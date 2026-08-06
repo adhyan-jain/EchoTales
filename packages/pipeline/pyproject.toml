@@ -1,0 +1,40 @@
+[project]
+name = "echotales-pipeline"
+version = "0.1.0"
+description = "EchoTales pipeline: ingest, resolve, eval."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "echotales-core",
+    "pydantic>=2.8",
+    "pydantic-settings>=2.4",
+    "beautifulsoup4>=4.12",
+    "lxml>=5.2",
+    "regex>=2024.5",
+    "pyahocorasick>=2.1",
+    "httpx>=0.27",
+    "rank-bm25>=0.2.2",
+    "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+ml = [
+    "gliner>=0.2.13",
+    "sentence-transformers>=3.0",
+    "scikit-learn>=1.5",
+]
+api = [
+    "anthropic>=0.40",
+]
+
+[tool.uv.sources]
+echotales-core = { workspace = true }
+
+[project.scripts]
+echotales = "echotales.pipeline.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/echotales"]

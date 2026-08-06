@@ -1,0 +1,85 @@
+[project]
+name = "echotales-workspace"
+version = "0.1.0"
+description = "Bitemporal narrative knowledge graphs for web-novel adaptation"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "echotales-core",
+    "echotales-pipeline",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv.sources]
+echotales-core = { workspace = true }
+echotales-pipeline = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "hypothesis>=6.100",
+    "mypy>=1.11",
+    "ruff>=0.6",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["data", ".venv"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",    # pycodestyle
+    "F",         # pyflakes
+    "I",         # isort
+    "B",         # bugbear
+    "UP",        # pyupgrade
+    "N",         # pep8-naming
+    "SIM",       # flake8-simplify
+    "RUF",       # ruff-specific
+]
+ignore = [
+    "E501",    # line length is the formatter's job
+    "N818",    # exception naming
+    # Ambiguous-unicode checks. The quote-splitting code must contain
+    # curly quotes as *data* (they are what the corpus uses), and prose
+    # docstrings legitimately use en/em dashes.
+    "RUF001",
+    "RUF002",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["N802", "N806"]
+"**/tests/**" = ["N802", "N806"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+plugins = ["pydantic.mypy"]
+exclude = ["^data/", "^\\.venv/"]
+
+[[tool.mypy.overrides]]
+module = [
+    "ahocorasick.*",
+    "gliner.*",
+    "fastcoref.*",
+    "bs4.*",
+    "sklearn.*",
+    "rank_bm25.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["packages/core/tests", "packages/pipeline/tests"]
+addopts = "-q --strict-markers"
+markers = [
+    "slow: loads ML models or runs over many chapters",
+    "corpus: requires the EPUBs in data/raw/",
+    "net: requires network or a running ollama",
+]

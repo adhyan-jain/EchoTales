@@ -1,0 +1,51 @@
+# Source novels — NEVER commit.
+#
+# These are copyrighted texts supplied by the user for local coursework. Git
+# retains blobs in history even after a later deletion, so an accidental commit
+# is not cleanly reversible. Everything downstream is designed around this:
+# data/gold/ stores character offsets and short evidence snippets rather than
+# chapter text, precisely so annotations stay shareable without the novels.
+data/raw/
+*.epub
+*.pdf
+*.mobi
+*.azw3
+
+# Built graph databases — regenerate with `echotales run`.
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/echotales.db*
+
+# Generated review artifacts (contain short text snippets from the sources).
+data/review/
+data/gold/*.jsonl
+
+# Induced lexicons are regenerable; keep the genre-neutral seed tracked.
+data/lexicons/*.toml
+!data/lexicons/_seed.toml
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+dist/
+build/
+
+# Environment
+.env
+.env.local
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
