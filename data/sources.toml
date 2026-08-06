@@ -1,0 +1,42 @@
+# Per-novel ingestion config.
+#
+# Adding a novel is a block here, not a code change. `adapter` selects the
+# parser; `chapters` limits ingestion to the volume under study.
+#
+# Source files are NOT committed. Place your own copies at the paths below.
+
+[[novel]]
+id = "reverend-insanity"
+title = "Reverend Insanity"
+path = "data/raw/reverend-insanity-c1-c500.epub"
+adapter = "lightnovelworld"
+chapters = "1-199"
+# Fan translation exported from a web reader. Two quirks the adapter handles:
+#  - Chapter 1 lives in page-0.html, so chapter numbers come from the TOC.
+#  - Each chapter repeats its title as a bold first paragraph.
+lexicon = "data/lexicons/reverend-insanity.toml"
+
+[[novel]]
+id = "lord-of-the-mysteries"
+title = "Lord of the Mysteries, Vol. 1: Clown"
+path = "data/raw/Clown - LotM Vol. 1.epub"
+adapter = "calibre"
+chapters = "1-213"
+# Official volume release. Inner monologue is marked with <i>, which gives the
+# span classifier a structural signal independent of attribution verbs.
+# Ships Pathways Guide / Characters / Locations appendices: ingested as
+# NON_DIEGETIC and excluded from identity processing, since they describe
+# end-of-volume state and would leak knowledge the reader does not yet have.
+lexicon = "data/lexicons/lord-of-the-mysteries.toml"
+
+[[novel]]
+id = "omniscient-readers-viewpoint"
+title = "Omniscient Reader's Viewpoint"
+path = "data/raw/Omniscient Reader's Viewpoint - Sing-shong (singsyong).epub"
+adapter = "calibre"
+chapters = "1-188"
+# 551 chapters in the file; volume under study is 1-188. Korean regression /
+# system fiction, so SYSTEM_WINDOW parsing carries far more weight here than in
+# the two Chinese sources -- status screens are a primary attribute source
+# rather than an occasional one.
+lexicon = "data/lexicons/omniscient-readers-viewpoint.toml"
