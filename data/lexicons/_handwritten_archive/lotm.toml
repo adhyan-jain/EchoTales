@@ -1,0 +1,194 @@
+# Lexicon for Lord of the Mysteries-style Victorian occult fiction.
+#
+# The naming problem here differs from xianxia. Instead of sect ranks, the
+# volatile classes are Pathway names and Tarot code names, and both are
+# systematically ambiguous in ways plans.md §4.1 calls out explicitly.
+
+[meta]
+id = "lotm"
+description = "Victorian occult: Pathways, Sequences, Tarot code names"
+
+# PATHWAY_TITLE -- ambiguous three ways, and disambiguation needs syntax:
+#   "the X pathway"  -> categorical, not a person
+#   "the X" + verb   -> the current holder
+#   "X <FullName>"   -> compound reference to a specific person
+[titles]
+pathway = [
+    "Seer",
+    "Clown",
+    "Magician",
+    "Faceless",
+    "Marionettist",
+    "Bizarro Sorcerer",
+    "Miracle Invoker",
+    "Attendant of Mysteries",
+    "Fool",
+    "Sailor",
+    "Warrior",
+    "Hunter",
+    "Apothecary",
+    "Spectator",
+    "Listener",
+    "Telepathist",
+    "Psychiatrist",
+    "Monster",
+    "Reader",
+    "Savant",
+    "Sleepless",
+    "Nightmare",
+    "Demoness",
+    "Assassin",
+    "Corpse Collector",
+    "Criminal",
+    "Marauder",
+    "Sun",
+    "Priest of Light",
+    "Red Priest",
+    "Black Emperor",
+    "Paragon",
+    "Door",
+    "Error",
+    "Trickmaster",
+]
+
+# TAROT_TITLE -- context-specific aliases used inside one organisation.
+# A character may hold a Tarot name and a Pathway title and a legal name
+# simultaneously, each scoped to a different audience.
+tarot = [
+    "The Fool",
+    "The Hanged Man",
+    "The World",
+    "The Sun",
+    "The Moon",
+    "The Star",
+    "The Magician",
+    "The Hermit",
+    "The Tower",
+    "The Justice",
+    "Miss Justice",
+    "Mr. Fool",
+    "Mr. Hanged Man",
+    "Mr. World",
+    "Miss Star",
+    "Miss Magician",
+    "The Empress",
+    "The Emperor",
+    "The Hierophant",
+    "The Chariot",
+    "The Wheel of Fortune",
+    "Death",
+    "Temperance",
+    "The Devil",
+    "Judgement",
+]
+
+# Positions that pass between holders.
+transferable = [
+    "Captain",
+    "Bishop",
+    "Archbishop",
+    "Cardinal",
+    "Pope",
+    "Church Elder",
+    "Team Leader",
+    "Chief",
+    "Deacon",
+    "Sequence 9",
+    "Sequence 8",
+    "Sequence 7",
+    "Sequence 6",
+    "Sequence 5",
+]
+
+[ranks]
+# Sequence numbers descend as a character advances: a progressive rank, not a
+# transfer. Sequence 9 -> Sequence 8 is one person, not two.
+progressive = [
+    "Sequence 9",
+    "Sequence 8",
+    "Sequence 7",
+    "Sequence 6",
+    "Sequence 5",
+    "Sequence 4",
+    "Sequence 3",
+    "Sequence 2",
+    "Sequence 1",
+    "Sequence 0",
+]
+
+[deictic]
+relational = [
+    "Mr.",
+    "Mrs.",
+    "Miss",
+    "Sir",
+    "Madam",
+    "Father",
+    "Mother",
+    "Brother",
+    "Sister",
+    "Captain",
+    "my lord",
+    "my lady",
+    "your excellency",
+    "your grace",
+]
+
+[generic]
+descriptors = [
+    "the detective",
+    "the officer",
+    "the constable",
+    "the landlord",
+    "the landlady",
+    "the shopkeeper",
+    "the waiter",
+    "the driver",
+    "the servant",
+    "the old man",
+    "the young lady",
+    "the gentleman",
+    "the woman",
+    "the stranger",
+    "the passerby",
+    "the clerk",
+]
+
+[honorifics]
+prefixes = ["Mr.", "Mrs.", "Miss", "Sir", "Lady", "Lord", "Captain", "Father", "Bishop"]
+suffixes = []
+
+[declarations]
+identity = [
+    "his true name was",
+    "her true name was",
+    "also known as",
+    "formerly called",
+    "was none other than",
+    "had always been",
+    "his real identity",
+    "her real identity",
+    "none other than",
+    "went by the name",
+    "under the alias",
+]
+
+transfer = [
+    "inherited the title",
+    "the new",
+    "succeeded",
+    "took over as",
+    "was appointed",
+    "became the next",
+    "was promoted to",
+]
+
+deception = [
+    "claimed to be",
+    "posing as",
+    "disguised as",
+    "pretending to be",
+    "under the guise of",
+    "assumed the identity",
+    "the alias of",
+]

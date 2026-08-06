@@ -1,0 +1,137 @@
+# Genre-neutral lexicon seed.
+#
+# Everything here is a property of ENGLISH NARRATIVE PROSE, not of any
+# particular novel. It is the cold-start floor: enough for the
+# generic-descriptor block (non-negotiable #4) and declaration detection to
+# work on chapter 1, before induction has run.
+#
+# Deliberately contains NO novel-specific content -- no sect names, no pathway
+# or constellation titles, no cultivation ranks. Those are induced from the
+# text by `echotales induce-lexicon`, because sourcing them from an author's
+# or model's recall puts unverifiable entries into the system at 0.95
+# confidence, where they silently outrank every heuristic.
+
+[meta]
+id = "_seed"
+description = "Genre-neutral structural seed; per-novel vocabulary is induced"
+
+[titles]
+transferable = []
+era_locked = []
+pathway = []
+tarot = []
+
+[ranks]
+progressive = []
+
+[deictic]
+# Kinship and address terms that resolve relative to the speaker in any
+# English prose. A novel's own honorifics are induced on top of these.
+relational = [
+    "Father",
+    "Mother",
+    "Brother",
+    "Sister",
+    "Uncle",
+    "Aunt",
+    "Grandfather",
+    "Grandmother",
+    "Son",
+    "Daughter",
+    "Cousin",
+    "Sir",
+    "Madam",
+    "Ma'am",
+    "Mister",
+    "Mr.",
+    "Mrs.",
+    "Ms.",
+    "Miss",
+    "my lord",
+    "my lady",
+    "your excellency",
+    "your grace",
+    "your majesty",
+    "this one",
+]
+
+[generic]
+# Article-led role nouns. These are scene-local descriptors in any English
+# narrative and must never enter the graph.
+descriptors = [
+    "the man",
+    "the woman",
+    "the boy",
+    "the girl",
+    "the child",
+    "the old man",
+    "the old woman",
+    "the young man",
+    "the young woman",
+    "the stranger",
+    "the passerby",
+    "the servant",
+    "the attendant",
+    "the guard",
+    "the soldier",
+    "the officer",
+    "the messenger",
+    "the merchant",
+    "the innkeeper",
+    "the shopkeeper",
+    "the clerk",
+    "the driver",
+    "the waiter",
+    "the doctor",
+    "the crowd",
+    "that man",
+    "that woman",
+]
+
+[honorifics]
+prefixes = ["Mr.", "Mrs.", "Ms.", "Miss", "Sir", "Lady", "Lord", "Old", "Young"]
+suffixes = []
+
+[declarations]
+# Narrative conventions for asserting, transferring and faking identity.
+# These are English idiom, not novel vocabulary.
+identity = [
+    "his true name was",
+    "her true name was",
+    "their true name was",
+    "also known as",
+    "formerly called",
+    "was none other than",
+    "had always been",
+    "his real identity",
+    "her real identity",
+    "went by the name",
+    "under the alias",
+    "none other than",
+    "turned out to be",
+    "in truth, he was",
+    "in truth, she was",
+]
+
+transfer = [
+    "inherited the title",
+    "the new",
+    "succeeded",
+    "took over as",
+    "was appointed",
+    "became the next",
+    "passed the mantle",
+    "ascended to the position",
+    "was promoted to",
+]
+
+deception = [
+    "claimed to be",
+    "posing as",
+    "disguised as",
+    "pretending to be",
+    "under the guise of",
+    "assumed the identity",
+    "impersonating",
+    "the alias of",
+]

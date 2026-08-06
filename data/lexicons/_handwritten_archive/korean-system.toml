@@ -1,0 +1,131 @@
+# Lexicon for Korean regression / system fiction.
+#
+# The volatile naming classes here differ again from both Chinese sources.
+# Instead of sect ranks or Pathway titles, the load-bearing classes are
+# system-assigned designations and constellation epithets -- both of which
+# attach to a character *in addition to* their legal name and change as the
+# story progresses.
+
+[meta]
+id = "korean-system"
+description = "Korean regression/system fiction: constellations, scenarios, titles"
+
+[titles]
+# System-conferred designations. Transferable in the strict sense: they are
+# awarded, revoked and reassigned by an external system rather than inherited
+# socially, so temporal validity must be checked before any link.
+transferable = [
+    "Demon King",
+    "Constellation",
+    "Sponsor",
+    "Incarnation",
+    "Prophet",
+    "Guild Master",
+    "Guild Leader",
+    "Party Leader",
+    "Scenario Administrator",
+    "Dokkaebi King",
+    "Head Dokkaebi",
+    "Ruler",
+    "Outer God",
+    "Great Sage",
+]
+
+# Constellation epithets. Long, descriptive, and used *instead of* a name for
+# most of a character's screen time -- the single hardest alias class in this
+# source, because two epithets for one being share no surface form.
+era_locked = [
+    "Demon-like Judge of Fire",
+    "Secretive Plotter",
+    "Abyssal Black Flame Dragon",
+    "Prisoner of the Golden Headband",
+    "Jealous Lady of Judgement",
+    "Fourth Wall",
+    "Wandering Wanderer",
+]
+
+[ranks]
+# Stat and level designations advance; they are drift, not transfer.
+progressive = [
+    "Level 1", "Level 2", "Level 3", "Level 4", "Level 5",
+    "Rank F", "Rank E", "Rank D", "Rank C", "Rank B", "Rank A", "Rank S",
+    "Stigma", "Sub-scenario", "Main scenario",
+]
+
+[deictic]
+relational = [
+    "hyung",
+    "noona",
+    "oppa",
+    "unnie",
+    "sunbae",
+    "hoobae",
+    "ajussi",
+    "ajumma",
+    "Mr.",
+    "Ms.",
+    "Miss",
+    "teacher",
+    "leader",
+    "my lord",
+    "this one",
+]
+
+[generic]
+descriptors = [
+    "the man",
+    "the woman",
+    "the survivor",
+    "the incarnation",
+    "the constellation",
+    "the dokkaebi",
+    "the monster",
+    "the passerby",
+    "the soldier",
+    "the guard",
+    "the office worker",
+    "the student",
+    "the child",
+    "the old man",
+    "the stranger",
+]
+
+[honorifics]
+prefixes = ["Mr.", "Ms.", "Miss", "Master", "Lord", "Lady"]
+suffixes = ["-ssi", "-nim", "-ah", "-ya", "-hyung", "-noona", "-oppa", "-unnie", "-sunbae"]
+
+[declarations]
+identity = [
+    "his true name was",
+    "her true name was",
+    "also known as",
+    "formerly called",
+    "was none other than",
+    "had always been",
+    "his real identity",
+    "her real identity",
+    "none other than",
+    "the constellation known as",
+    "whose modifier was",
+]
+
+transfer = [
+    "inherited the title",
+    "the new",
+    "succeeded",
+    "took over as",
+    "was appointed",
+    "became the next",
+    "was granted the title",
+    "acquired the title",
+]
+
+deception = [
+    "claimed to be",
+    "posing as",
+    "disguised as",
+    "pretending to be",
+    "under the guise of",
+    "assumed the identity",
+    "impersonating",
+]

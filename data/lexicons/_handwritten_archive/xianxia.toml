@@ -1,0 +1,176 @@
+# Lexicon for Chinese cultivation / xianxia fiction.
+#
+# plans.md §4.5 requires this to ship on day one: transferable-title handling
+# is the slice where BookNLP-style baselines score near zero, and it cannot be
+# learned from the text alone because the first holder looks identical to the
+# second.
+#
+# Entries are matched case-insensitively after honorific stripping.
+
+[meta]
+id = "xianxia"
+description = "Chinese cultivation fiction: sects, ranks, immortal titles"
+
+# TRANSFERABLE_TITLE -- held by one person at a time, passes to a successor.
+# The resolver checks temporal validity before linking any of these.
+[titles]
+transferable = [
+    "Sect Master",
+    "Sect Leader",
+    "Patriarch",
+    "Matriarch",
+    "Peak Lord",
+    "Hall Master",
+    "Grand Elder",
+    "Supreme Elder",
+    "First Elder",
+    "Second Elder",
+    "Third Elder",
+    "First Seat",
+    "Clan Head",
+    "Clan Leader",
+    "Academy Elder",
+    "Guild Master",
+    "City Lord",
+    "Palace Master",
+    "Pavilion Master",
+    "Valley Master",
+    "Island Master",
+    "Cave Master",
+    "Tribe Leader",
+    "Chief Elder",
+    "Great Elder",
+]
+
+# Era-locked: exactly one holder per era, and transfer is always stated
+# explicitly in the text.
+era_locked = [
+    "Immortal Venerable",
+    "Demon Venerable",
+    "Great Emperor",
+    "Heavenly Emperor",
+    "Demon Emperor",
+    "Sword Saint",
+    "Alchemy Saint",
+]
+
+# Cultivation ranks. These drift gradually rather than transferring:
+# "Golden Core Elder Wang" becoming "Nascent Soul Elder Wang" is one person
+# advancing, NOT a title changing hands. Far more common than true transfer,
+# and mistaking it for transfer splits one character into two.
+[ranks]
+progressive = [
+    "Qi Refinement",
+    "Foundation Establishment",
+    "Golden Core",
+    "Nascent Soul",
+    "Soul Formation",
+    "Spirit Severing",
+    "Dao Seeking",
+    "Immortal Ascension",
+    "Rank one",
+    "Rank two",
+    "Rank three",
+    "Rank four",
+    "Rank five",
+    "Rank six",
+    "Rank seven",
+    "Rank eight",
+    "Rank nine",
+]
+
+# RELATIONAL_DEICTIC -- resolves relative to the speaker, never globally.
+# "Master" said by two different disciples denotes two different people.
+[deictic]
+relational = [
+    "Master",
+    "Shifu",
+    "Senior Brother",
+    "Junior Brother",
+    "Senior Sister",
+    "Junior Sister",
+    "Martial Uncle",
+    "Martial Aunt",
+    "Elder Brother",
+    "Younger Brother",
+    "Father",
+    "Mother",
+    "Uncle",
+    "Aunt",
+    "Grandfather",
+    "Grandmother",
+    "this old man",
+    "this young master",
+    "this king",
+    "this venerable one",
+    "my lord",
+    "my lady",
+]
+
+# GENERIC_DESCRIPTOR -- scene-local only, NEVER enters the graph.
+# Non-negotiable #4. Keeping these out eliminates the largest class of both
+# false matches and false transfers.
+[generic]
+descriptors = [
+    "the innkeeper",
+    "the guard",
+    "the servant",
+    "the merchant",
+    "the old man",
+    "the young man",
+    "the woman",
+    "the girl",
+    "the boy",
+    "the disciple",
+    "the elder",
+    "the cultivator",
+    "the beast",
+    "that woman",
+    "that man",
+    "the stranger",
+    "the messenger",
+    "the attendant",
+]
+
+# Honorific affixes stripped when building a comparison key.
+[honorifics]
+prefixes = ["Elder", "Senior", "Junior", "Young Master", "Young Miss", "Old", "Little"]
+suffixes = ["-ge", "-jie", "-di", "-mei", "-er"]
+
+# Phrases that assert identity. `declaration_match` is the highest-weighted
+# feature in the evidence vector, and these are how it fires.
+[declarations]
+identity = [
+    "his true name was",
+    "her true name was",
+    "also known as",
+    "formerly called",
+    "was none other than",
+    "had always been",
+    "his real identity",
+    "her real identity",
+    "in truth, he was",
+    "in truth, she was",
+    "none other than",
+]
+
+transfer = [
+    "inherited the title",
+    "the new",
+    "succeeded",
+    "passed the mantle",
+    "took over as",
+    "was appointed",
+    "became the next",
+    "ascended to the position",
+]
+
+deception = [
+    "claimed to be",
+    "posing as",
+    "disguised as",
+    "pretending to be",
+    "under the guise of",
+    "assumed the identity",
+    "impersonating",
+]
