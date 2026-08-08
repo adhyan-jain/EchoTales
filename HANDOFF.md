@@ -6,14 +6,28 @@ re-deriving context. Read this first, then `architecture.md` for the model and
 
 **Last updated:** 2026-08-08, after wiring the LLM into layer 1, fixing the
 Phase 6 blockers it exposed, a first (model-drafted, unconfirmed) gold set,
-cross-novel A/B on all three corpus novels, a browsable coref/attribution
-viewer (static + React, §8a), a real reading-order bug in `Store` that
-affected every entity count in this document to an unmeasured degree (§4.16),
-and an interactive correction workflow with five correction types --
-mention/speaker reassignment, entity creation, line merging, flagging (§4.18).
+cross-novel A/B on all three corpus novels, a real reading-order bug in
+`Store` that affected every entity count in this document to an unmeasured
+degree (§4.16), a browsable coref/attribution viewer (static + React, §8a),
+an interactive correction workflow with six correction types -- mention/
+speaker reassignment, entity creation, line merging, flagging, span
+retyping (§4.18), and anonymous voice-slot assignment for unattributed
+dialogue (§4.19).
 **Test status:** 450 passing, 1 failing (`uv run pytest packages/`). The failure
 is `test_segment.py::test_llm_fires_only_on_ambiguous_chapters` and it predates
 this work — the runner counts a call the stub never receives.
+
+**Everything through this point is committed and pushed** — 12 commits on
+`master`, `origin/master` up to date, working tree clean except the
+git-ignored `data/webview-working/` and `data/corrections/` (working state
+for the interactive tool, not source). If picking this up in a fresh
+session: `git log --oneline -12` shows the commit-by-commit breakdown, each
+message describes what it changed and why. **The webview backend and
+frontend may or may not still be running** depending on what happened to
+this machine's processes between sessions -- check with
+`curl -s http://127.0.0.1:8787/api/manifest` and
+`curl -s -o /dev/null -w '%{http_code}' http://localhost:4173/`before
+assuming either; restart instructions are in §8a.
 
 ---
 
@@ -583,7 +597,7 @@ untracked number that would be misleading to conflate with it.
 ### 4.18 Interactive correction workflow (`webview/`, `webview_server.py`, `corrections.py`)
 
 The read-only viewer accepts corrections and does something with them,
-closing a loop the static build had no way to close. Five correction types,
+closing a loop the static build had no way to close. Six correction types,
 all wired end-to-end (backend + UI) except where noted.
 
 **Two things happen to a correction, and neither is "feed it back into the
@@ -606,7 +620,7 @@ against its own answer key measures nothing). Instead:
    correction is skipped; a correction whose apply fails is *not* marked
    applied, so it surfaces again rather than silently vanishing.
 
-**The five types:**
+**The six types:**
 
 - **`merge_entities`** -- two entities are the same person; fold one into the
   other. Sidebar ⇄ icon, then click the target row.
@@ -638,6 +652,13 @@ against its own answer key measures nothing). Instead:
   always agree on what "the new character" refers to, and it renders in a
   fixed teal (`#2EC4B6`) distinct from the ranked palette so a manually-created
   character is visually obvious in the sidebar.
+- **`reassign_span_type`** -- the classifier's `SpanType` was wrong: prose
+  read as narration that's actually a translator's note (retype
+  `NON_DIEGETIC`, which drops it from both audio and panels and clears any
+  speaker), or the reverse. Addressed by `Span.id`. A per-line `<select>` in
+  edit mode, populated from every `SpanType` value with `NON_DIEGETIC` and
+  the narration types listed first -- the two the request was specifically
+  about. Verified live in the overlay preview, not just at apply time.
 
 **Data safety: corrections are never applied to the databases this document's
 numbers came from.** `webview-server` is run against copies in
@@ -701,6 +722,50 @@ agent-review sweep discussed with the user (a scheduled job reusing
 `ModelClient`/`Task` routing to emit `flag` corrections with
 `source: "agent:<model>"`, human-reviewed before anything is applied) is
 designed but not built.
+
+### 4.19 Anonymous voice slots for unattributed dialogue (`speakers/runner.py`)
+
+The user's framing, worth keeping verbatim because it's the actual design
+constraint: unattributed lines "don't even need to be stored as a
+character," but leaving them all simply unattributed means downstream
+synthesis has no way to tell two different unnamed speakers apart --
+"we need different voices for different people" even when neither is known.
+
+`_assign_anonymous_slots()` runs after the normal four-tier attribution
+ladder, over whatever `DIALOGUE` it left `UNRESOLVED`. Turn-taking
+alternation only, explicitly not claiming to be coreference: consecutive
+unresolved lines alternate between up to `_MAX_ANON_SLOTS = 4` chapter-scoped
+slots, and any resolved line (a real speaker) restarts the count. The id
+(`f"{novel_id}:anon:{chapter:g}:{slot}"`) is never written as a `Self` row --
+see architecture.md §4's new note on this being a stand-in for `Persona`,
+which still has no runner. New `AttributionMethod.ANONYMOUS_SLOT` stays out
+of the tracked attribution-coverage KPI on purpose; it means "linked to a
+known identity," and an anonymous slot deliberately is not one.
+
+**Measured, full volumes, re-running attribution on top of the LLM-layer-1
+mention data:**
+
+| Novel | Attributed | Anonymous slots | Coverage (unaffected) |
+|---|---:|---:|---:|
+| RI | 2,795 / 5,725 | 2,930 | 48.8% |
+| LOTM | 1,290 / 1,812 | 522 | 71.2% |
+| ORV | 1,286 / 2,959 | 1,673 | 43.5% |
+
+Both webview builds render the slot as `Unknown Speaker N` (never the raw
+id), coloured from a small fixed palette distinct from the ranked entity
+palette, styled italic -- neither the bold treatment a named speaker gets
+nor the red "missing" treatment, since this is a design category, not a
+defect. `reassign_speaker` still works on an anonymous-slot line exactly as
+on any other -- naming the real speaker, if you know it, clears the
+anonymous styling and folds the line into the normal attribution-coverage
+count.
+
+**Found in passing, not fixed:** re-running attribution surfaced
+`speaker="As"` on several `EXPLICIT`-confidence lines in RI -- almost
+certainly a malformed extraction from narration text like "As he said
+this," not a real name. Predates every change in this document; not
+something this session's edits caused, and not investigated further. Worth
+a look before trusting `EXPLICIT`-tier output at face value.
 
 ### 4.10 LLM wiring — layer 1 done, three stages left
 
@@ -916,6 +981,20 @@ mkdir -p data/webview-working
 cp data/echotales.db data/webview-working/reverend-insanity.db
 cp data/llm-lotm.db  data/webview-working/lord-of-the-mysteries.db
 cp data/llm-orv.db   data/webview-working/omniscient-readers-viewpoint.db
+
+# The three databases above predate anonymous voice-slot assignment (§4.19)
+# -- re-run attribution on the working copies to populate it. Fast (spans are
+# already classified, mentions already resolved; this only redoes Phase 4).
+uv run python -c "
+from echotales.core.store import Store
+from echotales.pipeline.speakers import attribute_novel
+for novel, db in [
+    ('reverend-insanity', 'data/webview-working/reverend-insanity.db'),
+    ('lord-of-the-mysteries', 'data/webview-working/lord-of-the-mysteries.db'),
+    ('omniscient-readers-viewpoint', 'data/webview-working/omniscient-readers-viewpoint.db'),
+]:
+    attribute_novel(novel, Store(db))
+"
 
 uv run echotales webview-server \
     --source "data/webview-working/reverend-insanity.db:reverend-insanity:Reverend Insanity" \

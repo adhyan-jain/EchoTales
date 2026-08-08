@@ -215,9 +215,33 @@ in observer, returning different alias sets.
 ## `packages/pipeline/` — ingest, resolve, evaluate
 
 ### `src/echotales/pipeline/cli.py`
-`argparse` entry point exposing `ingest`, `resolve`, `query state-of`, `eval`,
-`export`. Kept importable with **no optional dependencies installed** so
-`--help` works on a bare checkout; the heavy import happens inside `main()`.
+`argparse` entry point exposing `run`, `ingest`, `resolve`, `review`,
+`query state-of`, `eval`, `export`, `webview`, `webview-server`. Kept
+importable with **no optional dependencies installed** so `--help` works on
+a bare checkout; the heavy import happens inside `main()`.
+
+`webview` takes `--format {static,react}` (default `static`) and repeated
+`--source DB_PATH:NOVEL_ID[:LABEL]`. `webview-server` takes the same
+`--source` shape plus `--host`/`--port` (default `127.0.0.1:8787`) and has
+no format flag — it only ever serves the live, correctable payload.
+
+### `src/echotales/pipeline/commands.py`
+Dispatch layer behind the CLI, one function per verb.
+
+`cmd_run` builds a single `ModelClient` for the whole run
+(`_build_client`) and threads it into every stage that can use one, rather
+than each stage constructing its own — preflighted once before the first
+chapter, so a missing/oversized model fails immediately instead of at
+chapter 140. Returns `None` on the `stub` backend rather than a stub
+client: a stub client would make a stage take the model-backed code path
+and get canned answers, which would print as a working LLM run without
+being one.
+
+`cmd_webview`/`cmd_webview_server` parse the repeated `--source` flag
+(`DB_PATH:NOVEL_ID[:LABEL]`, split on `:` with `maxsplit=2` so a Windows
+drive-letter path would still break — not hit yet on this project's
+platforms) and hand a list of `NovelSource` to `webview.py`/
+`webview_server.py`.
 
 ### `src/echotales/pipeline/config.py`
 `Settings` via pydantic-settings, prefix `ECHOTALES_`, reading `.env`.
@@ -227,9 +251,6 @@ Also holds `escalation_confidence_threshold` (0.75),
 `max_escalations_per_run` (a hard ceiling so a misconfiguration cannot turn a
 600-chapter job into an unbounded API bill), `window_size` (40 chapters per LLM
 window) and `conformal_alpha` (0.05).
-
-### `src/echotales/pipeline/commands.py` **(pending)**
-Dispatch layer behind the CLI.
 
 ### `src/echotales/pipeline/llm/base.py`
 Provider protocol. Every call site requests **structured output validated by a
@@ -586,8 +607,52 @@ dialogue becomes `DIALOGUE_REFERENCE`, not `PRESENT`: without this a chapter
 that merely *names* nine characters produces a panel containing nine, most
 absent or dead.
 
-**Measured:** RI 28,646 mentions / 199 ch (611-entry gazetteer, 75 generics
-dropped); LOTM 31,775 / 213 ch (789 entries, 523 dropped). ~7–9 s per novel.
+**Measured (deterministic, pre-LLM):** RI 28,646 mentions / 199 ch (611-entry
+gazetteer, 75 generics dropped); LOTM 31,775 / 213 ch (789 entries, 523
+dropped). ~7–9 s per novel.
+
+**Superseded as the default path by `chapter_ner.py`** (below): when a
+`client` is passed, layer 1 becomes a two-step pass instead of pure
+capitalisation matching. Measured on RI vol 1 with the LLM path:
+1,862 → 82 entities, 47% → 20% singleton rate. `detector_name`,
+`llm_calls`, `llm_surfaces`, `llm_rejected` on `MentionReport` distinguish
+which path a given run actually took — never assume from the code alone
+that a run used the model.
+
+### `src/echotales/pipeline/mentions/chapter_ner.py`
+Layer 1's LLM path. **Never asks the model where a mention is** — only,
+once per chapter, which surface forms in the chapter are names — and the
+returned vocabulary (`VocabularyDetector`) is matched over spans with the
+same Aho-Corasick machinery `gazetteer.py` already uses. Per-span prompting
+is 34.5h against this corpus by the measured 1.9s/call budget; per-chapter
+is ~35 min for 199 chapters, and offsets stay exact instead of being
+hallucinated back as character positions by the model.
+
+`NameCache` keys on a hash of the chapter text plus the model name, and
+flushes on the same `commit_every` cadence as the store commit — it used to
+flush only once, at the very end, and an interrupted 199-chapter run lost
+the whole run's GPU work with nothing written yet. `plausible_name()`
+rejects the concrete failure modes actually observed from a small local
+model: whole copied sentences, punctuation-bearing fragments, wholly
+lowercase returns (this corpus's translations capitalise names without
+exception, so a lowercase return is a paraphrased description).
+
+### `src/echotales/pipeline/mentions/commonness.py`
+Separates a capitalised common noun (a role word, an item name, a
+power-scale term) from a personal name using **determiner and plural rate**,
+measured from the corpus itself — capitalisation alone cannot, since both
+run near 0% lowercase in this content. `CommonnessProfile` retains the
+casefolded corpus text so a surface the LLM path proposes *after* the
+profile was built can still be measured on demand
+(`is_common_noun`/`measure`); without this, an LLM-discovered surface (the
+seed list never contained it) silently skipped the filter entirely, which
+is how "Grandpa" became an entity before possessive pronouns were added to
+`_DETERMINERS`.
+
+`credit_surfaces()` catches translation-group names specifically: a
+character occasionally appears near the word "translator", a translation
+group's name essentially always does, so a high co-occurrence rate with
+credit vocabulary is the signal, not a fixed name list.
 
 ### `src/echotales/pipeline/speakers/attribution.py`
 Phase 4, four-tier ladder: explicit → proximal → turn-taking → contextual.
@@ -640,6 +705,21 @@ next guess worse.
 plans.md anticipates. A large share are pronoun subjects ("he said"), which
 Phase 5 local anaphora is expected to recover; tier 4 was deliberately not
 over-engineered ahead of that feedback.
+
+`_assign_anonymous_slots()` runs after the ladder, over what it left
+`UNRESOLVED`, for `DIALOGUE` spans only. Turn-taking alternation between a
+small cap of chapter-scoped slots (`_MAX_ANON_SLOTS = 4`) -- never a `Self`
+row, deliberately: downstream synthesis needs two different unattributed
+lines to sound different far more often than it needs to know who either
+of them is, and minting an entity for a background speaker who may never
+be named again clutters the reviewed cast for no benefit. New
+`AttributionMethod.ANONYMOUS_SLOT` is excluded from `report.attributed`,
+which keeps its original meaning ("linked to a known identity"). Measured
+on RI vol 1 (post-LLM-layer-1 numbers, chapter counts differ from the
+54.0%/74.1% figures above which predate that change): 2,930 lines given a
+distinct anonymous voice out of 5,725 total, coverage unaffected
+(48.8%, same value with or without the anonymous-slot pass, confirming it
+never leaks into the tracked metric).
 
 ### `src/echotales/pipeline/anaphora/local.py`
 Phase 5. **Not clustering** (non-negotiable #1) — every link is made by a rule
@@ -767,26 +847,81 @@ chapter 40 contains only what had been read by chapter 40.
 | 40 | 25.0 s | 9.1 | 2,753 | 980 | 1,766 / 980 / 7 |
 | 80 | 63.9 s | 11.7 | 5,458 | 1,495 | 3,955 / 1,495 / 8 |
 
-**Still wrong.** 1,495 entities at 80 chapters over-splits badly (real cast well
-under 200), and `deferred≈8` means the DEFER band is unused, so
-re-resolution and adjudication are untested against real data. Thresholds are
-untuned — and must not be tuned by hand before the recall@k harness exists.
+**Superseded by two later findings, both load-bearing for anyone touching
+this package next:**
 
-### `src/echotales/pipeline/eval/` **(not started)**
+**The scorer cannot reach LINK at all, structurally, independent of
+tuning.** `DEFAULT_BIAS = -4.0` and `gate.FALLBACK_LINK_THRESHOLD = 0.80`
+were set independently and are mutually unreachable: a maximal plausible
+evidence vector (surface_similarity=1.0, context=0.6,
+speech_partner=1.0, temporal=1.0) scores p=0.711 through
+`ScoringModel.probability()`. So **every link the system has ever made
+came from `prefilter()`**, never from the scorer — which is the real
+explanation for the over-splitting the table above shows, not merely
+untuned thresholds. Not fixed by hand-rebalancing the bias (that is fitting
+to nothing without gold); the real fix is `ConformalGate.calibrate()`
+against confirmed examples once enough exist.
 
-Per the revised plan this moves to weeks 1–3, ahead of scorer work.
+**`name_containment` is now a fourth pre-filter row**, added after the
+above was diagnosed: one name is the other with a leading house-prefix
+token dropped and a shared tail of >=2 tokens (`normalize.py`). Two
+guards, both load-bearing: the >=2-token floor stops a bare shared surname
+from merging unrelated people ("Elder Wang"/"Xiao Wang" must not merge on
+"Wang" alone), and the short form must be a token-*suffix*, not any
+substring, so the house name itself ("Gu Yue", also two tokens) doesn't
+match every member of the house it prefixes. `co_presence_violation` is
+suppressed when `name_containment` holds -- a chapter introducing "Gu Yue
+Mo Bei" and calling him "Mo Bei" three lines later puts both surfaces in
+one scene, which the raw co-presence check read as two people standing
+together, firing *before* the pre-filter that would have merged them ever
+got a chance.
 
-**Required contents:**
-- `metrics.py` — MUC, B³, CEAF over the 3×5 dense chapters
-- `retriever_eval.py` — recall@{1,5,10,20} by `alias_type`. **Decision gate:**
-  recall@10 on `TRANSFERABLE_TITLE` below 80% means retrieval is the research
-  problem and scorer tuning is premature.
-- `baselines/long_context.py` — Baseline A: 30-chapter context + running entity
-  list, no graph, no gazetteer. The honest upper bound for naive LLM approaches.
-- `baselines/llmlink.py` — Baseline B: dual-LLM memorisation per COLING 2025.
-  The direct academic comparison.
-- `ablations.py` — implemented by zeroing named weights, so ablations cost **no
-  additional LLM passes**.
+**Measured after the LLM layer-1 change (§ mentions/runner.py above) plus
+these fixes, full volumes:** RI 199 ch: 1,862 → **82** entities (47% → 20%
+singleton rate). Cross-novel: LOTM 730 → 102, ORV 859 → 63 -- same regime
+shift on both, i.e. the fix generalises rather than being overfit to RI's
+xianxia house-prefix convention. Two known-open gaps found by that
+cross-novel check and deliberately not hand-fixed: LOTM ch1 is a
+reincarnation opening (Zhou Mingrui/Klein Moretti/Klein split into three
+entities -- the declaration detector doesn't recognise "memories began
+flooding him" as an identity-continuity assertion) and ORV's Korean
+family-name-first convention drops recall on given-name-alone references
+("Kim Dokja"/"Dokja" -- the >=2-token floor above is doing its job on the
+surname side and costing recall on the given-name side, since a Korean
+given name used alone is usually unambiguous in a small cast the way a
+bare surname is not).
+
+### `src/echotales/pipeline/eval/`
+
+**`gold.py`** — `GoldMention`/`GoldSet`, the annotation schema. Every record
+carries `Provenance` (`MODEL` vs `HUMAN`) and a `confirmed: bool` — a
+model-drafted annotation is a draft, never gold, until a person confirms
+it. `GoldSet.confirmed_only` is the only subset any recall/accuracy number
+may legitimately be computed from; nothing in this codebase should read a
+`provenance=MODEL, confirmed=False` record as ground truth.
+`MentionKind.NOT_AN_ENTITY` is a first-class kind, not an absence — a
+detector's false positive (a role noun, an item, a translation credit) is
+itself something gold needs to be able to say, or precision has no way to
+be measured at the entity-existence level, only at the coreference level.
+
+**`retriever_eval.py`** — recall@k, the plans.md §8.2 gate: recall@10 on
+`TRANSFERABLE_TITLE` below 80% means candidate retrieval is the research
+problem and scorer tuning is premature. `SELF_RETRIEVAL` mode needs no
+annotations and is a smoke test only (proves there's no indexing/
+tokenisation bug); `GOLD` mode is the real measurement and needs
+`GoldSet.confirmed_only` data that does not exist yet at any scale.
+
+**`coref_score.py`, `draft.py`** — coreference scoring and gold-drafting
+support. `data/gold/reverend-insanity-c1-c5.toml` is the first draft this
+produced: 26 identities over RI ch1-5, model-drafted (an LLM reading the
+source text directly, deliberately *not* reading the pipeline's own output
+first, to avoid grading the system against its own guess) and explicitly
+not gold until a person reviews it and flips `confirmed`.
+
+**Not built:** MUC/B³/CEAF coreference metrics, the two baselines (long-
+context LLM, dual-LLM memorisation per COLING 2025), and the ablation
+harness (would cost no additional LLM calls, since it re-scores cached
+evidence vectors with zeroed weights).
 
 ### Compute and cost budget
 
@@ -829,6 +964,102 @@ silently halving throughput mid-run.
   reference sheets (one character at two story-time states).
 - TTS: primary novel only ≈ **21,000 spans** (199 ch × ~107 spans/ch).
 
+### `src/echotales/pipeline/review.py`
+Assembles what a human needs to audit the graph, in three shapes for three
+jobs: console table (quick sanity read), HTML (browsable, evidence inline,
+for actually auditing entities), JSONL (scripting, or seeding annotation).
+
+`EntityRow.evidence` is capped at `SNIPPET_CHARS = 110` and centred on the
+mention -- enough to confirm or reject a decision at a glance, deliberately
+far too little to reconstruct the source, matching the `data/gold/`
+convention of offsets-plus-snippet rather than chapter text.
+
+`ScriptLine`/`ChapterScript` are the view the entity table cannot give:
+not "does Fang Yuan exist as one entity" but "line 40 of chapter 3 is
+spoken by Fang Yuan" -- entity-list cleanliness and per-line attribution
+coverage are different failure surfaces, and an entity list can look clean
+while a third of dialogue has no speaker, invisible until the lines are
+read in reading order. Rendered only for `script_chapters` explicitly
+passed in, so a top-200-entity review never materialises the whole novel.
+
+### `src/echotales/pipeline/webview.py`
+`build_novel_payload()` is the single source of truth both viewer builds
+render from -- one function, two consumers, so the static and interactive
+builds can never quietly disagree about what a merge or a mention looks
+like.
+
+Entity colour is assigned by **mention-count rank**, not a hash of the id,
+so the highest-traffic characters get the most visually distinguishable
+hues and a long tail of walk-ons doesn't fight for colour; beyond rank 16
+(`_COLOURED_RANKS`, the palette length) everything shares a neutral grey.
+`_ANON_SPEAKER_RE`/`_anon_slot_label()` recognise the
+`{novel_id}:anon:{chapter}:{slot}` id shape `speakers/runner.py` mints and
+render "Unknown Speaker N" -- there is deliberately no `Self` row behind
+that id for `store.get_self()` to find.
+
+`write_webview()` emits the dependency-free static build: one HTML shell
+plus one `<script src>`-loaded JS data file per novel (not `fetch`,
+specifically because `fetch()` of local JSON is blocked by the browser's
+same-origin policy on `file://` and `<script src>` is not).
+`write_webview_json()` emits the same payload as plain JSON files for the
+React app's `public/data/`, which needs a server either way.
+
+### `src/echotales/pipeline/webview_server.py`
+The live backend for the React app's "Live edit" mode. Stdlib
+`http.server` only, single-threaded deliberately: `Store` opens its
+sqlite3 connection once in the main thread, and sqlite3 forbids
+cross-thread use by default -- `ThreadingHTTPServer` crashed on the first
+concurrent request during verification, caught by actually calling the
+endpoint rather than by reading the code.
+
+`_overlay_corrections()` recomputes the full payload fresh on every
+request from `corrections.py`'s pending-and-applied log, rather than
+tracking deltas incrementally -- with six correction types now each able
+to touch a mention's entity, a span's speaker, and the entity list at
+once, one from-scratch walk that rebuilds marks and counts together is far
+easier to get right than several deltas that all have to reconcile with
+each other. `merge_lines` is the one type this function does not preview
+(folding two spans into one mid-render was judged too likely to hide a
+subtle bug for the time available) -- its effect is only visible after
+`apply`.
+
+### `src/echotales/pipeline/corrections.py`
+`Correction`/`CorrectionLog`/`apply_pending`. A correction is never fed
+back into the resolver as input -- HANDOFF §6 already rules that out for
+hand-curated alias mappings, and a correction is the same category of
+thing: a resolver graded against its own answer key measures nothing.
+Instead a correction does two things: preview (`webview_server.py`,
+immediate) and, on request, a one-time patch to *this run's* store
+(rebind, delete an absorbed span, append a `ResolutionEvent`) -- the same
+relationship a human copy-editor has to a draft, not a change to how
+future runs decide anything.
+
+Six types: `merge_entities`, `reassign_mention`, `reassign_speaker`,
+`merge_lines`, `flag`, `reassign_span_type`. `reassign_mention`/
+`reassign_speaker` can mint a brand-new entity instead of picking an
+existing one (`new_manual_entity_id()` decides the id once, at the moment
+the correction is logged, so the live preview and the eventual store
+write can never disagree about what "the new character" refers to).
+`flag` is excluded from `apply_pending` entirely -- it has no store-side
+effect, and sweeping it into "apply pending corrections" would silently
+mark a note as dealt with the moment something unrelated gets fixed; a
+flag stays open until explicitly removed.
+
+`apply_pending()` wraps each correction's apply in its own try/except and
+commits the store after every single item, not once at the end -- a
+prior version committed once at the very end after marking every item
+applied as it went, so a later item raising left the log claiming an
+earlier correction was applied while its store write sat in an
+uncommitted transaction that a crash would silently discard. Found by an
+actual crash during verification (a stale-closure frontend bug sending
+`chapter: null`), not anticipated in advance.
+
+**Data safety, load-bearing:** `webview-server` must be run against
+`data/webview-working/*.db`, copies of the databases every measurement in
+this document comes from, never those databases directly. Verified after
+a full edit-and-apply pass: originals byte-identical to before, working
+copy showing every change.
+
 ### `tests/test_anaphora.py`
 33 tests, weighted toward what the resolver must decline to do: no cataphora,
 no distant antecedents, no gender-mismatched links, no split when personas are
@@ -859,11 +1090,18 @@ chapters.
 
 ---
 
-## `tools/` **(pending)**
+## `tools/` — never built; superseded by a different design
 
-- `check_deps.py` — fails CI if `core` imports `pipeline`.
-- `annotate.py` — human promotion pass, `MACHINE` → `HUMAN_VERIFIED`.
-- `replay.py` — reconstruct graph state at any discourse position.
+`check_deps.py`/`annotate.py`/`replay.py` as originally planned do not
+exist. The human-promotion job `annotate.py` was meant for is now
+`corrections.py` + `webview_server.py` + the React app's "Live edit" mode
+-- an interactive tool rather than a batch script, because the actual need
+turned out to be "click the wrong mention and fix it while reading," not
+"run a promotion pass over a dump." `replay.py`'s job (reconstruct graph
+state at any discourse position) is `core/state.py::StateResolver`, already
+built and exposed as `echotales query state-of`. `check_deps.py` (fail CI
+if `core` imports `pipeline`) is still genuinely unbuilt -- the rule is
+enforced by convention only, not by a check.
 
 ---
 
@@ -875,5 +1113,23 @@ chapters.
 - `gold/` — annotations as character offsets plus short evidence snippets,
   never chapter text. Same convention as CoNLL/OntoNotes, so the directory can
   be shared with collaborators without redistributing the novels.
+  `reverend-insanity-c1-c5.toml` is tracked (a human-editable draft source);
+  the `.jsonl` it expands to via `eval/draft.py` is git-ignored (derived,
+  regenerable, and would duplicate the toml's content under source control
+  for no benefit).
 - `lexicons/` — per-novel honorifics, ranks, transferable titles. Seeded per
-  genre and grown during processing.
+  genre and grown during processing. `*-ner-cache.json` (chapter-NER results,
+  keyed by a hash of chapter text) is git-ignored -- pure cache, regenerates
+  on the next LLM-backed run, same philosophy as the induced lexicon TOMLs.
+- `webview/` — the static viewer's build output (`echotales webview`).
+  Git-ignored, regenerate on demand.
+- `webview-working/` — copies of the run-of-record `.db` files, edited by
+  `webview-server` so a correction can never mutate the databases this
+  document's numbers are measured from. Git-ignored; re-copy from the
+  originals to reset. See `webview_server.py` above.
+- `corrections/` — one JSONL per novel, the human-correction log
+  (`corrections.py::CorrectionLog`). **Not** git-ignored, deliberately --
+  unlike `webview/` and `webview-working/` this is irreplaceable human
+  review, not a regenerable build artifact, and it contains no source text
+  (only target ids and notes), so there is no copyright reason to exclude
+  it either.

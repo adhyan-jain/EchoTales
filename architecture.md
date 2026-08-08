@@ -109,6 +109,20 @@ A direct consequence: the co-occurrence penalty applies **between personas,
 never between selves**. Two simultaneous mentions is evidence of two distinct
 bodies — which for a clone is not evidence of two distinct characters.
 
+**`Persona` itself has no runner yet** — nothing in the pipeline creates one.
+One practical consequence surfaced before that gap was closed properly:
+unattributed dialogue needs a *distinct voice* far more often than it needs a
+*known identity* (two unnamed guards trading lines is read wrong in one
+voice), but minting a full `Self` for someone who may never be named again
+is exactly the flat-entity-table failure this section exists to avoid on the
+named side. `speakers/runner.py::_assign_anonymous_slots` is the interim
+answer: a locally-scoped id, never a `Self` row, assigned by turn-taking
+alternation and consumed the same way a `Persona` id eventually will be. It
+is not a substitute for building `Persona` — it has no appearance, no
+timbre, no binding, none of what this section defines — only a stand-in for
+the one thing generation needs immediately that identity resolution alone
+cannot provide.
+
 ---
 
 ## 5. Observers and the spoiler problem
