@@ -471,9 +471,30 @@ class Store:
             ],
         )
 
+    def delete_span(self, novel_id: str, span_id: str) -> None:
+        """Remove one span permanently.
+
+        Only correct when nothing still depends on it existing: mentions
+        address a block/offset range, not a span id, so a mention that fell
+        inside the deleted span's range is unaffected as long as some other
+        span (or an extended neighbour) now covers that range instead --
+        `corrections.py::_apply_merge_lines` is responsible for that, this
+        method only removes the row.
+        """
+        self.conn.execute(
+            "DELETE FROM span WHERE novel_id=? AND id=?", (novel_id, span_id)
+        )
+
     def get_spans(self, novel_id: str, chapter: float) -> list[Span]:
+        # `start`/`end` are offsets *within a block*, not within the chapter
+        # (docstring on `Mention.offset` states the same convention for
+        # mentions -- see `get_mentions` below). Ordering by `start` alone
+        # sorts every block's first span together, then every block's second
+        # span together, and so on, which is not reading order the moment any
+        # block contains more than one span. `block_index` must be the primary
+        # sort key.
         cur = self.conn.execute(
-            "SELECT * FROM span WHERE novel_id=? AND chapter=? ORDER BY start",
+            "SELECT * FROM span WHERE novel_id=? AND chapter=? ORDER BY block_index, start",
             (novel_id, chapter),
         )
         return [
@@ -932,7 +953,13 @@ class Store:
             params.append(chapter)
         if resolved_only:
             sql += " AND target_id IS NOT NULL"
-        sql += " ORDER BY chapter, offset"
+        # `offset` is block-local (see the field docstring on `Mention`), so
+        # `ORDER BY chapter, offset` alone interleaves mentions from different
+        # blocks by coincidence of their local offset rather than reading
+        # order -- the same bug as `get_spans`, and more consequential here:
+        # `resolve/runner.py::resolve_novel` explicitly relies on this call
+        # for "strictly in discourse order" processing within a chapter.
+        sql += " ORDER BY chapter, block_index, offset"
         cur = self.conn.execute(sql, params)
         return [Mention.model_validate(dict(r)) for r in cur]
 
