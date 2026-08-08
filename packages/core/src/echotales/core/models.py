@@ -404,6 +404,12 @@ class EvidenceVector(BaseModel):
     declaration_match: float = 0.0
     gazetteer_exact_match: float = 0.0
     surface_similarity: float = 0.0
+    #: One name is the other with a leading house prefix dropped, sharing a
+    #: two-or-more-token tail. Kept separate from `surface_similarity` because
+    #: it is categorical and pre-filtered, while character-level similarity is
+    #: gradual and scored — folding them into one field would let an ordinary
+    #: high Jaro-Winkler score between two different names force a link.
+    name_containment: float = 0.0
     context_embedding_similarity: float = 0.0
     speech_partner_compatibility: float = 0.0
     temporal_validity: float = 1.0
@@ -423,6 +429,7 @@ class EvidenceVector(BaseModel):
 FEATURE_ORDER: tuple[str, ...] = (
     "declaration_match",
     "gazetteer_exact_match",
+    "name_containment",
     "surface_similarity",
     "context_embedding_similarity",
     "speech_partner_compatibility",
