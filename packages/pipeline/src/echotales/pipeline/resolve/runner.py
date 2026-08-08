@@ -1,0 +1,563 @@
+"""Phase 6 orchestration: incremental global resolution.
+
+For each local mention group, in discourse order, ask: is this an existing
+entity or someone new? Retrieve, score, gate, and either link, create, or
+defer. Deferred cases are revisited at window boundaries, when the accumulated
+evidence has grown.
+
+Order is not an implementation detail. Processing strictly in discourse order
+is what makes the knowledge-time axis meaningful: an entity profile at chapter
+40 contains only what had been read by chapter 40, so a link made there cannot
+be justified by evidence from chapter 190. Reveals reach backwards through the
+event log instead.
+"""
+
+from __future__ import annotations
+
+import logging
+from dataclasses import dataclass, field
+
+from echotales.core.enums import (
+    OBSERVER_READER,
+    AliasType,
+    AssertedBy,
+    Decision,
+    EventType,
+    ResolutionMethod,
+    TargetKind,
+    TruthStatus,
+)
+from echotales.core.interval import FuzzyInterval
+from echotales.core.models import (
+    AliasBinding,
+    Mention,
+    ResolutionEvent,
+    ResolutionOutcome,
+    Self,
+)
+from echotales.core.readset import ReadSetRecorder, entity_ref
+from echotales.core.store import Store
+from echotales.pipeline.config import Settings, get_settings
+from echotales.pipeline.ingest.normalize import display_label
+from echotales.pipeline.llm import LLMRouter
+from echotales.pipeline.mentions.lexicon import Lexicon
+from echotales.pipeline.resolve.adjudicate import AdjudicationRequest, adjudicate
+from echotales.pipeline.resolve.detectors import run_detectors
+from echotales.pipeline.resolve.evidence import EvidenceContext, score_evidence
+from echotales.pipeline.resolve.gate import ConformalGate, DeferredCase, DeferredQueue
+from echotales.pipeline.resolve.retrieve import CandidateRetriever
+from echotales.pipeline.resolve.score import ScoringModel
+
+log = logging.getLogger(__name__)
+
+#: Characters of surrounding text supplied as evidence context.
+_CONTEXT_WINDOW = 400
+
+
+@dataclass(slots=True)
+class ResolveReport:
+    novel_id: str
+    groups: int = 0
+    linked: int = 0
+    created: int = 0
+    deferred: int = 0
+    adjudicated: int = 0
+    recovered_from_deferral: int = 0
+    unresolved: int = 0
+    #: Groups that never used a naming mention, so could not found an entity.
+    deictic_only: int = 0
+    entities: int = 0
+    contradictions: int = 0
+    splits: int = 0
+    contradiction_kinds: dict[str, int] = field(default_factory=dict)
+    by_method: dict[str, int] = field(default_factory=dict)
+    detector_hits: dict[str, int] = field(default_factory=dict)
+    events: int = 0
+
+    @property
+    def defer_rate(self) -> float:
+        return self.deferred / self.groups if self.groups else 0.0
+
+    def summary(self) -> str:
+        methods = ", ".join(f"{k}={v}" for k, v in sorted(self.by_method.items())) or "none"
+        detectors = (
+            ", ".join(f"{k}={v}" for k, v in sorted(self.detector_hits.items())) or "none"
+        )
+        return (
+            f"{self.novel_id}: {self.groups:,} groups -> {self.entities:,} entities\n"
+            f"  linked={self.linked:,}  created={self.created:,}  "
+            f"deferred={self.deferred:,} ({self.defer_rate:.1%})  "
+            f"recovered={self.recovered_from_deferral:,}  unresolved={self.unresolved:,}\n"
+            f"  deictic-only groups (no entity created): {self.deictic_only:,}\n"
+            f"  methods: {methods}\n"
+            f"  detectors: {detectors}\n"
+            f"  contradictions: {self.contradictions} -> {self.splits} split(s)\n"
+            f"  events logged: {self.events:,}"
+        )
+
+
+def _context_for(mention: Mention, chapter_text: str) -> str:
+    """Text around a mention, for declarations and context similarity."""
+    centre = chapter_text.find(mention.text)
+    if centre < 0:
+        return chapter_text[:_CONTEXT_WINDOW]
+    lo = max(0, centre - _CONTEXT_WINDOW // 2)
+    return chapter_text[lo : lo + _CONTEXT_WINDOW]
+
+
+class GlobalResolver:
+    """Incremental entity resolution with evidence accumulation.
+
+    Explicitly not clustering (non-negotiable #1): each mention group is
+    resolved against the entities established so far, and the decision is
+    recorded as an event with the evidence that produced it.
+    """
+
+    def __init__(
+        self,
+        novel_id: str,
+        store: Store,
+        *,
+        lexicon: Lexicon | None = None,
+        model: ScoringModel | None = None,
+        gate: ConformalGate | None = None,
+        router: LLMRouter | None = None,
+        settings: Settings | None = None,
+    ) -> None:
+        self.novel_id = novel_id
+        self.store = store
+        self.lexicon = lexicon or Lexicon()
+        self.model = model or ScoringModel()
+        self.settings = settings or get_settings()
+        self.gate = gate or ConformalGate(alpha=self.settings.conformal_alpha)
+        self.router = router
+        self.retriever = CandidateRetriever()
+        self.queue = DeferredQueue()
+        self.report = ResolveReport(novel_id=novel_id)
+        self._next_entity = 0
+
+    # ---- entity lifecycle ---------------------------------------------
+
+    def _create_entity(self, mention: Mention, label: str) -> str:
+        self._next_entity += 1
+        target_id = f"{self.novel_id}:self{self._next_entity}"
+        self.store.add_self(
+            Self(
+                id=target_id,
+                novel_id=self.novel_id,
+                canonical_label=label,
+                first_attested_pos=mention.position,
+            )
+        )
+        self.report.created += 1
+        return target_id
+
+    def _bind_alias(
+        self,
+        mention: Mention,
+        target_id: str,
+        *,
+        truth_status: TruthStatus = TruthStatus.TRUE,
+        asserted_by: AssertedBy = AssertedBy.NARRATOR,
+        evidence: str = "",
+        confidence: float = 1.0,
+    ) -> None:
+        """Persist an alias binding.
+
+        Generic descriptors are rejected by `AliasBinding` itself, so nothing
+        here needs to remember the rule.
+        """
+        if not mention.alias_type.enters_graph:
+            return
+        self.store.add_alias_binding(
+            self.novel_id,
+            AliasBinding(
+                alias=mention.text,
+                alias_type=mention.alias_type,
+                target_kind=TargetKind.SELF,
+                target_id=target_id,
+                # Open-ended from this position, with evidence up to here. The
+                # interval decays to PLAUSIBLE beyond the last sighting rather
+                # than asserting the binding holds forever.
+                interval=FuzzyInterval.open_ended(
+                    mention.chapter, last_evidence=mention.chapter
+                ),
+                learned_at_pos=mention.position,
+                observer_id=OBSERVER_READER,
+                asserted_by=asserted_by,
+                truth_status=truth_status,
+                evidence=evidence[:200],
+                confidence=confidence,
+            ),
+        )
+
+    def _log(
+        self,
+        event_type: EventType,
+        mention: Mention,
+        payload: dict[str, object],
+        *,
+        method: ResolutionMethod | None = None,
+        confidence: float = 1.0,
+        read_set: list[str] | None = None,
+    ) -> None:
+        recorder = ReadSetRecorder()
+        recorder.record_many(read_set or [])
+        self.store.append_event(
+            ResolutionEvent(
+                id=f"{self.novel_id}:{mention.id}:{event_type.value}:{self.store.next_seq()}",
+                seq=self.store.next_seq(),
+                type=event_type,
+                payload=payload,
+                cause_pos=mention.position,
+                read_set_hash=recorder.digest,
+                method=method,
+                confidence=confidence,
+            )
+        )
+        self.report.events += 1
+
+    # ---- the decision ---------------------------------------------------
+
+    def resolve_group(
+        self,
+        mentions: list[Mention],
+        chapter_text: str,
+        *,
+        co_present: frozenset[str] = frozenset(),
+        speaker: str | None = None,
+    ) -> ResolutionOutcome:
+        """Resolve one local mention group."""
+        head = mentions[0]
+        label = display_label(m.text for m in mentions)
+        context = _context_for(head, chapter_text)
+
+        candidates = self.retriever.retrieve(head.text, context)
+        ctx = EvidenceContext(
+            context=context,
+            co_present=co_present,
+            speaker=speaker,
+            lexicon=self.lexicon,
+        )
+        for candidate in candidates:
+            candidate.evidence = score_evidence(
+                head, candidate, self.retriever.profiles.get(candidate.target_id), ctx
+            )
+        candidates = self.model.score_candidates(candidates)
+
+        decision, best, rationale = self.gate.decide(candidates)
+        group_id = head.local_group_id or head.id
+
+        if decision is Decision.DEFER:
+            self.queue.add(
+                DeferredCase(
+                    group_id=group_id,
+                    chapter=head.chapter,
+                    surface=head.text,
+                    context=context,
+                    candidates=candidates,
+                    reason=rationale,
+                )
+            )
+            self.report.deferred += 1
+            return ResolutionOutcome(
+                group_id=group_id,
+                decision=Decision.DEFER,
+                candidates=candidates,
+                rationale=rationale,
+            )
+
+        if decision is Decision.LINK and best is not None:
+            self._apply_link(mentions, best.target_id, context, ResolutionMethod.SCORED)
+            return ResolutionOutcome(
+                group_id=group_id,
+                decision=Decision.LINK,
+                target_kind=TargetKind.SELF,
+                target_id=best.target_id,
+                probability=best.probability,
+                method=ResolutionMethod.SCORED,
+                candidates=candidates,
+                rationale=rationale,
+            )
+
+        # A group that never once said a name cannot found an entity. "sir",
+        # "Grandpa", "this one" refer to someone who is named elsewhere; minting
+        # an entity for them creates a duplicate of a real character *and* an
+        # entity with no retrievable identity. Leaving it unresolved is the
+        # honest outcome — anaphora or a later window may still bind it.
+        if not any(m.alias_type.enters_graph and m.alias_type is not AliasType.RELATIONAL_DEICTIC
+                   for m in mentions):
+            self.report.deictic_only += 1
+            return ResolutionOutcome(
+                group_id=group_id,
+                decision=Decision.DEFER,
+                candidates=candidates,
+                rationale="deictic-only group: no naming mention to found an entity on",
+            )
+
+        target_id = self._create_entity(head, label)
+        self._apply_link(mentions, target_id, context, ResolutionMethod.SCORED, new=True)
+        return ResolutionOutcome(
+            group_id=group_id,
+            decision=Decision.NEW,
+            target_kind=TargetKind.SELF,
+            target_id=target_id,
+            method=ResolutionMethod.SCORED,
+            candidates=candidates,
+            rationale=rationale,
+        )
+
+    def _apply_link(
+        self,
+        mentions: list[Mention],
+        target_id: str,
+        context: str,
+        method: ResolutionMethod,
+        *,
+        new: bool = False,
+    ) -> None:
+        head = mentions[0]
+        label = display_label(m.text for m in mentions)
+
+        for mention in mentions:
+            mention.target_kind = TargetKind.SELF
+            mention.target_id = target_id
+            mention.method = method
+            self.retriever.observe(
+                target_id,
+                mention.text,
+                context,
+                mention.chapter,
+                label=label,
+            )
+            self._bind_alias(mention, target_id, evidence=context[:120])
+
+        self.store.add_mentions(mentions)
+        if not new:
+            self.report.linked += 1
+        self.report.by_method[method.value] = self.report.by_method.get(method.value, 0) + 1
+        self._log(
+            EventType.NEW_ENTITY if new else EventType.LINK,
+            head,
+            {"target_id": target_id, "label": label, "mentions": len(mentions)},
+            method=method,
+            read_set=[entity_ref(TargetKind.SELF, target_id)],
+        )
+
+    # ---- deferred re-resolution -------------------------------------------
+
+    def retry_deferred(self) -> int:
+        """Re-resolve deferred cases against accumulated evidence.
+
+        This is what makes deferral worth its cost: a case that was ambiguous
+        at chapter 40 is often trivial by chapter 90, because the gazetteer has
+        grown and the entity profiles carry far more context.
+        """
+        recovered = 0
+        for case in self.queue.pop_ready():
+            candidates = self.retriever.retrieve(case.surface, case.context)
+            if not candidates:
+                continue
+            ctx = EvidenceContext(context=case.context, lexicon=self.lexicon)
+            for candidate in candidates:
+                candidate.evidence = score_evidence(
+                    _synthetic_mention(case), candidate,
+                    self.retriever.profiles.get(candidate.target_id), ctx,
+                )
+            candidates = self.model.score_candidates(candidates)
+            decision, best, _ = self.gate.decide(candidates)
+            if decision is Decision.LINK and best is not None:
+                self.queue.remove(case.group_id)
+                recovered += 1
+                self.report.recovered_from_deferral += 1
+                self.report.by_method[ResolutionMethod.DEFERRED_RERESOLVED.value] = (
+                    self.report.by_method.get(
+                        ResolutionMethod.DEFERRED_RERESOLVED.value, 0
+                    )
+                    + 1
+                )
+        return recovered
+
+    def adjudicate_remaining(self) -> int:
+        """Send exhausted deferrals to the LLM.
+
+        Only reached after re-resolution has failed repeatedly, which keeps the
+        expensive tier on the cases that genuinely need it.
+        """
+        if self.router is None:
+            return 0
+        count = 0
+        for case in self.queue.exhausted():
+            outcome = adjudicate(
+                AdjudicationRequest(
+                    group_id=case.group_id,
+                    surface=case.surface,
+                    context=case.context,
+                    chapter=case.chapter,
+                    candidates=case.candidates,
+                ),
+                self.router,
+                self.retriever.profiles,
+                self.model,
+                novel_id=self.novel_id,
+            )
+            count += 1
+            self.report.adjudicated += 1
+            if outcome.decision is not Decision.DEFER:
+                self.queue.remove(case.group_id)
+                self.report.by_method[ResolutionMethod.LLM_ADJUDICATED.value] = (
+                    self.report.by_method.get(ResolutionMethod.LLM_ADJUDICATED.value, 0) + 1
+                )
+        return count
+
+    # ---- contradiction sweep -----------------------------------------------
+
+    def sweep_contradictions(self, *, window: int = 0) -> int:
+        """Re-check committed links against evidence accumulated since.
+
+        The gazetteer compounds wrong decisions as readily as right ones: a bad
+        link adds a surface form, the automaton then exact-matches it forever,
+        and the pre-filter force-links on it. Nothing in the forward pass can
+        undo that, so this backward pass exists.
+
+        Affected entities are returned to the deferred queue rather than being
+        repaired here — the detector proposes, adjudication disposes.
+        """
+        from echotales.pipeline.resolve.contradiction import sweep
+
+        found, report = sweep(
+            self.novel_id, self.store, self.retriever.profiles, window=window
+        )
+        self.report.contradictions += report.contradictions
+        self.report.splits += report.splits_emitted
+        for kind, count in report.by_kind.items():
+            self.report.contradiction_kinds[kind] = (
+                self.report.contradiction_kinds.get(kind, 0) + count
+            )
+
+        for contradiction in found:
+            profile = self.retriever.profiles.get(contradiction.target_id)
+            if profile is None:
+                continue
+            self.queue.add(
+                DeferredCase(
+                    group_id=f"contradiction:{contradiction.target_id}:{window}",
+                    chapter=profile.last_chapter,
+                    surface=contradiction.surfaces[0] if contradiction.surfaces else profile.label,
+                    context=" ".join(
+                        t for t, _ in profile.context_terms.most_common(40)
+                    ),
+                    reason=f"{contradiction.kind.value}: {contradiction.detail}",
+                )
+            )
+        return report.splits_emitted
+
+    # ---- detectors ---------------------------------------------------------
+
+    def run_detectors_on(self, text: str, mention: Mention) -> None:
+        """Emit events for transfers, deceptions, reveals, deaths, reputation."""
+        for hit in run_detectors(text, self.lexicon):
+            self.report.detector_hits[hit.kind.value] = (
+                self.report.detector_hits.get(hit.kind.value, 0) + 1
+            )
+            self._log(
+                hit.event_type,
+                mention,
+                {
+                    "detector": hit.kind.value,
+                    "subject": hit.subject,
+                    "object": hit.object,
+                    "evidence": hit.evidence[:160],
+                    "truth_status": hit.truth_status.value if hit.truth_status else None,
+                },
+                confidence=hit.confidence,
+            )
+
+
+def _synthetic_mention(case: DeferredCase) -> Mention:
+    """Rebuild a mention stand-in for re-scoring a deferred case."""
+    from echotales.core.enums import ReferenceMode, SpanType
+
+    return Mention(
+        id=case.group_id,
+        novel_id="",
+        segment_id="",
+        chapter=case.chapter,
+        offset=0,
+        text=case.surface,
+        alias_type=AliasType.RIGID_NAME,
+        span_type=SpanType.NARRATION_ACTION,
+        reference_mode=ReferenceMode.PRESENT,
+    )
+
+
+def resolve_novel(
+    novel_id: str,
+    store: Store,
+    *,
+    lexicon: Lexicon | None = None,
+    model: ScoringModel | None = None,
+    gate: ConformalGate | None = None,
+    router: LLMRouter | None = None,
+    settings: Settings | None = None,
+    use_llm: bool = False,
+    commit_every: int = 10,
+) -> ResolveReport:
+    """Run global resolution over a whole novel, in discourse order."""
+    cfg = settings or get_settings()
+    resolver = GlobalResolver(
+        novel_id,
+        store,
+        lexicon=lexicon,
+        model=model,
+        gate=gate,
+        router=router if use_llm else None,
+        settings=cfg,
+    )
+
+    for i, chapter in enumerate(store.iter_chapters(novel_id), start=1):
+        mentions = store.get_mentions(novel_id, chapter.number)
+        if not mentions:
+            continue
+        chapter_text = chapter.story_text
+
+        # Group by the local group id from Phase 5; ungrouped mentions resolve
+        # individually rather than being silently dropped.
+        groups: dict[str, list[Mention]] = {}
+        for mention in mentions:
+            groups.setdefault(mention.local_group_id or mention.id, []).append(mention)
+
+        co_present = frozenset(
+            m.text for m in mentions if m.reference_mode.is_physically_present
+        )
+
+        for group in groups.values():
+            resolver.resolve_group(group, chapter_text, co_present=co_present)
+            resolver.report.groups += 1
+
+        if mentions:
+            resolver.run_detectors_on(chapter_text, mentions[0])
+
+        # Window boundary: re-check committed links, then retry deferrals.
+        #
+        # Order matters. The contradiction sweep runs first so that a link
+        # withdrawn this window is back in the deferred queue before the retry
+        # pass considers it -- otherwise a wrong link survives an extra window
+        # and keeps attracting mentions through the gazetteer.
+        if i % cfg.window_size == 0:
+            resolver.sweep_contradictions(window=i // cfg.window_size)
+            resolver.retry_deferred()
+
+        if i % commit_every == 0:
+            store.conn.commit()
+
+    # Final sweep: the last partial window never hit a boundary.
+    resolver.sweep_contradictions(window=-1)
+    resolver.retry_deferred()
+    if use_llm and router is not None:
+        resolver.adjudicate_remaining()
+
+    resolver.report.unresolved = len(resolver.queue)
+    resolver.report.entities = len(resolver.retriever)
+    store.conn.commit()
+    return resolver.report
