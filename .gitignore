@@ -17,13 +17,27 @@ data/*.db-wal
 data/*.db-shm
 data/echotales.db*
 
+# Working copies the webview backend edits, so a correction can never mutate
+# the originals above. Regenerate with the copy step in HANDOFF §4.18.
+data/webview-working/
+
 # Generated review artifacts (contain short text snippets from the sources).
 data/review/
 data/gold/*.jsonl
+data/webview/
+
+# React viewer (packages/pipeline/.../webview.py generates its data)
+webview/node_modules/
+webview/build/
+webview/public/data/
 
 # Induced lexicons are regenerable; keep the genre-neutral seed tracked.
 data/lexicons/*.toml
 !data/lexicons/_seed.toml
+
+# Chapter-NER cache (mentions/chapter_ner.py::NameCache) -- pure cache, keyed
+# by a hash of chapter text, regenerates on the next LLM-backed run.
+data/lexicons/*-ner-cache.json
 
 # Python
 __pycache__/
