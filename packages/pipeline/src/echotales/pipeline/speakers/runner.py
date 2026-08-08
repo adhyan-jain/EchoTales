@@ -24,6 +24,11 @@ from echotales.pipeline.speakers.attribution import (
 #: Characters of narration either side of a line that the tiers may consult.
 _WINDOW = 220
 
+#: Anonymous slots cycle within this cap rather than growing unboundedly --
+#: a chapter with a dozen unresolved lines in a row is one confused scene,
+#: not a dozen distinct background speakers.
+_MAX_ANON_SLOTS = 4
+
 
 @dataclass(slots=True)
 class AttributionReport:
@@ -33,6 +38,9 @@ class AttributionReport:
     attributed: int = 0
     by_method: dict[str, int] = field(default_factory=dict)
     pov_chapters: int = 0
+    #: Dialogue given a voice-differentiation slot but no real identity --
+    #: never counted in `attributed`/`coverage`. See `_assign_anonymous_slots`.
+    anonymous_slots: int = 0
 
     @property
     def coverage(self) -> float:
@@ -43,6 +51,7 @@ class AttributionReport:
         return (
             f"{self.novel_id}: {self.attributed:,}/{self.dialogue_spans:,} speech spans "
             f"attributed ({self.coverage:.1%})\n"
+            f"  anonymous voice slots (no identity, distinct voice): {self.anonymous_slots:,}\n"
             f"  by method: {methods}\n"
             f"  chapters with a detected POV holder: {self.pov_chapters}/{self.chapters}"
         )
@@ -123,6 +132,41 @@ def attribute_chapter(
     return out
 
 
+def _assign_anonymous_slots(novel_id: str, chapter_number: float, spans: list[Span]) -> None:
+    """Give unresolved dialogue a locally-distinct voice slot, not an identity.
+
+    Downstream synthesis needs two different unattributed lines to *sound*
+    different far more often than it needs to know *who* they are -- a scene
+    with two unnamed guards trading lines is wrong read in one voice, but
+    minting a `Self` for either of them clutters the graph with someone who
+    may never be named or seen again. `Persona` (appearance/voice) already
+    exists separately from `Self` (identity/memory) for exactly this reason
+    ("This is what image generation and TTS bind to") -- an anonymous slot is
+    the lightest thing that could work in that gap: an id, scoped to this
+    chapter, never written as a `Self` row.
+
+    Turn-taking only, and deliberately not claiming to be coreference:
+    consecutive unresolved dialogue alternates slots, and any resolved line
+    (a real speaker, or a scene break already having cleared upstream state)
+    restarts the count at slot 1. That encodes one fact confidently -- "the
+    same nobody twice in a row is the less likely reading of ordinary
+    back-and-forth dialogue" -- and claims nothing beyond it.
+    """
+    slot = 0
+    fresh_run = True
+    for span in spans:
+        if span.span_type is not SpanType.DIALOGUE:
+            continue
+        if span.speaker_self_id or span.attribution_method is not AttributionMethod.UNRESOLVED:
+            fresh_run = True
+            continue
+        slot = 1 if fresh_run else (slot % _MAX_ANON_SLOTS) + 1
+        span.speaker_self_id = f"{novel_id}:anon:{chapter_number:g}:{slot}"
+        span.attribution_method = AttributionMethod.ANONYMOUS_SLOT
+        span.confidence = 0.2
+        fresh_run = False
+
+
 def attribute_novel(
     novel_id: str,
     store: Store,
@@ -169,15 +213,30 @@ def attribute_novel(
             if attribution.speaker:
                 span.confidence = attribution.confidence
 
+        # Runs after the ladder, over what the ladder left UNRESOLVED. Never
+        # counted in `report.attributed` -- that number means "linked to a
+        # known identity," and an anonymous slot deliberately is not one.
+        _assign_anonymous_slots(novel_id, chapter.number, spans)
+
         store.add_spans(spans)
 
+        # Tallied from the spans' *final* state, after the anonymous-slot
+        # pass -- not from `attributions`, which is a snapshot from before
+        # that pass ran and would double-book every slot assignment as
+        # UNRESOLVED. `report.attributed` keeps its original meaning ("linked
+        # to a known identity"): ANONYMOUS_SLOT is tracked separately and
+        # never counted there, deliberately -- it is not one.
         report.chapters += 1
-        for attribution in attributions:
+        eligible_types = (SpanType.DIALOGUE, SpanType.INNER_MONOLOGUE, SpanType.CROWD_REACTION)
+        for span in spans:
+            if span.span_type not in eligible_types:
+                continue
             report.dialogue_spans += 1
-            report.by_method[attribution.method.value] = (
-                report.by_method.get(attribution.method.value, 0) + 1
-            )
-            if attribution.is_resolved:
+            method = span.attribution_method
+            report.by_method[method.value] = report.by_method.get(method.value, 0) + 1
+            if method is AttributionMethod.ANONYMOUS_SLOT:
+                report.anonymous_slots += 1
+            elif span.speaker_self_id or method is AttributionMethod.UNATTRIBUTED_CHORUS:
                 report.attributed += 1
 
         if i % commit_every == 0:

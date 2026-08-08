@@ -248,6 +248,12 @@ class AttributionMethod(StrEnum):
     UNATTRIBUTED_CHORUS = "UNATTRIBUTED_CHORUS"
     POV_INFERRED = "POV_INFERRED"
     UNRESOLVED = "UNRESOLVED"
+    #: A turn-taking guess assigned no real identity, only a locally-scoped
+    #: "not the same speaker as the last line" slot -- see
+    #: `speakers/runner.py::_assign_anonymous_slots`. Distinct from
+    #: UNRESOLVED so a consumer can tell "genuinely nobody" from "some
+    #: consistent nobody in particular."
+    ANONYMOUS_SLOT = "ANONYMOUS_SLOT"
 
 
 class ResolutionMethod(StrEnum):
