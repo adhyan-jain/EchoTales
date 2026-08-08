@@ -1,0 +1,219 @@
+# Annotation source for Reverend Insanity, chapters 1-5.
+#
+# PROVENANCE: drafted by a language model (Claude Opus 5) reading the chapter
+# text directly, NOT by a person, and NOT by inspecting the pipeline's output.
+# Every record it expands to carries provenance = "model" and confirmed =
+# false. It is a second opinion and a draft for review. It is not gold, and no
+# number computed from it may be reported as a recall or accuracy result until
+# a person has reviewed it and flipped `confirmed`.
+#
+# The drafter had read this pipeline's output earlier in the same session,
+# which is an anchoring risk that a truly independent annotator would not
+# carry. Identities here were committed from the source text before re-reading
+# the pipeline's entity list, but that mitigation is a claim, not a guarantee.
+#
+# FORMAT: one block per real-world individual, with every surface form the
+# text uses for it. `surfaces` are matched case-sensitively on word boundaries
+# and expanded to one gold record per occurrence.
+#
+# Scope note: within these five chapters a given surface form denotes exactly
+# one referent, so surface-level annotation expands to mention level without
+# loss. That is a property of this slice, verified by reading, and it is not
+# guaranteed to hold later in the volume where "the elder" and similar recur.
+
+schema = 1
+novel_id = "reverend-insanity"
+chapters = [1.0, 2.0, 3.0, 4.0, 5.0]
+drafted_by = "claude-opus-5"
+
+# ---------------------------------------------------------------------------
+# Characters
+# ---------------------------------------------------------------------------
+
+[[identity]]
+name = "Fang Yuan"
+kind = "character"
+surfaces = ["Fang Yuan", "Gu Yue Fang Yuan"]
+note = "Protagonist. A 500-year-old demonic cultivator reborn into his 15-year-old body. 'Old bastard Fang' and 'demon' are enemies' epithets in ch1, left unannotated as descriptors rather than names."
+
+[[identity]]
+name = "Fang Zheng"
+kind = "character"
+surfaces = ["Fang Zheng", "Fang Zhen"]
+note = "Fang Yuan's twin younger brother. 'Fang Zhen' in ch3 ('his brother Fang Zhen') is a source typo for the same person -- a romanisation-drift case the resolver should absorb, not a second character."
+
+[[identity]]
+name = "Shen Cui"
+kind = "character"
+surfaces = ["Shen Cui"]
+note = "Fang Yuan's personal servant girl. Distinct from Mother Shen, who is her mother -- the surnames match and the resolver must NOT merge them."
+
+[[identity]]
+name = "Mother Shen"
+kind = "character"
+surfaces = ["Mother Shen"]
+note = "Shen Cui's mother, caretaker of the household. Ch3 footnote states 'Mother Shen is like a title', so this is a title denoting one specific individual -- a TRANSFERABLE_TITLE-shaped case."
+
+[[identity]]
+name = "Gu Yue clan head"
+kind = "character"
+surfaces = ["Gu Yue clan head", "clan head"]
+note = "A specific unnamed individual referred to by office throughout ch1 and ch4. Annotated as a character because it denotes one person, though it is a title rather than a name. Ch4 also mentions a 'fourth generation clan head' and a 'first generation clan leader', who are DIFFERENT historical individuals -- a genuine temporal-scoping trap."
+
+[[identity]]
+name = "academy elder"
+kind = "character"
+surfaces = ["academy elder", "elder of the academy"]
+note = "Runs the Awakening Ceremony in ch4-5. A specific individual by office. Bare 'the elder' is left unannotated as too ambiguous in ch4, where several elders are present."
+
+[[identity]]
+name = "Bai Ning Bing"
+kind = "character"
+surfaces = ["Bai Ning Bing"]
+note = "Prodigy of the Bai clan, discussed but not present in ch1."
+
+[[identity]]
+name = "Gu Yue Chen Bo"
+kind = "character"
+surfaces = ["Gu Yue Chen Bo", "Chen Bo"]
+note = "First youth to cross the river in ch4; 3 steps, no talent. The short form is used four times immediately after introduction -- the dropped-house-prefix case."
+
+[[identity]]
+name = "Gu Yue Zao Xie"
+kind = "character"
+surfaces = ["Gu Yue Zao Xie"]
+note = "Second youth called in ch4; four steps, no talent."
+
+[[identity]]
+name = "Gu Yue Mo Bei"
+kind = "character"
+surfaces = ["Gu Yue Mo Bei", "Mo Bei"]
+note = "Horse-faced youth, B grade talent, ch4. Grandson of Gu Yue Mo Chen."
+
+[[identity]]
+name = "Gu Yue Mo Chen"
+kind = "character"
+surfaces = ["Gu Yue Mo Chen"]
+note = "An elder, and Gu Yue Mo Bei's GRANDFATHER. Distinct person despite sharing both the house prefix and the 'Mo' generational element. This is the pair most likely to be falsely merged."
+
+[[identity]]
+name = "Gu Yue Chi Lian"
+kind = "character"
+surfaces = ["Gu Yue Chi Lian"]
+note = "Red-haired elder, Gu Yue Mo Chen's rival. Grandfather of Gu Yue Chi Chen."
+
+[[identity]]
+name = "Gu Yue Chi Chen"
+kind = "character"
+surfaces = ["Gu Yue Chi Chen"]
+note = "Gu Yue Chi Lian's grandson, called in ch4. Distinct from his grandfather -- again a shared house prefix AND a shared 'Chi' element."
+
+[[identity]]
+name = "Ren Zu"
+kind = "character"
+surfaces = ["Ren Zu"]
+note = "Legendary first man, ch5. Mythological but a named individual."
+
+[[identity]]
+name = "Flower Wine Monk"
+kind = "character"
+surfaces = ["Flower Wine monk", "Flower Wine Monk"]
+note = "Ch4: the fourth generation clan head 'perished together with the Flower Wine monk'. A named individual. The deterministic run found 'Flower Wine' with 74 mentions; the LLM run dropped it entirely -- this record is what makes that a measurable recall loss rather than an impression."
+
+[[identity]]
+name = "Fang Zhi"
+kind = "character"
+surfaces = ["Fang Zhi"]
+note = "Ch1, \"Fang Zhi's side has appeared a young genius\" -- names the branch of the family Fang Yuan belongs to. Annotated as a person with low confidence; a reviewer may reasonably reclassify this as an organization."
+
+# ---------------------------------------------------------------------------
+# Locations
+# ---------------------------------------------------------------------------
+
+[[identity]]
+name = "Qing Mao Mountain"
+kind = "location"
+surfaces = ["Qing Mao Mountain", "Qing Mao mountain"]
+
+[[identity]]
+name = "Gu Yue Village"
+kind = "location"
+surfaces = ["Gu Yue Village", "Gu Yue village", "Gu Yue(1) Village"]
+
+[[identity]]
+name = "Bai Village"
+kind = "location"
+surfaces = ["Bai Village"]
+
+[[identity]]
+name = "Xiong Village"
+kind = "location"
+surfaces = ["Xiong Village"]
+
+[[identity]]
+name = "South Border"
+kind = "location"
+surfaces = ["South Border"]
+
+[[identity]]
+name = "Earth"
+kind = "location"
+surfaces = ["Earth"]
+note = "Fang Yuan's previous world. Only the capitalised standalone form; 'heaven or earth' in ch1 is a figure of speech, not this."
+
+# ---------------------------------------------------------------------------
+# Organizations
+# ---------------------------------------------------------------------------
+
+[[identity]]
+name = "Gu Yue clan"
+kind = "organization"
+surfaces = ["Gu Yue clan", "Gu Yue Clan", "Gu Yue"]
+note = "The house. 'Gu Yue' standing alone is the clan, NOT any of its members -- this is the pair that a substring-based containment rule would use to merge the entire family into one entity."
+
+[[identity]]
+name = "Bai clan"
+kind = "organization"
+surfaces = ["Bai clan"]
+
+# ---------------------------------------------------------------------------
+# Items
+# ---------------------------------------------------------------------------
+
+[[identity]]
+name = "Spring Autumn Cicada"
+kind = "item"
+surfaces = ["Spring Autumn Cicada"]
+note = "The legendary Gu that drives the rebirth. An item, not a character -- the pipeline currently types it as a character."
+
+[[identity]]
+name = "Hope Gu"
+kind = "item"
+surfaces = ["Hope Gu"]
+
+# ---------------------------------------------------------------------------
+# Surfaces the detector proposes that denote no individual.
+#
+# This list is the precision measurement. Without it, a metric that only scores
+# clustering cannot see a false positive at all.
+# ---------------------------------------------------------------------------
+
+[[not_entity]]
+surfaces = ["major factions of justice", "Gu Master", "Gu Masters", "Primeval Sea", "Primeval sea", "primeval sea"]
+reason = "Common nouns. 'Primeval Sea' is a cultivation organ every Gu Master has ('has not even opened my Primeval Sea', 'primeval sea measuring six by six'), not an individual. The deterministic run made it an entity with 41 mentions."
+
+[[not_entity]]
+surfaces = ["Awakening Ceremony", "Awakening ceremony"]
+reason = "An annually recurring event, not an individual."
+
+[[not_entity]]
+surfaces = ["Jiang Jing Jiu", "Yong Mei", "Jiang Cheng Zi"]
+reason = "Titles of poems Fang Yuan reproduced from Earth. Named works, but not individuals the identity graph is about."
+
+[[not_entity]]
+surfaces = ["Rank One", "Rank Two", "Rank Three", "Rank Four", "Rank Five", "rank one", "rank two", "rank three", "rank four", "rank five"]
+reason = "Power-scale positions. Already caught by commonness.is_scale_term; recorded so a regression would show up."
+
+[[not_entity]]
+surfaces = ["Demonic Way", "Demonic Faction", "Demonic faction"]
+reason = "A cultivation path / loose alignment, not an organisation with members in these chapters. Borderline -- a reviewer may reasonably move this to organization."
