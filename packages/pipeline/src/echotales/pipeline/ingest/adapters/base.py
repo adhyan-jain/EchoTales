@@ -54,18 +54,28 @@ def _normalise_ws(text: str) -> str:
     return _WS.sub(" ", text).strip()
 
 
-def extract_block(element: etree._Element) -> RawBlock:
+def extract_block(
+    element: etree._Element, *, italic_classes: frozenset[str] = frozenset()
+) -> RawBlock:
     """Flatten one block element to text, recording emphasised character ranges.
 
     Offsets are computed against the *normalised* text so they stay valid
-    against what actually gets stored.
+    against what actually gets stored. `italic_classes` catches emphasis some
+    sources apply via a whole-block CSS class (e.g. calibre's auto-numbered
+    `block_6`) rather than an inline `<i>`/`<em>` tag, which the tag check
+    alone would miss entirely.
     """
     parts: list[str] = []
     italics: list[tuple[int, int]] = []
 
     def walk(node: etree._Element, emphasised: bool) -> None:
         tag = etree.QName(node).localname.lower() if node.tag is not etree.Comment else ""
-        here = emphasised or tag in EMPHASIS_TAGS
+        node_classes = (node.get("class") or "").split() if isinstance(node.tag, str) else ()
+        here = (
+            emphasised
+            or tag in EMPHASIS_TAGS
+            or any(c in italic_classes for c in node_classes)
+        )
 
         if node.text:
             start = sum(len(p) for p in parts)
@@ -223,8 +233,9 @@ class SourceAdapter:
         root = self.content_root(tree)
         blocks: list[Block] = []
 
+        italic_classes = self.epub.italic_classes()
         for element in iter_block_elements(root):
-            raw_block = extract_block(element)
+            raw_block = extract_block(element, italic_classes=italic_classes)
             if raw_block.is_break:
                 # Scene break: zero-width marker that Phase 2 can key on.
                 blocks.append(

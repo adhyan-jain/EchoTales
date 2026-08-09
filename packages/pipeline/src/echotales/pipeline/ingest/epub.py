@@ -31,6 +31,22 @@ NS = {
     "container": "urn:oasis:names:tc:opendocument:xmlns:container",
 }
 
+# One selector per class only ("a, .foo" or nested/combinator selectors are
+# not matched) -- epub stylesheets from calibre and similar tools declare
+# emphasis classes this simply, and a stricter parser would need a real CSS
+# grammar for no measured benefit.
+_CSS_RULE = re.compile(r"\.([\w-]+)\s*\{([^}]*)\}")
+_FONT_STYLE = re.compile(r"font-style\s*:\s*(italic|oblique)\b", re.IGNORECASE)
+
+
+def _parse_italic_classes(css_text: str) -> set[str]:
+    """Bare-class selectors (`.foo { ... }`) whose rule sets italic/oblique."""
+    return {
+        match.group(1)
+        for match in _CSS_RULE.finditer(css_text)
+        if _FONT_STYLE.search(match.group(2))
+    }
+
 
 @dataclass(slots=True)
 class TocEntry:
@@ -65,6 +81,7 @@ class Epub:
         self._opf_path = self._find_opf()
         self._opf_dir = posixpath.dirname(self._opf_path)
         self._opf = etree.fromstring(self._zip.read(self._opf_path))
+        self._italic_classes: frozenset[str] | None = None
 
     def close(self) -> None:
         self._zip.close()
@@ -150,6 +167,27 @@ class Epub:
             for ref in self._opf.findall(".//opf:spine/opf:itemref", NS)
             if (idref := ref.get("idref")) and idref in manifest
         ]
+
+    def italic_classes(self) -> frozenset[str]:
+        """CSS classes styled `font-style: italic` (or `oblique`) by any stylesheet.
+
+        Some sources mark inner monologue with a whole-block class (e.g. calibre's
+        auto-numbered ``block_6``) rather than an inline ``<i>``/``<em>`` tag, so
+        the emphasis signal only exists in the stylesheet. Cached: the manifest
+        does not change within one `Epub`'s lifetime.
+        """
+        if self._italic_classes is None:
+            classes: set[str] = set()
+            for href in self.manifest().values():
+                if not href.lower().endswith(".css"):
+                    continue
+                try:
+                    css_text = self.read(href).decode("utf-8", errors="replace")
+                except KeyError:
+                    continue
+                classes |= _parse_italic_classes(css_text)
+            self._italic_classes = frozenset(classes)
+        return self._italic_classes
 
     # ---- table of contents -----------------------------------------------
 
