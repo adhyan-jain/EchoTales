@@ -251,7 +251,8 @@ CREATE TABLE IF NOT EXISTS mention (
     confidence REAL NOT NULL DEFAULT 1.0,
     method TEXT,
     provenance TEXT NOT NULL DEFAULT 'MACHINE',
-    block_index INTEGER NOT NULL DEFAULT 0
+    block_index INTEGER NOT NULL DEFAULT 0,
+    entity_label TEXT
 );
 CREATE INDEX IF NOT EXISTS ix_mention_chapter ON mention(novel_id, chapter, offset);
 CREATE INDEX IF NOT EXISTS ix_mention_target ON mention(target_kind, target_id);
@@ -364,11 +365,23 @@ class Store:
         self.conn = sqlite3.connect(self.path)
         self.conn.row_factory = sqlite3.Row
         self.conn.executescript(_SCHEMA)
+        self._migrate()
         self.conn.execute(
             "INSERT OR REPLACE INTO schema_meta(key, value) VALUES ('version', ?)",
             (str(SCHEMA_VERSION),),
         )
         self.conn.commit()
+
+    def _migrate(self) -> None:
+        """Additive column upgrades for databases created before they existed.
+
+        `CREATE TABLE IF NOT EXISTS` in `_SCHEMA` only creates a table on a
+        fresh database; it does not touch an existing table's columns, so a
+        new nullable column needs an explicit, idempotent `ALTER TABLE` here.
+        """
+        existing = {row["name"] for row in self.conn.execute("PRAGMA table_info(mention)")}
+        if "entity_label" not in existing:
+            self.conn.execute("ALTER TABLE mention ADD COLUMN entity_label TEXT")
 
     def close(self) -> None:
         self.conn.close()
@@ -917,8 +930,8 @@ class Store:
         self.conn.executemany(
             "INSERT OR REPLACE INTO mention(id, novel_id, segment_id, chapter, offset, text,"
             " alias_type, span_type, reference_mode, speaker_self_id, target_kind, target_id,"
-            " local_group_id, confidence, method, provenance, block_index)"
-            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            " local_group_id, confidence, method, provenance, block_index, entity_label)"
+            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             [
                 (
                     m.id,
@@ -938,6 +951,7 @@ class Store:
                     m.method.value if m.method else None,
                     m.provenance.value,
                     m.block_index,
+                    m.entity_label,
                 )
                 for m in mentions
             ],

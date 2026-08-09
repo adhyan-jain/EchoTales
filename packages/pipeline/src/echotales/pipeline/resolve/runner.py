@@ -38,6 +38,7 @@ from echotales.core.models import (
 from echotales.core.readset import ReadSetRecorder, entity_ref
 from echotales.core.store import Store
 from echotales.pipeline.config import Settings, get_settings
+from echotales.pipeline.corrections import Correction, CorrectionLog, CorrectionType
 from echotales.pipeline.ingest.normalize import display_label
 from echotales.pipeline.llm import LLMRouter
 from echotales.pipeline.mentions.lexicon import Lexicon
@@ -123,6 +124,7 @@ class GlobalResolver:
         gate: ConformalGate | None = None,
         router: LLMRouter | None = None,
         settings: Settings | None = None,
+        corrections_log: CorrectionLog | None = None,
     ) -> None:
         self.novel_id = novel_id
         self.store = store
@@ -135,6 +137,11 @@ class GlobalResolver:
         self.queue = DeferredQueue()
         self.report = ResolveReport(novel_id=novel_id)
         self._next_entity = 0
+        #: When set, a newly-created entity founded mostly on mentions NER
+        #: itself labeled "location"/"organization" rather than "character"
+        #: gets an automatic review flag -- see `_maybe_flag_non_character`.
+        #: `None` by default so every existing caller keeps today's behaviour.
+        self.corrections_log = corrections_log
 
     # ---- entity lifecycle ---------------------------------------------
 
@@ -151,6 +158,44 @@ class GlobalResolver:
         )
         self.report.created += 1
         return target_id
+
+    def _maybe_flag_non_character(
+        self, target_id: str, label: str, founding_mentions: list[Mention]
+    ) -> None:
+        """Auto-flag an entity founded entirely on non-"character" NER labels.
+
+        Not a filter -- see `mentions/runner.py`'s `rejected()` docstring on
+        why a blunt kind filter over-deletes real entities like a clan name
+        or a central plot item, which this project has already been burned
+        by once. This only leaves a review note on entities that would
+        otherwise silently join the voice-cast list as if they were people.
+        Unanimous rather than majority: any mention NER did call "character"
+        is enough signal to stay quiet rather than risk a false flag.
+        """
+        if self.corrections_log is None:
+            return
+        labels = [m.entity_label for m in founding_mentions if m.entity_label]
+        if not labels or any(l == "character" for l in labels):
+            return
+        if not all(l in ("location", "organization") for l in labels):
+            return
+        kind = labels[0] if len(set(labels)) == 1 else "/".join(sorted(set(labels)))
+        self.corrections_log.add(
+            Correction(
+                novel_id=self.novel_id,
+                type=CorrectionType.FLAG,
+                payload={
+                    "span_id": None,
+                    "target_id": target_id,
+                    "note": (
+                        f"Auto-flagged: every founding mention of {label!r} was NER-labeled "
+                        f"{kind!r}, not 'character' -- likely a location/organization rather "
+                        f"than a person. Review before it's treated as a voice-cast character."
+                    ),
+                    "source": "agent:pipeline",
+                },
+            )
+        )
 
     def _bind_alias(
         self,
@@ -296,6 +341,7 @@ class GlobalResolver:
             )
 
         target_id = self._create_entity(head, label)
+        self._maybe_flag_non_character(target_id, label, mentions)
         self._apply_link(mentions, target_id, context, ResolutionMethod.SCORED, new=True)
         return ResolutionOutcome(
             group_id=group_id,
@@ -502,6 +548,7 @@ def resolve_novel(
     settings: Settings | None = None,
     use_llm: bool = False,
     commit_every: int = 10,
+    corrections_log: CorrectionLog | None = None,
 ) -> ResolveReport:
     """Run global resolution over a whole novel, in discourse order."""
     cfg = settings or get_settings()
@@ -513,6 +560,7 @@ def resolve_novel(
         gate=gate,
         router=router if use_llm else None,
         settings=cfg,
+        corrections_log=corrections_log,
     )
 
     for i, chapter in enumerate(store.iter_chapters(novel_id), start=1):

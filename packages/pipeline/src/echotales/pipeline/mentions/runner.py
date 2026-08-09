@@ -227,6 +227,7 @@ def detect_mentions_in_chapter(
                     confidence=min(confidence, ner_span.score),
                     segment_id=segment_id,
                     index=len(mentions),
+                    entity_label=ner_span.label.strip().lower() or None,
                 )
             )
 
@@ -254,6 +255,7 @@ def _make_mention(
     confidence: float,
     segment_id: str,
     index: int,
+    entity_label: str | None = None,
 ) -> Mention:
     span_type = getattr(span, "span_type", SpanType.NARRATION_ACTION)
     return Mention(
@@ -270,6 +272,7 @@ def _make_mention(
         target_id=target_id,
         confidence=confidence,
         method=method,
+        entity_label=entity_label,
     )
 
 

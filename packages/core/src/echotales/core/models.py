@@ -346,6 +346,14 @@ class Mention(BaseModel):
     #: Index of the containing block. Segments express their bounds in block
     #: indices, so this -- not `offset` -- is what timeline lookup must use.
     block_index: int = 0
+    #: NER's own semantic label ("character"/"location"/"organization"),
+    #: when the mention came from the LLM layer. `None` for mentions from the
+    #: gazetteer or other sources that never had one to give. Not used to
+    #: gate what enters the graph (see `mentions/runner.py`'s `rejected()`
+    #: docstring on why a blunt kind filter over-deletes real entities like a
+    #: clan name or a plot item) -- only to flag a newly-created `Self` for
+    #: human review when it was founded mostly on non-character mentions.
+    entity_label: str | None = None
 
     @property
     def position(self) -> DiscoursePosition:
