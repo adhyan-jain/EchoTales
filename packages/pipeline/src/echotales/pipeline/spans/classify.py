@@ -114,6 +114,12 @@ _CROWD_RE = re.compile(
 
 _CROWD_MAX_LEN = 60
 
+#: Below this many characters (trimmed), an italic run is treated as an
+#: emphasised *word* inside its sentence, not a switch to inner monologue --
+#: see `split_block`. "Gu" (2 chars) sits under it; "Ouch..." (7) and "Where
+#: am I?" (11) sit comfortably over it.
+_MIN_EMPHASIS_SPLIT_LEN = 4
+
 
 @dataclass(slots=True)
 class RawSpan:
@@ -161,8 +167,20 @@ def split_block(text: str, italic_ranges: list[tuple[int, int]] | None = None) -
     covers too small a fraction of it to classify as inner monologue -- so the
     structural signal that motivated ingesting EPUB rather than PDF gets thrown
     away at the last step. Splitting on emphasis boundaries keeps it.
+
+    A very short italic run (under `_MIN_EMPHASIS_SPLIT_LEN`) is excluded from
+    that split, and stays merged into whatever span contains it. Some sources
+    italicise a single recurring term for emphasis wherever it appears -- RI
+    italicises the bare word "Gu" throughout, including mid-name ("Uncle
+    <i>Gu</i> Yue Dong Tu") -- and splitting there tears a name in half rather
+    than finding a real inner-monologue boundary; a genuine italicised thought
+    ("Ouch...", "Where am I?") is reliably longer than this.
     """
-    ranges = list(italic_ranges or [])
+    ranges = [
+        (start, end)
+        for start, end in (italic_ranges or [])
+        if len(text[max(0, start) : min(len(text), end)].strip()) >= _MIN_EMPHASIS_SPLIT_LEN
+    ]
     quotes = _quote_runs(text)
 
     points = {0, len(text)}
