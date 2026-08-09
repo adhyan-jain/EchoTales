@@ -51,6 +51,14 @@ AMBIGUITY_BLOCKLIST: frozenset[str] = frozenset(
         "war", "peace", "death", "life", "time", "world", "heaven", "hell",
         # Interjections and discourse particles.
         "ah", "oh", "eh", "hmm", "well", "yes", "no", "wait", "stop", "look",
+        # Genre-generic terms that read as capitalised proper nouns but are
+        # common vocabulary in specific novels: "Gu" = worm/insect in
+        # Gu-themed cultivation novels (e.g. Reverend Insanity); "veil" =
+        # the barrier to the spirit/Beyonder world in Gothic-horror novels
+        # (e.g. Lord of the Mysteries). Multi-word aliases such as
+        # "Gu Yue Dong Tu" are separate strings and are not affected by
+        # blocking the bare token.
+        "gu", "veil",
     }
 )
 
