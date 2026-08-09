@@ -137,9 +137,23 @@ def cmd_run(args: argparse.Namespace) -> int:
     stage("0 ingest", lambda: ingest_novel(novel, store, chapters=chapters))
     stage("2 segment", lambda: segment_novel(novel, store))
     stage("3 mentions", lambda: detect_mentions(novel, store, lexicon=lexicon, client=client))
-    stage("4 speakers", lambda: attribute_novel(novel, store))
+    stage(
+        "4 speakers",
+        lambda: attribute_novel(
+            novel,
+            store,
+            client=client,
+            llm_chapter_cutoff=getattr(args, "llm_attribution_chapters", 0.0),
+        ),
+    )
     stage("5 anaphora", lambda: anaphora_resolve(novel, store))
-    stage("6 resolve", lambda: global_resolve(novel, store, lexicon=lexicon))
+    from echotales.pipeline.corrections import CorrectionLog
+
+    corrections_log = CorrectionLog(Path("data/corrections") / f"{novel}.jsonl")
+    stage(
+        "6 resolve",
+        lambda: global_resolve(novel, store, lexicon=lexicon, corrections_log=corrections_log),
+    )
 
     print(report.render())
     print(f"\ngraph written to: {store.path}")

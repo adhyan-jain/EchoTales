@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import pytest
-from echotales.core.enums import AttributionMethod, BlockType, SpanType
-from echotales.core.models import Block, Chapter, Span
+from echotales.core.enums import AliasType, AttributionMethod, BlockType, ReferenceMode, SpanType
+from echotales.core.models import Block, Chapter, Mention, Span
 from echotales.core.store import Store
+from echotales.pipeline.llm.client import ModelClient
+from echotales.pipeline.llm.stub import StubProvider
 from echotales.pipeline.speakers import (
     attribute_chapter,
     attribute_explicit,
@@ -254,3 +256,90 @@ class TestRunner:
         store.conn.commit()
         report = attribute_novel("t", store)
         assert 0.0 <= report.coverage <= 1.0
+
+
+class TestContextualTier:
+    """Tier 4: LLM-backed cold-start attribution, gated to early chapters."""
+
+    @pytest.fixture
+    def store(self) -> Store:
+        s = Store(":memory:")
+        s.add_novel("t", "T", "x.epub", "generic")
+        # Chapter 1 establishes the roster; chapter 2's inner monologue has no
+        # nearby name or verb, so tiers 1-3 and POV inference all miss it --
+        # the exact cold-start gap tier 4 exists for.
+        s.add_chapter(chapter("Zhou Mingrui walked home.", number=1.0))
+        s.add_chapter(
+            Chapter(
+                novel_id="t",
+                number=2.0,
+                title="T2",
+                source_href="b.html",
+                blocks=[
+                    Block(
+                        index=0,
+                        block_type=BlockType.PROSE,
+                        text="Painful! Why does my head hurt so much?",
+                        italic_ranges=[(0, 40)],
+                    )
+                ],
+            )
+        )
+        s.add_mentions(
+            [
+                Mention(
+                    id="m1",
+                    novel_id="t",
+                    segment_id="",
+                    chapter=1.0,
+                    offset=0,
+                    text="Zhou Mingrui",
+                    alias_type=AliasType.RIGID_NAME,
+                    span_type=SpanType.NARRATION_ACTION,
+                    reference_mode=ReferenceMode.PRESENT,
+                    block_index=0,
+                )
+            ]
+        )
+        s.conn.commit()
+        return s
+
+    def test_no_client_leaves_it_unresolved(self, store: Store) -> None:
+        report = attribute_novel("t", store, llm_chapter_cutoff=3.0)
+        assert report.by_method.get(AttributionMethod.UNRESOLVED.value, 0) == 1
+
+    def test_roster_match_resolves_it(self, store: Store) -> None:
+        stub = StubProvider()
+        stub.register_response(
+            "speaker_attribution", {"speaker": "Zhou Mingrui", "confidence": 0.8}
+        )
+        report = attribute_novel(
+            "t", store, client=ModelClient(provider_override=stub), llm_chapter_cutoff=3.0
+        )
+        assert report.by_method.get(AttributionMethod.CONTEXTUAL_LLM.value, 0) == 1
+        spans = store.get_spans("t", 2.0)
+        assert any(s.speaker_self_id == "Zhou Mingrui" for s in spans)
+        assert len(stub.calls) == 1
+
+    def test_off_roster_answer_is_discarded(self, store: Store) -> None:
+        """A name the model invents that is not in the roster must not stick --
+        mirrors how the regex tiers already discard an unknown capitalised
+        token via `_known`."""
+        stub = StubProvider()
+        stub.register_response(
+            "speaker_attribution", {"speaker": "Someone Else", "confidence": 0.9}
+        )
+        report = attribute_novel(
+            "t", store, client=ModelClient(provider_override=stub), llm_chapter_cutoff=3.0
+        )
+        assert report.by_method.get(AttributionMethod.UNRESOLVED.value, 0) == 1
+
+    def test_cutoff_excludes_later_chapters(self, store: Store) -> None:
+        stub = StubProvider()
+        stub.register_response(
+            "speaker_attribution", {"speaker": "Zhou Mingrui", "confidence": 0.8}
+        )
+        attribute_novel(
+            "t", store, client=ModelClient(provider_override=stub), llm_chapter_cutoff=1.0
+        )
+        assert len(stub.calls) == 0

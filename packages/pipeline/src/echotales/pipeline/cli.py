@@ -30,6 +30,16 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="force the deterministic path even when a model backend is configured",
     )
+    p_run.add_argument(
+        "--llm-attribution-chapters",
+        type=float,
+        default=3.0,
+        help=(
+            "run tier-4 LLM speaker attribution on chapters up to and including this "
+            "number, where the deterministic tiers have no established context yet "
+            "(default: 3; 0 disables tier 4 entirely)"
+        ),
+    )
 
     p_review = sub.add_parser("review", help="human-readable review of what the run produced")
     p_review.add_argument("--novel", required=True)

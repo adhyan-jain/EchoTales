@@ -56,6 +56,10 @@ class Task(StrEnum):
     SPAN_CLASSIFICATION = "span_classification"
     #: Delivery and emotion extraction. Structural.
     SENTIMENT = "sentiment"
+    #: Tier 4 of speaker attribution: who speaks/thinks a line the deterministic
+    #: ladder could not settle, given the established cast. Cold-start chapters
+    #: only -- see `speakers/contextual.py`.
+    SPEAKER_ATTRIBUTION = "speaker_attribution"
 
 
 @dataclass(frozen=True, slots=True)
@@ -127,6 +131,19 @@ TASK_PROFILES: dict[Task, TaskProfile] = {
         anthropic_model="claude-sonnet-5",
         temperature=0.0,
         max_tokens=512,
+    ),
+    # Needs the same cultural-naming prior as NER (the roster it picks from is
+    # xianxia-style names), so qwen2.5:7b locally. Unlike adjudication this is
+    # not a hard call between close identity candidates -- it is "does the
+    # surrounding text name one of these N established characters" -- so the
+    # cheaper Haiku tier is deliberately used on the API backend rather than
+    # Sonnet, mirroring the local/API cost split the module already makes
+    # elsewhere for tasks that do not need the strongest model.
+    Task.SPEAKER_ATTRIBUTION: TaskProfile(
+        ollama_model="qwen2.5:7b",
+        anthropic_model="claude-haiku-4-5-20251001",
+        temperature=0.0,
+        max_tokens=300,
     ),
 }
 

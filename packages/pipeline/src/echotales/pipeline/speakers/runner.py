@@ -20,6 +20,7 @@ from echotales.pipeline.speakers.attribution import (
     attribute_span,
     detect_pov_holder,
 )
+from echotales.pipeline.speakers.contextual import attribute_contextual
 
 #: Characters of narration either side of a line that the tiers may consult.
 _WINDOW = 220
@@ -132,6 +133,67 @@ def attribute_chapter(
     return out
 
 
+def _attribute_contextual_pass(
+    novel_id: str,
+    chapter: Chapter,
+    spans: list[Span],
+    *,
+    known_names: frozenset[str],
+    roster: list[str],
+    client: object | None,
+) -> None:
+    """Tier 4: give the LLM one shot at what tiers 1-3 left UNRESOLVED.
+
+    Runs over the same block-neighbourhood windows `attribute_chapter` used,
+    recomputed here rather than threaded through it -- this pass is optional
+    and only reaches a handful of lines per cold-start chapter, so a second
+    pass over the chapter's blocks is cheap next to a model call per span.
+    """
+    if client is None or not roster:
+        return
+
+    by_block: dict[int, list[Span]] = {}
+    for span in spans:
+        by_block.setdefault(span.block_index, []).append(span)
+    ordered_blocks = sorted(chapter.blocks, key=lambda b: b.index)
+
+    for position, block in enumerate(ordered_blocks):
+        if block.text.strip() == "* * *":
+            continue
+        block_spans = sorted(by_block.get(block.index, []), key=lambda s: s.start)
+        prev_block = ordered_blocks[position - 1].text if position > 0 else ""
+        next_block = (
+            ordered_blocks[position + 1].text if position + 1 < len(ordered_blocks) else ""
+        )
+
+        for i, span in enumerate(block_spans):
+            if span.span_type not in (SpanType.DIALOGUE, SpanType.INNER_MONOLOGUE):
+                continue
+            if span.speaker_self_id or span.attribution_method is not AttributionMethod.UNRESOLVED:
+                continue
+
+            in_block_before = " ".join(s.text for s in block_spans[:i])
+            in_block_after = " ".join(s.text for s in block_spans[i + 1 :])
+            preceding = (prev_block + " " + in_block_before)[-_WINDOW:]
+            following = (in_block_after + " " + next_block)[:_WINDOW]
+
+            attribution = attribute_contextual(
+                span,
+                preceding=preceding,
+                following=following,
+                known_names=known_names,
+                roster=roster,
+                client=client,
+                novel_id=novel_id,
+                chapter=chapter.number,
+            )
+            if attribution is None or not attribution.speaker:
+                continue
+            span.speaker_self_id = attribution.speaker
+            span.attribution_method = attribution.method
+            span.confidence = attribution.confidence
+
+
 def _assign_anonymous_slots(novel_id: str, chapter_number: float, spans: list[Span]) -> None:
     """Give unresolved dialogue a locally-distinct voice slot, not an identity.
 
@@ -172,8 +234,17 @@ def attribute_novel(
     store: Store,
     *,
     commit_every: int = 25,
+    client: object | None = None,
+    llm_chapter_cutoff: float = 0.0,
 ) -> AttributionReport:
-    """Run attribution over a whole novel and persist the spans."""
+    """Run attribution over a whole novel and persist the spans.
+
+    `client`/`llm_chapter_cutoff` enable tier 4 (`speakers/contextual.py`) on
+    chapters up to and including the cutoff -- see that module for why cold
+    start, specifically, is what it exists to fix. `client` is `None` by
+    default, so every existing caller (including every test) keeps the
+    deterministic-only behaviour unless it opts in.
+    """
     report = AttributionReport(novel_id=novel_id)
 
     # Accumulated across the novel rather than rebuilt per chapter: a character
@@ -182,6 +253,10 @@ def attribute_novel(
     # honorific-stripped key are stored so "Wang" matches a recorded
     # "Elder Wang".
     known_names: set[str] = set()
+    #: Display roster for the LLM prompt: surface forms only, no folded keys
+    #: (those exist purely for `_known`'s membership check and would read as
+    #: near-duplicate garbage names to the model).
+    display_roster: dict[str, int] = {}
 
     for i, chapter in enumerate(store.iter_chapters(novel_id), start=1):
         spans = classify_chapter(chapter)
@@ -192,6 +267,7 @@ def attribute_novel(
                 key = comparison_key(mention.text)
                 if key:
                     known_names.add(key)
+                display_roster[mention.text] = display_roster.get(mention.text, 0) + 1
         known = frozenset(known_names)
 
         pov = detect_pov_holder(mentions, spans)
@@ -212,6 +288,12 @@ def attribute_novel(
             span.co_speaker_self_ids = attribution.co_speakers
             if attribution.speaker:
                 span.confidence = attribution.confidence
+
+        if chapter.number <= llm_chapter_cutoff:
+            roster = [name for name, _ in sorted(display_roster.items(), key=lambda kv: -kv[1])]
+            _attribute_contextual_pass(
+                novel_id, chapter, spans, known_names=known, roster=roster, client=client
+            )
 
         # Runs after the ladder, over what the ladder left UNRESOLVED. Never
         # counted in `report.attributed` -- that number means "linked to a
