@@ -65,6 +65,16 @@ select, input[type=search] {
   background: var(--bg);
   color: var(--fg);
 }
+/* The dropdown's open option list is rendered by the OS/browser, not the
+   page, and reliably ignores `Canvas`/`CanvasText` -- it shows up with a
+   light popup background regardless of theme, so `color: var(--fg)` alone
+   can land as near-white text on that light background. Pin option text to
+   dark explicitly; background/color are the only two properties browsers
+   honor on <option> anyway. */
+select option {
+  color: #1a1a1a;
+  background: #fff;
+}
 #novel-select { font-weight: 600; }
 
 .stats-strip { display: flex; gap: 1.1rem; margin-left: auto; font-size: .78rem; color: var(--muted); }
@@ -185,6 +195,17 @@ aside .search input { width: 100%; }
 .entity-picker li.clear-row { color: #c9532b; border-bottom: 1px solid var(--border); border-radius: 0; margin-bottom: .2rem; }
 .entity-picker li.hint { color: var(--muted); cursor: default; }
 .entity-picker li.hint:hover { background: none; }
+.entity-picker li.anon-slot-row {
+  cursor: default; border-bottom: 1px solid var(--border); border-radius: 0; margin-bottom: .2rem;
+}
+.entity-picker li.anon-slot-row:hover { background: none; }
+.anon-slot-label { color: var(--muted); font-size: .78rem; }
+.anon-slot-btn {
+  font: inherit; width: 1.6rem; height: 1.6rem; border-radius: 50%;
+  border: 1px solid var(--border); background: var(--bg); color: var(--fg);
+  cursor: pointer; padding: 0;
+}
+.anon-slot-btn:hover { background: color-mix(in srgb, CanvasText 12%, transparent); }
 
 .body { position: relative; }
 .line-actions {
