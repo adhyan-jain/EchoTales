@@ -90,7 +90,7 @@ Measured on the real corpus, not projected.
 | 5 Local anaphora | `pipeline/anaphora/` | **Working** | RI 9,671 groups / 4 splits · LOTM 12,260 / 13 (deterministic baseline) |
 | 6 Global resolution | `pipeline/resolve/` | **Runs; scorer cannot LINK** — §4.1 | RI full vol: 1,002 groups → **82 entities** (1,862 deterministic). LOTM 730→102, ORV 859→63 — §4.14/§4.15 |
 | 6b Contradiction sweep | `pipeline/resolve/contradiction.py` | **Built, unvalidated** — §4.8 | `split` fires; 2 found on RI vol 1 |
-| 7 Eval harness | `pipeline/eval/` | **Gold exists, unconfirmed** — §4.12 | B-cubed scorer built (`coref_score.py`); RI ch1-5 gold drafted (model, not human) — recall@k gold mode still empty |
+| 7 Eval harness | `pipeline/eval/` | **Gold exists, unconfirmed; wired into `eval`** — §4.12, §4.20 | B-cubed scorer built (`coref_score.py`); RI gold extended ch1-5 → ch1-60 (3,457 mentions, still 0% confirmed); `echotales eval --novel X` now auto-scores against `data/gold/X.jsonl` when present — no longer a separate manual step |
 | CLI + review | `pipeline/commands.py`, `review.py` | **Working, + script view** — §4.13 | `run` / `review [--script]` / `query` / `export` / `eval` |
 | 8 Dataset export | — | **Not started** | JSONL export exists but is machine-only |
 | Persona / TTS | — | **Design only, no code** — §4b | `Persona` model has no appearance/voice fields; nothing constructs one |
@@ -767,6 +767,118 @@ this," not a real name. Predates every change in this document; not
 something this session's edits caused, and not investigated further. Worth
 a look before trusting `EXPLICIT`-tier output at face value.
 
+### 4.20 Session — six root-cause fixes, tier-4 attribution, entity auto-flag, corrections capabilities, gold-eval wiring (2026-08)
+
+A long session working from user-reported webview defects on RI/LOTM/ORV
+chapters 1-60. Root-caused each report rather than patching the symptom;
+several turned out to be the same underlying bug wearing different faces.
+All merged to `master` in separate commits (see git log for exact diffs).
+
+**Pipeline fixes:**
+- `mentions/gazetteer.py` `AMBIGUITY_BLOCKLIST` gained "gu" and "veil" —
+  genre-common nouns (RI's worm/insect term, LOTM's spirit-barrier term)
+  that the determiner-rate filter can't catch (rarely take "a"/"the" in
+  these books' phrasing) and that were becoming standalone gazetteer
+  entities, matching every bare occurrence.
+- `ingest/epub.py`/`adapters/base.py`: EPUB emphasis detection only saw
+  inline `<i>`/`<em>` tags. LOTM marks some inner-monologue paragraphs with
+  a whole-block CSS class instead (`<p class="block_6">`, italic via the
+  stylesheet) — `Epub.italic_classes()` now parses bundled stylesheets for
+  `font-style: italic/oblique` classes.
+- `spans/classify.py` `split_block()`: split at *every* italic-range
+  boundary regardless of length. RI's source italicises the bare word "Gu"
+  everywhere, including mid-name ("Uncle *Gu* Yue Dong Tu"), tearing the
+  name into two spans. Italic runs under 4 chars now stay merged into their
+  containing span.
+- Net effect on RI ch9's "Gu Yue Dong Tu" scene, which needed a manual
+  merge+reassign every single time before this session: now ingests as one
+  clean span, no correction needed. Verified against the real EPUB, not
+  just unit tests.
+
+**New capability — tier-4 LLM speaker attribution**
+(`speakers/contextual.py`, gated by `--llm-attribution-chapters`, default
+3): the deterministic ladder (explicit/proximal/turn-taking) has nothing to
+work with in a book's opening chapters — no established cast, no
+alternation history — so a protagonist's first lines of inner monologue
+landed `UNRESOLVED` no matter how obvious. This was the majority of both
+RI's and LOTM's manual corrections, concentrated entirely in ch1-2. New
+`Task.SPEAKER_ATTRIBUTION` (qwen2.5:7b local / Haiku on the API backend —
+a narrow "does this match one of N roster names" read, not a hard identity
+call). Hallucination-proof: an answer outside the known roster is
+discarded, same as the regex tiers already discard an unrecognised
+capitalised token.
+
+**New capability — auto-flag non-character entities**
+(`resolve/runner.py::_maybe_flag_non_character`, item 5 in §10's list):
+NER's own "location"/"organization" label was being computed and then
+discarded — every mention that reaches resolve becomes a `Self` regardless,
+since there's no non-person `TargetKind` (see §10 item 5 for why this is
+capped short of a real fix). `Mention.entity_label` now carries the label
+through (additive nullable column, lazy `ALTER TABLE` migration in
+`Store._migrate` — this project has no other migration mechanism); an
+entity founded *unanimously* on a non-character label gets an automatic
+`flag` correction (`source: "agent:pipeline"`) instead of silently joining
+the cast list. Off by default (`corrections_log=None`).
+  - **Caught by actually re-running, not by tests:** the first wiring of
+    this into `commands.py` keyed the corrections log off novel id alone,
+    but entity ids (`self1`, `self2`, ...) are a fresh in-memory counter
+    every resolve run, never resumed from disk — a run against a
+    non-canonical `--db` mints ids that don't correspond to the same
+    characters in the canonical store. 12 auto-flags landed in the *real*
+    `reverend-insanity.jsonl` referencing a throwaway run's entities before
+    this was caught and fixed (now keyed off the database's filename stem).
+    All unit tests were green while this was live. Take this as the
+    argument for why "green tests" and "safe to iterate unattended" are not
+    the same claim.
+
+**New webview/corrections capabilities**, from using the webview directly:
+- `reassign_speaker` accepts `payload.anon_slot` (1-4): puts a line into a
+  numbered "Unknown Speaker N" voice slot (same id scheme as
+  `_assign_anonymous_slots`) instead of only being able to clear it to bare
+  "unattributed" — including recovering from an accidental clear, which was
+  previously a dead end. Exposed in the picker UI as 4 numbered buttons.
+- New `create_mention` correction type: text the detector never proposed as
+  a mention at all ("old bastard Fang" referring to Fang Yuan) has no
+  `Mention.id` for `reassign_mention` to correct. The reviewer supplies a
+  span-local character range (same coordinate space the frontend already
+  renders marks in); alias type is inferred via `classify_alias_type`
+  rather than assumed. **Backend + tests done; no frontend text-selection
+  UI yet** — a reviewer can't actually trigger this from the browser. Next
+  step if picked back up: mouse-selection handling in `ScriptLine.js`.
+- Dropdown option-list text was unreadable (white-on-white) in the webview
+  — `<option>` doesn't reliably inherit the page's `Canvas`/`CanvasText`
+  theme colors from the browser's native popup rendering. Fixed with an
+  explicit `select option` color/background pin.
+
+**New capability — gold-set comparison wired into `eval`**: `cmd_eval` ran
+only the self-retrieval smoke test and printed a note that real recall@k
+needed gold data. Now auto-loads `data/gold/<novel>.jsonl` if present and
+runs B-cubed scoring (`score_b3`) against it, reported in the two tiers
+`gold.py` already draws (draft vs. human-confirmed) so a number computed
+from unconfirmed drafts is never silently reported as a result. RI's gold
+set extended from ch1-5 (343 mentions) to ch1-60 (3,457 mentions, still
+0% human-confirmed — a draft and a second opinion, not gold yet) via a new
+`data/gold/reverend-insanity-c1-c60-extended.toml`, following the existing
+draft file's conventions exactly (proper names extended across the full
+range where unambiguous, plus a not_entity net for this session's specific
+false-positive pattern). Verified end-to-end: precision=100% recall=95%
+f1=97.4% over 1,816 scored entity mentions against a fresh full pipeline
+run.
+
+**Not done, worth knowing:**
+- The clan-prefix alias-linking gap is still open: "Gu Yue Dong Tu" (full
+  name, clan prefix "Gu Yue" + given name) still doesn't auto-link to a
+  bare "Dong Tu" alias elsewhere in the book — no clan/surname-prefix
+  stripping in `variants.py`. Different bug from the two fixed above; this
+  one is a resolver change, not an ingestion/segmentation one.
+- §10 item 8 (new): recurring unnamed characters (a named character's
+  retinue, a minor character across a few chapters) still get a fresh
+  anonymous slot every chapter — no cross-chapter persistence exists.
+- `create_mention` has no frontend UI yet (above).
+- Extending `TargetKind` past `SELF`/`PERSONA` so a flagged item/location
+  can actually stop behaving like a character everywhere, not just get a
+  review note (§10 item 5).
+
 ### 4.10 LLM wiring — layer 1 done, three stages left
 
 **Done:** `commands.py::_build_client` builds one `ModelClient` per run,
@@ -1142,13 +1254,33 @@ webview/     React viewer (git-ignored node_modules/build; §8a, §4.18)
    §4.15's LOTM case: reincarnation/disguise needs two personas on one self,
    and there is currently nowhere to put the second persona even if resolution
    correctly identified the split.
-5. **Entity typing at the `Mention`/`Self` level, not just the commonness
-   filter.** §4.11's fix stopped items/locations from being silently deleted,
-   but a kept item still displays and behaves like a character in the review
-   table — `chapter_ner.py` has the label as far as `VocabularyDetector`, and
-   it is still discarded at `_make_mention`.
+5. ~~**Entity typing at the `Mention`/`Self` level, not just the commonness
+   filter.**~~ **Partially done, §4.20.** `Mention.entity_label` now carries
+   NER's label through to resolve, which auto-flags an entity founded
+   unanimously on a non-"character" label instead of silently letting it
+   join the voice-cast list. What's still missing: the flag is a review
+   note, not a type — a kept item/location still displays and behaves like
+   a character everywhere else (review table, webview, voice casting),
+   because `TargetKind` only has `SELF`/`PERSONA`, nothing for a non-person
+   entity to actually *be*. Extending `TargetKind` is the real fix; the
+   auto-flag was deliberately the safe, additive step short of that (see
+   §4.20 for why a blunt filter at mention-detection time was rejected —
+   already regressed once, per this same section's history).
 6. Wire the remaining three LLM stages (§4.10), coreference last and budgeted.
 7. Then: Mondrian conformal, baselines (§5).
+8. **Not started — recurring unnamed characters and voice consistency.**
+   A mob of retainers/guards attached to a named character, or a minor
+   character who recurs across a handful of chapters without ever being
+   named, gets a fresh anonymous slot every chapter (§4.19) — there is no
+   persistence across chapters, only within one. Mechanically possible
+   today via `merge_entities`/`reassign_speaker`'s `new_label` (promote the
+   recurring anon slot to a manual `Self` once, then merge later chapters'
+   occurrences into it), but nothing makes this easy or automatic, and
+   nobody has done it by hand yet either. The dormant `Relation` table
+   (`core/models.py`) is a plausible place to tag such a group as
+   `retainer_of`/similar once it exists, for UI grouping — see the turn-1
+   discussion in this session's conversation log for the fuller design
+   trade-offs (mob-vs-collective-voice, cold-start slot numbering).
 
 **How to check your work:** `uv run echotales run --novel <novel>` then
 `uv run echotales review --novel <novel> --script <a-b>`. Report the singleton

@@ -1014,14 +1014,14 @@ endpoint rather than by reading the code.
 
 `_overlay_corrections()` recomputes the full payload fresh on every
 request from `corrections.py`'s pending-and-applied log, rather than
-tracking deltas incrementally -- with six correction types now each able
+tracking deltas incrementally -- with seven correction types now each able
 to touch a mention's entity, a span's speaker, and the entity list at
 once, one from-scratch walk that rebuilds marks and counts together is far
 easier to get right than several deltas that all have to reconcile with
-each other. `merge_lines` is the one type this function does not preview
-(folding two spans into one mid-render was judged too likely to hide a
-subtle bug for the time available) -- its effect is only visible after
-`apply`.
+each other. `merge_lines` and `create_mention` are the types this
+function does not preview live (`create_mention` mints a `Mention` that
+doesn't exist yet, so there's nothing to overlay onto until `apply`) --
+their effect is only visible after `apply`.
 
 ### `src/echotales/pipeline/corrections.py`
 `Correction`/`CorrectionLog`/`apply_pending`. A correction is never fed
