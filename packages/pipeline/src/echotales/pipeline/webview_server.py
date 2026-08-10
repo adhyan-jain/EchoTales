@@ -39,7 +39,12 @@ from echotales.pipeline.corrections import (
     apply_pending,
     new_manual_entity_id,
 )
-from echotales.pipeline.webview import NovelSource, build_novel_payload
+from echotales.pipeline.webview import (
+    NovelSource,
+    _anon_slot_colour,
+    _anon_slot_label,
+    build_novel_payload,
+)
 
 log = logging.getLogger(__name__)
 
@@ -81,6 +86,10 @@ def _overlay_corrections(payload: dict, corrections: CorrectionLog) -> dict:  # 
     merge_redirect: dict[str, str] = {}
     mention_override: dict[str, str | None] = {}
     speaker_override: dict[str, str | None] = {}
+    #: span_ids whose speaker_override is an anon-slot id, not a real entity
+    #: -- rendered as "Unknown Speaker N" with slot styling, not as a normal
+    #: attributed line (see the anon_slot branch below).
+    anon_slot_override: set[str] = set()
     manual_labels: dict[str, str] = {}  # manual entity id -> label
     flags_by_mention: dict[str, list[dict]] = {}  # type: ignore[type-arg]
     flags_by_span: dict[str, list[dict]] = {}  # type: ignore[type-arg]
@@ -115,10 +124,19 @@ def _overlay_corrections(payload: dict, corrections: CorrectionLog) -> dict:  # 
         elif c.type is CorrectionType.REASSIGN_SPEAKER:
             span_id = str(c.payload["span_id"])
             new_label = c.payload.get("new_label")
+            anon_slot = c.payload.get("anon_slot")
             if new_label:
                 eid = new_manual_entity_id(novel_id, c.id)
                 manual_labels[eid] = str(new_label)
                 speaker_override[span_id] = eid
+            elif anon_slot:
+                # Same id scheme as corrections.py::_apply_reassign_speaker
+                # and speakers/runner.py::_assign_anonymous_slots, so the
+                # existing anon-id-to-"Unknown Speaker N" rendering path
+                # (webview.py) picks it up with no extra logic here.
+                chapter = c.payload.get("chapter")
+                speaker_override[span_id] = f"{novel_id}:anon:{float(chapter):g}:{int(anon_slot)}"
+                anon_slot_override.add(span_id)
             else:
                 speaker_id = c.payload.get("speaker_id")
                 speaker_override[span_id] = str(speaker_id) if speaker_id else None
@@ -220,7 +238,20 @@ def _overlay_corrections(payload: dict, corrections: CorrectionLog) -> dict:  # 
             else:
                 final_speaker = None
 
-            if final_speaker:
+            if final_speaker and span_id in anon_slot_override:
+                # A distinct voice slot, not an identity -- the opposite of
+                # the "clear the anonymous styling" case below, so it needs
+                # its own branch rather than falling into the named-speaker
+                # one just because `final_speaker` is truthy.
+                span = {
+                    **span,
+                    "speaker_id": final_speaker,
+                    "speaker": _anon_slot_label(final_speaker),
+                    "anonymous_speaker": True,
+                    "speaker_colour": _anon_slot_colour(final_speaker),
+                    "method": "anonymous (pending)",
+                }
+            elif final_speaker:
                 speaks.add(final_speaker)
                 span = {
                     **span,
