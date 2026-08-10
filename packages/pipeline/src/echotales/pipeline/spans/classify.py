@@ -183,6 +183,23 @@ def split_block(text: str, italic_ranges: list[tuple[int, int]] | None = None) -
     ]
     quotes = _quote_runs(text)
 
+    # A quote nested well inside one continuous emphasis run is a scare-quoted
+    # phrase inside a single train of thought ("...phrases like 'you are
+    # plagued with bad luck,' or 'nothing you do will happen smoothly?' No,
+    # that's nothing like a Seer..."), not a switch out of it -- splitting on
+    # it anyway leaves the connecting words either side ("and", "or", "The")
+    # as their own one-word spans. Required margin keeps this to the
+    # paragraph-emphasis case specifically: a quote that merely happens to
+    # sit inside a same-length or barely-larger emphasis range (the ordinary
+    # "a quoted thought is itself italicised" case) still splits normally.
+    def _nested_scare_quote(q_start: int, q_end: int) -> bool:
+        return any(
+            r_start <= q_start and q_end <= r_end and (r_end - r_start) > (q_end - q_start) + 20
+            for r_start, r_end in ranges
+        )
+
+    quotes = [q for q in quotes if not _nested_scare_quote(*q)]
+
     points = {0, len(text)}
     for start, end in quotes:
         points.update((start, end))
