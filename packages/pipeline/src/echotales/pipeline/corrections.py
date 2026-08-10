@@ -12,7 +12,7 @@ resolver fed its own answer key stops being measurable. Instead:
    log. This does not change how the resolver decides anything -- it patches
    *this run's* output, the same way a human copy-editor patches a draft.
 
-Six correction types:
+Seven correction types:
 
 - `merge_entities` -- two entities are the same person; fold one into the other.
 - `reassign_mention` -- one specific occurrence of a name was linked to the
@@ -34,6 +34,13 @@ Six correction types:
 - `reassign_span_type` -- the classifier's `SpanType` was wrong: prose read as
   narration that's actually a translator's note (retype `NON_DIEGETIC`, which
   drops it from both audio and panels), or the reverse. Addressed by `Span.id`.
+- `create_mention` -- a reference to a character exists in the text but was
+  never detected as a mention at all ("old bastard Fang" referring to Fang
+  Yuan): the reviewer selects the text themselves, so there is no existing
+  `Mention.id` to correct, unlike `reassign_mention`. Addressed by span id
+  plus a span-local character range; the alias type is inferred the same way
+  the pipeline infers it for a detected surface (`classify_alias_type`),
+  since a human picking the text supplies the surface, not its category.
 
 `reassign_mention` and `reassign_speaker` can target an existing entity *or*
 mint a new one (`new_label` set instead of `target_id`/`speaker_id`) -- the
@@ -52,8 +59,16 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 
-from echotales.core.enums import AttributionMethod, EventType, SpanType
-from echotales.core.models import DiscoursePosition, ResolutionEvent, Self
+from echotales.core.enums import (
+    AttributionMethod,
+    EventType,
+    Provenance,
+    ReferenceMode,
+    ResolutionMethod,
+    SpanType,
+    TargetKind,
+)
+from echotales.core.models import DiscoursePosition, Mention, ResolutionEvent, Self
 from echotales.core.store import Store
 
 
@@ -64,6 +79,7 @@ class CorrectionType(StrEnum):
     MERGE_LINES = "merge_lines"
     FLAG = "flag"
     REASSIGN_SPAN_TYPE = "reassign_span_type"
+    CREATE_MENTION = "create_mention"
 
 
 def new_manual_entity_id(novel_id: str, correction_id: str) -> str:
@@ -205,6 +221,8 @@ def apply_pending(store: Store, log: CorrectionLog) -> dict[str, object]:
                 result = _apply_merge_lines(store, correction, seq=seq_base + i)
             elif correction.type is CorrectionType.REASSIGN_SPAN_TYPE:
                 result = _apply_reassign_span_type(store, correction, seq=seq_base + i)
+            elif correction.type is CorrectionType.CREATE_MENTION:
+                result = _apply_create_mention(store, correction, seq=seq_base + i)
             else:  # pragma: no cover - CorrectionType is closed, kept for safety
                 result = {"type": correction.type.value, "error": "unknown correction type"}
         except Exception as exc:
@@ -329,6 +347,92 @@ def _apply_reassign_mention(store: Store, correction: Correction, *, seq: int) -
     }
 
 
+def _apply_create_mention(store: Store, correction: Correction, *, seq: int) -> dict[str, object]:
+    """A reviewer marks text the detector never proposed as a mention at all.
+
+    `local_start`/`local_end` are span-local -- the same coordinate space the
+    webview already renders marks in (`webview.py`'s `marks[].s`/`.e`) -- so
+    the browser can send exactly what the user selected without knowing
+    anything about block-local offsets. `Mention.offset` is block-local (see
+    its docstring), so `span.start` translates it, the same translation
+    `webview.py` already does in the other direction to build `marks`.
+    """
+    from echotales.pipeline.mentions.alias_type import classify_alias_type
+
+    span_id = str(correction.payload["span_id"])
+    chapter = float(correction.payload["chapter"])
+    novel_id = correction.novel_id
+
+    span = next((s for s in store.get_spans(novel_id, chapter) if s.id == span_id), None)
+    if span is None:
+        return {"type": "create_mention", "span_id": span_id, "error": "span not found"}
+
+    local_start = int(correction.payload["local_start"])
+    local_end = int(correction.payload["local_end"])
+    if not (0 <= local_start < local_end <= len(span.text)):
+        return {"type": "create_mention", "span_id": span_id, "error": "offset out of range"}
+    surface = str(correction.payload.get("text") or span.text[local_start:local_end])
+
+    new_label = correction.payload.get("new_label")
+    if new_label:
+        target_id = _ensure_manual_entity(
+            store, correction, label=str(new_label), first_pos=span.position
+        )
+    else:
+        target_id = correction.payload.get("target_id")
+        target_id = str(target_id) if target_id else None
+        if target_id is None:
+            return {"type": "create_mention", "span_id": span_id, "error": "no target given"}
+
+    alias_type, _ = classify_alias_type(surface)
+    reference_mode = (
+        ReferenceMode.DIALOGUE_REFERENCE
+        if span.span_type is SpanType.DIALOGUE
+        else ReferenceMode.NARRATOR_REFERENCE
+    )
+    mention = Mention(
+        id=f"{novel_id}:correction:{correction.id}:mention",
+        novel_id=novel_id,
+        segment_id="",
+        chapter=chapter,
+        offset=span.start + local_start,
+        text=surface,
+        alias_type=alias_type,
+        span_type=span.span_type,
+        reference_mode=reference_mode,
+        target_kind=TargetKind.SELF,
+        target_id=target_id,
+        confidence=1.0,
+        method=ResolutionMethod.SCORED,
+        provenance=Provenance.HUMAN_AUTHORED,
+        block_index=span.block_index,
+    )
+    store.add_mentions([mention])
+
+    store.append_event(
+        ResolutionEvent(
+            id=f"{novel_id}:correction:{correction.id}",
+            seq=seq,
+            type=EventType.REBIND,
+            payload={
+                "mention_id": mention.id,
+                "span_id": span_id,
+                "surface": surface,
+                "new_target_id": target_id,
+                "source": "human_correction",
+                "correction_id": correction.id,
+            },
+            cause_pos=span.position,
+        )
+    )
+    return {
+        "type": "create_mention",
+        "span_id": span_id,
+        "mention_id": mention.id,
+        "target_id": target_id,
+    }
+
+
 def _apply_reassign_speaker(store: Store, correction: Correction, *, seq: int) -> dict[str, object]:
     span_id = str(correction.payload["span_id"])
     chapter = float(correction.payload["chapter"])
@@ -339,19 +443,30 @@ def _apply_reassign_speaker(store: Store, correction: Correction, *, seq: int) -
         return {"type": "reassign_speaker", "span_id": span_id, "error": "span not found"}
 
     new_label = correction.payload.get("new_label")
+    anon_slot = correction.payload.get("anon_slot")
     if new_label:
         final_speaker = _ensure_manual_entity(
             store, correction, label=str(new_label), first_pos=span.position
         )
+    elif anon_slot:
+        # A distinct voice slot, not an identity -- same id scheme as the
+        # pipeline's own `speakers/runner.py::_assign_anonymous_slots`, so it
+        # renders as "Unknown Speaker N" and gets a slot colour for free
+        # (`webview.py::_anon_slot_label`/`_anon_slot_colour`) instead of
+        # needing a parallel display path for a human-picked slot.
+        final_speaker = f"{novel_id}:anon:{chapter:g}:{int(anon_slot)}"
     else:
         speaker_id = correction.payload.get("speaker_id")
         final_speaker = str(speaker_id) if speaker_id else None
 
     old_speaker = span.speaker_self_id
     span.speaker_self_id = final_speaker
-    span.attribution_method = (
-        AttributionMethod.EXPLICIT if final_speaker else AttributionMethod.UNRESOLVED
-    )
+    if anon_slot and final_speaker:
+        span.attribution_method = AttributionMethod.ANONYMOUS_SLOT
+    else:
+        span.attribution_method = (
+            AttributionMethod.EXPLICIT if final_speaker else AttributionMethod.UNRESOLVED
+        )
     store.add_spans([span])
 
     store.append_event(
