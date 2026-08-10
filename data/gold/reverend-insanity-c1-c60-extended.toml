@@ -1,0 +1,116 @@
+# Extension of reverend-insanity-c1-c5.toml to chapters 1-60.
+#
+# PROVENANCE: drafted by a language model (Claude Sonnet 5), NOT by a person.
+# Every record this expands to carries provenance = "model" and confirmed =
+# false, exactly like the c1-c5 draft it extends. It is a second opinion and
+# a draft for review, not gold, until a person confirms it.
+#
+# Scope, honestly stated: this is NOT a dense re-read of all 60 chapters the
+# way c1-c5 is. It extends two things that are safe to extend without a full
+# re-read:
+#   1. Proper names already confirmed unambiguous across ch1-5 (Fang Yuan,
+#      Fang Zheng, Shen Cui, Mother Shen, Gu Yue Village, Gu Yue clan, South
+#      Border) -- these denote one stable referent throughout the volume by
+#      the nature of a proper name, not a title, so extending their surface
+#      list to the full chapter range carries none of the "the elder"-style
+#      re-use risk the c1-c5 file's scope note warns about.
+#   2. A broad not_entity net for the specific false-positive *pattern* this
+#      session's pipeline work found and fixed: NER-labelled item/organisation
+#      surfaces that were becoming spurious `Self` (character) entities. These
+#      are structural false positives (a Gu-item name, a family name), not
+#      chapter-dependent judgement calls, so listing them across the full
+#      range is safe and is exactly the regression guard the auto-flag fix
+#      (resolve/runner.py::_maybe_flag_non_character) should be measured
+#      against going forward.
+#
+# Chapter 9 is the one genuinely dense addition: verified directly against
+# the ingested chapter text this session (the "Uncle Gu Yue Dong Tu" scene
+# that motivated the emphasis-split-length fix in spans/classify.py).
+#
+# "Uncle"/"Aunt" recur constantly in ch9 referring to Gu Yue Dong Tu and his
+# wife, but are left unannotated -- same conservative convention as c1-c5's
+# bare "the elder": a relational term, not a name, and Gu Yue Dong Tu's wife
+# is never given a proper name in this chapter to anchor an identity on.
+
+schema = 1
+novel_id = "reverend-insanity"
+chapters = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0, 31.0, 32.0, 33.0, 34.0, 35.0, 36.0, 37.0, 38.0, 39.0, 40.0, 41.0, 42.0, 43.0, 44.0, 45.0, 46.0, 47.0, 48.0, 49.0, 50.0, 51.0, 52.0, 53.0, 54.0, 55.0, 56.0, 57.0, 58.0, 59.0, 60.0]
+drafted_by = "claude-sonnet-5"
+
+# ---------------------------------------------------------------------------
+# Characters -- extending existing c1-c5 identities across the full range
+# ---------------------------------------------------------------------------
+
+[[identity]]
+name = "Fang Yuan"
+kind = "character"
+surfaces = ["Fang Yuan", "Gu Yue Fang Yuan"]
+note = "Protagonist. Extended from c1-c5: unambiguous proper name throughout."
+
+[[identity]]
+name = "Fang Zheng"
+kind = "character"
+surfaces = ["Fang Zheng", "Fang Zhen"]
+note = "Extended from c1-c5."
+
+[[identity]]
+name = "Shen Cui"
+kind = "character"
+surfaces = ["Shen Cui"]
+note = "Extended from c1-c5. Ch11 has an extended scene with her -- not densely annotated here, but the surface is safe to extend."
+
+[[identity]]
+name = "Mother Shen"
+kind = "character"
+surfaces = ["Mother Shen"]
+note = "Extended from c1-c5."
+
+# ---------------------------------------------------------------------------
+# New character, dense-verified in chapter 9
+# ---------------------------------------------------------------------------
+
+[[identity]]
+name = "Gu Yue Dong Tu"
+kind = "character"
+surfaces = ["Gu Yue Dong Tu"]
+note = "Fang Yuan and Fang Zheng's uncle/guardian, ch9 (the primeval-stone-giving scene). Before the emphasis-split-length fix (spans/classify.py), the source's mid-name italicisation of 'Gu' tore this surface into two spans and it needed a manual merge+reassign every time -- this record is what makes that fix's effect measurable rather than an impression. Only the full name is annotated; 'Uncle' alone recurs ~15x in ch9 referring to him but is left unannotated, same convention as c1-c5's bare 'the elder'."
+
+# ---------------------------------------------------------------------------
+# Locations / organizations -- extending existing c1-c5 identities
+# ---------------------------------------------------------------------------
+
+[[identity]]
+name = "Gu Yue Village"
+kind = "location"
+surfaces = ["Gu Yue Village", "Gu Yue village"]
+note = "Extended from c1-c5."
+
+[[identity]]
+name = "Gu Yue clan"
+kind = "organization"
+surfaces = ["Gu Yue clan", "Gu Yue Clan", "Gu Yue"]
+note = "Extended from c1-c5. 'Gu Yue' standing alone is still the clan, not a member -- see c1-c5's note on the containment-merge trap."
+
+[[identity]]
+name = "South Border"
+kind = "location"
+surfaces = ["South Border", "Southern Border"]
+note = "Extended from c1-c5, with 'Southern Border' added as the same place -- the pipeline's ch1-60 rerun split these into two entities (self11/self30), which an automated review pass (Haiku) correctly flagged as a duplicate and merged. This record is what makes that specific call measurable."
+
+# ---------------------------------------------------------------------------
+# Non-entities: the false-positive pattern this session's pipeline work
+# fixed (resolve/runner.py auto-flagging) and found (Haiku review of the
+# ch1-60 rerun). Structural, not chapter-scoped -- see header note.
+# ---------------------------------------------------------------------------
+
+[[not_entity]]
+surfaces = ["Gu"]
+reason = "The novel's central term (magical worm/insect), used constantly as a bare capitalised word. Was becoming a standalone gazetteer entity and tearing names apart mid-span (see 'Uncle Gu Yue Dong Tu' above) before mentions/gazetteer.py's AMBIGUITY_BLOCKLIST fix this session. The single highest-value regression-guard entry in this file."
+
+[[not_entity]]
+surfaces = ["Single Gate Poison Gu", "Bear Strength Gu", "Stream Gu", "Moonlight Gu", "Liquor Gu", "Relic Gu"]
+reason = "Named Gu constructs/items Fang Yuan refines or uses -- proper-noun-shaped item names, not characters. Each became a spurious `self` entity in the ch1-60 rerun; caught by an automated Haiku review pass and independently by resolve/runner.py's new NER-label auto-flag."
+
+[[not_entity]]
+surfaces = ["Mo Family"]
+reason = "A family/organization reference, not an individual -- misparsed as a character in the ch1-60 rerun."
