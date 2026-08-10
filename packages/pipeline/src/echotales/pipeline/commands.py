@@ -270,6 +270,8 @@ def cmd_export(args: argparse.Namespace) -> int:
 
 def cmd_eval(args: argparse.Namespace) -> int:
     from echotales.pipeline.eval import EvalMode, build_self_retrieval_cases, evaluate_recall
+    from echotales.pipeline.eval.coref_score import score_b3
+    from echotales.pipeline.eval.gold import read_gold
     from echotales.pipeline.resolve.retrieve import CandidateRetriever
 
     store = _open_store(args)
@@ -284,9 +286,41 @@ def cmd_eval(args: argparse.Namespace) -> int:
     result = evaluate_recall(retriever, cases, mode=EvalMode.SELF_RETRIEVAL)
     print(result.summary())
     print(
-        "\nNote: this is the self-retrieval smoke test. Real recall@k needs "
-        "annotated mention->entity pairs in data/gold/."
+        "\nNote: this is the self-retrieval smoke test, not a recall@k result. "
+        "See the gold comparison below for that."
     )
+
+    # Gold comparison: automatic whenever data/gold/<novel>.jsonl exists, so
+    # every eval run against an annotated novel is a regression check against
+    # the same fixed reference, not a one-off number. Reported in two tiers --
+    # draft (provenance=model, includes every record) and confirmed-only
+    # (`GoldSet.confirmed_only`) -- because a number computed from unconfirmed
+    # drafts is not a "result" per gold.py's own contract, and silently
+    # blending the two would make that distinction invisible in the printout.
+    gold_path = Path(getattr(args, "gold", None) or f"data/gold/{args.novel}.jsonl")
+    gold = read_gold(gold_path, novel_id=args.novel)
+    print(f"\n=== gold comparison: {gold_path} ===")
+    if not gold.mentions:
+        print(f"  no gold file at {gold_path} -- skipping. See `echotales export`/eval/draft.py.")
+    else:
+        print(f"  {gold.coverage()}")
+        draft_score = score_b3(store, args.novel, gold.entities_only)
+        print("\n  -- all drafted annotations (not a result, see confirmed-only below) --")
+        print("  " + draft_score.summary().replace("\n", "\n  "))
+        confirmed = gold.confirmed_only.entities_only
+        if confirmed.mentions:
+            confirmed_score = score_b3(store, args.novel, confirmed)
+            print("\n  -- human-confirmed only (this is the reportable result) --")
+            print("  " + confirmed_score.summary().replace("\n", "\n  "))
+            if args.report:
+                print(confirmed_score.worst_report())
+        else:
+            print(
+                "\n  0 human-confirmed records -- nothing here is a reportable result yet."
+            )
+        if args.report:
+            print(draft_score.worst_report())
+
     store.close()
     return 0
 
