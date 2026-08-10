@@ -149,7 +149,15 @@ def cmd_run(args: argparse.Namespace) -> int:
     stage("5 anaphora", lambda: anaphora_resolve(novel, store))
     from echotales.pipeline.corrections import CorrectionLog
 
-    corrections_log = CorrectionLog(Path("data/corrections") / f"{novel}.jsonl")
+    # Keyed by the *database's* stem, not just the novel id: entity ids
+    # (self1, self2, ...) are a fresh in-memory counter every resolve run
+    # (see resolve/runner.py), never resumed from what's on disk, so a run
+    # against a non-canonical --db (a throwaway rerun, an experiment) mints
+    # ids that do not correspond to the same characters in the canonical
+    # data/webview-working/<novel>.db. Auto-flags referencing those ids must
+    # never land in that novel's real corrections log. A canonical run's db
+    # stem already equals the novel id, so this is a no-op there.
+    corrections_log = CorrectionLog(Path("data/corrections") / f"{Path(store.path).stem}.jsonl")
     stage(
         "6 resolve",
         lambda: global_resolve(novel, store, lexicon=lexicon, corrections_log=corrections_log),
