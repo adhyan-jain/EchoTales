@@ -8,7 +8,21 @@ import React, { useState, useRef, useEffect } from 'react';
  * mention is wrong" and "this character doesn't exist yet" are the same
  * gesture, not two different UIs to learn.
  */
-export default function EntityPicker({ entities, anchor, onSelect, onCreateNew, onClear, onCancel }) {
+// Matches `_MAX_ANON_SLOTS` in speakers/runner.py -- a chapter with more
+// simultaneous unnamed voices than this is one confused scene, not a dozen
+// distinct background speakers, so the picker doesn't offer more than the
+// pipeline itself would ever assign.
+const MAX_ANON_SLOTS = 4;
+
+export default function EntityPicker({
+  entities,
+  anchor,
+  onSelect,
+  onCreateNew,
+  onClear,
+  onAnonSlot,
+  onCancel,
+}) {
   const [query, setQuery] = useState('');
   const inputRef = useRef(null);
 
@@ -42,6 +56,22 @@ export default function EntityPicker({ entities, anchor, onSelect, onCreateNew, 
           {onClear && (
             <li className="clear-row" onClick={onClear}>
               &empty; Unassign / mark unresolved
+            </li>
+          )}
+          {onAnonSlot && (
+            <li className="anon-slot-row">
+              <span className="anon-slot-label">Unknown speaker:</span>
+              {Array.from({ length: MAX_ANON_SLOTS }, (_, i) => i + 1).map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  className="anon-slot-btn"
+                  onClick={() => onAnonSlot(n)}
+                  title={`Give this line "Unknown Speaker ${n}"'s voice slot`}
+                >
+                  {n}
+                </button>
+              ))}
             </li>
           )}
           {query.trim() && !exactMatch && (

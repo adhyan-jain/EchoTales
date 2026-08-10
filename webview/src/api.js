@@ -36,11 +36,33 @@ export const api = {
       new_label: target && target.new_label ? target.new_label : null,
     }),
 
+  // `target` also accepts { anon_slot: 1..4 } -- a distinct voice slot with
+  // no identity, same id scheme the pipeline's own anonymous-slot pass uses
+  // (speakers/runner.py::_assign_anonymous_slots), so it renders as "Unknown
+  // Speaker N" and gets that slot's colour. Lets a reviewer put a line back
+  // into a numbered slot instead of only being able to clear it to bare
+  // "unattributed" -- including undoing an accidental clear.
   reassignSpeaker: (novelId, spanId, chapter, target) =>
     postCorrection(novelId, 'reassign_speaker', {
       span_id: spanId,
       chapter,
       speaker_id: typeof target === 'string' ? target : null,
+      new_label: target && target.new_label ? target.new_label : null,
+      anon_slot: target && target.anon_slot ? target.anon_slot : null,
+    }),
+
+  // For text the detector never proposed as a mention at all ("old bastard
+  // Fang" referring to Fang Yuan) -- `localStart`/`localEnd` are offsets into
+  // `span.text`, the same coordinate space `marks[].s`/`.e` already use, so
+  // the browser sends exactly what the user selected with no translation.
+  createMention: (novelId, spanId, chapter, localStart, localEnd, text, target) =>
+    postCorrection(novelId, 'create_mention', {
+      span_id: spanId,
+      chapter,
+      local_start: localStart,
+      local_end: localEnd,
+      text,
+      target_id: typeof target === 'string' ? target : null,
       new_label: target && target.new_label ? target.new_label : null,
     }),
 

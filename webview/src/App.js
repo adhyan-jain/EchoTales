@@ -228,6 +228,20 @@ export default function App() {
     call.then(afterCorrection).catch((e) => setLoadError(e.message));
   }, [picker, novelId, afterCorrection]);
 
+  // Speaker-only: put a line into a numbered "Unknown Speaker N" voice slot
+  // instead of a real character -- including putting it back after an
+  // accidental clear-to-unattributed, which was previously a dead end.
+  const handlePickerAnonSlot = useCallback(
+    (slot) => {
+      if (!picker || !novelId || picker.kind !== 'speaker') return;
+      api
+        .reassignSpeaker(novelId, picker.spanId, picker.chapter, { anon_slot: slot })
+        .then(afterCorrection)
+        .catch((e) => setLoadError(e.message));
+    },
+    [picker, novelId, afterCorrection]
+  );
+
   const handleFlagLine = useCallback(
     (span, chapterNumber) => {
       if (!novelId) return;
@@ -415,6 +429,7 @@ export default function App() {
           onSelect={handlePickerSelect}
           onCreateNew={handlePickerCreate}
           onClear={handlePickerClear}
+          onAnonSlot={picker.kind === 'speaker' ? handlePickerAnonSlot : undefined}
           onCancel={closePicker}
         />
       )}
