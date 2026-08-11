@@ -13,17 +13,25 @@ which this line intentionally does not repeat (see that section, or
 **This session (in progress, working from `xyz.md` in repo root — a 5-step
 plan another agent wrote):** implemented Step 1 (kinship coreference: "Uncle"
 now resolves to the character it was established to refer to earlier in the
-scene — `anaphora/local.py`/`runner.py`) and Step 2 (active scene participant
+scene — `anaphora/local.py`/`runner.py`), Step 2 (active scene participant
 tracking + mob-phrase detection, no entity minted for crowds — new
-`spans/scene.py`, new `TargetKind.MOB_GROUP`). Both committed, pushed,
-tested against real chapters, not just unit tests. **Steps 3-5 of xyz.md are
-NOT done** — pick up there next: Step 3 should *extend* the existing
-`speakers/contextual.py` tier-4 attribution with the new scene registry
-rather than duplicate it (they solve the same problem); Step 4 (persona
-visual infilling / `get_panel_cast`) is unstarted in the codebase regardless
-of what any other agent has claimed — verify with `find`/`grep` before
-trusting a status report from elsewhere, see the cautionary tale in this
-session's conversation log if you have access to it.
+`spans/scene.py`, new `TargetKind.MOB_GROUP`), and Step 3 (scene-constrained
+tier-4 roster: `speakers/runner.py::_scene_roster` narrows the LLM cold-start
+candidate pool from the full chapter cast to whoever `spans/scene.py`'s
+registry says is present in that block's scene, ranked by chapter frequency,
+falling back to the chapter-wide roster outside any scene or when a scene's
+cast is empty — extends `speakers/contextual.py` rather than duplicating it,
+per this file's own prior instruction). All three committed (not yet
+pushed — confirm with the user first), tested against real chapters with
+ollama live (RI ch1-5: tier 4 fired, `CONTEXTUAL_LLM=15`, no errors), not
+just unit tests. **Steps 4-5 of xyz.md are NOT done** — pick up there next:
+Step 4 (persona visual infilling / `get_panel_cast`) is unstarted in the
+codebase regardless of what any other agent has claimed — verify with
+`find`/`grep` before trusting a status report from elsewhere, see the
+cautionary tale in this session's conversation log if you have access to it.
+Step 5 is tests+docs for whichever of 3/4 land — test coverage for Step 3
+landed alongside it (`test_speakers.py::TestContextualTier` scene-roster
+cases); Step 4 still needs its own.
 
 **New user-reported gap, not yet investigated:** many plain "Fang Yuan"
 mentions in the text apparently aren't being classified as referring to the
