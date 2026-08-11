@@ -8,6 +8,7 @@ from echotales.core.models import Block, Chapter, Mention, Span
 from echotales.core.store import Store
 from echotales.pipeline.llm.client import ModelClient
 from echotales.pipeline.llm.stub import StubProvider
+from echotales.pipeline.spans.scene import ActiveScene
 from echotales.pipeline.speakers import (
     attribute_chapter,
     attribute_explicit,
@@ -16,6 +17,7 @@ from echotales.pipeline.speakers import (
     attribute_span,
     attribute_turn_taking,
 )
+from echotales.pipeline.speakers.runner import _scene_roster
 
 
 def span(text: str, span_type: SpanType = SpanType.DIALOGUE, span_id: str = "s1") -> Span:
@@ -333,6 +335,42 @@ class TestContextualTier:
             "t", store, client=ModelClient(provider_override=stub), llm_chapter_cutoff=3.0
         )
         assert report.by_method.get(AttributionMethod.UNRESOLVED.value, 0) == 1
+
+    def test_scene_roster_narrows_to_active_cast(self) -> None:
+        """xyz.md Step 3's scene-constrained pass, reusing tier 4 per HANDOFF.md.
+
+        Chapter-wide roster has three names, but only two are present in the
+        scene covering this block -- the roster handed to the model should be
+        just those two, in chapter-frequency order.
+        """
+        scenes = [
+            ActiveScene(
+                segment_id="seg1",
+                chapter=1.0,
+                block_from=0,
+                block_to=5,
+                active_selves={"Fang Yuan", "Zhao Sanshou"},
+            )
+        ]
+        fallback = ["Fang Yuan", "Gu Yue Dong Tu", "Zhao Sanshou"]
+        assert _scene_roster(2, scenes, fallback) == ["Fang Yuan", "Zhao Sanshou"]
+
+    def test_scene_roster_falls_back_outside_any_scene(self) -> None:
+        scenes = [
+            ActiveScene(
+                segment_id="seg1", chapter=1.0, block_from=0, block_to=2,
+                active_selves={"Fang Yuan"},
+            )
+        ]
+        fallback = ["Fang Yuan", "Gu Yue Dong Tu"]
+        assert _scene_roster(9, scenes, fallback) == fallback
+
+    def test_scene_roster_falls_back_when_scene_cast_empty(self) -> None:
+        scenes = [
+            ActiveScene(segment_id="seg1", chapter=1.0, block_from=0, block_to=5)
+        ]
+        fallback = ["Fang Yuan", "Gu Yue Dong Tu"]
+        assert _scene_roster(1, scenes, fallback) == fallback
 
     def test_cutoff_excludes_later_chapters(self, store: Store) -> None:
         stub = StubProvider()

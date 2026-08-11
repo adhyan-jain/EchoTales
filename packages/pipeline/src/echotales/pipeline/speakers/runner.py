@@ -15,6 +15,7 @@ from echotales.core.models import Chapter, Span
 from echotales.core.store import Store
 from echotales.pipeline.ingest.normalize import comparison_key
 from echotales.pipeline.spans import classify_chapter
+from echotales.pipeline.spans.scene import ActiveScene, build_active_scenes
 from echotales.pipeline.speakers.attribution import (
     Attribution,
     attribute_span,
@@ -133,6 +134,31 @@ def attribute_chapter(
     return out
 
 
+def _scene_roster(
+    block_index: int, scenes: list[ActiveScene], fallback_roster: list[str]
+) -> list[str]:
+    """Narrow the tier-4 candidate pool to who's actually in the room.
+
+    `xyz.md` Step 3 asked for a separate scene-constrained LLM pass; per
+    `HANDOFF.md` this instead feeds `spans/scene.py`'s registry into the
+    existing tier 4 (`speakers/contextual.py`) rather than duplicating it --
+    same problem, same call site, only the roster changes. A roster of 2-4
+    active names is a much easier disambiguation than the full chapter cast,
+    and the two solve the same problem the fallback already handles when no
+    scene applies (segment boundaries not covering this chapter, or an empty
+    cast -- e.g. a scene with no `ReferenceMode.PRESENT` mentions yet).
+    """
+    for scene in scenes:
+        if scene.block_from <= block_index <= scene.block_to and scene.active_selves:
+            # Preserve chapter-wide frequency order among the scene's cast --
+            # a more-mentioned character is a likelier default guess than one
+            # named once in passing, even within the same scene.
+            active = scene.active_selves
+            ranked = [name for name in fallback_roster if name in active]
+            return ranked or sorted(active)
+    return fallback_roster
+
+
 def _attribute_contextual_pass(
     novel_id: str,
     chapter: Chapter,
@@ -140,6 +166,7 @@ def _attribute_contextual_pass(
     *,
     known_names: frozenset[str],
     roster: list[str],
+    scenes: list[ActiveScene],
     client: object | None,
 ) -> None:
     """Tier 4: give the LLM one shot at what tiers 1-3 left UNRESOLVED.
@@ -182,7 +209,7 @@ def _attribute_contextual_pass(
                 preceding=preceding,
                 following=following,
                 known_names=known_names,
-                roster=roster,
+                roster=_scene_roster(span.block_index, scenes, roster),
                 client=client,
                 novel_id=novel_id,
                 chapter=chapter.number,
@@ -291,8 +318,16 @@ def attribute_novel(
 
         if chapter.number <= llm_chapter_cutoff:
             roster = [name for name, _ in sorted(display_roster.items(), key=lambda kv: -kv[1])]
+            segments = store.get_segments(novel_id, chapter.number)
+            scenes = build_active_scenes(chapter, mentions, segments, spans)
             _attribute_contextual_pass(
-                novel_id, chapter, spans, known_names=known, roster=roster, client=client
+                novel_id,
+                chapter,
+                spans,
+                known_names=known,
+                roster=roster,
+                scenes=scenes,
+                client=client,
             )
 
         # Runs after the ladder, over what the ladder left UNRESOLVED. Never
