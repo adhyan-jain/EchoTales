@@ -239,6 +239,124 @@ def group_mentions(
     return groups, links
 
 
+#: Family terms only, not honorifics like "Master"/"Senior" that are used as
+#: direct address to strangers as often as to kin, and not "brother"/"sister"/
+#: "father"/"mother", which are common polite address to non-relatives in this
+#: genre and would false-bind too often. Precision over recall, same as this
+#: module's own stated rule: a missed kinship link costs one mention Phase 6
+#: may still recover some other way; a wrong one corrupts an entity.
+_KINSHIP_TERMS = frozenset({"uncle", "aunt", "grandfather", "grandmother", "grandpa", "grandma"})
+_KINSHIP_RE = re.compile(r"\b(" + "|".join(_KINSHIP_TERMS) + r")\b", re.IGNORECASE)
+
+#: How far *after* a kinship word a rigid name may start and still count as
+#: naming it, in apposition ("his Uncle Gu Yue Dong Tu's eyebrows"). Small and
+#: one-directional on purpose: "Uncle took in Fang Yuan" has a rigid name only
+#: 20-odd characters after "Uncle" too, close enough for a symmetric distance
+#: check to wrongly bind the whole rest of the chapter's "Uncle" to Fang Yuan
+#: instead of Gu Yue Dong Tu -- caught by actually running this against real
+#: chapter text, not by construction. Apposition is specifically "kinship word,
+#: then the name, with nothing but a space/comma between" -- a name that is
+#: merely the object of the sentence a few words later is not that.
+_KINSHIP_APPOSITION_GAP = 3
+
+
+def find_kinship_terms(text: str, base_offset: int = 0) -> list[tuple[str, int]]:
+    """Locate bare third-person kinship words ("Uncle", "Aunt", ...).
+
+    Unlike a name, these are never proposed as mention candidates upstream --
+    the NER prompt explicitly rejects bare role words ("the guard", "the
+    innkeeper") as descriptions rather than names, and a bare kinship word is
+    the same shape. Found directly from span text instead, the same way
+    `find_pronouns` finds pronouns without needing them pre-detected.
+    """
+    return [(m.group(1), base_offset + m.start()) for m in _KINSHIP_RE.finditer(text)]
+
+
+def resolve_kinship_group(
+    term_offset: int,
+    term_end: int,
+    term_block_index: int,
+    mentions: list[Mention],
+    *,
+    established: Mention | None,
+    block_text: str | None = None,
+    apposition_gap: int = _KINSHIP_APPOSITION_GAP,
+) -> tuple[Mention, float, str] | None:
+    """Bind one kinship word occurrence to who it denotes.
+
+    Three rules, tried in order:
+
+    0. The kinship word is already the leading word of an existing rigid-name
+       mention in the same block ("Uncle Gu Yue Dong Tu" detected whole, not
+       as "Uncle" plus a separate "Gu Yue Dong Tu") -- the honorific-stripping
+       in `ingest/normalize.py` only ever affects *comparison* keys, never
+       what actually gets stored as a mention's surface, so a name detected
+       with its honorific attached is the common case, not the exception.
+       This occurrence is already covered by that mention, so the caller
+       should not mint a second, redundant one for it -- only record the
+       binding.
+    1. A rigid name immediately following this occurrence, in apposition,
+       establishes (or reinforces) the binding -- "his Uncle Gu Yue Dong Tu's
+       eyebrows". Must start right after the word ends (`apposition_gap`),
+       not merely somewhere nearby: "Uncle took in Fang Yuan" has a rigid name
+       a similar distance away but is not naming who "Uncle" is. Also must sit
+       in the *same block*: `Mention.offset` is block-local (see its own
+       docstring), so comparing raw offsets across two different blocks
+       compares two unrelated coordinate origins and can match purely by
+       coincidence -- found by actually running this against a real chapter,
+       where it bound "Uncle" to whatever character's name happened to have a
+       numerically-close offset in a completely different paragraph.
+    2. Otherwise, reuse whichever antecedent this kinship word was last bound
+       to earlier in the chapter. This is the case that actually matters: a
+       kinship word recurring through a scene almost never has a name next to
+       it after the first use ("Uncle heaved a sigh", "Uncle's cold voice
+       emerged") -- the text already said who it is once, same as a pronoun
+       does not repeat its antecedent's name either. Lower confidence than
+       rule 1 since it is one step further from the text.
+
+    The third element of the return tuple is the rule name; the caller uses
+    `"kinship_fused"` specifically to know not to mint a redundant mention for
+    an occurrence rule 0 covers.
+    """
+    fused = [
+        m
+        for m in mentions
+        if m.alias_type is AliasType.RIGID_NAME
+        and m.block_index == term_block_index
+        and m.offset == term_offset
+    ]
+    if fused:
+        return fused[0], 0.9, "kinship_fused"
+    def _is_apposed(m: Mention) -> bool:
+        if not (0 <= m.offset - term_end <= apposition_gap):
+            return False
+        if block_text is None:
+            return True
+        # The gap must be pure whitespace. "uncle, Fang Yuan laughed" has a
+        # rigid name only 2 characters after "uncle" too -- a character-count
+        # gap alone cannot tell that apart from "Uncle Gu Yue Dong Tu"'s
+        # single space, and the comma is exactly the signal that the name
+        # starts a new clause rather than naming who "uncle" is. Found by
+        # actually running this against real chapters, again: "his aunt and
+        # uncle, Fang Yuan laughed" bound every "aunt"/"uncle" in two whole
+        # chapters to the protagonist before this check existed.
+        return block_text[term_end:m.offset].strip() == ""
+
+    apposed = [
+        m
+        for m in mentions
+        if m.alias_type is AliasType.RIGID_NAME
+        and m.block_index == term_block_index
+        and _is_apposed(m)
+    ]
+    if apposed:
+        apposed.sort(key=lambda m: m.offset)
+        return apposed[0], 0.85, "kinship_apposed_name"
+    if established is not None:
+        return established, 0.55, "kinship_sticky_binding"
+    return None
+
+
 def most_informative_label(mentions: list[Mention]) -> str:
     """Pick the surface form that best identifies a group.
 

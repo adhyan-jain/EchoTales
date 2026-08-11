@@ -24,11 +24,13 @@ from echotales.pipeline.anaphora import (
     ViolationKind,
     check_co_presence,
     check_layer_boundary,
+    find_kinship_terms,
     find_pronouns,
     group_mentions,
     infer_gender,
     most_informative_label,
     present_cast,
+    resolve_kinship_group,
     resolve_novel,
     resolve_pronoun,
     validate_groups,
@@ -343,3 +345,170 @@ class TestRunner:
         report = resolve_novel("t", store)
         assert report.chapters == 1
         assert report.groups >= 1
+
+
+# ---------------------------------------------------------------------------
+# Kinship coreference
+# ---------------------------------------------------------------------------
+
+
+class TestFindKinshipTerms:
+    def test_finds_bare_kinship_words(self) -> None:
+        out = find_kinship_terms("his Uncle Gu Yue Dong Tu's eyebrows twisted")
+        assert [t for t, _ in out] == ["Uncle"]
+
+    def test_ignores_non_kinship_role_words(self) -> None:
+        # "Master"/"Senior" deliberately excluded -- used as direct address to
+        # strangers as often as to kin in this genre.
+        assert find_kinship_terms("Master, I have returned") == []
+
+    def test_offset_is_absolute_with_base(self) -> None:
+        out = find_kinship_terms("Uncle spoke.", base_offset=100)
+        assert out == [("Uncle", 100)]
+
+
+class TestResolveKinshipGroup:
+    def test_fused_mention_is_recognised_without_minting(self) -> None:
+        """'Uncle Gu Yue Dong Tu' detected whole, honorific included -- the
+        common case, since normalize.py only strips honorifics for comparison
+        keys, never for what gets stored as a mention's surface."""
+        name = mention("Uncle Gu Yue Dong Tu", offset=10, block_index=0)
+        resolved = resolve_kinship_group(10, 15, 0, [name], established=None)
+        assert resolved is not None
+        antecedent, confidence, rule = resolved
+        assert antecedent.id == name.id
+        assert rule == "kinship_fused"
+
+    def test_apposed_name_establishes_binding(self) -> None:
+        name = mention("Gu Yue Dong Tu", offset=16, block_index=0)
+        # "Uncle" at [10,15), a space, then the name at 16.
+        resolved = resolve_kinship_group(10, 15, 0, [name], established=None)
+        assert resolved is not None
+        antecedent, _, rule = resolved
+        assert antecedent.id == name.id
+        assert rule == "kinship_apposed_name"
+
+    def test_nearby_but_not_apposed_name_is_not_bound(self) -> None:
+        """'Uncle took in Fang Yuan' -- a rigid name sits nearby but is the
+        object of a different clause, not who 'Uncle' is. Regression case:
+        this exact pattern falsely bound the whole rest of a real chapter's
+        'Uncle' occurrences to the wrong character before the apposition-gap
+        fix."""
+        far_name = mention("Fang Yuan", offset=40, block_index=0)
+        resolved = resolve_kinship_group(10, 15, 0, [far_name], established=None)
+        assert resolved is None
+
+    def test_punctuation_gap_is_not_apposition(self) -> None:
+        """'his aunt and uncle, Fang Yuan laughed' -- a rigid name only 2
+        characters after 'uncle' too (character count alone is indistinguishable
+        from 'Uncle Gu Yue Dong Tu's single space), but the comma marks a new
+        clause. Regression case: this exact pattern bound every 'aunt'/'uncle'
+        in two real chapters to the protagonist before the whitespace-only
+        check existed."""
+        text = "thought of his aunt and uncle, Fang Yuan laughed"
+        term_offset = text.index("uncle")
+        term_end = term_offset + len("uncle")
+        name = mention("Fang Yuan", offset=text.index("Fang Yuan"), block_index=0)
+        resolved = resolve_kinship_group(
+            term_offset, term_end, 0, [name], established=None, block_text=text
+        )
+        assert resolved is None
+
+    def test_whitespace_only_gap_is_still_apposition(self) -> None:
+        text = "his Uncle Gu Yue Dong Tu's eyebrows twisted"
+        term_offset = text.index("Uncle")
+        term_end = term_offset + len("Uncle")
+        name = mention("Gu Yue Dong Tu", offset=text.index("Gu Yue Dong Tu"), block_index=0)
+        resolved = resolve_kinship_group(
+            term_offset, term_end, 0, [name], established=None, block_text=text
+        )
+        assert resolved is not None
+        assert resolved[2] == "kinship_apposed_name"
+
+    def test_falls_back_to_sticky_binding(self) -> None:
+        established = mention("Gu Yue Dong Tu", offset=16, block_index=0)
+        resolved = resolve_kinship_group(500, 505, 3, [], established=established)
+        assert resolved is not None
+        antecedent, confidence, rule = resolved
+        assert antecedent.id == established.id
+        assert rule == "kinship_sticky_binding"
+        assert confidence < 0.85  # weaker evidence than an apposed/fused name
+
+    def test_no_established_binding_and_nothing_nearby_stays_unresolved(self) -> None:
+        assert resolve_kinship_group(500, 505, 3, [], established=None) is None
+
+    def test_offset_collision_across_blocks_does_not_false_match(self) -> None:
+        """Mention.offset is block-local (see its own docstring) -- a name at
+        numerically-close offset in a *different* block must not count as
+        apposed just because the raw numbers are close."""
+        other_block_name = mention("Fang Yuan", offset=16, block_index=5)
+        resolved = resolve_kinship_group(10, 15, 0, [other_block_name], established=None)
+        assert resolved is None
+
+
+class TestKinshipEndToEnd:
+    @pytest.fixture
+    def store(self) -> Store:
+        s = Store(":memory:")
+        s.add_novel("t", "T", "x.epub", "generic")
+        text = "As he saw Fang Yuan, his Uncle Gu Yue Dong Tu's eyebrows twisted into a knot."
+        s.add_chapter(
+            Chapter(
+                novel_id="t",
+                number=1.0,
+                title="T",
+                source_href="a.html",
+                blocks=[
+                    Block(index=0, block_type=BlockType.PROSE, text=text),
+                    Block(index=1, block_type=BlockType.PROSE, text="Uncle heaved a sigh."),
+                    Block(
+                        index=2,
+                        block_type=BlockType.PROSE,
+                        text="Uncle's cold voice emerged from the darkness.",
+                    ),
+                ],
+            )
+        )
+        s.add_mentions(
+            [
+                mention("Fang Yuan", text.index("Fang Yuan"), block_index=0),
+                mention(
+                    "Uncle Gu Yue Dong Tu", text.index("Uncle Gu Yue Dong Tu"), block_index=0
+                ),
+            ]
+        )
+        s.conn.commit()
+        return s
+
+    def test_bare_uncle_binds_to_the_established_group_across_blocks(self, store: Store) -> None:
+        resolve_novel("t", store)
+        mentions = store.get_mentions("t", 1.0)
+        uncle_group = next(
+            m.local_group_id for m in mentions if m.text == "Uncle Gu Yue Dong Tu"
+        )
+        bare_uncles = [m for m in mentions if m.text.casefold() == "uncle" and m.block_index != 0]
+        assert len(bare_uncles) == 2
+        assert all(m.local_group_id == uncle_group for m in bare_uncles)
+        # Not double-counted against Fang Yuan's group.
+        fang_yuan_group = next(m.local_group_id for m in mentions if m.text == "Fang Yuan")
+        assert fang_yuan_group != uncle_group
+
+    def test_scene_break_resets_the_sticky_binding(self, store: Store) -> None:
+        """A bare kinship word after a scene break, with no name anywhere in
+        the new scene, must not silently inherit a binding from a scene it is
+        not part of."""
+        chapter = store.get_chapter("t", 1.0)
+        chapter.blocks.insert(
+            1, Block(index=1, block_type=BlockType.NON_DIEGETIC, text="* * *")
+        )
+        for i, b in enumerate(chapter.blocks):
+            b.index = i
+        store.add_chapter(chapter)
+        store.conn.commit()
+
+        resolve_novel("t", store)
+        mentions = store.get_mentions("t", 1.0)
+        # The post-break "Uncle" occurrences must not have been minted at all
+        # (no fused/apposed name, and the sticky binding was cleared).
+        bare_uncles = [m for m in mentions if m.text.casefold() == "uncle" and m.block_index > 1]
+        assert bare_uncles == []
