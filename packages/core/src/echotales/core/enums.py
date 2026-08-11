@@ -16,10 +16,21 @@ class TargetKind(StrEnum):
     Attributes route by kind: appearance/age/attire/voice-timbre belong to a
     PERSONA (the body that gets drawn and voiced); role/status/relationships/
     knowledge belong to a SELF (the continuity of consciousness).
+
+    MOB_GROUP is neither: "a crowd of disciples" is not one continuity of
+    consciousness and never becomes one, so it must never be minted as a
+    `Self` the way an individual character is -- see
+    `spans/scene.py::detect_mobs`, which deliberately never mints a `Mention`
+    or entity row at all, only a scene-scoped descriptor for panel casting.
+    This member exists so a future consumer (voice/persona casting) has a
+    real value to tag a background element with, distinct from an unnamed
+    individual (see `speakers/runner.py::_assign_anonymous_slots`, which is
+    the anonymous-*individual* case and is unrelated to this one).
     """
 
     SELF = "SELF"
     PERSONA = "PERSONA"
+    MOB_GROUP = "MOB_GROUP"
 
 
 class AliasType(StrEnum):
