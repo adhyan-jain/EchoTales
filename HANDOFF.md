@@ -21,17 +21,51 @@ candidate pool from the full chapter cast to whoever `spans/scene.py`'s
 registry says is present in that block's scene, ranked by chapter frequency,
 falling back to the chapter-wide roster outside any scene or when a scene's
 cast is empty — extends `speakers/contextual.py` rather than duplicating it,
-per this file's own prior instruction). All three committed (not yet
-pushed — confirm with the user first), tested against real chapters with
-ollama live (RI ch1-5: tier 4 fired, `CONTEXTUAL_LLM=15`, no errors), not
-just unit tests. **Steps 4-5 of xyz.md are NOT done** — pick up there next:
-Step 4 (persona visual infilling / `get_panel_cast`) is unstarted in the
-codebase regardless of what any other agent has claimed — verify with
-`find`/`grep` before trusting a status report from elsewhere, see the
-cautionary tale in this session's conversation log if you have access to it.
-Step 5 is tests+docs for whichever of 3/4 land — test coverage for Step 3
-landed alongside it (`test_speakers.py::TestContextualTier` scene-roster
-cases); Step 4 still needs its own.
+per this file's own prior instruction). All three tested against real
+chapters with ollama live (RI ch1-5: tier 4 fired, `CONTEXTUAL_LLM=15`, no
+errors), not just unit tests, and all pushed to `origin/master`.
+
+**Step 4 (persona visual infilling) also done, but scoped down from what
+xyz.md asked for — read this before trusting `get_panel_cast`'s output.**
+New `packages/pipeline/src/echotales/pipeline/persona/` (`attire.py` +
+`runner.py`). The 4-tier fallback chain (explicit -> faction -> regional ->
+novel style) is real and tested, but xyz.md's plan to seed faction/location
+`Attribute` rows in SQLite doesn't fit the schema as it exists: `TargetKind`
+(`core/enums.py`) only has `SELF`/`PERSONA`/`MOB_GROUP`, no `FACTION` or
+`LOCATION` — the same gap §10 item 5 already flags. Rather than add schema
+(and a migration, and a seeding stage, none of which xyz.md scoped), the
+faction/regional tables are static per-novel Python dicts in `attire.py`,
+currently seeded only for `reverend-insanity` with two factions and one
+region as a worked example — extend those tables before expecting real
+output on LOTM/ORV. **Bigger caveat: `Persona` still has no runner anywhere
+in this codebase** (true before this session and still true after —
+verified with `grep -rn "class Persona\b" packages/ | wc -l` style checks
+before writing this, not assumed), so tier 1 (explicit persona attire) is
+wired but structurally unreachable: `get_panel_cast` accepts an optional
+`persona_id_by_self` map and will query `Attribute(target_kind=PERSONA)` if
+given one, but nothing in the pipeline ever creates a `Persona` row or that
+mapping. In practice every character today gets tier 2-4 output only
+(faction/regional/style defaults), which is real and useful for a
+background-heavy panel but is not a character reference sheet. `environment`
+is similarly capped at novel-style — no location is ever attached to a
+`NarrativeSegment`, so there's nothing to feed the regional tier from scene
+data automatically; a region has to be passed in by the caller.
+Foreground/background-mob presence itself is real, reusing Step 2's
+`spans/scene.py::build_active_scenes` rather than re-deriving it, with
+background mobs scoped to the exact `block_index` requested (tighter than
+the scene-wide window `active_selves` uses, since a panel is one block/
+paragraph, not a whole scene). Tests: `test_persona.py`, 9 cases covering the
+fallback chain and both the tracked-scene and outside-any-scene paths.
+
+**xyz.md is now fully worked through (Steps 1-4 landed, this paragraph is
+Step 5's doc-update half).** What's not done, in case a future session wants
+to close the remaining gap for real rather than re-scope again: a persona-
+construction stage (mint a `Persona` per prominent `Self`, bind them via
+`SelfPersonaBinding`, extract appearance/attire from narrator description
+the way `speakers/contextual.py` extracts speaker identity) is the actual
+prerequisite for tier 1 output and for `environment` to read real location
+data — everything in `persona/` this session is real plumbing waiting for
+that stage to exist, not a placeholder to throw away.
 
 **New user-reported gap, not yet investigated:** many plain "Fang Yuan"
 mentions in the text apparently aren't being classified as referring to the
