@@ -4,30 +4,47 @@
 re-deriving context. Read this first, then `architecture.md` for the model and
 `details.md` for per-file detail.
 
-**Last updated:** 2026-08-08, after wiring the LLM into layer 1, fixing the
-Phase 6 blockers it exposed, a first (model-drafted, unconfirmed) gold set,
-cross-novel A/B on all three corpus novels, a real reading-order bug in
-`Store` that affected every entity count in this document to an unmeasured
-degree (§4.16), a browsable coref/attribution viewer (static + React, §8a),
-an interactive correction workflow with six correction types -- mention/
-speaker reassignment, entity creation, line merging, flagging, span
-retyping (§4.18), and anonymous voice-slot assignment for unattributed
-dialogue (§4.19).
-**Test status:** 450 passing, 1 failing (`uv run pytest packages/`). The failure
-is `test_segment.py::test_llm_fires_only_on_ambiguous_chapters` and it predates
-this work — the runner counts a call the stub never receives.
+**Last updated:** 2026-08-12. Prior session landed six pipeline root-cause
+fixes, tier-4 cold-start speaker attribution, an entity auto-flag pass, three
+new corrections capabilities, and gold-eval wiring — all detailed in §4.20,
+which this line intentionally does not repeat (see that section, or
+`git log`, for specifics — this block is a pointer, not a log).
 
-**Everything through this point is committed and pushed** — 12 commits on
-`master`, `origin/master` up to date, working tree clean except the
-git-ignored `data/webview-working/` and `data/corrections/` (working state
-for the interactive tool, not source). If picking this up in a fresh
-session: `git log --oneline -12` shows the commit-by-commit breakdown, each
-message describes what it changed and why. **The webview backend and
-frontend may or may not still be running** depending on what happened to
-this machine's processes between sessions -- check with
-`curl -s http://127.0.0.1:8787/api/manifest` and
-`curl -s -o /dev/null -w '%{http_code}' http://localhost:4173/`before
-assuming either; restart instructions are in §8a.
+**This session (in progress, working from `xyz.md` in repo root — a 5-step
+plan another agent wrote):** implemented Step 1 (kinship coreference: "Uncle"
+now resolves to the character it was established to refer to earlier in the
+scene — `anaphora/local.py`/`runner.py`) and Step 2 (active scene participant
+tracking + mob-phrase detection, no entity minted for crowds — new
+`spans/scene.py`, new `TargetKind.MOB_GROUP`). Both committed, pushed,
+tested against real chapters, not just unit tests. **Steps 3-5 of xyz.md are
+NOT done** — pick up there next: Step 3 should *extend* the existing
+`speakers/contextual.py` tier-4 attribution with the new scene registry
+rather than duplicate it (they solve the same problem); Step 4 (persona
+visual infilling / `get_panel_cast`) is unstarted in the codebase regardless
+of what any other agent has claimed — verify with `find`/`grep` before
+trusting a status report from elsewhere, see the cautionary tale in this
+session's conversation log if you have access to it.
+
+**New user-reported gap, not yet investigated:** many plain "Fang Yuan"
+mentions in the text apparently aren't being classified as referring to the
+character — reported at the very end of this session, no root cause found
+yet. Worth an early look next session; likely a mentions/NER or resolve-side
+issue given the phrasing, not a display bug.
+
+**Uncommitted, not mine:** `resolve/score.py` has `DEFAULT_BIAS` changed
+`-4.0 → -2.5` by a different concurrent agent (touches §4.1's LINK-threshold
+blocker) — check its status before building on or discarding it.
+`data/corrections/reverend-insanity.jsonl` has live in-progress corrections
+from a separate agent working chapters 1-100 in the webview — do not
+overwrite.
+
+**Test status:** ~470 passing, 1 pre-existing failing
+(`test_segment.py::test_llm_fires_only_on_ambiguous_chapters`, unrelated to
+any of this — the runner counts a call the stub never receives).
+
+**Git:** everything from this session is committed and pushed to
+`origin/master` (`git log --oneline -10` shows the breakdown). Working tree
+otherwise has only the two uncommitted files above, left alone deliberately.
 
 ---
 
