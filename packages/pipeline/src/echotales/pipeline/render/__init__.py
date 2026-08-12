@@ -8,7 +8,8 @@ camera pans/zooms on the still panel or cuts to a motion clip. `timeline.py`
 turns that decision list into real start/end timestamps by reading the
 already-rendered voice-line WAVs (`voice/runner.py`'s `manifest.jsonl`).
 `compose.py` composites the result into one mp4 per chapter. `runner.py`
-lands next -- see this module's docstring grow as it does.
+(`render_videos`) is the orchestrator that ties all of it together against
+whatever `panels.py` and `voice/runner.py` have already produced on disk.
 """
 
 from __future__ import annotations
@@ -29,6 +30,7 @@ from echotales.pipeline.render.panels import (
     get_engine as get_panel_engine,
     render_panels,
 )
+from echotales.pipeline.render.runner import VideoReport, render_videos
 from echotales.pipeline.render.timeline import TimedShot, build_timeline
 
 __all__ = [
@@ -39,6 +41,7 @@ __all__ = [
     "PanelReport",
     "ShotPlan",
     "TimedShot",
+    "VideoReport",
     "build_motion_library",
     "build_shot_plan",
     "build_timeline",
@@ -48,4 +51,5 @@ __all__ = [
     "load_motion_library",
     "match_tag",
     "render_panels",
+    "render_videos",
 ]

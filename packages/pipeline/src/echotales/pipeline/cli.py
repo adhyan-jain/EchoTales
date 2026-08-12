@@ -100,6 +100,39 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_voice.add_argument("--seed", type=int, default=20260812)
 
+    p_render = sub.add_parser(
+        "render",
+        help="Phase 9: render panel images, build the motion-clip library, "
+        "and composite per-chapter videos",
+    )
+    p_render.add_argument("--novel", required=True)
+    p_render.add_argument("--chapters", help="range, e.g. 1-5; default: all")
+    p_render.add_argument("--panel-dir", default="data/panels")
+    p_render.add_argument("--motion-dir", default="data/motion")
+    p_render.add_argument(
+        "--voice-dir", default="data/audio", help="must already hold `echotales voice`'s output"
+    )
+    p_render.add_argument("--out", default="data/video")
+    p_render.add_argument(
+        "--image-engine", default="stub", choices=["stub", "sdxl"],
+        help="stub writes solid-colour placeholder panels; sdxl needs a GPU",
+    )
+    p_render.add_argument(
+        "--motion-engine", default="stub", choices=["stub", "svd"],
+        help="stub writes placeholder frame sequences; svd needs a GPU",
+    )
+    p_render.add_argument(
+        "--compose-engine", default="stub", choices=["stub", "ffmpeg"],
+        help="stub concatenates real audio only (no video, no ffmpeg needed); "
+        "ffmpeg produces the actual mp4s",
+    )
+    p_render.add_argument("--width", type=int, default=1024)
+    p_render.add_argument("--height", type=int, default=1024)
+    p_render.add_argument("--seed", type=int, default=20260812)
+    p_render.add_argument("--skip-panels", action="store_true")
+    p_render.add_argument("--skip-motion", action="store_true")
+    p_render.add_argument("--skip-compose", action="store_true")
+
     p_export = sub.add_parser("export", help="emit the annotation dataset")
     p_export.add_argument("--novel", required=True)
     p_export.add_argument("--out", default="data/gold")

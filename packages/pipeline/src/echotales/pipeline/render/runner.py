@@ -1,0 +1,126 @@
+"""Phase 9: assemble a finished per-chapter video from what phases 7-8
+already produced (xyz.md Step 4, video revision -- the orchestrator that
+ties `panels.py`, `motion.py`, `director.py`, `timeline.py` and
+`compose.py` together).
+
+Reads two manifests that must already exist on disk -- `panels.py`'s
+(`render_panels`) and `voice/runner.py`'s (`render_novel`) -- rather than
+regenerating either, because both are expensive (a GPU image render, a GPU
+TTS synthesis) and this stage's whole job is arranging already-paid-for
+assets against each other, never re-paying for them.
+"""
+
+from __future__ import annotations
+
+import json
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
+
+from echotales.core.store import Store
+from echotales.pipeline.render.compose import ComposeEngine, get_engine
+from echotales.pipeline.render.director import build_shot_plan
+from echotales.pipeline.render.motion import load_motion_library
+from echotales.pipeline.render.panels import PanelImage
+from echotales.pipeline.render.timeline import build_timeline
+
+
+@dataclass(slots=True)
+class _AudioLine:
+    """Just enough of `voice/runner.py::AudioLine` to build a timeline --
+    reconstructed from JSON by field name, so extra manifest columns are
+    ignored rather than rejected."""
+
+    chapter: float
+    block_index: int
+    audio_path: str = ""
+
+    @classmethod
+    def from_json(cls, raw: dict) -> "_AudioLine":
+        return cls(
+            chapter=raw["chapter"],
+            block_index=raw["block_index"],
+            audio_path=raw.get("audio_path", ""),
+        )
+
+
+@dataclass(slots=True)
+class VideoReport:
+    novel_id: str
+    chapters_rendered: int = 0
+    chapters_skipped_no_audio: int = 0
+    engine: str = "stub"
+
+    def summary(self) -> str:
+        return (
+            f"{self.novel_id}: {self.chapters_rendered} chapter videos ({self.engine}); "
+            f"{self.chapters_skipped_no_audio} skipped (no rendered audio)"
+        )
+
+
+def _read_jsonl(path: Path) -> list[dict]:
+    if not path.exists():
+        return []
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
+
+
+def render_videos(
+    novel_id: str,
+    store: Store,
+    *,
+    panel_dir: str | Path = "data/panels",
+    motion_dir: str | Path = "data/motion",
+    voice_dir: str | Path = "data/audio",
+    out_dir: str | Path = "data/video",
+    engine: ComposeEngine | None = None,
+    chapters: list[float] | None = None,
+    clip_gap_blocks: int = 6,
+) -> VideoReport:
+    """Composite one mp4 per chapter that has both rendered panels and
+    rendered audio.
+
+    A chapter present in the panel manifest but absent from the voice
+    manifest (voice rendering hasn't reached it yet, in a partial run) is
+    skipped and counted, not treated as an error -- the two upstream stages
+    are allowed to run at different paces.
+    """
+    engine = engine or get_engine("stub")
+    report = VideoReport(novel_id=novel_id, engine=engine.name)
+    out_dir = Path(out_dir) / novel_id
+
+    panels = [PanelImage(**raw) for raw in _read_jsonl(Path(panel_dir) / novel_id / "manifest.jsonl")]
+    audio_lines = [_AudioLine.from_json(raw) for raw in _read_jsonl(Path(voice_dir) / novel_id / "manifest.jsonl")]
+    motion_library = load_motion_library(novel_id, motion_dir)
+
+    panels_by_chapter: dict[float, dict[int, PanelImage]] = {}
+    for panel in panels:
+        panels_by_chapter.setdefault(panel.chapter, {})[panel.block_index] = panel
+
+    audio_by_chapter: dict[float, list[_AudioLine]] = {}
+    for line in audio_lines:
+        audio_by_chapter.setdefault(line.chapter, []).append(line)
+
+    wanted = chapters if chapters is not None else sorted(panels_by_chapter)
+
+    for chapter_number in wanted:
+        chapter_audio = audio_by_chapter.get(chapter_number)
+        panel_images = panels_by_chapter.get(chapter_number)
+        if not chapter_audio or not panel_images:
+            report.chapters_skipped_no_audio += 1
+            continue
+
+        chapter_spans = store.get_spans(novel_id, chapter_number)
+        shots = build_shot_plan(
+            chapter_number, chapter_spans, panel_images, motion_library,
+            clip_gap_blocks=clip_gap_blocks,
+        )
+        timeline = build_timeline(chapter_number, chapter_audio, shots)
+        if not timeline:
+            report.chapters_skipped_no_audio += 1
+            continue
+
+        audio_paths = [Path(line.audio_path) for line in chapter_audio if line.audio_path]
+        out_path = out_dir / f"ch{chapter_number:g}.mp4"
+        engine.render(timeline, audio_paths, out_path)
+        report.chapters_rendered += 1
+
+    return report

@@ -445,9 +445,72 @@ def cmd_voice(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_render(args: argparse.Namespace) -> int:
+    """Phase 9: panel images, the motion-clip library, and per-chapter video.
+
+    Three sub-stages run in dependency order, each individually skippable
+    (`--skip-panels`/`--skip-motion`/`--skip-compose`) since they are
+    independently expensive and a rerun should not have to redo all three
+    just to pick up a change in one -- mirrors `render_panels`'s own
+    on-disk caching for the same reason.
+    """
+    from echotales.pipeline.render import (
+        build_motion_library,
+        get_compose_engine,
+        get_motion_engine,
+        get_panel_engine,
+        render_panels,
+        render_videos,
+    )
+
+    store = _open_store(args)
+    wanted = None
+    if selected := _chapter_range(args.chapters):
+        wanted = [n for n in store.chapter_numbers(args.novel) if n in selected]
+
+    if not args.skip_panels:
+        report = render_panels(
+            args.novel,
+            store,
+            out_dir=args.panel_dir,
+            engine=get_panel_engine(args.image_engine),
+            chapters=wanted,
+            seed=args.seed,
+            width=args.width,
+            height=args.height,
+        )
+        print(report.summary())
+
+    if not args.skip_motion:
+        report = build_motion_library(
+            args.novel,
+            out_dir=args.motion_dir,
+            engine=get_motion_engine(args.motion_engine),
+        )
+        print(report.summary())
+
+    if not args.skip_compose:
+        report = render_videos(
+            args.novel,
+            store,
+            panel_dir=args.panel_dir,
+            motion_dir=args.motion_dir,
+            voice_dir=args.voice_dir,
+            out_dir=args.out,
+            engine=get_compose_engine(args.compose_engine),
+            chapters=wanted,
+        )
+        print(report.summary())
+        print(f"\nvideos written under: {Path(args.out) / args.novel}")
+
+    store.close()
+    return 0
+
+
 _DISPATCH = {
     "run": cmd_run,
     "voice": cmd_voice,
+    "render": cmd_render,
     "review": cmd_review,
     "ingest": cmd_ingest,
     "resolve": cmd_resolve,
