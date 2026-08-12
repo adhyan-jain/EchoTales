@@ -306,7 +306,63 @@ overhead. Against 600 chapters / 65,296 spans:
 
 ## 4. Open defects — highest priority first
 
-### 4.1 The scorer cannot reach LINK *(blocker — root cause found)*
+### 4.1b Gold confirmed, gate calibrated — and the answer is "the features are too weak" *(2026-08-12)*
+
+The owner bulk-approved the gold set (§4.12) so calibration could finally
+run. **It ran, and it disproves §4.1's implied fix.** Recorded here because
+the negative result is more useful than the item it replaces.
+
+`eval/calibrate.py` replays resolution against confirmed gold and labels
+every scored (mention, candidate) pair, producing the
+`(probability, is_correct)` input `ConformalGate.calibrate()` always wanted
+and never had. On RI vol 1, 964 scored pairs:
+
+| | n | min | median | p90 | max |
+|---|---:|---:|---:|---:|---:|
+| correct | 95 | 0.169 | 0.217 | 0.291 | 0.349 |
+| incorrect | 869 | 0.049 | 0.061 | 0.161 | 0.334 |
+
+**First finding: a floor in `calibrate()` made calibration a no-op.**
+`link_threshold = max(incorrect[index], 0.5)` sits above the scorer's entire
+observed range (0.049–0.349), so every calibration silently fell back to
+`FALLBACK_LINK_THRESHOLD = 0.80`. That floor was §4.1's mechanism. Removed —
+`ScoringModel.probability` is a logistic over hand-set weights with a large
+negative bias, so its output is a *score*, not a likelihood, and reading 0.5
+as "even odds" is a category error.
+
+**Second finding, and the important one: fixing the threshold does not fix
+the problem.** The scorer separates correct from incorrect only weakly, and
+precision never becomes acceptable:
+
+| threshold | links | precision | recall |
+|---:|---:|---:|---:|
+| 0.181 (best F1) | 139 | 0.662 | 0.968 |
+| 0.220 | 63 | 0.714 | 0.474 |
+| 0.250 | 34 | 0.765 | 0.274 |
+| 0.335 | 3 | 1.000 | 0.032 |
+
+Precision plateaus at **0.66–0.77** across the entire usable range. Applying
+the calibrated gate (alpha=0.05, threshold 0.188) gives 62 entities and
+visibly wrong merges — `Chi Chen`/`Chi Lian`/`Mo Chen`/`Chi Shan`/`Chi She`/
+`Chi Zhong` collapse into one entity, as do `Lord Yao Ji`/`Ruo Nan`/
+`Tie Xue Leng`. Surname-sharing characters are exactly what the scored
+features cannot separate.
+
+**So the pre-filter-only regime is not a workaround, it is the correct
+choice for this feature set**, and §4.1 should be read accordingly: the
+problem is not an unreachable threshold, it is that
+`surface_similarity`/`context_embedding_similarity`/`speech_partner`/
+`temporal_validity` do not carry enough signal to separate two members of
+one clan. **The next move is better features, not a better threshold** —
+and `_ambiguous_tokens` (§4.15) is the shape of what works: a signal that
+knows "Chi" is shared by six people and therefore proves nothing.
+
+Default behaviour is unchanged (82 entities / 821 links): an uncalibrated
+`ConformalGate` still uses the fallback thresholds, and nothing enables a
+calibrated gate automatically. Reproduce with
+`eval/calibrate.py::calibrate_from_gold` against a scratch DB.
+
+### 4.1 The scorer cannot reach LINK *(blocker — root cause found; see §4.1b for the resolution)*
 
 **This is not a tuning problem. It is arithmetic.** `DEFAULT_BIAS = -4.0` and
 `gate.FALLBACK_LINK_THRESHOLD = 0.80` were set independently and are mutually

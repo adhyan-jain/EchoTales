@@ -73,7 +73,22 @@ class ConformalGate:
 
         if incorrect:
             index = min(int(a * len(incorrect)), len(incorrect) - 1)
-            self.link_threshold = max(incorrect[index], 0.5)
+            # No 0.5 floor. `ScoringModel.probability` is a logistic over
+            # hand-set weights with a large negative bias -- its output is a
+            # *score*, not a calibrated likelihood, so reading 0.5 as "even
+            # odds" is a category error. Measured on RI vol 1 against
+            # confirmed gold, the scorer's entire observed range is
+            # 0.049-0.349: a 0.5 floor sits above every value it can produce,
+            # which made calibration a no-op and left `FALLBACK_LINK_THRESHOLD`
+            # (0.80) in force. That is §4.1's blocker, and this floor was the
+            # mechanism.
+            #
+            # The separation itself is real and the reason this is safe:
+            # correct pairs sit at median 0.217 (min 0.169), incorrect at
+            # median 0.061 (p90 0.161). The conformal quantile lands in the
+            # gap between them, which is the whole point of calibrating
+            # rather than picking a number.
+            self.link_threshold = incorrect[index]
         if correct:
             index = min(int(a * len(correct)), len(correct) - 1)
             self.new_threshold = min(correct[index], self.link_threshold - 0.05)
