@@ -167,6 +167,13 @@ def cmd_run(args: argparse.Namespace) -> int:
     # resolved entities, their attributed dialogue, and the NER-derived kind
     # that says which of them are people at all.
     stage("7 personas", lambda: build_personas(novel, store, client=client))
+    # 7b reads the personas 7 just minted and needs a model: appearance is
+    # never stated by an honorific the way age is, so there is no
+    # deterministic path to fall back to (see appearance_extract's docstring).
+    if client is not None and not getattr(args, "skip_appearance", False):
+        from echotales.pipeline.resolve.appearance_extract import extract_appearance
+
+        stage("7b appearance", lambda: extract_appearance(novel, store, client=client))
 
     print(report.render())
     print(f"\ngraph written to: {store.path}")
@@ -223,6 +230,8 @@ def cmd_review(args: argparse.Namespace) -> int:
 
 
 def cmd_query(args: argparse.Namespace) -> int:
+    if args.query_command == "attributes":
+        return _query_attributes(args)
     if args.query_command != "state-of":
         print(f"unknown query: {args.query_command}", file=sys.stderr)
         return 2
@@ -499,6 +508,7 @@ def cmd_render(args: argparse.Namespace) -> int:
             out_dir=args.out,
             engine=get_compose_engine(args.compose_engine),
             chapters=wanted,
+            clips_per_chapter=args.clips_per_chapter,
         )
         print(report.summary())
         print(f"\nvideos written under: {Path(args.out) / args.novel}")
@@ -507,8 +517,111 @@ def cmd_render(args: argparse.Namespace) -> int:
     return 0
 
 
+def _query_attributes(args: argparse.Namespace) -> int:
+    """List an entity's stored attributes.
+
+    Accepts a bare id (`self1`), a fully-qualified one
+    (`reverend-insanity:self1`) or a canonical label, because the id scheme
+    is generated and nobody types it from memory.
+    """
+    store = _open_store(args)
+    kind = TargetKind(args.kind)
+
+    target = args.entity
+    if not store.get_self(target):
+        qualified = f"{args.novel}:{target}"
+        if store.get_self(qualified):
+            target = qualified
+        else:
+            matches = [
+                e
+                for e in store.all_selves(args.novel)
+                if e.canonical_label.casefold() == target.casefold()
+            ]
+            if not matches:
+                print(f"error: no entity {args.entity!r} in {args.novel}", file=sys.stderr)
+                store.close()
+                return 2
+            target = matches[0].id
+
+    entity = store.get_self(target)
+    lookup = f"{target}:body1" if kind is TargetKind.PERSONA else target
+    attrs = store.get_attributes(kind, lookup)
+
+    label = entity.canonical_label if entity else target
+    print(f"{label}  ({target}, {kind.value} {lookup})")
+    if not attrs:
+        print("  no attributes stored")
+        store.close()
+        return 0
+
+    for attr in sorted(attrs, key=lambda a: (a.key, a.learned_at_pos.chapter)):
+        standing = "" if attr.is_standing else "  [retracted]"
+        print(
+            f"  {attr.key:<28} {attr.value}"
+            f"   ({attr.truth_status.value}, ch{attr.learned_at_pos.chapter:g}){standing}"
+        )
+    store.close()
+    return 0
+
+
+def cmd_appearance(args: argparse.Namespace) -> int:
+    """Phase 7b: extract physical appearance into PERSONA attributes."""
+    from echotales.pipeline.resolve.appearance_extract import extract_appearance
+
+    store = _open_store(args)
+    client = _build_client(store)
+    if client is None:
+        print(
+            "error: appearance extraction needs a model backend "
+            "(set ECHOTALES_MODEL_BACKEND=ollama). There is no deterministic "
+            "fallback -- no honorific states hair colour.",
+            file=sys.stderr,
+        )
+        return 2
+
+    wanted = None
+    if selected := _chapter_range(getattr(args, "chapters", None)):
+        wanted = [n for n in store.chapter_numbers(args.novel) if n in selected]
+
+    report = extract_appearance(
+        args.novel,
+        store,
+        client=client,
+        chapters=wanted,
+        max_chapters=args.max_chapters,
+    )
+    print(report.summary())
+    store.close()
+    return 0
+
+
+def cmd_persona(args: argparse.Namespace) -> int:
+    """Persona-level operations; currently reference-sheet generation."""
+    from echotales.pipeline.persona.reference_gen import generate_references
+    from echotales.pipeline.render.panels import get_engine
+
+    store = _open_store(args)
+    report = generate_references(
+        args.novel,
+        store,
+        engine=get_engine(args.engine),
+        out_dir=args.out,
+        top=args.top,
+        include_recurring=not args.principals_only,
+        seed=args.seed,
+    )
+    print(report.summary())
+    for label, path in sorted(report.paths.items()):
+        print(f"  {label:<28} {path}")
+    store.close()
+    return 0
+
+
 _DISPATCH = {
     "run": cmd_run,
+    "appearance": cmd_appearance,
+    "persona": cmd_persona,
     "voice": cmd_voice,
     "render": cmd_render,
     "review": cmd_review,

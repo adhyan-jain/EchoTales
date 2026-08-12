@@ -31,6 +31,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="force the deterministic path even when a model backend is configured",
     )
     p_run.add_argument(
+        "--skip-appearance",
+        action="store_true",
+        help="skip Phase 7b appearance extraction (one model call per prominent "
+        "entity); CI and deterministic runs want this",
+    )
+    p_run.add_argument(
         "--llm-attribution-chapters",
         type=float,
         default=3.0,
@@ -71,6 +77,10 @@ def build_parser() -> argparse.ArgumentParser:
     q_state.add_argument("--observer", default="READER")
     q_state.add_argument("--timeline", default="MAIN_TIMELINE")
     q_state.add_argument("--kind", default="SELF", choices=["SELF", "PERSONA"])
+    q_attrs = q_sub.add_parser("attributes", help="list stored attributes for an entity")
+    q_attrs.add_argument("--novel", required=True)
+    q_attrs.add_argument("--entity", required=True, help="entity id, bare or fully qualified")
+    q_attrs.add_argument("--kind", default="PERSONA", choices=["SELF", "PERSONA"])
 
     p_eval = sub.add_parser("eval", help="run the evaluation harness")
     p_eval.add_argument("--novel", required=True)
@@ -114,8 +124,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_render.add_argument("--out", default="data/video")
     p_render.add_argument(
-        "--image-engine", default="stub", choices=["stub", "sdxl"],
-        help="stub writes solid-colour placeholder panels; sdxl needs a GPU",
+        "--image-engine", default="stub", choices=["stub", "sdxl", "manga"],
+        help="stub writes solid-colour placeholder panels; sdxl and manga need "
+        "a GPU. manga is the one that produces the intended look: an "
+        "anime/manga checkpoint plus IP-Adapter reference conditioning so a "
+        "character keeps their face between panels",
     )
     p_render.add_argument(
         "--motion-engine", default="stub", choices=["stub", "svd"],
@@ -129,9 +142,44 @@ def build_parser() -> argparse.ArgumentParser:
     p_render.add_argument("--width", type=int, default=1024)
     p_render.add_argument("--height", type=int, default=1024)
     p_render.add_argument("--seed", type=int, default=20260812)
+    p_render.add_argument(
+        "--clips-per-chapter", type=int, default=2,
+        help="hard cap on motion-clip cutaways per chapter (default: 2). "
+        "A chapter gets this many or zero, never a clip inserted for its own sake",
+    )
     p_render.add_argument("--skip-panels", action="store_true")
     p_render.add_argument("--skip-motion", action="store_true")
     p_render.add_argument("--skip-compose", action="store_true")
+
+    p_appearance = sub.add_parser(
+        "appearance",
+        help="extract physical appearance per character into PERSONA attributes "
+        "(prerequisite for reference sheets and panel generation)",
+    )
+    p_appearance.add_argument("--novel", required=True)
+    p_appearance.add_argument("--chapters", help="range, e.g. 1-5; default: all")
+    p_appearance.add_argument(
+        "--max-chapters", type=int, default=25,
+        help="how many chapters of evidence to sample per entity (default: 25)",
+    )
+
+    p_persona = sub.add_parser("persona", help="persona-level operations")
+    pe_sub = p_persona.add_subparsers(dest="persona_command", required=True)
+    pe_ref = pe_sub.add_parser(
+        "reference", help="generate one cached reference sheet per prominent character"
+    )
+    pe_ref.add_argument("--novel", required=True)
+    pe_ref.add_argument("--out", default="data/references")
+    pe_ref.add_argument(
+        "--top", type=int, default=None,
+        help="limit to the N most-mentioned eligible characters",
+    )
+    pe_ref.add_argument(
+        "--engine", default="stub", choices=["stub", "sdxl", "manga"],
+        help="manga is the intended backend; stub writes placeholders",
+    )
+    pe_ref.add_argument("--principals-only", action="store_true")
+    pe_ref.add_argument("--seed", type=int, default=20260812)
 
     p_export = sub.add_parser("export", help="emit the annotation dataset")
     p_export.add_argument("--novel", required=True)
