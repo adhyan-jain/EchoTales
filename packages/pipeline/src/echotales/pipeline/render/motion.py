@@ -43,6 +43,11 @@ GENERIC_TAGS: tuple[str, ...] = (
     "wind",
     "flame",
     "impact",
+    # The neutral loop. `director.py` falls back to this when a block earns
+    # a cutaway on impact score but cues no specific tag -- without it, a
+    # high-impact block with no matching keyword would silently get no clip
+    # and the chapter would come up short of its two.
+    "idle",
 )
 
 #: Keyword -> generic tag. Whole-word matched against a block's span text,

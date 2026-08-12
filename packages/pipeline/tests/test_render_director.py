@@ -26,6 +26,10 @@ def _panel(block_index: int) -> PanelImage:
     return PanelImage(chapter=1.0, block_index=block_index, prompt="p", image_path=f"block{block_index}.png")
 
 
+def _clip(tag: str) -> MotionClip:
+    return MotionClip(tag=tag, frames_dir=f"/clips/{tag}", num_frames=24, fps=12)
+
+
 class TestBuildShotPlan:
     def test_dialogue_block_zooms_in(self) -> None:
         spans = [_span(0, SpanType.DIALOGUE, '"Stop!" he said.')]
@@ -48,34 +52,81 @@ class TestBuildShotPlan:
         plans = build_shot_plan(1.0, spans, {}, {})
         assert plans == []
 
-    def test_matching_tag_cuts_to_a_clip(self) -> None:
-        spans = [_span(0, SpanType.NARRATION_ACTION, "Their swords clashed violently.")]
-        library = {"clash": MotionClip(tag="clash", frames_dir="/clips/clash", num_frames=24, fps=12)}
-        plans = build_shot_plan(1.0, spans, {0: _panel(0)}, library)
+    def test_high_impact_block_cuts_to_a_matching_clip(self) -> None:
+        """A combat verb (+3) plus a long block (+2) clears MIN_IMPACT_SCORE."""
+        spans = [_span(0, SpanType.NARRATION_ACTION, "Their swords clashed as he struck.")]
+        library = {"clash": _clip("clash")}
+        plans = build_shot_plan(1.0, spans, {0: _panel(0)}, library, durations={0: 9.0})
         assert plans[0].kind == "clip"
         assert plans[0].tag == "clash"
         assert plans[0].asset_path == "/clips/clash"
 
-    def test_clip_cutaways_respect_the_minimum_gap(self) -> None:
-        """Every block cues the same tag; only the first (and anything past
-        the gap) should actually cut to the clip -- constant cutaways would
-        read as a glitch, not a beat (see `director.py`'s module docstring)."""
+    def test_exactly_two_clips_per_chapter_however_many_blocks_qualify(self) -> None:
+        """The hard cap: ten blocks all cueing combat still yields two
+        cutaways, not ten -- a clip is an accent (`director.py` docstring)."""
         spans = [
-            _span(i, SpanType.NARRATION_ACTION, "Swords clashed again.")
+            _span(i, SpanType.NARRATION_ACTION, "He struck, and the blade shattered.")
+            for i in range(10)
+        ]
+        panels = {i: _panel(i) for i in range(10)}
+        plans = build_shot_plan(
+            1.0, spans, panels, {"clash": _clip("clash"), "impact": _clip("impact")},
+            durations={i: 9.0 for i in range(10)},
+        )
+        assert sum(1 for p in plans if p.kind == "clip") == 2
+
+    def test_selected_clips_are_never_adjacent(self) -> None:
+        """Back-to-back cutaways read as one clip with a seam in it."""
+        spans = [
+            _span(i, SpanType.NARRATION_ACTION, "He struck, and the wall shattered.")
+            for i in range(6)
+        ]
+        panels = {i: _panel(i) for i in range(6)}
+        plans = build_shot_plan(
+            1.0, spans, panels, {"clash": _clip("clash"), "impact": _clip("impact")},
+            durations={i: 9.0 for i in range(6)},
+        )
+        clip_blocks = [p.block_index for p in plans if p.kind == "clip"]
+        assert len(clip_blocks) == 2
+        assert abs(clip_blocks[0] - clip_blocks[1]) > 1
+
+    def test_quiet_chapter_gets_zero_clips(self) -> None:
+        """Two or zero, never a clip inserted for its own sake."""
+        spans = [
+            _span(i, SpanType.NARRATION_ACTION, "He walked to the market and bought rice.")
             for i in range(5)
         ]
         panels = {i: _panel(i) for i in range(5)}
-        library = {"clash": MotionClip(tag="clash", frames_dir="/clips/clash", num_frames=24, fps=12)}
+        plans = build_shot_plan(
+            1.0, spans, panels, {"clash": _clip("clash"), "idle": _clip("idle")},
+            durations={i: 2.0 for i in range(5)},
+        )
+        assert all(p.kind == "pan" for p in plans)
 
-        plans = build_shot_plan(1.0, spans, panels, library, clip_gap_blocks=3)
-        kinds = [p.kind for p in plans]
-        assert kinds[0] == "clip"
-        assert kinds[1] == "pan" and kinds[2] == "pan"
-        assert kinds[3] == "clip"  # 3 blocks after the first cutaway
-        assert kinds[4] == "pan"
+    def test_long_narration_alone_does_not_earn_a_cutaway(self) -> None:
+        """+2 for pacing is below MIN_IMPACT_SCORE on its own: a slow block
+        is not automatically an interesting one."""
+        spans = [_span(0, SpanType.NARRATION_ACTION, "He considered the road ahead.")]
+        plans = build_shot_plan(
+            1.0, spans, {0: _panel(0)}, {"idle": _clip("idle")}, durations={0: 20.0}
+        )
+        assert plans[0].kind == "pan"
+
+    def test_impact_block_with_no_tag_match_falls_back_to_idle(self) -> None:
+        """A revelation earns a cutaway but cues no action tag; the neutral
+        loop exists so the chapter still gets its two."""
+        spans = [
+            _span(0, SpanType.NARRATION_DESCRIPTION,
+                  "It was revealed that his true identity had been hidden all along.")
+        ]
+        plans = build_shot_plan(
+            1.0, spans, {0: _panel(0)}, {"idle": _clip("idle")}, durations={0: 9.0}
+        )
+        assert plans[0].kind == "clip"
+        assert plans[0].tag == "idle"
 
     def test_no_tag_match_stays_a_pan_even_with_a_library(self) -> None:
         spans = [_span(0, SpanType.NARRATION_ACTION, "He walked to the market.")]
-        library = {"clash": MotionClip(tag="clash", frames_dir="/clips/clash", num_frames=24, fps=12)}
+        library = {"clash": _clip("clash")}
         plans = build_shot_plan(1.0, spans, {0: _panel(0)}, library)
         assert plans[0].kind == "pan"

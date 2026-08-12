@@ -21,7 +21,7 @@ from echotales.pipeline.render.compose import ComposeEngine, get_engine
 from echotales.pipeline.render.director import build_shot_plan
 from echotales.pipeline.render.motion import load_motion_library
 from echotales.pipeline.render.panels import PanelImage
-from echotales.pipeline.render.timeline import build_timeline
+from echotales.pipeline.render.timeline import build_timeline, read_wav_duration
 
 
 @dataclass(slots=True)
@@ -73,7 +73,7 @@ def render_videos(
     out_dir: str | Path = "data/video",
     engine: ComposeEngine | None = None,
     chapters: list[float] | None = None,
-    clip_gap_blocks: int = 6,
+    clips_per_chapter: int = 2,
 ) -> VideoReport:
     """Composite one mp4 per chapter that has both rendered panels and
     rendered audio.
@@ -109,9 +109,23 @@ def render_videos(
             continue
 
         chapter_spans = store.get_spans(novel_id, chapter_number)
+        # Per-block audio length, so the director's pacing signal (a long
+        # block goes stale under Ken Burns) sees real durations rather than
+        # falling back to content cues alone.
+        durations: dict[int, float] = {}
+        for line in chapter_audio:
+            if line.audio_path:
+                durations[line.block_index] = durations.get(
+                    line.block_index, 0.0
+                ) + read_wav_duration(Path(line.audio_path))
+
         shots = build_shot_plan(
-            chapter_number, chapter_spans, panel_images, motion_library,
-            clip_gap_blocks=clip_gap_blocks,
+            chapter_number,
+            chapter_spans,
+            panel_images,
+            motion_library,
+            durations=durations,
+            clips_per_chapter=clips_per_chapter,
         )
         timeline = build_timeline(chapter_number, chapter_audio, shots)
         if not timeline:
