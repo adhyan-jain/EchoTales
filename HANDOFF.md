@@ -1150,6 +1150,48 @@ an ~10-hour download at the observed ~330 KB/s, and `torch`/`chatterbox` are
 not installed. `--engine stub` is the default precisely so nobody mistakes a
 manifest for a rendered audiobook.
 
+### 4.22 Full re-run of all three novels on the v1 pipeline (2026-08-12)
+
+Databases in `data/reruns/` (git-ignored). RI, phases 0-7, warm NER cache:
+
+| Stage | Time | Result |
+|---|---:|---|
+| 0 ingest | 2.8s | 199 ch / 16,360 blocks |
+| 2 segment | 3.4s | 200 segments |
+| 3 mentions | 228.5s | 9,717 mentions |
+| 4 speakers | 73.1s | 2,494/5,194 (48.0%) |
+| 5 anaphora | 4.9s | 967 groups |
+| 6 resolve | 44.6s | 1,066 groups → **120 entities** |
+| 7 personas | 191.1s | **75 personas** |
+| **total** | **548s** | |
+
+**120 entities of which only 75 are people** — §10 item 5's typing is
+excluding 45 locations/organisations from the cast at full scale, which is
+the clearest evidence it does what it was built for. Read the 120 against
+the older documented 82 with care: this is a *fresh* run (new NER, 9,717
+mentions vs 9,568), not a re-resolve, so it is not a controlled comparison.
+
+Phase 8 against that DB, 199 chapters, dry run: **20,449 audible lines,
+75 characters cast, 1,976 character lines / 2,700 anonymous-slot /
+15,773 narrator, and only 253 dialogue lines with no identity (1.2%).**
+
+**Two weaknesses this exposed, both real:**
+
+1. **49 of 75 characters still have `gender=unknown`.** Pronoun inference
+   needs narration around a character's mentions, and minor characters
+   often have none. They currently fall back to an age-matched voice of any
+   gender. Raising this is the single highest-value improvement to audio
+   quality available right now.
+2. **Bucket pressure is severe on a small bank** (`male:adult` = 14
+   characters over 6 voices in the test bank), producing 7 logged
+   collisions. Real VCTK has 110 speakers rather than 30, so this should
+   ease substantially — but it is worth re-reading `casting.txt` after the
+   real bank lands rather than assuming.
+
+Also surfaced: NER returned truncated JSON on chapter 143 (handled, chapter
+skipped with a warning) — pre-existing robustness gap in `chapter_ner.py`,
+not new.
+
 ### 4.10 LLM wiring — layer 1 done, three stages left
 
 **Done:** `commands.py::_build_client` builds one `ModelClient` per run,
