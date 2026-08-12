@@ -45,9 +45,20 @@ DEFAULT_WEIGHTS: dict[str, float] = {
 }
 
 #: Strongly negative so that an uncorroborated pair sits well below the LINK
-#: threshold. The previous -4.0 made it impossible for even a maximal plausible
-#: evidence vector to cross the link threshold (0.80). We set it to -2.5.
-DEFAULT_BIAS = -2.5
+#: threshold. The previous -2.0 left unrelated candidates at p≈0.77, one weak
+#: feature away from an automatic link.
+#:
+#: **Do not "fix" this to reach the LINK threshold without calibrating first.**
+#: An orphaned edit to -2.5 (rationale: "-4.0 made it impossible for even a
+#: maximal evidence vector to cross 0.80") was measured on RI vol 1 and cost
+#: 23 entities to false merges -- `Chi Shan` into `Bai Ning Bing`, `Ren Zu`
+#: into the `Gu Yue` clan, `Qing Shu` into `Dong Tu`, all method=SCORED. The
+#: premise was right and the conclusion wrong: the scorer genuinely cannot
+#: reach 0.80 (§4.1), but the answer is `ConformalGate.calibrate()` against
+#: confirmed gold, not hand-moving one end of an uncalibrated pair until
+#: links appear. Moving it lets the scorer link on *weak* evidence, which is
+#: exactly what §4.1 says the pre-filters exist to avoid.
+DEFAULT_BIAS = -4.0
 
 #: Surface similarity below this contributes nothing. Short romanised names
 #: collide by chance far too often for the raw score to be usable at the low
