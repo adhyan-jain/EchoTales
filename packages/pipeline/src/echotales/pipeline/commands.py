@@ -401,8 +401,53 @@ def cmd_webview_server(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_voice(args: argparse.Namespace) -> int:
+    """Phase 8: cast voices and render the script."""
+    from echotales.pipeline.voice import get_engine, load_vctk, render_novel
+
+    store = _open_store(args)
+    try:
+        bank = load_vctk(args.bank)
+    except FileNotFoundError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        print(
+            "the voice bank is CSTR VCTK 0.92; download and extract it under "
+            f"{args.bank!r} (see HANDOFF §7)",
+            file=sys.stderr,
+        )
+        return 2
+
+    print(bank.bucket_report())
+    if not bank.voices:
+        print("error: voice bank is empty", file=sys.stderr)
+        return 2
+
+    # Filter the novel's real chapter numbers rather than generating a range:
+    # `ChapterRange` is float-valued so split chapters (45.1) fall inside it
+    # naturally, and enumerating integers would silently drop them.
+    wanted = None
+    if selected := _chapter_range(args.chapters):
+        wanted = [n for n in store.chapter_numbers(args.novel) if n in selected]
+
+    report = render_novel(
+        args.novel,
+        store,
+        bank,
+        out_dir=args.out,
+        engine=get_engine(args.engine),
+        chapters=wanted,
+        seed=args.seed,
+        synthesize=not args.dry_run,
+    )
+    print(report.summary())
+    print(f"\nmanifest: {Path(args.out) / args.novel / 'manifest.jsonl'}")
+    store.close()
+    return 0
+
+
 _DISPATCH = {
     "run": cmd_run,
+    "voice": cmd_voice,
     "review": cmd_review,
     "ingest": cmd_ingest,
     "resolve": cmd_resolve,

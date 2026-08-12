@@ -656,6 +656,21 @@ class Store:
                 out.append(entity)
         return out
 
+    def chapter_numbers(self, novel_id: str) -> list[float]:
+        """Chapter numbers in reading order, without loading their blocks.
+
+        `iter_chapters` materialises every block of every chapter, which is
+        wasteful for a caller that only needs to know which chapters exist
+        before fetching spans per chapter.
+        """
+        return [
+            float(r["number"])
+            for r in self.conn.execute(
+                "SELECT number FROM chapter WHERE novel_id=? ORDER BY number",
+                (novel_id,),
+            )
+        ]
+
     def mention_count_for(self, novel_id: str, target_id: str) -> int:
         """How many mentions resolved to this entity."""
         row = self.conn.execute(

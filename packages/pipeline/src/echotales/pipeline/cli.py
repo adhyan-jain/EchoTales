@@ -76,6 +76,30 @@ def build_parser() -> argparse.ArgumentParser:
     p_eval.add_argument("--novel", required=True)
     p_eval.add_argument("--report", action="store_true")
 
+    p_voice = sub.add_parser(
+        "voice", help="Phase 8: cast voices and render the script to audio"
+    )
+    p_voice.add_argument("--novel", required=True)
+    p_voice.add_argument(
+        "--bank",
+        default="data/voice",
+        help="extracted VCTK root (default: data/voice)",
+    )
+    p_voice.add_argument("--out", default="data/audio")
+    p_voice.add_argument("--chapters", help="range, e.g. 1-5; default: all")
+    p_voice.add_argument(
+        "--engine",
+        default="stub",
+        choices=["stub", "chatterbox"],
+        help="stub writes silent WAVs of realistic duration; chatterbox needs a GPU",
+    )
+    p_voice.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="write the manifest and casting decisions without synthesising",
+    )
+    p_voice.add_argument("--seed", type=int, default=20260812)
+
     p_export = sub.add_parser("export", help="emit the annotation dataset")
     p_export.add_argument("--novel", required=True)
     p_export.add_argument("--out", default="data/gold")
