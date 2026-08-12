@@ -521,6 +521,11 @@ class GlobalResolver:
     # ---- contradiction sweep -----------------------------------------------
 
     def sweep_contradictions(self, *, window: int = 0) -> int:
+        # A window boundary is exactly the point §4.2 nominates for clearing
+        # the retriever's cached prominence ranking: enough mentions have
+        # accumulated since the last rebuild that the drift it tolerates is
+        # worth discarding.
+        self.retriever.refresh_prominent()
         """Re-check committed links against evidence accumulated since.
 
         The gazetteer compounds wrong decisions as readily as right ones: a bad
