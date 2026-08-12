@@ -32,6 +32,28 @@ class TargetKind(StrEnum):
     PERSONA = "PERSONA"
     MOB_GROUP = "MOB_GROUP"
 
+    #: Non-person entities. Phase 6 mints an entity row for every resolved
+    #: name regardless of what it denotes, because a name is a name; these
+    #: members are what stop a place or a plot item from then *behaving* like
+    #: a character downstream (§10 item 5). Nothing is deleted -- "the Gu Yue
+    #: clan" and "the Spring Autumn Cicada" are real, retrievable entities
+    #: worth resolving, they simply must never be cast a speaking voice or
+    #: drawn as a person. `is_person` is the check consumers should use.
+    LOCATION = "LOCATION"
+    ORGANIZATION = "ORGANIZATION"
+    ITEM = "ITEM"
+
+    @property
+    def is_person(self) -> bool:
+        """Whether facts about appearance, voice and speech make sense here.
+
+        The one question every downstream consumer (voice casting, panel
+        casting, the review cast list) actually needs answered. `MOB_GROUP`
+        is excluded deliberately: a crowd is people, but it is not *a*
+        person, and it has no single voice or face to bind.
+        """
+        return self in (TargetKind.SELF, TargetKind.PERSONA)
+
 
 class AliasType(StrEnum):
     """plans.md §4.1.

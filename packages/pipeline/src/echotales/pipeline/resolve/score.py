@@ -45,9 +45,9 @@ DEFAULT_WEIGHTS: dict[str, float] = {
 }
 
 #: Strongly negative so that an uncorroborated pair sits well below the LINK
-#: threshold. The previous -2.0 left unrelated candidates at p≈0.77, one weak
-#: feature away from an automatic link.
-DEFAULT_BIAS = -4.0
+#: threshold. The previous -4.0 made it impossible for even a maximal plausible
+#: evidence vector to cross the link threshold (0.80). We set it to -2.5.
+DEFAULT_BIAS = -2.5
 
 #: Surface similarity below this contributes nothing. Short romanised names
 #: collide by chance far too often for the raw score to be usable at the low

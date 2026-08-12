@@ -383,6 +383,14 @@ class Store:
         if "entity_label" not in existing:
             self.conn.execute("ALTER TABLE mention ADD COLUMN entity_label TEXT")
 
+        # Nullable rather than DEFAULT 'SELF': a pre-existing row genuinely
+        # has no recorded kind, and reading NULL back as SELF is a decision
+        # `get_self` makes explicitly (and documents) rather than one the
+        # schema makes silently.
+        existing = {row["name"] for row in self.conn.execute("PRAGMA table_info(self_entity)")}
+        if "kind" not in existing:
+            self.conn.execute("ALTER TABLE self_entity ADD COLUMN kind TEXT")
+
     def close(self) -> None:
         self.conn.close()
 
@@ -606,7 +614,7 @@ class Store:
         ch, off = _pos_cols(entity.first_attested_pos)
         self.conn.execute(
             "INSERT OR REPLACE INTO self_entity(id, novel_id, canonical_label, first_chapter,"
-            " first_offset, prominence, notes) VALUES (?,?,?,?,?,?,?)",
+            " first_offset, prominence, notes, kind) VALUES (?,?,?,?,?,?,?,?)",
             (
                 entity.id,
                 entity.novel_id,
@@ -615,6 +623,7 @@ class Store:
                 off,
                 entity.prominence.value,
                 entity.notes,
+                entity.kind.value,
             ),
         )
 
@@ -631,6 +640,11 @@ class Store:
             ),
             prominence=Prominence(r["prominence"]),
             notes=r["notes"],
+            # NULL means the row predates the `kind` column, not that it has
+            # no kind. SELF is the right reading: every entity written before
+            # typing existed was minted as a person by a resolver that could
+            # not express anything else.
+            kind=TargetKind(r["kind"]) if r["kind"] else TargetKind.SELF,
         )
 
     def all_selves(self, novel_id: str) -> list[Self]:

@@ -71,6 +71,10 @@ class ResolveReport:
     contradictions: int = 0
     splits: int = 0
     contradiction_kinds: dict[str, int] = field(default_factory=dict)
+    #: Entities typed as something other than a person (§10 item 5). Counted
+    #: separately from `entities` rather than subtracted from it: they are
+    #: real resolved entities, they just must never be cast a voice.
+    by_kind: dict[str, int] = field(default_factory=dict)
     by_method: dict[str, int] = field(default_factory=dict)
     detector_hits: dict[str, int] = field(default_factory=dict)
     events: int = 0
@@ -84,12 +88,14 @@ class ResolveReport:
         detectors = (
             ", ".join(f"{k}={v}" for k, v in sorted(self.detector_hits.items())) or "none"
         )
+        non_person = ", ".join(f"{k}={v}" for k, v in sorted(self.by_kind.items())) or "none"
         return (
             f"{self.novel_id}: {self.groups:,} groups -> {self.entities:,} entities\n"
             f"  linked={self.linked:,}  created={self.created:,}  "
             f"deferred={self.deferred:,} ({self.defer_rate:.1%})  "
             f"recovered={self.recovered_from_deferral:,}  unresolved={self.unresolved:,}\n"
             f"  deictic-only groups (no entity created): {self.deictic_only:,}\n"
+            f"  non-person entities (not voice-cast): {non_person}\n"
             f"  methods: {methods}\n"
             f"  detectors: {detectors}\n"
             f"  contradictions: {self.contradictions} -> {self.splits} split(s)\n"
@@ -164,7 +170,36 @@ class GlobalResolver:
 
     # ---- entity lifecycle ---------------------------------------------
 
-    def _create_entity(self, mention: Mention, label: str) -> str:
+    #: NER's own label vocabulary -> the entity kind it implies. "character"
+    #: is absent on purpose: it maps to the `TargetKind.SELF` default, and
+    #: listing it would invite a caller to treat this dict as exhaustive.
+    _KIND_BY_LABEL = {
+        "location": TargetKind.LOCATION,
+        "organization": TargetKind.ORGANIZATION,
+        "item": TargetKind.ITEM,
+    }
+
+    def _entity_kind(self, founding_mentions: list[Mention]) -> TargetKind:
+        """Type a new entity from the NER labels its founding mentions carry.
+
+        **Unanimous, not majority**, and identical in spirit to
+        `_maybe_flag_non_character`: any mention NER did call "character" is
+        enough to stay a person. A wrong `SELF` costs a spurious row in the
+        cast list (visible, correctable); a wrong `LOCATION` silently removes
+        a real character from voice casting and panel casting at once, which
+        is both worse and much harder to notice.
+        """
+        labels = [m.entity_label for m in founding_mentions if m.entity_label]
+        if not labels or any(label == "character" for label in labels):
+            return TargetKind.SELF
+        kinds = {self._KIND_BY_LABEL.get(label) for label in labels}
+        if len(kinds) == 1 and (only := kinds.pop()) is not None:
+            return only
+        return TargetKind.SELF
+
+    def _create_entity(
+        self, mention: Mention, label: str, kind: TargetKind = TargetKind.SELF
+    ) -> str:
         self._next_entity += 1
         target_id = f"{self.novel_id}:self{self._next_entity}"
         self.store.add_self(
@@ -173,9 +208,12 @@ class GlobalResolver:
                 novel_id=self.novel_id,
                 canonical_label=label,
                 first_attested_pos=mention.position,
+                kind=kind,
             )
         )
         self.report.created += 1
+        if kind is not TargetKind.SELF:
+            self.report.by_kind[kind.value] = self.report.by_kind.get(kind.value, 0) + 1
         return target_id
 
     def _maybe_flag_non_character(
@@ -360,7 +398,7 @@ class GlobalResolver:
                 rationale="deictic-only group: no naming mention to found an entity on",
             )
 
-        target_id = self._create_entity(head, label)
+        target_id = self._create_entity(head, label, self._entity_kind(mentions))
         self._maybe_flag_non_character(target_id, label, mentions)
         self._apply_link(mentions, target_id, context, ResolutionMethod.SCORED, new=True)
         return ResolutionOutcome(

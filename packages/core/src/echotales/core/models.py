@@ -197,6 +197,16 @@ class Self(BaseModel):
 
     Survives reincarnation, body-swap and disguise. Owns memory, relationships,
     roles and knowledge state -- never appearance.
+
+    **`kind` is the exception to that description, and it is deliberate.**
+    Phase 6 resolves every recurring *name* into a row here, and not every
+    name denotes a person -- "the Gu Yue clan" and "the Spring Autumn Cicada"
+    are real, retrievable, worth-resolving entities that are not continuities
+    of consciousness. Deleting them was tried and over-deleted real content
+    (see `mentions/runner.py::rejected`), so instead they are kept and
+    *typed*, and `kind.is_person` is what stops them being cast a voice or
+    drawn as a character. A row whose `kind` is not `SELF` is an entity that
+    happens to live in this table, not a claim that a place has a mind.
     """
 
     id: str
@@ -205,6 +215,7 @@ class Self(BaseModel):
     first_attested_pos: DiscoursePosition
     prominence: Prominence = Prominence.INCIDENTAL
     notes: str = ""
+    kind: TargetKind = TargetKind.SELF
 
 
 class Persona(BaseModel):
