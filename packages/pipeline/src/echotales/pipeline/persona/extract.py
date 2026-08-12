@@ -40,7 +40,17 @@ _MAX_NARRATION = 6
 class CharacterProfileResponse(BaseModel):
     age_band: str = Field(default="adult", description="child | youth | adult | elder")
     gender: str = Field(default="unknown", description="male | female | unknown")
-    register: str = Field(default="neutral", description="formal | neutral | casual | crude")
+    #: Named `speech_register` because a bare `register` shadows a BaseModel
+    #: attribute in pydantic v2 (it warns, then behaves unpredictably). The
+    #: alias keeps the wire/schema name the model actually sees as "register",
+    #: which is the word the prompt uses.
+    speech_register: str = Field(
+        default="neutral",
+        alias="register",
+        description="formal | neutral | casual | crude",
+    )
+
+    model_config = {"populate_by_name": True}
     openness: float = Field(default=0.5, ge=0.0, le=1.0)
     conscientiousness: float = Field(default=0.5, ge=0.0, le=1.0)
     extraversion: float = Field(default=0.5, ge=0.0, le=1.0)
@@ -109,8 +119,8 @@ def extract_traits(
         out.notes.append(f"llm age_band {value.age_band!r} off-vocabulary, kept {base.age_band!r}")
     if value.gender in GENDERS:
         out.gender = value.gender
-    if value.register in REGISTERS:
-        out.register = value.register
+    if value.speech_register in REGISTERS:
+        out.register = value.speech_register
 
     out.openness = value.openness
     out.conscientiousness = value.conscientiousness
