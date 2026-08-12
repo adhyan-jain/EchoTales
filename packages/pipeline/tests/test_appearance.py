@@ -163,6 +163,15 @@ class TestResponseHandling:
         )
         assert out["distinguishing_features"] == "a scar, one eye"
 
+    def test_prompt_separates_standing_identity_from_transient_state(self) -> None:
+        """Measured on RI ch1 (Fang Yuan's death scene): without this, the
+        extractor returned typical_attire="deep green robes that had been
+        torn to shreds" and features "covered in blood" -- which, baked into
+        a reference sheet, redraws him bloodied for all 199 chapters."""
+        prompt = build_prompt("Fang Yuan", ["He bled."])
+        assert "never 'torn green robes'" in prompt
+        assert "Never injuries, blood" in prompt
+
     def test_prompt_warns_off_describing_bystanders(self) -> None:
         """Real RI ch1 output attributed a neighbour's build to Fang Yuan
         until the prompt said not to."""
@@ -248,6 +257,29 @@ class TestReferenceGeneration:
         )
         assert second.generated == 0
         assert second.reused_cached == 1
+
+    def test_transient_condition_never_reaches_the_reference_sheet(
+        self, tmp_path
+    ) -> None:
+        """The second half of the consistency guarantee: even if the model
+        ignores the prompt and files an injury as identity, it is dropped at
+        the boundary rather than drawn into every later chapter."""
+        from echotales.pipeline.persona.reference_gen import appearance_of
+        from echotales.pipeline.resolve.appearance_extract import extract_appearance
+
+        store = _store(tmp_path)
+        extract_appearance(
+            "t",
+            store,
+            client=_FakeClient(
+                AppearanceResponse(hair_color="black", current_condition="injured")
+            ),
+        )
+        standing = appearance_of(store, "t:self1:body1")
+        assert standing == {"hair_color": "black"}
+        assert "current_condition" in appearance_of(
+            store, "t:self1:body1", standing_only=False
+        )
 
     def test_character_with_no_appearance_gets_no_sheet(self, tmp_path) -> None:
         from echotales.pipeline.persona.reference_gen import generate_references

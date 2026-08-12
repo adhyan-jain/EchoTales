@@ -104,18 +104,35 @@ class ReferenceReport:
         )
 
 
-def appearance_of(store: Store, persona_id: str) -> dict[str, str]:
-    """Standing appearance attributes for a persona, key -> value.
+def appearance_of(
+    store: Store, persona_id: str, *, standing_only: bool = True
+) -> dict[str, str]:
+    """Appearance attributes for a persona, key -> value.
 
     Later attestations win on a repeated key: `appearance_extract` appends
-    rather than overwrites (a character's condition changes; a scar is added
-    later), so the most recent row is the current reading.
+    rather than overwrites (a scar is added later), so the most recent row
+    is the current reading.
+
+    `standing_only` (the default) drops `TRANSIENT_KEYS` -- a character's
+    injuries belong to the scene that caused them, not to their face. This
+    is the second half of the consistency guarantee: the extractor is asked
+    to keep condition out of the identity fields, and this drops it again
+    at the boundary in case the model ignored the instruction. A reference
+    sheet built from a character's worst day would redraw them wounded in
+    every chapter thereafter.
     """
-    from echotales.pipeline.resolve.appearance_extract import APPEARANCE_KEYS
+    from echotales.pipeline.resolve.appearance_extract import (
+        APPEARANCE_KEYS,
+        TRANSIENT_KEYS,
+    )
+
+    allowed = set(APPEARANCE_KEYS)
+    if standing_only:
+        allowed -= set(TRANSIENT_KEYS)
 
     out: dict[str, str] = {}
     for attr in store.get_attributes(TargetKind.PERSONA, persona_id):
-        if attr.key in APPEARANCE_KEYS and attr.is_standing and attr.value:
+        if attr.key in allowed and attr.is_standing and attr.value:
             out[attr.key] = attr.value
     return out
 

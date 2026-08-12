@@ -68,6 +68,33 @@ APPEARANCE_KEYS = (
     "current_condition",
 )
 
+#: Keys describing a character's **standing identity** -- what makes them
+#: recognisable as themselves in any scene. These, and only these, build the
+#: reference sheet that conditions every panel
+#: (`persona/reference_gen.py`).
+STANDING_KEYS = (
+    "hair_color",
+    "hair_style",
+    "eye_color",
+    "skin_tone",
+    "height_build",
+    "distinguishing_features",
+    "typical_attire",
+    "rank_insignia",
+)
+
+#: Keys describing a **moment**, not a person.
+#:
+#: This split is what keeps a character consistent across chapters. Measured
+#: on RI: Fang Yuan's chapter 1 is his death scene, and an unsplit
+#: extraction returned `typical_attire="deep green robes that had been torn
+#: to shreds"` and `distinguishing_features="disheveled hair, covered in
+#: blood"`. Baking that into his reference sheet would have drawn him
+#: bloodied and in rags for all 199 chapters -- the exact failure this
+#: pipeline exists to avoid. The garment is `green robes`; the shredding is
+#: a condition, and conditions belong to the scene that caused them.
+TRANSIENT_KEYS = ("current_condition",)
+
 #: Narration only. Dialogue is what characters *say*, and a character's own
 #: account of how someone looks is a claim, not an observation.
 _DESCRIPTIVE = (SpanType.NARRATION_DESCRIPTION, SpanType.NARRATION_ACTION)
@@ -189,15 +216,31 @@ def gather_appearance_passages(
     appearance is frequently the pronoun sentence right after the naming
     one ("Fang Yuan was in deep green robes... His hair was disheveled").
     """
-    named: list[str] = []
-    unnamed: list[str] = []
     seen: set[str] = set()
     surfaces = _surface_forms(store, novel_id, target_id)
 
     limit = None if allowed_chapters is not None else max_chapters
-    for chapter in store.chapters_for_target(novel_id, target_id, limit=limit):
-        if allowed_chapters is not None and chapter not in allowed_chapters:
-            continue
+    chapters = [
+        c
+        for c in store.chapters_for_target(novel_id, target_id, limit=limit)
+        if allowed_chapters is None or c in allowed_chapters
+    ]
+    if not chapters:
+        return []
+
+    # Spread the budget across chapters instead of filling it from the
+    # earliest one. Measured on RI: Fang Yuan's 40-passage sample came
+    # entirely from chapters 1-3, so he profiled as `deathly pale` /
+    # `injured` / robes `torn to shreds` -- an accurate reading of his
+    # opening death scene and a useless one for every panel afterwards. A
+    # per-chapter cap is what makes "typical appearance" mean typical.
+    per_chapter = max(2, max_passages // len(chapters))
+
+    named: list[str] = []
+    unnamed: list[str] = []
+    overflow: list[str] = []
+
+    for chapter in chapters:
         present_blocks = {
             m.block_index
             for m in store.get_mentions(novel_id, chapter)
@@ -206,6 +249,7 @@ def gather_appearance_passages(
         if not present_blocks:
             continue
 
+        taken = 0
         for span in store.get_spans(novel_id, chapter):
             if span.block_index not in present_blocks:
                 continue
@@ -216,16 +260,20 @@ def gather_appearance_passages(
                 continue
             seen.add(text)
             clipped = text[:_MAX_PASSAGE_CHARS]
-            folded = clipped.casefold()
-            if any(sf in folded for sf in surfaces):
+
+            if taken >= per_chapter:
+                # Past this chapter's share. Kept aside rather than dropped,
+                # to backfill if the novel simply has fewer descriptive
+                # passages than the budget wants.
+                overflow.append(clipped)
+                continue
+            taken += 1
+            if any(sf in clipped.casefold() for sf in surfaces):
                 named.append(clipped)
             else:
                 unnamed.append(clipped)
 
-        if len(named) >= max_passages:
-            return named[:max_passages]
-
-    return (named + unnamed)[:max_passages]
+    return (named + unnamed + overflow)[:max_passages]
 
 
 def _surface_forms(store: Store, novel_id: str, target_id: str) -> set[str]:
@@ -258,6 +306,19 @@ def build_prompt(label: str, passages: list[str]) -> str:
         "  hair_color, hair_style, eye_color, skin_tone, height_build,",
         "  distinguishing_features (list of strings), typical_attire,",
         "  rank_insignia, current_condition (injured/healthy/transformed).",
+        "",
+        # The split that keeps a character recognisable between chapters.
+        # Without it, a character introduced mid-disaster is permanently
+        # drawn mid-disaster -- see TRANSIENT_KEYS.
+        "Separate what is permanently true about this person from what is "
+        "only true in these scenes:",
+        "  - typical_attire is the garment they normally wear, described "
+        "undamaged: 'green robes', never 'torn green robes'.",
+        "  - distinguishing_features are permanent marks only (scars, "
+        "birthmarks, unusual eyes). Never injuries, blood, dirt, sweat, "
+        "tears or dishevelment.",
+        "  - current_condition is where any injury, damage or transformation "
+        "goes.",
         "",
         # These passages are whole narration blocks, so they routinely
         # describe bystanders too. Without this, a neighbour's build gets
