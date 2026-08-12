@@ -50,16 +50,30 @@ GENERIC_TAGS: tuple[str, ...] = (
     "idle",
 )
 
-#: Keyword -> generic tag. Whole-word matched against a block's span text,
-#: same style as `traits.py::_AGE_HONORIFICS`. Longest key wins on overlap
-#: by virtue of `match_tag` checking `GENERIC_KEYWORDS` before polarity.
+#: Keyword stem -> generic tag. Stem-matched against a block's span text
+#: (`attack` catches attacked/attacking), longest stem first so a more
+#: specific cue wins over a shorter one it contains.
+#:
+#: **Kept deliberately in step with `director.py::_COMBAT_VERBS`.** The two
+#: vocabularies answer different questions -- that list decides whether a
+#: moment deserves a cutaway, this one decides *which* clip it cuts to --
+#: but when they drift apart the result is a block that scores high on
+#: violence and then plays the neutral idle loop. Measured on RI ch1: the
+#: two selected blocks were a killing (`kill`) and a wounding (`wound`),
+#: and both fell through to `idle` because this table only knew "sword"
+#: and "clashed". Anything scoring as combat over there needs a landing
+#: spot over here.
 GENERIC_KEYWORDS: dict[str, str] = {
-    "sword": "clash", "blade": "clash", "clashed": "clash", "clang": "clash",
-    "parried": "clash", "strike": "clash",
+    "sword": "clash", "blade": "clash", "clash": "clash", "clang": "clash",
+    "parr": "clash", "strike": "clash", "struck": "clash", "stab": "clash",
+    "slash": "clash", "sever": "clash", "attack": "clash", "duel": "clash",
     "wind": "wind", "gust": "wind", "breeze": "wind", "robe fluttered": "wind",
-    "flame": "flame", "fire": "flame", "burned": "flame", "blazing": "flame",
-    "explosion": "impact", "shattered": "impact", "collided": "impact",
-    "slammed": "impact", "crashed": "impact",
+    "flame": "flame", "fire": "flame", "burn": "flame", "blaz": "flame",
+    "explo": "impact", "shatter": "impact", "collid": "impact",
+    "slam": "impact", "crash": "impact", "smash": "impact", "erupt": "impact",
+    "kill": "impact", "slay": "impact", "slaughter": "impact",
+    "wound": "impact", "blood": "impact", "corpse": "impact",
+    "roar": "impact", "crush": "impact", "pierc": "impact", "blast": "impact",
 }
 
 #: Delivery polarity -> generic tag, the fallback when no keyword hits but
@@ -80,7 +94,10 @@ def match_tag(text: str) -> str | None:
     """
     blob = text.casefold()
     for term in sorted(GENERIC_KEYWORDS, key=len, reverse=True):
-        if re.search(rf"(?<!\w){re.escape(term)}(?!\w)", blob):
+        # Stem-matched, for the same reason `director.py` is: whole-word
+        # matching missed every inflected form ("killed", "attacking") and
+        # left violent blocks cueing nothing.
+        if re.search(rf"(?<!\w){re.escape(term)}\w*", blob):
             return GENERIC_KEYWORDS[term]
 
     markers = extract_delivery_markers(text)
