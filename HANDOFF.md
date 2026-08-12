@@ -10,6 +10,59 @@ new corrections capabilities, and gold-eval wiring — all detailed in §4.20,
 which this line intentionally does not repeat (see that section, or
 `git log`, for specifics — this block is a pointer, not a log).
 
+---
+
+## 0. Read this first — the v1 session (2026-08-12, later)
+
+**The pipeline now runs phases 0-8 and produces audio.** Two new phases
+exist: **Phase 7 personas** (`persona/build.py`) and **Phase 8 voice**
+(`voice/`). `uv run echotales voice --novel X --bank data/voice` casts every
+character to a reference voice and renders the script. §4.21 has the detail.
+
+**Six things landed, each its own commit, all pushed to `origin/master`:**
+
+1. §4.15's ORV half **fixed** — `Kim Dokja`/`Dokja` now resolve to one
+   entity via a corpus-wide ambiguous-token set (`name_containment`).
+2. §4.15's LOTM half **partly fixed** — `detect_identity_continuity` links
+   the ch1 transmigration; the bulk `Klein` alias is a separate,
+   still-open Western-name-prefix case.
+3. §10 item 5 **done** — `TargetKind` gained `LOCATION`/`ORGANIZATION`/
+   `ITEM` and `is_person`; places and factions no longer join the cast.
+4. §10 item 4 **done** — `Persona` finally has a runner.
+5. §4.2 **done** — prominence ranking cached, 53.4 → 48.3 ms/group.
+6. Phase 8 voice built end to end (bank, casting, delivery, TTS).
+
+**⚠ A regression I introduced and then root-caused — read before trusting
+any entity count in this file.** `git add -A` swept an orphaned working-tree
+edit (`DEFAULT_BIAS -4.0 → -2.5`) into commit `d677c60`. Measured on RI vol 1
+it cost **82 → 59 entities and 821 → 636 links**, all to false merges
+(`Chi Shan` into `Bai Ning Bing`, `Ren Zu` into the `Gu Yue` clan). Reverted
+in `6d99788`; 82/821 restored exactly. Three lessons worth keeping:
+
+- **Never `git add -A` with foreign changes in the tree.** Stage by path.
+- **Clear `self_entity` before re-resolving.** `resolve_novel` mints fresh
+  `self1..selfN` ids but leaves older rows behind, so re-resolving into a
+  populated DB gives a meaningless entity count. My first "82 → 59
+  regression" reading was this artifact, not the real bug.
+- **`ScoringModel.bias` is a dataclass field default**, bound at class
+  creation. Monkeypatching `score.DEFAULT_BIAS` at runtime does nothing —
+  two of my A/B runs were silent no-ops because of this.
+
+**The `.env`-less worktree trap:** a `git worktree` has no `.env` and builds
+its own venv. Both were red herrings I chased; the actual bisect that worked
+was checking out each commit in the worktree and running the *same* script.
+
+**"Fang Yuan mentions not classified" (prior session's open report):
+investigated, did not reproduce.** Literal occurrences in ingested text
+(5,185) exactly equal mention count (5,185), all resolving to `self1`, on
+both the canonical DB and the webview copy. User's call: dropped. If it
+resurfaces, get a specific chapter/spelling/UI location first.
+
+**The "other agent" in the previous handoff was never real** — user
+confirmed. The `score.py` edit attributed to it was the orphaned bias change
+above. `data/corrections/reverend-insanity.jsonl` has two unapplied
+`reassign_speaker` entries from the user's own webview session; left alone.
+
 **This session (in progress, working from `xyz.md` in repo root — a 5-step
 plan another agent wrote):** implemented Step 1 (kinship coreference: "Uncle"
 now resolves to the character it was established to refer to earlier in the
@@ -191,8 +244,9 @@ Measured on the real corpus, not projected.
 | 6b Contradiction sweep | `pipeline/resolve/contradiction.py` | **Built, unvalidated** — §4.8 | `split` fires; 2 found on RI vol 1 |
 | 7 Eval harness | `pipeline/eval/` | **Gold exists, unconfirmed; wired into `eval`** — §4.12, §4.20 | B-cubed scorer built (`coref_score.py`); RI gold extended ch1-5 → ch1-60 (3,457 mentions, still 0% confirmed); `echotales eval --novel X` now auto-scores against `data/gold/X.jsonl` when present — no longer a separate manual step |
 | CLI + review | `pipeline/commands.py`, `review.py` | **Working, + script view** — §4.13 | `run` / `review [--script]` / `query` / `export` / `eval` |
+| 7 Personas + traits | `pipeline/persona/` | **Working** — §4.21 | RI vol 1: 82 personas + bindings. Gender resolved for 51% of cast deterministically (91% unknown before pronoun counting) |
+| 8 Voice casting | `pipeline/voice/` | **Working, stub engine only** — §4.21 | Casts every character, writes manifest + casting report. **No real audio yet**: VCTK downloading, `torch`/`chatterbox` not installed |
 | 8 Dataset export | — | **Not started** | JSONL export exists but is machine-only |
-| Persona / TTS | — | **Design only, no code** — §4b | `Persona` model has no appearance/voice fields; nothing constructs one |
 
 `packages/core/` (models, store, `state_of`, interval algebra) is complete and
 well-tested — 74 tests including the full §3 case table.
@@ -980,6 +1034,66 @@ run.
   can actually stop behaving like a character everywhere, not just get a
   review note (§10 item 5).
 
+### 4.21 Phases 7 and 8 — personas, voice casting, TTS (2026-08-12)
+
+**Phase 7 (`persona/build.py`)** mints one `Persona` per character entity,
+binds it, and writes a trait profile as `Attribute` rows under
+`TargetKind.PERSONA`. This closes §10 item 4 and unblocks everything below.
+
+*One persona per self*, so `architecture.md §4`'s table is still aspirational
+below its first row: reincarnation needs a *second* persona, and deciding a
+second body exists is a `resolve/` question Phase 7 sits downstream of. §4.15's
+LOTM case now links the identity but produces one self with one persona, not
+one self with two sequential personas.
+
+**Trait inference has two paths and the deterministic one carries the run.**
+`Task.CHARACTER_PROFILE` fires once per entity above a mention floor (~80
+calls for a 199-chapter novel, not per mention). Below the floor, and with
+`--no-llm`, inference is deterministic — and **pronoun counting is what makes
+that viable**: honorifics alone left **91% of RI vol 1's cast
+gender-unknown**; counting third-person pronouns in narration around each
+character's mentions cut it to **49%**. Pronouns outrank honorifics for
+gender (measured: "Lord Yao Ji" is female, and translated xianxia uses
+"Lord" for both genders), honorifics outrank pronouns for age ("Granny" is
+exact). 6-observation floor, 70% majority, because those passages are
+narration *neighbourhoods* holding other characters' pronouns too.
+
+**Phase 8 (`voice/`)** — bank, casting, delivery, engine, runner. Detail in
+`details.md`; the decisions worth repeating here:
+
+- **Bank is CSTR VCTK 0.92** (110 speakers, CC BY 4.0, ~11 GB), picked for
+  its *hand-recorded* age/gender/accent metadata. Two limits reported rather
+  than hidden: it skews young (few real `elder` voices), and it has **no
+  register metadata**, so register does not partition the bank — it becomes
+  a synthesis parameter instead.
+- **Engine is Chatterbox (MIT), not XTTS-v2** as §4b originally proposed.
+  XTTS is non-commercial-only from a shut-down company and has no emotion
+  control; Chatterbox has an explicit `exaggeration` dial. User confirmed
+  no near-term commercialisation, but MIT costs nothing to prefer.
+  `turbo` variant for the 8 GB budget. **`ollama serve` must not be resident
+  during synthesis** — same non-negotiable as every GPU stage (measured:
+  ollama alone holds 5.0 of 8.0 GB).
+- **Casting colours within buckets**, principals first, age relaxed before
+  gender. Collisions logged, not claimed absent (`architecture.md §8b`).
+- **Non-negotiable #10 is enforced at synthesis**, not just extraction: a
+  `FLAT` marker overrides scene sentiment *and* the speaker's Big Five
+  baseline.
+
+**Found while wiring, and it matters beyond voice:** `Span.speaker_self_id`
+**does not hold a `Self` id despite the name.** The attribution ladder writes
+a *surface form* there ("Fang Yuan", and possessives like "Fang Yuan's") and
+resolution never revisits it. Casting saw zero characters until
+`voice/runner.py::speaker_index()` joined the two on `comparison_key`
+(0 → 26 character lines on RI ch1-3, unattributed dialogue 13 → 3). Anything
+else keying off that column has the same latent bug.
+
+**Status of the voice path, honestly:** the architecture is complete and
+tested (20 tests), and the whole chain runs end to end against a stub engine
+that writes real WAVs. **No real audio has been synthesised yet** — VCTK is
+an ~10-hour download at the observed ~330 KB/s, and `torch`/`chatterbox` are
+not installed. `--engine stub` is the default precisely so nobody mistakes a
+manifest for a rendered audiobook.
+
 ### 4.10 LLM wiring — layer 1 done, three stages left
 
 **Done:** `commands.py::_build_client` builds one `ModelClient` per run,
@@ -1157,6 +1271,19 @@ uv run echotales run --novel reverend-insanity
 # limited range while iterating
 uv run echotales run --novel reverend-insanity --chapters 1-40
 
+# Phase 8: cast voices and render. --dry-run writes the manifest and the
+# casting decisions without synthesising, which is how casting is reviewed
+# before spending GPU time on it. --engine stub (the default) writes real
+# but silent WAVs -- it is for testing the path, never for listening.
+uv run echotales voice --novel reverend-insanity --dry-run
+uv run echotales voice --novel reverend-insanity --engine chatterbox --chapters 1-2
+#   -> data/audio/<novel>/manifest.jsonl   (one row per line, with the
+#      voice, the synthesis parameters, and *why* they were chosen)
+#   -> data/audio/<novel>/casting.txt      (bucket pressure + collisions)
+#
+# STOP `ollama serve` BEFORE synthesising: ollama alone holds 5.0 of 8.0 GB
+# and no stage may share the GPU with another resident model (§3).
+
 # human review: console table + HTML audit + JSONL export
 uv run echotales review --novel reverend-insanity
 #   -> data/review/<novel>-review.html   (open in a browser; per-entity citations)
@@ -1305,6 +1432,9 @@ packages/pipeline/
   speakers/  attribution, runner
   anaphora/  local, coref, validate, runner
   resolve/   retrieve, evidence, score, gate, detectors, wiki, adjudicate, runner
+  spans/scene.py  active scene participants + mob detection (xyz.md Step 2)
+  persona/   traits, extract, build (Phase 7); attire, runner (panel casting)
+  voice/     bank, casting, delivery, engine, runner (Phase 8)
   webview.py builds both viewer targets (§8a) from one shared payload
   webview_server.py  live backend for corrections (§4.18)
   corrections.py     Correction/CorrectionLog/apply_pending (§4.18)
@@ -1318,6 +1448,12 @@ data/
                irreplaceable human review, not a regenerable build artifact.
                Contains no source text, only target_ids -- no copyright
                reason to exclude it either.
+  voice/       CSTR VCTK 0.92, extracted. NOT committed (~11 GB, CC BY 4.0)
+               -- download from datashare.ed.ac.uk, see §4.21.
+  audio/       Phase 8 output: per-chapter WAVs + manifest.jsonl +
+               casting.txt, one directory per novel. Git-ignored,
+               regenerable with `echotales voice`.
+  reruns/      full-pipeline re-run databases, one per novel (§4.22).
   webview-working/  copies of the *.db files above, edited by
                webview-server so a correction's Apply can never touch the
                databases this document's numbers are measured from (§4.18).
@@ -1350,13 +1486,11 @@ webview/     React viewer (git-ignored node_modules/build; §8a, §4.18)
    touched this session.
 3. **Recover the speaker-attribution regression** (§4.9/§4.14). 64.9% → 48.8%
    at full RI volume, and it got worse as the run scaled up, not better.
-4. **Build `Persona`'s runner** (§4b). Currently `Persona` has no fields beyond
-   an id and a label, and nothing in the pipeline ever constructs one — the
-   self/persona split `architecture.md §4` designs around doesn't exist in
-   code yet. Blocks TTS/voice work (§4b) and is the same underlying gap as
-   §4.15's LOTM case: reincarnation/disguise needs two personas on one self,
-   and there is currently nowhere to put the second persona even if resolution
-   correctly identified the split.
+4. ~~**Build `Persona`'s runner**~~ **Done, §4.21** — `persona/build.py`,
+   Phase 7. What remains from the original item: **a second persona per
+   self**. Reincarnation/disguise needs it, and §4.15's LOTM case now links
+   the identity but still yields one persona. That is a `resolve/` change
+   emitting a persona split, not a Phase 7 one.
 5. ~~**Entity typing at the `Mention`/`Self` level, not just the commonness
    filter.**~~ **Partially done, §4.20.** `Mention.entity_label` now carries
    NER's label through to resolve, which auto-flags an entity founded
@@ -1384,6 +1518,21 @@ webview/     React viewer (git-ignored node_modules/build; §8a, §4.18)
    `retainer_of`/similar once it exists, for UI grouping — see the turn-1
    discussion in this session's conversation log for the fuller design
    trade-offs (mob-vs-collective-voice, cold-start slot numbering).
+
+9. **Finish the voice path to real audio** (§4.21). Everything is built and
+   tested against a stub. Three concrete steps, in order:
+   a. Let `data/voice/vctk.zip` finish (~10 h at ~330 KB/s; resumable —
+      re-run the same `curl -C -` if interrupted), then extract it there.
+   b. `uv add torch torchaudio chatterbox-tts` — several GB; do it when the
+      VCTK download is not competing for bandwidth.
+   c. **Stop `ollama serve` first**, then
+      `uv run echotales voice --novel reverend-insanity --engine chatterbox
+      --chapters 1-2` and *listen to it*. Nothing in the test suite can tell
+      you whether a voice suits a character.
+10. **Temporal voice evolution and audio post-processing are unbuilt**
+    (plans.md Phase 9 items 1, 3, 5): `state_of`-keyed voice parameters,
+    the inner-monologue filter effect, and per-setting reverb. Item 3 is the
+    cheapest and most audible of the three.
 
 **How to check your work:** `uv run echotales run --novel <novel>` then
 `uv run echotales review --novel <novel> --script <a-b>`. Report the singleton

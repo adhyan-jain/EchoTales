@@ -63,3 +63,10 @@ build/
 .idea/
 .vscode/
 *.swp
+
+# Phase 8: voice bank (~11 GB corpus) and synthesised audio. Both are
+# regenerable -- the bank by re-downloading VCTK, the audio by re-running
+# `echotales voice` -- and neither belongs in git.
+data/voice/
+data/audio/
+data/reruns/

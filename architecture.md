@@ -109,19 +109,55 @@ A direct consequence: the co-occurrence penalty applies **between personas,
 never between selves**. Two simultaneous mentions is evidence of two distinct
 bodies — which for a clone is not evidence of two distinct characters.
 
-**`Persona` itself has no runner yet** — nothing in the pipeline creates one.
-One practical consequence surfaced before that gap was closed properly:
-unattributed dialogue needs a *distinct voice* far more often than it needs a
-*known identity* (two unnamed guards trading lines is read wrong in one
-voice), but minting a full `Self` for someone who may never be named again
-is exactly the flat-entity-table failure this section exists to avoid on the
-named side. `speakers/runner.py::_assign_anonymous_slots` is the interim
-answer: a locally-scoped id, never a `Self` row, assigned by turn-taking
-alternation and consumed the same way a `Persona` id eventually will be. It
-is not a substitute for building `Persona` — it has no appearance, no
-timbre, no binding, none of what this section defines — only a stand-in for
-the one thing generation needs immediately that identity resolution alone
-cannot provide.
+There is one further, narrower exception to that penalty, and it is worth
+stating because it looks like a bug: an **identity-continuity assertion
+suppresses it outright**. Transmigration necessarily narrates the old name
+and the newly-acquired one in the same paragraph — that paragraph is where
+the acquisition happens — so co-presence's premise ("simultaneously present,
+doing different things") is exactly inverted there. See `§4.15` in HANDOFF
+and `resolve/evidence.py::detect_identity_continuity`.
+
+### Not every entity is a person
+
+Phase 6 resolves every recurring *name* into an entity row, and names denote
+places and objects as readily as people. Deleting the non-people was tried
+and over-deleted real content — "the Gu Yue clan" and "the Spring Autumn
+Cicada" are worth resolving. So `TargetKind` carries `LOCATION`,
+`ORGANIZATION` and `ITEM` alongside `SELF`/`PERSONA`/`MOB_GROUP`, and
+`kind.is_person` is the single check every consumer uses. A typed entity
+still resolves, still accumulates aliases, still answers `state_of` — it
+simply never gets a persona, a voice or a face.
+
+Typing is **unanimous, not majority**: one founding mention NER called
+"character" keeps the entity a person. A wrong `SELF` costs a visible,
+correctable row in the cast list; a wrong `LOCATION` silently removes a real
+character from voice *and* panel casting at once.
+
+**`Persona` now has a runner** (`persona/build.py`, Phase 7). It mints one
+persona per character entity, binds it open-ended from first sighting, and
+writes a trait profile — demographics, register, Big Five — as `Attribute`
+rows under `TargetKind.PERSONA`, which is where this section says appearance
+and timbre belong. Voice casting and panel casting both read them through
+the existing `get_attributes` accessor rather than a side table.
+
+**One persona per self, so far, and the table above is therefore still
+aspirational below its first row.** Every case from reincarnation downward
+needs a *second* persona, and deciding that a second body exists is an
+identity-resolution question Phase 7 sits downstream of — `resolve/` decides
+who is whom. §4.15's LOTM case (Zhou Mingrui acquiring Klein Moretti) is
+exactly this: the identity link now fires, but both names land on one self
+with one persona rather than one self with two sequential personas. Closing
+that is a `resolve/` change that emits a persona split, not a Phase 7 one.
+
+A separate, smaller gap the persona runner does *not* close: unattributed
+dialogue needs a *distinct voice* far more often than it needs a *known
+identity* (two unnamed guards trading lines is read wrong in one voice), but
+minting a full `Self` for someone who may never be named again is the
+flat-entity-table failure this section exists to avoid on the named side.
+`speakers/runner.py::_assign_anonymous_slots` remains the answer there: a
+locally-scoped id, never a `Self` row, assigned by turn-taking alternation.
+Phase 8 consumes it directly, giving each slot a random bank voice of the
+right gender (`voice/runner.py`).
 
 ---
 
@@ -168,9 +204,13 @@ Phase 3  Mention detection      NER -> gazetteer -> LLM sweep
 Phase 4  Speaker attribution    4-tier escalation + delivery markers
 Phase 5  Local anaphora         within one chapter, within one layer
 Phase 6  Global resolution      retrieve -> evidence -> score -> gate   <- the heart
-Phase 7  Event log + state_of   append-only, replayable
-Phase 8  Prominence tiering     principal / recurring / incidental
+Phase 7  Personas + traits      one persona per self, bound; Big Five + demographics
+Phase 8  Voice casting + TTS    bank buckets -> per-character voice -> synthesis
 ```
+
+The event log and `state_of` are not a phase — they are written by every
+phase that makes a decision, and replayable at any point. Prominence tiering
+is computed in Phase 7, where the mention counts it depends on are final.
 
 **Volume-first.** The whole volume is processed before anything is generated.
 That is what makes prominence tiering, complete title-transfer tracking and
@@ -428,6 +468,47 @@ Revised approach:
 - Residual collisions between **non-co-occurring minor characters in the same
   bucket** are accepted and **explicitly logged**.
 - The system does **not** claim global collision-free voice assignment.
+
+**Built** (`voice/casting.py`), with two decisions this section did not
+previously settle:
+
+- **Principals are coloured first.** When a bucket runs short of voices the
+  reuse has to land somewhere; landing it on incidental characters puts it
+  where a listener is least likely to be tracking identity by voice.
+- **Age is relaxed before gender** when a bucket is short. A character
+  sounding a decade off is forgiven far more readily than one sounding like
+  the wrong person entirely. Gender is only dropped when the text never
+  stated it, or the bank has no voice of that gender at any age.
+
+The bank is **CSTR VCTK 0.92** (110 speakers, CC BY 4.0), chosen because
+every speaker ships hand-recorded age/gender/accent metadata — buckets come
+from stated facts rather than a classifier's guess about a voice. Two
+limitations are structural to it and are reported rather than hidden:
+the corpus skews young (genuine `elder` voices are scarce), and it carries
+**no register metadata**, so register does not partition the bank at all —
+it is carried into synthesis as a delivery parameter instead. Inventing a
+register distinction the audio does not contain would be worse than not
+having one.
+
+### Emotion, pacing and non-negotiable #10 at synthesis time
+
+The TTS engine is **Chatterbox** (MIT), not XTTS-v2 as originally scoped:
+XTTS ships under a non-commercial licence from a company that has since shut
+down, and — more importantly here — exposes no emotion control. Chatterbox
+has an explicit `exaggeration` dial plus `cfg_weight` for guidance. The two
+move **together, in opposite directions**, because raising exaggeration also
+speeds speech up and lowering `cfg_weight` is the documented compensation.
+
+`voice/delivery.py` is where **non-negotiable #10 is enforced**, not merely
+where it is described. A `FLAT` marker overrides both the scene's sentiment
+*and* the speaker's Big Five baseline — those being precisely the two
+signals that would otherwise argue for a dramatic read of a character the
+prose has just called expressionless.
+
+Pauses are inserted as **punctuation**, not as a parameter, because that is
+the only lever this class of model reliably honours. Conservatively: prose
+already contains the author's own pauses, and adding to them makes a reading
+sound mannered.
 
 ## 9. Package boundaries
 

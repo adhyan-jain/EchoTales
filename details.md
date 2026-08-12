@@ -882,14 +882,124 @@ singleton rate). Cross-novel: LOTM 730 → 102, ORV 859 → 63 -- same regime
 shift on both, i.e. the fix generalises rather than being overfit to RI's
 xianxia house-prefix convention. Two known-open gaps found by that
 cross-novel check and deliberately not hand-fixed: LOTM ch1 is a
-reincarnation opening (Zhou Mingrui/Klein Moretti/Klein split into three
-entities -- the declaration detector doesn't recognise "memories began
-flooding him" as an identity-continuity assertion) and ORV's Korean
-family-name-first convention drops recall on given-name-alone references
-("Kim Dokja"/"Dokja" -- the >=2-token floor above is doing its job on the
-surname side and costing recall on the given-name side, since a Korean
-given name used alone is usually unambiguous in a small cast the way a
-bare surname is not).
+reincarnation opening and ORV's Korean family-name-first convention. **Both
+are now addressed, one fully and one partly:**
+
+**ORV's `Kim Dokja`/`Dokja` (fixed).** `name_containment` takes an optional
+`ambiguous_tokens` set — name components attested across two or more
+entities, computed per call from the retriever's own profiles
+(`GlobalResolver._ambiguous_tokens`). A single shared *suffix* token is
+accepted as a dropped given name **unless that token is itself ambiguous**,
+which is the lexicon question the >=2-token floor could not express: "Dokja"
+identifies one person, "Wang" identifies a family. Passing `None` (the
+default) keeps the old strictly-2-token behaviour for every other caller.
+Verified by re-resolving `data/llm-orv.db`: both surfaces now share one
+`target_id`, 63 -> 54 entities on that subset.
+
+**LOTM's transmigration (partly fixed).**
+`resolve/evidence.py::detect_identity_continuity` recognises the shape the
+flat lexicon phrases structurally cannot — an *existing* identity acquiring
+a new name, with arbitrary words between the cue terms ("memories *began*
+flooding him"). It feeds the same `declaration_match` pre-filter and
+additionally **suppresses the co-presence blocker**, without which it could
+never fire: the two names are necessarily in one paragraph, because that
+paragraph is where the acquisition is narrated. Three guards, each added in
+response to a measured false positive on real text rather than defensively:
+word-boundary name matching, a 150-character proximity budget, and a
+memory-ownership veto ("his childhood memories came flooding back" is
+recollection, not acquisition). The bare noun "transmigration" is
+deliberately **not** a pattern — measured on LOTM, whose premise it is, it
+fired on three unrelated pairs and merged a country and a faction into the
+protagonist. Across all of LOTM it now fires exactly once, on the ch1
+sentence, and zero times on ORV. Links 4 of 9 `Klein Moretti` mentions into
+Zhou Mingrui's entity; the bulk `Klein` alias remains separate, being a
+Western given-name-*prefix* case the suffix rule does not reach.
+
+### `src/echotales/pipeline/persona/` — Phase 7
+
+Closes the gap where `architecture.md §4`'s self/persona split had no code on
+the persona side at all: nothing constructed a `Persona`, so
+`SelfPersonaBinding` was a dead table and voice/image work had nothing to
+bind to.
+
+**`build.py`** — `build_personas()` mints one persona per *character*
+entity (`kind.is_person`, so §10 item 5's typing excludes places and
+factions), binds it open-ended from first sighting, and writes the trait
+profile as `Attribute` rows under `TargetKind.PERSONA` — where
+`models.Attribute`'s own docstring says appearance/age/voice belong, so
+`get_panel_cast` and voice casting read them through the existing accessor.
+Also computes prominence from final mention counts. `load_trait_profiles()`
+rebuilds profiles from those attributes so casting can run as a separate
+stage against an already-built graph.
+
+**`traits.py`** — the vocabulary voice and image generation share. Age band,
+gender, register, Big Five; `archetype` is `gender:age:register` per `4b`
+(Big Five picks a voice *within* a bucket and shapes delivery, it does not
+partition). Big Five defaults are **0.5, not 0.0** — an uninformative
+profile must sit at the neutral centre, not read as maximally introverted.
+
+The deterministic path is a first-class mode, not a degradation, and
+`gender_from_pronouns` is what makes it usable: honorifics alone left **91%
+of RI vol 1's cast gender-unknown**, and counting third-person pronouns in
+narration around each character's mentions cut that to 49%. **Pronouns
+outrank honorifics for gender specifically** — "Lord Yao Ji" is a female Gu
+Immortal, and translated xianxia uses "Lord"/"Master" for both genders — but
+honorifics keep priority for *age*, where "Granny" is exact and has no
+pronoun equivalent. The ratio carries a 6-observation floor and a 70%
+majority because those passages are narration *neighbourhoods* containing
+other characters' pronouns too.
+
+**`extract.py`** — `Task.CHARACTER_PROFILE`, one call per entity above a
+mention floor, never per mention (~80 calls for a 199-chapter novel). Takes
+the deterministic profile as its base so any field the model declines or
+fluffs keeps a grounded value; off-vocabulary answers are discarded exactly
+as `speakers/contextual.py` discards an off-roster speaker.
+
+**`attire.py` / `runner.py`** — the 4-tier visual fallback (explicit →
+faction → regional → novel style) and `get_panel_cast`. Faction/regional
+tables are static per-novel dicts because `TargetKind` has no member a
+faction could attach an `Attribute` to.
+
+### `src/echotales/pipeline/voice/` — Phase 8
+
+**`bank.py`** — CSTR VCTK 0.92 (110 speakers, CC BY 4.0). Parses
+`speaker-info.txt` for stated age/gender/accent, so buckets rest on recorded
+facts rather than a classifier's guess. Picks a reference clip per speaker,
+preferring `mic1` (head-mounted) over `mic2` (distant, more room tone —
+which a 5-second cloning window would bake into every line the character
+ever speaks) and skipping the opening utterances, which are the same
+elicitation paragraph for every speaker and often start with a breath.
+`nearest_bucket` relaxes **age before gender**. `pick_mob_voice` takes an
+explicit `Random` so re-rendering a chapter cannot silently recast extras.
+
+**`casting.py`** — within-bucket graph colouring per `architecture.md §8b`,
+principals first. Collisions are recorded in the report, not avoided at all
+costs, because §8b explicitly declines to claim global collision-freedom.
+
+**`delivery.py`** — context → Chatterbox `exaggeration`/`cfg_weight`, moved
+together in opposite directions (raising intensity speeds speech; lowering
+guidance is the documented compensation). **Non-negotiable #10 is enforced
+here**: a `FLAT` marker overrides scene sentiment *and* the speaker's Big
+Five baseline. `pace_text` inserts pauses as punctuation only, and only for
+em-dash interruptions and long narration runs.
+
+**`engine.py`** — `TTSEngine` protocol, `StubEngine`, `ChatterboxEngine`;
+same shape as `llm/` for the same reason. Chatterbox over XTTS-v2 (MIT vs
+non-commercial, and it has an emotion dial). The stub writes **real** silent
+WAVs of realistic duration so downstream code that opens and measures them
+is genuinely exercised. An unknown engine name raises rather than falling
+back — a run that quietly produced silence would look successful until
+played.
+
+**`runner.py`** — `render_novel()`. Three speaker categories get three
+treatments: resolved characters get their cast voice, anonymous slots get a
+gender-matched bank voice stable per run, everything else gets the narrator.
+Unresolved *dialogue* is counted separately so the number is visible rather
+than hidden inside plausible-sounding audio. `speaker_index()` exists
+because **`Span.speaker_self_id` does not hold a `Self` id despite the
+name** — the attribution ladder writes a surface form there ("Fang Yuan",
+and possessives) and resolution never revisits it; the join is on
+`comparison_key`.
 
 ### `src/echotales/pipeline/eval/`
 

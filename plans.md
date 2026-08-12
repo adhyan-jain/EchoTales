@@ -526,20 +526,56 @@ Only possible because full volume is processed first. Score every entity on: men
 
 Mark inferred attributes as `truth_status=INFERRED` (not ATTESTED). Later textual evidence overrides.
 
-### Phase 9 — Voice Pipeline
+### Phase 9 — Voice Pipeline *(revised — built, numbered Phase 8 in code)*
+
+**Numbering note:** this document's Phase 8 (prominence tiering) turned out
+to be three lines of arithmetic inside persona building rather than a stage
+of its own, so the code's phases run …6 resolve → 7 personas → 8 voice.
+Where this section and the code disagree on a number, the code is current.
 
 **Cast via archetype scoring + graph coloring.**
 - Per entity: gender, age bracket, narrative role, register, emotional baseline → archetype match
-- Voice bank: 30-50 reference clips covering archetype matrix. Use XTTS or Qwen3-TTS locally.
-- **Graph coloring for collision avoidance:** Build co-occurrence graph from mention data. Greedy coloring ensures no two characters sharing a scene share a voice. Non-co-occurring characters reuse freely.
+- ~~Voice bank: 30-50 reference clips covering archetype matrix. Use XTTS or Qwen3-TTS locally.~~
+  **Revised: CSTR VCTK 0.92, 110 speakers, CC BY 4.0** — chosen because every
+  speaker ships hand-recorded age/gender/accent metadata, so a bucket is built
+  from stated facts rather than a classifier's guess about a voice. **Engine is
+  Chatterbox (MIT), not XTTS**: XTTS is non-commercial-only from a company that
+  has shut down, and exposes no emotion control, which is a hard requirement
+  here. See `architecture.md §8b`.
+- **Register does not partition the bank.** VCTK carries no register metadata,
+  so the archetype is `gender:age` on the bank side and register is applied as
+  a synthesis parameter instead. The alternative was inventing a distinction
+  the audio does not contain.
+- **Graph coloring for collision avoidance:** ~~ensures no two characters sharing a scene share a voice~~
+  **Revised, per `architecture.md §8b`: colouring runs *within* archetype
+  buckets, and collision-free assignment is explicitly not claimed.** The
+  co-occurrence graph over principals in a long cultivation novel is close to
+  complete, so its chromatic number exceeds any archetype-appropriate palette.
+  Residual collisions between non-co-occurring minor characters are accepted
+  and logged. Principals are coloured first so reuse lands on incidental
+  characters.
 - **Temporal voice evolution:** For principal characters with state changes, modify synthesis parameters (pitch, cadence, breathiness) keyed to state_of() at each chapter.
 
-**Per-line rendering:**
-1. Query state_of(speaker, chapter) for current voice parameters
-2. Delivery marker (if present) overrides scene-level sentiment
-3. Inner monologue gets filtered voice effect (whisper/reverb)
-4. Crowd reactions get rotating generic voices
-5. Spatial audio: per-setting reverb impulse (cavern, open field, great hall)
+**Per-line rendering:** *(built: `voice/delivery.py`, `voice/runner.py`)*
+1. ~~Query state_of(speaker, chapter) for current voice parameters~~ **Not
+   built.** Temporal voice evolution needs `state_of` per line and is deferred;
+   parameters currently come from the span and the speaker's standing profile.
+2. Delivery marker (if present) overrides scene-level sentiment — **built, and
+   it overrides the speaker's Big Five baseline too**, since that is the other
+   signal that would argue for a dramatic read of an "expressionless" line.
+3. ~~Inner monologue gets filtered voice effect (whisper/reverb)~~ **Not built**
+   — no post-processing chain yet. Inner monologue currently gets closer,
+   slower synthesis parameters instead, which is not the same thing.
+4. Crowd reactions get rotating generic voices — **built** as anonymous voice
+   slots, random within the correct gender bucket, stable per seed.
+5. ~~Spatial audio: per-setting reverb impulse~~ **Not built.** Needs a
+   location per scene, which the graph does not yet attach.
+
+**Emotion, concretely:** Chatterbox's `exaggeration` (intensity) and
+`cfg_weight` (guidance/pacing) are moved *together in opposite directions* —
+raising exaggeration speeds speech up, and lowering `cfg_weight` is the
+documented compensation. Pauses are inserted as punctuation, the only lever
+this model class reliably honours.
 
 **TTS everything in v1.** Span-type tags preserved so filtering is a config change later. When visual pipeline is partially done, add abstraction layer before TTS to filter text.
 
