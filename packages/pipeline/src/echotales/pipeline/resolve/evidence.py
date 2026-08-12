@@ -28,6 +28,7 @@ Two of the scored five behave distinctively, deliberately:
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 from echotales.core.enums import AliasType
@@ -143,6 +144,143 @@ def detect_declaration(context: str, lexicon: Lexicon | None) -> tuple[float, st
     return 0.0, ""
 
 
+#: Structural identity-continuity assertions, as regexes rather than lexicon
+#: phrases (§4.15's LOTM transmigration case).
+#:
+#: `detect_declaration`'s lexicon phrases are flat substrings, which cannot
+#: express "memories" and "flooding" separated by an arbitrary verb phrase
+#: ("memories *began* flooding him"). They also run in the opposite temporal
+#: direction from this class: "his true name was X" is a *new name revealing
+#: an old identity*, whereas transmigration is an *existing identity
+#: acquiring a new name and backstory*. Same evidential strength, different
+#: shape, so a different matcher -- but deliberately feeding the same
+#: `declaration_match` feature, because HANDOFF §4.15 identifies these as one
+#: class of signal and §4.1 makes the pre-filter the only path to a link.
+#:
+#: Kept structural (no novel-specific vocabulary) so this transfers to a book
+#: whose reincarnation idiom this code has never seen -- the same design call
+#: `normalize.name_containment` makes about house prefixes.
+_CONTINUITY_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
+    (
+        re.compile(r"\bmemor(?:y|ies)\b[^.!?]{0,60}?\b(?:flood|surg|surfac|return|rush|pour|emerg)"),
+        "memories of another identity surfacing",
+    ),  # vetoed by _MEMORIES_ALREADY_OWNED -- see detect_identity_continuity
+    (
+        re.compile(r"\bthis (?:the )?(?:present|current|new) (?:me|body|self)\b"),
+        "present-self identification",
+    ),
+    # Deliberately the *transitive* forms only ("transmigrated into X"), never
+    # the bare noun. Measured on LOTM, whose premise is transmigration: the
+    # bare word appears as ordinary topic vocabulary throughout ("his
+    # transmigration", "a transmigration senior", "transmigrate back") and
+    # fired on three unrelated pairs -- merging a *country* (`Loen Kingdom`)
+    # and a faction (`Beyonders`) into the protagonist. A word that is the
+    # subject matter of the book cannot also be a discriminator within it.
+    (
+        re.compile(r"\b(?:transmigrat|reincarnat)(?:ed|ing)\s+(?:into|as|in)\b"),
+        "transitive transmigration/reincarnation",
+    ),
+    (
+        re.compile(
+            r"\b(?:took over|occupied|inhabit(?:ed|ing)|possess(?:ed|ing)) "
+            r"(?:the |this |another )?body\b"
+        ),
+        "body occupation",
+    ),
+)
+
+
+#: Vetoes the memory pattern above. The semantic difference between
+#: transmigration and ordinary recollection is *who already owns the
+#: memories*: "memories began flooding him" describes memories arriving from
+#: outside the subject, while "his childhood memories came flooding back"
+#: describes memories he always had. A pronoun or a life-stage adjective in
+#: front of "memories" marks the second reading.
+#:
+#: A *name*-possessive is deliberately not vetoed ("Klein Moretti's memories
+#: began flooding him") -- that is the transmigration shape stated even more
+#: explicitly, not a counterexample to it.
+_MEMORIES_ALREADY_OWNED = re.compile(
+    r"\b(?:his|her|their|my|our|your|its|own|childhood|fond|painful|happy|"
+    r"distant|old|past|earlier|previous)\s+(?:\w+\s+)?memor(?:y|ies)\b"
+)
+
+
+#: How far a continuity phrase may sit from *each* of the two names it is
+#: claimed to link. The assertion is a single clause ("Zhou Mingrui ...
+#: memories began flooding him ... Klein Moretti" spans ~120 characters in
+#: the real LOTM text); a name at the far end of the 400-character context
+#: window is simply elsewhere in the paragraph, not part of the claim.
+_CONTINUITY_PROXIMITY = 150
+
+
+def _word_spans(haystack: str, needle: str) -> list[tuple[int, int]]:
+    """Whole-surface occurrences. Both arguments must already be casefolded.
+
+    Word-boundary matched, not `in`: a substring test lets a short surface
+    match inside an unrelated word (a bare "a" is present in "came"), which
+    silently defeats the two-name guard `detect_identity_continuity`'s
+    precision rests on. Same defect class as the gazetteer's `_is_boundary`
+    (§4.4).
+    """
+    return [
+        m.span() for m in re.finditer(rf"(?<!\w){re.escape(needle)}(?!\w)", haystack)
+    ]
+
+
+def detect_identity_continuity(
+    context: str, surface_a: str, surface_b: str
+) -> tuple[float, str]:
+    """Identity continuity across a *name change*, not a name reveal.
+
+    **Both surfaces must appear in the context window**, and that requirement
+    is the whole precision story. "Memories flooded back" is ordinary prose
+    about someone merely remembering something; it only asserts an identity
+    link when two different names are sitting next to it, because that is the
+    only configuration in which there is a link to assert. Without this guard
+    the pattern would FORCE_LINK a mention to whatever retrieval ranked first
+    every time a character recalled their childhood -- and per §4.1 a
+    pre-filter verdict is not outvoteable by other evidence, so a false
+    positive here is unrecoverable rather than merely noisy.
+
+    Returns `(1.0, rationale)` or `(0.0, "")`, matching `detect_declaration`.
+    """
+    if not context or not surface_a or not surface_b:
+        return 0.0, ""
+    lowered = context.casefold()
+    a, b = surface_a.casefold(), surface_b.casefold()
+    # Two *different* names. One name matching itself is a repetition, not a
+    # continuity assertion, and would fire on every ordinary mention.
+    if a == b:
+        return 0.0, ""
+    spans_a, spans_b = _word_spans(lowered, a), _word_spans(lowered, b)
+    if not spans_a or not spans_b:
+        return 0.0, ""
+
+    memories_owned = _MEMORIES_ALREADY_OWNED.search(lowered) is not None
+    for index, (pattern, rationale) in enumerate(_CONTINUITY_PATTERNS):
+        for hit in pattern.finditer(lowered):
+            # Index 0 is the memory pattern, the only one with an ownership
+            # reading to get wrong. Vetoing on *any* owned-memory phrase in
+            # the window (rather than only the matched one) errs toward not
+            # linking, which is the cheaper failure here: over-splitting is
+            # recoverable by a later merge, an unrecoverable FORCE_LINK is
+            # not (§4.1).
+            if index == 0 and memories_owned:
+                continue
+            if _near(hit.span(), spans_a) and _near(hit.span(), spans_b):
+                return 1.0, rationale
+    return 0.0, ""
+
+
+def _near(hit: tuple[int, int], spans: list[tuple[int, int]]) -> bool:
+    """Whether any occurrence in `spans` is within the proximity budget of `hit`."""
+    return any(
+        max(start, hit[0]) - min(end, hit[1]) <= _CONTINUITY_PROXIMITY
+        for start, end in spans
+    )
+
+
 def _audience_scope(
     ctx: EvidenceContext, profile: EntityProfile | None
 ) -> float | None:
@@ -178,7 +316,12 @@ def score_evidence(
     vector = EvidenceVector()
 
     declaration, _ = detect_declaration(ctx.context, ctx.lexicon)
-    vector.declaration_match = declaration
+    # Same feature, different shape and opposite temporal direction -- see
+    # `detect_identity_continuity`. Kept in its own variable because it also
+    # suppresses the co-presence blocker below, which a lexicon declaration
+    # deliberately does *not* do.
+    continuity, _ = detect_identity_continuity(ctx.context, mention.text, candidate.label)
+    vector.declaration_match = max(declaration, continuity)
 
     surface_key = comparison_key(mention.text)
     if profile is not None and surface_key and surface_key in profile.alias_keys:
@@ -244,11 +387,26 @@ def score_evidence(
     # The identity test is on the comparison key, not the raw string. Two
     # spellings of one name — "Fang Yuan" and its hyphenated spelling — are trivially
     # co-present with each other, and a raw `!=` read that as two people.
+    # Also suppressed by an identity-continuity assertion, for the same reason
+    # in a sharper form (§4.15's LOTM transmigration). Two names occupying one
+    # scene is not incidental to transmigration, it *is* transmigration: the
+    # old name and the newly-acquired one are necessarily in the same
+    # paragraph, because that paragraph is where the acquisition is narrated.
+    # Co-presence's premise ("simultaneously present doing different things")
+    # is therefore exactly inverted here, so it must not blocker-veto the
+    # pre-filter it would otherwise pre-empt.
+    #
+    # Deliberately keyed on the *continuity* signal only, not on
+    # `declaration_match` generally: `score.prefilter`'s docstring makes the
+    # blocker-beats-declaration precedence a considered choice ("far more
+    # likely to be a detector error than a genuine identity"), and that
+    # general rule is left standing.
     if (
         candidate.label in ctx.co_present
         and comparison_key(mention.text) != comparison_key(candidate.label)
         and candidate.label not in ctx.concurrent_personas
         and vector.name_containment < NAME_CONTAINMENT_FLOOR
+        and continuity < 1.0
     ):
         vector.co_presence_violation = 1.0
 
