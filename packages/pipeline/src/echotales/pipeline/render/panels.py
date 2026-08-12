@@ -21,15 +21,19 @@ identity processing already applies upstream.
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Protocol
 
-from echotales.core.models import Chapter
+from echotales.core.enums import ReferenceMode, SpanType
+from echotales.core.models import Chapter, Mention, Span
 from echotales.core.store import Store
 from echotales.pipeline.persona.prompt import NEGATIVE_PROMPT, build_image_prompt
 from echotales.pipeline.persona.runner import get_panel_cast
 from echotales.pipeline.render._png import write_solid_png
+
+log = logging.getLogger(__name__)
 
 
 @dataclass(slots=True)
@@ -42,6 +46,16 @@ class PanelImageRequest:
     width: int = 1024
     height: int = 1024
     seed: int = 0
+    #: Reference sheets for the characters in frame
+    #: (`persona/reference_gen.py`), used as IP-Adapter conditioning so the
+    #: same character keeps the same face between panels. Empty means
+    #: prompt-only generation, which every engine must still support --
+    #: incidental characters never get a sheet.
+    reference_images: list[Path] = field(default_factory=list)
+    #: IP-Adapter scale. 0.6-0.7 is the working range: strong enough to
+    #: carry identity, loose enough to let the prompt choose the pose. At
+    #: 1.0 every panel reproduces the reference sheet's neutral front view.
+    reference_weight: float = 0.65
 
 
 class PanelImageEngine(Protocol):
@@ -124,6 +138,107 @@ class SDXLEngine:
         return request.out_path
 
 
+@dataclass(slots=True)
+class MangaDiffusersEngine:
+    """Manga-style panels with IP-Adapter reference conditioning.
+
+    **The checkpoint carries the style, not the prompt.** SDXL base and
+    SD1.5 base both produce photorealistic or semi-realistic output however
+    hard a prompt argues otherwise, so the default here is an anime/manga
+    finetune. If output comes back photorealistic, the checkpoint is wrong
+    and swapping it is the fix -- rewording the prompt is not.
+
+    **IP-Adapter is what makes a character survive between panels.** Each
+    present character's reference sheet (`persona/reference_gen.py`) is fed
+    as image conditioning at `reference_weight`. When no sheet exists -- an
+    incidental character, or a run before `generate_references` -- the call
+    degrades to prompt-only rather than failing: a panel with a
+    less-consistent face is worth having, a crashed render is not. Every
+    such degradation is logged, because silently losing conditioning looks
+    identical to having it.
+
+    Multi-character panels are capped at `max_references`: IP-Adapter
+    blends the images it is given, and past two the blend stops resembling
+    any of them. The rest of the cast stays in the prompt as background
+    figures, which is the same principal/background split
+    `plans.md` Phase 10 specifies for 3+ character panels.
+    """
+
+    name: str = "manga"
+    #: An anime/manga finetune, not a photorealistic base -- see the class
+    #: docstring. Overridable so a locally-downloaded checkpoint can be
+    #: pointed at without a code change.
+    model_id: str = "Meina/MeinaMix_V11"
+    ip_adapter_repo: str = "h94/IP-Adapter"
+    ip_adapter_weight: str = "ip-adapter_sd15.bin"
+    device: str = "cuda"
+    steps: int = 28
+    guidance_scale: float = 7.0
+    max_references: int = 2
+    _pipe: object | None = None
+    _ip_loaded: bool = False
+
+    def _ensure_pipe(self, want_ip: bool) -> object:
+        if self._pipe is None:
+            import torch  # type: ignore[import-not-found]
+            from diffusers import StableDiffusionPipeline  # type: ignore[import-not-found]
+
+            self._pipe = StableDiffusionPipeline.from_pretrained(
+                self.model_id, torch_dtype=torch.float16, safety_checker=None
+            ).to(self.device)
+
+        if want_ip and not self._ip_loaded:
+            try:
+                self._pipe.load_ip_adapter(  # type: ignore[attr-defined]
+                    self.ip_adapter_repo,
+                    subfolder="models",
+                    weight_name=self.ip_adapter_weight,
+                )
+                self._ip_loaded = True
+            except Exception as exc:  # noqa: BLE001 - degrade, do not crash
+                log.warning(
+                    "IP-Adapter unavailable (%s); panels will be prompt-only "
+                    "and character identity will drift between panels",
+                    exc,
+                )
+        return self._pipe
+
+    def generate(self, request: PanelImageRequest) -> Path:
+        import torch  # type: ignore[import-not-found]
+        from diffusers.utils import load_image  # type: ignore[import-not-found]
+
+        refs = [p for p in request.reference_images if Path(p).exists()][
+            : self.max_references
+        ]
+        if request.reference_images and not refs:
+            log.warning(
+                "no reference sheet found on disk for %s; prompt-only fallback",
+                request.out_path.name,
+            )
+
+        pipe = self._ensure_pipe(want_ip=bool(refs))
+        kwargs: dict[str, object] = {}
+        if refs and self._ip_loaded:
+            pipe.set_ip_adapter_scale(request.reference_weight)  # type: ignore[attr-defined]
+            kwargs["ip_adapter_image"] = [load_image(str(p)) for p in refs]
+
+        generator = torch.Generator(device=self.device).manual_seed(request.seed)
+        image = pipe(  # type: ignore[operator]
+            prompt=request.prompt,
+            negative_prompt=request.negative_prompt or None,
+            width=request.width,
+            height=request.height,
+            num_inference_steps=self.steps,
+            guidance_scale=self.guidance_scale,
+            generator=generator,
+            **kwargs,
+        ).images[0]
+
+        request.out_path.parent.mkdir(parents=True, exist_ok=True)
+        image.save(request.out_path)
+        return request.out_path
+
+
 def get_engine(name: str = "stub", **kwargs: object) -> PanelImageEngine:
     """Construct a backend by name.
 
@@ -136,7 +251,11 @@ def get_engine(name: str = "stub", **kwargs: object) -> PanelImageEngine:
         return StubImageEngine(**kwargs)  # type: ignore[arg-type]
     if name == "sdxl":
         return SDXLEngine(**kwargs)  # type: ignore[arg-type]
-    raise ValueError(f"unknown image engine {name!r}; expected 'stub' or 'sdxl'")
+    if name == "manga":
+        return MangaDiffusersEngine(**kwargs)  # type: ignore[arg-type]
+    raise ValueError(
+        f"unknown image engine {name!r}; expected 'stub', 'sdxl' or 'manga'"
+    )
 
 
 @dataclass(slots=True)
@@ -147,6 +266,95 @@ class PanelImage:
     block_index: int
     prompt: str
     image_path: str
+    #: Entity labels whose reference sheet conditioned this panel. Empty
+    #: means prompt-only -- recorded per panel so a drifting face can be
+    #: traced to a missing sheet rather than guessed at.
+    conditioned_on: list[str] = field(default_factory=list)
+
+
+def beat_text(spans: list[Span], block_index: int, fallback: str) -> str:
+    """The composition cue for one block: what the panel should *depict*.
+
+    Narration only. A dialogue block's text is the line being spoken, and a
+    spoken line is a terrible thing to hand a diffusion model -- measured on
+    RI ch1, where using raw block text made the prompt for block 0
+    "Fang Yuan, quietly hand over the Spring Autumn Cicada and I'll give you
+    a quick death!", which describes nothing visible. The words are carried
+    by the audio track; the picture needs the stage direction.
+
+    Falls back to the raw block when it has no narration at all (a pure
+    dialogue exchange), since some cue beats none -- and the cast and style
+    clauses still carry that panel.
+    """
+    narration = [
+        s.text.strip()
+        for s in spans
+        if s.block_index == block_index
+        and s.span_type
+        in (
+            SpanType.NARRATION_ACTION,
+            SpanType.NARRATION_DESCRIPTION,
+        )
+        and s.text.strip()
+    ]
+    return " ".join(narration) if narration else fallback
+
+
+def present_entity_ids(mentions: list[Mention], block_index: int) -> list[str]:
+    """Resolved entity ids physically present in one block.
+
+    `spans/scene.py`'s `active_selves` cannot be used for this: it comes
+    from `anaphora/local.py::present_cast`, which returns mention *surface
+    text* ("he", "his uncle"), not entity ids -- fine for counting who is in
+    a scene, useless for looking up a persona's reference sheet. Reading the
+    mentions directly is both correct and no more expensive.
+
+    Ordered by first appearance in the block so the character the prose
+    introduces first is the one that survives `max_references` capping.
+    """
+    out: list[str] = []
+    for mention in mentions:
+        if mention.block_index != block_index:
+            continue
+        if mention.reference_mode is not ReferenceMode.PRESENT:
+            continue
+        if mention.target_id and mention.target_id not in out:
+            out.append(mention.target_id)
+    return out
+
+
+def character_looks(
+    store: Store, entity_id: str
+) -> tuple[str, str, Path | None] | None:
+    """`(label, appearance clause, reference sheet)` for one entity.
+
+    Returns None for a non-person entity -- §10 item 5's typing again: a
+    location resolves like a name but has no face to draw. The clause and
+    the sheet are independent: a character can have extracted appearance but
+    no generated sheet yet (references not run), which is exactly the
+    prompt-only fallback path.
+    """
+    entity = store.get_self(entity_id)
+    if entity is None or not entity.kind.is_person:
+        return None
+
+    from echotales.pipeline.persona.reference_gen import (
+        appearance_of,
+        build_reference_prompt,
+        reference_path_for,
+    )
+
+    persona_id = f"{entity_id}:body1"
+    appearance = appearance_of(store, persona_id)
+    clause = ""
+    if appearance:
+        # Reuse the reference sheet's own phrasing so the panel prompt and
+        # the image conditioning it are describing the same person in the
+        # same words; strip the style suffix, which the panel adds itself.
+        clause = build_reference_prompt(
+            entity.canonical_label, appearance
+        ).split(", manga style")[0]
+    return entity.canonical_label, clause, reference_path_for(store, persona_id)
 
 
 @dataclass(slots=True)
@@ -156,6 +364,10 @@ class PanelReport:
     chapters: int = 0
     skipped_cached: int = 0
     skipped_non_story: int = 0
+    #: Panels generated this run with at least one reference sheet vs none.
+    #: Cached panels count toward neither -- they were not generated now.
+    conditioned_panels: int = 0
+    prompt_only_panels: int = 0
     engine: str = "stub"
 
     def summary(self) -> str:
@@ -163,6 +375,8 @@ class PanelReport:
             f"{self.novel_id}: {self.panels:,} panels over {self.chapters} chapters "
             f"({self.engine})\n"
             f"  reused from cache: {self.skipped_cached:,}\n"
+            f"  generated with reference conditioning: {self.conditioned_panels:,}; "
+            f"prompt-only: {self.prompt_only_panels:,}\n"
             f"  skipped (non-story block): {self.skipped_non_story:,}"
         )
 
@@ -217,7 +431,28 @@ def render_panels(
                 segments=segments,
                 spans=spans,
             )
-            prompt = build_image_prompt(cast)
+
+            # Reference sheets for whoever is actually in this block, so the
+            # same character keeps the same face across panels.
+            references: list[Path] = []
+            conditioned: list[str] = []
+            appearances: dict[str, str] = {}
+            for entity_id in present_entity_ids(mentions, block.index):
+                looks = character_looks(store, entity_id)
+                if looks is None:
+                    continue
+                label, clause, sheet = looks
+                if clause:
+                    appearances[label] = clause
+                if sheet is not None:
+                    references.append(sheet)
+                    conditioned.append(label)
+
+            prompt = build_image_prompt(
+                cast,
+                beat=beat_text(spans, block.index, block.text),
+                character_appearances=appearances,
+            )
 
             if image_path.exists():
                 report.skipped_cached += 1
@@ -230,8 +465,13 @@ def render_panels(
                         width=width,
                         height=height,
                         seed=seed,
+                        reference_images=references,
                     )
                 )
+                if conditioned:
+                    report.conditioned_panels += 1
+                else:
+                    report.prompt_only_panels += 1
 
             manifest.append(
                 PanelImage(
@@ -239,6 +479,7 @@ def render_panels(
                     block_index=block.index,
                     prompt=prompt,
                     image_path=str(image_path),
+                    conditioned_on=conditioned,
                 )
             )
             report.panels += 1
