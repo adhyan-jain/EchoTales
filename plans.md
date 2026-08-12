@@ -603,17 +603,31 @@ the broader "no identity drift" goal.
 **What actually landed** (`render/`, detail in HANDOFF §4.23):
 
 - **`persona/prompt.py`** — `PanelCast` → one SDXL prompt string.
+- **`resolve/appearance_extract.py`** *(added 2026-08-13)* — the
+  appearance facts everything visual depends on: one call per prominent
+  entity over narration where they are `PRESENT`, stored as `INFERRED`
+  `Attribute` rows and accumulated across chapters. This section always
+  assumed such facts existed; nothing had ever produced them.
+- **`persona/reference_gen.py`** *(added 2026-08-13)* — **the tiered
+  reference generation this section specified is now built**: principals
+  get a full sheet, recurring a shorter one, incidental none (deterministic
+  faction/regional templates instead). Regeneration is digest-gated.
+  **Still not built** from this bullet: *temporal* reference sheets —
+  regeneration at each state-change point, which is the visual contribution
+  this document calls out — and IP-Adapter conditioning from
+  *user-uploaded* images. One sheet per character, for now.
 - **`render/panels.py`** — one cached panel image per `(chapter,
-  block_index)`, SDXL-backed (stub engine for dependency-free testing).
-  **Not built**: temporal reference sheets / state-change-triggered
-  regeneration for principals, IP-Adapter user uploads, the tiered
-  principal/recurring/incidental generation-cost split this section
-  originally specified. Every block currently gets the same treatment
-  regardless of prominence.
+  block_index)`. `MangaDiffusersEngine` does the panel generation this
+  section describes, with IP-Adapter reference conditioning so a character
+  keeps their face between panels. **Not built**: compose-separately-and-
+  inpaint for 3+ character panels (the cast beyond two references stays in
+  the prompt as background figures instead).
 - **`render/motion.py`** — the small reused clip library described above,
   SVD-backed (stub engine for testing). Not the beat-segmentation LLM stage
   this section originally specified; `director.py` matches on keyword/
-  delivery-polarity cues instead, deterministically.
+  delivery-polarity cues instead, deterministically, and picks the two
+  highest-impact blocks per chapter by competition rather than placing a
+  clip wherever a cue happens to fire.
 - **`render/director.py` + `timeline.py`** — per-block pan/zoom-vs-clip
   decision, then real timing from the already-rendered voice-line WAVs.
   This *is* the kinetic viewing layer the original plan called for, except
