@@ -70,3 +70,10 @@ build/
 data/voice/
 data/audio/
 data/reruns/
+# Phase 9 render output. Regenerable with `echotales render`, and binary --
+# panels are one PNG per block (thousands per novel), video is one mp4 per
+# chapter. Same reasoning as data/audio/ above.
+data/panels/
+data/motion/
+data/references/
+data/video/
