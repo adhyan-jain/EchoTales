@@ -1283,6 +1283,32 @@ nothing yet prefers a standing description over a transient one. And Shen
 Cui's `hair_style` came back `pearl hairpin`, which is an accessory, not a
 style.
 
+**First real end-to-end chapter video, RI ch1.** Produced with a synthetic
+6-speaker voice bank and the stub TTS (VCTK is a partial download — 2.5 GB
+of ~11 GB — so §4.21's blocker still stands), stub panel images, and a
+**real `ffmpeg` encode**:
+
+```
+89 panels, 5 motion clips, 1 chapter video (ffmpeg)
+ffprobe duration: 938.000s   summed audio: 938.0s    <- exact match
+shots: 87 pan / 2 clip
+pan directions: zoom_out 32, zoom_in 27, pan_left 15, pan_right 13
+clips: block 2 (score 6), block 7 (score 5)
+```
+
+The timing claim is the one that matters and it holds exactly: picture
+length is the audio length, not an estimate. Clip selection with real
+durations picked block 2 (`kill` +3, 11.6s +2, cast change +1) and block 7
+(`wound` +3, 12.4s +2). Block 3 tied at 6 and was correctly rejected as
+adjacent to block 2, with the tie broken toward the earlier block.
+
+That run also exposed a defect nothing synthetic would have: **both clips
+initially cued `idle`**. The director's combat stems (`kill`, `wound`) and
+`motion.py`'s tag keywords (`sword`, `clashed`) had drifted into disjoint
+vocabularies, so a block could score maximally on violence and then play
+the neutral loop. The two tables are now kept deliberately in step, and
+both blocks cue `impact`.
+
 **Status: qwen2.5:7b — not the 14b this stage was specified with.** A 14B q4
 is ~9 GB of weights against §3's 8 GB card and `tasks.py`'s own
 `VRAM_BUDGET_FRACTION` (~5.7 GB), so it cannot be resident; naming it would
