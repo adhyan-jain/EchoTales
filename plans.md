@@ -581,30 +581,53 @@ this model class reliably honours.
 
 Export: chaptered M4B.
 
-### Phase 10 — Visual Pipeline
+### Phase 10 — Visual Pipeline *(partially built — panels + video assembly landed 2026-08-12, numbered Phase 9 in code; see HANDOFF §4.23)*
 
-**Beat segmentation:** Break chapters into panel-worthy moments. Rules (scene breaks, location change, action moments) + LLM (cast assignment per beat, setting description).
+**Numbering note**, same shape as §Phase 9's above it: the code runs
+…7 personas → 8 voice → 9 render, not this document's Phase 7-10 ordering.
+Where this section and the code disagree, the code is current.
 
-**Panel casting:** For each beat, query state_of() for every PRESENT character (use reference_mode tags — only PRESENT, never NARRATOR_REFERENCE or DIALOGUE_REFERENCE). This prevents drawing absent/dead characters.
+**Built, and diverging from the original design on purpose:** this section
+originally called for **"No generative video. No identity drift risk"** —
+client-side Ken Burns only. That call is **reversed** for the panel-to-video
+stage: the actual brief (a reel adapting a manhwa, cutting between still
+panels and a handful of reused short AI-generated motion loops, timed to
+narration) needs real generated clips, not just pan/zoom on stills. The
+identity-drift risk the original plan was avoiding is contained by keeping
+the clip library **small, generic, and tag-keyed** rather than per-character
+or per-scene (`render/motion.py`'s `GENERIC_TAGS` — `clash`/`wind`/`flame`/
+`impact` — none of them a character's face), so no clip has an identity to
+drift from in the first place. This is a scoped exception, not a reversal of
+the broader "no identity drift" goal.
 
-**Reference generation:**
-- Principal: regenerate reference image at each state-change point (temporal reference sheets — the visual contribution)
-- Recurring: one reference, generated once from peak-information attribute set
-- Incidental: deterministic template selection from hashed entity ID
-- User-uploaded: IP-Adapter conditioning
-- Settings: same approach, reference regenerated at state changes (pre-siege vs post-siege city)
+**What actually landed** (`render/`, detail in HANDOFF §4.23):
 
-**Panel generation:** 1-2 characters → direct generation. 3+ → compose separately + inpaint.
+- **`persona/prompt.py`** — `PanelCast` → one SDXL prompt string.
+- **`render/panels.py`** — one cached panel image per `(chapter,
+  block_index)`, SDXL-backed (stub engine for dependency-free testing).
+  **Not built**: temporal reference sheets / state-change-triggered
+  regeneration for principals, IP-Adapter user uploads, the tiered
+  principal/recurring/incidental generation-cost split this section
+  originally specified. Every block currently gets the same treatment
+  regardless of prominence.
+- **`render/motion.py`** — the small reused clip library described above,
+  SVD-backed (stub engine for testing). Not the beat-segmentation LLM stage
+  this section originally specified; `director.py` matches on keyword/
+  delivery-polarity cues instead, deterministically.
+- **`render/director.py` + `timeline.py`** — per-block pan/zoom-vs-clip
+  decision, then real timing from the already-rendered voice-line WAVs.
+  This *is* the kinetic viewing layer the original plan called for, except
+  rendered server-side into the mp4 rather than client-side post-processing
+  — a click, since the clip cutaways have to be baked in at the same stage.
+- **`render/compose.py`** — `ffmpeg` compositor, verified against a real
+  encode. **Not built**: particle effects by setting type, layout templates
+  for multi-panel composition (current output is one full-frame shot per
+  block, no panel-grid layout), dream-realm style modifiers.
 
-**Layout:** Template library (10-15 manga layouts) with LLM-selected template per beat type.
-
-**Kinetic viewing layer (post-processing, client-side):**
-- Ken Burns / parallax on static panels
-- Particle effects by setting type (rain, dust, sparks, snow)
-- Transition timing synced to audio narration beats
-- No generative video. No identity drift risk.
-
-**Dream realm segments:** visual style modifier (sepia, softened) to signal "this is a memory."
+**Still fully unbuilt from this section:** beat segmentation as an LLM
+stage (blocks stand in for beats today), the manga layout template library,
+inpainting for 3+ character panels, and everything about temporal reference
+sheets / IP-Adapter conditioning.
 
 ---
 

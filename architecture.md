@@ -510,6 +510,50 @@ the only lever this class of model reliably honours. Conservatively: prose
 already contains the author's own pauses, and adding to them makes a reading
 sound mannered.
 
+## 8c. Panel-to-video assembly — reuse over generation
+
+The visual pipeline (`render/`, HANDOFF §4.23) exists to turn `PanelCast`
+(§4's persona/panel casting) into a finished, watchable chapter — but its
+central constraint is the opposite of a normal generation pipeline: **the
+goal is to generate as little as possible**, not as much as possible.
+
+**A still panel per block, animated, is the default; a generated motion clip
+is the accent.** The reel that this design is modelled on (a manhwa
+adaptation cutting between its own panels and 2-3 short AI clips, reused
+constantly, timed to narration) makes the reuse the entire reason the
+technique is affordable — a fresh clip per cut is a fresh generation per
+cut, with no budget to support it at novel scale. `render/motion.py`
+therefore keys clips by a **small, fixed, generic tag vocabulary**
+(`clash`/`wind`/`flame`/`impact` plus per-archetype idle loops), generates
+each tag **at most once**, and every subsequent match reuses the cached
+clip. This is the same escalation-ladder instinct as §7's LLM budget rule —
+expensive generation gated behind a cheap, deterministic check — applied to
+image/video cost instead of model-call cost.
+
+**Deliberately reversing plans.md Phase 10's original "no generative video"
+call, in a scoped way.** That call existed to avoid identity drift: a
+generated video of a character's face can drift from their established
+likeness in a way a still cannot. The scoped exception here is that no clip
+in the library is keyed to a character or a scene — every tag is a generic
+action/mood beat, so there is no identity for a clip to drift *from*. The
+broader "no identity drift" goal is unchanged; only its literal
+implementation (client-side Ken Burns, zero generated video) is revised.
+
+**Image duration is locked to speech, never estimated.** `render/timeline.py`
+reads the actual WAV duration of every voice line already rendered for a
+block (`voice/runner.py`'s manifest) and sums it into that block's on-screen
+time. This mirrors §7's general principle that a downstream stage should
+read a fact an upstream stage already established rather than re-derive or
+guess it — here, "how long does this shot hold" is exactly as knowable as
+"how long is this line," because the line has already been synthesised by
+the time this stage runs.
+
+**Same backend-naming discipline as every other stage in this pipeline**
+(§9's `llm`/`voice` packages): `render/panels.py`, `render/motion.py` and
+`render/compose.py` each name a capability (image generation, image-to-video,
+video composition) behind a `Protocol`, never a vendor, with a
+dependency-free stub standing in for local testing and CI.
+
 ## 9. Package boundaries
 
 ```

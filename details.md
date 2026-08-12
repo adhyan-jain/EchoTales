@@ -1001,6 +1001,67 @@ name** — the attribution ladder writes a surface form there ("Fang Yuan",
 and possessives) and resolution never revisits it; the join is on
 `comparison_key`.
 
+### `src/echotales/pipeline/render/` — Phase 9
+
+Panel images, a reused motion-clip library, and `ffmpeg` video assembly,
+timed to Phase 8's already-rendered voice track. Detail and status in
+HANDOFF §4.23 and the design rationale in `architecture.md §8c`; this entry
+is the file-by-file map.
+
+**`_png.py`** — a raw `zlib`/`struct` PNG writer, no Pillow. Shared by the
+two stub image engines below so neither needs the `render` extras installed.
+
+**`panels.py`** — `render_panels()`: one cached image per `(chapter,
+block_index)`, prompted via `persona/prompt.py::build_image_prompt` against
+`persona/runner.py::get_panel_cast`. `PanelImageEngine` protocol,
+`StubImageEngine` (real dependency-free PNG), `SDXLEngine` (lazy-loaded
+`torch`/`diffusers`, same discipline as `voice/engine.py::ChatterboxEngine`).
+Skips any block whose PNG already exists — re-rendering thousands of panels
+per iteration is both slow and, on a real engine, not free.
+
+**`motion.py`** — the reused clip library (`architecture.md §8c`).
+`GENERIC_TAGS` is a fixed, short vocabulary; `match_tag()` matches a block's
+text against it (keyword vocabulary first, `spans/delivery.py`'s
+`DeliveryPolarity` as a lower-precision fallback) rather than defining a
+second emotion vocabulary. `build_motion_library()` generates each tag **at
+most once**, caching by tag under `data/motion/<novel>/<tag>/`. Clips are
+PNG frame sequences, not an encoded video — `ffmpeg`'s `image2` demuxer
+reads a frame directory directly, so no video-writing dependency is needed
+even for the real `SVDEngine`.
+
+**`director.py`** — `build_shot_plan()`: one `ShotPlan` per block that has
+both a rendered panel and audible spans. Pan direction (`zoom_in` on
+dialogue, lateral `pan_left`/`pan_right` on pure description, `zoom_out`
+otherwise) is flagged in its own docstring as a first-guess rule, not
+validated against a real chapter. Motion-clip substitution requires both a
+`match_tag` hit *and* `clip_gap_blocks` (default 6) blocks since the last
+cutaway — a clip every block would read as a glitch, not an accent.
+
+**`timeline.py`** — `build_timeline()`: reads each voice line's real WAV
+duration (stdlib `wave`) and sums same-block lines into that block's
+on-screen time, locking image duration to speech rather than estimating it.
+A block with audio but no `ShotPlan` carries the previous shot forward
+(`carried_over=True`) rather than leaving a silent gap in the picture —
+same "make the gap visible" instinct as `AttributionMethod.ANONYMOUS_SLOT`.
+
+**`compose.py`** — `ComposeEngine` protocol. `concatenate_audio()` joins
+WAVs at the sample level via stdlib `wave`, raising on a format mismatch
+rather than resampling silently. `StubComposeEngine` does that real
+concatenation plus writes a JSON shot manifest, needing no `ffmpeg`.
+`FfmpegComposeEngine` renders each shot to its own segment (`zoompan` for a
+still, a trimmed/looped frame sequence for a clip), concatenates via the
+concat demuxer, and muxes against the real concatenated audio — **verified
+against a real `ffmpeg` encode** in `test_render_compose.py`, not just unit
+logic.
+
+**`runner.py`** — `render_videos()`, the orchestrator. Reads the panel and
+voice manifests already on disk rather than regenerating either (both are
+expensive; this stage only arranges already-paid-for assets). A chapter
+with panels but no voice manifest yet is skipped and counted, not an error.
+
+Wired into the CLI as `echotales render`, three independently-skippable
+sub-stages mirroring `panels.py`'s own on-disk caching.
+
 ### `src/echotales/pipeline/eval/`
 
 **`gold.py`** — `GoldMention`/`GoldSet`, the annotation schema. Every record
@@ -1197,6 +1258,20 @@ and the `FLAT`-wins delivery rule.
 merely mentions the past stays MAIN, a short chapter is never split, an empty
 LLM response never invents segments, and the LLM fires only on ambiguous
 chapters.
+
+### `tests/test_render_panels.py`, `test_render_motion.py`, `test_render_director.py`, `test_render_timeline.py`, `test_render_compose.py`, `test_render_runner.py`
+31 tests for Phase 9 (`render/`, HANDOFF §4.23), all against stub engines
+except one: `TestFfmpegComposeEngineIntegration` (`test_render_compose.py`)
+is skipped when `ffmpeg` is not on `PATH` and otherwise runs a real encode —
+a pan shot over a still, a cutaway to a 4-frame motion clip, muxed against
+real (silent) audio — then checks the output's actual duration via
+`ffprobe`. Everything else exercises logic only: `match_tag`'s keyword-then-
+polarity fallback, the clip-cutaway minimum-gap rule, timeline duration
+math against hand-written WAVs (including the carried-over-shot path), and
+`render_videos()` end to end against a hand-seeded `Store` and a hand-built
+voice manifest. **None of this exercises a real novel, a real voice bank,
+or a real generation model** — same limitation as `test_voice.py`, and for
+the same reason (no VCTK download, no GPU in this environment).
 
 ---
 
