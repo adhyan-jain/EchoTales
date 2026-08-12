@@ -67,11 +67,51 @@ prerequisite for tier 1 output and for `environment` to read real location
 data — everything in `persona/` this session is real plumbing waiting for
 that stage to exist, not a placeholder to throw away.
 
-**New user-reported gap, not yet investigated:** many plain "Fang Yuan"
-mentions in the text apparently aren't being classified as referring to the
-character — reported at the very end of this session, no root cause found
-yet. Worth an early look next session; likely a mentions/NER or resolve-side
-issue given the phrasing, not a display bug.
+**"Fang Yuan" gap, investigated, did not reproduce.** The prior session's
+report ("many plain 'Fang Yuan' mentions apparently aren't being classified
+as referring to the character") was checked against the canonical full-volume
+run (`data/echotales.db`): raw literal occurrences of "Fang Yuan" in the
+ingested chapter text (5,185) exactly match the mention count (5,185), and
+every one resolves to the single protagonist entity (`self1`, 5,191 mentions
+in the review table once other spellings are folded in) across all 199
+chapters. Checked `data/webview-working/reverend-insanity.db` too, in case it
+was a webview-specific report — identical numbers. User's call: drop it
+rather than keep guessing without more detail (which chapters, which UI). If
+it resurfaces, get a specific chapter/spelling/UI location before digging
+again — this session couldn't reproduce it from the description alone.
+
+**§10 item 2's ORV half fixed and verified on real data: `Kim Dokja`/`Dokja`
+now merge.** `normalize.name_containment` gained an optional
+`ambiguous_tokens` parameter (default `None` = old strictly-≥2-token
+behaviour, unchanged for every existing caller). When a caller supplies a
+corpus-wide set of name components attested across two or more distinct
+entities (`resolve/runner.py::GlobalResolver._ambiguous_tokens`, computed
+from `CandidateRetriever.profiles` each call — cheap next to retrieval at
+this corpus size), a single shared *suffix* token is now accepted as
+dropped-given-name evidence **unless that token is itself one of the
+ambiguous ones** — i.e. "Dokja" (unique to one entity in ORV's cast) merges
+"Kim Dokja"/"Dokja", but a bare "Wang"-style shared *surname* still does not,
+because "wang" would appear in the ambiguous set. This is exactly the
+lexicon-aware distinction §4.15 said was needed, not a token-count change.
+Both `EvidenceContext` construction sites in `resolve/runner.py` now pass
+`ambiguous_tokens=self._ambiguous_tokens()`. Verified two ways: a new
+targeted unit test (`test_chapter_ner.py::TestNameContainment`, 3 new cases)
+and an integration test (`test_name_containment_resolve.py`, dropped-given-
+name merges + shared-surname-does-not) — but more importantly, **re-ran
+`echotales resolve` against a copy of `data/llm-orv.db`'s existing mentions**
+(not just synthetic tests) and confirmed `Dokja` (148 mentions) and `Kim
+Dokja` (36 mentions) now share one `target_id`, entity count dropping 63→54
+on that 40-chapter subset. Did not chase further pre-existing entity-table
+oddities noticed in that same review pass (e.g. an apparent double-listing
+around "Kim Namwoon"/"Oksu") — unrelated to this change (no shared tokens
+between those names, so `name_containment` never fires there) and out of
+scope for this session.
+
+**Still open from §4.15: the LOTM transmigration case** ("Zhou Mingrui"
+acquiring "Klein Moretti" mid-chapter-1 via "memories began flooding him") —
+not touched this session. Needs the *declaration* pre-filter to recognise
+that phrasing, a different mechanism from the containment fix above (no
+shared tokens between the two names at all).
 
 **Uncommitted, not mine:** `resolve/score.py` has `DEFAULT_BIAS` changed
 `-4.0 → -2.5` by a different concurrent agent (touches §4.1's LINK-threshold
@@ -551,7 +591,9 @@ it's independent confirmation that reincarnation/transmigration (which
 path, matching §4b's finding that `Persona` itself has no runner.
 
 **ORV (859 -> 63 entities, same regime shift) found a second, cleaner case of
-the same failure family** -- structural, not a one-off reveal, and diagnosed
+the same failure family — since fixed, see the top-of-file note on this
+session's work; left as originally written below for the diagnosis history.**
+Structural, not a one-off reveal, and diagnosed
 without needing to re-read the source text since the two forms are unambiguous
 by target_id in the store:
 
@@ -1297,13 +1339,15 @@ webview/     React viewer (git-ignored node_modules/build; §8a, §4.18)
    *pre-filter* signal (a declaration variant, a lexicon-aware containment
    check), not a rebalanced weight. Extend the confirmed gold past ch5 before
    calibrating — five chapters is too small a sample, §4.12 says so explicitly.
-2. **Fix the two §4.15 identity-continuity misses**, now that they're each
-   reduced to one paragraph with exact entity counts: LOTM's transmigration
-   reveal needs the declaration detector to recognise "memories flooded him"
-   as an identity-continuity assertion; ORV's `Dokja`/`Kim Dokja` split needs
-   `name_containment` to distinguish a dropped surname (ambiguous, correctly
-   blocked) from a dropped given name (usually unambiguous, currently also
-   blocked) — a lexicon question, not a token-count threshold.
+2. **One of the two §4.15 identity-continuity misses is fixed: ORV's
+   `Dokja`/`Kim Dokja` split** — `name_containment` now distinguishes a
+   dropped surname (ambiguous, correctly still blocked) from a dropped given
+   name (usually unambiguous, now merges) via a corpus-wide ambiguous-token
+   set rather than a token-count threshold. See the top-of-file note on this
+   session's work for the mechanism and verification. **Still open:** LOTM's
+   transmigration reveal needs the declaration detector to recognise "memories
+   flooded him" as an identity-continuity assertion — different mechanism, not
+   touched this session.
 3. **Recover the speaker-attribution regression** (§4.9/§4.14). 64.9% → 48.8%
    at full RI volume, and it got worse as the run scaled up, not better.
 4. **Build `Persona`'s runner** (§4b). Currently `Persona` has no fields beyond

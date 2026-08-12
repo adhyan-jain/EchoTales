@@ -208,8 +208,8 @@ def comparison_key(name: str) -> str:
     )
 
 
-def name_containment(a: str, b: str) -> float:
-    """Evidence that one name is the other with a clan or house prefix dropped.
+def name_containment(a: str, b: str, *, ambiguous_tokens: frozenset[str] | None = None) -> float:
+    """Evidence that one name is the other with a leading name component dropped.
 
     In this corpus a character is written "Gu Yue Mo Bei" on introduction and
     "Mo Bei" thereafter. Character-level similarity cannot see that: Jaro-Winkler
@@ -217,34 +217,58 @@ def name_containment(a: str, b: str) -> float:
     similarity floor, and the pair becomes two entities. Measured on 40 chapters
     of the primary novel that was three duplicated characters out of 39.
 
-    The shared part must be **at least two tokens**. That is the whole safety
-    property, and it is §4.5 restated: a shared single token is a surname, which
-    identifies a *family* rather than a person, so "Elder Wang" and "Xiao Wang"
-    must not merge on the strength of "Wang". No clan list is involved — the
-    rule is structural and transfers to a novel whose houses this code has
-    never seen.
+    **The >= 2-token case** (house-prefixed names, e.g. "Gu Yue Mo Bei" ->
+    "Mo Bei") needs no corpus knowledge: the shared part is required to be
+    **at least two tokens**, and that is the whole safety property (§4.5
+    restated) — a shared *single* token is usually a bare surname, which
+    identifies a *family* rather than a person, so "Elder Wang" and
+    "Xiao Wang" must not merge on the strength of "Wang" alone. No clan list
+    is involved — the rule is structural and transfers to a novel whose
+    houses this code has never seen.
+
+    **The 1-token case** (a dropped given name, e.g. Korean family-name-first
+    "Kim Dokja" -> "Dokja", §4.15) is the same shape wearing the opposite
+    risk: here the *specific* component is the one that survives, and the
+    *ambiguous* one (the surname, "Kim") is what's dropped. The 2-token floor
+    alone can't tell these apart by token count -- it needs to know which
+    component is actually ambiguous *in this novel's cast*. `ambiguous_tokens`
+    supplies that: a lowercased token attested as a name component across two
+    or more distinct entities (built by the caller from the corpus's own
+    profiles — see `resolve/runner.py`). A single surviving token is treated
+    as a genuine dropped-given-name match only when it is *not* itself one of
+    those ambiguous components — i.e. it uniquely identifies one entity in
+    this cast, the same property "Dokja" has and "Wang" does not. Callers
+    that don't supply `ambiguous_tokens` (the default, `None`) get the old,
+    strictly-2-token-or-nothing behaviour — a caller-supplied *empty*
+    frozenset is a real answer ("this corpus has no ambiguous components")
+    and is not the same thing as `None` ("this caller has no opinion").
 
     Returns 0.0 when the containment does not hold, so callers can `max()` it
     against a character-level score without diluting either.
     """
-    short, long_ = sorted((_name_tokens(a), _name_tokens(b)), key=len)
-    if len(short) < 2 or len(short) == len(long_):
+    short, long_ = sorted((name_tokens(a), name_tokens(b)), key=len)
+    if not short or len(short) == len(long_):
         return 0.0
     # The shorter form must be a **suffix**, not merely a substring. In this
-    # naming convention the house comes first and the personal name last, so
-    # the form that survives abbreviation is the tail. Requiring a suffix is
-    # what stops the clan name itself — "Gu Yue", also two tokens — from
-    # matching every one of its members and merging the whole family.
+    # naming convention the house/surname comes first and the personal name
+    # last, so the form that survives abbreviation is the tail. Requiring a
+    # suffix is what stops the clan name itself — "Gu Yue", also two tokens —
+    # from matching every one of its members and merging the whole family.
     if long_[-len(short) :] != short:
         return 0.0
+    if len(short) == 1:
+        if ambiguous_tokens is None or short[0] in ambiguous_tokens:
+            return 0.0
     # Confidence falls as the dropped prefix grows: sharing 2 of 3 tokens is
     # stronger evidence than sharing 2 of 6.
     return 0.80 + 0.15 * (len(short) / len(long_))
 
 
-def _name_tokens(name: str) -> list[str]:
+def name_tokens(name: str) -> list[str]:
+    """Lowercase-comparable name components, for both `name_containment` and
+    corpus-wide token-ambiguity tables built from `EntityProfile.aliases`."""
     return [
-        token
+        token.casefold()
         for raw in strip_morphology(strip_honorifics(name)).split()
         if (token := normalize_romanization(raw))
     ]

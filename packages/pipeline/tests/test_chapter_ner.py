@@ -207,6 +207,24 @@ class TestNameContainment:
     def test_unrelated_names_score_zero(self) -> None:
         assert name_containment("Fang Yuan", "Fang Zheng") == 0.0
 
+    def test_single_token_needs_ambiguity_data_by_default(self) -> None:
+        """§4.15's ORV gap: without a caller-supplied ambiguity table, a
+        1-token shared suffix ("Dokja" in "Kim Dokja") stays the old,
+        strictly-2-token-or-nothing behaviour."""
+        assert name_containment("Dokja", "Kim Dokja") == 0.0
+
+    def test_single_token_matches_when_not_a_known_ambiguous_component(self) -> None:
+        """"Dokja" appears in only one entity's aliases in this corpus, so
+        it's treated as a dropped given name, not a bare surname."""
+        out = name_containment("Dokja", "Kim Dokja", ambiguous_tokens=frozenset())
+        assert out >= 0.86
+
+    def test_single_token_still_blocked_when_it_is_a_known_surname(self) -> None:
+        """"Wang" recurs across other entities in this corpus -- §4.5 still
+        applies even with an ambiguity table supplied."""
+        out = name_containment("Wang", "Elder Wang", ambiguous_tokens=frozenset({"wang"}))
+        assert out == 0.0
+
 
 class TestDisplayLabel:
     def test_possessive_never_becomes_the_label(self) -> None:

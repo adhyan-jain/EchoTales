@@ -39,7 +39,7 @@ from echotales.core.readset import ReadSetRecorder, entity_ref
 from echotales.core.store import Store
 from echotales.pipeline.config import Settings, get_settings
 from echotales.pipeline.corrections import Correction, CorrectionLog, CorrectionType
-from echotales.pipeline.ingest.normalize import display_label
+from echotales.pipeline.ingest.normalize import display_label, name_tokens
 from echotales.pipeline.llm import LLMRouter
 from echotales.pipeline.mentions.lexicon import Lexicon
 from echotales.pipeline.resolve.adjudicate import AdjudicationRequest, adjudicate
@@ -142,6 +142,25 @@ class GlobalResolver:
         #: gets an automatic review flag -- see `_maybe_flag_non_character`.
         #: `None` by default so every existing caller keeps today's behaviour.
         self.corrections_log = corrections_log
+
+    def _ambiguous_tokens(self) -> frozenset[str]:
+        """Name components shared by two or more entities seen so far.
+
+        Feeds `normalize.name_containment`'s single-token case (§4.15's
+        `Dokja`/`Kim Dokja` gap): a token that only ever appears in one
+        entity's aliases identifies that entity specifically (a given name);
+        one that recurs across several is a bare surname or title and must
+        not merge unrelated people on its own (§4.5). Recomputed per call
+        rather than cached — `EntityProfile.aliases` grows as resolution
+        proceeds, and the corpus is small enough (a few hundred entities at
+        most) that this costs nothing next to retrieval/scoring.
+        """
+        counts: dict[str, set[str]] = {}
+        for profile in self.retriever.profiles.values():
+            for alias in profile.aliases:
+                for token in name_tokens(alias):
+                    counts.setdefault(token, set()).add(profile.target_id)
+        return frozenset(token for token, ids in counts.items() if len(ids) > 1)
 
     # ---- entity lifecycle ---------------------------------------------
 
@@ -283,6 +302,7 @@ class GlobalResolver:
             co_present=co_present,
             speaker=speaker,
             lexicon=self.lexicon,
+            ambiguous_tokens=self._ambiguous_tokens(),
         )
         for candidate in candidates:
             candidate.evidence = score_evidence(
@@ -404,7 +424,11 @@ class GlobalResolver:
             candidates = self.retriever.retrieve(case.surface, case.context)
             if not candidates:
                 continue
-            ctx = EvidenceContext(context=case.context, lexicon=self.lexicon)
+            ctx = EvidenceContext(
+                context=case.context,
+                lexicon=self.lexicon,
+                ambiguous_tokens=self._ambiguous_tokens(),
+            )
             for candidate in candidates:
                 candidate.evidence = score_evidence(
                     _synthetic_mention(case), candidate,

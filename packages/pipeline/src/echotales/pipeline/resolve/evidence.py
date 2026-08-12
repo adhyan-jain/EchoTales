@@ -118,6 +118,13 @@ class EvidenceContext:
     #: than merely unknown.
     known_scopes: frozenset[str] = frozenset()
     lexicon: Lexicon | None = None
+    #: Name components (surname, title) attested across two or more distinct
+    #: entities in this novel's cast so far -- see
+    #: `resolve/runner.py::GlobalResolver._ambiguous_tokens`. `None` (the
+    #: default) means the caller has no opinion, which keeps
+    #: `name_containment`'s old strictly-2-token behaviour; a real (possibly
+    #: empty) frozenset opts into the single-token dropped-given-name case.
+    ambiguous_tokens: frozenset[str] | None = None
 
 
 def detect_declaration(context: str, lexicon: Lexicon | None) -> tuple[float, str]:
@@ -192,7 +199,10 @@ def score_evidence(
             # floor, so the pair splits into two entities. Kept in its own
             # feature so it can be pre-filtered without a merely-similar pair
             # of distinct names riding along on a high Jaro-Winkler score.
-            best_containment = max(best_containment, name_containment(mention.text, alias))
+            best_containment = max(
+                best_containment,
+                name_containment(mention.text, alias, ambiguous_tokens=ctx.ambiguous_tokens),
+            )
     vector.surface_similarity = best_surface
     vector.name_containment = best_containment
 
