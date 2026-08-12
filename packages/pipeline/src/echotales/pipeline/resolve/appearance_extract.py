@@ -1,0 +1,394 @@
+"""Appearance extraction: what a character actually looks like.
+
+Until this stage existed, nothing in the pipeline ever read a character's
+*appearance* out of the text. `persona/build.py` writes demographics and Big
+Five -- everything voice casting needs -- but image generation needs hair,
+eyes, build, attire and insignia, and none of that was extracted anywhere.
+Every character was a blank to the visual pipeline (HANDOFF §4.23's first
+listed gap).
+
+**Evidence is narration where the character is physically present.** Only
+`ReferenceMode.PRESENT` mentions count: a character described in someone
+else's dialogue, or recalled in a memory, is not being looked at, and
+scraping those passages is how a disguise or a rumour ends up baked into a
+reference sheet. This is the same filter `spans/scene.py` applies for panel
+casting, applied to a different question.
+
+**One call per entity, above a prominence floor -- never per mention.** The
+§3 budget rule again: ~80 entities against ~9,500 mentions in a 199-chapter
+novel, and appearance is a property of the character, not of each sighting.
+
+**Accumulated, never overwritten.** A novel describes a character across
+scattered sentences over dozens of chapters -- hair in chapter 2, a scar in
+chapter 40. Re-running on more chapters *adds* attestations rather than
+replacing them, so a profile grows monotonically as evidence arrives. A key
+whose value is already recorded is not written twice; a genuinely new value
+lands as an additional `Attribute` row, which is exactly what the temporal
+fact model is for (`architecture.md §3`).
+
+Everything written here is `truth_status=INFERRED` /
+`asserted_by=INFERENCE`: it is a model's reading of the prose, not the
+prose's own assertion, and any explicit textual declaration outranks it.
+"""
+
+from __future__ import annotations
+
+import logging
+from dataclasses import dataclass, field
+
+from pydantic import BaseModel, Field
+
+from echotales.core.enums import (
+    OBSERVER_READER,
+    AssertedBy,
+    Prominence,
+    ReferenceMode,
+    SpanType,
+    TargetKind,
+    TruthStatus,
+)
+from echotales.core.interval import FuzzyInterval
+from echotales.core.models import Attribute
+from echotales.core.store import Store
+
+log = logging.getLogger(__name__)
+
+#: The controlled vocabulary. An answer outside these keys is discarded --
+#: same hallucination discipline as `persona/extract.py`, because a silently
+#: accepted invented key would flow straight into a generation prompt.
+APPEARANCE_KEYS = (
+    "hair_color",
+    "hair_style",
+    "eye_color",
+    "skin_tone",
+    "height_build",
+    "distinguishing_features",
+    "typical_attire",
+    "rank_insignia",
+    "current_condition",
+)
+
+#: Narration only. Dialogue is what characters *say*, and a character's own
+#: account of how someone looks is a claim, not an observation.
+_DESCRIPTIVE = (SpanType.NARRATION_DESCRIPTION, SpanType.NARRATION_ACTION)
+
+#: Below this, an entity gets no call at all. An incidental walk-on has
+#: almost no descriptive evidence and is not drawn with a reference sheet
+#: anyway (`persona/reference_gen.py` skips them by the same rule).
+_ELIGIBLE = (Prominence.PRINCIPAL, Prominence.RECURRING)
+
+
+def eligible_prominence(store: Store, novel_id: str, entity: object) -> Prominence:
+    """This entity's prominence, derived from mention count rather than read
+    off the stored column.
+
+    `Self.prominence` is written by `persona/build.py`, but every database
+    built before that write landed still carries the `INCIDENTAL` default
+    for its entire cast -- measured on `data/reruns/reverend-insanity.db`,
+    where all 120 entities read `INCIDENTAL` including Fang Yuan at 5,191
+    mentions. Trusting the column there would make this stage silently
+    process nothing, which is the worst possible failure for a stage whose
+    output is invisible until a panel renders wrong. Deriving it costs one
+    indexed COUNT per entity and is correct regardless of what has or has
+    not been re-run.
+    """
+    from echotales.pipeline.persona.build import PRINCIPAL_FLOOR, RECURRING_FLOOR
+
+    count = store.mention_count_for(novel_id, entity.id)  # type: ignore[attr-defined]
+    if count >= PRINCIPAL_FLOOR:
+        return Prominence.PRINCIPAL
+    if count >= RECURRING_FLOOR:
+        return Prominence.RECURRING
+    return Prominence.INCIDENTAL
+
+#: Passage sampling bounds. Enough prose to characterise a face without
+#: turning a per-entity call into a per-chapter one.
+_MAX_PASSAGES = 40
+_MAX_PASSAGE_CHARS = 400
+
+SYSTEM = (
+    "You extract physical appearance from a translated web novel. Report only "
+    "what the passages state or directly imply about how the character looks. "
+    "Never invent a detail that is not there -- omit the key instead. "
+    "The passages describe several people; report only the named subject, "
+    "never anyone standing near them. Return only JSON."
+)
+
+
+class AppearanceResponse(BaseModel):
+    """Every field optional: a novel that never states eye colour must
+    produce no eye colour, not a plausible guess."""
+
+    hair_color: str = ""
+    hair_style: str = ""
+    eye_color: str = ""
+    skin_tone: str = ""
+    height_build: str = ""
+    distinguishing_features: list[str] = Field(default_factory=list)
+    typical_attire: str = ""
+    rank_insignia: str = ""
+    current_condition: str = ""
+
+
+@dataclass(slots=True)
+class AppearanceReport:
+    novel_id: str
+    entities_considered: int = 0
+    entities_called: int = 0
+    attributes_written: int = 0
+    attributes_already_known: int = 0
+    skipped_no_evidence: int = 0
+    skipped_not_prominent: int = 0
+    failures: int = 0
+    by_entity: dict[str, int] = field(default_factory=dict)
+
+    def summary(self) -> str:
+        top = sorted(self.by_entity.items(), key=lambda kv: -kv[1])[:6]
+        listed = ", ".join(f"{k}={v}" for k, v in top) or "none"
+        return (
+            f"{self.novel_id}: {self.attributes_written:,} appearance attributes "
+            f"from {self.entities_called} model calls\n"
+            f"  considered {self.entities_considered} entities; "
+            f"skipped {self.skipped_not_prominent} not prominent, "
+            f"{self.skipped_no_evidence} with no descriptive evidence\n"
+            f"  already known (not rewritten): {self.attributes_already_known}; "
+            f"failed calls: {self.failures}\n"
+            f"  most described: {listed}"
+        )
+
+
+def gather_appearance_passages(
+    store: Store,
+    novel_id: str,
+    target_id: str,
+    *,
+    max_chapters: int = 25,
+    max_passages: int = _MAX_PASSAGES,
+    allowed_chapters: set[float] | None = None,
+) -> list[str]:
+    """Narration blocks where this entity is physically present.
+
+    Sampled across chapters the entity actually appears in (see
+    `Store.chapters_for_target` on why the novel's first N would be wrong),
+    and restricted to blocks carrying a `PRESENT` mention of them -- see the
+    module docstring on why reference mode is load-bearing here.
+
+    `allowed_chapters` scopes the evidence to an explicit chapter set; the
+    `max_chapters` sample bound is then redundant and is not applied, since
+    the caller has already said exactly which chapters count.
+
+    **Passages that name the entity are preferred over the rest of their
+    block.** Evidence is gathered per *block*, and a block routinely
+    describes several people, so an unranked sample invites the model to
+    attribute a neighbour's description to this character -- measured on RI
+    ch1-5, where an unranked Fang Yuan sample produced
+    `height_build="thin, slightly shorter than Fang Yuan"`, which is
+    self-evidently about someone else. Naming passages therefore fill the
+    budget first, and unnamed same-block passages only backfill what is
+    left; they are still worth keeping, because the sentence carrying the
+    appearance is frequently the pronoun sentence right after the naming
+    one ("Fang Yuan was in deep green robes... His hair was disheveled").
+    """
+    named: list[str] = []
+    unnamed: list[str] = []
+    seen: set[str] = set()
+    surfaces = _surface_forms(store, novel_id, target_id)
+
+    limit = None if allowed_chapters is not None else max_chapters
+    for chapter in store.chapters_for_target(novel_id, target_id, limit=limit):
+        if allowed_chapters is not None and chapter not in allowed_chapters:
+            continue
+        present_blocks = {
+            m.block_index
+            for m in store.get_mentions(novel_id, chapter)
+            if m.target_id == target_id and m.reference_mode is ReferenceMode.PRESENT
+        }
+        if not present_blocks:
+            continue
+
+        for span in store.get_spans(novel_id, chapter):
+            if span.block_index not in present_blocks:
+                continue
+            if span.span_type not in _DESCRIPTIVE:
+                continue
+            text = span.text.strip()
+            if not text or text in seen:
+                continue
+            seen.add(text)
+            clipped = text[:_MAX_PASSAGE_CHARS]
+            folded = clipped.casefold()
+            if any(sf in folded for sf in surfaces):
+                named.append(clipped)
+            else:
+                unnamed.append(clipped)
+
+        if len(named) >= max_passages:
+            return named[:max_passages]
+
+    return (named + unnamed)[:max_passages]
+
+
+def _surface_forms(store: Store, novel_id: str, target_id: str) -> set[str]:
+    """Case-folded surfaces this entity is actually referred to by.
+
+    Read from resolved mentions rather than the canonical label alone, so
+    "Fang Yuan", "Gu Yue Fang Yuan" and a bare "Fang" all count as naming
+    him. Single-character surfaces are dropped -- they match everything.
+    """
+    out = {
+        str(r["text"]).strip().casefold()
+        for r in store.conn.execute(
+            "SELECT DISTINCT text FROM mention WHERE novel_id=? AND target_id=?",
+            (novel_id, target_id),
+        )
+    }
+    entity = store.get_self(target_id)
+    if entity is not None:
+        out.add(entity.canonical_label.strip().casefold())
+    return {s for s in out if len(s) > 1}
+
+
+def build_prompt(label: str, passages: list[str]) -> str:
+    lines = [f"Passages about {label}:", ""]
+    lines += [f"  - {p}" for p in passages]
+    lines += [
+        "",
+        f"Extract {label}'s physical appearance as a JSON object with these "
+        "keys, including a key only if the passages state it:",
+        "  hair_color, hair_style, eye_color, skin_tone, height_build,",
+        "  distinguishing_features (list of strings), typical_attire,",
+        "  rank_insignia, current_condition (injured/healthy/transformed).",
+        "",
+        # These passages are whole narration blocks, so they routinely
+        # describe bystanders too. Without this, a neighbour's build gets
+        # attributed to the subject -- see `gather_appearance_passages`.
+        f"Some passages describe other people standing near {label}. Report "
+        f"only {label}'s own appearance. If a detail describes someone else "
+        f"-- including anyone compared to {label} (\"taller than {label}\") "
+        f"-- omit it entirely.",
+        "Return only JSON, no explanation.",
+    ]
+    return "\n".join(lines)
+
+
+def _values_from(response: AppearanceResponse) -> dict[str, str]:
+    """Flatten a response to key -> value, dropping empties.
+
+    `distinguishing_features` is a list in the schema (a character can have
+    several) but is stored as one comma-joined `Attribute` value, because a
+    generation prompt consumes it as one clause.
+    """
+    out: dict[str, str] = {}
+    for key in APPEARANCE_KEYS:
+        raw = getattr(response, key, "")
+        if isinstance(raw, list):
+            joined = ", ".join(str(v).strip() for v in raw if str(v).strip())
+            value = joined
+        else:
+            value = str(raw).strip()
+        if value and value.lower() not in ("unknown", "none", "n/a", "not stated"):
+            out[key] = value
+    return out
+
+
+def extract_appearance(
+    novel_id: str,
+    store: Store,
+    *,
+    client: object,
+    chapters: list[float] | None = None,
+    max_chapters: int = 25,
+) -> AppearanceReport:
+    """Read appearance out of narration and store it under each persona.
+
+    `chapters` restricts which chapters count as evidence; None uses every
+    chapter the entity appears in (bounded by `max_chapters`). Requires a
+    model client -- there is no deterministic fallback, because unlike age or
+    gender there is no honorific or pronoun that states hair colour, and a
+    guess would be pure invention.
+    """
+    from echotales.pipeline.llm.tasks import Task
+
+    report = AppearanceReport(novel_id=novel_id)
+    allowed = set(chapters) if chapters is not None else None
+
+    for entity in store.all_selves(novel_id):
+        if not entity.kind.is_person:
+            continue
+        report.entities_considered += 1
+
+        if eligible_prominence(store, novel_id, entity) not in _ELIGIBLE:
+            report.skipped_not_prominent += 1
+            continue
+
+        passages = gather_appearance_passages(
+            store,
+            novel_id,
+            entity.id,
+            max_chapters=max_chapters,
+            allowed_chapters=allowed,
+        )
+        if not passages:
+            report.skipped_no_evidence += 1
+            continue
+
+        try:
+            result = client.complete(  # type: ignore[attr-defined]
+                Task.APPEARANCE_EXTRACTION,
+                build_prompt(entity.canonical_label, passages),
+                AppearanceResponse,
+                system=SYSTEM,
+                novel_id=novel_id,
+            )
+        except Exception as exc:  # noqa: BLE001 - one bad entity must not sink the stage
+            log.warning("appearance extraction failed for %s: %s", entity.id, exc)
+            report.failures += 1
+            continue
+
+        report.entities_called += 1
+        values = _values_from(result.value)
+        if not values:
+            continue
+
+        persona_id = f"{entity.id}:body1"
+        known = {
+            (a.key, a.value)
+            for a in store.get_attributes(TargetKind.PERSONA, persona_id)
+            if a.is_standing
+        }
+
+        written = 0
+        for key, value in values.items():
+            if (key, value) in known:
+                report.attributes_already_known += 1
+                continue
+            store.add_attribute(
+                novel_id,
+                Attribute(
+                    target_kind=TargetKind.PERSONA,
+                    target_id=persona_id,
+                    key=key,
+                    value=value,
+                    interval=FuzzyInterval.open_ended(
+                        entity.first_attested_pos.chapter,
+                        last_evidence=entity.first_attested_pos.chapter,
+                    ),
+                    learned_at_pos=entity.first_attested_pos,
+                    observer_id=OBSERVER_READER,
+                    # A model's reading of the prose, not the prose's own
+                    # assertion -- an explicit declaration outranks this.
+                    asserted_by=AssertedBy.INFERENCE,
+                    truth_status=TruthStatus.INFERRED,
+                    evidence=f"{len(passages)} narration passages"[:200],
+                ),
+            )
+            written += 1
+
+        report.attributes_written += written
+        if written:
+            report.by_entity[entity.canonical_label] = (
+                report.by_entity.get(entity.canonical_label, 0) + written
+            )
+
+    store.conn.commit()
+    return report

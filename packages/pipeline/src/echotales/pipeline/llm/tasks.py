@@ -65,6 +65,10 @@ class Task(StrEnum):
     #: traits voice casting and image generation bind to -- see `4b` and
     #: `persona/traits.py`.
     CHARACTER_PROFILE = "character_profile"
+    #: One call per prominent entity, turning the narration around that
+    #: entity's PRESENT mentions into the physical-appearance attributes
+    #: image generation binds to -- see `resolve/appearance_extract.py`.
+    APPEARANCE_EXTRACTION = "appearance_extraction"
 
 
 @dataclass(frozen=True, slots=True)
@@ -161,6 +165,23 @@ TASK_PROFILES: dict[Task, TaskProfile] = {
         anthropic_model="claude-sonnet-5",
         temperature=0.0,
         max_tokens=500,
+    ),
+    # Reading appearance out of scattered narration needs the same cultural
+    # priors NER does (xianxia robe/insignia vocabulary is not everyday
+    # English), and the same fires-once-per-entity budget as
+    # CHARACTER_PROFILE above.
+    #
+    # **qwen2.5:7b, not the 14b originally specified for this stage.** A 14B
+    # q4 is ~9 GB of weights against §3's 8 GB card and this file's own
+    # VRAM_BUDGET_FRACTION (0.70 -> ~5.7 GB), so it cannot be resident here
+    # at all -- naming it would fail `models_required`'s preflight rather
+    # than degrade quietly, which is the right failure but not a usable
+    # stage. Revisit if the hardware constraint changes.
+    Task.APPEARANCE_EXTRACTION: TaskProfile(
+        ollama_model="qwen2.5:7b",
+        anthropic_model="claude-sonnet-5",
+        temperature=0.0,
+        max_tokens=600,
     ),
 }
 
