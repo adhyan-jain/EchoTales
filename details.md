@@ -1001,6 +1001,40 @@ name** — the attribution ladder writes a surface form there ("Fang Yuan",
 and possessives) and resolution never revisits it; the join is on
 `comparison_key`.
 
+### `src/echotales/pipeline/resolve/appearance_extract.py` — Phase 7b
+
+What a character physically looks like, which nothing extracted before
+(HANDOFF §4.24). One `Task.APPEARANCE_EXTRACTION` call per prominent entity
+over narration where that entity is `ReferenceMode.PRESENT` — a character
+described in someone else's dialogue is not being *looked at*, and scraping
+those passages is how a disguise or a rumour gets baked into a reference
+sheet.
+
+Written as `INFERRED`/`INFERENCE` `Attribute` rows under
+`TargetKind.PERSONA`, **accumulated rather than overwritten**: a novel
+describes a character across scattered sentences over dozens of chapters, so
+re-running on a wider range adds attestations instead of replacing them.
+
+Two details that came from real data, not design: prominence is **derived
+from mention count** rather than read off `Self.prominence` (stale
+`INCIDENTAL` for the entire cast in every existing DB — see §4.24), and
+passages naming the entity are preferred over the rest of their block, with
+the prompt explicitly disclaiming bystanders, because an unranked sample
+attributed a neighbour's build to Fang Yuan.
+
+### `src/echotales/pipeline/persona/reference_gen.py`
+
+One cached reference sheet per prominent character — the anchor that makes
+"the same character across panels" mean anything. Prompt is built from the
+stored appearance rows (not re-read from prose), tiered by prominence
+(principal → full sheet, recurring → short prompt, incidental → none), and
+regeneration is gated on a **digest of the appearance data** so a re-run
+only redraws a character whose description actually changed.
+
+Reuses `render/panels.py`'s `PanelImageEngine` protocol rather than adding a
+parallel backend abstraction: a reference sheet is one more text-to-image
+call, and two abstractions would mean wiring every new checkpoint twice.
+
 ### `src/echotales/pipeline/render/` — Phase 9
 
 Panel images, a reused motion-clip library, and `ffmpeg` video assembly,
@@ -1014,10 +1048,26 @@ two stub image engines below so neither needs the `render` extras installed.
 **`panels.py`** — `render_panels()`: one cached image per `(chapter,
 block_index)`, prompted via `persona/prompt.py::build_image_prompt` against
 `persona/runner.py::get_panel_cast`. `PanelImageEngine` protocol,
-`StubImageEngine` (real dependency-free PNG), `SDXLEngine` (lazy-loaded
-`torch`/`diffusers`, same discipline as `voice/engine.py::ChatterboxEngine`).
-Skips any block whose PNG already exists — re-rendering thousands of panels
-per iteration is both slow and, on a real engine, not free.
+`StubImageEngine` (real dependency-free PNG), `SDXLEngine` and
+`MangaDiffusersEngine` (lazy-loaded `torch`/`diffusers`, same discipline as
+`voice/engine.py::ChatterboxEngine`). Skips any block whose PNG already
+exists — re-rendering thousands of panels per iteration is both slow and, on
+a real engine, not free.
+
+`MangaDiffusersEngine` (`--image-engine manga`) is the one that produces the
+intended look: an anime/manga finetune (**the checkpoint carries the style**
+— one returning photorealism is the wrong checkpoint, not a prompting
+problem) plus IP-Adapter conditioning at 0.65 on each present character's
+reference sheet, capped at two references since the adapter blends what it
+is given. A missing sheet degrades to prompt-only *and logs it*, because
+silently losing conditioning looks identical to having it.
+
+`beat_text()` draws the composition cue from the block's **narration**, not
+its raw text: a dialogue block's text is the spoken line, which the audio
+already carries and which describes nothing visible. `present_entity_ids()`
+resolves ids from mentions rather than `scene.py`'s `active_selves`, which
+holds surface text (`"he"`, `"his uncle"`) and cannot be looked up against a
+persona.
 
 **`motion.py`** — the reused clip library (`architecture.md §8c`).
 `GENERIC_TAGS` is a fixed, short vocabulary; `match_tag()` matches a block's
@@ -1033,9 +1083,17 @@ even for the real `SVDEngine`.
 both a rendered panel and audible spans. Pan direction (`zoom_in` on
 dialogue, lateral `pan_left`/`pan_right` on pure description, `zoom_out`
 otherwise) is flagged in its own docstring as a first-guess rule, not
-validated against a real chapter. Motion-clip substitution requires both a
-`match_tag` hit *and* `clip_gap_blocks` (default 6) blocks since the last
-cutaway — a clip every block would read as a glitch, not an accent.
+validated against a real chapter.
+
+Motion clips are placed by **competition, not cadence**: `score_blocks()`
+ranks every block in the chapter and `select_clip_blocks()` takes the best
+two, never adjacent, or **zero** if nothing clears `MIN_IMPACT_SCORE`. The
+score mixes content (combat stems +3, revelation +2) with pacing (+2 for
+narration past 6s — the signal that matters most, since a panel held for
+eight seconds goes stale however good it is). The combat vocabulary is
+corpus-derived: the first, intuition-written list matched **zero** blocks
+across RI ch1/8/20 and silently reduced the score to a cast-change
+detector (HANDOFF §4.24).
 
 **`timeline.py`** — `build_timeline()`: reads each voice line's real WAV
 duration (stdlib `wave`) and sums same-block lines into that block's

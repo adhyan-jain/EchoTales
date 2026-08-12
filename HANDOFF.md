@@ -1202,6 +1202,92 @@ Also surfaced: NER returned truncated JSON on chapter 143 (handled, chapter
 skipped with a warning) — pre-existing robustness gap in `chapter_ner.py`,
 not new.
 
+### 4.24 Phase 7b + Phase 9 completion — appearance, reference sheets, manga panels *(2026-08-13)*
+
+§4.23 built the video *assembly* (timing, compositing, shot decisions) but
+left four gaps that meant it could never produce a watchable panel. All four
+are now closed, and the work was driven against the real RI database rather
+than fixtures — which is where most of what follows came from.
+
+**1. Appearance was never extracted** (`resolve/appearance_extract.py`,
+`Task.APPEARANCE_EXTRACTION`). `persona/build.py` writes demographics and
+Big Five — everything *voice* casting needs — and nothing else. Hair, eyes,
+build, attire and insignia were read nowhere, so every character was a blank
+to the visual pipeline. One model call per prominent entity, over narration
+where that entity is `ReferenceMode.PRESENT`, written as `INFERRED` /
+`AssertedBy.INFERENCE` `Attribute` rows under `TargetKind.PERSONA` and
+accumulated across chapters rather than overwritten.
+
+**2. No reference images existed** (`persona/reference_gen.py`). IP-Adapter
+conditioning needs something to condition against; nothing had ever been
+generated. Built from the appearance rows (not re-read from prose), tiered
+by prominence, and cached against a digest of the appearance data so a
+re-run only regenerates a sheet whose source actually changed.
+
+**3. Reference conditioning was not implemented** and **4. manga style was
+specified nowhere** (`render/panels.py::MangaDiffusersEngine`,
+`persona/prompt.py`). `--image-engine manga` generates from an anime/manga
+finetune — the *checkpoint* carries the style, and one that returns
+photorealism is the wrong checkpoint, not a prompting problem — and feeds
+each present character's sheet as IP-Adapter conditioning at 0.65. Missing
+sheet or unavailable adapter degrades to prompt-only **and logs it**, since
+silently losing conditioning looks identical to having it.
+
+**5. Motion placement is now competitive, not local** (`render/director.py`).
+Scores every block in a chapter and takes the best two, non-adjacent, or
+zero if nothing clears the threshold.
+
+**Five things the real data corrected, none of which fixtures would have
+caught:**
+
+- **`Self.prominence` is stale in every existing database.** All 120
+  entities in `data/reruns/reverend-insanity.db` read `INCIDENTAL`,
+  including Fang Yuan at 5,191 mentions. `set_prominence` works — it simply
+  predates these databases. Appearance extraction therefore *derives*
+  prominence from mention count; trusting the column would have made the
+  stage silently process nothing, the worst failure mode for a stage whose
+  output is invisible until a panel renders wrong. **The stale column is
+  still there and still wrong** — anything else reading `entity.prominence`
+  off an existing DB has the same bug.
+- **The combat vocabulary scored literally zero on real chapters.** The
+  first `_COMBAT_VERBS` list was past-tense whole words ("struck",
+  "slammed", "erupted", "shattered") and matched **nothing** in RI ch1, ch8
+  or ch20 — ch1 is a massacre, and the translation says "killed" and
+  "attacked". A cue vocabulary that never fires silently degrades the impact
+  score to a cast-change detector. Now stem-matched and corpus-derived; ch1
+  selects blocks 2 and 27.
+- **The panel prompt was being fed spoken dialogue.** Block 0's cue was
+  `"Fang Yuan, quietly hand over the Spring Autumn Cicada..."` — words the
+  audio track already carries, describing nothing visible. The beat is now
+  drawn from narration spans, falling back to raw block text only for a
+  pure-dialogue block.
+- **`resolve_attire`'s last tier is a style, not a garment**, so characters
+  with no attire data produced "Fang Yuan wearing xianxia web-novel
+  illustration", repeated once per character.
+- **`present_cast` returns surface text, not entity ids.** `active_selves`
+  holds `"he"`/`"his uncle"` — fine for counting a scene's cast, useless for
+  looking up a persona, so `panels.py` resolves ids from mentions directly.
+
+**Measured output, RI chapters 1–5** (`ECHOTALES_MODEL_BACKEND=ollama`,
+qwen2.5:7b): 15 appearance attributes from 5 model calls across 75 person
+entities — 46 skipped as not prominent, 24 with no descriptive evidence, 0
+failures. Fang Yuan resolved to `deep green robes that had been torn to
+shreds` / `disheveled` / `deathly pale` / `injured`; Shen Cui to `black`
+hair, `green robe with long sleeves and trousers, embroidered shoes`.
+
+**Two honest quality caveats on that output**, both visible in the data:
+Fang Yuan's ch1–5 profile is his *death scene* (`current_condition:
+injured`, `deathly pale`) rather than his typical look — the accumulate-
+don't-overwrite design is what lets a wider chapter range correct this, but
+nothing yet prefers a standing description over a transient one. And Shen
+Cui's `hair_style` came back `pearl hairpin`, which is an accessory, not a
+style.
+
+**Status: qwen2.5:7b — not the 14b this stage was specified with.** A 14B q4
+is ~9 GB of weights against §3's 8 GB card and `tasks.py`'s own
+`VRAM_BUDGET_FRACTION` (~5.7 GB), so it cannot be resident; naming it would
+fail the `models_required` preflight outright rather than degrade.
+
 ### 4.23 Phase 9 — panel images, motion clips, and video assembly (`render/`) *(2026-08-12)*
 
 **What this is, and what it deliberately is not.** The brief was a
