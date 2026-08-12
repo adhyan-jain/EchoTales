@@ -60,6 +60,11 @@ class Task(StrEnum):
     #: ladder could not settle, given the established cast. Cold-start chapters
     #: only -- see `speakers/contextual.py`.
     SPEAKER_ATTRIBUTION = "speaker_attribution"
+    #: One call per prominent entity (never per mention), turning that
+    #: entity's accumulated evidence into the demographics and Big Five
+    #: traits voice casting and image generation bind to -- see `4b` and
+    #: `persona/traits.py`.
+    CHARACTER_PROFILE = "character_profile"
 
 
 @dataclass(frozen=True, slots=True)
@@ -144,6 +149,18 @@ TASK_PROFILES: dict[Task, TaskProfile] = {
         anthropic_model="claude-haiku-4-5-20251001",
         temperature=0.0,
         max_tokens=300,
+    ),
+    # Cultural knowledge again: judging a xianxia character's age band and
+    # register from their dialogue needs the same priors NER does (an "Elder"
+    # is old, a "Young Master" is not, and neither is stated outright).
+    # Budget is not a concern here the way it is for per-chapter stages --
+    # this fires once per *prominent entity*, so a 199-chapter novel with an
+    # 82-entity cast is well under a hundred calls for the whole book.
+    Task.CHARACTER_PROFILE: TaskProfile(
+        ollama_model="qwen2.5:7b",
+        anthropic_model="claude-sonnet-5",
+        temperature=0.0,
+        max_tokens=500,
     ),
 }
 

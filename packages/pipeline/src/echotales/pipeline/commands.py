@@ -95,6 +95,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     from echotales.pipeline.ingest import get_source, ingest_novel
     from echotales.pipeline.mentions import detect_mentions, load_or_seed
     from echotales.pipeline.resolve import resolve_novel as global_resolve
+    from echotales.pipeline.persona import build_personas
     from echotales.pipeline.segment import segment_novel
     from echotales.pipeline.speakers import attribute_novel
 
@@ -162,6 +163,10 @@ def cmd_run(args: argparse.Namespace) -> int:
         "6 resolve",
         lambda: global_resolve(novel, store, lexicon=lexicon, corrections_log=corrections_log),
     )
+    # Phase 7 runs last because it reads what every earlier phase produced:
+    # resolved entities, their attributed dialogue, and the NER-derived kind
+    # that says which of them are people at all.
+    stage("7 personas", lambda: build_personas(novel, store, client=client))
 
     print(report.render())
     print(f"\ngraph written to: {store.path}")

@@ -656,6 +656,34 @@ class Store:
                 out.append(entity)
         return out
 
+    def mention_count_for(self, novel_id: str, target_id: str) -> int:
+        """How many mentions resolved to this entity."""
+        row = self.conn.execute(
+            "SELECT COUNT(*) AS n FROM mention WHERE novel_id=? AND target_id=?",
+            (novel_id, target_id),
+        ).fetchone()
+        return int(row["n"] or 0)
+
+    def chapters_for_target(
+        self, novel_id: str, target_id: str, *, limit: int | None = None
+    ) -> list[float]:
+        """Chapters where this entity is mentioned, in reading order.
+
+        `limit` samples the *earliest* such chapters rather than the novel's
+        first N: a character introduced at chapter 90 would otherwise be
+        sampled from chapters they never appear in, and read as having no
+        evidence at all.
+        """
+        sql = (
+            "SELECT DISTINCT chapter FROM mention WHERE novel_id=? AND target_id=?"
+            " ORDER BY chapter"
+        )
+        params: list[object] = [novel_id, target_id]
+        if limit is not None:
+            sql += " LIMIT ?"
+            params.append(limit)
+        return [float(r["chapter"]) for r in self.conn.execute(sql, params)]
+
     def set_prominence(self, self_id: str, prominence: Prominence) -> None:
         self.conn.execute(
             "UPDATE self_entity SET prominence=? WHERE id=?", (prominence.value, self_id)
