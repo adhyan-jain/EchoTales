@@ -25,6 +25,10 @@ ml = [
 api = [
     "anthropic>=0.40",
 ]
+render = [
+    "torch>=2.2",
+    "diffusers>=0.30",
+]
 
 [tool.uv.sources]
 echotales-core = { workspace = true }
