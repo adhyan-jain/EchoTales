@@ -22,17 +22,90 @@ from echotales.pipeline.persona.runner import PanelCast
 #: `persona/reference_gen.py::REFERENCE_STYLE` deliberately: a panel that
 #: does not share a style vocabulary with the reference sheet conditioning
 #: it will fight that conditioning.
-MANGA_STYLE = (
+#: Shared by every shot type. What varies between them is framing, not
+#: rendering.
+_MANGA_BASE = (
     "manga panel, black and white, ink lines, screentone shading, "
-    "dynamic composition, no color, professional manga art, "
-    # A panel is a *scene*, not a portrait. Without these the checkpoint
-    # produces a floating bust on an abstract ink swirl -- which is exactly
-    # what the first real chapter of panels came out as, because nothing in
-    # the prompt asked for a place. The reference sheets deliberately ask
-    # for the opposite (plain white background); these are panels.
-    "characters in a detailed environment, full scene, detailed background, "
-    "wide shot, depth"
+    "no color, professional manga art"
 )
+
+#: **Three framings, chosen per block -- not one style applied to all 89.**
+#:
+#: Real manga alternates: a wide establishing shot when the scene changes, a
+#: full figure-in-environment shot for action, and a tight close-up over a
+#: toned background when someone is talking or thinking. The first pass here
+#: used one framing for every block, which is why an early version produced
+#: 89 near-identical compositions, and a later version produced 89
+#: environment shots -- including for blocks where a character is simply
+#: speaking, where a landscape is the wrong picture and an expensive one.
+#:
+#: The close-up variant is deliberately the "floating bust over an ink wash"
+#: look that an earlier pass produced *by accident* across the whole
+#: chapter. It was never a bad image; it was the right image for the wrong
+#: blocks.
+STYLE_ESTABLISHING = (
+    f"{_MANGA_BASE}, wide establishing shot, detailed background, "
+    "sweeping landscape, strong depth, small distant figures"
+)
+
+STYLE_SCENE = (
+    f"{_MANGA_BASE}, dynamic composition, characters in a detailed "
+    "environment, full scene, medium shot, depth"
+)
+
+STYLE_CLOSEUP = (
+    f"{_MANGA_BASE}, close-up on the character's face, intense expression, "
+    "dramatic lighting, speed lines, abstract toned background, shallow depth"
+)
+
+#: Default when a caller does not pick -- the middle framing, which is the
+#: one that is never badly wrong.
+MANGA_STYLE = STYLE_SCENE
+
+_NEGATIVE_BASE = (
+    "color, colored, photorealistic, western comic, 3d render, watermark, "
+    "text, speech bubble, blurry, deformed hands, extra limbs, lowres"
+)
+
+#: Negative prompt per framing. A close-up *wants* the plain toned
+#: background that a scene shot must reject, so one shared negative cannot
+#: serve both -- that conflict is why the close-up look could not coexist
+#: with environments until framing became explicit.
+NEGATIVE_BY_STYLE: dict[str, str] = {
+    STYLE_ESTABLISHING: (
+        f"{_NEGATIVE_BASE}, plain background, empty background, portrait, "
+        "close-up face, bust shot"
+    ),
+    STYLE_SCENE: (
+        f"{_NEGATIVE_BASE}, plain background, simple background, "
+        "white background, empty background, portrait, bust shot"
+    ),
+    STYLE_CLOSEUP: f"{_NEGATIVE_BASE}, full body, wide shot, crowd, tiny face",
+}
+
+
+def negative_for(style: str) -> str:
+    """The negative prompt matching a framing."""
+    return NEGATIVE_BY_STYLE.get(style, NEGATIVE_PROMPT)
+
+
+def shot_style(span_types: list[str], *, scene_change: bool = False) -> str:
+    """Pick a framing from what the block actually contains.
+
+    Establishing shots are reserved for scene changes -- used on every
+    description block they would make a chapter feel like a travelogue.
+    Dialogue and inner monologue get the close-up, which is both the right
+    manga grammar and much the cheaper picture: a landscape rendered behind
+    a line of speech is wasted work.
+    """
+    kinds = set(span_types)
+    if scene_change and "NARRATION_DESCRIPTION" in kinds:
+        return STYLE_ESTABLISHING
+    if kinds & {"DIALOGUE", "INNER_MONOLOGUE"}:
+        return STYLE_CLOSEUP
+    if "NARRATION_DESCRIPTION" in kinds and "NARRATION_ACTION" not in kinds:
+        return STYLE_ESTABLISHING
+    return STYLE_SCENE
 
 #: Universal negative prompt. Speech bubbles are excluded because dialogue
 #: is carried by the audio track, not drawn into the frame; the background

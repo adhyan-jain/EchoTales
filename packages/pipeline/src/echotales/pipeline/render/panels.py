@@ -29,7 +29,12 @@ from typing import Protocol
 from echotales.core.enums import ReferenceMode, SpanType
 from echotales.core.models import Chapter, Mention, Span
 from echotales.core.store import Store
-from echotales.pipeline.persona.prompt import NEGATIVE_PROMPT, build_image_prompt
+from echotales.pipeline.persona.prompt import (
+    STYLE_CLOSEUP,
+    build_image_prompt,
+    negative_for,
+    shot_style,
+)
 from echotales.pipeline.persona.attire import scene_locale, world_setting
 from echotales.pipeline.persona.runner import get_panel_cast
 from echotales.pipeline.render._png import write_solid_png
@@ -545,13 +550,27 @@ def render_panels(
                     conditioned.append(label)
 
             beat = beat_text(spans, block.index, block.text)
+            # Framing per block, not one style for the whole chapter -- a
+            # landscape behind a line of dialogue is the wrong picture and
+            # the expensive one. See `prompt.py::shot_style`.
+            style = shot_style(
+                [s.span_type.value for s in spans if s.block_index == block.index]
+            )
+            closeup = style is STYLE_CLOSEUP
             prompt = build_image_prompt(
                 cast,
                 beat=beat,
                 character_appearances=appearances,
                 character_genders=genders,
-                world=world_setting(novel_id),
-                locale=scene_locale(novel_id, beat, block_index=block.index),
+                # A close-up's background is deliberately abstract tone, so
+                # feeding it a courtyard only fights the framing.
+                world="" if closeup else world_setting(novel_id),
+                locale=(
+                    ""
+                    if closeup
+                    else scene_locale(novel_id, beat, block_index=block.index)
+                ),
+                style=style,
             )
 
             if image_path.exists():
@@ -561,7 +580,7 @@ def render_panels(
                     PanelImageRequest(
                         prompt=prompt,
                         out_path=image_path,
-                        negative_prompt=NEGATIVE_PROMPT,
+                        negative_prompt=negative_for(style),
                         width=width,
                         height=height,
                         seed=seed,
