@@ -52,6 +52,12 @@ from dataclasses import dataclass, field
 
 from echotales.core.enums import SpanType
 from echotales.core.models import Span
+
+# Rebirth / transmigration / possession cues, shared with the stage that
+# decides a character has changed bodies. One table, two consumers: the graph
+# learns there is a second persona, and the director learns there is a picture
+# worth drawing at the same moment.
+from echotales.pipeline.persona.split import BODY_CHANGE_CUES
 from echotales.pipeline.render.motion import MotionClip, match_tag
 from echotales.pipeline.render.panels import PanelImage
 
@@ -142,6 +148,24 @@ def score_blocks(
             if pattern in blob:
                 entry.score += 2
                 entry.reasons.append(f"revelation {pattern!r} (+2)")
+                break
+
+        # **A transformation is the most drawable thing a chapter can
+        # contain, and nothing here scored it.** Measured on RI ch1: the
+        # chapter's climax -- "With the use of the Spring Autumn Cicada I
+        # have been reborn, going back to the time of 500 years ago!" --
+        # scored zero and was merged into a panel with a conversation about
+        # the weather, while the fight that precedes it got four frames.
+        #
+        # The cue table is `persona/split.py`'s, imported rather than
+        # restated. Those patterns were read out of the corpus and are
+        # already the definition of "a body changed here" everywhere else in
+        # the pipeline; a second copy would drift, which §4.24 caught
+        # happening between this module and `motion.py` and cost a run.
+        for pattern, _kind in BODY_CHANGE_CUES:
+            if pattern.search(blob):
+                entry.score += 3
+                entry.reasons.append(f"transformation {pattern.pattern[:24]!r} (+3)")
                 break
 
         if entry.duration > LONG_BLOCK_SECONDS:

@@ -93,6 +93,12 @@ _SUPPORTING = (
 )
 
 _STRONG_RE = tuple((re.compile(p, re.I), kind) for p, kind in _STRONG)
+
+#: The strong cues, exported. `render/director.py` scores a transformation as
+#: a drawable moment from this same table -- one definition of "a body
+#: changed here", so the graph and the camera cannot disagree about where it
+#: happened.
+BODY_CHANGE_CUES = _STRONG_RE
 _SUPPORTING_RE = tuple((re.compile(p, re.I), kind) for p, kind in _SUPPORTING)
 
 #: A cue this close to an accepted change is that change being referred to

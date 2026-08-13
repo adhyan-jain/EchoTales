@@ -49,7 +49,6 @@ from echotales.core.enums import (
 from echotales.core.interval import FuzzyInterval
 from echotales.core.models import Attribute, DiscoursePosition
 from echotales.core.store import Store
-from echotales.pipeline.persona.split import persona_at
 from pydantic import BaseModel, Field
 
 log = logging.getLogger(__name__)
@@ -624,97 +623,156 @@ def extract_appearance(
             report.skipped_not_prominent += 1
             continue
 
-        evidence = gather_appearance_evidence(
-            store,
-            novel_id,
-            entity.id,
-            max_chapters=max_chapters,
-            allowed_chapters=allowed,
-        )
-        passages = [t for _c, t in evidence]
-        if not passages:
+        # **One call per body, not per character.** A regressor's two bodies
+        # are described in disjoint stretches of the novel, and pooling their
+        # evidence into one call asks the model to average a 500-year-old and
+        # a fifteen-year-old into a single face -- it will answer, and the
+        # answer will describe neither. Splitting the evidence by epoch is
+        # what lets each body be read out of the text rather than written
+        # down by hand (`persona/canon.py::CANON_BY_BODY` was the stopgap).
+        #
+        # Chapter granularity here, deliberately: a body change can fall
+        # mid-chapter (RI's does), but evidence is gathered per chapter, so
+        # the transition chapter goes wholly to the body that holds most of
+        # it. Splitting evidence per block would be more precise and is not
+        # worth the complexity until a novel needs it.
+        bodies = _chapters_by_body(store, novel_id, entity.id, allowed)
+        if not bodies:
+            # No chapters in range at all. Counted rather than skipped
+            # silently: a stage whose output is invisible until a panel
+            # renders wrong must not quietly drop entities from its own
+            # accounting.
             report.skipped_no_evidence += 1
             continue
 
-        try:
-            result = client.complete(  # type: ignore[attr-defined]
-                Task.APPEARANCE_EXTRACTION,
-                build_prompt(entity.canonical_label, passages),
-                AppearanceResponse,
-                system=SYSTEM,
-                novel_id=novel_id,
-            )
-        except Exception as exc:
-            log.warning("appearance extraction failed for %s: %s", entity.id, exc)
-            report.failures += 1
-            continue
-
-        report.entities_called += 1
-        values = _clean_values(
-            _values_from(result.value),
-            entity.canonical_label,
-            " ".join(t for _c, t in evidence).casefold(),
-        )
-        if not values:
-            continue
-
-        # Cached per persona rather than computed once: which body an
-        # attribute belongs to depends on the chapter that attests it, so a
-        # split character has more than one "already known" set in play.
-        known_by_persona: dict[str, set[tuple[str, str]]] = {}
-
-        written = 0
-        for key, value in values.items():
-            # Position this fact where the text actually attests it, not at
-            # the entity's first sighting -- see `attesting_chapter`.
-            at = attesting_chapter(value, evidence)
-            if at is None:
-                continue
-
-            # ...and file it against the body the character was in *then*.
-            # This is the whole payoff of the persona split: RI chapter 1
-            # attests Fang Yuan "deathly pale" with "robes torn to shreds"
-            # in his 500-year-old body, and that must not describe the
-            # fifteen-year-old the reader meets in chapter 2.
-            persona_id = persona_at(store, entity.id, at)
-            if persona_id not in known_by_persona:
-                known_by_persona[persona_id] = {
-                    (a.key, a.value)
-                    for a in store.get_attributes(TargetKind.PERSONA, persona_id)
-                    if a.is_standing
-                }
-            if (key, value) in known_by_persona[persona_id]:
-                report.attributes_already_known += 1
-                continue
-            pos = DiscoursePosition(chapter=at, offset=0)
-            store.add_attribute(
+        for persona_id, epoch_chapters in bodies:
+            evidence = gather_appearance_evidence(
+                store,
                 novel_id,
-                Attribute(
-                    target_kind=TargetKind.PERSONA,
-                    target_id=persona_id,
-                    key=key,
-                    value=value,
-                    # Open-ended *from the attesting chapter*: the fact
-                    # holds from where the novel states it, and a later
-                    # contradicting attestation lands as its own row rather
-                    # than silently replacing this one.
-                    interval=FuzzyInterval.open_ended(at, last_evidence=at),
-                    learned_at_pos=pos,
-                    observer_id=OBSERVER_READER,
-                    # A model's reading of the prose, not the prose's own
-                    # assertion -- an explicit declaration outranks this.
-                    asserted_by=AssertedBy.INFERENCE,
-                    truth_status=TruthStatus.INFERRED,
-                    evidence=f"attested ch{at:g}; {len(passages)} passages"[:200],
-                ),
+                entity.id,
+                max_chapters=max_chapters,
+                allowed_chapters=epoch_chapters,
             )
-            written += 1
+            passages = [t for _c, t in evidence]
+            if not passages:
+                report.skipped_no_evidence += 1
+                continue
 
-        report.attributes_written += written
-        if written:
-            report.by_entity[entity.canonical_label] = (
-                report.by_entity.get(entity.canonical_label, 0) + written
+            try:
+                result = client.complete(  # type: ignore[attr-defined]
+                    Task.APPEARANCE_EXTRACTION,
+                    build_prompt(entity.canonical_label, passages),
+                    AppearanceResponse,
+                    system=SYSTEM,
+                    novel_id=novel_id,
+                )
+            except Exception as exc:
+                log.warning("appearance extraction failed for %s: %s", entity.id, exc)
+                report.failures += 1
+                continue
+
+            report.entities_called += 1
+            values = _clean_values(
+                _values_from(result.value),
+                entity.canonical_label,
+                " ".join(t for _c, t in evidence).casefold(),
+            )
+            if not values:
+                continue
+
+            _write_appearance(
+                store,
+                novel_id,
+                entity,
+                persona_id,
+                values,
+                evidence,
+                report=report,
             )
 
     store.conn.commit()
     return report
+
+
+def _chapters_by_body(
+    store: Store,
+    novel_id: str,
+    target_id: str,
+    allowed: set[float] | None,
+) -> list[tuple[str, set[float]]]:
+    """`(persona_id, chapters)` for each body this character has, in order.
+
+    Grouped through `persona_at` rather than by re-reading intervals, so
+    there is exactly one rule in the codebase for "which body is this
+    consciousness in at this position". An unsplit character -- the
+    overwhelming majority -- comes back as a single group, which is
+    byte-identical to the behaviour before bodies existed.
+    """
+    from echotales.pipeline.persona.split import persona_at
+
+    by_body: dict[str, set[float]] = {}
+    for chapter in store.chapters_for_target(novel_id, target_id):
+        if allowed is not None and chapter not in allowed:
+            continue
+        by_body.setdefault(persona_at(store, target_id, chapter), set()).add(chapter)
+    if not by_body:
+        return []
+    return sorted(by_body.items())
+
+
+def _write_appearance(
+    store: Store,
+    novel_id: str,
+    entity: object,
+    persona_id: str,
+    values: dict[str, str],
+    evidence: list[tuple[float, str]],
+    *,
+    report: AppearanceReport,
+) -> None:
+    """Store one body's appearance, each attribute dated where it is stated."""
+    known = {
+        (a.key, a.value)
+        for a in store.get_attributes(TargetKind.PERSONA, persona_id)
+        if a.is_standing
+    }
+    passages = [t for _c, t in evidence]
+
+    written = 0
+    for key, value in values.items():
+        if (key, value) in known:
+            report.attributes_already_known += 1
+            continue
+        # Position this fact where the text actually attests it, not at
+        # the entity's first sighting -- see `attesting_chapter`.
+        at = attesting_chapter(value, evidence)
+        if at is None:
+            continue
+        pos = DiscoursePosition(chapter=at, offset=0)
+        store.add_attribute(
+            novel_id,
+            Attribute(
+                target_kind=TargetKind.PERSONA,
+                target_id=persona_id,
+                key=key,
+                value=value,
+                # Open-ended *from the attesting chapter*: the fact
+                # holds from where the novel states it, and a later
+                # contradicting attestation lands as its own row rather
+                # than silently replacing this one.
+                interval=FuzzyInterval.open_ended(at, last_evidence=at),
+                learned_at_pos=pos,
+                observer_id=OBSERVER_READER,
+                # A model's reading of the prose, not the prose's own
+                # assertion -- an explicit declaration outranks this.
+                asserted_by=AssertedBy.INFERENCE,
+                truth_status=TruthStatus.INFERRED,
+                evidence=f"attested ch{at:g}; {len(passages)} passages"[:200],
+            ),
+        )
+        written += 1
+
+    report.attributes_written += written
+    if written:
+        label = str(entity.canonical_label)  # type: ignore[attr-defined]
+        report.by_entity[label] = report.by_entity.get(label, 0) + written

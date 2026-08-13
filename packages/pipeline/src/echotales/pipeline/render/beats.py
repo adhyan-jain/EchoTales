@@ -66,6 +66,19 @@ class Beat:
         return self.blocks[0]
 
 
+def _is_transformation(text: str) -> bool:
+    """Does this block narrate a character changing bodies?
+
+    Uses `persona/split.py`'s cue table, the same one the graph splits
+    personas on and the director scores impact from -- so the moment a
+    character's body changes is one moment everywhere in the pipeline, not
+    three independently-drifting opinions about where it happened.
+    """
+    from echotales.pipeline.persona.split import BODY_CHANGE_CUES
+
+    return any(pattern.search(text) for pattern, _kind in BODY_CHANGE_CUES)
+
+
 def _kind(spans: list[Span]) -> str:
     """Coarse prose type for a block: what sort of picture it wants."""
     kinds = {s.span_type for s in spans}
@@ -114,6 +127,13 @@ def segment_beats(
             or (cast and prev_cast and cast != prev_cast)
             or len(current.text) >= max_beat_chars
             or len(current.blocks) >= max_beat_blocks
+            # A body change is a boundary, not merely a high score. Scoring
+            # alone could not save RI ch1's climax: the budget merge chooses
+            # *between* beats, so a dramatic block sitting inside one is
+            # unreachable by it, and "I have been reborn" was interior to a
+            # thirteen-block beat about clan elders discussing the weather.
+            # The picture changes when the body does.
+            or _is_transformation(text)
         )
 
         if starts_beat and current.blocks:
@@ -127,32 +147,79 @@ def segment_beats(
     if current.blocks:
         beats.append(current)
 
-    return _merge_to_budget(beats, max_panels)
+    return _merge_to_budget(beats, max_panels, by_block)
 
 
-def _merge_to_budget(beats: list[Beat], max_panels: int) -> list[Beat]:
-    """Fold the shortest neighbouring beats together until the chapter fits.
+def _merge_to_budget(
+    beats: list[Beat],
+    max_panels: int,
+    by_block: dict[int, list[Span]] | None = None,
+) -> list[Beat]:
+    """Fold the least *dramatic* neighbouring beats together until it fits.
 
-    Merging the *shortest* first means the moments that survive are the ones
-    the prose spends the most words on, which is the best available proxy
-    for what matters in the chapter.
+    **Word count was the wrong survival criterion and it showed.** Merging
+    shortest-first keeps whatever the prose spends the most words on, which
+    in a web novel is exposition -- cultivation-system explanation, an
+    inventory of a Gu room, a digression about a clan's history. Every
+    chapter saturates the panel budget, so this function, not the boundary
+    logic above, is what actually decides which moments get drawn; a
+    chapter's climax losing to a long paragraph about rank mechanics is a
+    panel budget spent on the least watchable material in the book.
+
+    `director.py::score_blocks` already ranks blocks by how much they want a
+    picture -- combat stems, revelations, cast changes -- for motion-clip
+    placement. Reusing it here (rather than duplicating a second, drifting
+    vocabulary, which §4.24 already caught happening once between the
+    director and `motion.py`) means one definition of "dramatic" governs
+    both which moments are drawn and which of them move.
+
+    Length stays in as a tiebreak, not the criterion: between two beats the
+    prose treats as equally dramatic, the longer one is the more developed
+    moment. Falls back to length alone when no spans are supplied, so the
+    function is still usable without a chapter's spans in hand.
     """
     if max_panels <= 0 or len(beats) <= max_panels:
         return _renumber(beats)
 
+    drama = _drama_by_block(by_block)
+
+    def weight(beat: Beat) -> tuple[int, int]:
+        return (
+            sum(drama.get(b, 0) for b in beat.blocks),
+            len(beat.text),
+        )
+
     working = list(beats)
     while len(working) > max_panels:
-        shortest = min(
-            range(len(working) - 1), key=lambda i: len(working[i].text) + len(working[i + 1].text)
+        # The cheapest adjacent pair to lose: least drama first, then least
+        # prose. Merging a pair never destroys a moment -- the two blocks
+        # stay in one beat and are still drawn, just sharing a picture.
+        weakest = min(
+            range(len(working) - 1),
+            key=lambda i: tuple(
+                a + b
+                for a, b in zip(
+                    weight(working[i]), weight(working[i + 1]), strict=True
+                )
+            ),
         )
         merged = Beat(
-            index=shortest,
-            blocks=working[shortest].blocks + working[shortest + 1].blocks,
-            text=f"{working[shortest].text} {working[shortest + 1].text}".strip(),
+            index=weakest,
+            blocks=working[weakest].blocks + working[weakest + 1].blocks,
+            text=f"{working[weakest].text} {working[weakest + 1].text}".strip(),
         )
-        working[shortest : shortest + 2] = [merged]
+        working[weakest : weakest + 2] = [merged]
 
     return _renumber(working)
+
+
+def _drama_by_block(by_block: dict[int, list[Span]] | None) -> dict[int, int]:
+    """`block_index -> impact score`, or empty when spans are unavailable."""
+    if not by_block:
+        return {}
+    from echotales.pipeline.render.director import score_blocks
+
+    return {entry.block_index: entry.score for entry in score_blocks(by_block)}
 
 
 def _renumber(beats: list[Beat]) -> list[Beat]:
