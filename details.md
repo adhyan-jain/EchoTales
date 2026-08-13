@@ -922,13 +922,70 @@ the persona side at all: nothing constructed a `Persona`, so
 `SelfPersonaBinding` was a dead table and voice/image work had nothing to
 bind to.
 
-**`build.py`** — `build_personas()` mints one persona per *character*
-entity (`kind.is_person`, so §10 item 5's typing excludes places and
-factions), binds it open-ended from first sighting, and writes the trait
+**`split.py`** — body changes: when one continuity of consciousness occupies
+a second body, and from which position. This is what makes
+`architecture.md §4`'s reincarnation row real rather than aspirational.
+
+- **Cues were grepped out of the corpus, not imagined.** RI ch1's "I have
+  been reborn, going back to the time of 500 years ago" and LOTM ch1's
+  "memories began flooding him" are both in the pattern tables verbatim.
+  §4.24's combat vocabulary scored literally zero on real chapters for the
+  opposite reason, and that lesson drove this.
+- **Evidence is narration near the character *or* their own first-person
+  line.** Both worked examples needed both halves: the cue blocks contain
+  only the pronoun "his" (an unresolved pronoun is not a mention, so a
+  same-block presence rule finds neither — §10 item 11d again), and the
+  clearest statement in each chapter is the character saying it about
+  himself. A `speaker_self_id`↔entity join on `comparison_key` is required
+  for that, the same §4.21 defect voice casting hit.
+- **Three guards, each added because the corpus broke the version without
+  it.** A passage naming a *different* character is about them (RI ch109's
+  "Fang Yuan's rebirth changed his situation" was minting bodies for every
+  bystander — 4,833 rejections on RI alone). A cue of a kind already
+  accepted is an *echo*, at any distance (Fang Yuan refers back to his
+  rebirth in ch2, 19, 71, 105, 135, 145, 187, 198 — a distance window alone
+  gave him eight bodies). And alternatives within a chapter are tried in
+  order, because keeping only the earliest cue let a veto on the weak one
+  throw away the strong one.
+- **`Task.PERSONA_SPLIT` vetoes**, one narrow call per candidate — "is this
+  the moment, or a reference back to it". Rare enough to be free: 8 calls
+  for RI vol 1. Its prompt carries the cue block *and its neighbours*,
+  since the matched sentence alone ("In short, it is the ability to be
+  reborn") is not judgeable.
+- **`persona_at(store, self_id, position)`** is the render-time half and the
+  accessor every consumer now uses. Total by construction: a graph with no
+  bindings (every database built before this module) returns `:body1`, so
+  nothing breaks, it simply does not benefit.
+
+Measured, all three novels, local ollama, free: RI **1 change — Fang Yuan,
+chapter 1, rebirth**, which is the correct answer; LOTM 0 (blocked upstream —
+resolve still splits Zhou Mingrui from Klein, so there is no one self to
+carry two bodies); ORV 1 false positive (Bihyung, from a passage discussing
+reincarnation in the abstract). Costs ~0 wall clock on top of Phase 7:
+182.7s for the full RI persona stage against §4.22's 191.1s.
+
+**`canon.py::CANON_BY_BODY`** — per-body appearance overrides, layered on the
+character's entry. Extraction cannot describe a body the prose never
+describes, and RI narrates Fang Yuan's death scene and almost nothing after
+it, so what the fifteen-year-old looks like is written down by a reader. This
+is what makes the split *visible*: the same character at ch1 and ch20 now
+renders "gaunt with age and injury" versus "slim adolescent build, not yet
+grown", from one query differing only in position.
+
+**`build.py`** — `build_personas()` mints one persona per *body epoch* of
+each *character* entity (`kind.is_person`, so §10 item 5's typing excludes
+places and factions), binds each over its interval, and writes the trait
 profile as `Attribute` rows under `TargetKind.PERSONA` — where
 `models.Attribute`'s own docstring says appearance/age/voice belong, so
 `get_panel_cast` and voice casting read them through the existing accessor.
-Also computes prominence from final mention counts. `load_trait_profiles()`
+Also computes prominence from final mention counts. Traits are written to
+*every* epoch (demographics and personality belong to the consciousness, not
+the body it wears); appearance is the opposite and is filed against the body
+attested at each fact's own chapter, which is the whole point of the split.
+Bindings are cleared before rewriting — `add_self_persona_binding` is a plain
+INSERT because one self legitimately has several, so re-running would
+otherwise bind each body twice (`Store.clear_self_persona_bindings`).
+`load_trait_profiles()`
 rebuilds profiles from those attributes so casting can run as a separate
 stage against an already-built graph.
 

@@ -140,14 +140,34 @@ rows under `TargetKind.PERSONA`, which is where this section says appearance
 and timbre belong. Voice casting and panel casting both read them through
 the existing `get_attributes` accessor rather than a side table.
 
-**One persona per self, so far, and the table above is therefore still
-aspirational below its first row.** Every case from reincarnation downward
-needs a *second* persona, and deciding that a second body exists is an
-identity-resolution question Phase 7 sits downstream of — `resolve/` decides
-who is whom. §4.15's LOTM case (Zhou Mingrui acquiring Klein Moretti) is
-exactly this: the identity link now fires, but both names land on one self
-with one persona rather than one self with two sequential personas. Closing
-that is a `resolve/` change that emits a persona split, not a Phase 7 one.
+**The reincarnation row of that table is now real** (`persona/split.py`).
+Phase 7 detects that a consciousness has changed bodies and mints one persona
+per **body epoch**, bound over contiguous half-open story-time intervals, so
+`persona_at(store, self_id, position)` answers "which body is this
+consciousness in *here*" — and every consumer of persona data (appearance
+extraction, reference sheets, panel prompts, `world/context.py`) asks that
+question instead of assuming `:body1`.
+
+Detection is lexical first and model-vetoed second: cue patterns read out of
+the corpus propose candidates, and one narrow model call per candidate
+decides whether the passage *is* the transition or merely refers back to one.
+The distinction carries all the weight — Fang Yuan's rebirth is mentioned
+again in eight later chapters, and a detector that cannot tell an event from
+its echo gives him eight bodies. Measured on RI vol 1: one change, chapter 1,
+which is the correct answer.
+
+Boundaries are **sub-chapter**, because RI's transition happens partway
+through chapter 1 and a chapter-granular boundary would put the 500-year-old
+and the fifteen-year-old in the same epoch. Story positions are floats
+precisely so this is expressible.
+
+**Still open on the other rows.** §4.15's LOTM case (Zhou Mingrui acquiring
+Klein Moretti) is *not* closed by this, and the reason is upstream: resolve
+still produces two separate selves for those names, so there is no single
+consciousness for two personas to hang off. That remains a `resolve/`
+declaration-detector change. Body swap, clones and possession need
+concurrent or crossed bindings, which the schema expresses and nothing yet
+emits.
 
 A separate, smaller gap the persona runner does *not* close: unattributed
 dialogue needs a *distinct voice* far more often than it needs a *known

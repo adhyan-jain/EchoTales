@@ -5,8 +5,10 @@ re-deriving context. Read this first, then `architecture.md` for the model and
 `details.md` for per-file detail.
 
 **Last updated:** 2026-08-13. **Picking this up fresh? Read §10 item 11
-first** — it states the free-models-first constraint, what works end to end
-today, and the highest-value work left (the persona split). Prior to that,
+first** — it states the free-models-first constraint and what works end to
+end today. Its highest-value item, **the persona split, is now done** — see
+§4.27; the next one is the ablation figure (item 11b), whose data now
+exists. Prior to that,
 2026-08-12: Prior session landed six pipeline root-cause
 fixes, tier-4 cold-start speaker attribution, an entity auto-flag pass, three
 new corrections capabilities, and gold-eval wiring — all detailed in §4.20,
@@ -181,7 +183,7 @@ blocker) — check its status before building on or discarding it.
 from a separate agent working chapters 1-100 in the webview — do not
 overwrite.
 
-181: **Test status:** **587 passing**, no failing tests after recent fixes.
+181: **Test status:** **634 passing**, no failing tests after recent fixes.
 182: Updated pipeline stability:
 183: - Added `heal_json` with schema‑aware repair to robustly handle truncated LLM outputs.
 184: - Modified `resolve_novel` to clear stale resolution events and bindings, ensuring idempotent re‑runs.
@@ -257,7 +259,7 @@ Measured on the real corpus, not projected.
 | 6b Contradiction sweep | `pipeline/resolve/contradiction.py` | **Built, unvalidated** — §4.8 | `split` fires; 2 found on RI vol 1 |
 | 7 Eval harness | `pipeline/eval/` | **Gold exists, unconfirmed; wired into `eval`** — §4.12, §4.20 | B-cubed scorer built (`coref_score.py`); RI gold extended ch1-5 → ch1-60 (3,457 mentions, still 0% confirmed); `echotales eval --novel X` now auto-scores against `data/gold/X.jsonl` when present — no longer a separate manual step |
 | CLI + review | `pipeline/commands.py`, `review.py` | **Working, + script view** — §4.13 | `run` / `review [--script]` / `query` / `export` / `eval` |
-| 7 Personas + traits | `pipeline/persona/` | **Working** — §4.21 | RI vol 1: 82 personas + bindings. Gender resolved for 51% of cast deterministically (91% unknown before pronoun counting) |
+| 7 Personas + traits | `pipeline/persona/` | **Working, + body split** — §4.21, §4.27 | RI vol 1: 76 personas / 75 characters (Fang Yuan has two bodies, split at ch1 b82). Gender resolved for 51% of cast deterministically (91% unknown before pronoun counting) |
 | 8 Voice casting | `pipeline/voice/` | **Working, stub engine only** — §4.21 | Casts every character, writes manifest + casting report. **No real audio yet**: VCTK downloading, `torch`/`chatterbox` not installed |
 | 8 Dataset export | — | **Not started** | JSONL export exists but is machine-only |
 
@@ -1205,6 +1207,111 @@ Also surfaced: NER returned truncated JSON on chapter 143 (handled, chapter
 skipped with a warning) — pre-existing robustness gap in `chapter_ner.py`,
 not new.
 
+### 4.27 The persona split — two bodies, one consciousness *(2026-08-13)*
+
+**§10 item 11a, done.** `persona/split.py`. Fang Yuan is a 500-year-old
+demonic cultivator in chapter 1 and a fifteen-year-old clan boy for the
+other 198 chapters, and until now the graph said he was one body throughout
+— which made every panel of him wrong on one side of that line or the other.
+`architecture.md §4` was designed around exactly this case and `build.py`
+carried "one persona per self, for now" as a stated limitation. It no longer
+does.
+
+**The demonstration, and it is the figure worth putting in the write-up.**
+One character, one query, nothing different but the position:
+
+```
+ch1 : 1boy, solo, male, tall and lean, gaunt with age and injury,
+      midnight black very long straight hair down to the waist, ...
+      aged, hollow-cheeked, cold expressionless stare
+ch20: 1boy, solo, male, slim adolescent build, not yet grown,
+      midnight black very long straight hair down to the waist, ...
+      a boy's face wearing an adult's cold, ruthless expression
+```
+
+Identity (hair, eyes, build-independent features) survives the change; the
+body does not. A flat pipeline cannot produce the second line at all.
+
+**Measured, all three novels, local ollama, free:**
+
+| Novel | Candidates | Model-vetoed | Confirmed |
+|---|---:|---:|---|
+| RI | 8 | 7 | **1 — Fang Yuan, ch1 b82, rebirth (correct)** |
+| LOTM | 10 | 13 | 0 — see below |
+| ORV | 6 | 6 | 1 false positive (Bihyung) |
+
+Full RI persona stage: **182.7s for 76 personas across 75 characters**,
+against §4.22's 191.1s for 75 — the split costs nothing measurable.
+
+**The corpus corrected four things, none of which a fixture would have.**
+
+1. **Both worked examples sit in blocks with no resolved mention.** RI ch1's
+   "memories of his previous life on Earth emerged before his eyes" and
+   LOTM ch1's "memories began flooding him" refer to the character only as
+   "his" — and an unresolved pronoun is not a mention, so the obvious
+   same-block presence rule found *neither* of the two cases the module
+   exists for. Widened to a ±3-block neighbourhood. This is §10 item 11d
+   (mention resolution is the ceiling) showing up in a new place.
+2. **The clearest statement in each chapter is the character's own line.**
+   Fang Yuan *says* "With the use of the Spring Autumn Cicada I have been
+   reborn"; Zhou Mingrui *thinks* "C-could I have transmigrated?".
+   Narration-only detection missed both. Dialogue and inner monologue now
+   count when the speaker is this entity and the line is first-person —
+   which needs the `speaker_self_id`↔entity join on `comparison_key`, the
+   same §4.21 defect voice casting hit.
+3. **Echoes swamp events.** Fang Yuan's rebirth is referred back to in
+   chapters 2, 19, 71, 105, 135, 145, 187 and 198. A distance window alone
+   gave him **eight bodies**. A cue of a kind already accepted is now folded
+   at any distance; only a genuinely different kind can open a new epoch.
+4. **A rebirth is narrated once and stood next to by everyone in the
+   scene.** "Fang Yuan's rebirth changed his current situation" (ch109) was
+   minting a second body for *Jia Fu*, who is merely nearby. A passage that
+   names another character and not this one is about them — 4,833 rejections
+   on RI, free, no model call.
+
+**A cue that is wrong in a plausible-sounding way is worse than one that
+never fires.** The first soul-transfer pattern matched LOTM ch126's "his
+mind, body, and soul suddenly entered a magical state" — a trance — and the
+**model agreed with it**, so the veto did not save it and Klein got a
+spurious second body. Fixed by requiring a destination body in the pattern.
+Do not assume the adjudicator catches a bad regex; it is a second opinion,
+not a filter.
+
+**LOTM's transmigration is still not expressible, and the reason is
+upstream.** Resolve produces `Zhou Mingrui` and `Klein` as two separate
+selves (§4.15, still open — needs the declaration detector), so there is no
+single consciousness for two personas to hang off. Every ch1 candidate there
+was correctly vetoed as a back-reference; the two the model kept before the
+regex fix were the trance above. This is a clean statement of what §4.15
+costs, not a defect in this module.
+
+**What changed downstream.** `f"{self_id}:body1"` was hardcoded in seven
+places; all now call `persona_at(store, self_id, position)`. The one that
+matters is **appearance extraction**, which files each attribute against the
+body attested at that fact's own chapter — so RI ch1's "green robes" (his
+death-scene attire) lands on body 1 and does not describe the teenager.
+`reference_gen` generates one sheet per body, seeded per body so two bodies
+of one character do not come out as the same face. `persona_at` is total: a
+database with no bindings returns `:body1`, so every existing graph keeps
+working unsplit.
+
+**`canon.py::CANON_BY_BODY` is the honest half of the demo, and should be
+read as such.** Fang Yuan's body-2 appearance is *reader-supplied*, not
+extracted — RI's narration describes his death scene and almost nothing
+about him afterwards (§4.24 flagged this already), so extraction gave body 2
+nothing at all. The mechanism is proven end to end on extracted data (the
+ch1 attire routed correctly by itself); what the fifteen-year-old looks like
+is a reader writing down what the prose never says, exactly the argument
+`canon.py` was created for. Do not present the ch1/ch20 contrast as evidence
+that *extraction* found two bodies. It is evidence that the **graph** knows
+there are two and hands the right one to the right chapter.
+
+**Known rough edge, pre-existing and now more visible:** re-running the
+persona stage against a graph that already has persona attributes appends a
+second copy of each trait row rather than replacing it (`add_attribute` is
+an INSERT). Harmless — `_facts_as_of` takes the latest attestation — but an
+attribute count off that table will double-count.
+
 ### 4.26 `world/` — structured facts for every entity, and position-filtered retrieval *(2026-08-13)*
 
 **The gap.** The graph has typed its entities since §10 item 5 and has had a
@@ -2072,20 +2179,25 @@ webview/     React viewer (git-ignored node_modules/build; §8a, §4.18)
     actually a pipeline problem. §4.25 has the measured cost numbers for
     when that point arrives.
 
-    a. **Build the persona split — the highest-value work left, and free.**
-       Fang Yuan is a 500-year-old man in ch1 and a fifteen-year-old from
-       ch2. He needs **two personas on one self**, exactly the case
-       `architecture.md §4` was designed around and `persona/build.py`
-       flags as its known "one persona per self, for now" limitation.
-       Appearance is already dated per attestation (§4.24) and retrieval is
-       already position-filtered (§4.26), so the graph side is ready; what
-       is missing is minting the second persona and selecting between them
-       at render time. **This is the strongest research demo available** —
-       a baseline pipeline cannot render it at all.
+    a. ~~**Build the persona split**~~ **Done, §4.27** —
+       `persona/split.py`. Fang Yuan now has two personas on one self, split
+       at chapter 1 block 82, and every consumer of persona data selects
+       between them by position. Verified against all three novels with
+       local ollama. What remains from this item: the *other* rows of
+       `architecture.md §4`'s table (body swap, clones, possession) still
+       have nothing emitting concurrent or crossed bindings, and LOTM's
+       transmigration is still blocked upstream by §4.15's declaration
+       detector — resolve produces two selves there, so there is no one
+       consciousness to carry two bodies.
     b. **Render the ablation figure**: ch1 and ch40 twice, once with
        `state_of`-driven persona/appearance and once flat. The flat version
        drawing a teenager as a 500-year-old is the figure that *proves* the
-       contribution rather than asserting it.
+       contribution rather than asserting it. **The data behind that figure
+       now exists** (§4.27 has the two prompts, which differ by position
+       alone); what is left is generating the four images and laying them
+       out, plus a `--flat` switch that pins `persona_at` to the latest
+       body so the ablation arm is a real code path rather than a hand-
+       edited prompt.
     c. **Re-run `world/` on the other two novels** and check the vocabulary
        holds up outside xianxia — LOTM is Victorian, ORV is modern Seoul,
        and `world/schema.py`'s keys were chosen against RI.
