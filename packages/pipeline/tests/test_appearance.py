@@ -261,7 +261,7 @@ class TestReferenceGeneration:
         )
         assert "black long hair" in prompt
         assert "wearing green robes" in prompt
-        assert "manga style" in prompt and "monochrome" in prompt
+        assert "xianxia" in prompt and "monochrome" in prompt
         # Danbooru tag, not the English word: anime checkpoints weight it far
         # more strongly, and it is what decides the figure's sex. Without it
         # Fang Yuan generated as a woman on the first real run.

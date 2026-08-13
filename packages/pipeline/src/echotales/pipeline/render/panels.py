@@ -171,10 +171,17 @@ class MangaDiffusersEngine:
     """
 
     name: str = "manga"
-    #: An anime/manga finetune, not a photorealistic base -- see the class
-    #: docstring. Overridable so a locally-downloaded checkpoint can be
-    #: pointed at without a code change.
-    model_id: str = "Meina/MeinaMix_V11"
+    #: **GuoFeng3, a Chinese antique-style checkpoint -- not a general anime
+    #: one.** The first real chapter was generated with MeinaMix, a cute
+    #: anime finetune, and the result read as soft manhwa: round friendly
+    #: faces, cherry blossoms, decorative birds, none of it xianxia. That is
+    #: the checkpoint's training distribution asserting itself, and no
+    #: prompt wording overrides it -- the same lesson as the colour output.
+    #: GuoFeng3 is trained on Chinese antique/xianxia character art and
+    #: ships male antique characters and scene elements specifically, which
+    #: is exactly this corpus. Still SD1.5-based, so the SD1.5 IP-Adapter
+    #: keeps working unchanged.
+    model_id: str = "xiaolxl/GuoFeng3"
     ip_adapter_repo: str = "h94/IP-Adapter"
     ip_adapter_weight: str = "ip-adapter_sd15.bin"
     device: str = "cuda"

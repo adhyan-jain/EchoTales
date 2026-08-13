@@ -49,7 +49,7 @@ from echotales.core.enums import (
     TruthStatus,
 )
 from echotales.core.interval import FuzzyInterval
-from echotales.core.models import Attribute
+from echotales.core.models import Attribute, DiscoursePosition
 from echotales.core.store import Store
 
 log = logging.getLogger(__name__)
@@ -189,6 +189,87 @@ class AppearanceReport:
         )
 
 
+#: Words that mark a sentence as *about how someone looks*. Used to find
+#: descriptive passages across the whole novel rather than hoping they fall
+#: on a sampling grid.
+_APPEARANCE_CUES = (
+    "hair", "eyes", "eye", "gaze", "stare", "face", "features", "skin",
+    "complexion", "robe", "robes", "clothes", "clothing", "dressed", "wore",
+    "wearing", "attire", "sleeve", "tall", "short", "thin", "lean", "slender",
+    "stout", "build", "figure", "handsome", "beautiful", "ugly", "plain",
+    "scar", "beard", "brow", "pale",
+)
+
+
+def find_descriptive_blocks(
+    store: Store, novel_id: str, target_id: str
+) -> list[tuple[float, int]]:
+    """`(chapter, block_index)` for every block that both contains this
+    entity as PRESENT *and* reads like a physical description.
+
+    **This replaced uniform chapter sampling, which was losing the
+    descriptions it existed to find.** Striding evenly across a character's
+    197 chapters samples 40 of them -- 20% coverage -- and appearance
+    sentences are rare and concentrated rather than evenly spread, so the
+    stride missed them by construction. Measured on RI: Fang Yuan's
+    canonical "his eyes dark like the abyss" is chapter 33, in a
+    `NARRATION_DESCRIPTION` block where he is `PRESENT` -- every upstream
+    stage had done its job, and the sampler simply never looked at chapter
+    33, because the grid went 30, 35.
+
+    A `LIKE` scan over the entity's own blocks is both cheaper than the
+    per-chapter span loads it replaces and complete over the volume, which
+    is the point of pre-processing the volume in the first place.
+    """
+    cue_sql = " OR ".join("LOWER(s.text) LIKE ?" for _ in _APPEARANCE_CUES)
+    params: list[object] = [novel_id, target_id, ReferenceMode.PRESENT.value]
+    params += [f"%{c}%" for c in _APPEARANCE_CUES]
+
+    rows = store.conn.execute(
+        "SELECT DISTINCT s.chapter, s.block_index FROM span s "
+        "JOIN mention m ON m.novel_id = s.novel_id AND m.chapter = s.chapter "
+        "  AND m.block_index = s.block_index "
+        "WHERE s.novel_id = ? AND m.target_id = ? AND m.reference_mode = ? "
+        f"AND s.span_type IN ('NARRATION_DESCRIPTION','NARRATION_ACTION') "
+        f"AND ({cue_sql}) "
+        "ORDER BY s.chapter, s.block_index",
+        params,
+    ).fetchall()
+    return [(float(r["chapter"]), int(r["block_index"])) for r in rows]
+
+
+def gather_appearance_evidence(
+    store: Store,
+    novel_id: str,
+    target_id: str,
+    *,
+    max_chapters: int = 40,
+    max_passages: int = _MAX_PASSAGES,
+    allowed_chapters: set[float] | None = None,
+) -> list[tuple[float, str]]:
+    """`(chapter, passage)` pairs -- the same evidence, with its provenance.
+
+    **The chapter is load-bearing, not decoration.** An appearance is not a
+    timeless property: Fang Yuan is a 500-year-old man in chapter 1 and a
+    fifteen-year-old from chapter 2 onward, and the novel reveals facts
+    about each body at different points. An attribute recorded without the
+    chapter it came from cannot answer `state_of(..., position)` at all --
+    it can only assert one flat appearance for the whole novel, which for a
+    regressor is wrong for most of the book.
+    """
+    pairs: list[tuple[float, str]] = []
+    for chapter, text in _gather_pairs(
+        store,
+        novel_id,
+        target_id,
+        max_chapters=max_chapters,
+        max_passages=max_passages,
+        allowed_chapters=allowed_chapters,
+    ):
+        pairs.append((chapter, text))
+    return pairs
+
+
 def gather_appearance_passages(
     store: Store,
     novel_id: str,
@@ -250,42 +331,68 @@ def gather_appearance_passages(
     # per-chapter cap is what makes "typical appearance" mean typical.
     per_chapter = max(2, max_passages // len(chapters))
 
-    named: list[str] = []
-    unnamed: list[str] = []
-    overflow: list[str] = []
+    return [t for _c, t in _gather_pairs(
+        store,
+        novel_id,
+        target_id,
+        max_chapters=max_chapters,
+        max_passages=max_passages,
+        allowed_chapters=allowed_chapters,
+    )]
 
-    for chapter in chapters:
-        present_blocks = {
-            m.block_index
-            for m in store.get_mentions(novel_id, chapter)
-            if m.target_id == target_id and m.reference_mode is ReferenceMode.PRESENT
-        }
-        if not present_blocks:
-            continue
 
+def _gather_pairs(
+    store: Store,
+    novel_id: str,
+    target_id: str,
+    *,
+    max_chapters: int,
+    max_passages: int,
+    allowed_chapters: set[float] | None,
+) -> list[tuple[float, str]]:
+    # Targeted retrieval across the WHOLE volume, not a 20% stride -- see
+    # `find_descriptive_blocks` on why the stride was losing exactly the
+    # sentences this stage exists to find.
+    wanted = find_descriptive_blocks(store, novel_id, target_id)
+    if allowed_chapters is not None:
+        wanted = [(c, b) for c, b in wanted if c in allowed_chapters]
+    if not wanted:
+        return []
+
+    by_chapter: dict[float, list[int]] = {}
+    for chapter, block in wanted:
+        by_chapter.setdefault(chapter, []).append(block)
+
+    # Still capped per chapter, so one talkative chapter cannot crowd out
+    # the rest of the arc -- but the candidates are now descriptive blocks
+    # rather than whatever happened to sit on a grid line.
+    per_chapter = max(2, max_passages // max(1, min(len(by_chapter), max_chapters)))
+
+    named: list[tuple[float, str]] = []
+    unnamed: list[tuple[float, str]] = []
+    overflow: list[tuple[float, str]] = []
+    seen: set[str] = set()
+    surfaces = _surface_forms(store, novel_id, target_id)
+
+    for chapter in sorted(by_chapter):
+        blocks = set(by_chapter[chapter])
         taken = 0
         for span in store.get_spans(novel_id, chapter):
-            if span.block_index not in present_blocks:
-                continue
-            if span.span_type not in _DESCRIPTIVE:
+            if span.block_index not in blocks or span.span_type not in _DESCRIPTIVE:
                 continue
             text = span.text.strip()
             if not text or text in seen:
                 continue
             seen.add(text)
             clipped = text[:_MAX_PASSAGE_CHARS]
-
             if taken >= per_chapter:
-                # Past this chapter's share. Kept aside rather than dropped,
-                # to backfill if the novel simply has fewer descriptive
-                # passages than the budget wants.
-                overflow.append(clipped)
+                overflow.append((chapter, clipped))
                 continue
             taken += 1
             if any(sf in clipped.casefold() for sf in surfaces):
-                named.append(clipped)
+                named.append((chapter, clipped))
             else:
-                unnamed.append(clipped)
+                unnamed.append((chapter, clipped))
 
     return (named + unnamed + overflow)[:max_passages]
 
@@ -370,6 +477,39 @@ _GENERIC_NOUNS = frozenset(
         "large", "features", "appearance", "young", "old", "man", "woman",
     }
 )
+
+
+def attesting_chapter(
+    value: str, evidence: list[tuple[float, str]]
+) -> float | None:
+    """The earliest chapter whose passage actually states this value.
+
+    This is what makes an appearance attribute answerable by
+    `state_of(..., position)`. Without it every attribute is written against
+    the entity's first attestation, which asserts that a description
+    revealed in chapter 90 was true -- and known to the reader -- from
+    chapter 1. For a regressor that is wrong for most of the novel: Fang
+    Yuan's aged, pre-regression body and his fifteen-year-old one are both
+    real, at different positions, and a flat profile can represent neither.
+
+    Returns None when nothing attests the value, which is the same signal
+    `_grounded` gives and is handled the same way -- the value is dropped.
+    """
+    words = [
+        w
+        for w in re.findall(r"[a-z]{3,}", value.casefold())
+        if w not in _GENERIC_NOUNS
+    ]
+    if not words:
+        # Nothing checkable; attribute it to the earliest evidence rather
+        # than inventing a position.
+        return min((c for c, _ in evidence), default=None)
+
+    for chapter, text in sorted(evidence):
+        low = text.casefold()
+        if all(w in low for w in words):
+            return chapter
+    return None
 
 
 def _grounded(value: str, blob: str) -> bool:
@@ -484,13 +624,14 @@ def extract_appearance(
             report.skipped_not_prominent += 1
             continue
 
-        passages = gather_appearance_passages(
+        evidence = gather_appearance_evidence(
             store,
             novel_id,
             entity.id,
             max_chapters=max_chapters,
             allowed_chapters=allowed,
         )
+        passages = [t for _c, t in evidence]
         if not passages:
             report.skipped_no_evidence += 1
             continue
@@ -512,7 +653,7 @@ def extract_appearance(
         values = _clean_values(
             _values_from(result.value),
             entity.canonical_label,
-            " ".join(passages).casefold(),
+            " ".join(t for _c, t in evidence).casefold(),
         )
         if not values:
             continue
@@ -529,6 +670,13 @@ def extract_appearance(
             if (key, value) in known:
                 report.attributes_already_known += 1
                 continue
+
+            # Position this fact where the text actually attests it, not at
+            # the entity's first sighting -- see `attesting_chapter`.
+            at = attesting_chapter(value, evidence)
+            if at is None:
+                continue
+            pos = DiscoursePosition(chapter=at, offset=0)
             store.add_attribute(
                 novel_id,
                 Attribute(
@@ -536,17 +684,18 @@ def extract_appearance(
                     target_id=persona_id,
                     key=key,
                     value=value,
-                    interval=FuzzyInterval.open_ended(
-                        entity.first_attested_pos.chapter,
-                        last_evidence=entity.first_attested_pos.chapter,
-                    ),
-                    learned_at_pos=entity.first_attested_pos,
+                    # Open-ended *from the attesting chapter*: the fact
+                    # holds from where the novel states it, and a later
+                    # contradicting attestation lands as its own row rather
+                    # than silently replacing this one.
+                    interval=FuzzyInterval.open_ended(at, last_evidence=at),
+                    learned_at_pos=pos,
                     observer_id=OBSERVER_READER,
                     # A model's reading of the prose, not the prose's own
                     # assertion -- an explicit declaration outranks this.
                     asserted_by=AssertedBy.INFERENCE,
                     truth_status=TruthStatus.INFERRED,
-                    evidence=f"{len(passages)} narration passages"[:200],
+                    evidence=f"attested ch{at:g}; {len(passages)} passages"[:200],
                 ),
             )
             written += 1

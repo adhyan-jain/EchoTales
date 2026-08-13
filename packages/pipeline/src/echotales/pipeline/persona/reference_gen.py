@@ -47,6 +47,7 @@ from echotales.core.interval import FuzzyInterval
 from echotales.core.models import Attribute
 from echotales.core.store import Store
 from echotales.pipeline.persona.attire import resolve_appearance
+from echotales.pipeline.persona.canon import apply_canon
 
 log = logging.getLogger(__name__)
 
@@ -83,15 +84,24 @@ _PROMPT_ORDER = (
 #: reference, not a page of model sheets.
 REFERENCE_STYLE = (
     "solo, single character, upper body portrait, facing viewer, "
-    "detailed face, neutral expression, plain white background, "
-    "monochrome, greyscale, manga style, ink lines, screentone shading"
+    "detailed face, plain white background, "
+    # Xianxia, not cute anime. The first real cast came out as soft
+    # manhwa -- round friendly faces on a cute-anime checkpoint. These
+    # terms plus the GuoFeng3 checkpoint are what move it toward the
+    # serious Chinese cultivation-novel register the corpus actually has.
+    "xianxia, wuxia, ancient chinese, guofeng, hanfu robes, "
+    "serious cold expression, mature adult proportions, sharp features, "
+    "monochrome, greyscale, ink wash painting, detailed linework"
 )
 
 REFERENCE_NEGATIVE = (
     "color, colored, vibrant, photorealistic, 3d render, western comic, "
     "watermark, text, speech bubble, multiple views, character sheet, "
-    "multiple poses, collage, grid, full body, extra limbs, deformed hands, "
-    "two people, crowd"
+    "multiple poses, collage, grid, extra limbs, deformed hands, "
+    "two people, crowd, "
+    # The cute-manhwa failure mode, named explicitly.
+    "chibi, cute, moe, kawaii, big round eyes, child, young girl, "
+    "school uniform, modern clothing, cherry blossoms, birds"
 )
 
 
@@ -341,6 +351,11 @@ def generate_references(
         # Genre defaults for whatever the prose never stated. Without this
         # the diffusion model picks those features itself, differently every
         # time it is asked -- see `attire.py::APPEARANCE_DEFAULTS`.
+        # Canon first (a reader beats an extractor), then genre defaults
+        # for whatever neither states.
+        appearance = apply_canon(
+            novel_id, str(entity.canonical_label), appearance  # type: ignore[attr-defined]
+        )
         appearance = resolve_appearance(novel_id, appearance)
         prompt = build_reference_prompt(
             entity.canonical_label,  # type: ignore[attr-defined]
