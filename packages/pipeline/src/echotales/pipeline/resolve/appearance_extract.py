@@ -129,8 +129,12 @@ def eligible_prominence(store: Store, novel_id: str, entity: object) -> Prominen
     return Prominence.INCIDENTAL
 
 #: Passage sampling bounds. Enough prose to characterise a face without
-#: turning a per-entity call into a per-chapter one.
-_MAX_PASSAGES = 40
+#: turning a per-entity call into a per-chapter one. Raised from 40 once
+#: sampling was spread across the volume rather than front-loaded: with an
+#: even stride there is more *distinct* description to be had, and a
+#: character's look is usually stated in a handful of sentences scattered
+#: over their whole arc.
+_MAX_PASSAGES = 60
 _MAX_PASSAGE_CHARS = 400
 
 SYSTEM = (
@@ -189,7 +193,7 @@ def gather_appearance_passages(
     novel_id: str,
     target_id: str,
     *,
-    max_chapters: int = 25,
+    max_chapters: int = 40,
     max_passages: int = _MAX_PASSAGES,
     allowed_chapters: set[float] | None = None,
 ) -> list[str]:
@@ -219,14 +223,23 @@ def gather_appearance_passages(
     seen: set[str] = set()
     surfaces = _surface_forms(store, novel_id, target_id)
 
-    limit = None if allowed_chapters is not None else max_chapters
     chapters = [
         c
-        for c in store.chapters_for_target(novel_id, target_id, limit=limit)
+        for c in store.chapters_for_target(novel_id, target_id)
         if allowed_chapters is None or c in allowed_chapters
     ]
     if not chapters:
         return []
+
+    # Sample **evenly across the character's whole run**, not the first N
+    # chapters they appear in. The full volume is pre-processed precisely so
+    # appearance can be read from everywhere a character is described, and
+    # `LIMIT`-ing to the earliest chapters threw that away: it profiled Fang
+    # Yuan entirely from chapter 1, the scene he dies in. An even stride
+    # keeps the cost bounded while covering the arc.
+    if len(chapters) > max_chapters:
+        stride = len(chapters) / max_chapters
+        chapters = [chapters[int(i * stride)] for i in range(max_chapters)]
 
     # Spread the budget across chapters instead of filling it from the
     # earliest one. Measured on RI: Fang Yuan's 40-passage sample came
@@ -332,6 +345,51 @@ def build_prompt(label: str, passages: list[str]) -> str:
     return "\n".join(lines)
 
 
+#: Words that describe a *state* of hair or clothing rather than its
+#: identity. `hair_style` is the field these leak into: "disheveled" is not
+#: a hairstyle, it is what happened to a hairstyle, and storing it makes a
+#: character permanently mid-crisis (measured on RI: Fang Yuan's chapter 1
+#: death scene put `hair_style="disheveled"` on his standing profile).
+_TRANSIENT_DESCRIPTORS = (
+    "disheveled", "dishevelled", "messy", "tangled", "matted", "unkempt",
+    "bloodied", "bloody", "torn", "tattered", "shredded", "ragged",
+    "burnt", "singed", "soaked", "drenched", "dirty", "muddy",
+)
+
+
+def _clean_values(values: dict[str, str], label: str) -> dict[str, str]:
+    """Drop extractions that are about a moment, a technique, or someone else.
+
+    Three filters, each from a real mis-extraction on RI:
+
+    - **Transient descriptors** in identity fields ("disheveled" as a
+      `hair_style`) -- the state/identity split again, applied to the value
+      rather than the key.
+    - **Self-referential values** ("streamline, matching up with Fang Yuan's
+      slowly growing body" as his own `height_build`). A description of the
+      subject never needs to name the subject; when it does, the model has
+      quoted a comparison or a technique's description instead.
+    - **Overlong values**, which are always a swallowed sentence rather than
+      an attribute.
+    """
+    folded_label = label.casefold()
+    out: dict[str, str] = {}
+
+    for key, value in values.items():
+        low = value.casefold()
+
+        if len(value) > 120:
+            continue
+        if key != "current_condition" and folded_label in low:
+            continue
+        if key in ("hair_style", "typical_attire", "distinguishing_features"):
+            if any(word in low for word in _TRANSIENT_DESCRIPTORS):
+                continue
+        out[key] = value
+
+    return out
+
+
 def _values_from(response: AppearanceResponse) -> dict[str, str]:
     """Flatten a response to key -> value, dropping empties.
 
@@ -358,7 +416,7 @@ def extract_appearance(
     *,
     client: object,
     chapters: list[float] | None = None,
-    max_chapters: int = 25,
+    max_chapters: int = 40,
 ) -> AppearanceReport:
     """Read appearance out of narration and store it under each persona.
 
@@ -407,7 +465,9 @@ def extract_appearance(
             continue
 
         report.entities_called += 1
-        values = _values_from(result.value)
+        values = _clean_values(
+            _values_from(result.value), entity.canonical_label
+        )
         if not values:
             continue
 

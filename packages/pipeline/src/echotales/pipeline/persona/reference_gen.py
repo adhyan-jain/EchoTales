@@ -46,6 +46,7 @@ from echotales.core.enums import (
 from echotales.core.interval import FuzzyInterval
 from echotales.core.models import Attribute
 from echotales.core.store import Store
+from echotales.pipeline.persona.attire import resolve_appearance
 
 log = logging.getLogger(__name__)
 
@@ -198,6 +199,19 @@ def _digest(prompt: str) -> str:
     return hashlib.sha256(prompt.encode("utf-8")).hexdigest()[:16]
 
 
+def _seed_for(entity_id: str, base: int) -> int:
+    """A stable seed unique to this character.
+
+    Derived from the entity id rather than `random`, so the same character
+    regenerates to the same face on any machine and in any run -- the whole
+    point of a reference sheet. Mixed with `base` so a caller can shift the
+    entire cast to a different draw without losing per-character
+    separation.
+    """
+    digest = hashlib.sha256(f"{base}:{entity_id}".encode()).hexdigest()
+    return int(digest[:8], 16)
+
+
 def _write_marker(
     store: Store, novel_id: str, persona_id: str, key: str, value: str, entity: object
 ) -> None:
@@ -271,6 +285,10 @@ def generate_references(
             continue
 
         gender, age_band = _demographics(store, persona_id)
+        # Genre defaults for whatever the prose never stated. Without this
+        # the diffusion model picks those features itself, differently every
+        # time it is asked -- see `attire.py::APPEARANCE_DEFAULTS`.
+        appearance = resolve_appearance(novel_id, appearance)
         prompt = build_reference_prompt(
             entity.canonical_label,  # type: ignore[attr-defined]
             appearance,
@@ -302,7 +320,11 @@ def generate_references(
                 negative_prompt=REFERENCE_NEGATIVE,
                 width=width,
                 height=height,
-                seed=seed,
+                # Per-character, not per-run: two characters sharing one
+                # seed and a similar prompt come out looking like siblings,
+                # and a seed that moved between runs would redraw a face
+                # that downstream panels are already conditioned on.
+                seed=_seed_for(str(entity.id), seed),  # type: ignore[attr-defined]
             )
         )
 

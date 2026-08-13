@@ -38,6 +38,60 @@ NOVEL_STYLE: dict[str, str] = {
 
 _DEFAULT_STYLE = "web-novel illustration, no further style data seeded for this novel"
 
+#: Per-novel appearance defaults, filling attributes the prose never states.
+#:
+#: **A default is not a guess, and it is not randomness.** The text of a
+#: Chinese cultivation novel does not stop to say its characters have black
+#: hair for the same reason an English novel does not say its characters
+#: have two hands -- it is assumed. Leaving those fields empty hands the
+#: choice to the diffusion model, which invents a *different* answer per
+#: panel and produces exactly the chapter-to-chapter drift the reference
+#: sheet exists to prevent. A stated-once default is stable, correct far
+#: more often than not, and always overridden by anything the text
+#: actually says (`resolve_appearance` applies it last).
+#:
+#: Keyed per novel rather than globally because the setting decides: RI and
+#: ORV are East Asian, LOTM is Victorian-European pastiche, and giving all
+#: three the same hair is how a background crowd ends up looking wrong.
+APPEARANCE_DEFAULTS: dict[str, dict[str, str]] = {
+    "reverend-insanity": {
+        "hair_color": "black",
+        "eye_color": "dark brown",
+        "skin_tone": "fair",
+    },
+    "omniscient-readers-viewpoint": {
+        "hair_color": "black",
+        "eye_color": "dark brown",
+        "skin_tone": "fair",
+    },
+    "lord-of-the-mysteries": {
+        "hair_color": "brown",
+        "eye_color": "grey",
+        "skin_tone": "pale",
+    },
+}
+
+#: Used when a novel has no seeded table. Deliberately the East Asian
+#: default: this pipeline's target corpus is predominantly translated
+#: Chinese/Korean web fiction (HANDOFF §1), so it is the majority case
+#: rather than a neutral one.
+_FALLBACK_APPEARANCE = {
+    "hair_color": "black",
+    "eye_color": "dark brown",
+}
+
+
+def resolve_appearance(novel_id: str, stated: dict[str, str]) -> dict[str, str]:
+    """Fill unstated appearance fields with this novel's defaults.
+
+    Anything the text stated wins outright -- this only ever adds keys, and
+    never overwrites one that came from the prose.
+    """
+    defaults = APPEARANCE_DEFAULTS.get(novel_id, _FALLBACK_APPEARANCE)
+    out = dict(defaults)
+    out.update({k: v for k, v in stated.items() if v})
+    return out
+
 
 def resolve_attire(
     novel_id: str,
