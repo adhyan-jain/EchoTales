@@ -69,6 +69,10 @@ class Task(StrEnum):
     #: entity's PRESENT mentions into the physical-appearance attributes
     #: image generation binds to -- see `resolve/appearance_extract.py`.
     APPEARANCE_EXTRACTION = "appearance_extraction"
+    #: One call per *beat* (~14 a chapter), deciding what a panel should
+    #: actually depict. Comprehension, not assembly -- see
+    #: `render/direction.py`.
+    PANEL_DIRECTION = "panel_direction"
 
 
 @dataclass(frozen=True, slots=True)
@@ -182,6 +186,16 @@ TASK_PROFILES: dict[Task, TaskProfile] = {
         anthropic_model="claude-sonnet-5",
         temperature=0.0,
         max_tokens=600,
+    ),
+    # Deciding what to draw is a creative call, not an extraction, so this
+    # is the one task in the pipeline that does not run at temperature 0:
+    # a deterministic director picks the same safe framing every time and
+    # the chapter reads flat. Still cheap -- ~14 calls per chapter.
+    Task.PANEL_DIRECTION: TaskProfile(
+        ollama_model="qwen2.5:7b",
+        anthropic_model="claude-sonnet-5",
+        temperature=0.4,
+        max_tokens=500,
     ),
 }
 

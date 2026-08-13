@@ -57,11 +57,23 @@ def _seeded_store(tmp_path) -> Store:
 
 
 class TestRenderPanels:
-    def test_renders_one_panel_per_story_block(self, tmp_path) -> None:
+    def test_renders_one_panel_per_beat_not_per_block(self, tmp_path) -> None:
+        """A paragraph is not a panel. Drawing every block produced 89
+        near-duplicate images for one RI chapter, mostly scenery -- see
+        `render/beats.py`. The heading block still contributes nothing."""
         store = _seeded_store(tmp_path)
         report = render_panels("t", store, out_dir=tmp_path / "panels")
         assert report.panels == 1
-        assert report.skipped_non_story == 1
+
+    def test_panel_count_is_capped_per_chapter(self, tmp_path) -> None:
+        """The cap is the point: fewer, better images beat a hundred
+        variations on an empty courtyard, and the render budget is better
+        spent on more steps per image than on more images."""
+        store = _seeded_store(tmp_path)
+        report = render_panels(
+            "t", store, out_dir=tmp_path / "panels", max_panels=1
+        )
+        assert report.panels <= 1
 
     def test_stub_writes_a_real_png(self, tmp_path) -> None:
         """Not a no-op: `director.py`/`compose.py` will open these files and

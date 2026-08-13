@@ -487,6 +487,8 @@ def cmd_render(args: argparse.Namespace) -> int:
             seed=args.seed,
             width=args.width,
             height=args.height,
+            client=_build_client(store) if not args.no_director else None,
+            max_panels=args.max_panels,
         )
         print(report.summary())
 

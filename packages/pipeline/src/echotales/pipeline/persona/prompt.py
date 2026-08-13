@@ -25,9 +25,9 @@ from echotales.pipeline.persona.runner import PanelCast
 #: Shared by every shot type. What varies between them is framing, not
 #: rendering.
 _MANGA_BASE = (
-    "xianxia, wuxia, ancient chinese, guofeng, black and white, "
-    "ink wash painting, detailed linework, screentone shading, no color, "
-    "serious tone, mature art style"
+    "xianxia, wuxia, ancient chinese fantasy, guofeng, "
+    "highly detailed, cinematic lighting, rich colors, dramatic atmosphere, "
+    "serious tone, mature art style, masterpiece, best quality"
 )
 
 #: **Three framings, chosen per block -- not one style applied to all 89.**
@@ -64,7 +64,7 @@ STYLE_CLOSEUP = (
 MANGA_STYLE = STYLE_SCENE
 
 _NEGATIVE_BASE = (
-    "color, colored, photorealistic, western comic, 3d render, watermark, "
+    "photorealistic, western comic, 3d render, watermark, "
     "text, speech bubble, blurry, deformed hands, extra limbs, lowres, "
     # Named failure modes from the first real chapter: a cute-anime
     # checkpoint gave round friendly faces, cherry blossoms and decorative

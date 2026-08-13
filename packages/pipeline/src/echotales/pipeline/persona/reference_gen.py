@@ -91,11 +91,11 @@ REFERENCE_STYLE = (
     # serious Chinese cultivation-novel register the corpus actually has.
     "xianxia, wuxia, ancient chinese, guofeng, hanfu robes, "
     "serious cold expression, mature adult proportions, sharp features, "
-    "monochrome, greyscale, ink wash painting, detailed linework"
+    "rich colors, cinematic lighting, detailed, masterpiece, best quality"
 )
 
 REFERENCE_NEGATIVE = (
-    "color, colored, vibrant, photorealistic, 3d render, western comic, "
+    "photorealistic, 3d render, western comic, "
     "watermark, text, speech bubble, multiple views, character sheet, "
     "multiple poses, collage, grid, extra limbs, deformed hands, "
     "two people, crowd, "

@@ -38,6 +38,8 @@ from echotales.pipeline.persona.prompt import (
 from echotales.pipeline.persona.attire import scene_locale, world_setting
 from echotales.pipeline.persona.runner import get_panel_cast
 from echotales.pipeline.render._png import write_solid_png
+from echotales.pipeline.render.beats import segment_beats
+from echotales.pipeline.render.direction import direct_beat
 
 log = logging.getLogger(__name__)
 
@@ -185,8 +187,10 @@ class MangaDiffusersEngine:
     ip_adapter_repo: str = "h94/IP-Adapter"
     ip_adapter_weight: str = "ip-adapter_sd15.bin"
     device: str = "cuda"
-    steps: int = 28
-    guidance_scale: float = 7.0
+    # Fewer panels means each one can afford more steps. At ~14 panels a
+    # chapter instead of 89, 40 steps costs less total GPU time than 28 did.
+    steps: int = 40
+    guidance_scale: float = 7.5
     max_references: int = 2
     #: Convert the result to greyscale after generation.
     #:
@@ -200,7 +204,15 @@ class MangaDiffusersEngine:
     #: checkpoint still earns its place: it supplies the anatomy, the
     #: linework and the xianxia costume vocabulary that a photorealistic
     #: base cannot.
-    monochrome: bool = True
+    #: **Colour, not ink.** Monochrome was the original brief, and it is
+    #: the right look *only* at a quality level this checkpoint does not
+    #: reach -- flat greyscale hides nothing and makes weak linework read as
+    #: unfinished. Colour gives the same output something to stand on, and
+    #: xianxia is a genre with a strong palette (jade, cinnabar, ink-black
+    #: hair, blood). Left switchable rather than deleted: a better
+    #: checkpoint or a manga-specific LoRA would make the ink look viable
+    #: again.
+    monochrome: bool = False
     _pipe: object | None = None
     _ip_loaded: bool = False
 
@@ -332,8 +344,13 @@ def get_engine(name: str = "stub", **kwargs: object) -> PanelImageEngine:
         return SDXLEngine(**kwargs)  # type: ignore[arg-type]
     if name == "manga":
         return MangaDiffusersEngine(**kwargs)  # type: ignore[arg-type]
+    if name == "openrouter":
+        from echotales.pipeline.render.openrouter import OpenRouterImageEngine
+
+        return OpenRouterImageEngine(**kwargs)  # type: ignore[arg-type,return-value]
     raise ValueError(
-        f"unknown image engine {name!r}; expected 'stub', 'sdxl' or 'manga'"
+        f"unknown image engine {name!r}; expected 'stub', 'sdxl', 'manga' "
+        "or 'openrouter'"
     )
 
 
@@ -395,6 +412,25 @@ def beat_text(spans: list[Span], block_index: int, fallback: str) -> str:
         and s.text.strip()
     ]
     return " ".join(narration) if narration else fallback
+
+
+def present_beat_entities(mentions: list[Mention], blocks: list[int]) -> list[str]:
+    """Resolved entities present anywhere in a beat.
+
+    A beat spans several blocks, and the character the moment is about is
+    frequently named in one of them rather than all -- looking only at the
+    lead block loses the cast for most beats.
+    """
+    wanted = set(blocks)
+    out: list[str] = []
+    for mention in mentions:
+        if mention.block_index not in wanted:
+            continue
+        if mention.reference_mode is not ReferenceMode.PRESENT:
+            continue
+        if mention.target_id and mention.target_id not in out:
+            out.append(mention.target_id)
+    return out
 
 
 def present_entity_ids(mentions: list[Mention], block_index: int) -> list[str]:
@@ -497,6 +533,8 @@ def render_panels(
     seed: int = 0,
     width: int = 1024,
     height: int = 1024,
+    client: object | None = None,
+    max_panels: int = 14,
 ) -> PanelReport:
     """Render one cached panel image per story-bearing block.
 
@@ -521,8 +559,34 @@ def render_panels(
         segments = store.get_segments(novel_id, chapter_number)
         spans = store.get_spans(novel_id, chapter_number)
 
-        for block in chapter.blocks:
-            if not block.block_type.is_story_content or not block.text.strip():
+        # One panel per *beat*, not per block. See `render/beats.py`: a
+        # paragraph is not a panel, and drawing every paragraph produced 89
+        # near-duplicate images per chapter, mostly scenery.
+        by_index_text = {b.index: b.text for b in chapter.blocks}
+        beats = segment_beats(spans, segments, max_panels=max_panels)
+        if not beats:
+            # No spans for this chapter (not span-classified yet, or a
+            # fixture): fall back to one beat per story block so the stage
+            # still produces something rather than silently nothing.
+            from echotales.pipeline.render.beats import Beat
+
+            story = [
+                b.index
+                for b in chapter.blocks
+                if b.block_type.is_story_content and b.text.strip()
+            ][:max_panels]
+            beats = [
+                Beat(index=i, blocks=[bi], text=by_index_text.get(bi, ""))
+                for i, bi in enumerate(story)
+            ]
+        lead_blocks = {b.lead_block: b for b in beats}
+        by_index = {b.index: b for b in chapter.blocks}
+
+        for lead, beat in sorted(lead_blocks.items()):
+            block = by_index.get(lead)
+            if block is None or not block.text.strip():
+                continue
+            if not block.block_type.is_story_content:
                 report.skipped_non_story += 1
                 continue
 
@@ -544,7 +608,7 @@ def render_panels(
             conditioned: list[str] = []
             appearances: dict[str, str] = {}
             genders: list[str] = []
-            for entity_id in present_entity_ids(mentions, block.index):
+            for entity_id in present_beat_entities(mentions, beat.blocks):
                 looks = character_looks(store, entity_id, novel_id=novel_id)
                 if looks is None:
                     continue
@@ -556,29 +620,49 @@ def render_panels(
                     references.append(sheet)
                     conditioned.append(label)
 
-            beat = beat_text(spans, block.index, block.text)
-            # Framing per block, not one style for the whole chapter -- a
-            # landscape behind a line of dialogue is the wrong picture and
-            # the expensive one. See `prompt.py::shot_style`.
+            beat_prose = beat.text or beat_text(spans, block.index, block.text)
+            # Framing from everything the beat contains, not one style for
+            # the whole chapter. See `prompt.py::shot_style`.
             style = shot_style(
-                [s.span_type.value for s in spans if s.block_index == block.index]
+                [s.span_type.value for s in spans if s.block_index in set(beat.blocks)]
             )
             closeup = style is STYLE_CLOSEUP
-            prompt = build_image_prompt(
-                cast,
-                beat=beat,
-                character_appearances=appearances,
-                character_genders=genders,
-                # A close-up's background is deliberately abstract tone, so
-                # feeding it a courtyard only fights the framing.
-                world="" if closeup else world_setting(novel_id),
-                locale=(
-                    ""
-                    if closeup
-                    else scene_locale(novel_id, beat, block_index=block.index)
-                ),
-                style=style,
-            )
+
+            # **Ask a model what this panel should show**, and only fall back
+            # to mechanical assembly when there is no client or the call
+            # fails. An assembled prompt is grammatical and about nothing:
+            # it cannot know what is happening in the beat, which is why
+            # panels came back unrelated to the story around them.
+            directed = None
+            if client is not None:
+                directed = direct_beat(
+                    beat_prose,
+                    cast={k: v for k, v in appearances.items() if v},
+                    novel_style=world_setting(novel_id),
+                    client=client,
+                    novel_id=novel_id,
+                )
+
+            if directed is not None:
+                prompt = directed.to_image_prompt()
+            else:
+                prompt = build_image_prompt(
+                    cast,
+                    beat=beat_prose,
+                    character_appearances=appearances,
+                    character_genders=genders,
+                    # A close-up's background is deliberately abstract tone,
+                    # so feeding it a courtyard only fights the framing.
+                    world="" if closeup else world_setting(novel_id),
+                    locale=(
+                        ""
+                        if closeup
+                        else scene_locale(
+                            novel_id, beat_prose, block_index=block.index
+                        )
+                    ),
+                    style=style,
+                )
 
             if image_path.exists():
                 report.skipped_cached += 1

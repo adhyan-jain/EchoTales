@@ -124,7 +124,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_render.add_argument("--out", default="data/video")
     p_render.add_argument(
-        "--image-engine", default="stub", choices=["stub", "sdxl", "manga"],
+        "--image-engine", default="stub", choices=["stub", "sdxl", "manga", "openrouter"],
         help="stub writes solid-colour placeholder panels; sdxl and manga need "
         "a GPU. manga is the one that produces the intended look: an "
         "anime/manga checkpoint plus IP-Adapter reference conditioning so a "
@@ -146,6 +146,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--clips-per-chapter", type=int, default=2,
         help="hard cap on motion-clip cutaways per chapter (default: 2). "
         "A chapter gets this many or zero, never a clip inserted for its own sake",
+    )
+    p_render.add_argument(
+        "--max-panels", type=int, default=14,
+        help="panels per chapter (default: 14). One per narrative beat, not "
+        "per paragraph -- fewer, better images beat a hundred near-duplicates",
+    )
+    p_render.add_argument(
+        "--no-director",
+        action="store_true",
+        help="skip the LLM art-director pass and assemble prompts mechanically",
     )
     p_render.add_argument("--skip-panels", action="store_true")
     p_render.add_argument("--skip-motion", action="store_true")
@@ -175,7 +185,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="limit to the N most-mentioned eligible characters",
     )
     pe_ref.add_argument(
-        "--engine", default="stub", choices=["stub", "sdxl", "manga"],
+        "--engine", default="stub", choices=["stub", "sdxl", "manga", "openrouter"],
         help="manga is the intended backend; stub writes placeholders",
     )
     pe_ref.add_argument("--principals-only", action="store_true")
