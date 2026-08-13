@@ -1,246 +1,98 @@
 # EchoTales — Handoff
 
-**Purpose:** let a different agent (or a future you) resume work without
-re-deriving context. Read this first, then `architecture.md` for the model and
-`details.md` for per-file detail.
+**What this file is:** the current state and the **open defect list**, so a
+different agent (or a future you) can resume without re-deriving context.
 
-**Last updated:** 2026-08-13. **Picking this up fresh? Read §10 item 11
-first** — it states the free-models-first constraint and what works end to
-end today. Its highest-value item, **the persona split, is now done** — see
-§4.27; the next one is the ablation figure (item 11b), whose data now
-exists. Prior to that,
-2026-08-12: Prior session landed six pipeline root-cause
-fixes, tier-4 cold-start speaker attribution, an entity auto-flag pass, three
-new corrections capabilities, and gold-eval wiring — all detailed in §4.20,
-which this line intentionally does not repeat (see that section, or
-`git log`, for specifics — this block is a pointer, not a log). This session
-added **Phase 9** — panel-image generation, a reused motion-clip library,
-and ffmpeg video assembly, cut to the Phase 8 voice track (§4.23). Built and
-unit-tested against stub engines and (for the compositor) a real `ffmpeg`
-encode; **not yet run against a real novel** — same VCTK-download blocker
-§4.21 already flagged for Phase 8, not a new gap.
+**The other three, in the order you want them:**
 
----
+| File | Answers |
+|---|---|
+| `EVOLUTION.md` | *Why is it built this way?* The diff between the original spec and reality — which mechanisms were replaced and what evidence replaced them. **Read before changing a design decision.** |
+| `architecture.md` | The model: three axes of time, self vs persona, observers |
+| `details.md` | Per-file detail |
+| `plans.md` | The original spec. Amended three times; the amendments win and are marked *(revised)* |
 
-## 0. Read this first — the v1 session (2026-08-12, later)
+**Last updated:** 2026-08-13. Most recent work: the **persona split**
+(§4.27) — one consciousness, two bodies, selected by story position — plus
+per-body appearance extraction and dramatic panel selection (§4.28).
+**Picking this up fresh?** §0 below, then §10 for what to do next.
 
-**The pipeline now runs phases 0-8 and produces audio.** Two new phases
-exist: **Phase 7 personas** (`persona/build.py`) and **Phase 8 voice**
-(`voice/`). `uv run echotales voice --novel X --bank data/voice` casts every
-character to a reference voice and renders the script. §4.21 has the detail.
 
-**Six things landed, each its own commit, all pushed to `origin/master`:**
+## 0. Current state, in one screen
 
-1. §4.15's ORV half **fixed** — `Kim Dokja`/`Dokja` now resolve to one
-   entity via a corpus-wide ambiguous-token set (`name_containment`).
-2. §4.15's LOTM half **partly fixed** — `detect_identity_continuity` links
-   the ch1 transmigration; the bulk `Klein` alias is a separate,
-   still-open Western-name-prefix case.
-3. §10 item 5 **done** — `TargetKind` gained `LOCATION`/`ORGANIZATION`/
-   `ITEM` and `is_person`; places and factions no longer join the cast.
-4. §10 item 4 **done** — `Persona` finally has a runner.
-5. §4.2 **done** — prominence ranking cached, 53.4 → 48.3 ms/group.
-6. Phase 8 voice built end to end (bank, casting, delivery, TTS).
+**The pipeline runs phases 0-9 end to end on free, local models** —
+ingest → spans → segments → mentions → speakers → anaphora → resolve →
+personas (with body split) → appearance → world facts → beats → LLM art
+direction → local image generation → ffmpeg video, with picture length
+locked exactly to audio length.
 
-**⚠ A regression I introduced and then root-caused — read before trusting
-any entity count in this file.** `git add -A` swept an orphaned working-tree
-edit (`DEFAULT_BIAS -4.0 → -2.5`) into commit `d677c60`. Measured on RI vol 1
-it cost **82 → 59 entities and 821 → 636 links**, all to false merges
-(`Chi Shan` into `Bai Ning Bing`, `Ren Zu` into the `Gu Yue` clan). Reverted
-in `6d99788`; 82/821 restored exactly. Three lessons worth keeping:
+**Read `EVOLUTION.md` before changing a design decision.** It is the diff
+between `plans.md` (the original spec) and what exists: which mechanisms were
+replaced, and what evidence replaced them. Most of what looks like an
+arbitrary choice in this codebase is a mechanism that was tried, measured and
+swapped — the combat vocabulary that scored literally zero, the scorer that
+can never reach its own threshold, the panel-per-paragraph that produced 89
+near-duplicate images. This file is the *open defect list*; that one is the
+reasoning.
 
-- **Never `git add -A` with foreign changes in the tree.** Stage by path.
-- **Clear `self_entity` before re-resolving.** `resolve_novel` mints fresh
-  `self1..selfN` ids but leaves older rows behind, so re-resolving into a
-  populated DB gives a meaningless entity count. My first "82 → 59
-  regression" reading was this artifact, not the real bug.
-- **`ScoringModel.bias` is a dataclass field default**, bound at class
-  creation. Monkeypatching `score.DEFAULT_BIAS` at runtime does nothing —
-  two of my A/B runs were silent no-ops because of this.
+**What is blocked, and by what:**
 
-**The `.env`-less worktree trap:** a `git worktree` has no `.env` and builds
-its own venv. Both were red herrings I chased; the actual bisect that worked
-was checking out each commit in the worktree and running the *same* script.
+| Blocked | By |
+|---|---|
+| Real audio | VCTK download incomplete (2.5 of ~11 GB); 11 speaker clips salvaged, enough for a multi-voice test |
+| Real audio *and* images in one venv | `chatterbox-tts` silently downgrades `diffusers` 0.39→0.29 and breaks image generation. Separate venvs, or separate runs |
+| Any accuracy claim | Gold is 0% human-confirmed (§4.12). Entity counts here are plausibility, not accuracy |
+| LOTM's transmigration demo | Resolve still splits `Zhou Mingrui` from `Klein` (§4.15). Not a persona-stage problem |
 
-**"Fang Yuan mentions not classified" (prior session's open report):
-investigated, did not reproduce.** Literal occurrences in ingested text
-(5,185) exactly equal mention count (5,185), all resolving to `self1`, on
-both the canonical DB and the webview copy. User's call: dropped. If it
-resurfaces, get a specific chapter/spelling/UI location first.
+**The governing constraint, from the author:** the research submission runs
+on **free models and APIs**. Paid APIs are not ruled out, but are a last
+option reserved for the point where the pipeline is good enough to be worth
+scaling — not a workaround for a quality problem that is actually a pipeline
+problem. §4.25 has the measured costs for when that point arrives.
 
-**The "other agent" in the previous handoff was never real** — user
-confirmed. The `score.py` edit attributed to it was the orphaned bias change
-above. `data/corrections/reverend-insanity.jsonl` has two unapplied
-`reassign_speaker` entries from the user's own webview session; left alone.
+**Test status: 639 passing**, no failures.
 
-**This session (in progress, working from `xyz.md` in repo root — a 5-step
-plan another agent wrote):** implemented Step 1 (kinship coreference: "Uncle"
-now resolves to the character it was established to refer to earlier in the
-scene — `anaphora/local.py`/`runner.py`), Step 2 (active scene participant
-tracking + mob-phrase detection, no entity minted for crowds — new
-`spans/scene.py`, new `TargetKind.MOB_GROUP`), and Step 3 (scene-constrained
-tier-4 roster: `speakers/runner.py::_scene_roster` narrows the LLM cold-start
-candidate pool from the full chapter cast to whoever `spans/scene.py`'s
-registry says is present in that block's scene, ranked by chapter frequency,
-falling back to the chapter-wide roster outside any scene or when a scene's
-cast is empty — extends `speakers/contextual.py` rather than duplicating it,
-per this file's own prior instruction). All three tested against real
-chapters with ollama live (RI ch1-5: tier 4 fired, `CONTEXTUAL_LLM=15`, no
-errors), not just unit tests, and all pushed to `origin/master`.
+**Two working practices that cost real time to learn, kept because they will
+cost it again:**
 
-**Step 4 (persona visual infilling) also done, but scoped down from what
-xyz.md asked for — read this before trusting `get_panel_cast`'s output.**
-New `packages/pipeline/src/echotales/pipeline/persona/` (`attire.py` +
-`runner.py`). The 4-tier fallback chain (explicit -> faction -> regional ->
-novel style) is real and tested, but xyz.md's plan to seed faction/location
-`Attribute` rows in SQLite doesn't fit the schema as it exists: `TargetKind`
-(`core/enums.py`) only has `SELF`/`PERSONA`/`MOB_GROUP`, no `FACTION` or
-`LOCATION` — the same gap §10 item 5 already flags. Rather than add schema
-(and a migration, and a seeding stage, none of which xyz.md scoped), the
-faction/regional tables are static per-novel Python dicts in `attire.py`,
-currently seeded only for `reverend-insanity` with two factions and one
-region as a worked example — extend those tables before expecting real
-output on LOTM/ORV. **Bigger caveat: `Persona` still has no runner anywhere
-in this codebase** (true before this session and still true after —
-verified with `grep -rn "class Persona\b" packages/ | wc -l` style checks
-before writing this, not assumed), so tier 1 (explicit persona attire) is
-wired but structurally unreachable: `get_panel_cast` accepts an optional
-`persona_id_by_self` map and will query `Attribute(target_kind=PERSONA)` if
-given one, but nothing in the pipeline ever creates a `Persona` row or that
-mapping. In practice every character today gets tier 2-4 output only
-(faction/regional/style defaults), which is real and useful for a
-background-heavy panel but is not a character reference sheet. `environment`
-is similarly capped at novel-style — no location is ever attached to a
-`NarrativeSegment`, so there's nothing to feed the regional tier from scene
-data automatically; a region has to be passed in by the caller.
-Foreground/background-mob presence itself is real, reusing Step 2's
-`spans/scene.py::build_active_scenes` rather than re-deriving it, with
-background mobs scoped to the exact `block_index` requested (tighter than
-the scene-wide window `active_selves` uses, since a panel is one block/
-paragraph, not a whole scene). Tests: `test_persona.py`, 9 cases covering the
-fallback chain and both the tracked-scene and outside-any-scene paths.
+- **Never `git add -A`.** Stage by path. An orphaned working-tree edit
+  (`DEFAULT_BIAS -4.0 → -2.5`) was swept into a commit this way and cost 82 →
+  59 entities to false merges before it was root-caused.
+- **`data/*.db` are the run of record; `data/webview-working/*.db` are what a
+  correction session edits.** Re-copy from the originals to reset.
 
-**xyz.md is now fully worked through (Steps 1-4 landed, this paragraph is
-Step 5's doc-update half).** What's not done, in case a future session wants
-to close the remaining gap for real rather than re-scope again: a persona-
-construction stage (mint a `Persona` per prominent `Self`, bind them via
-`SelfPersonaBinding`, extract appearance/attire from narrator description
-the way `speakers/contextual.py` extracts speaker identity) is the actual
-prerequisite for tier 1 output and for `environment` to read real location
-data — everything in `persona/` this session is real plumbing waiting for
-that stage to exist, not a placeholder to throw away.
 
-**"Fang Yuan" gap, investigated, did not reproduce.** The prior session's
-report ("many plain 'Fang Yuan' mentions apparently aren't being classified
-as referring to the character") was checked against the canonical full-volume
-run (`data/echotales.db`): raw literal occurrences of "Fang Yuan" in the
-ingested chapter text (5,185) exactly match the mention count (5,185), and
-every one resolves to the single protagonist entity (`self1`, 5,191 mentions
-in the review table once other spellings are folded in) across all 199
-chapters. Checked `data/webview-working/reverend-insanity.db` too, in case it
-was a webview-specific report — identical numbers. User's call: drop it
-rather than keep guessing without more detail (which chapters, which UI). If
-it resurfaces, get a specific chapter/spelling/UI location before digging
-again — this session couldn't reproduce it from the description alone.
+## 1. Running it, and how to read its numbers
 
-**§10 item 2's ORV half fixed and verified on real data: `Kim Dokja`/`Dokja`
-now merge.** `normalize.name_containment` gained an optional
-`ambiguous_tokens` parameter (default `None` = old strictly-≥2-token
-behaviour, unchanged for every existing caller). When a caller supplies a
-corpus-wide set of name components attested across two or more distinct
-entities (`resolve/runner.py::GlobalResolver._ambiguous_tokens`, computed
-from `CandidateRetriever.profiles` each call — cheap next to retrieval at
-this corpus size), a single shared *suffix* token is now accepted as
-dropped-given-name evidence **unless that token is itself one of the
-ambiguous ones** — i.e. "Dokja" (unique to one entity in ORV's cast) merges
-"Kim Dokja"/"Dokja", but a bare "Wang"-style shared *surname* still does not,
-because "wang" would appear in the ambiguous set. This is exactly the
-lexicon-aware distinction §4.15 said was needed, not a token-count change.
-Both `EvidenceContext` construction sites in `resolve/runner.py` now pass
-`ambiguous_tokens=self._ambiguous_tokens()`. Verified two ways: a new
-targeted unit test (`test_chapter_ner.py::TestNameContainment`, 3 new cases)
-and an integration test (`test_name_containment_resolve.py`, dropped-given-
-name merges + shared-surname-does-not) — but more importantly, **re-ran
-`echotales resolve` against a copy of `data/llm-orv.db`'s existing mentions**
-(not just synthetic tests) and confirmed `Dokja` (148 mentions) and `Kim
-Dokja` (36 mentions) now share one `target_id`, entity count dropping 63→54
-on that 40-chapter subset. Did not chase further pre-existing entity-table
-oddities noticed in that same review pass (e.g. an apparent double-listing
-around "Kim Namwoon"/"Oksu") — unrelated to this change (no shared tokens
-between those names, so `name_containment` never fires there) and out of
-scope for this session.
+```bash
+uv run echotales run    --novel reverend-insanity          # ~37 min w/ LLM, ~3 min --no-llm
+uv run echotales review --novel reverend-insanity --script 1-5
+```
 
-**Still open from §4.15: the LOTM transmigration case** ("Zhou Mingrui"
-acquiring "Klein Moretti" mid-chapter-1 via "memories began flooding him") —
-not touched this session. Needs the *declaration* pre-filter to recognise
-that phrasing, a different mechanism from the containment fix above (no
-shared tokens between the two names at all).
+`review` gives a console table, an HTML audit, a JSONL export, and a
+line-by-line script view (§4.13) — the script view is the fastest way to see
+speaker-attribution coverage directly rather than inferring it.
 
-**Uncommitted, not mine:** `resolve/score.py` has `DEFAULT_BIAS` changed
-`-4.0 → -2.5` by a different concurrent agent (touches §4.1's LINK-threshold
-blocker) — check its status before building on or discarding it.
-`data/corrections/reverend-insanity.jsonl` has live in-progress corrections
-from a separate agent working chapters 1-100 in the webview — do not
-overwrite.
+**`ollama serve` must be up.** `.env` sets
+`ECHOTALES_MODEL_BACKEND=ollama`; `--no-llm` forces the deterministic path,
+which is a supported A/B mode, not a degradation.
 
-181: **Test status:** **634 passing**, no failing tests after recent fixes.
-182: Updated pipeline stability:
-183: - Added `heal_json` with schema‑aware repair to robustly handle truncated LLM outputs.
-184: - Modified `resolve_novel` to clear stale resolution events and bindings, ensuring idempotent re‑runs.
-185: - Expanded `TestExtractJson` suite to cover healing, schema validation, and truncated JSON cases.
-186: - Ran `ruff --fix` to clean lint warnings across the codebase.
-(`test_segment.py::test_llm_fires_only_on_ambiguous_chapters`, unrelated to
-any of this — the runner counts a call the stub never receives).
+**Chapter NER is cached** at `data/lexicons/<novel>-ner-cache.json`, keyed on
+chapter text + model name — a re-run is ~15 s instead of ~35 min, which is
+what makes downstream tuning possible at all. It flushes every 25 chapters,
+not only at the end; an earlier version lost 175 chapters of GPU work to that.
 
-**Git:** everything from this session is committed and pushed to
-`origin/master` (`git log --oneline -10` shows the breakdown). Working tree
-otherwise has only the two uncommitted files above, left alone deliberately.
+**How to read every entity count in this file: as plausibility, not
+accuracy.** RI went 1,862 → 82 entities (deterministic → LLM layer 1), which
+against a plausible 150-300 cast is *under*-counting — a better failure mode
+than over-counting, and still a failure mode. §4.1b is the root cause and
+§4.12 is why no number here is a validated result: the gold set is 0%
+human-confirmed, and `eval/gold.py::GoldSet.confirmed_only` enforces it.
 
----
+**Report the singleton *count* next to the percentage.** The rate moves the
+wrong way when the fix is working — 49% of 551 entities is 271 singletons,
+35% of 31 is 11. Quoting the rate alone misleads (§4.9).
 
-## 1. Read this before touching anything
-
-**The pipeline runs end to end.** `uv run echotales run --novel reverend-insanity`
-completes RI vol 1 (199 ch) in ~37 min with the LLM backend (§4.14) or ~3 min
-deterministic (`--no-llm`), and writes a SQLite graph.
-`uv run echotales review --novel reverend-insanity` produces a console table,
-an HTML audit, a JSONL export, and optionally a line-by-line script view
-(`--script <range>`, §4.13).
-
-**Accuracy moved from unusable to plausible, and that is the current work.**
-RI: 1,862 -> 82 entities. LOTM: 730 -> 102. ORV: 859 -> 63 (all LLM vs.
-deterministic, §4.14/§4.15). All three now under-count against a 150-300 cast
-rather than wildly over-count, which is the better failure mode but still a
-failure mode — two specific, diagnosed-not-guessed identity-continuity gaps
-are in §4.15 (LOTM transmigration, ORV given-name-only mentions), and the
-scorer-can't-LINK defect in §4.1 is still the structural root cause under all
-of it. Do not present these entity counts as validated results — they are
-plausibility, not accuracy; §4.12's gold set is unconfirmed.
-
-**The LLM now runs in layer 1** (§4.10 — done). `.env` sets
-`ECHOTALES_MODEL_BACKEND=ollama`; `ollama serve` must be up. Segmentation,
-coreference and adjudication are still deterministic — see §4.10 for what is
-left. `--no-llm` forces the old path for A/B comparison.
-
-**Chapter NER is cached** at `data/lexicons/<novel>-ner-cache.json`, keyed by a
-hash of the chapter text and the model name. That turns a re-run from ~35 min
-into ~15 s, which is what makes downstream tuning possible at all. Delete the
-file to force a fresh read. **The cache flushes every 25 chapters, not only at
-the end** (§4.14) — an earlier version lost a whole run to this.
-
-**A gold set exists but is not gold yet.** `data/gold/reverend-insanity-c1-c5.toml`,
-26 identities over RI ch1-5, model-drafted (§4.12). Every record carries
-`provenance=model`, `confirmed=false`. Do not report a number computed from it
-as a recall or accuracy result — `eval/gold.py::GoldSet.confirmed_only` is the
-enforcement point. A request to "compare against gold" can now be partially
-satisfied for RI ch1-5 specifically, with that caveat stated; anything broader
-still cannot.
-
-**`plans.md` is the spec but has been amended three times** (NER/coref
-restructure, architecture review, per-novel-not-per-genre correction). Where
-they conflict, the amendments win; they are marked *(revised)*.
-
----
 
 ## 2. What actually works
 
@@ -261,6 +113,9 @@ Measured on the real corpus, not projected.
 | CLI + review | `pipeline/commands.py`, `review.py` | **Working, + script view** — §4.13 | `run` / `review [--script]` / `query` / `export` / `eval` |
 | 7 Personas + traits | `pipeline/persona/` | **Working, + body split** — §4.21, §4.27 | RI vol 1: 76 personas / 75 characters (Fang Yuan has two bodies, split at ch1 b82). Gender resolved for 51% of cast deterministically (91% unknown before pronoun counting) |
 | 8 Voice casting | `pipeline/voice/` | **Working, stub engine only** — §4.21 | Casts every character, writes manifest + casting report. **No real audio yet**: VCTK downloading, `torch`/`chatterbox` not installed |
+| 7b Appearance | `resolve/appearance_extract.py` | **Working, per body** — §4.24, §4.28 | One call per *body*, over only that body's chapters. RI ch1-40: 13 attributes / 10 calls, 0 failures |
+| 7c World facts | `pipeline/world/` | **Working** — §4.26 | RI full vol: 124 facts / 73 calls, 0 failures. Position-filtered retrieval verified |
+| 9 Panels + video | `pipeline/render/` | **Working, local + free** — §4.24, §4.28 | RI ch1: 92 blocks → **14 panels**, drama-weighted; real ffmpeg encode, picture length == audio length exactly |
 | 8 Dataset export | — | **Not started** | JSONL export exists but is machine-only |
 
 `packages/core/` (models, store, `state_of`, interval algebra) is complete and
@@ -1207,6 +1062,53 @@ Also surfaced: NER returned truncated JSON on chapter 143 (handled, chapter
 skipped with a warning) — pre-existing robustness gap in `chapter_ner.py`,
 not new.
 
+### 4.28 Per-body appearance, and panels chosen by drama *(2026-08-13)*
+
+Two changes that turned out to be one: the pipeline knew a character could
+change bodies (§4.27) and neither the extractor nor the camera used it.
+
+**Appearance is extracted per body, not per character.** Pooling a
+regressor's evidence into one call asks the model to average a 500-year-old
+and a fifteen-year-old into one face; it answers, and the answer describes
+neither. Evidence is grouped by body through `persona_at`, one call each.
+Measured, RI ch1-40, 13 attributes from 10 calls: **body 1 keeps `deathly
+pale` from the chapter 1 death scene, and body 2 — extracted from ch2 onward
+— does not inherit it.** That is what `CANON_BY_BODY` previously had to be
+hand-written to achieve, now falling out of the evidence.
+
+Chapter granularity, deliberately: a body change can fall mid-chapter (RI's
+does), but evidence is gathered per chapter, so the transition chapter goes
+wholly to the body holding most of it. Per-block evidence would be more
+precise and is not worth the complexity until a novel needs it.
+
+**Panel survival is now dramatic rather than lexical.** The 89-images-per-
+chapter problem was already fixed by `render/beats.py` (RI ch1: 92 blocks →
+14 panels) — but **every chapter saturates the budget**, so `_merge_to_budget`,
+not the boundary logic, is what actually decides what gets drawn, and it kept
+whatever the prose spent the most words on. In a web novel that is
+exposition: cultivation mechanics, an inventory of a Gu room, a clan's
+history. It now merges by `director.py`'s impact score with length as a
+tiebreak, so one definition of "dramatic" governs both which moments are
+drawn and which of them move.
+
+**Scoring alone was not enough, and the corpus said so.** RI ch1's climax —
+"With the use of the Spring Autumn Cicada I have been reborn, going back to
+the time of 500 years ago!" — scored **zero**, because nothing in the
+vocabulary knew a transformation was drawable, *and* it sat interior to a
+thirteen-block beat about clan elders discussing the weather, which a merge
+that only chooses *between* beats can never reach. So a body change is now
+both a **boundary** and a **score**, taken from `persona/split.py`'s cue
+table and imported by both consumers rather than restated.
+
+RI ch1 after: 14 panels, and the rebirth holds two of them (blocks 82 and
+83). Before: it was invisible, inside panel 12 of a conversation.
+
+**The through-line worth keeping:** one definition of "a body changed here",
+consumed by the graph, the beat segmenter and the director. These have
+drifted before — §4.24 records the director's combat stems and `motion.py`'s
+clip tags becoming disjoint vocabularies, so a block scored maximally on
+violence and then played the neutral idle loop.
+
 ### 4.27 The persona split — two bodies, one consciousness *(2026-08-13)*
 
 **§10 item 11a, done.** `persona/split.py`. Fang Yuan is a 500-year-old
@@ -1295,16 +1197,17 @@ of one character do not come out as the same face. `persona_at` is total: a
 database with no bindings returns `:body1`, so every existing graph keeps
 working unsplit.
 
-**`canon.py::CANON_BY_BODY` is the honest half of the demo, and should be
-read as such.** Fang Yuan's body-2 appearance is *reader-supplied*, not
-extracted — RI's narration describes his death scene and almost nothing
-about him afterwards (§4.24 flagged this already), so extraction gave body 2
-nothing at all. The mechanism is proven end to end on extracted data (the
-ch1 attire routed correctly by itself); what the fifteen-year-old looks like
-is a reader writing down what the prose never says, exactly the argument
-`canon.py` was created for. Do not present the ch1/ch20 contrast as evidence
-that *extraction* found two bodies. It is evidence that the **graph** knows
-there are two and hands the right one to the right chapter.
+**How much of the ch1/ch20 contrast is extracted, stated exactly.** §4.28
+made extraction run per body, and it does separate them from the text: body
+1 carries `deathly pale` from the death scene, body 2 does not. But RI's
+narration describes Fang Yuan's death scene and very little about him
+afterwards, so body 2's *extracted* profile is thin (`green robes`, ch14),
+and the age contrast in the prompts above comes from
+`canon.py::CANON_BY_BODY` — a reader writing down what the prose never
+states, which is exactly the argument `canon.py` was created for. Read the
+contrast as evidence that **the graph knows there are two bodies and hands
+the right one to the right chapter**, not that extraction inferred a
+teenager.
 
 **Known rough edge, pre-existing and now more visible:** re-running the
 persona stage against a graph that already has persona attributes appends a
@@ -1489,6 +1392,11 @@ shots: 87 pan / 2 clip
 pan directions: zoom_out 32, zoom_in 27, pan_left 15, pan_right 13
 clips: block 2 (score 6), block 7 (score 5)
 ```
+
+**The 89 is superseded — do not quote it as the current panel count.** That
+run predates `render/beats.py`; one panel per *block* was the defect that
+module exists to fix, and the same chapter now produces **14** (§4.28). The
+timing and shot numbers below still hold.
 
 The timing claim is the one that matters and it holds exactly: picture
 length is the audio length, not an estimate. Clip selection with real
@@ -1750,7 +1658,13 @@ whole clause as an entity, so this is load-bearing, not defensive.
 
 ---
 
-## 4b. Voice / TTS design (proposed, not built — 2026-08-07)
+## 4b. Voice / TTS design — **superseded, kept for its reasoning** (2026-08-07)
+
+**This section is the design *proposal*; §4.21 is what was built.** Where
+they differ, §4.21 wins — most notably the engine (Chatterbox, MIT, not
+XTTS-v2) and the bank (VCTK, for its hand-recorded age/gender/accent
+metadata). Kept because the trade-offs it works through are still the
+reasoning behind the built version.
 
 Not started, but scoped now because it consumes exactly what the graph
 produces and the design decisions constrain what `Persona` needs to carry.
@@ -2166,70 +2080,56 @@ webview/     React viewer (git-ignored node_modules/build; §8a, §4.18)
     (plans.md Phase 9 items 1, 3, 5): `state_of`-keyed voice parameters,
     the inner-monologue filter effect, and per-setting reverb. Item 3 is the
     cheapest and most audible of the three.
-11. **START HERE if you are picking this up fresh** — the visual pipeline's
-    state as of 2026-08-13, in priority order.
+11. **START HERE if you are picking this up fresh** — the visual pipeline,
+    in priority order, as of 2026-08-13.
 
     **Constraint from the author, which governs every choice below:** the
-    research submission comes first and must run on **free models and
-    APIs**. Paid APIs are *not* ruled out, but are a **last option, reserved
-    for the point where the pipeline is good enough to believe it will
-    produce the best possible outcome** — the pipeline is still crude, and
-    paying to mass-produce output from a crude pipeline buys nothing. Do not
-    reach for a paid backend to work around a quality problem that is
-    actually a pipeline problem. §4.25 has the measured cost numbers for
-    when that point arrives.
+    research submission must run on **free models and APIs**. Paid APIs are
+    not ruled out, but are a **last option, reserved for the point where the
+    pipeline is good enough to be worth scaling** — paying to mass-produce
+    output from a crude pipeline buys nothing. Do not reach for a paid
+    backend to work around what is actually a pipeline problem. §4.25 has
+    the measured costs for when that point arrives.
 
-    a. ~~**Build the persona split**~~ **Done, §4.27** —
-       `persona/split.py`. Fang Yuan now has two personas on one self, split
-       at chapter 1 block 82, and every consumer of persona data selects
-       between them by position. Verified against all three novels with
-       local ollama. What remains from this item: the *other* rows of
-       `architecture.md §4`'s table (body swap, clones, possession) still
-       have nothing emitting concurrent or crossed bindings, and LOTM's
-       transmigration is still blocked upstream by §4.15's declaration
-       detector — resolve produces two selves there, so there is no one
-       consciousness to carry two bodies.
-    b. **Render the ablation figure**: ch1 and ch40 twice, once with
-       `state_of`-driven persona/appearance and once flat. The flat version
-       drawing a teenager as a 500-year-old is the figure that *proves* the
-       contribution rather than asserting it. **The data behind that figure
-       now exists** (§4.27 has the two prompts, which differ by position
-       alone); what is left is generating the four images and laying them
-       out, plus a `--flat` switch that pins `persona_at` to the latest
-       body so the ablation arm is a real code path rather than a hand-
-       edited prompt.
-    c. **Re-run `world/` on the other two novels** and check the vocabulary
-       holds up outside xianxia — LOTM is Victorian, ORV is modern Seoul,
-       and `world/schema.py`'s keys were chosen against RI.
-    d. **Mention resolution is the ceiling on everything above.** RI ch12's
-       "his body figure was tall and thin, his skin pale" has *no resolved
-       mention*, so no amount of extraction sophistication can see it
-       (§4.24). Improving that lifts appearance, world facts and panel
-       casting simultaneously.
+    a. ~~**Build the persona split**~~ **Done, §4.27/§4.28.** Fang Yuan has
+       two personas on one self, split at ch1 b82; appearance is extracted
+       per body; the transformation gets its own panels. Left over: the
+       *other* rows of `architecture.md §4`'s table — body swap, clones,
+       possession — have nothing emitting concurrent or crossed bindings.
 
-    **What works right now, free, end to end:** ingest → resolve → personas
-    → appearance (§4.24) → world facts + retrieval (§4.26) → beats →
-    LLM art director → local image generation → ffmpeg video, with picture
-    length locked exactly to audio.
+    b. **Render the ablation figure. This is now the highest-value item.**
+       ch1 and ch40 twice, once `state_of`-driven and once flat. The flat
+       arm drawing a teenager as a 500-year-old is what *proves* the
+       contribution rather than asserting it. The data exists (§4.27 has the
+       two prompts, differing by position alone); what is left is four
+       images, a layout, and a `--flat` switch pinning `persona_at` to the
+       latest body — so the ablation arm is a real code path, not a
+       hand-edited prompt.
 
-    **What is blocked and why:** real audio needs VCTK, whose download is
-    incomplete (§4.21) — though **11 usable speaker clips were salvaged by
-    stream-parsing the partial zip** and are enough for a multi-voice test.
-    `chatterbox-tts` **cannot share a venv with the image stack** (§4.25's
-    warning box): it silently downgrades `diffusers` 0.39→0.29 and breaks
-    image generation outright.
+    c. **Mention resolution is the ceiling on everything above**, and it
+       bit twice more this session: RI ch12's "his body figure was tall and
+       thin, his skin pale" has no resolved mention (§4.24), and *both*
+       body-change worked examples sit in blocks whose only reference to the
+       character is "his" (§4.27). Improving it lifts appearance, world
+       facts, panel casting and split detection at once.
 
-12. **Watch Phase 9's actual output, once step 9 unblocks it** (§4.23). The
-    render pipeline is built and unit-tested but has never produced a real
-    chapter video — it needs the same VCTK-derived `manifest.jsonl` step 9
-    is waiting on, plus `pip install echotales-pipeline[render]` and a GPU
-    for `SDXLEngine`/`SVDEngine`. Once that's in place: `uv run echotales
-    render --novel reverend-insanity --chapters 1-2 --voice-dir data/audio
-    --image-engine sdxl --motion-engine svd --compose-engine ffmpeg`, then
-    **watch it** — the pan-direction rule in `director.py` and the motion-
-    clip tag vocabulary in `motion.py` are both first-guess heuristics, not
-    validated against a real chapter yet, same spirit as item 9c: nothing
-    in the test suite can tell you whether a shot reads well.
+    d. **Body 2's appearance is thin because the prose is thin.** RI
+       describes Fang Yuan's death scene and little else, so per-body
+       extraction gives body 2 one attribute. Either widen the chapter range
+       past 40, or accept `canon.py` as the layer that carries it — both are
+       defensible, the second is already built.
+
+
+12. **Watch the output.** The render pipeline has produced a real chapter
+    video (§4.24) but its shot rules have still never been *eyeballed*: the
+    pan-direction rule in `director.py` and the clip tag vocabulary in
+    `motion.py` are first-guess heuristics. §4.24's list of five defects
+    found purely by looking at generated images — a woman drawn for the male
+    protagonist, a collage of twelve thumbnails, a girl with cherry blossoms
+    for a death threat — is the argument for doing this before anything
+    else in the visual path is tuned. Nothing in the test suite can tell you
+    whether a shot reads well.
+
 
 **How to check your work:** `uv run echotales run --novel <novel>` then
 `uv run echotales review --novel <novel> --script <a-b>`. Report the singleton
