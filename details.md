@@ -1035,6 +1035,31 @@ Reuses `render/panels.py`'s `PanelImageEngine` protocol rather than adding a
 parallel backend abstraction: a reference sheet is one more text-to-image
 call, and two abstractions would mean wiring every new checkpoint twice.
 
+### `src/echotales/pipeline/world/` — structured world knowledge
+
+The package that stops locations and factions being names with nothing
+attached (HANDOFF §4.26). On the real RI database, 10 locations and 35
+organisations were resolved and entirely undescribed before this existed.
+
+**`schema.py`** — a *closed* fact vocabulary per `TargetKind`: places get
+terrain/architecture/atmosphere, factions get colours/territory/hierarchy,
+items get powers/owner, people get rank/faction/status/abilities. Closed
+because open-ended extraction yields prose that cannot be queried, compared
+or rendered into a prompt. Appearance is deliberately absent — that belongs
+to the PERSONA via `appearance_extract`, per §4's self/persona split.
+
+**`extract.py`** — one call per entity, importing `appearance_extract`'s
+retrieval, grounding and dating discipline rather than copying it. Evidence
+differs by kind on one axis: people need `ReferenceMode.PRESENT` (someone
+discussed in absentia is gossip), places do not.
+
+**`context.py`** — `story_context()`, the retrieval half. Everything
+relevant at a position as a compact LLM brief, **filtered by what is known
+at that position**, so a chapter-90 fact cannot appear in a chapter-12
+brief. Verified end to end: Fang Yuan has no rank at ch1 and
+`Rank one initial stage` at ch20, attested ch15. `render/direction.py`
+consumes it.
+
 ### `src/echotales/pipeline/render/` — Phase 9
 
 Panel images, a reused motion-clip library, and `ffmpeg` video assembly,

@@ -4,7 +4,10 @@
 re-deriving context. Read this first, then `architecture.md` for the model and
 `details.md` for per-file detail.
 
-**Last updated:** 2026-08-12. Prior session landed six pipeline root-cause
+**Last updated:** 2026-08-13. **Picking this up fresh? Read §10 item 11
+first** — it states the free-models-first constraint, what works end to end
+today, and the highest-value work left (the persona split). Prior to that,
+2026-08-12: Prior session landed six pipeline root-cause
 fixes, tier-4 cold-start speaker attribution, an entity auto-flag pass, three
 new corrections capabilities, and gold-eval wiring — all detailed in §4.20,
 which this line intentionally does not repeat (see that section, or
@@ -1202,6 +1205,60 @@ Also surfaced: NER returned truncated JSON on chapter 143 (handled, chapter
 skipped with a warning) — pre-existing robustness gap in `chapter_ner.py`,
 not new.
 
+### 4.26 `world/` — structured facts for every entity, and position-filtered retrieval *(2026-08-13)*
+
+**The gap.** The graph has typed its entities since §10 item 5 and has had a
+temporal fact table all along, and nothing ever populated either for
+anything that was not a character's face. Measured on the real RI database:
+**10 locations and 35 organisations -- Qing Mao Mountain, Gu Yue Village,
+the South Border, the Gu Yue Clan -- all resolved, named, and carrying zero
+facts.** That is why `persona/attire.py` grew hand-written `SCENE_LOCALES`
+and `FACTION_ATTIRE` tables inventing generic courtyards and guessing clan
+colours; those tables were a workaround for this package not existing.
+
+**`world/schema.py`** fixes a *closed* vocabulary per kind -- a place has
+`terrain`/`architecture`/`atmosphere`, a faction has `colors_attire`/
+`territory`, an item has `powers`/`owner`, a person has `cultivation_rank`/
+`faction`/`status`/`abilities`. Open-ended "tell me about this entity"
+produces prose that cannot be queried, compared, or rendered into a prompt.
+
+**`world/extract.py`** fills it in, one model call per entity, **importing**
+rather than copying `appearance_extract`'s retrieval/grounding/dating
+discipline. Evidence differs by kind on exactly one axis: a person's facts
+come from scenes they are `PRESENT` in (a character discussed in absentia is
+being gossiped about), a place is described whether or not anyone stands in
+it.
+
+**`world/context.py` is the half that makes it usable.**
+`story_context(novel, store, chapter, blocks)` returns everything relevant
+at one position as a compact brief, **filtered by what is known at that
+position rather than by what exists**. A brief that ignored position would
+leak the ending into the opening, which for a novel built on reveals is the
+worst thing this layer could do. `render/direction.py` now receives it, so
+panel prompts can know a character's rank and faction and who holds the
+village he is standing in.
+
+**Measured, RI full volume, local ollama, free:**
+
+```
+124 world facts from 73 model calls, 0 failures
+  by kind: LOCATION=13, ORGANIZATION=37, SELF=74
+  skipped: 46 not prominent, 1 no evidence
+```
+
+**Bitemporal retrieval verified end to end** -- the thing the whole
+architecture exists for:
+
+```
+ch1 : Fang Yuan facts = {}                                    <- correct: not yet stated
+ch20: {'cultivation_rank': 'Rank one initial stage',          <- attested ch15
+       'faction': 'Gu Yue clan'}                              <- attested ch4
+```
+
+No leakage backwards. This is the cleanest demonstration in the codebase
+that `state_of(..., position)` does something a flat pipeline cannot, and is
+the figure worth putting in the write-up.
+
 ### 4.25 Image backends — what is actually available, measured *(2026-08-13)*
 
 Every hosted option was tested with real keys rather than judged from
@@ -2002,7 +2059,55 @@ webview/     React viewer (git-ignored node_modules/build; §8a, §4.18)
     (plans.md Phase 9 items 1, 3, 5): `state_of`-keyed voice parameters,
     the inner-monologue filter effect, and per-setting reverb. Item 3 is the
     cheapest and most audible of the three.
-11. **Watch Phase 9's actual output, once step 9 unblocks it** (§4.23). The
+11. **START HERE if you are picking this up fresh** — the visual pipeline's
+    state as of 2026-08-13, in priority order.
+
+    **Constraint from the author, which governs every choice below:** the
+    research submission comes first and must run on **free models and
+    APIs**. Paid APIs are *not* ruled out, but are a **last option, reserved
+    for the point where the pipeline is good enough to believe it will
+    produce the best possible outcome** — the pipeline is still crude, and
+    paying to mass-produce output from a crude pipeline buys nothing. Do not
+    reach for a paid backend to work around a quality problem that is
+    actually a pipeline problem. §4.25 has the measured cost numbers for
+    when that point arrives.
+
+    a. **Build the persona split — the highest-value work left, and free.**
+       Fang Yuan is a 500-year-old man in ch1 and a fifteen-year-old from
+       ch2. He needs **two personas on one self**, exactly the case
+       `architecture.md §4` was designed around and `persona/build.py`
+       flags as its known "one persona per self, for now" limitation.
+       Appearance is already dated per attestation (§4.24) and retrieval is
+       already position-filtered (§4.26), so the graph side is ready; what
+       is missing is minting the second persona and selecting between them
+       at render time. **This is the strongest research demo available** —
+       a baseline pipeline cannot render it at all.
+    b. **Render the ablation figure**: ch1 and ch40 twice, once with
+       `state_of`-driven persona/appearance and once flat. The flat version
+       drawing a teenager as a 500-year-old is the figure that *proves* the
+       contribution rather than asserting it.
+    c. **Re-run `world/` on the other two novels** and check the vocabulary
+       holds up outside xianxia — LOTM is Victorian, ORV is modern Seoul,
+       and `world/schema.py`'s keys were chosen against RI.
+    d. **Mention resolution is the ceiling on everything above.** RI ch12's
+       "his body figure was tall and thin, his skin pale" has *no resolved
+       mention*, so no amount of extraction sophistication can see it
+       (§4.24). Improving that lifts appearance, world facts and panel
+       casting simultaneously.
+
+    **What works right now, free, end to end:** ingest → resolve → personas
+    → appearance (§4.24) → world facts + retrieval (§4.26) → beats →
+    LLM art director → local image generation → ffmpeg video, with picture
+    length locked exactly to audio.
+
+    **What is blocked and why:** real audio needs VCTK, whose download is
+    incomplete (§4.21) — though **11 usable speaker clips were salvaged by
+    stream-parsing the partial zip** and are enough for a multi-voice test.
+    `chatterbox-tts` **cannot share a venv with the image stack** (§4.25's
+    warning box): it silently downgrades `diffusers` 0.39→0.29 and breaks
+    image generation outright.
+
+12. **Watch Phase 9's actual output, once step 9 unblocks it** (§4.23). The
     render pipeline is built and unit-tested but has never produced a real
     chapter video — it needs the same VCTK-derived `manifest.jsonl` step 9
     is waiting on, plus `pip install echotales-pipeline[render]` and a GPU
