@@ -124,7 +124,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_render.add_argument("--out", default="data/video")
     p_render.add_argument(
-        "--image-engine", default="stub", choices=["stub", "sdxl", "manga", "openrouter"],
+        "--image-engine", default="stub", choices=["stub", "sdxl", "manga", "gemini", "openrouter"],
         help="stub writes solid-colour placeholder panels; sdxl and manga need "
         "a GPU. manga is the one that produces the intended look: an "
         "anime/manga checkpoint plus IP-Adapter reference conditioning so a "
@@ -185,7 +185,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="limit to the N most-mentioned eligible characters",
     )
     pe_ref.add_argument(
-        "--engine", default="stub", choices=["stub", "sdxl", "manga", "openrouter"],
+        "--engine", default="stub", choices=["stub", "sdxl", "manga", "gemini", "openrouter"],
         help="manga is the intended backend; stub writes placeholders",
     )
     pe_ref.add_argument("--principals-only", action="store_true")

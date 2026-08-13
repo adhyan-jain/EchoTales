@@ -344,13 +344,17 @@ def get_engine(name: str = "stub", **kwargs: object) -> PanelImageEngine:
         return SDXLEngine(**kwargs)  # type: ignore[arg-type]
     if name == "manga":
         return MangaDiffusersEngine(**kwargs)  # type: ignore[arg-type]
+    if name == "gemini":
+        from echotales.pipeline.render.gemini import GeminiImageEngine
+
+        return GeminiImageEngine(**kwargs)  # type: ignore[arg-type,return-value]
     if name == "openrouter":
         from echotales.pipeline.render.openrouter import OpenRouterImageEngine
 
         return OpenRouterImageEngine(**kwargs)  # type: ignore[arg-type,return-value]
     raise ValueError(
-        f"unknown image engine {name!r}; expected 'stub', 'sdxl', 'manga' "
-        "or 'openrouter'"
+        f"unknown image engine {name!r}; expected 'stub', 'sdxl', 'manga', "
+        "'gemini' or 'openrouter'"
     )
 
 
