@@ -745,6 +745,21 @@ class Store:
             ),
         )
 
+    def clear_self_persona_bindings(self, self_id: str) -> int:
+        """Drop every binding for one self, returning how many went.
+
+        `add_self_persona_binding` is a plain INSERT (a self legitimately has
+        several bindings, so INSERT OR REPLACE would be wrong), which makes
+        re-running the persona stage additive: a second run would leave the
+        character bound to two copies of each body. Callers that *rebuild* a
+        self's bodies clear first. Same class of bug as `resolve_novel`
+        clearing stale resolution events before re-resolving.
+        """
+        cur = self.conn.execute(
+            "DELETE FROM self_persona_binding WHERE self_id=?", (self_id,)
+        )
+        return cur.rowcount
+
     def get_self_persona_bindings(
         self, *, self_id: str | None = None, persona_id: str | None = None
     ) -> list[SelfPersonaBinding]:

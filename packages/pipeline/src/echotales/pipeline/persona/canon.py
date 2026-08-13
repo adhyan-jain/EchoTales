@@ -51,19 +51,87 @@ CANON_APPEARANCE: dict[str, dict[str, dict[str, str]]] = {
 }
 
 
-def canon_for(novel_id: str, label: str) -> dict[str, str]:
-    """Canonical appearance for this character, or an empty dict."""
-    return CANON_APPEARANCE.get(novel_id, {}).get(label, {})
+#: novel_id -> canonical label -> body index -> attributes that differ **for
+#: that body only**, layered on top of the character's entry above.
+#:
+#: **This is where a body change becomes visible.** `persona/split.py` finds
+#: that Fang Yuan is reborn in chapter 1 and binds a second persona from
+#: there; the graph knows the two bodies are different, but nothing in the
+#: prose ever states what the fifteen-year-old looks like -- RI's narration
+#: describes his *death scene* in chapter 1 and almost nothing afterwards
+#: (§4.24's honest caveat on that output). An extractor cannot invent what
+#: the text does not say, and a reader can simply write it down.
+#:
+#: Sparse by design: a body with no entry here inherits the character's
+#: appearance unchanged, which is right for the overwhelming majority of
+#: characters, who have exactly one body.
+CANON_BY_BODY: dict[str, dict[str, dict[int, dict[str, str]]]] = {
+    "reverend-insanity": {
+        "Fang Yuan": {
+            # Body 1: the 500-year-old demonic cultivator of chapter 1,
+            # dying at the hands of the righteous factions.
+            1: {
+                "height_build": "tall and lean, gaunt with age and injury",
+                "current_condition": "gravely wounded, robes torn",
+                "distinguishing_features": (
+                    "aged, hollow-cheeked, cold expressionless stare, "
+                    "utterly ruthless demeanour"
+                ),
+            },
+            # Body 2: the same consciousness in his fifteen-year-old self,
+            # from chapter 1's rebirth onward -- which is the entire book.
+            2: {
+                "height_build": "slim adolescent build, not yet grown",
+                "distinguishing_features": (
+                    "a boy's face wearing an adult's cold, ruthless "
+                    "expression"
+                ),
+            },
+        },
+    },
+}
 
 
-def apply_canon(novel_id: str, label: str, extracted: dict[str, str]) -> dict[str, str]:
+def _body_index(persona_id: str | None) -> int | None:
+    """The body number encoded in a persona id, if there is one."""
+    if not persona_id or ":body" not in persona_id:
+        return None
+    try:
+        return int(persona_id.rsplit(":body", 1)[1])
+    except ValueError:
+        return None
+
+
+def canon_for(
+    novel_id: str, label: str, persona_id: str | None = None
+) -> dict[str, str]:
+    """Canonical appearance for this character, or an empty dict.
+
+    With a `persona_id`, any body-specific overrides are layered on top --
+    the character's entry describes who they are, the body entry describes
+    which body the reader is looking at.
+    """
+    base = dict(CANON_APPEARANCE.get(novel_id, {}).get(label, {}))
+    index = _body_index(persona_id)
+    if index is None:
+        return base
+    base.update(CANON_BY_BODY.get(novel_id, {}).get(label, {}).get(index, {}))
+    return base
+
+
+def apply_canon(
+    novel_id: str,
+    label: str,
+    extracted: dict[str, str],
+    persona_id: str | None = None,
+) -> dict[str, str]:
     """Overlay canon onto extracted attributes.
 
     Canon wins key by key rather than wholesale, so a character with a
     canon entry still keeps any extracted attribute the entry does not
     mention -- the table is allowed to be partial.
     """
-    canon = canon_for(novel_id, label)
+    canon = canon_for(novel_id, label, persona_id)
     if not canon:
         return extracted
     merged = dict(extracted)

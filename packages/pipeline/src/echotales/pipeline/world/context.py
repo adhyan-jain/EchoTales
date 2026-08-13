@@ -232,15 +232,22 @@ def _appearance_brief(
         _demographics,
         build_reference_prompt,
     )
+    from echotales.pipeline.persona.split import persona_at
     from echotales.pipeline.resolve.appearance_extract import STANDING_KEYS
 
     entity = store.get_self(entity_id)
     if entity is None:
         return ""
 
-    facts = _facts_as_of(store, TargetKind.PERSONA, f"{entity_id}:body1", chapter)
+    # The body they are in *at this chapter*, not the first one they ever
+    # had: a character who was reborn or transmigrated has more than one, and
+    # this function's own docstring is the promise that we pick the right one.
+    persona_id = persona_at(store, entity_id, chapter)
+    facts = _facts_as_of(store, TargetKind.PERSONA, persona_id, chapter)
     appearance = {k: v for k, v in facts.items() if k in STANDING_KEYS}
-    appearance = apply_canon(novel_id, entity.canonical_label, appearance)
+    appearance = apply_canon(
+        novel_id, entity.canonical_label, appearance, persona_id
+    )
     appearance = resolve_appearance(novel_id, appearance)
     if not appearance:
         return ""
@@ -248,7 +255,7 @@ def _appearance_brief(
     # character as "androgynous person", which is how the male protagonist
     # came out drawn as a woman the first time this leaked (§4.24).
     gender, age_band = _demographics(
-        store, f"{entity_id}:body1", novel_id=novel_id, entity_id=entity_id
+        store, persona_id, novel_id=novel_id, entity_id=entity_id
     )
     return build_reference_prompt(
         entity.canonical_label,

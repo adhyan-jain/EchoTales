@@ -37,8 +37,6 @@ import logging
 import re
 from dataclasses import dataclass, field
 
-from pydantic import BaseModel, Field
-
 from echotales.core.enums import (
     OBSERVER_READER,
     AssertedBy,
@@ -51,6 +49,8 @@ from echotales.core.enums import (
 from echotales.core.interval import FuzzyInterval
 from echotales.core.models import Attribute, DiscoursePosition
 from echotales.core.store import Store
+from echotales.pipeline.persona.split import persona_at
+from pydantic import BaseModel, Field
 
 log = logging.getLogger(__name__)
 
@@ -644,7 +644,7 @@ def extract_appearance(
                 system=SYSTEM,
                 novel_id=novel_id,
             )
-        except Exception as exc:  # noqa: BLE001 - one bad entity must not sink the stage
+        except Exception as exc:
             log.warning("appearance extraction failed for %s: %s", entity.id, exc)
             report.failures += 1
             continue
@@ -658,23 +658,33 @@ def extract_appearance(
         if not values:
             continue
 
-        persona_id = f"{entity.id}:body1"
-        known = {
-            (a.key, a.value)
-            for a in store.get_attributes(TargetKind.PERSONA, persona_id)
-            if a.is_standing
-        }
+        # Cached per persona rather than computed once: which body an
+        # attribute belongs to depends on the chapter that attests it, so a
+        # split character has more than one "already known" set in play.
+        known_by_persona: dict[str, set[tuple[str, str]]] = {}
 
         written = 0
         for key, value in values.items():
-            if (key, value) in known:
-                report.attributes_already_known += 1
-                continue
-
             # Position this fact where the text actually attests it, not at
             # the entity's first sighting -- see `attesting_chapter`.
             at = attesting_chapter(value, evidence)
             if at is None:
+                continue
+
+            # ...and file it against the body the character was in *then*.
+            # This is the whole payoff of the persona split: RI chapter 1
+            # attests Fang Yuan "deathly pale" with "robes torn to shreds"
+            # in his 500-year-old body, and that must not describe the
+            # fifteen-year-old the reader meets in chapter 2.
+            persona_id = persona_at(store, entity.id, at)
+            if persona_id not in known_by_persona:
+                known_by_persona[persona_id] = {
+                    (a.key, a.value)
+                    for a in store.get_attributes(TargetKind.PERSONA, persona_id)
+                    if a.is_standing
+                }
+            if (key, value) in known_by_persona[persona_id]:
+                report.attributes_already_known += 1
                 continue
             pos = DiscoursePosition(chapter=at, offset=0)
             store.add_attribute(

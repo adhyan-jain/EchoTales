@@ -48,6 +48,7 @@ from echotales.core.models import Attribute
 from echotales.core.store import Store
 from echotales.pipeline.persona.attire import resolve_appearance
 from echotales.pipeline.persona.canon import apply_canon
+from echotales.pipeline.persona.split import bodies_of
 
 log = logging.getLogger(__name__)
 
@@ -321,7 +322,7 @@ def generate_references(
     is how a first pass gets reviewed before committing GPU time to a full
     cast.
     """
-    from echotales.pipeline.render.panels import PanelImageRequest, get_engine
+    from echotales.pipeline.render.panels import get_engine
     from echotales.pipeline.resolve.appearance_extract import eligible_prominence
 
     engine = engine or get_engine("stub")
@@ -346,75 +347,132 @@ def generate_references(
     if top is not None:
         eligible = eligible[:top]
 
+    # One sheet per **body**, not per character. A reborn or transmigrated
+    # character has two personas with genuinely different appearances, and a
+    # single sheet would condition every panel in the book on whichever one
+    # happened to be extracted first. `bodies_of` returns exactly one entry
+    # for the overwhelming majority of the cast, so this loop costs nothing
+    # for characters who never change.
     for entity, prominence in eligible:
-        persona_id = f"{entity.id}:body1"  # type: ignore[attr-defined]
-        appearance = appearance_of(store, persona_id)
-        if not appearance:
-            report.skipped_no_appearance += 1
-            continue
-
-        gender, age_band = _demographics(
-            store, persona_id, novel_id=novel_id, entity_id=str(entity.id)  # type: ignore[attr-defined]
-        )
-        # Genre defaults for whatever the prose never stated. Without this
-        # the diffusion model picks those features itself, differently every
-        # time it is asked -- see `attire.py::APPEARANCE_DEFAULTS`.
-        # Canon first (a reader beats an extractor), then genre defaults
-        # for whatever neither states.
-        appearance = apply_canon(
-            novel_id, str(entity.canonical_label), appearance  # type: ignore[attr-defined]
-        )
-        appearance = resolve_appearance(novel_id, appearance)
-        prompt = build_reference_prompt(
-            entity.canonical_label,  # type: ignore[attr-defined]
-            appearance,
-            gender=gender,
-            age_band=age_band,
-            detailed=prominence is Prominence.PRINCIPAL,
-        )
-        digest = _digest(prompt)
-
-        stored = {
-            a.key: a.value
-            for a in store.get_attributes(TargetKind.PERSONA, persona_id)
-            if a.is_standing
-        }
-        image_path = out_dir / f"{str(entity.id).replace(':', '_')}.png"  # type: ignore[attr-defined]
-
-        if (
-            stored.get(REFERENCE_DIGEST_KEY) == digest
-            and image_path.exists()
-        ):
-            report.reused_cached += 1
-            report.paths[str(entity.canonical_label)] = str(image_path)  # type: ignore[attr-defined]
-            continue
-
-        engine.generate(  # type: ignore[attr-defined]
-            PanelImageRequest(
-                prompt=prompt,
-                out_path=image_path,
-                negative_prompt=REFERENCE_NEGATIVE,
+        bodies = [pid for pid, _interval in bodies_of(store, str(entity.id))]  # type: ignore[attr-defined]
+        for persona_id in bodies or [f"{entity.id}:body1"]:  # type: ignore[attr-defined]
+            _generate_one(
+                store,
+                novel_id,
+                entity,
+                persona_id,
+                prominence,
+                engine=engine,
+                out_dir=out_dir,
+                report=report,
                 width=width,
                 height=height,
-                # Per-character, not per-run: two characters sharing one
-                # seed and a similar prompt come out looking like siblings,
-                # and a seed that moved between runs would redraw a face
-                # that downstream panels are already conditioned on.
-                seed=_seed_for(str(entity.id), seed),  # type: ignore[attr-defined]
+                seed=seed,
+                multi_body=len(bodies) > 1,
             )
-        )
-
-        if stored.get(REFERENCE_PATH_KEY) != str(image_path):
-            _write_marker(
-                store, novel_id, persona_id, REFERENCE_PATH_KEY, str(image_path), entity
-            )
-        _write_marker(store, novel_id, persona_id, REFERENCE_DIGEST_KEY, digest, entity)
-
-        report.generated += 1
-        report.paths[str(entity.canonical_label)] = str(image_path)  # type: ignore[attr-defined]
 
     store.conn.commit()
     return report
+
+
+def _generate_one(
+    store: Store,
+    novel_id: str,
+    entity: object,
+    persona_id: str,
+    prominence: Prominence,
+    *,
+    engine: object,
+    out_dir: Path,
+    report: ReferenceReport,
+    width: int,
+    height: int,
+    seed: int,
+    multi_body: bool,
+) -> None:
+    """Generate (or reuse) the sheet for one body of one character."""
+    from echotales.pipeline.render.panels import PanelImageRequest
+
+    appearance = appearance_of(store, persona_id)
+    if not appearance:
+        report.skipped_no_appearance += 1
+        return
+
+    gender, age_band = _demographics(
+        store, persona_id, novel_id=novel_id, entity_id=str(entity.id)  # type: ignore[attr-defined]
+    )
+    # Genre defaults for whatever the prose never stated. Without this
+    # the diffusion model picks those features itself, differently every
+    # time it is asked -- see `attire.py::APPEARANCE_DEFAULTS`.
+    # Canon first (a reader beats an extractor), then genre defaults
+    # for whatever neither states.
+    appearance = apply_canon(
+        novel_id,
+        str(entity.canonical_label),  # type: ignore[attr-defined]
+        appearance,
+        persona_id,
+    )
+    appearance = resolve_appearance(novel_id, appearance)
+    prompt = build_reference_prompt(
+        entity.canonical_label,  # type: ignore[attr-defined]
+        appearance,
+        gender=gender,
+        age_band=age_band,
+        detailed=prominence is Prominence.PRINCIPAL,
+    )
+    digest = _digest(prompt)
+
+    stored = {
+        a.key: a.value
+        for a in store.get_attributes(TargetKind.PERSONA, persona_id)
+        if a.is_standing
+    }
+    image_path = out_dir / f"{persona_id.replace(':', '_')}.png"
+
+    if (
+        stored.get(REFERENCE_DIGEST_KEY) == digest
+        and image_path.exists()
+    ):
+        report.reused_cached += 1
+        report.paths[_report_key(entity, persona_id, multi_body)] = str(image_path)
+        return
+
+    engine.generate(  # type: ignore[attr-defined]
+        PanelImageRequest(
+            prompt=prompt,
+            out_path=image_path,
+            negative_prompt=REFERENCE_NEGATIVE,
+            width=width,
+            height=height,
+            # Per-*body*, not per-run: two characters sharing one seed
+            # and a similar prompt come out looking like siblings, a seed
+            # that moved between runs would redraw a face downstream
+            # panels are already conditioned on, and two bodies of one
+            # character must not come out as the same face -- which is the
+            # entire point of splitting them.
+            seed=_seed_for(persona_id, seed),
+        )
+    )
+
+    if stored.get(REFERENCE_PATH_KEY) != str(image_path):
+        _write_marker(
+            store, novel_id, persona_id, REFERENCE_PATH_KEY, str(image_path), entity
+        )
+    _write_marker(store, novel_id, persona_id, REFERENCE_DIGEST_KEY, digest, entity)
+
+    report.generated += 1
+    report.paths[_report_key(entity, persona_id, multi_body)] = str(image_path)
+
+
+def _report_key(entity: object, persona_id: str, multi_body: bool) -> str:
+    """How a generated sheet is named in the report.
+
+    Unqualified for the ordinary one-body character, so existing output is
+    unchanged; qualified by body when there is more than one, because two
+    rows reading "Fang Yuan" would silently overwrite each other.
+    """
+    label = str(entity.canonical_label)  # type: ignore[attr-defined]
+    return label if not multi_body else f"{label} [{persona_id.rsplit(':', 1)[-1]}]"
 
 
 def reference_path_for(store: Store, persona_id: str) -> Path | None:

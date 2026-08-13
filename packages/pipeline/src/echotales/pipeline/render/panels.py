@@ -29,13 +29,13 @@ from typing import Protocol
 from echotales.core.enums import ReferenceMode, SpanType
 from echotales.core.models import Chapter, Mention, Span
 from echotales.core.store import Store
+from echotales.pipeline.persona.attire import scene_locale, world_setting
 from echotales.pipeline.persona.prompt import (
     STYLE_CLOSEUP,
     build_image_prompt,
     negative_for,
     shot_style,
 )
-from echotales.pipeline.persona.attire import scene_locale, world_setting
 from echotales.pipeline.persona.runner import get_panel_cast
 from echotales.pipeline.render._png import write_solid_png
 from echotales.pipeline.render.beats import segment_beats
@@ -234,7 +234,7 @@ class MangaDiffusersEngine:
                     weight_name=self.ip_adapter_weight,
                 )
                 self._ip_loaded = True
-            except Exception as exc:  # noqa: BLE001 - degrade, do not crash
+            except Exception as exc:
                 log.warning(
                     "IP-Adapter unavailable (%s); panels will be prompt-only "
                     "and character identity will drift between panels",
@@ -387,7 +387,7 @@ def _is_flat(image: object, *, threshold: float = 6.0) -> bool:
 
         stat = ImageStat.Stat(image.convert("L"))  # type: ignore[attr-defined]
         return float(stat.stddev[0]) < threshold
-    except Exception:  # noqa: BLE001 - a guard must never sink a render
+    except Exception:
         return False
 
 
@@ -462,9 +462,20 @@ def present_entity_ids(mentions: list[Mention], block_index: int) -> list[str]:
 
 
 def character_looks(
-    store: Store, entity_id: str, *, novel_id: str = ""
+    store: Store,
+    entity_id: str,
+    *,
+    novel_id: str = "",
+    chapter: float | None = None,
 ) -> tuple[str, str, Path | None, str] | None:
     """`(label, appearance clause, reference sheet, gender)` for one entity.
+
+    `chapter` selects which *body* to draw. A character who was reborn or
+    transmigrated has more than one persona, each with its own appearance and
+    its own reference sheet, and drawing chapter 40's panel from chapter 1's
+    body is the exact error the self/persona split exists to prevent. None
+    means "their latest body", which is the right answer for a cast list and
+    the wrong one for a panel -- so panel rendering always passes it.
 
     Returns None for a non-person entity -- §10 item 5's typing again: a
     location resolves like a name but has no face to draw. The clause and
@@ -484,15 +495,18 @@ def character_looks(
         build_reference_prompt,
         reference_path_for,
     )
+    from echotales.pipeline.persona.split import persona_at
 
-    persona_id = f"{entity_id}:body1"
+    persona_id = persona_at(store, entity_id, chapter)
     appearance = appearance_of(store, persona_id)
     # Canon, then genre defaults -- the same chain `reference_gen` applies.
     # Without it here the panels were running on raw extraction only: Fang
     # Yuan has no extracted hair colour, so the image model invented one and
     # gave the canonically black-haired protagonist white hair.
     if novel_id:
-        appearance = apply_canon(novel_id, entity.canonical_label, appearance)
+        appearance = apply_canon(
+            novel_id, entity.canonical_label, appearance, persona_id
+        )
         appearance = resolve_appearance(novel_id, appearance)
     gender, _age = _demographics(
         store, persona_id, novel_id=novel_id, entity_id=entity_id
@@ -632,7 +646,9 @@ def render_panels(
             appearances: dict[str, str] = {}
             genders: list[str] = []
             for entity_id in present_beat_entities(mentions, beat.blocks):
-                looks = character_looks(store, entity_id, novel_id=novel_id)
+                looks = character_looks(
+                    store, entity_id, novel_id=novel_id, chapter=chapter_number
+                )
                 if looks is None:
                     continue
                 label, clause, sheet, gender = looks

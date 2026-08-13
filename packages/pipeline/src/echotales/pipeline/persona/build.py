@@ -28,14 +28,20 @@ from dataclasses import dataclass, field
 
 from echotales.core.enums import (
     OBSERVER_READER,
-    AttributionMethod,
     Prominence,
     SpanType,
     TargetKind,
 )
 from echotales.core.interval import FuzzyInterval
-from echotales.core.models import Attribute, Persona, SelfPersonaBinding
+from echotales.core.models import Attribute
 from echotales.core.store import Store
+from echotales.pipeline.persona.split import (
+    SplitReport,
+    detect_body_changes,
+    epochs_for,
+    persona_at,
+    write_epochs,
+)
 from echotales.pipeline.persona.traits import TraitProfile, infer_traits_deterministic
 
 #: Below this many mentions an entity gets a deterministic profile only. A
@@ -59,18 +65,24 @@ class PersonaReport:
     profiled_llm: int = 0
     profiled_deterministic: int = 0
     skipped_non_person: int = 0
+    split_characters: int = 0
     by_archetype: dict[str, int] = field(default_factory=dict)
+    split: SplitReport | None = None
 
     def summary(self) -> str:
         top = sorted(self.by_archetype.items(), key=lambda kv: -kv[1])[:6]
         buckets = ", ".join(f"{k}={v}" for k, v in top) or "none"
-        return (
+        out = (
             f"{self.novel_id}: {self.personas:,} personas, {self.bindings:,} bindings\n"
             f"  profiled: {self.profiled_llm} llm, "
             f"{self.profiled_deterministic} deterministic\n"
             f"  skipped (not a person): {self.skipped_non_person}\n"
+            f"  characters with more than one body: {self.split_characters}\n"
             f"  top archetype buckets: {buckets}"
         )
+        if self.split is not None:
+            out += "\n  " + self.split.summary().replace("\n", "\n  ")
+        return out
 
 
 def _prominence_for(mention_count: int) -> Prominence:
@@ -141,6 +153,7 @@ def build_personas(
     `persona/traits.py` on why that is a supported mode and not a degradation.
     """
     report = PersonaReport(novel_id=novel_id)
+    report.split = SplitReport(novel_id=novel_id)
     profiles: dict[str, TraitProfile] = {}
 
     for entity in store.all_selves(novel_id):
@@ -184,58 +197,73 @@ def build_personas(
         else:
             report.profiled_deterministic += 1
 
-        persona_id = f"{entity.id}:body1"
-        store.add_persona(
-            Persona(
-                id=persona_id,
-                novel_id=novel_id,
-                body_label=entity.canonical_label,
-                first_attested_pos=entity.first_attested_pos,
-                notes=f"auto-built from {entity.id}; {profile.provenance} traits",
-            )
+        # One persona per *body*, not per character. A character with no
+        # detected body change gets exactly one epoch, so the common case is
+        # byte-identical to what this stage produced before `split.py`
+        # existed -- `self1:body1`, open-ended from their first sighting.
+        report.split.entities_scanned += 1
+        changes = detect_body_changes(
+            store, novel_id, entity, client=client, report=report.split
         )
-        store.add_self_persona_binding(
-            SelfPersonaBinding(
-                self_id=entity.id,
-                persona_id=persona_id,
-                # Open-ended from the entity's first sighting: one body, held
-                # for as long as the story shows them, which is the honest
-                # reading when nothing indicates a second body.
-                interval=FuzzyInterval.open_ended(
-                    entity.first_attested_pos.chapter,
-                    last_evidence=entity.first_attested_pos.chapter,
-                ),
-                learned_at_pos=entity.first_attested_pos,
-                observer_id=OBSERVER_READER,
-            )
-        )
-        report.personas += 1
-        report.bindings += 1
+        report.split.confirmed += len(changes)
+        if changes:
+            report.split.by_entity[entity.canonical_label] = [c.kind for c in changes]
+            report.split_characters += 1
 
-        for key, value in (
-            ("age_band", profile.age_band),
-            ("gender", profile.gender),
-            ("register", profile.register),
-            ("archetype", profile.archetype),
-            ("big_five", _big_five_str(profile)),
-            ("trait_provenance", profile.provenance),
-        ):
-            store.add_attribute(
-                novel_id,
-                Attribute(
-                    target_kind=TargetKind.PERSONA,
-                    target_id=persona_id,
-                    key=key,
-                    value=value,
-                    interval=FuzzyInterval.open_ended(
-                        entity.first_attested_pos.chapter,
-                        last_evidence=entity.first_attested_pos.chapter,
+        seen_chapters = store.chapters_for_target(novel_id, entity.id)
+        epochs = epochs_for(
+            entity.id,
+            entity.canonical_label,
+            entity.first_attested_pos.chapter,
+            changes,
+            last_pos=seen_chapters[-1] if seen_chapters else None,
+        )
+        # Rebuilding, not appending: bindings are a plain INSERT because one
+        # self legitimately has several, so a re-run would otherwise double
+        # them (see `Store.clear_self_persona_bindings`).
+        store.clear_self_persona_bindings(entity.id)
+        write_epochs(
+            store,
+            novel_id,
+            entity,
+            epochs,
+            observer_id=OBSERVER_READER,
+            notes=f"auto-built from {entity.id}; {profile.provenance} traits",
+        )
+        report.personas += len(epochs)
+        report.bindings += len(epochs)
+
+        # Traits are demographics and personality -- properties of the
+        # *consciousness*, not of the body it currently wears -- so they are
+        # written to every epoch rather than only the first. Appearance is
+        # the opposite and is dated per attestation by
+        # `appearance_extract`, which is why that stage picks its persona by
+        # position and this one does not.
+        for epoch in epochs:
+            for key, value in (
+                ("age_band", profile.age_band),
+                ("gender", profile.gender),
+                ("register", profile.register),
+                ("archetype", profile.archetype),
+                ("big_five", _big_five_str(profile)),
+                ("trait_provenance", profile.provenance),
+            ):
+                store.add_attribute(
+                    novel_id,
+                    Attribute(
+                        target_kind=TargetKind.PERSONA,
+                        target_id=epoch.persona_id,
+                        key=key,
+                        value=value,
+                        interval=FuzzyInterval.open_ended(
+                            epoch.from_pos,
+                            last_evidence=epoch.last_evidence or epoch.from_pos,
+                        ),
+                        learned_at_pos=entity.first_attested_pos,
+                        observer_id=OBSERVER_READER,
+                        evidence=profile.evidence[:200],
                     ),
-                    learned_at_pos=entity.first_attested_pos,
-                    observer_id=OBSERVER_READER,
-                    evidence=profile.evidence[:200],
-                ),
-            )
+                )
 
         report.by_archetype[profile.archetype] = (
             report.by_archetype.get(profile.archetype, 0) + 1
@@ -263,7 +291,10 @@ def load_trait_profiles(novel_id: str, store: Store) -> dict[str, TraitProfile]:
     for entity in store.all_selves(novel_id):
         if not entity.kind.is_person:
             continue
-        persona_id = f"{entity.id}:body1"
+        # Traits are body-independent, so any epoch answers -- but ask
+        # `persona_at` rather than assuming `:body1`, so a re-split character
+        # still resolves through one accessor.
+        persona_id = persona_at(store, entity.id)
         attrs = {
             a.key: a.value
             for a in store.get_attributes(TargetKind.PERSONA, persona_id)

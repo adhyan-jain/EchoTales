@@ -73,6 +73,11 @@ class Task(StrEnum):
     #: actually depict. Comprehension, not assembly -- see
     #: `render/direction.py`.
     PANEL_DIRECTION = "panel_direction"
+    #: One call per *lexical candidate* (not per entity, and not per
+    #: chapter): does this passage narrate a character's body changing, or
+    #: merely refer back to a change? The cue regexes in `persona/split.py`
+    #: propose, this vetoes.
+    PERSONA_SPLIT = "persona_split"
     #: One call per entity of any kind, filling the structured world
     #: vocabulary in `world/schema.py` -- the stage that stops locations
     #: and factions being names with nothing attached.
@@ -210,6 +215,17 @@ TASK_PROFILES: dict[Task, TaskProfile] = {
         anthropic_model="claude-sonnet-5",
         temperature=0.0,
         max_tokens=900,
+    ),
+    # A narrow yes/no read over one passage the regexes already flagged --
+    # "is this the moment, or a reference back to it" -- so the cheap API
+    # tier, mirroring SPEAKER_ATTRIBUTION's split rather than ADJUDICATION's.
+    # Fires only on lexical hits, which are rare: a whole novel produces a
+    # handful, not one per entity.
+    Task.PERSONA_SPLIT: TaskProfile(
+        ollama_model="qwen2.5:7b",
+        anthropic_model="claude-haiku-4-5-20251001",
+        temperature=0.0,
+        max_tokens=250,
     ),
 }
 
