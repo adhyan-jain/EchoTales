@@ -40,6 +40,7 @@ from echotales.pipeline.persona.runner import get_panel_cast
 from echotales.pipeline.render._png import write_solid_png
 from echotales.pipeline.render.beats import segment_beats
 from echotales.pipeline.render.direction import direct_beat
+from echotales.pipeline.world.context import story_context
 
 log = logging.getLogger(__name__)
 
@@ -657,8 +658,12 @@ def render_panels(
             # panels came back unrelated to the story around them.
             directed = None
             if client is not None:
+                brief = story_context(
+                    novel_id, store, chapter_number, beat.blocks
+                ).to_brief()
                 directed = direct_beat(
                     beat_prose,
+                    context_brief=brief,
                     cast={k: v for k, v in appearances.items() if v},
                     novel_style=world_setting(novel_id),
                     client=client,

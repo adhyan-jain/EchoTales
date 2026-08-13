@@ -64,6 +64,7 @@ def build_prompt(
     *,
     cast: dict[str, str],
     novel_style: str,
+    context_brief: str = "",
     max_chars: int = 2400,
 ) -> str:
     """Ask the director for one shot.
@@ -73,6 +74,12 @@ def build_prompt(
     than inventing "a young man", and can restate their look.
     """
     lines = [f"Novel setting: {novel_style}", ""]
+    if context_brief:
+        # The graph's own answer to "what is relevant here" -- who is
+        # present with their rank and faction, where this is, which
+        # factions are in play -- filtered to what is known by this
+        # position. See `world/context.py`.
+        lines += ["What the story knows at this point:", context_brief, ""]
     if cast:
         lines.append("Characters who may appear, with their fixed appearance:")
         for name, look in cast.items():
@@ -150,6 +157,7 @@ def direct_beat(
     novel_style: str,
     client: object,
     novel_id: str = "",
+    context_brief: str = "",
 ) -> Direction | None:
     """Get one shot from the director, or None if the call fails.
 
@@ -162,7 +170,12 @@ def direct_beat(
     try:
         result = client.complete(  # type: ignore[attr-defined]
             Task.PANEL_DIRECTION,
-            build_prompt(beat_text, cast=cast, novel_style=novel_style),
+            build_prompt(
+                beat_text,
+                cast=cast,
+                novel_style=novel_style,
+                context_brief=context_brief,
+            ),
             PanelDirection,
             system=SYSTEM,
             novel_id=novel_id,

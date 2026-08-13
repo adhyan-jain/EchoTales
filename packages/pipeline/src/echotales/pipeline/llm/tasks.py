@@ -73,6 +73,10 @@ class Task(StrEnum):
     #: actually depict. Comprehension, not assembly -- see
     #: `render/direction.py`.
     PANEL_DIRECTION = "panel_direction"
+    #: One call per entity of any kind, filling the structured world
+    #: vocabulary in `world/schema.py` -- the stage that stops locations
+    #: and factions being names with nothing attached.
+    WORLD_FACTS = "world_facts"
 
 
 @dataclass(frozen=True, slots=True)
@@ -196,6 +200,16 @@ TASK_PROFILES: dict[Task, TaskProfile] = {
         anthropic_model="claude-sonnet-5",
         temperature=0.4,
         max_tokens=500,
+    ),
+    # Same cultural-knowledge requirement as NER -- a cultivation rank and a
+    # sect's hierarchy are xianxia vocabulary -- and the same once-per-entity
+    # budget as the other profile stages. Temperature 0: this is extraction,
+    # not invention, and the whole point is that it does not embellish.
+    Task.WORLD_FACTS: TaskProfile(
+        ollama_model="qwen2.5:7b",
+        anthropic_model="claude-sonnet-5",
+        temperature=0.0,
+        max_tokens=900,
     ),
 }
 
