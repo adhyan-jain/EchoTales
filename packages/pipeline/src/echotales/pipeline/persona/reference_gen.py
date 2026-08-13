@@ -72,17 +72,26 @@ _PROMPT_ORDER = (
 )
 
 #: The style contract. Non-negotiable per the brief: the output must be
-#: inked black-and-white manga, and a checkpoint that ignores this is the
-#: wrong checkpoint (see `render/panels.py::MangaComfyEngine`).
+#: inked black-and-white manga.
+#:
+#: **"character reference sheet" is deliberately absent.** It reads to the
+#: model as a literal instruction to draw a *sheet* -- the first real
+#: generation came back as a collage of twelve thumbnail poses, which is
+#: the worst possible IP-Adapter input: the adapter needs one clear face to
+#: lock onto, and given twelve small ones it locks onto none of them. What
+#: this stage wants is a single portrait that happens to serve as a
+#: reference, not a page of model sheets.
 REFERENCE_STYLE = (
-    "manga style, black and white, ink lines, screentone shading, "
-    "detailed face, neutral expression, front view, white background, "
-    "character reference sheet"
+    "solo, single character, upper body portrait, facing viewer, "
+    "detailed face, neutral expression, plain white background, "
+    "monochrome, greyscale, manga style, ink lines, screentone shading"
 )
 
 REFERENCE_NEGATIVE = (
-    "color, colored, photorealistic, 3d render, western comic, watermark, "
-    "text, speech bubble, multiple views, extra limbs, deformed hands"
+    "color, colored, vibrant, photorealistic, 3d render, western comic, "
+    "watermark, text, speech bubble, multiple views, character sheet, "
+    "multiple poses, collage, grid, full body, extra limbs, deformed hands, "
+    "two people, crowd"
 )
 
 

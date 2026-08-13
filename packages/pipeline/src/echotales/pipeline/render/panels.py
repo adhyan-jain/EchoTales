@@ -175,6 +175,19 @@ class MangaDiffusersEngine:
     steps: int = 28
     guidance_scale: float = 7.0
     max_references: int = 2
+    #: Convert the result to greyscale after generation.
+    #:
+    #: The prompt asks for monochrome and the negative prompt rejects
+    #: colour, and the checkpoint produces colour anyway -- it is an anime
+    #: *colour* model, and that is what it knows. Measured on the first real
+    #: generation: green robes, brown eyes, full saturation, against a
+    #: negative prompt containing "color, colored". Rather than fight the
+    #: checkpoint with prompt wording that demonstrably does not work, the
+    #: conversion is done deterministically here, where it cannot fail. The
+    #: checkpoint still earns its place: it supplies the anatomy, the
+    #: linework and the xianxia costume vocabulary that a photorealistic
+    #: base cannot.
+    monochrome: bool = True
     _pipe: object | None = None
     _ip_loaded: bool = False
 
@@ -233,6 +246,12 @@ class MangaDiffusersEngine:
             generator=generator,
             **kwargs,
         ).images[0]
+
+        if self.monochrome:
+            # "L" then back to "RGB": the downstream ffmpeg segments and the
+            # IP-Adapter both expect three channels, and a single-channel
+            # PNG would force a conversion somewhere less visible.
+            image = image.convert("L").convert("RGB")
 
         request.out_path.parent.mkdir(parents=True, exist_ok=True)
         image.save(request.out_path)
