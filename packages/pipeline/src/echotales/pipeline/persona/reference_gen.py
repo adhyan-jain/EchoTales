@@ -205,6 +205,7 @@ def build_reference_prompt(
     gender: str = "unknown",
     age_band: str = "adult",
     detailed: bool = True,
+    with_style: bool = True,
 ) -> str:
     """Phrase a character's stored appearance as a generation prompt.
 
@@ -241,7 +242,13 @@ def build_reference_prompt(
             continue
         if key == "hair_style":
             colour = appearance.get("hair_color", "")
-            parts.append(f"{colour} {value} hair".strip())
+            # Canon styles read as full phrases ("very long straight hair
+            # down to the waist"); appending "hair" to those produced
+            # "...down to the waist hair".
+            phrase = f"{colour} {value}".strip()
+            if "hair" not in value.casefold():
+                phrase = f"{phrase} hair"
+            parts.append(phrase)
         elif key == "eye_color":
             parts.append(f"{value} eyes")
         elif key == "typical_attire":
@@ -252,7 +259,8 @@ def build_reference_prompt(
     if appearance.get("hair_color") and not appearance.get("hair_style"):
         parts.append(f"{appearance['hair_color']} hair")
 
-    parts.append(REFERENCE_STYLE)
+    if with_style:
+        parts.append(REFERENCE_STYLE)
     return ", ".join(p for p in parts if p)
 
 

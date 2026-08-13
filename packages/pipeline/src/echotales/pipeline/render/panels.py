@@ -471,6 +471,8 @@ def character_looks(
     if entity is None or not entity.kind.is_person:
         return None
 
+    from echotales.pipeline.persona.attire import resolve_appearance
+    from echotales.pipeline.persona.canon import apply_canon
     from echotales.pipeline.persona.reference_gen import (
         _demographics,
         appearance_of,
@@ -480,6 +482,13 @@ def character_looks(
 
     persona_id = f"{entity_id}:body1"
     appearance = appearance_of(store, persona_id)
+    # Canon, then genre defaults -- the same chain `reference_gen` applies.
+    # Without it here the panels were running on raw extraction only: Fang
+    # Yuan has no extracted hair colour, so the image model invented one and
+    # gave the canonically black-haired protagonist white hair.
+    if novel_id:
+        appearance = apply_canon(novel_id, entity.canonical_label, appearance)
+        appearance = resolve_appearance(novel_id, appearance)
     gender, _age = _demographics(
         store, persona_id, novel_id=novel_id, entity_id=entity_id
     )
@@ -488,9 +497,18 @@ def character_looks(
         # Reuse the reference sheet's own phrasing so the panel prompt and
         # the image conditioning it are describing the same person in the
         # same words; strip the style suffix, which the panel adds itself.
+        # Pass the resolved gender and omit the style suffix outright --
+        # splitting on a style substring silently stopped working the
+        # moment the style text changed, and the omitted gender made the
+        # protagonist render as "androgynous person" despite a clean
+        # 120/131 male-pronoun verdict.
         clause = build_reference_prompt(
-            entity.canonical_label, appearance
-        ).split(", manga style")[0]
+            entity.canonical_label,
+            appearance,
+            gender=gender,
+            age_band=_age,
+            with_style=False,
+        )
     return (
         entity.canonical_label,
         clause,
