@@ -233,7 +233,11 @@ class TestReferenceGeneration:
         )
         assert "black long hair" in prompt
         assert "wearing green robes" in prompt
-        assert "manga style" in prompt and "black and white" in prompt
+        assert "manga style" in prompt and "monochrome" in prompt
+        # Danbooru tag, not the English word: anime checkpoints weight it far
+        # more strongly, and it is what decides the figure's sex. Without it
+        # Fang Yuan generated as a woman on the first real run.
+        assert prompt.startswith("1boy")
 
     def test_generation_is_cached_on_the_appearance_digest(self, tmp_path) -> None:
         """Regenerating every principal on every run is not viable; only an

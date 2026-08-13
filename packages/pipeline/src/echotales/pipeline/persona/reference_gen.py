@@ -147,14 +147,45 @@ def appearance_of(
     return out
 
 
-def _demographics(store: Store, persona_id: str) -> tuple[str, str]:
-    """`(gender, age_band)` from the trait profile `persona/build.py` wrote."""
+def _demographics(
+    store: Store, persona_id: str, *, novel_id: str = "", entity_id: str = ""
+) -> tuple[str, str]:
+    """`(gender, age_band)` from the trait profile `persona/build.py` wrote.
+
+    **Falls back to pronoun evidence when the stored gender is `unknown`.**
+    That column is as stale as `Self.prominence` in existing databases --
+    measured on RI, Fang Yuan himself reads `unknown` -- and an unknown
+    gender is not a harmless default here the way it is for voice casting:
+    `build_reference_prompt` degrades to "person", and an anime checkpoint
+    handed "person" draws a woman. The protagonist of a 199-chapter novel
+    came out female on the first real run.
+
+    `traits.py::gender_from_pronouns` is the existing answer to exactly this
+    question (English translation makes narration unavoidably gendered even
+    when the name and honorifics state nothing), so it is consulted rather
+    than reimplemented -- and it returns `None` on thin or mixed evidence,
+    which is preserved as `unknown` rather than forced.
+    """
     attrs = {
         a.key: a.value
         for a in store.get_attributes(TargetKind.PERSONA, persona_id)
         if a.is_standing
     }
-    return attrs.get("gender", "unknown"), attrs.get("age_band", "adult")
+    gender = attrs.get("gender", "unknown")
+    age_band = attrs.get("age_band", "adult")
+
+    if gender == "unknown" and novel_id and entity_id:
+        from echotales.pipeline.persona.traits import gender_from_pronouns
+        from echotales.pipeline.resolve.appearance_extract import (
+            gather_appearance_passages,
+        )
+
+        passages = gather_appearance_passages(store, novel_id, entity_id)
+        inferred, _reason = gender_from_pronouns(passages)
+        if inferred:
+            gender = inferred
+
+    return gender, age_band
 
 
 def build_reference_prompt(
@@ -173,10 +204,21 @@ def build_reference_prompt(
     """
     parts: list[str] = []
 
-    subject = age_band if age_band != "adult" else ""
-    if gender in ("male", "female"):
-        subject = f"{subject} {gender}".strip()
-    parts.append(subject or "person")
+    # Danbooru-style tags first. Anime/manga checkpoints are trained on that
+    # vocabulary and weight `1boy`/`1girl` far more strongly than the plain
+    # English word -- and this is the token that decides whether the
+    # protagonist comes out male, so it leads the prompt rather than sitting
+    # inside a descriptive clause. `solo` reinforces the single-figure
+    # framing that `REFERENCE_STYLE` is also asking for.
+    if gender == "male":
+        parts.append("1boy, solo, male")
+    elif gender == "female":
+        parts.append("1girl, solo, female")
+    else:
+        parts.append("solo, androgynous person")
+
+    if age_band != "adult":
+        parts.append(age_band)
 
     keys = _PROMPT_ORDER if detailed else ("hair_color", "hair_style", "typical_attire")
     for key in keys:
@@ -293,7 +335,9 @@ def generate_references(
             report.skipped_no_appearance += 1
             continue
 
-        gender, age_band = _demographics(store, persona_id)
+        gender, age_band = _demographics(
+            store, persona_id, novel_id=novel_id, entity_id=str(entity.id)  # type: ignore[attr-defined]
+        )
         # Genre defaults for whatever the prose never stated. Without this
         # the diffusion model picks those features itself, differently every
         # time it is asked -- see `attire.py::APPEARANCE_DEFAULTS`.
