@@ -1335,6 +1335,30 @@ the output*:
    and by leading the prompt with the danbooru tag `1boy`/`1girl`, which
    these checkpoints weight far more heavily than the English word.
 
+4. **A girl holding cherry blossoms, for a scene where two men threaten to
+   kill each other** (RI ch1 block 2). Two compounding causes: the block
+   has no narration spans, so the beat fell back to the quoted line (words
+   the audio already carries, describing nothing visible), and the prompt
+   named two characters without saying anything about them. Handed a
+   vacuum, the checkpoint fell back to its training prior, which is
+   overwhelmingly female. Panel prompts now lead with danbooru headcount
+   tags (`1boy`/`2boys`/`1girl`), the same lever that fixed the reference
+   sheets.
+5. **Every unconditioned panel crashed once IP-Adapter had loaded.**
+   Loading it rewrites the UNet's attention processors, which then read
+   `added_cond_kwargs["image_embeds"]` unconditionally -- so a later call
+   without `ip_adapter_image` passes `None` into the UNet and raises. Not
+   an edge case: most blocks name nobody with a reference sheet, so panels
+   alternate constantly, and the run died on the first unconditioned panel
+   after the first conditioned one. Unconditioned panels now pass a blank
+   image at scale 0.0 (arithmetically identical to no conditioning) rather
+   than paying an unload/reload per block.
+
+**Conditioning verified working**: a panel generated with Fang Yuan's sheet
+carries his face and hair into a completely different pose and setting
+(full body, courtyard, pagoda), which is the balance 0.65 is chosen for --
+identity held, composition free.
+
 **The recurring lesson across §4.24: the persona table's stored values
 cannot be trusted in existing databases.** `prominence` and `gender` both
 read as defaults on `data/reruns/*.db`, and both had to be re-derived at
