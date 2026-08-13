@@ -30,6 +30,7 @@ from echotales.core.enums import ReferenceMode, SpanType
 from echotales.core.models import Chapter, Mention, Span
 from echotales.core.store import Store
 from echotales.pipeline.persona.prompt import NEGATIVE_PROMPT, build_image_prompt
+from echotales.pipeline.persona.attire import scene_locale, world_setting
 from echotales.pipeline.persona.runner import get_panel_cast
 from echotales.pipeline.render._png import write_solid_png
 
@@ -270,6 +271,30 @@ class MangaDiffusersEngine:
             **kwargs,
         ).images[0]
 
+        # A near-uniform panel is a failed generation, not a stylistic
+        # choice: it reads as a dropped frame mid-chapter. Retried once with
+        # a shifted seed rather than accepted or crashed on. A *deliberate*
+        # black frame is a transition and belongs to `director.py`, which
+        # would insert it knowingly -- this guard only catches the accident.
+        if _is_flat(image):
+            log.warning(
+                "flat panel for %s; retrying once with a shifted seed",
+                request.out_path.name,
+            )
+            generator = torch.Generator(device=self.device).manual_seed(
+                request.seed + 9973
+            )
+            image = pipe(  # type: ignore[operator]
+                prompt=request.prompt,
+                negative_prompt=request.negative_prompt or None,
+                width=request.width,
+                height=request.height,
+                num_inference_steps=self.steps,
+                guidance_scale=self.guidance_scale,
+                generator=generator,
+                **kwargs,
+            ).images[0]
+
         if self.monochrome:
             # "L" then back to "RGB": the downstream ffmpeg segments and the
             # IP-Adapter both expect three channels, and a single-channel
@@ -312,6 +337,24 @@ class PanelImage:
     #: means prompt-only -- recorded per panel so a drifting face can be
     #: traced to a missing sheet rather than guessed at.
     conditioned_on: list[str] = field(default_factory=list)
+
+
+def _is_flat(image: object, *, threshold: float = 6.0) -> bool:
+    """Whether an image is a near-uniform block of one colour.
+
+    Measured as the mean absolute deviation from the image's own mean
+    brightness -- cheap, and it does not care *which* colour, so it catches
+    a blank white panel and a blank grey one alike. The threshold is set low
+    enough that a legitimately sparse panel (a figure against open sky)
+    survives; only genuinely featureless output trips it.
+    """
+    try:
+        from PIL import ImageStat
+
+        stat = ImageStat.Stat(image.convert("L"))  # type: ignore[attr-defined]
+        return float(stat.stddev[0]) < threshold
+    except Exception:  # noqa: BLE001 - a guard must never sink a render
+        return False
 
 
 def beat_text(spans: list[Span], block_index: int, fallback: str) -> str:
@@ -501,11 +544,14 @@ def render_panels(
                     references.append(sheet)
                     conditioned.append(label)
 
+            beat = beat_text(spans, block.index, block.text)
             prompt = build_image_prompt(
                 cast,
-                beat=beat_text(spans, block.index, block.text),
+                beat=beat,
                 character_appearances=appearances,
                 character_genders=genders,
+                world=world_setting(novel_id),
+                locale=scene_locale(novel_id, beat, block_index=block.index),
             )
 
             if image_path.exists():

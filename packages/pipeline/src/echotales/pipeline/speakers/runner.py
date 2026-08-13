@@ -126,7 +126,11 @@ def attribute_chapter(
                 attribution.speaker
                 and span.span_type is SpanType.DIALOGUE
                 and attribution.method
-                in (AttributionMethod.EXPLICIT, AttributionMethod.JOINT)
+                in (
+                    AttributionMethod.EXPLICIT,
+                    AttributionMethod.JOINT,
+                    AttributionMethod.PROXIMAL,
+                )
             ):
                 recent.append(attribution.speaker)
                 recent = recent[-6:]
@@ -289,7 +293,7 @@ def attribute_novel(
         spans = classify_chapter(chapter)
         mentions = store.get_mentions(novel_id, chapter.number)
         for mention in mentions:
-            if mention.alias_type is AliasType.RIGID_NAME:
+            if mention.alias_type.enters_graph:
                 known_names.add(mention.text)
                 key = comparison_key(mention.text)
                 if key:

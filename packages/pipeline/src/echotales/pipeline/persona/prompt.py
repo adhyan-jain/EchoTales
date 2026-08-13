@@ -24,14 +24,24 @@ from echotales.pipeline.persona.runner import PanelCast
 #: it will fight that conditioning.
 MANGA_STYLE = (
     "manga panel, black and white, ink lines, screentone shading, "
-    "dynamic composition, no color, professional manga art"
+    "dynamic composition, no color, professional manga art, "
+    # A panel is a *scene*, not a portrait. Without these the checkpoint
+    # produces a floating bust on an abstract ink swirl -- which is exactly
+    # what the first real chapter of panels came out as, because nothing in
+    # the prompt asked for a place. The reference sheets deliberately ask
+    # for the opposite (plain white background); these are panels.
+    "characters in a detailed environment, full scene, detailed background, "
+    "wide shot, depth"
 )
 
 #: Universal negative prompt. Speech bubbles are excluded because dialogue
-#: is carried by the audio track, not drawn into the frame.
+#: is carried by the audio track, not drawn into the frame; the background
+#: terms are what stop a panel collapsing back into a portrait.
 NEGATIVE_PROMPT = (
     "color, colored, photorealistic, western comic, 3d render, watermark, "
-    "text, speech bubble, blurry, deformed hands, extra limbs, lowres"
+    "text, speech bubble, blurry, deformed hands, extra limbs, lowres, "
+    "plain background, simple background, white background, empty background, "
+    "portrait, bust shot, close-up face"
 )
 
 #: Beat text is a *composition* cue, not a caption -- past this length it
@@ -87,6 +97,8 @@ def build_image_prompt(
     beat: str = "",
     character_appearances: dict[str, str] | None = None,
     character_genders: list[str] | None = None,
+    world: str = "",
+    locale: str = "",
     style: str = MANGA_STYLE,
 ) -> str:
     """Compose one prompt string from a resolved `PanelCast`.
@@ -113,7 +125,20 @@ def build_image_prompt(
 
     if beat:
         parts.append(summarise_beat(beat))
-    if panel_cast.environment:
+
+    # The specific place first, the world's general vocabulary behind it:
+    # a diffusion model draws "a walled stone courtyard" and draws nothing
+    # recognisable from "ancient Chinese cultivation world".
+    if locale:
+        parts.append(locale)
+
+    # The world before the drawing style. `panel_cast.environment` is
+    # whatever `resolve_attire` produced, which for most panels is the
+    # novel's house *style* rather than a place -- so the scenery
+    # vocabulary is what actually puts a world behind the characters.
+    if world:
+        parts.append(world)
+    if panel_cast.environment and panel_cast.environment != world:
         parts.append(panel_cast.environment)
 
     for character in panel_cast.foreground_characters:

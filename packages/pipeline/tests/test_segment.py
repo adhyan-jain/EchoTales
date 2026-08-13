@@ -14,6 +14,7 @@ import pytest
 from echotales.core.enums import BlockType, EventType, NarrativeLayer, SegmentType
 from echotales.core.models import MAIN_TIMELINE, Block, Chapter
 from echotales.core.store import Store
+from echotales.pipeline.config import LLMMode, Settings
 from echotales.pipeline.llm import LLMRouter, StubProvider
 from echotales.pipeline.segment import (
     MarkerKind,
@@ -272,7 +273,7 @@ class TestRunner:
 
     def test_llm_is_not_called_when_disabled(self, store: Store) -> None:
         stub = StubProvider()
-        router = LLMRouter(stub=stub)
+        router = LLMRouter(settings=Settings(llm_mode=LLMMode.STUB), stub=stub)
         store.add_chapter(chapter(*filler(4), "Many years ago it was different.", *filler(4)))
         store.conn.commit()
 
@@ -283,7 +284,7 @@ class TestRunner:
         """The budget rule in practice: one call per ambiguous chapter, no more."""
         stub = StubProvider()
         stub.register_response("segment", SegmentationResponse())
-        router = LLMRouter(stub=stub)
+        router = LLMRouter(settings=Settings(llm_mode=LLMMode.STUB), stub=stub)
 
         store.add_chapter(chapter(*filler(10), number=1.0))
         store.add_chapter(
@@ -298,7 +299,7 @@ class TestRunner:
     def test_empty_llm_response_leaves_rules_untouched(self, store: Store) -> None:
         stub = StubProvider()
         stub.register_response("segment", SegmentationResponse())
-        router = LLMRouter(stub=stub)
+        router = LLMRouter(settings=Settings(llm_mode=LLMMode.STUB), stub=stub)
         store.add_chapter(chapter(*filler(4), "Many years ago it differed.", *filler(4)))
         store.conn.commit()
 

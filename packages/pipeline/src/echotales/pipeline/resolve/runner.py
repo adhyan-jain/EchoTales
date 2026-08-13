@@ -618,6 +618,14 @@ def resolve_novel(
     corrections_log: CorrectionLog | None = None,
 ) -> ResolveReport:
     """Run global resolution over a whole novel, in discourse order."""
+    # Prevent UNIQUE constraint violations by clearing existing resolution state for this novel
+    store.conn.execute("DELETE FROM resolution_event WHERE id LIKE ?", (f"{novel_id}:%",))
+    store.conn.execute("DELETE FROM alias_binding WHERE novel_id=?", (novel_id,))
+    store.conn.execute("DELETE FROM self_entity WHERE novel_id=?", (novel_id,))
+    store.conn.execute("DELETE FROM self_persona_binding WHERE self_id LIKE ?", (f"{novel_id}:%",))
+    store.conn.execute("UPDATE mention SET target_kind=NULL, target_id=NULL, method=NULL WHERE novel_id=?", (novel_id,))
+    store.conn.commit()
+
     cfg = settings or get_settings()
     resolver = GlobalResolver(
         novel_id,

@@ -124,23 +124,23 @@ class TestExtractJson:
         with pytest.raises(LLMParseError, match="no JSON object"):
             extract_json("I do not know.")
 
-    def test_unbalanced_embedded_object_raises(self) -> None:
-        with pytest.raises(LLMParseError, match="unbalanced"):
-            extract_json('here you go: {"a": 1')
+    def test_unbalanced_embedded_object_heals(self) -> None:
+        assert extract_json('here you go: {"a": 1') == '{"a": 1}'
 
-    def test_bare_truncated_json_defers_to_pydantic(self) -> None:
-        """Text that already looks like JSON is handed straight to the parser.
-
-        Pydantic's error names the offending field and position; re-deriving
-        that here would be a worse message for no gain.
-        """
-        assert extract_json('{"a": 1') == '{"a": 1'
+    def test_bare_truncated_json_heals(self) -> None:
+        assert extract_json('{"a": 1') == '{"a": 1}'
         with pytest.raises(LLMParseError):
             parse_into(Answer, '{"a": 1')
 
     def test_parse_into_reports_the_schema(self) -> None:
         with pytest.raises(LLMParseError, match="Answer"):
             parse_into(Answer, '{"wrong": true}')
+
+    def test_extract_json_truncated_with_schema(self) -> None:
+        from echotales.pipeline.mentions.ner import NerResponse
+        raw = 'Here is the JSON: {"entities": [{"text": "Fang Yuan", "label": "character"}, {"text": "Spring'
+        healed = extract_json(raw, schema=NerResponse)
+        assert healed == '{"entities": [{"text": "Fang Yuan", "label": "character"}]}'
 
 
 # ---------------------------------------------------------------------------
@@ -364,3 +364,4 @@ class TestAccounting:
         local = FakeProvider("local", payload='{"label": "l"}')
         router = LLMRouter(settings=Settings(llm_mode=LLMMode.LOCAL), local=local)
         assert router.complete(req(), Bare).value.label == "l"
+

@@ -81,7 +81,94 @@ class LLMRequest:
 _FENCE = re.compile(r"```(?:json)?\s*(.*?)\s*```", re.DOTALL)
 
 
-def extract_json(text: str) -> str:
+def heal_json(text: str, schema: type[BaseModel] | None = None) -> str:
+    """Attempt to repair a truncated JSON string by closing open strings, arrays, and objects."""
+    start = text.find('{')
+    start_arr = text.find('[')
+    if start == -1 and start_arr == -1:
+        return text
+    if start == -1 or (start_arr != -1 and start_arr < start):
+        start = start_arr
+
+    text = text[start:]
+    stack = []
+    in_string = False
+    escaped = False
+
+    i = 0
+    clean_text = []
+    while i < len(text):
+        ch = text[i]
+        if in_string:
+            if escaped:
+                escaped = False
+                clean_text.append(ch)
+            elif ch == '\\':
+                escaped = True
+                clean_text.append(ch)
+            elif ch == '"':
+                in_string = False
+                clean_text.append(ch)
+            else:
+                clean_text.append(ch)
+        else:
+            if ch == '"':
+                in_string = True
+                clean_text.append(ch)
+            elif ch in ('{', '['):
+                stack.append(ch)
+                clean_text.append(ch)
+            elif ch in ('}', ']'):
+                if stack:
+                    stack.pop()
+                clean_text.append(ch)
+            else:
+                clean_text.append(ch)
+        i += 1
+
+    if in_string:
+        if clean_text and clean_text[-1] == '\\':
+            clean_text.pop()
+        clean_text.append('"')
+
+    healed = "".join(clean_text)
+    healed = healed.rstrip()
+
+    for _ in range(50):
+        test_str = healed
+        for delim in reversed(stack):
+            if delim == '{':
+                test_str += '}'
+            elif delim == '[':
+                test_str += ']'
+
+        try:
+            json.loads(test_str)
+            if schema is not None:
+                schema.model_validate_json(test_str)
+            return test_str
+        except (json.JSONDecodeError, ValidationError):
+            pass
+
+        if not healed:
+            break
+
+        last_ch = healed[-1]
+        healed = healed[:-1]
+
+        if (last_ch == '{' and stack and stack[-1] == '{') or (last_ch == '[' and stack and stack[-1] == '['):
+            stack.pop()
+        elif last_ch == '}':
+            stack.append('{')
+        elif last_ch == ']':
+            stack.append('[')
+
+        healed = healed.rstrip().rstrip(',:')
+
+    return text
+
+
+def extract_json(text: str, schema: type[BaseModel] | None = None) -> str:
     """Pull a JSON object out of a model response.
 
     Small local models wrap JSON in prose or code fences far more often than
@@ -92,7 +179,13 @@ def extract_json(text: str) -> str:
     """
     stripped = text.strip()
     if stripped.startswith(("{", "[")):
-        return stripped
+        try:
+            json.loads(stripped)
+            if schema is not None:
+                schema.model_validate_json(stripped)
+            return stripped
+        except (json.JSONDecodeError, ValidationError):
+            pass
 
     fenced = _FENCE.search(text)
     if fenced:
@@ -122,12 +215,15 @@ def extract_json(text: str) -> str:
             depth -= 1
             if depth == 0:
                 return text[start : i + 1]
-    raise LLMParseError(f"unbalanced JSON object in response: {text[:200]!r}")
+    try:
+        return heal_json(text[start:], schema=schema)
+    except Exception as exc:
+        raise LLMParseError(f"unbalanced JSON object in response: {text[:200]!r}") from exc
 
 
 def parse_into[T: BaseModel](schema: type[T], text: str) -> T:
     """Validate a raw response into the requested schema."""
-    payload = extract_json(text)
+    payload = extract_json(text, schema=schema)
     try:
         return schema.model_validate_json(payload)
     except ValidationError as exc:

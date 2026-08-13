@@ -38,6 +38,119 @@ NOVEL_STYLE: dict[str, str] = {
 
 _DEFAULT_STYLE = "web-novel illustration, no further style data seeded for this novel"
 
+#: The world a panel is set in, per novel.
+#:
+#: **Distinct from `NOVEL_STYLE`, which is a drawing style, not a place.**
+#: That distinction was invisible until real panels came out: the panel
+#: prompt's "environment" slot was being filled by `resolve_attire`, whose
+#: last tier returns `"xianxia web-novel illustration, Gu-worm era Chinese
+#: fantasy"` -- an instruction about *how to draw*, containing nothing about
+#: where anyone is standing. The result was characters floating on abstract
+#: ink swirls with no world behind them.
+#:
+#: These are scenery nouns on purpose. A diffusion model draws a courtyard
+#: when told "stone courtyard"; it draws nothing recognisable when told
+#: "Chinese fantasy". Kept per novel because the settings genuinely differ
+#: -- RI's cultivation villages and ORV's collapsing Seoul share no
+#: architecture at all.
+WORLD_SETTING: dict[str, str] = {
+    "reverend-insanity": (
+        "ancient Chinese cultivation world, stone courtyards, timber halls "
+        "with upturned tiled roofs, bamboo groves, terraced mountain "
+        "villages, mist over jagged peaks, stone steps, paper lanterns"
+    ),
+    "lord-of-the-mysteries": (
+        "Victorian gaslamp city, cobbled streets, wrought-iron street lamps, "
+        "brick townhouses, fog, horse-drawn carriages, cathedral spires"
+    ),
+    "omniscient-readers-viewpoint": (
+        "modern Seoul in collapse, subway tunnels, cracked asphalt, "
+        "toppled high-rises, overturned cars, rebar and rubble, ash sky"
+    ),
+}
+
+_DEFAULT_WORLD = "detailed background environment"
+
+#: Concrete locales per novel, keyed by a cue word that suggests them.
+#: `world_setting` is the world's general vocabulary; these are *places*, and
+#: a panel needs one specific place rather than a list of everything the
+#: world contains.
+SCENE_LOCALES: dict[str, dict[str, str]] = {
+    "reverend-insanity": {
+        "hall": "inside a timber clan hall, carved pillars, hanging banners",
+        "courtyard": "a walled stone courtyard, flagstones, low roofs beyond",
+        "mountain": "a narrow mountain path, pine and mist, cliffs falling away",
+        "cave": "a damp stone cave, rough walls, torchlight",
+        "village": "a terraced hillside village, tiled roofs, stone steps",
+        "forest": "a dense bamboo grove, shafts of light",
+        "night": "a moonlit courtyard at night, deep shadows, paper lanterns",
+        "night_wild": "a dark forest clearing under moonlight, twisted branches",
+    },
+    "lord-of-the-mysteries": {
+        "hall": "a panelled Victorian study, bookshelves, oil lamp",
+        "courtyard": "a fog-bound cobbled square, iron railings",
+        "mountain": "a bleak coastal cliff, grey sky",
+        "cave": "a brick undercroft, dripping arches, lantern light",
+        "village": "a narrow terraced street, chimney pots, gaslight",
+        "forest": "a bare winter wood, mist between trunks",
+        "night": "a gaslit street at night, long shadows, fog",
+        "night_wild": "a moonlit moor, low cloud",
+    },
+}
+
+#: Cue word -> locale key. Checked against the block's own text, so the
+#: setting suits the scene rather than being decided by a coin flip.
+_LOCALE_CUES: dict[str, str] = {
+    "hall": "hall", "chamber": "hall", "throne": "hall", "inside": "hall",
+    "courtyard": "courtyard", "gate": "courtyard", "yard": "courtyard",
+    "mountain": "mountain", "peak": "mountain", "cliff": "mountain",
+    "slope": "mountain", "ridge": "mountain",
+    "cave": "cave", "cavern": "cave", "tunnel": "cave", "underground": "cave",
+    "village": "village", "town": "village", "street": "village",
+    "market": "village", "clan": "village",
+    "forest": "forest", "bamboo": "forest", "trees": "forest", "wood": "forest",
+}
+
+
+def scene_locale(novel_id: str, beat: str, *, block_index: int = 0) -> str:
+    """A specific place for this panel to happen in.
+
+    **Cue-matched where the prose suggests somewhere, varied where it does
+    not.** A panel with no stated setting still has to happen *somewhere*;
+    falling back to the world's general vocabulary produced characters on
+    abstract ink, and falling back to one fixed locale would make every
+    unstated block the same courtyard. So an unmatched block rotates
+    through the novel's locales by block index -- varied across a chapter,
+    yet identical on a re-render, which matters because panels are cached
+    and a re-run must not silently redecorate the chapter.
+    """
+    locales = SCENE_LOCALES.get(novel_id)
+    if not locales:
+        return ""
+
+    low = beat.casefold()
+    night = any(w in low for w in ("night", "moon", "dark", "midnight", "dusk"))
+
+    for cue, key in _LOCALE_CUES.items():
+        if cue in low:
+            if night and key in ("courtyard", "village"):
+                return locales.get("night", locales[key])
+            if night and key in ("forest", "mountain"):
+                return locales.get("night_wild", locales[key])
+            return locales[key]
+
+    if night:
+        return locales.get("night", "")
+
+    ordered = [v for k, v in sorted(locales.items()) if not k.startswith("night")]
+    return ordered[block_index % len(ordered)] if ordered else ""
+
+
+def world_setting(novel_id: str) -> str:
+    """The scenery vocabulary for this novel's world."""
+    return WORLD_SETTING.get(novel_id, _DEFAULT_WORLD)
+
+
 #: Per-novel appearance defaults, filling attributes the prose never states.
 #:
 #: **A default is not a guess, and it is not randomness.** The text of a

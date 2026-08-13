@@ -138,7 +138,11 @@ def resolve_pronoun(
         for m in candidates
         if m.offset < pronoun_offset
         and pronoun_offset - m.offset <= max_distance
-        and m.alias_type is AliasType.RIGID_NAME
+        and m.alias_type in (
+            AliasType.RIGID_NAME,
+            AliasType.EPITHET,
+            AliasType.RELATIONAL_DEICTIC,
+        )
     ]
     if not prior:
         return None

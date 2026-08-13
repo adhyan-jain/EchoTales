@@ -106,7 +106,7 @@ def resolve_novel(
             store.add_mentions(kinship_mentions)
         report.kinship_links += len(kinship_mentions)
 
-        recovered = _recover_attributions(store, novel_id, chapter.number, spans, links)
+        recovered = _recover_attributions(store, novel_id, chapter, spans, links)
 
         report.chapters += 1
         report.groups += len(result.groups)
@@ -211,7 +211,7 @@ def _resolve_kinship_mentions(
 def _recover_attributions(
     store: Store,
     novel_id: str,
-    chapter_number: float,
+    chapter: Chapter,
     spans: list,  # type: ignore[type-arg]
     links: int,
 ) -> int:
@@ -223,31 +223,53 @@ def _recover_attributions(
     """
     from echotales.pipeline.anaphora.local import find_pronouns, resolve_pronoun
 
-    stored = {s.id: s for s in store.get_spans(novel_id, chapter_number)}
-    mentions = store.get_mentions(novel_id, chapter_number)
+    stored = {s.id: s for s in store.get_spans(novel_id, chapter.number)}
+    mentions = store.get_mentions(novel_id, chapter.number)
     if not mentions:
         return 0
+
+    block_by_index = {b.index: b.text for b in chapter.blocks}
 
     recovered = 0
     updated = []
     for span in spans:
         existing = stored.get(span.id)
-        if existing is None or existing.speaker_self_id:
+        if existing is None:
+            continue
+        # If already attributed, but not to an anonymous slot, skip it.
+        # If it is assigned an anonymous slot, we can overwrite it with the pronoun resolved speaker.
+        if existing.speaker_self_id and existing.attribution_method is not AttributionMethod.ANONYMOUS_SLOT:
             continue
         if existing.span_type not in (SpanType.DIALOGUE, SpanType.INNER_MONOLOGUE):
             continue
 
-        # Look just after the line, where "he said" sits.
-        window_start = span.end
-        candidates = [
-            p
-            for p in find_pronouns(span.text, span.start)
-            if p[1] >= window_start - len(span.text)
-        ]
+        block_text = block_by_index.get(span.block_index)
+        if not block_text:
+            continue
+
+        # Look just after the line, where "he said" sits, or before, where "he said" sits.
+        # Find all pronouns in the block
+        all_pronouns = find_pronouns(block_text, 0)
+        
+        # Filter for pronouns close to the span and outside of it
+        candidates = []
+        for p in all_pronouns:
+            p_offset = p[1]
+            if p_offset < span.start:
+                dist = span.start - p_offset
+                if dist <= 50:
+                    candidates.append((dist, p))
+            elif p_offset >= span.end:
+                dist = p_offset - span.end
+                if dist <= 50:
+                    candidates.append((dist, p))
         if not candidates:
             continue
 
-        _, offset, gender, number = candidates[0]
+        # Take the closest pronoun
+        candidates.sort(key=lambda x: x[0])
+        dist, closest_pronoun = candidates[0]
+        _, offset, gender, number = closest_pronoun
         resolved = resolve_pronoun(offset, gender, number, mentions)
         if resolved is None:
             continue
