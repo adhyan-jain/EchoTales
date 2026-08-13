@@ -343,9 +343,9 @@ def present_entity_ids(mentions: list[Mention], block_index: int) -> list[str]:
 
 
 def character_looks(
-    store: Store, entity_id: str
-) -> tuple[str, str, Path | None] | None:
-    """`(label, appearance clause, reference sheet)` for one entity.
+    store: Store, entity_id: str, *, novel_id: str = ""
+) -> tuple[str, str, Path | None, str] | None:
+    """`(label, appearance clause, reference sheet, gender)` for one entity.
 
     Returns None for a non-person entity -- §10 item 5's typing again: a
     location resolves like a name but has no face to draw. The clause and
@@ -358,6 +358,7 @@ def character_looks(
         return None
 
     from echotales.pipeline.persona.reference_gen import (
+        _demographics,
         appearance_of,
         build_reference_prompt,
         reference_path_for,
@@ -365,6 +366,9 @@ def character_looks(
 
     persona_id = f"{entity_id}:body1"
     appearance = appearance_of(store, persona_id)
+    gender, _age = _demographics(
+        store, persona_id, novel_id=novel_id, entity_id=entity_id
+    )
     clause = ""
     if appearance:
         # Reuse the reference sheet's own phrasing so the panel prompt and
@@ -373,7 +377,12 @@ def character_looks(
         clause = build_reference_prompt(
             entity.canonical_label, appearance
         ).split(", manga style")[0]
-    return entity.canonical_label, clause, reference_path_for(store, persona_id)
+    return (
+        entity.canonical_label,
+        clause,
+        reference_path_for(store, persona_id),
+        gender,
+    )
 
 
 @dataclass(slots=True)
@@ -456,11 +465,13 @@ def render_panels(
             references: list[Path] = []
             conditioned: list[str] = []
             appearances: dict[str, str] = {}
+            genders: list[str] = []
             for entity_id in present_entity_ids(mentions, block.index):
-                looks = character_looks(store, entity_id)
+                looks = character_looks(store, entity_id, novel_id=novel_id)
                 if looks is None:
                     continue
-                label, clause, sheet = looks
+                label, clause, sheet, gender = looks
+                genders.append(gender)
                 if clause:
                     appearances[label] = clause
                 if sheet is not None:
@@ -471,6 +482,7 @@ def render_panels(
                 cast,
                 beat=beat_text(spans, block.index, block.text),
                 character_appearances=appearances,
+                character_genders=genders,
             )
 
             if image_path.exists():

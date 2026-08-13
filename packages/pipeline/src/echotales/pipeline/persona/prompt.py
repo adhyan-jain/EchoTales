@@ -57,11 +57,36 @@ def summarise_beat(text: str, *, limit: int = _MAX_BEAT_CHARS) -> str:
     return cut.rsplit(" ", 1)[0].strip()
 
 
+def cast_tags(genders: list[str]) -> str:
+    """Danbooru headcount tags for the figures in frame.
+
+    Anime/manga checkpoints weight `1boy`/`2boys`/`1girl` far more heavily
+    than any English phrasing, and without them they fall back to their
+    training prior, which is overwhelmingly female. Measured on RI ch1
+    block 2 -- a confrontation between two men -- a prompt carrying only
+    their names produced a girl holding cherry blossoms.
+    """
+    males = sum(1 for g in genders if g == "male")
+    females = sum(1 for g in genders if g == "female")
+
+    parts: list[str] = []
+    if males == 1:
+        parts.append("1boy")
+    elif males > 1:
+        parts.append(f"{min(males, 6)}boys")
+    if females == 1:
+        parts.append("1girl")
+    elif females > 1:
+        parts.append(f"{min(females, 6)}girls")
+    return ", ".join(parts)
+
+
 def build_image_prompt(
     panel_cast: PanelCast,
     *,
     beat: str = "",
     character_appearances: dict[str, str] | None = None,
+    character_genders: list[str] | None = None,
     style: str = MANGA_STYLE,
 ) -> str:
     """Compose one prompt string from a resolved `PanelCast`.
@@ -79,6 +104,12 @@ def build_image_prompt(
     """
     appearances = character_appearances or {}
     parts: list[str] = []
+
+    # Headcount first: it is the single strongest steer on this class of
+    # checkpoint, and getting it wrong turns a confrontation between two men
+    # into a girl with cherry blossoms.
+    if tags := cast_tags(character_genders or []):
+        parts.append(tags)
 
     if beat:
         parts.append(summarise_beat(beat))
