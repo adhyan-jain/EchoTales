@@ -1309,6 +1309,44 @@ vocabularies, so a block could score maximally on violence and then play
 the neutral loop. The two tables are now kept deliberately in step, and
 both blocks cue `impact`.
 
+**First real image generation** (`torch 2.5.1+cu121`, `diffusers 0.39.0`,
+MeinaMix_V11 on an RTX 4060 8 GB, ~5.5 s for 28 steps at 512×640). Three
+defects, none of which any test could have caught, all found by *looking at
+the output*:
+
+1. **Full colour**, despite `monochrome` in the prompt and `color, colored`
+   in the negative prompt. MeinaMix is an anime *colour* checkpoint and
+   that is what it knows. Fixed by converting to greyscale in code after
+   generation, where it cannot fail, rather than rewording a prompt that
+   demonstrably does not win. The checkpoint still earns its place: it
+   supplies anatomy, linework and xianxia costume vocabulary a
+   photorealistic base cannot.
+2. **A collage of twelve thumbnail poses**, because `"character reference
+   sheet"` reads as a literal instruction to draw a sheet. That is the
+   worst possible IP-Adapter input — the adapter needs one clear face and,
+   given twelve small ones, locks onto none.
+3. **Fang Yuan generated as a woman.** His stored `gender` reads `unknown`
+   (the same staleness as `Self.prominence`), `build_reference_prompt`
+   degraded that to the word "person", and an anime checkpoint handed
+   "person" draws a woman. Fixed by falling back to
+   `traits.py::gender_from_pronouns` — which already existed for voice
+   casting, was written to solve exactly this (honorifics alone left 91% of
+   the cast unknown), and which nothing in the visual path was calling —
+   and by leading the prompt with the danbooru tag `1boy`/`1girl`, which
+   these checkpoints weight far more heavily than the English word.
+
+**The recurring lesson across §4.24: the persona table's stored values
+cannot be trusted in existing databases.** `prominence` and `gender` both
+read as defaults on `data/reruns/*.db`, and both had to be re-derived at
+point of use. Anything else reading those columns has the same bug.
+
+**Measured, 6 reference sheets, RI:** all six generated as single-figure
+monochrome inked portraits. Fang Yuan and Fang Zheng come out looking
+*similar*, and that is the data rather than the generator — both extracted
+to `green robes` + default black hair + male. See the `green robes`
+contamination noted above; it is visible in the output, not just the
+attributes.
+
 **Status: qwen2.5:7b — not the 14b this stage was specified with.** A 14B q4
 is ~9 GB of weights against §3's 8 GB card and `tasks.py`'s own
 `VRAM_BUDGET_FRACTION` (~5.7 GB), so it cannot be resident; naming it would
