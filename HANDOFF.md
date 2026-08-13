@@ -1202,6 +1202,36 @@ Also surfaced: NER returned truncated JSON on chapter 143 (handled, chapter
 skipped with a warning) — pre-existing robustness gap in `chapter_ner.py`,
 not new.
 
+### 4.25 Image backends — what is actually available, measured *(2026-08-13)*
+
+Every hosted option was tested with real keys rather than judged from
+documentation. **There is no free hosted image API usable for a batch.**
+
+| Backend | Result |
+| --- | --- |
+| OpenRouter (`gemini-2.5-flash-image`) | Works. No free image model exists there -- every image-output model is priced. A free-tier key returns `HTTP 402` after its grace (measured: 3 calls, `total_credits: 0`, `total_usage: 0.155`). **~$0.05/image**, and a content-filtered call still bills. |
+| Gemini direct (AI Studio) | `HTTP 429`, `limit: 0` on *every* image model including Imagen. Not a rate limit -- the free tier has no image quota at all. Needs billing. |
+| NVIDIA NIM (`flux.1-schnell`) | Authenticates, then times out past 180 s. Queued; unusable for a chapter batch. |
+| Pollinations | `HTTP 403`. No longer keyless. |
+| **Local (`--image-engine manga`)** | **Free, unlimited, unfiltered.** Lower quality, and the only option with no content filter -- which matters for this corpus. |
+
+**Cost, if paying:** 12 panels/chapter ≈ **$0.60/chapter**, ~$120 for a
+199-chapter volume, plus ~20% for content-filter retries on this novel.
+
+**The recommendation for the research phase is to pay the ~$2** for one to
+three demonstration chapters. The contribution is the graph -- `plans.md`
+§0 says so outright -- and image quality is a confound to remove, not a
+variable to optimise. Free/local is the right answer for *shipping*, where
+each user brings their own GPU and per-user cost is zero, which is also a
+genuinely stronger product architecture than any API tier.
+
+**Content filtering is a permanent property of the hosted path here.**
+Reverend Insanity's first chapter is a massacre; both OpenRouter and Gemini
+refuse gore outright (`content_filter`, `PROHIBITED_CONTENT`). Refusals are
+retried once with the violence abstracted (`openrouter.soften`), so the
+moment is implied rather than explicit. The local engine has no such
+filter.
+
 ### 4.24 Phase 7b + Phase 9 completion — appearance, reference sheets, manga panels *(2026-08-13)*
 
 §4.23 built the video *assembly* (timing, compositing, shot decisions) but
