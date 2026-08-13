@@ -139,8 +139,31 @@ def build_parser() -> argparse.ArgumentParser:
         help="stub concatenates real audio only (no video, no ffmpeg needed); "
         "ffmpeg produces the actual mp4s",
     )
-    p_render.add_argument("--width", type=int, default=1024)
-    p_render.add_argument("--height", type=int, default=1024)
+    # **Portrait by default, at 2:3.** The output format is a 9:16 phone
+    # reel, and a square panel in that frame is a small box with bars above
+    # and below it. 2:3 rather than 9:16 on the *panel* is deliberate: the
+    # source is then slightly wider than the frame, which is what gives a
+    # horizontal pan room to travel instead of panning across empty space.
+    p_render.add_argument("--width", type=int, default=832)
+    p_render.add_argument("--height", type=int, default=1248)
+    p_render.add_argument(
+        "--video-width", type=int, default=1080,
+        help="composed video frame (default 1080x1920, phone-native vertical)",
+    )
+    p_render.add_argument("--video-height", type=int, default=1920)
+    p_render.add_argument(
+        "--ink", action="store_true",
+        help="high-contrast monochrome ink treatment instead of colour. "
+        "Off by default because flat greyscale makes weak linework read as "
+        "unfinished; this applies a contrast curve rather than a plain "
+        "desaturation, so it is worth trying per novel",
+    )
+    p_render.add_argument(
+        "--no-captions", action="store_true",
+        help="do not burn the spoken line on screen. The on-screen prose is "
+        "the point of this format, so this is an escape hatch, not a toggle "
+        "you want by default",
+    )
     p_render.add_argument("--seed", type=int, default=20260812)
     p_render.add_argument(
         "--clips-per-chapter", type=int, default=2,

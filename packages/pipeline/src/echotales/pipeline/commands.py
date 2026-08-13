@@ -94,8 +94,8 @@ def cmd_run(args: argparse.Namespace) -> int:
     from echotales.pipeline.anaphora import resolve_novel as anaphora_resolve
     from echotales.pipeline.ingest import get_source, ingest_novel
     from echotales.pipeline.mentions import detect_mentions, load_or_seed
-    from echotales.pipeline.resolve import resolve_novel as global_resolve
     from echotales.pipeline.persona import build_personas
+    from echotales.pipeline.resolve import resolve_novel as global_resolve
     from echotales.pipeline.segment import segment_novel
     from echotales.pipeline.speakers import attribute_novel
 
@@ -482,7 +482,9 @@ def cmd_render(args: argparse.Namespace) -> int:
             args.novel,
             store,
             out_dir=args.panel_dir,
-            engine=get_panel_engine(args.image_engine),
+            engine=get_panel_engine(args.image_engine, monochrome=args.ink)
+            if args.image_engine == "manga"
+            else get_panel_engine(args.image_engine),
             chapters=wanted,
             seed=args.seed,
             width=args.width,
@@ -508,7 +510,12 @@ def cmd_render(args: argparse.Namespace) -> int:
             motion_dir=args.motion_dir,
             voice_dir=args.voice_dir,
             out_dir=args.out,
-            engine=get_compose_engine(args.compose_engine),
+            engine=get_compose_engine(
+                args.compose_engine,
+                width=args.video_width,
+                height=args.video_height,
+            ),
+            captions=not args.no_captions,
             chapters=wanted,
             clips_per_chapter=args.clips_per_chapter,
         )

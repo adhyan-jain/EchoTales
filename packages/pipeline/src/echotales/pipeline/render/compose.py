@@ -35,8 +35,13 @@ from typing import Protocol
 
 from echotales.pipeline.render.timeline import TimedShot
 
-OUTPUT_WIDTH = 1280
-OUTPUT_HEIGHT = 720
+#: **Portrait, because that is where this format is watched.** The reference
+#: edits are all 9:16 phone-native; a 16:9 frame showing a portrait panel
+#: pillarboxes it into a small rectangle in the middle of the screen and
+#: throws away most of the display. Landscape stays available by passing the
+#: dimensions through -- it is a preview format here, not the default.
+OUTPUT_WIDTH = 1080
+OUTPUT_HEIGHT = 1920
 OUTPUT_FPS = 30
 
 #: End-of-pan zoom factor. Modest on purpose -- a still illustration panned
@@ -94,17 +99,33 @@ def concatenate_audio(paths: list[Path], out_path: Path) -> Path:
 @dataclass(slots=True)
 class StubComposeEngine:
     name: str = "stub"
+    # Same fields as the real engine so callers configure one interface. The
+    # stub cannot burn captions into an mp4 it does not write, but it records
+    # the path in its sidecar, which is what makes "were captions built at
+    # all" checkable in CI without ffmpeg.
+    width: int = OUTPUT_WIDTH
+    height: int = OUTPUT_HEIGHT
+    captions_path: Path | None = None
 
     def render(self, timeline: list[TimedShot], audio_paths: list[Path], out_path: Path) -> Path:
         out_path.parent.mkdir(parents=True, exist_ok=True)
         concatenate_audio(audio_paths, out_path.with_suffix(".wav"))
+        if self.captions_path is not None:
+            out_path.with_suffix(".captions.txt").write_text(
+                str(self.captions_path), encoding="utf-8"
+            )
         out_path.with_suffix(".shots.json").write_text(
             json.dumps([asdict(s) for s in timeline], indent=2), encoding="utf-8"
         )
         return out_path
 
 
-def _zoompan_filter(shot: TimedShot, num_frames: int) -> str:
+def _zoompan_filter(
+    shot: TimedShot,
+    num_frames: int,
+    width: int = OUTPUT_WIDTH,
+    height: int = OUTPUT_HEIGHT,
+) -> str:
     direction = shot.pan_direction or "zoom_in"
     step = (_MAX_ZOOM - 1.0) / max(num_frames, 1)
 
@@ -123,9 +144,17 @@ def _zoompan_filter(shot: TimedShot, num_frames: int) -> str:
             else f"(iw-iw/zoom)*{progress}"
         )
 
+    # Scale-and-crop to the frame *before* the zoom/pan. A panel is
+    # generated at 2:3 and the frame is 9:16, so the source is wider than
+    # the frame: filling by height and cropping the sides is what gives a
+    # horizontal pan somewhere to travel, instead of panning across bars.
+    fill = (
+        f"scale={width}:{height}:force_original_aspect_ratio=increase,"
+        f"crop={width}:{height},"
+    )
     return (
-        f"zoompan=z='{z}':x='{x}':y='{y}':d={num_frames}:"
-        f"s={OUTPUT_WIDTH}x{OUTPUT_HEIGHT}:fps={OUTPUT_FPS}"
+        f"{fill}zoompan=z='{z}':x='{x}':y='{y}':d={num_frames}:"
+        f"s={width}x{height}:fps={OUTPUT_FPS}"
     )
 
 
@@ -137,7 +166,12 @@ def _run_ffmpeg(args: list[str]) -> None:
         raise RuntimeError(f"ffmpeg failed: {result.stderr.strip()}")
 
 
-def _render_segment(shot: TimedShot, out_path: Path) -> None:
+def _render_segment(
+    shot: TimedShot,
+    out_path: Path,
+    width: int = OUTPUT_WIDTH,
+    height: int = OUTPUT_HEIGHT,
+) -> None:
     num_frames = max(1, round(shot.duration * OUTPUT_FPS))
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -149,8 +183,8 @@ def _render_segment(shot: TimedShot, out_path: Path) -> None:
                 "-framerate", "12",
                 "-i", frames_glob,
                 "-t", f"{shot.duration:.3f}",
-                "-vf", f"scale={OUTPUT_WIDTH}:{OUTPUT_HEIGHT}:force_original_aspect_ratio=increase,"
-                f"crop={OUTPUT_WIDTH}:{OUTPUT_HEIGHT},fps={OUTPUT_FPS}",
+                "-vf", f"scale={width}:{height}:force_original_aspect_ratio=increase,"
+                f"crop={width}:{height},fps={OUTPUT_FPS}",
                 "-pix_fmt", "yuv420p",
                 str(out_path),
             ]
@@ -161,7 +195,7 @@ def _render_segment(shot: TimedShot, out_path: Path) -> None:
         [
             "-loop", "1",
             "-i", shot.asset_path,
-            "-vf", _zoompan_filter(shot, num_frames),
+            "-vf", _zoompan_filter(shot, num_frames, width, height),
             "-t", f"{shot.duration:.3f}",
             "-pix_fmt", "yuv420p",
             str(out_path),
@@ -174,6 +208,13 @@ class FfmpegComposeEngine:
     """The real compositor. Requires `ffmpeg` on `PATH`."""
 
     name: str = "ffmpeg"
+    width: int = OUTPUT_WIDTH
+    height: int = OUTPUT_HEIGHT
+    #: Burnable subtitle track (`render/captions.py::write_ass`). The prose
+    #: on screen is the point of this format, not an accessibility extra --
+    #: see that module. Optional so a run without a voice manifest still
+    #: composes.
+    captions_path: Path | None = None
 
     def render(self, timeline: list[TimedShot], audio_paths: list[Path], out_path: Path) -> Path:
         if shutil.which("ffmpeg") is None:
@@ -188,7 +229,7 @@ class FfmpegComposeEngine:
         segment_paths: list[Path] = []
         for i, shot in enumerate(timeline):
             segment_path = work_dir / f"seg{i:05d}.mp4"
-            _render_segment(shot, segment_path)
+            _render_segment(shot, segment_path, self.width, self.height)
             segment_paths.append(segment_path)
 
         concat_list = work_dir / "concat.txt"
@@ -201,17 +242,31 @@ class FfmpegComposeEngine:
         audio_path = work_dir / "audio.wav"
         concatenate_audio(audio_paths, audio_path)
 
-        _run_ffmpeg(
-            [
-                "-i", str(video_only),
-                "-i", str(audio_path),
-                "-c:v", "copy",
-                "-c:a", "aac",
-                "-shortest",
-                str(out_path),
-            ]
-        )
+        # Captions are burned in the same pass that muxes the audio, so the
+        # chapter is encoded once rather than twice. Without them the video
+        # stream is copied through untouched, which is why this is a branch
+        # and not a filter that happens to be empty.
+        mux: list[str] = ["-i", str(video_only), "-i", str(audio_path)]
+        if self.captions_path is not None and Path(self.captions_path).exists():
+            mux += ["-vf", f"ass={_escape_filter_path(Path(self.captions_path))}"]
+            mux += ["-c:v", "libx264", "-crf", "20", "-preset", "medium", "-pix_fmt", "yuv420p"]
+        else:
+            mux += ["-c:v", "copy"]
+        mux += ["-c:a", "aac", "-shortest", str(out_path)]
+        _run_ffmpeg(mux)
         return out_path
+
+
+def _escape_filter_path(path: Path) -> str:
+    """Quote a path for use inside an ffmpeg filter argument.
+
+    Filter graphs treat `:`, `'`, `[`, `]` and `,` as syntax, and a
+    scratch directory built from a novel id can contain any of them.
+    """
+    text = str(path.resolve())
+    for char in ("\\", ":", "'", "[", "]", ","):
+        text = text.replace(char, f"\\{char}")
+    return f"'{text}'"
 
 
 def get_engine(name: str = "stub", **kwargs: object) -> ComposeEngine:
