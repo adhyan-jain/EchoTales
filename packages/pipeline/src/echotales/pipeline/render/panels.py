@@ -231,9 +231,32 @@ class MangaDiffusersEngine:
 
         pipe = self._ensure_pipe(want_ip=bool(refs))
         kwargs: dict[str, object] = {}
-        if refs and self._ip_loaded:
-            pipe.set_ip_adapter_scale(request.reference_weight)  # type: ignore[attr-defined]
-            kwargs["ip_adapter_image"] = [load_image(str(p)) for p in refs]
+
+        if self._ip_loaded:
+            # **Once the adapter is loaded it can never be skipped.** Loading
+            # it rewrites the UNet's attention processors, and they read
+            # `added_cond_kwargs["image_embeds"]` unconditionally -- a call
+            # without `ip_adapter_image` passes None straight into
+            # `process_encoder_hidden_states` and raises. Panels alternate
+            # between having a reference and not (most blocks name nobody
+            # with a sheet), so this is the common path, not an edge case:
+            # the real run crashed on the first unconditioned panel after
+            # the first conditioned one.
+            #
+            # Rather than unload and reload per panel -- seconds of GPU
+            # churn on every block -- an unconditioned panel passes a blank
+            # image at scale 0.0, which is arithmetically the same as no
+            # conditioning at all.
+            if refs:
+                pipe.set_ip_adapter_scale(request.reference_weight)  # type: ignore[attr-defined]
+                kwargs["ip_adapter_image"] = [load_image(str(p)) for p in refs]
+            else:
+                from PIL import Image
+
+                pipe.set_ip_adapter_scale(0.0)  # type: ignore[attr-defined]
+                kwargs["ip_adapter_image"] = [
+                    Image.new("RGB", (224, 224), (255, 255, 255))
+                ]
 
         generator = torch.Generator(device=self.device).manual_seed(request.seed)
         image = pipe(  # type: ignore[operator]
