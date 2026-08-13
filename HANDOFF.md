@@ -1359,6 +1359,33 @@ carries his face and hair into a completely different pose and setting
 (full body, courtyard, pagoda), which is the balance 0.65 is chosen for --
 identity held, composition free.
 
+6. **Panels had no world in them.** Characters floated on abstract ink
+   swirls, because the prompt's "environment" slot was filled by
+   `resolve_attire`, whose last tier returns the novel's house *style*
+   (`"xianxia web-novel illustration, Gu-worm era Chinese fantasy"`) -- an
+   instruction about how to draw, saying nothing about where anyone is
+   standing. A diffusion model draws a courtyard from "stone courtyard" and
+   draws nothing recognisable from "Chinese fantasy". `WORLD_SETTING`
+   (scenery nouns per novel) and `SCENE_LOCALES` (concrete places, cue-
+   matched against the block's own text, rotating by block index when the
+   prose states none) fixed it: the same block that was a floating bust
+   became a figure on a misty cliff path with pines, distant peaks and
+   architecture.
+
+> ### ⚠ `chatterbox-tts` is dependency-incompatible with the image stack
+>
+> Installing it **silently downgraded `diffusers` 0.39.0 → 0.29.0**, plus
+> `transformers` 5.15.0 → 5.2.0 and `torch` 2.5.1 → 2.6.0, which broke image
+> generation outright (`cannot import name 'FLAX_WEIGHTS_NAME'`). Restoring
+> `diffusers==0.39.0` and `transformers==5.15.0` repairs the image path and
+> breaks chatterbox instead.
+>
+> **Voice and image cannot currently share one venv.** Whoever wires real
+> audio needs a separate environment for TTS, a different TTS, or a
+> compatible chatterbox pin -- and should expect `uv pip install` to
+> silently rearrange the image stack otherwise. This is the single most
+> likely thing to waste an afternoon here.
+
 **The recurring lesson across §4.24: the persona table's stored values
 cannot be trusted in existing databases.** `prominence` and `gender` both
 read as defaults on `data/reruns/*.db`, and both had to be re-derived at
