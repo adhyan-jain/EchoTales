@@ -34,6 +34,7 @@ prose's own assertion, and any explicit textual declaration outranks it.
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass, field
 
 from pydantic import BaseModel, Field
@@ -357,7 +358,47 @@ _TRANSIENT_DESCRIPTORS = (
 )
 
 
-def _clean_values(values: dict[str, str], label: str) -> dict[str, str]:
+#: Generic nouns that carry no identifying information. A value's *other*
+#: words are what must be grounded -- "robes" appears in almost every
+#: passage of a xianxia novel and proves nothing; "green" is the claim.
+_GENERIC_NOUNS = frozenset(
+    {
+        "hair", "eyes", "eye", "skin", "robe", "robes", "clothes", "clothing",
+        "attire", "garment", "garments", "build", "body", "face", "wearing",
+        "with", "and", "the", "his", "her", "their", "colour", "color",
+        "coloured", "colored", "tone", "style", "long", "short", "small",
+        "large", "features", "appearance", "young", "old", "man", "woman",
+    }
+)
+
+
+def _grounded(value: str, blob: str) -> bool:
+    """Whether the passages actually support this value.
+
+    The model invents. Measured on RI: Bai Ning Bing is introduced as
+    "This white-clothed young man was none other than ... Bai Ning Bing",
+    and the extractor returned `typical_attire="green robes"` -- green
+    being the Gu Yue clan's colour and the novel's most frequent robe
+    description, so the model reached for the genre default over the
+    sentence in front of it. Nothing about that is detectable from the
+    response alone; it is only wrong relative to the evidence.
+
+    So every distinguishing word in a value must appear somewhere in the
+    evidence. Generic nouns are exempt (see `_GENERIC_NOUNS`) because they
+    carry no claim, and a value made *only* of generic words is left alone
+    rather than dropped -- there is nothing to check.
+    """
+    words = [
+        w
+        for w in re.findall(r"[a-z]{3,}", value.casefold())
+        if w not in _GENERIC_NOUNS
+    ]
+    if not words:
+        return True
+    return all(w in blob for w in words)
+
+
+def _clean_values(values: dict[str, str], label: str, blob: str = "") -> dict[str, str]:
     """Drop extractions that are about a moment, a technique, or someone else.
 
     Three filters, each from a real mis-extraction on RI:
@@ -385,6 +426,9 @@ def _clean_values(values: dict[str, str], label: str) -> dict[str, str]:
         if key in ("hair_style", "typical_attire", "distinguishing_features"):
             if any(word in low for word in _TRANSIENT_DESCRIPTORS):
                 continue
+        # The evidence has to actually say it -- see `_grounded`.
+        if blob and not _grounded(value, blob):
+            continue
         out[key] = value
 
     return out
@@ -466,7 +510,9 @@ def extract_appearance(
 
         report.entities_called += 1
         values = _clean_values(
-            _values_from(result.value), entity.canonical_label
+            _values_from(result.value),
+            entity.canonical_label,
+            " ".join(passages).casefold(),
         )
         if not values:
             continue

@@ -60,7 +60,7 @@ def _store(tmp_path, *, mentions_per_chapter: int = 40) -> Store:
     store.add_novel("t", "T", "x.epub", "generic")
 
     blocks = [
-        Block(index=0, block_type=BlockType.PROSE, text="Fang Yuan wore green robes."),
+        Block(index=0, block_type=BlockType.PROSE, text="Fang Yuan had black hair and wore green robes. He was injured."),
         Block(index=1, block_type=BlockType.DIALOGUE, text='"Hand it over!"'),
     ]
     store.add_chapter(
@@ -83,9 +83,9 @@ def _store(tmp_path, *, mentions_per_chapter: int = 40) -> Store:
                 chapter=1.0,
                 block_index=0,
                 start=0,
-                end=27,
+                end=63,
                 span_type=SpanType.NARRATION_DESCRIPTION,
-                text="Fang Yuan wore green robes.",
+                text="Fang Yuan had black hair and wore green robes. He was injured.",
             ),
             Span(
                 id="sp1",
@@ -129,7 +129,7 @@ class TestEvidenceGathering:
         block 1 is where the dialogue lives."""
         store = _store(tmp_path)
         passages = gather_appearance_passages(store, "t", "t:self1")
-        assert passages == ["Fang Yuan wore green robes."]
+        assert passages == ["Fang Yuan had black hair and wore green robes. He was injured."]
 
     def test_chapter_scoping_excludes_everything_else(self, tmp_path) -> None:
         store = _store(tmp_path)
@@ -162,6 +162,34 @@ class TestResponseHandling:
             AppearanceResponse(distinguishing_features=["a scar", "one eye"])
         )
         assert out["distinguishing_features"] == "a scar, one eye"
+
+    def test_ungrounded_values_are_dropped(self) -> None:
+        """The real case: Bai Ning Bing is introduced as "This white-clothed
+        young man was none other than ... Bai Ning Bing", and the extractor
+        returned typical_attire="green robes" -- green being the Gu Yue
+        clan's colour and the novel's most frequent robe description, so the
+        model reached for the genre default over the sentence in front of
+        it. Nothing about that is detectable from the response alone."""
+        from echotales.pipeline.resolve.appearance_extract import _clean_values
+
+        blob = (
+            "this white-clothed young man was none other than bai ning bing. "
+            "his snowy white hair stirred."
+        )
+        out = _clean_values(
+            {"typical_attire": "green robes", "hair_color": "snowy white"},
+            "Bai Ning Bing",
+            blob,
+        )
+        assert out == {"hair_color": "snowy white"}
+
+    def test_generic_only_values_are_left_alone(self) -> None:
+        """A value made purely of generic nouns carries no claim to check,
+        so it is kept rather than dropped for lack of evidence."""
+        from echotales.pipeline.resolve.appearance_extract import _clean_values
+
+        out = _clean_values({"hair_style": "long"}, "X", "nothing relevant here")
+        assert out == {"hair_style": "long"}
 
     def test_prompt_separates_standing_identity_from_transient_state(self) -> None:
         """Measured on RI ch1 (Fang Yuan's death scene): without this, the
