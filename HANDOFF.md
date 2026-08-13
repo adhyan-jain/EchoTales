@@ -1380,6 +1380,35 @@ identity held, composition free.
 > `diffusers==0.39.0` and `transformers==5.15.0` repairs the image path and
 > breaks chatterbox instead.
 >
+> ### ⚠ Appearance is bitemporal, and only half-built
+>
+> Raised by the user, and correct: **a character's appearance is not a
+> timeless property, and this pipeline still largely treats it as one.**
+> Fang Yuan is a 500-year-old man in chapter 1 and a fifteen-year-old from
+> chapter 2 onward; the novel reveals facts about each body at different
+> discourse positions. A single flat profile is wrong for most of the book.
+>
+> **Half fixed.** Attributes now carry the chapter that actually attests
+> them (`attesting_chapter`), so `interval` and `learned_at_pos` are real
+> rather than every fact claiming to hold from the entity's first sighting.
+> That much makes appearance answerable by `state_of(..., position)`.
+>
+> **Not fixed, and this is the flagship case §4 was designed for:** Fang
+> Yuan needs **two personas on one self** -- the aged pre-regression body
+> and the regressed one -- exactly the split `architecture.md §4` describes
+> and `persona/build.py` flags as its known "one persona per self, for now"
+> limitation. Until that exists, `reference_gen` builds one sheet per
+> character from a merged profile, and panels cannot ask "what did he look
+> like *here*". The visual pipeline is therefore blocked on an identity
+> question, which is the right place for it to be blocked -- `resolve/`
+> decides who is whom -- but it is blocked.
+>
+> Second, smaller gap from the same investigation: some descriptive blocks
+> carry **no resolved mention at all** (RI ch12's "his body figure was tall
+> and thin, his skin pale" is a bare "The young man...", never linked to
+> Fang Yuan), so they are invisible to extraction no matter how it samples.
+> That is a mention-resolution gap, not an appearance one.
+>
 > **Voice and image cannot currently share one venv.** Whoever wires real
 > audio needs a separate environment for TTS, a different TTS, or a
 > compatible chatterbox pin -- and should expect `uv pip install` to
