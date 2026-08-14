@@ -1062,6 +1062,47 @@ Also surfaced: NER returned truncated JSON on chapter 143 (handled, chapter
 skipped with a warning) — pre-existing robustness gap in `chapter_ner.py`,
 not new.
 
+### 4.29 First real chapter video with the fixed prompts *(2026-08-14)*
+
+Ran the full pipeline end to end after the token-budget and reference-sheet
+fixes (§4.28's follow-up): stub voice (real, correctly-timed WAVs; no real
+TTS yet) → 14 GuoFeng3 panels with the fixed prompts → stub motion clips →
+`ffmpeg` compose with captions, on RI chapter 1 against `ri-body.db` (has
+the persona split and per-body appearance from earlier this session).
+
+```
+14 panels (manga engine, GuoFeng3, 832x1248)     531s
+5 motion clips (stub)                              1s
+1 chapter video (ffmpeg), 154 caption cards     1352s
+ch1.mp4: 1080x1920, 938.0s video == 938.0s audio (exact), 321 MB
+```
+
+**The chapter's climax renders correctly.** Pulled the frame at the "I have
+been reborn, going back to the time of 500 years ago!" line (t=855s, block
+83): a real ink-style panel, waist-length flowing black hair as the
+composition, correctly captioned and attributed to Fang Yuan. This is the
+same frame described in §4.27/§4.28's design discussion, now actually in a
+composed, timed, captioned video rather than a standalone generation.
+
+**One non-issue worth recording so it isn't re-investigated:** a frame
+pulled at t=30s came back solid blue with only the caption visible. Traced
+to block 2's shot being a **motion clip**, not a still panel -- and the
+`--motion-engine stub` used for this run writes solid-colour placeholder
+frames by design (`motion.py`'s stub, same contract as every other stub in
+this pipeline). The 14 still panels are all real; only the 2
+motion-clip cutaways per chapter are placeholders until `--motion-engine
+svd` runs. Confirmed by reconstructing the shot timeline offline
+(`build_shot_plan` + `build_timeline`) and checking `panel_images` keys
+against the flat frame's block index.
+
+**VCTK's zip is now fully downloaded** (11.7 GB, matches the archive's own
+listed size) -- §4.21/§10 item 9's "2.5 of ~11 GB, partial" is stale. Not
+extracted this session (an attempt into `/tmp` filled the 7.7 GB tmpfs
+before I redirected it into `data/voice/`, wasting time worth flagging: extract
+into the repo's own disk, `/tmp` is tmpfs and small). Extracting it and
+wiring `chatterbox-tts` (remember the separate-venv warning, §4.25) is what
+turns this session's silent stub audio into a real audiobook track.
+
 ### 4.28 Per-body appearance, and panels chosen by drama *(2026-08-13)*
 
 Two changes that turned out to be one: the pipeline knew a character could
