@@ -12,14 +12,17 @@ different agent (or a future you) can resume without re-deriving context.
 | `details.md` | Per-file detail |
 | `plans.md` | The original spec. Amended three times; the amendments win and are marked *(revised)* |
 
-**Last updated:** 2026-08-15. Most recent work (§4.30): real Chatterbox-cloned
-audio (VCTK fully extracted, no separate venv needed — an isolated `uv run
---with` overlay), block-scoped panel casting (a chapter-wide
-`NarrativeSegment` was silently giving every panel the same cast), and
-hand-authored staging for the two panels a director can't derive from prose
-alone. **The first chapter video with real voice, not stub timing, exists**
-— `data/video_v3/reverend-insanity/ch1.mp4`, 545s, 1080x1920.
-**Picking this up fresh?** §0 below, then §10 for what to do next.
+**Last updated:** 2026-08-15. §4.30 built the first chapter video with real
+cloned audio and block-scoped casting
+(`data/video_v3/reverend-insanity/ch1.mp4`, 545s, 1080x1920). **§4.31 is
+what actually matters if you're picking this up fresh**: the author watched
+it start to finish and reported nine specific, unfixed defects —
+speaker attribution missing an identifiable speaker, voice casting ignoring
+authority/register, panels not reflecting who's acting or what a scene
+actually contains, no character-design consistency (the fix already exists,
+just isn't wired in), and a text-classification bug on "Gu". Start there,
+not at §10, and read §4.31's own suggested order before picking a first
+task.
 
 
 ## 0. Current state, in one screen
@@ -1065,6 +1068,131 @@ Phase 8 against that DB, 199 chapters, dry run: **20,449 audible lines,
 Also surfaced: NER returned truncated JSON on chapter 143 (handled, chapter
 skipped with a warning) — pre-existing robustness gap in `chapter_ner.py`,
 not new.
+
+### 4.31 User watch-through of the §4.30 video — nine real defects, none fixed yet *(2026-08-15)*
+
+The author watched `data/video_v3/reverend-insanity/ch1.mp4` start to finish
+with sound on and reported nine specific problems. **Nothing in this
+section is fixed** — this is intake for the next session, written down
+before any code changed so the next session starts from the actual report
+rather than a paraphrase. Ranked in the order the author raised them, not
+by guessed severity; the diagnosis under each is this session's best
+inference from the code, not confirmed by re-running anything.
+
+1. **Speaker attribution has real classification gaps.** The clan leader
+   speaks before his name is introduced in the text, and the pipeline
+   never resolved his line back to him -- he was cast as an anonymous
+   slot instead. Likely cause: the four-tier attribution ladder
+   (`speakers/`) and `_assign_anonymous_slots` both key on a name already
+   being *known*, and nothing revisits an anonymous slot once the
+   speaker's identity becomes clear later in the same scene. This is a
+   real gap distinct from the tracked "attribution regressed 64.9% →
+   48.8%" number in §4.9/§4.14 -- that number measures coverage, not
+   whether an anonymous slot silently swallows an identifiable speaker.
+
+2. **Voice casting ignores authority/register.** The clan leader -- an
+   authority figure -- got a voice the author heard as "a weak asian
+   man," wrong for the role regardless of correctness on age/gender.
+   `voice/bank.py::nearest_bucket` buckets purely by age band and gender;
+   nothing in casting reads `register` (formal/authoritative, already
+   computed by `persona/traits.py`) or picks toward a commanding-sounding
+   reference clip within a bucket. Casting needs a second axis, not just
+   a better bucket match.
+
+3. **Speed reverted: 1.25x is too fast, back to 1.0.** `compose.py`'s
+   `speed` default and the CLI's `--speed` default are both `1.25` right
+   now (§4.30). Change both to `1.0` first -- this is the one purely
+   mechanical fix in this list, no design question attached to it.
+
+4. **The "~30 panels would be enough" framing was wrong; retracted by the
+   author who said it.** More panels are needed, but explicitly *after*
+   relevance is fixed, not before -- see item 9.
+
+5. **"The pipeline isn't able to have even the slightest level of
+   understanding of the scenes."** The author's summary judgment, and
+   items 6-9 below are the specific cases underneath it.
+
+6. **Establishing shots work; character/action panels mostly don't.**
+   The mountain-stronghold and Qing Mao Mountain panels landed; "rest was
+   absolute trash" (author's words). Consistent with `beat_canon.py`'s
+   two hand-staged panels being the only ones with real content behind
+   them -- every other panel is still assembled from `beat_prose` alone,
+   with no equivalent staging.
+
+7. **Panels don't track who is acting at each beat, or the actual staged
+   scene.** When a different character speaks, shouting at Fang Yuan, the
+   panel should show *that* character's face and expression, not
+   whichever image the previous beat carried forward. The text also
+   states several people surround Fang Yuan at a distance, waiting until
+   sunrise for his last attack, and describes specifically how he dies --
+   none of that staging reached any panel. This is `beat_canon.py`'s
+   whole justification generalised past two entries: the beat's own
+   prose is being under-used, and speaker-turn changes are not treated as
+   panel-worthy events the way `render/beats.py`'s cast-change boundary
+   should already be catching. Worth checking whether that boundary is
+   actually firing here, or whether it fires but the *prompt* still
+   doesn't reflect who the beat's subject is.
+
+8. **No character-design consistency across panels.** Fang Yuan's look
+   changes panel to panel; the author gave a specific reference
+   description earlier in this project (waist-length black hair, cold
+   narrow eyes, per `canon.py`) that isn't being held. Root cause is
+   already known and *already partly fixed, just not wired in*: §4.30
+   generated real reference sheets (`data/references_v2/`) but no render
+   has been pointed at them yet -- `render_panels` reports
+   `conditioned_panels=0` for every run to date, meaning every panel is
+   still prompt-text-only with nothing to IP-Adapter-condition against.
+   Wiring `data/references_v2/` (or a fresh generation) into the next
+   `render_panels` call is the direct next step here, not a new
+   mechanism.
+
+9. **More panels only after they're relevant, not before.** Direct
+   sequencing instruction from the author: fix relevance (items 6-8)
+   first, then raise `--max-panels`. Producing more of an already-wrong
+   panel wastes the same GPU time §10 item 11 (block-range testing) was
+   built to protect.
+
+10. **Gu/Gu worms mis-classified, and the definition should come from the
+    text, not a web search.** The author explicitly flagged this against
+    the web-search-phase idea raised in the same conversation: the novel
+    itself defines Gu ("actual insect-like spirits with special power")
+    in narration later in the book, so extraction should already be able
+    to find and use it without any external source -- **prefer in-text
+    definitions over external lookup wherever the text actually states
+    the thing**, which bears directly on how any future web-search phase
+    should be scoped (supplementary only, not a replacement for
+    extraction the pipeline should be doing anyway). Separately, the
+    author also flagged that mentions of "Gu" are for some reason
+    sometimes classified as narrator speech, which is a `spans/` or
+    `speakers/` classification bug worth reproducing directly rather than
+    guessed at.
+
+11. **Group scenes render as one isolated figure with no one else and no
+    background.** The ancestral hall scene (clan leader and elders
+    present) rendered as a single unrelated figure, no other people, no
+    hall. Given §4.30's `has_mob`/`resolved_subjects` work was aimed
+    exactly at this class of scene, the likely next question is whether
+    `detect_mobs` (`spans/scene.py`) is actually firing on this specific
+    block's language ("elders", "ancestral hall" style phrasing) or
+    silently missing it, and whether `scene_locale`'s cue table
+    (`persona/attire.py::SCENE_LOCALES`/`_LOCALE_CUES`) has an "ancestral
+    hall" or "hall" cue that this block's actual wording matches --
+    worth checking against the real block text before assuming either
+    mechanism is broken versus simply not cued for this phrasing.
+
+**Suggested order for the next session, synthesising the above:** item 3
+(one-line fix) first; then item 8 (wire the existing reference sheets --
+already-built machinery, not new work) since it is likely the single
+highest-value fix per unit of effort; then items 6/7/11 together, since
+they are all instances of "the panel doesn't reflect the beat's actual
+content" and a proper fix probably touches `beat_canon.py`'s pattern,
+`render/beats.py`'s boundary logic, and `scene_locale`'s cue table at
+once; then items 1/2 (attribution/casting); item 10's classification bug
+last, reproduced against the real block first rather than guessed at. The
+web-search phase the author asked about is explicitly *not* next --
+item 10 is a standing instruction to prefer in-text extraction first, and
+none of the above defects are caused by missing world knowledge the text
+doesn't already contain.
 
 ### 4.30 Real cloned audio, block-scoped casting, and the panels that go with them *(2026-08-15)*
 
@@ -2169,6 +2297,11 @@ webview/     React viewer (git-ignored node_modules/build; §8a, §4.18)
 ---
 
 ## 10. Suggested next steps, in order
+
+**Picking this up fresh, read §4.31 before this list.** It is the author's
+own watch-through report on the most recent real chapter video and it
+outranks everything below until it's addressed — nine specific defects,
+none fixed yet, with a suggested order at the end of that section.
 
 1. **Get a person to confirm §4.12's gold set, then calibrate the gate** (§4.1).
    The scorer cannot emit a linking probability above p=0.71 against a 0.80
