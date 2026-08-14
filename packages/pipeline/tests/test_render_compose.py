@@ -110,3 +110,47 @@ class TestFfmpegComposeEngineIntegration:
         )
         duration = float(probe.stdout.strip())
         assert 1.2 < duration < 1.8
+
+    def test_speed_scales_the_finished_video(self, tmp_path) -> None:
+        """A 199-chapter novel at natural narration pace produces a 15+
+        minute video per chapter -- far longer than the reel this format is
+        modelled on. `speed` is a uniform post-mux multiplier, applied after
+        captions are burned so sync holds at any speed."""
+        panel = tmp_path / "panel.png"
+        write_solid_png(panel, 64, 64, (80, 40, 40))
+        wav = tmp_path / "a.wav"
+        _write_wav(wav, 4.0)
+        timeline = [
+            TimedShot(chapter=1.0, block_index=0, kind="pan", asset_path=str(panel),
+                      pan_direction="zoom_in", start=0.0, end=4.0),
+        ]
+
+        out = tmp_path / "ch1.mp4"
+        FfmpegComposeEngine(speed=1.25).render(timeline, [wav], out)
+
+        import subprocess
+
+        probe = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+             "-of", "csv=p=0", str(out)],
+            capture_output=True, text=True,
+        )
+        duration = float(probe.stdout.strip())
+        # 4.0s / 1.25 == 3.2s, with encoder rounding tolerance.
+        assert 3.0 < duration < 3.4
+
+    def test_speed_one_is_unchanged(self, tmp_path) -> None:
+        """1.0 must not force the slower captioned/re-encoded path when
+        there are no captions either -- same fast `-c:v copy` path as
+        before this existed."""
+        panel = tmp_path / "panel.png"
+        write_solid_png(panel, 64, 64, (80, 40, 40))
+        wav = tmp_path / "a.wav"
+        _write_wav(wav, 1.0)
+        timeline = [
+            TimedShot(chapter=1.0, block_index=0, kind="pan", asset_path=str(panel),
+                      pan_direction="zoom_in", start=0.0, end=1.0),
+        ]
+        out = tmp_path / "ch1.mp4"
+        FfmpegComposeEngine(speed=1.0).render(timeline, [wav], out)
+        assert out.exists() and out.stat().st_size > 0

@@ -292,6 +292,32 @@ because each cost real time and would cost it again.
   protagonist rendered as a woman because his stored gender read `unknown`
   and the word "person" hands an anime checkpoint a female prior. No test
   catches any of these.
+- **Look at the *composed* output, not just isolated generations.** Every
+  panel-prompt fix in this document was found by generating single images
+  in isolation and looked correct in isolation. Watching one assembled
+  chapter video surfaced three defects none of those generations could:
+  `Mention.target_kind` going stale after the resolver retypes an entity
+  (a location and an organisation rode into a panel prompt as people, and
+  the checkpoint drew a stranger with no grounding at all); `get_panel_cast`
+  scoping "who's present" to a whole chapter-wide `NarrativeSegment` instead
+  of a block, so a group conversation and a scene fifty blocks away shared
+  one cast; and a hand-authored staging directive silently losing a budget
+  fight to a *shorter, less important* appearance clause, twice, because a
+  greedy token-fit tries whatever comes first in the list regardless of
+  which matters more. None of these are visible from one prompt's token
+  count or one panel's pixels — only from watching the whole thing play.
+- **A modern `setuptools` breaks a well-known TTS library, silently.**
+  Chatterbox's watermarker (`perth`) imports `pkg_resources`, which
+  `setuptools` stopped bundling somewhere past v81 — the failure is
+  `TypeError: 'NoneType' object is not callable` deep inside a class
+  constructor, nothing about missing setuptools in the message at all.
+  `uv run --with chatterbox-tts --with "setuptools<81"` is the fix, and
+  it is also the answer to the earlier-recorded "chatterbox and diffusers
+  can't share a venv" blocker: `uv run --with` resolves an ephemeral
+  overlay *per invocation* rather than modifying the project's own
+  `.venv`, so the image-generation environment was never actually at risk
+  — the two stages just needed to run as separate processes, which they
+  always could.
 
 ---
 

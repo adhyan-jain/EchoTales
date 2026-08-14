@@ -737,7 +737,13 @@ fact about a character. Unknown gender is compatible with everything, or recall
 collapses.
 
 `present_cast()` filters on `reference_mode`, so a character merely named in
-dialogue is not counted as being in the scene.
+dialogue is not counted as being in the scene. Also takes an optional
+`person_ids` set (built by the caller from `Self.kind`, not from
+`Mention.target_kind` — that column is written once at linking time and goes
+stale when the resolver's typing pass later reclassifies an entity) to
+exclude locations and organisations from a cast that is meant to be people.
+`person_ids=None` keeps the old unfiltered behaviour for callers with no
+store handy.
 
 ### `src/echotales/pipeline/anaphora/validate.py`
 Where precision comes back. A violating group is **split, not repaired** —
@@ -1017,6 +1023,17 @@ faction → regional → novel style) and `get_panel_cast`. Faction/regional
 tables are static per-novel dicts because `TargetKind` has no member a
 faction could attach an `Attribute` to.
 
+`get_panel_cast` takes an optional `block_window` (defaulting to just
+`block_index`), which scopes "who is present" to that range rather than to
+the whole enclosing `NarrativeSegment`. A segment marks story-time
+continuity (a dream, a flashback) and a chapter with none of those is
+correctly one segment covering every block, so reading segment-wide
+presence as "the scene" gave every panel in a chapter the same cast.
+Callers pass a beat's own block range, matching the window
+`render/panels.py::present_beat_entities` already used for appearance and
+reference conditioning. Also filters non-person entities via `store` when
+given (see `anaphora/local.py::present_cast` above).
+
 ### `src/echotales/pipeline/voice/` — Phase 8
 
 **`bank.py`** — CSTR VCTK 0.92 (110 speakers, CC BY 4.0). Parses
@@ -1079,6 +1096,33 @@ passages naming the entity are preferred over the rest of their block, with
 the prompt explicitly disclaiming bystanders, because an unranked sample
 attributed a neighbour's build to Fang Yuan.
 
+### `src/echotales/pipeline/persona/prompt.py`
+
+`build_image_prompt()` and the CLIP token budget every panel prompt has to
+fit. **Measured against the last real chapter run: every panel exceeded
+CLIP's 77-token limit** (median 154), and Stable Diffusion truncates
+silently — so half of every prompt never reached the model, and because
+the prompt was written scenery-first, the discarded half was routinely the
+character, the framing and the style.
+
+`fit_to_budget()` assembles a prompt as a *priority ranking* rather than a
+fixed template: headcount tag, a short style anchor, hand-authored
+`directive` staging (`render/beat_canon.py`), the subject's condensed
+appearance, framing, the beat's own narration, locale, then the novel's
+generic scenery vocabulary last, since that is true of every chapter and
+individuates nothing. Parts that do not fit are dropped whole, never cut
+mid-phrase — a truncated clause still spends tokens steering toward
+whatever the fragment resembles. `negative_for()` budgets the negative
+prompt the same way, most-discriminating clause first (a close-up needs a
+different negative than a scene shot, and that per-framing clause was the
+one silently getting cut).
+
+`condense_clause()` trims a character's full appearance clause to what
+identifies them, ranked by feature (hair, eyes, build) rather than by
+position in the clause — a positional cut kept "tall and lean" and dropped
+"waist-length midnight black hair," losing the one feature that makes a
+xianxia character recognisable in silhouette.
+
 ### `src/echotales/pipeline/persona/reference_gen.py`
 
 One cached reference sheet per prominent character — the anchor that makes
@@ -1127,22 +1171,30 @@ is the file-by-file map.
 **`_png.py`** — a raw `zlib`/`struct` PNG writer, no Pillow. Shared by the
 two stub image engines below so neither needs the `render` extras installed.
 
-**`panels.py`** — `render_panels()`: one cached image per `(chapter,
-block_index)`, prompted via `persona/prompt.py::build_image_prompt` against
-`persona/runner.py::get_panel_cast`. `PanelImageEngine` protocol,
+**`panels.py`** — `render_panels()`: one cached image per beat (see
+`beats.py`), prompted via `persona/prompt.py::build_image_prompt` against
+`persona/runner.py::get_panel_cast`, block-scoped via `block_window`. Two
+caches, not one: `image_path.exists()` skips across runs, and a
+`generated_by_digest` dict (keyed on the exact prompt string's SHA-256)
+skips *within* one run — two blocks whose final prompt is byte-identical
+(same cast, environment, framing, truncated beat) produce a byte-identical
+image under one fixed seed, so the second is copied from the first rather
+than re-run through the model. `PanelImageEngine` protocol,
 `StubImageEngine` (real dependency-free PNG), `SDXLEngine` and
 `MangaDiffusersEngine` (lazy-loaded `torch`/`diffusers`, same discipline as
-`voice/engine.py::ChatterboxEngine`). Skips any block whose PNG already
-exists — re-rendering thousands of panels per iteration is both slow and, on
-a real engine, not free.
+`voice/engine.py::ChatterboxEngine`).
 
 `MangaDiffusersEngine` (`--image-engine manga`) is the one that produces the
-intended look: an anime/manga finetune (**the checkpoint carries the style**
-— one returning photorealism is the wrong checkpoint, not a prompting
-problem) plus IP-Adapter conditioning at 0.65 on each present character's
-reference sheet, capped at two references since the adapter blends what it
-is given. A missing sheet degrades to prompt-only *and logs it*, because
-silently losing conditioning looks identical to having it.
+intended look: `xiaolxl/GuoFeng3` (**the checkpoint carries the style** —
+one returning photorealism, or generic anime, is the wrong checkpoint, not
+a prompting problem) plus IP-Adapter conditioning at 0.65 on each present
+character's reference sheet, capped at two references since the adapter
+blends what it is given. A missing sheet degrades to prompt-only *and logs
+it*, because silently losing conditioning looks identical to having it.
+Colour restraint (`render/palette.py`: colour / ink / accent) is a
+post-process, not a prompt request — a checkpoint asked in words for a
+discipline it does not have produces the same picture with the words
+ignored.
 
 `beat_text()` draws the composition cue from the block's **narration**, not
 its raw text: a dialogue block's text is the spoken line, which the audio
@@ -1150,6 +1202,21 @@ already carries and which describes nothing visible. `present_entity_ids()`
 resolves ids from mentions rather than `scene.py`'s `active_selves`, which
 holds surface text (`"he"`, `"his uncle"`) and cannot be looked up against a
 persona.
+
+**`beat_canon.py`** — hand-authored staging for the handful of panels no
+amount of extraction reaches, keyed to exact `(novel, chapter, block
+range)` entries. The same argument `persona/canon.py` makes about a
+character's appearance, one level up: some panels are not "whatever this
+block's prose says," they are a specific staging a reader holds in their
+head and the prose alone never states. Deliberately non-generic — an entry
+covers one exact block range in one novel, never a pattern, so an unseeded
+block gets nothing rather than a wrong generic guess. Feeds
+`build_image_prompt`'s `directive` parameter, which has its own priority
+slot (ahead of both the beat text and the character's generic appearance
+clause — both were tried first and lost the token-budget fight, since
+each is shorter and a greedy fit tries the shortest-to-fewest-tokens
+candidates as they come) and its own truncation budget, sized for
+hand-written density rather than noisy scraped prose.
 
 **`motion.py`** — the reused clip library (`architecture.md §8c`).
 `GENERIC_TAGS` is a fixed, short vocabulary; `match_tag()` matches a block's
@@ -1189,10 +1256,21 @@ WAVs at the sample level via stdlib `wave`, raising on a format mismatch
 rather than resampling silently. `StubComposeEngine` does that real
 concatenation plus writes a JSON shot manifest, needing no `ffmpeg`.
 `FfmpegComposeEngine` renders each shot to its own segment (`zoompan` for a
-still, a trimmed/looped frame sequence for a clip), concatenates via the
-concat demuxer, and muxes against the real concatenated audio — **verified
-against a real `ffmpeg` encode** in `test_render_compose.py`, not just unit
-logic.
+still, a trimmed/looped frame sequence for a clip) at a **portrait 1080x1920
+frame** (phone-native; the panel itself is generated 2:3 rather than 9:16,
+slightly wider than the output frame, which is what gives a horizontal pan
+somewhere to travel), concatenates via the concat demuxer, and muxes against
+the real concatenated audio — **verified against a real `ffmpeg` encode** in
+`test_render_compose.py`, not just unit logic.
+
+Captions (`captions.py::write_ass`) burn in during the same mux pass rather
+than a second encode: one line of the novel's own spoken prose held on
+screen, timed off the same WAV durations the picture is timed off, styled
+distinctly for dialogue vs narration. `speed` (default 1.25x via CLI) scales
+picture and audio together *after* captions are burned, so sync holds at
+any speed — `setpts` retimes already-drawn frames rather than re-rendering
+them, so a caption shown for framerange N stays attached to the same audio
+words once both streams are scaled by the same factor.
 
 **`runner.py`** — `render_videos()`, the orchestrator. Reads the panel and
 voice manifests already on disk rather than regenerating either (both are
