@@ -287,6 +287,13 @@ class AttributionMethod(StrEnum):
     #: UNRESOLVED so a consumer can tell "genuinely nobody" from "some
     #: consistent nobody in particular."
     ANONYMOUS_SLOT = "ANONYMOUS_SLOT"
+    #: A role-title speaker tag with no proper name attached ("the clan head
+    #: instructed") -- see `speakers/attribution.py::attribute_epithet`.
+    #: Distinct from ANONYMOUS_SLOT: the text itself names *who*, just by
+    #: title rather than name, so this gets one stable id keyed by the title
+    #: instead of a round-robin slot -- distinct from EXPLICIT too, since a
+    #: title is never promoted into the entity graph the way a name is.
+    EPITHET_SLOT = "EPITHET_SLOT"
 
 
 class ResolutionMethod(StrEnum):

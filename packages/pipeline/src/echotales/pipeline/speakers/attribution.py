@@ -42,7 +42,8 @@ _SPEECH_VERBS = (
     r"interrupted|interrupts|interjected|interjects|greeted|greets|"
     r"repeated|repeats|stated|states|remarked|remarks|noted|notes|"
     r"agreed|agrees|admitted|admits|confessed|confesses|warned|warns|"
-    r"ordered|orders|commanded|commands|announced|announces|hollered"
+    r"ordered|orders|commanded|commands|announced|announces|hollered|"
+    r"instructed|instructs"
 )
 
 _NAME = r"[A-Z][\w’'\-]*(?:\s+[A-Z][\w’'\-]*){0,3}"
@@ -71,6 +72,32 @@ _NAME_THEN_ACTION = re.compile(
 
 # Pronoun subjects; resolved by the anaphora layer, not here.
 _PRONOUN_SUBJECT = re.compile(r"\b(?:he|she|they|it)\s+(?:\w+\s+){0,2}?(?:" + _SPEECH_VERBS + r")\b", re.IGNORECASE)
+
+#: Role titles worth matching as a speaker tag even with no proper name
+#: attached -- "the clan head instructed" is exactly as much of a speaker
+#: tag as "Fang Yuan instructed", just naming the speaker by role instead of
+#: name. Deliberately a single verified phrase, not a broad guessed
+#: vocabulary: RI ch1's ancestral-hall scene repeats "the clan head"/"the
+#: Gu Yue clan head" as its speaker tag four separate times and none of them
+#: were ever resolved (§4.34); extend this list only against other real,
+#: checked chapters, not speculatively -- see EVOLUTION.md on the combat-
+#: vocabulary mechanism that scored zero from guessing instead of measuring.
+_ROLE_EPITHETS = ("clan head",)
+
+_EPITHET = (
+    r"(?:the\s+)(?:[A-Z][\w'\-]*\s+){0,3}?(?:" + "|".join(_ROLE_EPITHETS) + r")"
+)
+
+# "the clan head instructed" / "the Gu Yue clan head said"
+_EPITHET_THEN_VERB = re.compile(
+    rf"\b(?P<epithet>{_EPITHET})\s+(?:\w+\s+){{0,2}}?(?:{_SPEECH_VERBS})\b",
+    re.IGNORECASE,
+)
+
+# "said the clan head"
+_VERB_THEN_EPITHET = re.compile(
+    rf"\b(?:{_SPEECH_VERBS})\s+(?P<epithet>{_EPITHET})\b", re.IGNORECASE
+)
 
 
 @dataclass(slots=True)
@@ -155,6 +182,50 @@ def attribute_explicit(
                     confidence=0.95,
                     evidence=match.group(0),
                 )
+    return None
+
+
+def attribute_epithet(
+    span: Span,
+    *,
+    following: str,
+) -> Attribution | None:
+    """Tier 1.5: a role-title speaker tag with no proper name attached.
+
+    Same adjacency requirement as `attribute_explicit` -- the epithet must
+    sit directly beside a speech verb, not just appear somewhere nearby --
+    so this only fires on genuine speaker tags ("the clan head instructed"),
+    never on an epithet that happens to be mentioned in the same paragraph
+    for some other reason. `speaker` is the matched epithet text itself; the
+    caller mints a stable id from it (`_assign_epithet_speakers`), never a
+    graph `Self` -- a title is not a permanent identity and must stay able
+    to transfer to someone else later without this tier caring.
+
+    `following` only, deliberately -- unlike `attribute_explicit`, which
+    checks both directions. A postposed tag ("'...,' the clan head
+    instructed.") sits in the *next* block's text once the block boundary is
+    crossed, and `preceding` there is the whole previous block, which still
+    contains that same tag verbatim. Checking `preceding` here attributed
+    the elders' own reply in the very next line to "the clan head" too,
+    because their line's preceding window still held the clan head's tag
+    from the line before it -- a real, caught regression, not a hypothetical
+    one. A preceding-side epithet tag would need same-block-only text to be
+    safe, which the caller does not currently distinguish from a full
+    cross-block window; left for that case to actually appear in real text
+    rather than built for a case that hasn't.
+    """
+    if not following:
+        return None
+    for pattern in (_EPITHET_THEN_VERB, _VERB_THEN_EPITHET):
+        match = pattern.search(following)
+        if match:
+            return Attribution(
+                span_id=span.id,
+                speaker=match.group("epithet").strip(),
+                method=AttributionMethod.EPITHET_SLOT,
+                confidence=0.55,
+                evidence=match.group(0),
+            )
     return None
 
 
@@ -255,6 +326,10 @@ def attribute_span(
     )
     if explicit:
         return explicit
+
+    epithet = attribute_epithet(span, following=following)
+    if epithet:
+        return epithet
 
     proximal = attribute_proximal(
         span, preceding=preceding, following=following, known_names=known_names

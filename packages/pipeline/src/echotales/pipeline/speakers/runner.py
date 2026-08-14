@@ -17,6 +17,7 @@ from echotales.pipeline.ingest.normalize import comparison_key
 from echotales.pipeline.spans import classify_chapter
 from echotales.pipeline.spans.scene import ActiveScene, build_active_scenes
 from echotales.pipeline.speakers.attribution import (
+    _ROLE_EPITHETS,
     Attribution,
     attribute_span,
     detect_pov_holder,
@@ -293,6 +294,24 @@ def attribute_novel(
         spans = classify_chapter(chapter)
         mentions = store.get_mentions(novel_id, chapter.number)
         for mention in mentions:
+            # A mention the NER layer confidently tagged as a place or an
+            # organisation must never become a speaker candidate -- both
+            # `_known()`'s regex gate and tier 4's LLM roster otherwise treat
+            # it exactly like a person, which is how "Qing Mao Mountain" (a
+            # mountain) ended up as the attributed speaker of a shouted line
+            # in RI ch1 (§4.34). `entity_label` is `None` for the much larger
+            # deterministic/gazetteer layer that never classified at all --
+            # that stays in, since "unlabelled" is not evidence of anything.
+            if mention.entity_label in ("location", "organization"):
+                continue
+            # RELATIONAL_DEICTIC ("this one", "that person") is defined as
+            # speaker-relative -- its referent depends on who is already
+            # speaking, so it can never itself be a fixed name to attribute
+            # *to*. Without this it entered the roster verbatim and the LLM
+            # tier picked "this one" as a line's speaker, literally, in RI
+            # ch1 (§4.34).
+            if mention.alias_type is AliasType.RELATIONAL_DEICTIC:
+                continue
             if mention.alias_type.enters_graph:
                 known_names.add(mention.text)
                 key = comparison_key(mention.text)
@@ -314,7 +333,19 @@ def attribute_novel(
             attribution = by_id.get(span.id)
             if attribution is None:
                 continue
-            span.speaker_self_id = attribution.speaker
+            speaker = attribution.speaker
+            if speaker and attribution.method is AttributionMethod.EPITHET_SLOT:
+                # Keyed by the *role noun itself* ("clan head"), not the
+                # whole matched phrase -- "the clan head" and "the Gu Yue
+                # clan head" are the same title stated two ways, and must
+                # collapse to the same stable id or the whole point (one
+                # consistent voice per title) is lost. Never a graph `Self`:
+                # a title is not a permanent identity.
+                role = next(
+                    (r for r in _ROLE_EPITHETS if r in speaker.casefold()), speaker.casefold()
+                )
+                speaker = f"{novel_id}:epithet:{chapter.number:g}:{role.replace(' ', '-')}"
+            span.speaker_self_id = speaker
             span.attribution_method = attribution.method
             span.co_speaker_self_ids = attribution.co_speakers
             if attribution.speaker:
