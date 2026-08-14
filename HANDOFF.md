@@ -16,14 +16,19 @@ history of how any of it got this way lives in `EVOLUTION.md`, not here.
 **Last updated:** 2026-08-15. §4.30 built the first chapter video with real
 cloned audio and block-scoped casting
 (`data/video_v3/reverend-insanity/ch1.mp4`, 545s, 1080x1920). §4.31 recorded
-the author's watch-through: nine specific defects. **This session fixed
-three of them** (speed default, reference-sheet wiring, and the
-panel-relevance cluster — cast-change boundary, mob detection, scene-locale
-cues — see §4.31's dated addendum for exactly what changed and what's
-still unverified by an actual re-render). **Speaker attribution, voice
-register, and the "Gu" classification bug (items 1/2/10) are still open**
-and are the actual next pick-up point — root causes are diagnosed in
-§4.31, no code changed for them yet.
+the author's watch-through: nine specific defects. **This session fixed four
+of them** (speed default, reference-sheet wiring, the panel-relevance
+cluster, and a translator's-note ingestion bug found by re-inspecting ch1's
+raw spans directly — see §4.31's and §4.32's dated addenda for exactly what
+changed). **Speaker attribution and voice register (items 1/2) are still
+open** and are the next pick-up point.
+
+**§4.32, found this session, not in the original nine:** re-reading ch1's
+actual span table (not just the video) surfaced a translator's-note
+ingestion bug independent of anything in §4.31 — see §4.32 below. Fixed.
+A full 1-199 resolve/persona run is in progress as of this update to build
+a real character knowledge base before any further per-chapter rendering;
+see §0's workflow note.
 
 
 ## 0. Current state, in one screen
@@ -426,6 +431,74 @@ open:**
   `spans/classify.py`'s short-emphasis-span exposition-regex interaction
   (item 10) are all real, next-session work.
 
+
+---
+
+### 4.32 Translator's-note continuation blocks were leaking into the story graph *(2026-08-15)*
+
+Found by dumping RI ch1's actual span table (`store.get_spans`) end to end
+and reading every line's `speaker_self_id`, prompted by the author's report
+that classification "isn't even able to detect the clan leader" and "took
+[the author's extra info] as a stupid dialogue of narrator." The dump
+confirmed both complaints, plus a third the author hadn't named yet:
+
+- **Blocks 88, 89, and 91 — the actual body of the chapter's "TL Note:" and
+  its footnote — were classified `PROSE`, not `TRANSLATOR_NOTE`, and fed
+  straight into span classification and speaker attribution.**
+  `ingest/classify.py::classify_block` only recognises a *labelled* note
+  block (one starting with "TL Note:"/"Translator's Note:"/etc.); its own
+  continuation paragraphs carry no such marker and were re-entering the
+  story as ordinary prose. One of those continuation blocks (89) literally
+  says *"This novel has another name, Daoist Gu"* — and the pipeline
+  resolved a phantom character entity named **"Daoist Gu"** out of that
+  sentence, then used it as the attributed speaker for several of the real
+  clan leader's actual dialogue lines elsewhere in the chapter (blocks 47,
+  48, 55, 71). This is likely the single biggest reason "the clan leader"
+  reads as absent: some of his lines were captured by a person who does not
+  exist, invented from the translator's meta-commentary about the novel's
+  alternate title.
+- **Fixed** in `ingest/adapters/base.py::parse_chapter`: once a block
+  classifies as `TRANSLATOR_NOTE`/`AUTHOR_NOTE`, every remaining block in
+  the chapter is now forced to the same type, rather than only the labelled
+  block. In this corpus a translator's note is always chapter-terminal —
+  including a second `* * *` separator and a footnote *after* it (RI ch1's
+  actual layout) — so latching to the end of the chapter is the correct
+  boundary, not merely a convenient one. Verified against the real EPUB:
+  re-ingesting ch1 now classifies blocks 87-89 and 91 as `TRANSLATOR_NOTE`
+  (were `PROSE`); `BlockType.is_story_content` already excludes that type,
+  so downstream phases now see nothing from that section without any other
+  change required.
+- **Separately confirmed, not yet fixed:** block 2 of ch1 — a shouted
+  line, `"Fang Yuan you damn demon..."` — was attributed to
+  `speaker_self_id = "Qing Mao Mountain"`, a *place* name, not a person.
+  This is the `TargetKind`-typing gap already tracked as open defect #7 in
+  §4 above, but this is the first confirmed case of it corrupting a
+  *speaker* attribution rather than just a review-table display, which is
+  a more serious instance of the same root cause than previously recorded.
+- **Still not fixed, and now better understood:** even with §4.32's bug
+  gone, the clan leader's dialogue (blocks 37, 47, 48, 54, 62, 68, 69, 78)
+  is scattered across four different `anon:1:N` slots rather than
+  consolidated onto one, because `_assign_anonymous_slots` cycles slots
+  per-unresolved-run rather than per-speaker (§4 item 1's forward-only-pass
+  diagnosis, confirmed again here against real chapter-1 data). Fixing item
+  1 is what actually makes the clan leader "detected" as one continuous
+  character rather than four unrelated anonymous voices; §4.32's fix only
+  stops a wrong person from stealing some of his lines.
+- **Workflow clarification from the author, worth recording:** the
+  intended shape of a normal session is to run ingest through persona
+  build across the *whole* novel once (building the full character
+  knowledge base the resolver/speaker/persona stages need to work
+  correctly), and treat voice/render as a separate, cheap, per-chapter step
+  drawn from that knowledge base — not to re-derive character identity
+  from a single chapter's text in isolation. A same-session verification
+  run against ch1 alone (`--chapters 1-1`) produced only 2 entities/21
+  mentions from a chapter that clearly has more named characters than
+  that, which is a demonstration of exactly this: the mention/resolve
+  stages are tuned against multi-chapter context (lexicon induction,
+  cross-chapter alias linking) and are not representative of quality when
+  starved of it. This was already the pipeline's designed structure (§0,
+  §8's `run` vs `voice`/`render` split) — nothing to build, just to run
+  correctly and document as the expected workflow going forward.
 
 ---
 
