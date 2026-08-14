@@ -92,12 +92,25 @@ BEAT_CANON: dict[str, dict[float, list[BeatCanonEntry]]] = {
                 # overriding around it.
                 block_from=83,
                 block_to=83,
+                # **"cicada" alone was read as a weapon, twice.** The
+                # checkpoint's xianxia prior favours blades and battle
+                # imagery strongly enough that an unqualified "cicada"
+                # rendered as a dark bladed object both times this was
+                # tried, verified by looking at the actual generated
+                # panels, not assumed from the prompt text. Now named
+                # explicitly as an insect ("a tiny glowing golden cicada,
+                # an insect") with "no weapon, no sword" in the negative
+                # half of the staging -- the same lesson as `prompt.py`'s
+                # headcount tags: a checkpoint follows the *category* word
+                # it already has a strong prior for, so naming the category
+                # outright outperforms describing the object and hoping
+                # the category is inferred.
                 staging=(
-                    "standing in a pool of blood, bloody footprints leading "
-                    "to him, robes soaked and torn, face calm and "
-                    "expressionless. Both palms raised before his chest, "
-                    "holding a small glowing luminous cicada, gazing at it "
-                    "plainly."
+                    "standing in a pool of blood, robes soaked and torn, "
+                    "face calm and expressionless. Empty bare hands cupped "
+                    "before his chest (no weapon, no sword, no blade), "
+                    "holding a tiny glowing golden cicada insect, gazing "
+                    "down at it plainly."
                 ),
                 # A tight face close-up -- what a dialogue block would get
                 # by default -- crops out the raised palms and the cicada,
