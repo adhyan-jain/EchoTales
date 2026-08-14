@@ -14,10 +14,14 @@ from __future__ import annotations
 
 from echotales.pipeline.persona.prompt import (
     STYLE_ANCHOR,
+    STYLE_CLOSEUP,
+    STYLE_ESTABLISHING,
+    STYLE_SCENE,
     build_image_prompt,
     condense_clause,
     count_tokens,
     fit_to_budget,
+    negative_for,
 )
 from echotales.pipeline.persona.runner import CharacterCast, PanelCast
 
@@ -113,6 +117,28 @@ class TestOrdering:
         )
         assert "Fang Yuan" in prompt and "Bai Ning Bing" in prompt
         assert count_tokens(prompt) <= 77
+
+
+class TestNegativePrompts:
+    """The same truncation bug, one prompt over. Every negative measured
+    ~100 tokens against the same 77-token limit, and because the shared
+    base came first, what was silently dropped was the per-framing tail --
+    "plain background, portrait, bust shot" -- which is exactly what stops
+    a scene shot collapsing into a portrait."""
+
+    def test_every_framing_fits(self) -> None:
+        for style in (STYLE_ESTABLISHING, STYLE_SCENE, STYLE_CLOSEUP):
+            assert count_tokens(negative_for(style)) <= 77
+
+    def test_the_discriminating_clause_survives(self) -> None:
+        """The per-framing head must not be the part that gets cut."""
+        assert "portrait" in negative_for(STYLE_SCENE)
+        assert "tiny face" in negative_for(STYLE_CLOSEUP)
+
+    def test_framings_reject_different_things(self) -> None:
+        """A close-up wants the plain background a scene shot must reject --
+        one shared negative cannot serve both."""
+        assert negative_for(STYLE_CLOSEUP) != negative_for(STYLE_SCENE)
 
 
 class TestCondenseClause:

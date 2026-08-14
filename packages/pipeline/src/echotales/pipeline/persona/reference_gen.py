@@ -48,6 +48,7 @@ from echotales.core.models import Attribute
 from echotales.core.store import Store
 from echotales.pipeline.persona.attire import resolve_appearance
 from echotales.pipeline.persona.canon import apply_canon
+from echotales.pipeline.persona.prompt import fit_to_budget
 from echotales.pipeline.persona.split import bodies_of
 
 log = logging.getLogger(__name__)
@@ -83,27 +84,59 @@ _PROMPT_ORDER = (
 #: lock onto, and given twelve small ones it locks onto none of them. What
 #: this stage wants is a single portrait that happens to serve as a
 #: reference, not a page of model sheets.
-REFERENCE_STYLE = (
-    "solo, single character, upper body portrait, facing viewer, "
-    "detailed face, plain white background, "
-    # Xianxia, not cute anime. The first real cast came out as soft
-    # manhwa -- round friendly faces on a cute-anime checkpoint. These
-    # terms plus the GuoFeng3 checkpoint are what move it toward the
-    # serious Chinese cultivation-novel register the corpus actually has.
-    "xianxia, wuxia, ancient chinese, guofeng, hanfu robes, "
-    "serious cold expression, mature adult proportions, sharp features, "
-    "rich colors, cinematic lighting, detailed, masterpiece, best quality"
+#: **Three-quarter, not an upper-body crop.** The sheet was asking for
+#: "upper body portrait", and a bust crop discards the two things that
+#: identify a xianxia character in silhouette: the length of the hair and
+#: the shape of the robe. Measured on the first real cast -- a sheet showing
+#: shoulders and up, for a protagonist whose canon description is
+#: waist-length hair, so the sheet could not carry the feature the panels
+#: were supposed to inherit from it.
+#:
+#: Three-quarter rather than full body because IP-Adapter needs a clear
+#: face to lock onto -- the reference-sheet-as-collage failure was exactly
+#: a face too small to read. Head-to-thigh keeps the face large and still
+#: shows the hair falling past the waist.
+#:
+#: **Vocabulary matches `persona/prompt.py` deliberately**, including the
+#: terms that moved to the negative side there: "rich colors, cinematic
+#: lighting, masterpiece, best quality" were in this string while the panel
+#: prompt was rejecting them, so the sheet and the panels conditioned on it
+#: were asking for opposite pictures. That divergence is the failure mode
+#: `prompt.py`'s docstring warns about, found in this file.
+#: The framing and medium, short enough to lead every sheet prompt. Split
+#: out of `REFERENCE_STYLE` for the same reason panel framing was split out
+#: of the panel style: the appearance clause alone is ~65 of the 75
+#: available tokens, so anything appended after it is dropped -- and what
+#: was being dropped was the three-quarter framing and the ink-painting
+#: medium, i.e. the entire point of the style string.
+REFERENCE_ANCHOR = (
+    "three-quarter shot from head to thigh, "
+    "guofeng illustration, chinese ink painting, xianxia"
 )
 
-REFERENCE_NEGATIVE = (
-    "photorealistic, 3d render, western comic, "
-    "watermark, text, speech bubble, multiple views, character sheet, "
-    "multiple poses, collage, grid, extra limbs, deformed hands, "
-    "two people, crowd, "
-    # The cute-manhwa failure mode, named explicitly.
-    "chibi, cute, moe, kawaii, big round eyes, child, young girl, "
-    "school uniform, modern clothing, cherry blossoms, birds"
+REFERENCE_STYLE = (
+    "solo, single character, three-quarter shot from head to thigh, "
+    "facing viewer, detailed face, plain background, "
+    "guofeng illustration, chinese ink painting, xianxia, wuxia, "
+    "hanfu with long wide sleeves, ink wash, muted limited palette, "
+    "serious cold expression, mature proportions, sharp features"
 )
+
+#: Ordered most-discriminating first and fitted to CLIP's 77 tokens, same
+#: as `prompt.py::negative_for`. The collage terms lead because that is the
+#: failure that destroys a sheet's whole purpose: IP-Adapter handed twelve
+#: small faces locks onto none of them.
+_REFERENCE_NEGATIVE_PARTS = (
+    "multiple views, character sheet, multiple poses, collage, grid",
+    "two people, crowd, extra limbs, deformed hands",
+    "chibi, cute, moe, kawaii, big round eyes, child",
+    "photorealistic, 3d render, western comic",
+    "rich colors, oversaturated, glossy, plastic skin",
+    "school uniform, modern clothing, cherry blossoms, birds",
+    "watermark, text, speech bubble",
+)
+
+REFERENCE_NEGATIVE = fit_to_budget(list(_REFERENCE_NEGATIVE_PARTS))
 
 
 @dataclass(slots=True)
@@ -260,9 +293,16 @@ def build_reference_prompt(
     if appearance.get("hair_color") and not appearance.get("hair_style"):
         parts.append(f"{appearance['hair_color']} hair")
 
-    if with_style:
-        parts.append(REFERENCE_STYLE)
-    return ", ".join(p for p in parts if p)
+    if not with_style:
+        return ", ".join(p for p in parts if p)
+
+    # Priority order, fitted to CLIP's 77 tokens. The headcount tag and the
+    # framing/medium anchor lead because losing them changes *what kind of
+    # picture this is*; the appearance follows; the style elaboration goes
+    # last because it is the cheapest thing to lose. Before this, appearance
+    # ran to ~65 tokens and the style never reached the model at all.
+    head, *appearance_parts = parts
+    return fit_to_budget([head, REFERENCE_ANCHOR, *appearance_parts, REFERENCE_STYLE])
 
 
 def _digest(prompt: str) -> str:

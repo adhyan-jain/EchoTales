@@ -90,6 +90,13 @@ STYLE_CLOSEUP = (
     "abstract toned background"
 )
 
+#: What each framing must *not* be, leading its negative prompt.
+NEGATIVE_HEAD_BY_STYLE: dict[str, str] = {
+    STYLE_ESTABLISHING: "plain background, empty background, portrait, bust shot",
+    STYLE_SCENE: "plain background, simple background, white background, portrait, bust shot",
+    STYLE_CLOSEUP: "full body, wide shot, crowd, tiny face",
+}
+
 #: Style string -> its short framing clause, for the budget-aware ordering
 #: in `build_image_prompt`.
 FRAMING_BY_STYLE: dict[str, str] = {
@@ -107,42 +114,52 @@ def framing_for(style: str) -> str:
 #: one that is never badly wrong.
 MANGA_STYLE = STYLE_SCENE
 
-_NEGATIVE_BASE = (
-    "photorealistic, western comic, 3d render, watermark, "
-    "text, speech bubble, blurry, deformed hands, extra limbs, lowres, "
-    # Named failure modes from the first real chapter: a cute-anime
-    # checkpoint gave round friendly faces, cherry blossoms and decorative
-    # birds, none of which belong in this novel.
-    "chibi, cute, moe, kawaii, big round eyes, cherry blossoms, birds, "
-    "modern clothing, school uniform, japanese shrine, "
-    # The look the *positive* prompt used to ask for, now rejected: the
-    # reference art is restrained and near-monochrome, and every one of
-    # these pulls toward glossy saturated game key art instead.
-    "rich colors, oversaturated, neon, glossy, plastic skin, "
-    "heavy cel shading, thick black outlines, cluttered background, "
-    "lens flare, bloom"
+#: **Negatives are budgeted exactly like positives, and for a defect found
+#: the same way.** Every negative prompt measured ~100 tokens against the
+#: same 77-token limit, and because the shared base came first, the part
+#: being discarded was the per-framing tail -- "plain background, portrait,
+#: bust shot" -- which is precisely what stops a scene shot collapsing into
+#: a standing portrait. The most-cut clause was the one doing the work.
+#:
+#: Ordered most-discriminating first, so what survives truncation is what
+#: distinguishes this panel from the default picture the checkpoint wants
+#: to draw.
+_NEGATIVE_ANATOMY = "deformed hands, extra limbs, lowres, blurry"
+
+#: Wrong medium. A checkpoint that drifts here is not making a subtle error.
+_NEGATIVE_MEDIUM = "photorealistic, 3d render, western comic"
+
+#: Named failure modes from the first real chapter: a cute-anime checkpoint
+#: gave round friendly faces, cherry blossoms and decorative birds, none of
+#: which belong in this novel.
+_NEGATIVE_TONE = "chibi, cute, moe, kawaii, big round eyes"
+
+#: The look the *positive* prompt used to ask for, now rejected: the
+#: reference art is restrained and near-monochrome, and every one of these
+#: pulls toward glossy saturated game key art instead.
+_NEGATIVE_LOOK = "rich colors, oversaturated, glossy, plastic skin, lens flare"
+
+#: Wrong culture. Cheap to state and it does fire -- an early panel came
+#: back as a Japanese covered walkway.
+_NEGATIVE_CULTURE = "cherry blossoms, japanese shrine, modern clothing, school uniform"
+
+#: Artefacts. Last because they are the least likely and the least costly:
+#: a watermark is fixable, a portrait where a battle should be is not.
+_NEGATIVE_ARTEFACT = "watermark, text, speech bubble"
+
+_NEGATIVE_TAIL = (
+    _NEGATIVE_ANATOMY,
+    _NEGATIVE_MEDIUM,
+    _NEGATIVE_TONE,
+    _NEGATIVE_LOOK,
+    _NEGATIVE_CULTURE,
+    _NEGATIVE_ARTEFACT,
 )
 
-#: Negative prompt per framing. A close-up *wants* the plain toned
-#: background that a scene shot must reject, so one shared negative cannot
-#: serve both -- that conflict is why the close-up look could not coexist
-#: with environments until framing became explicit.
-NEGATIVE_BY_STYLE: dict[str, str] = {
-    STYLE_ESTABLISHING: (
-        f"{_NEGATIVE_BASE}, plain background, empty background, portrait, "
-        "close-up face, bust shot"
-    ),
-    STYLE_SCENE: (
-        f"{_NEGATIVE_BASE}, plain background, simple background, "
-        "white background, empty background, portrait, bust shot"
-    ),
-    STYLE_CLOSEUP: f"{_NEGATIVE_BASE}, full body, wide shot, crowd, tiny face",
-}
-
-
 def negative_for(style: str) -> str:
-    """The negative prompt matching a framing."""
-    return NEGATIVE_BY_STYLE.get(style, NEGATIVE_PROMPT)
+    """The negative prompt matching a framing, fitted to the token budget."""
+    head = NEGATIVE_HEAD_BY_STYLE.get(style, NEGATIVE_HEAD_BY_STYLE[STYLE_SCENE])
+    return fit_to_budget([head, *_NEGATIVE_TAIL])
 
 
 def shot_style(span_types: list[str], *, scene_change: bool = False) -> str:
@@ -162,16 +179,6 @@ def shot_style(span_types: list[str], *, scene_change: bool = False) -> str:
     if "NARRATION_DESCRIPTION" in kinds and "NARRATION_ACTION" not in kinds:
         return STYLE_ESTABLISHING
     return STYLE_SCENE
-
-#: Universal negative prompt. Speech bubbles are excluded because dialogue
-#: is carried by the audio track, not drawn into the frame; the background
-#: terms are what stop a panel collapsing back into a portrait.
-NEGATIVE_PROMPT = (
-    "color, colored, photorealistic, western comic, 3d render, watermark, "
-    "text, speech bubble, blurry, deformed hands, extra limbs, lowres, "
-    "plain background, simple background, white background, empty background, "
-    "portrait, bust shot, close-up face"
-)
 
 #: Beat text is a *composition* cue, not a caption -- past this length it
 #: stops steering the image and starts diluting the rest of the prompt.

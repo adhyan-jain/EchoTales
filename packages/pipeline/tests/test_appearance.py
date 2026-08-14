@@ -49,7 +49,7 @@ class _FakeClient:
         self.value = value
         self.prompts: list[str] = []
 
-    def complete(self, task, prompt, schema, **kwargs):  # noqa: ANN001, ARG002
+    def complete(self, task, prompt, schema, **kwargs):
         self.prompts.append(prompt)
         return _FakeResult(self.value)
 
@@ -241,7 +241,7 @@ class TestExtractAppearance:
         from echotales.pipeline.resolve.appearance_extract import extract_appearance
 
         class Boom:
-            def complete(self, *a, **k):  # noqa: ANN002, ANN003, ARG002
+            def complete(self, *a, **k):
                 raise RuntimeError("model down")
 
         report = extract_appearance("t", _store(tmp_path), client=Boom())
@@ -261,11 +261,37 @@ class TestReferenceGeneration:
         )
         assert "black long hair" in prompt
         assert "wearing green robes" in prompt
-        assert "xianxia" in prompt and "best quality" in prompt
+        assert "xianxia" in prompt and "chinese ink painting" in prompt
         # Danbooru tag, not the English word: anime checkpoints weight it far
         # more strongly, and it is what decides the figure's sex. Without it
         # Fang Yuan generated as a woman on the first real run.
         assert prompt.startswith("1boy")
+
+    def test_a_full_sheet_still_carries_its_style(self) -> None:
+        """Measured bug: a detailed appearance clause alone runs to ~65 of
+        CLIP's 77 tokens, and appending the style string after it meant the
+        style -- three-quarter framing, ink-painting medium -- never reached
+        the model. It has to survive alongside a real, long appearance."""
+        from echotales.pipeline.persona.prompt import count_tokens
+        from echotales.pipeline.persona.reference_gen import build_reference_prompt
+
+        appearance = {
+            "height_build": "tall and lean, gaunt with age and injury",
+            "hair_color": "midnight black",
+            "hair_style": "very long straight hair down to the waist",
+            "eye_color": "jet black, cold and narrow",
+            "skin_tone": "pale",
+            "distinguishing_features": "cold expressionless stare, ruthless demeanour",
+            "typical_attire": "simple robes with wide sleeves",
+        }
+        prompt = build_reference_prompt(
+            "Fang Yuan", appearance, gender="male", age_band="adult", detailed=True
+        )
+        assert count_tokens(prompt) <= 77
+        assert "three-quarter" in prompt
+        assert "chinese ink painting" in prompt
+        # And the identifying attribute must not have been the casualty.
+        assert "midnight black" in prompt
 
     def test_generation_is_cached_on_the_appearance_digest(self, tmp_path) -> None:
         """Regenerating every principal on every run is not viable; only an
