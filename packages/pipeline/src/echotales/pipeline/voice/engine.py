@@ -125,7 +125,23 @@ class ChatterboxEngine:
             cfg_weight=request.cfg_weight,
         )
         request.out_path.parent.mkdir(parents=True, exist_ok=True)
-        torchaudio.save(str(request.out_path), wav, self.sample_rate)
+        # **Explicit PCM16, not torchaudio's default.** `model.generate`
+        # returns a float32 tensor, and `torchaudio.save` given one with no
+        # further hint writes IEEE-float WAV (format tag 3) -- a real,
+        # playable file, but not one the stdlib `wave` module can open.
+        # Every duration read and every concatenation in this pipeline
+        # (`render/timeline.py::read_wav_duration`,
+        # `render/compose.py::concatenate_audio`) goes through `wave`, so a
+        # float-format file is not a quality difference, it is a hard
+        # failure the first time anything downstream touches the file --
+        # measured: `wave.Error: unknown format: 3` composing a real
+        # chapter, after all 104 lines had already been paid for. Fixed at
+        # the write, where it can never recur, rather than teaching every
+        # reader about a second WAV format.
+        torchaudio.save(
+            str(request.out_path), wav, self.sample_rate,
+            encoding="PCM_S", bits_per_sample=16,
+        )
         return request.out_path
 
 

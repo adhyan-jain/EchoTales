@@ -175,6 +175,37 @@ class TestEngine:
         with wave.open(str(out)) as fh:
             assert fh.getnframes() > 0
 
+    def test_chatterbox_writes_pcm16_not_torchaudios_float_default(self, tmp_path) -> None:
+        """Measured on a real chapter: `model.generate` returns a float32
+        tensor, and `torchaudio.save` given one with no encoding hint writes
+        IEEE-float WAV (format tag 3) -- playable, but not something the
+        stdlib `wave` module (used by every duration read and every
+        concatenation in `render/`) can open. The failure didn't surface
+        until compose, after all 104 lines of a chapter had already been
+        synthesised. `wave` accepting the file is the actual contract this
+        engine has to satisfy."""
+        import wave
+
+        import torch
+        from echotales.pipeline.voice.engine import ChatterboxEngine
+
+        class _FakeModel:
+            sr = 24000
+
+            def generate(self, *args, **kwargs):
+                # float32 in [-1, 1], exactly what chatterbox itself returns.
+                return torch.zeros(1, 4800, dtype=torch.float32)
+
+        engine = ChatterboxEngine()
+        engine._model = _FakeModel()  # skip the real ~2GB download/load
+
+        out = tmp_path / "line.wav"
+        engine.synthesize(SynthesisRequest(text="hand it over", out_path=out))
+
+        with wave.open(str(out)) as fh:
+            assert fh.getsampwidth() == 2  # PCM16, not the 4-byte float default
+            assert fh.getnframes() > 0
+
     def test_unknown_engine_raises_rather_than_silently_stubbing(self) -> None:
         """A run that quietly produced silent audio because of a typo would
         look successful until someone listened to it."""
