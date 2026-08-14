@@ -32,12 +32,15 @@ from echotales.core.store import Store
 from echotales.pipeline.persona.attire import scene_locale, world_setting
 from echotales.pipeline.persona.prompt import (
     STYLE_CLOSEUP,
+    STYLE_ESTABLISHING,
+    STYLE_SCENE,
     build_image_prompt,
     negative_for,
     shot_style,
 )
 from echotales.pipeline.persona.runner import get_panel_cast
 from echotales.pipeline.render._png import write_solid_png
+from echotales.pipeline.render.beat_canon import beat_canon_for
 from echotales.pipeline.render.beats import segment_beats
 from echotales.pipeline.render.direction import direct_beat
 from echotales.pipeline.render.palette import Palette, PaletteSpec, apply_palette
@@ -696,6 +699,16 @@ def render_panels(
                     conditioned.append(label)
 
             beat_prose = beat.text or beat_text(spans, block.index, block.text)
+
+            # Hand-authored staging for the handful of panels no amount of
+            # extraction sophistication reaches -- see `beat_canon.py`. Its
+            # own prompt slot, not prepended into `beat_prose`: that was
+            # tried first and lost its second sentence to the shorter
+            # budget meant for scraped prose (see `build_image_prompt`'s
+            # docstring on `directive`).
+            canon = beat_canon_for(novel_id, chapter_number, block.index)
+            directive = canon.staging if canon is not None else ""
+
             # Framing from everything the beat contains, not one style for
             # the whole chapter. See `prompt.py::shot_style`.
             style = shot_style(
@@ -703,6 +716,10 @@ def render_panels(
                 resolved_subjects=len(cast.foreground_characters),
                 has_mob=bool(cast.background_mobs),
             )
+            if canon is not None and canon.style_override == "establishing":
+                style = STYLE_ESTABLISHING
+            elif canon is not None and canon.style_override == "scene":
+                style = STYLE_SCENE
             closeup = style is STYLE_CLOSEUP
 
             # **Ask a model what this panel should show**, and only fall back
@@ -715,8 +732,13 @@ def render_panels(
                 brief = story_context(
                     novel_id, store, chapter_number, beat.blocks
                 ).to_brief()
+                # The director model reads free-form text, not a
+                # token-budgeted prompt, so the directive can simply lead
+                # the passage it directs from rather than needing its own
+                # slot the way the mechanical path does below.
+                directed_prose = f"{directive} {beat_prose}".strip() if directive else beat_prose
                 directed = direct_beat(
-                    beat_prose,
+                    directed_prose,
                     context_brief=brief,
                     cast={k: v for k, v in appearances.items() if v},
                     novel_style=world_setting(novel_id),
@@ -730,6 +752,7 @@ def render_panels(
                 prompt = build_image_prompt(
                     cast,
                     beat=beat_prose,
+                    directive=directive,
                     character_appearances=appearances,
                     character_genders=genders,
                     # A close-up's background is deliberately abstract tone,

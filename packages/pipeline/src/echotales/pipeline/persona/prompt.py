@@ -218,6 +218,15 @@ def shot_style(
 #: cue that survives beats a fuller one that does not.
 _MAX_BEAT_CHARS = 110
 
+#: A hand-authored `directive` (`render/beat_canon.py`) gets more room than
+#: scraped prose. It exists precisely because raw extraction cannot recover
+#: the moment, so it is already the *dense* version -- there is no fuller
+#: source text to fall back to if it gets cut, the way a beat's second
+#: sentence is at least recoverable from the audio's caption track. Still
+#: capped, so one long directive cannot swallow the entire token budget on
+#: its own.
+_MAX_DIRECTIVE_CHARS = 240
+
 
 def summarise_beat(text: str, *, limit: int = _MAX_BEAT_CHARS) -> str:
     """Condense a block's narration into a single composition cue.
@@ -392,6 +401,7 @@ def build_image_prompt(
     panel_cast: PanelCast,
     *,
     beat: str = "",
+    directive: str = "",
     character_appearances: dict[str, str] | None = None,
     character_genders: list[str] | None = None,
     world: str = "",
@@ -406,6 +416,20 @@ def build_image_prompt(
     (`persona/reference_gen.py::build_reference_prompt` builds the same
     clause for the reference sheet), so a character's look survives into
     panels even where reference conditioning is unavailable.
+
+    `directive` is hand-authored staging (`render/beat_canon.py`), kept
+    **separate from `beat`** rather than prepended to it, and that
+    separation is load-bearing: `beat` is capped to `_MAX_BEAT_CHARS` and
+    truncated on a sentence boundary meant for raw prose, and a directive
+    concatenated in front of the beat lost its second sentence to that same
+    cap the first time this was tried -- "surrounded by an armed faction,
+    some flying overhead" fell off, leaving only "a mountain stronghold at
+    dusk." `directive` gets its own priority slot, ahead of *both* the beat
+    and the character's generic appearance clause -- the second ordering
+    also had to be measured in, not assumed: "Fang Yuan: midnight black
+    hair, cold narrow eyes" is shorter and unremarkable next to the
+    staging, so a first attempt that put appearance first let it win the
+    greedy budget fit and silently dropped the entire directive.
 
     Returns a style/environment-only prompt (still a valid establishing-shot
     prompt) when nobody is in frame -- `get_panel_cast` returns exactly that
@@ -430,6 +454,19 @@ def build_image_prompt(
     # painting or a 3D render -- comes early and short. The rest of the
     # style string is appended last, where it is the first thing dropped.
     parts.append(STYLE_ANCHOR)
+
+    # Hand-authored staging outranks the block's own prose *and* the
+    # generic appearance clause -- it exists specifically for panels where
+    # neither the prose nor a standing description is the picture a reader
+    # wants (§ this module's docstring), so it goes ahead of both. Tried
+    # after the character loop first and lost the budget fight every time:
+    # "Fang Yuan: midnight black hair, cold narrow eyes" is unremarkable
+    # and generic next to "standing in a pool of blood... holding a
+    # glowing cicada", but being *shorter* let it win the greedy fit, and
+    # the entire directive was silently dropped. Own truncation budget, so
+    # one long directive cannot swallow the rest of the prompt either.
+    if directive:
+        parts.append(summarise_beat(directive, limit=_MAX_DIRECTIVE_CHARS))
 
     # The subject, before the setting. This is the change that matters: the
     # character used to sit behind locale, world and environment, i.e.

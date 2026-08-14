@@ -64,6 +64,59 @@ class TestBudget:
         assert fit_to_budget(["", ""]) == ""
 
 
+class TestDirective:
+    """Hand-authored staging (`render/beat_canon.py`) and the priority fight
+    it lost twice before landing in the right slot -- first to `beat`'s
+    truncation cap, then to the character's own generic appearance clause."""
+
+    _DIRECTIVE = (
+        "standing in a pool of blood, bloody footprints leading to him, "
+        "robes soaked and torn, face calm and expressionless. Both palms "
+        "raised before his chest, holding a small glowing luminous "
+        "cicada, gazing at it plainly."
+    )
+
+    def test_a_long_directive_survives_alongside_a_character(self) -> None:
+        """Measured regression: appearance ("Fang Yuan: midnight black
+        hair, cold narrow eyes") is shorter than the directive, so a
+        greedy budget fit that tried appearance first kept it and dropped
+        the entire directive silently."""
+        prompt = build_image_prompt(
+            _cast("Fang Yuan"),
+            directive=self._DIRECTIVE,
+            character_appearances={"Fang Yuan": _APPEARANCE},
+            character_genders=["male"],
+        )
+        assert "pool of blood" in prompt
+        assert "cicada" in prompt
+        assert count_tokens(prompt) <= 77
+
+    def test_directive_outranks_the_beat(self) -> None:
+        prompt = build_image_prompt(
+            _cast("Fang Yuan"),
+            beat="A very long stretch of ordinary narration text " * 5,
+            directive=self._DIRECTIVE,
+            character_appearances={"Fang Yuan": _APPEARANCE},
+            character_genders=["male"],
+        )
+        assert "cicada" in prompt
+
+    def test_no_directive_is_a_no_op(self) -> None:
+        """Every panel without a canon entry must build exactly as before
+        this existed."""
+        with_empty = build_image_prompt(
+            _cast("Fang Yuan"), directive="",
+            character_appearances={"Fang Yuan": _APPEARANCE},
+            character_genders=["male"],
+        )
+        without_arg = build_image_prompt(
+            _cast("Fang Yuan"),
+            character_appearances={"Fang Yuan": _APPEARANCE},
+            character_genders=["male"],
+        )
+        assert with_empty == without_arg
+
+
 class TestOrdering:
     def test_a_real_panel_prompt_fits(self) -> None:
         prompt = build_image_prompt(
