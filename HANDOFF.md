@@ -500,6 +500,40 @@ confirmed both complaints, plus a third the author hadn't named yet:
   §8's `run` vs `voice`/`render` split) — nothing to build, just to run
   correctly and document as the expected workflow going forward.
 
+### 4.33 `add_spans`/`add_mentions` never deleted stale rows on re-run — the real reason "Daoist Gu" survived §4.32's fix *(2026-08-15)*
+
+After §4.32's ingest fix landed and a full 1-199 `run` completed cleanly,
+re-inspecting ch1's span table directly (`store.get_spans`) still showed
+the phantom "Daoist Gu" speaker on real dialogue lines. Root cause was one
+level deeper than §4.32: **`Store.add_spans` and `Store.add_mentions` are
+both `INSERT OR REPLACE` keyed by row id, with no corresponding delete of
+rows a fresh re-derivation no longer produces.** When a block's
+classification changes such that it now yields *fewer* spans/mentions than
+a previous run did (exactly what §4.32's fix does — one `NON_DIEGETIC`
+span instead of three story-typed ones), the previous run's now-orphaned
+ids are simply never touched again and sit in the table forever, mixed in
+with the correct new rows. `speakers/runner.py::attribute_novel` (spans)
+and `mentions/runner.py`'s per-chapter loop (mentions) both write this
+way. This is a **general store-hygiene bug, not specific to translator
+notes** — any block whose span/mention count changes between two runs
+against the same database (a regex tightened, a bug fixed, a corpus
+adapter changed) leaks stale rows the same way, silently, with no error.
+
+Given `data/reruns/reverend-insanity.db` has been re-run across many
+sessions, this means **its current mention/span/entity counts likely
+include an unknown amount of accumulated stale-row noise from every prior
+session's fixes** — not just today's. No way to quantify how much without
+a from-scratch re-ingest, which is exactly what the next full run (started
+after this fix) does for the first time since the bug was introduced.
+
+Fixed: `Store.delete_spans_for_chapter` / `delete_mentions_for_chapter`,
+called immediately before each chapter's fresh rows are written in both
+runners. `uv run pytest packages/` 682 passing. A second full 1-199 `run`
+was kicked off immediately after this fix to purge the accumulated
+staleness — see this file's top-of-document status for its outcome; this
+section will be updated once it's confirmed clean rather than left to
+imply an unverified claim.
+
 ---
 
 ## 5. Architecture-review items not yet implemented
