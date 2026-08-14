@@ -67,13 +67,32 @@ build/
 # Phase 8: voice bank (~11 GB corpus) and synthesised audio. Both are
 # regenerable -- the bank by re-downloading VCTK, the audio by re-running
 # `echotales voice` -- and neither belongs in git.
-data/voice/
-data/audio/
-data/reruns/
+#
+# Wildcarded (`data/audio*/` not `data/audio/`), because every scratch/testing
+# rerun in this project has landed in a suffixed sibling directory --
+# `data/audio_real/`, `data/panels_v2/`, `data/panels_v3/`, `data/video_v3/`
+# -- so an exact-name-only rule silently stopped covering the very output it
+# was written for the moment anyone iterated on it. If a real, permanent
+# output directory needs tracking, `!data/whatever/` after this block is the
+# right way to carve out that exception explicitly, not renaming the rule
+# back to an exact match.
+data/voice*/
+data/audio*/
+data/reruns*/
 # Phase 9 render output. Regenerable with `echotales render`, and binary --
 # panels are one PNG per block (thousands per novel), video is one mp4 per
-# chapter. Same reasoning as data/audio/ above.
-data/panels/
-data/motion/
-data/references/
-data/video/
+# chapter. Same reasoning as data/audio*/ above, same wildcarding.
+data/panels*/
+data/motion*/
+data/references*/
+data/video*/
+
+# Ad hoc experiment / scratch databases that aren't the canonical per-novel
+# run (that's `data/<novel>.db`, matched by the `data/*.db` rule above).
+# Session scratch work has repeatedly landed here as `data/*-body.db`,
+# `data/*-split.db` and similar throwaway copies used to test a code change
+# against real data without touching the canonical graph.
+data/*-body.db
+data/*-body.db-*
+data/*-split.db
+data/*-split.db-*
