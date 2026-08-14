@@ -85,6 +85,19 @@ class Settings(BaseSettings):
 
     anthropic_api_key: str = Field(default="", alias="ANTHROPIC_API_KEY")
 
+    #: Stage toggles, for iterating on one half of the render pipeline
+    #: without paying for the other. Both real backends are expensive and
+    #: independent -- panel generation is 40-70s/image on this hardware,
+    #: real TTS is ~5-10s/line -- so tuning prompts for one while the other
+    #: keeps generating for real wastes exactly the GPU time being iterated
+    #: to save. `False` forces that stage to its stub engine regardless of
+    #: what `--image-engine`/`--engine` asked for, rather than requiring the
+    #: caller to remember to pass `stub` by hand every time; the CLI prints
+    #: a note when a toggle overrides an explicit real-engine request, so
+    #: the override is never silent.
+    enable_image_gen: bool = True
+    enable_tts: bool = True
+
 
 _settings: Settings | None = None
 

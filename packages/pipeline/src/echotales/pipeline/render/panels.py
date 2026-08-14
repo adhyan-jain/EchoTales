@@ -589,12 +589,24 @@ def render_panels(
     height: int = 1024,
     client: object | None = None,
     max_panels: int = 14,
+    block_range: tuple[int, int] | None = None,
 ) -> PanelReport:
     """Render one cached panel image per story-bearing block.
 
     `engine=None` uses the stub, matching `voice/runner.py::render_novel`'s
     default -- a manifest without a GPU is how a run gets reviewed before
     spending render time on it.
+
+    **`block_range` restricts every requested chapter to `[lo, hi]`
+    inclusive, for testing.** Panel generation costs 40-70s/image on this
+    hardware and its cost is set by `max_panels`, not by chapter length --
+    a short chapter is exactly as expensive to render as a long one, since
+    both get merged down to the same panel count. `max_panels` alone already
+    controls that count; `block_range` is for the different, real need of
+    iterating on a *specific* portion of a chapter (the opening, a
+    confrontation) rather than a sample scattered across the whole thing,
+    without having to first classify where one "scene" starts and ends --
+    a block range is cheap to pick by eye and good enough for tuning.
 
     **Deduplicates on the exact prompt string, across the whole run.** Two
     blocks with identical cast, environment, framing and (after truncation)
@@ -628,6 +640,14 @@ def render_panels(
         mentions = store.get_mentions(novel_id, chapter_number)
         segments = store.get_segments(novel_id, chapter_number)
         spans = store.get_spans(novel_id, chapter_number)
+
+        if block_range is not None:
+            lo, hi = block_range
+            chapter = chapter.model_copy(
+                update={"blocks": [b for b in chapter.blocks if lo <= b.index <= hi]}
+            )
+            mentions = [m for m in mentions if lo <= m.block_index <= hi]
+            spans = [s for s in spans if lo <= s.block_index <= hi]
 
         # One panel per *beat*, not per block. See `render/beats.py`: a
         # paragraph is not a panel, and drawing every paragraph produced 89

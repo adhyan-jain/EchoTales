@@ -194,6 +194,15 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="skip the LLM art-director pass and assemble prompts mechanically",
     )
+    p_render.add_argument(
+        "--block-range", default=None, metavar="LO-HI",
+        help="restrict panel generation to blocks LO-HI (inclusive) of every "
+        "requested chapter, e.g. '0-45' for roughly the first half. Panel "
+        "cost is set by --max-panels, not chapter length, so testing a "
+        "whole chapter to tune a few panels wastes GPU time; use this to "
+        "iterate on one portion (an opening, a confrontation) without first "
+        "classifying where a 'scene' begins and ends",
+    )
     p_render.add_argument("--skip-panels", action="store_true")
     p_render.add_argument("--skip-motion", action="store_true")
     p_render.add_argument("--skip-compose", action="store_true")

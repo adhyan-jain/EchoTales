@@ -75,6 +75,35 @@ class TestRenderPanels:
         )
         assert report.panels <= 1
 
+    def test_block_range_restricts_which_blocks_get_panels(self, tmp_path) -> None:
+        """Panel cost is set by --max-panels, not chapter length, so a full
+        chapter costs the same whether you are tuning one portion of it or
+        all of it. block_range lets a caller restrict generation to a
+        contiguous range for testing, without first classifying scenes."""
+        store = Store(str(tmp_path / "t.db"))
+        store.add_novel("t", "T", "x.epub", "generic")
+        store.add_chapter(
+            Chapter(
+                novel_id="t",
+                number=1.0,
+                title="T",
+                source_href="a.html",
+                blocks=[
+                    Block(index=i, block_type=BlockType.PROSE, text=f"Block {i} prose.")
+                    for i in range(10)
+                ],
+            )
+        )
+        store.conn.commit()
+
+        report = render_panels(
+            "t", store, out_dir=tmp_path / "panels", max_panels=20, block_range=(0, 4)
+        )
+        out_dir = tmp_path / "panels" / "t" / "ch1"
+        rendered = {int(p.stem.removeprefix("block")) for p in out_dir.glob("*.png")}
+        assert rendered and max(rendered) <= 4
+        assert report.panels == len(rendered)
+
     def test_stub_writes_a_real_png(self, tmp_path) -> None:
         """Not a no-op: `director.py`/`compose.py` will open these files and
         read their dimensions, and a stub that wrote nothing would let a

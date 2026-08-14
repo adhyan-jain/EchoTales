@@ -438,12 +438,20 @@ def cmd_voice(args: argparse.Namespace) -> int:
     if selected := _chapter_range(args.chapters):
         wanted = [n for n in store.chapter_numbers(args.novel) if n in selected]
 
+    engine_name = args.engine
+    if not get_settings().enable_tts and engine_name != "stub":
+        print(
+            f"note: ECHOTALES_ENABLE_TTS=false overrides --engine {engine_name!r} -> stub "
+            "(iterating on image generation only; flip the flag back on when done)"
+        )
+        engine_name = "stub"
+
     report = render_novel(
         args.novel,
         store,
         bank,
         out_dir=args.out,
-        engine=get_engine(args.engine),
+        engine=get_engine(engine_name),
         chapters=wanted,
         seed=args.seed,
         synthesize=not args.dry_run,
@@ -477,24 +485,44 @@ def cmd_render(args: argparse.Namespace) -> int:
     if selected := _chapter_range(args.chapters):
         wanted = [n for n in store.chapter_numbers(args.novel) if n in selected]
 
+    image_engine_name = args.image_engine
+    if not get_settings().enable_image_gen and image_engine_name != "stub":
+        print(
+            f"note: ECHOTALES_ENABLE_IMAGE_GEN=false overrides --image-engine "
+            f"{image_engine_name!r} -> stub (iterating on voice/TTS only; flip "
+            "the flag back on when done)"
+        )
+        image_engine_name = "stub"
+
+    block_range = None
+    if args.block_range:
+        lo_s, _, hi_s = args.block_range.partition("-")
+        try:
+            block_range = (int(lo_s), int(hi_s))
+        except ValueError:
+            print(f"error: --block-range must be LO-HI, got {args.block_range!r}", file=sys.stderr)
+            store.close()
+            return 2
+
     if not args.skip_panels:
         report = render_panels(
             args.novel,
             store,
             out_dir=args.panel_dir,
             engine=get_panel_engine(
-                args.image_engine,
+                image_engine_name,
                 palette=args.palette,
                 accent_hue=args.accent_hue,
             )
-            if args.image_engine == "manga"
-            else get_panel_engine(args.image_engine),
+            if image_engine_name == "manga"
+            else get_panel_engine(image_engine_name),
             chapters=wanted,
             seed=args.seed,
             width=args.width,
             height=args.height,
             client=_build_client(store) if not args.no_director else None,
             max_panels=args.max_panels,
+            block_range=block_range,
         )
         print(report.summary())
 
