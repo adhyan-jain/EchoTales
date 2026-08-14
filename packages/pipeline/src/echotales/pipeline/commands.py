@@ -482,7 +482,11 @@ def cmd_render(args: argparse.Namespace) -> int:
             args.novel,
             store,
             out_dir=args.panel_dir,
-            engine=get_panel_engine(args.image_engine, monochrome=args.ink)
+            engine=get_panel_engine(
+                args.image_engine,
+                palette=args.palette,
+                accent_hue=args.accent_hue,
+            )
             if args.image_engine == "manga"
             else get_panel_engine(args.image_engine),
             chapters=wanted,

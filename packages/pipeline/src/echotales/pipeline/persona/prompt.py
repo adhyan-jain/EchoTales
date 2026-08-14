@@ -24,11 +24,33 @@ from echotales.pipeline.persona.runner import PanelCast
 #: it will fight that conditioning.
 #: Shared by every shot type. What varies between them is framing, not
 #: rendering.
+#: **Rewritten against reference art the author selected, not from
+#: intuition.** The previous vocabulary was "highly detailed, cinematic
+#: lighting, rich colors, masterpiece, best quality" -- generic
+#: AI-illustration boilerplate that pulls toward a glossy, saturated,
+#: over-rendered look. The fan art this novel actually has, and what the
+#: author asked for, is the opposite on every axis: Chinese ink painting,
+#: a *limited* palette (most pieces are near-monochrome with a single
+#: accent), large areas of negative space, visible brushwork, and hanfu
+#: whose long sleeves and waist-length black hair are the composition.
+#:
+#: Two terms were actively working against that and are now negatives
+#: instead: "rich colors" and "cinematic lighting". A checkpoint given both
+#: renders a video-game key art frame, which is a perfectly good picture and
+#: the wrong one.
 _MANGA_BASE = (
-    "xianxia, wuxia, ancient chinese fantasy, guofeng, "
-    "highly detailed, cinematic lighting, rich colors, dramatic atmosphere, "
-    "serious tone, mature art style, masterpiece, best quality"
+    "guofeng illustration, chinese ink painting, xianxia, wuxia, "
+    "ancient chinese fantasy, hanfu with long wide sleeves, "
+    "flowing black hair, ink wash, muted limited palette, "
+    "elegant brushwork, negative space, subtle gradients, "
+    "solemn atmosphere, mature serious art style"
 )
+
+#: The few words that decide *what kind of picture this is*, kept short
+#: enough to sit at the front of every prompt. The full style string is
+#: appended at the end, where the token budget drops it first -- so a panel
+#: that runs long loses the elaboration and keeps the medium.
+STYLE_ANCHOR = "guofeng illustration, chinese ink painting, xianxia"
 
 #: **Three framings, chosen per block -- not one style applied to all 89.**
 #:
@@ -44,20 +66,42 @@ _MANGA_BASE = (
 #: look that an earlier pass produced *by accident* across the whole
 #: chapter. It was never a bad image; it was the right image for the wrong
 #: blocks.
-STYLE_ESTABLISHING = (
-    f"{_MANGA_BASE}, wide establishing shot, detailed background, "
-    "sweeping landscape, strong depth, small distant figures"
-)
+#: **Framing is separated from the rest of the style string, and that
+#: separation is load-bearing.** Framing decides the *composition* -- whether
+#: this is a face or a landscape -- while the rest of the style decides how
+#: it is rendered. Both used to live in one string appended at the very end
+#: of the prompt, which meant the token budget dropped them together: a
+#: close-up chosen for a line of dialogue came back as a full-body standing
+#: portrait, because the words "close-up on the character's face" never
+#: reached the model. Framing now travels near the front with the subject;
+#: the rendering elaboration stays at the back where it is cheap to lose.
+FRAMING_ESTABLISHING = "wide establishing shot, sweeping landscape, small distant figures"
+FRAMING_SCENE = "medium shot, full scene, dynamic composition"
+FRAMING_CLOSEUP = "close-up on the face, intense expression, shallow depth"
+
+STYLE_ESTABLISHING = f"{_MANGA_BASE}, {FRAMING_ESTABLISHING}, detailed background, strong depth"
 
 STYLE_SCENE = (
-    f"{_MANGA_BASE}, dynamic composition, characters in a detailed "
-    "environment, full scene, medium shot, depth"
+    f"{_MANGA_BASE}, {FRAMING_SCENE}, characters in a detailed environment, depth"
 )
 
 STYLE_CLOSEUP = (
-    f"{_MANGA_BASE}, close-up on the character's face, intense expression, "
-    "dramatic lighting, speed lines, abstract toned background, shallow depth"
+    f"{_MANGA_BASE}, {FRAMING_CLOSEUP}, dramatic lighting, "
+    "abstract toned background"
 )
+
+#: Style string -> its short framing clause, for the budget-aware ordering
+#: in `build_image_prompt`.
+FRAMING_BY_STYLE: dict[str, str] = {
+    STYLE_ESTABLISHING: FRAMING_ESTABLISHING,
+    STYLE_SCENE: FRAMING_SCENE,
+    STYLE_CLOSEUP: FRAMING_CLOSEUP,
+}
+
+
+def framing_for(style: str) -> str:
+    """The short composition clause inside a full style string."""
+    return FRAMING_BY_STYLE.get(style, FRAMING_SCENE)
 
 #: Default when a caller does not pick -- the middle framing, which is the
 #: one that is never badly wrong.
@@ -70,7 +114,13 @@ _NEGATIVE_BASE = (
     # checkpoint gave round friendly faces, cherry blossoms and decorative
     # birds, none of which belong in this novel.
     "chibi, cute, moe, kawaii, big round eyes, cherry blossoms, birds, "
-    "modern clothing, school uniform, japanese shrine"
+    "modern clothing, school uniform, japanese shrine, "
+    # The look the *positive* prompt used to ask for, now rejected: the
+    # reference art is restrained and near-monochrome, and every one of
+    # these pulls toward glossy saturated game key art instead.
+    "rich colors, oversaturated, neon, glossy, plastic skin, "
+    "heavy cel shading, thick black outlines, cluttered background, "
+    "lens flare, bloom"
 )
 
 #: Negative prompt per framing. A close-up *wants* the plain toned
@@ -125,7 +175,14 @@ NEGATIVE_PROMPT = (
 
 #: Beat text is a *composition* cue, not a caption -- past this length it
 #: stops steering the image and starts diluting the rest of the prompt.
-_MAX_BEAT_CHARS = 220
+#:
+#: **Lowered from 220 after measuring against the token budget.** At 220
+#: characters a beat is ~50 of the 75 available tokens, so it did not fit
+#: alongside the subject and framing and was dropped whole -- which made
+#: every panel of one character in one place the *same picture*, since the
+#: beat is the only part of the prompt that distinguishes them. A shorter
+#: cue that survives beats a fuller one that does not.
+_MAX_BEAT_CHARS = 110
 
 
 def summarise_beat(text: str, *, limit: int = _MAX_BEAT_CHARS) -> str:
@@ -170,6 +227,133 @@ def cast_tags(genders: list[str]) -> str:
     return ", ".join(parts)
 
 
+# ---------------------------------------------------------------------------
+# Token budget
+# ---------------------------------------------------------------------------
+
+#: CLIP's context is 77 tokens **including** the two special tokens, and
+#: Stable Diffusion silently truncates past it -- no error, no warning in
+#: normal use, just a prompt whose tail never reached the model.
+CLIP_TOKEN_LIMIT = 77
+_USABLE_TOKENS = CLIP_TOKEN_LIMIT - 2
+
+
+def count_tokens(text: str) -> int:
+    """CLIP token count, or a conservative estimate without `transformers`.
+
+    The estimate deliberately over-counts (CLIP splits on punctuation and
+    sub-words, so commas and long names cost more than a word each): budget
+    logic that under-counts silently reintroduces the truncation this
+    module exists to prevent.
+    """
+    try:
+        from transformers import CLIPTokenizer
+    except Exception:
+        words = text.replace(",", " , ").split()
+        return int(len(words) * 1.3) + 2
+
+    global _TOKENIZER
+    if _TOKENIZER is None:
+        _TOKENIZER = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
+    return len(_TOKENIZER(text)["input_ids"])
+
+
+_TOKENIZER = None
+
+
+def fit_to_budget(parts: list[str], limit: int = _USABLE_TOKENS) -> str:
+    """Join `parts` (highest priority first) into a prompt CLIP will read.
+
+    **Measured, not assumed: every panel of the last real chapter run
+    exceeded the limit** -- median 154 tokens against a limit of 77, so
+    *half of every prompt was discarded*, and because the character came
+    after three blocks of scenery the discarded half was the character, the
+    framing and the style. That is the whole explanation for panels that
+    came back as empty courtyards for scenes about people.
+
+    Parts are added while they fit and skipped when they do not, rather than
+    the whole string being cut mid-phrase: a truncated clause ("wearing
+    simple robes with wide") is worse than an absent one, because it still
+    spends tokens and steers toward whatever the fragment resembles.
+    """
+    kept: list[str] = []
+    for part in parts:
+        if not part:
+            continue
+        candidate = ", ".join([*kept, part])
+        if count_tokens(candidate) <= limit:
+            kept.append(part)
+    return ", ".join(kept)
+
+
+#: Token budget for one character's description inside a *panel* prompt.
+#:
+#: The clause `reference_gen.build_reference_prompt` produces is a full
+#: character sheet -- hair, eyes, skin, build, features, attire -- and is
+#: right for the sheet, which has nothing else to say. In a panel it is
+#: ~60 of the 75 available tokens for one person, which measured on RI ch1
+#: meant the character was skipped entirely and the panel became scenery.
+#: A panel needs *identity*, and identity is the first few attributes; the
+#: face itself arrives through IP-Adapter conditioning, not through words.
+#: Sized so the *beat* also fits alongside it -- the beat is the only part
+#: of a prompt that makes two panels of one character in one place
+#: different pictures, so it wins ties against further description.
+_MAX_CHARACTER_TOKENS = 18
+
+
+def condense_clause(clause: str, limit: int = _MAX_CHARACTER_TOKENS) -> str:
+    """Trim a character clause to its most identifying attributes.
+
+    Cuts on comma boundaries, never mid-phrase: "wearing simple robes with
+    wide" spends tokens steering toward nothing. Keeps the front, which is
+    where `build_reference_prompt` puts build and hair -- the two things
+    that make a xianxia character recognisable at panel scale.
+
+    Also drops any leading headcount tag, since `cast_tags` has already put
+    one at the very front of the prompt and a second `1boy` is a token spent
+    saying something the model has been told.
+    """
+    parts = [p.strip() for p in clause.split(",") if p.strip()]
+    parts = [p for p in parts if p not in _HEADCOUNT_TAGS]
+    ranked = sorted(enumerate(parts), key=lambda pair: (_identity_rank(pair[1]), pair[0]))
+
+    kept: list[tuple[int, str]] = []
+    for index, part in ranked:
+        candidate = ", ".join(p for _i, p in sorted([*kept, (index, part)]))
+        if count_tokens(candidate) - 2 > limit:
+            continue
+        kept.append((index, part))
+    # Re-emit in the clause's own order: the ranking decides what survives,
+    # not what it reads like.
+    return ", ".join(part for _i, part in sorted(kept))
+
+
+#: Tags `cast_tags` already emits; duplicating them inside a character
+#: clause wastes budget without adding information.
+_HEADCOUNT_TAGS = frozenset(
+    {"1boy", "1girl", "2boys", "2girls", "solo", "male", "female", "person"}
+)
+
+#: What identifies a character at panel scale, best first.
+#:
+#: Ranked rather than taken in clause order, because clause order is the
+#: *reference sheet's* order (build, then hair, then eyes...) and the sheet
+#: has room for all of it. A panel does not: measured on Fang Yuan, a
+#: positional cut kept "tall and lean, gaunt with age and injury" and
+#: dropped "midnight black very long straight hair down to the waist" --
+#: losing the single feature that makes him recognisable in silhouette,
+#: which in this genre is most of what recognition is.
+_IDENTITY_ORDER = ("hair", "eyes", "build", "tall", "slim", "wearing", "robe")
+
+
+def _identity_rank(part: str) -> int:
+    low = part.casefold()
+    for rank, keyword in enumerate(_IDENTITY_ORDER):
+        if keyword in low:
+            return rank
+    return len(_IDENTITY_ORDER)
+
+
 def build_image_prompt(
     panel_cast: PanelCast,
     *,
@@ -194,6 +378,12 @@ def build_image_prompt(
     shape for a block outside every tracked scene.
     """
     appearances = character_appearances or {}
+    # **Ordered by what must survive truncation, not by reading order.**
+    # See `fit_to_budget`: everything past 77 CLIP tokens is silently
+    # discarded, so this list is a priority ranking. Headcount and the
+    # subject's own description come before scenery, because a panel of the
+    # right character in a vague place is recoverable and a beautiful empty
+    # courtyard is not.
     parts: list[str] = []
 
     # Headcount first: it is the single strongest steer on this class of
@@ -202,26 +392,16 @@ def build_image_prompt(
     if tags := cast_tags(character_genders or []):
         parts.append(tags)
 
-    if beat:
-        parts.append(summarise_beat(beat))
+    # The style *anchor* -- the few words that decide whether this is ink
+    # painting or a 3D render -- comes early and short. The rest of the
+    # style string is appended last, where it is the first thing dropped.
+    parts.append(STYLE_ANCHOR)
 
-    # The specific place first, the world's general vocabulary behind it:
-    # a diffusion model draws "a walled stone courtyard" and draws nothing
-    # recognisable from "ancient Chinese cultivation world".
-    if locale:
-        parts.append(locale)
-
-    # The world before the drawing style. `panel_cast.environment` is
-    # whatever `resolve_attire` produced, which for most panels is the
-    # novel's house *style* rather than a place -- so the scenery
-    # vocabulary is what actually puts a world behind the characters.
-    if world:
-        parts.append(world)
-    if panel_cast.environment and panel_cast.environment != world:
-        parts.append(panel_cast.environment)
-
+    # The subject, before the setting. This is the change that matters: the
+    # character used to sit behind locale, world and environment, i.e.
+    # entirely inside the discarded half of the prompt.
     for character in panel_cast.foreground_characters:
-        described = appearances.get(character.self_label, "")
+        described = condense_clause(appearances.get(character.self_label, ""))
         if described:
             parts.append(f"{character.self_label}: {described}")
         elif character.attire and character.attire != panel_cast.environment:
@@ -235,11 +415,35 @@ def build_image_prompt(
             # the character and let the style clause do its job once.
             parts.append(character.self_label)
 
+    # Composition, immediately after the subject: it is short, and losing it
+    # turns a chosen close-up into a generic full-body portrait.
+    parts.append(framing_for(style))
+
+    # What is happening, then where. A beat with no place still reads; a
+    # place with no beat is a landscape.
+    if beat:
+        parts.append(summarise_beat(beat))
+
+    # The specific place first, the world's general vocabulary behind it:
+    # a diffusion model draws "a walled stone courtyard" and draws nothing
+    # recognisable from "ancient Chinese cultivation world".
+    if locale:
+        parts.append(locale)
+
     for mob in panel_cast.background_mobs:
         descriptor = f"background: {mob.description}"
         if mob.attire:
             descriptor += f" ({mob.attire})"
         parts.append(descriptor)
 
+    # The world's generic scenery vocabulary is the *lowest* priority thing
+    # in the prompt and used to be near the top. It is a list of nouns true
+    # of every chapter of the novel, so it individuates nothing, and it was
+    # crowding out the things that do.
+    if world:
+        parts.append(world)
+    if panel_cast.environment and panel_cast.environment != world:
+        parts.append(panel_cast.environment)
+
     parts.append(style)
-    return ", ".join(p for p in parts if p)
+    return fit_to_budget(parts)

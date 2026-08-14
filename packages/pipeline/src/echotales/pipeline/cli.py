@@ -152,11 +152,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_render.add_argument("--video-height", type=int, default=1920)
     p_render.add_argument(
-        "--ink", action="store_true",
-        help="high-contrast monochrome ink treatment instead of colour. "
-        "Off by default because flat greyscale makes weak linework read as "
-        "unfinished; this applies a contrast curve rather than a plain "
-        "desaturation, so it is worth trying per novel",
+        "--palette", default="colour", choices=["colour", "ink", "accent"],
+        help="colour restraint, applied after generation where it cannot "
+        "fail (a checkpoint ignores a prompt asking for a discipline it "
+        "does not have). ink = greyscale with a contrast curve; accent = "
+        "ink except where the hue is near --accent-hue, which is the "
+        "single-red-robe-against-grey look most of the reference art uses",
+    )
+    p_render.add_argument(
+        "--accent-hue", type=float, default=0.0,
+        help="hue kept under --palette accent, in degrees: 0 cinnabar red "
+        "(xianxia's signature), 45 gold, 140 jade green",
     )
     p_render.add_argument(
         "--no-captions", action="store_true",

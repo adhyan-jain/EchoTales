@@ -40,6 +40,7 @@ from echotales.pipeline.persona.runner import get_panel_cast
 from echotales.pipeline.render._png import write_solid_png
 from echotales.pipeline.render.beats import segment_beats
 from echotales.pipeline.render.direction import direct_beat
+from echotales.pipeline.render.palette import Palette, PaletteSpec, apply_palette
 from echotales.pipeline.world.context import story_context
 
 log = logging.getLogger(__name__)
@@ -214,6 +215,14 @@ class MangaDiffusersEngine:
     #: checkpoint or a manga-specific LoRA would make the ink look viable
     #: again.
     monochrome: bool = False
+    #: Colour restraint, applied after generation where it cannot fail --
+    #: see `render/palette.py`. `monochrome=True` is kept as a shorthand for
+    #: `Palette.INK` so existing callers and configs keep working.
+    palette: str = "colour"
+    #: Hue preserved under the `accent` palette, in degrees. Cinnabar red
+    #: (0) is xianxia's signature; jade green (140) and gold (45) are the
+    #: other two the genre reaches for.
+    accent_hue: float = 0.0
     _pipe: object | None = None
     _ip_loaded: bool = False
 
@@ -320,11 +329,10 @@ class MangaDiffusersEngine:
                 **kwargs,
             ).images[0]
 
-        if self.monochrome:
-            # "L" then back to "RGB": the downstream ffmpeg segments and the
-            # IP-Adapter both expect three channels, and a single-channel
-            # PNG would force a conversion somewhere less visible.
-            image = image.convert("L").convert("RGB")
+        treatment = Palette.INK if self.monochrome else Palette(self.palette)
+        image = apply_palette(
+            image, PaletteSpec(palette=treatment, accent_hue=self.accent_hue)
+        )
 
         request.out_path.parent.mkdir(parents=True, exist_ok=True)
         image.save(request.out_path)
