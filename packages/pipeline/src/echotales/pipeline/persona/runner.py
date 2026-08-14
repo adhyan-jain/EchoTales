@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 
 from echotales.core.enums import TargetKind
 from echotales.core.models import Chapter, Mention, NarrativeSegment, Span
+from echotales.pipeline.anaphora.local import present_cast
 from echotales.pipeline.persona.attire import resolve_attire
 from echotales.pipeline.spans.scene import build_active_scenes
 
@@ -50,6 +51,7 @@ def get_panel_cast(
     faction_by_self: dict[str, str] | None = None,
     mob_faction: dict[str, str] | None = None,
     region: str | None = None,
+    block_window: tuple[int, int] | None = None,
 ) -> PanelCast:
     """Who's in frame at `block_index`, and what they should look like.
 
@@ -63,6 +65,28 @@ def get_panel_cast(
     Returns an empty cast (environment only) when `block_index` falls
     outside every tracked scene -- e.g. a chapter with no detected
     `NarrativeSegment` boundaries yet.
+
+    **Foreground presence is scoped to `block_window` (defaulting to just
+    `block_index`), not to the whole `NarrativeSegment`, and that distinction
+    is load-bearing.** A `NarrativeSegment` marks *story-time* continuity --
+    a dream, a flashback, a time skip -- and a chapter with none of those
+    is correctly exactly one segment covering all of it (§3's own design).
+    Reading that as "the scene" for panel casting means every panel in a
+    92-block chapter gets the same cast: measured on RI ch1, clan elders
+    discussing the harvest got Fang Yuan in their foreground because he
+    appears *somewhere* in the chapter's one segment, and vice versa. A
+    beat's own block range is the right unit -- it is already how
+    `render/panels.py::present_beat_entities` scopes appearance and
+    reference conditioning, so this brings casting into agreement with
+    them instead of quietly using a coarser window for one and not the
+    other.
+
+    `store` (when given) also filters non-person entities out of the cast
+    via `Self.kind` -- `Mention.target_kind` cannot be used for this; it is
+    written once at linking time and goes stale when the resolver's typing
+    pass later reclassifies an entity (verified against real data: a
+    LOCATION's every mention still reads `target_kind=SELF`). Without
+    `store`, presence is reported unfiltered, same as before this existed.
     """
     scenes = build_active_scenes(chapter, mentions, segments, spans)
     scene = next(
@@ -71,8 +95,18 @@ def get_panel_cast(
     if scene is None:
         return PanelCast(environment=resolve_attire(novel_id, region=region))
 
+    lo, hi = block_window or (block_index, block_index)
+    lo, hi = max(lo, scene.block_from), min(hi, scene.block_to)
+    person_ids = None
+    if store is not None:
+        person_ids = frozenset(
+            e.id for e in store.all_selves(novel_id) if e.kind.is_person  # type: ignore[attr-defined]
+        )
+    local_mentions = [m for m in mentions if lo <= m.block_index <= hi]
+    local_cast = present_cast(local_mentions, person_ids)
+
     foreground: list[CharacterCast] = []
-    for name in sorted(scene.active_selves):
+    for name in sorted(local_cast):
         explicit = None
         persona_id = (persona_id_by_self or {}).get(name)
         if store is not None and persona_id:

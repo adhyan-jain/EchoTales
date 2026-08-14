@@ -29,12 +29,16 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Protocol
 
 from echotales.pipeline.render._png import write_solid_png
-from echotales.pipeline.spans.delivery import DeliveryPolarity, dominant_polarity, extract_delivery_markers
+from echotales.pipeline.spans.delivery import (
+    DeliveryPolarity,
+    dominant_polarity,
+    extract_delivery_markers,
+)
 
 #: Fixed vocabulary of reusable motion beats, independent of any one
 #: character or scene. Kept short deliberately -- see the module docstring.

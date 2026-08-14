@@ -373,15 +373,56 @@ def most_informative_label(mentions: list[Mention]) -> str:
     return mentions[0].text if mentions else ""
 
 
-def present_cast(mentions: list[Mention]) -> set[str]:
+def present_cast(
+    mentions: list[Mention], person_ids: frozenset[str] | None = None
+) -> set[str]:
     """Entities physically present, for co-presence checks and panel casting.
 
     Uses `reference_mode`, so a character merely *named* in dialogue is
     excluded. Without this a scene that mentions nine characters is treated as
     containing nine.
+
+    **`person_ids` filters out non-person entities, and it has to come from
+    `Self.kind`, not `Mention.target_kind`.** RI ch1 block 0 -- Fang Yuan
+    cornered by warlords quoting his crimes -- resolved "Qing Mao Mountain"
+    (a LOCATION) and "Daoist Gu" (an ORGANIZATION) as PRESENT in the same
+    block Fang Yuan is, and rode along into `get_panel_cast`'s foreground
+    cast as if they were people to draw -- the generated panel was a
+    stranger's face with no gender, hair, or expression grounding it,
+    because two of the three "characters" in the prompt had no appearance
+    data and never could.
+
+    The first fix attempted here checked `m.target_kind` and did nothing:
+    that column is written once, when a mention is first linked, and stays
+    `SELF` even after the resolver's typing pass later reclassifies the
+    entity as `LOCATION` -- verified directly against the store, where both
+    mislabelled mentions read `target_kind=SELF` while `store.get_self(...)
+    .kind` correctly reads `LOCATION`/`ORGANIZATION`. `Self.kind` is the
+    only place the corrected typing lives, so callers now build
+    `person_ids` from `store.all_selves(novel_id)` once per chapter and
+    pass it in, rather than trusting a per-mention column that can go
+    stale.
+
+    A location cannot be a co-presence signal either: "the mountain and
+    Fang Yuan were both in the scene" proves nothing about who else was
+    physically standing there. So this filter belongs here, not only at
+    the one caller (`persona/runner.py::get_panel_cast`) that passes
+    `person_ids` today -- `speakers/runner.py`'s contextual-attribution
+    pass calls `build_active_scenes` too and would benefit the same way,
+    but was deliberately left unfiltered this session: that pass's roster
+    logic feeds a tracked speaker-attribution accuracy number, and changing
+    its input on the same pass as an unrelated visual-panel fix would make
+    any resulting shift in that number unattributable. Worth doing as its
+    own change, measured on its own.
+
+    `person_ids=None` (the default, and every caller before this fix) keeps
+    the old unfiltered behaviour -- tests and call sites that have no store
+    handy still get a set, just an uncurated one, rather than an import
+    error or a silently empty scene.
     """
     return {
         m.text
         for m in mentions
         if m.reference_mode is ReferenceMode.PRESENT
+        and (person_ids is None or m.target_id in person_ids)
     }

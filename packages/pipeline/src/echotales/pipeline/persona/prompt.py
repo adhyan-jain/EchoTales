@@ -162,7 +162,13 @@ def negative_for(style: str) -> str:
     return fit_to_budget([head, *_NEGATIVE_TAIL])
 
 
-def shot_style(span_types: list[str], *, scene_change: bool = False) -> str:
+def shot_style(
+    span_types: list[str],
+    *,
+    scene_change: bool = False,
+    resolved_subjects: int = 1,
+    has_mob: bool = False,
+) -> str:
     """Pick a framing from what the block actually contains.
 
     Establishing shots are reserved for scene changes -- used on every
@@ -170,11 +176,32 @@ def shot_style(span_types: list[str], *, scene_change: bool = False) -> str:
     Dialogue and inner monologue get the close-up, which is both the right
     manga grammar and much the cheaper picture: a landscape rendered behind
     a line of speech is wasted work.
+
+    **A close-up needs someone to close up on.** `resolved_subjects` is how
+    many named people `get_panel_cast` actually placed in this block;
+    default 1 preserves the old behaviour for every caller that hasn't been
+    updated to pass it. At 0 -- an unresolved speaker, or a line whose
+    subject the mention pipeline never linked -- a close-up has nothing to
+    condition on and the checkpoint invents a face, which is how RI ch1's
+    opening threat ("hand over the Cicada or I'll give you a quick death")
+    rendered as a calm stranger smiling at the camera: no character data,
+    no headcount tag, "intense expression" with nothing to be intense
+    *about*. Routed to the scene shot instead, which at least asks for an
+    environment rather than a face from nowhere.
+
+    `has_mob` pulls the other way: a block `get_panel_cast` tagged with a
+    background crowd (elders, warlords, guards) is a group moment even
+    without a single named subject, and a scene shot showing several
+    figures is the right picture for "a few people discussing tribe
+    affairs" -- an establishing landscape undersells it as much as a
+    single face oversells it.
     """
     kinds = set(span_types)
     if scene_change and "NARRATION_DESCRIPTION" in kinds:
         return STYLE_ESTABLISHING
     if kinds & {"DIALOGUE", "INNER_MONOLOGUE"}:
+        if resolved_subjects <= 0:
+            return STYLE_SCENE if has_mob else STYLE_ESTABLISHING
         return STYLE_CLOSEUP
     if "NARRATION_DESCRIPTION" in kinds and "NARRATION_ACTION" not in kinds:
         return STYLE_ESTABLISHING

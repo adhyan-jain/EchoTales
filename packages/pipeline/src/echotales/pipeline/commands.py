@@ -518,6 +518,7 @@ def cmd_render(args: argparse.Namespace) -> int:
                 args.compose_engine,
                 width=args.video_width,
                 height=args.video_height,
+                speed=args.speed,
             ),
             captions=not args.no_captions,
             chapters=wanted,

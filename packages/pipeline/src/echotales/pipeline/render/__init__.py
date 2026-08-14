@@ -14,21 +14,26 @@ whatever `panels.py` and `voice/runner.py` have already produced on disk.
 
 from __future__ import annotations
 
-from echotales.pipeline.render.compose import ComposeEngine, get_engine as get_compose_engine
+from echotales.pipeline.render.compose import ComposeEngine
+from echotales.pipeline.render.compose import get_engine as get_compose_engine
 from echotales.pipeline.render.director import ShotPlan, build_shot_plan
 from echotales.pipeline.render.motion import (
     MotionClip,
     MotionLibraryReport,
     build_motion_library,
-    get_engine as get_motion_engine,
     load_motion_library,
     match_tag,
+)
+from echotales.pipeline.render.motion import (
+    get_engine as get_motion_engine,
 )
 from echotales.pipeline.render.panels import (
     PanelImage,
     PanelReport,
-    get_engine as get_panel_engine,
     render_panels,
+)
+from echotales.pipeline.render.panels import (
+    get_engine as get_panel_engine,
 )
 from echotales.pipeline.render.runner import VideoReport, render_videos
 from echotales.pipeline.render.timeline import TimedShot, build_timeline

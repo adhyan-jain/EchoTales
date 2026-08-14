@@ -555,13 +555,19 @@ class PanelReport:
     #: Cached panels count toward neither -- they were not generated now.
     conditioned_panels: int = 0
     prompt_only_panels: int = 0
+    #: Blocks whose final prompt was byte-identical to one already generated
+    #: this run, and were copied from that file instead of paying for a
+    #: second diffusion pass. See `render_panels`'s note on why this is
+    #: exact-match only, not similarity-based.
+    deduped_panels: int = 0
     engine: str = "stub"
 
     def summary(self) -> str:
         return (
             f"{self.novel_id}: {self.panels:,} panels over {self.chapters} chapters "
             f"({self.engine})\n"
-            f"  reused from cache: {self.skipped_cached:,}\n"
+            f"  reused from cache: {self.skipped_cached:,}; "
+            f"deduped against another block this run: {self.deduped_panels:,}\n"
             f"  generated with reference conditioning: {self.conditioned_panels:,}; "
             f"prompt-only: {self.prompt_only_panels:,}\n"
             f"  skipped (non-story block): {self.skipped_non_story:,}"
@@ -586,10 +592,26 @@ def render_panels(
     `engine=None` uses the stub, matching `voice/runner.py::render_novel`'s
     default -- a manifest without a GPU is how a run gets reviewed before
     spending render time on it.
+
+    **Deduplicates on the exact prompt string, across the whole run.** Two
+    blocks with identical cast, environment, framing and (after truncation)
+    beat text produce a byte-identical prompt -- and with one fixed `seed`
+    per run, a byte-identical prompt is a byte-identical image, so a second
+    diffusion pass for it is pure GPU time spent to reproduce a file already
+    on disk. Deliberately exact-match only, not similarity-based: two
+    *different* prompts might describe a similar-looking panel, but judging
+    "similar enough to reuse" is a real editorial call this function has no
+    basis to make silently, and a wrong merge would show the wrong picture
+    under a caption that doesn't match it. `image_path.exists()` (below)
+    already covers the cross-run case; this covers the within-run one.
     """
+    import hashlib
+    import shutil
+
     engine = engine or get_engine("stub")
     out_dir = Path(out_dir) / novel_id
     report = PanelReport(novel_id=novel_id, engine=engine.name)
+    generated_by_digest: dict[str, Path] = {}
 
     manifest: list[PanelImage] = []
     wanted = chapters if chapters is not None else store.chapter_numbers(novel_id)
@@ -645,6 +667,12 @@ def render_panels(
                 mentions=mentions,
                 segments=segments,
                 spans=spans,
+                store=store,
+                # Scoped to the beat, not the whole (often chapter-wide)
+                # `NarrativeSegment` -- see `get_panel_cast`'s own docstring.
+                # Matches `present_beat_entities` below, which already uses
+                # this same range for appearance and reference conditioning.
+                block_window=(beat.blocks[0], beat.blocks[-1]),
             )
 
             # Reference sheets for whoever is actually in this block, so the
@@ -671,7 +699,9 @@ def render_panels(
             # Framing from everything the beat contains, not one style for
             # the whole chapter. See `prompt.py::shot_style`.
             style = shot_style(
-                [s.span_type.value for s in spans if s.block_index in set(beat.blocks)]
+                [s.span_type.value for s in spans if s.block_index in set(beat.blocks)],
+                resolved_subjects=len(cast.foreground_characters),
+                has_mob=bool(cast.background_mobs),
             )
             closeup = style is STYLE_CLOSEUP
 
@@ -715,8 +745,13 @@ def render_panels(
                     style=style,
                 )
 
+            digest = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
             if image_path.exists():
                 report.skipped_cached += 1
+            elif digest in generated_by_digest:
+                image_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(generated_by_digest[digest], image_path)
+                report.deduped_panels += 1
             else:
                 engine.generate(
                     PanelImageRequest(
@@ -729,6 +764,7 @@ def render_panels(
                         reference_images=references,
                     )
                 )
+                generated_by_digest[digest] = image_path
                 if conditioned:
                     report.conditioned_panels += 1
                 else:

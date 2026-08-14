@@ -180,7 +180,7 @@ def direct_beat(
             system=SYSTEM,
             novel_id=novel_id,
         )
-    except Exception as exc:  # noqa: BLE001 - a bad panel must not end a run
+    except Exception as exc:
         log.warning("panel direction failed: %s", exc)
         return None
 

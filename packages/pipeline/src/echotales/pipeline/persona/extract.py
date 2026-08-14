@@ -15,14 +15,13 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from pydantic import BaseModel, Field
-
 from echotales.pipeline.persona.traits import (
     AGE_BANDS,
     GENDERS,
     REGISTERS,
     TraitProfile,
 )
+from pydantic import BaseModel, Field
 
 SYSTEM = (
     "You profile a character from a translated web novel for voice casting. "
@@ -103,7 +102,7 @@ def extract_traits(
             system=SYSTEM,
             novel_id=novel_id,
         )
-    except Exception:  # noqa: BLE001 - a profiling failure must not sink a run
+    except Exception:
         return base
 
     value = result.value

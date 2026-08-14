@@ -215,6 +215,26 @@ class FfmpegComposeEngine:
     #: see that module. Optional so a run without a voice manifest still
     #: composes.
     captions_path: Path | None = None
+    #: Uniform playback speed applied to the finished mux, video and audio
+    #: together. 1.0 is the natural narration pace timeline.py measured the
+    #: shots against.
+    #:
+    #: **Why this is a post-process on the whole video, not a faster TTS
+    #: rate.** The stub engine's words-per-minute knob only changes stub
+    #: silence; the real engine (Chatterbox) has no comparable "speak
+    #: faster" parameter, so a fix that lived inside the TTS stage would
+    #: work for one engine and not the other. Speed applied uniformly here
+    #: works for both, and for the stub-timed run this session's video was
+    #: built from -- a 199-chapter novel at natural narration pace produces
+    #: a 15+ minute video per chapter, far longer than the reels this
+    #: format is modelled on.
+    #:
+    #: Correct by construction for captions: `ass=` burns the subtitle
+    #: track into the frames *before* `setpts` retimes them, so a caption
+    #: shown for framerange N stays attached to the same audio words after
+    #: both streams are scaled by the same factor -- relative sync is
+    #: preserved, only the absolute runtime shrinks.
+    speed: float = 1.0
 
     def render(self, timeline: list[TimedShot], audio_paths: list[Path], out_path: Path) -> Path:
         if shutil.which("ffmpeg") is None:
@@ -246,10 +266,26 @@ class FfmpegComposeEngine:
         # chapter is encoded once rather than twice. Without them the video
         # stream is copied through untouched, which is why this is a branch
         # and not a filter that happens to be empty.
+        has_captions = self.captions_path is not None and Path(self.captions_path).exists()
+        speed_up = abs(self.speed - 1.0) > 1e-6
+
         mux: list[str] = ["-i", str(video_only), "-i", str(audio_path)]
-        if self.captions_path is not None and Path(self.captions_path).exists():
-            mux += ["-vf", f"ass={_escape_filter_path(Path(self.captions_path))}"]
-            mux += ["-c:v", "libx264", "-crf", "20", "-preset", "medium", "-pix_fmt", "yuv420p"]
+        if has_captions or speed_up:
+            vchain = []
+            if has_captions:
+                vchain.append(f"ass={_escape_filter_path(Path(self.captions_path))}")  # type: ignore[arg-type]
+            if speed_up:
+                # setpts scales frame *timestamps*; it does not re-encode
+                # what is drawn on each frame, so burned captions retime
+                # along with the picture rather than drifting off it.
+                vchain.append(f"setpts=PTS/{self.speed}")
+            achain = f"atempo={self.speed}" if speed_up else "anull"
+            mux += [
+                "-filter_complex",
+                f"[0:v]{','.join(vchain)}[v];[1:a]{achain}[a]",
+                "-map", "[v]", "-map", "[a]",
+                "-c:v", "libx264", "-crf", "20", "-preset", "medium", "-pix_fmt", "yuv420p",
+            ]
         else:
             mux += ["-c:v", "copy"]
         mux += ["-c:a", "aac", "-shortest", str(out_path)]

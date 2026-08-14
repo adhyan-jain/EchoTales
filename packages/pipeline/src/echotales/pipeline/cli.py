@@ -170,6 +170,14 @@ def build_parser() -> argparse.ArgumentParser:
         "the point of this format, so this is an escape hatch, not a toggle "
         "you want by default",
     )
+    p_render.add_argument(
+        "--speed", type=float, default=1.25,
+        help="uniform playback speed on the finished video (default 1.25x). "
+        "Natural narration pace produces a 15+ minute video per chapter, "
+        "far longer than the reels this format is modelled on; 1.0 disables "
+        "it. Applied to picture and audio together, after captions are "
+        "burned, so sync is exact at any speed",
+    )
     p_render.add_argument("--seed", type=int, default=20260812)
     p_render.add_argument(
         "--clips-per-chapter", type=int, default=2,
