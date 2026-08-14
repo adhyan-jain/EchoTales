@@ -102,6 +102,11 @@ SCENE_LOCALES: dict[str, dict[str, str]] = {
 #: setting suits the scene rather than being decided by a coin flip.
 _LOCALE_CUES: dict[str, str] = {
     "hall": "hall", "chamber": "hall", "throne": "hall", "inside": "hall",
+    # RI ch1's ancestral-hall scene never says "hall" outside one interior
+    # line -- the walk-out and discussion blocks say "ancestral temple" /
+    # "sacred temple" instead (§4.31 item 11), which the cue table missed
+    # entirely.
+    "temple": "hall",
     "courtyard": "courtyard", "gate": "courtyard", "yard": "courtyard",
     "mountain": "mountain", "peak": "mountain", "cliff": "mountain",
     "slope": "mountain", "ridge": "mountain",

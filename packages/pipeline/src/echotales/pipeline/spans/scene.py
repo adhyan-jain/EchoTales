@@ -49,7 +49,13 @@ _MOB_QUANTIFIER = (
 
 _MOB_RE = re.compile(
     rf"\b{_MOB_QUANTIFIER}\s+(?:surrounding\s+|nearby\s+)?"
-    rf"({'|'.join(_MOB_ROLE_NOUNS)})\b",
+    # One optional modifier word between the quantifier and the role noun --
+    # "the clan elders", "the experienced elders" -- real RI phrasing that a
+    # strictly-adjacent quantifier+noun match missed entirely (§4.31 item 11:
+    # the ancestral-hall scene's repeated "the clan elders" never fired).
+    # Bounded to exactly one word, not an open-ended list, to avoid the
+    # vocabulary-growth trap EVOLUTION.md already flagged once.
+    rf"(?:\w+\s+)?({'|'.join(_MOB_ROLE_NOUNS)})\b",
     re.IGNORECASE,
 )
 

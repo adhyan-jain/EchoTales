@@ -124,7 +124,13 @@ def segment_beats(
             not current.blocks
             or block_index in boundaries
             or (prev_kind is not None and kind != prev_kind and kind != "talk")
-            or (cast and prev_cast and cast != prev_cast)
+            # Non-empty prev_cast is not required: a block with no resolved
+            # speaker (unattributed dialogue, pure narration) must not mask
+            # a real cast change into the next block that does have one --
+            # it did exactly that when this compared against a carried-
+            # forward prev_cast instead of the immediately preceding block's
+            # actual (possibly empty) cast. See prev_cast assignment below.
+            or (cast and cast != prev_cast)
             or len(current.text) >= max_beat_chars
             or len(current.blocks) >= max_beat_blocks
             # A body change is a boundary, not merely a high score. Scoring
@@ -142,7 +148,7 @@ def segment_beats(
 
         current.blocks.append(block_index)
         current.text = f"{current.text} {text}".strip()
-        prev_kind, prev_cast = kind, cast or prev_cast
+        prev_kind, prev_cast = kind, cast
 
     if current.blocks:
         beats.append(current)

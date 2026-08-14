@@ -171,8 +171,8 @@ def build_parser() -> argparse.ArgumentParser:
         "you want by default",
     )
     p_render.add_argument(
-        "--speed", type=float, default=1.25,
-        help="uniform playback speed on the finished video (default 1.25x). "
+        "--speed", type=float, default=1.0,
+        help="uniform playback speed on the finished video (default 1.0x). "
         "Natural narration pace produces a 15+ minute video per chapter, "
         "far longer than the reels this format is modelled on; 1.0 disables "
         "it. Applied to picture and audio together, after captions are "

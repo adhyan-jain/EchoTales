@@ -18,7 +18,11 @@ from dataclasses import dataclass, field
 
 from echotales.core.enums import BlockType
 from echotales.core.models import Block, Chapter
-from echotales.pipeline.ingest.classify import classify_block, is_appendix_heading
+from echotales.pipeline.ingest.classify import (
+    ClassifiedBlock,
+    classify_block,
+    is_appendix_heading,
+)
 from echotales.pipeline.ingest.epub import Epub, TocEntry, parse_chapter_label
 from lxml import etree
 from lxml import html as lxml_html
@@ -234,6 +238,18 @@ class SourceAdapter:
         blocks: list[Block] = []
 
         italic_classes = self.epub.italic_classes()
+        # Once a translator's/author's note starts, every remaining block in
+        # the chapter is back matter too -- `classify_block` only recognises
+        # the *labelled* block ("TL Note:"), and its own continuation
+        # paragraphs and footnotes carry no such marker, so without this they
+        # were re-entering the story as ordinary PROSE and picking up
+        # resolved speakers and mentions from meta-text. In this corpus a
+        # translator's note is always chapter-terminal, so latching to the
+        # end of the chapter (rather than un-latching at the next `* * *`)
+        # is the correct, not merely convenient, boundary -- a footnote can
+        # sit on the far side of a second separator from the note label
+        # itself and is still back matter.
+        in_note = False
         for element in iter_block_elements(root):
             raw_block = extract_block(element, italic_classes=italic_classes)
             if raw_block.is_break:
@@ -247,11 +263,16 @@ class SourceAdapter:
             if self.should_skip_block(raw_block, len(blocks)):
                 continue
 
-            classified = classify_block(
-                raw_block.text,
-                tag=raw_block.tag,
-                css_classes=raw_block.css_classes,
-            )
+            if in_note:
+                classified = ClassifiedBlock(BlockType.TRANSLATOR_NOTE, raw_block.text.strip(), {})
+            else:
+                classified = classify_block(
+                    raw_block.text,
+                    tag=raw_block.tag,
+                    css_classes=raw_block.css_classes,
+                )
+                if classified.block_type in (BlockType.TRANSLATOR_NOTE, BlockType.AUTHOR_NOTE):
+                    in_note = True
             blocks.append(
                 Block(
                     index=len(blocks),

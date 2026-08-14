@@ -15,15 +15,15 @@ history of how any of it got this way lives in `EVOLUTION.md`, not here.
 
 **Last updated:** 2026-08-15. §4.30 built the first chapter video with real
 cloned audio and block-scoped casting
-(`data/video_v3/reverend-insanity/ch1.mp4`, 545s, 1080x1920). **§4.31 is
-what actually matters if you're picking this up fresh**: the author watched
-it start to finish and reported nine specific, unfixed defects —
-speaker attribution missing an identifiable speaker, voice casting ignoring
-authority/register, panels not reflecting who's acting or what a scene
-actually contains, no character-design consistency (the fix already exists,
-just isn't wired in), and a text-classification bug on "Gu". Start there,
-not at §10, and read §4.31's own suggested order before picking a first
-task.
+(`data/video_v3/reverend-insanity/ch1.mp4`, 545s, 1080x1920). §4.31 recorded
+the author's watch-through: nine specific defects. **This session fixed
+three of them** (speed default, reference-sheet wiring, and the
+panel-relevance cluster — cast-change boundary, mob detection, scene-locale
+cues — see §4.31's dated addendum for exactly what changed and what's
+still unverified by an actual re-render). **Speaker attribution, voice
+register, and the "Gu" classification bug (items 1/2/10) are still open**
+and are the actual next pick-up point — root causes are diagnosed in
+§4.31, no code changed for them yet.
 
 
 ## 0. Current state, in one screen
@@ -365,6 +365,66 @@ web-search phase the author asked about is explicitly *not* next --
 item 10 is a standing instruction to prefer in-text extraction first, and
 none of the above defects are caused by missing world knowledge the text
 doesn't already contain.
+
+**Items 3, 8, 6/7/11 done this session (2026-08-15), items 1/2/10 still
+open:**
+
+- **Item 3**: `cli.py`'s `--speed` default was `1.25`; `compose.py`'s was
+  already `1.0`. Fixed the CLI default to `1.0`.
+- **Item 8**: root cause confirmed empirically -- every `data/*.db` had
+  zero `reference_image_path` attribute rows, for any novel, so
+  `reference_path_for` always returned `None` regardless of which store
+  `render_panels` read. The conditioning plumbing in `render_panels`
+  itself needed no changes. Wrote `scripts/backfill_reference_markers.py`,
+  a one-off that reverse-derives `persona_id` from each
+  `data/references_v2/<novel>/*.png` filename and writes the missing
+  marker directly into `data/reruns/reverend-insanity.db` -- the only DB
+  with RI's persona rows populated (all other `data/*.db` files have zero
+  persona rows for RI; confirmed with the author before writing). 2 of 3
+  reference sheets matched an existing persona (`self1:body1`,
+  `self13:body1`); `self1:body2` has no matching persona row in that DB
+  yet and was skipped, not invented. Verified `reference_path_for` now
+  resolves both. **Not yet done: an actual re-render to confirm
+  `conditioned_panels > 0` end to end** -- that needs a real (costly) GPU
+  render pass, left for the next session's watch-through.
+- **Item 6/7/11**: three separate, verified fixes, not one mechanism:
+  - `render/beats.py`'s cast-change boundary (`segment_beats`) required
+    *both* `cast` and `prev_cast` non-empty to fire, and separately
+    carried a stale `prev_cast` forward across any empty-cast block
+    (`cast or prev_cast`) -- so one narration-only or unattributed block
+    could silently swallow the *next* block's real cast change too. Fixed
+    both: the condition now fires on `cast and cast != prev_cast`, and
+    `prev_cast` is always the immediately preceding block's actual cast,
+    never carried forward.
+  - `spans/scene.py::detect_mobs`'s regex required the quantifier
+    ("the"/"a"/...) to sit *immediately* before the role noun, which
+    missed the real RI ch1 ancestral-hall text almost entirely -- "the
+    clan's elders", "the experienced elders", "the clan elders" (the
+    exact recurring phrase in that scene) never matched. Now allows one
+    optional intervening word between the quantifier and the role noun.
+    Verified against the real chapter-1 blocks: block 12 and 57/62 (which
+    didn't fire before) now correctly detect "elders" as a mob; a
+    possessive form ("clan's elders", apostrophe breaks the token) still
+    doesn't match -- a known, smaller residual gap.
+  - `persona/attire.py`'s `_LOCALE_CUES` had no "temple" cue. The
+    ancestral-hall scene's actual wording is "ancestral temple" / "sacred
+    temple" in every block *except* one interior line that says "hall" --
+    so most of the scene's blocks were falling through to the rotating
+    fallback locale instead of matching. Added `"temple": "hall"`.
+    Verified block 57 (which mentions "temple") now resolves to the
+    "hall" locale correctly. Did **not** touch the "clan" -> "village" cue
+    or add speculative vocabulary beyond what the real text needed.
+  - `uv run pytest packages/` still 682 passing after all of the above.
+  - **Not yet done: a real re-render of RI ch1 to eyeball the combined
+    effect** -- per the author's own item-9 instruction, more panels (or
+    a fresh render pass) should wait until relevance is fixed, and these
+    changes are the relevance fix, but nobody has watched the output yet.
+- **Items 1, 2, 10: still open, untouched this session.** Root causes are
+  fully diagnosed (see the numbered list above) but no code changed for
+  any of them -- `_assign_anonymous_slots`'s forward-only pass (item 1),
+  `voice/bank.py::nearest_bucket`'s missing register axis (item 2), and
+  `spans/classify.py`'s short-emphasis-span exposition-regex interaction
+  (item 10) are all real, next-session work.
 
 
 ---
