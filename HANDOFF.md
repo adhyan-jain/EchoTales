@@ -12,9 +12,13 @@ different agent (or a future you) can resume without re-deriving context.
 | `details.md` | Per-file detail |
 | `plans.md` | The original spec. Amended three times; the amendments win and are marked *(revised)* |
 
-**Last updated:** 2026-08-13. Most recent work: the **persona split**
-(§4.27) — one consciousness, two bodies, selected by story position — plus
-per-body appearance extraction and dramatic panel selection (§4.28).
+**Last updated:** 2026-08-15. Most recent work (§4.30): real Chatterbox-cloned
+audio (VCTK fully extracted, no separate venv needed — an isolated `uv run
+--with` overlay), block-scoped panel casting (a chapter-wide
+`NarrativeSegment` was silently giving every panel the same cast), and
+hand-authored staging for the two panels a director can't derive from prose
+alone. **The first chapter video with real voice, not stub timing, exists**
+— `data/video_v3/reverend-insanity/ch1.mp4`, 545s, 1080x1920.
 **Picking this up fresh?** §0 below, then §10 for what to do next.
 
 
@@ -39,8 +43,8 @@ reasoning.
 
 | Blocked | By |
 |---|---|
-| Real audio | VCTK download incomplete (2.5 of ~11 GB); 11 speaker clips salvaged, enough for a multi-voice test |
-| Real audio *and* images in one venv | `chatterbox-tts` silently downgrades `diffusers` 0.39→0.29 and breaks image generation. Separate venvs, or separate runs |
+| ~~Real audio~~ | **Done, §4.30.** VCTK extracted (110 speakers), Chatterbox runs via an isolated `uv run --with chatterbox-tts --with "setuptools<81"` overlay -- no separate venv was ever actually needed, only an ephemeral one |
+| Reference-conditioned panels | Sheets exist now (`data/references_v2/`, §4.30) but no render has been pointed at them yet -- every panel to date is prompt-only |
 | Any accuracy claim | Gold is 0% human-confirmed (§4.12). Entity counts here are plausibility, not accuracy |
 | LOTM's transmigration demo | Resolve still splits `Zhou Mingrui` from `Klein` (§4.15). Not a persona-stage problem |
 
@@ -50,7 +54,7 @@ option reserved for the point where the pipeline is good enough to be worth
 scaling — not a workaround for a quality problem that is actually a pipeline
 problem. §4.25 has the measured costs for when that point arrives.
 
-**Test status: 639 passing**, no failures.
+**Test status: 682 passing**, no failures.
 
 **Two working practices that cost real time to learn, kept because they will
 cost it again:**
@@ -115,7 +119,7 @@ Measured on the real corpus, not projected.
 | 8 Voice casting | `pipeline/voice/` | **Working, stub engine only** — §4.21 | Casts every character, writes manifest + casting report. **No real audio yet**: VCTK downloading, `torch`/`chatterbox` not installed |
 | 7b Appearance | `resolve/appearance_extract.py` | **Working, per body** — §4.24, §4.28 | One call per *body*, over only that body's chapters. RI ch1-40: 13 attributes / 10 calls, 0 failures |
 | 7c World facts | `pipeline/world/` | **Working** — §4.26 | RI full vol: 124 facts / 73 calls, 0 failures. Position-filtered retrieval verified |
-| 9 Panels + video | `pipeline/render/` | **Working, local + free** — §4.24, §4.28 | RI ch1: 92 blocks → **14 panels**, drama-weighted; real ffmpeg encode, picture length == audio length exactly |
+| 9 Panels + video | `pipeline/render/` | **Working, local + free, + real cloned audio** — §4.24, §4.28, §4.30 | RI ch1: 92 blocks → **14 panels**, drama-weighted, block-scoped casting; real ffmpeg encode with real Chatterbox-cloned audio, picture length == audio length exactly |
 | 8 Dataset export | — | **Not started** | JSONL export exists but is machine-only |
 
 `packages/core/` (models, store, `state_of`, interval algebra) is complete and
@@ -1061,6 +1065,109 @@ Phase 8 against that DB, 199 chapters, dry run: **20,449 audible lines,
 Also surfaced: NER returned truncated JSON on chapter 143 (handled, chapter
 skipped with a warning) — pre-existing robustness gap in `chapter_ner.py`,
 not new.
+
+### 4.30 Real cloned audio, block-scoped casting, and the panels that go with them *(2026-08-15)*
+
+Direct response to watching the §4.29 video with the sound on and at real
+length: the cast was wrong in several panels, the opening had nothing to
+draw, playback was slower than the reel format this is modelled on, and
+the audio was silent. All four are now fixed and verified end to end --
+**this is the first chapter video with real voice, not stub timing.**
+
+```
+RI ch1 final: 1080x1920, 545.1s (video and audio streams match exactly),
+14 real GuoFeng3 panels (accent palette), 154 caption cards, real
+Chatterbox-cloned dialogue for every character line.
+```
+
+**`present_cast`'s non-person filter never worked, and the reason is a
+second stale-column bug in the same family as §4.15's.** `Mention
+.target_kind` is written once when a mention first links and never
+updated when the resolver's typing pass later reclassifies the entity --
+verified directly: "Qing Mao Mountain" (LOCATION) and "Daoist Gu"
+(ORGANIZATION) both still read `target_kind=SELF` on every mention while
+`Self.kind` correctly reads their real type. `present_cast` now takes a
+`person_ids` set built from `Self.kind`, and that is what fixed the
+opening panel's "smiling stranger" defect -- two of the three "characters"
+the old code handed to the prompt had no appearance data and never could,
+because they were not people.
+
+**`get_panel_cast` was scoping "who's present" to the whole
+`NarrativeSegment`, and RI ch1 has exactly one, covering all 92 blocks.**
+A segment marks story-time continuity (a dream, a flashback), not a
+cinematic scene, so a chapter with no flashbacks is *correctly* one
+segment -- reading that as "the cast for this panel" meant every panel in
+the chapter shared one cast: Fang Yuan showed up in the clan-elders
+conversation because he appears *somewhere* in the chapter, and the
+elders' own scene showed nobody specific. Added `block_window` (defaults
+to the single block, callers pass a beat's own range), matching the
+window `present_beat_entities` already used for appearance --
+**verified against the final video**: the "quietly gazed... rain from the
+wind" narration panel now correctly shows and captions "Fang Yuan", not
+"Unknown Speaker".
+
+**A close-up needs someone to close up on.** `shot_style` takes
+`resolved_subjects`/`has_mob` now: zero resolved subjects routes to a
+scene or establishing shot instead of a checkpoint inventing a face, and a
+detected background mob routes to a scene shot showing a group.
+
+**Hand-authored staging for the two panels no director can derive**
+(`render/beat_canon.py`, same argument `persona/canon.py` makes about
+appearance, one level up): the opening (a lone figure surrounded by an
+armed faction -- the prose is one hostile line with no resolved speaker,
+nothing to stage from) and the rebirth line (blood pooled where he
+stands, calm expression, the Cicada glowing in his raised palms -- true
+of the *reader's* image of the moment, not recoverable from "I have been
+reborn" by any extraction). Wiring it surfaced the token-budget priority
+bug a third time: a directive concatenated into `beat` lost its second
+sentence to `beat`'s 110-char cap, and once given its own slot, still
+lost the fit to the character's shorter, less important appearance
+clause. `directive` now has its own 240-char budget and sits ahead of
+both. **The cicada itself needed a second pass**: an unqualified "cicada"
+rendered as a dark bladed weapon in two separate generations, not an
+insect -- GuoFeng3's xianxia prior for battle imagery is strong enough to
+override the word alone. Fixed by naming the category outright ("golden
+cicada insect") and adding "no weapon, no sword, no blade" ahead of it,
+the same lesson `prompt.py`'s danbooru headcount tags already depend on.
+
+**Real audio, finally.** VCTK's zip (11.7 GB, §4.29 already found it
+complete) extracted properly this time -- into `data/`, not `/tmp`, which
+is a small tmpfs and filled on the first attempt. `load_vctk` sees all
+110 speakers. Chatterbox runs via `uv run --with chatterbox-tts --with
+"setuptools<81"` -- an **ephemeral overlay**, not a second `.venv`: it
+resolves per-invocation without touching the project's own environment,
+which means the "chatterbox and diffusers can't share a venv" blocker in
+§4.21/§4.25 was never actually true, only under-specified. `setuptools<81`
+is required because Chatterbox's watermarker (`perth`) imports
+`pkg_resources`, which modern `setuptools` stopped bundling -- the failure
+with no pin is `TypeError: 'NoneType' object is not callable`, nothing in
+the message about setuptools at all.
+
+**Real audio surfaced a real bug the stub could never have: `torchaudio
+.save` writes IEEE-float WAV by default, and the stdlib `wave` module
+every duration read/concatenation in `render/` uses cannot open it.**
+`wave.Error: unknown format: 3`, discovered composing a real chapter
+after all 104 lines had already been synthesised (~12 minutes of model
+inference). Fixed with explicit `encoding="PCM_S", bits_per_sample=16` on
+the save call; the already-synthesised files were reloaded and resaved
+rather than re-run.
+
+**Also generated real reference sheets** (`data/references_v2/`, GuoFeng3,
+not yet wired into a re-render): Fang Yuan's two bodies plus one
+supporting character. `render_panels` reported `conditioned_panels=0` for
+the whole session up to this point -- every panel has been prompt-only,
+with nothing to IP-Adapter-condition against, because this stage had
+never been run against the current checkpoint. Not yet fed back into a
+video; the next render pointed at this directory is where identity
+consistency across panels should visibly improve.
+
+**New, for iterating without paying for both GPU stages at once:**
+`ECHOTALES_ENABLE_IMAGE_GEN` / `ECHOTALES_ENABLE_TTS` (config.py, default
+true) force that stage to its stub engine regardless of the CLI flag, and
+`echotales render --block-range LO-HI` restricts panel generation to a
+contiguous block span -- panel cost is set by `--max-panels`, not chapter
+length, so a full-chapter test run costs the same whether you're tuning
+one portion of it or all of it.
 
 ### 4.29 First real chapter video with the fixed prompts *(2026-08-14)*
 
