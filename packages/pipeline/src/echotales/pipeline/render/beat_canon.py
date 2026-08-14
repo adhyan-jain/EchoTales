@@ -92,25 +92,29 @@ BEAT_CANON: dict[str, dict[float, list[BeatCanonEntry]]] = {
                 # overriding around it.
                 block_from=83,
                 block_to=83,
-                # **"cicada" alone was read as a weapon, twice.** The
-                # checkpoint's xianxia prior favours blades and battle
-                # imagery strongly enough that an unqualified "cicada"
-                # rendered as a dark bladed object both times this was
-                # tried, verified by looking at the actual generated
-                # panels, not assumed from the prompt text. Now named
-                # explicitly as an insect ("a tiny glowing golden cicada,
-                # an insect") with "no weapon, no sword" in the negative
-                # half of the staging -- the same lesson as `prompt.py`'s
-                # headcount tags: a checkpoint follows the *category* word
-                # it already has a strong prior for, so naming the category
-                # outright outperforms describing the object and hoping
-                # the category is inferred.
+                # **An earlier version of this entry forced "no weapon, no
+                # sword" and named the Cicada an "insect" outright, on the
+                # assumption that a cicada must look like a literal bug.
+                # That assumption was never checked against the source and
+                # was wrong to make.** RI ch1-2 never describes the Spring
+                # Autumn Cicada's physical form -- it is introduced only
+                # functionally, as the seventh-ranked of the Ten Great
+                # Mystical Gu, a life form Fang Yuan *cultivates*, not an
+                # object with a stated shape. Gu in this novel are
+                # insect-derived but routinely depicted as strange,
+                # weapon-like or crystalline artifacts rather than mundane
+                # bugs (the checkpoint's own instinct here, unprompted).
+                # Insisting on a literal insect was inventing a detail the
+                # text does not support -- exactly what
+                # `appearance_extract.py`'s "never invent a detail that is
+                # not there" discipline exists to prevent, applied to a
+                # hand-authored directive instead of a model's extraction.
+                # Left open rather than re-forced in either direction.
                 staging=(
                     "standing in a pool of blood, robes soaked and torn, "
-                    "face calm and expressionless. Empty bare hands cupped "
-                    "before his chest (no weapon, no sword, no blade), "
-                    "holding a tiny glowing golden cicada insect, gazing "
-                    "down at it plainly."
+                    "face calm and expressionless. Both palms cupped "
+                    "before his chest, holding a small glowing Gu artifact "
+                    "that emits a soft light, gazing down at it plainly."
                 ),
                 # A tight face close-up -- what a dialogue block would get
                 # by default -- crops out the raised palms and the cicada,

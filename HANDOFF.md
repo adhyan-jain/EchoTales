@@ -1123,12 +1123,20 @@ bug a third time: a directive concatenated into `beat` lost its second
 sentence to `beat`'s 110-char cap, and once given its own slot, still
 lost the fit to the character's shorter, less important appearance
 clause. `directive` now has its own 240-char budget and sits ahead of
-both. **The cicada itself needed a second pass**: an unqualified "cicada"
-rendered as a dark bladed weapon in two separate generations, not an
-insect -- GuoFeng3's xianxia prior for battle imagery is strong enough to
-override the word alone. Fixed by naming the category outright ("golden
-cicada insect") and adding "no weapon, no sword, no blade" ahead of it,
-the same lesson `prompt.py`'s danbooru headcount tags already depend on.
+both. **The cicada's exact rendering was chased and then deliberately
+un-chased.** An unqualified "cicada" rendered as a dark bladed object in
+two generations; the first fix forced "a golden cicada insect... no
+weapon, no sword" to steer away from that -- but RI ch1-2 never actually
+states the Spring Autumn Cicada's physical form. It is introduced only
+functionally, the seventh-ranked of the Ten Great Mystical Gu, something
+Fang Yuan *cultivates* rather than an object with a stated shape, and Gu
+in this novel are routinely depicted as strange or weapon-adjacent
+artifacts rather than literal bugs -- which is closer to what the
+checkpoint drew unprompted than to a garden insect. Forcing "insect" was
+inventing a detail the text does not support, the same discipline
+`appearance_extract.py` already enforces for model extraction, applied
+here to a hand-authored directive instead. Reworded to "a small glowing
+Gu artifact" and left open rather than re-forced in either direction.
 
 **Real audio, finally.** VCTK's zip (11.7 GB, §4.29 already found it
 complete) extracted properly this time -- into `data/`, not `/tmp`, which

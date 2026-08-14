@@ -11,7 +11,7 @@ class TestBeatCanonLookup:
     def test_a_seeded_block_returns_its_entry(self) -> None:
         entry = beat_canon_for("reverend-insanity", 1.0, 83)
         assert entry is not None
-        assert "cicada" in entry.staging
+        assert "pool of blood" in entry.staging
 
     def test_an_unseeded_block_returns_none(self) -> None:
         """Zero coverage on an unseeded block, never a generic guess --
