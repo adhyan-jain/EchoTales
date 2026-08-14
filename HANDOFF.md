@@ -16,17 +16,26 @@ history of how any of it got this way lives in `EVOLUTION.md`, not here.
 **Last updated:** 2026-08-15. §4.30 built the first chapter video with real
 cloned audio and block-scoped casting
 (`data/video_v3/reverend-insanity/ch1.mp4`, 545s, 1080x1920). §4.31 recorded
-the author's watch-through: nine specific defects. **This session fixed four
-of them** (speed default, reference-sheet wiring, the panel-relevance
-cluster, and a translator's-note ingestion bug found by re-inspecting ch1's
-raw spans directly — see §4.31's and §4.32's dated addenda for exactly what
-changed). **Speaker attribution and voice register (items 1/2) are still
-open** and are the next pick-up point.
+the author's watch-through: nine specific defects. **This session fixed
+four of them** (speed default, reference-sheet wiring, the panel-relevance
+cluster) **plus three bugs found afterward by reading ch1's actual span
+table directly, not in the original nine** — a translator's-note ingestion
+leak that minted a phantom "Daoist Gu" speaker (§4.32), a store bug where
+`add_spans`/`add_mentions` never deleted stale rows on re-run so old wrong
+data survived every subsequent fix (§4.33), and two roster-pollution bugs
+plus a missing epithet-based attribution tier that let a location and a
+self-referential idiom get attributed as speakers while the clan leader's
+real speaker tags went unused (§4.34). **Voice register (item 2) and voice
+casting are still open** and are the next pick-up point; speaker
+attribution is meaningfully better but the pronoun-to-epithet coreference
+gap noted at the end of §4.34 is the natural next increment on it, not a
+finished job.
 
-**§4.32, found this session, not in the original nine:** re-reading ch1's
-actual span table (not just the video) surfaced a translator's-note
-ingestion bug independent of anything in §4.31 — see §4.32 below. Fixed.
-A full 1-199 resolve/persona run is in progress as of this update to build
+**§4.32-§4.34, found this session, not in the original nine:** re-reading
+ch1's actual span table (not just the video) surfaced three real bugs
+independent of §4.31's list — see those sections below. All fixed. The
+full 1-199 resolve/persona/speaker pipeline was re-run twice this session
+(once after §4.32/§4.33, once after §4.34) to build
 a real character knowledge base before any further per-chapter rendering;
 see §0's workflow note.
 
@@ -529,10 +538,73 @@ after this fix) does for the first time since the bug was introduced.
 Fixed: `Store.delete_spans_for_chapter` / `delete_mentions_for_chapter`,
 called immediately before each chapter's fresh rows are written in both
 runners. `uv run pytest packages/` 682 passing. A second full 1-199 `run`
-was kicked off immediately after this fix to purge the accumulated
-staleness — see this file's top-of-document status for its outcome; this
-section will be updated once it's confirmed clean rather than left to
-imply an unverified claim.
+confirmed clean: `store.get_spans`/`get_mentions` on ch1 show no duplicate
+rows, and the "Daoist Gu" mention/self_entity rows are gone entirely.
+
+### 4.34 Speaker attribution: two roster-pollution bugs and a missing tier, found against real ch1 data *(2026-08-15)*
+
+After §4.32/§4.33 cleared the "Daoist Gu" phantom, re-inspecting ch1's
+dialogue spans still showed real damage: a location (`Qing Mao Mountain`)
+and a self-referential idiom (`"this one"`) both got attributed as the
+*speaker* of real lines, and the clan leader's dialogue was scattered
+across unrelated anonymous slots (or worse, credited to Fang Yuan) despite
+the text containing explicit speaker tags for him ("...the clan head
+sighed", "The clan head strictly instructed."). Three fixes, all verified
+against ch1's actual spans, not just tests:
+
+1. **Roster pollution, source 1**: `speakers/runner.py::attribute_novel`
+   built `known_names`/`display_roster` (which gate both the deterministic
+   tiers' `_known()` check and tier 4's LLM prompt) from every mention with
+   `alias_type.enters_graph`, with no check on `entity_label`. A mention
+   the NER layer confidently tagged `"location"`/`"organization"` entered
+   the roster exactly like a person — how a mountain became an attributed
+   speaker. Fixed: those two labels are now excluded before a mention
+   reaches the roster.
+2. **Roster pollution, source 2**: `AliasType.RELATIONAL_DEICTIC` ("this
+   one", "that person") is defined in `core/enums.py` as *speaker-relative*
+   — its referent depends on who's already talking — but was entering the
+   roster as if it were a fixed name anyway, so the LLM tier attributed a
+   line to the literal string "this one". Fixed: `RELATIONAL_DEICTIC`
+   mentions are now excluded from the roster too.
+3. **A missing tier, not a missing mechanism**: the text does carry a real
+   speaker tag for the clan leader — he's never named in ch1, only ever
+   referred to by title ("the clan head"/"the Gu Yue clan head"), and the
+   attribution ladder had no tier that could use a title-based tag the way
+   it already uses a name-based one. Added `attribute_epithet`
+   (`AttributionMethod.EPITHET_SLOT`): fires on the exact same
+   speech-verb-adjacency `attribute_explicit` requires, but for a bounded,
+   text-verified role-title list (currently just `"clan head"` — extend
+   only against other real chapters, not speculatively, per EVOLUTION.md's
+   warning about the combat-vocabulary mechanism that scored zero from
+   guessing). A match mints a **stable id keyed by the title itself**,
+   scoped to the chapter — never a graph `Self` (a title can transfer to a
+   different person later, unlike a name) — so every line tagging "the
+   clan head" lands on the same consistent voice instead of a fresh
+   anonymous slot each time. Also closed a real gap in `_SPEECH_VERBS`
+   ("instructed"/"instructs" were missing; one of the two verified hits
+   depended on it) and caught-and-fixed a regression during
+   development: checking the *preceding* window as well as *following*
+   let one line's postposed tag ("...the clan head instructed.") bleed
+   into the *next* line's window and misattribute the reply that came
+   after it to the same title. `attribute_epithet` now checks `following`
+   only — the only direction with a verified real case.
+
+Result on ch1 (deterministic tiers only, no LLM client): "Qing Mao
+Mountain" and "this one" no longer appear as speakers anywhere; two of the
+clan leader's postposed-tag lines (`the clan head instructed`, `the clan
+head sighed`) now resolve to one consistent `epithet:1:clan-head` id
+instead of two unrelated anonymous slots. **Deliberately incomplete, and
+correctly so**: lines with a *pronoun* tag ("he faced the clan elders and
+said,") or no tag at all still fall through to `ANONYMOUS_SLOT`/unresolved
+— per the author's explicit instruction, some lines genuinely have no
+recoverable textual evidence and forcing an attribution onto them would be
+a confident wrong answer, worse than leaving them unresolved. Pronoun-to-
+epithet coreference (resolving "he" to the most recent epithet-tagged
+subject) is the natural next increment but needs scene-scoped state this
+pass doesn't build — left for a session that can verify it against real
+text the way this one did, not guessed at now.
+
+`uv run pytest packages/` 682 passing throughout.
 
 ---
 
