@@ -506,6 +506,23 @@ class Store:
             "DELETE FROM span WHERE novel_id=? AND id=?", (novel_id, span_id)
         )
 
+    def delete_spans_for_chapter(self, novel_id: str, chapter: float) -> None:
+        """Remove every span row for one chapter, before a full re-classification.
+
+        `add_spans` is `INSERT OR REPLACE` keyed by span id
+        (`{novel}:{chapter}:{block}:{i}`). That only overwrites ids the new
+        batch actually produces -- if a re-run yields *fewer* spans for a
+        block than a previous run did (a block reclassified from `PROSE` to
+        `NON_DIEGETIC`, say, collapsing three spans into one), the ids the
+        new batch never touches are silently left behind forever, mixed in
+        with the fresh, correct rows. Any caller that re-derives a whole
+        chapter's spans from scratch (`speakers/runner.py::attribute_novel`)
+        must call this first.
+        """
+        self.conn.execute(
+            "DELETE FROM span WHERE novel_id=? AND chapter=?", (novel_id, chapter)
+        )
+
     def get_spans(self, novel_id: str, chapter: float) -> list[Span]:
         # `start`/`end` are offsets *within a block*, not within the chapter
         # (docstring on `Mention.offset` states the same convention for
@@ -1027,6 +1044,21 @@ class Store:
                 )
                 for m in mentions
             ],
+        )
+
+    def delete_mentions_for_chapter(self, novel_id: str, chapter: float) -> None:
+        """Remove every mention row for one chapter, before a full re-extraction.
+
+        Same hazard as `delete_spans_for_chapter`: `add_mentions` is
+        `INSERT OR REPLACE` keyed by id, so a re-run that extracts *fewer*
+        mentions for a chapter than a previous run did (a block newly
+        excluded from story content, say) leaves the old run's now-invalid
+        ids behind as permanent stale rows. `mentions/runner.py`'s
+        per-chapter loop must call this before extending `pending` for that
+        chapter.
+        """
+        self.conn.execute(
+            "DELETE FROM mention WHERE novel_id=? AND chapter=?", (novel_id, chapter)
         )
 
     def get_mentions(

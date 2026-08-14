@@ -379,6 +379,10 @@ def detect_mentions(
             credits=report.credit_surfaces,
         )
 
+        # Full re-derivation, not an incremental update -- clear this
+        # chapter's existing rows before extending `pending` with the fresh
+        # set. See `Store.delete_mentions_for_chapter`'s docstring.
+        store.delete_mentions_for_chapter(novel_id, chapter.number)
         pending.extend(mentions)
         report.chapters += 1
         report.mentions += len(mentions)

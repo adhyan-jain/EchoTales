@@ -339,6 +339,13 @@ def attribute_novel(
         # known identity," and an anonymous slot deliberately is not one.
         _assign_anonymous_slots(novel_id, chapter.number, spans)
 
+        # Full re-derivation, not an incremental update -- clear the
+        # chapter's existing rows first so a re-run that produces fewer
+        # spans than a previous run (e.g. a block reclassified out of story
+        # content) doesn't leave orphaned stale spans behind. See
+        # `delete_spans_for_chapter`'s docstring; this is where §4.32's
+        # phantom "Daoist Gu" speaker survived a re-ingest.
+        store.delete_spans_for_chapter(novel_id, chapter.number)
         store.add_spans(spans)
 
         # Tallied from the spans' *final* state, after the anonymous-slot
