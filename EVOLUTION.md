@@ -246,6 +246,38 @@ corpus — RI chapter 1 is a massacre and both hosted backends refuse it. And
 local is the stronger product architecture anyway: each user brings their own
 GPU, so per-user cost is zero.
 
+**Measured render wall-clock, RI ch1, 8 GB VRAM (2026-08-15):** 14 panels,
+`--image-engine manga --motion-engine svd --compose-engine ffmpeg`, cold
+model load included — **30m55s** end to end, with `--no-director` (LLM art
+direction skipped). `0` panels reused from cache, `7` generated with real
+reference conditioning (the first successful conditioned render since the
+mechanism was wired up), `7` prompt-only (only 2 of the chapter's personas
+have a reference sheet on disk yet). `0` motion clips despite `--motion-
+engine svd` and a 2-per-chapter budget — not yet explained, worth checking
+`director.py`'s clip-placement gate against this specific chapter before
+assuming the SVD engine itself is broken. Final video: 646s at 1.0x speed
+(the reverted default; ~545s at the previous, too-fast 1.25x default is
+consistent with this once speed-scaled).
+
+**The LLM director and the local diffusion engine cannot run in the same
+`render` invocation on 8 GB VRAM.** `--image-engine manga` (no `--no-
+director`) with `ollama serve` warm from the director's own calls earlier in
+the *same run* hit `CUDA OutOfMemoryError` loading the diffusion pipeline —
+ollama's resident model (~5 GB) plus the diffusion pipeline don't both fit.
+This is the same non-negotiable `HANDOFF.md` section 3 states for the LLM
+tier ("no stage may share the GPU with another resident model"), just newly
+discovered to apply *within* one `render` invocation too, not only across
+separate pipeline phases -- `cmd_render` builds an LLM client for art
+direction and loads the local image engine in the same process, with no
+ordering guarantee that ollama's model has unloaded (its own idle timeout,
+not this pipeline's) by the time diffusion needs the GPU. Until `render`
+sequences the two (or `ollama serve` is stopped beforehand, same as the
+voice-synthesis rule already documented in `HANDOFF.md` section 8),
+**`--no-director` is required alongside `--image-engine manga`**, not merely
+an option — the mechanical prompt path still gets every non-LLM fix (beat
+boundaries, mob detection, locale cues), it just skips LLM-authored prompt
+phrasing.
+
 ---
 
 ## 10. Gold set: dense short-span → long-span sparse

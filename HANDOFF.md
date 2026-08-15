@@ -693,6 +693,34 @@ Neither issue is fixed. Issue 1's "stale DB" half is a one-line re-run,
 not a code change; its chapter-6 half needs a real fix in
 `chapter_ner.py::plausible_name`. Issue 2 needs new code, not yet written.
 
+### 4.36 ch1.mp4 regenerated with today's fixes — not yet watched *(2026-08-15)*
+
+`data/video_v3/reverend-insanity/ch1.mp4` was re-rendered against the fully
+fixed pipeline (4.32-4.34's ingest/attribution fixes, item 8's reference-
+conditioning fix, the beat-boundary/mob-detection/locale-cue fixes) — the
+panel cache had to be cleared first (moved to `ch1.bak-pre-fixes`), since
+`render_panels` only checks whether a file exists at the expected path, not
+whether the prompt that would produce it has changed, so the previous
+session's stale PNGs were silently being reused despite every fix above.
+**7 of 14 panels now have real reference conditioning** — the first time
+`conditioned_panels > 0` has ever been true for this novel. Discovered and
+documented mid-render: the LLM director and the local diffusion engine
+cannot share this machine's 8 GB VRAM within one `render` invocation
+(`EVOLUTION.md` section 9 has the measured OOM and the fix — `--no-director`
+required alongside `--image-engine manga` until `render` sequences the two
+itself); this render used `--no-director`, so its prompts are the mechanical
+assembly path, not LLM-authored. Full measured timing (30m55s, cache/
+conditioning counts) is in `EVOLUTION.md` section 9, not duplicated here.
+
+**Nobody has watched this video yet.** Don't assume any of 4.31's nine
+original defects beyond items 3/6/7/8/11 are fixed just because the
+pipeline ran clean — item 1/2 (attribution fragmentation, voice register)
+and item 10 (Gu classification) are known still-open per 4.34/4.35, and
+`--no-director` means this specific render doesn't test the LLM-authored
+prompt path at all. Also unexplained: 0 motion clips were produced despite
+`--motion-engine svd` and a budget of 2 per chapter — worth checking before
+assuming the SVD engine works, not just the panels.
+
 ---
 
 ## 5. Architecture-review items not yet implemented
