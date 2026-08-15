@@ -118,11 +118,26 @@ class GatewayProvider(LLMProvider):
             "messages": messages,
             "temperature": request.temperature,
             "max_tokens": request.max_tokens,
-            # Honoured by providers that support it, ignored by those that
-            # don't -- schema_instructions in the prompt is what actually
-            # carries the requirement across every provider the gateway
-            # might route to.
-            "response_format": {"type": "json_object"},
+            # `json_schema` constrains decoding directly on providers that
+            # honour it -- strictly better than `json_object`, which only
+            # promises *some* JSON object, not one matching this shape.
+            # `strict: False`: the gateway fans this out across providers
+            # with uneven support for OpenAI's strict-mode schema rules
+            # (no defaults, additionalProperties: false, every property
+            # required) -- asking for strict on a provider that can't do it
+            # risks an outright rejection instead of a degraded-but-usable
+            # answer. `schema_instructions` in the prompt plus the retry/
+            # salvage path in this method are what carry the requirement
+            # the rest of the way on a provider that ignores this field
+            # entirely, which is the behaviour actually observed.
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": schema.__name__,
+                    "schema": schema.model_json_schema(),
+                    "strict": False,
+                },
+            },
         }
         started = time.perf_counter()
 

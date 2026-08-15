@@ -230,19 +230,56 @@ def parse_into[T: BaseModel](schema: type[T], text: str) -> T:
         raise LLMParseError(f"response did not match {schema.__name__}: {exc}") from exc
 
 
+#: Placeholder values by JSON Schema type, for a minimal worked example --
+#: showing a provider the exact shape wanted works better than describing
+#: it, especially for a model that ignores a schema block but still
+#: pattern-matches an example.
+_EXAMPLE_BY_TYPE: dict[str, object] = {
+    "string": "...",
+    "integer": 0,
+    "number": 0.0,
+    "boolean": True,
+    "array": [],
+    "object": {},
+}
+
+
+def _example_for(schema: type[BaseModel]) -> dict[str, object]:
+    props = schema.model_json_schema().get("properties", {})
+    return {name: _EXAMPLE_BY_TYPE.get(spec.get("type", "string"), "...") for name, spec in props.items()}
+
+
 def schema_instructions(schema: type[BaseModel]) -> str:
     """Render a JSON-schema instruction block to append to a prompt.
 
     Included verbatim for local models, which do not support a native
-    structured-output mode the way the API does.
+    structured-output mode the way the API does, and doubles as the
+    fallback for a hosted provider that ignores `response_format` --
+    confirmed necessary in practice, not just in theory: some providers a
+    multi-provider gateway can route to answer in a markdown bullet list
+    ("*   `shot`: \"wide\"") despite an explicit instruction not to.
+
+    The instruction is stated three times on purpose -- opening, a worked
+    example, and closing -- because the failure observed was a provider
+    that read the request as "describe these fields" and reached for its
+    own default format (markdown) rather than parsing "JSON only" as a
+    hard constraint on the wire format. Repetition and a concrete example
+    are the two things that measurably move a model off a habitual
+    non-JSON answer style; restating prose alone did not.
     """
+    example = json.dumps(_example_for(schema))
     return (
-        "Respond with a single JSON object and nothing else: no markdown, "
-        "no bullet points or numbered lists, no headings, no code fences, "
-        "no explanation before or after -- the entire response must be "
-        "parseable as JSON on its own, starting with { and ending with }. "
+        "Your entire response is passed directly to a JSON parser. Any "
+        "character outside a single JSON object -- markdown, a bullet or "
+        "numbered list, a heading, backticks, bold text, a code fence, an "
+        "explanation before or after -- will fail to parse and the "
+        "request will be discarded and retried at cost. Respond with "
+        "nothing but the JSON object itself: the first character of your "
+        "response must be { and the last character must be }.\n\n"
+        f"Example of the expected shape (placeholder values): {example}\n\n"
         "It must conform to this JSON Schema:\n"
-        f"{json.dumps(schema.model_json_schema(), indent=2)}"
+        f"{json.dumps(schema.model_json_schema(), indent=2)}\n\n"
+        "Reminder: JSON only. No markdown. Start with { and end with }."
     )
 
 
