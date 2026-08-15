@@ -505,25 +505,68 @@ def cmd_render(args: argparse.Namespace) -> int:
             return 2
 
     if not args.skip_panels:
-        report = render_panels(
-            args.novel,
-            store,
-            out_dir=args.panel_dir,
-            engine=get_panel_engine(
-                image_engine_name,
-                palette=args.palette,
-                accent_hue=args.accent_hue,
-            )
+        image_engine = (
+            get_panel_engine(image_engine_name, palette=args.palette, accent_hue=args.accent_hue)
             if image_engine_name == "manga"
-            else get_panel_engine(image_engine_name),
-            chapters=wanted,
-            seed=args.seed,
-            width=args.width,
-            height=args.height,
-            client=_build_client(store) if not args.no_director else None,
-            max_panels=args.max_panels,
-            block_range=block_range,
+            else get_panel_engine(image_engine_name)
         )
+        director_client = _build_client(store) if not args.no_director else None
+        two_phase = director_client is not None and get_settings().render_direction_first
+
+        if two_phase:
+            # Direction and image generation split into two passes so an
+            # LLM backend that needs the local GPU (ollama) never has to
+            # share it with the local diffusion engine in the same process
+            # -- see render_panels's own docstring on prompt_cache_path and
+            # EVOLUTION.md section 9 for the measured OOM this avoids.
+            # Phase 1 uses a stub image engine deliberately: no GPU cost,
+            # every beat's director call still runs and gets cached.
+            cache_path = Path(args.panel_dir) / args.novel / "prompt_cache.json"
+            print(f"phase 1/2: directing panels via {director_client.backend.value} ...")
+            direction_report = render_panels(
+                args.novel,
+                store,
+                out_dir=args.panel_dir,
+                engine=get_panel_engine("stub"),
+                chapters=wanted,
+                seed=args.seed,
+                width=args.width,
+                height=args.height,
+                client=director_client,
+                max_panels=args.max_panels,
+                block_range=block_range,
+                prompt_cache_path=cache_path,
+            )
+            print(direction_report.summary())
+            print(f"phase 2/2: generating images ({image_engine_name}) ...")
+            report = render_panels(
+                args.novel,
+                store,
+                out_dir=args.panel_dir,
+                engine=image_engine,
+                chapters=wanted,
+                seed=args.seed,
+                width=args.width,
+                height=args.height,
+                client=None,
+                max_panels=args.max_panels,
+                block_range=block_range,
+                prompt_cache_path=cache_path,
+            )
+        else:
+            report = render_panels(
+                args.novel,
+                store,
+                out_dir=args.panel_dir,
+                engine=image_engine,
+                chapters=wanted,
+                seed=args.seed,
+                width=args.width,
+                height=args.height,
+                client=director_client,
+                max_panels=args.max_panels,
+                block_range=block_range,
+            )
         print(report.summary())
 
     if not args.skip_motion:

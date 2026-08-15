@@ -590,12 +590,29 @@ def render_panels(
     client: object | None = None,
     max_panels: int = 14,
     block_range: tuple[int, int] | None = None,
+    prompt_cache_path: str | Path | None = None,
 ) -> PanelReport:
     """Render one cached panel image per story-bearing block.
 
     `engine=None` uses the stub, matching `voice/runner.py::render_novel`'s
     default -- a manifest without a GPU is how a run gets reviewed before
     spending render time on it.
+
+    **`prompt_cache_path`, when given, decouples direction from image
+    generation.** Every beat's final prompt (LLM-directed or mechanically
+    assembled) is written to this JSON file keyed by `"{chapter:g}:
+    {block_index}"`; on a later call with the same path, a beat whose key is
+    already cached skips the director call (and the mechanical fallback)
+    entirely and reuses the cached prompt. This is what lets a "direction
+    first" run (`client` set, a cheap/no-GPU image engine such as `stub`)
+    populate the cache with every beat's LLM-authored prompt using a
+    gateway/API backend that doesn't touch the local GPU, followed by a
+    separate "image" run (`client=None`, the real local diffusion engine)
+    that generates every image from the cache with zero further LLM calls
+    -- avoiding the VRAM conflict a resident ollama model and a local
+    diffusion pipeline have in the same process (`EVOLUTION.md` section 9).
+    Config: `render_direction_first` in `config.json`/`Settings`;
+    `commands.py::cmd_render` is what actually runs the two passes.
 
     **`block_range` restricts every requested chapter to `[lo, hi]`
     inclusive, for testing.** Panel generation costs 40-70s/image on this
@@ -627,6 +644,14 @@ def render_panels(
     out_dir = Path(out_dir) / novel_id
     report = PanelReport(novel_id=novel_id, engine=engine.name)
     generated_by_digest: dict[str, Path] = {}
+
+    prompt_cache: dict[str, str] = {}
+    cache_path = Path(prompt_cache_path) if prompt_cache_path is not None else None
+    if cache_path is not None and cache_path.exists():
+        try:
+            prompt_cache = json.loads(cache_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            prompt_cache = {}
 
     manifest: list[PanelImage] = []
     wanted = chapters if chapters is not None else store.chapter_numbers(novel_id)
@@ -742,51 +767,67 @@ def render_panels(
                 style = STYLE_SCENE
             closeup = style is STYLE_CLOSEUP
 
-            # **Ask a model what this panel should show**, and only fall back
-            # to mechanical assembly when there is no client or the call
-            # fails. An assembled prompt is grammatical and about nothing:
-            # it cannot know what is happening in the beat, which is why
-            # panels came back unrelated to the story around them.
-            directed = None
-            if client is not None:
-                brief = story_context(
-                    novel_id, store, chapter_number, beat.blocks
-                ).to_brief()
-                # The director model reads free-form text, not a
-                # token-budgeted prompt, so the directive can simply lead
-                # the passage it directs from rather than needing its own
-                # slot the way the mechanical path does below.
-                directed_prose = f"{directive} {beat_prose}".strip() if directive else beat_prose
-                directed = direct_beat(
-                    directed_prose,
-                    context_brief=brief,
-                    cast={k: v for k, v in appearances.items() if v},
-                    novel_style=world_setting(novel_id),
-                    client=client,
-                    novel_id=novel_id,
-                )
+            cache_key = f"{chapter_number:g}:{block.index}"
+            cached_prompt = prompt_cache.get(cache_key)
 
-            if directed is not None:
-                prompt = directed.to_image_prompt()
+            if cached_prompt is not None:
+                # A direction pass already ran (`prompt_cache_path`) and
+                # settled this beat's prompt -- reuse it verbatim rather
+                # than re-calling the director or falling back to the
+                # mechanical assembler, which is the whole point of the
+                # two-phase split (this function's own docstring).
+                prompt = cached_prompt
             else:
-                prompt = build_image_prompt(
-                    cast,
-                    beat=beat_prose,
-                    directive=directive,
-                    character_appearances=appearances,
-                    character_genders=genders,
-                    # A close-up's background is deliberately abstract tone,
-                    # so feeding it a courtyard only fights the framing.
-                    world="" if closeup else world_setting(novel_id),
-                    locale=(
-                        ""
-                        if closeup
-                        else scene_locale(
-                            novel_id, beat_prose, block_index=block.index
-                        )
-                    ),
-                    style=style,
-                )
+                # **Ask a model what this panel should show**, and only fall
+                # back to mechanical assembly when there is no client or the
+                # call fails. An assembled prompt is grammatical and about
+                # nothing: it cannot know what is happening in the beat,
+                # which is why panels came back unrelated to the story
+                # around them.
+                directed = None
+                if client is not None:
+                    brief = story_context(
+                        novel_id, store, chapter_number, beat.blocks
+                    ).to_brief()
+                    # The director model reads free-form text, not a
+                    # token-budgeted prompt, so the directive can simply lead
+                    # the passage it directs from rather than needing its own
+                    # slot the way the mechanical path does below.
+                    directed_prose = (
+                        f"{directive} {beat_prose}".strip() if directive else beat_prose
+                    )
+                    directed = direct_beat(
+                        directed_prose,
+                        context_brief=brief,
+                        cast={k: v for k, v in appearances.items() if v},
+                        novel_style=world_setting(novel_id),
+                        client=client,
+                        novel_id=novel_id,
+                    )
+
+                if directed is not None:
+                    prompt = directed.to_image_prompt()
+                else:
+                    prompt = build_image_prompt(
+                        cast,
+                        beat=beat_prose,
+                        directive=directive,
+                        character_appearances=appearances,
+                        character_genders=genders,
+                        # A close-up's background is deliberately abstract
+                        # tone, so feeding it a courtyard only fights the
+                        # framing.
+                        world="" if closeup else world_setting(novel_id),
+                        locale=(
+                            ""
+                            if closeup
+                            else scene_locale(
+                                novel_id, beat_prose, block_index=block.index
+                            )
+                        ),
+                        style=style,
+                    )
+                prompt_cache[cache_key] = prompt
 
             digest = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
             if image_path.exists():
@@ -829,4 +870,7 @@ def render_panels(
         "\n".join(json.dumps(asdict(p)) for p in manifest) + "\n",
         encoding="utf-8",
     )
+    if cache_path is not None:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        cache_path.write_text(json.dumps(prompt_cache, indent=2), encoding="utf-8")
     return report
