@@ -229,6 +229,62 @@ def attribute_epithet(
     return None
 
 
+#: Any mention of a bounded role epithet, speech-verb-adjacent or not --
+#: used to track "who does a bare pronoun refer to right now", not to
+#: attribute a line by itself. Deliberately looser than `_EPITHET_THEN_VERB`
+#: for that reason: `attribute_epithet_mentioned` only updates a chapter-
+#: scoped "current epithet holder" pointer, it never assigns a speaker.
+_EPITHET_MENTIONED = re.compile(_EPITHET, re.IGNORECASE)
+
+
+def epithet_mentioned(text: str) -> str | None:
+    """The role epithet a block's narration is currently about, if any.
+
+    Called on every block regardless of whether it contains dialogue --
+    "the Gu Yue clan head curled up his lips" (no speech verb) still tells
+    `attribute_pronoun_epithet` who a following bare "he said" belongs to.
+    """
+    match = _EPITHET_MENTIONED.search(text)
+    return match.group(0).strip() if match else None
+
+
+def attribute_pronoun_epithet(
+    span: Span,
+    *,
+    preceding: str,
+    following: str,
+    current_epithet: str | None,
+) -> Attribution | None:
+    """Tier 1.6: a bare pronoun speech tag, resolved via the chapter's
+    current epithet holder rather than the anaphora layer `_PRONOUN_SUBJECT`
+    was originally written for (module note above it) -- the anaphora layer
+    resolves pronouns to *named* entities, and this speaker has no name in
+    this chapter to resolve to. `current_epithet` is threaded in by the
+    caller (`speakers/runner.py::attribute_chapter`), which tracks it from
+    `epithet_mentioned` and clears it whenever a different named character
+    is confidently established as the current speaker -- see that caller
+    for the actual state machine; this function only consumes the pointer.
+
+    Lower confidence than `attribute_epithet`'s direct match (0.45 vs 0.55):
+    a bare pronoun is weaker evidence than the title stated outright, and
+    this only fires when the stronger tiers have already failed.
+    """
+    if current_epithet is None:
+        return None
+    for window in (following, preceding):
+        if not window:
+            continue
+        if _PRONOUN_SUBJECT.search(window):
+            return Attribution(
+                span_id=span.id,
+                speaker=current_epithet,
+                method=AttributionMethod.EPITHET_SLOT,
+                confidence=0.45,
+                evidence=f"pronoun tag, current epithet: {current_epithet}",
+            )
+    return None
+
+
 def attribute_proximal(
     span: Span,
     *,

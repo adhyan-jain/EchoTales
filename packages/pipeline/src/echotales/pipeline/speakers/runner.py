@@ -8,6 +8,7 @@ scene to someone who is no longer present.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 from echotales.core.enums import AliasType, AttributionMethod, SpanType
@@ -19,8 +20,10 @@ from echotales.pipeline.spans.scene import ActiveScene, build_active_scenes
 from echotales.pipeline.speakers.attribution import (
     _ROLE_EPITHETS,
     Attribution,
+    attribute_pronoun_epithet,
     attribute_span,
     detect_pov_holder,
+    epithet_mentioned,
 )
 from echotales.pipeline.speakers.contextual import attribute_contextual
 
@@ -77,6 +80,36 @@ def attribute_chapter(
     recent: list[str] = []
     ordered_blocks = sorted(chapter.blocks, key=lambda b: b.index)
 
+    # Who a bare pronoun ("he faced the clan elders and said,") currently
+    # refers to, when nobody's been named. Updated from every block's own
+    # narration (`epithet_mentioned`, speech-verb-adjacency not required --
+    # "the clan head curled up his lips" still tells the *next* line who
+    # "he" is), and cleared the moment a *different*, named character is
+    # confidently established as speaking -- a real name always wins over a
+    # standing title, and carrying the title past that point would
+    # misattribute the named character's own lines to the epithet instead.
+    current_epithet: str | None = None
+
+    # A single combined pattern for every known character name, so a block's
+    # narration can be checked for "does this mention someone by name" in
+    # one pass. Longest-first so "Fang Zheng" doesn't shadow inside a longer
+    # name that happens to contain it. This is what actually clears
+    # `current_epithet` in practice -- confirmed on RI ch1, where nothing
+    # between the clan head's last epithet-tagged line (block 68) and Fang
+    # Yuan's own line (block 84) ever got an EXPLICIT-tier resolution, so
+    # the EXPLICIT-only reset above never fired and "he slowly closed his
+    # eyes... He sighed" -- narration plainly about Fang Yuan, established
+    # by name two blocks earlier -- was about to be misattributed to "the
+    # clan head" by the pronoun tier. Sorted names, not raw `known_names`,
+    # since that set also holds folded comparison keys that are not valid
+    # regex-safe surface forms to alternate on.
+    named_re: re.Pattern[str] | None = None
+    surface_names = sorted(
+        (n for n in known_names if n and n[:1].isupper()), key=len, reverse=True
+    )
+    if surface_names:
+        named_re = re.compile(r"\b(?:" + "|".join(re.escape(n) for n in surface_names) + r")\b")
+
     for position, block in enumerate(ordered_blocks):
         block_spans = sorted(by_block.get(block.index, []), key=lambda s: s.start)
 
@@ -84,7 +117,16 @@ def attribute_chapter(
         # scene whose cast may share nobody with the previous one.
         if block.text.strip() == "* * *":
             recent.clear()
+            current_epithet = None
             continue
+
+        if mentioned := epithet_mentioned(block.text):
+            current_epithet = mentioned
+        elif current_epithet is not None and named_re is not None and named_re.search(block.text):
+            # A different, named character is now what this block's
+            # narration is actually about -- the epithet no longer applies
+            # to the next bare pronoun until it's mentioned again.
+            current_epithet = None
 
         # Narration from the neighbouring blocks. Roughly 15% of speech spans
         # occupy a paragraph of their own, with the attribution sitting in the
@@ -119,7 +161,27 @@ def attribute_chapter(
                 known_names=known_names,
                 pov_holder=pov_holder,
             )
+
+            if attribution.method is AttributionMethod.UNRESOLVED:
+                pronoun_hit = attribute_pronoun_epithet(
+                    span,
+                    preceding=preceding,
+                    following=following,
+                    current_epithet=current_epithet,
+                )
+                if pronoun_hit is not None:
+                    attribution = pronoun_hit
+
             out.append(attribution)
+
+            # A real name speaking clears the standing title -- see
+            # `current_epithet`'s own comment above the loop.
+            if (
+                attribution.speaker
+                and attribution.method is AttributionMethod.EXPLICIT
+                and attribution.speaker not in _ROLE_EPITHETS
+            ):
+                current_epithet = None
 
             # Only confident, genuinely spoken lines update the alternation
             # state. Seeding it from a guess makes the next guess worse.
