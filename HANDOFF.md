@@ -13,35 +13,31 @@ history of how any of it got this way lives in `EVOLUTION.md`, not here.
 | `details.md` | Per-file detail |
 | `plans.md` | The original spec. Amended three times; the amendments win and are marked *(revised)* |
 
-**Last updated:** 2026-08-15. 4.30 built the first chapter video with real
-cloned audio and block-scoped casting
-(`data/video_v3/reverend-insanity/ch1.mp4`, 545s, 1080x1920). 4.31 recorded
-the author's watch-through: nine specific defects. **This session fixed
-four of them** (speed default, reference-sheet wiring, the panel-relevance
-cluster) **plus three bugs found afterward by reading ch1's actual span
-table directly, not in the original nine** — a translator's-note ingestion
-leak that minted a phantom "Daoist Gu" speaker (4.32), a store bug where
-`add_spans`/`add_mentions` never deleted stale rows on re-run so old wrong
-data survived every subsequent fix (4.33), and two roster-pollution bugs
-plus a missing epithet-based attribution tier that let a location and a
-self-referential idiom get attributed as speakers while the clan leader's
-real speaker tags went unused (4.34). ch1 was then re-rendered
-(`data/video_v4/reverend-insanity/ch1.mp4` — **video output is now
-versioned, never overwritten in place, see 4.36**) and actually watched:
-4.37 has six real findings, none fixed yet — a wrong-gender voice on the
-clan head's first line, a narrator/anonymous-slot voice collision, a flat
-narrator delivery, register-blind voice casting confirmed by ear with
-specific detail, and an image-frequency/whose-face-is-on-screen problem
-with a concrete pacing target (~60% of a manhwa's cut rate). **4.37 is the
-actual next pick-up point**, not 4.34's leftover items alone.
+**Last updated:** 2026-08-15. **Read 4.39 first if you only have time for
+one section** — it supersedes parts of everything below it (per-beat panel
+generation is gone, replaced by scene-grouped generation; the motion-clip
+scorer was rewritten; voice casting gained a pitch lever and gender
+coin-flip; a local multi-provider LLM gateway backend was added) and ends
+with the exact next step: the real SDXL render this whole session built
+toward has not completed successfully yet, for two found-and-partly-fixed
+reasons (a caching bug that made every panel a blank placeholder, now
+fixed; an ollama-vs-diffusion GPU conflict across the two render phases,
+not yet fixed).
 
-**4.32-4.34, found this session, not in the original nine:** re-reading
-ch1's actual span table (not just the video) surfaced three real bugs
-independent of 4.31's list — see those sections below. All fixed. The
-full 1-199 resolve/persona/speaker pipeline was re-run twice this session
-(once after 4.32/4.33, once after 4.34) to build
-a real character knowledge base before any further per-chapter rendering;
-see 0's workflow note.
+Earlier in the session: 4.30 built the first chapter video with real
+cloned audio and block-scoped casting. 4.31 recorded the author's
+watch-through: nine specific defects, four fixed directly (speed default,
+reference-sheet wiring, the panel-relevance cluster) plus three bugs found
+by reading ch1's actual span table (4.32-4.34: a phantom "Daoist Gu"
+speaker from a translator's-note ingestion leak, a store bug where
+`add_spans`/`add_mentions` never deleted stale rows on re-run, two
+roster-pollution bugs plus a missing epithet-attribution tier). ch1 was
+re-rendered and watched again: 4.37's six findings (wrong-gender voice,
+voice collisions, flat narration, register-blind casting, image-frequency/
+whose-face problems) were worked through in 4.38 and the voice half of
+4.39. The image half of 4.37 (item 6) is what 4.39's scene-grouping
+rewrite was built to address, and per above, hasn't reached a real
+verified render yet.
 
 
 ## 0. Current state, in one screen
@@ -899,6 +895,172 @@ nothing useful for this specific chapter, so it was skipped rather than
 faked. **4.35 is upstream of item 6 being properly fixable for ch1's clan
 head specifically** -- worth remembering the next time item 6 looks like
 a pure image-generation problem.
+
+### 4.39 Voice layer: pitch shift, gender coin-flip, mob casting; a local multi-provider LLM gateway; scene-grouped image generation replacing per-block generation -- large session, several real bugs caught before shipping *(2026-08-15)*
+
+Picking this up fresh: **this section is the actual state of the render
+pipeline as of this session's end.** Read it before 4.30-4.38 if you only
+have time for one -- several things those sections describe (per-beat
+panel generation, the additive motion-clip scorer, no register/age lever
+in voice casting) were replaced in this session, not merely patched.
+
+**Voice layer, all verified against real data, not just tests:**
+
+- **Pitch shift** (`voice/pitch.py`, new): post-synthesis, via ffmpeg's
+  `rubberband` filter (duration-preserving, unlike `asetrate`+`atempo`).
+  `DeliverySettings.pitch_semitones` -2 for `profile.register == "formal"`.
+  Author correction that shaped this: in a cultivation novel "elder" is a
+  *rank* (authority, seniority), not a biological age descriptor -- the
+  fix targets *sounding commanding*, not *sounding old*. Neither VCTK nor
+  Chatterbox exposes an age/authority dial, so this is the only lever
+  available short of new voice data.
+- **50/50 gender coin-flip for genuinely unresolved speakers and crowds**
+  (author instruction): `voice/runner.py` no longer lets VCTK's own
+  population imbalance (63 female / 47 male) bias casting when the text
+  states no gender at all. `CROWD_REACTION` spans also got real mob-voice
+  casting for the first time -- they were falling into the narrator
+  branch by default before this.
+- **VCTK's real limitation, confirmed, not assumed**: only 6 male-adult /
+  8 female-adult voices, zero elder, zero child; 96 of 110 speakers are
+  "youth". Researched but **not yet integrated**: LibriTTS-R (2,456
+  speakers, CC BY 4.0, openslr.org/141, balanced gender, no
+  child/teen/elderly either) as the adult-bucket fix. Explicitly **not**
+  pursuing a dedicated elderly-speaker dataset, per the rank-not-age
+  correction above -- VCTK's own youth skew is actually well-suited to
+  RI's early, disciple-heavy chapters and should stay.
+- Also this session (documented in 4.38, still true): wrong-gender voice
+  casting fixed, voice collisions fixed, the dead delivery-marker/polarity
+  system wired into synthesis for the first time, pronoun-to-epithet
+  coreference added to speaker attribution.
+
+**A local multi-provider LLM gateway** (`llm/gateway.py`, new
+`ModelBackend.GATEWAY`): the author's own separate project, a
+key-rotation/fallback proxy across free-tier providers (Gemini, Groq,
+OpenRouter, ...), OpenAI-compatible, `127.0.0.1:11435/v1`. Verified as a
+real, legitimate local service before any code was written against it
+(checked what was actually listening on that port). Exists specifically
+to get LLM calls off `ollama` for stages that can't share this machine's
+8 GB VRAM with a local image/TTS engine.
+
+- `config.json` (gitignored, `config.json.example` committed -- same
+  pattern as `.env`/`.env.example`): holds `gateway.host`, `gateway.model`,
+  and `render.direction_first` (bool), since these are meant to be
+  hand-edited directly. `Settings` applies `config.json` only where an env
+  var hasn't already set the field.
+- **Real, caught issue, not yet fully resolved**: some providers the
+  gateway routes to under load don't honour "JSON only" as reliably as
+  others -- confirmed directly (identical requests, one clean JSON
+  response, one markdown bullet list, no code change in between).
+  Mitigated three ways: 4 retries (gives the gateway's own rotation a
+  second chance), a much stronger anti-markdown instruction in
+  `schema_instructions` (stated three times: opening, worked example,
+  closing), and a markdown-bullet-list salvage parser as a last resort.
+  **Still not bulletproof**: mid-render this session, the backing Gemini
+  key hit its free-tier rate limit (confirmed via the author's own usage
+  dashboard -- a spike of 429s), which cascaded into the gateway itself
+  returning 502s for a stretch, and those calls fell back to mechanical
+  prompts after exhausting all 4 retries. This is provider-side rate
+  limiting, not a bug in `gateway.py` -- but it means a real render can
+  still have a meaningfully lower director-coverage rate than intended if
+  it lands during a rate-limit window.
+- `response_format` upgraded to `json_schema` (`strict: false`, for
+  uneven provider support) from the weaker `json_object`.
+
+**Two-phase render (direction pass, then image pass)**, config-gated via
+`render_direction_first`: `render_panels` gained `prompt_cache_path` --
+every beat's prompt is cached to JSON keyed by `chapter:block_index`, so a
+second call against the same cache reuses it and skips the director
+entirely. `cmd_render` runs phase 1 (director calls, whatever backend is
+configured, `StubImageEngine`, no GPU cost) then phase 2 (the real local
+image engine, `client=None`, no further LLM calls) when a director client
+is configured and the toggle is on.
+
+- **A real, caught bug, fixed same-session**: phase 1 originally wrote to
+  `args.panel_dir` -- the *same* directory phase 2 uses. `StubImageEngine`
+  writes a real (placeholder) PNG file, and `render_panels`'s own
+  cross-run cache checks `image_path.exists()` -- so phase 1's placeholder
+  files made phase 2 think every image was already rendered, and it
+  silently skipped real SDXL generation for all 39 panels in the first
+  full run of this feature. Fixed: phase 1 now writes to a `tempfile.
+  mkdtemp()` scratch directory, cleaned up after phase 2 completes. Only
+  `prompt_cache_path` needs to survive between the two phases; the image
+  files must not.
+- **Still open, not yet fixed**: `ollama` runs as a persistent background
+  server, not an in-process model. Two-phase generation avoids one
+  *specific* GPU conflict (the director LLM and local diffusion loaded in
+  the same Python process), but if `director_client.backend is
+  ModelBackend.OLLAMA`, `ollama serve` stays resident across both phases
+  of one `cmd_render` invocation regardless -- there is currently no code
+  that stops it between phase 1 and phase 2. Every ollama-backed render
+  this session that avoided the OOM did so by the operator manually
+  stopping `ollama serve` between phases, not because the code guarantees
+  it. **This is the immediate next thing to build**: an explicit ollama
+  shutdown between phase 1 and phase 2 in `cmd_render`, gated on
+  `director_client.backend is ModelBackend.OLLAMA`, before switching the
+  gateway back off in favour of ollama for the next render (which is
+  where this session was headed when it stopped -- the gateway's Gemini
+  key was rate-limited, and the author asked to switch to ollama for
+  directing next).
+
+**Scene-grouped image generation, replacing per-block/per-beat generation
+entirely** -- this is the biggest structural change of the session, from
+an explicit author spec (full text not reproduced here; ask for it if the
+exact numeric targets matter again). Core idea: a chapter's blocks group
+into *scenes* (contiguous stretches sharing cast, place and timeline), and
+a scene's *length in blocks* sets a hard image budget (1 for <=3 blocks, 2
+for 4-7, 3 for 8+) rather than one image per beat/block.
+
+- `render/scenes.py` (new): `group_scenes()`. Boundary fires on a
+  `NarrativeSegment` change, a cast change, or a location change
+  (`persona/attire.py::scene_locale`).
+- `render/panels.py`: rewritten to iterate scenes, generate only the
+  slots (establishing/close-up/wide -- reusing the existing
+  `STYLE_ESTABLISHING`/`CLOSEUP`/`SCENE` prompt machinery, not a new
+  parallel one) a scene's blocks actually use, and write one manifest row
+  per *block* pointing at its slot's (possibly shared) image -- this is
+  what keeps `render/timeline.py` and everything downstream unchanged
+  while cutting the actual generation count.
+- `render/director.py`: added `KEN_BURNS_ZOOM_IN/ZOOM_OUT/PAN_SCALE/
+  PAN_TRANSLATE_PCT` constants (`# TUNING`, first-guess). Motion-clip
+  scoring rewritten to an exact three-tier priority order (duration>8s +
+  clip-tag / duration>6s + scene emotional peak via `spans/delivery.py`
+  markers / duration>6s alone) replacing the previous additive scorer.
+  `pan_direction` rule left exactly as-is (explicit instruction).
+- `render/compose.py`: `_zoompan_filter` now reads `director.py`'s Ken
+  Burns constants instead of its own local `_MAX_ZOOM`.
+- **Two real scene-boundary bugs found and fixed before the real render,
+  by checking numbers against the spec's own 15-25 sanity range first**:
+  (1) `scene_locale`'s rotating fallback (deliberate, for *panel-
+  background* variety on unstated blocks) looked like a location change
+  on nearly every block -- fixed with a new `strict=True` parameter that
+  returns `""` instead of rotating, used only by `scenes.py`. (2)
+  Comparing cast only against the *immediately preceding* block treated
+  an ordinary rotating exchange (RI ch1's opening: four unnamed attackers
+  taking turns) as a new scene on every turn -- fixed by comparing against
+  the accumulated union of the current scene's speakers, and excluding
+  `ANONYMOUS_SLOT` speakers from the cast signal entirely (a rotating
+  anon slot is an unidentified member of a group already present, not a
+  new arrival; `EPITHET_SLOT` still counts). Measured: ch1 78 -> 19 scenes
+  (30 images), ch2 -> 4 scenes (10 images) -- **not a clean fit to the
+  spec's 18-22 target either direction, and further tuning needs a real
+  watch-through this session didn't reach.** Flagged honestly, not
+  chased to an exact number under time pressure.
+- **The real SDXL render this was all building toward has not
+  successfully completed yet.** One run finished in ~24 min but produced
+  every panel as a stub placeholder (the caching bug above, since fixed).
+  Another run's director coverage was degraded by the mid-run Gemini
+  rate-limit. **Next session's concrete first step**: build the ollama-
+  stop-between-phases fix, switch `ECHOTALES_MODEL_BACKEND` back to
+  `ollama`, and run `echotales render --novel reverend-insanity --chapters
+  1-2 --image-engine sdxl --motion-engine svd --compose-engine ffmpeg`
+  for real, then report the 10 numbers the original spec asked for (scene
+  counts, image counts, timeline event counts, video duration, motion-clip
+  block indices and scores, average/outlier hold durations,
+  zero-image/carried-over block counts) -- none of that reporting has
+  happened yet because no run has completed with both a real director and
+  real image generation at the same time.
+
+`uv run pytest packages/` 682 passing throughout this entire session.
 
 ---
 

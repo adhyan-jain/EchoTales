@@ -521,12 +521,27 @@ def cmd_render(args: argparse.Namespace) -> int:
             # EVOLUTION.md section 9 for the measured OOM this avoids.
             # Phase 1 uses a stub image engine deliberately: no GPU cost,
             # every beat's director call still runs and gets cached.
+            #
+            # **Phase 1 writes to a separate scratch directory, not
+            # args.panel_dir.** A real, caught bug: StubImageEngine writes
+            # a real (placeholder) PNG to request.out_path, and
+            # render_panels's own cross-run cache checks `image_path.
+            # exists()` -- so a phase 1 run against the *same* directory
+            # phase 2 uses left every image path already "existing" by the
+            # time phase 2 ran, and phase 2 silently skipped real SDXL
+            # generation for all 39 panels, reporting them "reused from
+            # cache" when every one was actually the stub's blank
+            # placeholder. Only prompt_cache_path needs to persist between
+            # the two phases; the image files themselves must not.
+            import tempfile
+
+            direction_scratch = tempfile.mkdtemp(prefix="echotales-direction-")
             cache_path = Path(args.panel_dir) / args.novel / "prompt_cache.json"
             print(f"phase 1/2: directing panels via {director_client.backend.value} ...")
             direction_report = render_panels(
                 args.novel,
                 store,
-                out_dir=args.panel_dir,
+                out_dir=direction_scratch,
                 engine=get_panel_engine("stub"),
                 chapters=wanted,
                 seed=args.seed,
@@ -553,6 +568,9 @@ def cmd_render(args: argparse.Namespace) -> int:
                 block_range=block_range,
                 prompt_cache_path=cache_path,
             )
+            import shutil as _shutil
+
+            _shutil.rmtree(direction_scratch, ignore_errors=True)
         else:
             report = render_panels(
                 args.novel,
