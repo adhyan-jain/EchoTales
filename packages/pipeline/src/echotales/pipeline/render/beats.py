@@ -45,11 +45,16 @@ _MAX_BEAT_CHARS = 900
 #: uneventful stretch still gets a fresh picture eventually.
 _MAX_BEAT_BLOCKS = 14
 
-#: A chapter gets at most this many panels. The binding constraint is
-#: quality, not count: a handful of well-composed images beats a hundred
-#: variations on an empty courtyard, and the render budget is better spent
-#: on more steps per image than on more images.
-DEFAULT_MAX_PANELS = 14
+#: A chapter gets at most this many panels. Originally 14 on the argument
+#: that quality beats count -- a handful of well-composed images beats a
+#: hundred variations on an empty courtyard. Raised to 70 on explicit
+#: author instruction (HANDOFF 4.37 item 6: 14 read as too sparse, a target
+#: of roughly 60% of a manhwa's panel density was requested). The original
+#: argument about quality-per-image still holds and this is a real
+#: trade-off, not a free change -- 5x the panels is roughly 5x the render
+#: wall-clock for the same GPU (measured: 14 panels was ~31 minutes with
+#: --no-director; see EVOLUTION.md section 9 for the timing).
+DEFAULT_MAX_PANELS = 70
 
 
 @dataclass(slots=True)

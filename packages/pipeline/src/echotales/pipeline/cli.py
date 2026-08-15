@@ -185,9 +185,11 @@ def build_parser() -> argparse.ArgumentParser:
         "A chapter gets this many or zero, never a clip inserted for its own sake",
     )
     p_render.add_argument(
-        "--max-panels", type=int, default=14,
-        help="panels per chapter (default: 14). One per narrative beat, not "
-        "per paragraph -- fewer, better images beat a hundred near-duplicates",
+        "--max-panels", type=int, default=70,
+        help="panels per chapter (default: 70, roughly 60%% of a manhwa's "
+        "panel density -- author instruction, HANDOFF 4.37 item 6). One "
+        "per narrative beat, not per paragraph. 5x the panels is roughly "
+        "5x the render wall-clock on the same GPU",
     )
     p_render.add_argument(
         "--no-director",
