@@ -237,7 +237,10 @@ def schema_instructions(schema: type[BaseModel]) -> str:
     structured-output mode the way the API does.
     """
     return (
-        "Respond with a single JSON object and nothing else. "
+        "Respond with a single JSON object and nothing else: no markdown, "
+        "no bullet points or numbered lists, no headings, no code fences, "
+        "no explanation before or after -- the entire response must be "
+        "parseable as JSON on its own, starting with { and ending with }. "
         "It must conform to this JSON Schema:\n"
         f"{json.dumps(schema.model_json_schema(), indent=2)}"
     )

@@ -17,7 +17,9 @@ for that stage, at zero API cost (free-tier keys only).
 
 from __future__ import annotations
 
+import json
 import os
+import re
 import time
 
 import httpx
@@ -38,6 +40,38 @@ DEFAULT_MODEL = "coding-best"
 #: HTTP client always sends a (non-empty, per OpenAI client convention)
 #: Authorization header, never a real secret.
 PLACEHOLDER_KEY = "not-needed"
+
+_MD_LINE = re.compile(
+    r"^\s*(?:[-*]|\d+[.)])\s*\*{0,2}`?(?P<key>[A-Za-z_][\w ]*)`?\*{0,2}\s*:\s*(?P<value>.+?)\s*$"
+)
+
+
+def _markdown_to_json(text: str) -> str:
+    """Best-effort recovery when a provider answers in a markdown list
+    instead of JSON despite being told not to (e.g. "*   `shot`: \"wide\"").
+
+    Not a general markdown parser -- just enough structure to catch the one
+    failure mode actually observed against this gateway under load. A line
+    that doesn't match is silently skipped; a response that yields no
+    fields at all still fails downstream in `parse_into`, exactly as if
+    this function didn't exist, so this can only help, never make a
+    parseable response worse.
+    """
+    fields: dict[str, object] = {}
+    for line in text.splitlines():
+        match = _MD_LINE.match(line)
+        if not match:
+            continue
+        key = match.group("key").strip().lower().replace(" ", "_")
+        raw = match.group("value").strip().rstrip(",")
+        quoted = re.findall(r'"([^"]*)"', raw)
+        if raw.startswith("[") or len(quoted) > 1:
+            fields[key] = quoted
+        elif quoted:
+            fields[key] = quoted[0]
+        else:
+            fields[key] = raw.strip('"')
+    return json.dumps(fields)
 
 
 class GatewayProvider(LLMProvider):
@@ -104,7 +138,8 @@ class GatewayProvider(LLMProvider):
         # which fixing the parser to tolerate one bad output shape would
         # not: the next bad shape would just be a different one.
         last_exc: Exception | None = None
-        for attempt in range(2):
+        attempts = 4
+        for attempt in range(attempts):
             try:
                 resp = self._client.post(
                     f"{self.host}/chat/completions",
@@ -114,7 +149,17 @@ class GatewayProvider(LLMProvider):
                 resp.raise_for_status()
                 data = resp.json()
                 content = data["choices"][0]["message"]["content"]
-                value = parse_into(schema, content)
+                try:
+                    value = parse_into(schema, content)
+                except LLMParseError:
+                    # Last resort before giving up on this attempt: some
+                    # providers the gateway can land on answer in a
+                    # markdown bullet/numbered list instead of JSON despite
+                    # being told not to ("*   `shot`: \"wide\""). Salvage
+                    # what a real JSON parse would have gotten anyway
+                    # rather than discard a perfectly good answer just
+                    # because of its punctuation.
+                    value = parse_into(schema, _markdown_to_json(content))
                 break
             except httpx.HTTPError as exc:
                 last_exc = exc
@@ -127,7 +172,7 @@ class GatewayProvider(LLMProvider):
                 continue
         else:
             raise LLMUnavailable(
-                f"gateway request failed after 2 attempts: {last_exc}"
+                f"gateway request failed after {attempts} attempts: {last_exc}"
             ) from last_exc
 
         elapsed_ms = int((time.perf_counter() - started) * 1000)
