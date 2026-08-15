@@ -42,6 +42,7 @@ from echotales.pipeline.voice.bank import VoiceBank, pick_mob_voice
 from echotales.pipeline.voice.casting import DEFAULT_SEED, cast_voices
 from echotales.pipeline.voice.delivery import pace_text, settings_for
 from echotales.pipeline.voice.engine import SynthesisRequest, TTSEngine, get_engine
+from echotales.pipeline.voice.pitch import ffmpeg_available, shift_pitch
 
 #: Span types that reach audio. `NARRATION_EXPOSITION` is included (it is
 #: read aloud even though panels skip it -- `SpanType.is_renderable_visually`
@@ -73,6 +74,7 @@ class AudioLine:
     cfg_weight: float
     rationale: str
     text: str
+    pitch_semitones: float = 0.0
     audio_path: str = ""
 
 
@@ -92,6 +94,9 @@ class VoiceReport:
     unattributed_lines: int = 0
     voices_used: set[str] = field(default_factory=set)
     engine: str = "stub"
+    #: Set once the first pitch-shift call finds no ffmpeg on PATH, so the
+    #: note prints once per run, not once per affected line.
+    pitch_shift_unavailable_warned: bool = False
 
     def summary(self) -> str:
         return (
@@ -385,6 +390,7 @@ def render_novel(
                 voice=voice,
                 exaggeration=settings.exaggeration,
                 cfg_weight=settings.cfg_weight,
+                pitch_semitones=settings.pitch_semitones,
                 rationale=settings.rationale,
                 text=text,
             )
@@ -403,6 +409,14 @@ def render_novel(
                         cfg_weight=settings.cfg_weight,
                     )
                 )
+                if settings.pitch_semitones:
+                    shift_pitch(path, settings.pitch_semitones)
+                    if not ffmpeg_available() and not report.pitch_shift_unavailable_warned:
+                        print(
+                            "note: ffmpeg not found -- register-based pitch shifting "
+                            "(voice/pitch.py) is a no-op this run"
+                        )
+                        report.pitch_shift_unavailable_warned = True
                 line.audio_path = str(path)
 
             manifest.append(line)

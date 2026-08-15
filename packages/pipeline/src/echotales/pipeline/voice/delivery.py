@@ -42,6 +42,13 @@ NEUTRAL_CFG = 0.5
 class DeliverySettings:
     exaggeration: float = NEUTRAL_EXAGGERATION
     cfg_weight: float = NEUTRAL_CFG
+    #: Semitones applied as post-processing pitch shift (voice/pitch.py),
+    #: negative = lower/older-reading, positive = higher/younger-reading.
+    #: Neither Chatterbox nor VCTK expose age as a controllable dial --
+    #: this is the lever for "cast the voice that's available, then make
+    #: it read as the age/authority the role needs" instead of only being
+    #: able to pick a different reference clip.
+    pitch_semitones: float = 0.0
     #: Why these values -- carried into the manifest so a bad-sounding line
     #: can be traced to the decision that produced it rather than re-derived.
     rationale: str = "neutral"
@@ -75,9 +82,20 @@ def settings_for(
     2. **Terminal punctuation** -- an exclamation is stated intensity.
     3. **The speaker's baseline** from Big Five, as a gentle offset only.
     """
+    # Register reading as older/more authoritative than the cast voice's
+    # own age -- the one lever available when the bank has nothing better
+    # to offer (module docstring on DeliverySettings.pitch_semitones): a
+    # -2 semitone shift reads as noticeably more mature without the
+    # cartoonish "chipmunk in reverse" effect a larger shift produces.
+    # Independent of exaggeration/cfg_weight, so it applies under every
+    # branch below, including the polarity override.
+    pitch = -2.0 if (profile is not None and profile.register == "formal") else 0.0
+
     if polarity is not None and polarity in _BY_POLARITY:
         exaggeration, cfg = _BY_POLARITY[polarity]
-        return DeliverySettings(exaggeration, cfg, f"delivery marker: {polarity.value}")
+        return DeliverySettings(
+            exaggeration, cfg, pitch, f"delivery marker: {polarity.value}"
+        )
 
     exaggeration, cfg = NEUTRAL_EXAGGERATION, NEUTRAL_CFG
     reasons: list[str] = []
@@ -98,8 +116,10 @@ def settings_for(
         reasons.append("narration: read, calmer than performed")
         if profile is not None and profile.register == "formal":
             cfg = _clamp(cfg - 0.08)
-            reasons.append("formal register: measured pace")
-        return DeliverySettings(_clamp(exaggeration), _clamp(cfg), "; ".join(reasons))
+            reasons.append("formal register: measured pace, pitched down 2 semitones")
+        return DeliverySettings(
+            _clamp(exaggeration), _clamp(cfg), pitch, "; ".join(reasons)
+        )
 
     if span_type is SpanType.INNER_MONOLOGUE:
         exaggeration, cfg = 0.45, 0.60
@@ -131,10 +151,10 @@ def settings_for(
         # differently from a young disciple's line in the same bucket.
         if profile.register == "formal":
             cfg = _clamp(cfg - 0.08)
-            reasons.append("formal register: measured pace")
+            reasons.append("formal register: measured pace, pitched down 2 semitones")
 
     return DeliverySettings(
-        _clamp(exaggeration), _clamp(cfg), "; ".join(reasons) or "neutral"
+        _clamp(exaggeration), _clamp(cfg), pitch, "; ".join(reasons) or "neutral"
     )
 
 
