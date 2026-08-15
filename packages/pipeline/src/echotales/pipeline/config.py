@@ -8,11 +8,39 @@ between them -- the router picks providers, and every stage sees the same
 
 from __future__ import annotations
 
+import json
 from enum import StrEnum
 from pathlib import Path
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+#: Repo-root `config.json` -- plain JSON on purpose, for values a human
+#: edits directly rather than through `.env`: the local gateway's
+#: host/model, and the render direction-first toggle. Everything else
+#: stays in `.env`/environment variables as before; this is not a wholesale
+#: migration, only for what actually benefits from being a checked-in,
+#: directly-editable file instead of an environment variable.
+_CONFIG_JSON = Path(__file__).resolve().parents[5] / "config.json"
+
+
+def _load_config_json() -> dict[str, object]:
+    if not _CONFIG_JSON.exists():
+        return {}
+    try:
+        raw = json.loads(_CONFIG_JSON.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    out: dict[str, object] = {}
+    gateway = raw.get("gateway", {})
+    if "host" in gateway:
+        out["llm_gateway_host"] = gateway["host"]
+    if "model" in gateway:
+        out["llm_gateway_model"] = gateway["model"]
+    render = raw.get("render", {})
+    if "direction_first" in render:
+        out["render_direction_first"] = render["direction_first"]
+    return out
 
 
 class LLMMode(StrEnum):
@@ -37,6 +65,11 @@ class ModelBackend(StrEnum):
     STUB = "stub"
     OLLAMA = "ollama"
     ANTHROPIC = "anthropic"
+    #: The author's local multi-provider key-rotation proxy
+    #: (`llm/gateway.py`), OpenAI-compatible. Free-tier only, no GPU
+    #: contention with a local image/TTS engine -- see that module's
+    #: docstring for why this exists as a distinct backend from `ollama`.
+    GATEWAY = "gateway"
 
 
 class Settings(BaseSettings):
@@ -64,6 +97,20 @@ class Settings(BaseSettings):
 
     llm_api_model: str = "claude-sonnet-4-5"
     llm_api_timeout: float = 120.0
+
+    #: The local gateway (`llm/gateway.py`), sourced from `config.json`, not
+    #: `.env` -- see that file's own comment for why this pair specifically
+    #: lives there.
+    llm_gateway_host: str = "http://127.0.0.1:11435/v1"
+    llm_gateway_model: str = "coding-best"
+
+    #: True: direct every panel first (one pass, gateway/API only, no local
+    #: GPU needed), cache the results, then generate images in a second
+    #: pass. False: direct and generate interleaved, one panel at a time
+    #: (the original behaviour) -- only safe when direction doesn't need
+    #: the local GPU (gateway/API backends), never with `ollama` alongside
+    #: a local image engine (`EVOLUTION.md` section 9's measured OOM).
+    render_direction_first: bool = True
 
     #: Below this confidence a local answer is escalated in hybrid mode.
     escalation_confidence_threshold: float = 0.75
@@ -105,5 +152,16 @@ _settings: Settings | None = None
 def get_settings(reload: bool = False) -> Settings:
     global _settings
     if _settings is None or reload:
-        _settings = Settings()
+        settings = Settings()
+        # config.json fills in only fields an env var/`.env` didn't already
+        # set -- pydantic-settings gives init kwargs the *highest*
+        # precedence, so passing these as constructor args would make
+        # config.json always win over an explicit env var, backwards from
+        # what a human editing a checked-in file next to `.env` expects.
+        # Applied after construction instead, and only where the field
+        # still holds its hardcoded default.
+        for key, value in _load_config_json().items():
+            if getattr(settings, key) == Settings.model_fields[key].default:
+                setattr(settings, key, value)
+        _settings = settings
     return _settings

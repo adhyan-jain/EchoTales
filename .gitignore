@@ -57,12 +57,18 @@ build/
 # Environment
 .env
 .env.local
+# Machine-specific (e.g. a local gateway port) -- config.json.example is
+# the committed template, same pattern as .env/.env.example.
+config.json
 
 # Editors / OS
 .DS_Store
 .idea/
 .vscode/
 *.swp
+
+# Local-only Claude Code working rules — never share/commit.
+.claude
 
 # Phase 8: voice bank (~11 GB corpus) and synthesised audio. Both are
 # regenerable -- the bank by re-downloading VCTK, the audio by re-running

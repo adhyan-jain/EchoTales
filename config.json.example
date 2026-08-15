@@ -1,0 +1,9 @@
+{
+  "gateway": {
+    "host": "http://127.0.0.1:11435/v1",
+    "model": "coding-best"
+  },
+  "render": {
+    "direction_first": true
+  }
+}

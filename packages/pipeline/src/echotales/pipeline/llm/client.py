@@ -108,6 +108,8 @@ class PreflightResult:
                     f"in llm/tasks.py, or run this task on the API backend."
                 )
             return "\n".join(lines)
+        if self.backend == ModelBackend.GATEWAY.value:
+            return self.detail or "gateway unreachable; check it is running on the configured host"
         return "Set ANTHROPIC_API_KEY and install the api extra: uv sync --extra api"
 
 
@@ -156,6 +158,16 @@ class ModelClient:
                 self._providers[model] = existing
             return existing
 
+        if self.backend is ModelBackend.GATEWAY:
+            model = self.settings.llm_gateway_model
+            existing = self._providers.get(model)
+            if existing is None:
+                from echotales.pipeline.llm.gateway import GatewayProvider
+
+                existing = GatewayProvider(model=model, host=self.settings.llm_gateway_host)
+                self._providers[model] = existing
+            return existing
+
         model = profile.anthropic_model
         existing = self._providers.get(model)
         if existing is None:
@@ -174,11 +186,11 @@ class ModelClient:
         profile = profile_for(task)
         if self.backend is ModelBackend.STUB:
             return "stub"
-        return (
-            profile.ollama_model
-            if self.backend is ModelBackend.OLLAMA
-            else profile.anthropic_model
-        )
+        if self.backend is ModelBackend.OLLAMA:
+            return profile.ollama_model
+        if self.backend is ModelBackend.GATEWAY:
+            return self.settings.llm_gateway_model
+        return profile.anthropic_model
 
     # ---- the call --------------------------------------------------------
 
@@ -233,6 +245,24 @@ class ModelClient:
         backend = self.backend.value
         if self.backend is ModelBackend.STUB or self._override is not None:
             return PreflightResult(backend=backend, available=True, missing=[])
+
+        if self.backend is ModelBackend.GATEWAY:
+            from echotales.pipeline.llm.gateway import GatewayProvider
+
+            provider = GatewayProvider(
+                model=self.settings.llm_gateway_model, host=self.settings.llm_gateway_host
+            )
+            if provider.available():
+                return PreflightResult(backend=backend, available=True, missing=[])
+            return PreflightResult(
+                backend=backend,
+                available=False,
+                missing=[self.settings.llm_gateway_model],
+                detail=(
+                    f"gateway at {self.settings.llm_gateway_host} unreachable, or "
+                    f"model {self.settings.llm_gateway_model!r} not in its /models list"
+                ),
+            )
 
         required = models_required(backend)
 
