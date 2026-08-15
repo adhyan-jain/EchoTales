@@ -808,6 +808,98 @@ section is fixed — intake for the next session, in the order raised.
 **None of these six are fixed.** Given the size of this session already,
 they're intake for the next one, not a queue to clear immediately.
 
+### 4.38 4.37's six findings: four fixed and verified, one improved, one blocked on real prerequisites *(2026-08-15)*
+
+Worked through 4.37's list same-session, against real ch1 data at every
+step, not just tests (682 passing throughout).
+
+**Item 1 (wrong-gender voice) — fixed.** `voice/runner.py` was casting
+anonymous/epithet slots with a hardcoded `"unknown"` gender, which VCTK has
+no bucket for, so `nearest_bucket` silently fell back to a mixed-gender
+pool -- roughly even odds of a male character getting a female voice.
+Fixed by inferring gender from pronoun density in the narration
+surrounding *every* occurrence of a slot across the whole chapter
+(`persona.traits.gender_from_pronouns`), widened to a +/-5 block window --
+narrower windows (+/-1, +/-3) didn't clear the function's own 6-pronoun
+floor; +/-5 cleared it unanimously (6/6, 8/8) on the real clan-head case.
+Verified: the clan head now gets `p347`/`p360`-class male voices, not a
+coin flip.
+
+**Item 2 (many lines still unknown) — meaningfully improved, not solved.**
+Wired the previously dead `_PRONOUN_SUBJECT` regex (defined last session,
+never called) into a real tier: `attribute_pronoun_epithet` resolves a bare
+"he/she + speech verb" tag to the chapter's current epithet holder, tracked
+via `epithet_mentioned()` on every block's narration (speech-verb adjacency
+not required). Caught a real regression during verification before it
+shipped: without also clearing the state when a *different* named
+character's narration takes over, Fang Yuan's own line at block 84 got
+misattributed to "the clan head" (nothing between block 68 and 84 ever hit
+an EXPLICIT resolution to clear it the original way). Fixed by also
+clearing on any block whose narration mentions a different known name.
+Full-volume EPITHET_SLOT count: 8 (before this session) -> 26 (naive,
+included the false positive) -> **9 (real, after the fix)**. Still open:
+lines with no epithet tag *and* no pronoun tag anywhere nearby correctly
+stay `ANONYMOUS_SLOT` -- that's the honest remaining gap, not a bug.
+
+**Item 3 (voice collisions) — fixed.** Anonymous/epithet slots could land
+on the narrator's voice, a named character's voice, or each other's, by
+coincidence -- confirmed on ch1 (narrator == Unknown Speaker 1 before the
+fix). Fixed with a per-chapter "voices already in use" set that every
+slot-casting decision checks against, widened to same-gender/any-age
+before actually accepting a repeat (VCTK's `male:adult` bucket is only 6
+speakers wide and RI ch1 needs 6 simultaneously: narrator, Fang Yuan, and
+4-5 anonymous/epithet slots -- genuine resource pressure, not a logic
+bug). Verified: all 7 distinct ch1 speakers now have 7 distinct voices.
+
+**Item 4 (flat narrator) — fixed, and found something bigger while fixing
+it.** The entire delivery-marker/polarity system -- `spans/delivery.py`'s
+own "non-negotiable #10" -- was extracted at span-classification time and
+then never reached synthesis at all: `voice/runner.py` hardcoded
+`polarity=None` on every call to `settings_for`. This was very likely the
+dominant cause of "flat," not merely a tuning issue. Wired in: narration
+checks its own text for a marker, dialogue/inner-monologue falls back to
+the surrounding block window (where a postposed speech tag actually
+lives). Also nudged narration's baseline (0.40/0.55 -> 0.46/0.52) as a
+secondary, smaller tweak. Verified: real lines now carry `HUSHED`/`WARM`/
+etc. rationale strings in the manifest instead of every line reading
+`"neutral"`.
+
+**Item 5 (register-blind casting) — partially addressed, ceiling is real
+and unmoved.** VCTK carries no register metadata (`voice/bank.py`'s own
+documented limitation) and this session did not change the *bank* -- it
+can't, without new voice data. What it *can* do: bias delivery parameters
+by `TraitProfile.register`. A `"formal"` register (elders, authority
+figures) now lowers `cfg_weight` -- the documented lever for slower, more
+deliberate pacing -- in both the narration and dialogue paths. This
+directly targets the "male voices too fast-paced" half of the complaint;
+it does not and cannot address "the elder sounded weak" if the underlying
+reference clip itself reads as unconfident -- that needs either new voice
+data or a smarter clip-selection heuristic within a bucket, genuinely not
+built.
+
+**Item 6 (image frequency / whose-face) — panel budget raised on explicit
+instruction; whose-face is blocked on real prerequisites, not deferred out
+of laziness.** `--max-panels` default raised 14 -> 70 (author instruction,
+targeting ~60% of a manhwa's panel density) in both `render/beats.py` and
+`cli.py`. This is a real cost trade-off, not a free change -- roughly 5x
+the render wall-clock for the same GPU (measured 14-panel baseline:
+~31 minutes with `--no-director`, `EVOLUTION.md` section 9). A 70-panel
+ch1 render was started this session; see this file's top-of-document
+status for its outcome once it lands.
+
+Whose-face-on-screen was investigated, not fixed: checked whether ch1 has
+*any* other resolved named character besides Fang Yuan to generate a
+reference sheet for, and it does not -- chapter 1 resolves to exactly two
+`Self` entities, Fang Yuan and "Qing Mao Mountain" (the location-as-Self
+bug, 4.32). The clan head cannot get a reference sheet because he is not a
+graph entity at all, which is 4.35's still-open mention-detection gap
+("Gu Yue Bo" is confidently NER-extracted 31 times and never becomes a
+mention). Generating more reference sheets right now would have produced
+nothing useful for this specific chapter, so it was skipped rather than
+faked. **4.35 is upstream of item 6 being properly fixable for ch1's clan
+head specifically** -- worth remembering the next time item 6 looks like
+a pure image-generation problem.
+
 ---
 
 ## 5. Architecture-review items not yet implemented
