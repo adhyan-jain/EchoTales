@@ -25,11 +25,15 @@ leak that minted a phantom "Daoist Gu" speaker (4.32), a store bug where
 data survived every subsequent fix (4.33), and two roster-pollution bugs
 plus a missing epithet-based attribution tier that let a location and a
 self-referential idiom get attributed as speakers while the clan leader's
-real speaker tags went unused (4.34). **Voice register (item 2) and voice
-casting are still open** and are the next pick-up point; speaker
-attribution is meaningfully better but the pronoun-to-epithet coreference
-gap noted at the end of 4.34 is the natural next increment on it, not a
-finished job.
+real speaker tags went unused (4.34). ch1 was then re-rendered
+(`data/video_v4/reverend-insanity/ch1.mp4` — **video output is now
+versioned, never overwritten in place, see 4.36**) and actually watched:
+4.37 has six real findings, none fixed yet — a wrong-gender voice on the
+clan head's first line, a narrator/anonymous-slot voice collision, a flat
+narrator delivery, register-blind voice casting confirmed by ear with
+specific detail, and an image-frequency/whose-face-is-on-screen problem
+with a concrete pacing target (~60% of a manhwa's cut rate). **4.37 is the
+actual next pick-up point**, not 4.34's leftover items alone.
 
 **4.32-4.34, found this session, not in the original nine:** re-reading
 ch1's actual span table (not just the video) surfaced three real bugs
@@ -693,18 +697,18 @@ Neither issue is fixed. Issue 1's "stale DB" half is a one-line re-run,
 not a code change; its chapter-6 half needs a real fix in
 `chapter_ner.py::plausible_name`. Issue 2 needs new code, not yet written.
 
-### 4.36 ch1.mp4 regenerated with today's fixes — not yet watched *(2026-08-15)*
+### 4.36 ch1.mp4 regenerated with today's fixes, then actually watched — video output is now versioned as data/video_v4/ *(2026-08-15)*
 
-`data/video_v3/reverend-insanity/ch1.mp4` was re-rendered against the fully
-fixed pipeline (4.32-4.34's ingest/attribution fixes, item 8's reference-
-conditioning fix, the beat-boundary/mob-detection/locale-cue fixes) — the
-panel cache had to be cleared first (moved to `ch1.bak-pre-fixes`), since
-`render_panels` only checks whether a file exists at the expected path, not
-whether the prompt that would produce it has changed, so the previous
-session's stale PNGs were silently being reused despite every fix above.
-**7 of 14 panels now have real reference conditioning** — the first time
-`conditioned_panels > 0` has ever been true for this novel. Discovered and
-documented mid-render: the LLM director and the local diffusion engine
+`ch1.mp4` was re-rendered against the fully fixed pipeline (4.32-4.34's
+ingest/attribution fixes, item 8's reference-conditioning fix, the beat-
+boundary/mob-detection/locale-cue fixes) — the panel cache had to be
+cleared first (moved to `data/panels/reverend-insanity/ch1.bak-pre-fixes`),
+since `render_panels` only checks whether a file exists at the expected
+path, not whether the prompt that would produce it has changed, so the
+previous session's stale PNGs were silently being reused despite every fix
+above. **7 of 14 panels now have real reference conditioning** — the first
+time `conditioned_panels > 0` has ever been true for this novel. Discovered
+and documented mid-render: the LLM director and the local diffusion engine
 cannot share this machine's 8 GB VRAM within one `render` invocation
 (`EVOLUTION.md` section 9 has the measured OOM and the fix — `--no-director`
 required alongside `--image-engine manga` until `render` sequences the two
@@ -712,14 +716,97 @@ itself); this render used `--no-director`, so its prompts are the mechanical
 assembly path, not LLM-authored. Full measured timing (30m55s, cache/
 conditioning counts) is in `EVOLUTION.md` section 9, not duplicated here.
 
-**Nobody has watched this video yet.** Don't assume any of 4.31's nine
-original defects beyond items 3/6/7/8/11 are fixed just because the
-pipeline ran clean — item 1/2 (attribution fragmentation, voice register)
-and item 10 (Gu classification) are known still-open per 4.34/4.35, and
-`--no-director` means this specific render doesn't test the LLM-authored
-prompt path at all. Also unexplained: 0 motion clips were produced despite
-`--motion-engine svd` and a budget of 2 per chapter — worth checking before
-assuming the SVD engine works, not just the panels.
+**A real mistake, recorded rather than quietly fixed:** this render was
+first written in place to `data/video_v3/reverend-insanity/ch1.mp4`,
+overwriting the previous session's 545s reference video — the one the
+author had actually watched to produce 4.31's nine-item list. That file is
+git-ignored (video output is documented as "regenerable," not tracked) and
+is **not recoverable** — checked `/tmp` for stray copies from the same
+period and found three (`video`, `video_v2`, `video_manga`), all from
+2026-08-13 with different durations/sizes, none matching the 545s file
+that existed when this session started. **Going forward, a pipeline output
+directory is never overwritten in place** — this run's output has been
+moved to `data/video_v4/reverend-insanity/`, and each subsequent full
+re-render gets its own `video_vN/` directory so the author can always watch
+the previous version back to back with the new one, which is the entire
+point of keeping history here rather than only in prose.
+
+**This one got watched — see 4.37 for the real findings.**
+
+### 4.37 Author watch-through of data/video_v4/reverend-insanity/ch1.mp4 — six real findings, none fixed yet *(2026-08-15)*
+
+Mixed result, in the author's own words: some parts better, some parts
+worse than the previous (now-lost, see 4.36) version. Nothing in this
+section is fixed — intake for the next session, in the order raised.
+
+1. **The clan head's very first actual line was voiced as a woman**,
+   despite the character being male. This is a real, direct regression the
+   author caught by ear, distinct from and worse than the fragmentation
+   problem 4.34/4.35 already tracked — a wrong-gender voice is a confident
+   wrong answer, not merely an inconsistent one. Likely cause, not yet
+   confirmed: 4.34's `epithet:1:clan-head` id and the plain `anon:*` slots
+   both carry no gender signal into voice casting at all — casting
+   presumably falls back to a rotation or default bucket for any speaker
+   id that isn't a resolved `Self`/`Persona` with a known gender attribute.
+   The text itself states his gender unambiguously ("his voice",
+   "he clenched his fists") on nearly every line attributed to him, so the
+   signal exists and simply isn't reaching the caster — worth checking
+   `voice/casting.py`'s handling of `EPITHET_SLOT`/`ANONYMOUS_SLOT` speaker
+   ids specifically, not the bucket-matching logic itself.
+2. **Many of the clan head's lines are still an unknown/anonymous
+   speaker.** Expected and already tracked (4.34's "deliberately
+   incomplete" note, 4.35's pronoun-coreference gap) — recorded here only
+   to confirm it's still visibly true by ear, not a new finding.
+3. **Voice collision: anonymous slot 1 and the narrator used the same
+   reference voice in one chapter.** This must never happen — the corpus
+   has enough distinct voices that a narrator/character collision within
+   one chapter is a casting bug, not a resource limit. Check whether
+   `voice/casting.py`'s collision-avoidance pool includes the narrator
+   voice at all, or only tracks collisions among character/anonymous
+   slots and treats the narrator as a separate, unchecked lane.
+4. **The narrator's voice is too flat — no emotional delivery.** The
+   author wants real narrative emotion in the narrator's reading, not just
+   in character dialogue. Likely lands in `voice/delivery.py`'s parameter
+   mapping (already designed to read register/Big Five per `EVOLUTION.md`
+   section 4b, but that mapping may not be reaching the narrator lane, or
+   may be under-driving Chatterbox's actual expressiveness range) — needs
+   a real listen-and-tune pass, not a guess.
+5. **Age/gender bucketing alone is not enough register signal.** Direct
+   quote of the pattern: the "asian voice" (author's description) sounded
+   weak/unconfident when cast for an elder, and elders — described in the
+   text as authoritative pillars of the clan — need a voice with real
+   confidence and strength. By contrast the female voices used elsewhere
+   already had good emotion and pacing; the male voices skewed too
+   fast-paced and bland. This is exactly item 2's already-tracked gap
+   (`voice/bank.py::nearest_bucket` has no register axis, 4.31/4.34) now
+   confirmed by ear with specific, actionable detail: register needs to
+   bias not just *which* voice gets picked but the delivery parameters on
+   top of it (pacing, confidence/strength), and the current default
+   delivery for the male bucket is measurably worse than the female one —
+   worth checking whether `delivery.py`'s parameter mapping is symmetric
+   across genders or was tuned/tested mostly against female reference
+   clips.
+6. **Image frequency/focus is wrong in a specific way.** Fang Yuan's
+   design "matches a little" with his described appearance (some progress
+   from 4.34/8's reference-conditioning fix), but the chapter reads as a
+   sequence of different portraits *of Fang Yuan* rather than images that
+   track what the scene actually contains — the same complaint as 4.31
+   items 6/7/11, now reconfirmed after this session's beat-boundary/mob/
+   locale fixes, meaning those fixes improved *relevance* somewhat but did
+   not fix *whose face is on screen*, which is a casting-per-panel problem
+   (`get_panel_cast`/`present_beat_entities` in `render/panels.py`), not a
+   scene-content problem. **Explicit pacing target from the author: panel/
+   image change frequency should be roughly 60% of a typical manhwa's cut
+   rate** — fewer panels than a real manhwa page-turn, but enough that the
+   story reads as progressing rather than as one character's portrait
+   gallery. This is a concrete, checkable number against `--max-panels`
+   and `_merge_to_budget`'s behavior, not a vague "more panels" ask (4.31
+   item 9 already warned against blindly raising `--max-panels` before
+   relevance is fixed — this is the same warning, now with a real target
+   ratio to test against instead of a guess).
+
+**None of these six are fixed.** Given the size of this session already,
+they're intake for the next one, not a queue to clear immediately.
 
 ---
 
