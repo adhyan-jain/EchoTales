@@ -288,7 +288,20 @@ def render_novel(
                 report.character_lines += 1
             elif span.attribution_method in _SLOT_METHODS:
                 if speaker_id not in anon_voices:
-                    gender = slot_gender(speaker_id) or "unknown"
+                    # A genuinely unresolved gender is coin-flipped, not
+                    # left to the bank's raw population. VCTK is 63 female
+                    # / 47 male overall -- passing "unknown" straight to
+                    # `nearest_bucket` falls back to every adult voice
+                    # regardless of gender, and an `rng.choice` over that
+                    # mixed pool is implicitly weighted toward whichever
+                    # gender the corpus happens to have more of. That is
+                    # backwards: a speaker whose gender the text simply
+                    # never states should get even odds, not odds shaped by
+                    # a recording corpus's own imbalance. Real pronoun
+                    # evidence (`slot_gender` resolving to an actual value)
+                    # still wins outright -- this only fires when the text
+                    # gave no signal at all.
+                    gender = slot_gender(speaker_id) or rng.choice(("male", "female"))
                     # Prefer a voice nobody else in this chapter is already
                     # using -- narrator, a named character, or another
                     # anonymous/epithet slot -- so "no voice repeated in a
@@ -323,6 +336,31 @@ def render_novel(
                 else:
                     label = f"Unknown Speaker {speaker_id.rsplit(':', 1)[-1]}"
                     report.anonymous_lines += 1
+            elif span.span_type is SpanType.CROWD_REACTION:
+                # A crowd shouting in unison is not the narrator -- it was
+                # falling into the narrator branch by default before this
+                # (no `speaker_self_id` at all, so nothing else matched).
+                # One stable "crowd" voice per chapter, same reasoning as
+                # `anon_voices`: distinguishable from surrounding lines, not
+                # claiming to model the crowd's actual composition.
+                # Gender: the block's own text if it states one ("a crowd
+                # of men roared"), otherwise the same 50/50 coin flip as an
+                # unresolved individual speaker -- explicit author
+                # instruction (HANDOFF), not a guess, since VCTK's male
+                # deficit would otherwise bias crowds female too.
+                if "crowd" not in anon_voices:
+                    crowd_gender, _ = gender_from_pronouns(
+                        [block_text.get(span.block_index, "")]
+                    )
+                    crowd_gender = crowd_gender or rng.choice(("male", "female"))
+                    pool = bank.nearest_bucket(crowd_gender, "adult")
+                    candidates = [v for v in pool if v.speaker_id not in chapter_voices_used]
+                    picked = rng.choice(candidates) if candidates else rng.choice(pool or bank.voices)
+                    anon_voices["crowd"] = picked.speaker_id
+                    chapter_voices_used.add(anon_voices["crowd"])
+                voice = anon_voices["crowd"]
+                label = "Crowd"
+                report.anonymous_lines += 1
             else:
                 voice = narrator
                 report.narrator_lines += 1
