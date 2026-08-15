@@ -28,9 +28,16 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from echotales.core.enums import AttributionMethod, SpanType
+from echotales.core.models import Span
 from echotales.core.store import Store
 from echotales.pipeline.ingest.normalize import comparison_key
 from echotales.pipeline.persona import load_trait_profiles
+from echotales.pipeline.persona.traits import gender_from_pronouns
+from echotales.pipeline.spans.delivery import (
+    DeliveryPolarity,
+    dominant_polarity,
+    extract_delivery_markers,
+)
 from echotales.pipeline.voice.bank import VoiceBank, pick_mob_voice
 from echotales.pipeline.voice.casting import DEFAULT_SEED, cast_voices
 from echotales.pipeline.voice.delivery import pace_text, settings_for
@@ -76,6 +83,11 @@ class VoiceReport:
     chapters: int = 0
     character_lines: int = 0
     anonymous_lines: int = 0
+    #: A role-title speaker (`AttributionMethod.EPITHET_SLOT`, e.g. "the
+    #: clan head") -- has a real, if unnamed, identity, so counted
+    #: separately from a plain anonymous slot rather than folded into
+    #: either `character_lines` or `anonymous_lines`.
+    epithet_lines: int = 0
     narrator_lines: int = 0
     unattributed_lines: int = 0
     voices_used: set[str] = field(default_factory=set)
@@ -85,8 +97,8 @@ class VoiceReport:
         return (
             f"{self.novel_id}: {self.lines:,} lines over {self.chapters} chapters "
             f"({self.engine})\n"
-            f"  character={self.character_lines:,}  anonymous={self.anonymous_lines:,}  "
-            f"narrator={self.narrator_lines:,}\n"
+            f"  character={self.character_lines:,}  epithet={self.epithet_lines:,}  "
+            f"anonymous={self.anonymous_lines:,}  narrator={self.narrator_lines:,}\n"
             f"  dialogue with no identity (read as narrator): "
             f"{self.unattributed_lines:,}\n"
             f"  distinct reference voices used: {len(self.voices_used)}"
@@ -177,19 +189,92 @@ def render_novel(
     manifest: list[AudioLine] = []
     wanted = chapters if chapters is not None else store.chapter_numbers(novel_id)
 
+    _SLOT_METHODS = (AttributionMethod.ANONYMOUS_SLOT, AttributionMethod.EPITHET_SLOT)
+
     for chapter in wanted:
         report.chapters += 1
-        for span in store.get_spans(novel_id, chapter):
+        chapter_spans = list(store.get_spans(novel_id, chapter))
+        chapter_obj = store.get_chapter(novel_id, chapter)
+        block_text = {b.index: b.text for b in chapter_obj.blocks} if chapter_obj else {}
+
+        # Gender evidence for anonymous/epithet speakers, pooled across every
+        # line the same slot speaks in this chapter -- one line's narration
+        # neighbourhood rarely clears `gender_from_pronouns`'s floor, a whole
+        # chapter's worth usually does. Without this, every slot fell back to
+        # a gender-blind pool and a male character had roughly even odds of
+        # being cast with a female reference clip (confirmed by ear on RI
+        # ch1's clan head -- HANDOFF 4.37 item 1).
+        slot_gender_cache: dict[str, str | None] = {}
+
+        # Every voice already spoken for in this chapter -- the narrator,
+        # plus every named character who actually has a line here. Anonymous
+        # and epithet slots are cast preferring a voice outside this set, so
+        # "no voice repeated in a chapter" (HANDOFF 4.37 item 3) holds for
+        # narrator-vs-anonymous *and* named-vs-anonymous collisions, not
+        # just the one case that was caught by ear.
+        chapter_voices_used: set[str] = {narrator}
+        for s in chapter_spans:
+            sid = s.speaker_self_id or ""
+            if sid and s.attribution_method not in _SLOT_METHODS and sid not in assignments:
+                sid = labels.get(comparison_key(sid), sid)
+            if sid in assignments:
+                chapter_voices_used.add(assignments[sid].speaker_id)
+
+        def slot_gender(speaker_id: str) -> str | None:
+            if speaker_id not in slot_gender_cache:
+                # The block where the slot is *speaking* is usually a short
+                # quoted line -- rarely a pronoun in sight. The pronoun
+                # evidence lives in the narration around it, so pull a wide
+                # neighbourhood around each occurrence, not just the exact
+                # block. Measured against RI ch1's clan head: a +/-1 window
+                # around his two epithet-tagged lines cleared only 1-4
+                # pronouns (below the 6 floor, no call); +/-5 cleared 6/6 and
+                # 8/8, unanimously, because the whole surrounding scene is
+                # about him and there's no other-character noise to dilute
+                # it. Wider than `line_polarity`'s window deliberately --
+                # gender only needs a majority *anywhere* nearby, so it can
+                # afford to look further than a delivery tag can.
+                passages: list[str] = []
+                for s in chapter_spans:
+                    if s.speaker_self_id != speaker_id:
+                        continue
+                    idx = s.block_index
+                    passages.extend(
+                        block_text[i]
+                        for i in range(idx - 5, idx + 6)
+                        if i in block_text
+                    )
+                gender, _ = gender_from_pronouns(passages)
+                slot_gender_cache[speaker_id] = gender
+            return slot_gender_cache[speaker_id]
+
+        def line_polarity(span: Span) -> DeliveryPolarity | None:
+            # A marker on the line's own text first (mostly hits narration,
+            # which carries its own adverbs); dialogue rarely does, so fall
+            # back to the immediately surrounding blocks, which is where a
+            # postposed speech tag ("...,\" he said calmly.") actually lives.
+            own = dominant_polarity(extract_delivery_markers(span.text))
+            if own is not None:
+                return own
+            if span.span_type not in (SpanType.DIALOGUE, SpanType.INNER_MONOLOGUE):
+                return None
+            idx = span.block_index
+            window = " ".join(
+                block_text.get(i, "") for i in (idx - 1, idx, idx + 1) if i in block_text
+            )
+            return dominant_polarity(extract_delivery_markers(window))
+
+        for span in chapter_spans:
             if span.span_type not in _AUDIBLE or not span.text.strip():
                 continue
 
             raw_speaker = span.speaker_self_id or ""
-            # Anonymous slots are already ids, not labels, and must not be
-            # looked up as surfaces.
+            # Anonymous/epithet slots are already ids, not labels, and must
+            # not be looked up as surfaces.
             speaker_id = raw_speaker
             if (
                 raw_speaker
-                and span.attribution_method is not AttributionMethod.ANONYMOUS_SLOT
+                and span.attribution_method not in _SLOT_METHODS
                 and raw_speaker not in assignments
             ):
                 speaker_id = labels.get(comparison_key(raw_speaker), raw_speaker)
@@ -201,13 +286,43 @@ def render_novel(
                 voice = assignments[speaker_id].speaker_id
                 label = assignments[speaker_id].label
                 report.character_lines += 1
-            elif span.attribution_method is AttributionMethod.ANONYMOUS_SLOT:
+            elif span.attribution_method in _SLOT_METHODS:
                 if speaker_id not in anon_voices:
-                    picked = pick_mob_voice(bank, "unknown", "adult", rng=rng)
+                    gender = slot_gender(speaker_id) or "unknown"
+                    # Prefer a voice nobody else in this chapter is already
+                    # using -- narrator, a named character, or another
+                    # anonymous/epithet slot -- so "no voice repeated in a
+                    # chapter" (HANDOFF 4.37 item 3) holds generally, not
+                    # just for the one narrator collision caught by ear.
+                    # `male:adult` is only 6 speakers wide in VCTK and one RI
+                    # chapter can need all 6 at once (narrator, a named
+                    # principal, and 4+ anonymous/epithet slots) -- widen to
+                    # the same gender at *any* age before accepting a repeat;
+                    # a decade-off voice is a far smaller compromise than two
+                    # different people sounding identical.
+                    pool = bank.nearest_bucket(gender, "adult")
+                    candidates = [v for v in pool if v.speaker_id not in chapter_voices_used]
+                    if not candidates and gender in ("male", "female"):
+                        candidates = [
+                            v for v in bank.voices
+                            if v.gender == gender and v.speaker_id not in chapter_voices_used
+                        ]
+                    if not candidates:
+                        candidates = [v for v in pool if v.speaker_id != narrator]
+                    picked = (
+                        rng.choice(candidates)
+                        if candidates
+                        else pick_mob_voice(bank, gender, "adult", rng=rng)
+                    )
                     anon_voices[speaker_id] = picked.speaker_id if picked else narrator
+                    chapter_voices_used.add(anon_voices[speaker_id])
                 voice = anon_voices[speaker_id]
-                label = f"Unknown Speaker {speaker_id.rsplit(':', 1)[-1]}"
-                report.anonymous_lines += 1
+                if span.attribution_method is AttributionMethod.EPITHET_SLOT:
+                    label = speaker_id.rsplit(":", 1)[-1].replace("-", " ").title()
+                    report.epithet_lines += 1
+                else:
+                    label = f"Unknown Speaker {speaker_id.rsplit(':', 1)[-1]}"
+                    report.anonymous_lines += 1
             else:
                 voice = narrator
                 report.narrator_lines += 1
@@ -216,7 +331,7 @@ def render_novel(
 
             settings = settings_for(
                 span_type=span.span_type,
-                polarity=None,
+                polarity=line_polarity(span),
                 profile=profile,
                 text=span.text,
             )

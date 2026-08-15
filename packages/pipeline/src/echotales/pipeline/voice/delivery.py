@@ -82,14 +82,24 @@ def settings_for(
     exaggeration, cfg = NEUTRAL_EXAGGERATION, NEUTRAL_CFG
     reasons: list[str] = []
 
-    # Narration is read, not performed. Keeping it near-neutral is what makes
-    # a performed line audible *as* a performance by contrast.
+    # Narration is read, not performed -- kept measurably calmer than
+    # performed dialogue is what makes a performed line audible *as* a
+    # performance by contrast. Not neutral either, though: a flat read for
+    # 70% of a chapter's runtime is its own complaint, distinct from the
+    # dialogue-vs-narration contrast this design protects. Nudged warmer
+    # than the original (0.40, 0.55), still well short of a performed
+    # baseline (0.50/0.50).
     if span_type in (
         SpanType.NARRATION_ACTION,
         SpanType.NARRATION_DESCRIPTION,
         SpanType.NARRATION_EXPOSITION,
     ):
-        return DeliverySettings(0.40, 0.55, "narration: read, not performed")
+        exaggeration, cfg = 0.46, 0.52
+        reasons.append("narration: read, calmer than performed")
+        if profile is not None and profile.register == "formal":
+            cfg = _clamp(cfg - 0.08)
+            reasons.append("formal register: measured pace")
+        return DeliverySettings(_clamp(exaggeration), _clamp(cfg), "; ".join(reasons))
 
     if span_type is SpanType.INNER_MONOLOGUE:
         exaggeration, cfg = 0.45, 0.60
@@ -112,6 +122,16 @@ def settings_for(
         exaggeration = _clamp(exaggeration + offset)
         if abs(offset) >= 0.02:
             reasons.append(f"extraversion {profile.extraversion:.2f}")
+        # A formal register (clan elders, authority figures) reads as
+        # measured and deliberate, not merely calm -- lower cfg_weight is
+        # the documented lever for slower, weightier pacing (module
+        # docstring). Register has no bank-voice equivalent (VCTK carries
+        # no register metadata, `voice/bank.py`'s own docstring says so),
+        # so this is the one lever available to make an elder's line land
+        # differently from a young disciple's line in the same bucket.
+        if profile.register == "formal":
+            cfg = _clamp(cfg - 0.08)
+            reasons.append("formal register: measured pace")
 
     return DeliverySettings(
         _clamp(exaggeration), _clamp(cfg), "; ".join(reasons) or "neutral"

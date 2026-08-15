@@ -142,8 +142,9 @@ class TestDelivery:
         assert out.cfg_weight < 0.5
 
     def test_narration_stays_near_neutral(self) -> None:
+        """Calmer than performed dialogue, but not flat (HANDOFF 4.37 item 4)."""
         out = settings_for(span_type=SpanType.NARRATION_ACTION, text="He walked north.")
-        assert out.exaggeration <= 0.45
+        assert 0.40 <= out.exaggeration <= 0.50
 
     def test_extraversion_offset_is_bounded(self) -> None:
         """A large offset would make a character's *neutral* lines sound
