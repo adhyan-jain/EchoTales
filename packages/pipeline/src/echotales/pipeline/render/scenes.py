@@ -41,6 +41,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from echotales.core.enums import AttributionMethod
 from echotales.core.models import Chapter, Mention, NarrativeSegment, Span
 from echotales.pipeline.persona.attire import scene_locale
 from echotales.pipeline.spans.scene import ActiveScene, build_active_scenes
@@ -115,7 +116,18 @@ def group_scenes(
     scenes: list[Scene] = []
     current: list[int] = []
     current_selves: set[str] = set()
-    prev_cast: set[str] = set()
+    # The *union* of every speaker seen so far in the current scene, not
+    # just the immediately preceding block's speaker. Comparing against one
+    # block back treats an ordinary rotating exchange -- four attackers
+    # taking turns shouting at one target, nobody entering or leaving -- as
+    # a new scene on every single turn, since consecutive lines almost
+    # never share a speaker by construction. Confirmed directly: RI ch1's
+    # opening confrontation (blocks 0-3, four different unnamed attackers)
+    # produced four separate one-block scenes under a strict previous-block
+    # comparison. A boundary should fire when someone *new* joins who
+    # wasn't already part of the conversation, not when the turn simply
+    # passes to someone already in it.
+    scene_cast: set[str] = set()
     prev_locale = ""
     prev_seg: ActiveScene | None = None
 
@@ -127,27 +139,47 @@ def group_scenes(
 
     for block_index in story_blocks:
         block_spans = by_block.get(block_index, [])
-        cast_here = {s.speaker_self_id for s in block_spans if s.speaker_self_id}
+        # ANONYMOUS_SLOT speakers excluded from the cast-change signal --
+        # a rotating anonymous slot represents an unidentified member of a
+        # group already in the scene taking their turn, not someone new
+        # arriving (`speakers/runner.py::_assign_anonymous_slots`). Without
+        # this, RI ch1's opening -- four unnamed attackers, each getting a
+        # fresh anon slot number in turn -- looked like four different
+        # people joining the scene one after another, each triggering its
+        # own boundary. EPITHET_SLOT stays counted: an epithet (§4.34) is a
+        # specific, if unnamed, individual, so its appearance is a real
+        # cast signal the way an anonymous slot's is not.
+        cast_here = {
+            s.speaker_self_id for s in block_spans
+            if s.speaker_self_id and s.attribution_method is not AttributionMethod.ANONYMOUS_SLOT
+        }
         text = " ".join(s.text for s in block_spans) or block_text.get(block_index, "")
-        locale_here = scene_locale(novel_id, text, block_index=block_index)
+        # strict=True: a real stated location (or night/dark cue), never
+        # the rotating per-block-index fallback attire.py's own scene_locale
+        # uses for panel-background variety -- that rotation looks like a
+        # location change on almost every block and is exactly why an
+        # earlier version of this function produced 78 one-block "scenes"
+        # for a 92-block chapter.
+        locale_here = scene_locale(novel_id, text, block_index=block_index, strict=True)
         seg_here = _containing_segment(block_index, active_scenes)
 
         boundary = (
             not current
             or seg_here is not prev_seg
-            or (cast_here and prev_cast and cast_here != prev_cast)
+            or (cast_here and scene_cast and cast_here.isdisjoint(scene_cast))
             or (locale_here and prev_locale and locale_here != prev_locale)
         )
         if boundary and current:
             flush()
             current = []
             current_selves = set()
+            scene_cast = set()
 
         current.append(block_index)
         if seg_here is not None:
             current_selves |= seg_here.active_selves
         if cast_here:
-            prev_cast = cast_here
+            scene_cast |= cast_here
         if locale_here:
             prev_locale = locale_here
         prev_seg = seg_here

@@ -117,7 +117,9 @@ _LOCALE_CUES: dict[str, str] = {
 }
 
 
-def scene_locale(novel_id: str, beat: str, *, block_index: int = 0) -> str:
+def scene_locale(
+    novel_id: str, beat: str, *, block_index: int = 0, strict: bool = False
+) -> str:
     """A specific place for this panel to happen in.
 
     **Cue-matched where the prose suggests somewhere, varied where it does
@@ -128,6 +130,16 @@ def scene_locale(novel_id: str, beat: str, *, block_index: int = 0) -> str:
     through the novel's locales by block index -- varied across a chapter,
     yet identical on a re-render, which matters because panels are cached
     and a re-run must not silently redecorate the chapter.
+
+    `strict=True` disables that rotation and returns `""` on no cue match
+    instead. For `render/scenes.py`'s boundary detection, not panel
+    generation: the rotation exists specifically to make two *unrelated*
+    unstated blocks look different, which is exactly backwards for "did
+    the location actually change" -- confirmed directly, not guessed:
+    treating the rotating fallback as a real signal turned a 92-block RI
+    chapter into 78 one-block "scenes," since almost every block without
+    an explicit cue rotated to a different locale than its neighbour by
+    sheer block-index arithmetic.
     """
     locales = SCENE_LOCALES.get(novel_id)
     if not locales:
@@ -143,6 +155,9 @@ def scene_locale(novel_id: str, beat: str, *, block_index: int = 0) -> str:
             if night and key in ("forest", "mountain"):
                 return locales.get("night_wild", locales[key])
             return locales[key]
+
+    if strict:
+        return ""
 
     if night:
         return locales.get("night", "")
