@@ -22,6 +22,7 @@ import time
 
 import httpx
 from echotales.pipeline.llm.base import (
+    LLMParseError,
     LLMProvider,
     LLMRequest,
     LLMResult,
@@ -90,21 +91,46 @@ class GatewayProvider(LLMProvider):
             "response_format": {"type": "json_object"},
         }
         started = time.perf_counter()
-        try:
-            resp = self._client.post(f"{self.host}/chat/completions", json=body,
-                                      headers={"Authorization": f"Bearer {self._api_key}"})
-            resp.raise_for_status()
-        except httpx.HTTPError as exc:
-            raise LLMUnavailable(f"gateway request failed: {exc}") from exc
 
-        data = resp.json()
+        # The gateway's whole reason to exist is rotating across providers
+        # under free-tier rate limits, and not every provider it can land
+        # on honours "return only JSON" as reliably as another -- confirmed
+        # directly: an identical request against this same gateway returned
+        # clean JSON on one call and a markdown bullet list ("*   `shot`:
+        # ...") with no JSON object in it at all on another, under load, no
+        # code change in between. A retry is not a generic robustness
+        # nicety here, it is *the* fix -- it gives the gateway's own
+        # rotation a second chance to land on a provider that behaves,
+        # which fixing the parser to tolerate one bad output shape would
+        # not: the next bad shape would just be a different one.
+        last_exc: Exception | None = None
+        for attempt in range(2):
+            try:
+                resp = self._client.post(
+                    f"{self.host}/chat/completions",
+                    json=body,
+                    headers={"Authorization": f"Bearer {self._api_key}"},
+                )
+                resp.raise_for_status()
+                data = resp.json()
+                content = data["choices"][0]["message"]["content"]
+                value = parse_into(schema, content)
+                break
+            except httpx.HTTPError as exc:
+                last_exc = exc
+                continue
+            except (KeyError, IndexError) as exc:
+                last_exc = exc
+                continue
+            except LLMParseError as exc:
+                last_exc = exc
+                continue
+        else:
+            raise LLMUnavailable(
+                f"gateway request failed after 2 attempts: {last_exc}"
+            ) from last_exc
+
         elapsed_ms = int((time.perf_counter() - started) * 1000)
-        try:
-            content = data["choices"][0]["message"]["content"]
-        except (KeyError, IndexError) as exc:
-            raise LLMUnavailable(f"gateway returned no usable choice: {data!r:.200}") from exc
-
-        value = parse_into(schema, content)
         usage = data.get("usage") or {}
         return LLMResult(
             value=value,
