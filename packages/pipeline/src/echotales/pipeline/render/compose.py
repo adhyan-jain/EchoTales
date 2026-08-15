@@ -33,6 +33,12 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Protocol
 
+from echotales.pipeline.render.director import (
+    KEN_BURNS_PAN_SCALE,
+    KEN_BURNS_PAN_TRANSLATE_PCT,
+    KEN_BURNS_ZOOM_IN,
+    KEN_BURNS_ZOOM_OUT,
+)
 from echotales.pipeline.render.timeline import TimedShot
 
 #: **Portrait, because that is where this format is watched.** The reference
@@ -43,10 +49,6 @@ from echotales.pipeline.render.timeline import TimedShot
 OUTPUT_WIDTH = 1080
 OUTPUT_HEIGHT = 1920
 OUTPUT_FPS = 30
-
-#: End-of-pan zoom factor. Modest on purpose -- a still illustration panned
-#: too aggressively reveals its own resolution limits.
-_MAX_ZOOM = 1.15
 
 
 class ComposeEngine(Protocol):
@@ -126,22 +128,34 @@ def _zoompan_filter(
     width: int = OUTPUT_WIDTH,
     height: int = OUTPUT_HEIGHT,
 ) -> str:
+    # TUNING: these values are first-guess, re-tune after watching ch1
+    # (render/director.py's own constants; see that module for the note).
     direction = shot.pan_direction or "zoom_in"
-    step = (_MAX_ZOOM - 1.0) / max(num_frames, 1)
 
     if direction == "zoom_in":
-        z = f"min(zoom+{step:.6f},{_MAX_ZOOM})"
+        start, end = KEN_BURNS_ZOOM_IN
+        step = (end - start) / max(num_frames, 1)
+        z = f"min(zoom+{step:.6f},{end})"
         x, y = "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"
     elif direction == "zoom_out":
-        z = f"if(eq(on,1),{_MAX_ZOOM},max(zoom-{step:.6f},1.0))"
+        start, end = KEN_BURNS_ZOOM_OUT
+        step = (start - end) / max(num_frames, 1)
+        z = f"if(eq(on,1),{start},max(zoom-{step:.6f},{end}))"
         x, y = "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"
     else:  # pan_left / pan_right at a constant, modest zoom
-        z = f"{_MAX_ZOOM}"
+        z = f"{KEN_BURNS_PAN_SCALE}"
         y = "ih/2-(ih/zoom/2)"
         progress = f"(on/{max(num_frames - 1, 1)})"
+        # Translate across KEN_BURNS_PAN_TRANSLATE_PCT of frame width
+        # either side of centre, not the crop's full available range --
+        # a smaller, steadier drift than "pan across everything the zoom
+        # leaves to pan across."
+        pct = KEN_BURNS_PAN_TRANSLATE_PCT / 100.0
+        centre = "iw/2-(iw/zoom/2)"
+        span = f"(iw*{pct:.4f})"
         x = (
-            f"(iw-iw/zoom)*(1-{progress})" if direction == "pan_left"
-            else f"(iw-iw/zoom)*{progress}"
+            f"({centre})+({span})*(1-2*{progress})" if direction == "pan_left"
+            else f"({centre})-({span})*(1-2*{progress})"
         )
 
     # Scale-and-crop to the frame *before* the zoom/pan. A panel is

@@ -47,58 +47,67 @@ is cheap to re-tune once it has been.
 from __future__ import annotations
 
 import itertools
-import re
 from dataclasses import dataclass, field
 
 from echotales.core.enums import SpanType
 from echotales.core.models import Span
-
-# Rebirth / transmigration / possession cues, shared with the stage that
-# decides a character has changed bodies. One table, two consumers: the graph
-# learns there is a second persona, and the director learns there is a picture
-# worth drawing at the same moment.
-from echotales.pipeline.persona.split import BODY_CHANGE_CUES
 from echotales.pipeline.render.motion import MotionClip, match_tag
 from echotales.pipeline.render.panels import PanelImage
+from echotales.pipeline.spans.delivery import (
+    DeliveryPolarity,
+    dominant_polarity,
+    extract_delivery_markers,
+)
 
 #: How many cutaways a chapter gets. A hard cap, not a target: see the
 #: module docstring on why two, and why zero is a valid answer.
 CLIPS_PER_CHAPTER = 2
 
-#: A block must score at least this to be worth a cutaway at all. Set so
-#: that a long block (+2) or a bare combat verb (+3) alone does not qualify:
-#: a cutaway should need either a strong content cue or a weak one
-#: reinforced by pacing.
-MIN_IMPACT_SCORE = 4
+# TUNING: these values are first-guess, re-tune after watching ch1
+#
+# Ken Burns parameters for a held panel. `compose.py` reads these to build
+# the actual pan/zoom filter; kept here as plain constants (not buried in
+# an ffmpeg filter string) so they are the one place to adjust after
+# watching real output, per the module docstring on `pan_direction` being
+# a starting rule rather than a settled one.
+#
+# All transforms are linear easing, deliberately -- acceleration on a still
+# image reads as shaky, not cinematic. A 1.0 -> 1.08 (or the reverse) scale
+# range is a small, steady drift: enough to read as motion over a 5-15s
+# hold, not so much that a face at the edge of frame leaves it.
+KEN_BURNS_ZOOM_IN = (1.00, 1.08)
+KEN_BURNS_ZOOM_OUT = (1.08, 1.00)
+#: Lateral pan: fixed scale (headroom to pan within), translate range in
+#: percent of frame width. Direction alternates per panel (`_pan_direction`
+#: already alternates left/right by block-index parity) so a chapter does
+#: not always drift the same way.
+KEN_BURNS_PAN_SCALE = 1.05
+KEN_BURNS_PAN_TRANSLATE_PCT = 3.0
+
+#: A block must clear tier 3 (duration alone) to be worth a cutaway at
+#: all -- see `score_blocks`'s three-tier priority order.
+MIN_IMPACT_SCORE = 1
 
 #: Narration longer than this on a single panel goes stale under Ken Burns.
 LONG_BLOCK_SECONDS = 6.0
 
-#: Stems that mark a landed physical beat. Deliberately narrower than
-#: `motion.py::GENERIC_KEYWORDS`, which decides *which* clip to use; this
-#: decides whether the moment deserves one at all.
-#:
-#: **Matched as stems, and chosen against the corpus rather than from
-#: intuition.** The first version of this list was past-tense whole words
-#: ("struck", "slammed", "erupted", "shattered"...) and scored **zero hits
-#: across RI chapters 1, 8 and 20** -- chapter 1 is a massacre and matched
-#: none of them, because the translation says "killed", "attacked" and
-#: "blood", not "slammed". A cue vocabulary that never fires is worse than
-#: no cue vocabulary, since it silently turns the impact score into a
-#: cast-change detector. Stems (`attack` -> attacked/attacking) are what
-#: make this robust to tense, which whole-word matching was not.
-_COMBAT_VERBS = (
-    "kill", "slay", "slaughter", "attack", "struck", "strike", "stab",
-    "sever", "crush", "blast", "charge", "lunge", "hurl", "collide",
-    "explod", "shatter", "smash", "erupt", "pierc", "slash", "slam",
-    "roar", "massacre", "wound", "corpse",
-)
+#: Delivery-marker polarity -> how much emotional intensity it represents,
+#: for picking a scene's "emotional peak" block (tier 2 below). Reuses
+#: `spans/delivery.py` rather than a second emotion vocabulary -- same
+#: reasoning as `motion.py::POLARITY_TAGS`.
+_INTENSITY_BY_POLARITY: dict[DeliveryPolarity, int] = {
+    DeliveryPolarity.HEIGHTENED: 3,
+    DeliveryPolarity.WARM: 2,
+    DeliveryPolarity.COLD: 2,
+    DeliveryPolarity.HUSHED: 1,
+    DeliveryPolarity.HESITANT: 1,
+    DeliveryPolarity.FLAT: 0,
+}
 
-#: Phrasing that marks a reveal.
-_REVELATION_PATTERNS = (
-    "revealed", "was none other", "true identity", "realised", "realized",
-    "it was actually", "turned out to be",
-)
+
+def _delivery_intensity(text: str) -> int:
+    polarity = dominant_polarity(extract_delivery_markers(text))
+    return _INTENSITY_BY_POLARITY.get(polarity, 0) if polarity is not None else 0
 
 
 @dataclass(slots=True)
@@ -119,73 +128,62 @@ class BlockScore:
 def score_blocks(
     by_block: dict[int, list[Span]],
     durations: dict[int, float] | None = None,
+    scenes: list[object] | None = None,
 ) -> list[BlockScore]:
     """Rank every block in a chapter by how much it wants a motion clip.
 
+    Three priority tiers, strictly ordered -- a tier-1 block always outranks
+    every tier-2 block regardless of duration, and so on:
+
+    1. Duration > 8s **and** the block cues a motion-clip tag
+       (`motion.py::match_tag`'s own vocabulary -- clash/wind/flame/impact).
+    2. Duration > 6s **and** the block is its scene's emotional peak
+       (highest `spans/delivery.py` marker intensity among the scene's
+       blocks -- `scenes` groups blocks into scenes, `render/scenes.py`).
+    3. Duration > 6s alone, as a fallback when nothing scores higher.
+
     `durations` is the per-block audio length from the voice manifest; when
-    it is absent the pacing signal simply does not fire, and scoring falls
-    back to content cues alone rather than guessing at timing.
+    it is absent every duration reads as 0 and nothing clears any tier --
+    the pacing signal cannot fire on a guess. `scenes` is optional for the
+    same reason: without it, tier 2 never fires (no scene to be the peak
+    of), and scoring still produces tier-1/tier-3 results.
     """
     durations = durations or {}
-    scored: list[BlockScore] = []
 
+    scene_peak_block: dict[int, int] = {}
+    if scenes:
+        for scene in scenes:
+            best_block, best_intensity = None, -1
+            for b in scene.blocks:  # type: ignore[attr-defined]
+                if b not in by_block:
+                    continue
+                text = " ".join(s.text for s in by_block[b])
+                intensity = _delivery_intensity(text)
+                if intensity > best_intensity:
+                    best_intensity, best_block = intensity, b
+            if best_block is not None:
+                scene_peak_block[scene.index] = best_block  # type: ignore[attr-defined]
+    peak_blocks = set(scene_peak_block.values())
+
+    scored: list[BlockScore] = []
     for block_index in sorted(by_block):
         spans = by_block[block_index]
-        blob = " ".join(s.text for s in spans).casefold()
-        entry = BlockScore(
-            block_index=block_index, duration=durations.get(block_index, 0.0)
-        )
+        blob = " ".join(s.text for s in spans)
+        duration = durations.get(block_index, 0.0)
+        entry = BlockScore(block_index=block_index, duration=duration)
 
-        for verb in _COMBAT_VERBS:
-            # Stem-matched: a trailing \w* catches every inflection, which
-            # whole-word matching missed entirely (see `_COMBAT_VERBS`).
-            if re.search(rf"(?<!\w){verb}\w*", blob):
-                entry.score += 3
-                entry.reasons.append(f"combat stem {verb!r} (+3)")
-                break
-
-        for pattern in _REVELATION_PATTERNS:
-            if pattern in blob:
-                entry.score += 2
-                entry.reasons.append(f"revelation {pattern!r} (+2)")
-                break
-
-        # **A transformation is the most drawable thing a chapter can
-        # contain, and nothing here scored it.** Measured on RI ch1: the
-        # chapter's climax -- "With the use of the Spring Autumn Cicada I
-        # have been reborn, going back to the time of 500 years ago!" --
-        # scored zero and was merged into a panel with a conversation about
-        # the weather, while the fight that precedes it got four frames.
-        #
-        # The cue table is `persona/split.py`'s, imported rather than
-        # restated. Those patterns were read out of the corpus and are
-        # already the definition of "a body changed here" everywhere else in
-        # the pipeline; a second copy would drift, which §4.24 caught
-        # happening between this module and `motion.py` and cost a run.
-        for pattern, _kind in BODY_CHANGE_CUES:
-            if pattern.search(blob):
-                entry.score += 3
-                entry.reasons.append(f"transformation {pattern.pattern[:24]!r} (+3)")
-                break
-
-        if entry.duration > LONG_BLOCK_SECONDS:
-            entry.score += 2
-            entry.reasons.append(f"{entry.duration:.1f}s of narration (+2)")
+        tag = match_tag(blob)
+        if duration > 8.0 and tag is not None:
+            entry.score = 3
+            entry.reasons.append(f"tier 1: {duration:.1f}s + clip tag {tag!r}")
+        elif duration > 6.0 and block_index in peak_blocks:
+            entry.score = 2
+            entry.reasons.append(f"tier 2: {duration:.1f}s + scene emotional peak")
+        elif duration > 6.0:
+            entry.score = 1
+            entry.reasons.append(f"tier 3: {duration:.1f}s duration alone")
 
         scored.append(entry)
-
-    # A cast change marks a new beat. Computed as a second pass because it
-    # is the only signal that depends on the neighbouring block.
-    order = sorted(by_block)
-    for i, block_index in enumerate(order):
-        if i == 0:
-            continue
-        prev = {s.speaker_self_id for s in by_block[order[i - 1]] if s.speaker_self_id}
-        here = {s.speaker_self_id for s in by_block[block_index] if s.speaker_self_id}
-        if here and prev and here != prev:
-            entry = scored[i]
-            entry.score += 1
-            entry.reasons.append("cast change from previous block (+1)")
 
     return scored
 
@@ -198,13 +196,14 @@ def select_clip_blocks(
 ) -> list[BlockScore]:
     """The blocks that get a cutaway: highest scoring, never adjacent.
 
-    Ties break toward the earlier block, so selection is deterministic
-    across runs -- a chapter that re-rendered with its clips in different
-    places would look like a bug to anyone comparing two takes.
+    Ties break toward the longer block, then the earlier one, so selection
+    is deterministic across runs -- a chapter that re-rendered with its
+    clips in different places would look like a bug to anyone comparing two
+    takes.
     """
     ranked = sorted(
         (b for b in scored if b.score >= min_score),
-        key=lambda b: (-b.score, b.block_index),
+        key=lambda b: (-b.score, -b.duration, b.block_index),
     )
 
     chosen: list[BlockScore] = []
@@ -246,6 +245,7 @@ def build_shot_plan(
     durations: dict[int, float] | None = None,
     clips_per_chapter: int = CLIPS_PER_CHAPTER,
     min_impact_score: int = MIN_IMPACT_SCORE,
+    scenes: list[object] | None = None,
 ) -> list[ShotPlan]:
     """One `ShotPlan` per block that has both a rendered panel and dialogue
     or narration reaching audio.
@@ -256,9 +256,11 @@ def build_shot_plan(
     contributes nothing here -- shots exist only where there is both
     something to show and something being said over it.
 
-    `durations` (block index -> seconds of audio) feeds the pacing half of
-    the impact score; pass the voice manifest's per-block sums. Without it
-    the clips are placed on content cues alone.
+    `durations` (block index -> seconds of audio) feeds tiers 1/2/3 of the
+    impact score; pass the voice manifest's per-block sums. `scenes`
+    (`render/scenes.py::Scene`, optional) feeds tier 2's "emotional peak of
+    its scene" signal -- without it, tier 2 never fires and scoring falls
+    back to tiers 1/3 alone.
     """
     by_block: dict[int, list[Span]] = {
         block_index: list(group)
@@ -269,7 +271,7 @@ def build_shot_plan(
     # "selected" for a block that then falls through to nothing.
     candidates = {b: spans for b, spans in by_block.items() if b in panel_images}
 
-    scored = score_blocks(candidates, durations)
+    scored = score_blocks(candidates, durations, scenes)
     selected = select_clip_blocks(
         scored, limit=clips_per_chapter, min_score=min_impact_score
     )

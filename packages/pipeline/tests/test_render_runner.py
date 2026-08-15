@@ -93,7 +93,12 @@ class TestRenderVideosEndToEnd:
         out_dir = tmp_path / "video"
 
         panel_report = render_panels("t", store, out_dir=panel_dir, engine=get_panel_engine("stub"))
-        assert panel_report.panels == 2
+        # Scene-grouped generation (render/scenes.py): both blocks share one
+        # scene (2 blocks, no cast/locale signal in this fixture to split
+        # them), so a short scene's budget of 1 unique image covers both --
+        # `render_videos` below still produces one shot per block, both
+        # pointing at that one generated image.
+        assert panel_report.panels == 1
 
         _write_voice_manifest(voice_dir, {})
 

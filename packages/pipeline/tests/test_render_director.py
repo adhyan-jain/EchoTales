@@ -103,18 +103,20 @@ class TestBuildShotPlan:
         )
         assert all(p.kind == "pan" for p in plans)
 
-    def test_long_narration_alone_does_not_earn_a_cutaway(self) -> None:
-        """+2 for pacing is below MIN_IMPACT_SCORE on its own: a slow block
-        is not automatically an interesting one."""
+    def test_short_narration_does_not_earn_a_cutaway(self) -> None:
+        """Tier 3 (duration alone) requires > 6s; a short block clears no
+        tier no matter its content."""
         spans = [_span(0, SpanType.NARRATION_ACTION, "He considered the road ahead.")]
         plans = build_shot_plan(
-            1.0, spans, {0: _panel(0)}, {"idle": _clip("idle")}, durations={0: 20.0}
+            1.0, spans, {0: _panel(0)}, {"idle": _clip("idle")}, durations={0: 5.0}
         )
         assert plans[0].kind == "pan"
 
-    def test_impact_block_with_no_tag_match_falls_back_to_idle(self) -> None:
-        """A revelation earns a cutaway but cues no action tag; the neutral
-        loop exists so the chapter still gets its two."""
+    def test_long_block_with_no_tag_earns_a_cutaway_on_duration_alone(self) -> None:
+        """Tier 3 is duration alone, deliberately with no content
+        requirement -- a long block goes stale under Ken Burns regardless
+        of what it says, and the neutral "idle" loop exists for exactly
+        this case: a cutaway with no specific tag to cue."""
         spans = [
             _span(0, SpanType.NARRATION_DESCRIPTION,
                   "It was revealed that his true identity had been hidden all along.")

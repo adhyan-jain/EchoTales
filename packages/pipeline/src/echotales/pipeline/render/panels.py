@@ -36,13 +36,12 @@ from echotales.pipeline.persona.prompt import (
     STYLE_SCENE,
     build_image_prompt,
     negative_for,
-    shot_style,
 )
 from echotales.pipeline.persona.runner import get_panel_cast
 from echotales.pipeline.render._png import write_solid_png
 from echotales.pipeline.render.beat_canon import beat_canon_for
-from echotales.pipeline.render.beats import segment_beats
 from echotales.pipeline.render.direction import direct_beat
+from echotales.pipeline.render.scenes import group_scenes
 from echotales.pipeline.render.palette import Palette, PaletteSpec, apply_palette
 from echotales.pipeline.world.context import story_context
 
@@ -674,196 +673,219 @@ def render_panels(
             mentions = [m for m in mentions if lo <= m.block_index <= hi]
             spans = [s for s in spans if lo <= s.block_index <= hi]
 
-        # One panel per *beat*, not per block. See `render/beats.py`: a
-        # paragraph is not a panel, and drawing every paragraph produced 89
-        # near-duplicate images per chapter, mostly scenery.
-        by_index_text = {b.index: b.text for b in chapter.blocks}
-        beats = segment_beats(spans, segments, max_panels=max_panels)
-        if not beats:
-            # No spans for this chapter (not span-classified yet, or a
-            # fixture): fall back to one beat per story block so the stage
-            # still produces something rather than silently nothing.
-            from echotales.pipeline.render.beats import Beat
-
-            story = [
-                b.index
-                for b in chapter.blocks
-                if b.block_type.is_story_content and b.text.strip()
-            ][:max_panels]
-            beats = [
-                Beat(index=i, blocks=[bi], text=by_index_text.get(bi, ""))
-                for i, bi in enumerate(story)
-            ]
-        lead_blocks = {b.lead_block: b for b in beats}
+        # One (or a few) unique images per *scene*, not per block or per
+        # beat. See `render/scenes.py`: a scene is a contiguous stretch
+        # sharing cast, place and timeline, and its length in blocks sets
+        # a hard image budget (1/2/3) rather than one image per drawable
+        # moment -- a 15-block conversation in one courtyard needs 1-3
+        # pictures held across it with Ken Burns, not 15 near-duplicates.
         by_index = {b.index: b for b in chapter.blocks}
+        scenes = group_scenes(novel_id, chapter, mentions, segments, spans)
+        by_block_spans: dict[int, list[Span]] = {}
+        for span in spans:
+            by_block_spans.setdefault(span.block_index, []).append(span)
 
-        for lead, beat in sorted(lead_blocks.items()):
-            block = by_index.get(lead)
-            if block is None or not block.text.strip():
+        for scene in scenes:
+            story_scene_blocks = [
+                b for b in scene.blocks
+                if (blk := by_index.get(b)) is not None
+                and blk.text.strip()
+                and blk.block_type.is_story_content
+            ]
+            if not story_scene_blocks:
+                report.skipped_non_story += len(scene.blocks)
                 continue
-            if not block.block_type.is_story_content:
-                report.skipped_non_story += 1
-                continue
 
-            chapter_dir = out_dir / f"ch{chapter_number:g}"
-            image_path = chapter_dir / f"block{block.index:04d}.png"
-
-            cast = get_panel_cast(
-                novel_id,
-                chapter,
-                block.index,
-                mentions=mentions,
-                segments=segments,
-                spans=spans,
-                store=store,
-                # Scoped to the beat, not the whole (often chapter-wide)
-                # `NarrativeSegment` -- see `get_panel_cast`'s own docstring.
-                # Matches `present_beat_entities` below, which already uses
-                # this same range for appearance and reference conditioning.
-                block_window=(beat.blocks[0], beat.blocks[-1]),
-            )
-
-            # Reference sheets for whoever is actually in this block, so the
-            # same character keeps the same face across panels.
-            references: list[Path] = []
-            conditioned: list[str] = []
-            appearances: dict[str, str] = {}
-            genders: list[str] = []
-            for entity_id in present_beat_entities(mentions, beat.blocks):
-                looks = character_looks(
-                    store, entity_id, novel_id=novel_id, chapter=chapter_number
+            budget = scene.image_budget
+            # Which slot (0=establishing, 1=close-up, 2=wide/secondary)
+            # each block in this scene draws its picture from. Budget 1:
+            # everything shares the one image. Budget 2: narration blocks
+            # get the establishing image, dialogue-bearing blocks get the
+            # close-up -- the spec's own "alternate on dialogue exchanges"
+            # rule. Budget 3: non-dialogue still anchors on establishing;
+            # dialogue blocks alternate between close-up and wide/
+            # secondary by position, so a scene with several speakers
+            # doesn't hold on only one of them for its entire length.
+            slot_for_block: dict[int, int] = {}
+            for i, b in enumerate(story_scene_blocks):
+                has_dialogue = any(
+                    s.span_type in (SpanType.DIALOGUE, SpanType.INNER_MONOLOGUE)
+                    for s in by_block_spans.get(b, [])
                 )
-                if looks is None:
-                    continue
-                label, clause, sheet, gender = looks
-                genders.append(gender)
-                if clause:
-                    appearances[label] = clause
-                if sheet is not None:
-                    references.append(sheet)
-                    conditioned.append(label)
-
-            beat_prose = beat.text or beat_text(spans, block.index, block.text)
-
-            # Hand-authored staging for the handful of panels no amount of
-            # extraction sophistication reaches -- see `beat_canon.py`. Its
-            # own prompt slot, not prepended into `beat_prose`: that was
-            # tried first and lost its second sentence to the shorter
-            # budget meant for scraped prose (see `build_image_prompt`'s
-            # docstring on `directive`).
-            canon = beat_canon_for(novel_id, chapter_number, block.index)
-            directive = canon.staging if canon is not None else ""
-
-            # Framing from everything the beat contains, not one style for
-            # the whole chapter. See `prompt.py::shot_style`.
-            style = shot_style(
-                [s.span_type.value for s in spans if s.block_index in set(beat.blocks)],
-                resolved_subjects=len(cast.foreground_characters),
-                has_mob=bool(cast.background_mobs),
-            )
-            if canon is not None and canon.style_override == "establishing":
-                style = STYLE_ESTABLISHING
-            elif canon is not None and canon.style_override == "scene":
-                style = STYLE_SCENE
-            closeup = style is STYLE_CLOSEUP
-
-            cache_key = f"{chapter_number:g}:{block.index}"
-            cached_prompt = prompt_cache.get(cache_key)
-
-            if cached_prompt is not None:
-                # A direction pass already ran (`prompt_cache_path`) and
-                # settled this beat's prompt -- reuse it verbatim rather
-                # than re-calling the director or falling back to the
-                # mechanical assembler, which is the whole point of the
-                # two-phase split (this function's own docstring).
-                prompt = cached_prompt
-            else:
-                # **Ask a model what this panel should show**, and only fall
-                # back to mechanical assembly when there is no client or the
-                # call fails. An assembled prompt is grammatical and about
-                # nothing: it cannot know what is happening in the beat,
-                # which is why panels came back unrelated to the story
-                # around them.
-                directed = None
-                if client is not None:
-                    brief = story_context(
-                        novel_id, store, chapter_number, beat.blocks
-                    ).to_brief()
-                    # The director model reads free-form text, not a
-                    # token-budgeted prompt, so the directive can simply lead
-                    # the passage it directs from rather than needing its own
-                    # slot the way the mechanical path does below.
-                    directed_prose = (
-                        f"{directive} {beat_prose}".strip() if directive else beat_prose
-                    )
-                    directed = direct_beat(
-                        directed_prose,
-                        context_brief=brief,
-                        cast={k: v for k, v in appearances.items() if v},
-                        novel_style=world_setting(novel_id),
-                        client=client,
-                        novel_id=novel_id,
-                    )
-
-                if directed is not None:
-                    prompt = directed.to_image_prompt()
+                if budget == 1:
+                    slot_for_block[b] = 0
+                elif budget == 2:
+                    slot_for_block[b] = 1 if has_dialogue else 0
                 else:
-                    prompt = build_image_prompt(
-                        cast,
-                        beat=beat_prose,
-                        directive=directive,
-                        character_appearances=appearances,
-                        character_genders=genders,
-                        # A close-up's background is deliberately abstract
-                        # tone, so feeding it a courtyard only fights the
-                        # framing.
-                        world="" if closeup else world_setting(novel_id),
-                        locale=(
-                            ""
-                            if closeup
-                            else scene_locale(
-                                novel_id, beat_prose, block_index=block.index
-                            )
-                        ),
-                        style=style,
-                    )
-                prompt_cache[cache_key] = prompt
+                    slot_for_block[b] = (0 if not has_dialogue else (1 if i % 2 == 0 else 2))
 
-            digest = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
-            if image_path.exists():
-                report.skipped_cached += 1
-            elif digest in generated_by_digest:
-                image_path.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(generated_by_digest[digest], image_path)
-                report.deduped_panels += 1
-            else:
-                engine.generate(
-                    PanelImageRequest(
-                        prompt=prompt,
-                        out_path=image_path,
-                        negative_prompt=negative_for(style),
-                        width=width,
-                        height=height,
-                        seed=seed,
-                        reference_images=references,
-                    )
+            # Only slots a block actually maps to get generated -- an
+            # all-narration long scene never needs its close-up/wide
+            # slots just because the budget allows them.
+            needed_slots = sorted(set(slot_for_block.values()))
+            slot_lead: dict[int, int] = {}
+            for b in story_scene_blocks:
+                slot_lead.setdefault(slot_for_block[b], b)
+
+            slot_images: dict[int, PanelImage] = {}
+            for slot in needed_slots:
+                lead = slot_lead[slot]
+                block = by_index[lead]
+                style = (STYLE_ESTABLISHING, STYLE_CLOSEUP, STYLE_SCENE)[slot]
+                closeup = style is STYLE_CLOSEUP
+
+                chapter_dir = out_dir / f"ch{chapter_number:g}"
+                image_path = chapter_dir / f"block{lead:04d}.png"
+
+                cast = get_panel_cast(
+                    novel_id,
+                    chapter,
+                    lead,
+                    mentions=mentions,
+                    segments=segments,
+                    spans=spans,
+                    store=store,
+                    # Scoped to the whole scene, not one block -- every
+                    # slot in a scene should see the scene's full cast,
+                    # since all of them are pictures of the same stretch
+                    # of story, just at different moments/framings in it.
+                    block_window=(scene.block_from, scene.block_to),
                 )
-                generated_by_digest[digest] = image_path
-                if conditioned:
-                    report.conditioned_panels += 1
-                else:
-                    report.prompt_only_panels += 1
 
-            manifest.append(
-                PanelImage(
+                references: list[Path] = []
+                conditioned: list[str] = []
+                appearances: dict[str, str] = {}
+                genders: list[str] = []
+                for entity_id in present_beat_entities(mentions, scene.blocks):
+                    looks = character_looks(
+                        store, entity_id, novel_id=novel_id, chapter=chapter_number
+                    )
+                    if looks is None:
+                        continue
+                    label, clause, sheet, gender = looks
+                    genders.append(gender)
+                    if clause:
+                        appearances[label] = clause
+                    if sheet is not None:
+                        references.append(sheet)
+                        conditioned.append(label)
+
+                # The slot's own representative block's prose, not the
+                # whole scene's -- what makes the establishing/close-up/
+                # wide images of one scene distinct pictures rather than
+                # the same prompt three times.
+                beat_prose = beat_text(spans, lead, block.text)
+
+                canon = beat_canon_for(novel_id, chapter_number, lead)
+                directive = canon.staging if canon is not None else ""
+                if canon is not None and canon.style_override == "establishing":
+                    style = STYLE_ESTABLISHING
+                elif canon is not None and canon.style_override == "scene":
+                    style = STYLE_SCENE
+
+                cache_key = f"{chapter_number:g}:{lead}"
+                cached_prompt = prompt_cache.get(cache_key)
+
+                if cached_prompt is not None:
+                    # A direction pass already ran (`prompt_cache_path`) and
+                    # settled this slot's prompt -- reuse it verbatim rather
+                    # than re-calling the director or falling back to the
+                    # mechanical assembler, which is the whole point of the
+                    # two-phase split (this function's own docstring).
+                    prompt = cached_prompt
+                else:
+                    # **Ask a model what this panel should show**, and only
+                    # fall back to mechanical assembly when there is no
+                    # client or the call fails. An assembled prompt is
+                    # grammatical and about nothing: it cannot know what is
+                    # happening in the beat, which is why panels came back
+                    # unrelated to the story around them.
+                    directed = None
+                    if client is not None:
+                        brief = story_context(
+                            novel_id, store, chapter_number, scene.blocks
+                        ).to_brief()
+                        directed_prose = (
+                            f"{directive} {beat_prose}".strip() if directive else beat_prose
+                        )
+                        directed = direct_beat(
+                            directed_prose,
+                            context_brief=brief,
+                            cast={k: v for k, v in appearances.items() if v},
+                            novel_style=world_setting(novel_id),
+                            client=client,
+                            novel_id=novel_id,
+                        )
+
+                    if directed is not None:
+                        prompt = directed.to_image_prompt()
+                    else:
+                        prompt = build_image_prompt(
+                            cast,
+                            beat=beat_prose,
+                            directive=directive,
+                            character_appearances=appearances,
+                            character_genders=genders,
+                            world="" if closeup else world_setting(novel_id),
+                            locale=(
+                                ""
+                                if closeup
+                                else scene_locale(novel_id, beat_prose, block_index=lead)
+                            ),
+                            style=style,
+                        )
+                    prompt_cache[cache_key] = prompt
+
+                digest = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
+                if image_path.exists():
+                    report.skipped_cached += 1
+                elif digest in generated_by_digest:
+                    image_path.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(generated_by_digest[digest], image_path)
+                    report.deduped_panels += 1
+                else:
+                    engine.generate(
+                        PanelImageRequest(
+                            prompt=prompt,
+                            out_path=image_path,
+                            negative_prompt=negative_for(style),
+                            width=width,
+                            height=height,
+                            seed=seed,
+                            reference_images=references,
+                        )
+                    )
+                    generated_by_digest[digest] = image_path
+                    if conditioned:
+                        report.conditioned_panels += 1
+                    else:
+                        report.prompt_only_panels += 1
+
+                slot_images[slot] = PanelImage(
                     chapter=chapter_number,
-                    block_index=block.index,
+                    block_index=lead,
                     prompt=prompt,
                     image_path=str(image_path),
                     conditioned_on=conditioned,
                 )
-            )
-            report.panels += 1
+                report.panels += 1
+
+            # One manifest row per block, all blocks sharing a slot
+            # pointing at the same (already generated) image -- this is
+            # what gives `render/timeline.py` its per-block shot mapping
+            # while keeping the actual generation count down to the
+            # scene's budget, not the scene's block count.
+            for b in story_scene_blocks:
+                image = slot_images[slot_for_block[b]]
+                manifest.append(
+                    PanelImage(
+                        chapter=chapter_number,
+                        block_index=b,
+                        prompt=image.prompt,
+                        image_path=image.image_path,
+                        conditioned_on=image.conditioned_on,
+                    )
+                )
 
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "manifest.jsonl").write_text(

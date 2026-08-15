@@ -22,6 +22,7 @@ from echotales.pipeline.render.compose import ComposeEngine, get_engine
 from echotales.pipeline.render.director import build_shot_plan
 from echotales.pipeline.render.motion import load_motion_library
 from echotales.pipeline.render.panels import PanelImage
+from echotales.pipeline.render.scenes import group_scenes
 from echotales.pipeline.render.timeline import build_timeline, read_wav_duration
 
 
@@ -134,6 +135,18 @@ def render_videos(
                     line.block_index, 0.0
                 ) + read_wav_duration(Path(line.audio_path))
 
+        # Scene grouping for the clip-selection tier 2 signal ("emotional
+        # peak of its scene") -- same scenes `render_panels` already
+        # generated images against, recomputed here rather than persisted,
+        # since it is cheap (spans/mentions/segments are already stored)
+        # and keeps this stage independent of panel-generation internals.
+        chapter_obj = store.get_chapter(novel_id, chapter_number)
+        scenes = None
+        if chapter_obj is not None:
+            mentions = store.get_mentions(novel_id, chapter_number)
+            segments = store.get_segments(novel_id, chapter_number)
+            scenes = group_scenes(novel_id, chapter_obj, mentions, segments, chapter_spans)
+
         shots = build_shot_plan(
             chapter_number,
             chapter_spans,
@@ -141,6 +154,7 @@ def render_videos(
             motion_library,
             durations=durations,
             clips_per_chapter=clips_per_chapter,
+            scenes=scenes,
         )
         timeline = build_timeline(chapter_number, chapter_audio, shots)
         if not timeline:
