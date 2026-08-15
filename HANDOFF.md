@@ -606,6 +606,93 @@ text the way this one did, not guessed at now.
 
 `uv run pytest packages/` 682 passing throughout.
 
+### 4.35 Full-volume processing isn't actually helping early chapters — the clan head's real name never reaches ch1, for two stacked reasons *(2026-08-15, diagnosed, not fixed)*
+
+The author's own observation, confirmed correct: the Gu Yue clan head is
+*named* later in volume 1 — "Gu Yue Bo" — used explicitly in chapters 6,
+25, 39, 54+ ("go against me, Gu Yue Bo!", "the clan head, Gu Yue Bo"). If
+whole-volume processing (§0's stated point of running `resolve`/personas
+across all 199 chapters rather than one at a time) actually paid off for
+early chapters, chapter 1's "the clan head" should be attributable to that
+name once the rest of the book has been read. It currently is not, for two
+independent, stacked reasons — both diagnosed against real data, not
+guessed at:
+
+**Issue 1 — "Gu Yue Bo" the mention barely exists at all, for two different reasons depending on the chapter:**
+
+- **Most chapters (25, 39, 54, ...): the database is stale relative to the
+  NER cache, not a code bug.** `data/lexicons/reverend-insanity-ner-cache.json`
+  correctly contains "Gu Yue Bo" → `character` in 31 separate chapter
+  entries — re-running `detect_mentions_in_chapter` against the *current*
+  cache and chapter 25's real text reproduces a correct
+  `Mention("Gu Yue Bo", RIGID_NAME, confidence=0.7)` directly. But
+  `data/reruns/reverend-insanity.db`'s actual mention rows for chapter 25
+  only have "Gu Yue Mo Bei" — the run that populated this database used an
+  older, smaller version of the cache than exists on disk now (the cache
+  file has clearly been extended since, likely by isolated NER iteration in
+  an earlier session, without a corresponding mentions re-run). Fix: just
+  re-run the mentions phase against the current cache — no code change
+  needed for this part.
+- **Chapter 6 specifically: a real, still-live bug.** Its current cache
+  entry is an empty `{}` — the model call happened and returned candidates,
+  but every one was rejected by `chapter_ner.py`'s `plausible_name()`
+  filter. Strong inference (not confirmed by replaying the exact raw model
+  output, since that requires a live model call to reproduce): the text
+  reads `Gu Yue Bo!”` with punctuation directly adjacent, and
+  `chapter_ner.py`'s `_SENTENCE_MARK = re.compile(r"[.!?;:,]")` rejects any
+  candidate surface containing one of those characters — if the model
+  copied the trailing `!` into its returned string, the whole candidate is
+  discarded rather than punctuation-stripped and kept. Needs a real fix:
+  strip trailing sentence punctuation from a candidate before the
+  plausibility check, not reject the candidate outright.
+
+**Issue 2 — even with the name captured, nothing carries it backward.**
+This is the deeper, architectural gap, and it's a real gap, not a bug:
+speaker/mention processing runs forward, chapter by chapter. Bare role
+titles ("the clan head") are deliberately excluded from ever becoming a
+mention at all (`GENERIC_DESCRIPTOR`, never entering the graph) —
+specifically to avoid a title falsely binding to the wrong person, which
+is a real risk in this exact book: chapters 7/13/15/16 discuss a
+*different*, historical "**the fourth generation clan head**" — proof that
+naively binding every "clan head" mention across the whole volume to one
+name would actively break things. §4.34's epithet-tag tier (added this
+session) works around this locally per-chapter but does not solve
+backward propagation.
+
+**A design sketch exists, not yet built or validated — the author is
+ideating on this with other agents in parallel, so treat this as a
+starting point for that conversation, not a spec to implement blind:**
+
+1. A lightweight, whole-book pass (after mentions/resolve, before
+   attribution) that finds occurrences of a bounded, verified epithet
+   phrase in direct proximity to an already-resolved `RIGID_NAME` mention
+   (e.g. "the clan head, Gu Yue Bo" / "Gu Yue Bo... the current clan
+   leader"), and records that binding.
+2. **The disambiguating signal already exists in the text and doesn't need
+   to be guessed**: an ordinal + "generation" ("the fourth generation clan
+   head") marks a *different*, historical referent; a bare, unqualified
+   epithet is the current holder. Gate the backward pass on this pattern
+   specifically, not a vaguer "temporal window" or a guessed trigger-word
+   list — this book already tells you which occurrences are safe to bind
+   and which aren't.
+3. **This must never become a graph `Self` fact.** It has to stay an
+   attribution-layer lookup (something `attribute_epithet`/
+   `_assign_epithet_speakers` can consult), exactly like §4.34's per-
+   chapter epithet ids already do, not a permanent binding written into
+   `self_entity`/mentions — a title provably changes hands in this book
+   (the fourth-generation/current-generation split *is* a title transfer),
+   and the codebase already has a documented, deliberate rule against
+   letting a `GENERIC_DESCRIPTOR`-class reference enter the graph as a
+   fixed identity for exactly this reason (`core/enums.py`'s `AliasType`
+   docstring; see also `EVOLUTION.md` on why lexicons are induced rather
+   than hand-written, and on the pre-filter-not-scorer design generally --
+   the pattern of "verify against real text, keep the binding narrow and
+   revocable" recurs throughout this codebase's history for good reason).
+
+Neither issue is fixed. Issue 1's "stale DB" half is a one-line re-run,
+not a code change; its chapter-6 half needs a real fix in
+`chapter_ner.py::plausible_name`. Issue 2 needs new code, not yet written.
+
 ---
 
 ## 5. Architecture-review items not yet implemented
