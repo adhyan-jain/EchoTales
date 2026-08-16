@@ -102,3 +102,22 @@ data/*-body.db
 data/*-body.db-*
 data/*-split.db
 data/*-split.db-*
+
+# Per-novel output roots (pipeline/paths.py::novel_root -> data/RI, data/LOTM,
+# data/ORV, ...). The rules above matched the old flat layout -- data/panels*,
+# data/video*, data/audio* -- and stopped covering anything the moment output
+# moved under a novel directory. Matched one asset kind at a time rather than
+# the whole novel dir, so a novel's README/manifest stays trackable while its
+# 1.9 GB of PNGs and mp4s does not.
+data/*/panels/
+data/*/video/
+data/*/audio/
+data/*/motion/
+data/*/references/
+data/*/scratch/
+
+# Hand-collected composition references (Pinterest fan art). Deliberately not
+# committed: these are other artists' copyrighted work, gathered as local
+# conditioning input. Pushing them to a public repo is redistribution, which
+# is a different act from using them locally -- same reasoning as data/raw/.
+data/scene-references/
