@@ -67,8 +67,18 @@ _NAME_THEN_ACTION = re.compile(
     rf"\b(?P<name>{_NAME})\s+(?:\w+\s+){{0,2}}?"
     r"(?:nodded|frowned|smiled|turned|looked|glanced|stepped|walked|raised|"
     r"lowered|shook|bowed|paused|hesitated|sighed|stood|sat|leaned|gestured|"
-    r"pointed|waved|shrugged|blinked|stared)\b"
+    r"pointed|waved|shrugged|blinked|stared|gazed|stretched)\b"
 )
+# "gazed"/"stretched" added against a real, verified miss: RI ch1 blocks 80
+# and 83 ("Fang Yuan quietly gazed, standing by the window...",
+# "Fang Yuan stretched out his hand...") are Fang Yuan's own post-rebirth
+# inner monologue with his name sitting directly next to the quote -- the
+# easiest possible case -- and this tier was silently missing both because
+# the verb list is a fixed enumeration, letting both fall through to
+# anonymous slots. Not a speculative vocabulary expansion (EVOLUTION.md
+# warns against that -- the combat-vocabulary mechanism that scored zero
+# from guessing): these two verbs are added because they were caught
+# missing two real, checkable lines, not because they seemed plausible.
 
 # Pronoun subjects; resolved by the anaphora layer, not here.
 _PRONOUN_SUBJECT = re.compile(r"\b(?:he|she|they|it)\s+(?:\w+\s+){0,2}?(?:" + _SPEECH_VERBS + r")\b", re.IGNORECASE)
