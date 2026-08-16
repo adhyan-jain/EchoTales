@@ -504,6 +504,22 @@ def cmd_render(args: argparse.Namespace) -> int:
             store.close()
             return 2
 
+    # **Every render gets its own version directory.** Writing into the root
+    # of `panels/` meant a run silently overwrote the previous one -- the
+    # exact failure that destroyed the reference video an earlier review was
+    # written against. `next_version` continues from the highest existing vN,
+    # so deleting an old version never causes a new run to land on a
+    # survivor. `--panel-dir` still wins if given explicitly.
+    from echotales.pipeline.paths import next_version
+
+    _version = None
+    if not getattr(args, "no_versioned_output", False):
+        _tag = f"ch{wanted[0]:g}" if wanted else "all"
+        _version = next_version(Path(args.panel_dir) / _tag)
+        args.out = str(Path(args.out) / _tag / _version)
+        args.motion_dir = str(Path(args.motion_dir) / _tag / _version)
+        print(f"output version: {_version}")
+
     if not args.skip_panels:
         image_engine = (
             get_panel_engine(image_engine_name, palette=args.palette, accent_hue=args.accent_hue)
@@ -536,7 +552,8 @@ def cmd_render(args: argparse.Namespace) -> int:
             import tempfile
 
             direction_scratch = tempfile.mkdtemp(prefix="echotales-direction-")
-            cache_path = Path(args.panel_dir) / args.novel / "prompt_cache.json"
+            # Shared between the two phases of *this* version only.
+            cache_path = Path(args.panel_dir) / f"prompt_cache_{_version or 'x'}.json"
             print(f"phase 1/2: directing panels via {director_client.backend.value} ...")
             direction_report = render_panels(
                 args.novel,
@@ -551,6 +568,7 @@ def cmd_render(args: argparse.Namespace) -> int:
                 max_panels=args.max_panels,
                 block_range=block_range,
                 prompt_cache_path=cache_path,
+                version=_version,
             )
             print(direction_report.summary())
 
@@ -573,6 +591,7 @@ def cmd_render(args: argparse.Namespace) -> int:
                 max_panels=args.max_panels,
                 block_range=block_range,
                 prompt_cache_path=cache_path,
+                version=_version,
             )
             import shutil as _shutil
 

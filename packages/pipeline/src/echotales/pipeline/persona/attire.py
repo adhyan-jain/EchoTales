@@ -146,15 +146,36 @@ def scene_locale(
         return ""
 
     low = beat.casefold()
-    night = any(w in low for w in ("night", "moon", "dark", "midnight", "dusk"))
 
+    # **Weigh the cues, do not take the first one that appears.** This is
+    # called once per *scene* now, not once per block, so the text is long
+    # enough that several unrelated cues almost always occur somewhere in
+    # it -- and first-match simply returned whichever key happened to sit
+    # earliest in the dict. Measured on RI ch1's opening siege, which is
+    # stated as a mountaintop over and over ("Qing Mao Mountain", "the
+    # mountain rock beneath his feet", "the mountain breeze") and still
+    # resolved to a bamboo grove because a single "bamboo" appeared first.
+    scores: dict[str, int] = {}
     for cue, key in _LOCALE_CUES.items():
-        if cue in low:
-            if night and key in ("courtyard", "village"):
-                return locales.get("night", locales[key])
-            if night and key in ("forest", "mountain"):
-                return locales.get("night_wild", locales[key])
-            return locales[key]
+        hits = low.count(cue)
+        if hits:
+            scores[key] = scores.get(key, 0) + hits
+
+    # Night only when the text actually reads as night, not when the word
+    # occurs anywhere in it. Block 18's *poem* ("the morning is fine like
+    # hair and night is like...") flipped that panel to a moonlit forest
+    # while its own prose said "looking at the setting sun".
+    night_words = ("night", "midnight", "moonlight", "moonlit", "starlight")
+    day_words = ("sun", "sunset", "sunlight", "dawn", "morning", "daylight", "afternoon")
+    night = sum(low.count(w) for w in night_words) > sum(low.count(w) for w in day_words)
+
+    if scores:
+        key = max(scores, key=lambda k: scores[k])
+        if night and key in ("courtyard", "village"):
+            return locales.get("night", locales[key])
+        if night and key in ("forest", "mountain"):
+            return locales.get("night_wild", locales[key])
+        return locales[key]
 
     if strict:
         return ""

@@ -624,6 +624,10 @@ def render_panels(
     max_panels: int = 14,
     block_range: tuple[int, int] | None = None,
     prompt_cache_path: str | Path | None = None,
+    #: Version directory for this run, placed *inside* the chapter so a
+    #: multi-chapter run keeps each chapter's history browsable and no
+    #: run ever overwrites a previous one.
+    version: str | None = None,
 ) -> PanelReport:
     """Render one cached panel image per story-bearing block.
 
@@ -764,6 +768,25 @@ def render_panels(
             for b in story_scene_blocks:
                 slot_lead.setdefault(slot_for_block[b], b)
 
+            # **One locale per scene, resolved from the whole scene's text.**
+            # `scene_locale` rotates through the novel's locales by block
+            # index when no cue matches -- a deliberate choice from when
+            # panels were generated per block, and actively wrong now that
+            # they are generated per scene: consecutive slots of one
+            # continuous scene came back as a cave, then a courtyard, then a
+            # bamboo grove, by sheer block-index arithmetic. Measured on RI
+            # ch1's opening siege, which rendered as five unrelated places.
+            # Resolving once from the joined scene text also stops a single
+            # stray word deciding the whole location -- block 18's *poem*
+            # ("night is like...") flipped that panel to a moonlit forest
+            # while its own prose said "looking at the setting sun".
+            _scene_text = " ".join(
+                by_index[b].text for b in story_scene_blocks if b in by_index
+            )
+            scene_locale_text = scene_locale(
+                novel_id, _scene_text, block_index=scene.blocks[0]
+            )
+
             slot_images: dict[int, PanelImage] = {}
             for slot in needed_slots:
                 lead = slot_lead[slot]
@@ -772,6 +795,8 @@ def render_panels(
                 closeup = style is STYLE_CLOSEUP
 
                 chapter_dir = out_dir / f"ch{chapter_number:g}"
+                if version:
+                    chapter_dir = chapter_dir / version
                 image_path = chapter_dir / f"block{lead:04d}.png"
 
                 cast = get_panel_cast(
@@ -873,7 +898,7 @@ def render_panels(
                             locale=(
                                 ""
                                 if closeup
-                                else scene_locale(novel_id, beat_prose, block_index=lead)
+                                else scene_locale_text
                             ),
                             style=style,
                         )
