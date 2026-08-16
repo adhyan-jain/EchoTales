@@ -77,10 +77,10 @@ def _write_voice_manifest(voice_dir: Path, panel_paths: dict[int, Path]) -> None
     this test only needs the fields `render/runner.py::_AudioLine` reads."""
     lines = []
     for block_index in (0, 1):
-        wav = voice_dir / "t" / f"ch1_block{block_index}.wav"
+        wav = voice_dir / f"ch1_block{block_index}.wav"
         _write_wav(wav, 1.0)
         lines.append({"chapter": 1.0, "block_index": block_index, "audio_path": str(wav)})
-    out = voice_dir / "t" / "manifest.jsonl"
+    out = voice_dir / "manifest.jsonl"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text("\n".join(json.dumps(line) for line in lines) + "\n", encoding="utf-8")
 
@@ -111,12 +111,12 @@ class TestRenderVideosEndToEnd:
         assert report.chapters_skipped_no_audio == 0
 
         # StubComposeEngine's real output: concatenated audio + a shot manifest.
-        wav = out_dir / "t" / "ch1.wav"
+        wav = out_dir / "ch1.wav"
         assert wav.exists()
         with wave.open(str(wav)) as fh:
             assert abs(fh.getnframes() / fh.getframerate() - 2.0) < 0.01
 
-        shots = json.loads((out_dir / "t" / "ch1.shots.json").read_text())
+        shots = json.loads((out_dir / "ch1.shots.json").read_text())
         assert [s["block_index"] for s in shots] == [0, 1]
         assert shots[0]["pan_direction"] == "zoom_in"  # dialogue block
 

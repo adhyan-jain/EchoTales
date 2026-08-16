@@ -101,10 +101,10 @@ def render_videos(
     """
     engine = engine or get_engine("stub")
     report = VideoReport(novel_id=novel_id, engine=engine.name)
-    out_dir = Path(out_dir) / novel_id
+    out_dir = Path(out_dir)
 
-    panels = [PanelImage(**raw) for raw in _read_jsonl(Path(panel_dir) / novel_id / "manifest.jsonl")]
-    audio_lines = [_AudioLine.from_json(raw) for raw in _read_jsonl(Path(voice_dir) / novel_id / "manifest.jsonl")]
+    panels = [PanelImage(**raw) for raw in _read_jsonl(Path(panel_dir) / "manifest.jsonl")]
+    audio_lines = [_AudioLine.from_json(raw) for raw in _read_jsonl(Path(voice_dir) / "manifest.jsonl")]
     motion_library = load_motion_library(novel_id, motion_dir)
 
     panels_by_chapter: dict[float, dict[int, PanelImage]] = {}

@@ -95,7 +95,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="data/voice",
         help="extracted VCTK root (default: data/voice)",
     )
-    p_voice.add_argument("--out", default="data/audio")
+    p_voice.add_argument("--out", default="data/RI/audio")
     p_voice.add_argument("--chapters", help="range, e.g. 1-5; default: all")
     p_voice.add_argument(
         "--engine",
@@ -117,12 +117,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_render.add_argument("--novel", required=True)
     p_render.add_argument("--chapters", help="range, e.g. 1-5; default: all")
-    p_render.add_argument("--panel-dir", default="data/panels")
-    p_render.add_argument("--motion-dir", default="data/motion")
+    p_render.add_argument("--panel-dir", default="data/RI/panels")
+    p_render.add_argument("--motion-dir", default="data/RI/motion")
     p_render.add_argument(
-        "--voice-dir", default="data/audio", help="must already hold `echotales voice`'s output"
+        "--voice-dir", default="data/RI/audio", help="must already hold `echotales voice`'s output"
     )
-    p_render.add_argument("--out", default="data/video")
+    p_render.add_argument("--out", default="data/RI/video")
     p_render.add_argument(
         "--image-engine", default="stub", choices=["stub", "sdxl", "manga", "gemini", "openrouter"],
         help="stub writes solid-colour placeholder panels; sdxl and manga need "
@@ -227,7 +227,7 @@ def build_parser() -> argparse.ArgumentParser:
         "reference", help="generate one cached reference sheet per prominent character"
     )
     pe_ref.add_argument("--novel", required=True)
-    pe_ref.add_argument("--out", default="data/references")
+    pe_ref.add_argument("--out", default="data/RI/references")
     pe_ref.add_argument(
         "--top", type=int, default=None,
         help="limit to the N most-mentioned eligible characters",

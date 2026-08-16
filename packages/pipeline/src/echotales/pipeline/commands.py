@@ -553,6 +553,12 @@ def cmd_render(args: argparse.Namespace) -> int:
                 prompt_cache_path=cache_path,
             )
             print(direction_report.summary())
+
+            from echotales.pipeline.config import ModelBackend as _ModelBackend
+
+            if director_client.backend is _ModelBackend.OLLAMA:
+                unload_ollama_models(prefix="phase 1/2: ")
+
             print(f"phase 2/2: generating images ({image_engine_name}) ...")
             report = render_panels(
                 args.novel,
@@ -699,12 +705,53 @@ def cmd_appearance(args: argparse.Namespace) -> int:
     return 0
 
 
+def unload_ollama_models(*, prefix: str = "") -> None:
+    """Evict ollama's resident models from VRAM before a local-GPU stage.
+
+    ollama is a persistent server: finishing a stage's calls does not free
+    the ~5 GB its model holds, so any diffusion stage that runs afterwards
+    in the same session has to share an 8 GB card with it and OOMs.
+    `keep_alive: 0` unloads the weights without killing the server, so the
+    next ollama-backed command still works with no manual restart.
+
+    **Every model the backend could use, not just the ones this process
+    called.** A cached stage can make zero model calls and still find
+    ollama holding weights from an *earlier command* -- which is exactly
+    how the reference-sheet generator OOM'd immediately after an appearance
+    run that had already exited. `models_required` is the fixed, correct
+    set regardless of what ran.
+
+    Best-effort by design: a failure here is a warning, not a stage abort.
+    """
+    import httpx as _httpx
+
+    from echotales.pipeline.config import get_settings
+    from echotales.pipeline.llm.tasks import models_required
+
+    host = get_settings().llm_local_host
+    for model_name in models_required("ollama"):
+        try:
+            _httpx.post(
+                f"{host}/api/generate",
+                json={"model": model_name, "keep_alive": 0},
+                timeout=10.0,
+            )
+            print(f"{prefix}unloaded {model_name} from ollama to free VRAM")
+        except Exception as exc:
+            print(f"warning: failed to unload ollama model {model_name!r}: {exc}")
+
+
 def cmd_persona(args: argparse.Namespace) -> int:
     """Persona-level operations; currently reference-sheet generation."""
     from echotales.pipeline.persona.reference_gen import generate_references
     from echotales.pipeline.render.panels import get_engine
 
     store = _open_store(args)
+    # The reference engine is a local diffusion pipeline; anything ollama
+    # still holds from a previous command competes with it for the same
+    # 8 GB. Verified: this OOM'd at 4.95 GiB resident straight after an
+    # `appearance` run.
+    unload_ollama_models()
     report = generate_references(
         args.novel,
         store,

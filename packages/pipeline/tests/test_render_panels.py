@@ -99,7 +99,7 @@ class TestRenderPanels:
         report = render_panels(
             "t", store, out_dir=tmp_path / "panels", max_panels=20, block_range=(0, 4)
         )
-        out_dir = tmp_path / "panels" / "t" / "ch1"
+        out_dir = tmp_path / "panels" / "ch1"
         rendered = {int(p.stem.removeprefix("block")) for p in out_dir.glob("*.png")}
         assert rendered and max(rendered) <= 4
         assert report.panels == len(rendered)
@@ -111,7 +111,7 @@ class TestRenderPanels:
         store = _seeded_store(tmp_path)
         out_dir = tmp_path / "panels"
         render_panels("t", store, out_dir=out_dir)
-        image = out_dir / "t" / "ch1" / "block0001.png"
+        image = out_dir / "ch1" / "block0001.png"
         assert image.exists()
         assert image.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
 
@@ -155,8 +155,8 @@ class TestRenderPanels:
         # And the deduped file is a real, independent copy, not a symlink
         # into the manifest referencing a path that vanishes if the source
         # is ever cleaned up.
-        ch1 = (tmp_path / "panels" / "t" / "ch1" / "block0000.png")
-        ch2 = (tmp_path / "panels" / "t" / "ch2" / "block0000.png")
+        ch1 = (tmp_path / "panels" / "ch1" / "block0000.png")
+        ch2 = (tmp_path / "panels" / "ch2" / "block0000.png")
         assert ch1.exists() and ch2.exists()
         assert ch1.read_bytes() == ch2.read_bytes()
 

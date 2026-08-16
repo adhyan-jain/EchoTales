@@ -176,7 +176,7 @@ def render_novel(
     how casting decisions are reviewed before spending GPU time on them.
     """
     engine = engine or get_engine("stub")
-    out_dir = Path(out_dir) / novel_id
+    out_dir = Path(out_dir)
     report = VoiceReport(novel_id=novel_id, engine=engine.name)
 
     profiles = load_trait_profiles(novel_id, store)
