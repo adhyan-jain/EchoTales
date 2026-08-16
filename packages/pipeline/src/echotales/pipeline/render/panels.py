@@ -489,6 +489,7 @@ def character_looks(
     *,
     novel_id: str = "",
     chapter: float | None = None,
+    crowd: bool = False,
 ) -> tuple[str, str, Path | None, str] | None:
     """`(label, appearance clause, reference sheet, gender)` for one entity.
 
@@ -571,6 +572,7 @@ def character_looks(
             with_style=False,
             solo=False,
             detailed=False,
+            crowd=crowd,
         )
     return (
         entity.canonical_label,
@@ -731,6 +733,12 @@ def render_panels(
                 b for b in scene.blocks
                 if (blk := by_index.get(b)) is not None
                 and blk.text.strip()
+                # A scene-break block ("......") has nothing to depict, and
+                # the director invents a whole scene when handed one --
+                # RI ch1 block 4 is a bare ellipsis and became "Fang Yuan
+                # stands at the edge of a stone courtyard, gazing up at
+                # mist-covered peaks", none of which is in the novel.
+                and any(ch.isalnum() for ch in blk.text)
                 and blk.block_type.is_story_content
             ]
             if not story_scene_blocks:
@@ -780,6 +788,14 @@ def render_panels(
             # stray word deciding the whole location -- block 18's *poem*
             # ("night is like...") flipped that panel to a moonlit forest
             # while its own prose said "looking at the setting sun".
+            _scene_narration = " ".join(
+                sp.text.strip()
+                for sp in spans
+                if sp.block_index in set(story_scene_blocks)
+                and sp.span_type
+                in (SpanType.NARRATION_ACTION, SpanType.NARRATION_DESCRIPTION)
+                and sp.text.strip()
+            )
             _scene_text = " ".join(
                 by_index[b].text for b in story_scene_blocks if b in by_index
             )
@@ -826,7 +842,11 @@ def render_panels(
                 story_position = chapter_number + lead / max(len(chapter.blocks), 1)
                 for entity_id in present_beat_entities(mentions, scene.blocks):
                     looks = character_looks(
-                        store, entity_id, novel_id=novel_id, chapter=story_position
+                        store,
+                        entity_id,
+                        novel_id=novel_id,
+                        chapter=story_position,
+                        crowd=bool(cast.background_mobs),
                     )
                     if looks is None:
                         continue
@@ -842,7 +862,17 @@ def render_panels(
                 # whole scene's -- what makes the establishing/close-up/
                 # wide images of one scene distinct pictures rather than
                 # the same prompt three times.
-                beat_prose = beat_text(spans, lead, block.text)
+                # **Fall back to the scene's narration, never to the
+                # spoken line.** `beat_text` already prefers narration, but
+                # its fallback was the raw block, so a pure-dialogue block
+                # handed the director an insult to illustrate: RI ch1 block
+                # 1 is "Old bastard Fang, stop attempting to resist", and
+                # the director duly wrote "Old bastard Fang stands
+                # resolute", inventing a character out of a slur. Panels are
+                # scene-grouped now, so the scene almost always has real
+                # narration somewhere -- which describes the same moment and
+                # is actually visual.
+                beat_prose = beat_text(spans, lead, _scene_narration or block.text)
 
                 canon = beat_canon_for(novel_id, chapter_number, lead)
                 directive = canon.staging if canon is not None else ""
@@ -876,6 +906,21 @@ def render_panels(
                         directed_prose = (
                             f"{directive} {beat_prose}".strip() if directive else beat_prose
                         )
+                        # State the crowd to the director explicitly. The
+                        # mob is detected (`spans/scene.py::detect_mobs`) and
+                        # reaches the mechanical assembler as a "background:"
+                        # clause, but the director only ever saw the beat
+                        # prose -- so a scene the pipeline *knew* had a crowd
+                        # in it was described to the model as if it did not,
+                        # and came back as one figure alone.
+                        if cast.background_mobs:
+                            roles = ", ".join(
+                                sorted({m.role for m in cast.background_mobs})
+                            )
+                            directed_prose = (
+                                f"{directed_prose} "
+                                f"(many people present: {roles}, surrounding him)"
+                            ).strip()
                         directed = direct_beat(
                             directed_prose,
                             context_brief=brief,
@@ -887,6 +932,21 @@ def render_panels(
 
                     if directed is not None:
                         prompt = directed.to_image_prompt()
+                        # **Assert the crowd as a count tag, in front.**
+                        # Removing "1boy" stopped the prompt insisting on
+                        # exactly one man, but nothing replaced it, and prose
+                        # like "surrounded by enemies on the ground and in
+                        # the air" sitting mid-prompt does not survive
+                        # against a named subject -- three rounds of real
+                        # generation produced a lone figure every time while
+                        # saying exactly that. Danbooru count tags are the
+                        # vocabulary this checkpoint actually weights (the
+                        # same reason "1boy" and "solo" were able to override
+                        # everything), so the crowd has to be stated in that
+                        # vocabulary and placed where truncation cannot reach
+                        # it.
+                        if cast.background_mobs and not closeup:
+                            prompt = f"crowd, multiple people, 6+boys, {prompt}"
                     else:
                         prompt = build_image_prompt(
                             cast,
@@ -927,6 +987,24 @@ def render_panels(
                     # plain-background single-figure framing. Any panel
                     # with a background mob needs the most room for the
                     # prompt to actually draw the scene.
+                    # **A wide shot of a crowd gets no reference sheet at
+                    # all.** The sheet is a solo figure on a plain
+                    # background, and IP-Adapter reproduces composition as
+                    # well as face -- so on exactly the panels that need
+                    # other people in frame it was overriding them. Verified
+                    # both ways on RI ch1's opening siege: with the sheet
+                    # attached the panel renders one man alone however
+                    # explicitly the prompt asks for warlords, and a
+                    # standalone generation at the same weight *without* a
+                    # sheet produced the crowd and the environment. What the
+                    # sheet buys is face consistency, which is worth almost
+                    # nothing at wide-shot scale where faces are a few
+                    # pixels -- so this trades a benefit we cannot see for a
+                    # failure we can.
+                    if cast.background_mobs and not closeup:
+                        references = []
+                        conditioned = []
+
                     if closeup:
                         weight = 0.65
                     elif cast.background_mobs:

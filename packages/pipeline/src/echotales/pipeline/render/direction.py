@@ -142,12 +142,27 @@ class Direction:
         if d.mood:
             parts.append(f"{d.mood} mood")
         parts.append(framing)
-        parts.append(self.novel_style)
-        parts.append(
-            "highly detailed, cinematic lighting, dramatic composition, "
-            "masterpiece, best quality"
-        )
-        return ", ".join(p for p in parts if p)
+        # `novel_style` is deliberately NOT appended. It is 25 words of
+        # generic world vocabulary ("stone courtyards, timber halls, bamboo
+        # groves, terraced mountain villages, paper lanterns") identical on
+        # every panel -- measured at 46% of the median prompt across a real
+        # 30-panel chapter, including its massacre. It describes a peaceful
+        # village whatever the scene is, and `d.setting` already carries the
+        # place this particular beat happens in. The director still *sees*
+        # it: `build_prompt` passes it as context so the model writes an
+        # in-world setting, which is where that vocabulary belongs.
+        parts.append("highly detailed, cinematic lighting, masterpiece")
+
+        # **Budget-fit, highest priority first.** This path never did, while
+        # the mechanical assembler (`persona/prompt.py::build_image_prompt`)
+        # always has -- so director-written prompts ran 150+ tokens against
+        # CLIP's 77 and lost everything after the halfway point, silently.
+        # Order is a priority ranking, not reading order: what the panel is
+        # *of* has to survive; scenery and quality tags are what should fall
+        # off the end.
+        from echotales.pipeline.persona.prompt import fit_to_budget
+
+        return fit_to_budget(parts)
 
 
 def direct_beat(

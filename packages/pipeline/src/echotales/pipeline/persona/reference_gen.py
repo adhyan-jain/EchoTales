@@ -271,6 +271,7 @@ def build_reference_prompt(
     detailed: bool = True,
     with_style: bool = True,
     solo: bool = True,
+    crowd: bool = False,
 ) -> str:
     """Phrase a character's stored appearance as a generation prompt.
 
@@ -300,12 +301,21 @@ def build_reference_prompt(
     # inside a descriptive clause. `solo` reinforces the single-figure
     # framing that `REFERENCE_STYLE` is also asking for -- but only when
     # actually generating a reference sheet; see the `solo` param docs.
+    # **`crowd=True` drops the numeric headcount.** "1boy" is a Danbooru
+    # count tag meaning *exactly one male*, and this checkpoint weights it
+    # far above any English phrasing -- so a panel whose prompt also said
+    # "surrounded by armed warlords and warrior women" rendered one man
+    # alone on a mountainside. Only resolved characters reach this clause,
+    # and a mob never resolves, so the count was systematically wrong for
+    # exactly the scenes that needed other people in them. Same failure as
+    # the `solo` tag above, one layer along.
     if gender == "male":
-        parts.append("1boy, solo, male" if solo else "1boy, male")
+        head = "male" if crowd else ("1boy, solo, male" if solo else "1boy, male")
     elif gender == "female":
-        parts.append("1girl, solo, female" if solo else "1girl, female")
+        head = "female" if crowd else ("1girl, solo, female" if solo else "1girl, female")
     else:
-        parts.append("solo, androgynous person" if solo else "androgynous person")
+        head = "androgynous person" if (crowd or not solo) else "solo, androgynous person"
+    parts.append(head)
 
     if age_band != "adult":
         parts.append(age_band)
