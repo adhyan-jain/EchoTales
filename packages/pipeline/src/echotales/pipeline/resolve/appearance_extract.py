@@ -200,6 +200,114 @@ _APPEARANCE_CUES = (
 )
 
 
+#: Attribute words that make a cue noun an actual *description* rather than a
+#: passing mention. "his emotionless face" and "under the gazes of the masses"
+#: both contain a cue noun from `_APPEARANCE_CUES` and describe nothing --
+#: measured on RI, 56 of 60 gathered passages for Fang Yuan's second body
+#: scored zero here, which is why that body extracted no appearance at all
+#: despite 196 chapters of evidence being in range.
+_DESCRIPTORS = (
+    "black", "white", "red", "green", "blue", "golden", "gold", "silver",
+    "grey", "gray", "brown", "purple", "jade", "crimson", "pale", "dark",
+    "fair", "blond", "azure",
+    # Real RI text: "bearing a sickly yellow skin" (ch87 b40) scored zero
+    # without these -- a verified miss, not speculative vocabulary growth.
+    "yellow", "yellowish", "sickly", "sallow", "ruddy", "ashen", "swarthy", "tall", "short", "thin", "slender", "lean",
+    "stout", "sturdy", "thick", "slim", "broad", "narrow", "petite", "burly",
+    "long", "straight", "curly", "messy", "dishevelled", "disheveled",
+    "smooth", "sharp", "deep", "bright", "handsome", "beautiful", "ugly",
+    "plain", "delicate", "gaunt", "hollow", "wrinkled", "youthful", "aged",
+    "scarred", "muscular", "frail", "bony", "rosy", "tanned", "silky",
+)
+
+#: Cue nouns that can be described. Narrower than `_APPEARANCE_CUES` (which
+#: is a recall-first *retrieval* filter): this set is used for precision
+#: *ranking*, so verbs-in-noun-clothing ("build" as in "build up") are
+#: excluded -- that exact string produced a false positive on real text
+#: ("had long build up deep steel-like determination").
+_DESC_NOUNS = (
+    "hair", "eyes", "eye", "face", "features", "skin", "complexion",
+    "robe", "robes", "clothes", "clothing", "attire", "sleeve", "sleeves",
+    "figure", "brow", "brows", "beard", "scar", "nose", "lips", "cheeks",
+    "chin", "forehead", "physique", "stature",
+    # Whole-person nouns: a description frequently attaches to the person
+    # rather than a part -- "The youth was thin, slightly shorter than Fang
+    # Yuan" (RI ch2, real text) is exactly the sentence this stage exists to
+    # find, and a parts-only noun list scored it zero.
+    "youth", "man", "woman", "boy", "girl", "child", "elder", "figure",
+    # "The leading person was neither short nor tall" (RI ch87 b40).
+    "person",
+)
+
+_D = "|".join(_DESCRIPTORS)
+_N = "|".join(_DESC_NOUNS)
+
+#: "long black hair", "deep red robes" -- attribute before the noun. A
+#: determiner/possessive is required so a verb reading cannot match.
+_DESC_PRE = re.compile(
+    rf"\b(?:his|her|their|its|the|a|an|with|in|had|has)\b[\w\s,\-]{{0,20}}?"
+    rf"\b(?:{_D})\b[\w\s,\-]{{0,15}}?\b(?:{_N})\b",
+    re.IGNORECASE,
+)
+#: "his face was pale", "eyes were sharp", "his face had become deathly pale"
+#: -- attribute after a copula. `had become`/`turned` are load-bearing: RI's
+#: real ch1 line is "his face had become deathly pale", which a `was|were`-only
+#: copula list scored zero.
+_DESC_POST = re.compile(
+    rf"\b(?:{_N})\b\s+(?:was|were|is|are|looked|seemed|appeared|"
+    rf"had\s+become|has\s+become|became|become|turned|grew)\s+"
+    rf"[\w\s]{{0,12}}?\b(?:{_D})\b",
+    re.IGNORECASE,
+)
+#: Possession/attire verbs: "wore green robes", "was in deep green robes".
+_DESC_HAS = re.compile(
+    rf"\b(?:wore|wearing|dressed\s+in|clad\s+in|was\s+in|were\s+in)\b"
+    rf"[\w\s,\-]{{0,20}}?\b(?:{_N})\b",
+    re.IGNORECASE,
+)
+
+
+def descriptive_score(text: str) -> int:
+    """How strongly this passage *describes a body*, not merely mentions one.
+
+    `find_descriptive_blocks` is deliberately recall-first: a bare cue word
+    anywhere in the block admits it. That is right for retrieval and wrong
+    for ranking, and nothing downstream re-ranked, so a model asking "what
+    does this character look like" was handed 60 passages of which 56 said
+    nothing about anyone's appearance. Higher is more descriptive; 0 means
+    "mentions a body part, describes nothing".
+    """
+    return (
+        len(_DESC_PRE.findall(text)) * 2
+        + len(_DESC_POST.findall(text)) * 2
+        + len(_DESC_HAS.findall(text))
+    )
+
+
+def describes_target(text: str, surfaces: set[str]) -> bool:
+    """Whether the described body plausibly belongs to this entity.
+
+    **Block-level co-presence is not attribution.** `find_descriptive_blocks`
+    admits any block where the target is PRESENT, so a block in which Fang
+    Yuan watches someone else being described admits *that* person's
+    appearance as evidence for Fang Yuan -- measured on real RI text, his
+    highest-scoring passages described "a man with a yellowish skin tone...
+    huge body size and developed muscles", who is not him. Requiring the
+    description to sit in a possessive/naming construction tied to the
+    target is a cheap, text-verified guard against that.
+    """
+    lowered = text.casefold()
+    for surface in surfaces:
+        for pattern in (f"{surface}'s", f"{surface}\u2019s", surface):
+            idx = lowered.find(pattern)
+            while idx != -1:
+                window = lowered[idx : idx + len(pattern) + 90]
+                if _DESC_PRE.search(window) or _DESC_POST.search(window) or _DESC_HAS.search(window):
+                    return True
+                idx = lowered.find(pattern, idx + 1)
+    return False
+
+
 def find_descriptive_blocks(
     store: Store, novel_id: str, target_id: str
 ) -> list[tuple[float, int]]:
@@ -235,6 +343,83 @@ def find_descriptive_blocks(
         params,
     ).fetchall()
     return [(float(r["chapter"]), int(r["block_index"])) for r in rows]
+
+
+#: A *reveal*: an unnamed figure is described, then named. RI ch87 b40 is the
+#: verified case this is built from -- "The leading person was neither short
+#: nor tall, bearing a sickly yellow skin -- it was Gu Yue Jiao San." The
+#: description attaches to no resolved mention of Jiao San, so
+#: `find_descriptive_blocks`'s `m.target_id` join never sees it and the only
+#: physical description that character gets in the volume is invisible to
+#: appearance extraction.
+#:
+#: **The possessive exclusion is load-bearing.** Without it this matches
+#: "it was Fang Yuan's life elementary force" and "this was Gu Yue Chi Lian's
+#: grandson", which name a *different* referent -- measured on the real
+#: volume, possessives outnumbered true reveals roughly 2:1 in an early
+#: version of this pattern.
+_REVEAL = re.compile(
+    r"\b(?:it|this|that|he|she|they)\s+(?:was|were|is|are)\s+"
+    r"(?:none\s+other\s+than\s+)?"
+    r"(?P<name>[A-Z][\w’']*(?:\s+[A-Z][\w’']*){0,3})"
+    r"(?![’']s)\b",
+    re.UNICODE,
+)
+
+
+def find_reveal_blocks(
+    store: Store, novel_id: str, target_id: str
+) -> list[tuple[float, int]]:
+    """Blocks that describe someone and *then* name them as this entity.
+
+    Complements `find_descriptive_blocks`, which requires a resolved mention
+    of the target in the block. A delayed-identity reveal has no such
+    mention by construction: the describing sentences refer to "a young man"
+    or "the leading person", and only the closing clause names them. Those
+    blocks carry some of the only physical description a character gets, and
+    were silently unreachable.
+
+    Kept to the *same block* as the reveal deliberately. Walking back over
+    preceding blocks would catch the two-paragraph form too, but it also
+    invents attributions whenever the reveal follows unrelated narration,
+    and there is no way to tell those apart without the coreference the
+    resolver does not yet do (`EVOLUTION.md`'s open declaration-pre-filter
+    defect is the same missing mechanism).
+    """
+    surfaces = {s for s in _surface_forms(store, novel_id, target_id) if " " in s or len(s) > 3}
+    if not surfaces:
+        return []
+
+    out: list[tuple[float, int]] = []
+    seen: set[tuple[float, int]] = set()
+    for row in store.conn.execute(
+        "SELECT chapter, block_index, text FROM span"
+        " WHERE novel_id = ? AND span_type IN ('NARRATION_DESCRIPTION','NARRATION_ACTION')",
+        (novel_id,),
+    ):
+        text = str(row["text"])
+        for match in _REVEAL.finditer(text):
+            revealed = match.group("name").casefold()
+            # **Match on the name's tail, not the whole string.** This corpus
+            # names people with a clan prefix at first mention and without it
+            # thereafter -- the reveal reads "it was Gu Yue Jiao San" while
+            # every resolved mention of him is the bare "Jiao San", so an
+            # equality test found nothing at all. Same clan-prefix gap the
+            # open `variants.py` defect describes, handled locally here
+            # rather than left to block this stage.
+            if not any(
+                revealed == sf or revealed.endswith(" " + sf) for sf in surfaces
+            ):
+                continue
+            # The block has to actually describe a body, or this is just a
+            # naming sentence with no appearance in it.
+            if not descriptive_score(text):
+                continue
+            key = (float(row["chapter"]), int(row["block_index"]))
+            if key not in seen:
+                seen.add(key)
+                out.append(key)
+    return sorted(out)
 
 
 def gather_appearance_evidence(
@@ -353,6 +538,10 @@ def _gather_pairs(
     # `find_descriptive_blocks` on why the stride was losing exactly the
     # sentences this stage exists to find.
     wanted = find_descriptive_blocks(store, novel_id, target_id)
+    # Delayed-identity reveals carry description that no resolved mention
+    # points at -- see `find_reveal_blocks`. Merged rather than replacing,
+    # and de-duplicated below by block.
+    wanted = sorted(set(wanted) | set(find_reveal_blocks(store, novel_id, target_id)))
     if allowed_chapters is not None:
         wanted = [(c, b) for c, b in wanted if c in allowed_chapters]
     if not wanted:
@@ -393,7 +582,23 @@ def _gather_pairs(
             else:
                 unnamed.append((chapter, clipped))
 
-    return (named + unnamed + overflow)[:max_passages]
+    # **Rank by how much each passage actually describes a body, and whose.**
+    # Naming alone was the only signal before, and it is nearly useless here:
+    # every passage in this pool already comes from a block where the target
+    # is PRESENT, so "contains the name" separates almost nothing. Measured on
+    # RI's Fang Yuan body 2, 56 of the 60 passages that reached the model
+    # described no appearance at all, and the highest-scoring ones that did
+    # described *other people* standing near him -- which is how a body with
+    # 196 chapters of evidence in range extracted nothing but one attire
+    # string. `describes_target` outranks a bare descriptive hit, since an
+    # accurate description of the wrong person is worse than no description.
+    def _rank(pair: tuple[float, str]) -> tuple[int, int]:
+        text = pair[1]
+        score = descriptive_score(text)
+        return (score + (4 if score and describes_target(text, surfaces) else 0), score)
+
+    ordered = sorted(named + unnamed + overflow, key=_rank, reverse=True)
+    return ordered[:max_passages]
 
 
 def _surface_forms(store: Store, novel_id: str, target_id: str) -> set[str]:
@@ -714,7 +919,17 @@ def _chapters_by_body(
     for chapter in store.chapters_for_target(novel_id, target_id):
         if allowed is not None and chapter not in allowed:
             continue
-        by_body.setdefault(persona_at(store, target_id, chapter), set()).add(chapter)
+        # **Ask at the chapter's midpoint, not its first block.** `persona_at`
+        # takes the fractional story position `split.py::write_epochs` writes
+        # its body boundaries in (`chapter + block / n_blocks`); a bare integer
+        # chapter number means "the very start of the chapter", so a body that
+        # takes over partway through one still reported the *previous* body for
+        # the whole of it. The midpoint implements this function's own stated
+        # rule -- the transition chapter goes wholly to the body holding most
+        # of it -- instead of always to whichever body opened it.
+        by_body.setdefault(
+            persona_at(store, target_id, chapter + 0.5), set()
+        ).add(chapter)
     if not by_body:
         return []
     return sorted(by_body.items())

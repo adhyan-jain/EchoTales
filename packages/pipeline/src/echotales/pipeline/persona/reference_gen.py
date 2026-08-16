@@ -121,6 +121,12 @@ REFERENCE_STYLE = (
     "hanfu with long wide sleeves, ink wash, muted limited palette, "
     "serious cold expression, mature proportions, sharp features"
 )
+# Tried dropping "serious cold expression ... sharp features" in favour of
+# neutral framing-only language, reasoning that it fought characters
+# described as plain/ordinary. Reverted: the author's own visual judgement
+# on the resulting images was that they were worse on every axis except
+# clothing colour, which was the actual bug (see `canon.py`'s
+# `CANON_APPEARANCE`, now fixed there instead of here).
 
 #: Ordered most-discriminating first and fitted to CLIP's 77 tokens, same
 #: as `prompt.py::negative_for`. The collage terms lead because that is the
@@ -229,6 +235,30 @@ def _demographics(
         if inferred:
             gender = inferred
 
+    # **Same treatment for age, and it must be scoped to *this body*.**
+    # `age_band` had no evidence path at all -- nothing ever overrode the
+    # `"adult"` default -- so RI's reborn fifteen-year-old was prompted as a
+    # grown man on every panel and every reference sheet. Unlike gender, age
+    # differs *between bodies* of the same character, so the evidence has to
+    # come from this persona's own chapters: pooling both bodies would let
+    # the 500-year-old's chapters answer for the teenager's.
+    if age_band == "adult" and novel_id and entity_id:
+        from echotales.pipeline.persona.traits import age_band_from_text
+        from echotales.pipeline.resolve.appearance_extract import (
+            _chapters_by_body,
+            gather_appearance_passages as _passages,
+        )
+
+        scoped = dict(_chapters_by_body(store, novel_id, entity_id, None))
+        chapters = scoped.get(persona_id)
+        body_passages = _passages(
+            store, novel_id, entity_id, allowed_chapters=chapters
+        )
+        if body_passages:
+            inferred_age, _why = age_band_from_text(body_passages)
+            if inferred_age:
+                age_band = inferred_age
+
     return gender, age_band
 
 
@@ -240,12 +270,26 @@ def build_reference_prompt(
     age_band: str = "adult",
     detailed: bool = True,
     with_style: bool = True,
+    solo: bool = True,
 ) -> str:
     """Phrase a character's stored appearance as a generation prompt.
 
     `detailed=False` (recurring characters) keeps only the strongest identity
     cues, which is the whole point of the prominence tiering: a walk-on does
     not need -- and has not got the evidence to support -- a full sheet.
+
+    **`solo=False` for anything but an actual reference sheet.** This
+    function is reused by `render/panels.py::character_looks` to phrase a
+    character's clause *inside a scene panel's prompt*, and the "solo" tag
+    was leaking through there unconditionally -- a real, confirmed bug:
+    RI ch1's opening panel prompt read "...1boy, solo, male... a xianxia
+    mountain stronghold..., warlords with drawn swords..." in the same
+    string, and the generated image was a single clean solo portrait with
+    no warlords, no wound, no crowd at all. `solo` is a strongly-weighted
+    anime-tag token on this checkpoint (see below) and was overriding
+    everything else in the prompt describing other people in frame.
+    Reference-sheet generation (`generate_references`) always wants
+    `solo=True`; panel prompts embedding a cast member never do.
     """
     parts: list[str] = []
 
@@ -254,13 +298,14 @@ def build_reference_prompt(
     # English word -- and this is the token that decides whether the
     # protagonist comes out male, so it leads the prompt rather than sitting
     # inside a descriptive clause. `solo` reinforces the single-figure
-    # framing that `REFERENCE_STYLE` is also asking for.
+    # framing that `REFERENCE_STYLE` is also asking for -- but only when
+    # actually generating a reference sheet; see the `solo` param docs.
     if gender == "male":
-        parts.append("1boy, solo, male")
+        parts.append("1boy, solo, male" if solo else "1boy, male")
     elif gender == "female":
-        parts.append("1girl, solo, female")
+        parts.append("1girl, solo, female" if solo else "1girl, female")
     else:
-        parts.append("solo, androgynous person")
+        parts.append("solo, androgynous person" if solo else "androgynous person")
 
     if age_band != "adult":
         parts.append(age_band)

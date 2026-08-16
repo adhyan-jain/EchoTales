@@ -141,6 +141,79 @@ _MALE_PRONOUNS = re.compile(r"(?<!\w)(?:he|him|his|himself)(?!\w)", re.IGNORECAS
 _FEMALE_PRONOUNS = re.compile(r"(?<!\w)(?:she|her|hers|herself)(?!\w)", re.IGNORECASE)
 
 
+#: Number words this corpus actually spells out for ages. Bounded to the
+#: range where the band boundaries sit -- past "twenty" the band is `adult`
+#: either way, so there is nothing to gain from a longer table.
+_AGE_WORDS = {
+    "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+    "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14,
+    "fifteen": 15, "sixteen": 16, "seventeen": 17, "eighteen": 18,
+    "nineteen": 19, "twenty": 20, "thirty": 30, "forty": 40, "fifty": 50,
+    "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90,
+}
+
+#: "a fifteen year old teenager", "15-year-old", "aged sixteen".
+_AGE_STATEMENT = re.compile(
+    r"\b(?:(\d{1,3})|(" + "|".join(_AGE_WORDS) + r"))[\s\-]*year[\s\-]*old\b",
+    re.IGNORECASE,
+)
+
+#: Bare band words, used only when no number is stated anywhere.
+_AGE_BAND_WORDS = (
+    ("child", ("child", "infant", "toddler", "little boy", "little girl")),
+    ("youth", ("teenager", "teenage", "adolescent", "youth", "young man",
+               "young woman", "boy", "girl", "lad")),
+    ("elder", ("elderly", "old man", "old woman", "aged man", "greybeard",
+               "grey-haired", "white-haired old")),
+)
+
+
+def age_band_from_text(passages: list[str]) -> tuple[str | None, str]:
+    """Infer a coarse age band from explicit statements in the narration.
+
+    **`age_band` had no evidence path at all**, unlike gender: nothing ever
+    overrode the `"adult"` default, so RI's reborn fifteen-year-old body was
+    stored and prompted as an adult, and the reference sheet drew a grown
+    man for the entire novel. The novel does state it -- "his skin bringing
+    about the pale whiteness of a fifteen year old teenager" (ch47) -- and a
+    stated number is far stronger evidence than a band word, so numbers win
+    and bare words are only a fallback.
+
+    Returns `(band, reason)`; `band` is None when the text states nothing,
+    which is preserved as the existing default rather than guessed.
+    """
+    joined = " ".join(passages)
+
+    ages: list[int] = []
+    for digits, word in _AGE_STATEMENT.findall(joined):
+        if digits:
+            ages.append(int(digits))
+        elif word:
+            ages.append(_AGE_WORDS[word.casefold()])
+    if ages:
+        # The *youngest* stated age wins. A rebirth body is described by its
+        # own age in some passages and compared to the previous life's span
+        # ("500 years of experience") in others; taking the minimum keeps the
+        # body's real age rather than the consciousness's.
+        age = min(ages)
+        if age < 13:
+            band = "child"
+        elif age < 20:
+            band = "youth"
+        elif age < 60:
+            band = "adult"
+        else:
+            band = "elder"
+        return band, f"stated age {age}"
+
+    lowered = joined.casefold()
+    for band, words in _AGE_BAND_WORDS:
+        hits = sum(lowered.count(w) for w in words)
+        if hits >= 2:
+            return band, f"{band} words x{hits}"
+    return None, "no age evidence"
+
+
 def gender_from_pronouns(passages: list[str]) -> tuple[str | None, str]:
     """Gender from third-person pronouns in narration about a character.
 

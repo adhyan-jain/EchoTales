@@ -913,6 +913,36 @@ class Store:
     def add_attribute(self, novel_id: str, attr: Attribute) -> int:
         lch, loff = _pos_cols(attr.learned_at_pos)
         rch, roff = _opt_pos_cols(attr.retracted_at)
+
+        # **An exact-duplicate row carries no information, and re-runs made
+        # many of them.** This is a plain INSERT with no delete-on-rederive,
+        # the same store-hygiene gap `delete_spans_for_chapter` /
+        # `delete_mentions_for_chapter` closed for spans and mentions -- but
+        # attributes are position-dated facts, so blanket-deleting a target's
+        # rows before a re-derive would throw away attestations a partial run
+        # never regenerates. Dropping only *byte-identical* rows is the
+        # conservative half of that fix: it cannot lose a fact, and it stops
+        # the accumulation. Measured on RI, Fang Yuan's body 1 carried three
+        # identical `gender`/`age_band`/`register`/`big_five` rows each.
+        existing = self.conn.execute(
+            "SELECT id FROM attribute WHERE novel_id=? AND target_kind=? AND target_id=?"
+            " AND key=? AND value=? AND learned_chapter IS ? AND learned_offset IS ?"
+            " AND retracted_chapter IS ? AND retracted_offset IS ?",
+            (
+                novel_id,
+                attr.target_kind.value,
+                attr.target_id,
+                attr.key,
+                attr.value,
+                lch,
+                loff,
+                rch,
+                roff,
+            ),
+        ).fetchone()
+        if existing is not None:
+            return int(existing["id"])
+
         cur = self.conn.execute(
             "INSERT INTO attribute(novel_id, target_kind, target_id, key, value, timeline_id,"
             " story_from_lb, story_from_ub, story_to_lb, story_to_ub, learned_chapter,"
