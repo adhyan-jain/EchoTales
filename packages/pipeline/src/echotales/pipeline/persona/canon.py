@@ -39,13 +39,26 @@ CANON_APPEARANCE: dict[str, dict[str, dict[str, str]]] = {
             "eye_color": "jet black, cold and narrow",
             "skin_tone": "pale",
             "height_build": "tall and lean, 188cm",
-            # Canonically *plain* -- the character is described as ordinary
-            # looking, and a striking face would be as wrong as a cute one.
+            # Inert for Fang Yuan today -- `CANON_BY_BODY` overrides this key
+            # for both his bodies -- but kept matching the look the author
+            # actually confirmed they wanted (serious, cold, ruthless), not
+            # the "plain ordinary" wording that was tried and reverted (see
+            # `CANON_BY_BODY` below for why).
             "distinguishing_features": (
-                "plain ordinary features, cold expressionless stare, "
-                "utterly ruthless demeanour"
+                "cold expressionless stare, utterly ruthless demeanour"
             ),
-            "typical_attire": "simple robes with wide sleeves",
+            # No "typical_attire" entry, deliberately: `appearance_extract.py`
+            # already extracted "green robes" from Fang Yuan's own ch1
+            # death-scene text, grounded evidence, not a hallucination (its
+            # own docstring on `TRANSIENT_KEYS` uses this exact case as the
+            # example of *correct* standing-garment extraction -- green is
+            # the garment, "torn to shreds" is the transient condition that
+            # correctly got filtered out already). This table's job is
+            # permanent physical traits a reader already knows outrank an
+            # extractor's guess on; attire that varies is not that -- an
+            # earlier version hardcoded "simple robes with wide sleeves"
+            # here, which silently overwrote the correct extracted colour
+            # with a colourless generic on every single reference sheet.
         },
     },
 }
@@ -70,6 +83,18 @@ CANON_BY_BODY: dict[str, dict[str, dict[int, dict[str, str]]]] = {
         "Fang Yuan": {
             # Body 1: the 500-year-old demonic cultivator of chapter 1,
             # dying at the hands of the righteous factions.
+            #
+            # **The "plain ordinary" wording was tried and reverted.** A
+            # version of this entry pushed hard on plainness in both the
+            # text and `REFERENCE_STYLE`, and the author's own visual
+            # judgement on the result was that it was worse on every axis
+            # except clothing colour -- the original "serious, sharp
+            # features" framing produced the image the author actually
+            # wanted. Only the colour was ever really wrong (see
+            # `CANON_APPEARANCE` above: no more hardcoded "simple robes",
+            # extraction's real "green robes" flows through instead). Do
+            # not re-add plainness language here without the author asking
+            # for it again.
             1: {
                 "height_build": "tall and lean, gaunt with age and injury",
                 "current_condition": "gravely wounded, robes torn",

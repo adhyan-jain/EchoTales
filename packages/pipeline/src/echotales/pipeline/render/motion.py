@@ -194,7 +194,14 @@ class SVDEngine:
 
             self._pipe = StableVideoDiffusionPipeline.from_pretrained(
                 self.model_id, torch_dtype=torch.float16
-            ).to(self.device)
+            )
+            # Same fix as SDXLEngine._ensure_pipe, same reason: vae_slicing
+            # alone does nothing at batch=1, and SVD's multi-frame decode is
+            # even more memory-hungry than SDXL's single-frame one on this
+            # 8 GB card. cpu_offload manages device placement -- do not
+            # call `.to(self.device)` first.
+            self._pipe.enable_vae_slicing()
+            self._pipe.enable_model_cpu_offload()
         return self._pipe
 
     def generate(self, request: MotionClipRequest) -> Path:
@@ -264,7 +271,7 @@ def build_motion_library(
     look like this novel.
     """
     engine = engine or get_engine("stub")
-    out_dir = Path(out_dir) / novel_id
+    out_dir = Path(out_dir)
     report = MotionLibraryReport(novel_id=novel_id, engine=engine.name)
     seed_images = seed_images or {}
 
@@ -306,7 +313,7 @@ def build_motion_library(
 
 def load_motion_library(novel_id: str, out_dir: str | Path = "data/motion") -> dict[str, MotionClip]:
     """Reload a previously built library, keyed by tag."""
-    manifest_path = Path(out_dir) / novel_id / "manifest.json"
+    manifest_path = Path(out_dir) / "manifest.json"
     if not manifest_path.exists():
         return {}
     raw = json.loads(manifest_path.read_text(encoding="utf-8"))

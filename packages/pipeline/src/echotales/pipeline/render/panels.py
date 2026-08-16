@@ -128,7 +128,19 @@ class SDXLEngine:
 
             self._pipe = StableDiffusionXLPipeline.from_pretrained(
                 self.model_id, torch_dtype=torch.float16
-            ).to(self.device)
+            )
+            # This 8 GB card OOMs inside vae.decode with the pipeline fully
+            # resident on GPU (`.to(self.device)`), even with vae/attention
+            # slicing enabled -- slicing only helps a batch >1, and every
+            # call here is batch=1, so it did nothing (confirmed: still
+            # OOM'd at ~7.5/7.65 GiB, same crash site, after adding it).
+            # `enable_model_cpu_offload` keeps only the submodule actually
+            # running on GPU at any moment and shuttles the rest to CPU --
+            # slower per image, but this is the option that actually fits
+            # the card. Do not call `.to(self.device)` first: offload
+            # manages device placement itself.
+            self._pipe.enable_vae_slicing()
+            self._pipe.enable_model_cpu_offload()
         return self._pipe
 
     def generate(self, request: PanelImageRequest) -> Path:
@@ -480,12 +492,18 @@ def character_looks(
 ) -> tuple[str, str, Path | None, str] | None:
     """`(label, appearance clause, reference sheet, gender)` for one entity.
 
-    `chapter` selects which *body* to draw. A character who was reborn or
-    transmigrated has more than one persona, each with its own appearance and
-    its own reference sheet, and drawing chapter 40's panel from chapter 1's
-    body is the exact error the self/persona split exists to prevent. None
-    means "their latest body", which is the right answer for a cast list and
-    the wrong one for a panel -- so panel rendering always passes it.
+    `chapter` selects which *body* to draw, and **must be the fractional
+    story position** `persona/split.py::write_epochs` uses for its own body
+    boundaries (`chapter + block_index / n_blocks_in_chapter`), not a bare
+    chapter number. A body change can land mid-chapter -- RI's Fang Yuan is
+    reborn partway through chapter 1 itself -- and a bare integer chapter
+    number is indistinguishable from "the very start of the chapter" to
+    `persona_at`'s interval lookup, so every panel in that chapter resolved
+    to the pre-rebirth body regardless of which half of the chapter it was
+    actually depicting. `render_panels` computes this the same way
+    `split.py` does; see its call site. None means "their latest body",
+    which is the right answer for a cast list and the wrong one for a
+    panel -- so panel rendering always passes a real position.
 
     Returns None for a non-person entity -- §10 item 5's typing again: a
     location resolves like a name but has no face to draw. The clause and
@@ -531,12 +549,28 @@ def character_looks(
         # moment the style text changed, and the omitted gender made the
         # protagonist render as "androgynous person" despite a clean
         # 120/131 male-pronoun verdict.
+        # **`detailed=False` for panels, and it is the difference between a
+        # panel that shows the scene and one that shows a portrait.** CLIP
+        # truncates at 77 tokens, this clause leads the prompt, and the full
+        # version spends ~50 of them on one face -- so the scene, the mob and
+        # the locale, all of which come *after* it, were silently cut off the
+        # end of every panel prompt that had a resolved character in it.
+        # Measured on RI ch1: block 0 (long clause) rendered a lone figure on
+        # a blank grey background while its prompt asked for a mountain
+        # stronghold and encroaching warlords; block 1, whose speaker never
+        # resolved and so carried no clause at all, rendered the full misty
+        # peaks-and-timber-halls scene from the same run. The short form keeps
+        # the identity cues that actually survive at panel scale (hair,
+        # attire, gender); the face is carried by the IP-Adapter reference
+        # sheet, which is what that conditioning is for.
         clause = build_reference_prompt(
             entity.canonical_label,
             appearance,
             gender=gender,
             age_band=_age,
             with_style=False,
+            solo=False,
+            detailed=False,
         )
     return (
         entity.canonical_label,
@@ -640,7 +674,10 @@ def render_panels(
     import shutil
 
     engine = engine or get_engine("stub")
-    out_dir = Path(out_dir) / novel_id
+    # No novel level here: `paths.novel_root` already scopes the output
+    # root to this novel (`data/RI/panels`), so repeating the id below it
+    # only buried the chapters one directory deeper.
+    out_dir = Path(out_dir)
     report = PanelReport(novel_id=novel_id, engine=engine.name)
     generated_by_digest: dict[str, Path] = {}
 
@@ -756,9 +793,15 @@ def render_panels(
                 conditioned: list[str] = []
                 appearances: dict[str, str] = {}
                 genders: list[str] = []
+                # Same fractional-position convention as
+                # `persona/split.py::write_epochs`'s own boundaries --
+                # required, not cosmetic: see `character_looks`'s
+                # docstring for the mid-chapter body-selection bug this
+                # fixes.
+                story_position = chapter_number + lead / max(len(chapter.blocks), 1)
                 for entity_id in present_beat_entities(mentions, scene.blocks):
                     looks = character_looks(
-                        store, entity_id, novel_id=novel_id, chapter=chapter_number
+                        store, entity_id, novel_id=novel_id, chapter=story_position
                     )
                     if looks is None:
                         continue
@@ -844,6 +887,27 @@ def render_panels(
                     shutil.copyfile(generated_by_digest[digest], image_path)
                     report.deduped_panels += 1
                 else:
+                    # 0.65 (the default) is right for a close-up -- a face
+                    # is exactly what the reference sheet is meant to
+                    # anchor there. It is wrong for a wide/establishing
+                    # shot that needs a crowd, an environment, or an
+                    # action pose the reference's neutral front-facing
+                    # portrait never shows: confirmed directly on RI ch1's
+                    # opening panel, whose prompt correctly described
+                    # "warlords with drawn swords" and a mountain
+                    # stronghold, but which rendered as a clean solo
+                    # portrait regardless -- the reference *image*, not
+                    # just its "solo" text tag (already fixed separately),
+                    # was pulling the whole composition toward its own
+                    # plain-background single-figure framing. Any panel
+                    # with a background mob needs the most room for the
+                    # prompt to actually draw the scene.
+                    if closeup:
+                        weight = 0.65
+                    elif cast.background_mobs:
+                        weight = 0.3
+                    else:
+                        weight = 0.45
                     engine.generate(
                         PanelImageRequest(
                             prompt=prompt,
@@ -853,6 +917,7 @@ def render_panels(
                             height=height,
                             seed=seed,
                             reference_images=references,
+                            reference_weight=weight,
                         )
                     )
                     generated_by_digest[digest] = image_path

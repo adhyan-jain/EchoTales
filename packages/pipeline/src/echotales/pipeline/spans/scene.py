@@ -38,6 +38,9 @@ _MOB_ROLE_NOUNS = (
     "students", "villagers", "citizens", "clansmen", "warriors", "monks",
     "nuns", "attendants", "subordinates", "followers", "retainers",
     "bandits", "spectators", "onlookers", "crowd", "mob", "troops",
+    # RI ch1's opening scene ("Enemies surrounded him all around") --
+    # verified against the real block text, not guessed.
+    "enemies",
 )
 
 #: Quantifiers that mark a plural role noun as a described *group* rather
@@ -59,6 +62,15 @@ _MOB_RE = re.compile(
     re.IGNORECASE,
 )
 
+#: Noun-*first* construction: "Enemies surrounded him all around" (RI ch1's
+#: real opening block) -- the sentence's subject is the crowd, with no
+#: leading quantifier for `_MOB_RE` to anchor on at all. Verified against
+#: that exact block; not a guessed second pattern.
+_MOB_RE_SUBJECT_FIRST = re.compile(
+    rf"\b({'|'.join(_MOB_ROLE_NOUNS)})\s+surrounded\b",
+    re.IGNORECASE,
+)
+
 
 @dataclass(slots=True)
 class MobDescriptor:
@@ -72,12 +84,21 @@ class MobDescriptor:
 
 def detect_mobs(text: str, block_index: int = 0) -> list[MobDescriptor]:
     """Find collective-noun crowd phrases in one span or block of text."""
-    return [
+    found = [
         MobDescriptor(
             text=m.group(0), role=m.group(1).lower(), offset=m.start(), block_index=block_index
         )
         for m in _MOB_RE.finditer(text)
     ]
+    seen_offsets = {m.offset for m in found}
+    found.extend(
+        MobDescriptor(
+            text=m.group(0), role=m.group(1).lower(), offset=m.start(), block_index=block_index
+        )
+        for m in _MOB_RE_SUBJECT_FIRST.finditer(text)
+        if m.start() not in seen_offsets
+    )
+    return found
 
 
 @dataclass(slots=True)

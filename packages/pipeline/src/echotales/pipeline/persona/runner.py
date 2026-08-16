@@ -124,7 +124,15 @@ def get_panel_cast(
 
     background: list[MobCast] = []
     for mob in scene.mobs:
-        if mob.block_index != block_index:
+        # Foreground persons above are correctly scoped to the whole
+        # `block_window` (lo..hi), not just `block_index` (a slot's
+        # single lead block) -- this loop used to check the single block
+        # only, so a mob description landing on a different block of the
+        # same scene (e.g. "the clan's elders" a few blocks after the
+        # panel's lead block) was silently dropped, and a genuine group
+        # scene rendered as one isolated figure with nobody else in
+        # frame. Match the foreground scoping.
+        if not (lo <= mob.block_index <= hi):
             continue
         faction = (mob_faction or {}).get(mob.role)
         background.append(
