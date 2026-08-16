@@ -40,3 +40,35 @@ and `data/webview-working` hold one file *per novel*, keyed by novel id
 (`config.py`'s `gold_path` / `lexicon_path`). Moving RI's entries out of them
 breaks that lookup. `data/scene-references` is genre-wide composition
 reference, not RI's. `data/voice` is the shared VCTK corpus (~23 GB).
+
+## Crowd rendering — a measured dead end on this checkpoint
+
+Four rounds of prompt work (v10–v13) failed to put a crowd in frame next to a
+named character. Every lever was tried and verified in real generation:
+
+| lever | result |
+|---|---|
+| removed the `solo` tag | no crowd |
+| removed the `1boy` count tag | no crowd |
+| crowd stated in the director's setting prose | no crowd |
+| IP-Adapter dropped entirely on wide shots | no crowd (but much better depth) |
+| leading Danbooru count tags (`crowd, 6+boys`) | no crowd |
+
+The same checkpoint *does* render a dense crowd when the prompt contains **no
+named foreground character** (verified standalone: "a large angry crowd of
+cultivators on a mountain path" produced a full battlefield). So GuoFeng3
+(SD1.5) can draw a hero, and can draw a crowd, but not both in one image at
+1024px. That is a model-capacity limit, not a prompt-engineering one, and no
+further prompt work will move it.
+
+Two ways forward, neither of them prompt tweaks:
+
+1. **A stronger checkpoint** — Illustrious XL or Pony Diffusion V6 XL (SDXL
+   anime finetunes, ~7–8 GB at FP16, fits this card with the cpu-offload
+   already wired in `SDXLEngine`). Multi-subject composition is the specific
+   thing SDXL improves on SD1.5, and SDXL IP-Adapter exists so character
+   consistency survives the switch.
+2. **Cut, don't compose** — a hero panel and a crowd-reaction panel as two
+   consecutive cuts. This is what manhwa actually does with this beat, it
+   needs no new model, and the panel-per-beat machinery already supports it.
+   Compositing the two into one frame was tried and looked pasted.
