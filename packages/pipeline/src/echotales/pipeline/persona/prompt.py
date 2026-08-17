@@ -199,8 +199,30 @@ _NEGATIVE_TAIL = (
 #: ranges stacked behind the subject with no ground plane. Physique matters
 #: where a body fills the frame and geography where a landscape does, so
 #: which one survives truncation has to follow the framing.
+#: Key art instead of a scene. An anime checkpoint's strongest prior for
+#: "several named characters, one image" is a promotional poster, and it
+#: fires hard: a reviewed establishing shot came back as a cast lineup of
+#: twenty unrelated characters staring at the camera under a title banner in
+#: fake Chinese type, with two chibi mascots in the corner. Every element of
+#: that is a genre convention of the *format*, not of the scene, so it has
+#: to be refused as a format.
+_NEGATIVE_POSTER = (
+    "poster, cover art, title text, watermark, character lineup, "
+    "looking at viewer, chibi"
+)
+
+#: **A wide shot cannot afford the full safety block.** The negative prompt
+#: is fitted to 77 tokens like the positive one, and at 13 words the long
+#: form left nothing for the two failures a wide shot actually exhibits
+#: (poster layout, incoherent geography) -- both were being truncated off.
+#: This states the same refusals in a third of the tokens; the long form
+#: still applies to close-ups, where a body fills the frame and the extra
+#: precision earns its place.
+_NEGATIVE_SAFETY_SHORT = "nsfw, nude, worst quality, bad anatomy, distorted face"
+
 _NEGATIVE_TAIL_WIDE = (
-    _NEGATIVE_SAFETY,
+    _NEGATIVE_SAFETY_SHORT,
+    _NEGATIVE_POSTER,
     _NEGATIVE_GEOGRAPHY,
     _NEGATIVE_PHYSIQUE,
     _NEGATIVE_ANATOMY,

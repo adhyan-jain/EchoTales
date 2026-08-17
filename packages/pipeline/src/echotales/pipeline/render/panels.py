@@ -1411,6 +1411,14 @@ def render_panels(
 
                     if closeup:
                         weight = 0.65
+                    elif curated:
+                        # 0.3 exists because a *sheet* on a wide shot
+                        # reproduces its own solo framing and erases the
+                        # crowd. A curated composition reference has the
+                        # opposite problem -- at 0.3 its layout barely
+                        # registers -- and copying its layout is the entire
+                        # reason it is attached.
+                        weight = 0.5
                     elif cast.background_mobs:
                         weight = 0.3
                     else:
