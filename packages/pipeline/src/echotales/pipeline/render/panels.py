@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import json
 import logging
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Protocol
 
@@ -42,6 +42,10 @@ from echotales.pipeline.persona.runner import get_panel_cast
 from echotales.pipeline.render._png import write_solid_png
 from echotales.pipeline.render.beat_canon import beat_canon_for
 from echotales.pipeline.render.direction import direct_beat
+from echotales.pipeline.render.scene_refs import (
+    curated_character_reference,
+    match_scene_references,
+)
 from echotales.pipeline.render.scenes import group_scenes
 from echotales.pipeline.render.palette import Palette, PaletteSpec, apply_palette
 from echotales.pipeline.world.context import story_context
@@ -381,9 +385,34 @@ class IllustriousEngine:
     device: str = "cuda"
     steps: int = 30
     guidance_scale: float = 6.0
+    #: **Danbooru quality tags are not decoration on this checkpoint.**
+    #: Illustrious is trained with them and drifts hard toward its raw
+    #: training prior without them: a first render came back as grotesque
+    #: uncanny faces and a partially undressed figure. GuoFeng3 needs no such
+    #: preamble, which is why this is engine-level rather than in the shared
+    #: prompt builder.
+    #: **Genre has to lead on every prompt, not just the crowd cut.**
+    #: GuoFeng3 carries ancient-China style in its weights; this checkpoint
+    #: is a general anime model and reverts to that prior the moment the
+    #: prompt lets it -- test renders came back with cat ears, modern
+    #: clothing and a European cathedral. Anchoring per-panel in the shared
+    #: prompt builder would spend tokens GuoFeng3 does not need, so it lives
+    #: here, on the engine that needs it.
+    quality_prefix: str = (
+        "masterpiece, best quality, very aesthetic, absurdres, "
+        "ancient china, xianxia, wuxia, hanfu, chinese clothes, "
+        "manhwa style, webtoon art"
+    )
+    #: SDXL takes different adapter weights than SD1.5 -- the SD1.5 file
+    #: `MangaDiffusersEngine` loads will not load here at all.
+    ip_adapter_repo: str = "h94/IP-Adapter"
+    ip_adapter_subfolder: str = "sdxl_models"
+    ip_adapter_weight: str = "ip-adapter_sdxl.bin"
+    max_references: int = 2
     _pipe: object | None = None
+    _ip_loaded: bool = False
 
-    def _ensure_pipe(self) -> object:
+    def _ensure_pipe(self, want_ip: bool = False) -> object:
         if self._pipe is None:
             import torch  # type: ignore[import-not-found]
             from diffusers import StableDiffusionXLPipeline  # type: ignore[import-not-found]
@@ -393,25 +422,195 @@ class IllustriousEngine:
             )
             self._pipe.enable_vae_slicing()
             self._pipe.enable_model_cpu_offload()
+
+        if want_ip and not self._ip_loaded:
+            try:
+                self._pipe.load_ip_adapter(  # type: ignore[attr-defined]
+                    self.ip_adapter_repo,
+                    subfolder=self.ip_adapter_subfolder,
+                    weight_name=self.ip_adapter_weight,
+                )
+                self._ip_loaded = True
+            except Exception as exc:
+                log.warning(
+                    "SDXL IP-Adapter unavailable (%s); panels will be "
+                    "prompt-only and curated references will not apply",
+                    exc,
+                )
         return self._pipe
 
     def generate(self, request: PanelImageRequest) -> Path:
         import torch  # type: ignore[import-not-found]
+        from diffusers.utils import load_image  # type: ignore[import-not-found]
+
+        refs = [p for p in request.reference_images if Path(p).exists()][
+            : self.max_references
+        ]
+        pipe = self._ensure_pipe(want_ip=bool(refs))
+        kwargs: dict[str, object] = {}
+        if self._ip_loaded:
+            # Same "never skip once loaded" constraint as
+            # `MangaDiffusersEngine` -- loading rewrites the UNet's attention
+            # processors, and a call without an image raises rather than
+            # falling back. A blank image at scale 0.0 is the no-op.
+            if refs:
+                pipe.set_ip_adapter_scale(request.reference_weight)  # type: ignore[attr-defined]
+                kwargs["ip_adapter_image"] = [load_image(str(p)) for p in refs]
+            else:
+                from PIL import Image
+
+                pipe.set_ip_adapter_scale(0.0)  # type: ignore[attr-defined]
+                kwargs["ip_adapter_image"] = [
+                    Image.new("RGB", (224, 224), (255, 255, 255))
+                ]
+
+        generator = torch.Generator(device="cpu").manual_seed(request.seed)
+        image = pipe(  # type: ignore[operator]
+            # **The prefix has to be prepended here, not in the shared prompt
+            # builder.** GuoFeng3 needs none of it and every token spent on it
+            # would come out of the 77-token CLIP budget that `fit_to_budget`
+            # is already rationing for scene content.
+            prompt=f"{self.quality_prefix}, {request.prompt}",
+            negative_prompt=(
+                (request.negative_prompt or "")
+                # This family's anime prior specifically: without these it
+                # puts cat ears, kemonomimi and modern dress in a xianxia
+                # scene, and once put a European cathedral behind it.
+                + ", animal ears, cat ears, kemonomimi, fantasy armor, "
+                "modern clothing, school uniform, elf"
+            ),
+            width=request.width,
+            height=request.height,
+            num_inference_steps=self.steps,
+            guidance_scale=self.guidance_scale,
+            generator=generator,
+            **kwargs,
+        ).images[0]
+        request.out_path.parent.mkdir(parents=True, exist_ok=True)
+        image.save(request.out_path)
+        return request.out_path
+
+
+@dataclass(slots=True)
+class RefinedEngine:
+    """One checkpoint composes the frame, a second repaints it.
+
+    The measured split between the two backends is clean: SDXL checkpoints
+    place several people in a frame and SD1.5 cannot, while GuoFeng3 carries
+    ancient-China style in its weights that no amount of prompt tokens buys
+    on a general anime checkpoint. Neither is fixable by prompting, so this
+    runs both -- `base` for layout, then GuoFeng3 img2img over its output at
+    a denoise strength low enough to keep that layout.
+
+    **This is not compositing.** Nothing is pasted; the refiner repaints
+    every pixel of the frame and inherits only where the shapes are. The
+    earlier attempt to cut a hero out of one render and drop it into another
+    is what produced seams, and this shares none of that mechanism.
+
+    `strength` is the whole dial. Below ~0.25 the restyle barely lands;
+    above ~0.5 SD1.5 starts re-deciding the composition and the crowd
+    collapses the same way it does when it generates one from scratch.
+    """
+
+    name: str = "refined"
+    #: Which SDXL backend lays the frame out. Named rather than injected so
+    #: `--image-engine refined` stays a one-flag choice on the CLI.
+    base_engine: str = "animagine"
+    refiner_model_id: str = "xiaolxl/GuoFeng3"
+    device: str = "cuda"
+    strength: float = 0.35
+    steps: int = 30
+    guidance_scale: float = 7.0
+    #: Keep the intermediate next to the final panel. It costs one file per
+    #: panel and it is the only way to tell "the base composed badly" apart
+    #: from "the refiner destroyed a good composition" after the fact.
+    keep_base: bool = True
+    _base: object | None = None
+    _pipe: object | None = None
+
+    def _ensure_base(self) -> PanelImageEngine:
+        if self._base is None:
+            self._base = get_engine(self.base_engine)
+        return self._base  # type: ignore[return-value]
+
+    def _ensure_pipe(self) -> object:
+        if self._pipe is None:
+            import torch  # type: ignore[import-not-found]
+            from diffusers import StableDiffusionImg2ImgPipeline  # type: ignore[import-not-found]
+
+            self._pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
+                self.refiner_model_id, torch_dtype=torch.float16, safety_checker=None
+            )
+            # Both checkpoints are resident across a panel, so neither one
+            # gets to sit on the card -- offload, unlike `MangaDiffusersEngine`
+            # which is alone on the GPU and can afford `.to(device)`.
+            self._pipe.enable_vae_slicing()
+            self._pipe.enable_model_cpu_offload()
+        return self._pipe
+
+    def generate(self, request: PanelImageRequest) -> Path:
+        import torch  # type: ignore[import-not-found]
+        from diffusers.utils import load_image  # type: ignore[import-not-found]
+
+        base_path = request.out_path.with_name(
+            request.out_path.stem + ".base" + request.out_path.suffix
+        )
+        base_request = replace(request, out_path=base_path)
+        self._ensure_base().generate(base_request)
 
         pipe = self._ensure_pipe()
         generator = torch.Generator(device="cpu").manual_seed(request.seed)
         image = pipe(  # type: ignore[operator]
             prompt=request.prompt,
             negative_prompt=request.negative_prompt or None,
-            width=request.width,
-            height=request.height,
+            image=load_image(str(base_path)),
+            strength=self.strength,
             num_inference_steps=self.steps,
             guidance_scale=self.guidance_scale,
             generator=generator,
         ).images[0]
+
         request.out_path.parent.mkdir(parents=True, exist_ok=True)
         image.save(request.out_path)
+        if not self.keep_base:
+            base_path.unlink(missing_ok=True)
         return request.out_path
+
+
+@dataclass(slots=True)
+class AnimagineEngine(IllustriousEngine):
+    """Animagine XL 4.0 -- the same SDXL bet as `IllustriousEngine`, on a
+    checkpoint that was actually finished.
+
+    The Illustrious weights this pipeline pinned are the *early release*, and
+    the measured result matches that label: it composes a crowd (the thing
+    SD1.5 could not do at all) but renders it flat, with generic modern-anime
+    faces. Composition and aesthetics are separable here, so the cheapest
+    next move is to hold the prompt fixed and swap only the checkpoint.
+    """
+
+    name: str = "animagine"
+    model_id: str = "cagliostrolab/animagine-xl-4.0"
+    #: Animagine 4.0's own card specifies this ordering (quality, then
+    #: rating, then year); it is trained on it and drifts without it.
+    quality_prefix: str = (
+        "masterpiece, high score, great score, absurdres, "
+        "ancient china, xianxia, wuxia, hanfu, chinese clothes, "
+        "manhwa style, webtoon art"
+    )
+
+
+@dataclass(slots=True)
+class NoobAIEngine(IllustriousEngine):
+    """NoobAI-XL v1.1 -- an Illustrious continuation trained far longer.
+
+    Same architecture and same tag vocabulary as `IllustriousEngine`, so it
+    is a drop-in A/B on the exact axis that came up short (render quality at
+    equal crowd competence) rather than a second variable.
+    """
+
+    name: str = "noobai"
+    model_id: str = "Laxhar/noobai-XL-1.1"
 
 
 def get_engine(name: str = "stub", **kwargs: object) -> PanelImageEngine:
@@ -428,6 +627,12 @@ def get_engine(name: str = "stub", **kwargs: object) -> PanelImageEngine:
         return SDXLEngine(**kwargs)  # type: ignore[arg-type]
     if name == "illustrious":
         return IllustriousEngine(**kwargs)  # type: ignore[arg-type]
+    if name == "refined":
+        return RefinedEngine(**kwargs)  # type: ignore[arg-type]
+    if name == "animagine":
+        return AnimagineEngine(**kwargs)  # type: ignore[arg-type]
+    if name == "noobai":
+        return NoobAIEngine(**kwargs)  # type: ignore[arg-type]
     if name == "manga":
         return MangaDiffusersEngine(**kwargs)  # type: ignore[arg-type]
     if name == "gemini":
@@ -960,6 +1165,15 @@ def render_panels(
                     genders.append(gender)
                     if clause:
                         appearances[label] = clause
+                    # A hand-picked portrait beats the generated sheet when
+                    # one exists: the sheets are themselves diffusion output
+                    # and inherit the same drift they are supposed to
+                    # prevent (Fang Yuan kept coming back bulked and
+                    # bright-eyed), while the curated image is ground truth.
+                    sheet = (
+                        curated_character_reference(label, chapter=story_position)
+                        or sheet
+                    )
                     if sheet is not None:
                         references.append(sheet)
                         conditioned.append(label)
@@ -1051,7 +1265,14 @@ def render_panels(
                         # everything), so the crowd has to be stated in that
                         # vocabulary and placed where truncation cannot reach
                         # it.
-                        if cast.background_mobs and not closeup:
+                        # Only the crowd *cut* asserts a crowd. Prefixing
+                        # every wide panel in a mob scene with "crowd,
+                        # multiple people, 6+boys" turned the hero's own
+                        # panel into a wall of faces on a checkpoint that
+                        # actually honours the tag -- the count tag is a
+                        # blunt instrument and belongs only on the panel
+                        # whose subject *is* the crowd.
+                        if is_crowd_cut:
                             prompt = f"crowd, multiple people, 6+boys, {prompt}"
                     else:
                         prompt = build_image_prompt(
@@ -1095,11 +1316,30 @@ def render_panels(
                     # hold a crowd at closer range replaces it.
                     prompt = fit_to_budget(
                         [
-                            "crowd, multiple people, 6+boys",
-                            f"a group of {_roles} gathered on the path",
-                            "varied robes, xianxia cultivators",
-                            scene_locale_text,
+                            # **Genre anchor first, and repeated.** GuoFeng3
+                            # carries ancient-China style in the checkpoint
+                            # itself, so a bare "xianxia cultivators" was
+                            # enough; a general anime checkpoint carries no
+                            # such prior and rendered this crowd as a
+                            # European cathedral interior in modern cloaks.
+                            # The setting has to be asserted, not assumed.
+                            # **Scale the figures up, keep the vocabulary
+                            # calm.** v16's crowd was real but tiny -- people
+                            # at the foot of a mountain, a landscape with
+                            # figures in it. The two attempts to pull in
+                            # closer failed on *wording* ("angry mob",
+                            # "shouting", "bloodied" -> gore and collage),
+                            # not on framing, so this asks for large
+                            # foreground figures while keeping the calm
+                            # standoff language, and demotes the locale to
+                            # the back of the prompt so it stops dictating
+                            # the shot.
+                            "ancient china, xianxia, wuxia, hanfu robes",
+                            "crowd of chinese cultivators, multiple people, 6+boys",
+                            "large figures in the foreground, seen from behind",
+                            f"{_roles} standing close together, facing away",
                             "manhwa illustration, dramatic lighting, highly detailed",
+                            scene_locale_text,
                         ]
                     )
                     references = []
@@ -1145,6 +1385,21 @@ def render_panels(
                     if cast.background_mobs and not closeup:
                         references = []
                         conditioned = []
+
+                    # ...but a *curated* image is the exact opposite of a
+                    # solo sheet: it was picked because it already shows the
+                    # composition this panel needs (one figure against a
+                    # crowd, a clan hall that reads as a clan hall). So the
+                    # panels that just gave up their generated sheets are
+                    # the ones most worth conditioning on a hand-picked one.
+                    curated = match_scene_references(
+                        _scene_text,
+                        has_mob=bool(cast.background_mobs),
+                        closeup=closeup,
+                    )
+                    if curated:
+                        references = curated + references[:1]
+                        conditioned = conditioned or ["curated"]
 
                     if closeup:
                         weight = 0.65
