@@ -147,7 +147,19 @@ _NEGATIVE_CULTURE = "cherry blossoms, japanese shrine, modern clothing, school u
 #: a watermark is fixable, a portrait where a battle should be is not.
 _NEGATIVE_ARTEFACT = "watermark, text, speech bubble"
 
+#: Incoherent geography. The checkpoint fills a wide frame by stacking
+#: several unrelated landscapes -- a reviewed panel had the subject standing
+#: over what read as three different mountain ranges at once, with no single
+#: ground plane under him. Nothing in the negative opposed that, and the
+#: positive prompt cannot fix it: naming one place does not stop the model
+#: adding more behind it.
+_NEGATIVE_GEOGRAPHY = (
+    "multiple horizons, stacked landscapes, disjointed background, "
+    "floating in air, no ground, collage"
+)
+
 _NEGATIVE_TAIL = (
+    _NEGATIVE_GEOGRAPHY,
     _NEGATIVE_ANATOMY,
     _NEGATIVE_MEDIUM,
     _NEGATIVE_TONE,

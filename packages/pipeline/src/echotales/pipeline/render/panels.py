@@ -31,6 +31,7 @@ from echotales.core.models import Chapter, Mention, Span
 from echotales.core.store import Store
 from echotales.pipeline.persona.attire import scene_locale, world_setting
 from echotales.pipeline.persona.prompt import (
+    fit_to_budget,
     STYLE_CLOSEUP,
     STYLE_ESTABLISHING,
     STYLE_SCENE,
@@ -803,17 +804,60 @@ def render_panels(
                 novel_id, _scene_text, block_index=scene.blocks[0]
             )
 
+            # **The crowd gets its own cut, not a corner of the hero's
+            # panel.** Four rounds of prompt work could not put a crowd in
+            # frame beside a named character on this checkpoint -- and the
+            # same checkpoint renders a dense crowd readily when the prompt
+            # names nobody. So a scene with a mob earns one extra panel that
+            # is *only* the mob: no character clause, no reference sheet,
+            # nothing for the model to collapse onto a single figure. This
+            # is also what the source medium does with this beat -- cut to
+            # the faces reacting, then back -- so it is the honest structure
+            # rather than a workaround for a model limit, though it is both.
+            from echotales.pipeline.spans.scene import detect_mobs
+
+            _scene_mobs = detect_mobs(_scene_text, scene.blocks[0])
+            _crowd_slot = None
+            if _scene_mobs and len(story_scene_blocks) > 1:
+                _crowd_slot = 3
+                # It belongs on a line somebody in the crowd speaks, which
+                # is the moment a reader would be looking at them.
+                _dialogue_blocks = [
+                    b
+                    for b in story_scene_blocks
+                    if any(
+                        sp.span_type in (SpanType.DIALOGUE,)
+                        for sp in by_block_spans.get(b, [])
+                    )
+                ]
+                if _dialogue_blocks:
+                    slot_for_block[_dialogue_blocks[0]] = _crowd_slot
+                    slot_lead[_crowd_slot] = _dialogue_blocks[0]
+                    needed_slots = sorted(set(slot_for_block.values()))
+                else:
+                    _crowd_slot = None
+
             slot_images: dict[int, PanelImage] = {}
             for slot in needed_slots:
                 lead = slot_lead[slot]
                 block = by_index[lead]
-                style = (STYLE_ESTABLISHING, STYLE_CLOSEUP, STYLE_SCENE)[slot]
+                is_crowd_cut = slot == _crowd_slot
+                style = (STYLE_ESTABLISHING, STYLE_CLOSEUP, STYLE_SCENE, STYLE_SCENE)[slot]
                 closeup = style is STYLE_CLOSEUP
 
                 chapter_dir = out_dir / f"ch{chapter_number:g}"
                 if version:
                     chapter_dir = chapter_dir / version
-                image_path = chapter_dir / f"block{lead:04d}.png"
+                # **The crowd cut needs its own file.** `slot_lead` is
+                # built before the crowd slot is assigned, so the crowd's
+                # lead block is usually already some other slot's lead too --
+                # both then resolve to the same block{n}.png, the normal
+                # panel writes it first, and the crowd panel is silently
+                # dropped by the `image_path.exists()` cache check. Cost
+                # three rounds of "the crowd cut fires but never appears".
+                image_path = chapter_dir / (
+                    f"block{lead:04d}_crowd.png" if is_crowd_cut else f"block{lead:04d}.png"
+                )
 
                 cast = get_panel_cast(
                     novel_id,
@@ -881,7 +925,7 @@ def render_panels(
                 elif canon is not None and canon.style_override == "scene":
                     style = STYLE_SCENE
 
-                cache_key = f"{chapter_number:g}:{lead}"
+                cache_key = f"{chapter_number:g}:{lead}" + (":crowd" if is_crowd_cut else "")
                 cached_prompt = prompt_cache.get(cache_key)
 
                 if cached_prompt is not None:
@@ -963,6 +1007,30 @@ def render_panels(
                             style=style,
                         )
                     prompt_cache[cache_key] = prompt
+
+                if is_crowd_cut:
+                    # No character clause and no reference sheet: those are
+                    # exactly the two things that collapse this panel back
+                    # into a single figure. Danbooru count tags lead, since
+                    # that is the vocabulary this checkpoint weights most.
+                    _roles = ", ".join(sorted({m.role for m in _scene_mobs}))
+                    # Framing leads. The first crowd panel that rendered put
+                    # the crowd as tiny figures at the foot of a mountain --
+                    # a landscape with people in it, not a reaction shot --
+                    # because the locale outweighed everything. The point of
+                    # this cut is the faces, so the shot has to be stated
+                    # first and the locale demoted to a backdrop.
+                    prompt = fit_to_budget(
+                        [
+                            "crowd of people filling the frame, medium shot",
+                            "multiple people, 6+boys, angry mob, front view",
+                            f"{_roles} shouting, faces showing anger and fear",
+                            "varied colored robes, some wounded and bloodied",
+                            "manhwa illustration, dramatic lighting, highly detailed",
+                        ]
+                    )
+                    references = []
+                    conditioned = []
 
                 digest = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
                 if image_path.exists():
