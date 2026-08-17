@@ -226,3 +226,26 @@ class TestCondenseClause:
 
     def test_an_empty_clause_stays_empty(self) -> None:
         assert condense_clause("") == ""
+
+
+def test_all_male_cast_gets_male_focus_and_a_feminine_negative() -> None:
+    from echotales.pipeline.persona.prompt import cast_tags, gender_negative
+
+    assert "male focus" in cast_tags(["male"])
+    assert "1girl" in gender_negative(["male", "male"])
+
+
+def test_mixed_cast_is_left_alone() -> None:
+    from echotales.pipeline.persona.prompt import cast_tags, gender_negative
+
+    # Masculinising a panel that has a woman in it is the opposite failure.
+    assert "male focus" not in cast_tags(["male", "female"])
+    assert gender_negative(["male", "female"]) == ""
+    assert gender_negative([]) == ""
+
+
+def test_style_base_carries_no_hair() -> None:
+    from echotales.pipeline.persona.prompt import STYLE_SCENE
+
+    # Hair belongs to whoever has it, not to every panel including empty ones.
+    assert "flowing black hair" not in STYLE_SCENE

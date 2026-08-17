@@ -36,6 +36,7 @@ from echotales.pipeline.persona.prompt import (
     STYLE_ESTABLISHING,
     STYLE_SCENE,
     build_image_prompt,
+    gender_negative,
     negative_for,
 )
 from echotales.pipeline.persona.runner import get_panel_cast
@@ -413,8 +414,11 @@ class IllustriousEngine:
     #: disk for `MangaDiffusersEngine` -- which, on this connection, is the
     #: difference between a 700 MB download and a 4.4 GB one.
     ip_adapter_weight: str = "ip-adapter_sdxl_vit-h.safetensors"
-    #: Where that shared encoder lives, relative to `ip_adapter_subfolder`.
-    ip_adapter_image_encoder: str = "../models/image_encoder"
+    #: Where that shared encoder lives *in its own repo*. It cannot be
+    #: reached as `../models/image_encoder` from `sdxl_models`: `huggingface_
+    #: _hub` rejects any path containing `..` outright, so the encoder is
+    #: loaded by hand and handed to the pipeline instead.
+    ip_adapter_image_encoder: str = "models/image_encoder"
     max_references: int = 2
     _pipe: object | None = None
     _ip_loaded: bool = False
@@ -424,28 +428,49 @@ class IllustriousEngine:
             import torch  # type: ignore[import-not-found]
             from diffusers import StableDiffusionXLPipeline  # type: ignore[import-not-found]
 
-            self._pipe = StableDiffusionXLPipeline.from_pretrained(
+            pipe = StableDiffusionXLPipeline.from_pretrained(
                 self.model_id, torch_dtype=torch.float16, use_safetensors=True
             )
-            self._pipe.enable_vae_slicing()
-            self._pipe.enable_model_cpu_offload()
+            # **The adapter has to be attached before offloading, not after.**
+            # `enable_model_cpu_offload` installs hooks on the modules present
+            # at the time it runs; an image encoder assigned afterwards has no
+            # hook, stays on CPU, and the first conditioned panel dies on a
+            # device mismatch. So the decision to condition is made here, at
+            # first load, from the first panel that asks for it.
+            if want_ip:
+                self._load_ip_adapter(pipe, torch)
+            pipe.enable_vae_slicing()
+            pipe.enable_model_cpu_offload()
+            self._pipe = pipe
+        elif want_ip and not self._ip_loaded:
+            import torch  # type: ignore[import-not-found]
 
-        if want_ip and not self._ip_loaded:
-            try:
-                self._pipe.load_ip_adapter(  # type: ignore[attr-defined]
-                    self.ip_adapter_repo,
-                    subfolder=self.ip_adapter_subfolder,
-                    weight_name=self.ip_adapter_weight,
-                    image_encoder_folder=self.ip_adapter_image_encoder,
-                )
-                self._ip_loaded = True
-            except Exception as exc:
-                log.warning(
-                    "SDXL IP-Adapter unavailable (%s); panels will be "
-                    "prompt-only and curated references will not apply",
-                    exc,
-                )
+            self._load_ip_adapter(self._pipe, torch)
         return self._pipe
+
+    def _load_ip_adapter(self, pipe: object, torch: object) -> None:
+        try:
+            from transformers import CLIPVisionModelWithProjection  # type: ignore[import-not-found]
+
+            pipe.image_encoder = CLIPVisionModelWithProjection.from_pretrained(  # type: ignore[attr-defined]
+                self.ip_adapter_repo,
+                subfolder=self.ip_adapter_image_encoder,
+                torch_dtype=torch.float16,  # type: ignore[attr-defined]
+            ).to(self.device)
+            pipe.load_ip_adapter(  # type: ignore[attr-defined]
+                self.ip_adapter_repo,
+                subfolder=self.ip_adapter_subfolder,
+                weight_name=self.ip_adapter_weight,
+                # None means "use the encoder already on the pipeline".
+                image_encoder_folder=None,
+            )
+            self._ip_loaded = True
+        except Exception as exc:
+            log.warning(
+                "SDXL IP-Adapter unavailable (%s); panels will be "
+                "prompt-only and curated references will not apply",
+                exc,
+            )
 
     def generate(self, request: PanelImageRequest) -> Path:
         import torch  # type: ignore[import-not-found]
@@ -478,7 +503,17 @@ class IllustriousEngine:
             # builder.** GuoFeng3 needs none of it and every token spent on it
             # would come out of the 77-token CLIP budget that `fit_to_budget`
             # is already rationing for scene content.
-            prompt=f"{self.quality_prefix}, {request.prompt}",
+            #
+            # But the caller already spent that budget down to the limit, so
+            # a naive `f"{prefix}, {prompt}"` overflows and CLIP silently
+            # drops the *end* -- which is where the locale and the style
+            # elaboration live. Measured on the crowd cut: "a narrow mountain
+            # path, pine and mist, cliffs falling away" was cut off entirely.
+            # Re-fitting drops whole low-priority clauses instead, which is
+            # the same trade `fit_to_budget` exists to make.
+            prompt=fit_to_budget(
+                [self.quality_prefix, *request.prompt.split(", ")]
+            ),
             negative_prompt=(
                 (request.negative_prompt or "")
                 # This family's anime prior specifically: without these it
@@ -1429,6 +1464,17 @@ def render_panels(
                             out_path=image_path,
                             negative_prompt=(
                                 negative_for(style)
+                                # Appended after the budgeted body, not
+                                # inside it: this is the one clause that
+                                # must never be the one truncation drops,
+                                # since the failure it prevents (a male
+                                # protagonist rendered as a woman) makes the
+                                # panel unusable rather than merely worse.
+                                + (
+                                    f", {gender_neg}"
+                                    if (gender_neg := gender_negative(genders))
+                                    else ""
+                                )
                                 + (
                                     ", gore, blood splatter, muscular, bare chest, "
                                     "screaming, western comic, corpses, fire"

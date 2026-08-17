@@ -41,7 +41,14 @@ from echotales.pipeline.persona.runner import PanelCast
 _MANGA_BASE = (
     "guofeng illustration, chinese ink painting, xianxia, wuxia, "
     "ancient chinese fantasy, hanfu with long wide sleeves, "
-    "flowing black hair, ink wash, muted limited palette, "
+    # "flowing black hair" used to sit here. It is in the reference art, but
+    # as a *global* style term it applied to every panel including ones with
+    # no person in them, and on a Danbooru-trained checkpoint long flowing
+    # hair is one of the strongest feminine cues there is -- reviewed panels
+    # of a male protagonist came back as women in white robes with
+    # waist-length hair. Hair belongs to the character clause, where it is
+    # attached to a character who actually has it.
+    "ink wash, muted limited palette, "
     "elegant brushwork, negative space, subtle gradients, "
     "solemn atmosphere, mature serious art style"
 )
@@ -346,7 +353,29 @@ def cast_tags(genders: list[str]) -> str:
         parts.append("1girl")
     elif females > 1:
         parts.append(f"{min(females, 6)}girls")
+    # **`1boy` alone does not hold.** It fixes the headcount and not the
+    # rendering: with `1boy` present and nothing else, reviewed panels still
+    # came back as a slim figure with a feminine face, waist-length hair and
+    # a white gown. `male focus` is the Danbooru tag that actually moves the
+    # face and build, and it only makes sense when nobody in frame is
+    # female -- adding it to a mixed-cast panel would masculinise the women.
+    if males and not females:
+        parts.append("male focus")
     return ", ".join(parts)
+
+
+#: What to refuse when the cast is entirely male. Paired with `male focus`
+#: above and for the same measured reason: on these checkpoints the pull
+#: toward a female subject is strong enough that it has to be opposed from
+#: both directions at once.
+_NEGATIVE_FEMININE = "1girl, female, feminine face, breasts, lipstick, makeup"
+
+
+def gender_negative(genders: list[str]) -> str:
+    """The extra negative clause an all-male panel needs, if any."""
+    if not genders or any(g == "female" for g in genders):
+        return ""
+    return _NEGATIVE_FEMININE if any(g == "male" for g in genders) else ""
 
 
 # ---------------------------------------------------------------------------
