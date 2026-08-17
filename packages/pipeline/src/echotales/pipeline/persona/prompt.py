@@ -158,7 +158,18 @@ _NEGATIVE_GEOGRAPHY = (
     "floating in air, no ground, collage"
 )
 
+#: Wrong body and wrong demeanour. The protagonist is repeatedly described as
+#: lean with cold, abyss-black eyes, and the checkpoint's prior for a robed
+#: martial figure is a broad-shouldered, bright-eyed heroic one -- reviewed
+#: panels read as "an energetic righteous warrior", which is the opposite of
+#: the character. Positive wording did not hold this on its own.
+_NEGATIVE_PHYSIQUE = (
+    "muscular, buff, bulky, broad shoulders, bodybuilder, heroic pose, "
+    "righteous, cheerful, smiling, bright eyes"
+)
+
 _NEGATIVE_TAIL = (
+    _NEGATIVE_PHYSIQUE,
     _NEGATIVE_GEOGRAPHY,
     _NEGATIVE_ANATOMY,
     _NEGATIVE_MEDIUM,

@@ -320,7 +320,31 @@ def build_reference_prompt(
     if age_band != "adult":
         parts.append(age_band)
 
-    keys = _PROMPT_ORDER if detailed else ("hair_color", "hair_style", "typical_attire")
+    # **The short form still has to carry build, eyes and demeanour.**
+    # Trimming it to hair and attire saved the tokens that let a panel show
+    # its scene, but it dropped exactly the traits that make this character
+    # himself: reviewed panels came back as a bulked, bright-eyed "righteous
+    # warrior" for a lean demonic cultivator whose canon says "cold and
+    # narrow eyes ... deep as the abyss". Build and eye colour are a handful
+    # of tokens and they are the difference between the right character and
+    # a generic hero.
+    keys = (
+        _PROMPT_ORDER
+        if detailed
+        else (
+            "height_build",
+            "hair_color",
+            "hair_style",
+            "eye_color",
+            # `distinguishing_features` stays out: it is by far the longest
+            # value ("aged, hollow-cheeked, cold expressionless stare,
+            # utterly ruthless demeanour") and putting it back cost ~25
+            # tokens, which is the scene again. Demeanour is carried by
+            # `_NEGATIVE_PHYSIQUE` instead, where it costs the positive
+            # prompt nothing.
+            "typical_attire",
+        )
+    )
     for key in keys:
         value = appearance.get(key)
         if not value:

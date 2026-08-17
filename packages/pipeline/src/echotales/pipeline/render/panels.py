@@ -354,6 +354,66 @@ class MangaDiffusersEngine:
         return request.out_path
 
 
+@dataclass(slots=True)
+class IllustriousEngine:
+    """Illustrious XL -- an SDXL anime finetune, for scenes SD1.5 cannot hold.
+
+    `MangaDiffusersEngine`'s GuoFeng3 is SD1.5-based, and nine rounds of
+    prompt work established a hard ceiling on it: it renders a hero, and it
+    renders a crowd, but never both, and pulling a crowd closer than
+    landscape distance collapses into gore or poster collage. Multi-subject
+    composition is the specific thing SDXL improves over SD1.5, which makes
+    the checkpoint -- not the prompt -- the next thing to change.
+
+    Loaded with `enable_model_cpu_offload` for the same reason `SDXLEngine`
+    is: this card OOMs in `vae.decode` with an SDXL pipeline fully resident,
+    and slicing does nothing at batch=1.
+
+    No IP-Adapter here yet. SD1.5 and SDXL take different adapter weights,
+    and wiring the SDXL one is only worth doing once the checkpoint has
+    earned its place on output quality -- so this engine is prompt-only, and
+    `render_panels` degrades to prompt-only for it exactly as it already
+    does for a character with no sheet.
+    """
+
+    name: str = "illustrious"
+    model_id: str = "OnomaAIResearch/Illustrious-xl-early-release-v0"
+    device: str = "cuda"
+    steps: int = 30
+    guidance_scale: float = 6.0
+    _pipe: object | None = None
+
+    def _ensure_pipe(self) -> object:
+        if self._pipe is None:
+            import torch  # type: ignore[import-not-found]
+            from diffusers import StableDiffusionXLPipeline  # type: ignore[import-not-found]
+
+            self._pipe = StableDiffusionXLPipeline.from_pretrained(
+                self.model_id, torch_dtype=torch.float16, use_safetensors=True
+            )
+            self._pipe.enable_vae_slicing()
+            self._pipe.enable_model_cpu_offload()
+        return self._pipe
+
+    def generate(self, request: PanelImageRequest) -> Path:
+        import torch  # type: ignore[import-not-found]
+
+        pipe = self._ensure_pipe()
+        generator = torch.Generator(device="cpu").manual_seed(request.seed)
+        image = pipe(  # type: ignore[operator]
+            prompt=request.prompt,
+            negative_prompt=request.negative_prompt or None,
+            width=request.width,
+            height=request.height,
+            num_inference_steps=self.steps,
+            guidance_scale=self.guidance_scale,
+            generator=generator,
+        ).images[0]
+        request.out_path.parent.mkdir(parents=True, exist_ok=True)
+        image.save(request.out_path)
+        return request.out_path
+
+
 def get_engine(name: str = "stub", **kwargs: object) -> PanelImageEngine:
     """Construct a backend by name.
 
@@ -366,6 +426,8 @@ def get_engine(name: str = "stub", **kwargs: object) -> PanelImageEngine:
         return StubImageEngine(**kwargs)  # type: ignore[arg-type]
     if name == "sdxl":
         return SDXLEngine(**kwargs)  # type: ignore[arg-type]
+    if name == "illustrious":
+        return IllustriousEngine(**kwargs)  # type: ignore[arg-type]
     if name == "manga":
         return MangaDiffusersEngine(**kwargs)  # type: ignore[arg-type]
     if name == "gemini":
@@ -1020,12 +1082,23 @@ def render_panels(
                     # because the locale outweighed everything. The point of
                     # this cut is the faces, so the shot has to be stated
                     # first and the locale demoted to a backdrop.
+                    # **Distant-crowd-in-a-landscape is this checkpoint's
+                    # ceiling, and it is worth taking.** Two attempts to pull
+                    # the framing in for legible faces both collapsed: a
+                    # "medium shot ... angry mob, shouting, bloodied" returned
+                    # screaming muscular berserkers over a field of corpses,
+                    # and a calmer "group standing together, front view"
+                    # returned a garish poster collage with text artefacts.
+                    # The locale-led version below is the one that produced a
+                    # real crowd (people with banners on the mountain path
+                    # under mist), so it stays until a checkpoint that can
+                    # hold a crowd at closer range replaces it.
                     prompt = fit_to_budget(
                         [
-                            "crowd of people filling the frame, medium shot",
-                            "multiple people, 6+boys, angry mob, front view",
-                            f"{_roles} shouting, faces showing anger and fear",
-                            "varied colored robes, some wounded and bloodied",
+                            "crowd, multiple people, 6+boys",
+                            f"a group of {_roles} gathered on the path",
+                            "varied robes, xianxia cultivators",
+                            scene_locale_text,
                             "manhwa illustration, dramatic lighting, highly detailed",
                         ]
                     )
@@ -1083,7 +1156,15 @@ def render_panels(
                         PanelImageRequest(
                             prompt=prompt,
                             out_path=image_path,
-                            negative_prompt=negative_for(style),
+                            negative_prompt=(
+                                negative_for(style)
+                                + (
+                                    ", gore, blood splatter, muscular, bare chest, "
+                                    "screaming, western comic, corpses, fire"
+                                    if is_crowd_cut
+                                    else ""
+                                )
+                            ),
                             width=width,
                             height=height,
                             seed=seed,
