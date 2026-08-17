@@ -30,12 +30,35 @@ from pydantic import BaseModel, Field
 
 log = logging.getLogger(__name__)
 
+#: **Written for 199 chapters, not for one.** Every rule below replaces a
+#: failure that was previously patched downstream in `panels.py`'s negative
+#: prompts, where the fix costs scarce CLIP tokens on every panel forever.
+#: The director's output is prose the budget then has to carry, so a
+#: specification stated correctly here is free and the same specification
+#: enforced later is not -- at chapter scale that difference compounds.
 SYSTEM = (
     "You are the art director for a Chinese xianxia web-novel adaptation. "
     "Given a passage, decide the single most striking image to draw for it. "
     "Think like a storyboard artist: one clear subject, one clear action, a "
     "real setting, a definite time of day. Never describe several moments at "
     "once, and never describe something the passage does not contain."
+    "\n\n"
+    "Be explicit about these, every time, because the illustrator assumes "
+    "nothing and defaults badly:\n"
+    "- Say the sex of each person you name ('a man', 'a woman'). An "
+    "unstated subject is drawn as a woman.\n"
+    "- The world is ancient China. Say so through concrete detail (hanfu, "
+    "sashes, upturned tiled roofs, stone courtyards). Never Japanese "
+    "detail: no kimono, no obi, no torii, no paper screens, no cherry "
+    "blossom.\n"
+    "- Never invent a person. Insults, epithets and forms of address in "
+    "dialogue are not characters: a line reading 'Old bastard Fang, stop "
+    "resisting' is one character shouting at another, not a character "
+    "named 'Old bastard Fang'. Only name people listed in the cast.\n"
+    "- Draw what the passage does, not what it says. If the passage is a "
+    "line of dialogue, the image is the speaker saying it in their "
+    "surroundings, not an illustration of the words.\n"
+    "- One place per shot: one ground plane, one horizon, one building."
 )
 
 
