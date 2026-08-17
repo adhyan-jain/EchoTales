@@ -304,7 +304,15 @@ class MangaDiffusersEngine:
             # conditioning at all.
             if refs:
                 pipe.set_ip_adapter_scale(request.reference_weight)  # type: ignore[attr-defined]
-                kwargs["ip_adapter_image"] = [load_image(str(p)) for p in refs]
+                # **Nested, and that nesting is the API contract, not a
+                # style choice.** diffusers reads the outer list as "one
+                # entry per loaded IP-Adapter" and the inner list as the
+                # images for that adapter. A flat list of two images against
+                # one adapter raises `must have same length as the number of
+                # IP Adapters` -- which is exactly what killed a full
+                # chapter run 54 panels in, on the first panel that had both
+                # a curated composition reference and a character sheet.
+                kwargs["ip_adapter_image"] = [[load_image(str(p)) for p in refs]]
             else:
                 from PIL import Image
 
@@ -488,7 +496,15 @@ class IllustriousEngine:
             # falling back. A blank image at scale 0.0 is the no-op.
             if refs:
                 pipe.set_ip_adapter_scale(request.reference_weight)  # type: ignore[attr-defined]
-                kwargs["ip_adapter_image"] = [load_image(str(p)) for p in refs]
+                # **Nested, and that nesting is the API contract, not a
+                # style choice.** diffusers reads the outer list as "one
+                # entry per loaded IP-Adapter" and the inner list as the
+                # images for that adapter. A flat list of two images against
+                # one adapter raises `must have same length as the number of
+                # IP Adapters` -- which is exactly what killed a full
+                # chapter run 54 panels in, on the first panel that had both
+                # a curated composition reference and a character sheet.
+                kwargs["ip_adapter_image"] = [[load_image(str(p)) for p in refs]]
             else:
                 from PIL import Image
 
