@@ -168,7 +168,19 @@ _NEGATIVE_PHYSIQUE = (
     "righteous, cheerful, smiling, bright eyes"
 )
 
+#: Safety and baseline quality. Illustrious (and SDXL anime finetunes
+#: generally) are Danbooru-tag trained: without explicit quality/safety tags
+#: they drift toward their training prior, which includes NSFW. A test render
+#: returned a partially undressed figure among grotesque faces -- neither
+#: asked for nor acceptable, and not something a positive prompt prevents.
+_NEGATIVE_SAFETY = (
+    "nsfw, nude, topless, exposed chest, suggestive, "
+    "worst quality, low quality, jpeg artifacts, bad hands, bad face, "
+    "grotesque, uncanny, distorted face"
+)
+
 _NEGATIVE_TAIL = (
+    _NEGATIVE_SAFETY,
     _NEGATIVE_PHYSIQUE,
     _NEGATIVE_GEOGRAPHY,
     _NEGATIVE_ANATOMY,
@@ -179,10 +191,32 @@ _NEGATIVE_TAIL = (
     _NEGATIVE_ARTEFACT,
 )
 
+#: **The negative prompt is fitted to the same 77 tokens as the positive
+#: one, so its ordering is a real choice, not a stylistic one.** Measured:
+#: with the single order above, an establishing shot's negative ended at
+#: "...cheerful, smiling, bright eyes" and every geography term was dropped
+#: -- on precisely the framing whose reviewed failure was three mountain
+#: ranges stacked behind the subject with no ground plane. Physique matters
+#: where a body fills the frame and geography where a landscape does, so
+#: which one survives truncation has to follow the framing.
+_NEGATIVE_TAIL_WIDE = (
+    _NEGATIVE_SAFETY,
+    _NEGATIVE_GEOGRAPHY,
+    _NEGATIVE_PHYSIQUE,
+    _NEGATIVE_ANATOMY,
+    _NEGATIVE_MEDIUM,
+    _NEGATIVE_TONE,
+    _NEGATIVE_LOOK,
+    _NEGATIVE_CULTURE,
+    _NEGATIVE_ARTEFACT,
+)
+
+
 def negative_for(style: str) -> str:
     """The negative prompt matching a framing, fitted to the token budget."""
     head = NEGATIVE_HEAD_BY_STYLE.get(style, NEGATIVE_HEAD_BY_STYLE[STYLE_SCENE])
-    return fit_to_budget([head, *_NEGATIVE_TAIL])
+    tail = _NEGATIVE_TAIL if style == STYLE_CLOSEUP else _NEGATIVE_TAIL_WIDE
+    return fit_to_budget([head, *tail])
 
 
 def shot_style(

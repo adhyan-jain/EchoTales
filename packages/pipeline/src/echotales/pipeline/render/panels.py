@@ -407,7 +407,14 @@ class IllustriousEngine:
     #: `MangaDiffusersEngine` loads will not load here at all.
     ip_adapter_repo: str = "h94/IP-Adapter"
     ip_adapter_subfolder: str = "sdxl_models"
-    ip_adapter_weight: str = "ip-adapter_sdxl.bin"
+    #: The ViT-H variant, not the default `ip-adapter_sdxl.bin`. They are
+    #: equivalent in quality, but the plain one wants the ViT-bigG image
+    #: encoder (3.7 GB) while this one reuses the ViT-H encoder already on
+    #: disk for `MangaDiffusersEngine` -- which, on this connection, is the
+    #: difference between a 700 MB download and a 4.4 GB one.
+    ip_adapter_weight: str = "ip-adapter_sdxl_vit-h.safetensors"
+    #: Where that shared encoder lives, relative to `ip_adapter_subfolder`.
+    ip_adapter_image_encoder: str = "../models/image_encoder"
     max_references: int = 2
     _pipe: object | None = None
     _ip_loaded: bool = False
@@ -429,6 +436,7 @@ class IllustriousEngine:
                     self.ip_adapter_repo,
                     subfolder=self.ip_adapter_subfolder,
                     weight_name=self.ip_adapter_weight,
+                    image_encoder_folder=self.ip_adapter_image_encoder,
                 )
                 self._ip_loaded = True
             except Exception as exc:
