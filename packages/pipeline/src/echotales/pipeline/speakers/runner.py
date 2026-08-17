@@ -16,6 +16,7 @@ from echotales.core.models import Chapter, Span
 from echotales.core.store import Store
 from echotales.pipeline.ingest.normalize import comparison_key
 from echotales.pipeline.spans import classify_chapter
+from echotales.pipeline.render.scenes import group_scenes
 from echotales.pipeline.spans.scene import ActiveScene, build_active_scenes
 from echotales.pipeline.speakers.attribution import (
     _ROLE_EPITHETS,
@@ -288,7 +289,25 @@ def _attribute_contextual_pass(
             span.confidence = attribution.confidence
 
 
-def _assign_anonymous_slots(novel_id: str, chapter_number: float, spans: list[Span]) -> None:
+def _scene_key(block_index: int, scene_bounds: list[tuple[int, int]]) -> str:
+    """A short, stable label for the scene a block sits in.
+
+    Keyed by the block index the scene starts at, not by a segment id:
+    segment ids are not stable across re-runs, and this string ends up
+    inside a speaker id that corrections files reference by name.
+    """
+    for first, last in scene_bounds:
+        if first <= block_index <= last:
+            return f"s{first}"
+    return "s0"
+
+
+def _assign_anonymous_slots(
+    novel_id: str,
+    chapter_number: float,
+    spans: list[Span],
+    scene_bounds: list[tuple[int, int]] | None = None,
+) -> None:
     """Give unresolved dialogue a locally-distinct voice slot, not an identity.
 
     Downstream synthesis needs two different unattributed lines to *sound*
@@ -310,14 +329,31 @@ def _assign_anonymous_slots(novel_id: str, chapter_number: float, spans: list[Sp
     """
     slot = 0
     fresh_run = True
+    scene_bounds = scene_bounds or []
+    current_scene = ""
     for span in spans:
         if span.span_type is not SpanType.DIALOGUE:
             continue
         if span.speaker_self_id or span.attribution_method is not AttributionMethod.UNRESOLVED:
             fresh_run = True
             continue
+        scene_key = _scene_key(span.block_index, scene_bounds)
+        if scene_key != current_scene:
+            # A scene change restarts the numbering as well as the scope, so
+            # each scene's unnamed speakers read "Unknown Speaker 1, 2" in
+            # the viewer rather than continuing a chapter-long count.
+            current_scene = scene_key
+            fresh_run = True
         slot = 1 if fresh_run else (slot % _MAX_ANON_SLOTS) + 1
-        span.speaker_self_id = f"{novel_id}:anon:{chapter_number:g}:{slot}"
+        # **Scoped to the scene, not the chapter.** The slot counter restarts
+        # at 1 after every resolved line, so a chapter-scoped id makes
+        # collisions systematic rather than rare: measured on RI ch1,
+        # `anon:1:1` was a cultivator besieging Fang Yuan in block 0 *and* a
+        # villager gossiping at a ceremony in block 45 -- different people,
+        # different scenes, three hundred years apart in story time, read by
+        # TTS in one voice. Two unnamed speakers in one scene are plausibly
+        # the same person; two in different scenes are not.
+        span.speaker_self_id = f"{novel_id}:anon:{chapter_number:g}:{scene_key}:{slot}"
         span.attribution_method = AttributionMethod.ANONYMOUS_SLOT
         span.confidence = 0.2
         fresh_run = False
@@ -413,10 +449,27 @@ def attribute_novel(
             if attribution.speaker:
                 span.confidence = attribution.confidence
 
+        # Built for every chapter, not only the ones the LLM tier runs on:
+        # anonymous slot ids are scene-scoped now, and a chapter that skipped
+        # this would silently fall back to one scene for the whole chapter.
+        # No model calls involved, so the cost is a pass over mentions.
+        segments = store.get_segments(novel_id, chapter.number)
+        scenes = build_active_scenes(chapter, mentions, segments, spans)
+        # **`ActiveScene` is not a scene here, it is a narrative segment.**
+        # Measured: segmentation produces exactly one MAIN segment per
+        # chapter across all 199 (200 segments, 199 chapters), so scoping
+        # anonymous slots to it would have been scoping them to the chapter
+        # under a different name -- the bug it is meant to fix. The panel
+        # renderer already splits chapters into real scenes on locale, cast
+        # and time cues; that is the boundary a voice should reset at.
+        scene_bounds = [
+            (min(s.blocks), max(s.blocks))
+            for s in group_scenes(novel_id, chapter, mentions, segments, spans)
+            if s.blocks
+        ]
+
         if chapter.number <= llm_chapter_cutoff:
             roster = [name for name, _ in sorted(display_roster.items(), key=lambda kv: -kv[1])]
-            segments = store.get_segments(novel_id, chapter.number)
-            scenes = build_active_scenes(chapter, mentions, segments, spans)
             _attribute_contextual_pass(
                 novel_id,
                 chapter,
@@ -430,7 +483,7 @@ def attribute_novel(
         # Runs after the ladder, over what the ladder left UNRESOLVED. Never
         # counted in `report.attributed` -- that number means "linked to a
         # known identity," and an anonymous slot deliberately is not one.
-        _assign_anonymous_slots(novel_id, chapter.number, spans)
+        _assign_anonymous_slots(novel_id, chapter.number, spans, scene_bounds)
 
         # Full re-derivation, not an incremental update -- clear the
         # chapter's existing rows first so a re-run that produces fewer

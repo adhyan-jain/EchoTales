@@ -27,11 +27,13 @@ from pathlib import Path
 from echotales.core.store import Store
 
 #: Matches the id `speakers/runner.py::_assign_anonymous_slots` mints --
-#: `f"{novel_id}:anon:{chapter:g}:{slot}"`. Never a `Self` row, so
+#: `f"{novel_id}:anon:{chapter:g}:s{block}:{slot}"`, and the older
+#: chapter-scoped `f"{novel_id}:anon:{chapter:g}:{slot}"` that corrections
+#: files written before the scene scoping still reference. Never a `Self` row, so
 #: `store.get_self` would return None for it; this is the display-layer half
 #: of "distinct voice, no identity" -- see that function's docstring for why
 #: an id exists here at all rather than just leaving the speaker blank.
-_ANON_SPEAKER_RE = re.compile(r":anon:[\d.]+:(?P<slot>\d+)$")
+_ANON_SPEAKER_RE = re.compile(r":anon:[\d.]+:(?:s\d+:)?(?P<slot>\d+)$")
 
 #: Deliberately not in `_PALETTE` -- an anonymous slot must never look like it
 #: could be a ranked, named entity at a glance.

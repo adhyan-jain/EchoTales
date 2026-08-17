@@ -381,3 +381,66 @@ class TestContextualTier:
             "t", store, client=ModelClient(provider_override=stub), llm_chapter_cutoff=1.0
         )
         assert len(stub.calls) == 0
+
+
+def test_anonymous_slots_do_not_collide_across_scenes() -> None:
+    """Two unnamed speakers in different scenes are not the same person.
+
+    The slot counter restarts at 1 after every resolved line, so a
+    chapter-scoped id made this collision systematic: on RI ch1 the same
+    `anon:1:1` was a cultivator besieging Fang Yuan in block 0 and a
+    villager gossiping at a ceremony in block 45, read by TTS in one voice.
+    """
+    from echotales.core.enums import AttributionMethod, SpanType
+    from echotales.core.models import Span
+    from echotales.pipeline.speakers.runner import _assign_anonymous_slots
+
+    def unresolved(block_index: int) -> Span:
+        return Span(
+            id=f"ri:1:{block_index}",
+            novel_id="ri",
+            chapter=1.0,
+            block_index=block_index,
+            start=0,
+            end=5,
+            span_type=SpanType.DIALOGUE,
+            text="“...”",
+            attribution_method=AttributionMethod.UNRESOLVED,
+        )
+
+    scenes = [(0, 30), (31, 60)]
+    first, second = unresolved(0), unresolved(45)
+    _assign_anonymous_slots("ri", 1.0, [first, second], scenes)
+
+    assert first.speaker_self_id != second.speaker_self_id
+    assert first.speaker_self_id == "ri:anon:1:s0:1"
+    assert second.speaker_self_id == "ri:anon:1:s31:1"
+
+
+def test_anonymous_slots_still_alternate_within_one_scene() -> None:
+    from echotales.core.enums import AttributionMethod, SpanType
+    from echotales.core.models import Span
+    from echotales.pipeline.speakers.runner import _assign_anonymous_slots
+
+    spans = [
+        Span(
+            id=f"ri:1:{i}",
+            novel_id="ri",
+            chapter=1.0,
+            block_index=i,
+            start=0,
+            end=5,
+            span_type=SpanType.DIALOGUE,
+            text="“...”",
+            attribution_method=AttributionMethod.UNRESOLVED,
+        )
+        for i in (0, 1, 2)
+    ]
+    scenes = [(0, 30)]
+    _assign_anonymous_slots("ri", 1.0, spans, scenes)
+
+    assert [s.speaker_self_id for s in spans] == [
+        "ri:anon:1:s0:1",
+        "ri:anon:1:s0:2",
+        "ri:anon:1:s0:3",
+    ]
