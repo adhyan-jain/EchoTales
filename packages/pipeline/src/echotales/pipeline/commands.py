@@ -761,9 +761,12 @@ def unload_ollama_models(*, prefix: str = "") -> None:
 
 
 def cmd_persona(args: argparse.Namespace) -> int:
-    """Persona-level operations; currently reference-sheet generation."""
+    """Persona-level operations: reference sheets, wiki canon import."""
     from echotales.pipeline.persona.reference_gen import generate_references
     from echotales.pipeline.render.panels import get_engine
+
+    if getattr(args, "persona_command", "") == "wiki-canon":
+        return _cmd_wiki_canon(args)
 
     store = _open_store(args)
     # The reference engine is a local diffusion pipeline; anything ollama
@@ -783,6 +786,38 @@ def cmd_persona(args: argparse.Namespace) -> int:
     print(report.summary())
     for label, path in sorted(report.paths.items()):
         print(f"  {label:<28} {path}")
+    store.close()
+    return 0
+
+
+def _cmd_wiki_canon(args: argparse.Namespace) -> int:
+    """Import appearance from a fandom wiki into the canon cache.
+
+    Deliberately a separate command rather than a pipeline stage: it is the
+    only part of the system that reaches the open internet, and a render
+    must never depend on that succeeding. It writes a file; everything
+    downstream only ever reads what it wrote.
+    """
+    from echotales.pipeline.persona.wiki_canon import build_wiki_canon, save_wiki_canon
+
+    store = _open_store(args)
+    # Ranked by mention count, the same ordering `reference_gen` uses to
+    # decide who is worth GPU time -- one request per character, so the
+    # cast has to be cut somewhere, and "who the novel talks about most"
+    # is the same answer here as there.
+    people = [e for e in store.all_selves(args.novel) if e.kind.is_person]
+    labels = [
+        entity.canonical_label
+        for entity in sorted(
+            people, key=lambda e: -store.mention_count_for(args.novel, e.id)
+        )[: args.top]
+    ]
+    report = build_wiki_canon(args.novel, labels)
+    print(report.summary())
+    for label, traits in sorted(report.entries.items()):
+        print(f"  {label:<28} " + ", ".join(f"{k}={v}" for k, v in sorted(traits.items())))
+    if not args.dry_run and report.entries:
+        print(f"  written to {save_wiki_canon(report, data_root=args.data_root)}")
     store.close()
     return 0
 

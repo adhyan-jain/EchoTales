@@ -239,6 +239,24 @@ def build_parser() -> argparse.ArgumentParser:
     pe_ref.add_argument("--principals-only", action="store_true")
     pe_ref.add_argument("--seed", type=int, default=20260812)
 
+    pe_wiki = pe_sub.add_parser(
+        "wiki-canon",
+        help="import character appearance from the novel's fandom wiki",
+    )
+    pe_wiki.add_argument("--novel", required=True)
+    pe_wiki.add_argument(
+        "--top", type=int, default=40,
+        help="limit to the N most-mentioned characters (default: 40)",
+    )
+    pe_wiki.add_argument(
+        "--data-root", default="data",
+        help="where the cached wiki canon is written",
+    )
+    pe_wiki.add_argument(
+        "--dry-run", action="store_true",
+        help="print what would be imported without writing the cache",
+    )
+
     p_export = sub.add_parser("export", help="emit the annotation dataset")
     p_export.add_argument("--novel", required=True)
     p_export.add_argument("--out", default="data/gold")

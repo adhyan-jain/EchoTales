@@ -135,8 +135,18 @@ def canon_for(
     With a `persona_id`, any body-specific overrides are layered on top --
     the character's entry describes who they are, the body entry describes
     which body the reader is looking at.
+
+    **Three tiers, in this order: hand-authored > wiki > extraction.** The
+    table below is typed by someone who read the novel and meant it; the
+    wiki (`wiki_canon.py`, imported by an explicit command and cached to
+    disk) is written by many hands and can be stale or wrong; extraction is
+    a guess from whichever sentences it happened to sample. This function
+    covers the first two -- `apply_canon` layers the pair over the third.
     """
-    base = dict(CANON_APPEARANCE.get(novel_id, {}).get(label, {}))
+    from echotales.pipeline.persona.wiki_canon import load_wiki_canon
+
+    base = dict(load_wiki_canon(novel_id).get(label, {}))
+    base.update(CANON_APPEARANCE.get(novel_id, {}).get(label, {}))
     index = _body_index(persona_id)
     if index is None:
         return base

@@ -410,9 +410,18 @@ class TestPerBodyCanon:
         assert first["hair_color"] == second["hair_color"] == "midnight black"
 
     def test_a_character_without_body_entries_is_unaffected(self) -> None:
-        from echotales.pipeline.persona.canon import canon_for
+        """Body layering changes nothing for a character with no body entry.
 
-        assert canon_for("reverend-insanity", "Shen Cui", "x:self2:body1") == {}
+        Asserted as "same as with no persona id" rather than "empty": since
+        `wiki_canon.py`, a character with no hand-authored entry can still
+        have imported wiki traits, and this test is about body layering.
+        """
+        from echotales.pipeline.persona.canon import CANON_BY_BODY, canon_for
+
+        assert "Shen Cui" not in CANON_BY_BODY.get("reverend-insanity", {})
+        assert canon_for("reverend-insanity", "Shen Cui", "x:self2:body1") == canon_for(
+            "reverend-insanity", "Shen Cui"
+        )
 
     def test_no_persona_id_keeps_the_old_behaviour(self) -> None:
         """Every existing caller passed a label only, and must keep getting

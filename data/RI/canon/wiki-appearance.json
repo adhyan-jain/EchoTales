@@ -1,0 +1,24 @@
+{
+  "Bai Ning Bing": {
+    "eye_color": "blue",
+    "skin_tone": "pale like snow"
+  },
+  "Fang Yuan": {
+    "eye_color": "dark",
+    "hair_color": "midnight black",
+    "hair_style": "short",
+    "typical_attire": "white robes"
+  },
+  "Fang Zheng": {
+    "eye_color": "crystal clear",
+    "hair_color": "black",
+    "typical_attire": "white robe"
+  },
+  "Lord Sky Crane": {
+    "hair_color": "white"
+  },
+  "Shen Cui": {
+    "hair_color": "black",
+    "typical_attire": "green robe"
+  }
+}
