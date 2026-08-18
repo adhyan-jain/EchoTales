@@ -53,6 +53,19 @@ from echotales.pipeline.world.context import story_context
 
 log = logging.getLogger(__name__)
 
+#: How many consecutive story blocks one panel may cover.
+#:
+#: The audio reads every block; the picture changes only when a new panel
+#: starts, so this number *is* how long a viewer looks at one image while
+#: the narration moves on. Four is roughly a paragraph of story -- close
+#: enough that the image still describes what is being read. Measured
+#: before this existed: single panels covered 12 and 16 blocks of RI ch1.
+_MAX_BLOCKS_PER_PANEL = 4
+
+#: Slot ids are `chunk * _SLOTS_PER_CHUNK + base`, where base is
+#: 0=establishing, 1=close-up, 2=scene, 3=crowd cut.
+_SLOTS_PER_CHUNK = 4
+
 
 @dataclass(slots=True)
 class PanelImageRequest:
@@ -1089,11 +1102,28 @@ def render_panels(
                     for s in by_block_spans.get(b, [])
                 )
                 if budget == 1:
-                    slot_for_block[b] = 0
+                    base = 0
                 elif budget == 2:
-                    slot_for_block[b] = 1 if has_dialogue else 0
+                    base = 1 if has_dialogue else 0
                 else:
-                    slot_for_block[b] = (0 if not has_dialogue else (1 if i % 2 == 0 else 2))
+                    base = 0 if not has_dialogue else (1 if i % 2 == 0 else 2)
+                # **A scene is not a shot, and this is where relevance was
+                # being lost.** Slots were assigned by content type only, so
+                # a scene of any length produced at most three images, each
+                # anchored to the first block that claimed its slot.
+                # Measured on RI ch1: 22 panels for 92 blocks, with two
+                # panels covering 12 and 16 consecutive blocks -- sixteen
+                # blocks of narration read aloud over one picture of the
+                # scene's opening moment. The picture was not wrong about
+                # the scene; it was answering a question the audio had
+                # stopped asking twelve blocks earlier.
+                #
+                # Chunking keeps everything scene grouping bought (one
+                # locale, one cast, continuity) and restores beat-level
+                # granularity: each run of blocks gets its own slot, hence
+                # its own director call, drawn from its own prose.
+                chunk = i // _MAX_BLOCKS_PER_PANEL
+                slot_for_block[b] = chunk * _SLOTS_PER_CHUNK + base
 
             # Only slots a block actually maps to get generated -- an
             # all-narration long scene never needs its close-up/wide
@@ -1157,8 +1187,16 @@ def render_panels(
                     )
                 ]
                 if _dialogue_blocks:
-                    slot_for_block[_dialogue_blocks[0]] = _crowd_slot
-                    slot_lead[_crowd_slot] = _dialogue_blocks[0]
+                    # In the chunk that block belongs to, so the crowd cut
+                    # lands next to the lines it illustrates rather than at
+                    # the top of a scene it may be far into.
+                    _crowd_block = _dialogue_blocks[0]
+                    _crowd_chunk = (
+                        story_scene_blocks.index(_crowd_block) // _MAX_BLOCKS_PER_PANEL
+                    )
+                    _crowd_slot = _crowd_chunk * _SLOTS_PER_CHUNK + 3
+                    slot_for_block[_crowd_block] = _crowd_slot
+                    slot_lead[_crowd_slot] = _crowd_block
                     needed_slots = sorted(set(slot_for_block.values()))
                 else:
                     _crowd_slot = None
@@ -1168,7 +1206,9 @@ def render_panels(
                 lead = slot_lead[slot]
                 block = by_index[lead]
                 is_crowd_cut = slot == _crowd_slot
-                style = (STYLE_ESTABLISHING, STYLE_CLOSEUP, STYLE_SCENE, STYLE_SCENE)[slot]
+                style = (STYLE_ESTABLISHING, STYLE_CLOSEUP, STYLE_SCENE, STYLE_SCENE)[
+                    slot % _SLOTS_PER_CHUNK
+                ]
                 closeup = style is STYLE_CLOSEUP
 
                 chapter_dir = out_dir / f"ch{chapter_number:g}"
@@ -1251,7 +1291,27 @@ def render_panels(
                 # scene-grouped now, so the scene almost always has real
                 # narration somewhere -- which describes the same moment and
                 # is actually visual.
-                beat_prose = beat_text(spans, lead, _scene_narration or block.text)
+                # **The chunk's own narration, falling back to the scene's.**
+                # Now that a slot covers a handful of blocks rather than a
+                # whole scene, the scene-wide fallback would hand the
+                # director prose from a different part of the scene than the
+                # one this panel plays under -- the exact mismatch chunking
+                # exists to remove.
+                _chunk_blocks = {
+                    b for b, sl in slot_for_block.items()
+                    if sl // _SLOTS_PER_CHUNK == slot // _SLOTS_PER_CHUNK
+                }
+                _chunk_narration = " ".join(
+                    sp.text.strip()
+                    for sp in spans
+                    if sp.block_index in _chunk_blocks
+                    and sp.span_type
+                    in (SpanType.NARRATION_ACTION, SpanType.NARRATION_DESCRIPTION)
+                    and sp.text.strip()
+                )
+                beat_prose = beat_text(
+                    spans, lead, _chunk_narration or _scene_narration or block.text
+                )
 
                 canon = beat_canon_for(novel_id, chapter_number, lead)
                 directive = canon.staging if canon is not None else ""
