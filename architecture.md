@@ -510,6 +510,17 @@ it is carried into synthesis as a delivery parameter instead. Inventing a
 register distinction the audio does not contain would be worse than not
 having one.
 
+### The reference clip carries the emotion, not the dial
+
+Chatterbox clones the prosody of its prompt clip, so `exaggeration` scales
+intensity around whatever that clip already sounds like — against VCTK read
+speech there is no anger to scale, at any setting. `voice/bank.py::load_cremad`
+loads 91 actors performing six emotions with published age and sex, and
+`voice/delivery.py::EMOTION_FOR_POLARITY` picks the performance to prompt
+with (HEIGHTENED → angry, COLD → disgust, HUSHED → fear). Selected with
+`--bank-kind cremad`; VCTK stays the default and is unaffected, since a bank
+without performances falls back to each speaker's single clip.
+
 ### Emotion, pacing and non-negotiable #10 at synthesis time
 
 The TTS engine is **Chatterbox** (MIT), not XTTS-v2 as originally scoped:
@@ -573,6 +584,37 @@ the time this stage runs.
 `render/compose.py` each name a capability (image generation, image-to-video,
 video composition) behind a `Protocol`, never a vendor, with a
 dependency-free stub standing in for local testing and CI.
+
+## 8d. What a panel is allowed to claim
+
+Three modules were added after measuring where irrelevant panels came from,
+and each answers a different failure that prompt wording cannot:
+
+- **`render/scene_refs.py`** — hand-collected images (`data/scene-references/`)
+  matched to a panel by content, fed as IP-Adapter conditioning. A picture
+  states a composition ("one figure against an army") that 77 CLIP tokens
+  cannot, and a curated portrait outranks a generated reference sheet, which
+  is itself diffusion output and inherits the drift it exists to prevent.
+- **`render/factions.py`** — role words are qualified with the faction that
+  owns them ("Gu Yue clan elders", not "elders"). One novel runs that word
+  past four clans in a volume; unqualified, the same role cannot be drawn
+  consistently. Scoped per scene, which is also what makes a character
+  moving between clans need no rule at all.
+- **`world/lexicon.py`** — what this novel's *words* denote, derived from
+  prose plus graph presence. `world/context.py` filters facts by position;
+  this filters vocabulary by novel, so "demon" is known to name a man here
+  before the image model reaches for a species.
+
+**`render/relevance.py` is the measurement the visual path lacked.** It
+scores a panel's prompt against the blocks it plays under, exempting crowd
+cuts and hand-authored staging. Lexical and shallow on purpose: it cannot
+judge composition, and it does catch a prompt describing a moment that is
+not in these blocks — which was every relevance defect found by eye.
+
+**Panels are chunked at four blocks each** (`render/panels.py`
+`_MAX_BLOCKS_PER_PANEL`). The audio reads every block and the picture only
+changes when a new panel starts, so this number *is* how long a viewer looks
+at one image while the narration moves on.
 
 ## 9. Package boundaries
 

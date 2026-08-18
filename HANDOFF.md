@@ -1424,6 +1424,74 @@ every chapter.
   weights (unavoidable at 8 GB VRAM, doubled by `refined`), ffmpeg compose,
   ollama, then TTS and PNG encoding.
 
+### 4.41 The relevance hunt continued: cast leakage, panel numbering, faction-scoped roles, and an audio layer that could not produce emotion *(2026-08-19)*
+
+**Cast leakage was the largest remaining relevance defect.** `get_panel_cast`
+took the whole scene's block range, and the protagonist is present somewhere
+in nearly every scene, so a chunk of Gu Yue elders gossiping about a third
+party was handed Fang Yuan as cast -- and the director wrote *"Fang Yuan
+stands in a stone courtyard, his gaze distant as he contemplates the future
+of the Bai clan"* for a passage he does not appear in. Cast and present
+entities now resolve from the panel's own blocks. This is the same
+scene-wide-scoping mistake as the crowd bug in 4.40, in a third place.
+
+**Panel filenames encoded the lead block**, so one scene produced
+`block0021`, `block0026`, `block0047` and a directory listing interleaved
+panels from different scenes -- readable only if you knew the slot-assignment
+algorithm. Now `p003_b0026.png`: sequential in play order, block kept for
+tracing.
+
+**Gender steer only fired when the cast resolved.** `genders` is empty
+whenever nobody in frame resolves to a persona, and empty meant "say
+nothing", which on these checkpoints means "draw a woman". The beat's own
+pronouns now decide.
+
+**`render/factions.py` -- role words carry their faction.** "Elders discuss
+worriedly" is accurate and unusable in a novel that runs that word past the
+Gu Yue, Bai and Xiong clans in one volume. The graph cannot answer it yet
+(RI ch1 has no resolved ORGANIZATION mention at all; the first is ch4), so
+the faction is read from the scene's prose by the genre's naming convention,
+and no match leaves the role where it started. Scoped per scene, which is
+also the answer to a character moving between clans.
+
+**Audio, measured before touching anything.** Chapter 1's v3 render: 97
+lines, **70% narration, all at exaggeration 0.40-0.46**. Two real defects
+under that:
+
+1. **Delivery markers were read from inside the quoted line.** Block 0 is a
+   besieging cultivator shouting "Fang Yuan, quietly hand over the Spring
+   Autumn Cicada" -- "quietly" is what he demands, not how he says it. Six of
+   the chapter's twenty-seven dialogue lines were marked HUSHED, so threats
+   were whispered at 0.40.
+2. **The emotion dial cannot produce emotion against read speech.**
+   Chatterbox clones its reference clip's prosody, so `exaggeration` scales
+   intensity around whatever that clip already sounds like -- and VCTK is 110
+   speakers reading prompt sentences. Fixed with a corpus, not a number:
+   CREMA-D, 91 actors x 6 emotions with published age/sex, 7,442 clips, and
+   `EMOTION_FOR_POLARITY` picking the performance to prompt with.
+   `--bank-kind cremad`; VCTK remains the default.
+
+**Video directories now match panels**: `video/ch<N>/v<K>_<date>_<label>/`
+holding `ch<N>.mp4`, `segments/` and any `.ass`. The five earlier renders
+were loose mp4s beside `video_v2/`-`video_v4/`; they are sorted and labelled
+in `data/RI/README.md`.
+
+**Two open items named honestly:**
+
+- **Homonymous factions are not handled.** The second Bai clan, after Qing
+  Mao mountain, is a different organisation with the same name.
+  `factions.py` is text-derived and will conflate them. The fix is to key a
+  faction by name *plus attested locale*, the same shape as the entity-split
+  logic resolution already runs.
+- **No video has been produced since any of this work.** The newest cut
+  predates chunking, the crowd fix, beat-first prompts and sequential
+  numbering.
+
+**Where the numbers stand.** Mechanical prompts on RI ch1: mean relevance
+0.27, 9 of 40 scored panels below 0.10. The v32 render's director-written
+prompts scored 0.09 -- partly the metric punishing paraphrase, partly the
+cast leakage above, which is now fixed and untested.
+
 
 ## 9. Layout
 

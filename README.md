@@ -74,6 +74,10 @@ apps/api/            orchestration and correction UI
 data/raw/            source EPUBs (not committed)
 data/gold/           annotations — offsets and short evidence snippets only
 data/lexicons/       genre-neutral seed + per-novel induced vocabulary
+data/<CODE>/         one novel's outputs: panels/, video/, audio/, references/,
+                     canon/ — each versioned per run (`pipeline/paths.py`)
+data/scene-references/  hand-collected composition/character images (input)
+data/voice/          VCTK (read speech) and CREMA-D (91 actors, six emotions)
 tools/               annotation CLI, replay debugger
 ```
 
