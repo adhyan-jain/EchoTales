@@ -93,3 +93,25 @@ Two ways forward, neither of them prompt tweaks:
   Precedence is hand-authored `persona/canon.py` > this file > extraction.
 - `../scene-references/` — hand-collected composition and character images,
   consumed by `render/scene_refs.py`.
+
+## Videos
+
+`video/ch<N>/v<K>_<date>_<label>/` — same scheme as `panels/`, one directory
+per finished render, each holding `ch<N>.mp4` plus its `segments/` and any
+`.ass` subtitle file. New runs are versioned automatically by
+`pipeline/paths.py::next_version`; the directories below were the earlier
+loose files, sorted into the scheme by hand.
+
+| version | what it was |
+|---|---|
+| v1 2026-08-13 | first end-to-end cut |
+| v2 2026-08-13 | manga engine (GuoFeng3) |
+| v3 2026-08-13 | scene-grouped panels replacing per-block |
+| v4 2026-08-14 | SVD motion clips added |
+| v5 2026-08-15 | the cut that was watched end to end; six findings came out of it |
+
+`compare/` holds before/after excerpts cut for review, not full chapters.
+
+**No video has been produced since 2026-08-18's panel work** (chunked beats,
+scene-local crowds, beat-first prompts, sequential panel numbering) — the
+newest here predates all of it.
