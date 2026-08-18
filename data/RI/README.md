@@ -72,3 +72,24 @@ Two ways forward, neither of them prompt tweaks:
    consecutive cuts. This is what manhwa actually does with this beat, it
    needs no new model, and the panel-per-beat machinery already supports it.
    Compositing the two into one frame was tried and looked pasted.
+
+## Panel versions, 2026-08-18
+
+| version | engine | what changed |
+|---|---|---|
+| v22 | illustrious | crowd composes, render flat, generic anime faces |
+| v24 | animagine | checkpoint swap only; richer shading, still Japanese drift |
+| v25 | refined | Animagine composes, GuoFeng3 repaints @ 0.35 — Chinese roof lines, guanmao caps |
+| v26 | animagine + IP-Adapter | first panels shaped by `data/scene-references/` |
+| v28–v31 | refined | pre-chunking: **22 panels for 92 blocks**, single panels held 12–16 blocks |
+| v32+ | refined | 4 blocks per panel (48 panels for ch1), scene-local crowds |
+
+`*.base.png` next to a panel is the pre-repaint SDXL frame — keep it to tell
+"the base composed badly" apart from "the refiner destroyed a good frame".
+
+## Canon inputs (not generated, not versioned per run)
+
+- `canon/wiki-appearance.json` — imported by `echotales persona wiki-canon`.
+  Precedence is hand-authored `persona/canon.py` > this file > extraction.
+- `../scene-references/` — hand-collected composition and character images,
+  consumed by `render/scene_refs.py`.

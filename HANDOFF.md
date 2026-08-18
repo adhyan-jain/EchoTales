@@ -1284,6 +1284,147 @@ model or re-ingesting invalidates it automatically.
 
 ---
 
+### 4.40 Image-model bake-off, curated references wired in, fandom-wiki canon, and the real cause of "the images are irrelevant" *(2026-08-18)*
+
+**The headline: relevance was structural, not a director or checkpoint
+failure.** Panel slots were assigned by content type alone (narration ->
+establishing, dialogue -> close-up), so a scene produced at most three
+images however long it was, each anchored to the first block that claimed
+its slot. Measured on RI ch1: **22 panels for 92 blocks, with single panels
+covering 12 and 16 consecutive blocks.** The audio reads every block but the
+picture only changes when a new panel starts, so sixteen blocks of narration
+played over one image of the scene's opening moment. The director's prose
+was fine throughout ("Fang Yuan slowly turns his body, causing the group of
+warriors to step back in unison") and the checkpoint understood it.
+
+Blocks are now chunked at `_MAX_BLOCKS_PER_PANEL = 4` inside a scene, each
+chunk taking its own director call and its own beat prose. **RI ch1: 22
+panels -> 48, longest hold 16 blocks -> 4.**
+
+**Three defects that only appeared once chunking existed:**
+
+1. `cast.background_mobs` resolves over a whole *scene*, so every chunk of
+   RI ch1's opening inherited the besieging crowd -- including a dying
+   man's private last thoughts, which lost its character sheet (crowd wides
+   drop sheets) and picked up the one-vs-many composition reference. The
+   crowds were never random; they were one crowd asserted everywhere. Mobs,
+   curated references and crowd roles now resolve from the panel's own
+   blocks: **7 of 48 panels assert a crowd, down from every panel of every
+   scene that had one.**
+2. `ip_adapter_image` was passed as a flat list. diffusers reads the outer
+   list as one entry *per loaded adapter*, so two images against one adapter
+   raises `must have same length as the number of IP Adapters`. Harmless
+   until curated references landed and a panel could carry two. Killed a
+   full chapter run 54 panels in.
+3. The prompt cache keyed on `chapter:block`, which outlived every change to
+   how beats are chosen -- a render kept serving prompts written for the old
+   whole-scene beats, and two rounds of "the fix changed nothing" were the
+   cache answering. Key now includes a beat digest.
+
+**`echotales relevance` -- the metric that was missing.** Scores each
+panel's prompt against the blocks it plays under, exempting crowd cuts
+(fixed template) and `beat_canon.py` staging (hand-authored precisely
+because the prose was not the wanted picture). It immediately found that
+prompt ordering put the standing appearance clause ahead of the beat, and
+Fang Yuan's clause runs ~20 tokens of hair and eyes, so the beat kept
+losing the greedy 77-token fit -- panels came back as a correct-looking man
+doing nothing identifiable, or as pure locale scenery. Beat now goes first:
+**mean overlap 0.19 -> 0.27, panels below 0.10 21 -> 9** (RI ch1,
+mechanical prompts). All-dialogue chunks also had nothing to fall back on
+but the scene's narration -- a different moment -- and now draw from their
+own lines, one speaker and a few words, short enough to survive the budget.
+
+**Image model bake-off, measured on the same panels (8 GB RTX 4060 laptop,
+15 GB RAM).** Settled stack, engine name `refined`:
+
+| Job | Model | Why |
+|---|---|---|
+| Composition, crowds | Animagine XL 4.0 (SDXL) | SDXL places many figures; SD1.5 cannot at any prompt. The *finished* checkpoint, not Illustrious's early release |
+| Culture and finish | GuoFeng3, img2img @ 0.35 | Chinese art in the weights -- fixes the Japanese drift the Danbooru-trained SDXL checkpoints introduce, for free |
+| Identity | IP-Adapter + curated references | `data/scene-references/`, finally consumed (`render/scene_refs.py`) |
+
+Rejected: Illustrious early-release (composes, renders flat), SDXL/SD1.5
+base (photoreal), Flux.1 (12B, needs nf4 on 15 GB RAM, ~2 min/panel),
+SD3.5/PixArt (fix the 77-token cage, weak style), Kolors (won't fit), Pony
+(wrong genre drift), compositing (visible seams, rejected on sight).
+NoobAI-XL never finished downloading -- TLS failures on this connection.
+
+**The two-model pass is not compositing.** Nothing is pasted; GuoFeng3
+repaints every pixel and inherits only the layout. It cannot change *what
+moment* is depicted, so it costs nothing in relevance -- only time (a
+second pass), CPU/RAM (two checkpoints resident) and a little crispness.
+
+**Japanese drift is a real error, and the tell matters.** The crossed collar
+is *not* one -- hanfu closes right-over-left too. The actual errors are a
+wide flat obi, straight eaves, shoji screens, torii and cherry blossom. It
+happens because Animagine/Illustrious/NoobAI are Danbooru-trained: "anime"
+means Japanese visual defaults in those weights.
+
+**`world/lexicon.py` -- what this novel's words denote, from the graph.**
+RI calls Fang Yuan a demon constantly and the checkpoints read that as a
+species: a close-up of his dying thoughts came back as a grinning red-eyed
+youth with fangs and a forehead gem. Reading mentions was the obvious
+design and does not work -- resolution only mints mentions for name-like
+spans, so the table knows "Bloodwing Demon Sect" and has never recorded the
+bare "demon". Evidence comes from the prose instead: a lowercase creature
+word used vocatively or as an epithet, in a block where a person is
+present. Two filters keep it from eating real content -- lowercase-only
+separates "the wicked demon" from "the Demon Suppression Tower", and a
+minimum epithet share (measured across all 199 chapters: demon 5/27 and god
+4/13 clear it; worm 47/737, wolf 19/604, beast 9/199 do not, correctly,
+since RI has real worms, wolves and beasts). Feeds the director's brief and
+the negative prompt.
+
+**`persona/wiki_canon.py` -- appearance from the fandom wiki.** Precedence
+is **hand-authored canon > wiki > extraction**. Spoiler containment is
+structural: appearance sections only, first 1,200 characters of one (Fang
+Yuan's runs 6,700 across three bodies including a six-metre zombie form),
+and only typed traits are ever kept. Four things had to be measured: fandom
+answers urllib's default User-Agent with a blanket 403 that looks exactly
+like an empty wiki; the subdomain is `reverend-insanity`, not
+`reverendinsanity`; sequential requests get dropped silently, so pages are
+retried and the cache *merges* rather than overwrites; and resolution
+classifies Gu worms as people, so the wiki's own categories decide what is
+a character. RI top 72 by mention count: 5 with traits, 26 with no page
+(mostly epithets like "Gu Master"), 17 not people.
+
+**`speakers/runner.py` -- anonymous slots collided across scenes.** The slot
+counter restarts at 1 after every resolved line, so a chapter-scoped id made
+collisions systematic: `anon:1:1` was a cultivator besieging Fang Yuan in
+block 0 *and* a villager gossiping at the ceremony in block 45, read by TTS
+in one voice. Slots are now scene-scoped, and the scenes come from
+`render/scenes.py::group_scenes`, **not** from narrative segments --
+segmentation emits exactly one MAIN segment per chapter across all 199 (200
+segments, 199 chapters), so scoping to a segment would have been scoping to
+the chapter under another name. **RI: 727 distinct anonymous voices ->
+1,877; ch1 alone 4 recycled slots -> 19 across 8 scenes.** Anonymity itself
+is deliberate: background mobs never need names, they need not to share a
+voice with someone from another scene.
+
+**Director system prompt now states specifications** (`render/direction.py`):
+sex of each named person ("an unstated subject is drawn as a woman"),
+ancient-China detail and never Japanese detail, never invent a character
+from an insult ("Old bastard Fang" became a character), draw what the
+passage *does* rather than what it says, one ground plane per shot. Stated
+here rather than in negatives because a rule in the director's prose is free
+while the same rule in `panels.py` spends CLIP tokens on every panel of
+every chapter.
+
+**Still open after this session:**
+
+- Attribution has not been re-run against the live DB (the render held the
+  write lock); the 1,877-voice figure is measured on a working copy.
+- Dialogue coverage is **51.3% attributed** over 199 chapters. The slot fix
+  made those voices distinct, not *named* -- separate work.
+- Nine scored ch1 panels still sit below 0.10 relevance; that list is the
+  next thing to work.
+- No full chapter has yet gone end-to-end (director -> panels -> SVD ->
+  ffmpeg) since chunking landed.
+- CPU load during a run, in order: `enable_model_cpu_offload` shuttling
+  weights (unavoidable at 8 GB VRAM, doubled by `refined`), ffmpeg compose,
+  ollama, then TTS and PNG encoding.
+
+
 ## 9. Layout
 
 ```
@@ -1454,7 +1595,14 @@ none fixed yet, with a suggested order at the end of that section.
        defensible, the second is already built.
 
 
-12. **Watch the output.** The render pipeline has produced a real chapter
+12. **Work the relevance list.** `uv run echotales relevance --novel
+    reverend-insanity` ranks panels by how little of their prompt the source
+    text says, exempting crowd cuts and hand-authored staging. Nine ch1
+    panels are still under 0.10. This replaces "open PNGs until something
+    looks wrong" as the way visual defects are found, and it is the only
+    number in the visual path that moves when the director improves.
+
+13. **Watch the output.** The render pipeline has produced a real chapter
     video (4.24) but its shot rules have still never been *eyeballed*: the
     pan-direction rule in `director.py` and the clip tag vocabulary in
     `motion.py` are first-guess heuristics. 4.24's list of five defects
