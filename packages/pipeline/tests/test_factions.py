@@ -44,3 +44,25 @@ def test_different_scenes_get_different_factions() -> None:
     gu_yue = scene_faction("The Gu Yue clan elders knelt in the hall.")
     bai = scene_faction("The Bai clan elders received him coldly.")
     assert qualify_role("elders", gu_yue) != qualify_role("elders", bai)
+
+
+def test_two_clans_of_the_same_name_are_distinguished_by_region() -> None:
+    """After Qing Mao mountain's clans are destroyed, RI introduces a
+    different Bai clan elsewhere. Nothing in the words separates them; a
+    reader disambiguates by where they are standing."""
+    from echotales.pipeline.render.factions import faction_key, scene_region
+
+    home = "The Bai clan of Qing Mao Mountain gathered in the hall."
+    away = "Far away, the Bai clan of Western Border Region welcomed them."
+
+    assert scene_faction(home) == scene_faction(away) == "Bai clan"
+    assert faction_key(scene_faction(home), scene_region(home)) != faction_key(
+        scene_faction(away), scene_region(away)
+    )
+
+
+def test_a_faction_with_no_region_keys_on_its_name_alone() -> None:
+    from echotales.pipeline.render.factions import faction_key
+
+    assert faction_key("Gu Yue clan", "") == "Gu Yue clan"
+    assert faction_key("", "Qing Mao mountain") == ""

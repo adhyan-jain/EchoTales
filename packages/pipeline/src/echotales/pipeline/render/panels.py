@@ -39,6 +39,7 @@ from echotales.pipeline.persona.prompt import (
     gender_negative,
     negative_for,
 )
+from echotales.pipeline.persona.forms import detect_form
 from echotales.pipeline.persona.runner import get_panel_cast
 from echotales.pipeline.render._png import write_solid_png
 from echotales.pipeline.render.beat_canon import beat_canon_for
@@ -1271,6 +1272,10 @@ def render_panels(
                     by_index[b].text for b in _chunk_blocks if b in by_index
                 )
                 _chunk_mobs = detect_mobs(_chunk_text, lead)
+                # A transformation is a property of this passage, not of the
+                # character -- see `persona/forms.py` on why it is an
+                # overlay and why reverting needs no detection.
+                _form = detect_form(_chunk_text)
 
                 chapter_dir = out_dir / f"ch{chapter_number:g}"
                 if version:
@@ -1336,8 +1341,8 @@ def render_panels(
                         continue
                     label, clause, sheet, gender = looks
                     genders.append(gender)
-                    if clause:
-                        appearances[label] = clause
+                    if clause or _form.active:
+                        appearances[label] = _form.apply_to(clause)
                     # A hand-picked portrait beats the generated sheet when
                     # one exists: the sheets are themselves diffusion output
                     # and inherit the same drift they are supposed to
@@ -1663,7 +1668,7 @@ def render_panels(
                         PanelImageRequest(
                             prompt=prompt,
                             out_path=image_path,
-                            negative_prompt=(
+                            negative_prompt=_form.filtered_negative(
                                 negative_for(style)
                                 + _lexicon_negatives
                                 # Appended after the budgeted body, not

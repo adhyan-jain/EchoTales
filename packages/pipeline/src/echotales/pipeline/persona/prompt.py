@@ -133,7 +133,19 @@ MANGA_STYLE = STYLE_SCENE
 #: Ordered most-discriminating first, so what survives truncation is what
 #: distinguishes this panel from the default picture the checkpoint wants
 #: to draw.
-_NEGATIVE_ANATOMY = "deformed hands, extra limbs, lowres, blurry"
+#: **Anatomy is where these checkpoints fail under zoom.** A panel that
+#: reads well at thumbnail size comes apart at 100%: fused or six-fingered
+#: hands, an eye at the wrong height, hair that changes colour partway down
+#: its own length. Listed specifically rather than as "bad anatomy",
+#: because these checkpoints are tag-trained and respond to the named
+#: failure far more than to the category.
+_NEGATIVE_ANATOMY = (
+    "deformed hands, mutated hands, fused fingers, extra fingers, "
+    "missing fingers, malformed fingers, extra limbs, extra arms, "
+    "asymmetric eyes, misaligned eyes, cross-eyed, deformed face, "
+    "melted features, disconnected limbs, two-tone hair, "
+    "inconsistent hair colour, lowres, blurry, jpeg artifacts"
+)
 
 #: Wrong medium. A checkpoint that drifts here is not making a subtle error.
 _NEGATIVE_MEDIUM = "photorealistic, 3d render, western comic"
@@ -531,6 +543,29 @@ def _identity_rank(part: str) -> int:
     return len(_IDENTITY_ORDER)
 
 
+#: **The cheapest fix for hands is to not show them.** Hanfu has long
+#: draping sleeves that cover the hands in ordinary standing poses, which
+#: is both period-correct and the single most reliable way to avoid the
+#: failure these checkpoints are worst at. Applied only where it costs
+#: nothing -- a beat that puts something *in* a character's hands (a sword,
+#: a Gu, a raised palm) must not hide them.
+_SLEEVE_CLAUSE = "hands concealed in long draping sleeves"
+
+#: Words that mean the hands are the point of the shot.
+_HANDS_MATTER = (
+    "hand", "palm", "finger", "grip", "grasp", "hold", "sword", "blade",
+    "weapon", "raise", "reach", "point", "clench", "fist", "throw", "seal",
+)
+
+
+def hands_clause(beat: str) -> str:
+    """`_SLEEVE_CLAUSE` when nothing in the beat needs visible hands."""
+    blob = (beat or "").casefold()
+    if any(term in blob for term in _HANDS_MATTER):
+        return ""
+    return _SLEEVE_CLAUSE
+
+
 def build_image_prompt(
     panel_cast: PanelCast,
     *,
@@ -636,6 +671,11 @@ def build_image_prompt(
     # Composition, immediately after the subject: it is short, and losing it
     # turns a chosen close-up into a generic full-body portrait.
     parts.append(framing_for(style))
+
+    # Late in the priority order: worth having, never worth displacing the
+    # beat or the subject.
+    if sleeves := hands_clause(beat):
+        parts.append(sleeves)
 
     # The specific place first, the world's general vocabulary behind it:
     # a diffusion model draws "a walled stone courtyard" and draws nothing

@@ -93,6 +93,44 @@ def scene_faction(text: str) -> str:
     return best
 
 
+#: Region words that distinguish two same-named factions. The genre names
+#: its geography as consistently as its organisations.
+_REGION_RE = re.compile(
+    r"\b((?:[A-Z][a-z]+\s+){1,3})(?i:(mountain|mountains|ridge|valley|"
+    r"plains|province|region|city|kingdom|continent))\b"
+)
+
+
+def scene_region(text: str) -> str:
+    """The geography this scene sits in, or "".
+
+    **Two clans can share a name.** After Qing Mao mountain's three clans
+    are destroyed, Reverend Insanity introduces a *different* Bai clan
+    elsewhere, and nothing in the words "Bai clan" separates them. A reader
+    disambiguates by where they are standing; so does this.
+    """
+    for match in _REGION_RE.finditer(text or ""):
+        name = " ".join(match.group(1).split())
+        if name.split()[0] in ("The", "A", "An"):
+            name = " ".join(name.split()[1:])
+        if name:
+            return f"{name} {match.group(2).lower()}"
+    return ""
+
+
+def faction_key(faction: str, region: str) -> str:
+    """A stable identity for a faction, distinguishing same-named ones.
+
+    Not used in prompts -- a prompt wants "Bai clan", not
+    "Bai clan@Qing Mao mountain". This is the handle for anything that must
+    not merge two organisations: continuity of dress and insignia across
+    chapters, and eventually a graph entity per faction.
+    """
+    if not faction:
+        return ""
+    return f"{faction}@{region}" if region else faction
+
+
 def qualify_role(role: str, faction: str) -> str:
     """"elders" + "Gu Yue clan" -> "Gu Yue clan elders"."""
     if not faction:
