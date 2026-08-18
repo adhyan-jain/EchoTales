@@ -353,6 +353,147 @@ because each cost real time and would cost it again.
 
 ---
 
+### The 2026-08-18/19 visual-and-audio run — every setback, in the order it bit
+
+Written for study: each one is *symptom -> what it looked like -> what it
+actually was -> the lesson that generalises*. Several of these look like
+different bugs and are the same mistake wearing different clothes.
+
+**1. A fix that was patched onto the wrong class and passed every test.**
+Genre anchoring meant for `IllustriousEngine` was applied by a scripted
+`str.replace` that matched the *first* occurrence of a common line, which
+lived in `SDXLEngine`. Result: `SDXLEngine.generate` referenced a
+`quality_prefix` field it did not have (an `AttributeError` waiting for
+anyone who chose that engine) while `IllustriousEngine` silently kept none
+of the anchoring it was supposed to get. Two rounds of renders were
+attributed to "the checkpoint ignores genre tags". *Lesson: a scripted edit
+that matches on generic text is a coin flip; assert on something unique to
+the target, and read the diff.*
+
+**2. The stale prompt cache that ate two fixes.** `prompt_cache` keyed on
+`chapter:block`. Beat selection changed twice, and both times the render
+served prompts written for the *old* beats -- so the measurement said "no
+change" and the natural conclusion was "the fix does not work". *Lesson: any
+cache key must contain every input that can change the cached value. If a
+fix appears to do nothing, suspect the cache before suspecting the fix.*
+
+**3. Scene-wide scoping, applied three times, wrong all three.** Panels used
+to be one-per-scene, so "resolve it over the scene" was correct everywhere.
+The moment scenes were chunked into several panels, the same line of
+reasoning became a hallucination source in three separate places: crowds
+(`cast.background_mobs`) asserted a besieging army over a dying man's
+private thoughts; cast (`get_panel_cast`) handed the protagonist to a scene
+of elders gossiping, and the director wrote him into it; beat prose fell
+back to the scene's narration, i.e. a different moment. *Lesson: when a unit
+of work is subdivided, every "per unit" scope decision inherited from the
+old granularity is now a bug. Grep for them deliberately -- they will not
+fail a test.*
+
+**4. Anonymous voice slots that collided on purpose.** The slot counter
+restarts at 1 after every attributed line, and ids were chapter-scoped, so
+collisions were not rare -- they were systematic. A cultivator besieging the
+protagonist and a villager gossiping three hundred years earlier were both
+`anon:1:1`, read by TTS in one voice. *Lesson: an id scoped to the wrong
+unit is worse than no id, because it asserts sameness rather than admitting
+ignorance.*
+
+**5. Then the fix for #4 did nothing, for a reason worth remembering.**
+Scoping slots to `ActiveScene` changed no output: narrative segmentation
+emits exactly **one MAIN segment per chapter across all 199** (200 segments,
+199 chapters). The type was named `ActiveScene` and was not a scene. *Lesson:
+verify what a table actually contains before scoping anything to it; a
+plausible name is not evidence.*
+
+**6. A checkpoint that reads a moral word as a species.** "Demon" in this
+novel is name-calling. The SDXL checkpoints drew a grinning red-eyed youth
+with fangs and a forehead gem. The first fix was a negative-prompt patch,
+which fixes one word in one novel. The graph-derived version had its own
+trap: the obvious source -- resolved mentions -- has *never once recorded
+the bare word "demon"*, because resolution only mints mentions for name-like
+spans; it knows "Bloodwing Demon Sect". Evidence had to come from prose,
+gated by graph presence. *Lesson: "the graph knows this" is a hypothesis.
+Check which table would hold it before designing on top of it.*
+
+**7. Two filters that had to be measured, not assumed.** The lexicon nearly
+suppressed the novel's real content: RI's characters call each other worms,
+wolves and beasts, but the book also contains actual worms, wolves and
+beasts, and glossing those words would have emitted "animal head, fur,
+claws" as a permanent negative. Counting over all 199 chapters gave the
+split -- demon 5/27 and god 4/13 are mostly name-calling; worm 47/737, wolf
+19/604, beast 9/199 are mostly animals. *Lesson: a heuristic's threshold is
+a measurement, not a taste. The corpus already contains the answer.*
+
+**8. A diffusers API shape that only breaks with two inputs.**
+`ip_adapter_image` takes one entry *per loaded adapter*, with a nested list
+for that adapter's images. A flat list of two raises. Harmless for months
+because no panel ever carried more than one reference -- then curated
+references landed and it killed a full chapter run 54 panels in. *Lesson: a
+latent API misuse surfaces the day a feature makes the second case reachable.
+The bug was introduced long before the change that exposed it.*
+
+**9. Fandom returned 403 to urllib's default User-Agent** -- indistinguishable
+from "this novel has no wiki", since both produce an empty result. Then the
+subdomain guess was wrong (`reverend-insanity`, not `reverendinsanity`),
+which produces 404, which also looks like "no page". Then sequential requests
+were dropped silently, so a page that fetched fine alone vanished inside a
+60-page loop, and the cache -- which overwrote rather than merged -- deleted
+the entries an earlier run had got. *Lesson: on any network path, make
+"absent" and "failed" different states in the report, and never let a
+refresh be destructive.*
+
+**10. Resolution thinks Gu worms are people.** Understandable -- the novel
+talks about them the way it talks about characters -- and it meant the wiki
+importer wrote `skin_tone=bronze` into the canon of things that are not
+characters. The wiki's own categories were a better classifier than our
+resolver. *Lesson: when an external source disagrees with the pipeline about
+a type, it is worth asking which one is actually better positioned to know.*
+
+**11. Delivery markers read from inside the quoted line.** A besieging
+cultivator shouts "Fang Yuan, *quietly* hand over the Spring Autumn Cicada"
+-- "quietly" is what he demands, not how he says it. Six of chapter 1's
+twenty-seven dialogue lines were marked HUSHED and whispered. *Lesson: a
+signal has a location as well as a vocabulary. Matching the right words in
+the wrong span is a category error, not a tuning problem.*
+
+**12. The emotion dial that could not produce emotion.** Chatterbox clones
+the prosody of its reference clip, so `exaggeration` scales intensity around
+whatever that clip already sounds like -- and every clip was VCTK read
+speech. No setting makes a man reading a prompt sentence sound like a
+warlord. The fix was a different *corpus* (CREMA-D, 91 actors performing six
+emotions), not a different number. *Lesson: check what a parameter is
+relative to before tuning it.*
+
+**13. Inserting a dataclass field in the middle.** `DeliverySettings` gained
+an `emotion` field, positioned third; every existing positional construction
+silently shifted `pitch_semitones` into `rationale`. Caught by one assertion
+comparing a float to a string. *Lesson: append-only for any dataclass that is
+constructed positionally anywhere -- or make it keyword-only and take the
+churn once.*
+
+**14. Filenames that encoded the wrong thing.** Panels were named for their
+lead block, so one scene produced `block0021`, `block0026`, `block0047`, and
+a directory listing interleaved panels from different scenes. Reading the
+output required knowing the slot-assignment algorithm. *Lesson: an artefact's
+name is an interface. Sort order is part of it.*
+
+**15. The measurement that was missing until late, and immediately paid.**
+Every relevance defect up to this point was found by a human opening a PNG.
+Once `echotales relevance` existed, it found in minutes that prompt assembly
+ranked the standing appearance clause above the beat, so the beat kept losing
+the 77-token budget -- panels of a correct-looking man doing nothing
+identifiable. *Lesson: in a pipeline whose output is subjective, the
+highest-leverage code is often the thing that turns "looks wrong" into a
+number. Build it earlier than feels justified.*
+
+**16. Two ways of destroying your own evidence.** A working copy of the
+database was truncated to zero rows by an interrupted process, and a `pkill`
+pattern aimed at a render matched the shell that owned it. Neither lost real
+data because the originals were untouched -- which is the only reason they
+were merely annoying. *Lesson: measure on copies; keep the originals
+read-only in practice; and check what a kill pattern matches before running
+it.*
+
+
 ## Where this leaves the original plan
 
 Intact: the three-axis time model, self/persona, typed and induced aliases,
