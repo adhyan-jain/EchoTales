@@ -131,6 +131,27 @@ class DeliveryMarker:
     end: int
 
 
+#: Quoted speech, in the several quote styles this project's sources use.
+_QUOTED_RE = re.compile(r"[\u201c\u201d\"\u2018\u2019'][^\u201c\u201d\"]*?[\u201c\u201d\"]")
+
+
+def _speech_tag_only(text: str) -> str:
+    """The text with quoted speech blanked out, offsets preserved.
+
+    **A delivery marker is a property of the speech tag, never of the line
+    itself.** RI ch1 block 0 is a besieging cultivator shouting "Fang Yuan,
+    quietly hand over the Spring Autumn Cicada and I'll give you a quick
+    death!" -- "quietly" is what he is *demanding*, not how he says it, and
+    matching inside the quote marked the line HUSHED and whispered a siege
+    threat. Six of chapter 1's twenty-seven dialogue lines were mis-marked
+    this way.
+
+    Blanked rather than removed so every reported offset still indexes the
+    caller's original string.
+    """
+    return _QUOTED_RE.sub(lambda m: " " * len(m.group(0)), text)
+
+
 def extract_delivery_markers(text: str) -> list[DeliveryMarker]:
     """Find delivery markers in a narration span.
 
@@ -139,7 +160,7 @@ def extract_delivery_markers(text: str) -> list[DeliveryMarker]:
     """
     out: list[DeliveryMarker] = []
     taken: list[tuple[int, int]] = []
-    for match in _MARKER_RE.finditer(text):
+    for match in _MARKER_RE.finditer(_speech_tag_only(text)):
         start, end = match.span()
         if any(s <= start < e or s < end <= e for s, e in taken):
             continue

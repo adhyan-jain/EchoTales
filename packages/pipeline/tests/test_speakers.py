@@ -444,3 +444,25 @@ def test_anonymous_slots_still_alternate_within_one_scene() -> None:
         "ri:anon:1:s0:2",
         "ri:anon:1:s0:3",
     ]
+
+
+def test_delivery_markers_ignore_words_inside_the_quote() -> None:
+    """A marker describes how a line is said, not what it demands.
+
+    RI ch1 block 0 is a besieging cultivator shouting "Fang Yuan, quietly
+    hand over the Spring Autumn Cicada" -- matching inside the quote marked
+    it HUSHED and whispered a siege threat. Six of chapter 1's twenty-seven
+    dialogue lines were mis-marked this way.
+    """
+    from echotales.pipeline.spans.delivery import extract_delivery_markers
+
+    shouted = "“Fang Yuan, quietly hand over the Cicada and I'll give you a quick death!”"
+    assert extract_delivery_markers(shouted) == []
+
+    # The speech tag still governs.
+    tagged = "“Get out,” he said coldly."
+    assert [m.polarity.value for m in extract_delivery_markers(tagged)] == ["COLD"]
+
+    # Bare narration is unaffected.
+    narration = "He answered quietly, lowering his head."
+    assert [m.polarity.value for m in extract_delivery_markers(narration)] == ["HUSHED"]
