@@ -16,6 +16,8 @@ for being pointed at a checkpoint that can honour it.
 
 from __future__ import annotations
 
+import re
+
 from echotales.pipeline.persona.runner import PanelCast
 
 #: The style contract, appended to every panel prompt. Matches
@@ -377,11 +379,29 @@ def cast_tags(genders: list[str]) -> str:
 _NEGATIVE_FEMININE = "1girl, female, feminine face, breasts, lipstick, makeup"
 
 
-def gender_negative(genders: list[str]) -> str:
-    """The extra negative clause an all-male panel needs, if any."""
-    if not genders or any(g == "female" for g in genders):
+#: Pronouns, for the case where nothing in frame resolved to a known
+#: character. Deliberately whole-word: "his" must not match "history".
+_MALE_PRONOUN_RE = re.compile(r"\b(?:he|him|his|himself)\b", re.I)
+_FEMALE_PRONOUN_RE = re.compile(r"\b(?:she|her|hers|herself)\b", re.I)
+
+
+def gender_negative(genders: list[str], *, beat: str = "") -> str:
+    """The extra negative clause a male-only panel needs, if any.
+
+    **The unresolved case is the one that was failing.** `genders` is empty
+    whenever nobody in frame resolved to a persona -- an unnamed cultivator,
+    a scene the cast pass could not place anyone in -- and an empty list
+    used to mean "say nothing", which on these checkpoints means "draw a
+    woman". The beat's own pronouns settle it: prose that says "he" four
+    times and never "she" is about a man, whatever resolution managed.
+    """
+    if any(g == "female" for g in genders):
         return ""
-    return _NEGATIVE_FEMININE if any(g == "male" for g in genders) else ""
+    if any(g == "male" for g in genders):
+        return _NEGATIVE_FEMININE
+    if beat and _MALE_PRONOUN_RE.search(beat) and not _FEMALE_PRONOUN_RE.search(beat):
+        return _NEGATIVE_FEMININE
+    return ""
 
 
 # ---------------------------------------------------------------------------

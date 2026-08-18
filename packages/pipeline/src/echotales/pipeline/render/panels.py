@@ -1079,6 +1079,9 @@ def render_panels(
         if chapter is None:
             continue
         report.chapters += 1
+        # Panel number within the chapter, in play order. Reset per chapter
+        # so a filename is meaningful without knowing the whole run.
+        _panel_seq = 0
 
         mentions = store.get_mentions(novel_id, chapter_number)
         segments = store.get_segments(novel_id, chapter_number)
@@ -1279,8 +1282,16 @@ def render_panels(
                 # panel writes it first, and the crowd panel is silently
                 # dropped by the `image_path.exists()` cache check. Cost
                 # three rounds of "the crowd cut fires but never appears".
+                # **Numbered in the order they play, block kept for tracing.**
+                # Naming by lead block alone put `block0047.png` after
+                # `block0048.png` in a directory listing and gave three
+                # panels of one scene numbers 21, 26 and 47 -- readable only
+                # if you already knew how slots were assigned. `p003_b0026`
+                # sorts as it plays and still says which block it came from.
+                _panel_seq += 1
+                stem = f"p{_panel_seq:03d}_b{lead:04d}"
                 image_path = chapter_dir / (
-                    f"block{lead:04d}_crowd.png" if is_crowd_cut else f"block{lead:04d}.png"
+                    f"{stem}_crowd.png" if is_crowd_cut else f"{stem}.png"
                 )
 
                 cast = get_panel_cast(
@@ -1291,11 +1302,16 @@ def render_panels(
                     segments=segments,
                     spans=spans,
                     store=store,
-                    # Scoped to the whole scene, not one block -- every
-                    # slot in a scene should see the scene's full cast,
-                    # since all of them are pictures of the same stretch
-                    # of story, just at different moments/framings in it.
-                    block_window=(scene.block_from, scene.block_to),
+                    # **Scoped to this panel's own blocks.** Scene-wide was
+                    # right when a scene produced one image and is a
+                    # hallucination source now that it produces several: the
+                    # protagonist is present somewhere in almost every
+                    # scene, so a chunk of clan elders gossiping about a
+                    # third party was handed Fang Yuan as cast and the
+                    # director wrote "Fang Yuan stands in a stone courtyard,
+                    # his gaze distant as he contemplates the future of the
+                    # Bai clan" for a passage he does not appear in.
+                    block_window=(min(_chunk_blocks), max(_chunk_blocks)),
                 )
 
                 references: list[Path] = []
@@ -1308,7 +1324,7 @@ def render_panels(
                 # docstring for the mid-chapter body-selection bug this
                 # fixes.
                 story_position = chapter_number + lead / max(len(chapter.blocks), 1)
-                for entity_id in present_beat_entities(mentions, scene.blocks):
+                for entity_id in present_beat_entities(mentions, _chunk_blocks):
                     looks = character_looks(
                         store,
                         entity_id,
@@ -1658,7 +1674,7 @@ def render_panels(
                                 # panel unusable rather than merely worse.
                                 + (
                                     f", {gender_neg}"
-                                    if (gender_neg := gender_negative(genders))
+                                    if (gender_neg := gender_negative(genders, beat=beat_prose))
                                     else ""
                                 )
                                 + (
