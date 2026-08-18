@@ -93,7 +93,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_voice.add_argument(
         "--bank",
         default="data/voice",
-        help="extracted VCTK root (default: data/voice)",
+        help="extracted voice-bank root (default: data/voice)",
+    )
+    p_voice.add_argument(
+        "--bank-kind",
+        default="vctk",
+        choices=["vctk", "cremad"],
+        help=(
+            "vctk is read speech (110 speakers, clean, lifeless); cremad is "
+            "91 actors performing six emotions, which lets a shouted line be "
+            "prompted with an actually angry recording"
+        ),
     )
     p_voice.add_argument("--out", default="data/RI/audio")
     p_voice.add_argument("--chapters", help="range, e.g. 1-5; default: all")

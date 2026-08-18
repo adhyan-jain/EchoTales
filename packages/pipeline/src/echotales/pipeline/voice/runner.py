@@ -396,8 +396,17 @@ def render_novel(
             )
 
             if synthesize:
-                clip = next(
-                    (v.reference_clip for v in bank.voices if v.speaker_id == voice), None
+                # The cast voice *performing this line's emotion*, where the
+                # bank has performances. `clip_for` falls back to the
+                # speaker's default clip, so a read-speech bank (VCTK) is
+                # unaffected and this stays one code path.
+                cast_voice = next(
+                    (v for v in bank.voices if v.speaker_id == voice), None
+                )
+                clip = (
+                    cast_voice.clip_for(settings.emotion)
+                    if cast_voice is not None
+                    else None
                 )
                 path = out_dir / f"ch{chapter:g}" / f"{span.id.replace(':', '_')}.wav"
                 engine.synthesize(

@@ -33,6 +33,25 @@ from echotales.core.enums import SpanType
 from echotales.pipeline.persona.traits import TraitProfile
 from echotales.pipeline.spans.delivery import DeliveryPolarity
 
+#: Delivery polarity -> the emotion recording to prompt with, when the bank
+#: has performances (`voice/bank.py::load_cremad`). This is the lever that
+#: `exaggeration` cannot replace: the dial scales intensity around whatever
+#: the reference clip already sounds like, so a calm read-speech prompt
+#: stays calm at any setting, while an angry reference makes a shouted
+#: line audibly angry at a *lower* exaggeration.
+#:
+#: HEIGHTENED maps to anger rather than to happiness on purpose -- in this
+#: genre a raised voice is nearly always a threat, an order or a fury, and
+#: the one case it is not (a warm exclamation) already has its own polarity.
+EMOTION_FOR_POLARITY: dict[DeliveryPolarity, str] = {
+    DeliveryPolarity.HEIGHTENED: "angry",
+    DeliveryPolarity.COLD: "disgust",
+    DeliveryPolarity.WARM: "happy",
+    DeliveryPolarity.HUSHED: "fear",
+    DeliveryPolarity.HESITANT: "fear",
+    DeliveryPolarity.FLAT: "neutral",
+}
+
 #: Chatterbox's own documented neutral point.
 NEUTRAL_EXAGGERATION = 0.5
 NEUTRAL_CFG = 0.5
@@ -52,6 +71,12 @@ class DeliverySettings:
     #: Why these values -- carried into the manifest so a bad-sounding line
     #: can be traced to the decision that produced it rather than re-derived.
     rationale: str = "neutral"
+    #: Which of the cast voice's emotion recordings to prompt with, for a
+    #: bank that has them ("neutral" for every bank that does not). Last in
+    #: the field order deliberately: every other call site constructs this
+    #: positionally, and inserting a field mid-list silently shifted
+    #: `pitch_semitones` into `rationale`.
+    emotion: str = "neutral"
 
 
 #: Polarity -> (exaggeration, cfg_weight). `cfg_weight` moves opposite to
@@ -94,7 +119,11 @@ def settings_for(
     if polarity is not None and polarity in _BY_POLARITY:
         exaggeration, cfg = _BY_POLARITY[polarity]
         return DeliverySettings(
-            exaggeration, cfg, pitch, f"delivery marker: {polarity.value}"
+            exaggeration,
+            cfg,
+            pitch,
+            f"delivery marker: {polarity.value}",
+            EMOTION_FOR_POLARITY.get(polarity, "neutral"),
         )
 
     exaggeration, cfg = NEUTRAL_EXAGGERATION, NEUTRAL_CFG

@@ -61,6 +61,18 @@ class BankVoice:
     accent: str = ""
     region: str = ""
     reference_clip: Path | None = None
+    #: Emotion label -> a clip of this speaker performing it. Empty for a
+    #: read-speech bank like VCTK, which has no emotional recordings at all.
+    #: **This is the strongest emotion lever available.** Chatterbox clones
+    #: the prosody of its reference clip, so handing it an angry recording
+    #: does more for a shouted line than any value of `exaggeration` --
+    #: that dial scales intensity around whatever the reference already
+    #: sounds like, and a calm read-speech prompt has no anger to scale.
+    emotion_clips: dict[str, Path] = field(default_factory=dict)
+
+    def clip_for(self, emotion: str) -> Path | None:
+        """This speaker performing `emotion`, or their default clip."""
+        return self.emotion_clips.get(emotion) or self.reference_clip
 
     @property
     def age_band(self) -> str:
@@ -218,3 +230,91 @@ def pick_mob_voice(
     """
     candidates = bank.nearest_bucket(gender, age_band)
     return rng.choice(candidates) if candidates else None
+
+
+#: CREMA-D encodes its labels in the filename: `1001_DFA_ANG_XX.wav` is
+#: actor 1001, sentence DFA, emotion ANG, intensity unspecified.
+_CREMAD_EMOTIONS: dict[str, str] = {
+    "ANG": "angry",
+    "DIS": "disgust",
+    "FEA": "fear",
+    "HAP": "happy",
+    "NEU": "neutral",
+    "SAD": "sad",
+}
+
+#: Loudest first. A reference clip is chosen per (actor, emotion), and where
+#: the corpus offers several intensities the strongest one is the most
+#: useful prompt -- a barely-angry reference transfers barely any anger.
+_CREMAD_INTENSITY_RANK: dict[str, int] = {"HI": 0, "MD": 1, "XX": 2, "LO": 3}
+
+
+def load_cremad(
+    root: str | Path,
+    *,
+    demographics: str | Path | None = None,
+) -> VoiceBank:
+    """Load CREMA-D as an emotion-capable voice bank.
+
+    **Why a second bank at all.** VCTK is read speech: 110 speakers reading
+    prompt sentences evenly, which is why casting from it sounds correct and
+    lifeless, and why a warlord besieging a mountain sounds like a man
+    reading a train timetable. CREMA-D is 91 actors performing six emotions
+    on purpose, with published age and sex per actor -- so it can be cast
+    the same way *and* asked for the right feeling.
+
+    The two are not exclusive: VCTK has the wider voice range and cleaner
+    audio, CREMA-D has the performances. `VoiceBank.voices` from either
+    slots into the same casting path.
+    """
+    root = Path(root)
+    audio_dir = root / "AudioWAV" if (root / "AudioWAV").is_dir() else root
+    if not audio_dir.is_dir():
+        raise FileNotFoundError(f"CREMA-D audio directory not found under {root}")
+
+    ages: dict[str, int] = {}
+    genders: dict[str, str] = {}
+    demo_path = Path(demographics) if demographics else root / "VideoDemographics.csv"
+    if demo_path.exists():
+        import csv
+
+        with demo_path.open(encoding="utf-8") as handle:
+            for row in csv.DictReader(handle):
+                actor = str(row["ActorID"]).strip()
+                ages[actor] = int(row["Age"])
+                genders[actor] = str(row["Sex"]).strip().casefold()
+
+    best: dict[tuple[str, str], tuple[int, Path]] = {}
+    for clip in sorted(audio_dir.glob("*.wav")):
+        parts = clip.stem.split("_")
+        if len(parts) < 4:
+            continue
+        actor, _sentence, emotion_code, intensity = parts[0], parts[1], parts[2], parts[3]
+        emotion = _CREMAD_EMOTIONS.get(emotion_code.upper())
+        if emotion is None:
+            continue
+        rank = _CREMAD_INTENSITY_RANK.get(intensity.upper(), 9)
+        key = (actor, emotion)
+        if key not in best or rank < best[key][0]:
+            best[key] = (rank, clip)
+
+    by_actor: dict[str, dict[str, Path]] = {}
+    for (actor, emotion), (_rank, clip) in best.items():
+        by_actor.setdefault(actor, {})[emotion] = clip
+
+    voices: list[BankVoice] = []
+    for actor, clips in sorted(by_actor.items()):
+        voices.append(
+            BankVoice(
+                speaker_id=f"cremad{actor}",
+                # Unknown demographics would silently cast every actor into
+                # one bucket, so an actor the CSV does not cover is skipped
+                # rather than guessed at.
+                gender=genders.get(actor, ""),
+                age=ages.get(actor, 0),
+                accent="american",
+                reference_clip=clips.get("neutral") or next(iter(clips.values())),
+                emotion_clips=clips,
+            )
+        )
+    return VoiceBank([v for v in voices if v.gender and v.age])

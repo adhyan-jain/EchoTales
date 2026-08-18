@@ -214,3 +214,65 @@ class TestEngine:
 
         with pytest.raises(ValueError, match="unknown TTS engine"):
             get_engine("nope")
+
+
+class TestEmotionalBank:
+    """CREMA-D loading and emotion-clip selection (`voice/bank.py`)."""
+
+    def _corpus(self, tmp_path):
+        audio = tmp_path / "AudioWAV"
+        audio.mkdir()
+        for name in (
+            "1001_IEO_ANG_HI", "1001_IEO_ANG_LO", "1001_DFA_NEU_XX",
+            "1002_IEO_HAP_MD", "1002_DFA_NEU_XX",
+            "9999_DFA_NEU_XX",  # actor missing from the demographics file
+        ):
+            (audio / f"{name}.wav").write_bytes(b"")
+        (tmp_path / "VideoDemographics.csv").write_text(
+            '"ActorID","Age","Sex","Race","Ethnicity"\n'
+            '1001,51,"Male","Caucasian","Not Hispanic"\n'
+            '1002,21,"Female","Caucasian","Not Hispanic"\n',
+            encoding="utf-8",
+        )
+        return tmp_path
+
+    def test_actors_become_voices_with_published_demographics(self, tmp_path) -> None:
+        from echotales.pipeline.voice.bank import load_cremad
+
+        bank = load_cremad(self._corpus(tmp_path))
+        assert {v.speaker_id for v in bank.voices} == {"cremad1001", "cremad1002"}
+        voice = next(v for v in bank.voices if v.speaker_id == "cremad1001")
+        assert (voice.gender, voice.age, voice.age_band) == ("male", 51, "adult")
+
+    def test_an_actor_without_demographics_is_skipped_not_guessed(self, tmp_path) -> None:
+        from echotales.pipeline.voice.bank import load_cremad
+
+        bank = load_cremad(self._corpus(tmp_path))
+        assert all(v.speaker_id != "cremad9999" for v in bank.voices)
+
+    def test_the_strongest_take_of_an_emotion_wins(self, tmp_path) -> None:
+        from echotales.pipeline.voice.bank import load_cremad
+
+        bank = load_cremad(self._corpus(tmp_path))
+        voice = next(v for v in bank.voices if v.speaker_id == "cremad1001")
+        assert voice.clip_for("angry").stem == "1001_IEO_ANG_HI"
+
+    def test_a_missing_emotion_falls_back_to_the_default_clip(self, tmp_path) -> None:
+        from echotales.pipeline.voice.bank import load_cremad
+
+        bank = load_cremad(self._corpus(tmp_path))
+        voice = next(v for v in bank.voices if v.speaker_id == "cremad1002")
+        assert voice.clip_for("angry") == voice.reference_clip
+
+    def test_shouted_lines_are_prompted_with_an_angry_recording(self) -> None:
+        from echotales.core.enums import SpanType
+        from echotales.pipeline.spans.delivery import DeliveryPolarity
+        from echotales.pipeline.voice.delivery import settings_for
+
+        heightened = settings_for(
+            span_type=SpanType.DIALOGUE, polarity=DeliveryPolarity.HEIGHTENED
+        )
+        assert heightened.emotion == "angry"
+        # A read-speech bank has no such clip and is unaffected: the default
+        # emotion stays neutral.
+        assert settings_for(span_type=SpanType.DIALOGUE).emotion == "neutral"
