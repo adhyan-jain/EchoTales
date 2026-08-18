@@ -47,6 +47,7 @@ from echotales.pipeline.render.scene_refs import (
     curated_character_reference,
     match_scene_references,
 )
+from echotales.pipeline.render.factions import qualify_role, scene_faction
 from echotales.pipeline.render.scenes import group_scenes
 from echotales.pipeline.spans.scene import detect_mobs
 from echotales.pipeline.render.palette import Palette, PaletteSpec, apply_palette
@@ -1205,6 +1206,10 @@ def render_panels(
             # is also what the source medium does with this beat -- cut to
             # the faces reacting, then back -- so it is the honest structure
             # rather than a workaround for a model limit, though it is both.
+            # Whose people these are. A role word without a faction is a
+            # continuity hazard in a novel that runs "the elders" past four
+            # clans in one volume -- see `render/factions.py`.
+            _scene_faction = scene_faction(_scene_text)
             _scene_mobs = detect_mobs(_scene_text, scene.blocks[0])
             _crowd_slot = None
             if _scene_mobs and len(story_scene_blocks) > 1:
@@ -1454,7 +1459,8 @@ def render_panels(
                         # and came back as one figure alone.
                         if _chunk_mobs:
                             roles = ", ".join(
-                                sorted({m.role for m in _chunk_mobs})
+                                qualify_role(role, _scene_faction)
+                                for role in sorted({m.role for m in _chunk_mobs})
                             )
                             directed_prose = (
                                 f"{directed_prose} "
@@ -1515,7 +1521,10 @@ def render_panels(
                     # exactly the two things that collapse this panel back
                     # into a single figure. Danbooru count tags lead, since
                     # that is the vocabulary this checkpoint weights most.
-                    _roles = ", ".join(sorted({m.role for m in (_chunk_mobs or _scene_mobs)}))
+                    _roles = ", ".join(
+                        qualify_role(role, _scene_faction)
+                        for role in sorted({m.role for m in (_chunk_mobs or _scene_mobs)})
+                    )
                     # Framing leads. The first crowd panel that rendered put
                     # the crowd as tiny figures at the foot of a mountain --
                     # a landscape with people in it, not a reaction shot --

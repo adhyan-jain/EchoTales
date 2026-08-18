@@ -45,8 +45,9 @@ SYSTEM = (
     "\n\n"
     "Be explicit about these, every time, because the illustrator assumes "
     "nothing and defaults badly:\n"
-    "- Say the sex of each person you name ('a man', 'a woman'). An "
-    "unstated subject is drawn as a woman.\n"
+    "- Say the sex of each person you name. An unstated subject is drawn "
+    "as a woman, so write 'a man' or the person's name whenever the "
+    "passage does not clearly indicate a woman.\n"
     "- The world is ancient China. Say so through concrete detail (hanfu, "
     "sashes, upturned tiled roofs, stone courtyards). Never Japanese "
     "detail: no kimono, no obi, no torii, no paper screens, no cherry "
@@ -58,7 +59,14 @@ SYSTEM = (
     "- Draw what the passage does, not what it says. If the passage is a "
     "line of dialogue, the image is the speaker saying it in their "
     "surroundings, not an illustration of the words.\n"
-    "- One place per shot: one ground plane, one horizon, one building."
+    "- One place per shot: one ground plane, one horizon, one building.\n"
+    "- Say which faction a role belongs to when the passage names one "
+    "('Gu Yue clan elders', not 'elders'). The same word covers several "
+    "clans in this book and an unqualified one cannot be drawn "
+    "consistently.\n"
+
+    "- No film vocabulary. There is no camera: never write 'into the "
+    "camera', 'close-up on', 'the shot pans'."
 )
 
 
