@@ -51,6 +51,7 @@ from echotales.pipeline.render.scenes import group_scenes
 from echotales.pipeline.spans.scene import detect_mobs
 from echotales.pipeline.render.palette import Palette, PaletteSpec, apply_palette
 from echotales.pipeline.world.context import story_context
+from echotales.pipeline.world.lexicon import build_lexicon
 
 log = logging.getLogger(__name__)
 
@@ -1039,6 +1040,24 @@ def render_panels(
     manifest: list[PanelImage] = []
     wanted = chapters if chapters is not None else store.chapter_numbers(novel_id)
 
+    # **Built from the whole volume, not from the chapters being rendered.**
+    # A word's sense is a property of the book; deriving "demon means a man
+    # here" from a two-chapter slice would give a thinner answer for the
+    # same panels. Reveals stay contained because the lexicon only ever
+    # says what a *word* denotes -- never who anyone turns out to be.
+    _lexicon = build_lexicon(store, novel_id)
+    _lexicon_note = _lexicon.director_note()
+    _lexicon_negatives = (
+        f", {_lexicon.negative_terms()}" if _lexicon.negative_terms() else ""
+    )
+    if _lexicon.people_called:
+        log.info(
+            "world lexicon: %s",
+            ", ".join(
+                f"{w}={labels[0]}" for w, labels in sorted(_lexicon.people_called.items())
+            ),
+        )
+
     for chapter_number in wanted:
         chapter: Chapter | None = store.get_chapter(novel_id, chapter_number)
         if chapter is None:
@@ -1357,6 +1376,11 @@ def render_panels(
                         brief = story_context(
                             novel_id, store, chapter_number, scene.blocks
                         ).to_brief()
+                        # What this novel's own words denote. The graph is
+                        # the only thing that knows "demon" is a man here,
+                        # and the director is the cheapest place to say so.
+                        if _lexicon_note:
+                            brief = f"{brief}\n{_lexicon_note}".strip()
                         directed_prose = (
                             f"{directive} {beat_prose}".strip() if directive else beat_prose
                         )
@@ -1555,6 +1579,7 @@ def render_panels(
                             out_path=image_path,
                             negative_prompt=(
                                 negative_for(style)
+                                + _lexicon_negatives
                                 # Appended after the budgeted body, not
                                 # inside it: this is the one clause that
                                 # must never be the one truncation drops,
