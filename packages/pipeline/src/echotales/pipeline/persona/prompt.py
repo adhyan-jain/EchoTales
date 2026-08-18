@@ -172,7 +172,13 @@ _NEGATIVE_GEOGRAPHY = (
 #: the character. Positive wording did not hold this on its own.
 _NEGATIVE_PHYSIQUE = (
     "muscular, buff, bulky, broad shoulders, bodybuilder, heroic pose, "
-    "righteous, cheerful, smiling, bright eyes"
+    "righteous, cheerful, smiling, bright eyes, "
+    # The SDXL anime checkpoints reach for a demon-boy costume whenever a
+    # character is described as a demon -- a close-up of Fang Yuan's dying
+    # thoughts came back as a grinning red-eyed youth with fangs and a
+    # forehead gem. He is canonically jet-black eyed and expressionless;
+    # "demon" in this novel is a moral word, not a species.
+    "red eyes, glowing eyes, fangs, horns, forehead gem, face markings"
 )
 
 #: Safety and baseline quality. Illustrious (and SDXL anime finetunes

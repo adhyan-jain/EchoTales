@@ -48,6 +48,7 @@ from echotales.pipeline.render.scene_refs import (
     match_scene_references,
 )
 from echotales.pipeline.render.scenes import group_scenes
+from echotales.pipeline.spans.scene import detect_mobs
 from echotales.pipeline.render.palette import Palette, PaletteSpec, apply_palette
 from echotales.pipeline.world.context import story_context
 
@@ -1170,8 +1171,6 @@ def render_panels(
             # is also what the source medium does with this beat -- cut to
             # the faces reacting, then back -- so it is the honest structure
             # rather than a workaround for a model limit, though it is both.
-            from echotales.pipeline.spans.scene import detect_mobs
-
             _scene_mobs = detect_mobs(_scene_text, scene.blocks[0])
             _crowd_slot = None
             if _scene_mobs and len(story_scene_blocks) > 1:
@@ -1210,6 +1209,26 @@ def render_panels(
                     slot % _SLOTS_PER_CHUNK
                 ]
                 closeup = style is STYLE_CLOSEUP
+
+                # **What this panel's own blocks say, not the scene's.**
+                # `cast.background_mobs` is resolved over the whole scene,
+                # which was harmless when a scene produced one image and is
+                # wrong now that it produces several: RI ch1's opening scene
+                # mentions a besieging crowd in its first blocks, so *every*
+                # chunk of it -- including a dying man's private last
+                # thoughts -- inherited "many people present", lost its
+                # character sheet as a crowd wide, and picked up the
+                # one-vs-many composition reference. That is the "random
+                # crowds": the same crowd, asserted everywhere.
+                _chunk_blocks = sorted(
+                    b
+                    for b, sl in slot_for_block.items()
+                    if sl // _SLOTS_PER_CHUNK == slot // _SLOTS_PER_CHUNK
+                )
+                _chunk_text = " ".join(
+                    by_index[b].text for b in _chunk_blocks if b in by_index
+                )
+                _chunk_mobs = detect_mobs(_chunk_text, lead)
 
                 chapter_dir = out_dir / f"ch{chapter_number:g}"
                 if version:
@@ -1256,7 +1275,7 @@ def render_panels(
                         entity_id,
                         novel_id=novel_id,
                         chapter=story_position,
-                        crowd=bool(cast.background_mobs),
+                        crowd=bool(_chunk_mobs),
                     )
                     if looks is None:
                         continue
@@ -1297,14 +1316,10 @@ def render_panels(
                 # director prose from a different part of the scene than the
                 # one this panel plays under -- the exact mismatch chunking
                 # exists to remove.
-                _chunk_blocks = {
-                    b for b, sl in slot_for_block.items()
-                    if sl // _SLOTS_PER_CHUNK == slot // _SLOTS_PER_CHUNK
-                }
                 _chunk_narration = " ".join(
                     sp.text.strip()
                     for sp in spans
-                    if sp.block_index in _chunk_blocks
+                    if sp.block_index in set(_chunk_blocks)
                     and sp.span_type
                     in (SpanType.NARRATION_ACTION, SpanType.NARRATION_DESCRIPTION)
                     and sp.text.strip()
@@ -1352,9 +1367,9 @@ def render_panels(
                         # prose -- so a scene the pipeline *knew* had a crowd
                         # in it was described to the model as if it did not,
                         # and came back as one figure alone.
-                        if cast.background_mobs:
+                        if _chunk_mobs:
                             roles = ", ".join(
-                                sorted({m.role for m in cast.background_mobs})
+                                sorted({m.role for m in _chunk_mobs})
                             )
                             directed_prose = (
                                 f"{directed_prose} "
@@ -1415,7 +1430,7 @@ def render_panels(
                     # exactly the two things that collapse this panel back
                     # into a single figure. Danbooru count tags lead, since
                     # that is the vocabulary this checkpoint weights most.
-                    _roles = ", ".join(sorted({m.role for m in _scene_mobs}))
+                    _roles = ", ".join(sorted({m.role for m in (_chunk_mobs or _scene_mobs)}))
                     # Framing leads. The first crowd panel that rendered put
                     # the crowd as tiny figures at the foot of a mountain --
                     # a landscape with people in it, not a reaction shot --
@@ -1501,7 +1516,7 @@ def render_panels(
                     # nothing at wide-shot scale where faces are a few
                     # pixels -- so this trades a benefit we cannot see for a
                     # failure we can.
-                    if cast.background_mobs and not closeup:
+                    if _chunk_mobs and not closeup:
                         references = []
                         conditioned = []
 
@@ -1512,8 +1527,8 @@ def render_panels(
                     # panels that just gave up their generated sheets are
                     # the ones most worth conditioning on a hand-picked one.
                     curated = match_scene_references(
-                        _scene_text,
-                        has_mob=bool(cast.background_mobs),
+                        _chunk_text,
+                        has_mob=bool(_chunk_mobs),
                         closeup=closeup,
                     )
                     if curated:
@@ -1530,7 +1545,7 @@ def render_panels(
                         # registers -- and copying its layout is the entire
                         # reason it is attached.
                         weight = 0.5
-                    elif cast.background_mobs:
+                    elif _chunk_mobs:
                         weight = 0.3
                     else:
                         weight = 0.45
