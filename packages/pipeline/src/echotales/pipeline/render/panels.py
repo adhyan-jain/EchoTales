@@ -954,6 +954,21 @@ class PanelReport:
         )
 
 
+def _speaker_label(span: Span, store: Store) -> str:
+    """Who says this line, in words a director can use.
+
+    An anonymous slot is deliberately rendered as "someone" rather than as
+    its slot id: the id is a voice-casting handle, and putting
+    `ri:anon:1:s0:2` in a prompt would have the image model draw the
+    string.
+    """
+    speaker = span.speaker_self_id or ""
+    if not speaker or ":anon:" in speaker:
+        return "Someone"
+    entity = store.get_self(speaker)
+    return entity.canonical_label if entity is not None else "Someone"
+
+
 def render_panels(
     novel_id: str,
     store: Store,
@@ -1343,8 +1358,39 @@ def render_panels(
                     in (SpanType.NARRATION_ACTION, SpanType.NARRATION_DESCRIPTION)
                     and sp.text.strip()
                 )
+                # **An all-dialogue chunk has to be drawn from its dialogue.**
+                # Falling back to the scene's narration here was reaching
+                # into a different moment for the picture -- which is the
+                # very mismatch chunking removes -- and measurably so: every
+                # panel scoring 0.00 in the relevance audit was a chunk of
+                # pure dialogue. Handing the director the lines themselves,
+                # with who says them, lets its "draw the speaker saying it
+                # in their surroundings" rule apply to real material.
+                if not _chunk_narration:
+                    # Kept short on purpose. `fit_to_budget` rations 77 CLIP
+                    # tokens by priority, and a verbatim exchange is long
+                    # enough to be dropped whole -- which is what happened:
+                    # the panel for the elders' gossip came out as locale
+                    # scenery with no beat in it at all. One speaker, a few
+                    # words, is what survives the budget and is also all a
+                    # picture of someone talking can show.
+                    _lines = [
+                        (_speaker_label(sp, store), " ".join(sp.text.split()[:10]))
+                        for sp in spans
+                        if sp.block_index in set(_chunk_blocks)
+                        and sp.span_type is SpanType.DIALOGUE
+                        and sp.text.strip()
+                    ]
+                    _chunk_dialogue = (
+                        f"{_lines[0][0]} speaking: {_lines[0][1]}" if _lines else ""
+                    )
+                else:
+                    _chunk_dialogue = ""
+
                 beat_prose = beat_text(
-                    spans, lead, _chunk_narration or _scene_narration or block.text
+                    spans,
+                    lead,
+                    _chunk_narration or _chunk_dialogue or _scene_narration or block.text
                 )
 
                 canon = beat_canon_for(novel_id, chapter_number, lead)
@@ -1354,7 +1400,22 @@ def render_panels(
                 elif canon is not None and canon.style_override == "scene":
                     style = STYLE_SCENE
 
-                cache_key = f"{chapter_number:g}:{lead}" + (":crowd" if is_crowd_cut else "")
+                # **Keyed by the beat, not just the block.** The key was
+                # `chapter:block`, which silently outlived every change to
+                # how beats are chosen: after scenes were chunked, a render
+                # kept serving prompts written for the old whole-scene
+                # beats, and two rounds of "the fix changed nothing" were
+                # actually the cache answering. The beat digest makes a
+                # changed beat a different entry, so stale prompts fall out
+                # of use on their own while genuinely identical work is
+                # still reused across the two phases.
+                _beat_digest = hashlib.sha256(
+                    f"{beat_prose}|{directive}".encode("utf-8")
+                ).hexdigest()[:12]
+                cache_key = (
+                    f"{chapter_number:g}:{lead}:{_beat_digest}"
+                    + (":crowd" if is_crowd_cut else "")
+                )
                 cached_prompt = prompt_cache.get(cache_key)
 
                 if cached_prompt is not None:

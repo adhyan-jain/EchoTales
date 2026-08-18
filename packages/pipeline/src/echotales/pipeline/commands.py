@@ -822,7 +822,30 @@ def _cmd_wiki_canon(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_relevance(args: argparse.Namespace) -> int:
+    """Rank rendered panels by how little of their prompt the source says."""
+    from echotales.pipeline.render.relevance import audit
+
+    store = _open_store(args)
+    block_text: dict[tuple[float, int], str] = {}
+    for number in store.chapter_numbers(args.novel):
+        chapter = store.get_chapter(args.novel, number)
+        if chapter is None:
+            continue
+        for block in chapter.blocks:
+            block_text[(number, block.index)] = block.text
+
+    report = audit(args.manifest, block_text, novel_id=args.novel)
+    print(report.summary())
+    print("\n  weakest panels (score, blocks, file, words shared with the passage):")
+    for panel in report.worst(args.worst):
+        print("  " + panel.line())
+    store.close()
+    return 0
+
+
 _DISPATCH = {
+    "relevance": cmd_relevance,
     "run": cmd_run,
     "appearance": cmd_appearance,
     "persona": cmd_persona,

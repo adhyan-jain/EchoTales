@@ -257,6 +257,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="print what would be imported without writing the cache",
     )
 
+    p_rel = sub.add_parser(
+        "relevance", help="score rendered panels against the blocks they play under"
+    )
+    p_rel.add_argument("--novel", required=True)
+    p_rel.add_argument("--manifest", default="data/RI/panels/manifest.jsonl")
+    p_rel.add_argument("--worst", type=int, default=10)
+
     p_export = sub.add_parser("export", help="emit the annotation dataset")
     p_export.add_argument("--novel", required=True)
     p_export.add_argument("--out", default="data/gold")

@@ -582,6 +582,19 @@ def build_image_prompt(
     if directive:
         parts.append(summarise_beat(directive, limit=_MAX_DIRECTIVE_CHARS))
 
+    # **What is happening, ahead of what the subject permanently looks
+    # like.** Appearance is a standing fact and repeats on every panel of
+    # that character; the beat is the only part of the prompt that makes
+    # *this* panel a different picture from the last one. Behind the
+    # appearance clause it kept losing the greedy budget fit -- Fang Yuan's
+    # clause runs about twenty tokens of hair and eyes, and panels came out
+    # as a correct-looking man doing nothing identifiable, or as locale
+    # scenery with no beat in them at all. Identity is also the one thing
+    # reference conditioning can carry without any tokens, which the beat
+    # cannot.
+    if beat:
+        parts.append(summarise_beat(beat))
+
     # The subject, before the setting. This is the change that matters: the
     # character used to sit behind locale, world and environment, i.e.
     # entirely inside the discarded half of the prompt.
@@ -603,11 +616,6 @@ def build_image_prompt(
     # Composition, immediately after the subject: it is short, and losing it
     # turns a chosen close-up into a generic full-body portrait.
     parts.append(framing_for(style))
-
-    # What is happening, then where. A beat with no place still reads; a
-    # place with no beat is a landscape.
-    if beat:
-        parts.append(summarise_beat(beat))
 
     # The specific place first, the world's general vocabulary behind it:
     # a diffusion model draws "a walled stone courtyard" and draws nothing
