@@ -13,31 +13,26 @@ history of how any of it got this way lives in `EVOLUTION.md`, not here.
 | `details.md` | Per-file detail |
 | `plans.md` | The original spec. Amended three times; the amendments win and are marked *(revised)* |
 
-**Last updated:** 2026-08-15. **Read 4.39 first if you only have time for
-one section** — it supersedes parts of everything below it (per-beat panel
-generation is gone, replaced by scene-grouped generation; the motion-clip
-scorer was rewritten; voice casting gained a pitch lever and gender
-coin-flip; a local multi-provider LLM gateway backend was added) and ends
-with the exact next step: the real SDXL render this whole session built
-toward has not completed successfully yet, for two found-and-partly-fixed
-reasons (a caching bug that made every panel a blank placeholder, now
-fixed; an ollama-vs-diffusion GPU conflict across the two render phases,
-not yet fixed).
+**Last updated:** 2026-08-20. **Read 4.44 first, then 4.42-4.43 if you
+need more — those three are the actual current state.** Everything from
+4.30 through 4.39 (2026-08-15) is real history, superseded in places, not
+wrong: per-beat panel generation is gone (scene-grouped generation, 4.39);
+the motion-clip scorer was rewritten (4.39); a checkpoint bake-off found
+single-character panels genuinely improved but crowd/establishing panels
+did not (4.43); the crowd-panel headcount-tag gap 4.43 flagged is now
+fixed (4.44); voice gender casting gained a pitch lever, a 50/50
+unresolved-speaker fallback, and now a dialogue self-reference signal for
+lines no narration window could ever resolve (4.39, 4.44); a local
+multi-provider LLM gateway backend exists as an alternative to ollama for
+director calls (4.39).
 
-Earlier in the session: 4.30 built the first chapter video with real
-cloned audio and block-scoped casting. 4.31 recorded the author's
-watch-through: nine specific defects, four fixed directly (speed default,
-reference-sheet wiring, the panel-relevance cluster) plus three bugs found
-by reading ch1's actual span table (4.32-4.34: a phantom "Daoist Gu"
-speaker from a translator's-note ingestion leak, a store bug where
-`add_spans`/`add_mentions` never deleted stale rows on re-run, two
-roster-pollution bugs plus a missing epithet-attribution tier). ch1 was
-re-rendered and watched again: 4.37's six findings (wrong-gender voice,
-voice collisions, flat narration, register-blind casting, image-frequency/
-whose-face problems) were worked through in 4.38 and the voice half of
-4.39. The image half of 4.37 (item 6) is what 4.39's scene-grouping
-rewrite was built to address, and per above, hasn't reached a real
-verified render yet.
+**The one thing that has not happened yet, across all of this**: a real
+end-to-end render (director on, real image checkpoint, real CREMA-D
+narration, real motion, real compose) with today's fixes in place, that
+someone has actually watched and listened to. 4.42's own standing
+instruction — look at the panels, listen to the audio, don't trust the
+metric first — is still the right order of operations for whoever picks
+this up next. 4.44's closing note has the exact command shape.
 
 
 ## 0. Current state, in one screen
@@ -1633,6 +1628,76 @@ Diagnostic output, not deleted, for the next session to look at directly:
 prompt). Not wired into the real pipeline's default engine -- this was a
 look, not a switch.
 
+### 4.44 Two real fixes, found sitting uncommitted from an earlier turn plus one new one: crowd-panel gender tags, and dialogue self-reference for voice gender *(2026-08-20)*
+
+**Housekeeping first, because it mattered**: this session started with
+`persona/prompt.py`, `render/panels.py`, `test_prompt_budget.py` and part
+of this file already modified on disk but never committed — complete,
+tested, working code from earlier in the day that simply never made it
+into a commit. Verified (`pytest`, read the diff) before committing rather
+than assumed. **If you ever find yourself picking up a session and
+`git status` shows unexpected modifications, read the diff before doing
+anything else** — it may be finished work, not a mess to clean up.
+
+That work was item 1 of 4.43's own two next actions: `persona/prompt.py::
+cast_tags` gained a `beat=` parameter. When `genders` is empty (an
+unresolved cast — an unnamed mob role, or a director-named character whose
+block window carried no matching mention), it now pushes a positive
+`1boy, male focus` / `1girl` tag from the beat's own pronouns, the same
+signal `gender_negative` already trusted for its negative-only case.
+Measured necessary on real output, not assumed: RI ch1 blocks 0 and 36
+both still rendered feminine-presenting subjects on the noobai checkpoint
+despite `gender_negative`'s exclusion already applying — excluding a look
+is not the same as asking for one.
+
+**New this session**: the author reported a line addressed entirely in
+second person ("you demon, you took what was mine!") got voiced with the
+wrong gender. Root cause is structural: `voice/runner.py::slot_gender`'s
+only signal, `gender_from_pronouns`, reads the narration *surrounding* a
+line, and a purely second-person line states nothing grammatically about
+its own speaker — no window size fixes that, because the signal it needs
+isn't in the window at all, it's in the line itself.
+
+Added `persona/traits.py::self_reference_gender`: matches this genre's own
+"this `<gendered term>`" third-person self-reference convention ("this
+king", "this humble maiden", "this old master") directly in the speaker's
+own quoted text. Deliberately narrower than running the full
+`_GENDER_TERMS`/`_honorific_signals` address-form table against arbitrary
+dialogue text would be: a bare honorific inside a line is usually the
+speaker addressing *someone else* ("Elder, please forgive this disciple"),
+and the broader table would misattribute the addressee's gender to the
+speaker. Verified this distinction holds before shipping it (test:
+`test_honorific_addressing_someone_else_is_not_self_reference`). Wired
+into `slot_gender` as the first check, ahead of the pronoun window — a
+self-reference, when present, is more direct evidence than a majority
+vote over nearby narration.
+
+**Not verified against real RI text**: the author's exact quoted line
+("you demon, you took my priority") does not appear verbatim anywhere in
+chapters 1-29 of the stored text (checked directly) — likely a paraphrase
+of a similar real line, or from later in the volume. The *mechanism* gap
+this fix closes is real and general regardless (any purely second-person
+line was structurally unresolvable by gender before this), but the
+specific reported line has not been re-checked against the actual fix.
+Worth doing once a chapter with real audio is re-rendered.
+
+`uv run pytest packages/` passing throughout (682 at session start,
+counted differently by the time §4.40+'s new test files landed — check
+the live count with `uv run pytest packages/ --collect-only -q | tail -1`
+rather than trusting a number quoted here, since this file does not keep
+that count current across every session).
+
+**Where render output stood at this section's start, still true**: the
+last real SDXL/director run (4.42/4.43's session) died on a transient
+Hugging Face Hub error loading `cagliostrolab/animagine-xl-4.0`, and a
+separate run's CREMA-D voice bank loaded empty — both have dedicated fixes
+already committed (`c57e4b4`, `1a289c3`, `dde0d91`) that this section's
+work has not yet re-tested with an actual end-to-end render. **The next
+concrete step is still: run a real chapter through the full chain
+(direction -> images -> relevance audit -> CREMA-D narration -> motion ->
+compose) with today's fixes in place, and actually look at the result** —
+per 4.42's own standing instruction, look at the panels and listen to the
+audio before trusting any metric.
 
 ## 9. Layout
 
