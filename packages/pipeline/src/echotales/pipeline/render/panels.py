@@ -454,9 +454,23 @@ class IllustriousEngine:
             import torch  # type: ignore[import-not-found]
             from diffusers import StableDiffusionXLPipeline  # type: ignore[import-not-found]
 
-            pipe = StableDiffusionXLPipeline.from_pretrained(
-                self.model_id, torch_dtype=torch.float16, use_safetensors=True
-            )
+            # **A flaky network must not kill a multi-hour render.** The
+            # weights are fully cached, but a transient "Connection reset by
+            # peer" while fetching metadata makes diffusers fall through to
+            # "model is not cached locally" and raise -- it took down a
+            # ch1+ch2 run twice. Retry pinned to the local cache.
+            try:
+                pipe = StableDiffusionXLPipeline.from_pretrained(
+                    self.model_id, torch_dtype=torch.float16, use_safetensors=True
+                )
+            except OSError as exc:
+                log.warning("hub unreachable (%s); loading from local cache", exc)
+                pipe = StableDiffusionXLPipeline.from_pretrained(
+                    self.model_id,
+                    torch_dtype=torch.float16,
+                    use_safetensors=True,
+                    local_files_only=True,
+                )
             # **The adapter has to be attached before offloading, not after.**
             # `enable_model_cpu_offload` installs hooks on the modules present
             # at the time it runs; an image encoder assigned afterwards has no
@@ -615,9 +629,18 @@ class RefinedEngine:
             import torch  # type: ignore[import-not-found]
             from diffusers import StableDiffusionImg2ImgPipeline  # type: ignore[import-not-found]
 
-            self._pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
-                self.refiner_model_id, torch_dtype=torch.float16, safety_checker=None
-            )
+            try:
+                self._pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
+                    self.refiner_model_id, torch_dtype=torch.float16, safety_checker=None
+                )
+            except OSError as exc:  # same transient-network case as the base
+                log.warning("hub unreachable (%s); loading from local cache", exc)
+                self._pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
+                    self.refiner_model_id,
+                    torch_dtype=torch.float16,
+                    safety_checker=None,
+                    local_files_only=True,
+                )
             # Both checkpoints are resident across a panel, so neither one
             # gets to sit on the card -- offload, unlike `MangaDiffusersEngine`
             # which is alone on the GPU and can afford `.to(device)`.
