@@ -32,7 +32,7 @@ from echotales.core.models import Span
 from echotales.core.store import Store
 from echotales.pipeline.ingest.normalize import comparison_key
 from echotales.pipeline.persona import load_trait_profiles
-from echotales.pipeline.persona.traits import gender_from_pronouns
+from echotales.pipeline.persona.traits import gender_from_pronouns, self_reference_gender
 from echotales.pipeline.spans.delivery import (
     DeliveryPolarity,
     dominant_polarity,
@@ -227,30 +227,46 @@ def render_novel(
 
         def slot_gender(speaker_id: str) -> str | None:
             if speaker_id not in slot_gender_cache:
-                # The block where the slot is *speaking* is usually a short
-                # quoted line -- rarely a pronoun in sight. The pronoun
-                # evidence lives in the narration around it, so pull a wide
-                # neighbourhood around each occurrence, not just the exact
-                # block. Measured against RI ch1's clan head: a +/-1 window
-                # around his two epithet-tagged lines cleared only 1-4
-                # pronouns (below the 6 floor, no call); +/-5 cleared 6/6 and
-                # 8/8, unanimously, because the whole surrounding scene is
-                # about him and there's no other-character noise to dilute
-                # it. Wider than `line_polarity`'s window deliberately --
-                # gender only needs a majority *anywhere* nearby, so it can
-                # afford to look further than a delivery tag can.
-                passages: list[str] = []
+                # Checked first: what the speaker says about *themself* in
+                # their own line ("this king will not kneel"). A line
+                # addressed entirely in second person ("you demon, you took
+                # what was mine!") states nothing grammatically about its
+                # own speaker, so no amount of narration-window pronoun
+                # counting below can ever resolve it -- the only signal is
+                # in the line's own wording, which this checks and the
+                # pronoun path structurally cannot.
                 for s in chapter_spans:
                     if s.speaker_self_id != speaker_id:
                         continue
-                    idx = s.block_index
-                    passages.extend(
-                        block_text[i]
-                        for i in range(idx - 5, idx + 6)
-                        if i in block_text
-                    )
-                gender, _ = gender_from_pronouns(passages)
-                slot_gender_cache[speaker_id] = gender
+                    if gender := self_reference_gender(s.text):
+                        slot_gender_cache[speaker_id] = gender
+                        break
+                else:
+                    # The block where the slot is *speaking* is usually a
+                    # short quoted line -- rarely a pronoun in sight. The
+                    # pronoun evidence lives in the narration around it, so
+                    # pull a wide neighbourhood around each occurrence, not
+                    # just the exact block. Measured against RI ch1's clan
+                    # head: a +/-1 window around his two epithet-tagged
+                    # lines cleared only 1-4 pronouns (below the 6 floor, no
+                    # call); +/-5 cleared 6/6 and 8/8, unanimously, because
+                    # the whole surrounding scene is about him and there's
+                    # no other-character noise to dilute it. Wider than
+                    # `line_polarity`'s window deliberately -- gender only
+                    # needs a majority *anywhere* nearby, so it can afford
+                    # to look further than a delivery tag can.
+                    passages: list[str] = []
+                    for s in chapter_spans:
+                        if s.speaker_self_id != speaker_id:
+                            continue
+                        idx = s.block_index
+                        passages.extend(
+                            block_text[i]
+                            for i in range(idx - 5, idx + 6)
+                            if i in block_text
+                        )
+                    gender, _ = gender_from_pronouns(passages)
+                    slot_gender_cache[speaker_id] = gender
             return slot_gender_cache[speaker_id]
 
         def line_polarity(span: Span) -> DeliveryPolarity | None:

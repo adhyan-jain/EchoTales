@@ -242,6 +242,41 @@ def gender_from_pronouns(passages: list[str]) -> tuple[str | None, str]:
     return None, f"mixed pronouns ({male}m/{female}f), no majority"
 
 
+#: "this king", "this humble maiden", "this old master" -- third-person
+#: self-reference is a real, common convention in this genre's
+#: translations, and unlike `_GENDER_TERMS`/`_honorific_signals` (which
+#: reads how *others* address someone, from narration surfaces), this
+#: reads a line the *speaker* says about themselves. Bounded to the
+#: explicit "this <gendered term>" construction deliberately: a bare
+#: honorific inside a quoted line is usually the speaker addressing
+#: *someone else* ("Elder, please forgive me") and applying the same
+#: table there would misattribute the addressee's gender to the speaker.
+_SELF_REFERENCE_GENDER = re.compile(
+    r"\bthis\s+(?:humble\s+|little\s+|old\s+|young\s+)?("
+    + "|".join(sorted(_GENDER_TERMS, key=len, reverse=True))
+    + r")\b",
+    re.IGNORECASE,
+)
+
+
+def self_reference_gender(text: str) -> str | None:
+    """Gender a speaker states about themself in their own quoted line.
+
+    A dialogue line has no pronoun about its own speaker (a line addressed
+    entirely in second person, "you demon, you took what was mine!", says
+    nothing grammatically about who is saying it) -- self-reference is a
+    dialogue-content signal `gender_from_pronouns`'s narration-only window
+    structurally cannot see, since it only ever looks at the text
+    *surrounding* a line, never the line's own wording. Returns `None` on
+    no match rather than guessing; callers should treat this as one more
+    vote alongside `gender_from_pronouns`, not an override.
+    """
+    match = _SELF_REFERENCE_GENDER.search(text)
+    if match is None:
+        return None
+    return _GENDER_TERMS.get(match.group(1).casefold())
+
+
 def infer_traits_deterministic(
     target_id: str,
     label: str,

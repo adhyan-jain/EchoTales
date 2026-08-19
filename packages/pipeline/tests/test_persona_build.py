@@ -11,6 +11,7 @@ from echotales.core.enums import Prominence, TargetKind
 from echotales.pipeline.persona.traits import (
     gender_from_pronouns,
     infer_traits_deterministic,
+    self_reference_gender,
 )
 
 
@@ -49,6 +50,30 @@ class TestGenderFromPronouns:
     def test_pronoun_inside_a_word_does_not_count(self) -> None:
         passages = ["Sheathed blades and hershey bars lined the shelf."] * 6
         assert gender_from_pronouns(passages)[0] is None
+
+
+class TestSelfReferenceGender:
+    """A line addressed entirely in second person states nothing
+    grammatically about its own speaker -- `gender_from_pronouns`'s
+    narration-window signal cannot see this, only the line's own wording
+    can. Bounded to "this <term>" specifically so a bare honorific
+    addressing someone *else* in the same line is not misread as the
+    speaker's own gender."""
+
+    def test_self_reference_male(self) -> None:
+        assert self_reference_gender("This king will not kneel before you!") == "male"
+
+    def test_self_reference_female(self) -> None:
+        assert self_reference_gender("This humble maiden begs your forgiveness.") == "female"
+
+    def test_second_person_only_line_is_undetermined(self) -> None:
+        assert self_reference_gender("You demon, you took what was mine!") is None
+
+    def test_honorific_addressing_someone_else_is_not_self_reference(self) -> None:
+        assert self_reference_gender("Elder, please forgive this disciple.") is None
+
+    def test_modifier_between_this_and_the_term_still_matches(self) -> None:
+        assert self_reference_gender("This old master has seen enough.") == "male"
 
 
 class TestDeterministicTraits:
