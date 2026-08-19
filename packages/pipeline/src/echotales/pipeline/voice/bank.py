@@ -274,7 +274,22 @@ def load_cremad(
 
     ages: dict[str, int] = {}
     genders: dict[str, str] = {}
-    demo_path = Path(demographics) if demographics else root / "VideoDemographics.csv"
+    # **The demographics CSV is not inside the audio archive.** CREMA-D
+    # ships `AudioWAV/` in its zip and the actor table separately, so it
+    # normally sits one level above the extracted root. Looking only in the
+    # root left every actor without an age or sex, and the filter at the end
+    # of this function then dropped all 91 -- the bank loaded empty and the
+    # narration stage died with "voice bank is empty" one second in.
+    candidates = (
+        [Path(demographics)]
+        if demographics
+        else [
+            root / "VideoDemographics.csv",
+            root.parent / "VideoDemographics.csv",
+            audio_dir.parent / "VideoDemographics.csv",
+        ]
+    )
+    demo_path = next((c for c in candidates if c.exists()), candidates[0])
     if demo_path.exists():
         import csv
 
