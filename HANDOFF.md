@@ -1492,6 +1492,71 @@ in `data/RI/README.md`.
 prompts scored 0.09 -- partly the metric punishing paraphrase, partly the
 cast leakage above, which is now fixed and untested.
 
+### 4.42 START HERE — the count-tag bug, and exactly what to do next *(2026-08-19, session end)*
+
+**The bug that invalidated most of this session's visual output.** Panels
+came back as women no matter what the prose said. Cause:
+`persona/prompt.py::build_image_prompt` puts `1boy, male focus` at the very
+front -- these checkpoints weight Danbooru count tags far above any English
+phrasing -- while `render/direction.py::Direction.to_image_prompt` composes
+its own string from action, cast, setting, lighting and mood, **with no tags
+at all**. Every panel a real director wrote therefore reached the model with
+no headcount steer and fell back to its training prior, which is
+overwhelmingly female.
+
+**The lesson, because this is the second time it has happened:** there are
+two prompt paths, and only one of them runs in production. The mechanical
+assembler runs under `--no-director`; the director path runs in every real
+render. The crowd count tag had the same split three rounds earlier. *Any
+prompt-level fix must be applied to both paths and verified on the director
+one.* A stub render proving a fix works proves it works on the path nobody
+uses.
+
+**State at session end**
+
+- A ch1+ch2 render is running on the fixed code (`refined` engine, director
+  on), chained to: relevance audit -> CREMA-D narration -> SVD motion ->
+  ffmpeg compose, output under `data/RI/video/`. Logs: `/tmp/ch12b.log`,
+  `/tmp/product2.log`. If it died, re-run
+  `scratchpad/ch12.sh` then `scratchpad/product.sh` (both in this session's
+  scratchpad; they are three lines each and trivially reconstructed from the
+  commands in §4.41).
+- **Nothing in this session has been visually verified after the count-tag
+  fix.** Every number quoted in 4.40-4.41 predates it.
+
+**Continue from here, in this order**
+
+1. **Look at the finished panels and the video.** Not the metric first --
+   the metric cannot see anatomy, gender or composition. Then run
+   `uv run echotales --db data/reruns/reverend-insanity.db relevance
+   --novel reverend-insanity --worst 15` for the number.
+2. **Check ch1 against ch2 for consistency**, which has never been tested:
+   does Fang Yuan look like himself across chapters, do anonymous voice
+   slots stay distinct, do the Gu Yue elders look like one clan.
+3. **If panels still do not match their beats, stop tuning prompts.**
+   Seven rounds of input fixes this week were all real bugs and are all
+   fixed; if the output is still wrong after them, the remaining gap is that
+   a text-to-image checkpoint *invents* a composition rather than
+   reconstructing the one in the prose. The untried lever is **ControlNet
+   openpose** -- place the figures explicitly -- or a model larger than an
+   8 GB card runs. Do not spend another session on wording.
+4. **Verify the audio changes by ear.** The delivery-marker fix and the
+   CREMA-D emotional bank are both unheard. Chapter 1 block 0 is the test
+   case: a siege threat that used to be whispered.
+5. **Open items that are stated and not done:** homonymous factions beyond
+   the `faction_key` region hack (the second Bai clan needs a graph entity,
+   not a string); dialogue attribution at 51.3%; no batching, checkpointing
+   or crash recovery, which makes 199 chapters ~25 GPU-days on this
+   hardware; CREMA-D is research-licensed; and the source novel is
+   copyrighted, which gates shipping anything publicly.
+
+**Tooling added this session that the next one should use rather than
+rebuild:** `echotales relevance` (panel-vs-source scoring, exempting crowd
+cuts and hand-authored staging), `echotales graph` (self-contained KG page
+with a chapter slider, `data/webview/graph.html`), `echotales persona
+wiki-canon`, `--bank-kind cremad`, `render/factions.py`, `world/lexicon.py`,
+`persona/forms.py`.
+
 
 ## 9. Layout
 
