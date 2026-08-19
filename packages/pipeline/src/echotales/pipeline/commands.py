@@ -849,7 +849,19 @@ def cmd_relevance(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_graph(args: argparse.Namespace) -> int:
+    """Render the graph itself, browsable, with a position slider."""
+    from echotales.pipeline.graphview import write_graphview
+
+    store = _open_store(args)
+    path = write_graphview(store, args.novel, args.out, top=args.top)
+    print(f"knowledge graph written to {path}")
+    store.close()
+    return 0
+
+
 _DISPATCH = {
+    "graph": cmd_graph,
     "relevance": cmd_relevance,
     "run": cmd_run,
     "appearance": cmd_appearance,

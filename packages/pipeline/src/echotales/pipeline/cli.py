@@ -274,6 +274,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_rel.add_argument("--manifest", default="data/RI/panels/manifest.jsonl")
     p_rel.add_argument("--worst", type=int, default=10)
 
+    p_graph = sub.add_parser(
+        "graph", help="render the knowledge graph as one self-contained HTML page"
+    )
+    p_graph.add_argument("--novel", required=True)
+    p_graph.add_argument("--out", default="data/webview/graph.html")
+    p_graph.add_argument("--top", type=int, default=60)
+
     p_export = sub.add_parser("export", help="emit the annotation dataset")
     p_export.add_argument("--novel", required=True)
     p_export.add_argument("--out", default="data/gold")
