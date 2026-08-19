@@ -1492,7 +1492,7 @@ in `data/RI/README.md`.
 prompts scored 0.09 -- partly the metric punishing paraphrase, partly the
 cast leakage above, which is now fixed and untested.
 
-### 4.42 START HERE — the count-tag bug, and exactly what to do next *(2026-08-19, session end)*
+### 4.42 The count-tag bug, and exactly what to do next *(2026-08-19, session end)*
 
 **The bug that invalidated most of this session's visual output.** Panels
 came back as women no matter what the prose said. Cause:
@@ -1556,6 +1556,82 @@ cuts and hand-authored staging), `echotales graph` (self-contained KG page
 with a chapter slider, `data/webview/graph.html`), `echotales persona
 wiki-canon`, `--bank-kind cremad`, `render/factions.py`, `world/lexicon.py`,
 `persona/forms.py`.
+
+### 4.43 START HERE — NoobAI-XL checkpoint bake-off on 5 real ch1 panels: single-character shots are genuinely better, crowd/establishing shots are not *(2026-08-19)*
+
+**What this session did, deliberately small in scope:** rather than another
+full-chapter render (each one costs real GPU hours and the last three did
+not settle the question), generated a handful of individual panels against
+**real ch1 blocks** with `--image-engine noobai` (`Laxhar/noobai-XL-1.1`,
+single-checkpoint, no GuoFeng3 repaint pass) instead of the current default
+`refined` engine (Animagine compose + GuoFeng3 repaint), director on, so the
+4.42 count-tag fix was live. Command:
+`echotales --db data/reruns/reverend-insanity.db render --novel
+reverend-insanity --chapters 1-1 --block-range 0-40 --image-engine noobai
+--max-panels 5 --panel-dir data/diag/noobai/panels --skip-motion
+--skip-compose` (`--max-panels` caps beats merged per chapter, not raw
+output count -- 39 panels actually landed at 22s/panel on this checkpoint,
+notably faster than `refined`'s two-pass ~2 min/panel).
+
+**Result, looked at directly, not just scored:**
+
+- **Single-character panels (director prompt carries `1boy, male focus` +
+  the persona's attribute string) are a real, visible improvement.** Blocks
+  9, 29 (`p005`, `p013`): correct gender, correct long-black-hair/white-and-
+  dark-green-robe description, a readable face, five fingers on visible
+  hands, a legible foreground subject. This is categorically better than
+  the "distorted, unrecognizable" panels the author described -- the
+  checkpoint swap alone measurably helped here, on this specific class of
+  shot.
+- **Crowd and establishing-shot panels did not improve, and reproduce the
+  count-tag bug's sibling.** Block 0 (`p001`), the chapter's opening "crowd
+  of chinese cultivators... 6+boys... elders" prompt, rendered as a single
+  feminine-presenting central figure in ornate robes with two smaller
+  attendants -- the `6+boys` tag is present in the prompt text and was
+  still overridden by the checkpoint's prior. This is **not the same code
+  path 4.42 fixed**: that fix was in `persona/prompt.py::build_image_prompt`
+  for named-persona panels; the crowd/establishing prompt is assembled
+  elsewhere (the mob-detection/scene-locale path) and never got an
+  equivalent headcount-tag audit. Block 36 (`p016`), "elders gather... faces
+  illuminated by paper lanterns," rendered atmospherically coherent (real
+  lanterns, real pavilion, real dusk lighting) but as two figures seen from
+  behind, not a gathered group with lit faces -- the checkpoint composed a
+  *plausible* scene, not the *described* one, which is exactly the "invents
+  a composition rather than reconstructing the one in the prose" ceiling
+  4.42 already flagged.
+
+**Conclusion:** swapping the checkpoint is a real, low-cost lever for one
+specific failure mode (single-subject anatomy/identity fidelity) but does
+**not** touch the other one (multi-subject scene composition, headcount
+fidelity outside the per-persona prompt path). Two concrete next actions,
+neither of which is "try another checkpoint" again:
+
+1. **Audit the crowd/establishing prompt path for the same class of bug
+   4.42 found** -- find where `spans/scene.py`'s mob detection or
+   `render/direction.py`'s establishing-shot assembly builds its prompt
+   string and confirm whether a headcount/gender tag is present, leading,
+   and actually respected on a real render, the same way 4.42 verified the
+   per-persona path.
+2. **The multi-subject composition gap is very likely the base-model
+   ceiling, not a prompt problem** -- consistent with 4.42's own
+   conclusion. ControlNet-openpose (explicit figure placement) or a model
+   too large for an 8 GB card are the untried levers; per 4.42, further
+   prompt wording is not expected to move this.
+
+**On the free-vs-paid question directly, now with a real data point behind
+it:** the gap between "single-character panel, checkpoint swap" (fixed by
+a free local model) and "multi-subject scene composition" (not fixed by
+any local checkpoint tried) is a reasonable proxy for what a larger,
+paid/hosted model would likely buy across the board -- more capacity
+generally buys exactly this kind of prompt-adherence and composition
+fidelity. That remains an expectation, not a result measured in this
+project, since staying free/local is the deliberate constraint being
+demonstrated.
+
+Diagnostic output, not deleted, for the next session to look at directly:
+`data/diag/noobai/panels/ch1/v1/` (39 PNGs + `manifest.jsonl` with every
+prompt). Not wired into the real pipeline's default engine -- this was a
+look, not a switch.
 
 
 ## 9. Layout

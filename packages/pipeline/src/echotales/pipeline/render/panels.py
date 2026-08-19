@@ -1569,7 +1569,7 @@ def render_panels(
                         # whose subject *is* the crowd.
                         if is_crowd_cut:
                             prompt = f"crowd, multiple people, 6+boys, {prompt}"
-                        elif tags := cast_tags(genders):
+                        elif tags := cast_tags(genders, beat=beat_prose):
                             # **The director path never carried the headcount
                             # tags, and that is the whole "everyone is a
                             # woman" bug.** `build_image_prompt` puts
@@ -1584,6 +1584,23 @@ def render_panels(
                             # overwhelmingly female, no matter how plainly
                             # the prose said "he". The negative clause alone
                             # could not hold the line on its own.
+                            #
+                            # `cast_tags` now also covers the *unresolved*
+                            # cast case (`beat=` param): a beat whose cast
+                            # never resolved to a named persona -- an
+                            # unnamed mob role, a director-named character
+                            # whose block window carried no matching mention
+                            # -- used to leave `genders` empty and fall
+                            # through with no tag at all. Confirmed still
+                            # failing after the fix above, on a *different*
+                            # checkpoint (noobai): RI ch1 blocks 0 and 36
+                            # both rendered feminine-presenting subjects
+                            # despite `gender_negative`'s exclusion already
+                            # applying, because a negative clause opposes a
+                            # look without asking for one. `cast_tags` falls
+                            # back to the same beat-pronoun signal
+                            # `gender_negative` already trusts, so both the
+                            # positive and negative clauses now agree.
                             prompt = f"{tags}, {prompt}"
                     else:
                         prompt = build_image_prompt(

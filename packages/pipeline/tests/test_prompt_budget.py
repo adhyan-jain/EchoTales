@@ -244,6 +244,34 @@ def test_mixed_cast_is_left_alone() -> None:
     assert gender_negative([]) == ""
 
 
+def test_unresolved_cast_falls_back_to_the_beats_own_pronouns() -> None:
+    """RI ch1 blocks 0/36: an unnamed mob/role cast leaves `genders` empty,
+    and an empty tag list used to mean no steer at all -- confirmed on a
+    real render (noobai bake-off) to still default female even with
+    `gender_negative`'s negative-only exclusion applied. `cast_tags` now
+    asks positively, from the same pronoun signal `gender_negative` trusts.
+    """
+    from echotales.pipeline.persona.prompt import cast_tags
+
+    tags = cast_tags([], beat="He stood before the elders, his eyes cold.")
+    assert "1boy" in tags
+    assert "male focus" in tags
+
+    tags = cast_tags([], beat="She walked past the elders, her sleeves trailing.")
+    assert "1girl" in tags
+
+    # No pronoun signal at all, or a genuinely mixed one: stay silent
+    # rather than guess -- an empty tag is recoverable, a confidently wrong
+    # one is not.
+    assert cast_tags([], beat="The mountain path wound upward through mist.") == ""
+    assert cast_tags([], beat="He grabbed her arm as she turned to face him.") == ""
+    assert cast_tags([]) == ""
+
+    # A resolved cast still wins outright -- the fallback only fires when
+    # there is nothing else to go on.
+    assert cast_tags(["female"], beat="He shouted from the courtyard.") == "1girl"
+
+
 def test_style_base_carries_no_hair() -> None:
     from echotales.pipeline.persona.prompt import STYLE_SCENE
 

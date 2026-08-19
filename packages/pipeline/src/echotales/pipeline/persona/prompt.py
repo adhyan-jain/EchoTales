@@ -352,7 +352,7 @@ def summarise_beat(text: str, *, limit: int = _MAX_BEAT_CHARS) -> str:
     return cut.rsplit(" ", 1)[0].strip()
 
 
-def cast_tags(genders: list[str]) -> str:
+def cast_tags(genders: list[str], *, beat: str = "") -> str:
     """Danbooru headcount tags for the figures in frame.
 
     Anime/manga checkpoints weight `1boy`/`2boys`/`1girl` far more heavily
@@ -381,6 +381,28 @@ def cast_tags(genders: list[str]) -> str:
     # female -- adding it to a mixed-cast panel would masculinise the women.
     if males and not females:
         parts.append("male focus")
+
+    # **The unresolved-cast case still needs a *positive* push, not just
+    # `gender_negative`'s negative one.** `genders` is empty whenever
+    # nobody in frame resolved to a persona -- an unnamed "warlords and
+    # warrior women" mob, a director-named character whose block window
+    # never actually carried a resolved mention. A negative-only clause was
+    # measured insufficient on its own: RI ch1 blocks 0 and 36, both
+    # unresolved-cast beats whose prose plainly reads male ("he"/"his"
+    # throughout), still rendered feminine-presenting subjects even with
+    # `gender_negative`'s exclusion applied (`data/diag/noobai/panels/ch1/
+    # v1/p001_b0000.png`, `p016_b0036.png`) -- excluding a look is not the
+    # same as asking for one, and this checkpoint needs to be asked. Uses
+    # the beat's own pronouns, same signal `gender_negative` already
+    # trusts for the same case.
+    if not parts and beat:
+        has_male = bool(_MALE_PRONOUN_RE.search(beat))
+        has_female = bool(_FEMALE_PRONOUN_RE.search(beat))
+        if has_male and not has_female:
+            parts = ["1boy", "male focus"]
+        elif has_female and not has_male:
+            parts = ["1girl"]
+
     return ", ".join(parts)
 
 
@@ -616,7 +638,7 @@ def build_image_prompt(
     # Headcount first: it is the single strongest steer on this class of
     # checkpoint, and getting it wrong turns a confrontation between two men
     # into a girl with cherry blossoms.
-    if tags := cast_tags(character_genders or []):
+    if tags := cast_tags(character_genders or [], beat=beat):
         parts.append(tags)
 
     # The style *anchor* -- the few words that decide whether this is ink
