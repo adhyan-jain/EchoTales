@@ -72,6 +72,33 @@ _MAX_BLOCKS_PER_PANEL = 4
 _SLOTS_PER_CHUNK = 4
 
 
+def _cached_snapshot(model_id: str) -> str | None:
+    """The local snapshot directory for a hub model, if one is usable.
+
+    **`local_files_only=True` is not the fallback it looks like.** It routes
+    through the hub's snapshot-completeness check, which fails when the repo
+    carries files this pipeline never needs -- Animagine ships a
+    single-file `.safetensors` variant and a README alongside the diffusers
+    folder layout, and their absence raises `IncompleteSnapshotError` even
+    though every weight required to build the pipeline is present. Passing
+    the directory path instead skips hub resolution entirely, which is what
+    "use what is on disk" actually means.
+    """
+    org, _, name = model_id.partition("/")
+    root = (
+        Path.home()
+        / ".cache/huggingface/hub"
+        / f"models--{org}--{name}".replace("/", "--")
+        / "snapshots"
+    )
+    if not root.is_dir():
+        return None
+    for snapshot in sorted(root.iterdir(), reverse=True):
+        if (snapshot / "model_index.json").exists():
+            return str(snapshot)
+    return None
+
+
 @dataclass(slots=True)
 class PanelImageRequest:
     """One panel to render."""
@@ -466,10 +493,9 @@ class IllustriousEngine:
             except OSError as exc:
                 log.warning("hub unreachable (%s); loading from local cache", exc)
                 pipe = StableDiffusionXLPipeline.from_pretrained(
-                    self.model_id,
+                    _cached_snapshot(self.model_id) or self.model_id,
                     torch_dtype=torch.float16,
                     use_safetensors=True,
-                    local_files_only=True,
                 )
             # **The adapter has to be attached before offloading, not after.**
             # `enable_model_cpu_offload` installs hooks on the modules present
@@ -636,10 +662,9 @@ class RefinedEngine:
             except OSError as exc:  # same transient-network case as the base
                 log.warning("hub unreachable (%s); loading from local cache", exc)
                 self._pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
-                    self.refiner_model_id,
+                    _cached_snapshot(self.refiner_model_id) or self.refiner_model_id,
                     torch_dtype=torch.float16,
                     safety_checker=None,
-                    local_files_only=True,
                 )
             # Both checkpoints are resident across a panel, so neither one
             # gets to sit on the card -- offload, unlike `MangaDiffusersEngine`
