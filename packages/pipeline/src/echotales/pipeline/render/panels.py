@@ -31,6 +31,7 @@ from echotales.core.models import Chapter, Mention, Span
 from echotales.core.store import Store
 from echotales.pipeline.persona.attire import scene_locale, world_setting
 from echotales.pipeline.persona.prompt import (
+    cast_tags,
     fit_to_budget,
     STYLE_CLOSEUP,
     STYLE_ESTABLISHING,
@@ -1520,6 +1521,22 @@ def render_panels(
                         # whose subject *is* the crowd.
                         if is_crowd_cut:
                             prompt = f"crowd, multiple people, 6+boys, {prompt}"
+                        elif tags := cast_tags(genders):
+                            # **The director path never carried the headcount
+                            # tags, and that is the whole "everyone is a
+                            # woman" bug.** `build_image_prompt` puts
+                            # `1boy, male focus` at the very front for the
+                            # measured reason that these checkpoints weight
+                            # Danbooru count tags far above any English
+                            # phrasing -- and `Direction.to_image_prompt`
+                            # composes its own string from action, cast,
+                            # setting and mood, with no tags anywhere. So
+                            # every panel a real director wrote fell back to
+                            # the checkpoint's training prior, which is
+                            # overwhelmingly female, no matter how plainly
+                            # the prose said "he". The negative clause alone
+                            # could not hold the line on its own.
+                            prompt = f"{tags}, {prompt}"
                     else:
                         prompt = build_image_prompt(
                             cast,
