@@ -1520,14 +1520,24 @@ def render_panels(
                         directed_prose = (
                             f"{directive} {beat_prose}".strip() if directive else beat_prose
                         )
-                        # State the crowd to the director explicitly. The
-                        # mob is detected (`spans/scene.py::detect_mobs`) and
-                        # reaches the mechanical assembler as a "background:"
-                        # clause, but the director only ever saw the beat
-                        # prose -- so a scene the pipeline *knew* had a crowd
-                        # in it was described to the model as if it did not,
-                        # and came back as one figure alone.
-                        if _chunk_mobs:
+                        # State the crowd to the director explicitly -- but
+                        # only on the slot that actually needs to know.
+                        # **Real bug, found by generating and looking at
+                        # one panel repeatedly (4.45): this injection had no
+                        # `is_crowd_cut` gate at all, so a scene with a mob
+                        # got "many people present ... surrounding him"
+                        # stapled onto *every* slot's prompt in the chunk --
+                        # including the main/establishing slot, whose job is
+                        # a solo shot of the named subject and whose own
+                        # dedicated crowd cut (`_crowd_slot`, just below)
+                        # already exists specifically to carry the crowd.
+                        # Result: the crowd got asserted twice, and the
+                        # solo-capable slot never had a chance to be solo --
+                        # confirmed directly: three checkpoint/prompt fixes
+                        # failed on this exact scene, and the *only* thing
+                        # that worked in testing was a prompt with no crowd
+                        # mention in it at all.
+                        if _chunk_mobs and (is_crowd_cut or _crowd_slot is None):
                             roles = ", ".join(
                                 qualify_role(role, _scene_faction)
                                 for role in sorted({m.role for m in _chunk_mobs})
@@ -1535,6 +1545,18 @@ def render_panels(
                             directed_prose = (
                                 f"{directed_prose} "
                                 f"(many people present: {roles}, surrounding him)"
+                            ).strip()
+                        elif _chunk_mobs and not is_crowd_cut:
+                            # A dedicated crowd cut exists elsewhere in this
+                            # scene -- tell the director explicitly to leave
+                            # the crowd to it, rather than leaving the
+                            # omission implicit and hoping the model infers
+                            # the same division of labour the pipeline
+                            # already decided on.
+                            directed_prose = (
+                                f"{directed_prose} "
+                                "(draw only the named subject alone here -- "
+                                "the surrounding crowd is a separate panel)"
                             ).strip()
                         directed = direct_beat(
                             directed_prose,

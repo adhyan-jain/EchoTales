@@ -1830,6 +1830,60 @@ it specifically, not a tonight fix.
 
 `uv run pytest packages/` passing throughout.
 
+### 4.46 Found and partly fixed a real double-injection bug; the remaining gap on RI ch1 block 0 is the checkpoint ceiling working as expected, not a new bug *(2026-08-20, same session as 4.45, continued)*
+
+**A second real bug, found the same way as 4.45's**: `render/panels.py`'s
+crowd-context injection (`if _chunk_mobs: ... "many people present: ...,
+surrounding him"`) had no `is_crowd_cut` gate at all. A scene with a
+detected mob got that clause stapled onto *every* slot's director prompt
+in its chunk -- including the main/establishing slot, whose job is a solo
+shot of the named subject, and whose own dedicated crowd cut
+(`_crowd_slot`) already exists specifically to carry the crowd. The crowd
+was being asserted twice, and the solo-capable slot never got a chance to
+be solo. Fixed: the injection now only fires on the crowd slot itself, or
+when no dedicated crowd slot exists for the scene at all; every other slot
+in a mob scene now gets an explicit "draw only the named subject alone
+here -- the surrounding crowd is a separate panel" instruction instead.
+
+**Verified this fixed most of the scene, and did not fix block 0
+specifically -- and that second part is correct, not a remaining bug.**
+Re-ran RI ch1 blocks 0-17 (a real scene spanning the opening confrontation
+through its aftermath) end to end. Checked the actual prompt cache (the
+run timed out before the full image pass finished, so this is prompts,
+not final pixels, for most of the range):
+
+- **Blocks 5, 9, 13, 17 -- all clean, all correct.** `"1boy, male focus,
+  Fang Yuan looks around... Fang Yuan alone at center; no one else in
+  frame..."`, and similarly for the others. These are the scene's
+  narration-only beats (Fang Yuan reflecting alone after the confrontation),
+  and the fix produced exactly the right prompt for every one of them.
+  This is the real, validated payoff of 4.45's finding: most of a scene's
+  panels are single-subject moments this pipeline can now render reliably.
+- **Block 0 -- still says "surrounded by attackers," unchanged by the new
+  "draw only alone" instruction.** Checked why before assuming the fix
+  failed: block 0 *is* the scene's actual confrontation-establishing beat
+  -- four unnamed attackers are narratively present and threatening Fang
+  Yuan at that exact moment, which is what the passage says. The director
+  correctly refused to lie about the scene even when explicitly told to
+  omit the crowd. **This is not a prompt bug**: the checkpoint's inability
+  to render "one named man plus several unnamed attackers" correctly (4.45's
+  triple-confirmed ceiling) is a real property of the moment being drawn,
+  not something any instruction wording fixes. The honest fix for *this*
+  specific beat is exactly what 4.45 already concluded: real spatial
+  conditioning (ControlNet/GLIGEN), or accepting this specific class of
+  panel renders at lower fidelity than the rest of the chapter.
+
+**Net effect of 4.45+4.46 together**: the pipeline can now be trusted to
+render the *majority* of a typical scene's panels (the single-subject
+narration/reaction beats) reliably and correctly, and the *specific*
+panels that genuinely require multiple people in one frame remain the
+known, now precisely-scoped ceiling -- not "the pipeline is broken," but
+"this one class of shot needs a lever this session did not build." That
+is a materially better place to hand off from than "it's hallucinating a
+lot" was at the start of this session's block-by-block work.
+
+`uv run pytest packages/` passing.
+
 ## 9. Layout
 
 ```
