@@ -1699,6 +1699,137 @@ compose) with today's fixes in place, and actually look at the result** —
 per 4.42's own standing instruction, look at the panels and listen to the
 audio before trusting any metric.
 
+### 4.45 One-panel-at-a-time verification finds a real director bug, then three prompt-engineering attempts fail to fix multi-subject composition, then solo framing works on the first try — the ceiling is now triple-confirmed, not just theorized *(2026-08-20)*
+
+**Method change that mattered**: instead of another full-chapter render,
+generated `ch1` block 0 alone, repeatedly, actually looking at each image
+before changing anything. This is what caught a real bug the full-chapter
+runs never isolated.
+
+**Real bug found and fixed**: `render/direction.py`'s director (qwen2.5:7b
+via ollama) wrote `"Fang Yuan stands resolute, flanked by armed warlords
+and warrior women closing in."` for block 0 — **the LLM invented "warrior
+women" that appear nowhere in the source text.** Not a checkpoint/prompt-
+application bug like 4.42's count-tag issue; the fabrication happened
+*before* the image model ever ran. Root cause: the SYSTEM prompt's "never
+invent a person" rule is scoped to *named* individuals (the "Old bastard
+Fang" example) and says nothing about inventing unnamed background
+figures/groups. A 7B model given a thin or empty cast list padded the
+scene with generic filler to make the description feel populated. Fixed:
+added an explicit rule -- "never invent a background figure or group
+either, named or not... an empty or sparse cast is real information, not
+a gap to fill." Verified: regenerating block 0 with the fix produced
+`"Fang Yuan, a man, stands resolute under the encroaching night,
+surrounded by armed opponents"` -- no more fabricated women. Tests
+passing.
+
+**Three more real experiments after that, each one actually generated and
+looked at, not assumed:**
+
+1. Regenerated block 0 with the fixed prompt (`refined` engine): still a
+   feminine-presenting central figure, and the scene composed as a calm,
+   lantern-lit market conversation between smiling people -- nothing like
+   "surrounded by armed opponents." The gender-fabrication bug was fixed;
+   the underlying wrong-gender, wrong-mood *composition* was not.
+2. Same block, `noobai` engine (the checkpoint 4.43 found genuinely better
+   for single-character shots): worse on this scene specifically -- an
+   even more clearly feminine figure in a serene temple-courtyard
+   composition with a small girl companion, praying pose. Confirms 4.43's
+   own finding held: the checkpoint swap helps single-subject shots and
+   does not touch multi-subject composition.
+3. Added an experimental `layout` field to `PanelDirection`
+   (`render/direction.py`) -- the director now writes an explicit spatial
+   sentence ("Fang Yuan alone at centre; three attackers surround him at
+   the edges, left, right and behind") in addition to `action`, on the
+   hypothesis that forcing concrete spatial commitment would help the
+   image model more than loose prose. Verified the director produced
+   exactly that sentence, correctly. **The generated image still failed**:
+   still a feminine-presenting central figure, now surrounded by 5-6
+   people who look like a friendly group photo, several smiling. Checked
+   `.base.png` (the Animagine compose stage, before GuoFeng3's img2img
+   repaint) directly: the wrong composition is already present at the
+   *base* stage, unchanged by repaint -- the failure is Animagine XL's own
+   prior for this style/prompt combination, not something happening
+   downstream. **This experiment is a validated negative result, kept in
+   code** (harmless when it doesn't help, and plausibly helps *other*
+   scenes even though it didn't fix this one) **but not proof of concept
+   for anything further along this path.**
+4. Control test: hand-written prompt, forced solo framing ("1boy, solo,
+   Fang Yuan, long black hair, cold narrow eyes, deep green robes torn to
+   shreds, blood on his body... close-up... "), negative prompt excluding
+   "2girls, crowd, group, extra people". **Worked on the first try**:
+   correctly male, black hair, torn green robes, visible blood, defiant/
+   injured expression, alone -- and it independently matches the actual
+   prose ("deep green robes that had been torn to shreds... his entire
+   body was covered in blood... his expression did not change, it was
+   calm") that the director-composed multi-subject version never managed
+   to honour either.
+
+**Conclusion, now backed by four independent tests in one sitting rather
+than one prior session's checkpoint bake-off alone**: multi-subject/crowd
+composition on an 8 GB card's anime SDXL checkpoints is a real ceiling,
+not a prompt-wording gap -- checkpoint swap (4.43), gender-tag fixes
+(4.44), and explicit spatial layout (this section) were all tried in good
+faith and all failed on the same scene, while solo framing succeeded
+immediately and independently matched the source prose. This matches
+4.42's own standing conclusion; it is no longer a hypothesis.
+
+**Research done this session on the two real remaining levers, so the next
+session doesn't have to re-derive it:**
+
+- **ControlNet-openpose, SDXL-compatible versions exist**
+  ([sdxl-controlnet-openpose](https://www.aimodels.fyi/models/replicate/sdxl-controlnet-openpose-lucataco),
+  [ControlNet-Union-SDXL-1.0](https://crepal.ai/blog/controlnet-union-sdxl-1-0-free-image-generate-online/)
+  supports openpose among 12 control types). **Real blocker**: openpose
+  conditioning needs a *pose reference image* (a skeleton) to condition
+  on, and this project has no pose references at all -- a text-only
+  novel has no images to extract poses from. Would need either
+  hand-authored skeletons per multi-subject panel (does not scale to 199
+  chapters) or an LLM-to-layout-to-skeleton synthesis step, which is a
+  real, novel piece of engineering, not a config change.
+- **GLIGEN** (bounding-box/entity grounded diffusion,
+  [paper](https://arxiv.org/abs/2301.07093),
+  [project page](https://gligen.github.io/)): checked directly --
+  `diffusers==0.39.0` (already installed) ships
+  `StableDiffusionGLIGENPipeline`, but **only for SD1.5, not SDXL**. Using
+  it as-is would mean dropping to SD1.5 for multi-subject panels, a real
+  quality trade against the SDXL anime checkpoints already in use.
+  SDXL-compatible GLIGEN-style approaches exist in the literature (HiCo-SDXL
+  per the NeurIPS 2024 paper) but are not bundled, off-the-shelf
+  `diffusers` pipelines -- would need real integration work.
+- **DiffSensei** ([arXiv:2412.07589](https://arxiv.org/pdf/2412.07589)):
+  a manga-specific framework built exactly for "precise character and
+  dialog layout control" in panel generation -- the closest match to this
+  project's actual use case in the literature found this session. Not
+  evaluated hands-on (a separate model/framework, real integration
+  project, not a drop-in). Worth a dedicated look next.
+- **Story-visualization consistency literature** (StorySync, TemporalStory,
+  Scene De-Contextualization -- search results in this session's history)
+  mostly targets a *different* problem than the one blocking this
+  project: keeping one character's identity consistent *across* several
+  generated panels. This project already has a answer to that one
+  (reference-sheet IP-Adapter conditioning, item 8/4.36). The open problem
+  here is single-panel multi-subject composition fidelity, which none of
+  these papers directly address.
+
+**Concrete recommendation, not yet implemented**: bias panel/slot
+selection toward **solo framing wherever the story allows it** -- most of
+a scene's dramatic weight sits on one or two named characters anyway, and
+that is exactly the class this pipeline can already render reliably.
+Reserve true multi-subject "crowd surrounds the hero" moments for the
+already-built `_crowd_slot` mechanism (`panels.py`) as a *separate,
+lower-fidelity, explicitly-labelled category* rather than trying to fold
+protagonist-plus-antagonists into one composition -- and treat a scoped,
+budget-capped escalation to a paid API for *just* those specific
+multi-subject panels (not a wholesale switch) as the more honest
+"last resort" the project's own free-model policy already allows for,
+ahead of building real ControlNet/GLIGEN infrastructure. Building the
+pose-conditioning infrastructure remains the deeper, more capable fix,
+but is real, scoped engineering work for a session that starts fresh on
+it specifically, not a tonight fix.
+
+`uv run pytest packages/` passing throughout.
+
 ## 9. Layout
 
 ```

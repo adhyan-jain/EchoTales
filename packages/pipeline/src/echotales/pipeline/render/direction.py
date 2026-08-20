@@ -56,6 +56,12 @@ SYSTEM = (
     "dialogue are not characters: a line reading 'Old bastard Fang, stop "
     "resisting' is one character shouting at another, not a character "
     "named 'Old bastard Fang'. Only name people listed in the cast.\n"
+    "- Never invent a background figure or group either, named or not. "
+    "If the cast list is empty or thin, that means the passage does not "
+    "say who else is there -- draw only the speaker or actor the passage "
+    "actually names, not 'warriors', 'guards', 'warrior women' or any "
+    "other filler added to make the scene feel populated. An empty or "
+    "sparse cast is real information, not a gap to fill.\n"
     "- Draw what the passage does, not what it says. If the passage is a "
     "line of dialogue, the image is the speaker saying it in their "
     "surroundings, not an illustration of the words.\n"
@@ -77,6 +83,19 @@ class PanelDirection(BaseModel):
     shot: str = Field(default="medium")
     #: What is happening, as a single visual sentence.
     action: str = Field(default="")
+    #: **Experimental** (2026-08-20): who is where in frame, as a short,
+    #: literal spatial sentence -- "Fang Yuan stands alone at centre;
+    #: attackers surround him at the edges of frame, left, right and
+    #: behind." `action` alone left composition entirely to the image
+    #: model's own prior, which is measurably the failure mode a checkpoint
+    #: swap does not fix (HANDOFF 4.42/4.43): asked for "surrounded by
+    #: armed opponents" with no spatial commitment, both `refined` and
+    #: `noobai` composed an unrelated calm two-person scene. A `layout`
+    #: instruction forces the director to commit to concrete positions
+    #: rather than leaving the diffusion model to invent a composition
+    #: wholesale. Not yet proven to move the number -- an experiment to
+    #: verify against real panels, not a settled fix.
+    layout: str = Field(default="")
     #: Where it happens, concretely.
     setting: str = Field(default="")
     #: Time of day / weather / light.
@@ -123,6 +142,11 @@ def build_prompt(
         "Return JSON with these keys:",
         '  shot          one of "wide", "medium", "close"',
         "  action        one sentence: the single moment to draw",
+        "  layout        one sentence: where each person is in frame, "
+        "literally (e.g. 'X stands alone at centre; three attackers "
+        "surround him at the edges, left, right and behind'). If only "
+        "one person is in the scene, say so explicitly ('X alone, no "
+        "one else in frame') rather than leaving it unstated.",
         "  setting       where it happens, concretely",
         "  lighting      time of day, weather, quality of light",
         "  key_objects   list of objects that must be visible",
@@ -161,6 +185,11 @@ class Direction:
         parts: list[str] = []
         if d.action:
             parts.append(d.action)
+        # Right after action, ahead of setting/lighting -- composition
+        # placement matters more to what gets drawn than scenery does, and
+        # `fit_to_budget` below treats list order as priority order.
+        if d.layout:
+            parts.append(d.layout)
         for name, look in self.cast.items():
             if name.lower() in (d.action or "").lower():
                 parts.append(f"{name} ({look})")
