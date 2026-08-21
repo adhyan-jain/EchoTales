@@ -196,14 +196,18 @@ TASK_PROFILES: dict[Task, TaskProfile] = {
         temperature=0.0,
         max_tokens=600,
     ),
-    # Deciding what to draw is a creative call, not an extraction, so this
-    # is the one task in the pipeline that does not run at temperature 0:
-    # a deterministic director picks the same safe framing every time and
-    # the chapter reads flat. Still cheap -- ~14 calls per chapter.
+    # Deciding what to draw is a creative call, not an extraction.
+    # gemma2:9b over qwen2.5:7b here: measured on RI ch1, qwen2.5:7b at
+    # temperature 0.4 ignored explicit negative rules in the system prompt
+    # (invented "warrior women", copied the layout "X" placeholder verbatim,
+    # described appearance details not in the passage).  gemma2:9b has
+    # stronger instruction-following on constrained creative tasks.
+    # Temperature lowered to 0.2: enough variation to avoid a flat chapter,
+    # not so much that rule violations become likely.
     Task.PANEL_DIRECTION: TaskProfile(
-        ollama_model="qwen2.5:7b",
+        ollama_model="gemma2:9b",
         anthropic_model="claude-sonnet-5",
-        temperature=0.4,
+        temperature=0.2,
         max_tokens=500,
     ),
     # Same cultural-knowledge requirement as NER -- a cultivation rank and a

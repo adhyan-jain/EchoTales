@@ -24,6 +24,7 @@ description in every prompt is the only consistency lever left.
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass
 
 from pydantic import BaseModel, Field
@@ -41,38 +42,34 @@ SYSTEM = (
     "Given a passage, decide the single most striking image to draw for it. "
     "Think like a storyboard artist: one clear subject, one clear action, a "
     "real setting, a definite time of day. Never describe several moments at "
-    "once, and never describe something the passage does not contain."
-    "\n\n"
-    "Be explicit about these, every time, because the illustrator assumes "
-    "nothing and defaults badly:\n"
-    "- Say the sex of each person you name. An unstated subject is drawn "
-    "as a woman, so write 'a man' or the person's name whenever the "
-    "passage does not clearly indicate a woman.\n"
-    "- The world is ancient China. Say so through concrete detail (hanfu, "
-    "sashes, upturned tiled roofs, stone courtyards). Never Japanese "
-    "detail: no kimono, no obi, no torii, no paper screens, no cherry "
-    "blossom.\n"
-    "- Never invent a person. Insults, epithets and forms of address in "
-    "dialogue are not characters: a line reading 'Old bastard Fang, stop "
-    "resisting' is one character shouting at another, not a character "
-    "named 'Old bastard Fang'. Only name people listed in the cast.\n"
-    "- Never invent a background figure or group either, named or not. "
-    "If the cast list is empty or thin, that means the passage does not "
-    "say who else is there -- draw only the speaker or actor the passage "
-    "actually names, not 'warriors', 'guards', 'warrior women' or any "
-    "other filler added to make the scene feel populated. An empty or "
-    "sparse cast is real information, not a gap to fill.\n"
-    "- Draw what the passage does, not what it says. If the passage is a "
-    "line of dialogue, the image is the speaker saying it in their "
-    "surroundings, not an illustration of the words.\n"
-    "- One place per shot: one ground plane, one horizon, one building.\n"
-    "- Say which faction a role belongs to when the passage names one "
-    "('Gu Yue clan elders', not 'elders'). The same word covers several "
-    "clans in this book and an unqualified one cannot be drawn "
-    "consistently.\n"
+    "once.\n\n"
 
-    "- No film vocabulary. There is no camera: never write 'into the "
-    "camera', 'close-up on', 'the shot pans'."
+    "STRICT RULES — violations produce unusable panels:\n\n"
+
+    "1. ONLY describe what the passage explicitly shows. If clothing colour, "
+    "an object, or a character's expression is not stated in the passage, do "
+    "not invent it. The cast appearance block is reference only -- never put "
+    "appearance details into 'action' unless the passage itself mentions them.\n\n"
+
+    "2. EVERY person you name must have their sex stated. 'A man' or 'a woman' "
+    "or the character's name (if male, write it). Anything unstated is drawn "
+    "female by default. If the passage names no one, draw the setting only.\n\n"
+
+    "3. NEVER invent people. No 'warriors', 'guards', 'warrior women', "
+    "'onlookers', 'soldiers', 'elders' unless those words appear in the "
+    "passage. Dialogue is one person addressing another -- not a crowd. "
+    "An empty or one-person scene is correct information, not a gap to fill.\n\n"
+
+    "4. Ancient China only. Use concrete detail: hanfu, sashes, upturned tiled "
+    "roofs, stone courtyards. No kimono, obi, torii, paper screens, cherry "
+    "blossom.\n\n"
+
+    "5. In 'layout': use the character's actual name, not a placeholder. "
+    "Write 'Fang Yuan stands alone' not 'X stands alone'.\n\n"
+
+    "6. One place per shot. One ground plane, one building, one horizon.\n\n"
+
+    "7. No film vocabulary. No 'close-up on', 'the shot pans', 'into the camera'."
 )
 
 
@@ -141,12 +138,14 @@ def build_prompt(
         "",
         "Return JSON with these keys:",
         '  shot          one of "wide", "medium", "close"',
-        "  action        one sentence: the single moment to draw",
-        "  layout        one sentence: where each person is in frame, "
-        "literally (e.g. 'X stands alone at centre; three attackers "
-        "surround him at the edges, left, right and behind'). If only "
-        "one person is in the scene, say so explicitly ('X alone, no "
-        "one else in frame') rather than leaving it unstated.",
+        "  action        one sentence: the single moment to draw, "
+        "using only what the passage states (do not add clothing "
+        "colours, expressions, or objects the passage does not mention)",
+        "  layout        one sentence: where each person is in frame. "
+        "Use the character's real name, never the letter X or a "
+        "placeholder. Example when surrounded: 'Fang Yuan stands at "
+        "centre; enemies ring him on all sides.' Example when alone: "
+        "'Fang Yuan stands alone; no one else is present.'",
         "  setting       where it happens, concretely",
         "  lighting      time of day, weather, quality of light",
         "  key_objects   list of objects that must be visible",
@@ -166,13 +165,20 @@ class Direction:
     cast: dict[str, str]
     novel_style: str
 
-    def to_image_prompt(self) -> str:
+    def to_image_prompt(self, *, scene_locale: str = "") -> str:
         """Compose the final text-to-image prompt.
 
         Canonical appearances are restated in full here rather than
         referred to, because the hosted image model has no memory between
         panels and no reference-image input -- the description *is* the
         continuity mechanism.
+
+        `scene_locale` is the pipeline-computed location vocabulary shared
+        by every panel in this scene. It comes after the director's own
+        setting in the priority order so the director's specific description
+        wins when both compete for tokens; it supplements when there is room,
+        providing the consistent background anchor that stops consecutive
+        panels of the same scene rendering in five unrelated places.
         """
         d = self.direction
         shot = d.shot if d.shot in _SHOTS else "medium"
@@ -182,36 +188,68 @@ class Direction:
             "close": "close-up, tight framing on the subject's face",
         }[shot]
 
-        parts: list[str] = []
+        from echotales.pipeline.persona.prompt import (
+            STYLE_ANCHOR,
+            condense_clause,
+            fit_to_budget,
+        )
+
+        # Style anchor always leads — it is the first thing CLIP reads and the
+        # last thing truncation drops. Without it this path produces generic
+        # anime; with it the checkpoint's own guofeng/xianxia weights activate.
+        parts: list[str] = [STYLE_ANCHOR]
         if d.action:
             parts.append(d.action)
-        # Right after action, ahead of setting/lighting -- composition
-        # placement matters more to what gets drawn than scenery does, and
-        # `fit_to_budget` below treats list order as priority order.
         if d.layout:
             parts.append(d.layout)
-        for name, look in self.cast.items():
-            if name.lower() in (d.action or "").lower():
-                parts.append(f"{name} ({look})")
+        # Setting and lighting come right after the action/layout description
+        # and before character appearance. Background should read in every
+        # panel; a character appearance that crowds it out is too long --
+        # condense_clause below trims the appearance to the most discriminating
+        # features, freeing the tokens that setting and lighting need.
         if d.setting:
             parts.append(d.setting)
         if d.lighting:
             parts.append(d.lighting)
+        _director_text = f"{d.action or ''} {d.layout or ''}".lower()
+        _has_white_robe = False
+        for name, look in self.cast.items():
+            # Check both action and layout: the director sometimes names the
+            # character in layout ("Fang Yuan stands alone") while using a
+            # pronoun in action ("He watches the enemies"). Either occurrence
+            # is enough evidence the character is in frame.
+            if name.lower() in _director_text:
+                # condense_clause strips headcount tags (already in cast_tags)
+                # and drops the least-discriminating features, freeing ~15
+                # tokens that would otherwise crowd out setting/lighting.
+                condensed = condense_clause(look)
+                parts.append(f"{name} ({condensed})")
+                if "white robe" in condensed.lower():
+                    _has_white_robe = True
+        # Reinforce white robe colour when the character appearance calls for it.
+        # Measured v38: negative suppression of teal shifted the model to dark
+        # charcoal (the checkpoint's next preferred colour) rather than white.
+        # A standalone "pure white outer robe" after the character clause adds
+        # explicit colour direction that survives as a separate CLIP token group.
+        if _has_white_robe:
+            parts.append("pure white outer robe")
+        # Score tags immediately after character appearance so they survive when
+        # scene_locale and key_objects push the prompt to 77 tokens. Measured
+        # v37: 19/24 prompts had no score tags because the character clause used
+        # ~20 tokens and scene_locale + key_objects then filled the budget,
+        # leaving nothing for quality tags. Character appearance is mandatory;
+        # scene_locale is a helpful supplement but not as critical as quality.
+        parts.append("score_9, score_8_up, highly detailed, cinematic lighting")
+        if scene_locale:
+            # Scene-level location anchor: same string for every panel in
+            # the scene, so consecutive panels don't render as different places.
+            # Placed after score tags so quality survives the budget before locale.
+            parts.append(scene_locale)
         if d.key_objects:
             parts.append(", ".join(str(o) for o in d.key_objects if o))
         if d.mood:
             parts.append(f"{d.mood} mood")
         parts.append(framing)
-        # `novel_style` is deliberately NOT appended. It is 25 words of
-        # generic world vocabulary ("stone courtyards, timber halls, bamboo
-        # groves, terraced mountain villages, paper lanterns") identical on
-        # every panel -- measured at 46% of the median prompt across a real
-        # 30-panel chapter, including its massacre. It describes a peaceful
-        # village whatever the scene is, and `d.setting` already carries the
-        # place this particular beat happens in. The director still *sees*
-        # it: `build_prompt` passes it as context so the model writes an
-        # in-world setting, which is where that vocabulary belongs.
-        parts.append("highly detailed, cinematic lighting, masterpiece")
 
         # **Budget-fit, highest priority first.** This path never did, while
         # the mechanical assembler (`persona/prompt.py::build_image_prompt`)
@@ -220,8 +258,6 @@ class Direction:
         # Order is a priority ranking, not reading order: what the panel is
         # *of* has to survive; scenery and quality tags are what should fall
         # off the end.
-        from echotales.pipeline.persona.prompt import fit_to_budget
-
         return fit_to_budget(parts)
 
 
@@ -259,4 +295,100 @@ def direct_beat(
         log.warning("panel direction failed: %s", exc)
         return None
 
-    return Direction(direction=result.value, cast=cast, novel_style=novel_style)
+    direction = result.value
+    direction = _validate_direction(direction, beat_text=beat_text, cast=cast)
+    return Direction(direction=direction, cast=cast, novel_style=novel_style)
+
+
+#: Comma-separated phrases that must never appear in a final image prompt.
+#: These are model hallucinations that survive prompt-level validation because
+#: they appear in the assembled string (after `to_image_prompt`) rather than
+#: in a specific direction field. Listed as literal substrings (lower-cased);
+#: a comma-clause containing one of these is excised rather than the whole prompt.
+_BANNED_PROMPT_PHRASES: tuple[str, ...] = (
+    "warrior women",
+    "warrior woman",
+    "female warrior",
+    "female warriors",
+    "women warriors",
+    "woman warrior",
+    "armed women",
+    "armed woman",
+)
+
+
+def sanitize_prompt(prompt: str) -> str:
+    """Remove known hallucinated phrases from a final image prompt string.
+
+    Operates at the comma-clause level: strips the whole clause containing
+    a banned phrase rather than leaving a dangling comma or truncated word.
+    Called on the final assembled prompt just before it enters the cache and
+    the image engine, so it catches whatever the field-level validator missed.
+    """
+    lower = prompt.lower()
+    for phrase in _BANNED_PROMPT_PHRASES:
+        if phrase not in lower:
+            continue
+        # Split on commas, drop any clause that contains the phrase,
+        # rejoin. Preserves clause order and avoids regex on freeform text.
+        parts = prompt.split(",")
+        parts = [p for p in parts if phrase not in p.lower()]
+        prompt = ",".join(parts)
+        lower = prompt.lower()
+        print(
+            f"[direction] sanitized hallucinated phrase {phrase!r} from prompt",
+            flush=True,
+        )
+    return prompt
+
+
+#: Groups the director must never invent. Any of these appearing in action or
+#: layout when the word is absent from both the passage and the cast list is a
+#: hallucination. The fix is to strip the offending field back to the safe
+#: fallback rather than pass invented content to the image engine.
+_HALLUCINATED_GROUP_RE = re.compile(
+    r"\b(warrior\s+women?|female\s+warriors?|woman\s+warrior|"
+    r"armed\s+women?|women\s+soldiers?|"
+    r"guards?|soldiers?|onlookers?|bystanders?|spectators?)\b",
+    re.IGNORECASE,
+)
+
+
+def _validate_direction(
+    d: PanelDirection, *, beat_text: str, cast: dict[str, str]
+) -> PanelDirection:
+    """Post-call guardrails that catch what the prompt rules could not.
+
+    Two checks:
+    1. Hallucinated groups: if 'action' or 'layout' contains a group noun
+       that does not appear in the passage text or the cast list, blank the
+       offending field.  The image prompt falls back to the assembled
+       mechanical prompt, which is worse but does not put invented people
+       in frame.
+    2. Literal 'X' placeholder: if layout still says 'X alone' or 'X stands',
+       blank it.  The layout instruction example used X as a variable and
+       some models copy it verbatim.
+    """
+    combined_source = beat_text.lower() + " " + " ".join(cast.keys()).lower()
+
+    def _has_hallucinated_group(text: str) -> bool:
+        m = _HALLUCINATED_GROUP_RE.search(text)
+        if m is None:
+            return False
+        # If the exact word appears in the passage or cast list, it is not
+        # invented -- the passage itself placed them there.
+        return m.group(0).lower() not in combined_source
+
+    if _has_hallucinated_group(d.action or ""):
+        log.warning("director hallucinated group in action: %r -- blanked", d.action)
+        d = d.model_copy(update={"action": ""})
+    if _has_hallucinated_group(d.layout or ""):
+        log.warning("director hallucinated group in layout: %r -- blanked", d.layout)
+        d = d.model_copy(update={"layout": ""})
+
+    # Literal placeholder the model copies from the layout example.
+    if re.search(r"\bX\s+(alone|stands|is\b)", d.layout or "", re.IGNORECASE):
+        log.warning("director used literal 'X' placeholder in layout: %r -- blanked", d.layout)
+        d = d.model_copy(update={"layout": ""})
+
+    return d

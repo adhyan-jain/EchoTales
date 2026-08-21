@@ -115,6 +115,7 @@ data/*/audio/
 data/*/motion/
 data/*/references/
 data/*/scratch/
+data/diag/
 
 # Hand-collected composition references (Pinterest fan art). Deliberately not
 # committed: these are other artists' copyrighted work, gathered as local

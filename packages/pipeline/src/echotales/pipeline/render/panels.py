@@ -44,7 +44,7 @@ from echotales.pipeline.persona.forms import detect_form
 from echotales.pipeline.persona.runner import get_panel_cast
 from echotales.pipeline.render._png import write_solid_png
 from echotales.pipeline.render.beat_canon import beat_canon_for
-from echotales.pipeline.render.direction import direct_beat
+from echotales.pipeline.render.direction import direct_beat, sanitize_prompt
 from echotales.pipeline.render.scene_refs import (
     curated_character_reference,
     match_scene_references,
@@ -632,7 +632,7 @@ class RefinedEngine:
     name: str = "refined"
     #: Which SDXL backend lays the frame out. Named rather than injected so
     #: `--image-engine refined` stays a one-flag choice on the CLI.
-    base_engine: str = "animagine"
+    base_engine: str = "noobai"
     refiner_model_id: str = "xiaolxl/GuoFeng3"
     device: str = "cuda"
     strength: float = 0.35
@@ -702,40 +702,32 @@ class RefinedEngine:
         return request.out_path
 
 
-@dataclass(slots=True)
-class AnimagineEngine(IllustriousEngine):
-    """Animagine XL 4.0 -- the same SDXL bet as `IllustriousEngine`, on a
-    checkpoint that was actually finished.
-
-    The Illustrious weights this pipeline pinned are the *early release*, and
-    the measured result matches that label: it composes a crowd (the thing
-    SD1.5 could not do at all) but renders it flat, with generic modern-anime
-    faces. Composition and aesthetics are separable here, so the cheapest
-    next move is to hold the prompt fixed and swap only the checkpoint.
-    """
-
-    name: str = "animagine"
-    model_id: str = "cagliostrolab/animagine-xl-4.0"
-    #: Animagine 4.0's own card specifies this ordering (quality, then
-    #: rating, then year); it is trained on it and drifts without it.
-    quality_prefix: str = (
-        "masterpiece, high score, great score, absurdres, "
-        "ancient china, xianxia, wuxia, hanfu, chinese clothes, "
-        "manhwa style, webtoon art"
-    )
-
 
 @dataclass(slots=True)
 class NoobAIEngine(IllustriousEngine):
     """NoobAI-XL v1.1 -- an Illustrious continuation trained far longer.
 
-    Same architecture and same tag vocabulary as `IllustriousEngine`, so it
-    is a drop-in A/B on the exact axis that came up short (render quality at
-    equal crowd competence) rather than a second variable.
+    NoobAI diverges from Illustrious's tag vocabulary: it was trained on
+    Danbooru aesthetic *score* tags (score_9 / score_8_up / …) rather than
+    the older masterpiece/best-quality taxonomy. Feeding it the Illustrious
+    prefix puts unknown tags at the front of its attention budget and pulls
+    it back toward its raw aesthetic prior instead of the intended content.
+
+    Steps raised from 30→35 and guidance_scale from 6.0→7.0 for this
+    checkpoint: NoobAI's longer training lets it use more steps productively,
+    and the higher CFG is needed to hold character-specific prompt terms
+    (gender, clothing, hair) against its very strong default composition bias.
     """
 
     name: str = "noobai"
     model_id: str = "Laxhar/noobai-XL-1.1"
+    steps: int = 35
+    guidance_scale: float = 7.0
+    quality_prefix: str = (
+        "score_9, score_8_up, score_7_up, masterpiece, best quality, "
+        "ancient china, xianxia, wuxia, hanfu, chinese clothes, "
+        "manhwa style, webtoon art"
+    )
 
 
 def get_engine(name: str = "stub", **kwargs: object) -> PanelImageEngine:
@@ -754,8 +746,6 @@ def get_engine(name: str = "stub", **kwargs: object) -> PanelImageEngine:
         return IllustriousEngine(**kwargs)  # type: ignore[arg-type]
     if name == "refined":
         return RefinedEngine(**kwargs)  # type: ignore[arg-type]
-    if name == "animagine":
-        return AnimagineEngine(**kwargs)  # type: ignore[arg-type]
     if name == "noobai":
         return NoobAIEngine(**kwargs)  # type: ignore[arg-type]
     if name == "manga":
@@ -770,7 +760,7 @@ def get_engine(name: str = "stub", **kwargs: object) -> PanelImageEngine:
         return OpenRouterImageEngine(**kwargs)  # type: ignore[arg-type,return-value]
     raise ValueError(
         f"unknown image engine {name!r}; expected 'stub', 'sdxl', 'manga', "
-        "'gemini' or 'openrouter'"
+        "'illustrious', 'noobai', 'refined', 'gemini' or 'openrouter'"
     )
 
 
@@ -786,6 +776,11 @@ class PanelImage:
     #: means prompt-only -- recorded per panel so a drifting face can be
     #: traced to a missing sheet rather than guessed at.
     conditioned_on: list[str] = field(default_factory=list)
+    #: Logged for debugging -- the negative prompt sent to the engine.
+    #: Without this, "why did a female figure appear?" cannot be answered
+    #: after the fact: the positive prompt and the image are both visible,
+    #: but the negative that was (or was not) applied is not.
+    negative_prompt: str = ""
 
 
 def _is_flat(image: object, *, threshold: float = 6.0) -> bool:
@@ -1378,6 +1373,7 @@ def render_panels(
                 # docstring for the mid-chapter body-selection bug this
                 # fixes.
                 story_position = chapter_number + lead / max(len(chapter.blocks), 1)
+                _chunk_blocks_set = set(_chunk_blocks)
                 for entity_id in present_beat_entities(mentions, _chunk_blocks):
                     looks = character_looks(
                         store,
@@ -1404,6 +1400,51 @@ def render_panels(
                     if sheet is not None:
                         references.append(sheet)
                         conditioned.append(label)
+
+                if not appearances:
+                    # The PRESENT-only pass produced no cast. This happens on
+                    # dialogue/prologue blocks where the subject is physically
+                    # present but their mention was classified as
+                    # DIALOGUE_REFERENCE rather than PRESENT (e.g. someone
+                    # shouting "Fang Yuan, stop resisting!" in block 0). The
+                    # director correctly names them in action/layout, but
+                    # without an appearance clause the model invents an
+                    # unconstrained figure -- confirmed as the titan effect in
+                    # RI ch1 block 0. Fall back to any entity mentioned in
+                    # these blocks (any reference mode) so the director still
+                    # gets the canonical look to constrain the output.
+                    _fallback_ids = {
+                        m.target_id
+                        for m in mentions
+                        if m.block_index in _chunk_blocks_set and m.target_id
+                    }
+                    for entity_id in _fallback_ids:
+                        if any(
+                            m.target_id == entity_id and m.block_index in _chunk_blocks_set
+                            for m in mentions
+                            if m.reference_mode is ReferenceMode.PRESENT
+                        ):
+                            continue  # already handled above
+                        looks = character_looks(
+                            store,
+                            entity_id,
+                            novel_id=novel_id,
+                            chapter=story_position,
+                            crowd=bool(_chunk_mobs),
+                        )
+                        if looks is None:
+                            continue
+                        label, clause, sheet, gender = looks
+                        genders.append(gender)
+                        if clause or _form.active:
+                            appearances[label] = _form.apply_to(clause)
+                        sheet = (
+                            curated_character_reference(label, chapter=story_position)
+                            or sheet
+                        )
+                        if sheet is not None:
+                            references.append(sheet)
+                            conditioned.append(label)
 
                 # The slot's own representative block's prose, not the
                 # whole scene's -- what makes the establishing/close-up/
@@ -1492,6 +1533,7 @@ def render_panels(
                     + (":crowd" if is_crowd_cut else "")
                 )
                 cached_prompt = prompt_cache.get(cache_key)
+                directed = None  # may be set in the else branch below; None on cache hit
 
                 if cached_prompt is not None:
                     # A direction pass already ran (`prompt_cache_path`) and
@@ -1507,7 +1549,6 @@ def render_panels(
                     # grammatical and about nothing: it cannot know what is
                     # happening in the beat, which is why panels came back
                     # unrelated to the story around them.
-                    directed = None
                     if client is not None:
                         brief = story_context(
                             novel_id, store, chapter_number, scene.blocks
@@ -1568,7 +1609,9 @@ def render_panels(
                         )
 
                     if directed is not None:
-                        prompt = directed.to_image_prompt()
+                        prompt = directed.to_image_prompt(
+                            scene_locale=scene_locale_text,
+                        )
                         # **Assert the crowd as a count tag, in front.**
                         # Removing "1boy" stopped the prompt insisting on
                         # exactly one man, but nothing replaced it, and prose
@@ -1591,7 +1634,24 @@ def render_panels(
                         # whose subject *is* the crowd.
                         if is_crowd_cut:
                             prompt = f"crowd, multiple people, 6+boys, {prompt}"
-                        elif tags := cast_tags(genders, beat=beat_prose):
+                        elif tags := cast_tags(
+                            genders,
+                            # **Combine beat prose with the director's own
+                            # action+layout text.** When a block is pure
+                            # dialogue the beat prose has no narration and
+                            # therefore no he/him/his pronouns (e.g. block 0
+                            # RI ch1: an enemy shouts at Fang Yuan in second
+                            # person, so beat_prose never mentions "he").
+                            # The director's output often does: "enemies ring
+                            # *him* on all sides." Including those fields
+                            # catches the pronoun even when the original prose
+                            # doesn't carry it.
+                            beat=(
+                                f"{beat_prose} "
+                                f"{directed.direction.action or ''} "
+                                f"{directed.direction.layout or ''}"
+                            ),
+                        ):
                             # **The director path never carried the headcount
                             # tags, and that is the whole "everyone is a
                             # woman" bug.** `build_image_prompt` puts
@@ -1639,6 +1699,7 @@ def render_panels(
                             ),
                             style=style,
                         )
+                    prompt = sanitize_prompt(prompt)
                     prompt_cache[cache_key] = prompt
 
                 if is_crowd_cut:
@@ -1699,6 +1760,7 @@ def render_panels(
                     conditioned = []
 
                 digest = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
+                neg_prompt = ""  # set in the generation branch; "" on cache hit
                 if image_path.exists():
                     report.skipped_cached += 1
                 elif digest in generated_by_digest:
@@ -1768,36 +1830,86 @@ def render_panels(
                         weight = 0.3
                     else:
                         weight = 0.45
+                    # **Gender clause has the highest priority and must
+                    # survive truncation.** `negative_for(style)` alone
+                    # uses ~69 tokens; the gender clause adds ~14 more,
+                    # pushing the total to ~83 against CLIP's 75-token
+                    # limit. CLIP silently truncates from the right -- so
+                    # appending `gender_neg` LAST meant it was the first
+                    # thing dropped. Verified: the assembled string
+                    # `negative_for(STYLE_SCENE) + _NEGATIVE_FEMININE`
+                    # measured at 98 tokens, 23 over budget, meaning the
+                    # entire gender clause was discarded on every
+                    # male-cast panel, removing the one guard against
+                    # feminisation at inference time.
+                    #
+                    # Fix: re-fit the full assembled negative as a
+                    # comma-split part list with gender terms at the
+                    # front. `fit_to_budget` adds parts in priority
+                    # order -- earlier = higher priority -- so gender
+                    # terms fill the first slots and style terms use
+                    # whatever space remains. Crowd terms get lowest
+                    # priority (least critical to prevent feminisation).
+                    # Same pronoun-coverage fix as `cast_tags` above:
+                    # dialogue-only beats have no he/him/his in
+                    # `beat_prose`, so also scan the director's own
+                    # action/layout text where those pronouns appear.
+                    gender_neg = gender_negative(
+                        genders,
+                        beat=(
+                            f"{beat_prose} "
+                            f"{directed.direction.action or '' if directed is not None else ''} "
+                            f"{directed.direction.layout or '' if directed is not None else ''}"
+                        ),
+                    )
+                    _base_neg = _form.filtered_negative(
+                        negative_for(style) + _lexicon_negatives
+                    )
+                    _crowd_gore_neg = (
+                        "gore, blood splatter, muscular, bare chest, screaming, western comic, corpses, fire"
+                        if is_crowd_cut
+                        else ""
+                    )
+                    # Crowd cuts need explicit female suppression beyond gender_neg:
+                    # the model's prior for xianxia group scenes includes a female
+                    # cultivator student even when gender_neg has "1girl, female,
+                    # woman". Placed BEFORE base_neg so it survives budget trimming.
+                    _crowd_female_neg = (
+                        "girl, girls, female, woman, women, bishoujo"
+                        if is_crowd_cut
+                        else ""
+                    )
+                    # When the positive prompt calls for white robes, suppress the
+                    # NoobAI xianxia checkpoint's strong teal/cyan prior. Placed
+                    # FIRST so it survives budget trimming ahead of gender terms
+                    # and the base negative tail.
+                    _color_neg = (
+                        "teal clothing, cyan robe, blue-green robe, turquoise outfit"
+                        if "white robe" in prompt.lower()
+                        else ""
+                    )
+                    _neg_parts = (
+                        ([p.strip() for p in _color_neg.split(",") if p.strip()] if _color_neg else [])
+                        + ([p.strip() for p in gender_neg.split(",") if p.strip()] if gender_neg else [])
+                        + ([p.strip() for p in _crowd_female_neg.split(",") if p.strip()] if _crowd_female_neg else [])
+                        + [p.strip() for p in _base_neg.split(",") if p.strip()]
+                        + ([p.strip() for p in _crowd_gore_neg.split(",") if p.strip()] if _crowd_gore_neg else [])
+                    )
+                    neg_prompt = fit_to_budget(_neg_parts)
+                    # Reference conditioning removed: IP-Adapter reference
+                    # sheets caused color/composition contamination and cannot
+                    # generalise across novels. Appearance is constrained by
+                    # prompt text (appearance clause + style anchor) instead.
                     engine.generate(
                         PanelImageRequest(
                             prompt=prompt,
                             out_path=image_path,
-                            negative_prompt=_form.filtered_negative(
-                                negative_for(style)
-                                + _lexicon_negatives
-                                # Appended after the budgeted body, not
-                                # inside it: this is the one clause that
-                                # must never be the one truncation drops,
-                                # since the failure it prevents (a male
-                                # protagonist rendered as a woman) makes the
-                                # panel unusable rather than merely worse.
-                                + (
-                                    f", {gender_neg}"
-                                    if (gender_neg := gender_negative(genders, beat=beat_prose))
-                                    else ""
-                                )
-                                + (
-                                    ", gore, blood splatter, muscular, bare chest, "
-                                    "screaming, western comic, corpses, fire"
-                                    if is_crowd_cut
-                                    else ""
-                                )
-                            ),
+                            negative_prompt=neg_prompt,
                             width=width,
                             height=height,
                             seed=seed,
-                            reference_images=references,
-                            reference_weight=weight,
+                            reference_images=[],
+                            reference_weight=0.0,
                         )
                     )
                     generated_by_digest[digest] = image_path
@@ -1812,6 +1924,7 @@ def render_panels(
                     prompt=prompt,
                     image_path=str(image_path),
                     conditioned_on=conditioned,
+                    negative_prompt=neg_prompt,
                 )
                 report.panels += 1
 
@@ -1829,6 +1942,7 @@ def render_panels(
                         prompt=image.prompt,
                         image_path=image.image_path,
                         conditioned_on=image.conditioned_on,
+                        negative_prompt=image.negative_prompt,
                     )
                 )
 

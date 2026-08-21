@@ -1059,6 +1059,70 @@ for 4-7, 3 for 8+) rather than one image per beat/block.
 
 ---
 
+### 4.45 Six render-path bugs found and fixed, 746 tests passing *(2026-08-20)*
+
+All found against real run output and code inspection, not guessed at. None
+required a design change — all were gaps in existing mechanisms.
+
+1. **Hallucinated group phrases in final prompt string — fixed.** The field-
+   level `_validate_direction()` (which blanks `action`/`layout`) was swallowing
+   its own `log.warning` through the pipeline's log filter, so "warrior women"
+   survived into the prompt cache. Added `sanitize_prompt()` in `direction.py`
+   as a belt-and-suspenders string-level filter on the final assembled prompt
+   just before `prompt_cache[cache_key] = prompt` in `panels.py`. Strips
+   any comma-clause containing a banned phrase. Prints to stderr (bypasses
+   the log filter). Caught 3 "warrior women" occurrences per run.
+
+2. **Transformers tokenizer warning `81 > 77` spamming run output — fixed.**
+   `fit_to_budget` calls `count_tokens` on candidates that intentionally exceed
+   the CLIP limit (to check whether to drop them). The CLIPTokenizer fires a
+   warning on every such call. Suppressed by setting the transformers logger to
+   ERROR level inside `count_tokens`.
+
+3. **Missing `1boy, male focus` on dialogue-only blocks — fixed.** `cast_tags`
+   uses `beat_prose` for pronoun-based gender detection. For block 0 of RI ch1
+   (an enemy shout in second person), `beat_prose` has no "he/him/his" and
+   `genders` is empty, so `cast_tags` returned `""` — no gender tags prepended.
+   The director's own `action`/`layout` output ("enemies ring *him* on all
+   sides") does have the male pronoun. Fixed: `cast_tags` in the director path
+   now receives `beat=f"{beat_prose} {directed.direction.action} {directed.direction.layout}"`.
+
+4. **Negative feminine clause silently truncated by CLIP — fixed.** Critical
+   regression: `negative_for(STYLE_SCENE)` alone measures 69 tokens. The gender
+   clause (`_NEGATIVE_FEMININE`, ~14 tokens) was appended LAST, pushing the total
+   to ~98 tokens — 23 over CLIP's 75-token limit. CLIP truncates from the right,
+   so the gender clause (the most important guard against feminisation) was the
+   first thing dropped at inference time. Fixed by re-fitting the assembled
+   negative as a comma-split priority list with gender terms first. Regression
+   test added to `test_prompt_budget.py`.
+
+5. **`gender_negative` had same dialogue-block gap as `cast_tags` — fixed.**
+   The negative prompt's feminine exclusion also used `beat_prose` only for
+   pronoun detection. Applied the same `directed.direction.action/.layout`
+   extension so the negative clause fires even on dialogue-only blocks.
+
+6. **Character appearance dropped from director prompts when name in layout
+   only — fixed.** `to_image_prompt` in `direction.py` added the appearance
+   clause only when the character's name appeared in `d.action`. The director
+   sometimes names the character in `layout` ("Fang Yuan stands alone") while
+   using a pronoun in `action` ("He watches"). Fixed by checking
+   `f"{d.action} {d.layout}".lower()` for the name.
+
+**Also found but NOT fixed (real, small, low-priority):**
+
+- Possessive mob phrase "clan's elders" still missed by `detect_mobs` — zero
+  occurrences in first 10 real chapters, correctly documented in §4.31 as a
+  known residual gap. No change per EVOLUTION.md's vocabulary-growth rule.
+
+- NER `plausible_name()` fix: strips trailing sentence punctuation (`!?.,;:`)
+  before rejecting a candidate — fixes "Gu Yue Bo!" being discarded in ch6
+  (§4.35's diagnosed-but-unimplemented fix). Internal punctuation still rejected.
+
+**Test count: 746 passing** (was 745 before, 682 before the sessions above; +1
+from the negative-prompt regression guard added this session).
+
+---
+
 ## 5. Architecture-review items not yet implemented
 
 From the 2026-08-06 review. None of these are done; all are folded into the

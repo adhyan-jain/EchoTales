@@ -410,7 +410,10 @@ def cast_tags(genders: list[str], *, beat: str = "") -> str:
 #: above and for the same measured reason: on these checkpoints the pull
 #: toward a female subject is strong enough that it has to be opposed from
 #: both directions at once.
-_NEGATIVE_FEMININE = "1girl, female, feminine face, breasts, lipstick, makeup"
+_NEGATIVE_FEMININE = (
+    "1girl, 2girls, multiple girls, female, woman, girl, girls, "
+    "feminine face, breasts, lipstick, makeup, female focus"
+)
 
 
 #: Pronouns, for the case where nothing in frame resolved to a known
@@ -466,6 +469,13 @@ def count_tokens(text: str) -> int:
     global _TOKENIZER
     if _TOKENIZER is None:
         _TOKENIZER = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
+    # fit_to_budget calls this on candidates that may exceed the 77-token
+    # limit as part of the check loop. The transformers tokenizer warns on
+    # any input over model_max_length, which fires on every rejected
+    # candidate and pollutes the run log. Suppress here since over-budget
+    # is expected and handled by the caller.
+    import logging as _logging
+    _logging.getLogger("transformers.tokenization_utils_base").setLevel(_logging.ERROR)
     return len(_TOKENIZER(text)["input_ids"])
 
 
@@ -509,7 +519,12 @@ def fit_to_budget(parts: list[str], limit: int = _USABLE_TOKENS) -> str:
 #: Sized so the *beat* also fits alongside it -- the beat is the only part
 #: of a prompt that makes two panels of one character in one place
 #: different pictures, so it wins ties against further description.
-_MAX_CHARACTER_TOKENS = 18
+# Raised from 18 to 20: the priority reorder puts "wearing white robes" (3
+# tokens) right after hair (~12 tokens). At 18 the total with eyes pushed to
+# 19 and eyes was dropped. At 20, hair (12) + robe (3) + eyes (4) = 19 ≤ 20.
+# 2-character scenes use 40 tokens total (20+20), still within the 77-token
+# CLIP budget when style, cast, beat and framing are accounted for (~26 more).
+_MAX_CHARACTER_TOKENS = 20
 
 
 def condense_clause(clause: str, limit: int = _MAX_CHARACTER_TOKENS) -> str:
@@ -554,7 +569,11 @@ _HEADCOUNT_TAGS = frozenset(
 #: dropped "midnight black very long straight hair down to the waist" --
 #: losing the single feature that makes him recognisable in silhouette,
 #: which in this genre is most of what recognition is.
-_IDENTITY_ORDER = ("hair", "eyes", "build", "tall", "slim", "wearing", "robe")
+# "wearing" and "robe" promoted to rank 2: robe colour is the single most
+# visible difference between characters in xianxia (Fang Yuan's white vs
+# Shen Cui's green), and the budget cut it every time by ranking it below
+# hair+eyes which together already used 16 of the 18-token limit.
+_IDENTITY_ORDER = ("hair", "wearing", "robe", "eyes", "build", "tall", "slim")
 
 
 def _identity_rank(part: str) -> int:

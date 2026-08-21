@@ -90,6 +90,12 @@ def plausible_name(surface: str) -> bool:
     consistently.
     """
     surface = surface.strip()
+    # Strip trailing sentence punctuation before the check: a model may
+    # return "Gu Yue Bo!" (pasting the exclamation that follows in the
+    # text) and the name itself is still valid. Internal punctuation
+    # (a comma mid-string, a period not at the end) still fails below
+    # because _SENTENCE_MARK is a search, not a full-string match.
+    surface = surface.rstrip(".!?;:,")
     if not (2 <= len(surface) <= MAX_NAME_CHARS):
         return False
     if len(surface.split()) > MAX_NAME_TOKENS:

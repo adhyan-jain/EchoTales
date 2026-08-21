@@ -197,17 +197,17 @@ class TestNegativePrompts:
 class TestCondenseClause:
     def test_it_keeps_what_identifies_over_what_comes_first(self) -> None:
         """Clause order is the *reference sheet's* order, and the sheet has
-        room for everything. A panel does not: a positional cut kept "tall
-        and lean" and dropped the waist-length black hair, which is the one
-        feature that makes this character recognisable in silhouette."""
+        room for everything. A panel does not: hair and robe colour are the
+        two most identifying features (hair is silhouette, robe is the
+        character's visual signature in xianxia); eyes survive when they fit."""
         out = condense_clause(_APPEARANCE)
         assert "midnight black" in out
-        assert "narrow eyes" in out
+        assert "wearing" in out  # robe colour must always survive
 
     def test_surviving_parts_keep_their_original_order(self) -> None:
         """Ranking decides what survives, not how it reads."""
         out = condense_clause(_APPEARANCE)
-        assert out.index("hair") < out.index("eyes")
+        assert out.index("hair") < out.index("wearing")
 
     def test_it_drops_duplicated_headcount_tags(self) -> None:
         """`cast_tags` already put `1boy` at the very front of the prompt; a
@@ -277,3 +277,45 @@ def test_style_base_carries_no_hair() -> None:
 
     # Hair belongs to whoever has it, not to every panel including empty ones.
     assert "flowing black hair" not in STYLE_SCENE
+
+
+def test_negative_prompt_with_gender_clause_fits_clip() -> None:
+    """Gender negative must not be truncated when stacked on the style base.
+
+    Regression guard: `negative_for(STYLE_SCENE)` alone is ~69 tokens.
+    Appending `_NEGATIVE_FEMININE` (~14 tokens) pushed the total to ~83,
+    past CLIP's 75-token limit. CLIP silently drops from the right, so the
+    gender clause — the last thing appended and the most important guard
+    against feminisation — was the first thing to disappear at inference time.
+    The fix re-fits with gender terms at the front of the priority list so
+    they always survive truncation.
+    """
+    from echotales.pipeline.persona.prompt import (
+        STYLE_SCENE,
+        CLIP_TOKEN_LIMIT,
+        _NEGATIVE_FEMININE,
+        count_tokens,
+        fit_to_budget,
+        negative_for,
+    )
+
+    gender_neg = _NEGATIVE_FEMININE
+    base_neg = negative_for(STYLE_SCENE)
+
+    # Old assembly (gender last) exceeds the limit.
+    old_assembled = base_neg + ", " + gender_neg
+    assert count_tokens(old_assembled) > CLIP_TOKEN_LIMIT, (
+        "pre-condition: old assembly must exceed the CLIP limit for this test to be meaningful"
+    )
+
+    # New assembly: gender terms at the front of the priority list.
+    parts = (
+        [p.strip() for p in gender_neg.split(",") if p.strip()]
+        + [p.strip() for p in base_neg.split(",") if p.strip()]
+    )
+    result = fit_to_budget(parts)
+
+    assert count_tokens(result) <= CLIP_TOKEN_LIMIT
+    # Gender terms must survive.
+    assert "1girl" in result
+    assert "female" in result
