@@ -2024,6 +2024,102 @@ session (was causing colour bleeding across characters).
 across all panels; Fang Yuan face consistency is good; score_9 fix is real.
 The ceiling is composition (solo collapse + crowd directionality), not style.
 
+### 4.48 Root cause confirmed: prompt token order defeats style anchor; all three visual defects now precisely scoped for ideation *(2026-08-21)*
+
+User confirmed v39 panels look like anime portraits with no Chinese vibe,
+inconsistent clothing, and irrelevant crowds. This session ends here; the
+three defects below are ready to ideate on with a fresh Claude session (web
+or otherwise) without needing to read any code.
+
+**Root cause 1 — `1boy, male focus` before STYLE_ANCHOR kills the Chinese aesthetic**
+
+Every solo panel prompt starts: `1boy, male focus, guofeng illustration,
+chinese ink painting, xianxia, ...`
+
+CLIP weights earlier tokens more strongly. `1boy, male focus` are danbooru
+portrait triggers that activate anime-portrait mode before the style anchor
+fires. By the time `guofeng illustration, chinese ink painting, xianxia`
+is read, the portrait prior is already dominant. The style anchor should be
+token positions 0–2, not positions 2–4.
+
+Fix candidate: move `STYLE_ANCHOR` before cast headcount tags, or drop
+`1boy, male focus` entirely (NoobAI XL's xianxia weights are sufficient to
+infer male/single-figure from `guofeng illustration` alone).
+
+**Root cause 2 — Director LLM over-applies "never invent people" rule, collapses group scenes**
+
+36/52 v39 prompts contain "stands alone; no one else is present." SYSTEM
+prompt rules ("NEVER invent people," "ONLY describe what the passage shows")
+are being over-applied: even the Awakening Ceremony scene (500+ clan members
+explicitly in the text) gets solo layout. The director treats "don't invent"
+as "erase everyone not named individually."
+
+The `layout` field is supposed to force spatial commitment but currently
+echoes the same solo framing as `action`. A layout that says "Fang Yuan stands
+alone" when `action` says "everyone is wary of Fang Yuan" is internally
+contradictory — but no validation catches it.
+
+Fix candidates: (a) post-generation cross-check: if `action` mentions third
+parties but `layout` says "alone", re-query or inject a crowd count; (b)
+change the rule from "never invent" to "use the passage's headcount — if it
+names a group, you must represent it, even if individuals are unnamed";
+(c) for known group beats (mob detected by `detect_mobs`), bypass the director
+entirely and use the mechanical assembler with crowd vocabulary.
+
+**Root cause 3 — scene_locale re-derived per panel, background drifts every beat**
+
+`scene_locale` is a keyword-lookup run on each beat's text independently.
+The Awakening Ceremony spans ~15 beats in the same physical space; each beat
+has slightly different vocabulary so the lookup returns different location
+strings: "stone courtyard," "timber clan hall," "terraced hillside village,"
+"moonlit courtyard at night." Eight consecutive panels of the same ceremony
+render as eight different locations.
+
+Fix: lock `scene_locale` for the entire `ActiveScene` span on first
+derivation; only update it when the scene boundary changes.
+
+**What was working and must not be undone:**
+- Guofeng ink-painting texture is present (when style anchor isn't clobbered)
+- Fang Yuan face is consistent across panels
+- score_9/score_8_up quality tags now in 36/52 prompts (up from 5/24 in v37)
+- Teal robe prior is suppressed (panels show charcoal, not teal — step toward white)
+- Director hallucination guards (warrior-women sanitizer, layout placeholder validator) work
+
+**Prompt for ideation with a fresh Claude session:**
+
+```
+I'm building a xianxia manhwa adaptation pipeline for "Reverend Insanity" using
+NoobAI XL 1.1 (SDXL checkpoint). An LLM art-director reads story beats and
+produces PanelDirection JSON (action, layout, setting, lighting, mood, key_objects),
+which gets assembled into a CLIP prompt with a 77-token budget.
+
+Three bugs, in priority order:
+
+1. TOKEN ORDER: Every prompt starts "1boy, male focus, guofeng illustration,
+   chinese ink painting, xianxia, ..." — the danbooru portrait tags (1boy,
+   male focus) come before the style anchor and clobber it, producing generic
+   anime portraits instead of Chinese guofeng paintings. How should I reorder
+   these, and should I drop 1boy/male focus entirely given NoobAI's xianxia
+   weights?
+
+2. DIRECTOR SOLO COLLAPSE: The LLM director has a rule "NEVER invent people —
+   only describe what the passage explicitly shows." It's over-applying this
+   to collapse group scenes (500-person Awakening Ceremony → "Fang Yuan stands
+   alone; no one else is present"). The layout field is supposed to force
+   spatial commitment but echoes the solo framing. How do I fix the rule
+   wording or add a post-generation validation pass so group beats actually
+   render as groups?
+
+3. BACKGROUND DRIFT: scene_locale (location vocabulary) is re-derived per
+   beat from a keyword lookup on the beat's text. Same scene, 15 different
+   beats → 15 different location strings → 15 different backgrounds. Should
+   I lock it per ActiveScene span, and how should the lock interact with
+   genuine scene changes mid-chapter?
+
+Constraint: NoobAI XL 1.1 only, no multi-model. 77 CLIP token budget.
+LLM director runs on ollama (qwen2.5:7b locally). No paid APIs.
+```
+
 ## 9. Layout
 
 ```
