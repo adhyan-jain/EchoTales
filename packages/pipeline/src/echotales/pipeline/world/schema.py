@@ -2,7 +2,7 @@
 
 `resolve/appearance_extract.py` answers one question -- what does a person
 look like -- and nothing answers any of the others. The graph already types
-its entities (`TargetKind.LOCATION`, `ORGANIZATION`, `ITEM`, added by §10
+its entities (`TargetKind.LOCATION`, `ORGANIZATION`, `ITEM`, added by Section 10
 item 5) and already has a temporal fact table to hang answers on, and on a
 real Reverend Insanity database that machinery holds **10 locations and 35
 organisations with zero facts attached to any of them**. Qing Mao Mountain,
@@ -37,7 +37,7 @@ from echotales.core.enums import TargetKind
 #: Deliberately excludes appearance: that is
 #: `resolve/appearance_extract.py`'s vocabulary and belongs on the PERSONA
 #: (the body), while these belong on the SELF (the continuity of
-#: consciousness) -- the split `architecture.md §4` draws and the one
+#: consciousness) -- the split `architecture.md Section 4` draws and the one
 #: `models.Attribute` routes on.
 PERSON_KEYS: tuple[str, ...] = (
     "role",

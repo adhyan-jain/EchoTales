@@ -118,7 +118,7 @@ class TestAutoFlagNonCharacterEntities:
 
 
 class TestEntityKindTyping:
-    """§10 item 5: a flagged location must stop *behaving* like a character,
+    """Section 10 item 5: a flagged location must stop *behaving* like a character,
     not merely carry a review note. The flag and the kind come from the same
     unanimity rule, so these tests sit alongside the flag tests above."""
 

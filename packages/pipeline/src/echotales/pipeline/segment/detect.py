@@ -1,4 +1,4 @@
-"""Building narrative segments from markers (plans.md §6 Phase 2).
+"""Building narrative segments from markers (plans.md Section 6 Phase 2).
 
 Turns per-block markers into `NarrativeSegment` rows mapping discourse spans
 onto story-time spans.

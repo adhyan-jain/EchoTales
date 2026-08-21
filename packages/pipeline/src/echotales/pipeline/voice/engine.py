@@ -18,7 +18,7 @@ swapping engines is a config change rather than a rewrite.
   voice bank provides (`voice/bank.py`).
 
 The `turbo` variant is the default model because of the hardware constraint
-in HANDOFF §3: 8 GB of VRAM, and no stage may share the GPU with another
+in HANDOFF Section 3: 8 GB of VRAM, and no stage may share the GPU with another
 resident model. Turbo is ~350M parameters against the base model's 0.5B.
 **`ollama serve` must not be resident when synthesis runs** -- that is the
 same non-negotiable that governs the LLM stages, applied to this one.

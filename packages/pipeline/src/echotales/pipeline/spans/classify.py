@@ -1,4 +1,4 @@
-"""Phase 1: span-level classification (plans.md §6 Phase 1).
+"""Phase 1: span-level classification (plans.md Section 6 Phase 1).
 
 Blocks are split into spans and each span is typed. This is what stops a
 chapter that merely *names* nine characters from producing a panel containing

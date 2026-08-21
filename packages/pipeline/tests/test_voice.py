@@ -1,4 +1,4 @@
-"""Voice bank, casting and delivery (Phase 8, `4b`, `architecture.md §8b`)."""
+"""Voice bank, casting and delivery (Phase 8, `4b`, `architecture.md Section 8b`)."""
 
 from __future__ import annotations
 
@@ -114,7 +114,7 @@ class TestCasting:
         assert assignments["e1"].speaker_id == "p227"
 
     def test_collisions_are_recorded_not_hidden(self) -> None:
-        """§8b accepts residual collisions and requires them to be visible;
+        """Section 8b accepts residual collisions and requires them to be visible;
         the system does not claim global collision-free assignment."""
         _, report = cast_voices("t", self._profiles(4), _bank())
         assert "does not" not in report.summary()  # sanity: summary renders

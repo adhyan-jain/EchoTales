@@ -1,4 +1,4 @@
-"""Log-linear scoring over the evidence vector (plans.md §6 Phase 6, step 3; §7).
+"""Log-linear scoring over the evidence vector (plans.md Section 6 Phase 6, step 3; Section 7).
 
 A linear model on interpretable features, not a black box. Two reasons that
 matters here beyond taste:
@@ -35,7 +35,7 @@ from echotales.core.models import SCORED_FEATURES, Candidate, EvidenceVector
 #: signal that must be corroborated by context or speech partners.
 #:
 #: `first_attested_soft_prior` stays small so a late reveal can override it
-#: (plans.md §4.4).
+#: (plans.md Section 4.4).
 DEFAULT_WEIGHTS: dict[str, float] = {
     "surface_similarity": 1.2,
     "context_embedding_similarity": 2.0,
@@ -54,10 +54,10 @@ DEFAULT_WEIGHTS: dict[str, float] = {
 #: 23 entities to false merges -- `Chi Shan` into `Bai Ning Bing`, `Ren Zu`
 #: into the `Gu Yue` clan, `Qing Shu` into `Dong Tu`, all method=SCORED. The
 #: premise was right and the conclusion wrong: the scorer genuinely cannot
-#: reach 0.80 (§4.1), but the answer is `ConformalGate.calibrate()` against
+#: reach 0.80 (Section 4.1), but the answer is `ConformalGate.calibrate()` against
 #: confirmed gold, not hand-moving one end of an uncalibrated pair until
 #: links appear. Moving it lets the scorer link on *weak* evidence, which is
-#: exactly what §4.1 says the pre-filters exist to avoid.
+#: exactly what Section 4.1 says the pre-filters exist to avoid.
 DEFAULT_BIAS = -4.0
 
 #: Surface similarity below this contributes nothing. Short romanised names
@@ -211,7 +211,7 @@ class ScoringModel:
     def ablate(self, *feature_names: str) -> ScoringModel:
         """Return a copy with the named features zeroed.
 
-        The mechanism behind the §8 ablation table: "no temporal scoping" is
+        The mechanism behind the Section 8 ablation table: "no temporal scoping" is
         `ablate("temporal_validity")`, not a separately trained model.
         """
         weights = dict(self.weights)

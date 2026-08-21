@@ -1,4 +1,4 @@
-"""Calibrate `ConformalGate` against confirmed gold (§4.1, §5 item 3).
+"""Calibrate `ConformalGate` against confirmed gold (Section 4.1, Section 5 item 3).
 
 **This is the fix for the blocker, not a tuning knob.** `DEFAULT_BIAS` and
 `FALLBACK_LINK_THRESHOLD` were set independently and are mutually
@@ -6,7 +6,7 @@ unreachable: a maximal plausible evidence vector scores p≈0.71 against a 0.80
 threshold, so no combination of scored features has ever produced a link, and
 every link in the system comes from `score.prefilter`. Hand-moving either end
 is fitting to nothing (and was tried: it cost 23 entities to false merges,
-see §0). Conformal calibration sets both ends *from data* instead.
+see Section 0). Conformal calibration sets both ends *from data* instead.
 
 The input `calibrate()` wants is `(probability, is_correct)` pairs, and
 nothing in the pipeline produced them. This module does: it replays
@@ -104,7 +104,7 @@ def collect_samples(
 
     Runs against a *copy* of the caller's store contents in the sense that it
     re-resolves in place -- the caller is expected to hand this a scratch
-    database, exactly as `HANDOFF` §0 warns for any re-resolution.
+    database, exactly as `HANDOFF` Section 0 warns for any re-resolution.
     """
     confirmed = gold.confirmed_only
     if not confirmed.mentions:

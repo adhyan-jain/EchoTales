@@ -180,7 +180,7 @@ def _merge_to_budget(
     `director.py::score_blocks` already ranks blocks by how much they want a
     picture -- combat stems, revelations, cast changes -- for motion-clip
     placement. Reusing it here (rather than duplicating a second, drifting
-    vocabulary, which §4.24 already caught happening once between the
+    vocabulary, which Section 4.24 already caught happening once between the
     director and `motion.py`) means one definition of "dramatic" governs
     both which moments are drawn and which of them move.
 

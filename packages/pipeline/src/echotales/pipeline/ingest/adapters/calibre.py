@@ -7,7 +7,7 @@ Structure per chapter document::
     <p class="block_7"><i class="calibre6">inner thought…</i> narration…</p>
 
 The italics are the reason this source is worth more than its page count
-suggests. plans.md §6 Phase 1 detects `INNER_MONOLOGUE` from attribution verbs
+suggests. plans.md Section 6 Phase 1 detects `INNER_MONOLOGUE` from attribution verbs
 ("thought", "said in his heart"), which is a recall-limited heuristic. Here the
 translator has already marked those spans structurally, giving a second,
 independent signal -- and a labelled slice usable for measuring how well the

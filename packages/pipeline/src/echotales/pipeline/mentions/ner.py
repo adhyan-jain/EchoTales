@@ -1,4 +1,4 @@
-"""Layer 1 mention detection (plans.md §6 Phase 3).
+"""Layer 1 mention detection (plans.md Section 6 Phase 3).
 
 **Qwen2.5, not GLiNER.** The deciding factor is training data rather than
 architecture: Qwen is trained on Chinese web-novel content *and* its English

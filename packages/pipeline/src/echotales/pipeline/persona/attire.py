@@ -6,7 +6,7 @@
 Per-novel, hand-seeded tables rather than graph-backed facts -- `TargetKind`
 (`core/enums.py`) only has `SELF`/`PERSONA`/`MOB_GROUP`, so a faction or a
 region has no row it could attach an `Attribute` to without a schema change
-(the same gap HANDOFF §10 item 5 already flags for item/location entities).
+(the same gap HANDOFF Section 10 item 5 already flags for item/location entities).
 Keeping this as a static lookup is the same "lightest thing that could work"
 call `spans/scene.py::detect_mobs` already made for background crowds: real
 data, scoped to what actually needs it, no migration risk.
@@ -104,7 +104,7 @@ _LOCALE_CUES: dict[str, str] = {
     "hall": "hall", "chamber": "hall", "throne": "hall", "inside": "hall",
     # RI ch1's ancestral-hall scene never says "hall" outside one interior
     # line -- the walk-out and discussion blocks say "ancestral temple" /
-    # "sacred temple" instead (§4.31 item 11), which the cue table missed
+    # "sacred temple" instead (Section 4.31 item 11), which the cue table missed
     # entirely.
     "temple": "hall",
     "courtyard": "courtyard", "gate": "courtyard", "yard": "courtyard",
@@ -227,7 +227,7 @@ APPEARANCE_DEFAULTS: dict[str, dict[str, str]] = {
 
 #: Used when a novel has no seeded table. Deliberately the East Asian
 #: default: this pipeline's target corpus is predominantly translated
-#: Chinese/Korean web fiction (HANDOFF §1), so it is the majority case
+#: Chinese/Korean web fiction (HANDOFF Section 1), so it is the majority case
 #: rather than a neutral one.
 _FALLBACK_APPEARANCE = {
     "hair_color": "black",

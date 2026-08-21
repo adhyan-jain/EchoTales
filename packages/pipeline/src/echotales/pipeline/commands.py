@@ -426,7 +426,7 @@ def cmd_voice(args: argparse.Namespace) -> int:
         print(f"error: {exc}", file=sys.stderr)
         print(
             "the voice bank is CSTR VCTK 0.92; download and extract it under "
-            f"{args.bank!r} (see HANDOFF §7)",
+            f"{args.bank!r} (see HANDOFF Section 7)",
             file=sys.stderr,
         )
         return 2

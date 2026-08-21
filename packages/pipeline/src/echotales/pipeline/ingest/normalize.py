@@ -219,7 +219,7 @@ def name_containment(a: str, b: str, *, ambiguous_tokens: frozenset[str] | None 
 
     **The >= 2-token case** (house-prefixed names, e.g. "Gu Yue Mo Bei" ->
     "Mo Bei") needs no corpus knowledge: the shared part is required to be
-    **at least two tokens**, and that is the whole safety property (§4.5
+    **at least two tokens**, and that is the whole safety property (Section 4.5
     restated) — a shared *single* token is usually a bare surname, which
     identifies a *family* rather than a person, so "Elder Wang" and
     "Xiao Wang" must not merge on the strength of "Wang" alone. No clan list
@@ -227,7 +227,7 @@ def name_containment(a: str, b: str, *, ambiguous_tokens: frozenset[str] | None 
     houses this code has never seen.
 
     **The 1-token case** (a dropped given name, e.g. Korean family-name-first
-    "Kim Dokja" -> "Dokja", §4.15) is the same shape wearing the opposite
+    "Kim Dokja" -> "Dokja", Section 4.15) is the same shape wearing the opposite
     risk: here the *specific* component is the one that survives, and the
     *ambiguous* one (the surname, "Kim") is what's dropped. The 2-token floor
     alone can't tell these apart by token count -- it needs to know which
@@ -339,7 +339,7 @@ def detect_translator_handoffs(
     by romanization variants of themselves. One name changing is noise; twenty
     changing together at a single boundary is a new translator.
 
-    `min_changed` follows plans.md §6 Phase 0 (20+ simultaneous changes).
+    `min_changed` follows plans.md Section 6 Phase 0 (20+ simultaneous changes).
     """
     chapters = list(store.iter_chapters(novel_id))
     if len(chapters) < window * 2:

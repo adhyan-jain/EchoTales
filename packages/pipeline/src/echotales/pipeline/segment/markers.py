@@ -1,4 +1,4 @@
-"""Rule-based narrative-boundary markers (plans.md §6 Phase 2).
+"""Rule-based narrative-boundary markers (plans.md Section 6 Phase 2).
 
 **Which phenomena appear is a property of the individual novel, not of its
 genre.** This distinction is easy to get wrong and expensive when you do:
@@ -21,7 +21,7 @@ Where a device *is* present, it is usually signalled with a fixed formula, and
 that regularity is what makes rule-first detection viable. An LLM pass covers
 the implicit boundaries.
 
-**Asymmetric thresholds** (plans.md §6 Phase 2, revised):
+**Asymmetric thresholds** (plans.md Section 6 Phase 2, revised):
 
 - *Explicitly signalled* boundaries → aggressive detection, low threshold.
   Missing one merges a separate-timeline persona into the main-timeline self,

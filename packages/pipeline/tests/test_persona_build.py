@@ -1,6 +1,6 @@
-"""Persona construction and trait inference (§10 item 4, `4b` step 1).
+"""Persona construction and trait inference (Section 10 item 4, `4b` step 1).
 
-Until `build.py` existed, `architecture.md §4`'s self/persona split had no
+Until `build.py` existed, `architecture.md Section 4`'s self/persona split had no
 code on the persona side: nothing constructed a `Persona`, so nothing
 consumed `SelfPersonaBinding` and voice/image work had nothing to bind to.
 """
@@ -119,7 +119,7 @@ class TestDeterministicTraits:
 
     def test_archetype_is_gender_age_register_only(self) -> None:
         """Big Five picks a voice *within* a bucket and shapes delivery; it
-        deliberately does not partition the bank (`architecture.md §8b`)."""
+        deliberately does not partition the bank (`architecture.md Section 8b`)."""
         p = infer_traits_deterministic("e1", "Granny Ma", surfaces=["Granny Ma"])
         assert p.archetype == "female:elder:formal"
 
@@ -139,7 +139,7 @@ class TestBuildPersonas:
         assert store.get_self_persona_bindings(self_id=entity.id)
 
     def test_non_person_entities_are_skipped(self, tmp_path) -> None:
-        """§10 item 5's typing doing the job it was added for: a location has
+        """Section 10 item 5's typing doing the job it was added for: a location has
         no body to draw and no voice to cast."""
         store = _seeded_store(tmp_path, kind=TargetKind.LOCATION)
         from echotales.pipeline.persona import build_personas

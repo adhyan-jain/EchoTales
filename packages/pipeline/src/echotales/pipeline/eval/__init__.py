@@ -1,6 +1,6 @@
 """Phase 7: evaluation harness.
 
-Moved ahead of scorer work per plans.md §13: measure the retriever ceiling and
+Moved ahead of scorer work per plans.md Section 13: measure the retriever ceiling and
 get a baseline metric before tuning anything downstream of them.
 """
 

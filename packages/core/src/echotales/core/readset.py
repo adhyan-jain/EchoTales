@@ -1,4 +1,4 @@
-"""Read-set tracking for incremental invalidation (plans.md §6 Phase 7).
+"""Read-set tracking for incremental invalidation (plans.md Section 6 Phase 7).
 
 Every derived artifact records which graph facts it consulted. When a later
 event changes some facts, invalidation is the intersection of the changed set

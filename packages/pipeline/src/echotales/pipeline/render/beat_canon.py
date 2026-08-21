@@ -20,8 +20,8 @@ watching the composed video rather than a single generation:**
   to be said, because nothing upstream of this module can derive it from a
   block whose only content is one hostile line of dialogue.
 - The rebirth line. "With the use of the Spring Autumn Cicada I have been
-  reborn" is extracted correctly (§4.27/§4.28) and gets its own panel
-  correctly (§4.28's transformation cue) -- but the *visual* the reader
+  reborn" is extracted correctly (Section 4.27/Section 4.28) and gets its own panel
+  correctly (Section 4.28's transformation cue) -- but the *visual* the reader
   wants is not implied by that sentence: blood pooled where he stands, a
   bloody trail leading to it, a calm and expressionless face, the Cicada
   itself glowing and held up in both palms. None of that is stated in the

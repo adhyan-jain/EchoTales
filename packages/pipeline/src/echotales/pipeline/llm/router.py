@@ -1,6 +1,6 @@
 """The escalation ladder.
 
-Not plumbing. plans.md §7 names "% routed to expensive inference vs. accuracy
+Not plumbing. plans.md Section 7 names "% routed to expensive inference vs. accuracy
 gained" as a contribution of this work, which makes the routing decision a
 measurement instrument. Two consequences shape this module:
 

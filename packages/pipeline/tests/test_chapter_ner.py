@@ -197,7 +197,7 @@ class TestNameContainment:
         assert name_containment("Gu Yue", "Gu Yue Mo Bei") == 0.0
 
     def test_a_shared_surname_is_not_evidence(self) -> None:
-        """HANDOFF §4.5: a bare surname identifies a family, not a person."""
+        """HANDOFF Section 4.5: a bare surname identifies a family, not a person."""
         assert name_containment("Elder Wang", "Xiao Wang") == 0.0
         assert name_containment("Wang", "Elder Wang") == 0.0
 
@@ -208,7 +208,7 @@ class TestNameContainment:
         assert name_containment("Fang Yuan", "Fang Zheng") == 0.0
 
     def test_single_token_needs_ambiguity_data_by_default(self) -> None:
-        """§4.15's ORV gap: without a caller-supplied ambiguity table, a
+        """Section 4.15's ORV gap: without a caller-supplied ambiguity table, a
         1-token shared suffix ("Dokja" in "Kim Dokja") stays the old,
         strictly-2-token-or-nothing behaviour."""
         assert name_containment("Dokja", "Kim Dokja") == 0.0
@@ -220,7 +220,7 @@ class TestNameContainment:
         assert out >= 0.86
 
     def test_single_token_still_blocked_when_it_is_a_known_surname(self) -> None:
-        """"Wang" recurs across other entities in this corpus -- §4.5 still
+        """"Wang" recurs across other entities in this corpus -- Section 4.5 still
         applies even with an ambiguity table supplied."""
         out = name_containment("Wang", "Elder Wang", ambiguous_tokens=frozenset({"wang"}))
         assert out == 0.0
@@ -228,7 +228,7 @@ class TestNameContainment:
 
 class TestDisplayLabel:
     def test_possessive_never_becomes_the_label(self) -> None:
-        """HANDOFF §4.9 item 1 — the longest raw surface is the possessive."""
+        """HANDOFF Section 4.9 item 1 — the longest raw surface is the possessive."""
         assert display_label(["Fang Yuan", "Fang Yuan's"]) == "Fang Yuan"
 
     def test_leading_article_is_dropped(self) -> None:

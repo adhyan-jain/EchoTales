@@ -1111,12 +1111,12 @@ required a design change — all were gaps in existing mechanisms.
 **Also found but NOT fixed (real, small, low-priority):**
 
 - Possessive mob phrase "clan's elders" still missed by `detect_mobs` — zero
-  occurrences in first 10 real chapters, correctly documented in §4.31 as a
+  occurrences in first 10 real chapters, correctly documented in Section 4.31 as a
   known residual gap. No change per EVOLUTION.md's vocabulary-growth rule.
 
 - NER `plausible_name()` fix: strips trailing sentence punctuation (`!?.,;:`)
   before rejecting a candidate — fixes "Gu Yue Bo!" being discarded in ch6
-  (§4.35's diagnosed-but-unimplemented fix). Internal punctuation still rejected.
+  (Section 4.35's diagnosed-but-unimplemented fix). Internal punctuation still rejected.
 
 **Test count: 746 passing** (was 745 before, 682 before the sessions above; +1
 from the negative-prompt regression guard added this session).
@@ -1579,7 +1579,7 @@ uses.
   `/tmp/product2.log`. If it died, re-run
   `scratchpad/ch12.sh` then `scratchpad/product.sh` (both in this session's
   scratchpad; they are three lines each and trivially reconstructed from the
-  commands in §4.41).
+  commands in Section 4.41).
 - **Nothing in this session has been visually verified after the count-tag
   fix.** Every number quoted in 4.40-4.41 predates it.
 
@@ -1746,7 +1746,7 @@ specific reported line has not been re-checked against the actual fix.
 Worth doing once a chapter with real audio is re-rendered.
 
 `uv run pytest packages/` passing throughout (682 at session start,
-counted differently by the time §4.40+'s new test files landed — check
+counted differently by the time Section 4.40+'s new test files landed — check
 the live count with `uv run pytest packages/ --collect-only -q | tail -1`
 rather than trusting a number quoted here, since this file does not keep
 that count current across every session).

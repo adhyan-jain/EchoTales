@@ -1,4 +1,4 @@
-"""Pronoun resolution (plans.md §6 Phase 5, revised).
+"""Pronoun resolution (plans.md Section 6 Phase 5, revised).
 
 **No fastcoref.** It is trained on OntoNotes-style English literary prose and
 degrades badly on translated web fiction: the register, the sentence rhythm and

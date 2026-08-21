@@ -1,6 +1,6 @@
-"""§4.15's ORV gap, end to end: a dropped *given* name should now merge into
+"""Section 4.15's ORV gap, end to end: a dropped *given* name should now merge into
 the entity that introduced it, distinguished from a dropped *surname* (which
-must still stay blocked, §4.5) by corpus-wide token ambiguity rather than a
+must still stay blocked, Section 4.5) by corpus-wide token ambiguity rather than a
 pure token-count threshold. See `normalize.name_containment` and
 `resolve/runner.py::GlobalResolver._ambiguous_tokens` for the mechanism;
 `test_chapter_ner.py::TestNameContainment` covers the function in isolation.
@@ -70,7 +70,7 @@ class TestDroppedGivenNameMerges:
 
     def test_ambiguous_surname_alone_does_not_merge(self) -> None:
         """Sanity control: with two "Kim"s in the cast, a bare "Kim" (not
-        "Dokja") must NOT pick one arbitrarily -- §4.5 still applies to the
+        "Dokja") must NOT pick one arbitrarily -- Section 4.5 still applies to the
         shared surname itself."""
         store = _store()
         store.add_mentions(

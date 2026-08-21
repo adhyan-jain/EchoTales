@@ -1,11 +1,11 @@
 """Human corrections made from the webview: log, then apply.
 
 Two separate things happen to a correction, and neither is "feed it back into
-the resolver as input" -- HANDOFF §6 rules that out explicitly, since a
+the resolver as input" -- HANDOFF Section 6 rules that out explicitly, since a
 resolver fed its own answer key stops being measurable. Instead:
 
 1. **Logged** as a `GoldMention`-adjacent record with `Provenance.HUMAN` and
-   `confirmed=True` -- real evidence for calibrating `ConformalGate` (§4.1)
+   `confirmed=True` -- real evidence for calibrating `ConformalGate` (Section 4.1)
    later, which is the principled path to the pipeline actually improving.
 2. **Applied** to the live SQLite store on request: mentions get rebound,
    the entity list changes, an event is appended to the existing append-only

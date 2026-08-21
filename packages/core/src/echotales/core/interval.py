@@ -1,4 +1,4 @@
-"""Fuzzy temporal intervals (plans.md §2.5).
+"""Fuzzy temporal intervals (plans.md Section 2.5).
 
 Web novels almost never state when a binding *stopped* holding. A new sect
 master is introduced; the text does not say the previous one ceased to be sect
@@ -143,7 +143,7 @@ class FuzzyInterval(BaseModel):
         This is the shape a reveal produces: chapter 200 discloses that Li Wei
         has been the Frost Emperor since before the story began. Modelling the
         start as unbounded-below is what lets a late reveal override the
-        first-attestation prior (plans.md §4.4) instead of contradicting it.
+        first-attestation prior (plans.md Section 4.4) instead of contradicting it.
         """
         return cls(from_lb=NEG_INF, from_ub=first_evidence, to_lb=first_evidence, to_ub=POS_INF)
 

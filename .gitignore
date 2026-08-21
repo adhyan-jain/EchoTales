@@ -18,7 +18,7 @@ data/*.db-shm
 data/echotales.db*
 
 # Working copies the webview backend edits, so a correction can never mutate
-# the originals above. Regenerate with the copy step in HANDOFF §4.18.
+# the originals above. Regenerate with the copy step in HANDOFF Section 4.18.
 data/webview-working/
 
 # Generated review artifacts (contain short text snippets from the sources).

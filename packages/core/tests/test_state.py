@@ -1,6 +1,6 @@
 """Tests for the store and ``state_of``.
 
-Organised around the case table in plans.md §3 -- the set of situations a flat
+Organised around the case table in plans.md Section 3 -- the set of situations a flat
 entity table cannot represent. Each class below is one row of that table, plus
 the temporal and epistemic behaviours the query has to get right.
 """
@@ -135,7 +135,7 @@ class TestGenericDescriptorsNeverEnterTheGraph:
 
 
 # ---------------------------------------------------------------------------
-# plans.md §3 case table
+# plans.md Section 3 case table
 # ---------------------------------------------------------------------------
 
 
@@ -576,7 +576,7 @@ class TestKnowledgeTime:
 
         Reading at chapter 300 about events at chapter 50, the reader now knows
         the binding held then. This is why first-attestation is a soft prior
-        rather than a hard constraint (plans.md §4.4) -- a hard constraint would
+        rather than a hard constraint (plans.md Section 4.4) -- a hard constraint would
         forbid the very binding the reveal establishes.
         """
         make_self(store, "s_x", "X")

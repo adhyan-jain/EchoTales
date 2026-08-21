@@ -1,4 +1,4 @@
-"""Structured evidence scoring (plans.md §6 Phase 6, step 2).
+"""Structured evidence scoring (plans.md Section 6 Phase 6, step 2).
 
 Ten signals are computed per (mention, candidate) pair. A **vector**, not a
 scalar similarity, because the two failure directions on this content need
@@ -21,7 +21,7 @@ Two of the scored five behave distinctively, deliberately:
 
 - **`temporal_validity`** doubles as the pre-filter's hard exclusion: an
   invalid binding is removed from consideration, not merely penalised.
-- **`first_attested_soft_prior` is weak on purpose** (plans.md §4.4). A hard
+- **`first_attested_soft_prior` is weak on purpose** (plans.md Section 4.4). A hard
   first-appearance constraint would forbid the exact reveal the system exists
   to handle — a late chapter disclosing that a binding held from the start.
 """
@@ -145,7 +145,7 @@ def detect_declaration(context: str, lexicon: Lexicon | None) -> tuple[float, st
 
 
 #: Structural identity-continuity assertions, as regexes rather than lexicon
-#: phrases (§4.15's LOTM transmigration case).
+#: phrases (Section 4.15's LOTM transmigration case).
 #:
 #: `detect_declaration`'s lexicon phrases are flat substrings, which cannot
 #: express "memories" and "flooding" separated by an arbitrary verb phrase
@@ -154,8 +154,8 @@ def detect_declaration(context: str, lexicon: Lexicon | None) -> tuple[float, st
 #: an old identity*, whereas transmigration is an *existing identity
 #: acquiring a new name and backstory*. Same evidential strength, different
 #: shape, so a different matcher -- but deliberately feeding the same
-#: `declaration_match` feature, because HANDOFF §4.15 identifies these as one
-#: class of signal and §4.1 makes the pre-filter the only path to a link.
+#: `declaration_match` feature, because HANDOFF Section 4.15 identifies these as one
+#: class of signal and Section 4.1 makes the pre-filter the only path to a link.
 #:
 #: Kept structural (no novel-specific vocabulary) so this transfers to a book
 #: whose reincarnation idiom this code has never seen -- the same design call
@@ -221,7 +221,7 @@ def _word_spans(haystack: str, needle: str) -> list[tuple[int, int]]:
     match inside an unrelated word (a bare "a" is present in "came"), which
     silently defeats the two-name guard `detect_identity_continuity`'s
     precision rests on. Same defect class as the gazetteer's `_is_boundary`
-    (§4.4).
+    (Section 4.4).
     """
     return [
         m.span() for m in re.finditer(rf"(?<!\w){re.escape(needle)}(?!\w)", haystack)
@@ -239,7 +239,7 @@ def detect_identity_continuity(
     link when two different names are sitting next to it, because that is the
     only configuration in which there is a link to assert. Without this guard
     the pattern would FORCE_LINK a mention to whatever retrieval ranked first
-    every time a character recalled their childhood -- and per §4.1 a
+    every time a character recalled their childhood -- and per Section 4.1 a
     pre-filter verdict is not outvoteable by other evidence, so a false
     positive here is unrecoverable rather than merely noisy.
 
@@ -265,7 +265,7 @@ def detect_identity_continuity(
             # the window (rather than only the matched one) errs toward not
             # linking, which is the cheaper failure here: over-splitting is
             # recoverable by a later merge, an unrecoverable FORCE_LINK is
-            # not (§4.1).
+            # not (Section 4.1).
             if index == 0 and memories_owned:
                 continue
             if _near(hit.span(), spans_a) and _near(hit.span(), spans_b):
@@ -388,7 +388,7 @@ def score_evidence(
     # spellings of one name — "Fang Yuan" and its hyphenated spelling — are trivially
     # co-present with each other, and a raw `!=` read that as two people.
     # Also suppressed by an identity-continuity assertion, for the same reason
-    # in a sharper form (§4.15's LOTM transmigration). Two names occupying one
+    # in a sharper form (Section 4.15's LOTM transmigration). Two names occupying one
     # scene is not incidental to transmigration, it *is* transmigration: the
     # old name and the newly-acquired one are necessarily in the same
     # paragraph, because that paragraph is where the acquisition is narrated.

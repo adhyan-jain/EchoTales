@@ -1,4 +1,4 @@
-"""B-cubed coreference scoring against gold (plans.md §7/§8, HANDOFF §4.6/§4.9).
+"""B-cubed coreference scoring against gold (plans.md Section 7/Section 8, HANDOFF Section 4.6/Section 4.9).
 
 Every number in HANDOFF up to this point is either a mention count or a table a
 person eyeballed for plausibility. Neither is falsifiable: "31 entities looks

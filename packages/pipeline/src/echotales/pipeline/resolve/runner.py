@@ -71,7 +71,7 @@ class ResolveReport:
     contradictions: int = 0
     splits: int = 0
     contradiction_kinds: dict[str, int] = field(default_factory=dict)
-    #: Entities typed as something other than a person (§10 item 5). Counted
+    #: Entities typed as something other than a person (Section 10 item 5). Counted
     #: separately from `entities` rather than subtracted from it: they are
     #: real resolved entities, they just must never be cast a voice.
     by_kind: dict[str, int] = field(default_factory=dict)
@@ -152,11 +152,11 @@ class GlobalResolver:
     def _ambiguous_tokens(self) -> frozenset[str]:
         """Name components shared by two or more entities seen so far.
 
-        Feeds `normalize.name_containment`'s single-token case (§4.15's
+        Feeds `normalize.name_containment`'s single-token case (Section 4.15's
         `Dokja`/`Kim Dokja` gap): a token that only ever appears in one
         entity's aliases identifies that entity specifically (a given name);
         one that recurs across several is a bare surname or title and must
-        not merge unrelated people on its own (§4.5). Recomputed per call
+        not merge unrelated people on its own (Section 4.5). Recomputed per call
         rather than cached — `EntityProfile.aliases` grows as resolution
         proceeds, and the corpus is small enough (a few hundred entities at
         most) that this costs nothing next to retrieval/scoring.
@@ -521,7 +521,7 @@ class GlobalResolver:
     # ---- contradiction sweep -----------------------------------------------
 
     def sweep_contradictions(self, *, window: int = 0) -> int:
-        # A window boundary is exactly the point §4.2 nominates for clearing
+        # A window boundary is exactly the point Section 4.2 nominates for clearing
         # the retriever's cached prominence ranking: enough mentions have
         # accumulated since the last rebuild that the drift it tolerates is
         # worth discarding.

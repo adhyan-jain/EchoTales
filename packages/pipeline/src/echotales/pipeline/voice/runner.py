@@ -1,6 +1,6 @@
 """Phase 8: render a novel's script to audio.
 
-Consumes exactly what §4.13's script view already shows a human -- every span
+Consumes exactly what Section 4.13's script view already shows a human -- every span
 in reading order, its speaker, and how confident that attribution is -- which
 is the point `4b` step 5 makes: the script view is not a debugging tool that
 happens to resemble the TTS input, it *is* the TTS input.

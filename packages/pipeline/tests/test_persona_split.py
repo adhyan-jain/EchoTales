@@ -2,7 +2,7 @@
 
 Every regex case here is a sentence taken from the corpus rather than
 invented -- the cue vocabulary in `split.py` exists because the first draft
-of a cue list written from imagination (§4.24's combat verbs) scored zero on
+of a cue list written from imagination (Section 4.24's combat verbs) scored zero on
 real chapters, and a test suite written the same way would have hidden that.
 """
 

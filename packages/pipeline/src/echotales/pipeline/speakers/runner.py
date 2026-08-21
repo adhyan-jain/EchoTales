@@ -397,7 +397,7 @@ def attribute_novel(
             # `_known()`'s regex gate and tier 4's LLM roster otherwise treat
             # it exactly like a person, which is how "Qing Mao Mountain" (a
             # mountain) ended up as the attributed speaker of a shouted line
-            # in RI ch1 (§4.34). `entity_label` is `None` for the much larger
+            # in RI ch1 (Section 4.34). `entity_label` is `None` for the much larger
             # deterministic/gazetteer layer that never classified at all --
             # that stays in, since "unlabelled" is not evidence of anything.
             if mention.entity_label in ("location", "organization"):
@@ -407,7 +407,7 @@ def attribute_novel(
             # speaking, so it can never itself be a fixed name to attribute
             # *to*. Without this it entered the roster verbatim and the LLM
             # tier picked "this one" as a line's speaker, literally, in RI
-            # ch1 (§4.34).
+            # ch1 (Section 4.34).
             if mention.alias_type is AliasType.RELATIONAL_DEICTIC:
                 continue
             if mention.alias_type.enters_graph:
@@ -489,7 +489,7 @@ def attribute_novel(
         # chapter's existing rows first so a re-run that produces fewer
         # spans than a previous run (e.g. a block reclassified out of story
         # content) doesn't leave orphaned stale spans behind. See
-        # `delete_spans_for_chapter`'s docstring; this is where §4.32's
+        # `delete_spans_for_chapter`'s docstring; this is where Section 4.32's
         # phantom "Daoist Gu" speaker survived a re-ingest.
         store.delete_spans_for_chapter(novel_id, chapter.number)
         store.add_spans(spans)

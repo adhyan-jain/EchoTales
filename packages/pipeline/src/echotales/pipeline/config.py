@@ -124,7 +124,7 @@ class Settings(BaseSettings):
     gold_path: Path = Path("data/gold")
     lexicon_path: Path = Path("data/lexicons")
 
-    #: Chapters per LLM processing window (plans.md §6).
+    #: Chapters per LLM processing window (plans.md Section 6).
     window_size: int = 40
 
     #: Conformal target error rate for the LINK decision.

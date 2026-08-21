@@ -1,4 +1,4 @@
-"""LLM fallback for implicit narrative boundaries (plans.md §6 Phase 2).
+"""LLM fallback for implicit narrative boundaries (plans.md Section 6 Phase 2).
 
 **One call per chapter, and only for chapters the rules found ambiguous.**
 

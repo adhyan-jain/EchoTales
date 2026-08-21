@@ -1,4 +1,4 @@
-"""Validation of local mention groups (plans.md §6 Phase 5).
+"""Validation of local mention groups (plans.md Section 6 Phase 5).
 
 Grouping is cheap and slightly reckless; this pass is where precision comes
 back. Every group is checked for violations that prove it cannot denote a

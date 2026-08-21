@@ -1,4 +1,4 @@
-"""Tier 4 of speaker attribution: contextual, LLM-backed (plans.md §6 Phase 4).
+"""Tier 4 of speaker attribution: contextual, LLM-backed (plans.md Section 6 Phase 4).
 
 The three deterministic tiers all lean on context the chapter has already
 built up -- a name introduced by an explicit attribution, an established

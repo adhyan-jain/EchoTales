@@ -1,4 +1,4 @@
-"""Alias-type classification (plans.md §4.1).
+"""Alias-type classification (plans.md Section 4.1).
 
 Assigning a type at detection time is what makes the rest of the resolver
 tractable. Each type carries different resolution behaviour:

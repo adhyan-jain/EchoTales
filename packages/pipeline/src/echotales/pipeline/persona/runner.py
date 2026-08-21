@@ -70,7 +70,7 @@ def get_panel_cast(
     `block_index`), not to the whole `NarrativeSegment`, and that distinction
     is load-bearing.** A `NarrativeSegment` marks *story-time* continuity --
     a dream, a flashback, a time skip -- and a chapter with none of those
-    is correctly exactly one segment covering all of it (§3's own design).
+    is correctly exactly one segment covering all of it (Section 3's own design).
     Reading that as "the scene" for panel casting means every panel in a
     92-block chapter gets the same cast: measured on RI ch1, clan elders
     discussing the harvest got Fang Yuan in their foreground because he

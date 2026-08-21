@@ -1,4 +1,4 @@
-"""Phase 4: speaker attribution by four-tier escalation (plans.md §6 Phase 4).
+"""Phase 4: speaker attribution by four-tier escalation (plans.md Section 6 Phase 4).
 
 Each tier is cheaper and more precise than the next, so a line is only handed
 down when the tier above it cannot answer:
@@ -89,7 +89,7 @@ _PRONOUN_SUBJECT = re.compile(r"\b(?:he|she|they|it)\s+(?:\w+\s+){0,2}?(?:" + _S
 #: name. Deliberately a single verified phrase, not a broad guessed
 #: vocabulary: RI ch1's ancestral-hall scene repeats "the clan head"/"the
 #: Gu Yue clan head" as its speaker tag four separate times and none of them
-#: were ever resolved (§4.34); extend this list only against other real,
+#: were ever resolved (Section 4.34); extend this list only against other real,
 #: checked chapters, not speculatively -- see EVOLUTION.md on the combat-
 #: vocabulary mechanism that scored zero from guessing instead of measuring.
 _ROLE_EPITHETS = ("clan head",)

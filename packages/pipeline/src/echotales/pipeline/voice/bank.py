@@ -4,7 +4,7 @@ Backed by **CSTR VCTK 0.92** (110 English speakers, ~400 sentences each, 48 kHz,
 CC BY 4.0), which is chosen for what casting actually needs rather than for
 size: every speaker ships hand-recorded metadata -- age, gender, accent and
 region -- so a bucket can be built from stated facts instead of from a
-classifier's guess about a voice. `data/voice/` holds it; see `HANDOFF` §7 for
+classifier's guess about a voice. `data/voice/` holds it; see `HANDOFF` Section 7 for
 why corpora are not committed.
 
 **A bank voice is a reference clip, not a trained model.** Chatterbox clones

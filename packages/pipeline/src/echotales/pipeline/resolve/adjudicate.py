@@ -1,4 +1,4 @@
-"""LLM adjudication of deferred cases (plans.md §6 Phase 6).
+"""LLM adjudication of deferred cases (plans.md Section 6 Phase 6).
 
 The expensive tier, reserved for the residual the deterministic path could not
 settle. Per the measured budget this is the *only* affordable way to use a

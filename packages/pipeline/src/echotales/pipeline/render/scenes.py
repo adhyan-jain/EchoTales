@@ -146,7 +146,7 @@ def group_scenes(
         # this, RI ch1's opening -- four unnamed attackers, each getting a
         # fresh anon slot number in turn -- looked like four different
         # people joining the scene one after another, each triggering its
-        # own boundary. EPITHET_SLOT stays counted: an epithet (§4.34) is a
+        # own boundary. EPITHET_SLOT stays counted: an epithet (Section 4.34) is a
         # specific, if unnamed, individual, so its appearance is a real
         # cast signal the way an anonymous slot's is not.
         cast_here = {

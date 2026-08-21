@@ -307,7 +307,7 @@ class ParsedLabel:
 def parse_chapter_label(label: str) -> ParsedLabel:
     """Extract a chapter number and title from a TOC label.
 
-    Regex-first per plans.md §6 Phase 0; callers escalate to an LLM only when
+    Regex-first per plans.md Section 6 Phase 0; callers escalate to an LLM only when
     this returns no number for something that looks like a chapter.
     """
     match = CHAPTER_LABEL.match(label)

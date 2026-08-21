@@ -92,7 +92,7 @@ export const api = {
 
 // Mirrors `SpanType` in packages/core/.../enums.py. NON_DIEGETIC and the
 // narration types are listed first -- the two retype targets actually asked
-// for (§ user request: "every line... option to change it to NON DIEGETIC
+// for (Section user request: "every line... option to change it to NON DIEGETIC
 // and narrator").
 export const SPAN_TYPES = [
   'NON_DIEGETIC',

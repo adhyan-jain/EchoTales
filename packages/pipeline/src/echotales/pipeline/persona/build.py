@@ -1,6 +1,6 @@
-"""Phase 7: build a `Persona` per character and profile it (§10 item 4).
+"""Phase 7: build a `Persona` per character and profile it (Section 10 item 4).
 
-Until this stage existed, `architecture.md §4`'s self/persona split had no
+Until this stage existed, `architecture.md Section 4`'s self/persona split had no
 code on the persona side at all: `Persona` had a runner nowhere in the
 pipeline, so nothing consumed the `SelfPersonaBinding` table and voice/image
 work had nothing to bind to.
@@ -8,7 +8,7 @@ work had nothing to bind to.
 **One persona per self, for now, and that is a real limitation stated
 plainly.** The split exists so that reincarnation, body-swap and sustained
 disguise can put *two* personas on one self (LOTM's Zhou Mingrui / Klein
-Moretti is the worked example in `architecture.md §4` and §4.15). Detecting
+Moretti is the worked example in `architecture.md Section 4` and Section 4.15). Detecting
 that a second body has appeared is an identity-resolution question this
 stage is downstream of, not one it can answer -- `resolve/` decides who is
 whom, and a persona split would have to come from there. What this stage
@@ -46,12 +46,12 @@ from echotales.pipeline.persona.traits import TraitProfile, infer_traits_determi
 
 #: Below this many mentions an entity gets a deterministic profile only. A
 #: model call per walk-on is exactly the per-entity equivalent of the
-#: per-mention waste §3's budget rule forbids, and a character with three
+#: per-mention waste Section 3's budget rule forbids, and a character with three
 #: mentions has almost no evidence to read anyway.
 LLM_MENTION_FLOOR = 25
 
 #: Prominence thresholds, by mention count. Drives generation budget
-#: downstream (plans.md §6 Phase 8) and which characters earn a cloned voice
+#: downstream (plans.md Section 6 Phase 8) and which characters earn a cloned voice
 #: rather than a bank voice (`4b` step 4).
 PRINCIPAL_FLOOR = 300
 RECURRING_FLOOR = 30
@@ -157,7 +157,7 @@ def build_personas(
     profiles: dict[str, TraitProfile] = {}
 
     for entity in store.all_selves(novel_id):
-        # §10 item 5's typing, doing the job it was added for: a location or
+        # Section 10 item 5's typing, doing the job it was added for: a location or
         # a faction has no body to draw and no voice to cast.
         if not entity.kind.is_person:
             report.skipped_non_person += 1

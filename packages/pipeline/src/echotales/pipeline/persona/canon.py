@@ -72,7 +72,7 @@ CANON_APPEARANCE: dict[str, dict[str, dict[str, str]]] = {
 #: there; the graph knows the two bodies are different, but nothing in the
 #: prose ever states what the fifteen-year-old looks like -- RI's narration
 #: describes his *death scene* in chapter 1 and almost nothing afterwards
-#: (§4.24's honest caveat on that output). An extractor cannot invent what
+#: (Section 4.24's honest caveat on that output). An extractor cannot invent what
 #: the text does not say, and a reader can simply write it down.
 #:
 #: Sparse by design: a body with no entry here inherits the character's

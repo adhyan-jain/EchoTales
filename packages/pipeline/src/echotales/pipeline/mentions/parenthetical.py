@@ -1,4 +1,4 @@
-"""Parenthetical disambiguation (plans.md §6 Phase 3).
+"""Parenthetical disambiguation (plans.md Section 6 Phase 3).
 
 A parenthesised name beside another name means one of three quite different
 things, and getting it wrong is expensive in both directions:

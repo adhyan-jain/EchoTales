@@ -47,7 +47,7 @@ export default function AnalysisPanel({ summary, onApply, applyResult, applying,
           <p className="muted small">
             Rebinds mentions/speakers in the SQLite store and logs an event per
             change. Does not change how the resolver decides anything on the
-            next run -- see HANDOFF §6 for why not. Flags are never applied;
+            next run -- see HANDOFF Section 6 for why not. Flags are never applied;
             remove one from the list once you've dealt with it.
           </p>
         </>

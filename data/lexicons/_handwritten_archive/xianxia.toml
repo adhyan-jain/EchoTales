@@ -1,6 +1,6 @@
 # Lexicon for Chinese cultivation / xianxia fiction.
 #
-# plans.md §4.5 requires this to ship on day one: transferable-title handling
+# plans.md Section 4.5 requires this to ship on day one: transferable-title handling
 # is the slice where BookNLP-style baselines score near zero, and it cannot be
 # learned from the text alone because the first holder looks identical to the
 # second.

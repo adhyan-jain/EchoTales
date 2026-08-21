@@ -1,5 +1,5 @@
 """Hand-authored staging for panels a general-purpose director gets wrong
-(§4.30 -- requested after watching the composed video, not from a single
+(Section 4.30 -- requested after watching the composed video, not from a single
 generation)."""
 
 from __future__ import annotations

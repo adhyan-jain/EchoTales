@@ -668,7 +668,7 @@ def build_image_prompt(
     # Hand-authored staging outranks the block's own prose *and* the
     # generic appearance clause -- it exists specifically for panels where
     # neither the prose nor a standing description is the picture a reader
-    # wants (§ this module's docstring), so it goes ahead of both. Tried
+    # wants (Section this module's docstring), so it goes ahead of both. Tried
     # after the character loop first and lost the budget fight every time:
     # "Fang Yuan: midnight black hair, cold narrow eyes" is unremarkable
     # and generic next to "standing in a pool of blood... holding a

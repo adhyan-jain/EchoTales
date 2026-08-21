@@ -1,7 +1,7 @@
 """Controlled vocabularies for the narrative knowledge graph.
 
 Every value here is load-bearing. In particular see `EventType`, where `RETRACT`
-and `CLOSE_INTERVAL` are deliberately distinct members: plans.md §4.3 makes the
+and `CLOSE_INTERVAL` are deliberately distinct members: plans.md Section 4.3 makes the
 distinction non-negotiable, and collapsing them silently corrupts the graph.
 """
 
@@ -35,7 +35,7 @@ class TargetKind(StrEnum):
     #: Non-person entities. Phase 6 mints an entity row for every resolved
     #: name regardless of what it denotes, because a name is a name; these
     #: members are what stop a place or a plot item from then *behaving* like
-    #: a character downstream (§10 item 5). Nothing is deleted -- "the Gu Yue
+    #: a character downstream (Section 10 item 5). Nothing is deleted -- "the Gu Yue
     #: clan" and "the Spring Autumn Cicada" are real, retrievable entities
     #: worth resolving, they simply must never be cast a speaking voice or
     #: drawn as a person. `is_person` is the check consumers should use.
@@ -56,7 +56,7 @@ class TargetKind(StrEnum):
 
 
 class AliasType(StrEnum):
-    """plans.md §4.1.
+    """plans.md Section 4.1.
 
     `GENERIC_DESCRIPTOR` is the important one: it is *not* a binding and must
     never reach the graph. Keeping it out eliminates the largest class of false
@@ -92,7 +92,7 @@ class AliasType(StrEnum):
 
 
 class SpanType(StrEnum):
-    """plans.md §5. Drives both generation pipelines."""
+    """plans.md Section 5. Drives both generation pipelines."""
 
     DIALOGUE = "DIALOGUE"
     NARRATION_ACTION = "NARRATION_ACTION"
@@ -138,7 +138,7 @@ class ReferenceMode(StrEnum):
 
 
 class TruthStatus(StrEnum):
-    """plans.md §4.3.
+    """plans.md Section 4.3.
 
     FABRICATED means an identity invented wholesale rather than impersonating
     a real person -- Fang Yuan's "Wu Yi Hai" is fabricated, not a disguise
@@ -165,7 +165,7 @@ class AssertedBy(StrEnum):
 
 
 class SegmentType(StrEnum):
-    """plans.md §2.4."""
+    """plans.md Section 2.4."""
 
     MAIN = "MAIN"
     FLASHBACK_OWN = "FLASHBACK_OWN"
@@ -196,7 +196,7 @@ class Canonicity(StrEnum):
 
 
 class BlockType(StrEnum):
-    """Phase 0 block-level classification (plans.md §6 Phase 0)."""
+    """Phase 0 block-level classification (plans.md Section 6 Phase 0)."""
 
     PROSE = "PROSE"
     DIALOGUE = "DIALOGUE"
@@ -213,7 +213,7 @@ class BlockType(StrEnum):
 
 
 class EventType(StrEnum):
-    """Append-only log vocabulary (plans.md §5).
+    """Append-only log vocabulary (plans.md Section 5).
 
     RETRACT vs CLOSE_INTERVAL is the distinction that matters most:
 
@@ -242,7 +242,7 @@ class EventType(StrEnum):
 
 
 class Decision(StrEnum):
-    """Three-way gate output from the global resolver (plans.md §6 Phase 6)."""
+    """Three-way gate output from the global resolver (plans.md Section 6 Phase 6)."""
 
     LINK = "LINK"
     NEW = "NEW"
@@ -250,7 +250,7 @@ class Decision(StrEnum):
 
 
 class Prominence(StrEnum):
-    """plans.md §6 Phase 8. Determines generation budget per entity."""
+    """plans.md Section 6 Phase 8. Determines generation budget per entity."""
 
     PRINCIPAL = "PRINCIPAL"
     RECURRING = "RECURRING"

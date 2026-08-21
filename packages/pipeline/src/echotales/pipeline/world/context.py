@@ -15,7 +15,7 @@ ago in story time. Every one of those is already in the graph.
 **Everything is filtered by position, not by existence.** A fact attested in
 chapter 90 must not appear in a chapter 12 brief -- that is the whole reason
 `Attribute` carries `learned_at_pos` and an interval, and the reason
-appearance extraction was changed to date its facts (§4.24). A brief that
+appearance extraction was changed to date its facts (Section 4.24). A brief that
 ignored position would leak the ending into the opening, which for a novel
 built on reveals is the single worst thing this layer could do.
 
@@ -253,7 +253,7 @@ def _appearance_brief(
         return ""
     # Gender has to be passed, not defaulted: omitting it renders every
     # character as "androgynous person", which is how the male protagonist
-    # came out drawn as a woman the first time this leaked (§4.24).
+    # came out drawn as a woman the first time this leaked (Section 4.24).
     gender, age_band = _demographics(
         store, persona_id, novel_id=novel_id, entity_id=entity_id
     )

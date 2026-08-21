@@ -1,4 +1,4 @@
-"""Aho-Corasick gazetteer over confirmed aliases (plans.md §6 Phase 3, layer 2).
+"""Aho-Corasick gazetteer over confirmed aliases (plans.md Section 6 Phase 3, layer 2).
 
 **This is the compound-interest mechanism.** The automaton starts empty and is
 rebuilt at each 30-50 chapter window boundary from aliases the resolver has

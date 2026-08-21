@@ -1,4 +1,4 @@
-"""Per-novel lexicons (plans.md §4.5).
+"""Per-novel lexicons (plans.md Section 4.5).
 
 Different novels use different vocabularies -- Sequence vs Rank, Pathway vs
 Cultivation Path -- so the lexicon is per-source, seeded per genre and grown

@@ -1,4 +1,4 @@
-"""Special-case detectors (plans.md §6 Phase 6).
+"""Special-case detectors (plans.md Section 6 Phase 6).
 
 These run in parallel with scoring and produce **events**, not links. They are
 what make the temporal and epistemic model earn its complexity: without them a

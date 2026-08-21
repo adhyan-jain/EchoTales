@@ -1,4 +1,4 @@
-"""Three-way decision gate via conformal prediction (plans.md §6 Phase 6, step 4).
+"""Three-way decision gate via conformal prediction (plans.md Section 6 Phase 6, step 4).
 
 The gate returns LINK / NEW / **DEFER**. The third option is the important one:
 without it, every ambiguous mention forces a guess, and a wrong guess made at
@@ -80,7 +80,7 @@ class ConformalGate:
             # confirmed gold, the scorer's entire observed range is
             # 0.049-0.349: a 0.5 floor sits above every value it can produce,
             # which made calibration a no-op and left `FALLBACK_LINK_THRESHOLD`
-            # (0.80) in force. That is §4.1's blocker, and this floor was the
+            # (0.80) in force. That is Section 4.1's blocker, and this floor was the
             # mechanism.
             #
             # The separation itself is real and the reason this is safe:

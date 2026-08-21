@@ -114,7 +114,7 @@ stating because it looks like a bug: an **identity-continuity assertion
 suppresses it outright**. Transmigration necessarily narrates the old name
 and the newly-acquired one in the same paragraph — that paragraph is where
 the acquisition happens — so co-presence's premise ("simultaneously present,
-doing different things") is exactly inverted there. See `§4.15` in HANDOFF
+doing different things") is exactly inverted there. See `Section 4.15` in HANDOFF
 and `resolve/evidence.py::detect_identity_continuity`.
 
 ### Not every entity is a person
@@ -161,7 +161,7 @@ through chapter 1 and a chapter-granular boundary would put the 500-year-old
 and the fifteen-year-old in the same epoch. Story positions are floats
 precisely so this is expressible.
 
-**Still open on the other rows.** §4.15's LOTM case (Zhou Mingrui acquiring
+**Still open on the other rows.** Section 4.15's LOTM case (Zhou Mingrui acquiring
 Klein Moretti) is *not* closed by this, and the reason is upstream: resolve
 still produces two separate selves for those names, so there is no single
 consciousness for two personas to hang off. That remains a `resolve/`
@@ -543,8 +543,8 @@ sound mannered.
 
 ## 8c. Panel-to-video assembly — reuse over generation
 
-The visual pipeline (`render/`, HANDOFF §4.23) exists to turn `PanelCast`
-(§4's persona/panel casting) into a finished, watchable chapter — but its
+The visual pipeline (`render/`, HANDOFF Section 4.23) exists to turn `PanelCast`
+(Section 4's persona/panel casting) into a finished, watchable chapter — but its
 central constraint is the opposite of a normal generation pipeline: **the
 goal is to generate as little as possible**, not as much as possible.
 
@@ -557,7 +557,7 @@ cut, with no budget to support it at novel scale. `render/motion.py`
 therefore keys clips by a **small, fixed, generic tag vocabulary**
 (`clash`/`wind`/`flame`/`impact` plus per-archetype idle loops), generates
 each tag **at most once**, and every subsequent match reuses the cached
-clip. This is the same escalation-ladder instinct as §7's LLM budget rule —
+clip. This is the same escalation-ladder instinct as Section 7's LLM budget rule —
 expensive generation gated behind a cheap, deterministic check — applied to
 image/video cost instead of model-call cost.
 
@@ -573,14 +573,14 @@ implementation (client-side Ken Burns, zero generated video) is revised.
 **Image duration is locked to speech, never estimated.** `render/timeline.py`
 reads the actual WAV duration of every voice line already rendered for a
 block (`voice/runner.py`'s manifest) and sums it into that block's on-screen
-time. This mirrors §7's general principle that a downstream stage should
+time. This mirrors Section 7's general principle that a downstream stage should
 read a fact an upstream stage already established rather than re-derive or
 guess it — here, "how long does this shot hold" is exactly as knowable as
 "how long is this line," because the line has already been synthesised by
 the time this stage runs.
 
 **Same backend-naming discipline as every other stage in this pipeline**
-(§9's `llm`/`voice` packages): `render/panels.py`, `render/motion.py` and
+(Section 9's `llm`/`voice` packages): `render/panels.py`, `render/motion.py` and
 `render/compose.py` each name a capability (image generation, image-to-video,
 video composition) behind a `Protocol`, never a vendor, with a
 dependency-free stub standing in for local testing and CI.

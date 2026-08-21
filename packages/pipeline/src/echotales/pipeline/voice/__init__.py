@@ -1,4 +1,4 @@
-"""Phase 8: voice casting and speech synthesis (`4b`, `architecture.md §8b`).
+"""Phase 8: voice casting and speech synthesis (`4b`, `architecture.md Section 8b`).
 
 Four pieces, in dependency order:
 
@@ -6,7 +6,7 @@ Four pieces, in dependency order:
   speaker metadata (age, gender, accent) rather than from a classifier's
   guess about a voice.
 - `casting.py` -- assigns a bank voice per character, colouring **within**
-  archetype buckets because §8b already established that global
+  archetype buckets because Section 8b already established that global
   collision-free assignment is not achievable on this content.
 - `delivery.py` -- turns a line's context into synthesis parameters, and is
   where non-negotiable #10 is enforced: an explicit delivery marker

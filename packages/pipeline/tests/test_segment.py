@@ -1,6 +1,6 @@
 """Tests for Phase 2 narrative segmentation.
 
-The governing asymmetry (plans.md §6 Phase 2): a missed flashback costs one
+The governing asymmetry (plans.md Section 6 Phase 2): a missed flashback costs one
 temporal misattribution; a false flashback costs that *plus* a spurious
 timeline every later fact gets attached to. So most of these tests are about
 what segmentation must refuse to do.

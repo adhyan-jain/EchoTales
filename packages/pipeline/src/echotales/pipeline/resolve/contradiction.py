@@ -1,4 +1,4 @@
-"""Contradiction detection over committed links (plans.md §6 Phase 6, revised).
+"""Contradiction detection over committed links (plans.md Section 6 Phase 6, revised).
 
 **The gazetteer compounds wrong decisions exactly as well as right ones.**
 

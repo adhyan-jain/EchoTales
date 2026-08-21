@@ -1,6 +1,6 @@
 """Body changes: when one continuity of consciousness occupies a second body.
 
-`architecture.md §4`'s whole reason for splitting `Self` from `Persona` is
+`architecture.md Section 4`'s whole reason for splitting `Self` from `Persona` is
 that a consciousness can outlive a body -- and until this module existed the
 pipeline never detected one, so `persona/build.py` minted exactly one persona
 per self and said so as a known limitation. Every downstream consumer
@@ -21,7 +21,7 @@ it is wrong in a way no amount of prompt tuning fixes, because the error is in
 the graph, not the prompt.
 
 **Detection is lexical first, model-confirmed second.** The cue vocabulary
-below was grepped out of the two novels rather than guessed -- §4.24's combat
+below was grepped out of the two novels rather than guessed -- Section 4.24's combat
 verbs scored literally zero on real chapters because they were written from
 imagination, and that lesson applies exactly here. A model call then *vetoes*
 candidates: the lexicon is deliberately generous (it fires on any chapter that
@@ -281,7 +281,7 @@ def _near(blocks: set[int], index: int, window: int = _PRESENCE_WINDOW) -> bool:
     emerged before his eyes" and LOTM ch1's "memories began flooding him"
     each sit in a block whose only reference to the character is the pronoun
     "his" -- and an unresolved pronoun is not a mention, so a same-block rule
-    finds neither. That is §10 item 11d (mention resolution is the ceiling on
+    finds neither. That is Section 10 item 11d (mention resolution is the ceiling on
     everything above it) showing up here rather than a reason to widen the
     rule indefinitely: three blocks is a paragraph or two, close enough that
     the narration is still about whoever the scene was just about.
@@ -294,7 +294,7 @@ def _speaker_keys(store: Store, novel_id: str, target_id: str) -> set[str]:
 
     `Span.speaker_self_id` does not hold a `Self` id despite its name -- the
     attribution ladder writes a *surface form* there and resolution never
-    revisits it (§4.21, found the same way in voice casting). Joining on
+    revisits it (Section 4.21, found the same way in voice casting). Joining on
     `comparison_key` is the same fix `voice/runner.py::speaker_index` makes,
     applied to one entity rather than the whole cast.
     """
@@ -797,7 +797,7 @@ def is_split(store: Store, self_id: str) -> bool:
 def split_selves(store: Store, novel_id: str) -> dict[str, list[str]]:
     """`self_id -> [persona_id, ...]` for every character with a body change.
 
-    The ablation figure (§10 item 11b) needs exactly this list: the characters
+    The ablation figure (Section 10 item 11b) needs exactly this list: the characters
     a flat pipeline gets wrong.
     """
     out: dict[str, list[str]] = {}

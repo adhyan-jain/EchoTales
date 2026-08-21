@@ -185,7 +185,7 @@ TASK_PROFILES: dict[Task, TaskProfile] = {
     # CHARACTER_PROFILE above.
     #
     # **qwen2.5:7b, not the 14b originally specified for this stage.** A 14B
-    # q4 is ~9 GB of weights against §3's 8 GB card and this file's own
+    # q4 is ~9 GB of weights against Section 3's 8 GB card and this file's own
     # VRAM_BUDGET_FRACTION (0.70 -> ~5.7 GB), so it cannot be resident here
     # at all -- naming it would fail `models_required`'s preflight rather
     # than degrade quietly, which is the right failure but not a usable

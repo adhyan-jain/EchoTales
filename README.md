@@ -134,7 +134,7 @@ Stated here because they are load-bearing, not incidental.
   buckets and residual collisions between non-co-occurring minor characters are
   accepted and logged.
 - **Visual pipeline is a 3-chapter showcase**, not a volume-scale system.
-- **Phase 6 thresholds are untuned.** See `HANDOFF.md` §4.1.
+- **Phase 6 thresholds are untuned.** See `HANDOFF.md` Section 4.1.
 - **Copyright.** For internal coursework only. Not for distribution. Source
   texts are not redistributed by this repository and must be supplied by the
   user.

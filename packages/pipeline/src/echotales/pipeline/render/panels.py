@@ -894,7 +894,7 @@ def character_looks(
     which is the right answer for a cast list and the wrong one for a
     panel -- so panel rendering always passes a real position.
 
-    Returns None for a non-person entity -- §10 item 5's typing again: a
+    Returns None for a non-person entity -- Section 10 item 5's typing again: a
     location resolves like a name but has no face to draw. The clause and
     the sheet are independent: a character can have extracted appearance but
     no generated sheet yet (references not run), which is exactly the

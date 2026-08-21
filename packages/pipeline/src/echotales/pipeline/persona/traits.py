@@ -7,7 +7,7 @@ Five continuous traits do not cluster into voice categories; age, gender and
 register do.
 
 **One call per entity, above a mention-count floor -- never per mention.** The
-§3 budget rule ("no stage may call a model per-span or per-mention at bulk")
+Section 3 budget rule ("no stage may call a model per-span or per-mention at bulk")
 applies here as everywhere, and this stage is naturally the cheapest kind:
 there are ~80 entities in a 199-chapter novel against ~9,500 mentions.
 
@@ -99,7 +99,7 @@ class TraitProfile:
 
     @property
     def archetype(self) -> str:
-        """The voice-bank bucket key (`4b` step 2, `architecture.md §8b`).
+        """The voice-bank bucket key (`4b` step 2, `architecture.md Section 8b`).
 
         Gender/age/register only. Big Five picks a voice *within* a bucket and
         shapes delivery; it deliberately does not partition the bank, because

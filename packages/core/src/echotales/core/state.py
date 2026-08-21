@@ -1,4 +1,4 @@
-"""``state_of()`` -- the central query (plans.md §6 Phase 7).
+"""``state_of()`` -- the central query (plans.md Section 6 Phase 7).
 
     state_of(target, timeline, position, observer=READER)
       -> {aliases, attributes, relationships, persona, truth_status}

@@ -5,7 +5,7 @@ See `attire.py` for the 4-tier prompt-infilling fallback and `runner.py` for
 (foreground characters, background mobs, environment) from what the graph
 and `spans/scene.py`'s active-scene registry already know.
 
-`build.py` is the persona-construction stage (§10 item 4): it mints one
+`build.py` is the persona-construction stage (Section 10 item 4): it mints one
 `Persona` per character entity, binds it to its `Self`, and writes a trait
 profile as `Attribute` rows under `TargetKind.PERSONA`. `traits.py` defines
 the vocabulary those profiles use, and `extract.py` is the optional model

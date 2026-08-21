@@ -1,4 +1,4 @@
-"""Lexicon induction from the text (plans.md §4.5, revised).
+"""Lexicon induction from the text (plans.md Section 4.5, revised).
 
 plans.md requires a transferable-title list on day one, because the first
 holder of a title is textually identical to the second — only prior knowledge

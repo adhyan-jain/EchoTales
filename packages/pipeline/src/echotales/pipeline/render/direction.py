@@ -12,7 +12,7 @@ not: **what single image would a reader want here?** That is a
 comprehension task, and comprehension is exactly what the assembler lacked.
 
 **One call per beat, not per block** -- ~14 a chapter, which is the same
-budget discipline §3 applies everywhere, and is only affordable because
+budget discipline Section 3 applies everywhere, and is only affordable because
 `render/beats.py` cut panels from 89 to ~14.
 
 The director is told the canonical appearance of whoever is present

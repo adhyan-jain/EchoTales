@@ -1,4 +1,4 @@
-"""Phase 5: local anaphora resolution (plans.md §6 Phase 5).
+"""Phase 5: local anaphora resolution (plans.md Section 6 Phase 5).
 
 **Not clustering.** Non-negotiable #1. Clustering assumes similarity implies
 identity, and this content violates that constantly in both directions: "Fang

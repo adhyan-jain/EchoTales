@@ -524,8 +524,8 @@ reasoning at the time, not prose polish.
 
 ### 4.1b Gold confirmed, gate calibrated — and the answer is "the features are too weak" *(2026-08-12)*
 
-The owner bulk-approved the gold set (§4.12) so calibration could finally
-run. **It ran, and it disproves §4.1's implied fix.** Recorded here because
+The owner bulk-approved the gold set (Section 4.12) so calibration could finally
+run. **It ran, and it disproves Section 4.1's implied fix.** Recorded here because
 the negative result is more useful than the item it replaces.
 
 `eval/calibrate.py` replays resolution against confirmed gold and labels
@@ -541,7 +541,7 @@ and never had. On RI vol 1, 964 scored pairs:
 **First finding: a floor in `calibrate()` made calibration a no-op.**
 `link_threshold = max(incorrect[index], 0.5)` sits above the scorer's entire
 observed range (0.049–0.349), so every calibration silently fell back to
-`FALLBACK_LINK_THRESHOLD = 0.80`. That floor was §4.1's mechanism. Removed —
+`FALLBACK_LINK_THRESHOLD = 0.80`. That floor was Section 4.1's mechanism. Removed —
 `ScoringModel.probability` is a logistic over hand-set weights with a large
 negative bias, so its output is a *score*, not a likelihood, and reading 0.5
 as "even odds" is a category error.
@@ -565,12 +565,12 @@ visibly wrong merges — `Chi Chen`/`Chi Lian`/`Mo Chen`/`Chi Shan`/`Chi She`/
 features cannot separate.
 
 **So the pre-filter-only regime is not a workaround, it is the correct
-choice for this feature set**, and §4.1 should be read accordingly: the
+choice for this feature set**, and Section 4.1 should be read accordingly: the
 problem is not an unreachable threshold, it is that
 `surface_similarity`/`context_embedding_similarity`/`speech_partner`/
 `temporal_validity` do not carry enough signal to separate two members of
 one clan. **The next move is better features, not a better threshold** —
-and `_ambiguous_tokens` (§4.15) is the shape of what works: a signal that
+and `_ambiguous_tokens` (Section 4.15) is the shape of what works: a signal that
 knows "Chi" is shared by six people and therefore proves nothing.
 
 Default behaviour is unchanged (82 entities / 821 links): an uncalibrated
@@ -578,7 +578,7 @@ Default behaviour is unchanged (82 entities / 821 links): an uncalibrated
 calibrated gate automatically. Reproduce with
 `eval/calibrate.py::calibrate_from_gold` against a scratch DB.
 
-### 4.1 The scorer cannot reach LINK *(blocker — root cause found; see §4.1b for the resolution)*
+### 4.1 The scorer cannot reach LINK *(blocker — root cause found; see Section 4.1b for the resolution)*
 
 **This is not a tuning problem. It is arithmetic.** `DEFAULT_BIAS = -4.0` and
 `gate.FALLBACK_LINK_THRESHOLD = 0.80` were set independently and are mutually
@@ -599,11 +599,11 @@ over-splitting, the 47% singleton rate, and why `deferred` sat at 8 — the DEFE
 band between 0.35 and 0.80 is almost unreachable from below.
 
 **Not fixed, deliberately.** Rebalancing the bias against an uncalibrated
-threshold by hand is fitting to nothing, which is the §4.6 trap. What was fixed
+threshold by hand is fitting to nothing, which is the Section 4.6 trap. What was fixed
 instead is the categorical half: signals that genuinely *are* near-certain moved
-into the pre-filter where they can act. See §4.11.
+into the pre-filter where they can act. See Section 4.11.
 
-The real fix is gold + `ConformalGate.calibrate()`, still §5 item 3.
+The real fix is gold + `ConformalGate.calibrate()`, still Section 5 item 3.
 
 ### 4.2 Phase 6 retrieval still mildly superlinear
 **Improved,** not fixed. `retrieve()` no longer scores every profile, but the
@@ -619,14 +619,14 @@ prominent-entity fallback re-sorts all profiles per group.
 10 min. The residual growth is the per-group `sorted(self.profiles...)` call —
 cache that ranking and refresh it at window boundaries.
 
-### 4.3 Contradiction detector — built *(review §1, done)*
+### 4.3 Contradiction detector — built *(review Section 1, done)*
 `resolve/contradiction.py` sweeps at every window boundary and on a final pass,
 re-scoring committed links against evidence accumulated since. Three classes:
 co-presence discovered later, too many distinct normalised names, and
 mutually-exclusive attribute conflicts. Emits `split` and returns affected
-entities to the deferred queue. See §4.8 for its validation gap.
+entities to the deferred queue. See Section 4.8 for its validation gap.
 
-### 4.4 Gazetteer guards — complete *(review §1, done)*
+### 4.4 Gazetteer guards — complete *(review Section 1, done)*
 All three now present: word-boundary matching (`_is_boundary`), min-length-2
 (`add()`), and `AMBIGUITY_BLOCKLIST` — ~70 words that are common nouns in some
 contexts and names in others. Blocked as whole surface forms only; compounds
@@ -643,7 +643,7 @@ Direction (not yet implemented): keep `comparison_key` broad for **retrieval**
 decorated variants as separate candidates and let context decide.
 
 ### 4.6 Retriever recall@k measured only on the easy case
-The harness exists (`eval/retriever_eval.py`) and enforces the §8.2 gate, but
+The harness exists (`eval/retriever_eval.py`) and enforces the Section 8.2 gate, but
 **gold mode has no data**. The self-retrieval smoke test returns 100% at every
 k over 313 cases — which is the easy case by construction and proves only that
 there is no indexing or tokenisation bug.
@@ -660,7 +660,7 @@ finds **zero** contradictions.
 That is expected and diagnostic rather than reassuring: the detector catches
 over-*merging* (too many aliases on one entity, or two forms co-present), and
 Phase 6 currently over-*splits*, so no entity accumulates enough aliases to
-trigger it. It cannot be validated against the corpus until §4.1 thresholds are
+trigger it. It cannot be validated against the corpus until Section 4.1 thresholds are
 tuned.
 
 ### 4.7 ORV block classification gaps
@@ -683,11 +683,11 @@ noise).
 and "Mo Bei" (ch24–36) were two entities. Jaro-Winkler is prefix-weighted and
 scores them ~0.5, under the similarity floor. `normalize.name_containment()`
 compares *token suffixes* instead and is a pre-filter, not a scored feature —
-per §4.1 a scored feature could not have linked them.
+per Section 4.1 a scored feature could not have linked them.
 
 Two guards, both load-bearing and both tested:
 - The shared tail must be **≥ 2 tokens**, so a bare shared surname does not
-  merge a family. That is §4.5 restated structurally, with no clan list.
+  merge a family. That is Section 4.5 restated structurally, with no clan list.
 - The short form must be a **suffix**, not any substring. The house name itself
   ("Gu Yue") is a two-token *prefix*, and without this it merged the whole clan.
 
@@ -715,7 +715,7 @@ retrievable identity. Left unresolved instead; counted as `deictic_only`.
 **A/B on RI ch1–40**, identical code, the only difference being whether layer 1
 is `QwenNerDetector` or `HeuristicDetector` (`--no-llm`):
 
-| Metric | deterministic | + LLM layer 1 | + the §4.11 fixes |
+| Metric | deterministic | + LLM layer 1 | + the Section 4.11 fixes |
 |---|---:|---:|---:|
 | mentions | 3,676 | 1,678 | 1,479 |
 | entities | **551** | 43 | **31** |
@@ -744,7 +744,7 @@ argument that layer 1 recall is now too tight.
    `Flower Wine` and `Moonlight` — which the deterministic path found with
    137/74/64 mentions — are gone entirely. These are real named world entities.
    The cause is the model's per-chapter judgement varying, not a filter. Needs
-   entity *typing* (§4.9 item 3 as originally written) rather than a filter, so
+   entity *typing* (Section 4.9 item 3 as originally written) rather than a filter, so
    items are kept and labelled rather than kept or dropped by accident.
 2. **Speaker attribution regression** — above.
 3. **Singletons are now mostly one-chapter walk-ons** (`Gu Yue Bei Ju`,
@@ -790,7 +790,7 @@ filter was deleting them outright, not mistyping them. Fixed by threading
 layer 1's own character/location/organization label into the commonness
 check (`mentions/runner.py::rejected`) so the determiner test only applies to
 surfaces labelled `character`. This directly closes HANDOFF's earlier item
-"item/artifact names — needs entity typing" (§4.9 old item 3) for the
+"item/artifact names — needs entity typing" (Section 4.9 old item 3) for the
 recall-loss half of that problem; the mistyping half (an item shown as if it
 were a character in the review table) is unaffected and still open.
 
@@ -808,7 +808,7 @@ Recall improved as expected. Precision dropped 8.4 points -- some newly
 admitted surfaces are merging into the wrong entity (`Gu Yue`, the clan, is
 now sometimes entity #7 with 23 mentions, sometimes folded elsewhere; a
 one-token `Gu` singleton also appeared). Not chased further this session --
-flagging it rather than tuning blind, per §4.6's warning. **Extend gold past
+flagging it rather than tuning blind, per Section 4.6's warning. **Extend gold past
 ch5 before drawing conclusions from this table**; five chapters is a small
 enough sample that a handful of disagreements moves both numbers a lot.
 
@@ -851,12 +851,12 @@ stated in-text at that point), which may be a genuinely hard case rather than
 a pipeline defect. Worth checking against a few more chapters before treating
 36% as representative.
 
-### 4.14 Full RI vol 1 run, LLM layer 1 + all §4.11 fixes
+### 4.14 Full RI vol 1 run, LLM layer 1 + all Section 4.11 fixes
 
 The 40-chapter numbers held up at full volume, and the shape of the win is the
 same: not a small improvement, a different regime.
 
-| Metric | deterministic (§4.9 original) | LLM + fixes, full 199 ch |
+| Metric | deterministic (Section 4.9 original) | LLM + fixes, full 199 ch |
 |---|---:|---:|
 | entities | **1,862** | **82** |
 | seen once only | 47% (875) | 20% (16) |
@@ -871,14 +871,14 @@ noise. The full run took 37 min, almost entirely the mentions stage (9.9
 s/chapter); everything downstream is now single-digit seconds.
 
 **Speaker attribution fell further at full scale** (64.9% -> 48.8%, worse than
-the 40-chapter sample's 54.3%) -- confirms §4.9's flagged regression and shows
+the 40-chapter sample's 54.3%) -- confirms Section 4.9's flagged regression and shows
 it compounds over the volume rather than being a chapter-1-5 artifact. This is
 now the clearest single number arguing that layer-1 recall is too tight, ahead
 of the singleton rate.
 
 ### 4.15 Cross-novel A/B (LOTM, ORV ch1-40) — one real defect found, not xianxia-overfitting
 
-Run to check whether §4.11's fixes (`name_containment` especially) were
+Run to check whether Section 4.11's fixes (`name_containment` especially) were
 tuned to RI's house-prefix naming convention and would misfire elsewhere.
 **They did not appear to** -- both novels' det->LLM moved the same way RI
 did: LOTM 730 -> 102 entities, ORV 859 -> 63, same shape each time, and
@@ -906,15 +906,15 @@ to recognise "memories began flooding him" as an identity-continuity
 assertion, the same class of signal as "his true name was X" but running in
 the opposite temporal direction -- an *existing* identity acquiring a new
 name and backstory, not a new name revealing an old identity. Lexicon-driven
-declaration phrases are induced per-novel (§6), so a phrase this
+declaration phrases are induced per-novel (Section 6), so a phrase this
 novel-specific was never going to be in the seed lexicon; it would need
 either a broader structural pattern ("memories... flooded/surfaced/returned")
 or to wait for the lexicon induction pass to see enough examples across the
 volume. Not fixed this session -- flagged because it's a clean, specific,
 citable case for whoever tackles the declaration detector next, and because
 it's independent confirmation that reincarnation/transmigration (which
-`architecture.md §4` designed for) is currently unhandled by any live code
-path, matching §4b's finding that `Persona` itself has no runner.
+`architecture.md Section 4` designed for) is currently unhandled by any live code
+path, matching Section 4b's finding that `Persona` itself has no runner.
 
 **ORV (859 -> 63 entities, same regime shift) found a second, cleaner case of
 the same failure family — since fixed, see the top-of-file note on this
@@ -933,9 +933,9 @@ by target_id in the store:
 `target_id` across all 148 occurrences -- unambiguous in this cast, verified
 directly against the mention table rather than assumed. Structurally this is
 identical to RI's `Gu Yue Mo Bei` -> `Mo Bei`: a personal name with its
-leading component dropped. `name_containment` (§4.11) doesn't catch it
+leading component dropped. `name_containment` (Section 4.11) doesn't catch it
 because the shared tail is **one token**, and the >= 2-token floor is there
-specifically to stop a bare *surname* from merging unrelated people (§4.5,
+specifically to stop a bare *surname* from merging unrelated people (Section 4.5,
 `Wang`). The floor is doing its job on the surname side and costing recall on
 the given-name side, because Korean family-name-first order puts the
 ambiguous component (surname, shared by many) and the specific component
@@ -1028,14 +1028,14 @@ closing a loop the static build had no way to close. Six correction types,
 all wired end-to-end (backend + UI) except where noted.
 
 **Two things happen to a correction, and neither is "feed it back into the
-resolver as input"** -- §6 rules that out explicitly (a resolver graded
+resolver as input"** -- Section 6 rules that out explicitly (a resolver graded
 against its own answer key measures nothing). Instead:
 
 1. **Logged** (`corrections.py::Correction`, JSONL per novel at
    `data/corrections/<novel>.jsonl`) as a human-provenance record, distinct
    from and *not* the same file as the model-drafted gold in `data/gold/` --
    this is a faster, less rigorous log meant to accumulate real evidence for
-   calibrating `ConformalGate` later (§4.1), not a replacement for gold review.
+   calibrating `ConformalGate` later (Section 4.1), not a replacement for gold review.
 2. **Previewed immediately**: `webview_server.py::_overlay_corrections`
    redirects the payload's display -- entity list, every inline mark, every
    span's speaker -- to reflect pending *and* applied corrections, recomputed
@@ -1058,11 +1058,11 @@ against its own answer key measures nothing). Instead:
 - **`reassign_speaker`** -- a dialogue/inner-monologue line has the wrong
   speaker or none, addressed by `Span.id`. Click the speaker cell.
 - **`merge_lines`** -- two adjacent spans in one block are one sentence the
-  classifier split (§4.16's quote-plus-narration-tag case is the common one).
+  classifier split (Section 4.16's quote-plus-narration-tag case is the common one).
   "merge ↑" button, hover-revealed per line. **No live preview** -- folding
   two spans into one mid-render was judged too likely to hide a subtle bug for
   the time available; the merge is only visible after Apply. Verified directly
-  instead: applying the exact §4.16 example (block 29, chapter 9) turned two
+  instead: applying the exact Section 4.16 example (block 29, chapter 9) turned two
   stored spans back into one, text byte-identical to the original block
   (re-sliced from source, not string-joined, so the join character is never
   guessed at or duplicated).
@@ -1128,8 +1128,8 @@ headless Chromium via the DevTools protocol, real clicks on the actual DOM
 (merge icon, mention marks, speaker cells, flag/merge buttons), reading back
 both the rendered page and a fresh SQLite query afterward. Confirmed on the
 exact cases this session had already found and named: merging `Klein` and
-`Zhou Mingrui` in LOTM (§4.15) produced one 1131-mention entity; merging RI
-chapter 9 block 29 (§4.16) restored the quote-plus-narration-tag sentence to
+`Zhou Mingrui` in LOTM (Section 4.15) produced one 1131-mention entity; merging RI
+chapter 9 block 29 (Section 4.16) restored the quote-plus-narration-tag sentence to
 one span with its original text intact.
 
 One test-harness false alarm from the merge-only verification pass is worth
@@ -1164,7 +1164,7 @@ alternation only, explicitly not claiming to be coreference: consecutive
 unresolved lines alternate between up to `_MAX_ANON_SLOTS = 4` chapter-scoped
 slots, and any resolved line (a real speaker) restarts the count. The id
 (`f"{novel_id}:anon:{chapter:g}:{slot}"`) is never written as a `Self` row --
-see architecture.md §4's new note on this being a stand-in for `Persona`,
+see architecture.md Section 4's new note on this being a stand-in for `Persona`,
 which still has no runner. New `AttributionMethod.ANONYMOUS_SLOT` stays out
 of the tracked attribution-coverage KPI on purpose; it means "linked to a
 known identity," and an anonymous slot deliberately is not one.
@@ -1236,10 +1236,10 @@ discarded, same as the regex tiers already discard an unrecognised
 capitalised token.
 
 **New capability — auto-flag non-character entities**
-(`resolve/runner.py::_maybe_flag_non_character`, item 5 in §10's list):
+(`resolve/runner.py::_maybe_flag_non_character`, item 5 in Section 10's list):
 NER's own "location"/"organization" label was being computed and then
 discarded — every mention that reaches resolve becomes a `Self` regardless,
-since there's no non-person `TargetKind` (see §10 item 5 for why this is
+since there's no non-person `TargetKind` (see Section 10 item 5 for why this is
 capped short of a real fix). `Mention.entity_label` now carries the label
 through (additive nullable column, lazy `ALTER TABLE` migration in
 `Store._migrate` — this project has no other migration mechanism); an
@@ -1298,23 +1298,23 @@ run.
   bare "Dong Tu" alias elsewhere in the book — no clan/surname-prefix
   stripping in `variants.py`. Different bug from the two fixed above; this
   one is a resolver change, not an ingestion/segmentation one.
-- §10 item 8 (new): recurring unnamed characters (a named character's
+- Section 10 item 8 (new): recurring unnamed characters (a named character's
   retinue, a minor character across a few chapters) still get a fresh
   anonymous slot every chapter — no cross-chapter persistence exists.
 - `create_mention` has no frontend UI yet (above).
 - Extending `TargetKind` past `SELF`/`PERSONA` so a flagged item/location
   can actually stop behaving like a character everywhere, not just get a
-  review note (§10 item 5).
+  review note (Section 10 item 5).
 
 ### 4.21 Phases 7 and 8 — personas, voice casting, TTS (2026-08-12)
 
 **Phase 7 (`persona/build.py`)** mints one `Persona` per character entity,
 binds it, and writes a trait profile as `Attribute` rows under
-`TargetKind.PERSONA`. This closes §10 item 4 and unblocks everything below.
+`TargetKind.PERSONA`. This closes Section 10 item 4 and unblocks everything below.
 
-*One persona per self*, so `architecture.md §4`'s table is still aspirational
+*One persona per self*, so `architecture.md Section 4`'s table is still aspirational
 below its first row: reincarnation needs a *second* persona, and deciding a
-second body exists is a `resolve/` question Phase 7 sits downstream of. §4.15's
+second body exists is a `resolve/` question Phase 7 sits downstream of. Section 4.15's
 LOTM case now links the identity but produces one self with one persona, not
 one self with two sequential personas.
 
@@ -1338,7 +1338,7 @@ narration *neighbourhoods* holding other characters' pronouns too.
   than hidden: it skews young (few real `elder` voices), and it has **no
   register metadata**, so register does not partition the bank — it becomes
   a synthesis parameter instead.
-- **Engine is Chatterbox (MIT), not XTTS-v2** as §4b originally proposed.
+- **Engine is Chatterbox (MIT), not XTTS-v2** as Section 4b originally proposed.
   XTTS is non-commercial-only from a shut-down company and has no emotion
   control; Chatterbox has an explicit `exaggeration` dial. User confirmed
   no near-term commercialisation, but MIT costs nothing to prefer.
@@ -1346,7 +1346,7 @@ narration *neighbourhoods* holding other characters' pronouns too.
   during synthesis** — same non-negotiable as every GPU stage (measured:
   ollama alone holds 5.0 of 8.0 GB).
 - **Casting colours within buckets**, principals first, age relaxed before
-  gender. Collisions logged, not claimed absent (`architecture.md §8b`).
+  gender. Collisions logged, not claimed absent (`architecture.md Section 8b`).
 - **Non-negotiable #10 is enforced at synthesis**, not just extraction: a
   `FLAT` marker overrides scene sentiment *and* the speaker's Big Five
   baseline.
@@ -1381,7 +1381,7 @@ Databases in `data/reruns/` (git-ignored). RI, phases 0-7, warm NER cache:
 | 7 personas | 191.1s | **75 personas** |
 | **total** | **548s** | |
 
-**120 entities of which only 75 are people** — §10 item 5's typing is
+**120 entities of which only 75 are people** — Section 10 item 5's typing is
 excluding 45 locations/organisations from the cast at full scale, which is
 the clearest evidence it does what it was built for. Read the 120 against
 the older documented 82 with care: this is a *fresh* run (new NER, 9,717
@@ -1408,7 +1408,7 @@ Also surfaced: NER returned truncated JSON on chapter 143 (handled, chapter
 skipped with a warning) — pre-existing robustness gap in `chapter_ner.py`,
 not new.
 
-### 4.31 User watch-through of the §4.30 video — nine real defects, none fixed yet *(2026-08-15)*
+### 4.31 User watch-through of the Section 4.30 video — nine real defects, none fixed yet *(2026-08-15)*
 
 The author watched `data/video_v3/reverend-insanity/ch1.mp4` start to finish
 with sound on and reported nine specific problems. **Nothing in this
@@ -1426,7 +1426,7 @@ inference from the code, not confirmed by re-running anything.
    being *known*, and nothing revisits an anonymous slot once the
    speaker's identity becomes clear later in the same scene. This is a
    real gap distinct from the tracked "attribution regressed 64.9% →
-   48.8%" number in §4.9/§4.14 -- that number measures coverage, not
+   48.8%" number in Section 4.9/Section 4.14 -- that number measures coverage, not
    whether an anonymous slot silently swallows an identifiable speaker.
 
 2. **Voice casting ignores authority/register.** The clan leader -- an
@@ -1440,7 +1440,7 @@ inference from the code, not confirmed by re-running anything.
 
 3. **Speed reverted: 1.25x is too fast, back to 1.0.** `compose.py`'s
    `speed` default and the CLI's `--speed` default are both `1.25` right
-   now (§4.30). Change both to `1.0` first -- this is the one purely
+   now (Section 4.30). Change both to `1.0` first -- this is the one purely
    mechanical fix in this list, no design question attached to it.
 
 4. **The "~30 panels would be enough" framing was wrong; retracted by the
@@ -1476,7 +1476,7 @@ inference from the code, not confirmed by re-running anything.
    changes panel to panel; the author gave a specific reference
    description earlier in this project (waist-length black hair, cold
    narrow eyes, per `canon.py`) that isn't being held. Root cause is
-   already known and *already partly fixed, just not wired in*: §4.30
+   already known and *already partly fixed, just not wired in*: Section 4.30
    generated real reference sheets (`data/references_v2/`) but no render
    has been pointed at them yet -- `render_panels` reports
    `conditioned_panels=0` for every run to date, meaning every panel is
@@ -1488,7 +1488,7 @@ inference from the code, not confirmed by re-running anything.
 9. **More panels only after they're relevant, not before.** Direct
    sequencing instruction from the author: fix relevance (items 6-8)
    first, then raise `--max-panels`. Producing more of an already-wrong
-   panel wastes the same GPU time §10 item 11 (block-range testing) was
+   panel wastes the same GPU time Section 10 item 11 (block-range testing) was
    built to protect.
 
 10. **Gu/Gu worms mis-classified, and the definition should come from the
@@ -1509,7 +1509,7 @@ inference from the code, not confirmed by re-running anything.
 11. **Group scenes render as one isolated figure with no one else and no
     background.** The ancestral hall scene (clan leader and elders
     present) rendered as a single unrelated figure, no other people, no
-    hall. Given §4.30's `has_mob`/`resolved_subjects` work was aimed
+    hall. Given Section 4.30's `has_mob`/`resolved_subjects` work was aimed
     exactly at this class of scene, the likely next question is whether
     `detect_mobs` (`spans/scene.py`) is actually firing on this specific
     block's language ("elders", "ancestral hall" style phrasing) or
@@ -1535,7 +1535,7 @@ doesn't already contain.
 
 ### 4.30 Real cloned audio, block-scoped casting, and the panels that go with them *(2026-08-15)*
 
-Direct response to watching the §4.29 video with the sound on and at real
+Direct response to watching the Section 4.29 video with the sound on and at real
 length: the cast was wrong in several panels, the opening had nothing to
 draw, playback was slower than the reel format this is modelled on, and
 the audio was silent. All four are now fixed and verified end to end --
@@ -1548,7 +1548,7 @@ Chatterbox-cloned dialogue for every character line.
 ```
 
 **`present_cast`'s non-person filter never worked, and the reason is a
-second stale-column bug in the same family as §4.15's.** `Mention
+second stale-column bug in the same family as Section 4.15's.** `Mention
 .target_kind` is written once when a mention first links and never
 updated when the resolver's typing pass later reclassifies the entity --
 verified directly: "Qing Mao Mountain" (LOCATION) and "Daoist Gu"
@@ -1605,14 +1605,14 @@ inventing a detail the text does not support, the same discipline
 here to a hand-authored directive instead. Reworded to "a small glowing
 Gu artifact" and left open rather than re-forced in either direction.
 
-**Real audio, finally.** VCTK's zip (11.7 GB, §4.29 already found it
+**Real audio, finally.** VCTK's zip (11.7 GB, Section 4.29 already found it
 complete) extracted properly this time -- into `data/`, not `/tmp`, which
 is a small tmpfs and filled on the first attempt. `load_vctk` sees all
 110 speakers. Chatterbox runs via `uv run --with chatterbox-tts --with
 "setuptools<81"` -- an **ephemeral overlay**, not a second `.venv`: it
 resolves per-invocation without touching the project's own environment,
 which means the "chatterbox and diffusers can't share a venv" blocker in
-§4.21/§4.25 was never actually true, only under-specified. `setuptools<81`
+Section 4.21/Section 4.25 was never actually true, only under-specified. `setuptools<81`
 is required because Chatterbox's watermarker (`perth`) imports
 `pkg_resources`, which modern `setuptools` stopped bundling -- the failure
 with no pin is `TypeError: 'NoneType' object is not callable`, nothing in
@@ -1647,7 +1647,7 @@ one portion of it or all of it.
 ### 4.29 First real chapter video with the fixed prompts *(2026-08-14)*
 
 Ran the full pipeline end to end after the token-budget and reference-sheet
-fixes (§4.28's follow-up): stub voice (real, correctly-timed WAVs; no real
+fixes (Section 4.28's follow-up): stub voice (real, correctly-timed WAVs; no real
 TTS yet) → 14 GuoFeng3 panels with the fixed prompts → stub motion clips →
 `ffmpeg` compose with captions, on RI chapter 1 against `ri-body.db` (has
 the persona split and per-body appearance from earlier this session).
@@ -1663,7 +1663,7 @@ ch1.mp4: 1080x1920, 938.0s video == 938.0s audio (exact), 321 MB
 been reborn, going back to the time of 500 years ago!" line (t=855s, block
 83): a real ink-style panel, waist-length flowing black hair as the
 composition, correctly captioned and attributed to Fang Yuan. This is the
-same frame described in §4.27/§4.28's design discussion, now actually in a
+same frame described in Section 4.27/Section 4.28's design discussion, now actually in a
 composed, timed, captioned video rather than a standalone generation.
 
 **One non-issue worth recording so it isn't re-investigated:** a frame
@@ -1678,17 +1678,17 @@ svd` runs. Confirmed by reconstructing the shot timeline offline
 against the flat frame's block index.
 
 **VCTK's zip is now fully downloaded** (11.7 GB, matches the archive's own
-listed size) -- §4.21/§10 item 9's "2.5 of ~11 GB, partial" is stale. Not
+listed size) -- Section 4.21/Section 10 item 9's "2.5 of ~11 GB, partial" is stale. Not
 extracted this session (an attempt into `/tmp` filled the 7.7 GB tmpfs
 before I redirected it into `data/voice/`, wasting time worth flagging: extract
 into the repo's own disk, `/tmp` is tmpfs and small). Extracting it and
-wiring `chatterbox-tts` (remember the separate-venv warning, §4.25) is what
+wiring `chatterbox-tts` (remember the separate-venv warning, Section 4.25) is what
 turns this session's silent stub audio into a real audiobook track.
 
 ### 4.28 Per-body appearance, and panels chosen by drama *(2026-08-13)*
 
 Two changes that turned out to be one: the pipeline knew a character could
-change bodies (§4.27) and neither the extractor nor the camera used it.
+change bodies (Section 4.27) and neither the extractor nor the camera used it.
 
 **Appearance is extracted per body, not per character.** Pooling a
 regressor's evidence into one call asks the model to average a 500-year-old
@@ -1728,17 +1728,17 @@ RI ch1 after: 14 panels, and the rebirth holds two of them (blocks 82 and
 
 **The through-line worth keeping:** one definition of "a body changed here",
 consumed by the graph, the beat segmenter and the director. These have
-drifted before — §4.24 records the director's combat stems and `motion.py`'s
+drifted before — Section 4.24 records the director's combat stems and `motion.py`'s
 clip tags becoming disjoint vocabularies, so a block scored maximally on
 violence and then played the neutral idle loop.
 
 ### 4.27 The persona split — two bodies, one consciousness *(2026-08-13)*
 
-**§10 item 11a, done.** `persona/split.py`. Fang Yuan is a 500-year-old
+**Section 10 item 11a, done.** `persona/split.py`. Fang Yuan is a 500-year-old
 demonic cultivator in chapter 1 and a fifteen-year-old clan boy for the
 other 198 chapters, and until now the graph said he was one body throughout
 — which made every panel of him wrong on one side of that line or the other.
-`architecture.md §4` was designed around exactly this case and `build.py`
+`architecture.md Section 4` was designed around exactly this case and `build.py`
 carried "one persona per self, for now" as a stated limitation. It no longer
 does.
 
@@ -1766,7 +1766,7 @@ body does not. A flat pipeline cannot produce the second line at all.
 | ORV | 6 | 6 | 1 false positive (Bihyung) |
 
 Full RI persona stage: **182.7s for 76 personas across 75 characters**,
-against §4.22's 191.1s for 75 — the split costs nothing measurable.
+against Section 4.22's 191.1s for 75 — the split costs nothing measurable.
 
 **The corpus corrected four things, none of which a fixture would have.**
 
@@ -1775,7 +1775,7 @@ against §4.22's 191.1s for 75 — the split costs nothing measurable.
    LOTM ch1's "memories began flooding him" refer to the character only as
    "his" — and an unresolved pronoun is not a mention, so the obvious
    same-block presence rule found *neither* of the two cases the module
-   exists for. Widened to a ±3-block neighbourhood. This is §10 item 11d
+   exists for. Widened to a ±3-block neighbourhood. This is Section 10 item 11d
    (mention resolution is the ceiling) showing up in a new place.
 2. **The clearest statement in each chapter is the character's own line.**
    Fang Yuan *says* "With the use of the Spring Autumn Cicada I have been
@@ -1783,7 +1783,7 @@ against §4.22's 191.1s for 75 — the split costs nothing measurable.
    Narration-only detection missed both. Dialogue and inner monologue now
    count when the speaker is this entity and the line is first-person —
    which needs the `speaker_self_id`↔entity join on `comparison_key`, the
-   same §4.21 defect voice casting hit.
+   same Section 4.21 defect voice casting hit.
 3. **Echoes swamp events.** Fang Yuan's rebirth is referred back to in
    chapters 2, 19, 71, 105, 135, 145, 187 and 198. A distance window alone
    gave him **eight bodies**. A cue of a kind already accepted is now folded
@@ -1804,10 +1804,10 @@ not a filter.
 
 **LOTM's transmigration is still not expressible, and the reason is
 upstream.** Resolve produces `Zhou Mingrui` and `Klein` as two separate
-selves (§4.15, still open — needs the declaration detector), so there is no
+selves (Section 4.15, still open — needs the declaration detector), so there is no
 single consciousness for two personas to hang off. Every ch1 candidate there
 was correctly vetoed as a back-reference; the two the model kept before the
-regex fix were the trance above. This is a clean statement of what §4.15
+regex fix were the trance above. This is a clean statement of what Section 4.15
 costs, not a defect in this module.
 
 **What changed downstream.** `f"{self_id}:body1"` was hardcoded in seven
@@ -1820,7 +1820,7 @@ of one character do not come out as the same face. `persona_at` is total: a
 database with no bindings returns `:body1`, so every existing graph keeps
 working unsplit.
 
-**How much of the ch1/ch20 contrast is extracted, stated exactly.** §4.28
+**How much of the ch1/ch20 contrast is extracted, stated exactly.** Section 4.28
 made extraction run per body, and it does separate them from the text: body
 1 carries `deathly pale` from the death scene, body 2 does not. But RI's
 narration describes Fang Yuan's death scene and very little about him
@@ -1840,7 +1840,7 @@ attribute count off that table will double-count.
 
 ### 4.26 `world/` — structured facts for every entity, and position-filtered retrieval *(2026-08-13)*
 
-**The gap.** The graph has typed its entities since §10 item 5 and has had a
+**The gap.** The graph has typed its entities since Section 10 item 5 and has had a
 temporal fact table all along, and nothing ever populated either for
 anything that was not a character's face. Measured on the real RI database:
 **10 locations and 35 organisations -- Qing Mao Mountain, Gu Yue Village,
@@ -1910,7 +1910,7 @@ documentation. **There is no free hosted image API usable for a batch.**
 
 **The recommendation for the research phase is to pay the ~$2** for one to
 three demonstration chapters. The contribution is the graph -- `plans.md`
-§0 says so outright -- and image quality is a confound to remove, not a
+Section 0 says so outright -- and image quality is a confound to remove, not a
 variable to optimise. Free/local is the right answer for *shipping*, where
 each user brings their own GPU and per-user cost is zero, which is also a
 genuinely stronger product architecture than any API tier.
@@ -1924,7 +1924,7 @@ filter.
 
 ### 4.24 Phase 7b + Phase 9 completion — appearance, reference sheets, manga panels *(2026-08-13)*
 
-§4.23 built the video *assembly* (timing, compositing, shot decisions) but
+Section 4.23 built the video *assembly* (timing, compositing, shot decisions) but
 left four gaps that meant it could never produce a watchable panel. All four
 are now closed, and the work was driven against the real RI database rather
 than fixtures — which is where most of what follows came from.
@@ -2005,7 +2005,7 @@ style.
 
 **First real end-to-end chapter video, RI ch1.** Produced with a synthetic
 6-speaker voice bank and the stub TTS (VCTK is a partial download — 2.5 GB
-of ~11 GB — so §4.21's blocker still stands), stub panel images, and a
+of ~11 GB — so Section 4.21's blocker still stands), stub panel images, and a
 **real `ffmpeg` encode**:
 
 ```
@@ -2018,7 +2018,7 @@ clips: block 2 (score 6), block 7 (score 5)
 
 **The 89 is superseded — do not quote it as the current panel count.** That
 run predates `render/beats.py`; one panel per *block* was the defect that
-module exists to fix, and the same chapter now produces **14** (§4.28). The
+module exists to fix, and the same chapter now produces **14** (Section 4.28). The
 timing and shot numbers below still hold.
 
 The timing claim is the one that matters and it holds exactly: picture
@@ -2118,9 +2118,9 @@ identity held, composition free.
 > rather than every fact claiming to hold from the entity's first sighting.
 > That much makes appearance answerable by `state_of(..., position)`.
 >
-> **Not fixed, and this is the flagship case §4 was designed for:** Fang
+> **Not fixed, and this is the flagship case Section 4 was designed for:** Fang
 > Yuan needs **two personas on one self** -- the aged pre-regression body
-> and the regressed one -- exactly the split `architecture.md §4` describes
+> and the regressed one -- exactly the split `architecture.md Section 4` describes
 > and `persona/build.py` flags as its known "one persona per self, for now"
 > limitation. Until that exists, `reference_gen` builds one sheet per
 > character from a merged profile, and panels cannot ask "what did he look
@@ -2140,7 +2140,7 @@ identity held, composition free.
 > silently rearrange the image stack otherwise. This is the single most
 > likely thing to waste an afternoon here.
 
-**The recurring lesson across §4.24: the persona table's stored values
+**The recurring lesson across Section 4.24: the persona table's stored values
 cannot be trusted in existing databases.** `prominence` and `gender` both
 read as defaults on `data/reruns/*.db`, and both had to be re-derived at
 point of use. Anything else reading those columns has the same bug.
@@ -2153,7 +2153,7 @@ contamination noted above; it is visible in the output, not just the
 attributes.
 
 **Status: qwen2.5:7b — not the 14b this stage was specified with.** A 14B q4
-is ~9 GB of weights against §3's 8 GB card and `tasks.py`'s own
+is ~9 GB of weights against Section 3's 8 GB card and `tasks.py`'s own
 `VRAM_BUDGET_FRACTION` (~5.7 GB), so it cannot be resident; naming it would
 fail the `models_required` preflight outright rather than degrade.
 
@@ -2238,7 +2238,7 @@ sub-stages (`--skip-panels`/`--skip-motion`/`--skip-compose`) mirroring
 tests across `test_render_panels/motion/director/timeline/compose/runner.py`,
 including one real end-to-end `ffmpeg` encode), but **nothing has run
 against a real novel or real audio yet.** Concretely blocked on the same
-gap §4.21 already flagged for Phase 8, not a new one: `data/voice/` (VCTK)
+gap Section 4.21 already flagged for Phase 8, not a new one: `data/voice/` (VCTK)
 is not downloaded, so no real `manifest.jsonl` with real per-line durations
 exists to build a real timeline against. `SDXLEngine`/`SVDEngine` are also
 unexercised — `torch`/`diffusers` are not installed (`pip install
@@ -2261,7 +2261,7 @@ forms in this chapter are names**; the returned vocabulary is then matched over
 every span by the same Aho-Corasick machinery layer 2 uses
 (`mentions/chapter_ner.py`). Two reasons:
 
-- Cost. Per-span is 34.5 h by the §3 budget; per-chapter is ~35 min for 199
+- Cost. Per-span is 34.5 h by the Section 3 budget; per-chapter is ~35 min for 199
   chapters (measured 9.9 s/chapter including chunking).
 - Correctness. Offsets, word boundaries and overlap resolution stay exact
   instead of being hallucinated back as character positions. The model
@@ -2283,8 +2283,8 @@ whole clause as an entity, so this is load-bearing, not defensive.
 
 ## 4b. Voice / TTS design — **superseded, kept for its reasoning** (2026-08-07)
 
-**This section is the design *proposal*; §4.21 is what was built.** Where
-they differ, §4.21 wins — most notably the engine (Chatterbox, MIT, not
+**This section is the design *proposal*; Section 4.21 is what was built.** Where
+they differ, Section 4.21 wins — most notably the engine (Chatterbox, MIT, not
 XTTS-v2) and the bank (VCTK, for its hand-recorded age/gender/accent
 metadata). Kept because the trade-offs it works through are still the
 reasoning behind the built version.
@@ -2293,7 +2293,7 @@ Not started, but scoped now because it consumes exactly what the graph
 produces and the design decisions constrain what `Persona` needs to carry.
 `plans.md` already committed to the shape: `persona` owns "voice timbre,
 physical attributes -- this is what image generation and TTS bind to", and
-`architecture.md §8b` already ruled out global collision-free voice
+`architecture.md Section 8b` already ruled out global collision-free voice
 assignment in favour of archetype-bucket colouring. Both stand; nothing below
 relitigates them.
 
@@ -2311,14 +2311,14 @@ choice, not an architecture choice.
 **Pipeline, in dependency order:**
 
 1. **Trait extraction — one LLM call per `Self` above a mention-count floor**,
-   not per mention. Same discipline as layer 1 (§4.10): the input is the
+   not per mention. Same discipline as layer 1 (Section 4.10): the input is the
    entity's accumulated evidence (attributed dialogue, narrator descriptions,
    relationships already in the graph), the output is Big Five scores plus
    coarse demographics (age band, gender, register). This is a new
    `Task.CHARACTER_PROFILE` in `llm/tasks.py`, same router.
 2. **Archetype bucket = demographics + register, not raw Big Five.** Five
    continuous traits don't cluster into voice categories; age/gender/register
-   do. Reuses the bucket concept `architecture.md §8b` already committed to
+   do. Reuses the bucket concept `architecture.md Section 8b` already committed to
    for collision avoidance — one bucketing serves both voice-collision
    avoidance and reference-voice selection.
 3. **Big Five picks the voice within the bucket**, and separately shapes
@@ -2333,13 +2333,13 @@ choice, not an architecture choice.
    mirrors the hybrid local/API escalation ladder already built for the LLM
    tier (`llm/router.py`), same pattern applied to voice budget instead of
    inference tier.
-5. **Consumes the script view (§4.13) directly.** `ScriptLine.speaker_label` +
+5. **Consumes the script view (Section 4.13) directly.** `ScriptLine.speaker_label` +
    `attribution_method` is already the exact input TTS needs: text, who says
    it, and how confident the attribution is. An `UNRESOLVED` line is a
    decision point (narrator voice? skip? flag for manual pass?) the script
    view now makes visible before synthesis, not after.
 
-**Blocked on:** §4.10's speaker-attribution regression (54.9% -> 48.8% at full
+**Blocked on:** Section 4.10's speaker-attribution regression (54.9% -> 48.8% at full
 volume). Casting a voice for a line with no resolved speaker is meaningless,
 so recovering attribution coverage is upstream of this being buildable at all
 against the current run, not just a nice-to-have.
@@ -2355,6 +2355,6 @@ appearance, no voice timbre, despite the docstring claiming both.
 `store.add_persona`/`get_persona` exist but **nothing in the pipeline ever
 constructs a `Persona`** — no runner creates one from a resolved `Self`. So
 this is not "add fields to a working stage", it is "the self/persona split
-in architecture.md §4 has no code on the persona side at all". Phase 6 only
+in architecture.md Section 4 has no code on the persona side at all". Phase 6 only
 produces `Self` rows today.
 

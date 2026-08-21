@@ -1,4 +1,4 @@
-"""Block-level content classification (plans.md §6 Phase 0).
+"""Block-level content classification (plans.md Section 6 Phase 0).
 
 Every block of a chapter is sorted into one of the `BlockType` categories
 before any identity processing happens. Two of these carry most of the value:

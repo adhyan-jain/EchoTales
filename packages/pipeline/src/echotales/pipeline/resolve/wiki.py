@@ -1,4 +1,4 @@
-"""Wiki-style entity summaries (plans.md §6 Phase 6).
+"""Wiki-style entity summaries (plans.md Section 6 Phase 6).
 
 Regenerated from the graph at each window boundary and used as LLM context in
 the next window. The direction of authority matters and is easy to get

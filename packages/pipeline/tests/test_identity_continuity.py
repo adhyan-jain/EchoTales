@@ -1,4 +1,4 @@
-"""§4.15's LOTM transmigration case: identity continuity across a name *change*.
+"""Section 4.15's LOTM transmigration case: identity continuity across a name *change*.
 
 `detect_declaration`'s lexicon phrases run in the opposite temporal direction
 (a new name revealing an old identity) and are flat substrings, so they cannot

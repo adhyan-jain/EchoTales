@@ -280,7 +280,7 @@ CREATE TABLE IF NOT EXISTS observation (
     PRIMARY KEY (observer_id, fact_ref)
 );
 
--- Every LLM call routed by the escalation ladder. plans.md §7 names
+-- Every LLM call routed by the escalation ladder. plans.md Section 7 names
 -- "% routed to expensive inference vs accuracy gained" as a contribution, so
 -- this table is evaluation data, not telemetry.
 CREATE TABLE IF NOT EXISTS llm_call (
@@ -299,7 +299,7 @@ CREATE TABLE IF NOT EXISTS llm_call (
 );
 CREATE INDEX IF NOT EXISTS ix_llm_stage ON llm_call(stage, tier);
 
--- Read-set tracking for cache invalidation (plans.md §6 Phase 7).
+-- Read-set tracking for cache invalidation (plans.md Section 6 Phase 7).
 CREATE TABLE IF NOT EXISTS derived_artifact (
     id TEXT PRIMARY KEY,
     tier TEXT NOT NULL,
@@ -614,7 +614,7 @@ class Store:
         ]
 
     def void_span(self, segment_ids: Sequence[str]) -> None:
-        """Flip segments to VOIDED (the illusion-arc case, plans.md §2.4).
+        """Flip segments to VOIDED (the illusion-arc case, plans.md Section 2.4).
 
         Facts inside a voided span stop contributing to canonical-timeline
         queries but remain fully queryable for "what did the reader believe at
@@ -1215,7 +1215,7 @@ class Store:
         )
 
     def escalation_stats(self) -> list[dict[str, Any]]:
-        """Per-stage escalation rates -- direct input to the §7 contribution."""
+        """Per-stage escalation rates -- direct input to the Section 7 contribution."""
         cur = self.conn.execute(
             "SELECT stage, tier, COUNT(*) AS calls, SUM(escalated) AS escalations,"
             " SUM(prompt_tokens+completion_tokens) AS tokens, AVG(latency_ms) AS avg_ms"

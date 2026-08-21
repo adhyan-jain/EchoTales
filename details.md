@@ -35,7 +35,7 @@ per-file map.
 
 ### `plans.md`
 The original design document. Treated as the specification — section numbers
-are cited throughout the code (`plans.md §4.3`, non-negotiable #5, etc.) so any
+are cited throughout the code (`plans.md Section 4.3`, non-negotiable #5, etc.) so any
 reader can trace a line of code back to the decision that motivated it.
 
 ---
@@ -52,7 +52,7 @@ behaviour that would otherwise be duplicated at call sites.
 | Enum | Purpose | Notable members / properties |
 |---|---|---|
 | `TargetKind` | `SELF` vs `PERSONA` | decides where an attribute routes |
-| `AliasType` | the §4.1 typology | `.enters_graph` is `False` only for `GENERIC_DESCRIPTOR`; `.is_transfer_eligible`; `.is_speaker_relative` |
+| `AliasType` | the Section 4.1 typology | `.enters_graph` is `False` only for `GENERIC_DESCRIPTOR`; `.is_transfer_eligible`; `.is_speaker_relative` |
 | `SpanType` | the 8 span kinds | `.is_renderable_visually` excludes `NARRATION_EXPOSITION` — kept in audio, skipped in panels |
 | `ReferenceMode` | is the mention physically present? | `.is_physically_present` gates panel casting |
 | `TruthStatus` | `TRUE`/`CLAIMED`/`CONTESTED`/`FALSE`/`UNKNOWN`/`FABRICATED`/`INFERRED` | `FABRICATED` = invented wholesale, not impersonating a real person |
@@ -97,7 +97,7 @@ one most worth reading closely.
   retraction; the docstring says so because the two are easy to conflate.
 
 ### `src/echotales/core/models.py`
-Pydantic v2 models for every table in §5.
+Pydantic v2 models for every table in Section 5.
 
 - `DiscoursePosition` — `(chapter, offset)`, total order, with comparison
   operators and `as_sortable()`/`from_sortable()` for SQL indexing.
@@ -200,7 +200,7 @@ widening bounds never strengthens certainty, and that overlap is symmetric.
 Named cases cover the decay property, re-attestation, and fuzzy-end transfer.
 
 ### `tests/test_state.py`
-40 tests organised as **one class per row of the §3 case table**: ordinary
+40 tests organised as **one class per row of the Section 3 case table**: ordinary
 character, reincarnation, body swap, clone/avatar, possession, sustained
 disguise, dream persona. Plus transferable titles, retraction-vs-interval-end,
 knowledge time, voided spans, attribute routing, certainty propagation, and
@@ -882,7 +882,7 @@ one scene, which the raw co-presence check read as two people standing
 together, firing *before* the pre-filter that would have merged them ever
 got a chance.
 
-**Measured after the LLM layer-1 change (§ mentions/runner.py above) plus
+**Measured after the LLM layer-1 change (Section mentions/runner.py above) plus
 these fixes, full volumes:** RI 199 ch: 1,862 → **82** entities (47% → 20%
 singleton rate). Cross-novel: LOTM 730 → 102, ORV 859 → 63 -- same regime
 shift on both, i.e. the fix generalises rather than being overfit to RI's
@@ -923,27 +923,27 @@ Western given-name-*prefix* case the suffix rule does not reach.
 
 ### `src/echotales/pipeline/persona/` — Phase 7
 
-Closes the gap where `architecture.md §4`'s self/persona split had no code on
+Closes the gap where `architecture.md Section 4`'s self/persona split had no code on
 the persona side at all: nothing constructed a `Persona`, so
 `SelfPersonaBinding` was a dead table and voice/image work had nothing to
 bind to.
 
 **`split.py`** — body changes: when one continuity of consciousness occupies
 a second body, and from which position. This is what makes
-`architecture.md §4`'s reincarnation row real rather than aspirational.
+`architecture.md Section 4`'s reincarnation row real rather than aspirational.
 
 - **Cues were grepped out of the corpus, not imagined.** RI ch1's "I have
   been reborn, going back to the time of 500 years ago" and LOTM ch1's
   "memories began flooding him" are both in the pattern tables verbatim.
-  §4.24's combat vocabulary scored literally zero on real chapters for the
+  Section 4.24's combat vocabulary scored literally zero on real chapters for the
   opposite reason, and that lesson drove this.
 - **Evidence is narration near the character *or* their own first-person
   line.** Both worked examples needed both halves: the cue blocks contain
   only the pronoun "his" (an unresolved pronoun is not a mention, so a
-  same-block presence rule finds neither — §10 item 11d again), and the
+  same-block presence rule finds neither — Section 10 item 11d again), and the
   clearest statement in each chapter is the character saying it about
   himself. A `speaker_self_id`↔entity join on `comparison_key` is required
-  for that, the same §4.21 defect voice casting hit.
+  for that, the same Section 4.21 defect voice casting hit.
 - **Three guards, each added because the corpus broke the version without
   it.** A passage naming a *different* character is about them (RI ch109's
   "Fang Yuan's rebirth changed his situation" was minting bodies for every
@@ -968,7 +968,7 @@ chapter 1, rebirth**, which is the correct answer; LOTM 0 (blocked upstream —
 resolve still splits Zhou Mingrui from Klein, so there is no one self to
 carry two bodies); ORV 1 false positive (Bihyung, from a passage discussing
 reincarnation in the abstract). Costs ~0 wall clock on top of Phase 7:
-182.7s for the full RI persona stage against §4.22's 191.1s.
+182.7s for the full RI persona stage against Section 4.22's 191.1s.
 
 **`canon.py::CANON_BY_BODY`** — per-body appearance overrides, layered on the
 character's entry. Extraction cannot describe a body the prose never
@@ -979,7 +979,7 @@ renders "gaunt with age and injury" versus "slim adolescent build, not yet
 grown", from one query differing only in position.
 
 **`build.py`** — `build_personas()` mints one persona per *body epoch* of
-each *character* entity (`kind.is_person`, so §10 item 5's typing excludes
+each *character* entity (`kind.is_person`, so Section 10 item 5's typing excludes
 places and factions), binds each over its interval, and writes the trait
 profile as `Attribute` rows under `TargetKind.PERSONA` — where
 `models.Attribute`'s own docstring says appearance/age/voice belong, so
@@ -1046,9 +1046,9 @@ elicitation paragraph for every speaker and often start with a breath.
 `nearest_bucket` relaxes **age before gender**. `pick_mob_voice` takes an
 explicit `Random` so re-rendering a chapter cannot silently recast extras.
 
-**`casting.py`** — within-bucket graph colouring per `architecture.md §8b`,
+**`casting.py`** — within-bucket graph colouring per `architecture.md Section 8b`,
 principals first. Collisions are recorded in the report, not avoided at all
-costs, because §8b explicitly declines to claim global collision-freedom.
+costs, because Section 8b explicitly declines to claim global collision-freedom.
 
 **`delivery.py`** — context → Chatterbox `exaggeration`/`cfg_weight`, moved
 together in opposite directions (raising intensity speeds speech; lowering
@@ -1078,7 +1078,7 @@ and possessives) and resolution never revisits it; the join is on
 ### `src/echotales/pipeline/resolve/appearance_extract.py` — Phase 7b
 
 What a character physically looks like, which nothing extracted before
-(HANDOFF §4.24). One `Task.APPEARANCE_EXTRACTION` call per prominent entity
+(HANDOFF Section 4.24). One `Task.APPEARANCE_EXTRACTION` call per prominent entity
 over narration where that entity is `ReferenceMode.PRESENT` — a character
 described in someone else's dialogue is not being *looked at*, and scraping
 those passages is how a disguise or a rumour gets baked into a reference
@@ -1091,7 +1091,7 @@ re-running on a wider range adds attestations instead of replacing them.
 
 Two details that came from real data, not design: prominence is **derived
 from mention count** rather than read off `Self.prominence` (stale
-`INCIDENTAL` for the entire cast in every existing DB — see §4.24), and
+`INCIDENTAL` for the entire cast in every existing DB — see Section 4.24), and
 passages naming the entity are preferred over the rest of their block, with
 the prompt explicitly disclaiming bystanders, because an unranked sample
 attributed a neighbour's build to Fang Yuan.
@@ -1139,7 +1139,7 @@ call, and two abstractions would mean wiring every new checkpoint twice.
 ### `src/echotales/pipeline/world/` — structured world knowledge
 
 The package that stops locations and factions being names with nothing
-attached (HANDOFF §4.26). On the real RI database, 10 locations and 35
+attached (HANDOFF Section 4.26). On the real RI database, 10 locations and 35
 organisations were resolved and entirely undescribed before this existed.
 
 **`schema.py`** — a *closed* fact vocabulary per `TargetKind`: places get
@@ -1147,7 +1147,7 @@ terrain/architecture/atmosphere, factions get colours/territory/hierarchy,
 items get powers/owner, people get rank/faction/status/abilities. Closed
 because open-ended extraction yields prose that cannot be queried, compared
 or rendered into a prompt. Appearance is deliberately absent — that belongs
-to the PERSONA via `appearance_extract`, per §4's self/persona split.
+to the PERSONA via `appearance_extract`, per Section 4's self/persona split.
 
 **`extract.py`** — one call per entity, importing `appearance_extract`'s
 retrieval, grounding and dating discipline rather than copying it. Evidence
@@ -1165,7 +1165,7 @@ consumes it.
 
 Panel images, a reused motion-clip library, and `ffmpeg` video assembly,
 timed to Phase 8's already-rendered voice track. Detail and status in
-HANDOFF §4.23 and the design rationale in `architecture.md §8c`; this entry
+HANDOFF Section 4.23 and the design rationale in `architecture.md Section 8c`; this entry
 is the file-by-file map.
 
 **`_png.py`** — a raw `zlib`/`struct` PNG writer, no Pillow. Shared by the
@@ -1218,7 +1218,7 @@ each is shorter and a greedy fit tries the shortest-to-fewest-tokens
 candidates as they come) and its own truncation budget, sized for
 hand-written density rather than noisy scraped prose.
 
-**`motion.py`** — the reused clip library (`architecture.md §8c`).
+**`motion.py`** — the reused clip library (`architecture.md Section 8c`).
 `GENERIC_TAGS` is a fixed, short vocabulary; `match_tag()` matches a block's
 text against it (keyword vocabulary first, `spans/delivery.py`'s
 `DeliveryPolarity` as a lower-precision fallback) rather than defining a
@@ -1242,7 +1242,7 @@ narration past 6s — the signal that matters most, since a panel held for
 eight seconds goes stale however good it is). The combat vocabulary is
 corpus-derived: the first, intuition-written list matched **zero** blocks
 across RI ch1/8/20 and silently reduced the score to a cast-change
-detector (HANDOFF §4.24).
+detector (HANDOFF Section 4.24).
 
 **`timeline.py`** — `build_timeline()`: reads each voice line's real WAV
 duration (stdlib `wave`) and sums same-block lines into that block's
@@ -1293,7 +1293,7 @@ detector's false positive (a role noun, an item, a translation credit) is
 itself something gold needs to be able to say, or precision has no way to
 be measured at the entity-existence level, only at the coreference level.
 
-**`retriever_eval.py`** — recall@k, the plans.md §8.2 gate: recall@10 on
+**`retriever_eval.py`** — recall@k, the plans.md Section 8.2 gate: recall@10 on
 `TRANSFERABLE_TITLE` below 80% means candidate retrieval is the research
 problem and scorer tuning is premature. `SELF_RETRIEVAL` mode needs no
 annotations and is a smoke test only (proves there's no indexing/
@@ -1414,7 +1414,7 @@ their effect is only visible after `apply`.
 
 ### `src/echotales/pipeline/corrections.py`
 `Correction`/`CorrectionLog`/`apply_pending`. A correction is never fed
-back into the resolver as input -- HANDOFF §6 already rules that out for
+back into the resolver as input -- HANDOFF Section 6 already rules that out for
 hand-curated alias mappings, and a correction is the same category of
 thing: a resolver graded against its own answer key measures nothing.
 Instead a correction does two things: preview (`webview_server.py`,
@@ -1478,7 +1478,7 @@ LLM response never invents segments, and the LLM fires only on ambiguous
 chapters.
 
 ### `tests/test_render_panels.py`, `test_render_motion.py`, `test_render_director.py`, `test_render_timeline.py`, `test_render_compose.py`, `test_render_runner.py`
-31 tests for Phase 9 (`render/`, HANDOFF §4.23), all against stub engines
+31 tests for Phase 9 (`render/`, HANDOFF Section 4.23), all against stub engines
 except one: `TestFfmpegComposeEngineIntegration` (`test_render_compose.py`)
 is skipped when `ffmpeg` is not on `PATH` and otherwise runs a real encode —
 a pan shot over a still, a cutaway to a 4-frame motion clip, muxed against

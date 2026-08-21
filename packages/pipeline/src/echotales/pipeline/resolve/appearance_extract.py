@@ -4,7 +4,7 @@ Until this stage existed, nothing in the pipeline ever read a character's
 *appearance* out of the text. `persona/build.py` writes demographics and Big
 Five -- everything voice casting needs -- but image generation needs hair,
 eyes, build, attire and insignia, and none of that was extracted anywhere.
-Every character was a blank to the visual pipeline (HANDOFF §4.23's first
+Every character was a blank to the visual pipeline (HANDOFF Section 4.23's first
 listed gap).
 
 **Evidence is narration where the character is physically present.** Only
@@ -15,7 +15,7 @@ reference sheet. This is the same filter `spans/scene.py` applies for panel
 casting, applied to a different question.
 
 **One call per entity, above a prominence floor -- never per mention.** The
-§3 budget rule again: ~80 entities against ~9,500 mentions in a 199-chapter
+Section 3 budget rule again: ~80 entities against ~9,500 mentions in a 199-chapter
 novel, and appearance is a property of the character, not of each sighting.
 
 **Accumulated, never overwritten.** A novel describes a character across
@@ -24,7 +24,7 @@ chapter 40. Re-running on more chapters *adds* attestations rather than
 replacing them, so a profile grows monotonically as evidence arrives. A key
 whose value is already recorded is not written twice; a genuinely new value
 lands as an additional `Attribute` row, which is exactly what the temporal
-fact model is for (`architecture.md §3`).
+fact model is for (`architecture.md Section 3`).
 
 Everything written here is `truth_status=INFERRED` /
 `asserted_by=INFERENCE`: it is a model's reading of the prose, not the

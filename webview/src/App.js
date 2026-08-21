@@ -25,7 +25,7 @@ function pct(x) {
  *   new ones. Requires `uv run echotales webview-server` running separately --
  *   this component degrades to a clear error if it isn't.
  *
- * A correction is never fed back into the resolver as input (HANDOFF §6 rules
+ * A correction is never fed back into the resolver as input (HANDOFF Section 6 rules
  * that out explicitly -- a resolver graded against its own answer key isn't
  * measuring anything). What a correction *does*: (1) redirects this payload's
  * display immediately, so the fix is visible before anything is "applied";

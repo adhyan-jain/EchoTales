@@ -1,6 +1,6 @@
 """Chapter-granularity LLM name discovery for layer 1.
 
-The design rule in §3 of the handoff is that no stage may call a model per span
+The design rule in Section 3 of the handoff is that no stage may call a model per span
 or per mention: at 1.9 s/call a per-span pass over this corpus is 34.5 hours.
 So the model is not asked *where* the mentions are — it is asked *which surface
 forms in this chapter are names*, once per chapter, and the resulting vocabulary

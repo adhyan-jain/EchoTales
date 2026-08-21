@@ -1,4 +1,4 @@
-"""Retriever recall@k (plans.md §8.2).
+"""Retriever recall@k (plans.md Section 8.2).
 
 **The scorer cannot exceed the retriever.** If the correct entity is not in the
 top-k candidates, no amount of scoring quality recovers it — recall@10 of 60%
@@ -37,7 +37,7 @@ from echotales.pipeline.resolve.retrieve import CandidateRetriever
 
 DEFAULT_KS: tuple[int, ...] = (1, 5, 10, 20)
 
-#: The gate from plans.md §8.2.
+#: The gate from plans.md Section 8.2.
 GATE_ALIAS_TYPE = AliasType.TRANSFERABLE_TITLE
 GATE_K = 10
 GATE_THRESHOLD = 0.80

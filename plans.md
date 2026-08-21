@@ -240,7 +240,7 @@ Three problems are routinely conflated. They need different treatment:
 | Level | Example | Resolved by |
 |---|---|---|
 | **Lexical variants of one alias** | "Miss Justice" / "Lady Justice" / "The Justice" / "Justice" | `comparison_key` — mechanical |
-| **Several aliases, one self** | a code name and a legal name | the global resolver (§6 Phase 6) |
+| **Several aliases, one self** | a code name and a legal name | the global resolver (Section 6 Phase 6) |
 | **Disguise with audience scope** | one faction knows the code name, another the legal name | `observer_id` + `truth_status=FABRICATED` |
 
 Only the first is safe to solve mechanically. `comparison_key` strips
@@ -378,7 +378,7 @@ in English as ordinary noun phrases. Western-trained NER parses those as
 descriptions and misses the entity entirely. New candidates enter at MEDIUM
 confidence.
 
-**Layer 2 — Growing Gazetteer:** Aho-Corasick automaton over confirmed aliases. Rebuilt after each processing window. By chapter 50, catches most name mentions with zero error. By chapter 100, most decisions are resolved by exact match. **This is the compound-interest mechanism that makes the system get easier as it reads.** Requires three guards: word-boundary matching, a two-character minimum, and an ambiguity blocklist for common words that double as names. It compounds *wrong* decisions equally well — hence the contradiction detector (§6 Phase 6).
+**Layer 2 — Growing Gazetteer:** Aho-Corasick automaton over confirmed aliases. Rebuilt after each processing window. By chapter 50, catches most name mentions with zero error. By chapter 100, most decisions are resolved by exact match. **This is the compound-interest mechanism that makes the system get easier as it reads.** Requires three guards: word-boundary matching, a two-character minimum, and an ambiguity blocklist for common words that double as names. It compounds *wrong* decisions equally well — hence the contradiction detector (Section 6 Phase 6).
 
 **Layer 3 — LLM gap-fill pass:** Send chapter text with already-detected mentions highlighted. Ask: "Are there character or location references NOT already highlighted?" Catches pronouns, oblique references, titles doubling as common nouns, honorific-only dialogue.
 
@@ -541,13 +541,13 @@ Where this section and the code disagree on a number, the code is current.
   from stated facts rather than a classifier's guess about a voice. **Engine is
   Chatterbox (MIT), not XTTS**: XTTS is non-commercial-only from a company that
   has shut down, and exposes no emotion control, which is a hard requirement
-  here. See `architecture.md §8b`.
+  here. See `architecture.md Section 8b`.
 - **Register does not partition the bank.** VCTK carries no register metadata,
   so the archetype is `gender:age` on the bank side and register is applied as
   a synthesis parameter instead. The alternative was inventing a distinction
   the audio does not contain.
 - **Graph coloring for collision avoidance:** ~~ensures no two characters sharing a scene share a voice~~
-  **Revised, per `architecture.md §8b`: colouring runs *within* archetype
+  **Revised, per `architecture.md Section 8b`: colouring runs *within* archetype
   buckets, and collision-free assignment is explicitly not claimed.** The
   co-occurrence graph over principals in a long cultivation novel is close to
   complete, so its chromatic number exceeds any archetype-appropriate palette.
@@ -581,9 +581,9 @@ this model class reliably honours.
 
 Export: chaptered M4B.
 
-### Phase 10 — Visual Pipeline *(partially built — panels + video assembly landed 2026-08-12, numbered Phase 9 in code; see HANDOFF §4.23)*
+### Phase 10 — Visual Pipeline *(partially built — panels + video assembly landed 2026-08-12, numbered Phase 9 in code; see HANDOFF Section 4.23)*
 
-**Numbering note**, same shape as §Phase 9's above it: the code runs
+**Numbering note**, same shape as Section Phase 9's above it: the code runs
 …7 personas → 8 voice → 9 render, not this document's Phase 7-10 ordering.
 Where this section and the code disagree, the code is current.
 
@@ -600,7 +600,7 @@ or per-scene (`render/motion.py`'s `GENERIC_TAGS` — `clash`/`wind`/`flame`/
 drift from in the first place. This is a scoped exception, not a reversal of
 the broader "no identity drift" goal.
 
-**What actually landed** (`render/`, detail in HANDOFF §4.23):
+**What actually landed** (`render/`, detail in HANDOFF Section 4.23):
 
 - **`persona/prompt.py`** — `PanelCast` → one SDXL prompt string.
 - **`resolve/appearance_extract.py`** *(added 2026-08-13)* — the
@@ -690,13 +690,13 @@ fields nobody can actually adjudicate.
 
 ### Metrics
 
-- Standard: MUC, B³, CEAF against Baseline A and Baseline B (§8.1)
+- Standard: MUC, B³, CEAF against Baseline A and Baseline B (Section 8.1)
 - Transferred-title slice accuracy
 - Resolution latency (chapters before correct conclusion)
 - Retroactive correction rate — *requires the contradiction detector to exist*
 - Deception handling accuracy
 - Anachronism rate (mentions bound to a temporally invalid target)
-- **Retriever recall@k**, broken down by `alias_type` (§8.2)
+- **Retriever recall@k**, broken down by `alias_type` (Section 8.2)
 - **Escalation rate** — share of decisions routed to human review. A reported
   result, not a failure mode.
 
@@ -773,7 +773,7 @@ gate, not a diagnostic.
 >    time skips, scene breaks. Everything else is enabled explicitly. A
 >    detector hunting for an absent device yields only false positives, each
 >    minting a spurious timeline that later facts get bound to.
-> 2. **Vocabulary is induced from the text** (§4.5), not seeded from genre
+> 2. **Vocabulary is induced from the text** (Section 4.5), not seeded from genre
 >    assumptions.
 >
 > The list below is therefore a catalogue of phenomena *observed across the
@@ -844,7 +844,7 @@ candidate to score.
 11. **Event log + graph** (week 7-8): append-only log, self/persona model, state_of(), materialized views
 12. **Setting resolver** (week 9-10): same resolver with swapped feature weights
 13. **Voice pipeline** (week 10-12): voice bank, archetype-bucketed casting, sentiment-conditioned synthesis, spatial audio. Primary novel only.
-14. **Visual pipeline** (week 12-14): **3-chapter showcase only** — see §13.1
+14. **Visual pipeline** (week 12-14): **3-chapter showcase only** — see Section 13.1
 15. **Application** (week 13-16): correction interface, integration, upload-to-output workflow
 
 ### 13.1 Scope reductions

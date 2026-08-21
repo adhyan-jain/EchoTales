@@ -11,7 +11,7 @@ on: whether the surface denotes an individual *at all*. A capitalised item name
 or a role noun that the detector proposed and gold rejects is a false positive,
 and it is invisible to any metric that only scores clustering.
 
-**Provenance is not optional metadata.** `HANDOFF §6` already forbids feeding
+**Provenance is not optional metadata.** `HANDOFF Section 6` already forbids feeding
 hand-curated alias mappings back in as pipeline input; a *model-drafted* label
 is weaker still, and the difference between "a person decided this" and "a model
 proposed it" has to survive every export, or a recall number computed from
@@ -192,7 +192,7 @@ def write_gold(gold: GoldSet, path: Path | str) -> Path:
 def read_gold(path: Path | str, novel_id: str = "") -> GoldSet:
     """Read JSONL. A missing file is an empty set, not an error.
 
-    Callers are expected to check `len()` and say so — HANDOFF §1 is explicit
+    Callers are expected to check `len()` and say so — HANDOFF Section 1 is explicit
     that "compare against gold" must fail loudly rather than be improvised, and
     an empty set that silently scores 100% is exactly that failure.
     """
