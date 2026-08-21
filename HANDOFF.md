@@ -1948,6 +1948,82 @@ lot" was at the start of this session's block-by-block work.
 
 `uv run pytest packages/` passing.
 
+### 4.47 Render rounds v38–v39: three code fixes shipped, three open defects identified, director "stands alone" collapse is the ceiling *(2026-08-21)*
+
+**Context:** Five iterative render rounds targeting first 10 panels of RI ch1
+with NoobAI XL 1.1. IP-Adapter reference conditioning permanently removed this
+session (was causing colour bleeding across characters).
+
+**Fixes shipped (all in the commit tagged 4.47):**
+
+1. **Teal robe negative suppression** (`render/panels.py`): NoobAI has a
+   strong teal/cyan prior for xianxia male characters. When "white robe"
+   appears in the positive prompt, we now prepend
+   `"teal clothing, cyan robe, blue-green robe, turquoise outfit"` at the
+   front of the negative priority list. Verified v38 p004_b0005: robe
+   shifted from teal to dark charcoal (partial — teal blocked, white not
+   yet achieved).
+
+2. **White robe positive reinforcement** (`render/direction.py`): v38
+   produced dark charcoal instead of white when teal was suppressed
+   (checkpoint's second preferred colour). Added standalone
+   `"pure white outer robe"` term after the character appearance clause
+   whenever `condense_clause()` yields "white robe". Applies from v39 onward.
+
+3. **Score_9 tags before scene_locale** (`render/direction.py`): v37 had
+   score_9 in only 5/24 prompts; v38 had 19/52. Root cause: score tags were
+   appended after scene_locale and key_objects, so the 20-token character
+   clause + 10-token locale exhausted the 75-token budget before quality tags
+   were reached. Fixed by moving `"score_9, score_8_up, highly detailed,
+   cinematic lighting"` immediately after the character appearance loop.
+
+4. **Crowd female suppression priority** (`render/panels.py`): `_crowd_neg`
+   female terms (`"girl, girls, female, woman, women, bishoujo"`) were placed
+   last in `_neg_parts` and were being trimmed by `fit_to_budget()` before
+   they were ever applied (gender_neg=6 tokens + base_neg=69 tokens = 75,
+   no budget left). Moved crowd female terms before base_neg. Crowd gore
+   terms (`blood, muscular, bare chest`…) remain at end as lowest priority.
+
+**Open defects (not fixed, prioritised):**
+
+1. **Director collapses to solo panels** — 36/52 prompts in v39 contain
+   "stands alone; no one else is present." The director's SYSTEM prompt rules
+   ("NEVER invent people," "ONLY describe what the passage shows") are being
+   over-applied: even beats that clearly place multiple people in scene get
+   solo layouts. The Awakening Ceremony (500+ clan members watching) renders
+   as "no one else is present." This is the dominant quality ceiling — scene
+   content is correct, composition is not. Candidate fixes: (a) tighter
+   layout validation that cross-checks `action` vs `layout` for obvious
+   contradictions; (b) a separate director re-query when layout says "alone"
+   but action names multiple people; (c) revert to mechanical assembler for
+   group beats and keep director only for solo narration.
+
+2. **Crowd panels feel allied not hostile** — when crowds do render via the
+   `:crowd` slot, they look supportive (facing Fang Yuan symmetrically). The
+   prompt says "enemies ring him on all sides" but the checkpoint's guofeng
+   prior defaults to harmonious group arrangements. Needs explicit
+   adversarial composition vocabulary ("backs half-turned, weapons raised,
+   closing in") — but this is a diffusion prior problem, not a prompt
+   wording problem, and v38/v39 iterations confirm wording changes don't move
+   this.
+
+3. **Background changes every panel within same scene** — `scene_locale` is
+   re-derived per panel from a keyword lookup. Director picks different
+   settings per beat even within one continuous scene. Eight consecutive
+   Awakening Ceremony panels render as eight different locations. Fix:
+   lock `scene_locale` for the duration of an `ActiveScene` span rather than
+   re-deriving per panel.
+
+**v39 prompt cache stats (52 entries):**
+- score_9 present: 36/52 (up from 5/24 in v37)
+- white robe panels: 13/52
+- "stands alone / no one else": 36/52
+- crowd variants: 7 separate `:crowd` slots
+
+**What worked and shouldn't be undone:** guofeng/xianxia aesthetic is solid
+across all panels; Fang Yuan face consistency is good; score_9 fix is real.
+The ceiling is composition (solo collapse + crowd directionality), not style.
+
 ## 9. Layout
 
 ```
