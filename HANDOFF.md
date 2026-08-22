@@ -2120,6 +2120,136 @@ Constraint: NoobAI XL 1.1 only, no multi-model. 77 CLIP token budget.
 LLM director runs on ollama (qwen2.5:7b locally). No paid APIs.
 ```
 
+### 4.49 Appearance-extraction contamination fixed and verified live; render round v40 finds the director inventing named characters, not just erasing them *(2026-08-22)*
+
+**Context.** A second session (this one) ran the appearance-extraction fixes
+that "green robes on 16/16 characters" and the CLI/gold-set findings called
+for, then ran a real render (v40, ch1, NoobAI XL, 48 panels) to check whether
+any of it actually reaches a panel. It does — and it also surfaces a defect
+worse than 4.48's solo-collapse: the director inventing a *specific named
+character* who is not in the chapter at all.
+
+**Fixes shipped and verified against the real 199-chapter corpus, live, with
+qwen2.5:7b (not a mock):**
+
+1. **Grounding requires proximity, not co-occurrence** (`resolve/appearance_extract.py::is_grounded`/`attesting_chapter`/`_grounded`).
+   The old check asked "does this word appear anywhere in the 60 pooled
+   passages" — true for "green" describing a *bystander's* eyes two
+   sentences from Bai Ning Bing's name, which is how he ended up with
+   `typical_attire="green robes"` despite the text calling him
+   white-clothed. Now a distinguishing word must sit within 40 chars of
+   the target's own surface form (or the model's citation must be near
+   the target's name — see next item).
+
+2. **Citation-forced extraction prompt.** The model must now return
+   `{"value": ..., "source": "<exact quoted sentence>"}` per attribute.
+   Two checks before anything reaches the store: the quote must be a real
+   (whitespace-normalized) substring of the passages sent to the model,
+   and the target's surface form must sit within 60 chars of that quote.
+   Both discards are counted by reason on the report
+   (`missing_source`/`source_not_in_passages`/`target_not_near_source`).
+
+3. **Chapter-scoped `appearance_of(..., position=...)`** so a panel at
+   chapter 5 can't pick up an attribute only attested at chapter 100.
+   Reference-sheet generation stays unscoped (a sheet is deliberately the
+   whole-history canonical look); panel-time reads pass `position`.
+
+4. **CLI `query attributes --kind PERSONA` no longer hides body2** — it
+   iterates `bodies_of()` and prints one block per body instead of
+   hardcoding `:body1`.
+
+**Verified, not asserted:** purged all appearance attributes from a scratch
+copy of `data/reruns/reverend-insanity.db` and re-ran extraction clean.
+Result: **0 `typical_attire` values anywhere in the corpus** (down from
+16/16 "green robes" pre-fix) — every attempt the model made at attire was
+either correctly grounded to something non-green or correctly discarded by
+the citation checks. Bai Ning Bing specifically: no `typical_attire`,
+correct `hair_color="white"` and `distinguishing_features="white hair and
+white clothes"` at ch189, both citation-verified. This scratch-copy result
+has **not** been applied to the real `data/reruns/reverend-insanity.db` —
+that purge-and-re-extract is a one-time bulk `DELETE` the harness's
+auto-mode classifier would not approve unattended, so the real file still
+carries the pre-fix contaminated rows until someone runs it deliberately
+with a human present.
+
+**Gold set (`data/gold/reverend-insanity.jsonl`, 3,457 rows, 100%
+`confirmed=True` despite `eval/draft.py` defaulting new rows to `False`):**
+this is a **prior session's** bulk glance-review by the project owner
+(2026-08-12 per that session's own note), not an auto-flip script and not
+a row-by-row human pass. Calibration built on it should say so.
+
+**`get_panel_cast` now also resolves narrator reveals** (`resolve/detect_reveals.py`,
+new this session): a block whose only mention is a placeholder ("the
+stranger") but which the narrator reveals in the same block ("this was
+none other than X") now adds X to the foreground cast. Additive only —
+verified with a same-block positive case and a different-block negative
+case so it can't leak a reveal into the wrong block.
+
+**New bug found by actually running v40, unrelated to any of the above:**
+
+`render_panels()` takes `max_panels: int = 14` and `commands.py` wires
+`--max-panels` straight to it — but grep the whole function body and the
+parameter is **never read again**. No slice, no cap, no early exit. `--max-panels
+5` on ch1 produced 48 panels, twice, in two independent runs. The docstring
+("the cost is set by `max_panels`, not by chapter length") describes intent
+that was apparently never implemented, or was implemented once and lost in
+a later edit. Anyone budgeting GPU time off this flag today is not getting
+what they asked for.
+
+**New visual defect, distinct from 4.48's "director erases everyone":** on
+v40's ch1 render, three panel slots (p022/p023/p024, all covering the same
+beat: *"The elders' faces show worry"* — no named subject, no PRESENT
+mention, no fallback mention, nothing in `mention` or `resolution_event`
+placing anyone there) came back with the director's own text reading
+`"Bai Ning Bing stands alone; no one else is present."` Checked directly
+against the store: **`self55` (Bai Ning Bing) has zero mentions and zero
+resolution events anywhere before chapter 108** — he is not introduced for
+another 107 chapters. Nothing in the resolved cast, the appearance
+pipeline, or the reveal detector above could have produced this name; the
+`cast` dict `direct_beat()` was called with for this beat was built from
+`present_beat_entities`/the PRESENT-fallback over chapter-1-only mentions
+(`store.get_mentions(novel_id, chapter_number)`, correctly chapter-scoped —
+checked), and neither path had anything to contribute for this beat. The
+only remaining source is the director LLM itself inventing the name from
+its own pretrained knowledge of the novel's cast list, not from anything in
+`cast` or the beat text.
+
+This is a different, worse failure mode than 4.48's "over-applies never
+invent people, collapses to solo": here the model *does* invent a person,
+specifically a real named character who is textually and chronologically
+impossible in this scene. And because "Bai Ning Bing" was never routed
+through `character_looks()` (he's not in `appearances`), his entry never
+reached the `genders` list either — so `direction.py`'s own rule 2
+("anything unstated is drawn female by default") applied to him, and the
+checkpoint rendered a woman. Bai Ning Bing is canonically male. **The
+"there's a woman in chapter 1 and there shouldn't be" complaint and the
+"it's just Fang Yuan in every panel" complaint are two sides of the same
+gap**: when a beat names no one, the director should either draw the scene
+alone (correct, and what most of v40's scenery-only beats already do —
+p014/p015/p016/p039/p042 all correctly render "no one present") or default
+to whoever the *scene* is actually about — not reach for an unrelated named
+character from later in the book. The SYSTEM prompt's rule 5 ("use the
+character's actual name, not a placeholder — write 'Fang Yuan stands alone'
+not 'X stands alone'") was written with Fang Yuan as the illustrative
+example and has no explicit constraint limiting names to the `cast` dict
+actually passed in; the model appears to have generalized "name a real
+character" without "...from the ones you were given."
+
+**Fix candidate (not yet implemented — flagged for next session, matches
+4.48's ideation framing):** either (a) validate `PanelDirection.action`/`layout`
+post-hoc against the `cast` dict's keys and strip/reject any proper name not
+present in it or in the beat text, or (b) tighten SYSTEM rule 5 to state
+explicitly: "Only name characters that appear in the cast list below or are
+named in the passage itself. If the passage names no one, do not introduce
+anyone — describe the scene alone or by role ('an elder'), never invent a
+specific character from elsewhere in the novel."
+
+**Net effect:** the appearance-extraction contamination this session set
+out to fix is fixed and proven, live, at the source. It does not fix, and
+was never going to fix, the separate director-hallucination defect family
+4.48 already opened — v40 just found a second, more specific member of that
+family than the one already on file.
+
 ## 9. Layout
 
 ```

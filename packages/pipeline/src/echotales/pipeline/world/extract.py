@@ -40,6 +40,7 @@ from echotales.core.store import Store
 from echotales.pipeline.resolve.appearance_extract import (
     _MAX_PASSAGE_CHARS,
     _clean_values,
+    _surface_forms,
     attesting_chapter,
     eligible_prominence,
 )
@@ -221,7 +222,8 @@ def extract_entity_facts(
         for key, value in (result.value.facts or {}).items()
         if key in keys and str(value).strip()
     }
-    cleaned = _clean_values(raw, label, " ".join(passages).casefold())
+    surfaces = _surface_forms(store, novel_id, str(entity.id))  # type: ignore[attr-defined]
+    cleaned = _clean_values(raw, label, surfaces, passages)
     return cleaned, evidence
 
 
@@ -270,12 +272,13 @@ def extract_world(
             for a in store.get_attributes(kind, str(entity.id))
             if a.is_standing
         }
+        surfaces = _surface_forms(store, novel_id, str(entity.id))  # type: ignore[attr-defined]
 
         for key, value in facts.items():
             if (key, value) in known:
                 report.facts_already_known += 1
                 continue
-            at = attesting_chapter(value, evidence)
+            at = attesting_chapter(value, evidence, surfaces)
             if at is None:
                 continue
             pos = DiscoursePosition(chapter=at, offset=0)

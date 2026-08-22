@@ -165,13 +165,18 @@ class ReferenceReport:
 
 
 def appearance_of(
-    store: Store, persona_id: str, *, standing_only: bool = True
+    store: Store,
+    persona_id: str,
+    *,
+    standing_only: bool = True,
+    position: float | None = None,
 ) -> dict[str, str]:
     """Appearance attributes for a persona, key -> value.
 
     Later attestations win on a repeated key: `appearance_extract` appends
     rather than overwrites (a scar is added later), so the most recent row
-    is the current reading.
+    is the current reading -- among those attested by `position`, when one
+    is given.
 
     `standing_only` (the default) drops `TRANSIENT_KEYS` -- a character's
     injuries belong to the scene that caused them, not to their face. This
@@ -180,6 +185,15 @@ def appearance_of(
     at the boundary in case the model ignored the instruction. A reference
     sheet built from a character's worst day would redraw them wounded in
     every chapter thereafter.
+
+    `position` (a chapter number) excludes any attribute whose interval
+    starts after it -- **temporal leakage otherwise**: without this, a
+    chapter 5 panel can pick up a scar the text doesn't reveal until chapter
+    100, because a flat read has no notion of "known yet". Reference sheets
+    (`generate_references`) call this with no position -- a sheet is meant
+    to be the character's canonical, whole-novel appearance, not a snapshot.
+    Panel-time reads (`render/panels.py::character_looks`) must pass the
+    panel's own chapter.
     """
     from echotales.pipeline.resolve.appearance_extract import (
         APPEARANCE_KEYS,
@@ -192,8 +206,11 @@ def appearance_of(
 
     out: dict[str, str] = {}
     for attr in store.get_attributes(TargetKind.PERSONA, persona_id):
-        if attr.key in allowed and attr.is_standing and attr.value:
-            out[attr.key] = attr.value
+        if attr.key not in allowed or not attr.is_standing or not attr.value:
+            continue
+        if position is not None and attr.interval.from_lb > position:
+            continue
+        out[attr.key] = attr.value
     return out
 
 

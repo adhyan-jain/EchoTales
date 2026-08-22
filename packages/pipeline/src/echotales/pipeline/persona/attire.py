@@ -1,7 +1,7 @@
-"""4-tier visual-prompt fallback chain (xyz.md Step 4).
+"""5-tier visual-prompt fallback chain (xyz.md Step 4).
 
-    explicit persona trait -> faction attire default -> regional aesthetic
-    default -> novel general style
+    explicit persona trait -> faction attire default -> rank attire default
+    -> regional aesthetic default -> novel general style
 
 Per-novel, hand-seeded tables rather than graph-backed facts -- `TargetKind`
 (`core/enums.py`) only has `SELF`/`PERSONA`/`MOB_GROUP`, so a faction or a
@@ -21,6 +21,25 @@ FACTION_ATTIRE: dict[str, dict[str, str]] = {
         "white province": "plain grey hemp robes, minimal ornamentation",
     },
 }
+
+#: novel_id -> rank keyword (lowercased) -> attire description, checked as a
+#: substring of whatever rank text the caller has (a title like "Dark Hall
+#: Elder" or a `rank_insignia` appearance attribute) -- ranks are rarely
+#: stated as the bare keyword alone, so an exact-match lookup would miss
+#: almost everything a real title contains.
+#:
+#: Sits between faction and region: a character's rank is closer to their
+#: own identity than the region they happen to be standing in, but a named
+#: faction (when known) still says more about what they'd actually wear than
+#: a generic rank bucket does.
+RANK_ATTIRE: dict[str, dict[str, str]] = {
+    "reverend-insanity": {
+        "elder": "aged sect elder's formal robes, dark trim, walking staff",
+        "sect master": "ornate sect master's ceremonial robes, sect crest prominent",
+        "disciple": "simple disciple's robes in sect colours, plain sash",
+    },
+}
+
 
 #: novel_id -> region name (lowercased) -> aesthetic description.
 REGIONAL_AESTHETIC: dict[str, dict[str, str]] = {
@@ -252,14 +271,25 @@ def resolve_attire(
     *,
     explicit: str | None = None,
     faction: str | None = None,
+    rank: str | None = None,
     region: str | None = None,
 ) -> str:
-    """Walk the 4-tier chain and return the first tier that has an answer.
+    """Walk the 5-tier chain and return the first tier that has an answer.
 
     `explicit` is whatever the caller already resolved for this specific
     character (a persona attribute, if one exists -- see the package
-    docstring for why that's usually `None` today). `faction`/`region` are
-    plain names, looked up case-insensitively against the tables above.
+    docstring for why that's usually `None` today). `faction`/`rank`/
+    `region` are plain text, looked up case-insensitively against the
+    tables above -- `rank` as a substring match (see `RANK_ATTIRE`), the
+    other two exact.
+
+    The bottom of the old 4-tier chain (`NOVEL_STYLE`) is an instruction
+    about *how to draw*, not a garment -- correct as a style suffix, wrong
+    as an attire clause for an undescribed character. `rank` gives one more
+    real tier before falling back to that: a character with no extracted
+    attire and no known faction usually still has a stated or inferable
+    rank ("Elder", "Disciple"), and that says far more about what they'd
+    plausibly wear than the novel's overall drawing style does.
     """
     if explicit:
         return explicit
@@ -267,6 +297,11 @@ def resolve_attire(
         hit = FACTION_ATTIRE.get(novel_id, {}).get(faction.strip().lower())
         if hit:
             return hit
+    if rank:
+        low = rank.strip().lower()
+        for keyword, hit in RANK_ATTIRE.get(novel_id, {}).items():
+            if keyword in low:
+                return hit
     if region:
         hit = REGIONAL_AESTHETIC.get(novel_id, {}).get(region.strip().lower())
         if hit:

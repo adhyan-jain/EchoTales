@@ -678,22 +678,34 @@ def _query_attributes(args: argparse.Namespace) -> int:
             target = matches[0].id
 
     entity = store.get_self(target)
-    lookup = f"{target}:body1" if kind is TargetKind.PERSONA else target
-    attrs = store.get_attributes(kind, lookup)
-
     label = entity.canonical_label if entity else target
-    print(f"{label}  ({target}, {kind.value} {lookup})")
-    if not attrs:
-        print("  no attributes stored")
-        store.close()
-        return 0
 
-    for attr in sorted(attrs, key=lambda a: (a.key, a.learned_at_pos.chapter)):
-        standing = "" if attr.is_standing else "  [retracted]"
-        print(
-            f"  {attr.key:<28} {attr.value}"
-            f"   ({attr.truth_status.value}, ch{attr.learned_at_pos.chapter:g}){standing}"
-        )
+    if kind is not TargetKind.PERSONA:
+        lookups = [target]
+    else:
+        # **Every body, not just the first.** A regressor or transmigrator
+        # has more than one persona (Fang Yuan: body1, body2), and printing
+        # only `f"{target}:body1"` silently hid every later body's
+        # attributes from this command -- there was no way to see them
+        # without querying the store directly.
+        from echotales.pipeline.persona.split import bodies_of
+
+        bodies = bodies_of(store, target)
+        lookups = [persona_id for persona_id, _interval in bodies] or [f"{target}:body1"]
+
+    for lookup in lookups:
+        attrs = store.get_attributes(kind, lookup)
+        print(f"{label}  ({target}, {kind.value} {lookup})")
+        if not attrs:
+            print("  no attributes stored")
+            continue
+        for attr in sorted(attrs, key=lambda a: (a.key, a.learned_at_pos.chapter)):
+            standing = "" if attr.is_standing else "  [retracted]"
+            print(
+                f"  {attr.key:<28} {attr.value}"
+                f"   ({attr.truth_status.value}, ch{attr.learned_at_pos.chapter:g}){standing}"
+            )
+
     store.close()
     return 0
 

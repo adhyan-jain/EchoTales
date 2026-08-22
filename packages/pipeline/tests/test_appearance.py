@@ -17,7 +17,9 @@ from echotales.core.enums import (
     TargetKind,
     TruthStatus,
 )
+from echotales.core.interval import FuzzyInterval
 from echotales.core.models import (
+    Attribute,
     Block,
     Chapter,
     DiscoursePosition,
@@ -28,7 +30,8 @@ from echotales.core.models import (
 from echotales.core.store import Store
 from echotales.pipeline.resolve.appearance_extract import (
     AppearanceResponse,
-    _values_from,
+    AttributeClaim,
+    _claims_from,
     build_prompt,
     eligible_prominence,
     gather_appearance_passages,
@@ -54,13 +57,18 @@ class _FakeClient:
         return _FakeResult(self.value)
 
 
-def _store(tmp_path, *, mentions_per_chapter: int = 40) -> Store:
+def _store(
+    tmp_path,
+    *,
+    mentions_per_chapter: int = 40,
+    narration_text: str = "Fang Yuan had black hair and wore green robes. He was injured.",
+) -> Store:
     """A novel where `Fang Yuan` is described in narration and present."""
     store = Store(str(tmp_path / "t.db"))
     store.add_novel("t", "T", "x.epub", "generic")
 
     blocks = [
-        Block(index=0, block_type=BlockType.PROSE, text="Fang Yuan had black hair and wore green robes. He was injured."),
+        Block(index=0, block_type=BlockType.PROSE, text=narration_text),
         Block(index=1, block_type=BlockType.DIALOGUE, text='"Hand it over!"'),
     ]
     store.add_chapter(
@@ -83,9 +91,9 @@ def _store(tmp_path, *, mentions_per_chapter: int = 40) -> Store:
                 chapter=1.0,
                 block_index=0,
                 start=0,
-                end=63,
+                end=len(narration_text),
                 span_type=SpanType.NARRATION_DESCRIPTION,
-                text="Fang Yuan had black hair and wore green robes. He was injured.",
+                text=narration_text,
             ),
             Span(
                 id="sp1",
@@ -152,16 +160,124 @@ class TestEvidenceGathering:
 class TestResponseHandling:
     def test_empty_and_non_committal_values_are_dropped(self) -> None:
         """"unknown" is the model declining, not a hair colour."""
-        out = _values_from(
-            AppearanceResponse(hair_color="unknown", eye_color="", skin_tone="pale")
+        out = _claims_from(
+            AppearanceResponse(
+                hair_color=AttributeClaim(value="unknown", source="x"),
+                eye_color=AttributeClaim(value="", source=""),
+                skin_tone=AttributeClaim(value="pale", source="her skin was pale"),
+            )
         )
-        assert out == {"skin_tone": "pale"}
+        assert list(out) == ["skin_tone"]
+        assert out["skin_tone"][0].value == "pale"
 
     def test_feature_list_is_joined_for_storage(self) -> None:
-        out = _values_from(
-            AppearanceResponse(distinguishing_features=["a scar", "one eye"])
+        out = _claims_from(
+            AppearanceResponse(
+                distinguishing_features=[
+                    AttributeClaim(value="a scar", source="a scar crossed his cheek"),
+                    AttributeClaim(value="one eye", source="he had only one eye"),
+                ]
+            )
         )
-        assert out["distinguishing_features"] == "a scar, one eye"
+        assert [c.value for c in out["distinguishing_features"]] == ["a scar", "one eye"]
+
+
+class TestCitationVerification:
+    """Fix 2: a claim must cite a real passage sentence that is actually
+    about the target, not merely echo the extraction prompt's own vocabulary
+    back."""
+
+    def test_fabricated_source_is_discarded(self) -> None:
+        from echotales.pipeline.resolve.appearance_extract import (
+            AppearanceReport,
+            _verify_citations,
+        )
+
+        report = AppearanceReport(novel_id="t")
+        claims = {
+            "typical_attire": [
+                AttributeClaim(value="green robes", source="Bai Ning Bing wore green robes.")
+            ]
+        }
+        out = _verify_citations(claims, ["Bai Ning Bing, clothed in white."], {"bai ning bing"}, report)
+        assert out == {}
+        assert report.discards_by_reason["source_not_in_passages"] == 1
+
+    def test_real_quote_about_someone_else_is_discarded(self) -> None:
+        """The exact real case: "green" genuinely appears in the passage --
+        as Xiong Jiang's iris colour -- so the source-exists check alone
+        would pass it. The proximity-to-target check must still reject it."""
+        from echotales.pipeline.resolve.appearance_extract import (
+            AppearanceReport,
+            _verify_citations,
+        )
+
+        report = AppearanceReport(novel_id="t")
+        passage = (
+            "Xiong Jiang used Roaming Zombie Gu, his two irises turning "
+            "gloomy green; Xiong Li's two eyes were red whereas Bai Ning "
+            "Bing's pair of pupils were azure like crystals."
+        )
+        claims = {
+            "typical_attire": [
+                AttributeClaim(value="green robes", source="his two irises turning gloomy green")
+            ]
+        }
+        out = _verify_citations(claims, [passage], {"bai ning bing"}, report)
+        assert out == {}
+        assert report.discards_by_reason["target_not_near_source"] == 1
+
+    def test_grounded_citation_survives(self) -> None:
+        from echotales.pipeline.resolve.appearance_extract import (
+            AppearanceReport,
+            _verify_citations,
+        )
+
+        report = AppearanceReport(novel_id="t")
+        passage = "Standing on a slope was Bai Ning Bing, clothed in white."
+        claims = {
+            "typical_attire": [
+                AttributeClaim(
+                    value="white robes",
+                    source="Standing on a slope was Bai Ning Bing, clothed in white.",
+                )
+            ]
+        }
+        out = _verify_citations(claims, [passage], {"bai ning bing"}, report)
+        assert out == {"typical_attire": "white robes"}
+        assert report.discards_by_reason == {}
+
+    def test_pronoun_continuation_after_naming_clause_survives(self) -> None:
+        """"the sentence carrying the appearance is frequently the pronoun
+        sentence right after the naming one" (`gather_appearance_passages`).
+        A citation for the pronoun clause must still ground against the
+        name in the clause before it."""
+        from echotales.pipeline.resolve.appearance_extract import (
+            AppearanceReport,
+            _verify_citations,
+        )
+
+        report = AppearanceReport(novel_id="t")
+        passage = "This was none other than Bai Ning Bing. His hair was snowy white."
+        claims = {
+            "hair_color": [
+                AttributeClaim(value="snowy white", source="His hair was snowy white.")
+            ]
+        }
+        out = _verify_citations(claims, [passage], {"bai ning bing"}, report)
+        assert out == {"hair_color": "snowy white"}
+
+    def test_missing_source_is_discarded(self) -> None:
+        from echotales.pipeline.resolve.appearance_extract import (
+            AppearanceReport,
+            _verify_citations,
+        )
+
+        report = AppearanceReport(novel_id="t")
+        claims = {"hair_color": [AttributeClaim(value="black", source="")]}
+        out = _verify_citations(claims, ["Fang Yuan had black hair."], {"fang yuan"}, report)
+        assert out == {}
+        assert report.discards_by_reason["missing_source"] == 1
 
     def test_ungrounded_values_are_dropped(self) -> None:
         """The real case: Bai Ning Bing is introduced as "This white-clothed
@@ -172,23 +288,49 @@ class TestResponseHandling:
         it. Nothing about that is detectable from the response alone."""
         from echotales.pipeline.resolve.appearance_extract import _clean_values
 
-        blob = (
-            "this white-clothed young man was none other than bai ning bing. "
-            "his snowy white hair stirred."
-        )
+        surfaces = {"bai ning bing"}
+        passages = [
+            "This white-clothed young man was none other than Bai Ning Bing. "
+            "His snowy white hair stirred.",
+        ]
         out = _clean_values(
             {"typical_attire": "green robes", "hair_color": "snowy white"},
             "Bai Ning Bing",
-            blob,
+            surfaces,
+            passages,
         )
         assert out == {"hair_color": "snowy white"}
+
+    def test_word_grounded_elsewhere_in_evidence_does_not_ground_the_target(self) -> None:
+        """The bug this whole fix exists for: "green" is genuinely present in
+        the evidence pool, but describes Xiong Jiang's irises, not Bai Ning
+        Bing's attire. A bag-of-words check over the pooled evidence let this
+        ground `typical_attire="green robes"` for Bai Ning Bing; a check
+        scoped to text near his own surface form must reject it."""
+        from echotales.pipeline.resolve.appearance_extract import _clean_values
+
+        surfaces = {"bai ning bing"}
+        passages = [
+            "Xiong Jiang used Roaming Zombie Gu, his two irises turning "
+            "gloomy green; Xiong Li's two eyes were red whereas Bai Ning "
+            "Bing's pair of pupils were azure like crystals.",
+        ]
+        out = _clean_values(
+            {"typical_attire": "green robes"},
+            "Bai Ning Bing",
+            surfaces,
+            passages,
+        )
+        assert out == {}
 
     def test_generic_only_values_are_left_alone(self) -> None:
         """A value made purely of generic nouns carries no claim to check,
         so it is kept rather than dropped for lack of evidence."""
         from echotales.pipeline.resolve.appearance_extract import _clean_values
 
-        out = _clean_values({"hair_style": "long"}, "X", "nothing relevant here")
+        out = _clean_values(
+            {"hair_style": "long"}, "X", {"x"}, ["nothing relevant here"]
+        )
         assert out == {"hair_style": "long"}
 
     def test_prompt_separates_standing_identity_from_transient_state(self) -> None:
@@ -197,14 +339,14 @@ class TestResponseHandling:
         torn to shreds" and features "covered in blood" -- which, baked into
         a reference sheet, redraws him bloodied for all 199 chapters."""
         prompt = build_prompt("Fang Yuan", ["He bled."])
-        assert "never 'torn green robes'" in prompt
+        assert "not \"torn white robes\"" in prompt
         assert "Never injuries, blood" in prompt
 
     def test_prompt_warns_off_describing_bystanders(self) -> None:
         """Real RI ch1 output attributed a neighbour's build to Fang Yuan
         until the prompt said not to."""
         prompt = build_prompt("Fang Yuan", ["He stood there."])
-        assert "only Fang Yuan's own appearance" in prompt
+        assert "describes someone else, even if they are compared" in prompt
 
 
 class TestExtractAppearance:
@@ -213,7 +355,15 @@ class TestExtractAppearance:
 
         store = _store(tmp_path)
         client = _FakeClient(
-            AppearanceResponse(hair_color="black", typical_attire="green robes")
+            AppearanceResponse(
+                hair_color=AttributeClaim(
+                    value="black", source="Fang Yuan had black hair and wore green robes."
+                ),
+                typical_attire=AttributeClaim(
+                    value="green robes",
+                    source="Fang Yuan had black hair and wore green robes.",
+                ),
+            )
         )
         report = extract_appearance("t", store, client=client)
 
@@ -230,7 +380,11 @@ class TestExtractAppearance:
         from echotales.pipeline.resolve.appearance_extract import extract_appearance
 
         store = _store(tmp_path)
-        client = _FakeClient(AppearanceResponse(hair_color="black"))
+        client = _FakeClient(
+            AppearanceResponse(
+                hair_color=AttributeClaim(value="black", source="Fang Yuan had black hair")
+            )
+        )
         extract_appearance("t", store, client=client)
         again = extract_appearance("t", store, client=client)
 
@@ -247,6 +401,49 @@ class TestExtractAppearance:
         report = extract_appearance("t", _store(tmp_path), client=Boom())
         assert report.failures == 1
         assert report.attributes_written == 0
+
+
+class TestPositionScopedAppearance:
+    def test_a_later_attribute_does_not_leak_into_an_earlier_panel(self, tmp_path) -> None:
+        """Fix 3: a chapter 5 panel must not see a scar the text only
+        reveals at chapter 100 -- temporal leakage from a flat, unscoped
+        read of the attribute history."""
+        from echotales.pipeline.persona.reference_gen import appearance_of
+
+        store = _store(tmp_path)
+        store.add_attribute(
+            "t",
+            Attribute(
+                target_kind=TargetKind.PERSONA,
+                target_id="t:self1:body1",
+                key="hair_color",
+                value="black",
+                interval=FuzzyInterval.open_ended(1.0, last_evidence=1.0),
+                learned_at_pos=DiscoursePosition(chapter=1.0, offset=0),
+                observer_id="READER",
+            ),
+        )
+        store.add_attribute(
+            "t",
+            Attribute(
+                target_kind=TargetKind.PERSONA,
+                target_id="t:self1:body1",
+                key="distinguishing_features",
+                value="long scar",
+                interval=FuzzyInterval.open_ended(100.0, last_evidence=100.0),
+                learned_at_pos=DiscoursePosition(chapter=100.0, offset=0),
+                observer_id="READER",
+            ),
+        )
+        store.conn.commit()
+
+        early = appearance_of(store, "t:self1:body1", position=5.0)
+        late = appearance_of(store, "t:self1:body1", position=150.0)
+        unscoped = appearance_of(store, "t:self1:body1")
+
+        assert early == {"hair_color": "black"}
+        assert late == {"hair_color": "black", "distinguishing_features": "long scar"}
+        assert unscoped == late
 
 
 class TestReferenceGeneration:
@@ -302,7 +499,15 @@ class TestReferenceGeneration:
 
         store = _store(tmp_path)
         extract_appearance(
-            "t", store, client=_FakeClient(AppearanceResponse(hair_color="black"))
+            "t",
+            store,
+            client=_FakeClient(
+                AppearanceResponse(
+                    hair_color=AttributeClaim(
+                        value="black", source="Fang Yuan had black hair"
+                    )
+                )
+            ),
         )
 
         first = generate_references(
@@ -325,12 +530,22 @@ class TestReferenceGeneration:
         from echotales.pipeline.persona.reference_gen import appearance_of
         from echotales.pipeline.resolve.appearance_extract import extract_appearance
 
-        store = _store(tmp_path)
+        store = _store(
+            tmp_path,
+            narration_text="Fang Yuan, black-haired and injured, wore green robes.",
+        )
         extract_appearance(
             "t",
             store,
             client=_FakeClient(
-                AppearanceResponse(hair_color="black", current_condition="injured")
+                AppearanceResponse(
+                    hair_color=AttributeClaim(
+                        value="black", source="Fang Yuan, black-haired and injured"
+                    ),
+                    current_condition=AttributeClaim(
+                        value="injured", source="black-haired and injured"
+                    ),
+                )
             ),
         )
         standing = appearance_of(store, "t:self1:body1")

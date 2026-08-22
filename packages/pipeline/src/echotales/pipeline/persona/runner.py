@@ -105,20 +105,51 @@ def get_panel_cast(
     local_mentions = [m for m in mentions if lo <= m.block_index <= hi]
     local_cast = present_cast(local_mentions, person_ids)
 
+    # A narrator reveal logged for this exact block hands the reader (not
+    # the characters in the scene) an identity that no resolved mention
+    # carries -- the placeholder surface ("the immortal zombie") is what
+    # `present_cast` found, not the name the reveal just gave the reader.
+    # Added to the cast rather than replacing the placeholder, since the
+    # placeholder mention is still real evidence of *someone* being present
+    # even where the revealed label doesn't already have a
+    # `persona_id_by_self`/`faction_by_self` entry of its own -- see
+    # `detect_reveals.reveal_target_for_block`'s docstring on why this is
+    # block-scoped, not chapter- or scene-scoped.
+    if store is not None:
+        from echotales.pipeline.resolve.detect_reveals import reveal_target_for_block
+
+        revealed_id = reveal_target_for_block(store, novel_id, chapter.number, block_index)
+        if revealed_id is not None:
+            revealed = store.get_self(revealed_id)  # type: ignore[attr-defined]
+            if revealed is not None and revealed.canonical_label not in local_cast:
+                local_cast = local_cast | {revealed.canonical_label}
+
     foreground: list[CharacterCast] = []
     for name in sorted(local_cast):
         explicit = None
+        rank = None
         persona_id = (persona_id_by_self or {}).get(name)
         if store is not None and persona_id:
             attrs = store.get_attributes(TargetKind.PERSONA, persona_id)  # type: ignore[attr-defined]
             explicit = next(
                 (a.value for a in attrs if a.key == "attire" and a.is_standing), None
             )
+            # `rank_insignia` is the appearance extractor's own vocabulary
+            # for this (e.g. "... Rank two Gu Master") -- reused here rather
+            # than adding a second rank source, so a character with no
+            # attire of their own but a known title still gets something
+            # closer than the novel's generic drawing style.
+            rank = next(
+                (a.value for a in attrs if a.key == "rank_insignia" and a.is_standing),
+                None,
+            )
         faction = (faction_by_self or {}).get(name)
         foreground.append(
             CharacterCast(
                 self_label=name,
-                attire=resolve_attire(novel_id, explicit=explicit, faction=faction, region=region),
+                attire=resolve_attire(
+                    novel_id, explicit=explicit, faction=faction, rank=rank, region=region
+                ),
             )
         )
 

@@ -2,7 +2,7 @@
 name = "echotales-core"
 version = "0.1.0"
 description = "EchoTales core: models, store, state_of(). Imports nothing from the pipeline."
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.12,<3.15"
 dependencies = [
     "pydantic>=2.8",
 ]

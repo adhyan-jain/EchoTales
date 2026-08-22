@@ -2,7 +2,7 @@
 name = "echotales-workspace"
 version = "0.1.0"
 description = "Bitemporal narrative knowledge graphs for web-novel adaptation"
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.12,<3.15"
 dependencies = [
     "echotales-core",
     "echotales-pipeline",
@@ -13,6 +13,10 @@ package = false
 
 [tool.uv.workspace]
 members = ["packages/*"]
+
+[tool.setuptools.packages.find]
+where = ["packages/pipeline/src"]
+include = ["echotales*"]
 
 [tool.uv.sources]
 echotales-core = { workspace = true }

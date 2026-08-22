@@ -146,19 +146,33 @@ SYSTEM = (
 )
 
 
+class AttributeClaim(BaseModel):
+    """One extracted value plus the sentence the model claims supports it.
+
+    The source is what makes the claim checkable after the fact --
+    `_verify_citations` confirms it is a real substring of the passages
+    handed to the model and that it actually sits near the target's own
+    name, rather than trusting the model's say-so that "the passages state
+    it".
+    """
+
+    value: str = ""
+    source: str = ""
+
+
 class AppearanceResponse(BaseModel):
     """Every field optional: a novel that never states eye colour must
     produce no eye colour, not a plausible guess."""
 
-    hair_color: str = ""
-    hair_style: str = ""
-    eye_color: str = ""
-    skin_tone: str = ""
-    height_build: str = ""
-    distinguishing_features: list[str] = Field(default_factory=list)
-    typical_attire: str = ""
-    rank_insignia: str = ""
-    current_condition: str = ""
+    hair_color: AttributeClaim = Field(default_factory=AttributeClaim)
+    hair_style: AttributeClaim = Field(default_factory=AttributeClaim)
+    eye_color: AttributeClaim = Field(default_factory=AttributeClaim)
+    skin_tone: AttributeClaim = Field(default_factory=AttributeClaim)
+    height_build: AttributeClaim = Field(default_factory=AttributeClaim)
+    distinguishing_features: list[AttributeClaim] = Field(default_factory=list)
+    typical_attire: AttributeClaim = Field(default_factory=AttributeClaim)
+    rank_insignia: AttributeClaim = Field(default_factory=AttributeClaim)
+    current_condition: AttributeClaim = Field(default_factory=AttributeClaim)
 
 
 @dataclass(slots=True)
@@ -172,10 +186,19 @@ class AppearanceReport:
     skipped_not_prominent: int = 0
     failures: int = 0
     by_entity: dict[str, int] = field(default_factory=dict)
+    #: Citation-check discards, by reason (`missing_source`,
+    #: `source_not_in_passages`, `target_not_near_source`) -- see
+    #: `_verify_citations`. Kept separate from `_clean_values`'s own drops
+    #: (transient descriptors, self-reference, overlength) so a citation
+    #: failure and a plain grounding failure aren't conflated in the report.
+    discards_by_reason: dict[str, int] = field(default_factory=dict)
 
     def summary(self) -> str:
         top = sorted(self.by_entity.items(), key=lambda kv: -kv[1])[:6]
         listed = ", ".join(f"{k}={v}" for k, v in top) or "none"
+        discards = ", ".join(
+            f"{k}={v}" for k, v in sorted(self.discards_by_reason.items())
+        ) or "none"
         return (
             f"{self.novel_id}: {self.attributes_written:,} appearance attributes "
             f"from {self.entities_called} model calls\n"
@@ -184,6 +207,7 @@ class AppearanceReport:
             f"{self.skipped_no_evidence} with no descriptive evidence\n"
             f"  already known (not rewritten): {self.attributes_already_known}; "
             f"failed calls: {self.failures}\n"
+            f"  citation discards: {discards}\n"
             f"  most described: {listed}"
         )
 
@@ -622,36 +646,61 @@ def _surface_forms(store: Store, novel_id: str, target_id: str) -> set[str]:
 
 
 def build_prompt(label: str, passages: list[str]) -> str:
+    """Build the extraction prompt, requiring a source quote per attribute.
+
+    **A description of what each key means was not enough to stop
+    invention.** Measured on RI with qwen2.5:7b: handed 60 real passages for
+    Bai Ning Bing, the model returned `typical_attire="green robes"` --
+    green being the genre default -- regardless of what those passages
+    actually said. Asking the model to name what it means by "the passages
+    state it" is free to ignore silently; asking it to *quote* the sentence
+    is not, because a quote can be checked afterwards (see
+    `_verify_citations`) and a fabricated one usually doesn't survive that
+    check even when the model still tries to invent.
+    """
     lines = [f"Passages about {label}:", ""]
     lines += [f"  - {p}" for p in passages]
     lines += [
         "",
-        f"Extract {label}'s physical appearance as a JSON object with these "
-        "keys, including a key only if the passages state it:",
-        "  hair_color, hair_style, eye_color, skin_tone, height_build,",
-        "  distinguishing_features (list of strings), typical_attire,",
-        "  rank_insignia, current_condition (injured/healthy/transformed).",
+        f"Extract {label}'s physical appearance. For each attribute you "
+        "report, you MUST include the exact source sentence from the "
+        "passages above that supports it. Do not include an attribute if "
+        "no passage directly describes it.",
         "",
+        "Return JSON in this shape:",
+        "{",
+        '  "typical_attire": {',
+        '    "value": "white robes",',
+        '    "source": "Standing on a slope was Bai Ning Bing, clothed in white."',
+        "  },",
+        '  "hair_color": {',
+        '    "value": "white",',
+        '    "source": "his hair snowy white"',
+        "  }",
+        "}",
+        "",
+        "Keys: hair_color, hair_style, eye_color, skin_tone, height_build, "
+        "distinguishing_features (a list of {value, source} objects), "
+        "typical_attire, rank_insignia, current_condition.",
+        "",
+        "Rules:",
         # The split that keeps a character recognisable between chapters.
         # Without it, a character introduced mid-disaster is permanently
         # drawn mid-disaster -- see TRANSIENT_KEYS.
-        "Separate what is permanently true about this person from what is "
-        "only true in these scenes:",
-        "  - typical_attire is the garment they normally wear, described "
-        "undamaged: 'green robes', never 'torn green robes'.",
-        "  - distinguishing_features are permanent marks only (scars, "
+        "- typical_attire = garment normally worn, described undamaged. "
+        '"white robes", not "torn white robes".',
+        "- distinguishing_features = permanent marks only (scars, "
         "birthmarks, unusual eyes). Never injuries, blood, dirt, sweat, "
-        "tears or dishevelment.",
-        "  - current_condition is where any injury, damage or transformation "
-        "goes.",
-        "",
+        "dishevelment.",
+        "- current_condition = injury, damage, transformation goes here.",
         # These passages are whole narration blocks, so they routinely
         # describe bystanders too. Without this, a neighbour's build gets
         # attributed to the subject -- see `gather_appearance_passages`.
-        f"Some passages describe other people standing near {label}. Report "
-        f"only {label}'s own appearance. If a detail describes someone else "
-        f"-- including anyone compared to {label} (\"taller than {label}\") "
-        f"-- omit it entirely.",
+        f"- If a detail describes someone else, even if they are compared "
+        f"to {label}, omit it entirely.",
+        "- Every attribute needs a source quote from the passages above. "
+        "No quote, no attribute.",
+        "",
         "Return only JSON, no explanation.",
     ]
     return "\n".join(lines)
@@ -683,10 +732,56 @@ _GENERIC_NOUNS = frozenset(
 )
 
 
+#: How far (in characters) a distinguishing word may sit from a mention of
+#: the target's own surface form and still count as grounding it. Chosen to
+#: cover "Bai Ning Bing's blue iris" (word right after the possessive) while
+#: excluding a clause about a different person two sentences away.
+_GROUNDING_WINDOW_CHARS = 40
+
+
+def is_grounded(
+    word: str, target_surface_forms: set[str] | list[str], evidence_passages: list[str]
+) -> bool:
+    """Whether `word` appears near an actual mention of the target, not just
+    somewhere in the pooled evidence.
+
+    **A bag-of-words check over pooled evidence proves nothing about who a
+    word describes.** Measured on RI: Bai Ning Bing's evidence pool contains
+    "Xiong Jiang used Roaming Zombie Gu, his two irises turning gloomy
+    green" -- describing Xiong Jiang's eyes, not Bai Ning Bing's attire --
+    and a plain `"green" in blob` check let that ground a hallucinated
+    `typical_attire="green robes"` for Bai Ning Bing. Requiring the word to
+    sit within `_GROUNDING_WINDOW_CHARS` of one of the target's own surface
+    forms (or in the same sentence) rejects that: "green" is nowhere near
+    "Bai Ning Bing" in that passage.
+    """
+    word_lower = word.lower()
+    for passage in evidence_passages:
+        passage_lower = passage.lower()
+        for form in target_surface_forms:
+            form_lower = form.lower()
+            if not form_lower:
+                continue
+            start = 0
+            while True:
+                idx = passage_lower.find(form_lower, start)
+                if idx == -1:
+                    break
+                window_start = max(0, idx - _GROUNDING_WINDOW_CHARS)
+                window_end = min(
+                    len(passage_lower), idx + len(form_lower) + _GROUNDING_WINDOW_CHARS
+                )
+                if word_lower in passage_lower[window_start:window_end]:
+                    return True
+                start = idx + len(form_lower)
+    return False
+
+
 def attesting_chapter(
-    value: str, evidence: list[tuple[float, str]]
+    value: str, evidence: list[tuple[float, str]], surfaces: set[str]
 ) -> float | None:
-    """The earliest chapter whose passage actually states this value.
+    """The earliest chapter whose passage actually states this value *about
+    the target*, not merely contains its words somewhere.
 
     This is what makes an appearance attribute answerable by
     `state_of(..., position)`. Without it every attribute is written against
@@ -710,27 +805,27 @@ def attesting_chapter(
         return min((c for c, _ in evidence), default=None)
 
     for chapter, text in sorted(evidence):
-        low = text.casefold()
-        if all(w in low for w in words):
+        if all(is_grounded(w, surfaces, [text]) for w in words):
             return chapter
     return None
 
 
-def _grounded(value: str, blob: str) -> bool:
-    """Whether the passages actually support this value.
+def _grounded(value: str, surfaces: set[str], passages: list[str]) -> bool:
+    """Whether the passages actually support this value, said *about the
+    target* -- not merely present somewhere in the pooled evidence.
 
     The model invents. Measured on RI: Bai Ning Bing is introduced as
     "This white-clothed young man was none other than ... Bai Ning Bing",
     and the extractor returned `typical_attire="green robes"` -- green
     being the Gu Yue clan's colour and the novel's most frequent robe
     description, so the model reached for the genre default over the
-    sentence in front of it. Nothing about that is detectable from the
-    response alone; it is only wrong relative to the evidence.
-
-    So every distinguishing word in a value must appear somewhere in the
-    evidence. Generic nouns are exempt (see `_GENERIC_NOUNS`) because they
-    carry no claim, and a value made *only* of generic words is left alone
-    rather than dropped -- there is nothing to check.
+    sentence in front of it. The old blob-substring check couldn't catch
+    this: "green" genuinely appears in the evidence pool, describing a
+    bystander's eyes. So grounding now requires the word to sit near one of
+    the target's own surface forms (`is_grounded`), not just anywhere in the
+    text. Generic nouns are exempt (see `_GENERIC_NOUNS`) because they carry
+    no claim, and a value made *only* of generic words is left alone rather
+    than dropped -- there is nothing to check.
     """
     words = [
         w
@@ -739,10 +834,15 @@ def _grounded(value: str, blob: str) -> bool:
     ]
     if not words:
         return True
-    return all(w in blob for w in words)
+    return all(is_grounded(w, surfaces, passages) for w in words)
 
 
-def _clean_values(values: dict[str, str], label: str, blob: str = "") -> dict[str, str]:
+def _clean_values(
+    values: dict[str, str],
+    label: str,
+    surfaces: set[str] | None = None,
+    passages: list[str] | None = None,
+) -> dict[str, str]:
     """Drop extractions that are about a moment, a technique, or someone else.
 
     Three filters, each from a real mis-extraction on RI:
@@ -770,32 +870,138 @@ def _clean_values(values: dict[str, str], label: str, blob: str = "") -> dict[st
         if key in ("hair_style", "typical_attire", "distinguishing_features"):
             if any(word in low for word in _TRANSIENT_DESCRIPTORS):
                 continue
-        # The evidence has to actually say it -- see `_grounded`.
-        if blob and not _grounded(value, blob):
+        # The evidence has to actually say it, about *this* character --
+        # see `_grounded`.
+        if surfaces and passages and not _grounded(value, surfaces, passages):
             continue
         out[key] = value
 
     return out
 
 
-def _values_from(response: AppearanceResponse) -> dict[str, str]:
-    """Flatten a response to key -> value, dropping empties.
+_NON_COMMITTAL = ("unknown", "none", "n/a", "not stated")
+
+
+def _claims_from(response: AppearanceResponse) -> dict[str, list[AttributeClaim]]:
+    """Flatten a response to key -> non-empty claims, dropping non-answers.
 
     `distinguishing_features` is a list in the schema (a character can have
-    several) but is stored as one comma-joined `Attribute` value, because a
-    generation prompt consumes it as one clause.
+    several), each with its own citation; every other key carries at most
+    one claim.
     """
-    out: dict[str, str] = {}
+    out: dict[str, list[AttributeClaim]] = {}
     for key in APPEARANCE_KEYS:
-        raw = getattr(response, key, "")
-        if isinstance(raw, list):
-            joined = ", ".join(str(v).strip() for v in raw if str(v).strip())
-            value = joined
-        else:
-            value = str(raw).strip()
-        if value and value.lower() not in ("unknown", "none", "n/a", "not stated"):
-            out[key] = value
+        raw = getattr(response, key, None)
+        claims = raw if isinstance(raw, list) else ([raw] if raw is not None else [])
+        kept = [
+            c
+            for c in claims
+            if isinstance(c, AttributeClaim)
+            and c.value.strip()
+            and c.value.strip().lower() not in _NON_COMMITTAL
+        ]
+        if kept:
+            out[key] = kept
     return out
+
+
+def _normalize_ws(text: str) -> str:
+    return " ".join(text.split())
+
+
+#: Approximate clause boundaries for citation-proximity scoping. Coarser
+#: than real sentence segmentation on purpose -- a semicolon-joined list of
+#: three people's eye colours (the real RI text this guards against) is one
+#: grammatical sentence but must not be treated as one unit of attribution.
+_CLAUSE_BOUNDARY = re.compile(r"[.;!?]")
+
+
+def _clause_at(host: str, idx: int) -> tuple[str, str]:
+    """The clause containing `idx`, and the clause immediately before it.
+
+    Two clauses, not one, because the pronoun continuation this extractor
+    relies on ("Bai Ning Bing... His hair was white.") splits the name into
+    the *preceding* clause. Only backward, not forward: the real
+    contamination case is "...turning gloomy green; ... Bai Ning Bing's
+    pupils were azure...", where the name sits in the clause *after* the
+    misattributed colour, and admitting the following clause too would
+    re-open exactly that hole.
+    """
+    bounds = [0] + [m.end() for m in _CLAUSE_BOUNDARY.finditer(host)] + [len(host)]
+    for i in range(len(bounds) - 1):
+        if bounds[i] <= idx < bounds[i + 1]:
+            current = host[bounds[i] : bounds[i + 1]]
+            previous = host[bounds[i - 1] : bounds[i]] if i > 0 else ""
+            return previous, current
+    return "", host
+
+
+def _verify_citations(
+    claims_by_key: dict[str, list[AttributeClaim]],
+    passages: list[str],
+    surfaces: set[str],
+    report: AppearanceReport,
+) -> dict[str, str]:
+    """The two checks Fix 2 exists for, run before a citation reaches the
+    store.
+
+    1. The quoted source must be a real (whitespace-normalized) substring
+       of the passages actually sent to the model -- a model can quote
+       something that sounds like the text without it being the text.
+    2. The target's own surface form must appear in the source quote's own
+       clause, or the clause immediately before it (see `_clause_at`) -- a
+       flat character window around the quote was tried first and rejected:
+       measured on the real RI text, "his two irises turning gloomy green;
+       ... Bai Ning Bing's pair of pupils were azure" put the name within a
+       60-character pad of "green" across the semicolon, which is exactly
+       the misattribution this fix exists to close. Clause-scoping catches
+       what the flat window let back in.
+
+    Discards are counted by reason on `report` rather than silently
+    dropped, so a run that extracts nothing is diagnosable.
+    """
+    normalized_passages = [_normalize_ws(p) for p in passages]
+    out: dict[str, list[str]] = {}
+
+    for key, claims in claims_by_key.items():
+        surviving: list[str] = []
+        for claim in claims:
+            value = claim.value.strip()
+            source = _normalize_ws(claim.source)
+            if not source:
+                report.discards_by_reason["missing_source"] = (
+                    report.discards_by_reason.get("missing_source", 0) + 1
+                )
+                continue
+
+            host = next(
+                (p for p in normalized_passages if source.lower() in p.lower()),
+                None,
+            )
+            if host is None:
+                report.discards_by_reason["source_not_in_passages"] = (
+                    report.discards_by_reason.get("source_not_in_passages", 0) + 1
+                )
+                continue
+
+            idx = host.lower().find(source.lower())
+            previous, current = _clause_at(host.lower(), idx)
+            scope = previous + current
+            if not any(form.lower() in scope for form in surfaces if form):
+                report.discards_by_reason["target_not_near_source"] = (
+                    report.discards_by_reason.get("target_not_near_source", 0) + 1
+                )
+                continue
+
+            surviving.append(value)
+
+        if surviving:
+            out[key] = surviving
+
+    return {
+        key: ", ".join(values) if key == "distinguishing_features" else values[0]
+        for key, values in out.items()
+    }
 
 
 def extract_appearance(
@@ -877,10 +1083,22 @@ def extract_appearance(
                 continue
 
             report.entities_called += 1
+            surfaces = _surface_forms(store, novel_id, entity.id)
+            # Citation checks first (Fix 2): a claim whose quote doesn't
+            # verifiably exist, or isn't about this target, never reaches
+            # `_clean_values`. What survives is still run through the
+            # existing transient/self-reference/overlength/grounding
+            # filters -- citation and word-grounding are independent
+            # defences against the same failure mode, not a replacement
+            # for each other.
+            cited_values = _verify_citations(
+                _claims_from(result.value), passages, surfaces, report
+            )
             values = _clean_values(
-                _values_from(result.value),
+                cited_values,
                 entity.canonical_label,
-                " ".join(t for _c, t in evidence).casefold(),
+                surfaces,
+                passages,
             )
             if not values:
                 continue
@@ -892,6 +1110,7 @@ def extract_appearance(
                 persona_id,
                 values,
                 evidence,
+                surfaces,
                 report=report,
             )
 
@@ -942,6 +1161,7 @@ def _write_appearance(
     persona_id: str,
     values: dict[str, str],
     evidence: list[tuple[float, str]],
+    surfaces: set[str],
     *,
     report: AppearanceReport,
 ) -> None:
@@ -960,7 +1180,7 @@ def _write_appearance(
             continue
         # Position this fact where the text actually attests it, not at
         # the entity's first sighting -- see `attesting_chapter`.
-        at = attesting_chapter(value, evidence)
+        at = attesting_chapter(value, evidence, surfaces)
         if at is None:
             continue
         pos = DiscoursePosition(chapter=at, offset=0)

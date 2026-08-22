@@ -4,10 +4,22 @@ from __future__ import annotations
 
 import pytest
 
-from echotales.core.enums import AliasType, BlockType, ReferenceMode, SpanType, TargetKind
-from echotales.core.models import Block, Chapter, DiscoursePosition, Mention, Self
+from echotales.core.enums import (
+    OBSERVER_READER,
+    AliasType,
+    AssertedBy,
+    BlockType,
+    ReferenceMode,
+    SpanType,
+    TargetKind,
+    TruthStatus,
+)
+from echotales.core.interval import FuzzyInterval
+from echotales.core.models import Attribute, Block, Chapter, DiscoursePosition, Mention, Self
 from echotales.core.store import Store
-from echotales.pipeline.render.panels import get_engine, render_panels
+from echotales.pipeline.persona.reference_gen import REFERENCE_PATH_KEY
+from echotales.pipeline.persona.split import BodyEpoch, write_epochs
+from echotales.pipeline.render.panels import character_looks, get_engine, render_panels
 
 
 def _seeded_store(tmp_path) -> Store:
@@ -225,3 +237,94 @@ class TestRenderPanels:
         labels = [c.self_label for c in cast.foreground_characters]
         assert "Fang Yuan" in labels
         assert "Some Mountain" not in labels
+
+
+class TestCharacterLooksBodySelection:
+    """Fix 10: a panel must draw the body that is actually active at its own
+    chapter, not whichever body happened to be extracted first.
+
+    IP-Adapter itself was permanently removed (colour/composition
+    contamination -- `render/panels.py`'s own comment at the `engine.generate`
+    call site, HANDOFF 4.47); `character_looks` still has to hand back the
+    *correct* per-chapter reference path regardless of what, if anything,
+    later conditions pixels on it -- the manifest records `conditioned_on`
+    for provenance even when generation is prompt-only.
+    """
+
+    def _two_body_store(self, tmp_path) -> Store:
+        store = Store(str(tmp_path / "t.db"))
+        store.add_novel("t", "T", "x.epub", "generic")
+        store.add_self(
+            Self(
+                id="t:self1",
+                novel_id="t",
+                canonical_label="Fang Yuan",
+                first_attested_pos=DiscoursePosition(chapter=1.0, offset=0),
+                kind=TargetKind.SELF,
+            )
+        )
+        epochs = [
+            BodyEpoch(
+                index=0,
+                persona_id="t:self1:body1",
+                body_label="Fang Yuan",
+                from_pos=1.0,
+                to_pos=2.0,
+                cause="death",
+                evidence="",
+            ),
+            BodyEpoch(
+                index=1,
+                persona_id="t:self1:body2",
+                body_label="Fang Yuan (body 2)",
+                from_pos=2.0,
+                to_pos=None,
+                cause="rebirth",
+                evidence="",
+            ),
+        ]
+        write_epochs(store, "t", store.get_self("t:self1"), epochs, observer_id=OBSERVER_READER)
+
+        body1_sheet = tmp_path / "body1.png"
+        body2_sheet = tmp_path / "body2.png"
+        body1_sheet.write_bytes(b"")
+        body2_sheet.write_bytes(b"")
+
+        for persona_id, path in (("t:self1:body1", body1_sheet), ("t:self1:body2", body2_sheet)):
+            store.add_attribute(
+                "t",
+                Attribute(
+                    target_kind=TargetKind.PERSONA,
+                    target_id=persona_id,
+                    key=REFERENCE_PATH_KEY,
+                    value=str(path),
+                    interval=FuzzyInterval.open_ended(1.0, last_evidence=1.0),
+                    learned_at_pos=DiscoursePosition(chapter=1.0, offset=0),
+                    observer_id=OBSERVER_READER,
+                    asserted_by=AssertedBy.INFERENCE,
+                    truth_status=TruthStatus.INFERRED,
+                ),
+            )
+        store.conn.commit()
+        return store, body1_sheet, body2_sheet
+
+    def test_reference_switches_at_the_body_boundary(self, tmp_path) -> None:
+        store, body1_sheet, body2_sheet = self._two_body_store(tmp_path)
+
+        before = character_looks(store, "t:self1", novel_id="t", chapter=1.5)
+        after = character_looks(store, "t:self1", novel_id="t", chapter=2.5)
+
+        assert before is not None and after is not None
+        assert before[2] == body1_sheet
+        assert after[2] == body2_sheet
+
+    def test_reference_at_the_exact_transition_goes_to_the_new_body(self, tmp_path) -> None:
+        """Point-known intervals are half-open (`FuzzyInterval.point_known`);
+        the position the new body starts at must already read as the new
+        body, not the last moment of the old one."""
+        store, _body1_sheet, body2_sheet = self._two_body_store(tmp_path)
+
+        at_boundary = character_looks(store, "t:self1", novel_id="t", chapter=2.0)
+
+        assert at_boundary is not None
+        assert at_boundary[2] == body2_sheet

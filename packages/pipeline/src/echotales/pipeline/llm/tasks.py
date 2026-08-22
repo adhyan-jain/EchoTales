@@ -194,7 +194,13 @@ TASK_PROFILES: dict[Task, TaskProfile] = {
         ollama_model="qwen2.5:7b",
         anthropic_model="claude-sonnet-5",
         temperature=0.0,
-        max_tokens=600,
+        # 600 was sized for a flat {key: value} response. The citation-forced
+        # schema (`appearance_extract.py::AttributeClaim`) doubles that: every
+        # key now costs a quoted source sentence as well as a value, and a
+        # truncated JSON object fails validation outright rather than
+        # degrading -- so this must cover the citation cost, not just the
+        # values.
+        max_tokens=1200,
     ),
     # Deciding what to draw is a creative call, not an extraction.
     # gemma2:9b over qwen2.5:7b here: measured on RI ch1, qwen2.5:7b at
