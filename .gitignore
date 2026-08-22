@@ -123,3 +123,6 @@ data/diag/
 # is a different act from using them locally -- same reasoning as data/raw/.
 data/scene-references/
 data/voice/cremad/
+
+# graphify knowledge-graph output -- regenerate with `/graphify`.
+graphify-out/
