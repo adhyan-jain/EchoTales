@@ -2301,8 +2301,13 @@ none of those words is ever a valid character name in this corpus).
 `echotales render --novel reverend-insanity --chapters 1 --max-panels 5
 --image-engine stub` against the `data/reruns/reverend-insanity.db` scratch
 copy 4.49 already fixed extraction on, through the real two-phase
-direction pass (ollama, qwen2.5:7b) end to end. 21 panels produced for
-chapter 1 (max-panels caps the 5 scenes generated, not raw panel count —
+direction pass (ollama, qwen2.5:7b) end to end. Output archived at
+`data/RI/panels/ch1/v41_stub-director-validation/` (panels, manifest,
+prompt cache, run log) — named out of the plain `vN` sequence deliberately:
+`--image-engine stub` writes solid-colour placeholders, not a real render,
+so it would misrepresent v1-v40's actual image-engine history to sit among
+them unlabelled. 21 panels produced for chapter 1 (max-panels caps the 5
+scenes generated, not raw panel count —
 see below). Zero occurrences of "Bai Ning Bing" anywhere in the run log or
 the 21 cached final prompts (checked directly against
 `prompt_cache_v1.json`, not just the log); "Fang Yuan" — the real chapter 1
