@@ -2250,6 +2250,119 @@ was never going to fix, the separate director-hallucination defect family
 4.48 already opened — v40 just found a second, more specific member of that
 family than the one already on file.
 
+### 4.50 4.49's fix candidate shipped, three real bugs found in the uncommitted draft, and verified clean against a real ch1 render *(2026-08-23)*
+
+**Context.** 4.49 flagged both fix candidates as "not yet implemented." A
+third session found both already half-written and sitting uncommitted in
+the working tree — `direction.py`'s SYSTEM rule 5 already restricted to the
+`CAST` list, and a `_validate_character_names` guardrail already existed.
+Neither had ever been run: `panels.py` never passed `store` into
+`direct_beat`, so the guardrail's `if store and novel_id` guard was always
+false. Reading the guardrail itself found it would have crashed immediately
+if it had run:
+
+- `store.iter_entities(novel_id)` — no such method (`Store` only has
+  `all_selves`).
+- `entity.entity_id` — the `Self` model's field is `id`, not `entity_id`.
+- `gazetteer.add(label, alias_type="CAST", ...)` — `alias_type` must be an
+  `AliasType` enum member; a plain string crashes the first time `add()`
+  reads `alias_type.enters_graph`.
+- `gazetteer.scan(...)` — no such method (`Gazetteer.find`).
+- The `cast` dict is `{name: appearance_clause}` (`build_prompt`'s own
+  docstring), not `{entity_id: name}` — the draft's `for entity_id, label
+  in cast.items()` had the two swapped, so even with the above fixed the
+  registered alias would have been an appearance-description sentence, not
+  a name, and would never match anything in the director's prose.
+- The spec's case 3 ("name not in the entity table at all → fabricated")
+  cannot be produced by gazetteer lookup alone — a gazetteer only matches
+  names it already knows, so it can never surface a name it doesn't know.
+  Added a second pass using `mentions/ner.py`'s `HeuristicDetector` (the
+  same offline capitalised-name detector the mention pipeline uses) over
+  the director's own text; anything it flags that isn't in the cast or the
+  entity table is genuinely invented.
+
+Fixed all of the above, wired `store` through the `direct_beat` call site,
+and added `packages/pipeline/tests/test_direction.py` (4 cases: cast member
+kept, out-of-scene known character stripped, fabricated name stripped,
+validation skipped cleanly with no store).
+
+**Two more real bugs found from the first live run, not from reasoning
+about the code:** the heuristic detector's regex captures a trailing
+possessive as part of the span, so "Fang Yuan's" (a real cast member,
+correctly named) was being flagged and stripped as fabricated. And
+"Everyone" / "Someone" — indefinite pronouns, not names — were being
+flagged the same way. Fixed by stripping a trailing `'s`/`'s` before the
+cast/entity-table comparison, and adding `Everyone`, `Everybody`, `Someone`,
+`Somebody`, `Anyone`, `Anybody`, `None` to `mentions/ner.py`'s shared
+`_STOPWORDS` list (a repo-wide improvement, not local to this call site —
+none of those words is ever a valid character name in this corpus).
+
+**Verified against a real render, not just unit tests.** Ran
+`echotales render --novel reverend-insanity --chapters 1 --max-panels 5
+--image-engine stub` against the `data/reruns/reverend-insanity.db` scratch
+copy 4.49 already fixed extraction on, through the real two-phase
+direction pass (ollama, qwen2.5:7b) end to end. 21 panels produced for
+chapter 1 (max-panels caps the 5 scenes generated, not raw panel count —
+see below). Zero occurrences of "Bai Ning Bing" anywhere in the run log or
+the 21 cached final prompts (checked directly against
+`prompt_cache_v1.json`, not just the log); "Fang Yuan" — the real chapter 1
+protagonist — appears in 13/21. Fifteen names were caught and stripped by
+the validator across the run: 8 were locations/factions the director
+misnamed as characters ("Qing Mao Mountain" x2, "Gu Yue Village" x2, "Gu Yue
+clan" x4 — all real entities, correctly rejected as non-person), 7 were
+genuinely fabricated words with no entity-table match at all ("Gu Yue" x4 —
+a clan-name fragment, not the clan's own registered surface form; "Spring",
+"Heads", "People"). None were a specific invented *named individual* the way
+Bai Ning Bing was in 4.49 — the worst the director did this run was
+misname a location as a person, which the validator's non-person branch
+catches correctly. Both the false-positive fixes above were verified by
+their absence in this second run: the first run (launched before the
+possessive/pronoun fix) showed "Fang Yuan's" and "Someone"/"Everyone" being
+wrongly stripped; the second, identical run with the fix in place showed
+neither.
+
+Eighteen distinct director (LLM) calls fired this run (18 distinct
+beat-hashes in the prompt cache); the 15 strips above landed across that
+set, so the raw name-error rate this beat structure produced is roughly
+15/18 calls touched at least one wrong name before the validator ran — the
+prompt constraint alone (rule 5) is visibly not holding on every call, which
+is exactly the case for the validator being load-bearing rather than
+defensive redundancy. No 1girl/female tag and no invented gendered figure
+appeared anywhere in the 21 final prompts for an empty-cast beat — but the
+model also never produced the literal "silhouette"/"back-turned" vocabulary
+rule 6 suggests; empty-cast beats instead read "No one is present" / "a
+figure ... ; no one else is present" (partly the director's own phrasing,
+partly the strip mechanism's `"a figure"` substitution). The outcome rule 6
+is meant to prevent — a specific gendered person invented for an unstated
+figure — did not happen in this run, but not via the exact mechanism
+specified; worth re-checking on a larger sample before calling the wording
+itself correct.
+
+**Fix C, also already present in the uncommitted draft and verified
+correct:** `render_panels()` now slices `scenes[:max_panels]` (4.49 found
+this parameter was read but never acted on — confirmed by the missing
+slice, not by grep alone). Caps *scenes*, not raw panel count — a scene's
+image budget (1-3) and crowd-cut logic can still produce several panels per
+scene, which is why `--max-panels 5` above produced 21 panels, not 5.
+Verified directly against `group_scenes` output for this chapter: ch1 has
+14 scenes over 92 blocks, and scene 5 (0-indexed `scenes[4]`) ends at block
+46; the `--max-panels 5` run's highest cached block index was 46 — the cap
+engaged exactly at the 5th-scene boundary, not partway through it and not
+at the chapter's real end (block 85, scene 14). Without the cap this
+matches 4.49's report of `--max-panels 5` on ch1 producing 48 panels twice
+(all 14 scenes, ignoring the flag). This is a scene cap, not a literal
+panel-count cap — if a literal panel-count cap is wanted later, that's a
+different, larger change (truncating mid-scene rather than dropping whole
+scenes), not a bug in this fix.
+
+**Net effect:** 4.49's flagged defect (a real, out-of-scene named character
+appearing in chapter 1) is fixed and verified absent under the same
+scratch-db/render conditions that found it. The fix that shipped was not
+the one 4.49 described in prose — it was a mostly-complete but never-run
+draft with real bugs in it, which is itself worth naming as a pattern: an
+uncommitted change that "looks done" in a diff is not verified until it has
+actually executed once.
+
 ## 9. Layout
 
 ```
