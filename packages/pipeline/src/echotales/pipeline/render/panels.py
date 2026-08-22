@@ -915,7 +915,11 @@ def character_looks(
     from echotales.pipeline.persona.split import persona_at
 
     persona_id = persona_at(store, entity_id, chapter)
-    appearance = appearance_of(store, persona_id)
+    # Position-scoped: an attribute the text only reveals later (a scar
+    # disclosed at chapter 100) must not appear on a chapter 5 panel just
+    # because it is now known to be true. `None` (a cast list, not a panel)
+    # keeps the old flattened behaviour -- see `appearance_of`.
+    appearance = appearance_of(store, persona_id, position=chapter)
     # Canon, then genre defaults -- the same chain `reference_gen` applies.
     # Without it here the panels were running on raw extraction only: Fang
     # Yuan has no extracted hair colour, so the image model invented one and
@@ -1152,7 +1156,7 @@ def render_panels(
         for span in spans:
             by_block_spans.setdefault(span.block_index, []).append(span)
 
-        for scene in scenes:
+        for scene in scenes[:max_panels]:
             story_scene_blocks = [
                 b for b in scene.blocks
                 if (blk := by_index.get(b)) is not None
@@ -1606,6 +1610,7 @@ def render_panels(
                             novel_style=world_setting(novel_id),
                             client=client,
                             novel_id=novel_id,
+                            store=store,
                         )
 
                     if directed is not None:

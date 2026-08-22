@@ -26,8 +26,12 @@ from __future__ import annotations
 import logging
 import re
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, Field
+
+if TYPE_CHECKING:
+    from echotales.core.store import Store
 
 log = logging.getLogger(__name__)
 
@@ -64,12 +68,17 @@ SYSTEM = (
     "roofs, stone courtyards. No kimono, obi, torii, paper screens, cherry "
     "blossom.\n\n"
 
-    "5. In 'layout': use the character's actual name, not a placeholder. "
-    "Write 'Fang Yuan stands alone' not 'X stands alone'.\n\n"
+    "5. You may only reference characters whose names appear in the CAST list below. "
+    "If CAST is empty, describe the scene without naming any character — use 'a figure', 'someone', 'the observer', or describe the environment alone. "
+    "Never invent character names. Never draw on external knowledge of the source novel. "
+    "Names outside CAST are forbidden even if they seem appropriate to the setting.\n\n"
 
-    "6. One place per shot. One ground plane, one building, one horizon.\n\n"
+    "6. If a character's gender is unstated, do not draw them as a specific character; "
+    "render as a silhouette, back-turned figure, or environmental element.\n\n"
 
-    "7. No film vocabulary. No 'close-up on', 'the shot pans', 'into the camera'."
+    "7. One place per shot. One ground plane, one building, one horizon.\n\n"
+
+    "8. No film vocabulary. No 'close-up on', 'the shot' pans', 'into the camera'."
 )
 
 
@@ -127,6 +136,10 @@ def build_prompt(
         # factions are in play -- filtered to what is known by this
         # position. See `world/context.py`.
         lines += ["What the story knows at this point:", context_brief, ""]
+    cast_list = list(cast.keys()) if cast else "EMPTY"
+    lines.append(f"CAST for this beat: {cast_list}")
+    lines.append("")
+    
     if cast:
         lines.append("Characters who may appear, with their fixed appearance:")
         for name, look in cast.items():
@@ -269,6 +282,7 @@ def direct_beat(
     client: object,
     novel_id: str = "",
     context_brief: str = "",
+    store: Store | None = None,
 ) -> Direction | None:
     """Get one shot from the director, or None if the call fails.
 
@@ -296,7 +310,9 @@ def direct_beat(
         return None
 
     direction = result.value
-    direction = _validate_direction(direction, beat_text=beat_text, cast=cast)
+    direction = _validate_direction(
+        direction, beat_text=beat_text, cast=cast, novel_id=novel_id, store=store
+    )
     return Direction(direction=direction, cast=cast, novel_style=novel_style)
 
 
@@ -355,19 +371,22 @@ _HALLUCINATED_GROUP_RE = re.compile(
 
 
 def _validate_direction(
-    d: PanelDirection, *, beat_text: str, cast: dict[str, str]
+    d: PanelDirection, *, beat_text: str, cast: dict[str, str], novel_id: str = "", store: Store | None = None
 ) -> PanelDirection:
     """Post-call guardrails that catch what the prompt rules could not.
 
-    Two checks:
+    Three checks:
     1. Hallucinated groups: if 'action' or 'layout' contains a group noun
        that does not appear in the passage text or the cast list, blank the
-       offending field.  The image prompt falls back to the assembled
+       offending field. The image prompt falls back to the assembled
        mechanical prompt, which is worse but does not put invented people
        in frame.
     2. Literal 'X' placeholder: if layout still says 'X alone' or 'X stands',
-       blank it.  The layout instruction example used X as a variable and
+       blank it. The layout instruction example used X as a variable and
        some models copy it verbatim.
+    3. Character name validation: parse the director's output for character names
+       using the gazetteer logic. Log violations for out-of-scene leakage or
+       fabricated names.
     """
     combined_source = beat_text.lower() + " " + " ".join(cast.keys()).lower()
 
@@ -391,4 +410,78 @@ def _validate_direction(
         log.warning("director used literal 'X' placeholder in layout: %r -- blanked", d.layout)
         d = d.model_copy(update={"layout": ""})
 
+    # Character name validation
+    if store and novel_id:
+        _validate_character_names(d, cast, novel_id, store)
+
     return d
+
+
+def _validate_character_names(
+    d: PanelDirection, cast: dict[str, str], novel_id: str, store: Store
+) -> None:
+    """Parse the director's output for character names and validate against the cast and entity table.
+
+    For each detected name:
+    1. If the name is in the cast dict → keep.
+    2. If the name is in the novel's entity table but not in the cast dict →
+       strip it from the director output, replace with 'a figure', and log as
+       'out-of-scene leakage'.
+    3. If the name is not in the entity table at all → strip, log as 'fabricated_name'.
+    """
+    from echotales.core.enums import AliasType
+    from echotales.pipeline.mentions.gazetteer import Gazetteer
+    from echotales.pipeline.mentions.ner import HeuristicDetector
+
+    text_to_scan = f"{d.action or ''} {d.layout or ''}".strip()
+    if not text_to_scan:
+        return
+
+    # `cast` maps a present character's *name* to their appearance clause
+    # (see `build_prompt`) -- there is no entity id here, so the cast check
+    # below is by name, not id.
+    cast_names = {name.lower() for name in cast}
+
+    gazetteer = Gazetteer()
+    for entity in store.all_selves(novel_id):
+        if entity.canonical_label:
+            gazetteer.add(entity.canonical_label, AliasType.RIGID_NAME, target_id=entity.id)
+
+    def _strip(name: str) -> None:
+        if d.action:
+            d.action = d.action.replace(name, "a figure")
+        if d.layout:
+            d.layout = d.layout.replace(name, "a figure")
+
+    known_hits = gazetteer.find(text_to_scan)
+    for hit in known_hits:
+        if hit.surface.lower() in cast_names:
+            continue  # Named character is in the cast for this beat -- keep it.
+
+        entity = store.get_self(hit.target_id) if hit.target_id else None
+        if entity is not None and entity.kind.is_person:
+            log.warning(
+                "director referenced out-of-scene character %r (id=%s) -- stripped",
+                hit.surface, hit.target_id,
+            )
+        else:
+            log.warning(
+                "director referenced a non-person entity as a character: %r -- stripped",
+                hit.surface,
+            )
+        _strip(hit.surface)
+
+    # A name the gazetteer has never heard of at all cannot be found by
+    # lookup -- it has to be *found*, with the same heuristic capitalised-name
+    # detector `mentions/ner.py` uses for offline runs. Anything it flags that
+    # is neither in the cast nor a known entity is an invented name.
+    known_surfaces = {hit.surface for hit in known_hits}
+    for span in HeuristicDetector().detect(text_to_scan):
+        # The heuristic regex captures a trailing possessive ("Fang Yuan's")
+        # as part of the span; compare the bare name so a cast/known member
+        # referenced possessively isn't misread as an unrecognised one.
+        bare = re.sub(r"[’']s$", "", span.text)
+        if bare.lower() in cast_names or bare in known_surfaces:
+            continue
+        log.warning("director fabricated character name: %r -- stripped", span.text)
+        _strip(span.text)
