@@ -114,6 +114,13 @@ real data without touching the canonical `data/<novel>.db`.
 - Commit conventions are in `.claude/RULES.md` (not shared with the repo,
   local only): push commits individually, never a `Co-Authored-By: Claude`
   trailer, no emoji or `§`-style symbols in commit messages.
+- **After a considerable change, invoke the `docs-sync` subagent** (Agent
+  tool, `.claude/agents/docs-sync.md`) before ending the turn — a new
+  pipeline stage, a call path rerouted, a bug fixed that a doc calls open,
+  a new flag/config value. This is how HANDOFF.md and friends stay true
+  rather than drifting (see 4.49/4.50: a fix documented as "not yet
+  implemented" was actually already half-written and broken). Skip it for
+  trivial edits (typos, formatting, comment-only changes).
 
 ## Current known issues
 
