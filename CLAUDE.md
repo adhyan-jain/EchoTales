@@ -97,9 +97,19 @@ real data without touching the canonical `data/<novel>.db`.
 - **"Verified, not asserted."** HANDOFF entries distinguish a fix that was
   run against real data (with numbers) from one that's only "should work."
   Do the same — a real render/query beats reasoning about the code.
-- **Versioned output directories.** Render/voice output goes under
-  `data/<novel>/panels/vN/` etc. (`pipeline/paths.py::next_version`) so a
-  rerun never silently overwrites the previous one.
+- **Versioned output directories, and name them.** Render/voice output goes
+  under `data/<novel>/panels/vN/` etc. (`pipeline/paths.py::next_version`)
+  so a rerun never silently overwrites the previous one. `v1`-`v9` had
+  descriptive suffixes (`v9_short-clause-scene-restored`); `v10`-`v40`
+  didn't, and turned into 31 directories nobody could tell apart without
+  re-reading HANDOFF by date. **Every new version gets a short suffix**
+  (`next_version` doesn't add one — pass it explicitly, e.g.
+  `v44_carry-forward-cast-fix`), and a one-line entry in that novel's
+  `data/<novel>/panels/ch<N>/VERSIONS.md` (what was tried, and an honest
+  verdict from a viewer's point of view) **at the same time**, not as a
+  follow-up. See `data/RI/panels/ch1/VERSIONS.md` for the format and the
+  backfilled history of what v10-v43 actually were (or, for v10-v27,
+  weren't — genuinely undocumented, said so rather than guessed).
 - **Config split**: `.env` for environment-dependent values (LLM mode,
   hosts), `config.json` for values a human hand-edits directly (gateway
   host/model, render two-phase toggle). Don't add a third mechanism.
