@@ -19,7 +19,12 @@ from echotales.core.models import Attribute, Block, Chapter, DiscoursePosition, 
 from echotales.core.store import Store
 from echotales.pipeline.persona.reference_gen import REFERENCE_PATH_KEY
 from echotales.pipeline.persona.split import BodyEpoch, write_epochs
-from echotales.pipeline.render.panels import character_looks, get_engine, render_panels
+from echotales.pipeline.render.panels import (
+    character_looks,
+    get_engine,
+    present_beat_entities_with_reveals,
+    render_panels,
+)
 
 
 def _seeded_store(tmp_path) -> Store:
@@ -237,6 +242,228 @@ class TestRenderPanels:
         labels = [c.self_label for c in cast.foreground_characters]
         assert "Fang Yuan" in labels
         assert "Some Mountain" not in labels
+
+    def test_present_beat_entities_with_reveals_includes_the_revealed_id(
+        self, tmp_path
+    ) -> None:
+        """FIX 2: the director path's cast-building (`present_beat_entities`)
+        had no notion of a narrator reveal at all -- only the mechanical
+        fallback path's `get_panel_cast` did, and no real render uses that
+        path. A block that reveals someone by name ("this was none other
+        than Fang Yuan") must add them to the director's cast too."""
+        from echotales.pipeline.resolve.detect_reveals import detect_reveals
+
+        store = Store(str(tmp_path / "t.db"))
+        store.add_novel("t", "T", "x.epub", "generic")
+        narration = "This was none other than Fang Yuan."
+        store.add_chapter(
+            Chapter(
+                novel_id="t",
+                number=1.0,
+                title="T",
+                source_href="a.html",
+                blocks=[Block(index=0, block_type=BlockType.PROSE, text=narration)],
+            )
+        )
+        store.add_self(
+            Self(
+                id="t:self1",
+                novel_id="t",
+                canonical_label="Fang Yuan",
+                first_attested_pos=DiscoursePosition(chapter=1.0, offset=0),
+                kind=TargetKind.SELF,
+            )
+        )
+        from echotales.core.models import Span
+
+        store.add_spans(
+            [
+                Span(
+                    id="sp0",
+                    novel_id="t",
+                    chapter=1.0,
+                    block_index=0,
+                    start=0,
+                    end=len(narration),
+                    span_type=SpanType.NARRATION_DESCRIPTION,
+                    text=narration,
+                )
+            ]
+        )
+        # A placeholder mention -- someone is here, but no resolved name --
+        # is what a reveal is meant to supplement, not the empty-mentions
+        # case: reference_mode is deliberately NOT PRESENT so the plain
+        # present_beat_entities pass alone finds nobody.
+        store.add_mentions(
+            [
+                Mention(
+                    id="m0",
+                    novel_id="t",
+                    segment_id="s",
+                    chapter=1.0,
+                    offset=0,
+                    block_index=0,
+                    text="This",
+                    alias_type=AliasType.RIGID_NAME,
+                    span_type=SpanType.NARRATION_DESCRIPTION,
+                    reference_mode=ReferenceMode.NARRATOR_REFERENCE,
+                    target_kind=TargetKind.SELF,
+                    target_id="t:self1",
+                )
+            ]
+        )
+        store.conn.commit()
+        detect_reveals(store, "t")
+
+        mentions = store.get_mentions("t", 1.0)
+        without_reveals = [m for m in mentions if m.reference_mode is ReferenceMode.PRESENT]
+        assert without_reveals == []  # sanity: the plain pass really finds nobody
+
+        ids = present_beat_entities_with_reveals(
+            mentions, [0], store=store, novel_id="t", chapter_number=1.0
+        )
+        assert "t:self1" in ids
+
+    def test_present_beat_entities_with_reveals_no_store_is_a_plain_pass(
+        self, tmp_path
+    ) -> None:
+        """Guard: no store (mirrors `direct_beat`'s own `store=None` default)
+        must not crash -- it degrades to the plain PRESENT-only pass."""
+        ids = present_beat_entities_with_reveals(
+            [], [0], store=None, novel_id="t", chapter_number=1.0
+        )
+        assert ids == []
+
+    def test_empty_present_beat_carries_forward_in_scene_cast_via_director(
+        self, tmp_path, monkeypatch
+    ) -> None:
+        """FIX 1 + FIX 3: exercises the LLM-director branch end to end (no
+        real render test did before this -- every existing test called
+        `render_panels` with the default `client=None`, so the branch every
+        real render actually uses had zero coverage).
+
+        A scene's second beat has no PRESENT mention of anyone -- only a
+        dialogue-only reference to a different, absent character ("Fang
+        Yuan, stop!" shouted at him from off scene). The old fallback
+        pulled in *any* mention regardless of reference mode, which is the
+        confirmed mechanism behind "every panel is Fang Yuan": he is
+        addressed in dialogue constantly even in scenes he never appears
+        in. The fix must carry forward the scene's real PRESENT cast (the
+        bystander from beat 1) instead, never reach for the absent name.
+        """
+        from echotales.pipeline.render import panels as panels_mod
+        from echotales.pipeline.render.direction import Direction, PanelDirection
+        from echotales.pipeline.render.scenes import Scene
+
+        store = Store(str(tmp_path / "t.db"))
+        store.add_novel("t", "T", "x.epub", "generic")
+        store.add_chapter(
+            Chapter(
+                novel_id="t",
+                number=1.0,
+                title="T",
+                source_href="a.html",
+                blocks=[
+                    Block(index=i, block_type=BlockType.PROSE, text=f"Block {i} prose.")
+                    for i in range(8)
+                ],
+            )
+        )
+        store.add_self(
+            Self(
+                id="t:bystander",
+                novel_id="t",
+                canonical_label="A Bystander",
+                first_attested_pos=DiscoursePosition(chapter=1.0, offset=0),
+                kind=TargetKind.SELF,
+            )
+        )
+        store.add_self(
+            Self(
+                id="t:fangyuan",
+                novel_id="t",
+                canonical_label="Fang Yuan",
+                first_attested_pos=DiscoursePosition(chapter=1.0, offset=0),
+                kind=TargetKind.SELF,
+            )
+        )
+        store.add_mentions(
+            [
+                Mention(
+                    id="m1",
+                    novel_id="t",
+                    segment_id="s",
+                    chapter=1.0,
+                    offset=0,
+                    block_index=0,
+                    text="A Bystander",
+                    alias_type=AliasType.RIGID_NAME,
+                    span_type=SpanType.NARRATION_ACTION,
+                    reference_mode=ReferenceMode.PRESENT,
+                    target_kind=TargetKind.SELF,
+                    target_id="t:bystander",
+                ),
+                # Blocks 4-7 (the scene's second beat) have no PRESENT
+                # mention of anyone -- only this dialogue-only reference to
+                # a character who is not physically in this scene.
+                Mention(
+                    id="m2",
+                    novel_id="t",
+                    segment_id="s",
+                    chapter=1.0,
+                    offset=0,
+                    block_index=5,
+                    text="Fang Yuan",
+                    alias_type=AliasType.RIGID_NAME,
+                    span_type=SpanType.DIALOGUE,
+                    reference_mode=ReferenceMode.DIALOGUE_REFERENCE,
+                    target_kind=TargetKind.SELF,
+                    target_id="t:fangyuan",
+                ),
+            ]
+        )
+        store.conn.commit()
+
+        # One continuous 8-block scene -- isolates the carry-forward logic
+        # under test from `group_scenes`'s own boundary detection, which
+        # this fix does not touch.
+        monkeypatch.setattr(
+            panels_mod, "group_scenes", lambda *a, **k: [Scene(index=0, blocks=list(range(8)))]
+        )
+        _looks = {
+            "t:bystander": ("A Bystander", "a bystander clause", None, "male"),
+            "t:fangyuan": ("Fang Yuan", "fang yuan clause", None, "male"),
+        }
+        monkeypatch.setattr(
+            panels_mod, "character_looks", lambda store, entity_id, **kw: _looks.get(entity_id)
+        )
+
+        received_casts: list[dict[str, str]] = []
+
+        def _fake_direct_beat(
+            beat_text, *, cast, novel_style, client, novel_id="", context_brief="", store=None
+        ):
+            received_casts.append(dict(cast))
+            return Direction(
+                direction=PanelDirection(action="Someone stands.", layout="Someone stands alone."),
+                cast=cast,
+                novel_style=novel_style,
+            )
+
+        monkeypatch.setattr(panels_mod, "direct_beat", _fake_direct_beat)
+
+        report = render_panels(
+            "t", store, out_dir=tmp_path / "panels", max_panels=5, client=object()
+        )
+
+        assert len(received_casts) == 2  # beat 1 (blocks 0-3), beat 2 (blocks 4-7)
+        assert "A Bystander" in received_casts[0]
+        # The carry-forward beat: the real in-scene cast survives...
+        assert "A Bystander" in received_casts[1]
+        # ...and the old any-reference-mode fallback (which would have
+        # picked up Fang Yuan's dialogue-only mention) does not fire.
+        assert "Fang Yuan" not in received_casts[1]
+        assert report.panels >= 1
 
 
 class TestCharacterLooksBodySelection:

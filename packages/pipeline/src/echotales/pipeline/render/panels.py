@@ -848,6 +848,42 @@ def present_beat_entities(mentions: list[Mention], blocks: list[int]) -> list[st
     return out
 
 
+def present_beat_entities_with_reveals(
+    mentions: list[Mention],
+    blocks: list[int],
+    *,
+    store: Store | None,
+    novel_id: str,
+    chapter_number: float,
+) -> list[str]:
+    """`present_beat_entities`, plus anyone the narrator reveals in this beat.
+
+    `persona/runner.py::get_panel_cast` has carried this exact resolution
+    since it was added, but only the mechanical fallback path
+    (`build_image_prompt`) ever consumed `get_panel_cast`'s output -- the
+    LLM-director path builds its cast from `present_beat_entities` alone,
+    which has no notion of a reveal at all. A block whose only mention is a
+    placeholder ("the stranger") but which the narrator reveals in the same
+    block ("this was none other than X") reached every real render with X
+    absent from CAST, because the director path never asked. Checked
+    per-block, not once for the whole beat, for the same reason
+    `get_panel_cast` checks a single `block_index`: a reveal is a specific
+    sentence, not a beat-wide fact.
+    """
+    out = present_beat_entities(mentions, blocks)
+    if store is None:
+        return out
+    from echotales.pipeline.resolve.detect_reveals import reveal_target_for_block
+
+    seen = set(out)
+    for block_index in blocks:
+        revealed_id = reveal_target_for_block(store, novel_id, chapter_number, block_index)
+        if revealed_id is not None and revealed_id not in seen:
+            seen.add(revealed_id)
+            out.append(revealed_id)
+    return out
+
+
 def present_entity_ids(mentions: list[Mention], block_index: int) -> list[str]:
     """Resolved entity ids physically present in one block.
 
@@ -1173,6 +1209,17 @@ def render_panels(
                 report.skipped_non_story += len(scene.blocks)
                 continue
 
+            # **Carry-forward state for the empty-cast fallback, below.**
+            # Reset per scene: a scene boundary is a place/cast/timeline
+            # change (`render/scenes.py`), so a cast from the previous scene
+            # has no business surviving into this one. Populated the first
+            # time a beat's own PRESENT-mode pass finds someone, then reused
+            # by any later beat in this scene whose own pass comes up empty.
+            _scene_last_present: dict[str, str] = {}
+            _scene_last_present_genders: list[str] = []
+            _scene_last_present_refs: list[Path] = []
+            _scene_last_present_conditioned: list[str] = []
+
             budget = scene.image_budget
             # Which slot (0=establishing, 1=close-up, 2=wide/secondary)
             # each block in this scene draws its picture from. Budget 1:
@@ -1377,8 +1424,13 @@ def render_panels(
                 # docstring for the mid-chapter body-selection bug this
                 # fixes.
                 story_position = chapter_number + lead / max(len(chapter.blocks), 1)
-                _chunk_blocks_set = set(_chunk_blocks)
-                for entity_id in present_beat_entities(mentions, _chunk_blocks):
+                for entity_id in present_beat_entities_with_reveals(
+                    mentions,
+                    _chunk_blocks,
+                    store=store,
+                    novel_id=novel_id,
+                    chapter_number=chapter_number,
+                ):
                     looks = character_looks(
                         store,
                         entity_id,
@@ -1405,50 +1457,35 @@ def render_panels(
                         references.append(sheet)
                         conditioned.append(label)
 
-                if not appearances:
-                    # The PRESENT-only pass produced no cast. This happens on
-                    # dialogue/prologue blocks where the subject is physically
-                    # present but their mention was classified as
-                    # DIALOGUE_REFERENCE rather than PRESENT (e.g. someone
-                    # shouting "Fang Yuan, stop resisting!" in block 0). The
-                    # director correctly names them in action/layout, but
-                    # without an appearance clause the model invents an
-                    # unconstrained figure -- confirmed as the titan effect in
-                    # RI ch1 block 0. Fall back to any entity mentioned in
-                    # these blocks (any reference mode) so the director still
-                    # gets the canonical look to constrain the output.
-                    _fallback_ids = {
-                        m.target_id
-                        for m in mentions
-                        if m.block_index in _chunk_blocks_set and m.target_id
-                    }
-                    for entity_id in _fallback_ids:
-                        if any(
-                            m.target_id == entity_id and m.block_index in _chunk_blocks_set
-                            for m in mentions
-                            if m.reference_mode is ReferenceMode.PRESENT
-                        ):
-                            continue  # already handled above
-                        looks = character_looks(
-                            store,
-                            entity_id,
-                            novel_id=novel_id,
-                            chapter=story_position,
-                            crowd=bool(_chunk_mobs),
-                        )
-                        if looks is None:
-                            continue
-                        label, clause, sheet, gender = looks
-                        genders.append(gender)
-                        if clause or _form.active:
-                            appearances[label] = _form.apply_to(clause)
-                        sheet = (
-                            curated_character_reference(label, chapter=story_position)
-                            or sheet
-                        )
-                        if sheet is not None:
-                            references.append(sheet)
-                            conditioned.append(label)
+                if appearances:
+                    # A real PRESENT cast for this beat -- becomes what the
+                    # next empty beat in this scene (if any) carries forward.
+                    _scene_last_present = dict(appearances)
+                    _scene_last_present_genders = list(genders)
+                    _scene_last_present_refs = list(references)
+                    _scene_last_present_conditioned = list(conditioned)
+                elif _scene_last_present:
+                    # The PRESENT-only pass produced no cast for this beat,
+                    # but an earlier beat in this same scene had one -- carry
+                    # it forward rather than reaching past it. This used to
+                    # fall back to *any* mention (dialogue/narrator reference)
+                    # in the beat's own blocks, which is why Fang Yuan -- the
+                    # protagonist, referenced constantly in dialogue even in
+                    # scenes he is not physically in -- ended up cast in
+                    # nearly every panel: a beat only needed one incidental
+                    # mention of him to pull him in. A scene's cast does not
+                    # actually change every few blocks; the immediately
+                    # preceding in-scene beat's real presence is the honest
+                    # answer for "who's still here", not a fresh scan for any
+                    # name that happens to appear in this beat's own text.
+                    appearances = dict(_scene_last_present)
+                    genders = list(_scene_last_present_genders)
+                    references = list(_scene_last_present_refs)
+                    conditioned = list(_scene_last_present_conditioned)
+                # else: first beat of the scene, nobody PRESENT yet -- no
+                # character to draw. Environment/setting only; the director
+                # is told CAST is empty (direction.py SYSTEM rule 5) rather
+                # than being handed an invented or borrowed subject.
 
                 # The slot's own representative block's prose, not the
                 # whole scene's -- what makes the establishing/close-up/
