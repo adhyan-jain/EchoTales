@@ -110,6 +110,9 @@ data/*-split.db-*
 # the whole novel dir, so a novel's README/manifest stays trackable while its
 # 1.9 GB of PNGs and mp4s does not.
 data/*/panels/
+# Exception: RI's panels are being tracked deliberately for this session's
+# prompt-composition work (versioned renders reviewed directly from git).
+!data/RI/panels/
 data/*/video/
 data/*/audio/
 data/*/motion/
