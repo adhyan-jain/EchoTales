@@ -2368,6 +2368,75 @@ draft with real bugs in it, which is itself worth naming as a pattern: an
 uncommitted change that "looks done" in a diff is not verified until it has
 actually executed once.
 
+### 4.51 Appearance-precedence fix shipped for RI ch1 blocks 5/9/13 (canon attire silently overriding a beat's own narration) — text-level bug fixed and verified, visual goal still not met *(2026-08-26)*
+
+**The bug.** `character_looks()` in `render/panels.py` restated the
+character's static wiki-canon appearance clause
+(`data/RI/canon/wiki-appearance.json`'s `typical_attire: "white robes"`)
+unconditionally on every panel, even when the block's own narration
+described a contradicting transient physical state. RI ch1 blocks 5, 9 and
+13 read "deep green robes... torn to shreds," "covered in blood," and
+"disheveled hair" respectively, but every prompt through v43 asserted
+pristine white robes regardless — canon was overriding the scene.
+
+**The fix.** `character_looks()` now returns a 5-tuple (`label, clause,
+sheet, gender, condition`) instead of 4: `clause` is identity-only
+(hair/eyes/build, never overridden by scene state), `condition` is a
+separate attire/transient-state string built by
+`apply_transient_overrides()` from the block's own narration when it
+states a conflicting physical state, falling back to canon attire
+otherwise, capped at 10 tokens via `fit_to_budget`. `apply_transient_overrides()`
+no longer folds "disheveled hair" into `hair_style` (that had been leaking
+a transient signal into the supposedly-permanent identity clause) — it now
+goes into `current_condition` with the other transient signals.
+`direction.py`'s `Direction` gained a `conditions: dict[str, str]` field
+threaded through `direct_beat()`; `to_image_prompt_parts()` appends
+identity and condition as two independent list entries so `fit_to_budget`
+can drop one without the other, and the `framing` phrase (wide/medium/
+close) was shortened from a full clause to 2-3 tokens after measuring that
+giving it a full sentence — on top of the newly added `conditions` entry —
+starved identity of budget.
+
+**A real regression, caught before shipping, not by the agent that caused
+it.** An interrupted subagent session (hit its account session limit
+mid-task) left half-applied code in the working tree that merged the
+transient override into the *same* string as hair/eyes/build. That single
+oversized string got dropped whole by `fit_to_budget` under budget
+pressure, losing the character's identity entirely on 3/3 test panels —
+worse than the original bug (canon-only wrong attire) it was meant to fix.
+Found by direct inspection of the cached prompts before shipping; the
+subagent's own work was never run against a real render. That broken
+intermediate output briefly occupied the `v44`/`v45` slot and was deleted.
+
+**What actually shipped, verified against a real NoobAI render**
+(`--block-range 0-15 --max-panels 2`, `data/RI/panels/ch1/v44_appearance-precedence-fix/`):
+identity clause present in 6/6 real panels (was 0/3 in the broken
+intermediate build); all 6 final prompts measured under 77 tokens with the
+real CLIP tokenizer (one panel had measured 80/77 pre-fix). The condition
+override is genuinely best-effort under CLIP's 77-token budget: it
+survived in 1/3 target panels (block 13, "gravely wounded") and was
+dropped in 2/3 (blocks 5, 9) when the director's own action/layout text
+for that beat left no remaining room.
+
+**Verdict — do not read this as resolved.** Looked at as images, not
+prompts: blocks 5, 9 and 13 still render as near-identical clean,
+undamaged portraits — same pose, same pristine robes, no visible blood or
+tears in any of the three, *including* block 13 whose prompt does contain
+"gravely wounded." The prompt-composition bug (canon silently overriding
+local narration) is real and is now correctly fixed at the text level, but
+two things stand between the fixed text and the fixed image: the 77-token
+budget means the override text often doesn't survive into the final prompt
+at all, and even the one panel where it did survive shows the checkpoint
+not treating "wounded" as a strong enough visual cue against its own
+training bias toward clean formal robes. Fixing the prompt was necessary
+but not sufficient. Next thread (not started this session): either free
+more budget specifically for the condition clause, or find a
+stronger/differently-weighted cue for visible damage on this checkpoint —
+a dedicated negative-prompt term against "clean robes," or testing whether
+Danbooru-style damage tags outperform plain English the way `1boy`
+outperforms "male" for headcount. Full before/after narrative and file
+paths: `data/RI/panels/ch1/VERSIONS.md`, `v44_appearance-precedence-fix`.
+
 ## 9. Layout
 
 ```

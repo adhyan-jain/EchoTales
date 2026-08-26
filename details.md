@@ -1173,8 +1173,20 @@ two stub image engines below so neither needs the `render` extras installed.
 
 **`panels.py`** — `render_panels()`: one cached image per beat (see
 `beats.py`), prompted via `persona/prompt.py::build_image_prompt` against
-`persona/runner.py::get_panel_cast`, block-scoped via `block_window`. Two
-caches, not one: `image_path.exists()` skips across runs, and a
+`persona/runner.py::get_panel_cast`, block-scoped via `block_window`.
+`character_looks()` splits a character's appearance into two independent
+prompt parts, not one: an identity clause (hair/eyes/build, never
+overridden) and a separate condition clause (attire, or a transient
+physical state — torn robes, blood — when the beat's own narration states
+one via `apply_transient_overrides()`), so `render/direction.py`'s
+`fit_to_budget` can drop the condition under token pressure without also
+losing identity. Fixed after canon attire was found silently overriding a
+beat's stated physical state (HANDOFF Section 4.51); that section also has
+the caveat this rationale doesn't resolve on its own — the condition
+clause is still frequently the one dropped, and even when it survives the
+checkpoint doesn't reliably render it.
+
+Two caches, not one: `image_path.exists()` skips across runs, and a
 `generated_by_digest` dict (keyed on the exact prompt string's SHA-256)
 skips *within* one run — two blocks whose final prompt is byte-identical
 (same cast, environment, framing, truncated beat) produce a byte-identical

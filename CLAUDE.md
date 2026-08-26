@@ -18,7 +18,7 @@ alone — read the source doc for the thing you're touching:
 - [`details.md`](details.md) — per-file design rationale.
 - [`HANDOFF.md`](HANDOFF.md) — **the session log.** Every real bug found,
   every fix shipped, every open defect, in chronological numbered sections
-  (currently past 4.49). **Read the last 2-3 sections before starting render
+  (currently past 4.51). **Read the last 2-3 sections before starting render
   or persona work** — it is the actual current-state-of-the-world doc, more
   current than any of the others.
 - [`EVOLUTION.md`](EVOLUTION.md) — architecture decisions and reversals over
@@ -135,10 +135,14 @@ real data without touching the canonical `data/<novel>.db`.
 ## Current known issues
 
 See HANDOFF.md's latest numbered section for the actual current state —
-it changes every session. As of Section 4.49/4.50, the live area of work is
+it changes every session. As of Section 4.51, the live area of work is
 the render/direction pipeline (`packages/pipeline/src/echotales/pipeline/render/`):
 getting the LLM art director to draw only what a beat actually supports —
 the correct cast, not an invented or out-of-scene one; the correct gender
-default for someone unstated; a bounded panel count. `.claude/agents/
-image-gen-debugger.md` is scoped to exactly this area if you're picking up
-that thread.
+default for someone unstated; a bounded panel count; and, per 4.51, a
+beat's own narrated physical state (torn robes, blood, disheveled hair)
+actually appearing on screen instead of the canon default — the
+prompt-level bug there is fixed, but the fix doesn't reliably survive
+CLIP's 77-token budget and the checkpoint doesn't reliably render it even
+when it does. `.claude/agents/image-gen-debugger.md` is scoped to exactly
+this area if you're picking up that thread.
