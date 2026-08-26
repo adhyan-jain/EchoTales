@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import logging
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, Field
@@ -78,7 +78,25 @@ SYSTEM = (
 
     "7. One place per shot. One ground plane, one building, one horizon.\n\n"
 
-    "8. No film vocabulary. No 'close-up on', 'the shot' pans', 'into the camera'."
+    "8. No film vocabulary. No 'close-up on', 'the shot' pans', 'into the camera'.\n\n"
+
+    "9. OUTPUT TAGS, NOT SENTENCES. This checkpoint (NoobAI/Illustrious) is "
+    "trained on Danbooru-style tag captions, not narrative English -- a "
+    "controlled comparison on this novel measured tag-style prompts "
+    "rendering the actual described action (torn clothes, blood, a crowd "
+    "surrounding the subject) where narrative sentences describing the "
+    "identical content rendered an unrelated calm scene, every time. Every "
+    "field below is a short, comma-separated list of tags: lowercase, "
+    "underscores for multi-word concepts, no articles ('a', 'the'), no "
+    "conjugated verbs, no connecting words ('and', 'while', 'as'), no "
+    "periods. Example tags: surrounded, weapons_drawn, fighting_stance, "
+    "standing_alone, kneeling, running, torn_clothes, blood, disheveled, "
+    "wounded, bruised, exhausted, mountain_background, stone_courtyard, "
+    "siege, misty_hills, dusk, night. Do not include numeric headcount tags "
+    "('1boy', '2boys', 'male focus') -- those are added separately. A "
+    "character's name is the one exception to snake_case: write it exactly "
+    "as given in CAST, with its normal spacing and capitalization ('Fang "
+    "Yuan', not 'fang_yuan')."
 )
 
 
@@ -87,28 +105,37 @@ class PanelDirection(BaseModel):
 
     #: "wide" | "medium" | "close" -- framing, in the storyboard sense.
     shot: str = Field(default="medium")
-    #: What is happening, as a single visual sentence.
+    #: What is happening, as comma-separated Danbooru-style tags (e.g.
+    #: "weapons_drawn, fighting_stance"), not a sentence. Kept as `str`
+    #: rather than `list[str]` on purpose: the fabrication guardrail
+    #: (`_validate_character_names`) scans this as free text for character
+    #: names via the gazetteer/heuristic detector, and a comma-joined string
+    #: is exactly what that scanning already expects -- splitting into a
+    #: list would need every validator rewritten for no assembly benefit,
+    #: since `to_image_prompt_parts` joins fields with commas either way.
     action: str = Field(default="")
-    #: **Experimental** (2026-08-20): who is where in frame, as a short,
-    #: literal spatial sentence -- "Fang Yuan stands alone at centre;
-    #: attackers surround him at the edges of frame, left, right and
-    #: behind." `action` alone left composition entirely to the image
-    #: model's own prior, which is measurably the failure mode a checkpoint
-    #: swap does not fix (HANDOFF 4.42/4.43): asked for "surrounded by
-    #: armed opponents" with no spatial commitment, both `refined` and
-    #: `noobai` composed an unrelated calm two-person scene. A `layout`
-    #: instruction forces the director to commit to concrete positions
-    #: rather than leaving the diffusion model to invent a composition
-    #: wholesale. Not yet proven to move the number -- an experiment to
-    #: verify against real panels, not a settled fix.
+    #: Who is in frame and where, as tags -- the character's real name
+    #: (exactly as given in CAST) plus spatial/count tags, e.g. "Fang Yuan,
+    #: surrounded" or "Fang Yuan, solo, standing_alone". Keeping the literal
+    #: name in here (rather than moving presence to a separate structured
+    #: field) is deliberate: `to_image_prompt_parts`'s cast-presence check
+    #: is a substring scan over `action + layout`, and the fabrication
+    #: guardrail already validates names found in this same text -- tags
+    #: replacing prose didn't need either mechanism touched.
+    #: Originally added 2026-08-20 as a spatial-composition experiment
+    #: (HANDOFF 4.42/4.43: `action` alone left composition to the image
+    #: model's own prior, which produced an unrelated calm scene for
+    #: "surrounded by armed opponents" with no spatial commitment); still
+    #: the field that carries presence/position.
     layout: str = Field(default="")
-    #: Where it happens, concretely.
+    #: Where it happens, as location tags (e.g. "mountain_background,
+    #: stone_courtyard, cliff"), not a prose description.
     setting: str = Field(default="")
-    #: Time of day / weather / light.
+    #: Time of day / weather / light, as tags (e.g. "dusk, misty").
     lighting: str = Field(default="")
     #: Objects that must appear (a glowing cicada, a raised sword).
     key_objects: list[str] = Field(default_factory=list)
-    #: One or two words of emotional register.
+    #: One or two mood tags.
     mood: str = Field(default="")
 
 
@@ -149,22 +176,31 @@ def build_prompt(
         "Passage:",
         beat_text[:max_chars].strip(),
         "",
-        "Return JSON with these keys:",
+        "Return JSON with these keys. EVERY field is a comma-separated list "
+        "of short tags -- lowercase, underscores for multi-word concepts, "
+        "no sentences, no articles, no conjugated verbs, no periods:",
         '  shot          one of "wide", "medium", "close"',
-        "  action        one sentence: the single moment to draw, "
-        "using only what the passage states (do not add clothing "
-        "colours, expressions, or objects the passage does not mention)",
-        "  layout        one sentence: where each person is in frame. "
-        "Use the character's real name, never the letter X or a "
-        "placeholder. Example when surrounded: 'Fang Yuan stands at "
-        "centre; enemies ring him on all sides.' Example when alone: "
-        "'Fang Yuan stands alone; no one else is present.'",
-        "  setting       where it happens, concretely",
-        "  lighting      time of day, weather, quality of light",
-        "  key_objects   list of objects that must be visible",
-        "  mood          one or two words",
+        "  action        pose/action tags for the single moment to draw, "
+        "using only what the passage states (do not add clothing colours, "
+        "expressions, or objects the passage does not mention). Example: "
+        "\"weapons_drawn, fighting_stance\" or \"kneeling, exhausted\".",
+        "  layout        the character's real name (exactly as written in "
+        "CAST -- never the letter X or a placeholder), followed by "
+        "spatial/count tags. Example when surrounded: \"Fang Yuan, "
+        "surrounded\". Example when alone: \"Fang Yuan, solo, "
+        "standing_alone\". If CAST is empty, use \"a figure\" instead of a name.",
+        "  setting       location tags, concretely. Example: "
+        "\"mountain_background, stone_courtyard, cliff\".",
+        "  lighting      time of day / weather / light, as tags. Example: "
+        "\"dusk, misty\" or \"day, bright_sunlight\".",
+        "  key_objects   list of object tags that must be visible",
+        "  mood          one or two mood tags",
         "",
-        "Only include characters the passage actually places in the scene.",
+        "Only include characters the passage actually places in the scene. "
+        "Do not include numeric headcount tags ('1boy', '2boys', 'male "
+        "focus') -- those are added separately from your output. 'solo' "
+        "and 'crowd' are fine as composition tags when the passage supports "
+        "them.",
         "Return only JSON.",
     ]
     return "\n".join(lines)
@@ -177,6 +213,12 @@ class Direction:
     direction: PanelDirection
     cast: dict[str, str]
     novel_style: str
+    #: Per-character attire/condition, kept separate from `cast`'s identity
+    #: clause so `fit_to_budget` can drop it independently. Folding a beat's
+    #: torn-and-bloodied override into the same string as hair/eyes made one
+    #: oversized part that got skipped wholesale -- identity and all --
+    #: instead of just losing the condition detail. See HANDOFF v44 fix.
+    conditions: dict[str, str] = field(default_factory=dict)
 
     def to_image_prompt(self, *, scene_locale: str = "") -> str:
         """Compose the final text-to-image prompt.
@@ -193,85 +235,139 @@ class Direction:
         providing the consistent background anchor that stops consecutive
         panels of the same scene rendering in five unrelated places.
         """
+        from echotales.pipeline.persona.prompt import fit_to_budget
+        return fit_to_budget(self.to_image_prompt_parts(scene_locale=scene_locale))
+
+    def to_image_prompt_parts(self, *, scene_locale: str = "") -> list[str]:
+        """Construct the prompt components, prioritizing what the panel shows."""
         d = self.direction
         shot = d.shot if d.shot in _SHOTS else "medium"
+        # 2-3 tokens, not a full sentence: this used to read "wide
+        # establishing shot, full scene, strong depth" etc, and giving it a
+        # full clause here (rather than at the very end, where it used to
+        # sit and almost never survived anyway) measurably starved the
+        # identity clause of budget -- see the priority-order comment below.
         framing = {
-            "wide": "wide establishing shot, full scene, strong depth",
-            "medium": "medium shot, characters and setting both visible",
-            "close": "close-up, tight framing on the subject's face",
+            "wide": "wide shot",
+            "medium": "medium shot",
+            "close": "close-up",
         }[shot]
 
         from echotales.pipeline.persona.prompt import (
             STYLE_ANCHOR,
+            compress_identity_tags,
             condense_clause,
             fit_to_budget,
         )
 
-        # Style anchor always leads — it is the first thing CLIP reads and the
-        # last thing truncation drops. Without it this path produces generic
-        # anime; with it the checkpoint's own guofeng/xianxia weights activate.
-        parts: list[str] = [STYLE_ANCHOR]
-        if d.action:
-            parts.append(d.action)
-        if d.layout:
-            parts.append(d.layout)
-        # Setting and lighting come right after the action/layout description
-        # and before character appearance. Background should read in every
-        # panel; a character appearance that crowds it out is too long --
-        # condense_clause below trims the appearance to the most discriminating
-        # features, freeing the tokens that setting and lighting need.
-        if d.setting:
-            parts.append(d.setting)
-        if d.lighting:
-            parts.append(d.lighting)
+        # **Tiered, not flat.** `fit_to_budget` tests parts independently
+        # against a running total, in list order -- so tier order here *is*
+        # priority order, and it is the only thing enforcing it. Before this
+        # fix all fields sat in one flat list (layout, action, setting,
+        # lighting, *then* identity/condition, *then* mood/key_objects), and
+        # measured directly on RI ch1's opening beats: the character's own
+        # identity clause and the beat's torn-robes/blood condition clause
+        # were dropped *entirely*, while setting and lighting tags placed
+        # earlier in that flat list survived -- scene-critical content
+        # losing to boilerplate scenery just because of list position, not
+        # because it mattered less. Tier 0 (style/framing) is fixed
+        # boilerplate the caller has already reserved budget for elsewhere
+        # (`render_panels`'s `_prompt_limit` reserves `quality_prefix`; cast
+        # tags are prepended by the caller). Tier 1 is identity + physical
+        # condition -- decomposed into single-attribute fragments, not two
+        # atomic clauses, specifically so a tight budget drops the least
+        # essential *attribute* (or the reinforcement line) rather than the
+        # entire clause; the character's name and a couple of core traits
+        # survive even under real pressure. Tier 2 is what is happening and
+        # its register. Tier 3 is where and when -- the first content cut
+        # when the budget is tight, because it is real information but the
+        # least essential in a genre where the character carries the panel.
+        tier0: list[str] = [STYLE_ANCHOR, framing]
+
         _director_text = f"{d.action or ''} {d.layout or ''}".lower()
         _has_white_robe = False
+        tier1: list[str] = []
         for name, look in self.cast.items():
             # Check both action and layout: the director sometimes names the
             # character in layout ("Fang Yuan stands alone") while using a
             # pronoun in action ("He watches the enemies"). Either occurrence
             # is enough evidence the character is in frame.
-            if name.lower() in _director_text:
-                # condense_clause strips headcount tags (already in cast_tags)
-                # and drops the least-discriminating features, freeing ~15
-                # tokens that would otherwise crowd out setting/lighting.
-                condensed = condense_clause(look)
-                parts.append(f"{name} ({condensed})")
-                if "white robe" in condensed.lower():
-                    _has_white_robe = True
-        # Reinforce white robe colour when the character appearance calls for it.
-        # Measured v38: negative suppression of teal shifted the model to dark
-        # charcoal (the checkpoint's next preferred colour) rather than white.
-        # A standalone "pure white outer robe" after the character clause adds
-        # explicit colour direction that survives as a separate CLIP token group.
+            if name.lower() not in _director_text:
+                continue
+            # condense_clause strips headcount tags and picks which
+            # attributes survive; compress_identity_tags controls how many
+            # *words* each one costs -- "midnight black very long straight
+            # hair down to the waist, cold and narrow eyes" (measured ~24
+            # tokens alone) becomes "long_black_hair, cold_narrow_eyes"
+            # (~8), which is what actually leaves tier 1 enough room for
+            # tier 2 to survive instead of consuming the whole budget by
+            # itself. See its docstring for the full rationale.
+            compressed = compress_identity_tags(condense_clause(look))
+            comp_tags = [t.strip() for t in compressed.split(",") if t.strip()]
+            condition = self.conditions.get(name, "")
+            cond_tags = [c.strip() for c in condition.split(",") if c.strip()] if condition else []
+            # **Hair before eyes/build, within tier 1 itself.** condense_clause
+            # re-emits survivors in the clause's *original* order (build,
+            # then hair, then eyes, for this pipeline's own phrasing), not
+            # rank order -- so without this split, a tight tier-1 cap would
+            # trim hair (the single feature that makes a character
+            # recognisable in silhouette, per condense_clause's own
+            # docstring) before it trimmed build, which is backwards.
+            # Condition/damage state is highest priority within tier 1
+            # after the name and hair -- it is the one thing this session's
+            # fix exists to guarantee actually shows up.
+            hair_tags = [t for t in comp_tags if t.endswith("hair")]
+            other_tags = [t for t in comp_tags if t not in hair_tags]
+            tier1.append(name)
+            tier1.extend(hair_tags)
+            tier1.extend(cond_tags)
+            if "white" in condition.lower() and "robe" in condition.lower():
+                _has_white_robe = True
+            elif "white" in compressed.lower() and "robe" in compressed.lower():
+                _has_white_robe = True
+            tier1.extend(other_tags)
         if _has_white_robe:
-            parts.append("pure white outer robe")
-        # Score tags immediately after character appearance so they survive when
-        # scene_locale and key_objects push the prompt to 77 tokens. Measured
-        # v37: 19/24 prompts had no score tags because the character clause used
-        # ~20 tokens and scene_locale + key_objects then filled the budget,
-        # leaving nothing for quality tags. Character appearance is mandatory;
-        # scene_locale is a helpful supplement but not as critical as quality.
-        parts.append("score_9, score_8_up, highly detailed, cinematic lighting")
+            # Reinforce white robe colour when the character appearance calls
+            # for it. Measured v38: negative suppression of teal shifted the
+            # model to dark charcoal (the checkpoint's next preferred
+            # colour) rather than white.
+            tier1.append("pure white outer robe")
+        # **Hard cap, as a backstop -- not the primary mechanism.**
+        # Compression is what should keep tier 1 small; this exists for a
+        # character whose canon distinguishing-features list is long enough
+        # to blow the budget even compressed. `fit_to_budget` drops from the
+        # *end* of the list first, which is exactly the eyes/build tags
+        # appended last above -- name, hair and condition survive a cap
+        # that has to cut something.
+        tier1 = fit_to_budget(tier1, limit=24).split(", ") if tier1 else tier1
+
+        tier2: list[str] = []
+        if d.action:
+            tier2.append(d.action)
+        # Quality tags in tier 2, not tier 1: they used to sit right after
+        # the character clause specifically to outlive scene content, which
+        # is the opposite of what this tiering now guarantees on purpose.
+        tier2.append("score_9, score_8_up, highly detailed, cinematic lighting")
+        if d.key_objects:
+            tier2.append(", ".join(str(o) for o in d.key_objects if o))
+        if d.mood:
+            tier2.append(f"{d.mood} mood")
+
+        tier3: list[str] = []
+        if d.layout:
+            tier3.append(d.layout)
+        if d.setting:
+            tier3.append(d.setting)
+        if d.lighting:
+            tier3.append(d.lighting)
         if scene_locale:
             # Scene-level location anchor: same string for every panel in
-            # the scene, so consecutive panels don't render as different places.
-            # Placed after score tags so quality survives the budget before locale.
-            parts.append(scene_locale)
-        if d.key_objects:
-            parts.append(", ".join(str(o) for o in d.key_objects if o))
-        if d.mood:
-            parts.append(f"{d.mood} mood")
-        parts.append(framing)
+            # the scene, so consecutive panels don't render as different
+            # places. Lowest priority in tier 3: it supplements the
+            # director's own setting when there is room, never displaces it.
+            tier3.append(scene_locale)
 
-        # **Budget-fit, highest priority first.** This path never did, while
-        # the mechanical assembler (`persona/prompt.py::build_image_prompt`)
-        # always has -- so director-written prompts ran 150+ tokens against
-        # CLIP's 77 and lost everything after the halfway point, silently.
-        # Order is a priority ranking, not reading order: what the panel is
-        # *of* has to survive; scenery and quality tags are what should fall
-        # off the end.
-        return fit_to_budget(parts)
+        return [*tier0, *tier1, *tier2, *tier3]
 
 
 def direct_beat(
@@ -283,6 +379,7 @@ def direct_beat(
     novel_id: str = "",
     context_brief: str = "",
     store: Store | None = None,
+    conditions: dict[str, str] | None = None,
 ) -> Direction | None:
     """Get one shot from the director, or None if the call fails.
 
@@ -313,7 +410,9 @@ def direct_beat(
     direction = _validate_direction(
         direction, beat_text=beat_text, cast=cast, novel_id=novel_id, store=store
     )
-    return Direction(direction=direction, cast=cast, novel_style=novel_style)
+    return Direction(
+        direction=direction, cast=cast, novel_style=novel_style, conditions=conditions or {}
+    )
 
 
 #: Comma-separated phrases that must never appear in a final image prompt.
@@ -405,8 +504,12 @@ def _validate_direction(
         log.warning("director hallucinated group in layout: %r -- blanked", d.layout)
         d = d.model_copy(update={"layout": ""})
 
-    # Literal placeholder the model copies from the layout example.
-    if re.search(r"\bX\s+(alone|stands|is\b)", d.layout or "", re.IGNORECASE):
+    # Literal placeholder the model copies from the layout example -- either
+    # the old sentence form ("X alone") or the tag form ("X, surrounded" /
+    # a bare "X" tag in the comma list).
+    if re.search(r"\bX\s+(alone|stands|is\b)", d.layout or "", re.IGNORECASE) or re.search(
+        r"(^|,)\s*X\s*(,|$)", d.layout or ""
+    ):
         log.warning("director used literal 'X' placeholder in layout: %r -- blanked", d.layout)
         d = d.model_copy(update={"layout": ""})
 

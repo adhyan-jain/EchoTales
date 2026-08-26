@@ -32,10 +32,12 @@ from echotales.core.store import Store
 from echotales.pipeline.persona.attire import scene_locale, world_setting
 from echotales.pipeline.persona.prompt import (
     cast_tags,
+    count_tokens,
     fit_to_budget,
     STYLE_CLOSEUP,
     STYLE_ESTABLISHING,
     STYLE_SCENE,
+    _USABLE_TOKENS,
     build_image_prompt,
     gender_negative,
     negative_for,
@@ -573,21 +575,33 @@ class IllustriousEngine:
 
         generator = torch.Generator(device="cpu").manual_seed(request.seed)
         image = pipe(  # type: ignore[operator]
-            # **The prefix has to be prepended here, not in the shared prompt
-            # builder.** GuoFeng3 needs none of it and every token spent on it
-            # would come out of the 77-token CLIP budget that `fit_to_budget`
-            # is already rationing for scene content.
+            # **The prefix is prepended here, not in the shared prompt
+            # builder.** GuoFeng3 needs none of it, so `render_panels`
+            # reserves `count_tokens(quality_prefix)` off its own budget
+            # before building `request.prompt` -- see its `_prompt_limit`.
+            # That means the two concatenate straight, with no truncation
+            # needed here at all.
             #
-            # But the caller already spent that budget down to the limit, so
-            # a naive `f"{prefix}, {prompt}"` overflows and CLIP silently
-            # drops the *end* -- which is where the locale and the style
-            # elaboration live. Measured on the crowd cut: "a narrow mountain
-            # path, pine and mist, cliffs falling away" was cut off entirely.
-            # Re-fitting drops whole low-priority clauses instead, which is
-            # the same trade `fit_to_budget` exists to make.
-            prompt=fit_to_budget(
-                [self.quality_prefix, *request.prompt.split(", ")]
-            ),
+            # **This used to re-run `fit_to_budget` on `[quality_prefix,
+            # *request.prompt.split(", ")]`, and that was the actual bug,**
+            # not a defence against one: it put `quality_prefix` (47 tokens
+            # for NoobAI) at *top* priority in a second, uncoordinated
+            # budget fit this module has no visibility into, silently
+            # overruling every ordering decision `render_panels` made --
+            # identity before condition, condition before mood, action
+            # before locale. Measured: two RI ch1 panels differing only in
+            # their trailing mood tag rendered byte-identical images,
+            # because that second fit pushed both prompts' one point of
+            # difference past its own cutoff, every time, regardless of
+            # what `render_panels` had prioritised. Splitting on `", "`
+            # compounded it by shattering compound clauses (an identity
+            # parenthetical's internal commas) into independently-droppable
+            # fragments that were never meant to separate. If a caller
+            # somehow arrives here without having reserved the budget, the
+            # tokenizer's own truncation (max_length=77 inside `pipe()`)
+            # is the correct fallback -- it drops the tail in the order the
+            # caller actually wrote it, not by a second priority reshuffle.
+            prompt=f"{self.quality_prefix}, {request.prompt}",
             negative_prompt=(
                 (request.negative_prompt or "")
                 # This family's anime prior specifically: without these it
@@ -723,11 +737,21 @@ class NoobAIEngine(IllustriousEngine):
     model_id: str = "Laxhar/noobai-XL-1.1"
     steps: int = 35
     guidance_scale: float = 7.0
-    quality_prefix: str = (
-        "score_9, score_8_up, score_7_up, masterpiece, best quality, "
-        "ancient china, xianxia, wuxia, hanfu, chinese clothes, "
-        "manhwa style, webtoon art"
-    )
+    # **Trimmed from 47 to ~8 tokens.** The old value duplicated
+    # STYLE_ANCHOR's "guofeng illustration, chinese ink painting, xianxia"
+    # (ancient china, xianxia, wuxia, hanfu, chinese clothes) and asserted
+    # "manhwa style, webtoon art" -- a Korean webtoon/comic line-and-colour
+    # aesthetic with no documented reason to coexist with the ink-painting
+    # anchor, found nowhere in HANDOFF.md or EVOLUTION.md. At 47 tokens,
+    # `render_panels`'s own budget reservation (`_prompt_limit = 75 - 47 =
+    # 28`) left no room for scene content once the always-present
+    # boilerplate (headcount tag, style anchor, framing, character name)
+    # was accounted for -- measured directly on RI ch1 block 25's actual
+    # delivered prompt, which contained nothing past "Fang Yuan, solo".
+    # `masterpiece` is kept per this class's own docstring caveat that the
+    # *rest* of Illustrious's taxonomy pulls NoobAI toward its raw prior --
+    # worth re-measuring if this specific tag turns out to do the same.
+    quality_prefix: str = "score_9, score_8_up, masterpiece"
 
 
 def get_engine(name: str = "stub", **kwargs: object) -> PanelImageEngine:
@@ -907,6 +931,86 @@ def present_entity_ids(mentions: list[Mention], block_index: int) -> list[str]:
     return out
 
 
+def apply_transient_overrides(appearance: dict[str, str], beat_text: str) -> dict[str, str]:
+    """Check if the beat_text contains transient physical-state signals.
+
+    If present, these override or append to the canon clause's attire/condition.
+    """
+    if not beat_text:
+        return appearance
+
+    import re
+    local_appearance = dict(appearance)
+    text_lower = beat_text.lower()
+
+    # 1. Hair condition: disheveled hair. Recorded into `current_condition`
+    # below, not `hair_style` -- hair_style is part of the identity clause,
+    # which `character_looks` keeps out of the droppable attire/condition
+    # sub-clause on purpose (see its docstring). Overwriting hair_style here
+    # inflated the identity clause and made it the one that got dropped
+    # under budget pressure -- the opposite of the fix's intent.
+    has_disheveled_hair = any(
+        w in text_lower
+        for w in ("disheveled", "dishevelled", "messy", "tangled", "matted", "unkempt")
+    )
+
+    # 2. Attire color/type override: e.g. "deep green robes"
+    attire_match = re.search(
+        r"\b(deep\s+)?(green|white|black|blue|red|purple|golden|grey|gray|azure)\s+(robes?|hanfu|gown|dress|clothing|garment|clothes)\b",
+        text_lower
+    )
+    if attire_match:
+        start, end = attire_match.span()
+        local_appearance["typical_attire"] = beat_text[start:end]
+
+    # 3. Clothing damage/torn signal. Recorded as its own tag below rather
+    # than mutated into typical_attire ("torn deep green robes"): the
+    # controlled tag-vs-narrative experiment (this session) hand-wrote
+    # attire and damage as separate tags -- "torn_clothes, deep green
+    # robes" -- and that is what actually rendered visible tears and
+    # blood, where a single merged prose phrase describing the same
+    # content did not.
+    has_torn_clothing = any(
+        w in text_lower
+        for w in ("torn", "shredded", "tattered", "ragged", "ripped", "shreds", "damaged")
+    )
+
+    # 4. Body condition (blood / injury / exhaustion), as single Danbooru-
+    # style tags -- matching the vocabulary the director's own system
+    # prompt is now told to use, so canon-fallback and beat-override
+    # conditions read the same way to the image model.
+    conditions = []
+    if any(
+        w in text_lower
+        for w in ("blood", "bloodied", "bloody", "bleeding")
+    ):
+        conditions.append("blood")
+
+    if "wounded" in text_lower or "injured" in text_lower or "wound" in text_lower or "injury" in text_lower:
+        conditions.append("wounded")
+
+    if "exhausted" in text_lower or "exhaustion" in text_lower or "tired" in text_lower or "fatigued" in text_lower:
+        conditions.append("exhausted")
+
+    # Combine local condition overrides
+    local_conds = []
+    if has_disheveled_hair:
+        local_conds.append("disheveled")
+    if has_torn_clothing:
+        local_conds.append("torn_clothes")
+    if conditions:
+        local_conds.extend(conditions)
+
+    if local_conds:
+        # If we have local signals, they completely override the canon condition
+        local_appearance["current_condition"] = ", ".join(local_conds)
+    elif "current_condition" in local_appearance:
+        # Keep the canon condition if there are no local signals
+        pass
+
+    return local_appearance
+
+
 def character_looks(
     store: Store,
     entity_id: str,
@@ -914,8 +1018,18 @@ def character_looks(
     novel_id: str = "",
     chapter: float | None = None,
     crowd: bool = False,
-) -> tuple[str, str, Path | None, str] | None:
-    """`(label, appearance clause, reference sheet, gender)` for one entity.
+    beat_text: str = "",
+) -> tuple[str, str, Path | None, str, str] | None:
+    """`(label, appearance clause, reference sheet, gender, condition)` for one entity.
+
+    `condition` (attire + any transient state this beat's narration implies)
+    is returned separately from the identity clause on purpose: folding a
+    beat's torn/bloodied override into the same string as hair/eyes/build
+    produced one oversized part that `fit_to_budget` skipped wholesale --
+    the whole identity going with it -- instead of just losing the transient
+    detail under token pressure. Keeping it separate lets the two halves
+    survive independently; `Direction.to_image_prompt_parts` appends them as
+    two list entries for exactly this reason.
 
     `chapter` selects which *body* to draw, and **must be the fractional
     story position** `persona/split.py::write_epochs` uses for its own body
@@ -955,7 +1069,7 @@ def character_looks(
     # disclosed at chapter 100) must not appear on a chapter 5 panel just
     # because it is now known to be true. `None` (a cast list, not a panel)
     # keeps the old flattened behaviour -- see `appearance_of`.
-    appearance = appearance_of(store, persona_id, position=chapter)
+    appearance = appearance_of(store, persona_id, position=chapter, standing_only=False)
     # Canon, then genre defaults -- the same chain `reference_gen` applies.
     # Without it here the panels were running on raw extraction only: Fang
     # Yuan has no extracted hair colour, so the image model invented one and
@@ -965,11 +1079,23 @@ def character_looks(
             novel_id, entity.canonical_label, appearance, persona_id
         )
         appearance = resolve_appearance(novel_id, appearance)
+    if beat_text:
+        appearance = apply_transient_overrides(appearance, beat_text)
     gender, _age = _demographics(
         store, persona_id, novel_id=novel_id, entity_id=entity_id
     )
     clause = ""
+    condition = ""
     if appearance:
+        # Attire and transient condition are pulled out of the appearance
+        # dict and phrased as their own clause below, rather than through
+        # this call -- see the docstring's note on why they must be a
+        # separate prompt part, not merged into the identity string.
+        identity_appearance = {
+            k: v
+            for k, v in appearance.items()
+            if k not in ("typical_attire", "current_condition")
+        }
         # Reuse the reference sheet's own phrasing so the panel prompt and
         # the image conditioning it are describing the same person in the
         # same words; strip the style suffix, which the panel adds itself.
@@ -994,7 +1120,7 @@ def character_looks(
         # sheet, which is what that conditioning is for.
         clause = build_reference_prompt(
             entity.canonical_label,
-            appearance,
+            identity_appearance,
             gender=gender,
             age_band=_age,
             with_style=False,
@@ -1002,11 +1128,35 @@ def character_looks(
             detailed=False,
             crowd=crowd,
         )
+        attire = appearance.get("typical_attire")
+        current = appearance.get("current_condition")
+        current_tags = [c.strip() for c in current.split(",") if c.strip()] if current else []
+        # **Tag-density, not "wearing <phrase>".** Attire and "torn" used to
+        # sit in two separate fragments ("wearing torn deep green robes"
+        # plus a standalone "torn_clothes" tag) -- redundant restatement of
+        # the same fact, costing tokens tier 1's own hard cap
+        # (`Direction.to_image_prompt_parts`) then has to spend on
+        # something else. One combined tag ("torn_green_robes") says the
+        # same thing for less: dropping "deep" (a modifier the checkpoint
+        # does not need) and "wearing" (implied by every other attire tag
+        # in this pipeline, e.g. `cast_tags`'s own vocabulary).
+        has_torn = "torn_clothes" in current_tags
+        condition_parts = []
+        if attire:
+            attire_words = [w for w in attire.lower().split() if w != "deep"]
+            condition_parts.append(
+                "_".join((["torn"] if has_torn else []) + attire_words)
+            )
+            if has_torn:
+                current_tags = [c for c in current_tags if c != "torn_clothes"]
+        condition_parts.extend(current_tags)
+        condition = ", ".join(condition_parts)
     return (
         entity.canonical_label,
         clause,
         reference_path_for(store, persona_id),
         gender,
+        condition,
     )
 
 
@@ -1073,6 +1223,16 @@ def render_panels(
     #: multi-chapter run keeps each chapter's history browsable and no
     #: run ever overwrites a previous one.
     version: str | None = None,
+    #: The image engine whose `quality_prefix` budget must be reserved when
+    #: building prompts, even when `engine` (above) is a stub for *this*
+    #: call. Phase 1 of a two-phase render (`commands.py`) directs every
+    #: beat through a stub engine to avoid GPU cost, but the prompt it
+    #: writes to `prompt_cache_path` is reused verbatim by phase 2's real
+    #: engine -- reserving against the stub's (nonexistent) `quality_prefix`
+    #: reserved nothing, so phase 1's prompts still ran to the full 75-token
+    #: budget and phase 2's real prefix silently ate into them anyway.
+    #: Defaults to `engine` itself, which is correct for a single-phase run.
+    target_engine: PanelImageEngine | None = None,
 ) -> PanelReport:
     """Render one cached panel image per story-bearing block.
 
@@ -1123,6 +1283,22 @@ def render_panels(
     import shutil
 
     engine = engine or get_engine("stub")
+    # **Reserve the engine's own quality-prefix cost up front.** NoobAI/
+    # Illustrious engines prepend a `quality_prefix` ahead of everything at
+    # generation time (`IllustriousEngine.generate`), inside a *second*,
+    # uncoordinated `fit_to_budget` call this function has no visibility
+    # into. Without reserving room for it here, every priority decision
+    # this function makes (identity before condition, condition before
+    # mood, ...) is silently overruled by that second pass, which just
+    # keeps whatever survives after 47 tokens (NoobAI's prefix) are spent
+    # first. Measured: two RI ch1 panels differing only in a trailing mood
+    # tag rendered byte-identical images, because that second pass pushed
+    # both prompts' only point of difference past its own cutoff. Reserving
+    # the cost here means *this* function's ordering is what actually
+    # survives, and the engine-level fit becomes a no-op in the normal case.
+    _budget_engine = target_engine if target_engine is not None else engine
+    _reserved_tokens = count_tokens(getattr(_budget_engine, "quality_prefix", "") or "")
+    _prompt_limit = max(_USABLE_TOKENS - _reserved_tokens, 1)
     # No novel level here: `paths.novel_root` already scopes the output
     # root to this novel (`data/RI/panels`), so repeating the id below it
     # only buried the chapters one directory deeper.
@@ -1219,6 +1395,7 @@ def render_panels(
             _scene_last_present_genders: list[str] = []
             _scene_last_present_refs: list[Path] = []
             _scene_last_present_conditioned: list[str] = []
+            _scene_last_present_conditions: dict[str, str] = {}
 
             budget = scene.image_budget
             # Which slot (0=establishing, 1=close-up, 2=wide/secondary)
@@ -1417,6 +1594,7 @@ def render_panels(
                 references: list[Path] = []
                 conditioned: list[str] = []
                 appearances: dict[str, str] = {}
+                conditions: dict[str, str] = {}
                 genders: list[str] = []
                 # Same fractional-position convention as
                 # `persona/split.py::write_epochs`'s own boundaries --
@@ -1437,13 +1615,16 @@ def render_panels(
                         novel_id=novel_id,
                         chapter=story_position,
                         crowd=bool(_chunk_mobs),
+                        beat_text=_chunk_text,
                     )
                     if looks is None:
                         continue
-                    label, clause, sheet, gender = looks
+                    label, clause, sheet, gender, condition = looks
                     genders.append(gender)
                     if clause or _form.active:
                         appearances[label] = _form.apply_to(clause)
+                    if condition:
+                        conditions[label] = condition
                     # A hand-picked portrait beats the generated sheet when
                     # one exists: the sheets are themselves diffusion output
                     # and inherit the same drift they are supposed to
@@ -1464,6 +1645,7 @@ def render_panels(
                     _scene_last_present_genders = list(genders)
                     _scene_last_present_refs = list(references)
                     _scene_last_present_conditioned = list(conditioned)
+                    _scene_last_present_conditions = dict(conditions)
                 elif _scene_last_present:
                     # The PRESENT-only pass produced no cast for this beat,
                     # but an earlier beat in this same scene had one -- carry
@@ -1482,6 +1664,7 @@ def render_panels(
                     genders = list(_scene_last_present_genders)
                     references = list(_scene_last_present_refs)
                     conditioned = list(_scene_last_present_conditioned)
+                    conditions = dict(_scene_last_present_conditions)
                 # else: first beat of the scene, nobody PRESENT yet -- no
                 # character to draw. Environment/setting only; the director
                 # is told CAST is empty (direction.py SYSTEM rule 5) rather
@@ -1648,10 +1831,33 @@ def render_panels(
                             client=client,
                             novel_id=novel_id,
                             store=store,
+                            conditions=dict(conditions),
                         )
 
                     if directed is not None:
-                        prompt = directed.to_image_prompt(
+                        # **The negative prompt's style bucket must follow the
+                        # director's own shot choice, not the mechanical
+                        # slot%4 cycle above.** That cycle picks `style` (and
+                        # therefore `negative_for(style)`, below) purely by
+                        # this panel's position in its chunk, with no
+                        # knowledge of what the director actually asked for.
+                        # `NEGATIVE_HEAD_BY_STYLE[STYLE_CLOSEUP]` is `"full
+                        # body, wide shot, crowd, tiny face"` -- so a panel
+                        # the director marked `shot="wide"` (enemies ringing
+                        # the subject, a mountain stronghold) could still land
+                        # on the cycle's closeup slot and get "wide shot,
+                        # crowd" put in its own negative prompt: the prompt
+                        # fighting itself before the sampler ever runs.
+                        # Confirmed on RI ch1 block 1, whose wide-shot siege
+                        # prompt landed on exactly this slot. Override with
+                        # the real per-panel decision whenever one exists.
+                        style = {
+                            "wide": STYLE_ESTABLISHING,
+                            "medium": STYLE_SCENE,
+                            "close": STYLE_CLOSEUP,
+                        }.get(directed.direction.shot, style)
+                        closeup = style is STYLE_CLOSEUP
+                        prompt_parts = directed.to_image_prompt_parts(
                             scene_locale=scene_locale_text,
                         )
                         # **Assert the crowd as a count tag, in front.**
@@ -1675,7 +1881,7 @@ def render_panels(
                         # blunt instrument and belongs only on the panel
                         # whose subject *is* the crowd.
                         if is_crowd_cut:
-                            prompt = f"crowd, multiple people, 6+boys, {prompt}"
+                            prompt_parts = ["crowd, multiple people, 6+boys"] + prompt_parts
                         elif tags := cast_tags(
                             genders,
                             # **Combine beat prose with the director's own
@@ -1725,7 +1931,8 @@ def render_panels(
                             # back to the same beat-pronoun signal
                             # `gender_negative` already trusts, so both the
                             # positive and negative clauses now agree.
-                            prompt = f"{tags}, {prompt}"
+                            prompt_parts = [tags] + prompt_parts
+                        prompt = fit_to_budget(prompt_parts, limit=_prompt_limit)
                     else:
                         prompt = build_image_prompt(
                             cast,
@@ -1734,6 +1941,7 @@ def render_panels(
                             character_appearances=appearances,
                             character_genders=genders,
                             world="" if closeup else world_setting(novel_id),
+                            limit=_prompt_limit,
                             locale=(
                                 ""
                                 if closeup
@@ -1796,7 +2004,8 @@ def render_panels(
                             f"{_roles} standing close together, facing away",
                             "manhwa illustration, dramatic lighting, highly detailed",
                             scene_locale_text,
-                        ]
+                        ],
+                        limit=_prompt_limit,
                     )
                     references = []
                     conditioned = []

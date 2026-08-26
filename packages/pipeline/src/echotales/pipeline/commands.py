@@ -565,6 +565,13 @@ def cmd_render(args: argparse.Namespace) -> int:
                 store,
                 out_dir=direction_scratch,
                 engine=get_panel_engine("stub"),
+                # **The real engine's `quality_prefix` budget, not the stub's.**
+                # This phase writes the prompt every later phase-2 panel uses
+                # verbatim -- reserving against the stub (which has none)
+                # would size every prompt to the full 75 tokens and let
+                # phase 2's real prefix silently truncate it anyway. See
+                # `render_panels`'s `target_engine` docstring.
+                target_engine=image_engine,
                 chapters=wanted,
                 seed=args.seed,
                 width=args.width,

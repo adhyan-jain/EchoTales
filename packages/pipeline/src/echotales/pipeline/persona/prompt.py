@@ -554,11 +554,68 @@ def condense_clause(clause: str, limit: int = _MAX_CHARACTER_TOKENS) -> str:
     return ", ".join(part for _i, part in sorted(kept))
 
 
+#: Colour words `compress_identity_tags` recognises inside a hair phrase.
+_HAIR_COLORS = frozenset(
+    {"black", "white", "silver", "grey", "gray", "brown", "red", "blonde",
+     "blond", "golden", "blue", "green", "purple", "pink", "auburn"}
+)
+
+#: Filler that carries no visual information -- dropped before tagging.
+_TAG_FILLER = frozenset(
+    {"and", "with", "a", "an", "the", "that", "had", "been", "very", "down",
+     "to", "waist", "of"}
+)
+
+
+def compress_identity_tags(clause: str) -> str:
+    """Convert a condensed identity/condition clause from prose to tags.
+
+    `condense_clause` already picks *which* attributes survive; this
+    controls how many *words* each one costs. Measured on Fang Yuan: his
+    condensed clause ran ~40 tokens of narrative prose ("midnight black
+    very long straight hair down to the waist, cold and narrow eyes") with
+    real redundancy the tag-vs-narrative experiment already proved
+    unnecessary -- the checkpoint reads "long_black_hair, cold_eyes" as the
+    same identity for a fraction of the tokens, which is what actually
+    freed room for tier 2 (action, mood, key_objects) to survive alongside
+    tier 1 instead of being silently squeezed out.
+
+    Hair and eyes get dedicated handling because their phrasing is
+    predictable ("<descriptors> hair" / "<descriptors> eyes") and losing
+    the wrong word matters most for them -- hair colour is "the single
+    feature that makes [a character] recognisable in silhouette" per
+    `condense_clause`'s own docstring. Everything else (build, attire,
+    distinguishing features, already-tagged condition words like `blood`
+    or `wounded`) just has filler words stripped and gets snake_cased,
+    capped to its two most specific words -- a plain word like `blood`
+    passes through unchanged.
+    """
+    parts = [p.strip() for p in clause.split(",") if p.strip()]
+    tags: list[str] = []
+    for part in parts:
+        words = [w for w in part.lower().split() if w not in _TAG_FILLER]
+        if not words:
+            continue
+        if words[-1] == "hair":
+            color = next((w for w in words if w in _HAIR_COLORS), None)
+            length = "long" if any(w in ("long", "floor") for w in words) else (
+                "short" if "short" in words else ""
+            )
+            tags.append("_".join(x for x in (length, color, "hair") if x))
+        elif words[-1] == "eyes":
+            descriptors = [w for w in words[:-1] if w != "eyes"][:2]
+            tags.append("_".join([*descriptors, "eyes"]))
+        else:
+            tags.append("_".join(words[:2]))
+    return ", ".join(t for t in tags if t)
+
+
 #: Tags `cast_tags` already emits; duplicating them inside a character
 #: clause wastes budget without adding information.
 _HEADCOUNT_TAGS = frozenset(
     {"1boy", "1girl", "2boys", "2girls", "solo", "male", "female", "person"}
 )
+
 
 #: What identifies a character at panel scale, best first.
 #:
@@ -617,6 +674,7 @@ def build_image_prompt(
     world: str = "",
     locale: str = "",
     style: str = MANGA_STYLE,
+    limit: int = _USABLE_TOKENS,
 ) -> str:
     """Compose one prompt string from a resolved `PanelCast`.
 
@@ -644,6 +702,18 @@ def build_image_prompt(
     Returns a style/environment-only prompt (still a valid establishing-shot
     prompt) when nobody is in frame -- `get_panel_cast` returns exactly that
     shape for a block outside every tracked scene.
+
+    `limit` defaults to the full 75-token budget, but the caller must lower
+    it by the target image engine's own `quality_prefix` cost when one
+    exists. That prefix is prepended ahead of everything built here, at the
+    engine layer, after this function has already returned a "complete"
+    fitted string -- without reserving room for it up front, the engine
+    silently re-truncates this carefully prioritised prompt from a second,
+    uncoordinated budget fit that has no knowledge of what this function
+    decided mattered most. Measured: two RI ch1 panels differing only in
+    their trailing mood tag rendered byte-identical images, because
+    `quality_prefix` alone (47 tokens for NoobAI) pushed both prompts' only
+    point of difference past the second fit's cutoff.
     """
     appearances = character_appearances or {}
     # **Ordered by what must survive truncation, not by reading order.**
@@ -740,4 +810,4 @@ def build_image_prompt(
         parts.append(panel_cast.environment)
 
     parts.append(style)
-    return fit_to_budget(parts)
+    return fit_to_budget(parts, limit=limit)

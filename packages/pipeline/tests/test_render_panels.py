@@ -431,8 +431,8 @@ class TestRenderPanels:
             panels_mod, "group_scenes", lambda *a, **k: [Scene(index=0, blocks=list(range(8)))]
         )
         _looks = {
-            "t:bystander": ("A Bystander", "a bystander clause", None, "male"),
-            "t:fangyuan": ("Fang Yuan", "fang yuan clause", None, "male"),
+            "t:bystander": ("A Bystander", "a bystander clause", None, "male", ""),
+            "t:fangyuan": ("Fang Yuan", "fang yuan clause", None, "male", ""),
         }
         monkeypatch.setattr(
             panels_mod, "character_looks", lambda store, entity_id, **kw: _looks.get(entity_id)
@@ -441,7 +441,15 @@ class TestRenderPanels:
         received_casts: list[dict[str, str]] = []
 
         def _fake_direct_beat(
-            beat_text, *, cast, novel_style, client, novel_id="", context_brief="", store=None
+            beat_text,
+            *,
+            cast,
+            novel_style,
+            client,
+            novel_id="",
+            context_brief="",
+            store=None,
+            conditions=None,
         ):
             received_casts.append(dict(cast))
             return Direction(
