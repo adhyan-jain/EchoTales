@@ -47,18 +47,24 @@ CANON_APPEARANCE: dict[str, dict[str, dict[str, str]]] = {
             "distinguishing_features": (
                 "cold expressionless stare, utterly ruthless demeanour"
             ),
-            # No "typical_attire" entry, deliberately: `appearance_extract.py`
-            # already extracted "green robes" from Fang Yuan's own ch1
-            # death-scene text, grounded evidence, not a hallucination (its
-            # own docstring on `TRANSIENT_KEYS` uses this exact case as the
-            # example of *correct* standing-garment extraction -- green is
-            # the garment, "torn to shreds" is the transient condition that
-            # correctly got filtered out already). This table's job is
-            # permanent physical traits a reader already knows outrank an
-            # extractor's guess on; attire that varies is not that -- an
-            # earlier version hardcoded "simple robes with wide sleeves"
-            # here, which silently overwrote the correct extracted colour
-            # with a colourless generic on every single reference sheet.
+            # No "typical_attire" entry here, deliberately: attire varies by
+            # body for Fang Yuan (green robes dying as the old demon, white
+            # robes reborn as the boy), so it belongs in `CANON_BY_BODY`
+            # below, per body, not here where it would apply to both. This
+            # used to say extraction's real "green robes" would "flow
+            # through" for body 1 as a result -- that was wrong: `canon_for`
+            # also loads the novel's wiki as an unconditional, body-unaware
+            # base layer, and RI's wiki entry states `typical_attire: "white
+            # robes"` (sourced from deep in the story, the body-2 era). With
+            # no body-1 override, that flat wiki value silently beat
+            # extraction's correct answer on every pre-regression panel.
+            # Fixed by stating both bodies' attire explicitly in
+            # `CANON_BY_BODY`, which layers *after* the wiki and actually
+            # overrides it -- an earlier version hardcoded a single
+            # "simple robes with wide sleeves" for the whole character
+            # instead, which silently overwrote the correct extracted
+            # colour with a colourless generic everywhere; the fix is
+            # per-body correctness, not just correct-somewhere.
         },
     },
 }
@@ -91,11 +97,26 @@ CANON_BY_BODY: dict[str, dict[str, dict[int, dict[str, str]]]] = {
             # except clothing colour -- the original "serious, sharp
             # features" framing produced the image the author actually
             # wanted. Only the colour was ever really wrong (see
-            # `CANON_APPEARANCE` above: no more hardcoded "simple robes",
-            # extraction's real "green robes" flows through instead). Do
-            # not re-add plainness language here without the author asking
-            # for it again.
+            # `CANON_APPEARANCE` above: no more hardcoded "simple robes").
+            #
+            # **`typical_attire` explicit here, for both bodies -- the
+            # comment above used to say extraction's "green robes" flows
+            # through unforced, and that was wrong in practice.**
+            # `canon_for` layers wiki (flat, no body awareness) first, then
+            # this table last; RI's wiki entry has `typical_attire: "white
+            # robes"` sourced from deep into the story (the body-2 era),
+            # applied unconditionally and merged key-by-key over whatever
+            # extraction found -- so it silently overrode body 1's correct
+            # "green robes" on every pre-regression panel whose own local
+            # narration didn't happen to restate the colour. Measured
+            # directly: RI ch1's opening confrontation (body 1, no local
+            # attire restatement) rendered "white_robes" instead of the
+            # green robes his own death-scene text describes two blocks
+            # later. Stating both bodies' attire here, where the per-body
+            # layer actually overrides the flat wiki tier, is what makes
+            # this temporal rather than a global flip to green.
             1: {
+                "typical_attire": "green robes",
                 "height_build": "tall and lean, gaunt with age and injury",
                 "current_condition": "gravely wounded, robes torn",
                 "distinguishing_features": (
@@ -106,6 +127,7 @@ CANON_BY_BODY: dict[str, dict[str, dict[int, dict[str, str]]]] = {
             # Body 2: the same consciousness in his fifteen-year-old self,
             # from chapter 1's rebirth onward -- which is the entire book.
             2: {
+                "typical_attire": "white robes",
                 "height_build": "slim adolescent build, not yet grown",
                 "distinguishing_features": (
                     "a boy's face wearing an adult's cold, ruthless "
