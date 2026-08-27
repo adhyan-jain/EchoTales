@@ -441,6 +441,34 @@ def gender_negative(genders: list[str], *, beat: str = "") -> str:
     return ""
 
 
+def genre_mismatch_negative(novel_id: str, beat: str) -> str:
+    """Suppress this novel's genre-typical-but-textually-absent props.
+
+    RI's director hallucinated `"blades, talismans, swords"` into a
+    beat's `key_objects` where the passage said nothing about weapons at
+    all -- measured on ch1 blocks 0-3 (pure dialogue, no props named),
+    the checkpoint's own xianxia-genre prior filling the gap the way it
+    fills an unstated gender. `WORLD_CONTEXT`'s citation trail is the
+    positive-side fix (tell the director what *is* actually here);
+    this is the negative-side backstop for whatever still slips through.
+
+    Gated on the beat's own text so a scene that genuinely names one of
+    these (rare, but the novel runs 199 chapters) is not silently
+    overridden -- same principle as `gender_negative` trusting the
+    beat's own pronouns over a blanket rule. Word-boundary matching on
+    both sides: "blade" must not fire on the beat text just because it
+    contains "moonblade", RI's real ranged-attack technique.
+    """
+    from echotales.pipeline.persona.attire import GENRE_MISMATCH_PROPS
+
+    props = GENRE_MISMATCH_PROPS.get(novel_id, ())
+    if not props:
+        return ""
+    if any(re.search(rf"\b{re.escape(p)}\b", beat, re.I) for p in props):
+        return ""
+    return ", ".join(props)
+
+
 # ---------------------------------------------------------------------------
 # Token budget
 # ---------------------------------------------------------------------------

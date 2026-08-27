@@ -90,6 +90,77 @@ WORLD_SETTING: dict[str, str] = {
 
 _DEFAULT_WORLD = "detailed background environment"
 
+#: **Grounded in the novel's own text, not wiki paraphrase.** Every claim
+#: below is a verified quote pulled from `data/echotales.db`'s `span`
+#: table (novel `reverend-insanity`, chapter<=30, narration/exposition
+#: spans only) via the same citation-forcing discipline as
+#: `resolve/appearance_extract.py` -- an LLM extraction pass over these
+#: passages was tried first and every claim it returned was discarded on
+#: substring verification (it paraphrased instead of quoting), so this
+#: entry was hand-built directly from the same passages, checked the same
+#: way: nothing here that isn't a literal substring of the source text.
+#: Wiki/fandom sources were checked only for terminology spelling, never
+#: as the source of what's visually true here.
+#:
+#: Citations:
+#: - "level of a level three Gu Master... rank one senior Gu Master...
+#:   rank two senior Gu Master... rank three Gu Masters" (ch1-3): the
+#:   ranked-cultivator system is called "Gu Master", not the generic
+#:   xianxia "cultivator".
+#: - "a large number of primeval stones... the foundation of the Gu Yue
+#:   village... the purchasing power of primeval stones" (ch2-3):
+#:   primeval stones, not gold/spirit-stones, are this world's currency.
+#: - "The light transformed into a small moonblade in the air, the faint
+#:   blue moonblade..." / "to throw out a single moonblade attack, one
+#:   would need to use up 10% of..." (ch8-9, ~30 occurrences): the
+#:   signature *ranged* combat technique is a thrown glowing blue energy
+#:   projectile called a "moonblade" -- not a wielded sword or blade.
+#: - "in the middle of the Gu Yue Village was a magnificent pavilion. A
+#:   grand ceremony was being held..." (ch1): Gu Yue Village has a
+#:   central ceremonial pavilion, not a throne hall.
+#: - "Gu Yue clan came to Qing Mao Mountain and settled down after
+#:   migrating from the central lands to the South Border" (ch1): the
+#:   village sits on Qing Mao Mountain, in the South Border region.
+#: - "Qing Mao Mountain's unique spear bamboo, each bamboo stick as
+#:   straight as a line" (ch1): bamboo groves are a real, stated feature
+#:   of the mountain, not a generic filler.
+#: - "they found a spirit spring in this underground cave" (ch1): an
+#:   underground spirit spring beneath the village, not a surface well.
+#: - Trope-absence, counted rather than assumed: "sword" appears exactly
+#:   twice across 276 world-building passages in chapters 1-30, both as a
+#:   figurative simile ("his gaze sharp like a sword") -- zero literal
+#:   sword weapons. "worm"/"Gu" appear 408 times combined in the same
+#:   passage set. See `GENRE_MISMATCH_PROPS` below.
+#: **Kept short on purpose -- see `fit_to_budget`'s docstring.** This is
+#: injected as one atomic tier-3 part (`Direction.to_image_prompt_parts`),
+#: not split into pieces the way tier 1's identity/condition clauses are,
+#: so it either survives whole or is dropped whole. Two measured misses
+#: before this length: a first ~55-token version never once survived
+#: across an 11-panel verification render, and a still-too-long ~25-token
+#: revision lost to `scene_locale` on the one truly empty-cast panel
+#: tested (block 36: 57 tokens of tier 0-2 content already spent before
+#: tier 3 is even considered, leaving ~18 of the 75 usable tokens --
+#: `scene_locale`'s own entries run 10-15). Cut to the two claims that
+#: actually fight genre-trope drift (the system's name, and the explicit
+#: swords negation) and dropped the location nouns, which `scene_locale`
+#: already covers on its own.
+WORLD_CONTEXT: dict[str, str] = {
+    "reverend-insanity": "Gu cultivation, Gu Masters, moonblade attacks not swords",
+}
+
+#: Props this novel's genre (xianxia) suggests by default but the text
+#: itself does not support -- see `WORLD_CONTEXT`'s trope-absence
+#: citation. Suppressed in the negative prompt *unless* the current
+#: beat's own narration names one of these as a physical weapon, so a
+#: scene that genuinely has one (rare, but possible over 199 chapters) is
+#: not silently overridden. Deliberately excludes "moonblade" as a
+#: substring collision -- `genre_mismatch_negative` matches whole words,
+#: so "blade" alone does not match inside "moonblade", but a future
+#: reader adding terms here should keep that in mind.
+GENRE_MISMATCH_PROPS: dict[str, tuple[str, ...]] = {
+    "reverend-insanity": ("sword", "blade", "saber", "sabre", "katana", "scimitar"),
+}
+
 #: Concrete locales per novel, keyed by a cue word that suggests them.
 #: `world_setting` is the world's general vocabulary; these are *places*, and
 #: a panel needs one specific place rather than a list of everything the
@@ -209,6 +280,21 @@ def scene_locale(
 def world_setting(novel_id: str) -> str:
     """The scenery vocabulary for this novel's world."""
     return WORLD_SETTING.get(novel_id, _DEFAULT_WORLD)
+
+
+def world_context(novel_id: str) -> str:
+    """The novel's *specific* visual signature -- power system, named
+    locations, faction identity -- as distinct from `world_setting`'s
+    generic scenery vocabulary.
+
+    Setting/atmosphere register only: this must never reach the
+    identity/condition tier, which is why it is threaded through
+    `direction.build_prompt`'s `novel_style` line rather than the cast
+    clause. Empty for a novel with no seeded entry rather than falling
+    back to `_DEFAULT_WORLD` -- an absent primer should mean "say
+    nothing extra", not "describe a generic environment twice".
+    """
+    return WORLD_CONTEXT.get(novel_id, "")
 
 
 #: Per-novel appearance defaults, filling attributes the prose never states.
