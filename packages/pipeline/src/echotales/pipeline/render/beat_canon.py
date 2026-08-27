@@ -68,15 +68,27 @@ BEAT_CANON: dict[str, dict[float, list[BeatCanonEntry]]] = {
     "reverend-insanity": {
         1.0: [
             BeatCanonEntry(
+                # **This entry originally staged "drawn swords... flying
+                # overhead on blades and talismans" -- invented on the same
+                # unchecked generic-xianxia assumption the Cicada entry
+                # below was corrected for, and never checked against the
+                # source. It wasn't: a citation-forcing pass over chapters
+                # 1-30 (`persona/attire.py::WORLD_CONTEXT`) found "sword"
+                # exactly twice in 276 world-building passages, both
+                # figurative similes, and "blade" overwhelmingly refers to
+                # "moonblade" -- a thrown glowing energy projectile, RI's
+                # actual signature ranged technique, not a wielded weapon.
+                # Corrected the same way the Cicada entry was: describe
+                # what the scene structurally needs (a lone figure ringed
+                # by an armed faction closing in) without inventing the
+                # specific armament the source never gives.
                 block_from=0,
                 block_to=1,
                 staging=(
-                    "Wide establishing view of a xianxia mountain stronghold "
-                    "under siege at dusk. A lone robed figure stands at the "
-                    "center, surrounded by a faction of armed warlords and "
-                    "warrior women, some standing on the ground with drawn "
-                    "swords, some flying overhead on blades and talismans, "
-                    "closing in on him."
+                    "Wide establishing view of a mountain stronghold under "
+                    "siege at dusk. A lone robed figure stands at the "
+                    "center, surrounded by a ring of cultivators closing in "
+                    "on him."
                 ),
                 style_override="establishing",
             ),
