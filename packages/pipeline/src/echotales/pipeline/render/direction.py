@@ -80,7 +80,18 @@ SYSTEM = (
 
     "8. No film vocabulary. No 'close-up on', 'the shot' pans', 'into the camera'.\n\n"
 
-    "9. OUTPUT TAGS, NOT SENTENCES. This checkpoint (NoobAI/Illustrious) is "
+    "9. FACIAL EXPRESSION IS INDEPENDENT OF PHYSICAL CONDITION. A wounded, "
+    "bleeding, or exhausted character does not default to a pained "
+    "expression -- report the face only as the passage actually states it, "
+    "as one short tag ('calm_expression', 'blank_stare', 'pained_expression', "
+    "'unmoved'), separate from wounds/blood/torn clothes. If the passage "
+    "explicitly states the character's expression does NOT change, or stays "
+    "calm/blank/unreadable despite what is happening to them, that contrast "
+    "is exactly what to report -- it is real information, not a contradiction "
+    "to resolve. If the passage says nothing about the face, leave this "
+    "empty; do not infer one from the body's condition.\n\n"
+
+    "10. OUTPUT TAGS, NOT SENTENCES. This checkpoint (NoobAI/Illustrious) is "
     "trained on Danbooru-style tag captions, not narrative English -- a "
     "controlled comparison on this novel measured tag-style prompts "
     "rendering the actual described action (torn clothes, blood, a crowd "
@@ -133,10 +144,28 @@ class PanelDirection(BaseModel):
     setting: str = Field(default="")
     #: Time of day / weather / light, as tags (e.g. "dusk, misty").
     lighting: str = Field(default="")
-    #: Objects that must appear (a glowing cicada, a raised sword).
+    #: Objects that must appear (a glowing cicada, a lantern). Not an
+    #: excuse to invent a prop the passage never names -- see rule 1.
     key_objects: list[str] = Field(default_factory=list)
     #: One or two mood tags.
     mood: str = Field(default="")
+    #: **The subject's face, as one compact tag -- independent of their
+    #: physical condition.** Added because a wounded/bleeding character's
+    #: face was being drawn pained by default, even on beats where the
+    #: passage explicitly says the opposite: RI ch1 blocks 9-13 state
+    #: four separate times that Fang Yuan's expression "did not change,
+    #: it was calm" despite his wounds, and no prompt ever carried that --
+    #: `condition` (blood, torn robes) was the only face-adjacent signal
+    #: reaching the checkpoint, whose own prior reads visible injury as a
+    #: pained expression. A single tag, not a phrase (`calm_expression`,
+    #: not "his expression did not change") -- this has to survive
+    #: `to_image_prompt_parts`'s tier-1 budget the same way identity and
+    #: condition tags do, and a phrase-length clause is exactly what tier
+    #: 1's own fix (see its docstring) exists to stop happening again.
+    #: Empty when the passage states nothing about the face -- an
+    #: unstated expression is not "neutral", it is unknown, and inventing
+    #: one violates rule 1 same as any other detail.
+    expression: str = Field(default="")
 
 
 _SHOTS = {"wide", "medium", "close"}
@@ -181,8 +210,9 @@ def build_prompt(
         "no sentences, no articles, no conjugated verbs, no periods:",
         '  shot          one of "wide", "medium", "close"',
         "  action        pose/action tags for the single moment to draw, "
-        "using only what the passage states (do not add clothing colours, "
-        "expressions, or objects the passage does not mention). Example: "
+        "using only what the passage states (do not add clothing colours "
+        "or objects the passage does not mention; facial expression goes "
+        "in its own 'expression' field below, not here). Example: "
         "\"weapons_drawn, fighting_stance\" or \"kneeling, exhausted\".",
         "  layout        the character's real name (exactly as written in "
         "CAST -- never the letter X or a placeholder), followed by "
@@ -195,6 +225,13 @@ def build_prompt(
         "\"dusk, misty\" or \"day, bright_sunlight\".",
         "  key_objects   list of object tags that must be visible",
         "  mood          one or two mood tags",
+        "  expression    ONE compact face tag, only if the passage states "
+        "or clearly implies it, independent of physical condition -- a "
+        "wounded character is not automatically pained. Example: "
+        "\"calm_expression\" or \"blank_stare\" for a passage that says the "
+        "expression did not change despite injury; \"pained_expression\" "
+        "only if the passage actually describes pain on the face itself, "
+        "not just an injury to the body. Leave empty if unstated.",
         "",
         "Only include characters the passage actually places in the scene. "
         "Do not include numeric headcount tags ('1boy', '2boys', 'male "
@@ -238,7 +275,9 @@ class Direction:
         from echotales.pipeline.persona.prompt import fit_to_budget
         return fit_to_budget(self.to_image_prompt_parts(scene_locale=scene_locale))
 
-    def to_image_prompt_parts(self, *, scene_locale: str = "") -> list[str]:
+    def to_image_prompt_parts(
+        self, *, scene_locale: str = "", world_context: str = ""
+    ) -> list[str]:
         """Construct the prompt components, prioritizing what the panel shows."""
         d = self.direction
         shot = d.shot if d.shot in _SHOTS else "medium"
@@ -286,6 +325,7 @@ class Direction:
 
         _director_text = f"{d.action or ''} {d.layout or ''}".lower()
         _has_white_robe = False
+        _expression_placed = False
         tier1: list[str] = []
         for name, look in self.cast.items():
             # Check both action and layout: the director sometimes names the
@@ -321,6 +361,16 @@ class Direction:
             tier1.append(name)
             tier1.extend(hair_tags)
             tier1.extend(cond_tags)
+            # **Same priority tier as condition, right after it -- one tag,
+            # once.** Placed inside the cast loop (not appended after it)
+            # so it sits ahead of the eyes/build tags `fit_to_budget`
+            # trims first, per this docstring's own priority-order
+            # rationale. Guarded to fire once even when several named
+            # characters share a beat: `expression` describes one face,
+            # repeating it per cast member would spend budget for nothing.
+            if d.expression and not _expression_placed:
+                tier1.append(d.expression)
+                _expression_placed = True
             if "white" in condition.lower() and "robe" in condition.lower():
                 _has_white_robe = True
             elif "white" in compressed.lower() and "robe" in compressed.lower():
@@ -360,6 +410,19 @@ class Direction:
             tier3.append(d.setting)
         if d.lighting:
             tier3.append(d.lighting)
+        if world_context:
+            # **The novel's own visual signature, grounded in its text --
+            # see `persona/attire.py::WORLD_CONTEXT` for the citation
+            # trail.** Ranked between the director's own setting and the
+            # generic locale rotation: it is more specific than
+            # `scene_locale`'s block-index fallback (which knows nothing
+            # about this particular novel beyond a scenery word list), but
+            # never displaces what the director actually extracted from
+            # the beat itself. This is what stops an empty-cast beat --
+            # the case with the most budget headroom, and measured as the
+            # case that most needed it -- from defaulting to whatever
+            # genre-typical prop the checkpoint's own prior fills in.
+            tier3.append(world_context)
         if scene_locale:
             # Scene-level location anchor: same string for every panel in
             # the scene, so consecutive panels don't render as different
