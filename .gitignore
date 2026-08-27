@@ -17,6 +17,11 @@ data/*.db-wal
 data/*.db-shm
 data/echotales.db*
 
+# Archived pre-promotion DB snapshots (paths.py-adjacent convention: never
+# overwrite, keep the old one aside) -- same reason as the rule above, just
+# a different directory.
+data/archive/
+
 # Working copies the webview backend edits, so a correction can never mutate
 # the originals above. Regenerate with the copy step in HANDOFF Section 4.18.
 data/webview-working/
@@ -110,9 +115,10 @@ data/*-split.db-*
 # the whole novel dir, so a novel's README/manifest stays trackable while its
 # 1.9 GB of PNGs and mp4s does not.
 data/*/panels/
-# Exception: RI's panels are being tracked deliberately for this session's
-# prompt-composition work (versioned renders reviewed directly from git).
-!data/RI/panels/
+# RI's panels were tracked deliberately for an earlier session's
+# prompt-composition work (versioned renders reviewed directly from git);
+# disabled for now -- re-enable `!data/RI/panels/` if that's needed again.
+# !data/RI/panels/
 data/*/video/
 data/*/audio/
 data/*/motion/
