@@ -29,7 +29,7 @@ from typing import Protocol
 from echotales.core.enums import ReferenceMode, SpanType
 from echotales.core.models import Chapter, Mention, Span
 from echotales.core.store import Store
-from echotales.pipeline.persona.attire import scene_locale, world_setting
+from echotales.pipeline.persona.attire import scene_locale, world_context, world_setting
 from echotales.pipeline.persona.prompt import (
     cast_tags,
     count_tokens,
@@ -40,6 +40,7 @@ from echotales.pipeline.persona.prompt import (
     _USABLE_TOKENS,
     build_image_prompt,
     gender_negative,
+    genre_mismatch_negative,
     negative_for,
 )
 from echotales.pipeline.persona.forms import detect_form
@@ -825,8 +826,8 @@ def _is_flat(image: object, *, threshold: float = 6.0) -> bool:
         return False
 
 
-def beat_text(spans: list[Span], block_index: int, fallback: str) -> str:
-    """The composition cue for one block: what the panel should *depict*.
+def beat_text(spans: list[Span], block_indices: list[int], fallback: str) -> str:
+    """The composition cue for one panel: what it should *depict*.
 
     Narration only. A dialogue block's text is the line being spoken, and a
     spoken line is a terrible thing to hand a diffusion model -- measured on
@@ -835,21 +836,41 @@ def beat_text(spans: list[Span], block_index: int, fallback: str) -> str:
     a quick death!", which describes nothing visible. The words are carried
     by the audio track; the picture needs the stage direction.
 
-    Falls back to the raw block when it has no narration at all (a pure
-    dialogue exchange), since some cue beats none -- and the cast and style
-    clauses still carry that panel.
+    **Pools narration across every block in `block_indices`, not just the
+    panel's lead.** A single narrative beat routinely spans several
+    consecutive blocks that got split apart by ingestion/segmentation, and
+    whichever block happens to be the panel's `lead` (an artifact of slot
+    assignment, not narrative meaning) used to be the only one whose own
+    narration counted -- confirmed on RI ch1 blocks 9-12, one panel led by
+    block 9, where "his expression did not change, it was calm" is block
+    10's own sentence and was silently invisible to the beat this panel
+    was supposedly depicting. The caller is responsible for passing exactly
+    this panel's own blocks (`_slot_blocks`, not the wider `_chunk_blocks`
+    a chunk-group can span) -- see the call site for why that distinction
+    matters for a slot-splitting chunk like RI ch1 blocks 25-28.
+
+    Falls back to the raw block when the whole set has no narration at all
+    (a pure dialogue exchange), since some beats have none -- and the cast
+    and style clauses still carry that panel.
     """
-    narration = [
-        s.text.strip()
-        for s in spans
-        if s.block_index == block_index
-        and s.span_type
-        in (
-            SpanType.NARRATION_ACTION,
-            SpanType.NARRATION_DESCRIPTION,
-        )
-        and s.text.strip()
-    ]
+    wanted = set(block_indices)
+    # Sorted by (block_index, start): pooling several blocks means reading
+    # order is no longer "whatever order `spans` happens to list them in".
+    matches = sorted(
+        (
+            s
+            for s in spans
+            if s.block_index in wanted
+            and s.span_type
+            in (
+                SpanType.NARRATION_ACTION,
+                SpanType.NARRATION_DESCRIPTION,
+            )
+            and s.text.strip()
+        ),
+        key=lambda s: (s.block_index, s.start),
+    )
+    narration = [s.text.strip() for s in matches]
     return " ".join(narration) if narration else fallback
 
 
@@ -1396,6 +1417,20 @@ def render_panels(
             _scene_last_present_refs: list[Path] = []
             _scene_last_present_conditioned: list[str] = []
             _scene_last_present_conditions: dict[str, str] = {}
+            # **Which body each carried-forward entity was resolved from.**
+            # `entity_id -> persona_id`, captured at the same moment as the
+            # appearance strings above. A carried string is only honest for
+            # as long as the entity is still in that body -- a scene can
+            # span a body transition (RI ch1 blocks 80->84, Fang Yuan's
+            # rebirth into his child body) and a beat whose own PRESENT scan
+            # comes up empty used to reuse whatever was cached with no check
+            # at all, so blocks 84-85 rendered in body1's adult green robes
+            # from block 80/81 while `character_looks` called fresh at 84
+            # already correctly returns body2's `white_robes`. See the
+            # invalidation check at the carry-forward reuse site below.
+            _scene_last_present_bodies: dict[str, str] = {}
+            _scene_last_present_entity_labels: dict[str, str] = {}
+            _scene_last_present_entity_genders: dict[str, str] = {}
 
             budget = scene.image_budget
             # Which slot (0=establishing, 1=close-up, 2=wide/secondary)
@@ -1544,6 +1579,21 @@ def render_panels(
                     by_index[b].text for b in _chunk_blocks if b in by_index
                 )
                 _chunk_mobs = detect_mobs(_chunk_text, lead)
+                # **This panel's own blocks, not the wider chunk-group.**
+                # `_chunk_blocks` above spans every slot sharing this
+                # chunk's 4-block group -- right for mob/form detection,
+                # which benefits from a wider look, but wrong for
+                # narration/dialogue extraction: a chunk of blocks 25-28
+                # actually splits into two *separate* panels (25/27
+                # dialogue-alternating to one slot, 26/28 to another --
+                # `has_dialogue` position parity, see `slot_for_block`
+                # above), and pooling `_chunk_blocks` for beat text would
+                # hand both panels the same narration/dialogue regardless
+                # of which one a sentence actually belongs to. Confirmed:
+                # `slot_for_block` gives {25:5, 27:5} and {26:6, 28:6} --
+                # two slots, not one. `_slot_blocks` is exactly the blocks
+                # assigned to *this* slot.
+                _slot_blocks = sorted(b for b, sl in slot_for_block.items() if sl == slot)
                 # A transformation is a property of this passage, not of the
                 # character -- see `persona/forms.py` on why it is an
                 # overlay and why reverting needs no detection.
@@ -1602,6 +1652,11 @@ def render_panels(
                 # docstring for the mid-chapter body-selection bug this
                 # fixes.
                 story_position = chapter_number + lead / max(len(chapter.blocks), 1)
+                from echotales.pipeline.persona.split import persona_at
+
+                _beat_bodies: dict[str, str] = {}
+                _beat_entity_labels: dict[str, str] = {}
+                _beat_entity_genders: dict[str, str] = {}
                 for entity_id in present_beat_entities_with_reveals(
                     mentions,
                     _chunk_blocks,
@@ -1637,6 +1692,13 @@ def render_panels(
                     if sheet is not None:
                         references.append(sheet)
                         conditioned.append(label)
+                    # Which body this label was actually drawn from, so a
+                    # later empty beat in this scene can tell whether it is
+                    # still honest to reuse it -- see the invalidation check
+                    # below.
+                    _beat_bodies[entity_id] = persona_at(store, entity_id, story_position)
+                    _beat_entity_labels[entity_id] = label
+                    _beat_entity_genders[entity_id] = gender
 
                 if appearances:
                     # A real PRESENT cast for this beat -- becomes what the
@@ -1646,6 +1708,9 @@ def render_panels(
                     _scene_last_present_refs = list(references)
                     _scene_last_present_conditioned = list(conditioned)
                     _scene_last_present_conditions = dict(conditions)
+                    _scene_last_present_bodies = dict(_beat_bodies)
+                    _scene_last_present_entity_labels = dict(_beat_entity_labels)
+                    _scene_last_present_entity_genders = dict(_beat_entity_genders)
                 elif _scene_last_present:
                     # The PRESENT-only pass produced no cast for this beat,
                     # but an earlier beat in this same scene had one -- carry
@@ -1665,6 +1730,81 @@ def render_panels(
                     references = list(_scene_last_present_refs)
                     conditioned = list(_scene_last_present_conditioned)
                     conditions = dict(_scene_last_present_conditions)
+
+                    # **But not across a body transition.** A carried
+                    # appearance string is only honest for as long as the
+                    # entity is still in the body it was resolved from; a
+                    # scene can span a `persona_at` boundary (RI ch1 blocks
+                    # 80->84, Fang Yuan's rebirth) and nothing above re-checks
+                    # that, so a beat whose own mention scan comes up empty
+                    # was silently redrawn in the *previous* body's
+                    # clothes/build. Re-resolve, fresh, any entity whose
+                    # active body at this beat's position has moved on from
+                    # the one the cached string was drawn from -- even
+                    # though the local PRESENT scan found nobody, that is
+                    # what makes this different from "nobody's here at all".
+                    _any_stale = False
+                    for entity_id, cached_body in list(_scene_last_present_bodies.items()):
+                        current_body = persona_at(store, entity_id, story_position)
+                        if current_body == cached_body:
+                            continue
+                        _any_stale = True
+                        stale_label = _scene_last_present_entity_labels.get(entity_id)
+                        if stale_label is not None:
+                            appearances.pop(stale_label, None)
+                            conditions.pop(stale_label, None)
+                            if stale_label in conditioned:
+                                idx = conditioned.index(stale_label)
+                                conditioned.pop(idx)
+                                if idx < len(references):
+                                    references.pop(idx)
+                        _scene_last_present_entity_genders.pop(entity_id, None)
+                        fresh = character_looks(
+                            store,
+                            entity_id,
+                            novel_id=novel_id,
+                            chapter=story_position,
+                            crowd=bool(_chunk_mobs),
+                            beat_text=_chunk_text,
+                        )
+                        if fresh is None:
+                            _scene_last_present_bodies.pop(entity_id, None)
+                            _scene_last_present_entity_labels.pop(entity_id, None)
+                            continue
+                        new_label, new_clause, new_sheet, new_gender, new_condition = fresh
+                        if new_clause or _form.active:
+                            appearances[new_label] = _form.apply_to(new_clause)
+                        if new_condition:
+                            conditions[new_label] = new_condition
+                        new_sheet = (
+                            curated_character_reference(new_label, chapter=story_position)
+                            or new_sheet
+                        )
+                        if new_sheet is not None:
+                            references.append(new_sheet)
+                            conditioned.append(new_label)
+                        # Persist the refresh into the scene cache so later
+                        # empty beats carry forward the *current* body, not
+                        # the one this check just replaced.
+                        _scene_last_present_bodies[entity_id] = current_body
+                        _scene_last_present_entity_labels[entity_id] = new_label
+                        _scene_last_present_entity_genders[entity_id] = new_gender
+                    if _any_stale:
+                        # **Rebuild from the per-entity map, don't append.**
+                        # `genders` is a flat list with no entity key of its
+                        # own; appending a refreshed entity's gender to the
+                        # list already carried forward from the cache double-
+                        # counted it -- one stale entry plus one fresh entry
+                        # for the same person, which is exactly how a single
+                        # Fang Yuan panel first came back tagged "2boys".
+                        # Rebuilding from `_scene_last_present_entity_genders`
+                        # (updated in place above) keeps one entry per entity.
+                        genders = list(_scene_last_present_entity_genders.values())
+                    _scene_last_present = dict(appearances)
+                    _scene_last_present_genders = list(genders)
+                    _scene_last_present_refs = list(references)
+                    _scene_last_present_conditioned = list(conditioned)
+                    _scene_last_present_conditions = dict(conditions)
                 # else: first beat of the scene, nobody PRESENT yet -- no
                 # character to draw. Environment/setting only; the director
                 # is told CAST is empty (direction.py SYSTEM rule 5) rather
@@ -1684,21 +1824,7 @@ def render_panels(
                 # scene-grouped now, so the scene almost always has real
                 # narration somewhere -- which describes the same moment and
                 # is actually visual.
-                # **The chunk's own narration, falling back to the scene's.**
-                # Now that a slot covers a handful of blocks rather than a
-                # whole scene, the scene-wide fallback would hand the
-                # director prose from a different part of the scene than the
-                # one this panel plays under -- the exact mismatch chunking
-                # exists to remove.
-                _chunk_narration = " ".join(
-                    sp.text.strip()
-                    for sp in spans
-                    if sp.block_index in set(_chunk_blocks)
-                    and sp.span_type
-                    in (SpanType.NARRATION_ACTION, SpanType.NARRATION_DESCRIPTION)
-                    and sp.text.strip()
-                )
-                # **An all-dialogue chunk has to be drawn from its dialogue.**
+                # **An all-dialogue slot has to be drawn from its dialogue.**
                 # Falling back to the scene's narration here was reaching
                 # into a different moment for the picture -- which is the
                 # very mismatch chunking removes -- and measurably so: every
@@ -1706,32 +1832,51 @@ def render_panels(
                 # pure dialogue. Handing the director the lines themselves,
                 # with who says them, lets its "draw the speaker saying it
                 # in their surroundings" rule apply to real material.
-                if not _chunk_narration:
-                    # Kept short on purpose. `fit_to_budget` rations 77 CLIP
-                    # tokens by priority, and a verbatim exchange is long
-                    # enough to be dropped whole -- which is what happened:
-                    # the panel for the elders' gossip came out as locale
-                    # scenery with no beat in it at all. One speaker, a few
-                    # words, is what survives the budget and is also all a
-                    # picture of someone talking can show.
-                    _lines = [
-                        (_speaker_label(sp, store), " ".join(sp.text.split()[:10]))
-                        for sp in spans
-                        if sp.block_index in set(_chunk_blocks)
-                        and sp.span_type is SpanType.DIALOGUE
-                        and sp.text.strip()
-                    ]
-                    _chunk_dialogue = (
-                        f"{_lines[0][0]} speaking: {_lines[0][1]}" if _lines else ""
-                    )
-                else:
-                    _chunk_dialogue = ""
-
-                beat_prose = beat_text(
-                    spans,
-                    lead,
-                    _chunk_narration or _chunk_dialogue or _scene_narration or block.text
+                #
+                # Kept short on purpose. `fit_to_budget` rations 77 CLIP
+                # tokens by priority, and a verbatim exchange is long enough
+                # to be dropped whole -- which is what happened: the panel
+                # for the elders' gossip came out as locale scenery with no
+                # beat in it at all. One speaker, a few words, is what
+                # survives the budget and is also all a picture of someone
+                # talking can show.
+                _lines = [
+                    (sp.block_index, _speaker_label(sp, store), " ".join(sp.text.split()[:10]))
+                    for sp in spans
+                    if sp.block_index in set(_slot_blocks)
+                    and sp.span_type is SpanType.DIALOGUE
+                    and sp.text.strip()
+                ]
+                # **This slot's own block's line, not another slot's.**
+                # `_lines` is now scoped to `_slot_blocks` (this panel's own
+                # blocks only, not the wider chunk-group `_chunk_blocks`
+                # spans), so a sibling slot's dialogue can no longer leak in
+                # here at all. Within *this* slot, still prefer the line
+                # belonging to `lead` over another block sharing the same
+                # slot, so two blocks assigned to one panel don't average
+                # into whichever line happened to sort first.
+                _own_lines = [ln for ln in _lines if ln[0] == lead]
+                _picked = _own_lines[0] if _own_lines else (_lines[0] if _lines else None)
+                _slot_dialogue = (
+                    f"{_picked[1]} speaking: {_picked[2]}" if _picked else ""
                 )
+
+                # **Narration pools across the whole slot, not just `lead`.**
+                # `beat_text` below now takes `_slot_blocks` rather than a
+                # single block index, so any narration anywhere in this
+                # panel's own blocks is available for extraction --
+                # confirmed necessary: RI ch1 blocks 9-12 share one slot
+                # (lead=9), but "his expression did not change, it was
+                # calm" is block 10's own sentence, not block 9's, and a
+                # lead-only scan never saw it. Safe against the earlier
+                # 25/26/27/28 collapse bug precisely because `_slot_blocks`
+                # is now the narrower, correct scope: blocks 25/27 and
+                # 26/28 are two different slots (confirmed via
+                # `slot_for_block`), so block 25's narration never enters
+                # block 26's slot in the first place -- no special-casing
+                # needed to keep them apart.
+                _fallback = _slot_dialogue or _scene_narration or block.text
+                beat_prose = beat_text(spans, _slot_blocks, _fallback)
 
                 canon = beat_canon_for(novel_id, chapter_number, lead)
                 directive = canon.staging if canon is not None else ""
@@ -1823,11 +1968,30 @@ def render_panels(
                                 "(draw only the named subject alone here -- "
                                 "the surrounding crowd is a separate panel)"
                             ).strip()
+                        # **The scenery word list alone let the director
+                        # invent genre-typical props.** `world_setting`
+                        # says "ancient Chinese cultivation world" with no
+                        # information about what this *specific* novel's
+                        # combat actually looks like, so a small local
+                        # model (qwen2.5:7b) filled `key_objects` with
+                        # whatever xianxia expects -- measured on RI ch1
+                        # blocks 0-3 (pure dialogue, no object named at
+                        # all): `key_objects` still came back "blades,
+                        # talismans, swords". `world_context` is the
+                        # grounded fix (see `persona/attire.py`'s citation
+                        # trail); `genre_mismatch_negative` below is the
+                        # backstop for whatever still slips through.
+                        _world_ctx = world_context(novel_id)
+                        _novel_style = (
+                            f"{world_setting(novel_id)}. {_world_ctx}"
+                            if _world_ctx
+                            else world_setting(novel_id)
+                        )
                         directed = direct_beat(
                             directed_prose,
                             context_brief=brief,
                             cast={k: v for k, v in appearances.items() if v},
-                            novel_style=world_setting(novel_id),
+                            novel_style=_novel_style,
                             client=client,
                             novel_id=novel_id,
                             store=store,
@@ -1859,6 +2023,7 @@ def render_panels(
                         closeup = style is STYLE_CLOSEUP
                         prompt_parts = directed.to_image_prompt_parts(
                             scene_locale=scene_locale_text,
+                            world_context=_world_ctx,
                         )
                         # **Assert the crowd as a count tag, in front.**
                         # Removing "1boy" stopped the prompt insisting on
@@ -2139,8 +2304,17 @@ def render_panels(
                         if "white robe" in prompt.lower()
                         else ""
                     )
+                    # **Backstop for the genre-prop hallucination.**
+                    # `world_context` (fed to the director above) is the
+                    # positive-side fix; this suppresses whatever slips
+                    # through anyway. Gated on `beat_prose` -- the source
+                    # text itself, not the director's own output -- so a
+                    # beat that genuinely names one of these isn't
+                    # overridden by its own suppression.
+                    _genre_neg = genre_mismatch_negative(novel_id, beat_prose)
                     _neg_parts = (
                         ([p.strip() for p in _color_neg.split(",") if p.strip()] if _color_neg else [])
+                        + ([p.strip() for p in _genre_neg.split(",") if p.strip()] if _genre_neg else [])
                         + ([p.strip() for p in gender_neg.split(",") if p.strip()] if gender_neg else [])
                         + ([p.strip() for p in _crowd_female_neg.split(",") if p.strip()] if _crowd_female_neg else [])
                         + [p.strip() for p in _base_neg.split(",") if p.strip()]
