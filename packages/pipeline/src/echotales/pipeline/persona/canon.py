@@ -118,7 +118,20 @@ CANON_BY_BODY: dict[str, dict[str, dict[int, dict[str, str]]]] = {
             1: {
                 "typical_attire": "green robes",
                 "height_build": "tall and lean, gaunt with age and injury",
-                "current_condition": "gravely wounded, robes torn",
+                # **Tags, not prose -- the same vocabulary
+                # `render/panels.py::apply_transient_overrides` uses for a
+                # beat's own local condition, and for the same measured
+                # reason (that function's own docstring): a controlled
+                # comparison this session found single Danbooru tags
+                # ("torn_clothes, blood") rendered visible tears and blood
+                # where a merged prose phrase describing the identical
+                # content did not. This canon default was the one holdout
+                # still in prose -- confirmed via the ch1 real-pixel audit
+                # as one of the more frequent "tag present in prompt,
+                # condition absent from the image" cases, on beats whose
+                # own local text has no override so this default carries
+                # straight through unchanged.
+                "current_condition": "wounded, torn_clothes",
                 "distinguishing_features": (
                     "aged, hollow-cheeked, cold expressionless stare, "
                     "utterly ruthless demeanour"
