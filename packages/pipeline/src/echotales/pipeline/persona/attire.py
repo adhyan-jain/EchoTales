@@ -144,21 +144,38 @@ _DEFAULT_WORLD = "detailed background environment"
 #: actually fight genre-trope drift (the system's name, and the explicit
 #: swords negation) and dropped the location nouns, which `scene_locale`
 #: already covers on its own.
+#: `hanfu` added after the swords fix was verified: the same absence
+#: mechanism (nothing positively asserts a garment register, so an
+#: empty-cast beat gets whatever the checkpoint's own prior fills in)
+#: was measured producing a modern schoolgirl outfit, turtleneck
+#: sweaters and a modern jacket on three genuinely empty-cast panels
+#: (RI ch1 blocks 42, 51, 75) -- none of it in any prompt, all of it
+#: the checkpoint's default when nothing says otherwise. One token,
+#: same budget discipline as the rest of this entry.
 WORLD_CONTEXT: dict[str, str] = {
-    "reverend-insanity": "Gu cultivation, Gu Masters, moonblade attacks not swords",
+    "reverend-insanity": "Gu cultivation, Gu Masters, moonblade attacks not swords, hanfu",
 }
 
-#: Props this novel's genre (xianxia) suggests by default but the text
-#: itself does not support -- see `WORLD_CONTEXT`'s trope-absence
-#: citation. Suppressed in the negative prompt *unless* the current
-#: beat's own narration names one of these as a physical weapon, so a
-#: scene that genuinely has one (rare, but possible over 199 chapters) is
-#: not silently overridden. Deliberately excludes "moonblade" as a
-#: substring collision -- `genre_mismatch_negative` matches whole words,
-#: so "blade" alone does not match inside "moonblade", but a future
-#: reader adding terms here should keep that in mind.
+#: Props/clothing this novel's genre (xianxia) suggests by default but
+#: the text itself does not support -- see `WORLD_CONTEXT`'s trope-
+#: absence citation. Suppressed in the negative prompt *unless* the
+#: current beat's own narration names one of these, so a scene that
+#: genuinely has one is not silently overridden. Deliberately excludes
+#: "moonblade" as a substring collision -- `genre_mismatch_negative`
+#: matches whole words, so "blade" alone does not match inside
+#: "moonblade", but a future reader adding terms here should keep that
+#: in mind.
 GENRE_MISMATCH_PROPS: dict[str, tuple[str, ...]] = {
-    "reverend-insanity": ("sword", "blade", "saber", "sabre", "katana", "scimitar"),
+    "reverend-insanity": (
+        "sword", "blade", "saber", "sabre", "katana", "scimitar",
+        # Modern clothing: same measured leak as the weapons above, on
+        # empty-cast beats where no attire clause survives (blocks 42,
+        # 51, 75 -- a schoolgirl outfit, turtleneck sweaters, a modern
+        # jacket, none of it stated anywhere in the prompt).
+        "modern clothes", "modern clothing", "turtleneck", "sweater",
+        "school uniform", "hoodie", "jeans", "business suit", "necktie",
+        "collared shirt",
+    ),
 }
 
 #: Concrete locales per novel, keyed by a cue word that suggests them.
