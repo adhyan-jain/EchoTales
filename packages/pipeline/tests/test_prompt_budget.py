@@ -269,7 +269,55 @@ def test_unresolved_cast_falls_back_to_the_beats_own_pronouns() -> None:
 
     # A resolved cast still wins outright -- the fallback only fires when
     # there is nothing else to go on.
-    assert cast_tags(["female"], beat="He shouted from the courtyard.") == "1girl"
+    assert cast_tags(["female"], beat="He shouted from the courtyard.") == "1girl, solo"
+
+
+def test_unresolved_figure_with_no_gender_signal_gets_a_silhouette_not_a_guess() -> None:
+    """RI ch1: 7+ panels with an unresolved figure (director wrote "a
+    figure" per SYSTEM rule 5) and zero gendered pronouns in the beat
+    still rendered a detailed feminine face on a real render -- rule 6's
+    "render as a silhouette" instruction was never backed by an actual
+    tag. Fires only when the director's own text says a figure is there;
+    a pure-environment beat with nobody in frame must stay silent, or
+    this would hallucinate a person into a landscape shot.
+    """
+    from echotales.pipeline.persona.prompt import cast_tags
+
+    tags = cast_tags([], beat="a figure, solo, stone_courtyard the elders murmured among themselves")
+    assert "silhouette" in tags
+    assert "1boy" not in tags
+    assert "1girl" not in tags
+
+    # No "a figure" marker at all -- a pure landscape/environment beat --
+    # must stay silent, exactly as before this fix.
+    assert cast_tags([], beat="The mountain path wound upward through mist.") == ""
+
+    # A resolved gender or a beat's own pronoun still wins outright; the
+    # silhouette fallback is the last resort, not a default.
+    assert "silhouette" not in cast_tags(["male"], beat="a figure stood there")
+    assert "silhouette" not in cast_tags(
+        [], beat="a figure, solo -- he stood before the elders"
+    )
+
+
+def test_solo_is_asserted_as_its_own_leading_tag() -> None:
+    """RI ch1 blocks 46/48/51-53/63: the director's own `layout` already
+    said "a figure, solo" and the checkpoint still rendered two people --
+    "solo" sat as one word inside a long tier-3 clause instead of being a
+    leading Danbooru tag the way `1boy`/`crowd` already are. `cast_tags`
+    now emits it whenever the resolved (or pronoun-inferred) headcount is
+    exactly one, so it gets the same front-of-prompt priority.
+    """
+    from echotales.pipeline.persona.prompt import cast_tags
+
+    assert cast_tags(["male"]) == "1boy, solo, male focus"
+    assert cast_tags(["female"]) == "1girl, solo"
+    # Two or more people: never assert solo, whatever the mix.
+    assert "solo" not in cast_tags(["male", "male"])
+    assert "solo" not in cast_tags(["male", "female"])
+    # Empty-cast pronoun fallback also implies exactly one figure.
+    assert "solo" in cast_tags([], beat="He stood before the elders, his eyes cold.")
+    assert "solo" in cast_tags([], beat="She walked past the elders, her sleeves trailing.")
 
 
 def test_style_base_carries_no_hair() -> None:

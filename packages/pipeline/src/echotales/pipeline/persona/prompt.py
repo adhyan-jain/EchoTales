@@ -373,6 +373,18 @@ def cast_tags(genders: list[str], *, beat: str = "") -> str:
         parts.append("1girl")
     elif females > 1:
         parts.append(f"{min(females, 6)}girls")
+    # **`solo` needs the same front-of-prompt treatment `1boy`/`crowd`
+    # already got, not a mid-clause mention.** Measured on RI ch1: the
+    # director's own `layout` field correctly said "a figure, solo" (or
+    # equivalent) on 5+ panels, and the checkpoint still rendered two
+    # people anyway -- because that "solo" sat as one word inside a
+    # 70+-token tier-3 clause, not asserted as its own leading Danbooru
+    # tag the way `1boy`/`male focus` are. Fires only for an actual
+    # single-person headcount; a crowd panel never reaches this function
+    # (`is_crowd_cut` branches before it), so there is no case here where
+    # "solo" could contradict a real multi-person cast.
+    if males + females == 1:
+        parts.append("solo")
     # **`1boy` alone does not hold.** It fixes the headcount and not the
     # rendering: with `1boy` present and nothing else, reviewed panels still
     # came back as a slim figure with a feminine face, waist-length hair and
@@ -399,9 +411,51 @@ def cast_tags(genders: list[str], *, beat: str = "") -> str:
         has_male = bool(_MALE_PRONOUN_RE.search(beat))
         has_female = bool(_FEMALE_PRONOUN_RE.search(beat))
         if has_male and not has_female:
-            parts = ["1boy", "male focus"]
+            parts = ["1boy", "male focus", "solo"]
         elif has_female and not has_male:
-            parts = ["1girl"]
+            parts = ["1girl", "solo"]
+
+    # **The genuinely signal-free case still needs a mechanical answer,
+    # not just an LLM instruction.** SYSTEM rule 6 already tells the
+    # director "if gender is unstated, render as a silhouette, back-
+    # turned figure, or environmental element" -- but that is compliance-
+    # only, with no tag-level backstop the way the pronoun fallback above
+    # gives `gender_negative`. Measured on a real chapter-1 render: 7+
+    # panels with neither a resolved gender nor a beat pronoun (clan
+    # elders discussing news, a narrator's aside) still rendered a
+    # detailed, clearly feminine face, because nothing here was asking
+    # for anything else -- an empty tag string means "checkpoint's own
+    # prior decides," and that prior is female. Assert the *composition*
+    # rule 6 already wants, as a positive tag this checkpoint actually
+    # weights, instead of guessing a gender that genuinely isn't stated
+    # (guessing wrong is the "confidently wrong" failure the pronoun
+    # fallback above was built to avoid; "faceless" isn't a guess).
+    # **Only when the director actually meant to draw someone.** `beat`
+    # here is beat prose plus the director's own action+layout text (see
+    # the call site), and `direction.py`'s SYSTEM rule 5 tells the
+    # director to write the literal words "a figure" in `layout` exactly
+    # when CAST is empty but the passage still places someone in frame --
+    # as opposed to a pure-environment beat with nobody there at all,
+    # where asserting a silhouette would be a *new* hallucination (a
+    # person injected into a landscape shot). "a figure" in the combined
+    # text is that same signal, already computed by the caller; checking
+    # for it here is what keeps this fallback from also firing on
+    # `cast_tags([], beat="The mountain path wound upward through mist.")`
+    # -- correctly still silent, since nothing places a figure there --
+    # while still catching the actually-measured failures (clan elders
+    # discussing news, a narrator's aside: `layout="a figure, solo"`,
+    # zero pronouns, rendered a detailed feminine face on a real chapter-
+    # 1 run). Also excludes the *mixed*-pronoun case ("he grabbed her
+    # arm"): that is two people in frame, a headcount problem, not one
+    # unresolved figure's gender -- asserting a lone silhouette there
+    # would be its own wrong guess.
+    if (
+        not parts
+        and beat
+        and "a figure" in beat.lower()
+        and not (_MALE_PRONOUN_RE.search(beat) and _FEMALE_PRONOUN_RE.search(beat))
+    ):
+        parts = ["silhouette", "back_turned", "faceless"]
 
     return ", ".join(parts)
 
