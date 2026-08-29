@@ -1186,7 +1186,17 @@ class PanelReport:
     novel_id: str
     panels: int = 0
     chapters: int = 0
+    #: The output *image file* already existed on disk -- an idempotent
+    #: re-run, not a prompt-cache event. See `prompt_cache_hits` for that.
     skipped_cached: int = 0
+    #: The *prompt text* was reused verbatim from `prompt_cache_path`
+    #: (phase 1 -> phase 2 decoupling, or a genuinely unchanged beat on a
+    #: re-run). Tracked separately from `skipped_cached` because the two
+    #: used to be indistinguishable in this summary -- a run could silently
+    #: serve a stale cached prompt (see the cache-key fingerprint comment
+    #: above) while reporting "reused from cache: 0", since that counter
+    #: only ever checked whether the image file existed.
+    prompt_cache_hits: int = 0
     skipped_non_story: int = 0
     #: Panels generated this run with at least one reference sheet vs none.
     #: Cached panels count toward neither -- they were not generated now.
@@ -1207,6 +1217,7 @@ class PanelReport:
             f"deduped against another block this run: {self.deduped_panels:,}\n"
             f"  generated with reference conditioning: {self.conditioned_panels:,}; "
             f"prompt-only: {self.prompt_only_panels:,}\n"
+            f"  prompt reused from cache: {self.prompt_cache_hits:,}\n"
             f"  skipped (non-story block): {self.skipped_non_story:,}"
         )
 
@@ -1334,6 +1345,34 @@ def render_panels(
             prompt_cache = json.loads(cache_path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             prompt_cache = {}
+
+    # **Cache keys carry a DB fingerprint so a promoted/changed database
+    # can never silently serve a stale prompt.** Measured directly: after
+    # promoting a more-complete `reverend-insanity.db` (real persona/
+    # attribute data, corrected entity `kind` classification) over a
+    # stale one, a same-numbered version's leftover `prompt_cache_vN.json`
+    # -- from an earlier, aborted run against the *old* DB -- still had
+    # entries for the same `chapter:lead:beat_digest` keys, because that
+    # key is a hash of beat *text* only and beat text does not change
+    # when the DB's entity typing does. The stale entries served verbatim
+    # ("Qing Mao Mountain" and a since-renamed "Daoist Gu" entity, both
+    # cast as if they were people) with zero indication in this run's own
+    # stats, because `skipped_cached` below only checks whether the
+    # *image file* exists, never whether the *prompt text* came from an
+    # old cache hit. Mixing the DB's mtime+size into the key means an old
+    # entry simply cannot match a new key format after the DB changes --
+    # it falls out of use the same way a changed beat already does,
+    # rather than needing an explicit invalidation step someone has to
+    # remember to run.
+    _db_fingerprint = ""
+    if store.path != ":memory:":
+        try:
+            _st = Path(store.path).stat()
+            _db_fingerprint = hashlib.sha256(
+                f"{_st.st_mtime_ns}:{_st.st_size}".encode("utf-8")
+            ).hexdigest()[:8]
+        except OSError:
+            pass
 
     manifest: list[PanelImage] = []
     wanted = chapters if chapters is not None else store.chapter_numbers(novel_id)
@@ -1898,7 +1937,7 @@ def render_panels(
                     f"{beat_prose}|{directive}".encode("utf-8")
                 ).hexdigest()[:12]
                 cache_key = (
-                    f"{chapter_number:g}:{lead}:{_beat_digest}"
+                    f"{chapter_number:g}:{lead}:{_beat_digest}:{_db_fingerprint}"
                     + (":crowd" if is_crowd_cut else "")
                 )
                 cached_prompt = prompt_cache.get(cache_key)
@@ -1911,6 +1950,7 @@ def render_panels(
                     # mechanical assembler, which is the whole point of the
                     # two-phase split (this function's own docstring).
                     prompt = cached_prompt
+                    report.prompt_cache_hits += 1
                 else:
                     # **Ask a model what this panel should show**, and only
                     # fall back to mechanical assembly when there is no
