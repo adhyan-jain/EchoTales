@@ -38,6 +38,7 @@ from echotales.core.store import Store
 from echotales.pipeline.persona.split import (
     SplitReport,
     detect_body_changes,
+    detect_permanent_injuries,
     epochs_for,
     persona_at,
     write_epochs,
@@ -205,6 +206,16 @@ def build_personas(
         changes = detect_body_changes(
             store, novel_id, entity, client=client, report=report.split
         )
+        # Section 3: a lasting injury to the SAME body is a boundary too,
+        # not just a rebirth/regression -- fed into the exact same
+        # `epochs_for`/`write_epochs` call below rather than a parallel
+        # body-creation path. Scoped to PRINCIPAL/RECURRING only (3.1);
+        # `prominence` here is this loop's own live computation just above,
+        # not a stored column (matches `eligible_prominence()`'s own
+        # stale-column caution elsewhere in this pipeline).
+        injuries = detect_permanent_injuries(store, novel_id, entity, prominence=prominence)
+        if injuries:
+            changes = sorted(changes + injuries, key=lambda c: c.story_pos)
         report.split.confirmed += len(changes)
         if changes:
             report.split.by_entity[entity.canonical_label] = [c.kind for c in changes]

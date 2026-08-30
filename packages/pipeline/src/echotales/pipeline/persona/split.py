@@ -48,7 +48,7 @@ import logging
 import re
 from dataclasses import dataclass, field
 
-from echotales.core.enums import ReferenceMode, SpanType, TargetKind
+from echotales.core.enums import Prominence, ReferenceMode, SpanType, TargetKind
 from echotales.core.interval import Certainty, FuzzyInterval
 from echotales.core.models import Persona, SelfPersonaBinding
 from echotales.core.store import Store
@@ -589,6 +589,136 @@ def detect_body_changes(
             ):
                 break
     return confirmed
+
+
+# ---------------------------------------------------------------------------
+# Section 3: permanent injury (not a rebirth/regression -- a lasting change
+# to the SAME body, e.g. a lost limb, that render/scene_state.py's transient
+# ladder (Section 2.4) must not silently absorb and forget by the next panel)
+# ---------------------------------------------------------------------------
+
+#: Permanent-injury phrasing, distinct from Section 2.4's transient wording
+#: ("was bleeding," "a deep gash") -- calibrated against this pipeline's own
+#: real `attribute` evidence (Section 0.5's extraction run over the full RI
+#: volume), not invented examples. **That run found exactly one weak
+#: candidate** -- `self24:body1 distinguishing_features="long scar",
+#: attested ch109` -- and zero of the dramatic "lost an arm" style events a
+#: task brief had assumed existed. This vocabulary is standard English
+#: permanence-marking (a subordinate clause asserting duration/irreversibility:
+#: "would never," "for the rest of his life," "never healed"), not a
+#: RI-specific rule mined from many real examples the way `_STRONG_RE`/
+#: `_SUPPORTING_RE` above were -- there simply isn't a corpus of confirmed
+#: real permanent-injury passages in this novel (at this processed range) to
+#: mine a comparable rule from. State that plainly rather than overclaiming
+#: real-data calibration this module's other detectors can genuinely claim.
+#: **`self6:body2` (Shen Cui, ch11) confirmed the risk this list has to
+#: guard against, live.** The first draft included a bare "for the rest of
+#: his/her life" pattern; the real run matched it against "Shen Cui vowed
+#: she would never forget his eyes for the rest of her life" -- a figure of
+#: speech about memory, not a physical injury, and it minted a second body
+#: for her on nothing. Removed rather than narrowed with a workaround,
+#: since a phrase this generic cannot be anchored reliably without an
+#: injury noun nearby, and every pattern below is specific enough on its
+#: own not to need it. Left as a documented false positive rather than
+#: silently deleted, per this pipeline's "verified, not asserted" norm --
+#: this is exactly the kind of finding that belongs here, not just in a
+#: commit message.
+_PERMANENT_INJURY_RE: list[tuple[re.Pattern[str], str]] = [
+    (re.compile(r"\blost\s+(?:his|her|their|its)\s+(?:arm|hand|leg|foot|eye|ear)\b", re.I), "lost_limb"),
+    (re.compile(r"\bwould\s+never\s+(?:walk|see|hear|speak|move)\s+again\b", re.I), "permanent_disability"),
+    (re.compile(r"\b(?:the\s+)?wound\s+never\s+healed\b", re.I), "unhealed_wound"),
+    (re.compile(r"\bscar\s+(?:remained|would remain)\b", re.I), "permanent_scar"),
+    (re.compile(r"\b(?:blinded|crippled|maimed)\s+(?:for life|permanently)\b", re.I), "permanent_disability"),
+    (re.compile(r"\bmissing\s+(?:an?\s+)?(?:arm|hand|leg|foot|eye|ear)\b", re.I), "missing_limb"),
+]
+
+
+def is_permanent_injury_phrasing(text: str) -> bool:
+    """True if `text` asserts a lasting, irreversible physical change --
+    never a transient wound (Section 2.4's ladder handles those). See this
+    section's module-level comment for calibration honesty: this is general
+    English permanence-marking, not a rule mined from many confirmed real
+    RI passages, because the real extraction run found essentially none."""
+    return _permanent_injury_kind(text) is not None
+
+
+def _permanent_injury_kind(text: str) -> str | None:
+    for pattern, kind in _PERMANENT_INJURY_RE:
+        if pattern.search(text):
+            return kind
+    return None
+
+
+def find_permanent_injury_candidates(
+    store: Store, novel_id: str, target_id: str, *, cast: dict[str, str] | None = None
+) -> list[BodyChange]:
+    """Lexical candidates for a permanent injury, using the same
+    presence/self-report/narration filtering `find_change_candidates` uses
+    for regression -- same precision discipline, different phrasing
+    vocabulary. Generous is not the goal here the way it is for regression:
+    with only one weak real example to calibrate against, this stays a
+    narrow fixed-pattern match rather than a broad cue list a model then
+    vetoes, since there is no real-data-backed veto step to build for this
+    yet (Section 3's own scope note: `detect_body_changes`'s LLM
+    adjudication step is not duplicated here without evidence to justify
+    it)."""
+    present = _blocks_present(store, novel_id, target_id)
+    if not present:
+        return []
+    speaker_keys = _speaker_keys(store, novel_id, target_id)
+    cast = cast_labels(store, novel_id) if cast is None else cast
+
+    candidates: list[BodyChange] = []
+    for chapter, blocks in sorted(present.items()):
+        spans = store.get_spans(novel_id, chapter)
+        if not spans:
+            continue
+        n_blocks = max(s.block_index for s in spans) + 1
+        for span in spans:
+            text = span.text.strip()
+            if not text:
+                continue
+            if span.span_type in _SELF_REPORT:
+                if not _is_speaker(span, speaker_keys) or not _speaks_of_self(text):
+                    continue
+            elif span.span_type in _NARRATION:
+                if not _near(blocks, span.block_index):
+                    continue
+            else:
+                continue
+            if _about_someone_else(text, target_id, cast) is not None:
+                continue
+            kind = _permanent_injury_kind(text)
+            if kind is None:
+                continue
+            candidates.append(
+                BodyChange(
+                    chapter=chapter,
+                    block_index=span.block_index,
+                    story_pos=chapter + span.block_index / n_blocks,
+                    kind=kind,
+                    cue=text[:120],
+                    passage=text,
+                    source="lexicon",
+                )
+            )
+    return candidates
+
+
+def detect_permanent_injuries(
+    store: Store, novel_id: str, entity: object, *, prominence: Prominence
+) -> list[BodyChange]:
+    """Permanent-injury `BodyChange`s for one entity, or `[]` if out of
+    scope (Section 3.1: PRINCIPAL/RECURRING only -- an INCIDENTAL entity is
+    never tracked across panels via a persistent body record, so a
+    permanent-injury boundary would have no consumer). Feed the result into
+    the SAME `epochs_for`/`write_epochs` call `persona/build.py` already
+    makes for regression `BodyChange`s (merge the two lists, sort by
+    `story_pos`) -- this is the "exact same event mechanism" Section 3.3
+    calls for, not a parallel body-creation path."""
+    if prominence not in (Prominence.PRINCIPAL, Prominence.RECURRING):
+        return []
+    return find_permanent_injury_candidates(store, novel_id, str(entity.id))  # type: ignore[attr-defined]
 
 
 def _adjudicate(

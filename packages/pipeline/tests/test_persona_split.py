@@ -11,6 +11,7 @@ from __future__ import annotations
 from echotales.core.enums import (
     AliasType,
     BlockType,
+    Prominence,
     ReferenceMode,
     SpanType,
     TargetKind,
@@ -29,8 +30,11 @@ from echotales.pipeline.persona.split import (
     SplitReport,
     bodies_of,
     detect_body_changes,
+    detect_permanent_injuries,
     epochs_for,
     find_change_candidates,
+    find_permanent_injury_candidates,
+    is_permanent_injury_phrasing,
     is_split,
     persona_at,
     split_selves,
@@ -505,4 +509,97 @@ class TestPersonaAt:
         write_epochs(store, "t", entity, epochs, observer_id="reader")
         store.conn.commit()
         assert len(bodies_of(store, "t:self1")) == 1
+        store.close()
+
+
+class TestPermanentInjury:
+    """Section 3: a lasting injury to the SAME body (not a rebirth) is a
+    boundary too. Calibrated against general permanence-marking phrasing,
+    not many confirmed real RI passages -- Section 0.5's real extraction
+    run over the full 199-chapter volume found exactly one weak candidate
+    (`self24:body1 distinguishing_features="long scar"`, ch109) and zero of
+    the dramatic "lost an arm" style events a task brief had assumed
+    existed. Stated plainly rather than overclaimed, per this module's own
+    docstring on `_PERMANENT_INJURY_RE`.
+    """
+
+    def test_is_permanent_injury_phrasing_distinguishes_from_transient(self) -> None:
+        assert is_permanent_injury_phrasing("He lost his arm in the collapse.")
+        assert is_permanent_injury_phrasing(
+            "The scar would remain for the rest of his life."
+        )
+        # Section 2.4's transient vocabulary must never trip this.
+        assert not is_permanent_injury_phrasing("His arm was bleeding badly.")
+        assert not is_permanent_injury_phrasing("He was gravely wounded.")
+        assert not is_permanent_injury_phrasing("His robes were torn.")
+
+    def test_find_permanent_injury_candidates_synthetic(self, tmp_path) -> None:
+        """3.2/3.3: a synthetic permanent-injury passage is found and typed
+        with the matched kind, using the same presence/self-report/
+        narration filtering `find_change_candidates` uses for regression."""
+        store = _store(tmp_path)
+        _self(store)
+        texts = ["He walked.", "In the fight, Fang Yuan lost his arm.", "After."]
+        _chapter(store, 5.0, texts)
+        _spans(store, 5.0, texts)
+        _mention(store, 5.0, 1)
+        store.conn.commit()
+
+        found = find_permanent_injury_candidates(store, "t", "t:self1")
+        assert len(found) == 1
+        assert found[0].kind == "lost_limb"
+        assert found[0].chapter == 5.0
+        store.close()
+
+    def test_detect_permanent_injuries_scoped_to_principal_and_recurring(
+        self, tmp_path
+    ) -> None:
+        """3.1: an INCIDENTAL entity never gets a permanent-injury boundary,
+        even with clearly matching text -- it isn't tracked across panels
+        via a persistent body record, so the boundary would have no
+        consumer."""
+        store = _store(tmp_path)
+        entity = _self(store)
+        texts = ["He walked.", "Fang Yuan lost his arm.", "After."]
+        _chapter(store, 5.0, texts)
+        _spans(store, 5.0, texts)
+        _mention(store, 5.0, 1)
+        store.conn.commit()
+
+        assert detect_permanent_injuries(
+            store, "t", entity, prominence=Prominence.INCIDENTAL
+        ) == []
+        assert len(
+            detect_permanent_injuries(store, "t", entity, prominence=Prominence.PRINCIPAL)
+        ) == 1
+        assert len(
+            detect_permanent_injuries(store, "t", entity, prominence=Prominence.RECURRING)
+        ) == 1
+        store.close()
+
+    def test_permanent_injury_resolves_via_the_existing_body_lookup_with_zero_new_code(
+        self, tmp_path
+    ) -> None:
+        """3.4/3.5: fed through the exact same `epochs_for`/`write_epochs`
+        mechanism regression uses, a permanent injury must resolve via the
+        existing position-based `persona_at`/`bodies_of` lookup -- panels
+        before the injury resolve body1, panels after consistently resolve
+        body2, with no additional lookup code."""
+        store = _store(tmp_path)
+        entity = _self(store)
+        texts = ["He walked.", "In the fight, Fang Yuan lost his arm.", "After."]
+        _chapter(store, 5.0, texts)
+        _spans(store, 5.0, texts)
+        _mention(store, 5.0, 1)
+        store.conn.commit()
+
+        injuries = find_permanent_injury_candidates(store, "t", "t:self1")
+        epochs = epochs_for("t:self1", "Fang Yuan", 1.0, injuries)
+        write_epochs(store, "t", entity, epochs, observer_id="reader")
+        store.conn.commit()
+
+        assert len(bodies_of(store, "t:self1")) == 2
+        boundary = injuries[0].story_pos
+        assert persona_at(store, "t:self1", boundary - 0.01) == "t:self1:body1"
+        assert persona_at(store, "t:self1", boundary + 0.01) == "t:self1:body2"
         store.close()
