@@ -59,6 +59,13 @@ class Scene:
     index: int
     blocks: list[int]
     active_selves: set[str] = field(default_factory=set)
+    #: The containing `NarrativeSegment`'s id, for `render/scene_state.py`'s
+    #: derivation to key `SceneState` rows off of. Empty when no
+    #: `ActiveScene` covered this scene's blocks (shouldn't happen in
+    #: practice -- `build_active_scenes` covers every block in a chapter --
+    #: but left non-fatal rather than asserted, matching this module's own
+    #: tolerance for `seg_here is None` elsewhere).
+    segment_id: str = ""
 
     @property
     def block_from(self) -> int:
@@ -134,7 +141,12 @@ def group_scenes(
     def flush() -> None:
         if current:
             scenes.append(
-                Scene(index=len(scenes), blocks=list(current), active_selves=set(current_selves))
+                Scene(
+                    index=len(scenes),
+                    blocks=list(current),
+                    active_selves=set(current_selves),
+                    segment_id=prev_seg.segment_id if prev_seg is not None else "",
+                )
             )
 
     for block_index in story_blocks:
