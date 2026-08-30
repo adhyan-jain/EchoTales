@@ -30,6 +30,8 @@ from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, Field
 
+from echotales.pipeline.spans.scene import _MOB_ROLE_NOUNS
+
 if TYPE_CHECKING:
     from echotales.core.store import Store
 
@@ -376,6 +378,22 @@ class Direction:
             elif "white" in compressed.lower() and "robe" in compressed.lower():
                 _has_white_robe = True
             tier1.extend(other_tags)
+        # **Section 4.4: an untracked figure's presence needs the same
+        # tier-1 priority a named character's identity already gets.**
+        # `tier1` stays empty whenever no cast member's name matches the
+        # director's text -- true for any subject with no resolved
+        # persona/reference sheet (e.g. "the clan head" in RI ch1 block 75,
+        # who has no tracked entity). The only subject-presence content for
+        # that beat was `d.layout`'s own "a figure" marker, stuck in tier 3
+        # behind setting/lighting -- exactly the environment-over-subject
+        # imbalance the real block-75 render showed (a rendered background
+        # with no person in it). Promoting the bare marker into tier 1 when
+        # there is otherwise nothing there costs at most a couple of
+        # tokens and guarantees *some* subject-presence content survives
+        # budget pressure ahead of scenery, mirroring `cast_tags`'s own
+        # silhouette fallback for the same "a figure" signal.
+        if not tier1 and "a figure" in _director_text:
+            tier1.append("a figure")
         if _has_white_robe:
             # Reinforce white robe colour when the character appearance calls
             # for it. Measured v38: negative suppression of teal shifted the
@@ -443,6 +461,7 @@ def direct_beat(
     context_brief: str = "",
     store: Store | None = None,
     conditions: dict[str, str] | None = None,
+    crowd_mood: str | None = None,
 ) -> Direction | None:
     """Get one shot from the director, or None if the call fails.
 
@@ -471,7 +490,12 @@ def direct_beat(
 
     direction = result.value
     direction = _validate_direction(
-        direction, beat_text=beat_text, cast=cast, novel_id=novel_id, store=store
+        direction,
+        beat_text=beat_text,
+        cast=cast,
+        novel_id=novel_id,
+        store=store,
+        crowd_mood=crowd_mood,
     )
     return Direction(
         direction=direction, cast=cast, novel_style=novel_style, conditions=conditions or {}
@@ -532,12 +556,93 @@ _HALLUCINATED_GROUP_RE = re.compile(
 )
 
 
+#: HANDOFF Section 4.48 root cause 2, measured: 36/52 v39 prompts contained
+#: one of these when the director over-applied "never invent people" to a
+#: scene the source text explicitly describes as a crowd (the 500+-member
+#: Awakening Ceremony chief among them).
+_SOLO_COLLAPSE_PHRASES: tuple[str, ...] = (
+    "stands alone",
+    "stand alone",
+    "no one else is present",
+    "no one else present",
+    "alone in the frame",
+)
+
+
+def _layout_contradicts_crowd(direction: PanelDirection, crowd_mood: str | None) -> bool:
+    """True when `SceneState` independently confirms this scene is a crowd
+    scene, but the director's own `layout` erases everyone from it anyway.
+
+    Fires only when `crowd_mood == "crowd"` -- `SceneState`'s own
+    `detect_mobs`-backed signal, not a guess from this field's own text --
+    so a genuinely solo scene can never trip this check.
+    """
+    if crowd_mood != "crowd":
+        return False
+    text = (direction.layout or "").lower()
+    if not any(p in text for p in _SOLO_COLLAPSE_PHRASES):
+        return False
+    # If layout already names a group noun, it isn't actually erasing the
+    # crowd -- e.g. "elders surround him" mentioning "alone in the frame"
+    # as a *negation* would be an odd false positive this guards against.
+    return not any(noun in text for noun in _MOB_ROLE_NOUNS)
+
+
+def _rewrite_layout_for_crowd(direction: PanelDirection) -> str:
+    """Mechanically strip the solo-collapse phrase and append a crowd
+    clause, rather than re-querying the LLM -- the same model that erased
+    the crowd once has no guarantee of fixing it on retry, while a
+    deterministic rewrite using data already computed elsewhere in the
+    render path is cheap and testable without an LLM in the loop.
+
+    Strips the offending phrase first: appending a crowd clause *alongside*
+    "stands alone" would leave both assertions in the final prompt string,
+    which is the same self-contradiction this check exists to fix, only
+    with an extra clause bolted on rather than resolved.
+    """
+    layout = direction.layout or ""
+    low = layout.lower()
+    for phrase in _SOLO_COLLAPSE_PHRASES:
+        idx = low.find(phrase)
+        if idx == -1:
+            continue
+        layout = layout[:idx] + layout[idx + len(phrase) :]
+        low = layout.lower()
+    # Clean up whatever punctuation the removed phrase leaves dangling
+    # (a leading/trailing "; ", doubled "; ;", etc.) before appending.
+    layout = re.sub(r"[;,]\s*[;,]", ";", layout)
+    layout = layout.strip(" ;,")
+    clause = "figures fill the scene around him"
+    return f"{layout}; {clause}".strip("; ").strip() if layout else clause
+
+
+def _layout_invents_second_subject(direction: PanelDirection, crowd_mood: str | None) -> bool:
+    """Text-prompt-level check only -- this cannot see the rendered pixels,
+    so it cannot catch a checkpoint that ignores a clean solo prompt and
+    paints a second figure anyway (the `p001_b0000.png` failure mode). It
+    confirms the *prompt itself* never asserts or implies two figures when
+    `SceneState` says the scene is not a crowd: True when `layout`/`action`
+    together mention more than one distinct named-or-generic figure while
+    `crowd_mood` is not "crowd"."""
+    if crowd_mood == "crowd":
+        return False
+    text = f"{direction.action or ''} {direction.layout or ''}".lower()
+    figure_mentions = text.count("a figure") + text.count("another figure")
+    return figure_mentions > 1
+
+
 def _validate_direction(
-    d: PanelDirection, *, beat_text: str, cast: dict[str, str], novel_id: str = "", store: Store | None = None
+    d: PanelDirection,
+    *,
+    beat_text: str,
+    cast: dict[str, str],
+    novel_id: str = "",
+    store: Store | None = None,
+    crowd_mood: str | None = None,
 ) -> PanelDirection:
     """Post-call guardrails that catch what the prompt rules could not.
 
-    Three checks:
+    Five checks:
     1. Hallucinated groups: if 'action' or 'layout' contains a group noun
        that does not appear in the passage text or the cast list, blank the
        offending field. The image prompt falls back to the assembled
@@ -549,6 +654,18 @@ def _validate_direction(
     3. Character name validation: parse the director's output for character names
        using the gazetteer logic. Log violations for out-of-scene leakage or
        fabricated names.
+    4. Crowd/layout contradiction (Section 4.1): `SceneState.crowd_mood`
+       says this scene is a crowd scene, but layout erases everyone from
+       frame -- mechanically rewritten rather than blanked, since blanking
+       would just fall back to the same mechanical assembler that already
+       has its own crowd-slot handling and lose the director's real
+       action/mood content for the beat.
+    5. Invented second subject (Section 4.1 extension): the inverse case --
+       `SceneState.crowd_mood` says this is not a crowd scene, but
+       layout/action still imply two figures. Logged, not corrected: unlike
+       the crowd case there is no single mechanical rewrite that reliably
+       picks the *right* one figure to keep, so this is flagged for the
+       pixel-review pass (Section 5) rather than silently patched.
     """
     combined_source = beat_text.lower() + " " + " ".join(cast.keys()).lower()
 
@@ -579,6 +696,24 @@ def _validate_direction(
     # Character name validation
     if store and novel_id:
         _validate_character_names(d, cast, novel_id, store)
+
+    # Crowd/layout contradiction (Section 4.1): SceneState confirms a crowd,
+    # director's own layout erased it anyway.
+    if _layout_contradicts_crowd(d, crowd_mood):
+        log.warning(
+            "director erased a SceneState-confirmed crowd in layout: %r -- rewritten",
+            d.layout,
+        )
+        d = d.model_copy(update={"layout": _rewrite_layout_for_crowd(d)})
+
+    # Invented second subject (Section 4.1 extension): flagged only, see
+    # this check's own docstring for why it isn't auto-corrected.
+    if _layout_invents_second_subject(d, crowd_mood):
+        log.warning(
+            "director's layout/action implies a second figure on a "
+            "SceneState-confirmed non-crowd scene: action=%r layout=%r",
+            d.action, d.layout,
+        )
 
     return d
 

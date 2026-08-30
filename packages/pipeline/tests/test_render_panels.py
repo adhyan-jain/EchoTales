@@ -450,6 +450,7 @@ class TestRenderPanels:
             context_brief="",
             store=None,
             conditions=None,
+            crowd_mood=None,
         ):
             received_casts.append(dict(cast))
             return Direction(

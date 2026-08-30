@@ -27,9 +27,13 @@ from pathlib import Path
 from typing import Protocol
 
 from echotales.core.enums import ReferenceMode, SpanType
-from echotales.core.models import Chapter, Mention, Span
+from echotales.core.models import Chapter, DiscoursePosition, Mention, Span
 from echotales.core.store import Store
-from echotales.pipeline.persona.attire import scene_locale, world_context, world_setting
+from echotales.pipeline.persona.attire import (
+    hostile_confrontation_modifier,
+    world_context,
+    world_setting,
+)
 from echotales.pipeline.persona.prompt import (
     cast_tags,
     count_tokens,
@@ -54,6 +58,7 @@ from echotales.pipeline.render.scene_refs import (
 )
 from echotales.pipeline.render.factions import qualify_role, scene_faction
 from echotales.pipeline.render.scenes import group_scenes
+from echotales.pipeline.render.scene_state import get_or_derive_scene_state
 from echotales.pipeline.spans.scene import detect_mobs
 from echotales.pipeline.render.palette import Palette, PaletteSpec, apply_palette
 from echotales.pipeline.world.context import story_context
@@ -952,12 +957,36 @@ def present_entity_ids(mentions: list[Mention], block_index: int) -> list[str]:
     return out
 
 
-def apply_transient_overrides(appearance: dict[str, str], beat_text: str) -> dict[str, str]:
+#: `SceneState.default_severity` -> the condition tag it stands in for when
+#: a beat's own local text has nothing to say. Mirrors
+#: `render/scene_state.py::_SEVERITY_TIERS`'s vocabulary -- this is the one
+#: place that vocabulary gets turned into an actual prompt clause.
+_SEVERITY_FLOOR_TAGS: dict[str, str] = {
+    "roughed_up": "torn_clothes",
+    "wounded": "wounded",
+    "gravely_wounded": "blood, wounded",
+}
+
+
+def apply_transient_overrides(
+    appearance: dict[str, str], beat_text: str, *, floor_severity: str = ""
+) -> dict[str, str]:
     """Check if the beat_text contains transient physical-state signals.
 
     If present, these override or append to the canon clause's attire/condition.
+    `floor_severity` (a `SceneState.default_severity` tag) is the scene-wide
+    floor: when this beat's own text has no local override, fall back to it
+    instead of silently keeping whatever canon condition was already there --
+    `SceneState.default_severity` is read here, never written; the stored
+    row is the query-time floor, this call site is the query.
     """
     if not beat_text:
+        if floor_severity and floor_severity != "unharmed":
+            local_appearance = dict(appearance)
+            local_appearance["current_condition"] = _SEVERITY_FLOOR_TAGS.get(
+                floor_severity, floor_severity
+            )
+            return local_appearance
         return appearance
 
     import re
@@ -1025,8 +1054,16 @@ def apply_transient_overrides(appearance: dict[str, str], beat_text: str) -> dic
     if local_conds:
         # If we have local signals, they completely override the canon condition
         local_appearance["current_condition"] = ", ".join(local_conds)
+    elif floor_severity and floor_severity != "unharmed":
+        # No local override in this beat's own text -- fall back to the
+        # scene-wide floor rather than silently keeping whatever canon
+        # condition was already present (the gap this parameter closes).
+        local_appearance["current_condition"] = _SEVERITY_FLOOR_TAGS.get(
+            floor_severity, floor_severity
+        )
     elif "current_condition" in local_appearance:
-        # Keep the canon condition if there are no local signals
+        # Keep the canon condition if there are no local signals and no
+        # scene-wide floor either.
         pass
 
     return local_appearance
@@ -1040,6 +1077,7 @@ def character_looks(
     chapter: float | None = None,
     crowd: bool = False,
     beat_text: str = "",
+    floor_severity: str = "",
 ) -> tuple[str, str, Path | None, str, str] | None:
     """`(label, appearance clause, reference sheet, gender, condition)` for one entity.
 
@@ -1100,8 +1138,10 @@ def character_looks(
             novel_id, entity.canonical_label, appearance, persona_id
         )
         appearance = resolve_appearance(novel_id, appearance)
-    if beat_text:
-        appearance = apply_transient_overrides(appearance, beat_text)
+    if beat_text or floor_severity:
+        appearance = apply_transient_overrides(
+            appearance, beat_text, floor_severity=floor_severity
+        )
     gender, _age = _demographics(
         store, persona_id, novel_id=novel_id, entity_id=entity_id
     )
@@ -1542,9 +1582,34 @@ def render_panels(
             _scene_text = " ".join(
                 by_index[b].text for b in story_scene_blocks if b in by_index
             )
-            scene_locale_text = scene_locale(
-                novel_id, _scene_text, block_index=scene.blocks[0]
+            # Moved above locale resolution so `SceneState` derivation can
+            # see the mob signal in the same pass -- a reordering, not new
+            # logic (`_scene_mobs` used to be computed just below, right
+            # before `_crowd_slot`'s allocation).
+            _scene_mobs = detect_mobs(_scene_text, scene.blocks[0])
+
+            # **`SceneState`: one persisted location/crowd-mood/severity
+            # floor per scene, not three locally-recomputed answers.** See
+            # `render/scene_state.py` -- `location` is the same
+            # `scene_locale` call this line always made (HANDOFF Section 4.48
+            # root cause 3's own fix: lock it once per `ActiveScene` span),
+            # `crowd_mood` is the same gate `_crowd_slot`'s allocation below
+            # already uses, and `default_severity` (2.4) is new. Storing it
+            # is what lets a second consumer (the crowd/layout contradiction
+            # check in `direction.py`, or a future voice/TTS scene-mood
+            # signal) read the same answer instead of silently re-deriving a
+            # possibly-different one.
+            _scene_state = get_or_derive_scene_state(
+                store,
+                novel_id,
+                scene,
+                _scene_text,
+                _scene_narration,
+                _scene_mobs,
+                len(story_scene_blocks),
+                DiscoursePosition(chapter=int(chapter_number), offset=scene.blocks[0]),
             )
+            scene_locale_text = _scene_state.location
 
             # **The crowd gets its own cut, not a corner of the hero's
             # panel.** Four rounds of prompt work could not put a crowd in
@@ -1560,7 +1625,6 @@ def render_panels(
             # continuity hazard in a novel that runs "the elders" past four
             # clans in one volume -- see `render/factions.py`.
             _scene_faction = scene_faction(_scene_text)
-            _scene_mobs = detect_mobs(_scene_text, scene.blocks[0])
             _crowd_slot = None
             if _scene_mobs and len(story_scene_blocks) > 1:
                 _crowd_slot = 3
@@ -1710,6 +1774,7 @@ def render_panels(
                         chapter=story_position,
                         crowd=bool(_chunk_mobs),
                         beat_text=_chunk_text,
+                        floor_severity=_scene_state.default_severity,
                     )
                     if looks is None:
                         continue
@@ -1805,6 +1870,7 @@ def render_panels(
                             chapter=story_position,
                             crowd=bool(_chunk_mobs),
                             beat_text=_chunk_text,
+                            floor_severity=_scene_state.default_severity,
                         )
                         if fresh is None:
                             _scene_last_present_bodies.pop(entity_id, None)
@@ -2036,6 +2102,7 @@ def render_panels(
                             novel_id=novel_id,
                             store=store,
                             conditions=dict(conditions),
+                            crowd_mood=_scene_state.crowd_mood,
                         )
 
                     if directed is not None:
@@ -2183,32 +2250,51 @@ def render_panels(
                     # real crowd (people with banners on the mountain path
                     # under mist), so it stays until a checkpoint that can
                     # hold a crowd at closer range replaces it.
+                    # **This used to REPLACE `prompt` outright with a fully
+                    # static template below, discarding the SceneState/
+                    # director-aware `prompt` computed just above** --
+                    # `directed.layout` (post Section 4.1's crowd-contradiction
+                    # fix) and `SceneState.crowd_mood`/`.location` never
+                    # reached image generation for any crowd-cut panel,
+                    # confirmed by a real re-render producing a byte-for-byte
+                    # identical image to before under a genuinely different
+                    # upstream prompt (HANDOFF Section 4.52). Fixed by
+                    # layering the proven-safe crowd-structural boilerplate
+                    # (genre anchor, framing, role list -- see the comment
+                    # block above on why "angry mob, shouting, bloodied" and
+                    # "front view" wording both failed) around the actual
+                    # scene-specific content, instead of replacing it.
+                    #
+                    # `hostile_confrontation_modifier` is the other half of
+                    # this fix: `scene_locale_text` alone ("a narrow mountain
+                    # path, pine and mist, cliffs falling away") correctly
+                    # identifies RI ch1's opening siege as a mountain scene
+                    # -- `scene_locale()`'s cue-matching was never the gap --
+                    # but reads as a serene nature scene, not a siege. This
+                    # asserts the mood the scene's own text supports
+                    # ("surrounded... no way out", block 8) without the
+                    # gore/collage-triggering wording the comment above
+                    # already ruled out.
+                    _hostility = hostile_confrontation_modifier(_scene_narration or beat_prose)
+                    _crowd_count = (
+                        f"crowd, {_hostility}, multiple people, 6+boys"
+                        if _hostility
+                        else "crowd of chinese cultivators, multiple people, 6+boys"
+                    )
+                    _director_layout = (
+                        directed.direction.layout
+                        if directed is not None and directed.direction.layout
+                        else ""
+                    )
                     prompt = fit_to_budget(
                         [
-                            # **Genre anchor first, and repeated.** GuoFeng3
-                            # carries ancient-China style in the checkpoint
-                            # itself, so a bare "xianxia cultivators" was
-                            # enough; a general anime checkpoint carries no
-                            # such prior and rendered this crowd as a
-                            # European cathedral interior in modern cloaks.
-                            # The setting has to be asserted, not assumed.
-                            # **Scale the figures up, keep the vocabulary
-                            # calm.** v16's crowd was real but tiny -- people
-                            # at the foot of a mountain, a landscape with
-                            # figures in it. The two attempts to pull in
-                            # closer failed on *wording* ("angry mob",
-                            # "shouting", "bloodied" -> gore and collage),
-                            # not on framing, so this asks for large
-                            # foreground figures while keeping the calm
-                            # standoff language, and demotes the locale to
-                            # the back of the prompt so it stops dictating
-                            # the shot.
                             "ancient china, xianxia, wuxia, hanfu robes",
-                            "crowd of chinese cultivators, multiple people, 6+boys",
+                            _crowd_count,
+                            scene_locale_text,
                             "large figures in the foreground, seen from behind",
                             f"{_roles} standing close together, facing away",
+                            _director_layout,
                             "manhwa illustration, dramatic lighting, highly detailed",
-                            scene_locale_text,
                         ],
                         limit=_prompt_limit,
                     )
@@ -2268,9 +2354,26 @@ def render_panels(
                         has_mob=bool(_chunk_mobs),
                         closeup=closeup,
                     )
+                    # **Section 4.4: `conditioned_on` must not claim
+                    # conditioning that never happens.** `engine.generate`
+                    # below is unconditionally called with
+                    # `reference_images=[], reference_weight=0.0` -- a
+                    # leftover from HANDOFF Section 4.47's deliberate
+                    # IP-Adapter removal that this tagging was never
+                    # updated to match. Tagging a panel `["curated"]` here
+                    # recorded conditioning that never reached the actual
+                    # generation call, which is how block 75's manifest
+                    # entry ended up lying about why its subject vanished
+                    # (a plain prompt-adherence failure, not a reference-
+                    # conditioning one -- see the real root cause fixed
+                    # above via `tier1`'s "a figure" promotion). `curated`/
+                    # `references`/`weight` below are left in place as the
+                    # selection this would apply if reference conditioning
+                    # is ever re-wired for real -- re-enabling it is a
+                    # bigger decision than this fix, per HANDOFF 4.47's own
+                    # measured reason for removing it.
                     if curated:
                         references = curated + references[:1]
-                        conditioned = conditioned or ["curated"]
 
                     if closeup:
                         weight = 0.65
