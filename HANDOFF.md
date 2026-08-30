@@ -2631,3 +2631,201 @@ none fixed yet, with a suggested order at the end of that section.
 when the fix is working). The script view's dialogue-attribution coverage is
 now the fastest way to see the speaker-attribution regression directly, rather
 than inferring it from the summary line.
+
+### 4.52 SceneState built (core model + render wiring), Section 0 audit corrected mid-session (v51 is real, not v44), permanent-injury tracking added and caught its own false positive live — but the v52 verification render surfaced a more serious, unexplained bug and was stopped before completion *(2026-08-29)*
+
+**Context.** A large scoped task: audit resource utilization across the
+pipeline (Section 0), populate whatever the audit found empty (Section 0.5),
+build a `SceneState` core model for scene-level location/crowd/condition
+tracking (Sections 1-2), extend body-transition tracking to permanent
+injury (Section 3), fix two render defects plus one newly-found one
+(Section 4), then re-render and pixel-review chapter 1 (Section 5). Sections
+0-4 completed; Section 5 stopped early on a serious new finding — see below.
+
+**Section 0 audit — real numbers, and one self-correction worth recording.**
+`attribute`: 0 rows. `self_persona_binding`: 0 rows. Both on the canonical
+`data/webview-working/reverend-insanity.db`, despite `chapter`/`span`
+covering the full 199 chapters. Gazetteer, `WORLD_CONTEXT`,
+`eligible_prominence()` all wired live. Conformal calibration: class
+constructed in `resolve/runner.py` but `.calibrate()` never called in
+production — always running the uncalibrated fallback. Gold set: all
+3,457 rows still `confirmed=True` from a prior bulk glance-review, not a
+row-by-row human pass — unresolved, unrelated to this session's work.
+
+**Self-correction, recorded because it should not happen twice:** an early
+pass in this session concluded "v51" and "block 75" didn't exist in this
+repo, reasoning only from `git log`/reflog/stash — but render output is
+deliberately gitignored (`cf2c84e`), so absence from git history proves
+nothing about the actual `data/RI/panels/` directory. A real pixel check
+against the files on disk found v51 is real (48 panels, most recent render
+at the time, 2026-08-27) and block 75 has a genuine, reproducible defect.
+**Lesson for the next session: check the actual output directory before
+concluding a version or defect doesn't exist — git history only covers
+source, this repo's render output is never committed.**
+
+**Section 0.5 — extraction run, real numbers.** Ran `appearance` (chapters
+1-199) then `persona` build (`build_personas`) against the canonical DB.
+`attribute`: 0 → 528 rows. `self_persona_binding`: 0 → 83 rows.
+**One** body-transition event detected across the full volume: Fang Yuan's
+own regression (ch1). No other body-transition-eligible events found in
+this pass — stated plainly per the non-negotiable against inflating
+findings.
+
+**Sections 1-2 — `SceneState`.** New model in
+`packages/core/src/echotales/core/models.py` (`SceneState`: `location`,
+`crowd_mood`, `default_severity`, all opaque consumer-defined tags, per
+non-negotiable #4 — this model does not invent genre vocabulary), new
+`scene_state` table in `store.py` (`SCHEMA_VERSION` bumped 1→2), new
+`render/scene_state.py` deriving it from the exact same `scene_locale`/
+`detect_mobs` calls `panels.py` already made per scene (this *is* Section
+4.48 root cause 3's own recommended fix: lock `scene_locale` once per
+`ActiveScene` span, now literally persisted instead of recomputed).
+Wired into `panels.py`: location floor, crowd-mood floor (feeds 4.1),
+condition floor (feeds `apply_transient_overrides` via a new
+`floor_severity` parameter, populating the tier-1 condition slot even on
+beats whose own text says nothing). Net budget impact: zero new prompt
+parts — routes through slots that already existed. Full test coverage:
+`packages/core/tests/test_scenestate.py`,
+`packages/pipeline/tests/test_scene_state.py`.
+
+**Section 3 — permanent injury, and a live false positive it's worth
+recording.** New `is_permanent_injury_phrasing()`/
+`find_permanent_injury_candidates()`/`detect_permanent_injuries()` in
+`persona/split.py`, scoped to PRINCIPAL/RECURRING only, fed into the exact
+same `epochs_for`/`write_epochs` call `build.py` already makes for
+regression (no parallel body-creation path). **First real run against the
+full DB minted a second body for Shen Cui** on the passage "Shen Cui vowed
+she would never forget his eyes for the rest of her life" — a figure of
+speech about memory, matched by an overly generic
+`"for the rest of (his|her|their) life"` pattern. Removed rather than
+patched around; the remaining patterns are specific enough not to need it.
+Re-ran `build_personas` after the fix: back to the correct 1 body-transition
+count (Fang Yuan only). **This is exactly the kind of finding the
+"verified, not asserted" convention exists to catch — the synthetic unit
+test alone would never have found it; only the real DB run did.**
+
+**Section 4.1 — crowd/layout contradiction, extended.** New
+`_layout_contradicts_crowd()`/`_rewrite_layout_for_crowd()` in
+`direction.py`'s `_validate_direction()`, using `SceneState.crowd_mood` as
+ground truth (chosen over bypassing the director entirely, to keep its
+real per-beat content on non-contradicted beats). Also added
+`_layout_invents_second_subject()` for the inverse case found in this
+session's own pixel audit (see below) — logged only, not auto-corrected,
+since there's no single correct rewrite for an invented figure.
+
+**Section 4.2 — verified, not regressed.** `get_panel_cast`'s
+`block_window` scoping (Section 4.41's fix) confirmed still panel-local,
+not scene- or segment-wide.
+
+**Section 4.4 — a fresh pixel audit found two real, previously-undiagnosed
+defects, both root-caused and fixed at the code level.** Against the actual
+v51 output (not v44, per the correction above): (1) `conditioned_on:
+["curated"]` was being written into 39/84 manifest rows for panels that
+received **no actual conditioning** — `panels.py`'s `engine.generate()`
+call has been hard-coded `reference_images=[], reference_weight=0.0` since
+Section 4.47's deliberate IP-Adapter removal, and the tagging code above it
+was never updated to match. Fixed by no longer setting the tag when no
+conditioning happens; re-wiring real conditioning was explicitly not
+attempted (4.47's removal was for a measured cross-novel-generalization
+reason). (2) Block 75 ("the clan head looked out of the window") rendered
+with **zero people** in v51 — root-caused to the subject having no tracked
+persona/reference sheet, so the only human-presence content was a
+generic `"a figure, solo"` filler stuck in `direction.py`'s lowest-priority
+tier-3 clause behind setting/lighting tags. Fixed by promoting an untracked
+figure's presence marker into tier 1 when no cast member resolves.
+
+**Section 5 — stopped early on a serious new finding, not completed.**
+Launched a real re-render of RI ch1 (`data/RI/panels/ch1/v52_scenestate-and-crowd-fix/`,
+NoobAI XL, real GPU diffusion) to verify all of the above against actual
+pixels. **Stopped by explicit user instruction after 3 of 48 panels, on
+sight of the crowd panel (block 0) looking identical to v51's.** A file
+hash check confirmed it precisely: **`p003_b0000_crowd.png` is
+byte-for-byte identical between v51 and v52** (same md5), despite (a) a
+demonstrably different final cached prompt string between the two runs
+(v51: `"ancient china, xianxia, wuxia, hanfu robes, crowd of chinese
+cultivators..."`; v52: `"crowd, multiple people, 6+boys, guofeng
+illustration, chinese ink painting, xianxia, wide shot..."` — no shared
+prefix at all) and (b) the v52 file being a genuinely freshly-generated
+file (different inode, today's mtime), not a disk-cache hit
+(`image_path.exists()` skip was checked and ruled out). Both runs use the
+same fixed default `--seed 20260812`, so a same-seed, same-checkpoint,
+genuinely-different-prompt pair produced identical output. **This should
+not happen under normal diffusion sampling and was not investigated
+further per the user's stop instruction** — the two other generated panels
+in this run (p001, p002) did differ from v51's versions, so this is not a
+blanket "nothing regenerates" bug, but something specific to at least this
+crowd-slot code path (or a coincidence improbable enough to warrant
+dedicated investigation before trusting it). **Flagging this as the
+highest-priority open item for the next session, ahead of any further
+SceneState/crowd-fix verification work** — until it's explained, no claim
+that Sections 1-4's fixes changed anything at the pixel level can be made,
+even though they are unit-tested and the code changes are real.
+
+**What this session leaves in a genuinely uncertain state, stated
+plainly:** Sections 0.5-4 are code-complete, reviewed against real data
+where real data existed, and covered by passing unit/integration tests
+(`packages/pipeline/tests/` + `packages/core/tests/`, full suite green
+throughout). **None of it has been verified as visually effective** — the
+one re-render attempt that could have shown that surfaced a more
+fundamental, unexplained rendering anomaly instead and was stopped before
+producing enough panels to check. Do not report the crowd-template,
+block-75, or invented-figure fixes as "fixed" until (a) the byte-identical-
+output anomaly above is root-caused, and (b) a full 48-panel re-render is
+actually reviewed pixel-by-pixel.
+
+**Still open, unrelated to this session's work, restated so it doesn't
+get lost:** conformal calibration never run in production; gold set still
+bulk-confirmed, not row-reviewed; v44's own open finding (condition clause
+survives CLIP's 77-token budget in only 1/3 target panels, and even then
+the checkpoint under-responds to "wounded") is not addressed by this
+session's `floor_severity` wiring, which only guarantees the slot is
+*populated*, not that it survives budget or renders visibly.
+
+**Follow-up, same session: the byte-identical crowd panel is root-caused
+and fixed, verified at small scale.** Per the user's own 5-step diagnostic
+(isolated seed test, then a code trace), the cause was not the diffusion
+engine or the cache — `panels.py`'s `is_crowd_cut` branch unconditionally
+overwrote the correctly-computed, `SceneState`-aware prompt with a fully
+static hardcoded template, so every crowd cut rendered the same ceremony-
+hall image regardless of what the scene actually was. Rewritten to build
+from `directed.direction.layout` and `SceneState.crowd_mood`/`location`
+instead (`hostile_confrontation_modifier()`, new in `persona/attire.py`,
+supplies the siege-vs-ceremony atmosphere clause). Re-rendered
+`--block-range 0-8 --max-panels 3` (`data/RI/panels/ch1/v53_crowd-fix-test/`):
+the crowd panel is now byte-different from every prior version and shows a
+crowd, hostile framing, and the mountain locale together in one prompt.
+
+**Same pass also found and fixed a real fourth instance of the
+"front-loading fix built, never reaches this specific path" pattern —
+except this one wasn't that.** `cast_tags()`'s silhouette fallback (the
+genuinely gender-unresolved, pronoun-free case, `persona/prompt.py:452-458`)
+*was* already correctly front-loaded (`"silhouette, back_turned, faceless"`
+sits at position 0 of the assembled prompt, per the existing headcount-
+first ordering rule) — so the routing itself was fine. The actual bug was
+narrower: that one branch never asserted an explicit `solo` tag the way its
+two sibling branches (`["1boy", ..., "solo"]` / `["1girl", "solo"]`) both
+do, so the only `solo` in the final prompt came from the *layout* tail text,
+past the budget's effective priority. Added `"solo"` to that branch's tag
+list. Re-render confirms the invented-second-figure defect is gone on this
+panel (`p001_b0000.png` in the same test dir): exactly one silhouette now,
+where the same seed/prompt shape previously rendered two.
+
+**Cross-reference, not yet fixed:** that same corrected panel still defaults
+to a feminine-coded silhouette (visible hair, gown) despite carrying zero
+gender signal — the identical bias the pronoun-based `gender_negative`/
+`cast_tags` backstop (commit `088a3b3`, HANDOFF §4.x "gender-default
+backstop") was built to correct for the *resolved*-pronoun case. The
+backstop has no equivalent assertion for the fully-unresolved silhouette
+case (there is no gender to assert against). Worth a positive fix (e.g. an
+explicit `androgynous`/no-gender-cue tag) next time this path is touched,
+rather than being rediscovered as a fresh bug.
+
+**All three fixes (is_crowd_cut rewrite, `hostile_confrontation_modifier`,
+solo-tag front-load) confirmed together, not just individually:** one more
+render (`--block-range 0-8 --max-panels 3`, same seed) produced all three
+panel types in a single pass — solo silhouette (one figure), the crowd cut
+(hostile mountain framing), and Fang Yuan's condition panel (torn robes,
+visible blood) — with no interaction defects between them. This is the
+first re-render since the byte-identical anomaly that can be trusted at the
+pixel level, at this reduced scale; the full 48-panel re-render and pixel
+audit (Section 5 of the SceneState plan) is the next step.
