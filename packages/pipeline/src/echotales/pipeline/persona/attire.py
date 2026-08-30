@@ -294,6 +294,40 @@ def scene_locale(
     return ordered[block_index % len(ordered)] if ordered else ""
 
 
+#: Cue words for a hostile, surrounded confrontation, grounded in RI ch1's
+#: actual opening siege text -- "Enemies surrounded him all around; there
+#: was already no way out" (block 8), "the major factions of justice...
+#: heavily surrounded Fang Yuan" (block 12), "this place is already
+#: covered in inescapable nets" (block 1) -- not invented, same citation
+#: discipline as `WORLD_CONTEXT`. **This is not a missing `SCENE_LOCALES`
+#: bucket.** `scene_locale()` already correctly cue-matches "mountain" for
+#: this exact text (block 6's "mountain breeze", block 14's "side of the
+#: mountain") -- verified directly, not assumed. The real gap is that
+#: "a narrow mountain path, pine and mist, cliffs falling away" describes
+#: the physical setting accurately but reads as a serene nature scene, not
+#: a siege, however correct the location itself is. An orthogonal mood
+#: modifier (same shape as the night/day check above) fixes that without
+#: making a new locale bucket compete with "mountain" for cue-matching
+#: priority, which a same-scored word list would do.
+_HOSTILITY_CUES: tuple[str, ...] = ("surrounded", "no way out", "inescapable")
+
+
+def hostile_confrontation_modifier(text: str) -> str:
+    """A short atmosphere clause when the text marks a hostile, surrounded
+    confrontation, else `""`. Layered onto whatever locale/crowd content a
+    caller already has -- not a replacement for `scene_locale()`'s own
+    location text."""
+    low = text.lower()
+    if any(cue in low for cue in _HOSTILITY_CUES):
+        # No "weapons drawn"/"blades" wording: this novel's
+        # `GENRE_MISMATCH_PROPS` negative-prompts sword/blade imagery
+        # specifically because the text never supports it (moonblade
+        # attacks, not swords) -- asserting it here would fight that
+        # negative clause instead of cooperating with it.
+        return "hostile, closing in, tense standoff"
+    return ""
+
+
 def world_setting(novel_id: str) -> str:
     """The scenery vocabulary for this novel's world."""
     return WORLD_SETTING.get(novel_id, _DEFAULT_WORLD)
