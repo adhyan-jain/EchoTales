@@ -455,7 +455,7 @@ def cast_tags(genders: list[str], *, beat: str = "") -> str:
         and "a figure" in beat.lower()
         and not (_MALE_PRONOUN_RE.search(beat) and _FEMALE_PRONOUN_RE.search(beat))
     ):
-        parts = ["silhouette", "back_turned", "faceless"]
+        parts = ["silhouette", "back_turned", "faceless", "solo"]
 
     return ", ".join(parts)
 
