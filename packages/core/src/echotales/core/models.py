@@ -187,6 +187,31 @@ class NarrativeSegment(BaseModel):
         return lo <= (float(pos.chapter), pos.offset) <= hi
 
 
+class SceneState(BaseModel):
+    """The shared, scene-level ground truth a panel/voice/etc. consumer reads
+    as a floor, not a final answer -- local, per-beat detail may refine or
+    override it without mutating the stored row (query-time override, not
+    a write).
+
+    Deliberately vocabulary-free: `location`, `crowd_mood` and
+    `default_severity` are opaque tags a *consumer* defines an ordering/
+    vocabulary for (e.g. the render pipeline's locale strings, or its
+    condition-ladder tiers) -- this model does not know what a "crowd" or a
+    "robe" is, matching `NarrativeSegment`'s own segment_type/layer being
+    enums *consumers* interpret, not this module inventing genre concepts.
+    """
+
+    id: str
+    novel_id: str
+    segment_id: str
+    location: str = ""
+    crowd_mood: str | None = None
+    default_severity: str = ""
+    extra: dict[str, str] = Field(default_factory=dict)
+    set_at_position: DiscoursePosition
+    closed: bool = False
+
+
 # ---------------------------------------------------------------------------
 # Entities: self / persona
 # ---------------------------------------------------------------------------

@@ -50,10 +50,11 @@ from echotales.core.models import (
     ResolutionEvent,
     Self,
     SelfPersonaBinding,
+    SceneState,
     Span,
 )
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 # Story positions may be +/-inf; SQLite has no infinity literal, so they are
 # stored as REAL and Python's float('inf') round-trips correctly through the
@@ -120,6 +121,21 @@ CREATE INDEX IF NOT EXISTS ix_segment_span
     ON narrative_segment(novel_id, chapter_from, chapter_to);
 CREATE INDEX IF NOT EXISTS ix_segment_timeline
     ON narrative_segment(novel_id, timeline_id, story_seq_from);
+
+CREATE TABLE IF NOT EXISTS scene_state (
+    id TEXT PRIMARY KEY,
+    novel_id TEXT NOT NULL,
+    segment_id TEXT NOT NULL,
+    location TEXT NOT NULL DEFAULT '',
+    crowd_mood TEXT,
+    default_severity TEXT NOT NULL DEFAULT '',
+    extra_json TEXT NOT NULL DEFAULT '{}',
+    set_at_chapter REAL NOT NULL,
+    set_at_offset INTEGER NOT NULL,
+    closed INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS ix_scene_state_segment ON scene_state(segment_id);
+CREATE INDEX IF NOT EXISTS ix_scene_state_novel ON scene_state(novel_id, closed);
 
 CREATE TABLE IF NOT EXISTS self_entity (
     id TEXT PRIMARY KEY,
@@ -624,6 +640,63 @@ class Store:
             "UPDATE narrative_segment SET canonicity=? WHERE id=?",
             [(Canonicity.VOIDED.value, sid) for sid in segment_ids],
         )
+
+    # ---- scene state ----------------------------------------------------
+
+    def add_scene_state(self, state: SceneState) -> None:
+        self.conn.execute(
+            "INSERT OR REPLACE INTO scene_state(id, novel_id, segment_id, location,"
+            " crowd_mood, default_severity, extra_json, set_at_chapter, set_at_offset,"
+            " closed) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            (
+                state.id,
+                state.novel_id,
+                state.segment_id,
+                state.location,
+                state.crowd_mood,
+                state.default_severity,
+                json.dumps(state.extra),
+                float(state.set_at_position.chapter),
+                state.set_at_position.offset,
+                int(state.closed),
+            ),
+        )
+
+    def get_scene_state(self, novel_id: str, segment_id: str) -> SceneState | None:
+        """Latest non-closed row for this segment, or the latest row overall
+        if every row for this segment has been closed -- mirrors "what do we
+        currently believe" semantics."""
+        cur = self.conn.execute(
+            "SELECT * FROM scene_state WHERE novel_id=? AND segment_id=? AND closed=0"
+            " ORDER BY set_at_chapter DESC, set_at_offset DESC LIMIT 1",
+            (novel_id, segment_id),
+        )
+        r = cur.fetchone()
+        if r is None:
+            cur = self.conn.execute(
+                "SELECT * FROM scene_state WHERE novel_id=? AND segment_id=?"
+                " ORDER BY set_at_chapter DESC, set_at_offset DESC LIMIT 1",
+                (novel_id, segment_id),
+            )
+            r = cur.fetchone()
+        if r is None:
+            return None
+        return SceneState(
+            id=r["id"],
+            novel_id=r["novel_id"],
+            segment_id=r["segment_id"],
+            location=r["location"],
+            crowd_mood=r["crowd_mood"],
+            default_severity=r["default_severity"],
+            extra=json.loads(r["extra_json"]),
+            set_at_position=DiscoursePosition(
+                chapter=int(r["set_at_chapter"]), offset=r["set_at_offset"]
+            ),
+            closed=bool(r["closed"]),
+        )
+
+    def close_scene_state(self, id: str) -> None:
+        self.conn.execute("UPDATE scene_state SET closed=1 WHERE id=?", (id,))
 
     # ---- entities -----------------------------------------------------
 
