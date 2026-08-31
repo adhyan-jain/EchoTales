@@ -2829,3 +2829,43 @@ visible blood) — with no interaction defects between them. This is the
 first re-render since the byte-identical anomaly that can be trusted at the
 pixel level, at this reduced scale; the full 48-panel re-render and pixel
 audit (Section 5 of the SceneState plan) is the next step.
+
+**Process lesson, worth repeating so it isn't rediscovered: `prompt_cache_v1.json`
+is a phase-1/stub-engine artifact, not the delivered prompt.** Mid-session,
+inspecting that cache file's `:crowd`-suffixed entry for the full-chapter
+run looked like the crowd fix wasn't reaching the real (`directed is not
+None`) director path — it was missing the hostile/locale content entirely.
+That reading was wrong. `panels.py`'s `is_crowd_cut` rewrite block sits
+*after and outside* the cache-hit/cache-miss branch, and runs unconditionally
+on every crowd-cut panel regardless of cache status or director success; the
+value written to `prompt_cache_v1.json` is the **pre-overwrite** intermediate
+from phase 1 (director-only pass, stub engine), never updated after the
+crowd-cut post-processing runs. The actual delivered prompt only shows up in
+`manifest.jsonl` (or the real generation call) written during phase 2. A
+future debugging session investigating what prompt a panel *actually*
+received should check the manifest, never `prompt_cache_v1.json` — that file
+answers a different, earlier question.
+
+**New defect found during the v54 full-chapter pixel review, not fixed
+here, explicitly not part of anything just fixed:** block 31
+(`p014_b0031.png`) mis-casts **"Qing Mao Mountain" — a location — as a
+named character**, attaching appearance attributes (`black_hair, blood,
+wounded, androgynous_person`) to it, and renders two figures despite a
+`standing_alone` layout tag with no `solo` anywhere in the prompt — meaning
+this panel never went through `cast_tags()`'s silhouette-fallback branch at
+all, because *something* upstream in cast/persona resolution treated a
+place name as a resolved character. This is a **persona/resolution bug** (a
+location entity leaking into character casting somewhere before
+`panels.py`'s prompt assembly), not a prompt-construction or
+crowd-contradiction issue — do not bundle it with, or mistake it for, any
+of this session's is_crowd_cut/solo-tag/hostile-modifier fixes. Next
+session: trace where "Qing Mao Mountain" (presumably a `Self`/mention
+entity with `kind` misclassified as a person, or a cast-resolution step
+that doesn't filter on `entity.kind.is_person`) gets into a panel's
+resolved cast.
+
+**v54 shipped** (`data/RI/panels/ch1/v54_crowd-solo-scenestate-fix/`, 51/51
+panels, full pixel review in `VERSIONS.md`): the crowd-template,
+invented-figure, and block-75 fixes are now confirmed at full-chapter scale,
+not just small-scale. Two mountain-path crowd cuts (blocks 37, 45) are the
+first in this novel's render history to escape the ceremony-hall template.
