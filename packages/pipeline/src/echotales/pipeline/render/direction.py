@@ -566,6 +566,14 @@ _SOLO_COLLAPSE_PHRASES: tuple[str, ...] = (
     "no one else is present",
     "no one else present",
     "alone in the frame",
+    # Danbooru-tag form, not prose: `direction.py`'s own SYSTEM instruction
+    # (below, "If CAST is empty...") tells the director to write these
+    # literal tags when the cast is unresolved, so a real director output
+    # is far more likely to say "standing_alone"/"solo" than any of the
+    # prose phrases above -- confirmed on a real chapter-1 render, where
+    # this prose-only list let a genuine crowd/solo contradiction through.
+    "standing_alone",
+    "solo",
 )
 
 
