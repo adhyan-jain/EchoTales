@@ -5256,6 +5256,29 @@ end-to-end against synthetic mentions mirroring the real shape
 
 ---
 
+**Section 6 (prompt-assembly priority mechanism), fixed:** grepping every
+prompt-assembly site confirmed the token-budget priority bug had been
+independently fixed three times (`Direction.to_image_prompt_parts`,
+`build_image_prompt`, and `panels.py`'s crowd-cut template), each
+hand-maintaining a flat list with position standing in for priority.
+Added `persona/prompt.py::fit_tiers_to_budget(tiers: list[list[str]])` as
+the one mechanism that decides what survives truncation -- every tier-N
+part is considered before any tier-N+1 part regardless of length or
+within-tier order, closing the "a shorter lower-priority clause that
+happens to come first" bug class by construction rather than convention.
+`fit_to_budget` is now a one-line wrapper over it, so no existing caller
+changed behavior. Migrated `build_image_prompt` and the crowd-cut template
+to explicit tiers matching their own already-documented priority order.
+New tests assert the mechanism directly and the *real delivered string*
+(quality_prefix concatenated on, matching what `panels.py::PanelImage`
+actually sends to the engine) fits budget and keeps tier-1 content.
+`Direction.to_image_prompt_parts` itself was left as a flat return (other
+callers depend on that shape) -- it was already correctly tier-ordered
+internally and was not one of the three confirmed bypasses, so left
+alone rather than changed without a measured reason.
+
+---
+
 ### Section 10 (superseded "suggested next steps" list, as of the 2026-08-31 cleanup)
 
 This was HANDOFF's own "suggested next steps, in order" section before

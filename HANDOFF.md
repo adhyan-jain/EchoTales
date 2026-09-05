@@ -40,8 +40,10 @@ the chorus default fixed — net honest full-novel number is flat (45.5%)
 since the old figure was inflated by turn-taking's wrong guesses. Section
 4's scorer precision plateau reconfirmed unfixable by reweighting (never
 exceeds 0.85; every real link still comes from a FORCE_LINK pre-filter).
-Next: Section 6 (prompt-assembly priority mechanism), Section 7 (frontend,
-after 1-6).
+Section 6's prompt-priority bug (found and patched three separate times
+in three separate places) now has one shared mechanism
+(`fit_tiers_to_budget`) instead of three independently-hand-ordered flat
+lists. Next: Section 7 (frontend).
 
 Before this pass, the live area of work was the render/direction pipeline
 (`packages/pipeline/src/echotales/pipeline/render/`). Most recently
