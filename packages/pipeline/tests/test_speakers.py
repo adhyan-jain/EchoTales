@@ -15,7 +15,6 @@ from echotales.pipeline.speakers import (
     attribute_novel,
     attribute_proximal,
     attribute_span,
-    attribute_turn_taking,
 )
 from echotales.pipeline.speakers.runner import _scene_roster
 
@@ -135,24 +134,12 @@ class TestProximal:
 
 
 # ---------------------------------------------------------------------------
-# Tier 3: turn-taking
+# Former tier 3, turn-taking, removed (Section 3.3): empirically wrong 82.9%
+# of the time against RI ch1-59 (n=105) -- see attribution.py's module
+# docstring. Its dedicated unit tests (two-party alternation, three-speaker
+# deferral, too-little-history deferral) tested a mechanism that no longer
+# exists and were removed with it, not left as dead assertions.
 # ---------------------------------------------------------------------------
-
-
-class TestTurnTaking:
-    def test_two_party_exchange_alternates(self) -> None:
-        out = attribute_turn_taking(span("“x”"), ["Wu An", "Wu Bei", "Wu An"])
-        assert out and out.speaker == "Wu Bei"
-
-    def test_three_speakers_defers(self) -> None:
-        """With three parties the alternation assumption is unfounded.
-
-        A confident wrong answer is worse than deferring.
-        """
-        assert attribute_turn_taking(span("“x”"), ["A", "B", "C", "A"]) is None
-
-    def test_too_little_history_defers(self) -> None:
-        assert attribute_turn_taking(span("“x”"), ["A"]) is None
 
 
 # ---------------------------------------------------------------------------
@@ -210,9 +197,14 @@ class TestChapterLevel:
         speech = [a for a in out if a.speaker]
         assert speech and speech[0].speaker == "Li Wei"
 
-    def test_scene_break_resets_alternation(self) -> None:
-        """Carrying turn-taking across a scene break attributes the first line
-        of a new scene to someone no longer present."""
+    def test_uncued_line_after_a_scene_break_defers(self) -> None:
+        """No tier left guesses from cross-scene history -- it defers instead.
+
+        Formerly this asserted the scene-break reset kept turn-taking from
+        attributing "Three." to whoever it thought was owed a turn from the
+        previous scene. With that tier removed (Section 3.3), the real
+        assertion is simpler: an uncued line gets no confident guess at all.
+        """
         ch = chapter(
             "Wu An said, “One.”",
             "Wu Bei said, “Two.”",
@@ -221,13 +213,13 @@ class TestChapterLevel:
         )
         out = attribute_chapter(ch)
         last = [a for a in out if a.span_id.endswith(":0")][-1]
-        assert last.method is not AttributionMethod.TURN_TAKING
+        assert last.method is AttributionMethod.UNRESOLVED
 
-    def test_only_confident_lines_seed_alternation(self) -> None:
-        """Seeding the state from a guess makes the next guess worse."""
+    def test_uncued_lines_never_guess_from_each_other(self) -> None:
+        """Formerly: seeding alternation state from a guess. Now: no state to seed."""
         ch = chapter("“One.”", "“Two.”", "“Three.”")
         out = attribute_chapter(ch)
-        assert all(a.method is not AttributionMethod.TURN_TAKING for a in out)
+        assert all(a.method is AttributionMethod.UNRESOLVED for a in out)
 
 
 class TestRunner:

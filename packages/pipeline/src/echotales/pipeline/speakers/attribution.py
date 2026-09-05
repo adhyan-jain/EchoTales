@@ -1,4 +1,4 @@
-"""Phase 4: speaker attribution by four-tier escalation (plans.md Section 6 Phase 4).
+"""Phase 4: speaker attribution by escalation (plans.md Section 6 Phase 4).
 
 Each tier is cheaper and more precise than the next, so a line is only handed
 down when the tier above it cannot answer:
@@ -7,8 +7,20 @@ down when the tier above it cannot answer:
    Near-perfect precision, and the bulk of lines in this genre.
 2. **Proximal** -- the dialogue abuts a character's action in the same block.
    ~85%. The hard part is split sentences.
-3. **Turn-taking** -- a two-party exchange alternates. ~80%.
-4. **Contextual** -- everything left, escalated to the LLM.
+3. **Contextual** -- everything left, escalated to the LLM.
+
+**A former tier 3, "turn-taking" (a two-party exchange alternates), was
+removed (Section 3.3, root-cause remediation pass 2026-09-05).** Its "~80%"
+was an unmeasured assumption carried in this docstring for the life of the
+feature; the first real measurement, against RI ch1-59's own high-confidence
+attributions used as ground truth, found it wrong 82.9% of the time (n=105).
+Dominant failure: a speaker holding the floor across more than one span (a
+monologue split by punctuation) reads as "the other party's turn," so it
+confidently flips to the wrong speaker instead of repeating the right one.
+Per this project's own criterion for the tier (wrong >20% of the time is
+worse than deferring to the LLM), it was deleted rather than patched --
+`AttributionMethod.TURN_TAKING` remains in the enum only so a database
+written before this change still deserialises.
 
 Two outcomes are first-class results rather than failures:
 
@@ -327,38 +339,11 @@ def attribute_proximal(
     return None
 
 
-def attribute_turn_taking(
-    span: Span,
-    recent_speakers: list[str],
-) -> Attribution | None:
-    """Tier 3: a two-party exchange alternates.
-
-    Only applied when the recent history contains exactly two distinct
-    speakers. With three or more the alternation assumption is unfounded, and
-    guessing would produce confident wrong answers -- worse than deferring.
-    """
-    if len(recent_speakers) < 2:
-        return None
-    distinct = list(dict.fromkeys(recent_speakers[-4:]))
-    if len(distinct) != 2:
-        return None
-    # The speaker is whoever did not speak last.
-    speaker = distinct[0] if recent_speakers[-1] == distinct[1] else distinct[1]
-    return Attribution(
-        span_id=span.id,
-        speaker=speaker,
-        method=AttributionMethod.TURN_TAKING,
-        confidence=0.6,
-        evidence=f"alternating with {recent_speakers[-1]}",
-    )
-
-
 def attribute_span(
     span: Span,
     *,
     preceding: str = "",
     following: str = "",
-    recent_speakers: list[str] | None = None,
     known_names: frozenset[str] = frozenset(),
     pov_holder: str | None = None,
 ) -> Attribution:
@@ -403,9 +388,18 @@ def attribute_span(
     if proximal:
         return proximal
 
-    turn = attribute_turn_taking(span, recent_speakers or [])
-    if turn:
-        return turn
+    # Turn-taking (former tier 3, attribute_turn_taking) removed entirely --
+    # Section 3.3's empirical validation (never done before; this module's
+    # own "~80%" was an unmeasured assumption) found it wrong 82.9% of the
+    # time against RI ch1-59's own high-confidence (EXPLICIT/PROXIMAL/JOINT)
+    # attributions used as ground truth (n=105, 18 correct). Dominant
+    # failure: a speaker holding the floor across more than one span (a
+    # monologue split by punctuation) reads as "the other party's turn," so
+    # it confidently flips to the wrong speaker instead of repeating the
+    # right one. Per the task's own criterion (wrong >20% of the time is
+    # worse than deferring to the LLM), a line that would have hit this
+    # tier now falls through to UNRESOLVED, for Section 4's contextual/LLM
+    # tier to handle -- not a guess this module should make.
 
     return Attribution(
         span_id=span.id, speaker=None, method=AttributionMethod.UNRESOLVED, confidence=0.0

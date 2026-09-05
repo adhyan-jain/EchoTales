@@ -275,6 +275,11 @@ class AttributionMethod(StrEnum):
 
     EXPLICIT = "EXPLICIT"
     PROXIMAL = "PROXIMAL"
+    #: Legacy only -- the tier that produced this (`attribute_turn_taking`)
+    #: was removed (Section 3.3, 2026-09-05): empirically wrong 82.9% of the
+    #: time against RI ch1-59 (n=105), see `speakers/attribution.py`'s module
+    #: docstring. Kept in the enum only so a span written before this change
+    #: still deserialises; no code path produces this value anymore.
     TURN_TAKING = "TURN_TAKING"
     CONTEXTUAL_LLM = "CONTEXTUAL_LLM"
     JOINT = "JOINT"

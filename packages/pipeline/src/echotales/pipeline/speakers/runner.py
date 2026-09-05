@@ -1,10 +1,4 @@
-"""Phase 4 orchestration: run the attribution ladder over a novel.
-
-Chapter-scoped state. `recent_speakers` resets at every chapter boundary and at
-every scene break, because turn-taking alternation says nothing across a scene
-change -- carrying it over would confidently attribute the first line of a new
-scene to someone who is no longer present.
-"""
+"""Phase 4 orchestration: run the attribution ladder over a novel."""
 
 from __future__ import annotations
 
@@ -15,8 +9,9 @@ from echotales.core.enums import AliasType, AttributionMethod, SpanType
 from echotales.core.models import Chapter, Span
 from echotales.core.store import Store
 from echotales.pipeline.ingest.normalize import comparison_key
-from echotales.pipeline.spans import classify_chapter
+from echotales.pipeline.mentions.ner import HeuristicDetector
 from echotales.pipeline.render.scenes import group_scenes
+from echotales.pipeline.spans import classify_chapter
 from echotales.pipeline.spans.scene import ActiveScene, build_active_scenes
 from echotales.pipeline.speakers.attribution import (
     _ROLE_EPITHETS,
@@ -30,6 +25,28 @@ from echotales.pipeline.speakers.contextual import attribute_contextual
 
 #: Characters of narration either side of a line that the tiers may consult.
 _WINDOW = 220
+
+#: Section 3.2: a second, looser candidate source for `_known()`'s gate,
+#: separate from the identity-grade `known_names` accumulator below.
+#: Diagnosed this session (Section 3.1 subagent): `QwenNerDetector` (layer-1
+#: mention NER) recalls far fewer capitalised candidates per chapter than
+#: this deterministic detector did, and `_known()` is the single gate every
+#: deterministic attribution tier checks -- so fewer candidates directly
+#: means fewer usable anchors, independent of any bug in the ladder itself.
+#: RI chapter 2's confirmed case: "Fang Zheng" (Fang Yuan's twin, 4+ lines
+#: of dialogue) was emitted by this detector 4 times but never entered the
+#: `mention` table for that chapter at all, so two of his lines fell to
+#: ANONYMOUS_SLOT even though `attribute_proximal`'s own regex matched
+#: "Fang Zheng lowered his head..." right next to one of them -- `_known()`
+#: rejected the match purely because the name was never in `known_names`.
+#: **Attribution-only, deliberately**: this candidate set is unioned into
+#: the *argument* passed to `attribute_chapter` for gating purposes alone.
+#: It must never reach `display_roster` (tier 4's LLM prompt) or the
+#: `mention`/graph tables -- a hallucination-prone LLM roster or a spurious
+#: graph entity is a much more expensive mistake than a missed attribution
+#: anchor, and precision there is the whole reason layer 1 moved to an LLM
+#: in the first place.
+_ATTRIBUTION_CANDIDATE_DETECTOR = HeuristicDetector()
 
 #: Anonymous slots cycle within this cap rather than growing unboundedly --
 #: a chapter with a dozen unresolved lines in a row is one confused scene,
@@ -78,7 +95,6 @@ def attribute_chapter(
         by_block.setdefault(span.block_index, []).append(span)
 
     out: list[Attribution] = []
-    recent: list[str] = []
     ordered_blocks = sorted(chapter.blocks, key=lambda b: b.index)
 
     # Who a bare pronoun ("he faced the clan elders and said,") currently
@@ -117,7 +133,6 @@ def attribute_chapter(
         # A scene break invalidates alternation: the next line belongs to a new
         # scene whose cast may share nobody with the previous one.
         if block.text.strip() == "* * *":
-            recent.clear()
             current_epithet = None
             continue
 
@@ -158,7 +173,6 @@ def attribute_chapter(
                 span,
                 preceding=preceding,
                 following=following,
-                recent_speakers=recent,
                 known_names=known_names,
                 pov_holder=pov_holder,
             )
@@ -183,21 +197,6 @@ def attribute_chapter(
                 and attribution.speaker not in _ROLE_EPITHETS
             ):
                 current_epithet = None
-
-            # Only confident, genuinely spoken lines update the alternation
-            # state. Seeding it from a guess makes the next guess worse.
-            if (
-                attribution.speaker
-                and span.span_type is SpanType.DIALOGUE
-                and attribution.method
-                in (
-                    AttributionMethod.EXPLICIT,
-                    AttributionMethod.JOINT,
-                    AttributionMethod.PROXIMAL,
-                )
-            ):
-                recent.append(attribution.speaker)
-                recent = recent[-6:]
 
     return out
 
@@ -416,7 +415,13 @@ def attribute_novel(
                 if key:
                     known_names.add(key)
                 display_roster[mention.text] = display_roster.get(mention.text, 0) + 1
-        known = frozenset(known_names)
+        attribution_candidates: set[str] = set()
+        for cand in _ATTRIBUTION_CANDIDATE_DETECTOR.detect(chapter.story_text):
+            attribution_candidates.add(cand.text)
+            key = comparison_key(cand.text)
+            if key:
+                attribution_candidates.add(key)
+        known = frozenset(known_names | attribution_candidates)
 
         pov = detect_pov_holder(mentions, spans)
         if pov:
