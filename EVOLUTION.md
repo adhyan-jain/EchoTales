@@ -5133,11 +5133,68 @@ the gap this is supposed to catch.
 `python3 -m pytest packages/pipeline/tests/ -q` — 400 passed after all of
 the above, no regressions.
 
-**Open, going into Section 2.3 and Section 3:** 2.3 (non-person entities
-excluded from voice/panel cast *and* rendered distinctly in webview) not
-yet started this session — the panel-cast half was already confirmed fixed
-in 4.56, webview/voice-casting specifically was flagged there as not
-independently re-verified and still isn't.
+**2.3, done same session:** voice casting was already correctly excluding
+non-person entities (`persona/build.py::load_trait_profiles` filters on
+`entity.kind.is_person` -- not a gap). Webview was the real gap: every
+resolved entity, person or not, rendered identically in the reviewer UI.
+Added `kind`/`is_person` to `webview.py`'s entity and per-mention payload,
+and distinct styling in the React app (kind badge + italic name in the
+sidebar, dashed underline on non-person inline marks). Verified against
+real production data: 18/82 RI entities are non-person and now flagged,
+Qing Mao Mountain among them. This closes HANDOFF defect #7 fully, not
+just its panel-cast half.
+
+**Section 3 (speaker attribution), same session:**
+
+- **3.1/3.2, subagent-diagnosed then fixed.** The 64.9%->48.8% regression
+  (EVOLUTION 4.57/4.9) was already root-caused to `QwenNerDetector`
+  recalling fewer candidate mentions than the old `HeuristicDetector`. This
+  session's subagent went one level deeper: of candidates the deterministic
+  detector found near dialogue that the LLM detector doesn't, ~59% are pure
+  noise (titles, common capitalised words), but a real minority are missed
+  real-person anchors -- concretely, RI ch2's "Fang Zheng" (Fang Yuan's
+  twin, 4+ lines of dialogue) never entered the `mention` table for that
+  chapter at all, so `attribute_proximal`'s own regex matched text right
+  next to his line but `_known()` rejected it solely because the name
+  wasn't in `known_names`. Fix: `speakers/runner.py` now unions a second,
+  chapter-scoped `HeuristicDetector` pass into `_known()`'s gate for
+  `attribute_explicit`/`attribute_proximal` only -- never into
+  `display_roster` (tier 4's LLM prompt) or the mention/graph tables, so
+  identity-grade precision is untouched. Controlled A/B on a scratch RI
+  copy (turn-taking removal held constant both sides): 33.3% identifiable
+  without the candidate set, 45.5% with it (+12.2pp, EXPLICIT 778->1156,
+  PROXIMAL 564->786).
+- **3.3, turn-taking removed.** Never empirically validated before this
+  session -- its "~80%" in the module docstring was an assumption. Measured
+  against RI ch1-59's own high-confidence attributions as ground truth:
+  wrong 82.9% of the time (n=105, 18 correct), dominated by a speaker
+  holding the floor across more than one span reading as "the other
+  party's turn." Deleted per the task's own removal criterion (wrong >20%
+  of the time is worse than deferring to the LLM), along with the now-dead
+  `recent_speakers` tracking and its unit tests -- not disabled in place.
+- **3.4, chorus default fixed.** A single short exclamation ("Impossible!")
+  became `CROWD_REACTION` on nothing more than matching a crowd-shaped
+  regex in isolation. `classify_span` now always returns `DIALOGUE` for a
+  quoted line; `_promote_crowd_runs` (a genuine run of 3+, gap<=2) is the
+  only remaining path to `CROWD_REACTION`, and now also requires the
+  crowd-exclamation shape on every span in the run, not length alone.
+  Verified on a scratch RI copy: all 261 previous `CROWD_REACTION`
+  classifications across ch1-199 fall back to normal `DIALOGUE`
+  attribution (EXPLICIT 1156->1229, PROXIMAL 786->831); zero runs in the
+  novel currently meet the tightened bar -- read as this genre's dialogue
+  being individually attributed rather than choral, not as the check being
+  dead (its own run-detection logic is still directly unit-tested).
+
+Net effect on the headline "identifiable" metric across 3.2-3.4 together:
+honestly mixed and worth stating plainly rather than picking the flattering
+number. The old 46.3%/48.8% included turn-taking's confident-but-usually-
+wrong guesses counted as "identified"; removing them (3.3) alone drops the
+honest number before any recovery. With 3.2's candidate set and 3.4's
+chorus fix both applied, the measured rate on a full fresh `attribute_novel`
+run against a scratch RI copy is 45.5% (2363/5194) -- essentially flat
+against the old inflated figure, but now backed by real EXPLICIT/PROXIMAL
+evidence instead of a heuristic that was wrong four times out of five.
+`python3 -m pytest packages/pipeline/tests/ -q` passes throughout.
 
 ---
 

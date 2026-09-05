@@ -24,20 +24,22 @@ conflated.
 ## Pick up here
 
 **A root-cause remediation pass is in progress (EVOLUTION 4.60).**
-Sections 1-2 done: the retriever recall@k gate now has real gold to run
+Sections 1-3 done. Retriever recall@k gate now has real gold to run
 against (`data/gold/reverend-insanity-hardcases.jsonl`, 89 hard cases,
 model-drafted/unconfirmed) and **it FAILS — recall@10 on
-`TRANSFERABLE_TITLE` = 0%, `RELATIONAL_DEICTIC` = 0%** (see EVOLUTION
-4.60 for the full numbers). This makes Section 5's premise (title/
-relational surfaces never becoming mentions) the load-bearing next
-target, not a nice-to-have. `render/relevance.py` now also checks cast
-survival, headcount, and condition-tag survival against ground truth
-(`echotales relevance`), not just scene-word overlap. Next up in the same
-pass: Section 2.3 (non-person entities' consequences in voice/webview,
-not just panel cast), then Section 3 (speaker attribution recovery),
-Section 4 (scorer features), Section 5 (title/relational mentions —
-now backed by the recall@k failure above), Section 6 (prompt-assembly
-priority mechanism), Section 7 (frontend, after 1-6).
+`TRANSFERABLE_TITLE` = 0%, `RELATIONAL_DEICTIC` = 0%** — making Section
+5's title/relational-mention work the load-bearing next target, not a
+nice-to-have. `render/relevance.py` now checks cast/headcount/condition
+survival against ground truth, not just scene-word overlap. Section 2's
+non-person-entity typing is fully closed across panel cast, voice
+casting, and webview. Section 3's speaker attribution got a real anchor-
+recall fix (+12.2pp in controlled A/B) and had the never-validated
+turn-taking tier removed (measured wrong 82.9% of the time) and the
+chorus default fixed — net honest full-novel number is flat (45.5%) since
+the old figure was inflated by turn-taking's wrong guesses. Next: Section
+4 (scorer features), Section 5 (title/relational mentions — now backed by
+the recall@k failure above), Section 6 (prompt-assembly priority
+mechanism), Section 7 (frontend, after 1-6).
 
 Before this pass, the live area of work was the render/direction pipeline
 (`packages/pipeline/src/echotales/pipeline/render/`). Most recently
@@ -169,21 +171,24 @@ genuinely unresolved *today*.
    emitting a persona split, not a Phase 7 one"). The model already supports
    multiple `Persona` rows per `self_id` (`core/models.py`); nothing yet
    generates the second one automatically.
-3. **Speaker attribution regressed with LLM layer 1 and hasn't recovered**:
-   64.9% (deterministic) → 48.8% (full RI volume). **Root cause confirmed,
-   not fixed (EVOLUTION 4.57):** it's an upstream mention-recall problem,
-   not a `speakers/` logic bug — `QwenNerDetector` (layer-1 LLM mention
-   extraction) recalls far fewer candidate mentions per chapter than the
-   deterministic `HeuristicDetector` (EVOLUTION 4.9's controlled A/B on
-   identical `speakers/` code: 3,676 → 1,678 mentions, 63.4% → 54.6%
-   attribution, same code both sides), and `speakers/` uses mention
-   candidates as attribution anchors — fewer anchors, fewer identifiable
-   speakers. Re-measured against the current production DB on 2026-09-02
-   (`data/webview-working/reverend-insanity.db`): 2,522/5,452 = 46.3%
-   identifiable (EXPLICIT/PROXIMAL/TURN_TAKING/POV_INFERRED vs.
-   ANONYMOUS_SLOT), consistent with the tracked 48.8% — **still broken
-   today, not stale.** Real fix is NER recall tuning in the mentions/layer-1
-   prompt (out of `speakers/`'s scope), not an attribution-ladder change.
+3. **Speaker attribution regressed with LLM layer 1 — PARTIALLY RECOVERED
+   (EVOLUTION 4.60, 2026-09-05).** Root cause (EVOLUTION 4.57) unchanged:
+   `QwenNerDetector` recalls far fewer candidate mentions per chapter than
+   the old `HeuristicDetector`, starving `speakers/`'s attribution anchors.
+   Fixes shipped this session: (a) `runner.py` now unions a second,
+   attribution-only `HeuristicDetector` candidate set into `_known()`'s
+   gate (never into the graph/LLM roster) — controlled A/B on a scratch RI
+   copy: 33.3% identifiable without it, 45.5% with it; (b) the turn-taking
+   tier was deleted after being empirically measured wrong 82.9% of the
+   time (n=105) — it had never been validated before, only assumed at
+   "~80%"; (c) the CROWD_REACTION chorus default was fixed to require an
+   actual multi-line run, not a single short exclamation. **Net effect on
+   the full-novel number is a wash, honestly reported**: 45.5%
+   (2,363/5,194) vs. the old 46.3%/48.8% — the old figure was propped up by
+   turn-taking's mostly-wrong confident guesses counting as "identified,"
+   so flat-but-honest is real progress, not a regression. Real fix for the
+   remaining gap is still NER recall tuning in the mentions/layer-1 prompt
+   (out of `speakers/`'s scope, unchanged from before).
 4. ~~**Retriever recall@k has no gold annotations.**~~ **RESOLVED for the
    plumbing, and now measured — the gate FAILS (EVOLUTION 4.60,
    2026-09-05).** `build_gold_retrieval_cases` bridges `data/gold/*.jsonl`
@@ -218,12 +223,15 @@ genuinely unresolved *today*.
    --kinds-only` (`resolve/kind_backfill.py`), verified against RI's
    working database. Partial by design: only entities the on-disk NER
    cache has non-character evidence for get reclassified (18/82 rows on
-   RI); the rest stay at the SELF default, same as before. Not
-   independently re-verified this session: whether a correctly-typed
-   non-person entity still displays/behaves like a character in webview
-   or voice casting specifically (as opposed to `present_cast()`'s panel
-   cast filter, which is confirmed fixed) — worth a follow-up check if a
-   webview/voice-casting instance of this recurs.
+   RI); the rest stay at the SELF default, same as before. **Webview/voice-
+   casting half now independently verified (EVOLUTION 4.60, 2026-09-05):**
+   voice casting was already correctly filtering on `entity.kind.is_person`
+   (`persona/build.py::load_trait_profiles`, not a gap); webview was not —
+   every entity rendered identically regardless of kind. Fixed:
+   `webview.py`'s payload now carries `kind`/`is_person`, and the React app
+   renders non-person entities distinctly (kind badge, dashed inline
+   underline). Verified against real data: 18/82 RI entities flagged,
+   Qing Mao Mountain among them. **This defect is now fully closed.**
 8. **Recurring unnamed characters have no cross-chapter persistence** — a
    named character's retinue or a minor recurring character gets a fresh
    anonymous voice slot every chapter.
