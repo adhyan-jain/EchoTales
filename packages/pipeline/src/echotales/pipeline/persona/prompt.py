@@ -18,6 +18,11 @@ from __future__ import annotations
 
 import re
 
+from echotales.pipeline.persona.attire import (
+    hands_default_clause,
+    manga_base,
+    style_anchor,
+)
 from echotales.pipeline.persona.runner import PanelCast
 
 #: The style contract, appended to every panel prompt. Matches
@@ -40,26 +45,22 @@ from echotales.pipeline.persona.runner import PanelCast
 #: instead: "rich colors" and "cinematic lighting". A checkpoint given both
 #: renders a video-game key art frame, which is a perfectly good picture and
 #: the wrong one.
-_MANGA_BASE = (
-    "guofeng illustration, chinese ink painting, xianxia, wuxia, "
-    "ancient chinese fantasy, hanfu with long wide sleeves, "
-    # "flowing black hair" used to sit here. It is in the reference art, but
-    # as a *global* style term it applied to every panel including ones with
-    # no person in them, and on a Danbooru-trained checkpoint long flowing
-    # hair is one of the strongest feminine cues there is -- reviewed panels
-    # of a male protagonist came back as women in white robes with
-    # waist-length hair. Hair belongs to the character clause, where it is
-    # attached to a character who actually has it.
-    "ink wash, muted limited palette, "
-    "elegant brushwork, negative space, subtle gradients, "
-    "solemn atmosphere, mature serious art style"
-)
-
-#: The few words that decide *what kind of picture this is*, kept short
-#: enough to sit at the front of every prompt. The full style string is
-#: appended at the end, where the token budget drops it first -- so a panel
-#: that runs long loses the elaboration and keeps the medium.
-STYLE_ANCHOR = "guofeng illustration, chinese ink painting, xianxia"
+#: **`_MANGA_BASE`/`STYLE_ANCHOR` used to be hardcoded here, applied to
+#: every novel regardless of `novel_id`** -- confirmed as the actual reason
+#: an LOTM render came out xianxia-styled: this novel's own
+#: `WORLD_CONTEXT`/`WORLD_SETTING`/`SCENE_LOCALES` entries in `attire.py`
+#: were already correctly novel-keyed, but the rendering-style layer
+#: wasn't. `manga_base(novel_id)`/`style_anchor(novel_id)`
+#: (`persona/attire.py`) are the per-novel replacement, same table pattern
+#: as `WORLD_CONTEXT` -- RI keeps this exact original vocabulary as its
+#: table entry, so nothing here changes for RI. "flowing black hair" is
+#: still deliberately absent from RI's entry for the reason this comment
+#: used to give inline: as a *global* style term it applied to every panel
+#: including ones with no person in them, and on a Danbooru-trained
+#: checkpoint long flowing hair is one of the strongest feminine cues there
+#: is -- reviewed panels of a male protagonist came back as women in white
+#: robes with waist-length hair. Hair belongs to the character clause,
+#: where it is attached to a character who actually has it.
 
 #: **Three framings, chosen per block -- not one style applied to all 89.**
 #:
@@ -88,16 +89,40 @@ FRAMING_ESTABLISHING = "wide establishing shot, sweeping landscape, small distan
 FRAMING_SCENE = "medium shot, full scene, dynamic composition"
 FRAMING_CLOSEUP = "close-up on the face, intense expression, shallow depth"
 
-STYLE_ESTABLISHING = f"{_MANGA_BASE}, {FRAMING_ESTABLISHING}, detailed background, strong depth"
+#: **Kind markers, not content.** These used to be the full, pre-rendered
+#: style string ("guofeng illustration, ..., wide establishing shot, ...");
+#: now they are stable identifiers everything else in this module and
+#: `render/panels.py` keys dict lookups and `is`-identity checks against
+#: (`style is STYLE_CLOSEUP` etc.) -- that comparison only ever cared about
+#: object identity, never content, so swapping these to short kind strings
+#: does not change any of that logic. The actual per-novel text is built by
+#: `style_text()` below, on demand, once a `novel_id` is known.
+STYLE_ESTABLISHING = "establishing"
+STYLE_SCENE = "scene"
+STYLE_CLOSEUP = "closeup"
 
-STYLE_SCENE = (
-    f"{_MANGA_BASE}, {FRAMING_SCENE}, characters in a detailed environment, depth"
-)
+#: Kind -> the tail clause appended after the per-novel style block and
+#: framing. Genre-neutral (composition/lighting words only), so unlike
+#: `manga_base()` this does not need a per-novel table.
+_STYLE_TAIL_BY_KIND: dict[str, str] = {
+    STYLE_ESTABLISHING: "detailed background, strong depth",
+    STYLE_SCENE: "characters in a detailed environment, depth",
+    STYLE_CLOSEUP: "dramatic lighting, abstract toned background",
+}
 
-STYLE_CLOSEUP = (
-    f"{_MANGA_BASE}, {FRAMING_CLOSEUP}, dramatic lighting, "
-    "abstract toned background"
-)
+
+def style_text(kind: str, novel_id: str) -> str:
+    """The full style string for a shot kind, in this novel's vocabulary.
+
+    Replaces what used to be the precomputed `STYLE_ESTABLISHING`/
+    `STYLE_SCENE`/`STYLE_CLOSEUP` constants -- those are now just kind
+    markers (see their docstring); this is where the actual per-novel text
+    gets assembled, from `manga_base(novel_id)` (the genre/rendering block)
+    plus this kind's framing and tail.
+    """
+    framing = FRAMING_BY_STYLE.get(kind, FRAMING_SCENE)
+    tail = _STYLE_TAIL_BY_KIND.get(kind, _STYLE_TAIL_BY_KIND[STYLE_SCENE])
+    return f"{manga_base(novel_id)}, {framing}, {tail}"
 
 #: What each framing must *not* be, leading its negative prompt.
 NEGATIVE_HEAD_BY_STYLE: dict[str, str] = {
@@ -564,8 +589,27 @@ def count_tokens(text: str) -> int:
 _TOKENIZER = None
 
 
-def fit_to_budget(parts: list[str], limit: int = _USABLE_TOKENS) -> str:
-    """Join `parts` (highest priority first) into a prompt CLIP will read.
+def fit_tiers_to_budget(tiers: list[list[str]], limit: int = _USABLE_TOKENS) -> str:
+    """Join tiered prompt parts into one CLIP-budgeted string (Section 6.1).
+
+    Section 6.2 grepped every place a prompt string is assembled and found
+    the token-budget priority bug fixed three separate times in three
+    separate places (`Direction.to_image_prompt_parts`, this module's
+    `build_image_prompt`, and `render/panels.py`'s crowd-cut template) --
+    each one hand-maintaining a single flat list where relative *position*
+    was standing in for priority. That works only as long as nobody ever
+    edits the list without re-deriving every interaction with
+    `count_tokens`, and HANDOFF's own history is three separate sessions
+    where someone didn't.
+
+    This is the one place that decides what survives truncation. A tier is
+    a priority band, highest first: **every part in tier N is considered
+    for the budget before any part in tier N+1**, regardless of how long
+    each tier's own list is or what order a caller appended to *within* a
+    tier. A directive or an identity clause in tier 1 can now only ever
+    lose its slot to something else *also* in tier 1 -- never to a shorter,
+    lower-priority clause that happened to sit earlier in a single
+    flattened list, which is the exact failure this section fixes.
 
     **Measured, not assumed: every panel of the last real chapter run
     exceeded the limit** -- median 154 tokens against a limit of 77, so
@@ -580,13 +624,23 @@ def fit_to_budget(parts: list[str], limit: int = _USABLE_TOKENS) -> str:
     spends tokens and steers toward whatever the fragment resembles.
     """
     kept: list[str] = []
-    for part in parts:
-        if not part:
-            continue
-        candidate = ", ".join([*kept, part])
-        if count_tokens(candidate) <= limit:
-            kept.append(part)
+    for tier in tiers:
+        for part in tier:
+            if not part:
+                continue
+            candidate = ", ".join([*kept, part])
+            if count_tokens(candidate) <= limit:
+                kept.append(part)
     return ", ".join(kept)
+
+
+def fit_to_budget(parts: list[str], limit: int = _USABLE_TOKENS) -> str:
+    """Single-tier convenience wrapper over `fit_tiers_to_budget`.
+
+    For a caller with no tier boundaries of its own to express -- the list
+    itself is already the full priority ranking, highest first.
+    """
+    return fit_tiers_to_budget([parts], limit=limit)
 
 
 #: Token budget for one character's description inside a *panel* prompt.
@@ -723,14 +777,13 @@ def _identity_rank(part: str) -> int:
     return len(_IDENTITY_ORDER)
 
 
-#: **The cheapest fix for hands is to not show them.** Hanfu has long
-#: draping sleeves that cover the hands in ordinary standing poses, which
-#: is both period-correct and the single most reliable way to avoid the
-#: failure these checkpoints are worst at. Applied only where it costs
-#: nothing -- a beat that puts something *in* a character's hands (a sword,
-#: a Gu, a raised palm) must not hide them.
-_SLEEVE_CLAUSE = "hands concealed in long draping sleeves"
-
+#: **The cheapest fix for hands is to not show them** -- period-appropriate
+#: concealment (hanfu's long draping sleeves for RI, gloves/coat pockets for
+#: LOTM: `persona/attire.py::hands_default_clause`) is both in-genre and the
+#: single most reliable way to avoid the failure these checkpoints are worst
+#: at. Applied only where it costs nothing -- a beat that puts something
+#: *in* a character's hands (a sword, a Gu, a raised palm) must not hide
+#: them.
 #: Words that mean the hands are the point of the shot.
 _HANDS_MATTER = (
     "hand", "palm", "finger", "grip", "grasp", "hold", "sword", "blade",
@@ -738,12 +791,12 @@ _HANDS_MATTER = (
 )
 
 
-def hands_clause(beat: str) -> str:
-    """`_SLEEVE_CLAUSE` when nothing in the beat needs visible hands."""
+def hands_clause(beat: str, *, novel_id: str = "") -> str:
+    """The genre-appropriate hands-concealed clause, or "" when hands matter."""
     blob = (beat or "").casefold()
     if any(term in blob for term in _HANDS_MATTER):
         return ""
-    return _SLEEVE_CLAUSE
+    return hands_default_clause(novel_id)
 
 
 def build_image_prompt(
@@ -756,6 +809,7 @@ def build_image_prompt(
     world: str = "",
     locale: str = "",
     style: str = MANGA_STYLE,
+    novel_id: str = "",
     limit: int = _USABLE_TOKENS,
 ) -> str:
     """Compose one prompt string from a resolved `PanelCast`.
@@ -798,60 +852,45 @@ def build_image_prompt(
     point of difference past the second fit's cutoff.
     """
     appearances = character_appearances or {}
-    # **Ordered by what must survive truncation, not by reading order.**
-    # See `fit_to_budget`: everything past 77 CLIP tokens is silently
-    # discarded, so this list is a priority ranking. Headcount and the
-    # subject's own description come before scenery, because a panel of the
-    # right character in a vague place is recoverable and a beautiful empty
-    # courtyard is not.
-    parts: list[str] = []
-
-    # Headcount first: it is the single strongest steer on this class of
-    # checkpoint, and getting it wrong turns a confrontation between two men
-    # into a girl with cherry blossoms.
+    # **Ordered by what must survive truncation, not by reading order** --
+    # and, since Section 6.1, expressed as explicit tiers rather than a
+    # single flat list, so an edit to one tier's contents can never
+    # accidentally change another tier's priority by shifting list
+    # position. `fit_tiers_to_budget` guarantees every tier-1 part is
+    # considered before any tier-2 part regardless of length, which is
+    # exactly what a single flat list could not guarantee (see its
+    # docstring for the three-times-in-three-places history this fixes).
+    #
+    # Tier 1: identity -- headcount, style anchor, hand-authored staging.
+    # Getting headcount wrong turns a confrontation between two men into a
+    # girl with cherry blossoms; the style anchor decides ink painting vs.
+    # 3D render; a directive exists specifically for panels where neither
+    # the prose nor a standing description is the picture a reader wants
+    # (this module's own docstring) and used to lose the budget fight to
+    # the shorter, more generic appearance clause below purely because it
+    # came later in one flat list -- now structurally impossible, since
+    # tier 1 is filled to exhaustion before tier 2 is ever considered.
+    tier1: list[str] = []
     if tags := cast_tags(character_genders or [], beat=beat):
-        parts.append(tags)
-
-    # The style *anchor* -- the few words that decide whether this is ink
-    # painting or a 3D render -- comes early and short. The rest of the
-    # style string is appended last, where it is the first thing dropped.
-    parts.append(STYLE_ANCHOR)
-
-    # Hand-authored staging outranks the block's own prose *and* the
-    # generic appearance clause -- it exists specifically for panels where
-    # neither the prose nor a standing description is the picture a reader
-    # wants (Section this module's docstring), so it goes ahead of both. Tried
-    # after the character loop first and lost the budget fight every time:
-    # "Fang Yuan: midnight black hair, cold narrow eyes" is unremarkable
-    # and generic next to "standing in a pool of blood... holding a
-    # glowing cicada", but being *shorter* let it win the greedy fit, and
-    # the entire directive was silently dropped. Own truncation budget, so
-    # one long directive cannot swallow the rest of the prompt either.
+        tier1.append(tags)
+    tier1.append(style_anchor(novel_id))
     if directive:
-        parts.append(summarise_beat(directive, limit=_MAX_DIRECTIVE_CHARS))
+        tier1.append(summarise_beat(directive, limit=_MAX_DIRECTIVE_CHARS))
 
-    # **What is happening, ahead of what the subject permanently looks
-    # like.** Appearance is a standing fact and repeats on every panel of
-    # that character; the beat is the only part of the prompt that makes
-    # *this* panel a different picture from the last one. Behind the
-    # appearance clause it kept losing the greedy budget fit -- Fang Yuan's
-    # clause runs about twenty tokens of hair and eyes, and panels came out
-    # as a correct-looking man doing nothing identifiable, or as locale
-    # scenery with no beat in them at all. Identity is also the one thing
-    # reference conditioning can carry without any tokens, which the beat
-    # cannot.
+    # Tier 2: what is happening and to whom -- the beat, then the subject's
+    # per-character appearance, then framing. Appearance is a standing fact
+    # repeated on every panel of that character; the beat is the only part
+    # of the prompt that makes *this* panel a different picture from the
+    # last one, so it comes first within this tier.
+    tier2: list[str] = []
     if beat:
-        parts.append(summarise_beat(beat))
-
-    # The subject, before the setting. This is the change that matters: the
-    # character used to sit behind locale, world and environment, i.e.
-    # entirely inside the discarded half of the prompt.
+        tier2.append(summarise_beat(beat))
     for character in panel_cast.foreground_characters:
         described = condense_clause(appearances.get(character.self_label, ""))
         if described:
-            parts.append(f"{character.self_label}: {described}")
+            tier2.append(f"{character.self_label}: {described}")
         elif character.attire and character.attire != panel_cast.environment:
-            parts.append(f"{character.self_label} wearing {character.attire}")
+            tier2.append(f"{character.self_label} wearing {character.attire}")
         else:
             # `resolve_attire`'s last tier is the *novel's house style*, not
             # a garment, so it comes back identical to the environment
@@ -859,37 +898,30 @@ def build_image_prompt(
             # web-novel illustration" on real RI ch1 output, and repeated
             # the same style string once per character on top of that. Name
             # the character and let the style clause do its job once.
-            parts.append(character.self_label)
+            tier2.append(character.self_label)
+    tier2.append(framing_for(style))
+    if sleeves := hands_clause(beat, novel_id=novel_id):
+        tier2.append(sleeves)
 
-    # Composition, immediately after the subject: it is short, and losing it
-    # turns a chosen close-up into a generic full-body portrait.
-    parts.append(framing_for(style))
-
-    # Late in the priority order: worth having, never worth displacing the
-    # beat or the subject.
-    if sleeves := hands_clause(beat):
-        parts.append(sleeves)
-
-    # The specific place first, the world's general vocabulary behind it:
-    # a diffusion model draws "a walled stone courtyard" and draws nothing
-    # recognisable from "ancient Chinese cultivation world".
+    # Tier 3: where and when. The specific place first, the world's general
+    # vocabulary behind it and lowest-priority within this tier -- a
+    # diffusion model draws "a walled stone courtyard" and draws nothing
+    # recognisable from "ancient Chinese cultivation world", and the
+    # world's generic scenery vocabulary used to sit near the top of one
+    # flat list, crowding out everything that actually individuates a
+    # panel.
+    tier3: list[str] = []
     if locale:
-        parts.append(locale)
-
+        tier3.append(locale)
     for mob in panel_cast.background_mobs:
         descriptor = f"background: {mob.description}"
         if mob.attire:
             descriptor += f" ({mob.attire})"
-        parts.append(descriptor)
-
-    # The world's generic scenery vocabulary is the *lowest* priority thing
-    # in the prompt and used to be near the top. It is a list of nouns true
-    # of every chapter of the novel, so it individuates nothing, and it was
-    # crowding out the things that do.
+        tier3.append(descriptor)
     if world:
-        parts.append(world)
+        tier3.append(world)
     if panel_cast.environment and panel_cast.environment != world:
-        parts.append(panel_cast.environment)
+        tier3.append(panel_cast.environment)
+    tier3.append(style_text(style, novel_id))
 
-    parts.append(style)
-    return fit_to_budget(parts, limit=limit)
+    return fit_tiers_to_budget([tier1, tier2, tier3], limit=limit)

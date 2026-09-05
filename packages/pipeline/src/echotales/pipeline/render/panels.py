@@ -34,33 +34,34 @@ from echotales.pipeline.persona.attire import (
     world_context,
     world_setting,
 )
+from echotales.pipeline.persona.forms import detect_form
 from echotales.pipeline.persona.prompt import (
-    cast_tags,
-    count_tokens,
-    fit_to_budget,
+    _USABLE_TOKENS,
     STYLE_CLOSEUP,
     STYLE_ESTABLISHING,
     STYLE_SCENE,
-    _USABLE_TOKENS,
     build_image_prompt,
+    cast_tags,
+    count_tokens,
+    fit_to_budget,
+    fit_tiers_to_budget,
     gender_negative,
     genre_mismatch_negative,
     negative_for,
 )
-from echotales.pipeline.persona.forms import detect_form
 from echotales.pipeline.persona.runner import get_panel_cast
 from echotales.pipeline.render._png import write_solid_png
 from echotales.pipeline.render.beat_canon import beat_canon_for
 from echotales.pipeline.render.direction import direct_beat, sanitize_prompt
+from echotales.pipeline.render.factions import qualify_role, scene_faction
+from echotales.pipeline.render.palette import Palette, PaletteSpec, apply_palette
 from echotales.pipeline.render.scene_refs import (
     curated_character_reference,
     match_scene_references,
 )
-from echotales.pipeline.render.factions import qualify_role, scene_faction
-from echotales.pipeline.render.scenes import group_scenes
 from echotales.pipeline.render.scene_state import get_or_derive_scene_state
+from echotales.pipeline.render.scenes import group_scenes
 from echotales.pipeline.spans.scene import detect_mobs
-from echotales.pipeline.render.palette import Palette, PaletteSpec, apply_palette
 from echotales.pipeline.world.context import story_context
 from echotales.pipeline.world.lexicon import build_lexicon
 
@@ -127,6 +128,25 @@ class PanelImageRequest:
     #: carry identity, loose enough to let the prompt choose the pose. At
     #: 1.0 every panel reproduces the reference sheet's neutral front view.
     reference_weight: float = 0.65
+    #: **Experimental, gated, opt-in only** -- see
+    #: `persona/reference_gen.py`'s `reference_transition_mode`. When set,
+    #: an engine that supports it runs img2img/inpainting *from* this image
+    #: instead of a fresh txt2img draw, so a body-state's reference is a
+    #: guided transform of the body-state before it rather than an
+    #: independent generation. Not IP-Adapter conditioning (which stays
+    #: permanently removed from the SDXL-family engines per HANDOFF 4.47)
+    #: and not wired into any default path -- an engine that does not
+    #: implement it simply ignores it and falls back to plain txt2img,
+    #: which keeps every existing call site byte-for-byte unaffected.
+    init_image: Path | None = None
+    #: img2img denoise strength for `init_image`. Same dial as
+    #: `RefinedEngine.strength`: low enough to keep the base identity
+    #: (face, hair, silhouette), high enough to actually apply the
+    #: state-transition delta (e.g. "younger" for a regression). Body-state
+    #: transitions want more change than `RefinedEngine`'s style restyle
+    #: (0.35), since the request is an actual physical change, not a
+    #: reskin -- tuned per-call by `reference_gen.py`, not fixed here.
+    transition_strength: float = 0.45
 
 
 class PanelImageEngine(Protocol):
@@ -154,10 +174,21 @@ class StubImageEngine:
 
     def generate(self, request: PanelImageRequest) -> Path:
         request.out_path.parent.mkdir(parents=True, exist_ok=True)
+        # **Img2img mode still has to be visibly distinguishable in a stub
+        # run**, or the `--reference-transition-mode=img2img` wiring can
+        # only ever be checked against a real GPU render. Mixing the
+        # `init_image` path into the colour hash (rather than only the
+        # prompt) means a stub-mode transition produces a different,
+        # deterministic colour than a stub-mode fresh generation of the
+        # same prompt -- enough to assert "this call actually took the
+        # img2img branch" in a test with no GPU involved.
+        key = request.prompt
+        if request.init_image is not None:
+            key = f"{key}::init={request.init_image}::s={request.transition_strength}"
         colour = (
-            hash(request.prompt) % 200 + 30,
-            (hash(request.prompt) // 200) % 200 + 30,
-            (hash(request.prompt) // 40000) % 200 + 30,
+            hash(key) % 200 + 30,
+            (hash(key) // 200) % 200 + 30,
+            (hash(key) // 40000) % 200 + 30,
         )
         write_solid_png(request.out_path, request.width, request.height, colour)
         return request.out_path
@@ -199,6 +230,7 @@ class SDXLEngine:
             # the card. Do not call `.to(self.device)` first: offload
             # manages device placement itself.
             self._pipe.enable_vae_slicing()
+            self._pipe.enable_vae_tiling()
             self._pipe.enable_model_cpu_offload()
         return self._pipe
 
@@ -307,6 +339,8 @@ class MangaDiffusersEngine:
             self._pipe = StableDiffusionPipeline.from_pretrained(
                 self.model_id, torch_dtype=torch.float16, safety_checker=None
             ).to(self.device)
+            if hasattr(self._pipe, "enable_vae_tiling"):
+                self._pipe.enable_vae_tiling()
 
         if want_ip and not self._ip_loaded:
             try:
@@ -483,6 +517,54 @@ class IllustriousEngine:
     max_references: int = 2
     _pipe: object | None = None
     _ip_loaded: bool = False
+    #: **Experimental img2img body-state-transition path, gated by the
+    #: caller.** `persona/reference_gen.py`'s `reference_transition_mode`
+    #: is the only thing that ever sets `request.init_image` -- ordinary
+    #: panel and reference-sheet generation never does, so this attribute
+    #: stays `None` and this whole branch is dead code on every existing
+    #: call path. Built with `StableDiffusionXLImg2ImgPipeline.from_pipe`,
+    #: which shares the already-loaded UNet/VAE/text-encoders rather than
+    #: loading a second multi-GB checkpoint -- the same reason `RefinedEngine`
+    #: reuses `get_engine(self.base_engine)` instead of a parallel model.
+    _img2img_pipe: object | None = None
+
+    def _ensure_img2img_pipe(self, want_ip: bool = False) -> object:
+        from diffusers import StableDiffusionXLImg2ImgPipeline  # type: ignore[import-not-found]
+
+        base = self._ensure_pipe(want_ip=want_ip)
+        if self._img2img_pipe is None:
+            # **`from_pipe` on an already-offloaded base does not compose
+            # with `enable_model_cpu_offload` -- this was the actual host-
+            # memory leak (EVOLUTION 4.54), not ordinary SDXL pressure.**
+            # `base` already carries accelerate's per-module offload hooks
+            # (`module._hf_hook`) from its own `enable_model_cpu_offload()`
+            # call. `from_pipe` shares those same `nn.Module` objects with
+            # the new img2img pipeline rather than copying them, so the two
+            # pipelines' components are identical objects. Measured: never
+            # re-arming offload on the wrapped pipe left the *old* hook
+            # chain (built against the base pipeline's `execution_device`
+            # bookkeeping, not the img2img pipeline's) in charge, which
+            # this hardware ran as "never offload back to CPU as the
+            # sequential chain expects" -- RSS climbed unbounded (6.8 GB ->
+            # 9.2 GB+, swap to 14 GB) with near-zero GPU utilisation while
+            # the process sat in D-state, and the run had to be killed
+            # before a single 17-step denoise finished. Accelerate's own
+            # fix for re-wrapping an offloaded pipeline is to strip the
+            # existing hooks before attaching a fresh, correctly-scoped
+            # chain for the *new* pipeline object -- not to skip
+            # re-arming offload altogether (that leaves everything
+            # GPU-resident and this 8 GB card OOMs instead, per
+            # `SDXLEngine`'s own comment on the same card).
+            from accelerate.hooks import remove_hook_from_module  # type: ignore[import-not-found]
+
+            for component in base.components.values():  # type: ignore[attr-defined]
+                if hasattr(component, "to"):
+                    remove_hook_from_module(component, recurse=True)
+            self._img2img_pipe = StableDiffusionXLImg2ImgPipeline.from_pipe(base)
+            self._img2img_pipe.enable_vae_slicing()
+            self._img2img_pipe.enable_vae_tiling()
+            self._img2img_pipe.enable_model_cpu_offload()
+        return self._img2img_pipe
 
     def _ensure_pipe(self, want_ip: bool = False) -> object:
         if self._pipe is None:
@@ -514,6 +596,7 @@ class IllustriousEngine:
             if want_ip:
                 self._load_ip_adapter(pipe, torch)
             pipe.enable_vae_slicing()
+            pipe.enable_vae_tiling()
             pipe.enable_model_cpu_offload()
             self._pipe = pipe
         elif want_ip and not self._ip_loaded:
@@ -553,8 +636,36 @@ class IllustriousEngine:
         refs = [p for p in request.reference_images if Path(p).exists()][
             : self.max_references
         ]
-        pipe = self._ensure_pipe(want_ip=bool(refs))
+        use_img2img = request.init_image is not None and Path(request.init_image).exists()
+        pipe = (
+            self._ensure_img2img_pipe(want_ip=bool(refs))
+            if use_img2img
+            else self._ensure_pipe(want_ip=bool(refs))
+        )
+        if use_img2img:
+            # **The card has no headroom left for fragmentation, only for
+            # exactly one live pipeline's worth of offloaded weights.**
+            # `_ensure_img2img_pipe` strips and re-arms offload hooks (see
+            # its own comment, EVOLUTION 4.54), which fixed the host-RAM
+            # leak -- but the *first* CUDA OOM after that fix still landed
+            # here: a prior txt2img call on `base` (body 1, same run) had
+            # already allocated and cached CUDA blocks under the old hook
+            # chain's device-placement bookkeeping, and PyTorch's caching
+            # allocator does not hand those blocks back across a hook swap
+            # on its own. `empty_cache` + `gc.collect` right before the
+            # transform call is the difference between "7.62/7.65 GiB in
+            # use, OOM on a 50 MiB alloc" and completing -- confirmed by
+            # running body1 (txt2img) then body2 (img2img) back-to-back in
+            # one process, the actual call pattern `generate_references`
+            # uses.
+            import gc
+
+            gc.collect()
+            torch.cuda.empty_cache()
         kwargs: dict[str, object] = {}
+        if use_img2img:
+            kwargs["image"] = load_image(str(request.init_image))
+            kwargs["strength"] = request.transition_strength
         if self._ip_loaded:
             # Same "never skip once loaded" constraint as
             # `MangaDiffusersEngine` -- loading rewrites the UNet's attention
@@ -689,6 +800,8 @@ class RefinedEngine:
             # Both checkpoints are resident across a panel, so neither one
             # gets to sit on the card -- offload, unlike `MangaDiffusersEngine`
             # which is alone on the GPU and can afford `.to(device)`.
+            if hasattr(self._pipe, "enable_vae_tiling"):
+                self._pipe.enable_vae_tiling()
             self._pipe.enable_vae_slicing()
             self._pipe.enable_model_cpu_offload()
         return self._pipe
@@ -1409,7 +1522,7 @@ def render_panels(
         try:
             _st = Path(store.path).stat()
             _db_fingerprint = hashlib.sha256(
-                f"{_st.st_mtime_ns}:{_st.st_size}".encode("utf-8")
+                f"{_st.st_mtime_ns}:{_st.st_size}".encode()
             ).hexdigest()[:8]
         except OSError:
             pass
@@ -2000,7 +2113,7 @@ def render_panels(
                 # of use on their own while genuinely identical work is
                 # still reused across the two phases.
                 _beat_digest = hashlib.sha256(
-                    f"{beat_prose}|{directive}".encode("utf-8")
+                    f"{beat_prose}|{directive}".encode()
                 ).hexdigest()[:12]
                 cache_key = (
                     f"{chapter_number:g}:{lead}:{_beat_digest}:{_db_fingerprint}"
@@ -2220,6 +2333,7 @@ def render_panels(
                                 else scene_locale_text
                             ),
                             style=style,
+                            novel_id=novel_id,
                         )
                     prompt = sanitize_prompt(prompt)
                     prompt_cache[cache_key] = prompt
@@ -2286,15 +2400,27 @@ def render_panels(
                         if directed is not None and directed.direction.layout
                         else ""
                     )
-                    prompt = fit_to_budget(
+                    # Section 6.2: this template was one of the three
+                    # independent prompt-assembly bypasses that hand-ordered
+                    # a single flat list instead of going through an
+                    # explicit tier mechanism -- see
+                    # `persona/prompt.py::fit_tiers_to_budget`'s docstring
+                    # for the full history. Tiered here to match the
+                    # priority this block's own comments already document
+                    # (genre anchor + crowd count must survive; layout/roles
+                    # are what's happening; scene locale and quality tags
+                    # are the lowest-priority style/place content), so a
+                    # future edit to any one tier's wording can no longer
+                    # accidentally starve a higher tier by list position.
+                    prompt = fit_tiers_to_budget(
                         [
-                            "ancient china, xianxia, wuxia, hanfu robes",
-                            _crowd_count,
-                            scene_locale_text,
-                            "large figures in the foreground, seen from behind",
-                            f"{_roles} standing close together, facing away",
-                            _director_layout,
-                            "manhwa illustration, dramatic lighting, highly detailed",
+                            ["ancient china, xianxia, wuxia, hanfu robes", _crowd_count],
+                            [
+                                "large figures in the foreground, seen from behind",
+                                f"{_roles} standing close together, facing away",
+                                _director_layout,
+                            ],
+                            [scene_locale_text, "manhwa illustration, dramatic lighting, highly detailed"],
                         ],
                         limit=_prompt_limit,
                     )

@@ -12,14 +12,17 @@ with scenery is the same bug wearing a smaller number.
 
 from __future__ import annotations
 
+from echotales.pipeline.persona.attire import style_anchor
 from echotales.pipeline.persona.prompt import (
-    STYLE_ANCHOR,
     STYLE_CLOSEUP,
     STYLE_ESTABLISHING,
     STYLE_SCENE,
+    _USABLE_TOKENS,
     build_image_prompt,
+    cast_tags,
     condense_clause,
     count_tokens,
+    fit_tiers_to_budget,
     fit_to_budget,
     negative_for,
 )
@@ -62,6 +65,73 @@ class TestBudget:
     def test_an_empty_part_list_is_an_empty_prompt(self) -> None:
         assert fit_to_budget([]) == ""
         assert fit_to_budget(["", ""]) == ""
+
+
+class TestTieredBudget:
+    """Section 6.1: a tier boundary must win regardless of length or list
+    position -- the mechanism fix for "a directive or an identity clause
+    must never lose budget to a lower-priority shorter clause that happens
+    to come first," found and separately patched three times (Section 6.2)
+    before this existed."""
+
+    def test_tier_one_survives_a_much_longer_tier_two(self) -> None:
+        long_lower_priority = "an extremely long trailing clause " * 20
+        out = fit_tiers_to_budget([["1boy", "identity clause"], [long_lower_priority]])
+        assert "1boy" in out and "identity clause" in out
+        assert "extremely long trailing" not in out
+
+    def test_tier_boundary_wins_over_naive_flat_concatenation(self) -> None:
+        """The exact bug class: a shorter, lower-priority clause used to win
+        the greedy fit simply by being listed first in one flat list. Given
+        a budget too tight for both, `fit_tiers_to_budget` must pick by
+        declared tier, not by whichever flat ordering someone happened to
+        write -- while the naive single-list equivalent (tier 2's item
+        first) picks the other one, proving the ordering actually matters
+        here rather than being incidentally the same either way."""
+        tier1_item = "identity clause"
+        tier2_item = "a"
+        limit = count_tokens(tier1_item)  # fits tier1 alone, not both
+
+        tiered = fit_tiers_to_budget([[tier1_item], [tier2_item]], limit=limit)
+        naive_flat = fit_to_budget([tier2_item, tier1_item], limit=limit)
+
+        assert tiered == tier1_item
+        assert naive_flat == tier2_item
+        assert tiered != naive_flat
+
+    def test_fit_to_budget_is_the_single_tier_case(self) -> None:
+        assert fit_tiers_to_budget([["1boy", "a courtyard"]]) == fit_to_budget(
+            ["1boy", "a courtyard"]
+        )
+
+
+class TestDeliveredPromptBudget:
+    """Section 6.3: assert the real delivered string -- post every override,
+    post quality_prefix concatenation -- not an intermediate. This is what
+    `panels.py::PanelImage`'s own `prompt=f"{self.quality_prefix}, ..."`
+    actually sends to the engine (see its own comment on why a *second*
+    `fit_to_budget` pass there was the bug, not a defence against one)."""
+
+    def test_delivered_prompt_with_quality_prefix_fits_and_keeps_tier_one(self) -> None:
+        quality_prefix = "score_9, score_8_up, masterpiece"
+        reserved = count_tokens(quality_prefix)
+        cast = _cast("Fang Yuan")
+        built = build_image_prompt(
+            cast,
+            beat="Fang Yuan stood at the courtyard's edge, blood on his sleeve.",
+            character_appearances={"Fang Yuan": _APPEARANCE},
+            character_genders=["male"],
+            world=_WORLD,
+            locale="a walled stone courtyard",
+            limit=_USABLE_TOKENS - reserved,
+        )
+        delivered = f"{quality_prefix}, {built}"
+
+        assert count_tokens(delivered) <= _USABLE_TOKENS
+        # Tier 1 (headcount + identity) must survive the full concatenation,
+        # not just the pre-prefix intermediate.
+        assert cast_tags(["male"]) in delivered
+        assert "Fang Yuan" in delivered
 
 
 class TestDirective:
@@ -155,7 +225,7 @@ class TestOrdering:
             character_genders=["male"],
         )
         assert prompt.startswith("1boy")
-        assert prompt.index(STYLE_ANCHOR) < prompt.index("Fang Yuan")
+        assert prompt.index(style_anchor("")) < prompt.index("Fang Yuan")
 
     def test_two_characters_both_survive(self) -> None:
         prompt = build_image_prompt(
@@ -321,10 +391,10 @@ def test_solo_is_asserted_as_its_own_leading_tag() -> None:
 
 
 def test_style_base_carries_no_hair() -> None:
-    from echotales.pipeline.persona.prompt import STYLE_SCENE
+    from echotales.pipeline.persona.prompt import STYLE_SCENE, style_text
 
     # Hair belongs to whoever has it, not to every panel including empty ones.
-    assert "flowing black hair" not in STYLE_SCENE
+    assert "flowing black hair" not in style_text(STYLE_SCENE, "reverend-insanity")
 
 
 def test_negative_prompt_with_gender_clause_fits_clip() -> None:
@@ -339,9 +409,9 @@ def test_negative_prompt_with_gender_clause_fits_clip() -> None:
     they always survive truncation.
     """
     from echotales.pipeline.persona.prompt import (
-        STYLE_SCENE,
-        CLIP_TOKEN_LIMIT,
         _NEGATIVE_FEMININE,
+        CLIP_TOKEN_LIMIT,
+        STYLE_SCENE,
         count_tokens,
         fit_to_budget,
         negative_for,
