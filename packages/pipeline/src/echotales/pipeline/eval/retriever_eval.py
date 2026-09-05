@@ -33,6 +33,8 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 
 from echotales.core.enums import AliasType
+from echotales.core.store import Store
+from echotales.pipeline.eval.gold import GoldSet
 from echotales.pipeline.resolve.retrieve import CandidateRetriever
 
 DEFAULT_KS: tuple[int, ...] = (1, 5, 10, 20)
@@ -209,11 +211,60 @@ def build_self_retrieval_cases(
     return cases
 
 
+def build_gold_retrieval_cases(
+    gold: GoldSet, store: Store, novel_id: str
+) -> tuple[list[RetrievalCase], int]:
+    """The real recall@k input: gold's `identity` mapped to a system `target_id`.
+
+    HANDOFF defect #4 ("Retriever recall@k has no gold annotations") existed
+    because nothing bridged the two annotation shapes in this package:
+    `GoldMention.identity` is deliberately an annotator's own string, never a
+    pipeline id (gold.py's docstring is explicit about why), while
+    `RetrievalCase.expected_target_id` needs a real `target_id` to query the
+    retriever's index. `load_gold_cases` below assumed a third format
+    (`target_id` already present in the JSONL, from a `tools/annotate.py` that
+    was never built) and was never reachable from any command.
+
+    This resolves identity -> target_id the same way `calibrate.py` does for
+    scorer calibration: majority vote over mentions the resolver already
+    aligned, not a label match (`_identity_to_target`'s own docstring covers
+    why a label match is wrong -- shared labels, multiple aliases per entity).
+    Returns the cases plus a count of gold identities with no system entity to
+    map to, so a caller can report that gap instead of silently dropping it.
+    """
+    from echotales.pipeline.eval.calibrate import _identity_to_target
+
+    identity_to_target, unmapped = _identity_to_target(store, novel_id, gold)
+    cases: list[RetrievalCase] = []
+    for m in gold.mentions:
+        target_id = identity_to_target.get(m.identity) if m.identity else None
+        if not target_id:
+            continue
+        cases.append(
+            RetrievalCase(
+                surface=m.surface,
+                context=m.context,
+                expected_target_id=target_id,
+                alias_type=m.alias_type,
+                chapter=m.chapter,
+            )
+        )
+    return cases, unmapped
+
+
 def load_gold_cases(path: str) -> list[RetrievalCase]:
     """Load annotated mention→entity pairs from JSONL.
 
     Expected fields per line: `surface`, `context`, `target_id`, and optionally
     `alias_type` and `chapter`. This is the format `tools/annotate.py` writes.
+
+    **Vestigial** -- `tools/annotate.py` was never built, so no file in this
+    format exists; nothing calls this. `build_gold_retrieval_cases` above is
+    the real bridge, built from `data/gold/*.jsonl` (the format `eval/gold.py`
+    and `eval/draft.py` actually produce). Left here rather than deleted only
+    because a future annotation tool could legitimately want to hand-author
+    target_ids directly; do not wire this into a command without that tool
+    existing first.
     """
     import json
     from pathlib import Path

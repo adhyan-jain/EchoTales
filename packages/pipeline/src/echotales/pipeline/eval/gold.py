@@ -27,6 +27,8 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 
+from echotales.core.enums import AliasType
+
 
 class Provenance(StrEnum):
     #: Proposed by a model. Not gold. Usable as a draft to be audited, and as a
@@ -68,6 +70,13 @@ class GoldMention:
     #: `NOT_AN_ENTITY`, since a non-entity denotes nobody.
     identity: str = ""
     kind: MentionKind = MentionKind.CHARACTER
+    #: plans.md Section 4.1 binding type. Needed to split retriever recall@k
+    #: by alias_type (eval/retriever_eval.py's TRANSFERABLE_TITLE gate) --
+    #: without this field every gold mention silently reported as RIGID_NAME,
+    #: which is exactly the easy case and hides a retrieval ceiling on the
+    #: hard ones. Defaults to RIGID_NAME for old records drafted before this
+    #: field existed; that default is a known undercount, not a measurement.
+    alias_type: AliasType = AliasType.RIGID_NAME
     context: str = ""
     provenance: Provenance = Provenance.MODEL
     #: Which model drafted it, when `provenance` is MODEL. Kept so a drafting
@@ -95,6 +104,7 @@ class GoldMention:
             "surface": self.surface,
             "identity": self.identity,
             "kind": self.kind.value,
+            "alias_type": self.alias_type.value,
             "context": self.context,
             "provenance": self.provenance.value,
             "drafted_by": self.drafted_by,
@@ -111,6 +121,7 @@ class GoldMention:
             surface=str(row["surface"]),
             identity=str(row.get("identity", "")),
             kind=MentionKind(str(row.get("kind", MentionKind.CHARACTER.value))),
+            alias_type=AliasType(str(row.get("alias_type", AliasType.RIGID_NAME.value))),
             context=str(row.get("context", "")),
             provenance=Provenance(str(row.get("provenance", Provenance.MODEL.value))),
             drafted_by=str(row.get("drafted_by", "")),
