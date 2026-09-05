@@ -46,15 +46,17 @@ from echotales.core.models import (
     Mention,
     NarrativeSegment,
     Persona,
+    RefImageCandidate,
+    RefImageSelectionEvent,
     Relation,
     ResolutionEvent,
+    SceneState,
     Self,
     SelfPersonaBinding,
-    SceneState,
     Span,
 )
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 # Story positions may be +/-inf; SQLite has no infinity literal, so they are
 # stored as REAL and Python's float('inf') round-trips correctly through the
@@ -325,6 +327,44 @@ CREATE TABLE IF NOT EXISTS derived_artifact (
     invalidated INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS ix_artifact_tier ON derived_artifact(tier, invalidated);
+
+-- Reference-image search candidates (opt-in, backend-only). Nothing in
+-- render/generation reads this table -- see RefImageCandidate's docstring
+-- in core/models.py for why auto-conditioning off image search results is
+-- deliberately not wired up, and HANDOFF 4.47 for the failure mode
+-- (contamination from an auto-selected single reference image) this is
+-- built not to repeat.
+CREATE TABLE IF NOT EXISTS ref_image_candidate (
+    id TEXT PRIMARY KEY,
+    novel_id TEXT NOT NULL,
+    self_id TEXT NOT NULL,
+    character_label TEXT NOT NULL,
+    source_url TEXT NOT NULL,
+    thumbnail_url TEXT NOT NULL DEFAULT '',
+    title TEXT NOT NULL DEFAULT '',
+    source_page TEXT NOT NULL DEFAULT '',
+    query TEXT NOT NULL DEFAULT '',
+    backend TEXT NOT NULL DEFAULT '',
+    found_at REAL NOT NULL DEFAULT 0,
+    user_uploaded INTEGER NOT NULL DEFAULT 0,
+    selected INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS ix_refimg_self ON ref_image_candidate(novel_id, self_id);
+
+-- Append-only, same reasoning as resolution_event: a selection made once
+-- (auto-search finding it, a user approving or overriding it) stays
+-- auditable rather than being silently overwritten.
+CREATE TABLE IF NOT EXISTS ref_image_selection_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    novel_id TEXT NOT NULL,
+    self_id TEXT NOT NULL,
+    candidate_id TEXT NOT NULL,
+    action TEXT NOT NULL,
+    actor TEXT NOT NULL,
+    note TEXT NOT NULL DEFAULT '',
+    at REAL NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS ix_refimg_log_self ON ref_image_selection_log(novel_id, self_id);
 """
 
 
@@ -338,6 +378,24 @@ def _opt_pos_cols(pos: DiscoursePosition | None) -> tuple[int | None, int | None
 
 def _interval_cols(iv: FuzzyInterval) -> tuple[float, float, float, float]:
     return iv.from_lb, iv.from_ub, iv.to_lb, iv.to_ub
+
+
+def _refimg_from_row(row: sqlite3.Row) -> RefImageCandidate:
+    return RefImageCandidate(
+        id=row["id"],
+        novel_id=row["novel_id"],
+        self_id=row["self_id"],
+        character_label=row["character_label"],
+        source_url=row["source_url"],
+        thumbnail_url=row["thumbnail_url"],
+        title=row["title"],
+        source_page=row["source_page"],
+        query=row["query"],
+        backend=row["backend"],
+        found_at=row["found_at"],
+        user_uploaded=bool(row["user_uploaded"]),
+        selected=bool(row["selected"]),
+    )
 
 
 def _interval_from_row(row: sqlite3.Row) -> FuzzyInterval:
@@ -794,6 +852,26 @@ class Store:
             "UPDATE self_entity SET prominence=? WHERE id=?", (prominence.value, self_id)
         )
 
+    def unset_kind_self_ids(self, novel_id: str) -> list[str]:
+        """Ids whose raw `kind` column is NULL/empty -- pre-a17ea32 rows.
+
+        Deliberately reads the raw column rather than going through
+        `get_self()`, which coerces a NULL `kind` to `TargetKind.SELF` for
+        backward-compat display. That coercion is exactly the bug the kind
+        backfill (`resolve/kind_backfill.py`) exists to fix, so this query
+        must see the true unset state to find candidates for it.
+        """
+        rows = self.conn.execute(
+            "SELECT id FROM self_entity WHERE novel_id=? AND (kind IS NULL OR kind='')",
+            (novel_id,),
+        ).fetchall()
+        return [r["id"] for r in rows]
+
+    def set_kind(self, self_id: str, kind: TargetKind) -> None:
+        self.conn.execute(
+            "UPDATE self_entity SET kind=? WHERE id=?", (kind.value, self_id)
+        )
+
     def add_persona(self, persona: Persona) -> None:
         ch, off = _pos_cols(persona.first_attested_pos)
         self.conn.execute(
@@ -875,6 +953,168 @@ class Store:
             )
             for r in cur
         ]
+
+    # ---- reference-image candidates ------------------------------------
+    #
+    # Opt-in, backend-only mechanism: see RefImageCandidate's docstring in
+    # core/models.py. Nothing here is read by render/generation code, and
+    # `select_ref_image_candidate` never touches any persona/prompt table --
+    # it only flips `selected` and appends a log row.
+
+    def add_ref_image_candidate(self, candidate: RefImageCandidate) -> None:
+        self.conn.execute(
+            "INSERT OR REPLACE INTO ref_image_candidate(id, novel_id, self_id,"
+            " character_label, source_url, thumbnail_url, title, source_page, query,"
+            " backend, found_at, user_uploaded, selected) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (
+                candidate.id,
+                candidate.novel_id,
+                candidate.self_id,
+                candidate.character_label,
+                candidate.source_url,
+                candidate.thumbnail_url,
+                candidate.title,
+                candidate.source_page,
+                candidate.query,
+                candidate.backend,
+                candidate.found_at,
+                int(candidate.user_uploaded),
+                int(candidate.selected),
+            ),
+        )
+        self.conn.commit()
+
+    def get_ref_image_candidate(self, candidate_id: str) -> RefImageCandidate | None:
+        r = self.conn.execute(
+            "SELECT * FROM ref_image_candidate WHERE id=?", (candidate_id,)
+        ).fetchone()
+        return _refimg_from_row(r) if r is not None else None
+
+    def list_ref_image_candidates(
+        self, novel_id: str, self_id: str
+    ) -> list[RefImageCandidate]:
+        cur = self.conn.execute(
+            "SELECT * FROM ref_image_candidate WHERE novel_id=? AND self_id=?"
+            " ORDER BY selected DESC, found_at DESC",
+            (novel_id, self_id),
+        )
+        return [_refimg_from_row(r) for r in cur]
+
+    def log_ref_image_event(self, event: RefImageSelectionEvent) -> int:
+        cur = self.conn.execute(
+            "INSERT INTO ref_image_selection_log(novel_id, self_id, candidate_id, action,"
+            " actor, note, at) VALUES (?,?,?,?,?,?,?)",
+            (
+                event.novel_id,
+                event.self_id,
+                event.candidate_id,
+                event.action,
+                event.actor,
+                event.note,
+                event.at,
+            ),
+        )
+        self.conn.commit()
+        return int(cur.lastrowid)
+
+    def get_ref_image_selection_log(
+        self, novel_id: str, self_id: str
+    ) -> list[RefImageSelectionEvent]:
+        cur = self.conn.execute(
+            "SELECT * FROM ref_image_selection_log WHERE novel_id=? AND self_id=?"
+            " ORDER BY id",
+            (novel_id, self_id),
+        )
+        return [
+            RefImageSelectionEvent(
+                id=r["id"],
+                novel_id=r["novel_id"],
+                self_id=r["self_id"],
+                candidate_id=r["candidate_id"],
+                action=r["action"],
+                actor=r["actor"],
+                note=r["note"],
+                at=r["at"],
+            )
+            for r in cur
+        ]
+
+    def select_ref_image_candidate(
+        self, novel_id: str, self_id: str, candidate_id: str, *, actor: str, note: str = ""
+    ) -> None:
+        """Mark one candidate selected and every other candidate for this
+        character unselected, logging the change.
+
+        This is the *only* write path that sets `selected=1` -- auto-search
+        (`add_ref_image_candidate`) never does, by construction, so a fresh
+        row is always unselected until this is called explicitly by a human
+        or a future auto-select step that does not exist yet.
+        """
+        import time
+
+        row = self.conn.execute(
+            "SELECT id FROM ref_image_candidate WHERE id=? AND novel_id=? AND self_id=?",
+            (candidate_id, novel_id, self_id),
+        ).fetchone()
+        if row is None:
+            raise KeyError(f"no ref image candidate {candidate_id!r} for self {self_id!r}")
+        with self.transaction():
+            self.conn.execute(
+                "UPDATE ref_image_candidate SET selected=0 WHERE novel_id=? AND self_id=?",
+                (novel_id, self_id),
+            )
+            self.conn.execute(
+                "UPDATE ref_image_candidate SET selected=1 WHERE id=?", (candidate_id,)
+            )
+        self.log_ref_image_event(
+            RefImageSelectionEvent(
+                novel_id=novel_id,
+                self_id=self_id,
+                candidate_id=candidate_id,
+                action="select",
+                actor=actor,
+                note=note,
+                at=time.time(),
+            )
+        )
+
+    def register_user_ref_image(
+        self,
+        novel_id: str,
+        self_id: str,
+        character_label: str,
+        image_path: str,
+        *,
+        actor: str = "user",
+        note: str = "",
+    ) -> RefImageCandidate:
+        """User-override path: register a locally supplied image as a
+        candidate and select it immediately, in one call.
+
+        This is the CLI's ``persona refimg register`` command. It goes
+        through the same candidate table as auto-search results so the
+        selection log reads uniformly ("where did the selected image come
+        from") whether the source was a search hit or a human's own file.
+        """
+        import hashlib
+        import time
+
+        candidate = RefImageCandidate(
+            id=f"{self_id}:user:{hashlib.sha1(image_path.encode()).hexdigest()[:10]}",
+            novel_id=novel_id,
+            self_id=self_id,
+            character_label=character_label,
+            source_url=f"file://{image_path}",
+            backend="user-upload",
+            found_at=time.time(),
+            user_uploaded=True,
+        )
+        self.add_ref_image_candidate(candidate)
+        self.select_ref_image_candidate(
+            novel_id, self_id, candidate.id, actor=actor, note=note or "user override"
+        )
+        candidate.selected = True
+        return candidate
 
     # ---- facts --------------------------------------------------------
 

@@ -536,6 +536,54 @@ class ResolutionOutcome(BaseModel):
     rationale: str = ""
 
 
+class RefImageCandidate(BaseModel):
+    """A candidate reference image found for a character, awaiting review.
+
+    Deliberately inert on its own: nothing in generation reads this table.
+    `selected=True` means a human (or, later, an explicit auto-select step
+    that does not exist yet) has approved it as *worth looking at* for
+    reference purposes -- it is still not conditioning for image generation
+    until a separate, explicitly-enabled step wires it in. See HANDOFF
+    4.47 on why an automatically-selected single reference image was pulled
+    out of the render path in the first place; this table exists so that
+    mistake is not repeated by re-adding auto-selection under a new name.
+    """
+
+    id: str
+    novel_id: str
+    self_id: str
+    character_label: str
+    source_url: str
+    thumbnail_url: str = ""
+    title: str = ""
+    source_page: str = ""
+    query: str = ""
+    backend: str = ""
+    found_at: float = 0.0
+    user_uploaded: bool = False
+    selected: bool = False
+
+
+class RefImageSelectionEvent(BaseModel):
+    """One entry in a candidate's selection log: who touched it, and how.
+
+    `actor` is "auto-search" for the search step that discovered a
+    candidate, "user" for a human CLI override, or a note like
+    "user:<name>" if the caller wants to record who. Append-only, same
+    reasoning as `resolution_event`: a wrong selection made once should
+    stay auditable rather than silently overwritten.
+    """
+
+    id: int | None = None
+    novel_id: str
+    self_id: str
+    candidate_id: str
+    action: str
+    actor: str
+    note: str = ""
+    at: float = 0.0
+
+
 class StateOfResult(BaseModel):
     """The answer to the central query.
 
