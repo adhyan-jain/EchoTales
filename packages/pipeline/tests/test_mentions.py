@@ -258,6 +258,25 @@ class TestAliasTyping:
 
     def test_generic_types_are_not_persistable(self) -> None:
         assert not AliasType.GENERIC_DESCRIPTOR.enters_graph
+
+    @pytest.mark.parametrize(
+        "text", ["the clan head", "the clan leader", "the sect leader", "the village head"]
+    )
+    def test_single_holder_offices_are_transferable_titles(self, text: str) -> None:
+        """Section 5.1: HANDOFF's worked example -- the clan leader in RI ch1
+        blocks 68-78 must not classify identically to "the innkeeper" just
+        because neither remainder is capitalised."""
+        assert classify_alias_type(text)[0] is AliasType.TRANSFERABLE_TITLE
+
+    def test_bare_single_holder_office_with_no_article(self) -> None:
+        assert classify_alias_type("clan head")[0] is AliasType.TRANSFERABLE_TITLE
+
+    def test_ordinary_bystander_roles_stay_generic_even_if_similar_shape(self) -> None:
+        """Not every article-led occupation is a title -- only curated,
+        single-holder offices are (non-negotiable #4's bias toward calling
+        something generic when it looks generic still applies elsewhere)."""
+        assert classify_alias_type("the innkeeper")[0] is AliasType.GENERIC_DESCRIPTOR
+        assert classify_alias_type("the merchant")[0] is AliasType.GENERIC_DESCRIPTOR
         assert AliasType.RIGID_NAME.enters_graph
 
 

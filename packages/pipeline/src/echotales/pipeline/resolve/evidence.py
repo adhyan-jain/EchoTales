@@ -112,6 +112,12 @@ class EvidenceContext:
     concurrent_personas: frozenset[str] = frozenset()
     #: The speaker of the span containing the mention.
     speaker: str | None = None
+    #: Section 5.1: the one already-resolved entity established as physically
+    #: present that a title/relational-only group's candidates were widened
+    #: to include (`resolve_group`), set only when exactly one such entity
+    #: exists. `None` whenever there is zero or more than one -- ambiguous
+    #: cases must defer, not guess (Section 5.3's six-Wang guard).
+    sole_copresent_target_id: str | None = None
     #: Region or faction of the current scene, for audience scoping.
     scene_scope: str = ""
     #: Every region/faction tag known to the graph. Empty means the novel
@@ -401,12 +407,25 @@ def score_evidence(
     # blocker-beats-declaration precedence a considered choice ("far more
     # likely to be a detector error than a genuine identity"), and that
     # general rule is left standing.
+    #
+    # Section 5.1: also suppressed for a title/relational mention. The
+    # blocker's premise ("simultaneously present doing different things
+    # cannot be one persona") assumes both mentions independently name a
+    # person; "the clan head" does not -- it resolves *through* whoever is
+    # co-present, so "Gu Yue Tie" and "the clan head" being co-present is
+    # not two people standing together, it is the mechanism this mention
+    # type resolves by. Without this exclusion the sole-co-present
+    # candidate `resolve_group` widens the candidate list with (Section
+    # 5.1/5.2) is blocked before `relationship_deictic_resolution`'s
+    # FORCE_LINK is ever reached -- confirmed the hard way, this exclusion
+    # exists because the mechanism silently failed without it.
     if (
         candidate.label in ctx.co_present
         and comparison_key(mention.text) != comparison_key(candidate.label)
         and candidate.label not in ctx.concurrent_personas
         and vector.name_containment < NAME_CONTAINMENT_FLOOR
         and continuity < 1.0
+        and mention.alias_type not in (AliasType.RELATIONAL_DEICTIC, AliasType.TRANSFERABLE_TITLE)
     ):
         vector.co_presence_violation = 1.0
 
@@ -428,10 +447,25 @@ def score_evidence(
     scope = _audience_scope(ctx, profile)
     vector.audience_scope_compatibility = 0.0 if scope is None else scope
 
-    # A relational deictic resolves relative to the speaker, never globally,
-    # so it only scores when a speaker is actually known.
-    if mention.alias_type is AliasType.RELATIONAL_DEICTIC and ctx.speaker:
-        vector.relationship_deictic_resolution = 0.5
+    # Section 5.1: a title/relational mention resolves only through who is
+    # established as the sole physically-present candidate here, never
+    # through surface similarity (confirmed by Section 1.2's recall@k gate:
+    # retrieval on these alias types is 0% -- "the clan head" and "Fang
+    # Yuan" share no tokens for surface retrieval to ever find). This used
+    # to be a flat 0.5 bonus applied identically to *every* candidate
+    # whenever any speaker was known -- not discriminative between
+    # candidates at all, and in practice always 0.0 anyway since no caller
+    # ever populated `ctx.speaker`. `resolve_group` now widens the
+    # candidate list for these alias types with every already-resolved
+    # entity known to be present, and sets `sole_copresent_target_id` only
+    # when exactly one such candidate exists -- so this fires for that one
+    # candidate specifically, never for two rival candidates at once.
+    if (
+        mention.alias_type in (AliasType.RELATIONAL_DEICTIC, AliasType.TRANSFERABLE_TITLE)
+        and ctx.sole_copresent_target_id is not None
+        and candidate.target_id == ctx.sole_copresent_target_id
+    ):
+        vector.relationship_deictic_resolution = 1.0
 
     # Soft and overridable: a hard constraint would forbid the reveal case.
     if profile is not None and profile.first_chapter > mention.chapter:

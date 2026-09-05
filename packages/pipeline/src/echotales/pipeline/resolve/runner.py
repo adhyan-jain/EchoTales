@@ -31,6 +31,7 @@ from echotales.core.enums import (
 from echotales.core.interval import FuzzyInterval
 from echotales.core.models import (
     AliasBinding,
+    Candidate,
     Mention,
     ResolutionEvent,
     ResolutionOutcome,
@@ -54,6 +55,13 @@ log = logging.getLogger(__name__)
 
 #: Characters of surrounding text supplied as evidence context.
 _CONTEXT_WINDOW = 400
+
+#: Section 5.1: alias types that never found a new entity on their own. A
+#: relational deictic ("this one") always refers to someone named
+#: elsewhere; a transferable title ("the clan head") names a *position*,
+#: not an individual, and outlives whoever currently holds it -- minting an
+#: entity from either mints a duplicate with no retrievable identity.
+_NON_FOUNDING_ALIAS_TYPES = frozenset({AliasType.RELATIONAL_DEICTIC, AliasType.TRANSFERABLE_TITLE})
 
 #: Section 2.2: fraction of a novel's entities with a raw-NULL `kind` column
 #: (never positively typed, backfill included) above which the SELF default
@@ -363,10 +371,45 @@ class GlobalResolver:
         context = _context_for(head, chapter_text)
 
         candidates = self.retriever.retrieve(head.text, context)
+
+        # Section 5.1: a title/relational mention never resolves through
+        # surface similarity -- "the clan head" and "Fang Yuan" share no
+        # tokens, so `retrieve()` above cannot surface the right candidate
+        # no matter how it's tuned (confirmed empirically, Section 1.2's
+        # recall@k gate: 0% retrieval on TRANSFERABLE_TITLE/
+        # RELATIONAL_DEICTIC). Widen the candidate list instead with every
+        # already-resolved entity this chapter has established as
+        # physically present -- relationship context, not surface text, is
+        # the query for these alias types.
+        sole_copresent_target_id: str | None = None
+        if any(
+            m.alias_type in (AliasType.RELATIONAL_DEICTIC, AliasType.TRANSFERABLE_TITLE)
+            for m in mentions
+        ):
+            seen_ids = {c.target_id for c in candidates}
+            for profile in self.retriever.profiles.values():
+                if profile.label in co_present and profile.target_id not in seen_ids:
+                    candidates.append(
+                        Candidate(
+                            target_kind=profile.target_kind,
+                            target_id=profile.target_id,
+                            label=profile.label,
+                            retrieval_score=0.0,
+                        )
+                    )
+                    seen_ids.add(profile.target_id)
+            copresent = [c for c in candidates if c.label in co_present]
+            # Exactly one, never a tie -- two rival co-present candidates is
+            # precisely the six-Wang case Section 5.3 guards against, and
+            # must defer rather than guess between them.
+            if len(copresent) == 1:
+                sole_copresent_target_id = copresent[0].target_id
+
         ctx = EvidenceContext(
             context=context,
             co_present=co_present,
             speaker=speaker,
+            sole_copresent_target_id=sole_copresent_target_id,
             lexicon=self.lexicon,
             ambiguous_tokens=self._ambiguous_tokens(),
         )
@@ -412,18 +455,24 @@ class GlobalResolver:
             )
 
         # A group that never once said a name cannot found an entity. "sir",
-        # "Grandpa", "this one" refer to someone who is named elsewhere; minting
-        # an entity for them creates a duplicate of a real character *and* an
-        # entity with no retrievable identity. Leaving it unresolved is the
-        # honest outcome — anaphora or a later window may still bind it.
-        if not any(m.alias_type.enters_graph and m.alias_type is not AliasType.RELATIONAL_DEICTIC
+        # "Grandpa", "this one" refer to someone who is named elsewhere, and
+        # (Section 5.1) so does a bare title like "the clan head" -- the
+        # position outlives whoever holds it, so a title-only group minting
+        # its own entity would found a person keyed to a role, not an
+        # individual, and orphan it the moment the title changes hands.
+        # Minting an entity here creates a duplicate of a real character
+        # *and* an entity with no retrievable identity either way. Leaving
+        # it unresolved is the honest outcome — the sole-co-present-
+        # candidate path above may still bind it; anaphora or a later
+        # window may too.
+        if not any(m.alias_type.enters_graph and m.alias_type not in _NON_FOUNDING_ALIAS_TYPES
                    for m in mentions):
             self.report.deictic_only += 1
             return ResolutionOutcome(
                 group_id=group_id,
                 decision=Decision.DEFER,
                 candidates=candidates,
-                rationale="deictic-only group: no naming mention to found an entity on",
+                rationale="deictic/title-only group: no naming mention to found an entity on",
             )
 
         target_id = self._create_entity(head, label, self._entity_kind(mentions))

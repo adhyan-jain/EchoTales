@@ -35,6 +35,29 @@ _ROLE_NOUNS = frozenset(
     ["man", "woman", "boy", "girl", "child", "elder", "youth", "stranger", "person", "people", "crowd", "guard", "soldier", "servant", "maid", "attendant", "merchant", "trader", "innkeeper", "shopkeeper", "clerk", "officer", "constable", "detective", "driver", "waiter", "landlord", "landlady", "priest", "monk", "nun", "doctor", "physician", "apothecary", "blacksmith", "farmer", "hunter", "fisherman", "beggar", "thief", "bandit", "disciple", "cultivator", "master", "student", "scholar", "official", "minister", "messenger", "courier", "captain", "sailor", "worker", "labourer", "laborer", "villager", "citizen"]
 )
 
+# Section 5.1: single-holder positions of authority -- exactly one person in
+# the story holds each of these at a time (until succession/death transfers
+# it), unlike `_ROLE_NOUNS`'s interchangeable bystander occupations
+# (innkeeper, merchant, guard). The old blanket "article-led + not
+# capitalised => GENERIC_DESCRIPTOR" rule swallowed both alike: "the clan
+# head" and "the innkeeper" classified identically, so 219 title occurrences
+# across RI ch1-15 produced zero mentions (HANDOFF Section 5) and the
+# retriever recall@k gate measured 0% on TRANSFERABLE_TITLE (Section 1.2).
+# Deliberately a narrow, curated list rather than "any noun following a
+# leading article that isn't a known bystander role": non-negotiable #4
+# exists precisely to keep generic descriptors out, and a title must earn
+# its way onto this list by actually naming a single-holder office, not by
+# being merely capitalised-sounding or authoritative in tone.
+_TRANSFERABLE_TITLE_NOUNS = frozenset(
+    [
+        "clan head", "clan leader", "clan chief", "sect leader", "sect master",
+        "sect head", "patriarch", "matriarch", "city lord", "guild master",
+        "guild leader", "guild head", "village head", "village chief",
+        "headmaster", "dean", "chancellor", "king", "queen", "emperor",
+        "empress", "chief elder", "grand elder",
+    ]
+)
+
 # Descriptive epithets: article-led but naming a specific, distinctive holder.
 _EPITHET_MARKERS = re.compile(
     r"\b(?:great|grand|dark|light|blood|iron|jade|golden|silver|crimson|azure|"
@@ -95,6 +118,13 @@ def classify_alias_type(
 
     if _ARTICLE_LED.match(text):
         remainder = _ARTICLE_LED.sub("", text)
+        remainder_lowered = remainder.casefold()
+        # Section 5.1: a single-holder office ("the clan head") is checked
+        # before the generic-descriptor fallback below, since that fallback
+        # would otherwise swallow it identically to "the innkeeper" purely
+        # because the remainder isn't capitalised.
+        if remainder_lowered in _TRANSFERABLE_TITLE_NOUNS:
+            return AliasType.TRANSFERABLE_TITLE, 0.7
         head = remainder.split()[-1].casefold() if remainder.split() else ""
         # "the Ashen Duke" is an epithet; "the innkeeper" is a descriptor.
         if _EPITHET_MARKERS.search(remainder) and head not in _ROLE_NOUNS:
@@ -102,6 +132,12 @@ def classify_alias_type(
         if head in _ROLE_NOUNS or not remainder[:1].isupper():
             return AliasType.GENERIC_DESCRIPTOR, 0.85
         return AliasType.EPITHET, 0.5
+
+    # A single-holder office named bare, with no article ("Clan Head Wang"'s
+    # own title stripped down to "Clan Head", or a translation that drops
+    # the article entirely).
+    if lowered in _TRANSFERABLE_TITLE_NOUNS:
+        return AliasType.TRANSFERABLE_TITLE, 0.65
 
     # Bare role nouns with no article are still generic.
     if lowered in _ROLE_NOUNS:

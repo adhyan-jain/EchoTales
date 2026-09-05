@@ -150,6 +150,12 @@ def prefilter(evidence: EvidenceVector) -> PrefilterResult:
             "name contained as a suffix: same personal name, house prefix dropped",
             confidence=0.90,
         )
+    if evidence.relationship_deictic_resolution >= 1.0:
+        return PrefilterResult(
+            PrefilterVerdict.FORCE_LINK,
+            "title/relational mention: sole candidate established as present",
+            confidence=0.85,
+        )
     return PrefilterResult(PrefilterVerdict.SCORE)
 
 
