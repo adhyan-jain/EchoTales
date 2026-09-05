@@ -103,6 +103,15 @@ def build_novel_payload(store: Store, novel_id: str, label: str) -> dict:
         colour = _entity_colour(rank)
         colour_of[target_id] = colour
         chapters = [m.chapter for m in group]
+        # Section 2.3: a non-person entity (LOCATION/ORGANIZATION/ITEM) must
+        # look different here, not just behave differently in voice/panel
+        # casting -- HANDOFF defect #7's webview half was never checked.
+        # `entity.kind` reads Store.get_self()'s NULL-coalesced SELF default
+        # when nothing has positively typed this row (see Section 2.2's
+        # kind-coverage warning): that default is "unknown," and this field
+        # cannot tell a reviewer apart from a genuinely-confirmed person, but
+        # it is still the only live typing there is.
+        kind = entity.kind.value if entity else "SELF"
         entities.append(
             {
                 "id": target_id,
@@ -113,6 +122,8 @@ def build_novel_payload(store: Store, novel_id: str, label: str) -> dict:
                 "aliases": sorted(surfaces, key=surfaces.get, reverse=True)[:10],
                 "colour": colour,
                 "speaks": False,  # filled in below once spans are walked
+                "kind": kind,
+                "is_person": entity.kind.is_person if entity else True,
             }
         )
     entity_index = {e["id"]: e for e in entities}
@@ -175,6 +186,12 @@ def build_novel_payload(store: Store, novel_id: str, label: str) -> dict:
                         "resolved": m.target_id is not None,
                         "conf": round(float(m.confidence), 2),
                         "alias_type": m.alias_type.value,
+                        #: Section 2.3: inline highlight also needs to mark a
+                        #: non-person mention distinctly, not just the sidebar
+                        #: entry -- a reviewer scanning script text is exactly
+                        #: where "Qing Mao Mountain" reading as a character
+                        #: would go unnoticed otherwise.
+                        "is_person": entity["is_person"] if entity else True,
                         # `Mention.id`, not a derived key -- this is what makes
                         # a mention individually correctable (reassign this one
                         # occurrence, independent of every other mention that

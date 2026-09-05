@@ -62,7 +62,14 @@ export default function EntitySidebar({
               }}
             >
               <span className="swatch" style={{ background: ent.colour }} />
-              <span className="name">{ent.label}</span>
+              <span className={ent.is_person === false ? 'name not-person' : 'name'}>
+                {ent.label}
+              </span>
+              {ent.is_person === false && (
+                <span className="kind-badge" title={`${ent.kind} -- not a person: excluded from voice/panel casting`}>
+                  {ent.kind}
+                </span>
+              )}
               {ent.speaks && <span className="speaks">🗣</span>}
               <span className="count">{ent.count}</span>
               {editMode && !picking && (

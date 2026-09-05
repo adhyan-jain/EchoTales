@@ -47,6 +47,7 @@ export default function ScriptLine({
     const cls = [
       'mark',
       !m.resolved ? 'unresolved' : '',
+      m.is_person === false ? 'not-person' : '',
       focusId && m.id !== focusId ? 'dim' : '',
       focusId && m.id === focusId ? 'focus' : '',
       editMode ? 'editable' : '',
@@ -54,7 +55,9 @@ export default function ScriptLine({
       .filter(Boolean)
       .join(' ');
     const tip =
-      `${m.label}${m.resolved ? '' : '  (unresolved)'}  ·  conf ${m.conf}` +
+      `${m.label}${m.resolved ? '' : '  (unresolved)'}` +
+      (m.is_person === false ? '  (not a person -- place/item/org)' : '') +
+      `  ·  conf ${m.conf}` +
       (m.flags && m.flags.length ? `  ⚑ ${m.flags.length}` : '');
     parts.push(
       <mark
