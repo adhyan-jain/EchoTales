@@ -67,6 +67,30 @@ def build_parser() -> argparse.ArgumentParser:
     p_resolve = sub.add_parser("resolve", help="Phases 1-6: spans, mentions, identity resolution")
     p_resolve.add_argument("--novel", required=True)
     p_resolve.add_argument("--chapters", default=None)
+    p_resolve.add_argument(
+        "--kinds-only",
+        action="store_true",
+        help=(
+            "Skip full re-resolution; only backfill self_entity.kind for entities "
+            "still unset, from the on-disk NER cache (EVOLUTION 4.54). Use this "
+            "against an existing database instead of a full resolve rerun -- "
+            "resolve_novel deletes and rebuilds self_entity from scratch, which "
+            "would lose mentions.entity_label evidence that no longer exists for "
+            "a novel whose mentions stage predates it."
+        ),
+    )
+    p_resolve.add_argument(
+        "--strict-kind-check",
+        action="store_true",
+        help=(
+            "Raise instead of warn when >30%% of entities have no positive kind "
+            "classification after the backfill (Section 2.2 startup assertion). "
+            "Off by default because the real production RI database sits at 78%% "
+            "and is HANDOFF-documented as spot-checked mostly-correct; use this "
+            "on a fresh novel to catch a missing NER-cache/entity_label pipeline "
+            "gap before it silently reaches voice/panel casting."
+        ),
+    )
 
     p_query = sub.add_parser("query", help="query the graph")
     q_sub = p_query.add_subparsers(dest="query_command", required=True)
@@ -248,6 +272,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     pe_ref.add_argument("--principals-only", action="store_true")
     pe_ref.add_argument("--seed", type=int, default=20260812)
+    pe_ref.add_argument(
+        "--reference-transition-mode", default="txt2img", choices=["txt2img", "img2img"],
+        help="experimental, opt-in only (default: txt2img, unchanged behaviour). "
+        "img2img generates a split character's second-and-later body as an "
+        "img2img transform of the previous body's own reference image, "
+        "instead of an independent txt2img draw -- see "
+        "persona/reference_gen.py::generate_references docstring",
+    )
 
     pe_wiki = pe_sub.add_parser(
         "wiki-canon",
@@ -266,6 +298,50 @@ def build_parser() -> argparse.ArgumentParser:
         "--dry-run", action="store_true",
         help="print what would be imported without writing the cache",
     )
+
+    # refimg: opt-in reference-image candidate search/review. Backend-only --
+    # see persona/refimg.py module docstring. Nothing here auto-conditions
+    # generation; "select"/"register" only update the candidate table and
+    # its selection log.
+    pe_search = pe_sub.add_parser(
+        "refimg-search",
+        help="search for reference-image candidates for prominent characters "
+        "(does not select or apply anything -- review queue only)",
+    )
+    pe_search.add_argument("--novel", required=True)
+    pe_search.add_argument("--title", help="novel title used in the search query; "
+        "defaults to the novel row's stored title")
+    pe_search.add_argument("--character", action="append", dest="characters",
+        help="self id to search (repeatable); default: every PRINCIPAL/RECURRING character")
+    pe_search.add_argument("--max-results", type=int, default=5)
+
+    pe_list = pe_sub.add_parser(
+        "refimg-list", help="list stored reference-image candidates for a character"
+    )
+    pe_list.add_argument("--novel", required=True)
+    pe_list.add_argument("--character", required=True, help="self id")
+
+    pe_select = pe_sub.add_parser(
+        "refimg-select",
+        help="mark one already-found candidate as selected (user override, "
+        "logged; does not touch generation)",
+    )
+    pe_select.add_argument("--novel", required=True)
+    pe_select.add_argument("--character", required=True, help="self id")
+    pe_select.add_argument("--candidate", required=True, help="candidate id from refimg-list")
+    pe_select.add_argument("--actor", default="user")
+    pe_select.add_argument("--note", default="")
+
+    pe_register = pe_sub.add_parser(
+        "refimg-register",
+        help="register a user-supplied local image as the reference for a "
+        "character (selected immediately; does not touch generation)",
+    )
+    pe_register.add_argument("--novel", required=True)
+    pe_register.add_argument("--character", required=True, help="self id")
+    pe_register.add_argument("--path", required=True, help="local image path")
+    pe_register.add_argument("--actor", default="user")
+    pe_register.add_argument("--note", default="")
 
     p_rel = sub.add_parser(
         "relevance", help="score rendered panels against the blocks they play under"

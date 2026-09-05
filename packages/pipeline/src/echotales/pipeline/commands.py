@@ -283,7 +283,13 @@ def cmd_export(args: argparse.Namespace) -> int:
 
 
 def cmd_eval(args: argparse.Namespace) -> int:
-    from echotales.pipeline.eval import EvalMode, build_self_retrieval_cases, evaluate_recall
+    from echotales.pipeline.eval import (
+        EvalMode,
+        build_gold_retrieval_cases,
+        build_self_retrieval_cases,
+        evaluate_recall,
+        miss_report,
+    )
     from echotales.pipeline.eval.coref_score import score_b3
     from echotales.pipeline.eval.gold import read_gold
     from echotales.pipeline.resolve.retrieve import CandidateRetriever
@@ -324,13 +330,36 @@ def cmd_eval(args: argparse.Namespace) -> int:
         confirmed = gold.confirmed_only.entities_only
         if confirmed.mentions:
             confirmed_score = score_b3(store, args.novel, confirmed)
-            print("\n  -- human-confirmed only (this is the reportable result) --")
+            print("\n  -- confirmed only (this is the reportable result) --")
             print("  " + confirmed_score.summary().replace("\n", "\n  "))
             if args.report:
                 print(confirmed_score.worst_report())
+
+            # Real retriever recall@k (HANDOFF defect #4): confirmed gold
+            # identities mapped to system target_ids, so the retriever gate
+            # (recall@10 on TRANSFERABLE_TITLE) is measured against something
+            # other than the self-retrieval smoke test above.
+            from echotales.pipeline.resolve.retrieve import CandidateRetriever
+
+            gold_retriever = CandidateRetriever()
+            for mention in store.get_mentions(args.novel, resolved_only=True):
+                if mention.target_id:
+                    gold_retriever.observe(
+                        mention.target_id, mention.text, "", mention.chapter,
+                        label=mention.text,
+                    )
+            gold_cases, unmapped = build_gold_retrieval_cases(confirmed, store, args.novel)
+            print(f"\n=== gold recall@k ({len(gold_cases):,} cases, {unmapped} identities unmapped) ===")
+            if gold_cases:
+                gold_result = evaluate_recall(gold_retriever, gold_cases, mode=EvalMode.GOLD)
+                print("  " + gold_result.summary().replace("\n", "\n  "))
+                if args.report:
+                    print("  " + miss_report(gold_result).replace("\n", "\n  "))
+            else:
+                print("  no gold mention mapped to a system target_id -- recall@k untested.")
         else:
             print(
-                "\n  0 human-confirmed records -- nothing here is a reportable result yet."
+                "\n  0 confirmed records -- nothing here is a reportable result yet."
             )
         if args.report:
             print(draft_score.worst_report())
@@ -355,8 +384,31 @@ def cmd_resolve(args: argparse.Namespace) -> int:
     from echotales.pipeline.resolve import resolve_novel
 
     store = _open_store(args)
+    if getattr(args, "kinds_only", False):
+        from pathlib import Path
+
+        from echotales.pipeline.config import get_settings
+        from echotales.pipeline.resolve.kind_backfill import backfill_kinds
+
+        cfg = get_settings()
+        cache_path = Path(cfg.lexicon_path) / f"{args.novel}-ner-cache.json"
+        stats = backfill_kinds(store, args.novel, cache_path)
+        print(
+            f"kind backfill: checked={stats['checked']} "
+            f"classified={stats['classified']} left_default={stats['left_default']}"
+        )
+        store.conn.commit()
+        store.close()
+        return 0
     lexicon = load_or_seed(get_source(args.novel).lexicon)
-    print(resolve_novel(args.novel, store, lexicon=lexicon).summary())
+    print(
+        resolve_novel(
+            args.novel,
+            store,
+            lexicon=lexicon,
+            strict_kind_check=getattr(args, "strict_kind_check", False),
+        ).summary()
+    )
     store.close()
     return 0
 
@@ -767,7 +819,6 @@ def unload_ollama_models(*, prefix: str = "") -> None:
     Best-effort by design: a failure here is a warning, not a stage abort.
     """
     import httpx as _httpx
-
     from echotales.pipeline.config import get_settings
     from echotales.pipeline.llm.tasks import models_required
 
@@ -789,8 +840,11 @@ def cmd_persona(args: argparse.Namespace) -> int:
     from echotales.pipeline.persona.reference_gen import generate_references
     from echotales.pipeline.render.panels import get_engine
 
-    if getattr(args, "persona_command", "") == "wiki-canon":
+    sub = getattr(args, "persona_command", "")
+    if sub == "wiki-canon":
         return _cmd_wiki_canon(args)
+    if sub in ("refimg-search", "refimg-list", "refimg-select", "refimg-register"):
+        return _cmd_refimg(args, sub)
 
     store = _open_store(args)
     # The reference engine is a local diffusion pipeline; anything ollama
@@ -806,6 +860,7 @@ def cmd_persona(args: argparse.Namespace) -> int:
         top=args.top,
         include_recurring=not args.principals_only,
         seed=args.seed,
+        reference_transition_mode=getattr(args, "reference_transition_mode", "txt2img"),
     )
     print(report.summary())
     for label, path in sorted(report.paths.items()):
@@ -846,6 +901,79 @@ def _cmd_wiki_canon(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_refimg(args: argparse.Namespace, sub: str) -> int:
+    """Opt-in reference-image candidate search and review-queue CLI.
+
+    This is the second part of the system that reaches the open internet
+    (`_cmd_wiki_canon` was the first) -- same reasoning applies: it is a
+    standalone command, never a pipeline stage a render depends on, and a
+    failed/empty search degrades to "no candidates" rather than aborting
+    anything. Nothing this command does is wired into image generation;
+    see `persona/refimg.py` module docstring and HANDOFF 4.47.
+    """
+    from echotales.pipeline.persona import refimg
+
+    store = _open_store(args)
+    try:
+        if sub == "refimg-search":
+            novel_row = store.conn.execute(
+                "SELECT title FROM novel WHERE id=?", (args.novel,)
+            ).fetchone()
+            title = args.title or (novel_row["title"] if novel_row else args.novel)
+            results = refimg.search_batch(
+                store, args.novel, title,
+                self_ids=args.characters, max_results=args.max_results,
+            )
+            for r in results:
+                if r.error:
+                    print(f"{r.character_label} ({r.self_id}): SEARCH FAILED: {r.error}")
+                    continue
+                print(f"{r.character_label} ({r.self_id}) -- query: {r.query!r}")
+                if not r.candidates:
+                    print("  no candidates found")
+                for c in r.candidates:
+                    print(f"  [{c.id}] {c.source_url}")
+                    if c.title:
+                        print(f"      title: {c.title}")
+                    if c.source_page:
+                        print(f"      page:  {c.source_page}")
+            return 0
+
+        if sub == "refimg-list":
+            candidates = refimg.list_candidates(store, args.novel, args.character)
+            if not candidates:
+                print(f"no candidates stored for {args.character}")
+                return 0
+            for c in candidates:
+                mark = "*" if c.selected else " "
+                origin = "user-upload" if c.user_uploaded else c.backend
+                print(f"[{mark}] {c.id}  ({origin})")
+                print(f"      {c.source_url}")
+                if c.title:
+                    print(f"      title: {c.title}")
+            return 0
+
+        if sub == "refimg-select":
+            candidate = refimg.select_candidate(
+                store, args.novel, args.character, args.candidate,
+                actor=args.actor, note=args.note,
+            )
+            print(f"selected {candidate.id} for {args.character}: {candidate.source_url}")
+            return 0
+
+        if sub == "refimg-register":
+            candidate = refimg.register_user_image(
+                store, args.novel, args.character, args.path,
+                actor=args.actor, note=args.note,
+            )
+            print(f"registered and selected {candidate.id} for {args.character}: {candidate.source_url}")
+            return 0
+
+        raise ValueError(f"unknown refimg subcommand {sub!r}")
+    finally:
+        store.close()
+
+
 def cmd_relevance(args: argparse.Namespace) -> int:
     """Rank rendered panels by how little of their prompt the source says."""
     from echotales.pipeline.render.relevance import audit
@@ -859,11 +987,24 @@ def cmd_relevance(args: argparse.Namespace) -> int:
         for block in chapter.blocks:
             block_text[(number, block.index)] = block.text
 
-    report = audit(args.manifest, block_text, novel_id=args.novel)
+    report = audit(args.manifest, block_text, novel_id=args.novel, store=store)
     print(report.summary())
     print("\n  weakest panels (score, blocks, file, words shared with the passage):")
     for panel in report.worst(args.worst):
         print("  " + panel.line())
+
+    cast_failures = [p for p in report.panels if p.cast_missing]
+    if cast_failures:
+        print(f"\n  panels that dropped an expected cast member ({len(cast_failures)}):")
+        for panel in cast_failures[: args.worst]:
+            print("  " + panel.line())
+
+    condition_failures = [p for p in report.panels if p.condition_missing]
+    if condition_failures:
+        print(f"\n  panels that dropped a narrated condition ({len(condition_failures)}):")
+        for panel in condition_failures[: args.worst]:
+            print("  " + panel.line())
+
     store.close()
     return 0
 

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from echotales.core.enums import (
     OBSERVER_READER,
@@ -54,6 +55,16 @@ log = logging.getLogger(__name__)
 #: Characters of surrounding text supplied as evidence context.
 _CONTEXT_WINDOW = 400
 
+#: Section 2.2: fraction of a novel's entities with a raw-NULL `kind` column
+#: (never positively typed, backfill included) above which the SELF default
+#: is standing in for "unknown" often enough to be a pipeline gap, not
+#: individually-fine unknowns. Calibrated against the real production RI
+#: database (`data/webview-working/reverend-insanity.db`), which sits at 78%
+#: post-backfill and is HANDOFF-documented as spot-checked mostly-correct
+#: (2/15 real gaps) -- so this warns well below that, but does not treat
+#: RI's own current, known, partially-typed state as fatal.
+_KIND_UNKNOWN_WARN_THRESHOLD = 0.30
+
 
 @dataclass(slots=True)
 class ResolveReport:
@@ -78,10 +89,21 @@ class ResolveReport:
     by_method: dict[str, int] = field(default_factory=dict)
     detector_hits: dict[str, int] = field(default_factory=dict)
     events: int = 0
+    #: Section 2.2: entities whose raw `self_entity.kind` column is still
+    #: NULL/empty after the unconditional backfill runs -- i.e. nobody has
+    #: ever positively typed them, so `Store.get_self()`'s SELF default is
+    #: standing in for "unknown," not "confirmed person." Kept distinct from
+    #: `by_kind` (which only counts entities *positively* typed non-person):
+    #: a novel can have zero `by_kind` entries and still be mostly untyped.
+    kind_unknown: int = 0
 
     @property
     def defer_rate(self) -> float:
         return self.deferred / self.groups if self.groups else 0.0
+
+    @property
+    def kind_unknown_fraction(self) -> float:
+        return self.kind_unknown / self.entities if self.entities else 0.0
 
     def summary(self) -> str:
         methods = ", ".join(f"{k}={v}" for k, v in sorted(self.by_method.items())) or "none"
@@ -89,6 +111,11 @@ class ResolveReport:
             ", ".join(f"{k}={v}" for k, v in sorted(self.detector_hits.items())) or "none"
         )
         non_person = ", ".join(f"{k}={v}" for k, v in sorted(self.by_kind.items())) or "none"
+        kind_line = (
+            f"  kind coverage: {self.entities - self.kind_unknown:,}/{self.entities:,} typed "
+            f"({self.kind_unknown:,} unknown, {self.kind_unknown_fraction:.0%}) "
+            f"{'-- SEE WARNING ABOVE' if self.kind_unknown_fraction > _KIND_UNKNOWN_WARN_THRESHOLD else ''}\n"
+        )
         return (
             f"{self.novel_id}: {self.groups:,} groups -> {self.entities:,} entities\n"
             f"  linked={self.linked:,}  created={self.created:,}  "
@@ -96,6 +123,7 @@ class ResolveReport:
             f"recovered={self.recovered_from_deferral:,}  unresolved={self.unresolved:,}\n"
             f"  deictic-only groups (no entity created): {self.deictic_only:,}\n"
             f"  non-person entities (not voice-cast): {non_person}\n"
+            f"{kind_line}"
             f"  methods: {methods}\n"
             f"  detectors: {detectors}\n"
             f"  contradictions: {self.contradictions} -> {self.splits} split(s)\n"
@@ -232,9 +260,9 @@ class GlobalResolver:
         if self.corrections_log is None:
             return
         labels = [m.entity_label for m in founding_mentions if m.entity_label]
-        if not labels or any(l == "character" for l in labels):
+        if not labels or any(label_name == "character" for label_name in labels):
             return
-        if not all(l in ("location", "organization") for l in labels):
+        if not all(label_name in ("location", "organization") for label_name in labels):
             return
         kind = labels[0] if len(set(labels)) == 1 else "/".join(sorted(set(labels)))
         self.corrections_log.add(
@@ -616,6 +644,7 @@ def resolve_novel(
     use_llm: bool = False,
     commit_every: int = 10,
     corrections_log: CorrectionLog | None = None,
+    strict_kind_check: bool = False,
 ) -> ResolveReport:
     """Run global resolution over a whole novel, in discourse order."""
     # Prevent UNIQUE constraint violations by clearing existing resolution state for this novel
@@ -682,5 +711,50 @@ def resolve_novel(
 
     resolver.report.unresolved = len(resolver.queue)
     resolver.report.entities = len(resolver.retriever)
+
+    # Legacy-kind backfill, always run (EVOLUTION 4.54): `_entity_kind`
+    # above only types entities minted *this* run. A novel resolved before
+    # that classification existed left `self_entity.kind` NULL, which reads
+    # back as SELF (a person) -- see kind_backfill.py's docstring for the
+    # measured defect this closes. Cheap and a no-op when everything is
+    # already typed, so it costs nothing to run unconditionally.
+    from echotales.pipeline.resolve.kind_backfill import backfill_kinds
+
+    backfill_stats = backfill_kinds(
+        store, novel_id, Path(cfg.lexicon_path) / f"{novel_id}-ner-cache.json"
+    )
+    if backfill_stats["checked"]:
+        log.info(
+            "kind backfill: checked=%d classified=%d left_default=%d",
+            backfill_stats["checked"],
+            backfill_stats["classified"],
+            backfill_stats["left_default"],
+        )
+
+    # Section 2.2 startup assertion: raw-NULL kind, checked *after* backfill
+    # so this counts only what evidence genuinely could not resolve, not what
+    # the (cheap, always-run) backfill above would have fixed anyway.
+    still_unknown = len(store.unset_kind_self_ids(novel_id))
+    resolver.report.kind_unknown = still_unknown
+    if resolver.report.entities and resolver.report.kind_unknown_fraction > _KIND_UNKNOWN_WARN_THRESHOLD:
+        message = (
+            f"KIND COVERAGE WARNING: {still_unknown}/{resolver.report.entities} "
+            f"({resolver.report.kind_unknown_fraction:.0%}) of {novel_id}'s entities have "
+            "no positive kind classification (self_entity.kind is raw-NULL) even after "
+            "the backfill ran. Store.get_self() reads that back as TargetKind.SELF, so "
+            "these will be treated as people (voice-cast, panel-cast, webview) with zero "
+            "evidence either way -- this is the exact shape of the Qing Mao Mountain "
+            "defect (EVOLUTION 4.56) recurring at scale. Likely cause: entity_label was "
+            "never written (Layer-1 NER pass didn't run) or the NER cache at "
+            f"{Path(cfg.lexicon_path) / f'{novel_id}-ner-cache.json'} is missing/empty for "
+            "this novel. A 15-row spot-check is not a substitute for this number being "
+            "high on a *new* novel -- RI's own 78% is HANDOFF-documented and spot-checked; "
+            "an unfamiliar novel at this level has not been checked at all."
+        )
+        if strict_kind_check:
+            raise RuntimeError(message)
+        log.warning(message)
+        print(f"\n{'=' * 70}\n{message}\n{'=' * 70}\n")
+
     store.conn.commit()
     return resolver.report
