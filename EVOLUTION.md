@@ -5196,6 +5196,64 @@ against the old inflated figure, but now backed by real EXPLICIT/PROXIMAL
 evidence instead of a heuristic that was wrong four times out of five.
 `python3 -m pytest packages/pipeline/tests/ -q` passes throughout.
 
+**Section 4 (scorer features):** 4.1 (generalise `_ambiguous_tokens`) and
+4.2/4.3 (clan-prefix stripping, declaration pre-filter) were already
+resolved or investigated-and-closed in earlier sessions (see this file's
+own 4.58 and HANDOFF's defects #1/#2/#6) -- re-checked, not re-litigated,
+and still accurate. 4.4's re-run: fresh calibration against confirmed gold
+on the current codebase, precision/recall curve computed directly rather
+than assumed --
+
+```
+thr   prec    rec
+0.05  0.102  1.000
+0.10  0.386  1.000
+0.15  0.461  1.000
+0.20  0.698  0.779
+0.25  0.765  0.274
+0.30  0.667  0.084
+0.35+   --   0.000  (no samples score this high at all)
+```
+
+Precision never reaches 0.85 anywhere the scorer actually produces a
+probability -- confirms HANDOFF defect #1's "confirmed unfixable by
+reweighting" plainly, per 4.4's own instruction to report that outcome
+honestly rather than pretend a fix exists. Every real link in the system
+still comes from a `FORCE_LINK` pre-filter, not the probabilistic scorer.
+
+**Section 5 (title/relational mentions), root-caused and fixed:**
+Non-negotiable #4's blanket exclusion was measured as a real cost by
+Section 1.2's recall@k gate (0% on `TRANSFERABLE_TITLE`/
+`RELATIONAL_DEICTIC`, 19/27 hard-case identities unmappable). Three
+changes: (a) `mentions/alias_type.py` gained a curated single-holder-
+office noun list ("clan head," "sect leader," etc.) so these route to
+`TRANSFERABLE_TITLE` instead of the same `GENERIC_DESCRIPTOR` bucket as
+"the innkeeper"; (b) `resolve/runner.py`'s existing "can't found an
+entity" guard for `RELATIONAL_DEICTIC` now also covers
+`TRANSFERABLE_TITLE`; (c) `resolve_group` widens the candidate list for
+these alias types with every already-resolved entity established as
+physically present, and a new `sole_copresent_target_id` FORCE_LINK fires
+only when exactly one such candidate exists -- ambiguity (two rival
+co-present candidates, the six-Wang case) defers rather than guesses.
+Had to also exclude these alias types from the existing
+`co_presence_violation` blocker, which was silently killing the very
+candidate this mechanism links to before the FORCE_LINK was ever reached
+-- found by tracing the actual decision path, not by inspection, after the
+first version of this fix produced DEFER instead of LINK in its own test.
+
+Verified against real production data (scratch copy, no LLM):
+`RELATIONAL_DEICTIC` resolution on RI went from 0/99 to 59/99 -- e.g.
+"Sir"/"sir" (ch16/20) now correctly resolves to Fang Yuan.
+**`TRANSFERABLE_TITLE` itself is unverified against real chapter text this
+session** -- the current mention table has zero mentions of that type
+(the classifier fix only takes effect on a future mentions-extraction
+run, and re-running that stage was explicitly out of scope to avoid any
+LLM/ollama invocation this session). The resolution mechanism is verified
+end-to-end against synthetic mentions mirroring the real shape
+(`test_transferable_title_resolve.py`, including the six-Wang guard).
+**Next session should re-run mentions extraction on RI ch1 and confirm
+"the clan head"/blocks 68-78 for real**, which this session could not do.
+
 ---
 
 ### Section 10 (superseded "suggested next steps" list, as of the 2026-08-31 cleanup)

@@ -24,22 +24,24 @@ conflated.
 ## Pick up here
 
 **A root-cause remediation pass is in progress (EVOLUTION 4.60).**
-Sections 1-3 done. Retriever recall@k gate now has real gold to run
-against (`data/gold/reverend-insanity-hardcases.jsonl`, 89 hard cases,
-model-drafted/unconfirmed) and **it FAILS — recall@10 on
-`TRANSFERABLE_TITLE` = 0%, `RELATIONAL_DEICTIC` = 0%** — making Section
-5's title/relational-mention work the load-bearing next target, not a
-nice-to-have. `render/relevance.py` now checks cast/headcount/condition
-survival against ground truth, not just scene-word overlap. Section 2's
-non-person-entity typing is fully closed across panel cast, voice
-casting, and webview. Section 3's speaker attribution got a real anchor-
-recall fix (+12.2pp in controlled A/B) and had the never-validated
-turn-taking tier removed (measured wrong 82.9% of the time) and the
-chorus default fixed — net honest full-novel number is flat (45.5%) since
-the old figure was inflated by turn-taking's wrong guesses. Next: Section
-4 (scorer features), Section 5 (title/relational mentions — now backed by
-the recall@k failure above), Section 6 (prompt-assembly priority
-mechanism), Section 7 (frontend, after 1-6).
+Sections 1-5 done. Retriever recall@k gate found real gold and **FAILED**
+(recall@10 on `TRANSFERABLE_TITLE`/`RELATIONAL_DEICTIC` = 0%), and Section
+5 shipped the fix: title/relational mentions now resolve via sole-co-
+presence, never surface similarity, verified on real RI data
+(`RELATIONAL_DEICTIC` 0/99 -> 59/99). **`TRANSFERABLE_TITLE` needs a fresh
+mentions-extraction run to validate for real (skipped this session to
+avoid an LLM/ollama call) — do that next**, then re-run the recall@k gate.
+`render/relevance.py` now checks cast/headcount/condition survival
+against ground truth. Section 2's non-person-entity typing is fully
+closed (panel cast, voice casting, webview). Section 3's speaker
+attribution got a real anchor-recall fix (+12.2pp in controlled A/B), the
+never-validated turn-taking tier removed (wrong 82.9% of the time), and
+the chorus default fixed — net honest full-novel number is flat (45.5%)
+since the old figure was inflated by turn-taking's wrong guesses. Section
+4's scorer precision plateau reconfirmed unfixable by reweighting (never
+exceeds 0.85; every real link still comes from a FORCE_LINK pre-filter).
+Next: Section 6 (prompt-assembly priority mechanism), Section 7 (frontend,
+after 1-6).
 
 Before this pass, the live area of work was the render/direction pipeline
 (`packages/pipeline/src/echotales/pipeline/render/`). Most recently
@@ -197,8 +199,15 @@ genuinely unresolved *today*.
    0%, `RELATIONAL_DEICTIC` = 0%, `RIGID_NAME` = 70% — 19/27 gold
    identities in the hard-case set had no system entity to even map to.
    Candidate retrieval is confirmed the ceiling on exactly the alias types
-   plans.md Section 8.2 flagged. See Section 5's open item below — it is
-   now this defect's fix.
+   plans.md Section 8.2 flagged. **The fix shipped same session (EVOLUTION
+   4.60):** title/relational mentions now resolve via sole-co-presence
+   (never surface similarity); verified on real RI data,
+   `RELATIONAL_DEICTIC` resolution 0/99 -> 59/99. `TRANSFERABLE_TITLE`
+   itself still has zero real mentions in the current mention table
+   (needs a fresh mentions-extraction run to actually produce them, which
+   this session skipped to avoid any LLM/ollama call) — **re-run mentions
+   on RI ch1 next and confirm the clan-leader/blocks-68-78 case for real**,
+   then re-run this recall@k gate to see if the number moves off 0%.
 5. **Contradiction detector unvalidated on real data** — fires correctly
    on constructed over-merges, finds zero on 60 real chapters, which is
    diagnostic (Phase 6 over-splits, so nothing accumulates enough aliases
