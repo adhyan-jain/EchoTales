@@ -30,7 +30,7 @@ import re
 from collections import Counter
 from dataclasses import dataclass, field
 
-from echotales.core.enums import ReferenceMode, TargetKind
+from echotales.core.enums import ReferenceMode
 from echotales.core.store import Store
 
 #: Common nouns that name a *kind of being* and that an image model will
@@ -207,7 +207,13 @@ def build_lexicon(
         for mention in store.get_mentions(novel_id, chapter):
             if mention.reference_mode is not ReferenceMode.PRESENT:
                 continue
-            if mention.target_kind is not TargetKind.SELF or not mention.target_id:
+            # `Self.kind` is the only live typing -- `Mention.target_kind` is
+            # written once at link time and never updated when the resolver's
+            # typing pass later reclassifies the entity (anaphora/local.py's
+            # `present_cast` docstring has the measured Qing Mao Mountain
+            # case). Gating on `mention.target_kind` here would silently
+            # trust that stale copy instead of the join below.
+            if not mention.target_id:
                 continue
             entity = store.get_self(mention.target_id)
             if entity is None or not entity.kind.is_person:
