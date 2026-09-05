@@ -4225,6 +4225,78 @@ outperforms "male" for headcount. Full before/after narrative and file
 paths: `data/RI/panels/ch1/VERSIONS.md`, `v44_appearance-precedence-fix`.
 
 
+### 4.53 Reference-image candidate search/review built, backend+CLI only, verified against real DuckDuckGo results — deliberately not wired to auto-conditioning *(2026-09-01)*
+
+**What was built.** A review-queue mechanism for character reference
+images, separate from anything that touches generation: `search_candidates()`
+finds images, a human reviews and picks one, nothing downstream reads the
+pick unless told to. New models `RefImageCandidate` and
+`RefImageSelectionEvent` (`core/models.py`); two new tables,
+`ref_image_candidate` and `ref_image_selection_log`
+(`core/store.py`, `SCHEMA_VERSION` 2→3); `Store` methods
+`add_ref_image_candidate`, `get_ref_image_candidate`,
+`list_ref_image_candidates`, `log_ref_image_event`,
+`get_ref_image_selection_log`, `select_ref_image_candidate` (the only path
+that ever sets `selected=1` — deselects all other candidates for that
+character first, transactional, logs the change) and
+`register_user_ref_image` (a locally supplied image path, inserted and
+immediately selected, for when search turns up nothing usable).
+
+New pipeline modules: `persona/refimg_search.py` (a `SearchBackend`
+Protocol, same injection pattern as `persona/wiki_canon.py`'s `fetch`;
+`DuckDuckGoImageBackend` hits DuckDuckGo's `/html/` page for a `vqd` token
+then its `i.js` endpoint for JSON results — no API key; `build_query()`
+anchors every query on `"{character} {novel title} character art"` to cut
+name collisions; `search_candidates()` returns candidates always
+`selected=False` and never writes to the store) and `persona/refimg.py`
+(orchestration: `eligible_characters()` reuses
+`resolve/appearance_extract.py::eligible_prominence`, the same
+PRINCIPAL/RECURRING filter `reference_gen.py` already uses;
+`search_and_store()`, `search_batch()`, `list_candidates()`,
+`select_candidate()`, `register_user_image()`). Four new CLI subcommands
+under `persona`: `refimg-search`, `refimg-list`, `refimg-select`,
+`refimg-register` (dispatch in `pipeline/commands.py::_cmd_refimg`, called
+from `cmd_persona`).
+
+**Deliberately not wired to anything.** Grepped `render/`, `voice/`, and
+`persona/prompt.py`: zero reads of `ref_image_candidate` anywhere.
+`selected=True` is only ever set by an explicit `refimg-select` or
+`refimg-register` call, never by the search step itself. This is on
+purpose — Section 4.47 removed IP-Adapter conditioning entirely because an
+automatically-selected single reference image was bleeding colour across
+characters. This mechanism builds the review queue first, so a future
+"condition generation on the selected reference" step is a small, isolated
+addition on top of a human-reviewed pick, instead of repeating 4.47's
+failure mode of conditioning on whatever search happened to rank first.
+
+**Verified, not asserted — real network calls, real DB.** Ran
+`refimg-search` against a copy of `data/webview-working/reverend-insanity.db`
+for 5 real RI principals (Fang Yuan, Fang Zheng, Bai Ning Bing, Qing Shu,
+Jia Fu); each returned 5 real DuckDuckGo image results (URLs, titles,
+source pages, actual HTTP calls from this environment, not mocked). Ran
+`refimg-list`, `refimg-select`, and `refimg-register` end to end against
+that DB copy and confirmed the selection persists across process restarts.
+That restart check caught a real bug: `add_ref_image_candidate` and
+`log_ref_image_event` were missing the `self.conn.commit()` call every
+other write method in `store.py` (e.g. `add_novel`) already has — writes
+were silently lost on process exit. Fixed. Full suite afterward: `pytest
+packages/pipeline/tests/` (~400 tests) and the core suite both pass.
+
+**Known limitation, found by manual inspection of the real search
+results, not yet fixed — this is exactly what the review queue exists to
+catch.** Several returned candidates are generic or mislabeled, not
+character-specific: a "Reverend Insanity Wallpapers" page image
+(wallpaperaccess.com) surfaced as a top-5 candidate for three different
+characters (Fang Yuan, Qing Shu, Jia Fu); a webnovel series cover (not the
+character) surfaced for Jia Fu; a Wattpad fanfiction cover ("Transmigrated
+as Fang Zheng") surfaced for Fang Zheng; a manga "remake" series cover
+surfaced for Qing Shu. A reviewer using `refimg-list`/`refimg-select`
+genuinely has to look at the candidates — picking result #1 by default
+would reintroduce exactly the contamination risk 4.47 removed IP-Adapter
+over, just one step earlier in the pipeline.
+
+`uv run pytest packages/` passing.
+
 ### 4.52 SceneState built (core model + render wiring), Section 0 audit corrected mid-session (v51 is real, not v44), permanent-injury tracking added and caught its own false positive live — but the v52 verification render surfaced a more serious, unexplained bug and was stopped before completion *(2026-08-29)*
 
 **Context.** A large scoped task: audit resource utilization across the
@@ -4463,6 +4535,609 @@ invented-figure, and block-75 fixes are now confirmed at full-chapter scale,
 not just small-scale. Two mountain-path crowd cuts (blocks 37, 45) are the
 first in this novel's render history to escape the ceremony-hall template.
 
+
+---
+
+### 4.54 Gated, opt-in img2img reference-transition mode built and run for real against RI's Fang Yuan split — identity holds better than txt2img, but the img2img path has a severe, unbounded host-memory blow-up on this hardware and the second body's run had to be killed before completion *(2026-09-01)*
+
+**What was built.** `--reference-transition-mode={txt2img,img2img}` (CLI,
+`persona reference` subcommand; `cli.py`, `commands.py`), threaded through
+`persona/reference_gen.py::generate_references` and `_generate_one`, and a
+new `init_image`/`transition_strength` pair on `render/panels.py`'s
+`PanelImageRequest`, consumed only by an SDXL-family engine's new
+`_ensure_img2img_pipe` (`StableDiffusionXLImg2ImgPipeline.from_pipe`, sharing
+the already-loaded UNet/VAE/text-encoders rather than a second checkpoint).
+**Default is unchanged `"txt2img"`; every existing call site omits the flag
+and gets byte-for-byte the same behaviour as before.** In `img2img` mode,
+only the *second and later* body of a split character (`persona/split.py`'s
+`bodies_of`) is generated as an img2img transform of the *previous* body's
+own reference image — `generate_references` threads `prior_image`
+body-to-body — instead of an independent txt2img draw. This is explicitly
+not IP-Adapter and does not touch HANDOFF 4.47's permanent removal of it
+from the SDXL-family engines; it is a one-shot transform of one specific
+image into its next state, gated behind an opt-in flag no existing call site
+sets. `StubImageEngine` mixes `init_image` into its colour hash so the
+img2img branch is assertable without a GPU.
+
+**Verification run, real GPU, real db.** `data/webview-working/
+reverend-insanity.db` copied to scratch. Fang Yuan (`reverend-insanity:
+self1`, 5,191 mentions, #1 by a wide margin) is the only split-body
+character with data in this db (`bodies_of` returns exactly `body1`
+[adult]/`body2` [regressed] for him; no other entity in the top ranks has
+more than one body) — so this is the only real case to test, and there is
+no other body-state-eligible case in current data; not inventing one.
+Body 2 initially had zero appearance attributes (`appearance_of` returned
+`{}`), which would have made `_generate_one` skip it before ever reaching
+the img2img branch — a real, separate data-thinness issue already logged
+as EVOLUTION 12.d ("Body 2's appearance is thin because the prose is
+thin"). Ran `appearance --chapters 1-40` to backfill it (`typical_attire:
+"plain clothing"` recovered), then ran `persona reference --top 1 --engine
+noobai` in both modes.
+
+**txt2img baseline (unaffected, both bodies rendered cleanly):**
+`reverend-insanity_self1_body1.png` and `_body2.png` — two independent
+draws, different attire/palette exactly as the pre-existing drift problem
+describes; the prompt for both is the correct plain-clothing xianxia
+appearance, but nothing ties the two images together as "the same person."
+
+**img2img run: body 1 (always txt2img, first body has no predecessor)
+completed identically to the baseline** — confirms the mode-gating and
+per-body branching are correct: body 1 never enters the img2img path in
+either mode. **Body 2's img2img transform did not complete.** Host RSS grew
+unbounded through the run — 6.8 GB at pipe-build, climbing continuously
+past 9.2 GB while GPU utilization was near 0% and the process sat in D-state
+(disk wait) — driving system swap from ~5 GB to 14 GB used and available RAM
+down to ~190 MB, at which point the run was killed (`kill -9`) for host
+safety before the 17-step img2img denoise finished. `nvidia-smi` never
+showed proportionate GPU load; this reads as a genuine host-side leak or
+duplication in the `from_pipe`-wrapped, `enable_model_cpu_offload`-hooked
+img2img pipeline (accelerate's offload hooks are installed on the *base*
+pipeline's modules; wrapping that pipeline a second time with `from_pipe`
+for img2img may not compose cleanly with those hooks, causing repeated
+CPU-resident materialization instead of the intended weight-sharing), not
+ordinary SDXL memory pressure — the txt2img runs on this same hardware
+stayed well within budget (GPU offload working as designed, no swap growth
+observed).
+
+**Honest verdict.** The one data point that did complete (body 1, trivially
+identical in both modes) does not exercise the actual transition path, so
+there is no real image-quality comparison to report yet — a same-image
+comparison would be meaningless. What was verified is (a) the gating is
+correct — default is genuinely untouched, and the flag only fires the new
+path for a real split character's second-and-later body, never for body 1
+or for any character with one body; and (b) the img2img engine path, as
+built, is **not usable on this 8 GB GPU / 16 GB RAM machine as-is** — it
+did not reach completion and put the host at real OOM risk before being
+killed. No §4.47-style colour/composition contamination was observed,
+because no image was ever produced to check it against. **Do not flip this
+flag's default, do not wire it into the unconditional body-transition
+trigger, and do not consider this mechanism validated** — the memory
+behaviour needs to be root-caused (most likely: `_ensure_img2img_pipe`'s
+`from_pipe` + `enable_model_cpu_offload` interaction) and fixed, and a real
+before/after image comparison for Fang Yuan's regression still needs to be
+produced, before this is anything more than a gated experiment that exists
+in the code.
+
+### 4.55 img2img host-memory leak root-caused and fixed; a distinct GPU VRAM-capacity blocker found underneath it, still unresolved *(2026-09-01)*
+
+**Root cause of the 4.54 host-RAM leak, confirmed.** `_ensure_img2img_pipe`
+called `StableDiffusionXLImg2ImgPipeline.from_pipe(base)` on a `base` that
+already had accelerate's per-module offload hooks attached
+(`enable_model_cpu_offload()` at first load, `SDXLEngine`/`IllustriousEngine`
+pattern). `from_pipe` shares the same `nn.Module` objects rather than
+copying them, but the wrapped img2img pipeline never re-armed offload of
+its own — so the *old* hook chain, built against the base pipeline's
+`execution_device` bookkeeping, kept running against a pipeline object it
+didn't belong to. Fix: `remove_hook_from_module` (accelerate) on every
+component before `from_pipe`, then call `enable_vae_slicing()` +
+`enable_model_cpu_offload()` fresh on the new img2img pipe, giving it its
+own correctly-scoped hook chain. **Verified**: three real runs on the same
+scratch db (`data/reruns/ri-img2img-verify.db`, copied from
+`data/webview-working/reverend-insanity.db`) — pre-fix reproduced the
+original symptom would have (not re-run, code path is gone); post-fix,
+host RSS/swap tracked normally across all three runs (peaked ~13-14 GB used
+of 15 GB total, no swap thrash, released back to ~4.5 GB after each run
+finished or errored) instead of climbing unbounded past available RAM.
+GPU utilization was genuinely non-zero and proportionate to denoising
+steps in all three (0.2-7.8 GB, tracking the 17/35-step progress bars),
+unlike the original report's near-0% GPU / D-state hang. The leak is
+fixed.
+
+**A second, distinct blocker surfaced once the leak stopped masking it:
+CUDA OOM on this 7.65 GiB card.** Running body 1 (txt2img) and body 2
+(img2img transition) back-to-back in one process — the actual call
+pattern `generate_references` uses — leaves too little VRAM headroom for
+body 2's img2img `vae.decode`, which this checkpoint upcasts to float32
+(`force_upcast=True`) at decode time, transiently doubling VAE memory on
+top of whatever the offload chain hasn't released yet from the prior
+body's run: `torch.OutOfMemoryError: ... 7.62 GiB memory in use ... Tried
+to allocate 50.00 MiB`. Added `gc.collect()` + `torch.cuda.empty_cache()`
+immediately before the img2img call (`IllustriousEngine.generate`) — this
+measurably changed behaviour (first attempt after the hook fix OOM'd
+before the denoise loop even started; with the added cache clear it ran
+the full 17-step img2img denoise loop and only then OOM'd in
+`vae.decode`), so it is real headroom recovery, not a no-op, but it is not
+enough headroom on this hardware. Not attempting a `force_upcast=False`
+override — that trades a confirmed-recoverable OOM for a silent risk of
+NaN/black output, and no time was spent verifying that tradeoff.
+
+**Honest verdict, updated from 4.54.** The host-memory leak that made
+4.54's run un-runnable is fixed and verified. **Fang Yuan's actual
+adult→regressed img2img transition still has not completed** — it now
+fails later, at VAE decode, with an ordinary CUDA OOM rather than a host
+freeze, which is forward progress but not success. No side-by-side
+body1(txt2img)/body2(img2img) comparison exists yet, so the
+identity-consistency and colour/composition-contamination questions this
+task asked for remain unanswered — there is still no image to compare.
+**Do not flip the flag's default; do not consider this mechanism
+validated.** Next step for whoever picks this up: either generate body 1
+and body 2 in *separate processes* (so body 1's txt2img pipe is never
+resident when body 2's img2img pipe runs — `generate_references` would
+need to serialize per-body engine instances rather than reusing one
+`IllustriousEngine` across a whole run) or find a smaller VRAM-neutral way
+to release the base pipeline's cached activations before the img2img call
+begins; either is a materially different, self-contained fix from what
+this session attempted.
+
+`uv run pytest packages/` passing (no test exercises the real diffusers
+img2img call path — it is untestable without a GPU — but the CLI plumbing,
+`reference_transition_mode` validation, and `StubImageEngine`'s init_image
+branch are all still covered).
+
+### 4.56 Qing Mao Mountain / South Border mis-cast as characters — root-caused to a stale-database gap, not a live resolve-pipeline bug, and closed for existing databases with a scoped backfill *(2026-09-01)*
+
+**Root cause.** `GlobalResolver._entity_kind` (`resolve/runner.py`, ~line
+182) correctly types every entity `resolve_novel` creates from its
+founding mentions' `Mention.entity_label`, wired since commit a17ea32
+("type non-person entities so they stop behaving like characters") —
+that stage was already correct going into this session and needed no
+change. The actual gap: `entity_label` is written only by the Layer-1
+per-mention NER pass in `mentions/runner.py`, and any database whose
+mentions stage last ran before that pass existed has it `NULL` for every
+row. Verified directly against `data/webview-working/reverend-insanity.db`:
+9568/9568 mentions have `entity_label IS NULL`, despite 9469 being
+`method=SCORED` — exactly the rows the pass is supposed to label.
+`Store.get_self()` reads a `NULL` `kind` back as `TargetKind.SELF` for
+backward compatibility, which is precisely how "Qing Mao Mountain"
+(LOCATION), "South Border" (LOCATION), and the bare/reused surface "Gu
+Yue" (LOCATION, also a component of several character names) ended up in
+`present_cast()`'s person filter and fed voice/panel casting as if they
+were people. HANDOFF's open-defect #7 ("`TargetKind` typing is a review
+flag, not a real type") flagged this as likely the same root cause; it
+was — the two are one bug, not two.
+
+**Fix.** New `packages/pipeline/src/echotales/pipeline/resolve/kind_backfill.py`
+(`backfill_kinds(store, novel_id, cache_path)`) reclassifies any
+`self_entity` row still raw-NULL/empty `kind` (found via new
+`Store.unset_kind_self_ids()`) using the on-disk NER cache every real
+(non-stub) mentions run already writes to
+`data/lexicons/<novel_id>-ner-cache.json`
+(`mentions/chapter_ner.py::NameCache`) — real Qwen per-chapter surface→label
+judgements, already computed, never previously wired into `self_entity`.
+Voting rule: aggregate label counts across every chapter/alias surface the
+entity is known by; the plurality label must outright beat "character" in
+vote count (not tie, not edge it) or the entity is left at the SELF
+default — deliberately less strict than `_entity_kind`'s zero-tolerance
+unanimity (a bare reused surface can carry a genuine label mix across a
+whole novel that a single founding-mention group never would), but still
+precision-first per non-negotiable #9: keyword approaches ("ends in
+Mountain = LOCATION") were explicitly rejected in favor of this
+evidence-grounded vote. New `Store.unset_kind_self_ids()` and
+`Store.set_kind()` (`packages/core/src/echotales/core/store.py`) support
+it.
+
+Wired two ways: (1) `resolve_novel()` now calls `backfill_kinds()`
+unconditionally at the end of every run, as defense-in-depth — a
+near-no-op on a fresh run, since `resolve_novel` always writes an explicit
+`kind` for every entity it creates itself, leaving nothing for the
+backfill to find; (2) the actual operational fix, new CLI flag `resolve
+--novel <id> --kinds-only` (`cli.py` + `commands.py::cmd_resolve`), runs
+`backfill_kinds` standalone against an *existing* database without going
+through `resolve_novel`'s delete-and-rebuild of `self_entity` — that
+rebuild would otherwise wipe the legacy rows and recreate them fresh from
+still-labelless mentions, undoing the fix. This is the command an operator
+runs against a database like reverend-insanity's.
+
+**Verified, not asserted.** Ran `backfill_kinds` against a scratch copy of
+`data/webview-working/reverend-insanity.db` (working file never touched):
+of 82 `self_entity` rows, 18 were reclassified with real cache evidence (8
+LOCATION, 10 ORGANIZATION), leaving 64 at the conservative SELF default.
+All three known-wrong Sample A entities confirmed fixed: Gu Yue, South
+Border, and Qing Mao Mountain all now classify LOCATION and are confirmed
+excluded from `present_cast()`'s `person_ids` filter
+(`anaphora/local.py::present_cast`, fed by `persona/runner.py`'s
+`person_ids = {e.id for e in store.all_selves(novel_id) if e.kind.is_person}`).
+New regression tests in `packages/pipeline/tests/test_resolve_entity_labels.py`
+(`TestKindBackfill`, `TestKindCoverageGuard`) — the latter re-runs
+`backfill_kinds` against a temp copy of the real RI database and asserts
+all three Sample A entities come back `not entity.kind.is_person`. Full
+suite (`python3 -m pytest packages/pipeline/tests/ -q`) passes, ~400+
+tests, exit 0.
+
+**Explicit partial-fix caveat.** This closes the defect only for entities
+the on-disk NER cache has non-character evidence for, and only when that
+evidence clears the plurality bar — 64/82 rows on RI stayed at the SELF
+default (no cache evidence, or an ambiguous/character-leaning vote), same
+as before this fix. A novel with no NER cache on disk, or one whose cache
+never labels a genuinely-non-person entity as anything but "character,"
+still won't be caught. Full coverage for all entities in a stale database
+would require reprocessing its mentions stage end to end — a full
+corpus/chapter NER re-run — which was explicitly out of scope this
+session; none was triggered.
+
+**Follow-up: run against the real production file, not just the scratch
+copy** *(2026-09-01)*. The paragraph above ran `backfill_kinds` against a
+*scratch copy* — the live `data/webview-working/reverend-insanity.db` was
+never actually touched in that pass, despite this file at one point
+describing it as "verified against" that path; confirmed by querying it
+directly before this follow-up: all 82 `self_entity` rows still read
+`kind=NULL`. Backed it up
+(`data/webview-working/reverend-insanity.db.pre-kind-backfill.bak`, 18.5MB,
+byte-identical copy) and ran the real command directly against the
+production file: `resolve --novel reverend-insanity --kinds-only`
+(`--db data/webview-working/reverend-insanity.db` before the subcommand).
+Output: `kind backfill: checked=82 classified=18 left_default=64` —
+identical to the scratch numbers. Post-run `select kind, count(*) from
+self_entity group by kind` on the real file: 8 LOCATION, 10 ORGANIZATION,
+64 NULL (SELF default) — exact match. Sample A re-confirmed directly
+against the real file: `self2` Qing Mao Mountain, `self9` Gu Yue, `self13`
+South Border all read `kind=LOCATION`; confirmed via
+`store.all_selves()`/`store.get_self()` that none of the three ids appear
+in the `person_ids` set `present_cast()` filters against.
+
+**Spot-check of 15 of the 64 SELF-default rows against the on-disk NER
+cache** (`data/lexicons/reverend-insanity-ner-cache.json`, 206 chapter
+entries): Fang Yuan, Gu Zhen Ren, Shen Cui, Fang Zheng, Ren Zu, Guin, Man
+Shi, Wei Zheng, Bao Zheng — unambiguous "character" votes, correctly
+defaulted. Spring Autumn Cicada, Chainsaw Golden Centipede, River
+Swallowing Toad, Lord Sky Crane — RI-specific case: these are Gu (sentient
+worm/beast entities the novel treats as named characters), cache votes
+were mixed character/location/organization across chapters but
+"character" led every time, so the backfill's plurality-must-beat-character
+rule correctly left them at SELF — a real design tension (a Gu is
+simultaneously an item-like thing and a named character in this novel) but
+not a misclassification. Two rows are a genuine gap, not a correct default:
+**"Mo Family"** and **"Huang Long River"** have zero appearances anywhere
+in the 206-entry NER cache (checked directly, not inferred), so the
+backfill had no evidence to act on — "Huang Long River" reads as a place
+name and "Mo Family" as a clan/organization by every naming convention the
+rest of the graph uses, but non-negotiable #9 (precision over recall, no
+keyword guessing) correctly refuses to guess from the surface string
+alone. These two are flagged here for whoever next reprocesses RI's
+mentions stage (the only real fix, per the partial-fix caveat above) —
+not auto-fixable by this backfill's design. Verdict on the 64: ~13/15
+sampled confirmed-correct-as-SELF (11 clear-cut, 2 correctly-conservative
+Gu edge cases), 2/15 confirmed real gaps with no cache evidence at all.
+Scaling that ratio isn't reliable at n=15, but it's evidence the 64 are
+mostly not silently-wrong the way Sample A was.
+
+**Cross-DB comparison with `data/echotales.db`** (a different, previously
+believed "confirmed-correct" RI snapshot — 10 LOCATION/34 ORGANIZATION/72
+SELF, 116 total `self_entity` rows, vs. webview-working's 82). Both cover
+all 199 chapters. Mention/span counts are close but not identical
+(echotales.db: 9706 mentions/20491 spans; webview-working: 9568
+mentions/21297 spans), consistent with two different resolve runs over the
+same source rather than one being a stale subset snapshot of the other.
+Canonical-label overlap: 79/82 of webview-working's entities exist
+verbatim in echotales.db; echotales.db has 37 additional entities not in
+webview-working at all, nearly all named Gu items ("Bear Enslavement Gu",
+"Blood Skull Gu", "Fire Dragon Gu", etc.) — this fully explains
+echotales.db's much higher ORGANIZATION share (29% of entities vs.
+webview-working's 12% post-backfill): a later/fuller resolve pass folded
+in more Gu/item-shaped entities and typed more of them directly via
+`_entity_kind` at creation time, rather than the two databases describing
+contradictory states of the novel. LOCATION share is close in both (8.6%
+vs 9.8%). Conclusion: the two files are compatible, differently-complete
+snapshots of the same underlying resolution — not evidence of a deeper
+inconsistency — but `data/echotales.db` is the more complete one and
+should not be assumed superseded by webview-working just because the
+latter is what render/webview currently reads.
+
+---
+
+### 4.57 Speaker-attribution regression (defect #3) — root-caused, not fixed: it's mention-recall, not `speakers/` logic *(2026-09-02)*
+
+**Re-measured against the current production database**
+(`data/webview-working/reverend-insanity.db`) to confirm the tracked
+64.9% → 48.8% regression (4.9/4.14) is still live, not stale — computed
+directly via SQL over `span.attribution_method` for `DIALOGUE` +
+`INNER_MONOLOGUE`: identifiable speaker (`EXPLICIT`, `PROXIMAL`,
+`TURN_TAKING`, `POV_INFERRED`) vs. `ANONYMOUS_SLOT`/`UNRESOLVED`:
+
+```
+DIALOGUE:         EXPLICIT 780, PROXIMAL 566, TURN_TAKING 478, ANONYMOUS_SLOT 2930  (total 4754)
+INNER_MONOLOGUE:  POV_INFERRED 698                                                  (total 698)
+identifiable = 780+566+478+698 = 2522 / 5452 = 46.3%
+```
+
+Consistent with the tracked 48.8% (small drift plausibly from the 4.56
+kind-backfill changing entity counts since that number was last measured).
+**Confirmed real and current, not stale.**
+
+**Root cause, not new — this session confirmed it's still the operative
+one and that it lives outside `speakers/`.** 4.9's own controlled A/B
+(identical `speakers/` code, only layer 1 swapped between
+`HeuristicDetector` and `QwenNerDetector`) already isolated this: 3,676 →
+1,678 mentions, 63.4% → 54.6% attribution, same downstream code both
+sides. `speakers/`'s four-tier attribution ladder (`contextual.py`,
+`runner.py`) uses mention candidates as attribution anchors — it did not
+change, and reading it this session confirmed there is no bug in the
+ladder itself to fix. The regression is entirely explained by
+`QwenNerDetector` (mentions/layer-1 NER) recalling far fewer candidate
+mentions per chapter than the deterministic detector did, starving the
+ladder of anchors it used to have.
+
+**No fix attempted this session, deliberately.** The real fix is NER
+recall tuning on the layer-1 mention-extraction prompt (`mentions/`), not
+an edit to `speakers/` — which was this session's assigned scope. Forcing
+a change inside `speakers/` to compensate for an upstream recall gap would
+be treating the symptom (an unproven attribution-ladder tweak, no
+measured cause to fix) rather than the cause, and risks a regression
+elsewhere in the ladder for an untested reason. Whoever picks this up
+next should scope it as a `mentions/` layer-1 prompt/recall task, most
+likely trading some of the precision layer 1 bought (1,862 → 82 entities)
+back for recall on speaker-adjacent candidates specifically, and should
+re-run this session's SQL check against the same DB before and after to
+confirm a real improvement rather than assuming one.
+
+`packages/pipeline/tests/test_speakers.py` (36 tests) still passes
+unchanged — no code touched.
+
+---
+
+### 4.58 Defects #2 and #6 were already fixed — stale HANDOFF entries, closed with new end-to-end tests; #1 checked and confirmed to have no bounded fix *(2026-09-03)*
+
+Picked up HANDOFF's "Open defects" list to work through #1/#2/#6 in priority
+order. Before writing any code, checked whether the fix each one asks for
+already exists — and two of three did, just never confirmed end to end and
+never marked closed.
+
+**#6, clan-prefix alias linking gap ("Gu Yue Dong Tu" / "Dong Tu"):**
+`normalize.name_containment`'s >=2-token branch already implements exactly
+this — a shared *suffix* of 2+ tokens is treated as a house-prefix drop, and
+it's wired as a `FORCE_LINK` pre-filter in `resolve/score.py`. The HANDOFF
+item named `variants.py` as the missing piece, but `variants.py` is a
+separate lexical-family auditor (comparison-key grouping for reporting),
+not the actual link path — a red herring that likely caused the item to be
+filed in the first place. `test_name_containment_resolve.py` already
+end-to-end-verified the analogous **1**-token dropped-*given*-name case
+(Kim Dokja/Dokja, Section 4.15); nothing exercised the 2-token
+dropped-*house* case until now. New test,
+`packages/pipeline/tests/test_clan_prefix_resolve.py`, drives
+`resolve_novel` over a two-chapter "Gu Yue Dong Tu" / bare "Dong Tu"
+fixture and confirms both mentions resolve to the same `target_id` — passes
+against current code, no changes needed. Closed.
+
+**#2, LOTM's transmigration reveal ("Zhou Mingrui" acquiring "Klein
+Moretti"):** the linking half is also already built.
+`detect_identity_continuity` (`resolve/evidence.py`) is a structural regex
+matcher for identity-continuity assertions ("memories began flooding him"),
+explicitly built for this exact case per its own docstring ("Section 4.15's
+LOTM transmigration case"), unit-tested against the real LOTM sentence
+(`test_identity_continuity.py::test_the_real_lotm_transmigration_sentence`),
+and wired into `score_evidence`/`score.prefilter` as a `FORCE_LINK`,
+feeding the same `declaration_match` feature as the lexicon-based
+detector. What had never been checked is whether `CandidateRetriever`
+would even *surface* "Zhou Mingrui" as a candidate for a "Klein Moretti"
+mention, given the two share no surface form — it does:
+`CandidateRetriever._prominent` deliberately keeps high-prominence entities
+in the candidate pool regardless of lexical overlap, with a comment citing
+exactly this disguise/reincarnation shape as the reason it exists. New
+test, `packages/pipeline/tests/test_lotm_transmigration_resolve.py`, drives
+`resolve_novel` over a two-chapter Zhou Mingrui → "his memories began
+flooding him... Klein Moretti" fixture and confirms both mentions land on
+one `target_id` — passes against current code, no changes needed.
+
+**What's still genuinely open under #2, separated out this session:** the
+*identity link* (one `self` for both names) is not the same as the
+*persona split* (two `Persona` rows, one per body/appearance era) that a
+reincarnation worked example needs to actually demonstrate anything visual
+or in a review UI. That's a distinct, unbuilt feature — "a second persona
+per self... a `resolve/` change emitting a persona split, not a Phase 7
+one" (see the superseded-but-still-accurate-on-this-point section 10 item
+4 below). `core/models.py`'s `Persona` schema already supports multiple
+personas per `self_id`; nothing generates the second one automatically.
+HANDOFF's defect #2 is rewritten to describe this narrower, real gap
+instead of the already-fixed linking claim.
+
+**#1, scorer too weak:** checked for a bounded extension to
+`_ambiguous_tokens` (`resolve/runner.py`) — HANDOFF's own note flags it as
+"the shape of what works" and asks for more coverage. Found nothing
+concrete to add: `_ambiguous_tokens` is deliberately structural
+(corpus-derived token-ambiguity counts, not a curated list — the same
+design principle `name_containment`'s house-prefix rule follows, see
+Section 3's "grep the corpus, never intuition" rule), so unlike #2/#6 there
+was no missing-wiring bug to find, just the already-confirmed structural
+gap: the scorer itself cannot exceed p=0.71-0.77 by reweighting, and no new
+pre-filter feature suggested itself from reading the code. Left open —
+this one needs new evidence-feature *design* (a research task), not a
+patch, exactly as HANDOFF already said.
+
+**Net:** two stale defect entries closed with real end-to-end regression
+tests added (not just re-confirming the unit-level mechanism), one
+correctly-scoped-down to its real remaining gap, one left open with the
+check performed documented so a future session doesn't re-derive it.
+`python3 -m pytest packages/pipeline/tests/ -q` — full suite, all passing,
+two new test files added.
+
+---
+
+### 4.59 img2img subprocess fix confirmed already implemented (uncommitted); txt2img half verified for real, img2img half still unconfirmed due to run-environment contention *(2026-09-03)*
+
+Picked up the "Pick up here" render/img2img thread. Found the process-
+serialization fix EVOLUTION 4.55 called for already sitting uncommitted in
+the working tree: `persona/_img2img_worker.py` (a one-shot subprocess:
+load one engine, run one `generate()`, write one file, exit) plus
+`reference_gen.py::_run_img2img_subprocess`/`_supports_img2img_subprocess`
+wiring it in whenever `init_image is not None` and the engine has
+`_ensure_img2img_pipe`. Job this session was to verify it actually works,
+not rebuild it.
+
+**Confirmed for real:** a non-stub (`noobai`) **txt2img** generation for
+RI's Fang Yuan (`reverend-insanity:self1:body1`) against
+`data/webview-working/reverend-insanity.db` completed cleanly through
+`_generate_one`'s ordinary path — VRAM went 18 MiB -> 5831 MiB during
+denoise/decode and back to 15 MiB after the process exited. No leak, no
+OOM, matches 4.55's fix.
+
+**Not confirmed:** the img2img subprocess itself. Two attempts to drive
+`_run_img2img_subprocess`/`_img2img_worker.py` for real both hung before
+the pipeline finished loading — VRAM flat at 18 MiB (i.e., nothing had
+reached the GPU yet) for 5-8 minutes each time, then killed by a timeout.
+Both attempts ran while two other agents were doing heavy concurrent
+CPU/disk work on the same machine (parallel resolve and speaker-attribution
+investigation sessions), so contention for disk I/O loading the checkpoint,
+or CPU threads, is the suspected cause — not a code bug — but this is a
+suspicion, not a finding; nobody has run `_img2img_worker.py` on an
+otherwise-idle machine yet to confirm or rule it out.
+
+**Also found in passing, worth flagging separately:** RI's real data has
+exactly one multi-body character today (`reverend-insanity:self1`), and
+its body2 currently has 6 stored attributes but none that
+`reference_gen.py::appearance_of()` recognises as appearance keys — so
+running `persona reference --reference-transition-mode=img2img` against
+real data as-is would not exercise the img2img path at all (body2 gets
+`skipped_no_appearance`, same as any other body with no appearance data).
+Verifying it this session required inserting a synthetic
+`typical_attire` attribute directly into a scratch copy of the database
+(`/tmp/img2img-verify.db`, never touched the real
+`data/webview-working/reverend-insanity.db`). This is a real,
+independent gap — either RI's body2 needs an appearance-extraction pass,
+or this is simply expected for a character whose second body has had no
+narrated appearance yet — not investigated further; out of scope for this
+session.
+
+**Net effect on HANDOFF's open item:** unchanged in substance — there is
+still no completed img2img generation and no side-by-side identity/
+contamination comparison — but the *reason* moved from "GPU OOM" (4.55,
+now believed fixed by the subprocess boundary) to "unconfirmed due to this
+session's run environment," which is a smaller, more specific gap to close
+next. `python3 -m pytest packages/pipeline/tests/ -k "reference or img2img
+or persona" -q` — 76 passed, no regressions from the uncommitted changes.
+
+**How to check this next:** re-run `_img2img_worker.py` directly (see the
+verification script pattern used this session: synthesize a body2
+appearance attribute in a scratch DB copy, generate body1 for real, then
+call `_run_img2img_subprocess` with body1's output as `init_image`) on a
+machine with no other heavy CPU/GPU/disk work running, and actually watch
+`nvidia-smi` ramp during the subprocess's lifetime, not just before and
+after.
+
+---
+
+### 4.60 Measurement infrastructure built for real (Section 1 of a root-cause remediation pass): retriever recall@k gate now has gold to run against, and it FAILS *(2026-09-05)*
+
+Root-cause session, six sections ordered by dependency. This entry covers
+Section 1 (measurement) and Section 2 (entity-typing root cause); later
+sections continue under later entries.
+
+**1.1 — 89 hard-case gold annotations drafted, not 200.** Dispatched to a
+subagent reading real chapter text via the Store across RI ch1-199 (title
+transfers, reveals, disguises, body changes, relational-deictic
+resolution), each with a direct source quote. Honestly short of the ~200
+target — the subagent prioritized verifying every offset/quote over
+padding the count, and reported so rather than inflating it. Breakdown:
+relational_deictic 29, title_transfer 17, disguise 13, body_change 11,
+reveal 17, plus 2 not-entity controls. All `provenance=MODEL`,
+`confirmed=False` (correctly excluded from `GoldSet.confirmed_only` —
+verified, not assumed: loading the file and calling `.confirmed_only`
+returns 0 records). New file: `data/gold/reverend-insanity-hardcases.jsonl`.
+Worth reading directly: ch192's "First gen Gu Yue" reveal (founding
+ancestor turns out to be a disguised fugitive from a different sect,
+combined disguise+body-change), and a found translation inconsistency
+(ch69-78 vs ch175 name the same backstory character "Wang Da" then
+"Wang Er" — flagged in the record's note rather than silently resolved).
+
+**1.2 — the recall@k gold path was wired to nothing, now fixed, and the
+real gate FAILS.** Root cause: `retriever_eval.load_gold_cases` expected a
+`target_id`-keyed JSONL from a `tools/annotate.py` that was never built,
+and `cmd_eval` only ever invoked `SELF_RETRIEVAL` mode — `GOLD` mode
+existed in code with no caller and no compatible file. Separately,
+`GoldMention` had no `alias_type` field at all, so every existing gold
+record silently defaulted to `RIGID_NAME` (the easy case) and the
+`TRANSFERABLE_TITLE` gate had *never once* been evaluated despite existing
+since plans.md Section 8.2.
+
+Fixed: added `GoldMention.alias_type: AliasType`, added
+`build_gold_retrieval_cases()` (bridges `data/gold/*.jsonl` -> `RetrievalCase`
+via the same identity->target_id majority-vote logic `calibrate.py` uses
+for scorer calibration), wired it into `echotales eval`.
+
+Two real runs against `data/webview-working/reverend-insanity.db`:
+- The existing bulk-approved gold (`reverend-insanity.jsonl`, ch1-60, all
+  `RIGID_NAME` by default): recall@1=99.7%, @5/@10/@20=100% over 1,740
+  cases. Easy-case ceiling, consistent with self-retrieval's own 100%.
+- **The 1.1 hard-case set, run as draft-tier (0% confirmed, reported with
+  that caveat, not as a "result"): recall@10 on `TRANSFERABLE_TITLE` =
+  0.0% (n=9), `RELATIONAL_DEICTIC` = 0.0% (n=4), `RIGID_NAME` = 70.0%
+  (n=30). GATE: FAIL.** 19 of 27 gold identities in the hard-case set had
+  no system `target_id` to even map to — consistent with Section 5's
+  premise (title/relational surfaces never becoming mentions at all, so
+  there is nothing for the retriever to find). This is the first real
+  number behind HANDOFF defect #4 and directly validates that Section 5's
+  fix (title/relational mentions entering the graph as
+  `RELATIONAL_DEICTIC`/`TRANSFERABLE_TITLE`, resolved via relationship
+  constraints) is the load-bearing next step, not a nice-to-have.
+
+**1.3 — relevance harness extended past scene-word overlap, run for real.**
+`render/relevance.py` gained ground-truth cast survival, headcount match,
+and condition-tag survival, reusing `persona.runner.get_panel_cast` (the
+same function panels.py itself calls) rather than re-deriving presence —
+a mismatch this harness finds means the *delivered prompt* drifted from
+what rendering decided to cast. Run against RI ch1's real 40-panel
+manifest: cast survival 100% (12 panels, 0 dropped, 0 headcount
+mismatches) — not the current bottleneck on this sample — but condition-tag
+survival only 57% (4 panels narrating blood/pale/disheveled-type cues, 3
+of 4 dropped at least one), giving 4.51's "condition tags don't reliably
+survive CLIP's budget" claim a real, reproducible number for the first
+time instead of an impression from viewing output.
+
+**2.1 — `Mention.target_kind` stale-copy audit, one live consumer found
+and fixed.** Exhaustive grep of every `.target_kind` read in the
+pipeline: `world/lexicon.py`'s presence-filter was gating on
+`mention.target_kind is not TargetKind.SELF` (always true, since it's
+written once at link time and never updated) *before* also checking
+`entity.kind.is_person` via the live `Self.kind` join — redundant, and
+exactly the kind of drift the non-negotiable warns about, even though the
+live join after it meant this was not an active bug on real data.
+Removed the stale gate; the live join is now the only check. Every other
+`.target_kind` reference in the pipeline turned out to be a different
+model's own field (`AliasBinding`, `Attribute`, `EntityProfile`) doing
+legitimate table-routing, not a copy of `Self.kind` — not touched.
+
+**2.2 — kind classification confirmed already unconditional (EVOLUTION
+4.54, still true); added the missing loud-failure half.** `resolve_novel`
+already runs `backfill_kinds` unconditionally on every call, not just for
+newly-created entities — that part of item 2.2 was already done. What was
+missing: nothing ever flagged when a novel comes out of resolution with a
+large fraction of entities still raw-NULL `kind` (nobody positively typed
+them, backfill included) — `Store.get_self()` silently reads that back as
+SELF with zero evidence either way. Added `ResolveReport.kind_unknown` /
+`kind_unknown_fraction`, computed post-backfill, and a loud warning (banner
+to stdout + `log.warning`, escalatable to a hard `RuntimeError` via the new
+`--strict-kind-check` CLI flag / `strict_kind_check=` param) when that
+fraction exceeds 30%. **Deliberately a warning by default, not a hard
+assertion**: measured directly against the real production database
+(`data/webview-working/reverend-insanity.db`) before picking the
+threshold — it sits at 78% raw-NULL post-backfill *today*, and HANDOFF
+already documents that state as spot-checked mostly-correct (2/15 real
+gaps). A hard-raising default at any reasonable threshold would break
+every future `resolve` run against that exact file. Verified the check
+itself is sound, not just theoretical: ran a full `resolve` against a
+scratch copy (`data/reruns/`, never the canonical file) and got 0% unknown
+(82/82 typed) — a *fresh* resolve retypes at creation time from real
+`entity_label` evidence, so it doesn't trip the warning; only a
+backfill-only path on stale pre-entity_label data does, which is exactly
+the gap this is supposed to catch.
+
+`python3 -m pytest packages/pipeline/tests/ -q` — 400 passed after all of
+the above, no regressions.
+
+**Open, going into Section 2.3 and Section 3:** 2.3 (non-person entities
+excluded from voice/panel cast *and* rendered distinctly in webview) not
+yet started this session — the panel-cast half was already confirmed fixed
+in 4.56, webview/voice-casting specifically was flagged there as not
+independently re-verified and still isn't.
 
 ---
 

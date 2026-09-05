@@ -19,36 +19,114 @@ conflated.
 | `details.md` | Per-file detail |
 | `plans.md` | The original spec. Amended three times; the amendments win and are marked *(revised)* |
 
-**Last updated:** 2026-08-31.
+**Last updated:** 2026-09-05.
 
 ## Pick up here
 
-The live area of work is the render/direction pipeline
+**A root-cause remediation pass is in progress (EVOLUTION 4.60).**
+Sections 1-2 done: the retriever recall@k gate now has real gold to run
+against (`data/gold/reverend-insanity-hardcases.jsonl`, 89 hard cases,
+model-drafted/unconfirmed) and **it FAILS — recall@10 on
+`TRANSFERABLE_TITLE` = 0%, `RELATIONAL_DEICTIC` = 0%** (see EVOLUTION
+4.60 for the full numbers). This makes Section 5's premise (title/
+relational surfaces never becoming mentions) the load-bearing next
+target, not a nice-to-have. `render/relevance.py` now also checks cast
+survival, headcount, and condition-tag survival against ground truth
+(`echotales relevance`), not just scene-word overlap. Next up in the same
+pass: Section 2.3 (non-person entities' consequences in voice/webview,
+not just panel cast), then Section 3 (speaker attribution recovery),
+Section 4 (scorer features), Section 5 (title/relational mentions —
+now backed by the recall@k failure above), Section 6 (prompt-assembly
+priority mechanism), Section 7 (frontend, after 1-6).
+
+Before this pass, the live area of work was the render/direction pipeline
 (`packages/pipeline/src/echotales/pipeline/render/`). Most recently
 (EVOLUTION's newest entries): the byte-identical crowd-panel bug, a
 solo-tag front-load gap, and a Danbooru-tag-form gap in the crowd/solo
 contradiction validator were all found and fixed, then confirmed at full
 48-panel scale (`v54_crowd-solo-scenestate-fix`, see `VERSIONS.md`).
 
-**New, not yet investigated:** block 31 of RI ch1's v54 render mis-casts
-**"Qing Mao Mountain" — a location — as a named character**, attaching
-appearance attributes (`black_hair, blood, wounded, androgynous_person`)
-to it and rendering two figures despite a `standing_alone` layout tag
-with no `solo` anywhere in the prompt. This bypassed `cast_tags()`'s
-silhouette-fallback branch entirely, meaning something upstream in
-persona/cast resolution treated a place name as a resolved character.
-This is a **persona/resolution bug** (a location entity leaking into
-character casting), not a prompt-construction or crowd-contradiction
-issue — do not conflate it with anything in the render-path fixes above.
-Next step: trace where "Qing Mao Mountain" (presumably a `Self`/mention
-entity with `kind` misclassified, or a cast-resolution step that doesn't
-filter on `entity.kind.is_person`) gets into a panel's resolved cast.
+**Resolved (EVOLUTION 4.56):** block 31 of RI ch1's v54 render mis-cast
+"Qing Mao Mountain" — a location — as a named character. Root cause:
+`self_entity.kind` was NULL for every row in this stale database (mentions
+last ran before the Layer-1 `entity_label` pass existed), and
+`Store.get_self()` reads a NULL `kind` back as SELF/person by default. A
+new `resolve --novel <id> --kinds-only` backfill (`resolve/kind_backfill.py`)
+reclassifies existing rows from the on-disk NER cache. **Run for real
+against the production file on 2026-09-01** (the first pass had only run
+against a scratch copy despite an earlier note here implying otherwise) —
+`data/webview-working/reverend-insanity.db` was backed up first
+(`.pre-kind-backfill.bak`) then modified directly: 8 LOCATION, 10
+ORGANIZATION, 64 left at SELF default, matching the scratch numbers
+exactly. Qing Mao Mountain, South Border, and Gu Yue confirmed LOCATION on
+the real file and confirmed excluded from `present_cast()`'s `person_ids`.
+A 15-row spot-check of the 64 SELF-default rows found only 2 likely real
+gaps ("Mo Family", "Huang Long River" — zero NER-cache evidence either
+way); see EVOLUTION 4.56 follow-up for the full breakdown. **Partial fix,
+by design**: only 18/82 rows on RI had cache evidence to reclassify — the
+rest stay at the conservative SELF default, so an operator may still find
+some mis-cast locations/items in old databases the cache has no evidence
+for. Open defect #7 below (the same root cause) is closed on the same
+basis.
+
+**Canonical operational DB, stated explicitly so this isn't re-discovered
+a third time:** `data/webview-working/reverend-insanity.db` is the file
+render/webview/CLI work against day to day (`--db` points here in normal
+use). `data/echotales.db` is a separate, older-but-more-complete RI
+snapshot (116 `self_entity` rows vs. 82, fuller Gu/item coverage, same 199
+chapters) — not a duplicate to delete and not automatically superseded by
+webview-working's kind-backfill fix. Don't assume the two are
+interchangeable, and don't let a future session re-derive which one is
+"the" file from scratch — this is it, `data/webview-working/reverend-insanity.db`, for render/webview.
 
 **Process note for whoever debugs this next:** `prompt_cache_v1.json` is
 a phase-1/stub-engine intermediate, not the delivered prompt — a
 mid-session misdiagnosis this round came from reading that file instead
 of `manifest.jsonl`. Always check the manifest (or the real generation
 call) for what a panel actually received.
+
+**Gated experiment added, not on the critical path:** `--reference-
+transition-mode=img2img` (opt-in only, default still `txt2img`). EVOLUTION
+4.55: the host-memory leak reported in 4.54 is root-caused and fixed
+(`_ensure_img2img_pipe` now strips and re-arms accelerate's offload hooks
+before wrapping the base pipe with `from_pipe`, instead of leaving the old
+hook chain in charge of a pipeline it doesn't belong to) — verified with
+three real runs, RSS/swap tracked normally, no more unbounded growth.
+
+**The process-serialization fix suggested in 4.55 is now implemented**
+(uncommitted, working tree only, 2026-09-03): `persona/_img2img_worker.py`
+is a standalone one-shot subprocess entrypoint (load engine, run one
+`generate()`, write one file, exit), invoked from
+`reference_gen.py::_run_img2img_subprocess` whenever `init_image is not
+None and _supports_img2img_subprocess(engine)`. `_generate_one` now
+returns the written image path so `generate_references` can thread body 1's
+own output forward as body 2's `init_image`.
+
+**Partially verified, not fully.** Confirmed for real on this 4060
+Laptop/8GB card: a real (non-stub, `noobai` engine) **txt2img** generation
+for RI's Fang Yuan body1 completed cleanly outside the subprocess path —
+VRAM ramped 18 MiB → 5831 MiB during denoise/decode and dropped back to
+15 MiB after the process exited, no leak, no OOM. **Not yet confirmed:**
+the img2img subprocess itself. Two attempts to actually exercise it this
+session both hung before the model finished loading (VRAM flat at 18 MiB
+for 5–8 minutes, then killed by timeout) — this happened while two other
+background agents were doing heavy concurrent CPU/disk work on the same
+machine (parallel resolve/speaker-attribution investigation), so **disk or
+CPU contention is the suspected cause, not a bug in the subprocess code
+itself**, but this is not proven — nobody has run it on an idle machine
+yet. Also found in passing: RI's real data has only one multi-body
+character (`reverend-insanity:self1`, Fang Yuan) and its body2 currently
+has no attributes `appearance_of()` recognises (6 stored attributes, none
+appearance keys) — so even a working subprocess wouldn't trigger on a
+default real run today; verification needs either synthetic appearance
+data (as attempted here) or an appearance-extraction fix for body2 first.
+**Still no completed img2img generation and no side-by-side identity/
+contamination comparison exists — this is unchanged from before, only the
+suspected blocker moved from "OOM" to "environment contention on this
+attempt."** Next step: retry `_img2img_worker.py` in isolation (no
+concurrent GPU/CPU-heavy processes) before concluding anything further
+about the subprocess mechanism itself. Do not promote this flag or its
+default without a completed comparison.
 
 ## Open defects — highest priority first
 
@@ -62,34 +140,90 @@ genuinely unresolved *today*.
    threshold range, and a calibrated gate merges six members of one clan
    into one entity. Every link in the system runs through the pre-filter,
    never the scorer. Needs better features (`_ambiguous_tokens` is the
-   shape of what works), not a rebalanced weight.
-2. **LOTM's transmigration reveal still isn't caught.** "Zhou Mingrui"
-   acquiring "Klein Moretti" needs a *declaration* pre-filter that
-   recognises "memories began flooding him" as an identity-continuity
-   assertion — structurally different from a name-containment fix, not
-   yet built. This is also why the persona split can't demonstrate LOTM's
-   worked example: resolve still produces two selves, so there's no one
-   consciousness for two personas to hang off.
+   shape of what works), not a rebalanced weight. **Checked this session
+   (2026-09-03), no concrete extension found:** `_ambiguous_tokens`
+   (`resolve/runner.py`) is deliberately structural/corpus-derived, not a
+   curated list, so there's no vocabulary gap to patch the way #2 and #6
+   turned out to have. A real fix here needs a new *kind* of pre-filter
+   feature (the scorer itself is confirmed unfixable by reweighting), which
+   is a research task, not a bounded patch — left open.
+2. **LOTM's transmigration reveal — the *linking* half is RESOLVED, verified
+   this session (2026-09-03).** `detect_identity_continuity` (`resolve/
+   evidence.py`) already implements the declaration pre-filter this item
+   asked for — a structural regex matcher for "memories began flooding
+   him"-shaped identity-continuity assertions, unit-tested against the real
+   LOTM sentence (`test_identity_continuity.py`) and wired into
+   `score_evidence`/`score.prefilter` as a `FORCE_LINK`. This item's own
+   claim ("not yet built... resolve still produces two selves") was stale:
+   a new end-to-end test
+   (`packages/pipeline/tests/test_lotm_transmigration_resolve.py`) drives
+   `resolve_novel` over a two-chapter Zhou Mingrui/Klein Moretti fixture
+   through the real candidate-retrieval and scoring path (including
+   `CandidateRetriever._prominent`, which is what surfaces a disguise-shaped
+   candidate with zero surface overlap) and confirms the two mentions land
+   on the same `target_id`. **Still genuinely open:** the *persona split*
+   half. Linking to one `self` is not the same as emitting the two
+   `Persona` rows a reincarnation/disguise case needs for pre-/post-reveal
+   appearance — that's a distinct, unbuilt feature (see EVOLUTION "suggested
+   next steps" #4: "a second persona per self... is a `resolve/` change
+   emitting a persona split, not a Phase 7 one"). The model already supports
+   multiple `Persona` rows per `self_id` (`core/models.py`); nothing yet
+   generates the second one automatically.
 3. **Speaker attribution regressed with LLM layer 1 and hasn't recovered**:
-   64.9% (deterministic) → 48.8% (full RI volume). Confirmed as a real,
-   user-visible problem — an identifiable speaker (the clan leader) got
-   cast as anonymous.
-4. **Retriever recall@k has no gold annotations.** The self-retrieval
-   smoke test passes 100% at every k by construction (it only proves
-   there's no indexing bug); real recall is unmeasured.
+   64.9% (deterministic) → 48.8% (full RI volume). **Root cause confirmed,
+   not fixed (EVOLUTION 4.57):** it's an upstream mention-recall problem,
+   not a `speakers/` logic bug — `QwenNerDetector` (layer-1 LLM mention
+   extraction) recalls far fewer candidate mentions per chapter than the
+   deterministic `HeuristicDetector` (EVOLUTION 4.9's controlled A/B on
+   identical `speakers/` code: 3,676 → 1,678 mentions, 63.4% → 54.6%
+   attribution, same code both sides), and `speakers/` uses mention
+   candidates as attribution anchors — fewer anchors, fewer identifiable
+   speakers. Re-measured against the current production DB on 2026-09-02
+   (`data/webview-working/reverend-insanity.db`): 2,522/5,452 = 46.3%
+   identifiable (EXPLICIT/PROXIMAL/TURN_TAKING/POV_INFERRED vs.
+   ANONYMOUS_SLOT), consistent with the tracked 48.8% — **still broken
+   today, not stale.** Real fix is NER recall tuning in the mentions/layer-1
+   prompt (out of `speakers/`'s scope), not an attribution-ladder change.
+4. ~~**Retriever recall@k has no gold annotations.**~~ **RESOLVED for the
+   plumbing, and now measured — the gate FAILS (EVOLUTION 4.60,
+   2026-09-05).** `build_gold_retrieval_cases` bridges `data/gold/*.jsonl`
+   to the retriever; `echotales eval` runs it. Real (draft-tier, 0%
+   human-confirmed) result against RI: recall@10 on `TRANSFERABLE_TITLE` =
+   0%, `RELATIONAL_DEICTIC` = 0%, `RIGID_NAME` = 70% — 19/27 gold
+   identities in the hard-case set had no system entity to even map to.
+   Candidate retrieval is confirmed the ceiling on exactly the alias types
+   plans.md Section 8.2 flagged. See Section 5's open item below — it is
+   now this defect's fix.
 5. **Contradiction detector unvalidated on real data** — fires correctly
    on constructed over-merges, finds zero on 60 real chapters, which is
    diagnostic (Phase 6 over-splits, so nothing accumulates enough aliases
    to trigger it) rather than reassuring.
-6. **Clan-prefix alias linking gap**: "Gu Yue Dong Tu" (full name) doesn't
-   auto-link to a bare "Dong Tu" alias elsewhere — no surname-prefix
-   stripping in `variants.py`.
-7. **`TargetKind` typing is a review flag, not a real type.** A
-   non-person entity gets an automatic `flag` correction instead of
-   silently joining the cast, but a *kept* item/location still displays
-   and behaves like a character everywhere else (webview, voice casting).
-   Likely the same root cause as the new Qing Mao Mountain defect above —
-   worth checking together.
+6. ~~**Clan-prefix alias linking gap**~~ **RESOLVED, verified this session
+   (2026-09-03) — was already fixed, this item was stale.** The mechanism
+   this item asked for already exists: `normalize.name_containment`'s
+   >=2-token branch treats a shared *suffix* of two or more tokens as a
+   house-prefix drop (no `variants.py` stripping needed — `variants.py` is
+   a separate lexical-family auditor, not the link path) and it's wired as
+   a `FORCE_LINK` pre-filter in `resolve/score.py`. A new end-to-end test
+   (`packages/pipeline/tests/test_clan_prefix_resolve.py`) drives
+   `resolve_novel` over a two-chapter "Gu Yue Dong Tu" / bare "Dong Tu"
+   fixture and confirms both mentions land on the same `target_id`.
+   `test_name_containment_resolve.py` already covered the 1-token
+   dropped-*given*-name case end to end (Kim Dokja/Dokja); this closes the
+   equivalent gap for the 2-token dropped-*house* case.
+7. **`TargetKind` typing is a review flag, not a real type — RESOLVED for
+   the root cause (EVOLUTION 4.56).** The NULL-`kind`-reads-as-SELF gap
+   that let Qing Mao Mountain/South Border/Gu Yue reach `present_cast()`
+   as people is closed for existing databases via `resolve --novel <id>
+   --kinds-only` (`resolve/kind_backfill.py`), verified against RI's
+   working database. Partial by design: only entities the on-disk NER
+   cache has non-character evidence for get reclassified (18/82 rows on
+   RI); the rest stay at the SELF default, same as before. Not
+   independently re-verified this session: whether a correctly-typed
+   non-person entity still displays/behaves like a character in webview
+   or voice casting specifically (as opposed to `present_cast()`'s panel
+   cast filter, which is confirmed fixed) — worth a follow-up check if a
+   webview/voice-casting instance of this recurs.
 8. **Recurring unnamed characters have no cross-chapter persistence** — a
    named character's retinue or a minor recurring character gets a fresh
    anonymous voice slot every chapter.
@@ -98,6 +232,13 @@ genuinely unresolved *today*.
    status messages are bracketed prose, not `Key: Value` lines.
 10. **`create_mention` has no frontend UI** — backend and tests exist; a
     reviewer can't trigger it from the browser yet.
+11. **Reference-image search returns generic/mislabeled candidates that a
+    reviewer must catch by eye** — a wallpaper-aggregator page surfaced as
+    a top-5 result for three different RI characters, plus a fanfiction
+    cover and an unrelated series cover for others (`EVOLUTION.md` 4.53).
+    Not auto-selected anywhere, so it can't reach a render yet, but
+    `refimg-list`/`refimg-select` has no "does this actually look like the
+    character" signal beyond a human looking at it.
 
 ## Architecture-review items not yet implemented
 
