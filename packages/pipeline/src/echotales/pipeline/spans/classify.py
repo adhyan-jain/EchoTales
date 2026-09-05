@@ -284,8 +284,17 @@ def classify_span(
         window = f"{preceding_text[-80:]} {following_text[:80]}"
         if _THOUGHT_RE.search(window):
             return SpanType.INNER_MONOLOGUE
-        if len(stripped) <= _CROWD_MAX_LEN and _CROWD_RE.match(stripped):
-            return SpanType.CROWD_REACTION
+        # Section 3.4: a short exclamation on its own used to become
+        # CROWD_REACTION here, on no more evidence than matching a crowd-
+        # shaped regex in isolation -- but "Impossible!" is exactly as
+        # likely to be one unnamed person's line as a crowd's. Non-negotiable
+        # #4-style thinking applies: CROWD is a claim about multiple
+        # simultaneous speakers, and one line is never evidence of that.
+        # DIALOGUE here means the attribution ladder gets a normal shot at
+        # it (at whatever confidence it can manage); `_promote_crowd_runs`
+        # below is now the *only* path to CROWD_REACTION, and it requires an
+        # actual run of several such lines -- the real "multiple speakers"
+        # signal.
         return SpanType.DIALOGUE
 
     # Unquoted narration.
@@ -367,9 +376,15 @@ def classify_block_spans(
 def _promote_crowd_runs(spans: list[Span]) -> list[Span]:
     """Re-type isolated short exclamations that appear in runs.
 
-    A single "Impossible!" beside a named speaker is that speaker's line. Three
-    in a row with no attribution between them is a crowd, and forcing a speaker
-    onto each would invent three attributions from nothing.
+    A single "Impossible!" beside a named speaker is that speaker's line
+    (Section 3.4: `classify_span` no longer even proposes CROWD_REACTION on
+    one line by itself). Three genuinely crowd-shaped exclamations in a row
+    with no attribution between them, on the other hand, is real textual
+    evidence of multiple simultaneous speakers -- so this is now the *only*
+    path to CROWD_REACTION, and it requires both the run *and* the
+    exclamation shape, not length alone: three short but ordinary dialogue
+    lines from a real two-person exchange ("Yes." "No." "Why?") are not a
+    crowd just because they're brief.
     """
     dialogue_idx = [
         i
@@ -378,7 +393,8 @@ def _promote_crowd_runs(spans: list[Span]) -> list[Span]:
     ]
     run: list[int] = []
     for idx in dialogue_idx:
-        short = len(spans[idx].text) <= _CROWD_MAX_LEN
+        stripped = spans[idx].text.strip().strip("".join(set(_OPEN_QUOTES + _CLOSE_QUOTES))).strip()
+        short = len(stripped) <= _CROWD_MAX_LEN and bool(_CROWD_RE.match(stripped))
         if short and (not run or idx - run[-1] <= 2):
             run.append(idx)
             continue
