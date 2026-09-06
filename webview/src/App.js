@@ -5,6 +5,9 @@ import ScriptView from './components/ScriptView';
 import Tooltip from './components/Tooltip';
 import AnalysisPanel from './components/AnalysisPanel';
 import EntityPicker from './components/EntityPicker';
+import Login from './components/Login';
+import NewProject from './components/NewProject';
+import CharacterDashboard from './components/CharacterDashboard';
 import { api } from './api';
 
 const DATA_BASE = process.env.PUBLIC_URL + '/data';
@@ -52,8 +55,33 @@ export default function App() {
   // { kind: 'mention'|'speaker', anchor: {x,y}, mentionId? | spanId?+chapter }
   const [picker, setPicker] = useState(null);
 
-  // Manifest: static file, or the backend's live list.
+  // Section 7.2: auth gate + view switcher. `authChecked` distinguishes "we
+  // don't know yet" from "known open" so the app doesn't flash the login
+  // screen for a frame while the status request is in flight. Auth only
+  // ever applies in live-edit mode -- the static build has no server to
+  // authenticate against at all.
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authRequired, setAuthRequired] = useState(false);
+  const [authed, setAuthed] = useState(api.hasToken());
+  const [view, setView] = useState('script'); // 'script' | 'characters' | 'new-project'
+
   useEffect(() => {
+    if (!editMode) {
+      setAuthChecked(true);
+      return;
+    }
+    api
+      .authStatus()
+      .then((r) => setAuthRequired(!!r.auth_required))
+      .catch(() => setAuthRequired(false))
+      .finally(() => setAuthChecked(true));
+  }, [editMode]);
+
+  // Manifest: static file, or the backend's live list. Held off in edit
+  // mode until the login gate (if any) clears, so a 401 from an unauthed
+  // request never masquerades as "can't reach the edit backend."
+  useEffect(() => {
+    if (editMode && (!authChecked || (authRequired && !authed))) return;
     setLoadError(null);
     const load = editMode
       ? api.manifest()
@@ -75,7 +103,7 @@ export default function App() {
         )
       );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editMode]);
+  }, [editMode, authChecked, authRequired, authed]);
 
   const refetchNovel = useCallback(
     (id) => {
@@ -317,6 +345,10 @@ export default function App() {
     return total ? `${attributed}/${total} dialogue lines attributed` : 'no dialogue';
   }, [chapter]);
 
+  if (editMode && authChecked && authRequired && !authed) {
+    return <Login onLoggedIn={() => setAuthed(true)} />;
+  }
+
   if (loadError) {
     return (
       <div id="empty">
@@ -327,6 +359,10 @@ export default function App() {
         </button>
       </div>
     );
+  }
+
+  if (editMode && !authChecked) {
+    return <div id="empty">Checking authentication…</div>;
   }
 
   if (!manifest.length || !novel) {
@@ -349,6 +385,28 @@ export default function App() {
           ))}
         </select>
         <span className="sub" id="novel-sub">{novel.chapters.length} chapters loaded</span>
+        <div className="view-tabs">
+          <button
+            className={view === 'script' ? 'view-tab-active' : ''}
+            onClick={() => setView('script')}
+          >
+            Script
+          </button>
+          <button
+            className={view === 'characters' ? 'view-tab-active' : ''}
+            onClick={() => setView('characters')}
+          >
+            Characters
+          </button>
+          {editMode && (
+            <button
+              className={view === 'new-project' ? 'view-tab-active' : ''}
+              onClick={() => setView('new-project')}
+            >
+              + New project
+            </button>
+          )}
+        </div>
         <label className="edit-toggle">
           <input
             type="checkbox"
@@ -385,39 +443,55 @@ export default function App() {
         </div>
       </header>
 
-      <EntitySidebar
-        entities={novel.entities}
-        search={search}
-        onSearchChange={setSearch}
-        focusId={focusId}
-        onToggleFocus={handleToggleFocus}
-        editMode={editMode}
-        mergeSourceId={mergeSourceId}
-        onStartMerge={handleStartMerge}
-        onConfirmMerge={handleConfirmMerge}
-        onCancelMerge={handleCancelMerge}
-      />
-
-      <main>
-        <ChapterNav
-          chapters={novel.chapters}
-          chapterIdx={chapterIdx}
-          onChange={setChapterIdx}
-          coverage={chapterCoverage}
-        />
-        <ScriptView
-          chapter={chapter}
+      {view === 'script' && (
+        <EntitySidebar
+          entities={novel.entities}
+          search={search}
+          onSearchChange={setSearch}
           focusId={focusId}
-          onMarkHover={onMarkHover}
-          onMarkMove={onMarkMove}
-          onMarkLeave={onMarkLeave}
+          onToggleFocus={handleToggleFocus}
           editMode={editMode}
-          onMentionClick={handleMentionClick}
-          onSpeakerClick={handleSpeakerClick}
-          onFlagLine={handleFlagLine}
-          onMergeLines={handleMergeLines}
-          onRetype={handleRetype}
+          mergeSourceId={mergeSourceId}
+          onStartMerge={handleStartMerge}
+          onConfirmMerge={handleConfirmMerge}
+          onCancelMerge={handleCancelMerge}
         />
+      )}
+
+      <main className={view !== 'script' ? 'main-full-width' : ''}>
+        {view === 'script' && (
+          <>
+            <ChapterNav
+              chapters={novel.chapters}
+              chapterIdx={chapterIdx}
+              onChange={setChapterIdx}
+              coverage={chapterCoverage}
+            />
+            <ScriptView
+              chapter={chapter}
+              focusId={focusId}
+              onMarkHover={onMarkHover}
+              onMarkMove={onMarkMove}
+              onMarkLeave={onMarkLeave}
+              editMode={editMode}
+              onMentionClick={handleMentionClick}
+              onSpeakerClick={handleSpeakerClick}
+              onFlagLine={handleFlagLine}
+              onMergeLines={handleMergeLines}
+              onRetype={handleRetype}
+            />
+          </>
+        )}
+        {view === 'characters' && <CharacterDashboard novelId={novelId} />}
+        {view === 'new-project' && (
+          <NewProject
+            onCreated={(created) => {
+              api.manifest().then(setManifest);
+              handleSelectNovel(created.id);
+              setView('characters');
+            }}
+          />
+        )}
       </main>
 
       <Tooltip tip={tip} />

@@ -329,3 +329,261 @@ mark.not-person { border-bottom-style: dashed; font-style: italic; }
   box-shadow: 0 2px 10px rgba(0,0,0,.25);
 }
 #empty { padding: 3rem; text-align: center; color: var(--muted); }
+
+/* Login (Section 7.2) */
+.login-screen {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+}
+.login-card {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  padding: 1.6rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, .25);
+}
+.login-card h1 { margin: 0 0 .1rem; font-size: 1.1rem; font-weight: 600; }
+.login-explainer { margin: 0 0 .4rem; font-size: .85rem; color: var(--muted); }
+.login-card label { font-size: .8rem; color: var(--muted); }
+.login-card input {
+  font: inherit;
+  padding: .5rem .6rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+}
+.login-error {
+  font-size: .82rem;
+  color: #c9532b;
+  background: color-mix(in srgb, #c9532b 12%, transparent);
+  border: 1px solid color-mix(in srgb, #c9532b 35%, transparent);
+  border-radius: 6px;
+  padding: .5rem .6rem;
+}
+
+/* NewProject (Section 7.2) */
+.new-project-card {
+  width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  padding: 1.6rem;
+  margin: 2rem auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.new-project-card h2 { margin: 0 0 .2rem; font-size: 1rem; font-weight: 600; }
+.new-project-card label { font-size: .8rem; color: var(--muted); }
+.new-project-card input,
+.new-project-card select {
+  font: inherit;
+  padding: .5rem .6rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+}
+.new-project-id {
+  font-size: .76rem;
+  color: var(--muted);
+  margin-top: -.3rem;
+}
+.new-project-id code {
+  background: color-mix(in srgb, CanvasText 8%, transparent);
+  border-radius: 4px;
+  padding: 0 .3em;
+}
+.new-project-error {
+  font-size: .82rem;
+  color: #c9532b;
+  background: color-mix(in srgb, #c9532b 12%, transparent);
+  border: 1px solid color-mix(in srgb, #c9532b 35%, transparent);
+  border-radius: 6px;
+  padding: .5rem .6rem;
+}
+.new-project-note {
+  margin: .2rem 0 0;
+  font-size: .78rem;
+  color: var(--muted);
+}
+
+/* Shared blue-gradient primary button (Section 7.2 visual identity) */
+.btn-primary {
+  font: inherit;
+  font-weight: bold;
+  color: white;
+  padding: .55rem .8rem;
+  border-radius: 7px;
+  border: 2px solid #1d4ed8;
+  background: linear-gradient(to right, #197AF0, #0252C5);
+  box-shadow: 4px 4px 1px 0 #B1C2F4;
+  cursor: pointer;
+}
+.btn-primary:disabled { opacity: .55; cursor: default; box-shadow: none; }
+.btn-primary:not(:disabled):hover { filter: brightness(1.05); }
+
+/* CharacterDashboard (Section 7.2/7.3) */
+.char-dashboard { padding: 1rem 1.2rem 3rem; max-width: 960px; margin: 0 auto; }
+.char-dashboard-search { position: sticky; top: 0; z-index: 2; background: var(--bg); padding-bottom: .8rem; }
+.char-dashboard-search input {
+  width: 100%;
+  font: inherit;
+  padding: .5rem .7rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--fg);
+}
+.char-dashboard-state {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--muted);
+}
+.char-dashboard-state-error { color: #c9532b; }
+.char-dashboard-state-empty { font-style: italic; }
+
+.char-card-list { display: flex; flex-direction: column; gap: 1rem; }
+.char-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+}
+.char-card-header { display: flex; align-items: center; gap: .6rem; margin-bottom: .7rem; }
+.char-card-name { margin: 0; font-size: 1.02rem; font-weight: 600; }
+.prominence-badge {
+  font-size: .65rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: .12rem .45rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.prominence-badge.prominence-principal { color: var(--accent); border-color: var(--accent); }
+.prominence-badge.prominence-recurring { color: var(--fg); }
+.prominence-badge.prominence-incidental { opacity: .7; }
+
+.char-card-section { padding: .7rem 0; border-top: 1px solid color-mix(in srgb, CanvasText 8%, transparent); }
+.char-card-section:first-of-type { border-top: none; padding-top: 0; }
+.char-section-title {
+  margin: 0 0 .5rem;
+  font-size: .74rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--muted);
+  font-weight: 600;
+}
+.char-empty-note { font-size: .85rem; color: var(--muted); font-style: italic; }
+
+.char-voice-current { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-bottom: .6rem; }
+.voice-label { font-size: .9rem; font-weight: 500; }
+.overridden-tag {
+  font-size: .68rem;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0 .35em;
+}
+.voice-sample { display: block; width: 100%; height: 2.1rem; margin-top: .3rem; }
+.voice-override { display: flex; gap: .5rem; align-items: center; }
+.voice-override-input {
+  font: inherit;
+  padding: .4rem .55rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+  flex: 1;
+  min-width: 0;
+  max-width: 220px;
+}
+
+/* Primary action styling: the project's intended blue-gradient identity,
+   applied here first per the 7.2/7.3 spec so interactive controls in new
+   components start moving the whole tool toward it. */
+/* .btn-gradient is an alias of .btn-primary (defined above) -- two
+   components built in parallel this session independently converged on the
+   same blue-gradient identity under different names; kept both selectors
+   working rather than hunting every call site, but they now share one
+   definition so the two can never drift apart. */
+.btn-gradient {
+  font: inherit;
+  font-weight: bold;
+  color: white;
+  padding: .55rem .8rem;
+  border-radius: 7px;
+  border: 2px solid #1d4ed8;
+  background: linear-gradient(to right, #197AF0, #0252C5);
+  box-shadow: 4px 4px 1px 0 #B1C2F4;
+  cursor: pointer;
+  flex: none;
+}
+.btn-gradient:hover:not(:disabled) { filter: brightness(1.05); }
+.btn-gradient:active:not(:disabled) { box-shadow: 2px 2px 1px 0 #B1C2F4; transform: translate(2px, 2px); }
+.btn-gradient:disabled { opacity: .55; cursor: default; box-shadow: none; }
+
+.ref-gallery { display: flex; flex-wrap: wrap; gap: .6rem; }
+.ref-thumb {
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: var(--bg);
+  cursor: pointer;
+  overflow: hidden;
+  width: 84px;
+  height: 84px;
+  flex: none;
+}
+.ref-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ref-thumb:hover:not(:disabled) { filter: brightness(1.1); }
+.ref-thumb:disabled { cursor: default; }
+.ref-thumb-selected { border-color: #197AF0; box-shadow: 0 0 0 2px #B1C2F4; }
+
+.trait-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .6rem; }
+.trait-row { font-size: .86rem; }
+.trait-key { font-weight: 600; }
+.trait-evidence {
+  margin: .3rem 0 0;
+  padding: .25rem 0 .25rem .6rem;
+  border-left: 2px solid var(--border);
+  color: var(--muted);
+  font-style: italic;
+  font-size: .82rem;
+}
+.trait-meta { margin-top: .25rem; display: flex; gap: .7rem; font-size: .7rem; color: var(--muted); }
+
+/* View tabs + full-width main (Section 7.2 App.js integration) */
+.view-tabs { display: flex; gap: .3rem; }
+.view-tabs button {
+  font: inherit;
+  padding: .35rem .7rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+}
+.view-tabs button.view-tab-active {
+  background: linear-gradient(to right, #197AF0, #0252C5);
+  border-color: #1d4ed8;
+  color: white;
+  font-weight: 600;
+}
+main.main-full-width {
+  grid-column: 1 / -1;
+  overflow-y: auto;
+  padding: 1.2rem 1.5rem;
+}
