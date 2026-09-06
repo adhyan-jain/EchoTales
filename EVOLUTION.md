@@ -5279,6 +5279,38 @@ alone rather than changed without a measured reason.
 
 ---
 
+**Section 7 (frontend), backend half shipped:** no `/frontend-design` skill
+exists in this environment to load (checked; not installable here either),
+so this proceeded on direct design judgment instead, using a prior
+EchoTales hackathon prototype (github.com/AdityaVKochar/devjam25 -- a
+Next.js app with its own Dashboard/Login/library-card UI, at the user's
+pointer) as the visual reference: a blue-gradient (`#197AF0`->`#0252C5`)
+button identity on a dark theme, card-based library layout.
+
+Backend built and verified live (not just unit-tested) against a scratch
+copy of RI's production database with the actual `webview-server` CLI
+process running: a real, minimal auth gate (`ECHOTALES_WEBVIEW_PASSWORD`
+env var, bearer session tokens, off by default so no existing deployment
+is affected), `POST /api/projects` (a new `novel.content_type` schema
+column -- distinct from `adapter`, which names the ingest *format*, not
+what kind of writing this is -- novel/short_story/general_text/roleplay),
+and `GET /api/novels/<id>/characters` (`webview.py::build_character_dashboard`)
+returning, per person-kind entity, its voice assignment (read from the
+audio manifest, the only place casting is currently persisted),
+reference-image candidates (reusing the `refimg` store already built for
+the CLI), and -- the part 7.3 called out as mattering as much as the
+controls -- every auto-assigned trait's `Attribute.evidence`, a field
+that already existed on every stored fact and had simply never been
+surfaced to a reviewer before. Override endpoints for both voice and
+reference selection verified end to end with a live curl session.
+
+React frontend (Login, NewProject, CharacterDashboard, wiring into
+App.js) dispatched to two parallel subagents working on disjoint files
+to avoid conflicts -- outcome recorded in a follow-up entry once
+integrated and verified.
+
+---
+
 ### Section 10 (superseded "suggested next steps" list, as of the 2026-08-31 cleanup)
 
 This was HANDOFF's own "suggested next steps, in order" section before
