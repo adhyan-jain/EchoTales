@@ -260,6 +260,160 @@ def build_novel_payload(store: Store, novel_id: str, label: str) -> dict:
     }
 
 
+#: Section 7.2/7.3: attribute keys shown on the character dashboard, in
+#: display order. Deliberately a curated subset of `Attribute.key`, not
+#: "every attribute" -- appearance/attire/voice-casting traits are what a
+#: reviewer actually needs to audit and override here; role/relationship
+#: facts belong to the graph view, not this dashboard.
+_DASHBOARD_TRAIT_KEYS: tuple[str, ...] = (
+    "gender",
+    "age_band",
+    "typical_attire",
+    "current_condition",
+    "hair_color",
+    "hair_style",
+    "eye_color",
+    "height_build",
+    "skin_tone",
+    "distinguishing_features",
+    "register",
+)
+
+
+def build_character_dashboard(store: Store, novel_id: str) -> dict:
+    """One row per person-kind entity: assigned voice, reference images,
+    and the source evidence behind every auto-assigned trait.
+
+    **The evidence is not new bookkeeping** -- `Attribute.evidence` already
+    exists on every stored trait (`core/models.py::TemporalFact`) precisely
+    so a claim like "assigned green_robes" can be traced to the sentence
+    that justified it; this endpoint is the first thing that actually
+    surfaces it to a reviewer instead of leaving it queryable only from a
+    Python shell.
+    """
+    from echotales.core.enums import TargetKind
+    from echotales.pipeline.persona.build import persona_at
+
+    voice_by_target = _voice_assignments_from_manifest(novel_id)
+
+    rows = []
+    for entity in store.all_selves(novel_id):
+        if not entity.kind.is_person:
+            continue
+        persona_id = persona_at(store, entity.id)
+        traits = []
+        for attr in store.get_attributes(TargetKind.PERSONA, persona_id):
+            if attr.key not in _DASHBOARD_TRAIT_KEYS or not attr.is_standing:
+                continue
+            traits.append(
+                {
+                    "key": attr.key,
+                    "value": attr.value,
+                    "evidence": attr.evidence,
+                    "confidence": attr.confidence,
+                    "provenance": attr.asserted_by.value,
+                }
+            )
+        # Also surface role/status facts stored on the Self itself -- voice
+        # casting reads `gender`/`age_band` from PERSONA attributes above,
+        # but a body-independent trait (e.g. a title) can sit on SELF; kept
+        # separate so the dashboard can label which entity it actually
+        # came from rather than merging two provenances silently.
+        for attr in store.get_attributes(TargetKind.SELF, entity.id):
+            if attr.key not in _DASHBOARD_TRAIT_KEYS or not attr.is_standing:
+                continue
+            traits.append(
+                {
+                    "key": attr.key,
+                    "value": attr.value,
+                    "evidence": attr.evidence,
+                    "confidence": attr.confidence,
+                    "provenance": attr.asserted_by.value,
+                }
+            )
+
+        # A user override (webview's own POST .../voice) always wins over
+        # the transient manifest-derived assignment -- the whole point of
+        # 7.2's override control is that it actually sticks.
+        voice = voice_by_target.get(entity.id)
+        override = next(
+            (
+                a
+                for a in store.get_attributes(TargetKind.PERSONA, persona_id)
+                if a.key == "voice_override" and a.is_standing
+            ),
+            None,
+        )
+        if override is not None:
+            voice = {
+                "speaker_id": override.value,
+                "speaker_label": override.value,
+                "voice": override.value,
+                "sample_audio_path": "",
+                "overridden": True,
+            }
+
+        candidates = store.list_ref_image_candidates(novel_id, entity.id)
+        rows.append(
+            {
+                "self_id": entity.id,
+                "persona_id": persona_id,
+                "label": entity.canonical_label,
+                "prominence": entity.prominence.value,
+                "voice": voice,
+                "traits": traits,
+                "reference_images": [
+                    {
+                        "id": c.id,
+                        "source_url": c.source_url,
+                        "thumbnail_url": c.thumbnail_url or c.source_url,
+                        "title": c.title,
+                        "selected": c.selected,
+                        "user_uploaded": c.user_uploaded,
+                    }
+                    for c in candidates
+                ],
+            }
+        )
+    rows.sort(key=lambda r: {"PRINCIPAL": 0, "RECURRING": 1, "INCIDENTAL": 2}.get(r["prominence"], 3))
+    return {"novel_id": novel_id, "characters": rows}
+
+
+def _voice_assignments_from_manifest(novel_id: str, data_root: str = "data") -> dict[str, dict]:
+    """Read `data/audio/<novel_id>/manifest.jsonl` for the voice each
+    resolved target actually got, if audio has been rendered at all.
+
+    Voice casting (`voice/casting.py::cast_voices`) is a transient, whole-
+    novel decision written only into this manifest, not into the graph as
+    an `Attribute` -- so this is a real file read, not a store query, and
+    it degrades to "no assignment yet" (an empty dict) rather than erroring
+    when nothing has been rendered, which is the common case for a project
+    a reviewer has just created.
+    """
+    path = Path(data_root) / "audio" / novel_id / "manifest.jsonl"
+    if not path.exists():
+        return {}
+    by_target: dict[str, dict] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            row = json.loads(line)
+        except ValueError:
+            continue
+        target = row.get("speaker_id")
+        if not target or target in by_target:
+            continue
+        by_target[target] = {
+            "speaker_id": row.get("speaker_id"),
+            "speaker_label": row.get("speaker_label", ""),
+            "voice": row.get("voice", ""),
+            "sample_audio_path": row.get("audio_path", ""),
+        }
+    return by_target
+
+
 def write_webview(sources: list[NovelSource], out_dir: Path | str) -> Path:
     """Build the full static app: one data file per novel plus the shell."""
     out = Path(out_dir)

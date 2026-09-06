@@ -8,13 +8,29 @@ web framework dependency for a handful of routes used by one person at a time
 would be solving a problem that doesn't exist here.
 
 Routes:
+    GET  /api/auth/status              {"auth_required": bool} -- never gated itself
+    POST /api/auth/login               body: {"password"} -> {"token"}
     GET  /api/manifest
+    POST /api/projects                 body: {"id", "title", "content_type"}
+                                        (Section 7.2 -- registers a project;
+                                        does not run ingest, see Registry.create_project)
     GET  /api/novels/<id>              live payload, corrections overlaid
     GET  /api/novels/<id>/corrections  log + summary
     POST /api/novels/<id>/corrections  body: {"type": "merge_entities",
                                                "payload": {"from_id", "into_id"}}
     DELETE /api/novels/<id>/corrections/<correction_id>   undo a pending one
     POST /api/novels/<id>/apply        write pending corrections into the store
+    GET  /api/novels/<id>/characters   per-character dashboard (Section 7.2/7.3):
+                                        assigned voice, reference images, and the
+                                        evidence behind every auto-assigned trait
+    POST /api/novels/<id>/characters/<self_id>/voice      body: {"speaker_id", "note"}
+    POST /api/novels/<id>/characters/<self_id>/reference  body: {"candidate_id", "note"}
+
+Every route except `/api/auth/status` and `/api/auth/login` requires a valid
+session token (`Authorization: Bearer <token>`) once `ECHOTALES_WEBVIEW_PASSWORD`
+is set in the server's environment -- see `SessionStore`/`Handler._authorized`.
+Unset (the default, and every deployment's behaviour before Section 7.2), auth
+is off entirely.
 
 Corrections are overlaid onto the payload *before* it reaches the browser
 (`_overlay_merges`), not reapplied client-side, so the static viewer's render
@@ -24,9 +40,13 @@ does a merge look like."
 
 from __future__ import annotations
 
+import hmac
 import json
 import logging
-from dataclasses import dataclass
+import os
+import secrets
+import time
+from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
@@ -43,8 +63,41 @@ from echotales.pipeline.webview import (
     NovelSource,
     _anon_slot_colour,
     _anon_slot_label,
+    build_character_dashboard,
     build_novel_payload,
 )
+
+#: Section 7.2: a real, minimal auth gate suited to a local, single-operator
+#: review tool -- not a decorative login screen. Reads the password from an
+#: environment variable rather than hardcoding or storing one in the repo;
+#: unset means auth is off (the tool's behaviour before this section, which
+#: every existing deployment keeps getting unless an operator opts in).
+#: Session tokens are held in-process only (no persistence across restarts),
+#: which is the right tradeoff for a tool one person runs on their own
+#: machine -- there is no multi-user session store to build here.
+_AUTH_ENV_VAR = "ECHOTALES_WEBVIEW_PASSWORD"
+_SESSION_TTL_SECONDS = 12 * 3600
+
+
+@dataclass(slots=True)
+class SessionStore:
+    tokens: dict[str, float] = field(default_factory=dict)
+
+    def issue(self) -> str:
+        token = secrets.token_urlsafe(32)
+        self.tokens[token] = time.time() + _SESSION_TTL_SECONDS
+        return token
+
+    def valid(self, token: str | None) -> bool:
+        if not token:
+            return False
+        expiry = self.tokens.get(token)
+        if expiry is None:
+            return False
+        if expiry < time.time():
+            del self.tokens[token]
+            return False
+        return True
 
 log = logging.getLogger(__name__)
 
@@ -342,6 +395,7 @@ class Registry:
     """Holds one `NovelHandle` per configured source, keyed by novel id."""
 
     def __init__(self, sources: list[NovelSource], corrections_dir: Path) -> None:
+        self.corrections_dir = corrections_dir
         self.handles: dict[str, NovelHandle] = {}
         for src in sources:
             store = Store(src.db_path)
@@ -350,16 +404,51 @@ class Registry:
 
     def manifest(self) -> list[dict[str, str]]:
         return [
-            {"id": h.source.novel_id, "label": h.source.label} for h in self.handles.values()
+            {
+                "id": h.source.novel_id,
+                "label": h.source.label,
+                "content_type": (h.store.get_novel(h.source.novel_id) or {}).get(
+                    "content_type", "novel"
+                ),
+            }
+            for h in self.handles.values()
         ]
+
+    def create_project(
+        self, novel_id: str, title: str, content_type: str, *, db_dir: Path
+    ) -> NovelHandle:
+        """Section 7.2: register a new project, content-type included.
+
+        This creates the *project* (a store with a `novel` row a reviewer
+        can immediately see in the sidebar and dashboard) -- it does not run
+        ingest. Ingest (turning a source text into chapters/blocks) is a
+        separate, heavier pipeline stage (`echotales ingest`) with its own
+        format-specific adapters; wiring a raw-text upload through that
+        stage from an HTTP request is future work, not something to fake
+        here as if it already existed.
+        """
+        if novel_id in self.handles:
+            raise ValueError(f"project {novel_id!r} already exists")
+        db_dir.mkdir(parents=True, exist_ok=True)
+        db_path = db_dir / f"{novel_id}.db"
+        store = Store(str(db_path))
+        store.add_novel(novel_id, title, "", "generic", content_type=content_type)
+        source = NovelSource(db_path=str(db_path), novel_id=novel_id, label=title)
+        corrections = CorrectionLog(self.corrections_dir / f"{novel_id}.jsonl")
+        handle = NovelHandle(source, store, corrections)
+        self.handles[novel_id] = handle
+        return handle
 
 
 def make_handler(registry: Registry) -> type[BaseHTTPRequestHandler]:
+    password = os.environ.get(_AUTH_ENV_VAR)
+    sessions = SessionStore()
+
     class Handler(BaseHTTPRequestHandler):
         def _cors(self) -> None:
             self.send_header("Access-Control-Allow-Origin", "*")
             self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
-            self.send_header("Access-Control-Allow-Headers", "Content-Type")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
         def _json(self, status: int, body: object) -> None:
             data = json.dumps(body, ensure_ascii=False).encode("utf-8")
@@ -376,6 +465,16 @@ def make_handler(registry: Registry) -> type[BaseHTTPRequestHandler]:
                 return {}
             return json.loads(self.rfile.read(length))
 
+        def _authorized(self) -> bool:
+            """No password configured means auth is off (unchanged default
+            behaviour); a password configured means every route but login
+            requires a valid session token."""
+            if password is None:
+                return True
+            header = self.headers.get("Authorization", "")
+            token = header[7:] if header.startswith("Bearer ") else ""
+            return sessions.valid(token)
+
         def do_OPTIONS(self) -> None:
             self.send_response(204)
             self._cors()
@@ -384,6 +483,10 @@ def make_handler(registry: Registry) -> type[BaseHTTPRequestHandler]:
         def do_GET(self) -> None:
             parts = urlparse(self.path).path.strip("/").split("/")
             try:
+                if parts == ["api", "auth", "status"]:
+                    return self._json(200, {"auth_required": password is not None})
+                if not self._authorized():
+                    return self._json(401, {"error": "unauthorized"})
                 if parts == ["api", "manifest"]:
                     return self._json(200, registry.manifest())
                 if len(parts) == 3 and parts[:2] == ["api", "novels"]:
@@ -402,6 +505,11 @@ def make_handler(registry: Registry) -> type[BaseHTTPRequestHandler]:
                             "summary": handle.corrections.summary(),
                         },
                     )
+                if len(parts) == 4 and parts[:2] == ["api", "novels"] and parts[3] == "characters":
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    return self._json(200, build_character_dashboard(handle.store, parts[2]))
             except Exception as exc:
                 log.exception("GET %s failed", self.path)
                 return self._json(500, {"error": str(exc)})
@@ -410,6 +518,104 @@ def make_handler(registry: Registry) -> type[BaseHTTPRequestHandler]:
         def do_POST(self) -> None:
             parts = urlparse(self.path).path.strip("/").split("/")
             try:
+                if parts == ["api", "auth", "login"]:
+                    body = self._read_json()
+                    if password is None:
+                        return self._json(400, {"error": "auth is not enabled on this server"})
+                    supplied = str(body.get("password", ""))
+                    # Constant-time compare: a login endpoint timed on string
+                    # equality leaks the password one byte at a time to
+                    # anyone who can measure response latency.
+                    if not hmac.compare_digest(supplied, password):
+                        return self._json(401, {"error": "wrong password"})
+                    return self._json(200, {"token": sessions.issue()})
+
+                if not self._authorized():
+                    return self._json(401, {"error": "unauthorized"})
+
+                if parts == ["api", "projects"]:
+                    body = self._read_json()
+                    novel_id = str(body.get("id", "")).strip()
+                    title = str(body.get("title", "")).strip()
+                    content_type = str(body.get("content_type", "novel"))
+                    if not novel_id or not title:
+                        return self._json(400, {"error": "id and title are required"})
+                    if content_type not in ("novel", "short_story", "general_text", "roleplay"):
+                        return self._json(400, {"error": f"unknown content_type {content_type!r}"})
+                    try:
+                        handle = registry.create_project(
+                            novel_id, title, content_type,
+                            db_dir=registry.corrections_dir.parent / "projects",
+                        )
+                    except ValueError as exc:
+                        return self._json(409, {"error": str(exc)})
+                    return self._json(
+                        201, {"id": novel_id, "title": title, "content_type": content_type}
+                    )
+
+                if (
+                    len(parts) == 6
+                    and parts[:2] == ["api", "novels"]
+                    and parts[3] == "characters"
+                    and parts[5] == "voice"
+                ):
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    body = self._read_json()
+                    speaker_id = str(body.get("speaker_id", "")).strip()
+                    if not speaker_id:
+                        return self._json(400, {"error": "speaker_id is required"})
+                    from echotales.core.enums import AssertedBy, TargetKind
+                    from echotales.core.interval import FuzzyInterval
+                    from echotales.core.models import Attribute, DiscoursePosition
+                    from echotales.pipeline.persona.build import persona_at
+
+                    persona_id = persona_at(handle.store, parts[4])
+                    # A user override is a standing fact from the moment it's
+                    # made, with no attested story-time position of its own
+                    # (it didn't come from narration) -- story position 0.0,
+                    # open-ended, same convention `persona/build.py` uses for
+                    # a trait attested from the character's first appearance.
+                    handle.store.add_attribute(
+                        parts[2],
+                        Attribute(
+                            target_kind=TargetKind.PERSONA,
+                            target_id=persona_id,
+                            key="voice_override",
+                            value=speaker_id,
+                            learned_at_pos=DiscoursePosition(chapter=0, offset=0),
+                            observer_id="reviewer",
+                            asserted_by=AssertedBy.NARRATOR,
+                            evidence=str(body.get("note", "user override via webview")),
+                            interval=FuzzyInterval.open_ended(0.0),
+                        ),
+                    )
+                    handle.invalidate()
+                    return self._json(200, {"self_id": parts[4], "voice_override": speaker_id})
+
+                if (
+                    len(parts) == 6
+                    and parts[:2] == ["api", "novels"]
+                    and parts[3] == "characters"
+                    and parts[5] == "reference"
+                ):
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    body = self._read_json()
+                    candidate_id = str(body.get("candidate_id", "")).strip()
+                    if not candidate_id:
+                        return self._json(400, {"error": "candidate_id is required"})
+                    from echotales.pipeline.persona import refimg
+
+                    candidate = refimg.select_candidate(
+                        handle.store, parts[2], parts[4], candidate_id,
+                        actor="reviewer", note=str(body.get("note", "")),
+                    )
+                    handle.invalidate()
+                    return self._json(200, {"id": candidate.id, "source_url": candidate.source_url})
+
                 if (
                     len(parts) == 4
                     and parts[:2] == ["api", "novels"]
@@ -449,6 +655,8 @@ def make_handler(registry: Registry) -> type[BaseHTTPRequestHandler]:
         def do_DELETE(self) -> None:
             parts = urlparse(self.path).path.strip("/").split("/")
             try:
+                if not self._authorized():
+                    return self._json(401, {"error": "unauthorized"})
                 if (
                     len(parts) == 5
                     and parts[:2] == ["api", "novels"]

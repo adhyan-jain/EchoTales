@@ -465,6 +465,17 @@ class Store:
         if "kind" not in existing:
             self.conn.execute("ALTER TABLE self_entity ADD COLUMN kind TEXT")
 
+        # Section 7.2: project creation needs a content-type distinct from
+        # `adapter` (which names the *ingest format* -- epub/generic -- not
+        # what kind of writing this is). A pre-existing row has no recorded
+        # type; "novel" is the correct default since every project before
+        # this column existed was one.
+        existing = {row["name"] for row in self.conn.execute("PRAGMA table_info(novel)")}
+        if "content_type" not in existing:
+            self.conn.execute(
+                "ALTER TABLE novel ADD COLUMN content_type TEXT NOT NULL DEFAULT 'novel'"
+            )
+
     def close(self) -> None:
         self.conn.close()
 
@@ -485,12 +496,28 @@ class Store:
 
     # ---- novels and chapters -----------------------------------------
 
-    def add_novel(self, novel_id: str, title: str, source_path: str, adapter: str) -> None:
+    def add_novel(
+        self,
+        novel_id: str,
+        title: str,
+        source_path: str,
+        adapter: str,
+        *,
+        content_type: str = "novel",
+    ) -> None:
         self.conn.execute(
-            "INSERT OR REPLACE INTO novel(id, title, source_path, adapter) VALUES (?,?,?,?)",
-            (novel_id, title, source_path, adapter),
+            "INSERT OR REPLACE INTO novel(id, title, source_path, adapter, content_type)"
+            " VALUES (?,?,?,?,?)",
+            (novel_id, title, source_path, adapter, content_type),
         )
         self.conn.commit()
+
+    def get_novel(self, novel_id: str) -> dict[str, str] | None:
+        row = self.conn.execute("SELECT * FROM novel WHERE id=?", (novel_id,)).fetchone()
+        return dict(row) if row is not None else None
+
+    def list_novels(self) -> list[dict[str, str]]:
+        return [dict(r) for r in self.conn.execute("SELECT * FROM novel").fetchall()]
 
     def add_chapter(self, chapter: Chapter) -> None:
         blocks = json.dumps([b.model_dump() for b in chapter.blocks])
