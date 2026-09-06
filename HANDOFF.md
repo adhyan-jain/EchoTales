@@ -19,31 +19,40 @@ conflated.
 | `details.md` | Per-file detail |
 | `plans.md` | The original spec. Amended three times; the amendments win and are marked *(revised)* |
 
-**Last updated:** 2026-09-05.
+**Last updated:** 2026-09-07.
 
 ## Pick up here
 
-**A root-cause remediation pass is in progress (EVOLUTION 4.60).**
-Sections 1-5 done. Retriever recall@k gate found real gold and **FAILED**
-(recall@10 on `TRANSFERABLE_TITLE`/`RELATIONAL_DEICTIC` = 0%), and Section
-5 shipped the fix: title/relational mentions now resolve via sole-co-
-presence, never surface similarity, verified on real RI data
-(`RELATIONAL_DEICTIC` 0/99 -> 59/99). **`TRANSFERABLE_TITLE` needs a fresh
-mentions-extraction run to validate for real (skipped this session to
-avoid an LLM/ollama call) — do that next**, then re-run the recall@k gate.
-`render/relevance.py` now checks cast/headcount/condition survival
-against ground truth. Section 2's non-person-entity typing is fully
-closed (panel cast, voice casting, webview). Section 3's speaker
-attribution got a real anchor-recall fix (+12.2pp in controlled A/B), the
-never-validated turn-taking tier removed (wrong 82.9% of the time), and
-the chorus default fixed — net honest full-novel number is flat (45.5%)
-since the old figure was inflated by turn-taking's wrong guesses. Section
-4's scorer precision plateau reconfirmed unfixable by reweighting (never
-exceeds 0.85; every real link still comes from a FORCE_LINK pre-filter).
-Section 6's prompt-priority bug (found and patched three separate times
-in three separate places) now has one shared mechanism
-(`fit_tiers_to_budget`) instead of three independently-hand-ordered flat
-lists. Next: Section 7 (frontend).
+**The six-section root-cause remediation pass (EVOLUTION 4.60) is
+complete** — Sections 1 through 7 all shipped and committed. What's
+actually left is verification the session itself couldn't do, not new
+design work:
+
+1. **`TRANSFERABLE_TITLE` end-to-end validation.** Section 5's classifier
+   fix (curated single-holder-office nouns -> `TRANSFERABLE_TITLE`
+   instead of `GENERIC_DESCRIPTOR`) only takes effect on a *future*
+   mentions-extraction run — the current mention table has zero mentions
+   of that type. Re-run `mentions`/`resolve` on RI ch1 for real (this
+   needs the LLM layer, deliberately not run this session per
+   instruction), confirm the clan-leader/blocks-68-78 case resolves, then
+   re-run `echotales eval`'s recall@k gate to see whether
+   `TRANSFERABLE_TITLE` moves off its measured 0%.
+2. **Click through the new webview UI in an actual browser.** Login,
+   NewProject, and CharacterDashboard (Section 7.2/7.3) are verified by
+   `npx eslint` + a clean `npx react-scripts build` + live curl checks
+   against every backend endpoint they call — nobody has opened the page
+   and clicked anything yet. Run `npm start` in `webview/` against a real
+   `echotales webview-server` instance and confirm the visual result
+   before treating this as done.
+3. Re-run `echotales relevance`/the speaker-attribution numbers against a
+   full, fresh, real render (not a scratch-copy re-resolve) once the
+   above lands, so the numbers in EVOLUTION 4.60 get a "confirmed on a
+   real production run" update rather than staying scratch-copy-only.
+
+See EVOLUTION 4.60 (search for it) for the full section-by-section
+numbers and reasoning. Before this pass, the live area of work was the
+render/direction pipeline — see EVOLUTION's 4.51-4.59 entries if picking
+that thread back up instead.
 
 Before this pass, the live area of work was the render/direction pipeline
 (`packages/pipeline/src/echotales/pipeline/render/`). Most recently

@@ -5306,8 +5306,23 @@ reference selection verified end to end with a live curl session.
 
 React frontend (Login, NewProject, CharacterDashboard, wiring into
 App.js) dispatched to two parallel subagents working on disjoint files
-to avoid conflicts -- outcome recorded in a follow-up entry once
-integrated and verified.
+to avoid conflicts. Both landed clean, integrated without incident (both
+independently converged on the same blue-gradient button identity from
+the reference repo, unified into one shared definition during
+integration), `npx eslint` clean, `npx react-scripts build` compiles.
+Section 7 -- and with it the whole six-section root-cause remediation
+pass started this session -- is done.
+
+**Verified real-user paths this session couldn't reach with the current
+setup, stated plainly rather than glossed over:** no browser was
+available to click through the built UI visually; correctness rests on
+ESLint + a clean production build + the backend endpoints' own live curl
+verification, not on someone having actually looked at the rendered
+page. `TRANSFERABLE_TITLE` end-to-end resolution (Section 5) also still
+needs a fresh mentions-extraction run against real chapter text to
+confirm the clan-leader/blocks-68-78 case, deliberately deferred to avoid
+an LLM/ollama call this session. Both are the natural next things to
+check before calling any of this "shipped," not just "committed."
 
 ---
 
