@@ -23,8 +23,6 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 
-from pydantic import BaseModel, Field
-
 from echotales.core.enums import (
     OBSERVER_READER,
     AssertedBy,
@@ -45,6 +43,7 @@ from echotales.pipeline.resolve.appearance_extract import (
     eligible_prominence,
 )
 from echotales.pipeline.world.schema import KEY_HINTS, keys_for
+from pydantic import BaseModel, Field
 
 log = logging.getLogger(__name__)
 
@@ -210,7 +209,7 @@ def extract_entity_facts(
             system=SYSTEM,
             novel_id=novel_id,
         )
-    except Exception as exc:  # noqa: BLE001 - one entity must not sink the stage
+    except Exception as exc:
         log.warning("world extraction failed for %s: %s", label, exc)
         raise
 
@@ -247,16 +246,19 @@ def extract_world(
         if not keys_for(kind):
             continue
 
-        if kind is TargetKind.SELF and not include_incidental:
-            if eligible_prominence(store, novel_id, entity) is Prominence.INCIDENTAL:
-                report.skipped_not_prominent += 1
-                continue
+        if (
+            kind is TargetKind.SELF
+            and not include_incidental
+            and eligible_prominence(store, novel_id, entity) is Prominence.INCIDENTAL
+        ):
+            report.skipped_not_prominent += 1
+            continue
 
         try:
             facts, evidence = extract_entity_facts(
                 novel_id, store, entity, client=client
             )
-        except Exception:  # noqa: BLE001 - already logged
+        except Exception:
             report.failures += 1
             continue
 

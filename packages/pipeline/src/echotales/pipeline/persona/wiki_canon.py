@@ -38,9 +38,10 @@ import json
 import logging
 import re
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable, Protocol
+from typing import Protocol
 from urllib.parse import quote
 
 log = logging.getLogger(__name__)
@@ -110,10 +111,10 @@ def api_fetch(wiki: str, title: str, *, timeout: float = 15.0) -> str | None:
     # (`Python-urllib/3.x`) with a blanket 403, which looked exactly like
     # "this novel has no wiki" -- every character came back empty.
     request = urllib.request.Request(
-        url, headers={"User-Agent": USER_AGENT}  # noqa: S310
+        url, headers={"User-Agent": USER_AGENT}
     )
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310
+        with urllib.request.urlopen(request, timeout=timeout) as response:
             return response.read().decode("utf-8", errors="replace")
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
         # A missing page and an unreachable network are the same thing to

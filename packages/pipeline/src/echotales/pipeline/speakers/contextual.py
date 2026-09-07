@@ -24,11 +24,10 @@ line. Cold start is a startup cost, not a standing one.
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
-
 from echotales.core.enums import AttributionMethod, SpanType
 from echotales.core.models import Span
 from echotales.pipeline.speakers.attribution import Attribution, _known
+from pydantic import BaseModel, Field
 
 SYSTEM = (
     "You identify who speaks or thinks one line from a translated web novel. "

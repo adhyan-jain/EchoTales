@@ -113,9 +113,10 @@ class VoiceBank:
             index = order.index(age_band)
             for distance in (1, 2, 3):
                 for neighbour in (index - distance, index + distance):
-                    if 0 <= neighbour < len(order):
-                        if hit := buckets.get(f"{gender}:{order[neighbour]}"):
-                            return hit
+                    if 0 <= neighbour < len(order) and (
+                        hit := buckets.get(f"{gender}:{order[neighbour]}")
+                    ):
+                        return hit
             # Same gender at any age beat the right age in the wrong gender.
             if same_gender := [v for v in self.voices if v.gender == gender]:
                 return same_gender

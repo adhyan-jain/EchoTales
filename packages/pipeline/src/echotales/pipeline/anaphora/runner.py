@@ -250,7 +250,7 @@ def _recover_attributions(
         # Look just after the line, where "he said" sits, or before, where "he said" sits.
         # Find all pronouns in the block
         all_pronouns = find_pronouns(block_text, 0)
-        
+
         # Filter for pronouns close to the span and outside of it
         candidates = []
         for p in all_pronouns:

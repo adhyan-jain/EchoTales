@@ -25,7 +25,7 @@ from echotales.pipeline.voice.bank import (
     pick_mob_voice,
 )
 from echotales.pipeline.voice.casting import CastingReport, cast_voices
-from echotales.pipeline.voice.delivery import DeliverySettings, pace_text, settings_for
+from echotales.pipeline.voice.delivery import DeliverySettings, pace_text
 from echotales.pipeline.voice.engine import (
     ChatterboxEngine,
     StubEngine,
