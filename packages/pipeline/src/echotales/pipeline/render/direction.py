@@ -28,9 +28,8 @@ import re
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-from pydantic import BaseModel, Field
-
 from echotales.pipeline.spans.scene import _MOB_ROLE_NOUNS
+from pydantic import BaseModel, Field
 
 if TYPE_CHECKING:
     from echotales.core.store import Store
@@ -197,7 +196,7 @@ def build_prompt(
     cast_list = list(cast.keys()) if cast else "EMPTY"
     lines.append(f"CAST for this beat: {cast_list}")
     lines.append("")
-    
+
     if cast:
         lines.append("Characters who may appear, with their fixed appearance:")
         for name, look in cast.items():
@@ -258,6 +257,12 @@ class Direction:
     #: oversized part that got skipped wholesale -- identity and all --
     #: instead of just losing the condition detail. See HANDOFF v44 fix.
     conditions: dict[str, str] = field(default_factory=dict)
+    #: **Needed so `to_image_prompt_parts` can pick the right
+    #: `style_anchor()` (`persona/attire.py`).** Previously the tier-0 style
+    #: anchor was one hardcoded xianxia string shared by every novel --
+    #: confirmed as the reason an LOTM render came out xianxia-styled
+    #: despite `novel_style`/`WORLD_CONTEXT` already being novel-specific.
+    novel_id: str = ""
 
     def to_image_prompt(self, *, scene_locale: str = "") -> str:
         """Compose the final text-to-image prompt.
@@ -294,8 +299,8 @@ class Direction:
             "close": "close-up",
         }[shot]
 
+        from echotales.pipeline.persona.attire import style_anchor
         from echotales.pipeline.persona.prompt import (
-            STYLE_ANCHOR,
             compress_identity_tags,
             condense_clause,
             fit_to_budget,
@@ -323,7 +328,7 @@ class Direction:
         # its register. Tier 3 is where and when -- the first content cut
         # when the budget is tight, because it is real information but the
         # least essential in a genre where the character carries the panel.
-        tier0: list[str] = [STYLE_ANCHOR, framing]
+        tier0: list[str] = [style_anchor(self.novel_id), framing]
 
         _director_text = f"{d.action or ''} {d.layout or ''}".lower()
         _has_white_robe = False
@@ -373,9 +378,7 @@ class Direction:
             if d.expression and not _expression_placed:
                 tier1.append(d.expression)
                 _expression_placed = True
-            if "white" in condition.lower() and "robe" in condition.lower():
-                _has_white_robe = True
-            elif "white" in compressed.lower() and "robe" in compressed.lower():
+            if ("white" in condition.lower() and "robe" in condition.lower()) or ("white" in compressed.lower() and "robe" in compressed.lower()):
                 _has_white_robe = True
             tier1.extend(other_tags)
         # **Section 4.4: an untracked figure's presence needs the same
@@ -498,7 +501,8 @@ def direct_beat(
         crowd_mood=crowd_mood,
     )
     return Direction(
-        direction=direction, cast=cast, novel_style=novel_style, conditions=conditions or {}
+        direction=direction, cast=cast, novel_style=novel_style, conditions=conditions or {},
+        novel_id=novel_id,
     )
 
 
