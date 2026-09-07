@@ -5,7 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from echotales.pipeline.render.motion import (
     GENERIC_TAGS,
     build_motion_library,

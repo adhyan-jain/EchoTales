@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from echotales.pipeline.world.lexicon import WorldLexicon, _ANY_USE_RE, _EPITHET_PATTERNS
+from echotales.pipeline.world.lexicon import _ANY_USE_RE, _EPITHET_PATTERNS, WorldLexicon
 
 
 def _epithets(text: str) -> list[str]:

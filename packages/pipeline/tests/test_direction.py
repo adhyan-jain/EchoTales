@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from echotales.core.enums import AliasType, BlockType, TargetKind
+from echotales.core.enums import BlockType, TargetKind
 from echotales.core.models import Block, Chapter, DiscoursePosition, Self
 from echotales.core.store import Store
 from echotales.pipeline.render.direction import Direction, PanelDirection, _validate_direction

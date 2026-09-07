@@ -375,7 +375,7 @@ class TestResolveKinshipGroup:
         name = mention("Uncle Gu Yue Dong Tu", offset=10, block_index=0)
         resolved = resolve_kinship_group(10, 15, 0, [name], established=None)
         assert resolved is not None
-        antecedent, confidence, rule = resolved
+        antecedent, _confidence, rule = resolved
         assert antecedent.id == name.id
         assert rule == "kinship_fused"
 

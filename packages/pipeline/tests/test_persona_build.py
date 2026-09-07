@@ -7,7 +7,7 @@ consumed `SelfPersonaBinding` and voice/image work had nothing to bind to.
 
 from __future__ import annotations
 
-from echotales.core.enums import Prominence, TargetKind
+from echotales.core.enums import TargetKind
 from echotales.pipeline.persona.traits import (
     gender_from_pronouns,
     infer_traits_deterministic,
@@ -161,8 +161,8 @@ class TestBuildPersonas:
 
 
 def _seeded_store(tmp_path, kind: TargetKind = TargetKind.SELF):
-    from echotales.core.models import Block, Chapter, DiscoursePosition, Mention, Self
     from echotales.core.enums import AliasType, BlockType, ReferenceMode, SpanType
+    from echotales.core.models import Block, Chapter, DiscoursePosition, Mention, Self
     from echotales.core.store import Store
 
     store = Store(str(tmp_path / "t.db"))

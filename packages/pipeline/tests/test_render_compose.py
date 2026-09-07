@@ -7,10 +7,8 @@ import json
 import shutil
 import struct
 import wave
-from pathlib import Path
 
 import pytest
-
 from echotales.pipeline.render._png import write_solid_png
 from echotales.pipeline.render.compose import (
     FfmpegComposeEngine,

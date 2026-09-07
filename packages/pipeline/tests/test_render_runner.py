@@ -12,7 +12,8 @@ from echotales.core.enums import AliasType, BlockType, ReferenceMode, SpanType, 
 from echotales.core.models import Block, Chapter, DiscoursePosition, Mention, Self, Span
 from echotales.core.store import Store
 from echotales.pipeline.render.compose import get_engine as get_compose_engine
-from echotales.pipeline.render.panels import get_engine as get_panel_engine, render_panels
+from echotales.pipeline.render.panels import get_engine as get_panel_engine
+from echotales.pipeline.render.panels import render_panels
 from echotales.pipeline.render.runner import render_videos
 
 
