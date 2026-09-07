@@ -37,13 +37,20 @@ design work:
    instruction), confirm the clan-leader/blocks-68-78 case resolves, then
    re-run `echotales eval`'s recall@k gate to see whether
    `TRANSFERABLE_TITLE` moves off its measured 0%.
-2. **Click through the new webview UI in an actual browser.** Login,
-   NewProject, and CharacterDashboard (Section 7.2/7.3) are verified by
-   `npx eslint` + a clean `npx react-scripts build` + live curl checks
-   against every backend endpoint they call — nobody has opened the page
-   and clicked anything yet. Run `npm start` in `webview/` against a real
-   `echotales webview-server` instance and confirm the visual result
-   before treating this as done.
+2. **Visual browser check of the new webview UI still genuinely open,
+   but the runtime-correctness half is now closed.** No browser tool was
+   available in this session (checked; the user had started installing
+   the Claude-in-Chrome extension but opted to continue without it) --
+   `webview/src/components/__tests__/Section7Smoke.test.js` (7/7 passing,
+   real React Testing Library mounts, not just ESLint/build) exercises
+   actual render + event-handler code for Login, NewProject, and
+   CharacterDashboard against realistically-shaped mocked API data:
+   login success/failure, slug derivation, voice/reference-image click
+   handlers calling the real API signatures, evidence-quote rendering,
+   and honest empty/404/error states. What's still unverified is purely
+   visual/CSS (does it *look* right, not does it *work*) — run `npm
+   start` in `webview/` against a real `echotales webview-server`
+   instance and eyeball it before calling this fully done.
 3. Re-run `echotales relevance`/the speaker-attribution numbers against a
    full, fresh, real render (not a scratch-copy re-resolve) once the
    above lands, so the numbers in EVOLUTION 4.60 get a "confirmed on a
