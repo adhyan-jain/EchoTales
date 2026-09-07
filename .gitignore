@@ -17,6 +17,11 @@ data/*.db-wal
 data/*.db-shm
 data/echotales.db*
 
+# Section 7.2: per-project databases the webview's "New project" flow
+# creates via Registry.create_project -- generated, user-specific, same
+# reasoning as every other data/*.db pattern above.
+data/projects/
+
 # Archived pre-promotion DB snapshots (paths.py-adjacent convention: never
 # overwrite, keep the old one aside) -- same reason as the rule above, just
 # a different directory.
