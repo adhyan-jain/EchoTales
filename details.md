@@ -150,6 +150,12 @@ Design commitments:
   tokens, latency. Evaluation data, not telemetry. `escalation_stats()`
   aggregates it.
 - `derived_artifact` + `invalidate_by_facts()` — read-set intersection.
+- `ref_image_candidate` / `ref_image_selection_log` (`SCHEMA_VERSION` 3) —
+  reference-image review queue, see `persona/refimg.py` below.
+  `add_ref_image_candidate`/`log_ref_image_event` were shipped without the
+  `self.conn.commit()` every other write method here has; writes were
+  silently lost on process exit until a restart-persistence check caught
+  it (EVOLUTION 4.53).
 
 ### `src/echotales/core/readset.py`
 Read-set tracking for incremental invalidation.
@@ -1135,6 +1141,28 @@ only redraws a character whose description actually changed.
 Reuses `render/panels.py`'s `PanelImageEngine` protocol rather than adding a
 parallel backend abstraction: a reference sheet is one more text-to-image
 call, and two abstractions would mean wiring every new checkpoint twice.
+
+### `src/echotales/pipeline/persona/refimg_search.py` + `refimg.py`
+
+A human-review queue for character reference images, kept deliberately
+separate from `reference_gen.py`'s generated sheets and from anything that
+touches generation. `refimg_search.py` finds candidates
+(`DuckDuckGoImageBackend`, no API key, behind a `SearchBackend` Protocol —
+same injection pattern as `wiki_canon.py`'s `fetch`) and never writes to
+the store; `refimg.py` orchestrates search-and-persist, listing, and
+selection (`eligible_characters()` reuses `appearance_extract`'s
+PRINCIPAL/RECURRING filter, same as `reference_gen.py`).
+
+`selected=1` is set in exactly one place, `Store.select_ref_image_candidate`
+(explicit CLI call only, never by search) — this is the whole point of the
+design. Section 4.47 removed IP-Adapter conditioning entirely because an
+automatically-picked single reference image bled colour across characters;
+this module intentionally stops short of picking anything, so a later
+"condition on the selected reference" step starts from a human-reviewed
+choice rather than repeating that failure mode. See EVOLUTION 4.53 for the
+real-search verification and a known limitation: generic/mislabeled images
+(wallpaper aggregator pages, fanfiction covers) genuinely reach the
+top-5 candidate list, so a reviewer has to look, not just take result #1.
 
 ### `src/echotales/pipeline/world/` — structured world knowledge
 

@@ -46,7 +46,11 @@ from echotales.core.enums import (
 from echotales.core.interval import FuzzyInterval
 from echotales.core.models import Attribute
 from echotales.core.store import Store
-from echotales.pipeline.persona.attire import resolve_appearance
+from echotales.pipeline.persona.attire import (
+    reference_anchor,
+    reference_style,
+    resolve_appearance,
+)
 from echotales.pipeline.persona.canon import apply_canon
 from echotales.pipeline.persona.prompt import fit_to_budget
 from echotales.pipeline.persona.split import bodies_of
@@ -109,18 +113,10 @@ _PROMPT_ORDER = (
 #: available tokens, so anything appended after it is dropped -- and what
 #: was being dropped was the three-quarter framing and the ink-painting
 #: medium, i.e. the entire point of the style string.
-REFERENCE_ANCHOR = (
-    "three-quarter shot from head to thigh, "
-    "guofeng illustration, chinese ink painting, xianxia"
-)
-
-REFERENCE_STYLE = (
-    "solo, single character, three-quarter shot from head to thigh, "
-    "facing viewer, detailed face, plain background, "
-    "guofeng illustration, chinese ink painting, xianxia, wuxia, "
-    "hanfu with long wide sleeves, ink wash, muted limited palette, "
-    "serious cold expression, mature proportions, sharp features"
-)
+#: **Now per-novel** (`persona/attire.py::reference_anchor`/`reference_style`)
+#: -- these used to be the RI-only text hardcoded here and shared by every
+#: novel, the same bug `persona/prompt.py::STYLE_ANCHOR` had. RI's table
+#: entry keeps this exact original vocabulary, so nothing changes for RI.
 # Tried dropping "serious cold expression ... sharp features" in favour of
 # neutral framing-only language, reasoning that it fought characters
 # described as plain/ordinary. Reverted: the author's own visual judgement
@@ -263,6 +259,8 @@ def _demographics(
         from echotales.pipeline.persona.traits import age_band_from_text
         from echotales.pipeline.resolve.appearance_extract import (
             _chapters_by_body,
+        )
+        from echotales.pipeline.resolve.appearance_extract import (
             gather_appearance_passages as _passages,
         )
 
@@ -289,6 +287,7 @@ def build_reference_prompt(
     with_style: bool = True,
     solo: bool = True,
     crowd: bool = False,
+    novel_id: str = "",
 ) -> str:
     """Phrase a character's stored appearance as a generation prompt.
 
@@ -398,7 +397,9 @@ def build_reference_prompt(
     # last because it is the cheapest thing to lose. Before this, appearance
     # ran to ~65 tokens and the style never reached the model at all.
     head, *appearance_parts = parts
-    return fit_to_budget([head, REFERENCE_ANCHOR, *appearance_parts, REFERENCE_STYLE])
+    return fit_to_budget([
+        head, reference_anchor(novel_id), *appearance_parts, reference_style(novel_id),
+    ])
 
 
 def _digest(prompt: str) -> str:
@@ -451,13 +452,39 @@ def generate_references(
     width: int = 768,
     height: int = 1024,
     seed: int = 0,
+    reference_transition_mode: str = "txt2img",
 ) -> ReferenceReport:
     """Generate one cached reference sheet per prominent character.
 
     `top` limits the run to the N most-mentioned eligible characters, which
     is how a first pass gets reviewed before committing GPU time to a full
     cast.
+
+    **`reference_transition_mode` is experimental and opt-in only, default
+    `"txt2img"` (unchanged behaviour).** Every existing call site omits it
+    and gets exactly the independent-generation-per-body behaviour this
+    module has always had. `"img2img"` is the only other value: for the
+    *second and later* body of a split character (`persona/split.py`'s
+    `bodies_of` -- a regression, transmigration, possession, or permanent
+    injury), instead of an independent txt2img draw it runs an img2img pass
+    guided by the *previous* body's own reference image, so the new body's
+    sheet is a transform of the old one rather than an unrelated roll.
+    Built to close a measured drift problem (adjacent body-states of one
+    character coming out with different attire/palette because they share
+    no generation history), not to reintroduce IP-Adapter -- HANDOFF 4.47
+    removed that permanently for a different, specific, documented reason
+    (colour/composition contamination that did not generalise across
+    novels) and this does not touch that decision or its engines' default
+    path. An engine with no img2img support for `request.init_image`
+    degrades to plain txt2img (see `PanelImageRequest.init_image`'s
+    docstring), which is why it is safe to pass unconditionally to
+    `_generate_one` rather than feature-detecting the engine here.
     """
+    if reference_transition_mode not in ("txt2img", "img2img"):
+        raise ValueError(
+            f"unknown reference_transition_mode {reference_transition_mode!r}; "
+            "expected 'txt2img' or 'img2img'"
+        )
     from echotales.pipeline.render.panels import get_engine
     from echotales.pipeline.resolve.appearance_extract import eligible_prominence
 
@@ -491,8 +518,15 @@ def generate_references(
     # for characters who never change.
     for entity, prominence in eligible:
         bodies = [pid for pid, _interval in bodies_of(store, str(entity.id))]  # type: ignore[attr-defined]
+        # Only relevant in img2img mode: the previous body's own image path,
+        # threaded body-to-body so the second body transforms the first, the
+        # third transforms the second, and so on. Populated from whatever
+        # `_generate_one` actually wrote (fresh or reused-from-cache) --
+        # not re-read from the store, since a cache hit and a fresh
+        # generation both leave `image_path` valid on disk either way.
+        prior_image: Path | None = None
         for persona_id in bodies or [f"{entity.id}:body1"]:  # type: ignore[attr-defined]
-            _generate_one(
+            written = _generate_one(
                 store,
                 novel_id,
                 entity,
@@ -505,10 +539,83 @@ def generate_references(
                 height=height,
                 seed=seed,
                 multi_body=len(bodies) > 1,
+                init_image=(
+                    prior_image if reference_transition_mode == "img2img" else None
+                ),
             )
+            if written is not None:
+                prior_image = written
 
     store.conn.commit()
     return report
+
+
+def _supports_img2img_subprocess(engine: object) -> bool:
+    """True only for the SDXL-family engines that actually built the
+    img2img path (`IllustriousEngine`/`NoobAIEngine`, see `render/panels.py`).
+    `StubImageEngine` (tests, no GPU) and anything else must keep calling
+    `generate()` in-process -- there is no OOM to dodge without a real GPU
+    pipeline, and a subprocess would only add cost and a new failure mode.
+    """
+    return hasattr(engine, "_ensure_img2img_pipe")
+
+
+def _run_img2img_subprocess(
+    *,
+    engine_name: str,
+    prompt: str,
+    out_path: Path,
+    negative_prompt: str,
+    width: int,
+    height: int,
+    seed: int,
+    init_image: Path,
+    transition_strength: float,
+) -> None:
+    """Run one img2img generation in a fresh process via `_img2img_worker.py`.
+
+    See that module's docstring and EVOLUTION 4.55/4.56 for why this exists
+    at all -- a fresh CUDA context is the only thing that reliably clears
+    the fragmentation an in-process `empty_cache()` could not.
+    """
+    import json
+    import subprocess
+    import sys
+    import tempfile
+
+    from echotales.pipeline.persona import _img2img_worker
+
+    payload = {
+        "engine_name": engine_name,
+        "prompt": prompt,
+        "out_path": str(out_path),
+        "negative_prompt": negative_prompt,
+        "width": width,
+        "height": height,
+        "seed": seed,
+        "init_image": str(init_image),
+        "transition_strength": transition_strength,
+    }
+    with tempfile.NamedTemporaryFile(
+        "w", suffix=".json", delete=False
+    ) as handle:
+        json.dump(payload, handle)
+        request_path = handle.name
+
+    try:
+        result = subprocess.run(
+            [sys.executable, _img2img_worker.__file__, request_path],
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        Path(request_path).unlink(missing_ok=True)
+
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"img2img subprocess failed (exit {result.returncode}) for "
+            f"{out_path}:\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+        )
 
 
 def _generate_one(
@@ -525,14 +632,22 @@ def _generate_one(
     height: int,
     seed: int,
     multi_body: bool,
-) -> None:
-    """Generate (or reuse) the sheet for one body of one character."""
+    init_image: Path | None = None,
+) -> Path | None:
+    """Generate (or reuse) the sheet for one body of one character.
+
+    Returns the image path actually on disk for this body (fresh or
+    cached), or `None` when there is no appearance data to generate from --
+    the caller (`generate_references`) uses this as "the previous body's
+    image" for the next body's img2img transition, so a skipped body simply
+    leaves the chain unbroken rather than transitioning from nothing.
+    """
     from echotales.pipeline.render.panels import PanelImageRequest
 
     appearance = appearance_of(store, persona_id)
     if not appearance:
         report.skipped_no_appearance += 1
-        return
+        return None
 
     gender, age_band = _demographics(
         store, persona_id, novel_id=novel_id, entity_id=str(entity.id)  # type: ignore[attr-defined]
@@ -555,8 +670,13 @@ def _generate_one(
         gender=gender,
         age_band=age_band,
         detailed=prominence is Prominence.PRINCIPAL,
+        novel_id=novel_id,
     )
-    digest = _digest(prompt)
+    # `init_image` is folded into the cache digest so that switching
+    # `reference_transition_mode` between runs invalidates the cache rather
+    # than silently reusing a txt2img-era sheet for an img2img-mode run (or
+    # vice versa) -- the two are different generations of the same prompt.
+    digest = _digest(prompt if init_image is None else f"{prompt}::img2img:{init_image}")
 
     stored = {
         a.key: a.value
@@ -571,24 +691,67 @@ def _generate_one(
     ):
         report.reused_cached += 1
         report.paths[_report_key(entity, persona_id, multi_body)] = str(image_path)
-        return
+        return image_path
 
-    engine.generate(  # type: ignore[attr-defined]
-        PanelImageRequest(
+    seed_for_body = _seed_for(persona_id, seed)
+    # A body-state transition is a real physical change, not a style
+    # reskin, so it gets more denoise room than `RefinedEngine`'s 0.35
+    # restyle -- low enough to keep the same face and hair reading as the
+    # same character, high enough that "younger" or an added permanent
+    # injury actually lands. Not independently tuned per-transition-kind
+    # yet; see this experiment's honest verdict in HANDOFF.md before
+    # promoting it.
+    transition_strength = 0.5
+
+    # **A real img2img transform runs in its own subprocess, never in this
+    # one.** EVOLUTION 4.55: body1 (txt2img) and body2 (img2img) sharing one
+    # process leaves too little VRAM headroom for body2's `vae.decode` on
+    # this 7.65 GiB card -- an in-process `empty_cache()`+`gc.collect()`
+    # mitigation got the denoise loop running but still OOM'd at decode,
+    # because PyTorch's caching allocator does not hand every block back to
+    # the driver even when cleared, and body1's run already fragmented that
+    # same CUDA context. A subprocess gets a fresh CUDA context with none of
+    # that fragmentation -- the only fix that actually closes the gap rather
+    # than narrowing it. Gated on `_supports_img2img_subprocess`: the stub
+    # engine (tests, no GPU) and any engine without `_ensure_img2img_pipe`
+    # keep the original in-process call, unchanged.
+    if init_image is not None and _supports_img2img_subprocess(engine):
+        _run_img2img_subprocess(
+            engine_name=getattr(engine, "name", "noobai"),
             prompt=prompt,
             out_path=image_path,
             negative_prompt=REFERENCE_NEGATIVE,
             width=width,
             height=height,
-            # Per-*body*, not per-run: two characters sharing one seed
-            # and a similar prompt come out looking like siblings, a seed
-            # that moved between runs would redraw a face downstream
-            # panels are already conditioned on, and two bodies of one
-            # character must not come out as the same face -- which is the
-            # entire point of splitting them.
-            seed=_seed_for(persona_id, seed),
+            seed=seed_for_body,
+            init_image=init_image,
+            transition_strength=transition_strength,
         )
-    )
+    else:
+        engine.generate(  # type: ignore[attr-defined]
+            PanelImageRequest(
+                prompt=prompt,
+                out_path=image_path,
+                negative_prompt=REFERENCE_NEGATIVE,
+                width=width,
+                height=height,
+                # Per-*body*, not per-run: two characters sharing one seed
+                # and a similar prompt come out looking like siblings, a
+                # seed that moved between runs would redraw a face
+                # downstream panels are already conditioned on, and two
+                # bodies of one character must not come out as the same
+                # face -- which is the entire point of splitting them.
+                seed=seed_for_body,
+                # Experimental body-state-transition path -- see this
+                # module's `reference_transition_mode` docstring and
+                # `PanelImageRequest.init_image`. `None` on every ordinary
+                # call (body1 of any character, or any body generated in
+                # the default `txt2img` mode), which keeps this call
+                # byte-for-byte identical to before the flag existed.
+                init_image=init_image,
+                transition_strength=transition_strength,
+            )
+        )
 
     if stored.get(REFERENCE_PATH_KEY) != str(image_path):
         _write_marker(
@@ -598,6 +761,7 @@ def _generate_one(
 
     report.generated += 1
     report.paths[_report_key(entity, persona_id, multi_body)] = str(image_path)
+    return image_path
 
 
 def _report_key(entity: object, persona_id: str, multi_body: bool) -> str:

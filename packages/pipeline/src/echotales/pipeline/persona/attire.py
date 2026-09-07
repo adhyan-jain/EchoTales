@@ -20,6 +20,12 @@ FACTION_ATTIRE: dict[str, dict[str, str]] = {
         "gu yue clan": "green and brown silk cultivator robes with a silver clan emblem",
         "white province": "plain grey hemp robes, minimal ornamentation",
     },
+    "lord-of-the-mysteries": {
+        "nighthawks": "black formal trench coat, red glove, top hat, dark trousers",
+        "evernight church": "dark blue clerical cassock, silver emblem of crimson moon and stars",
+        "secret order": "dark hooded cloak, mysterious ritual robes with secret symbols",
+        "mi9": "formal military intelligence uniform, tailored dark coat, high leather boots",
+    },
 }
 
 #: novel_id -> rank keyword (lowercased) -> attire description, checked as a
@@ -38,6 +44,11 @@ RANK_ATTIRE: dict[str, dict[str, str]] = {
         "sect master": "ornate sect master's ceremonial robes, sect crest prominent",
         "disciple": "simple disciple's robes in sect colours, plain sash",
     },
+    "lord-of-the-mysteries": {
+        "captain": "formal black trench coat, top hat, brass pocket watch chain",
+        "bishop": "ceremonial dark blue clerical robes, silver star and moon emblem",
+        "beyonder": "Victorian coat, dark formal trousers, high collar shirt, cravat",
+    },
 }
 
 
@@ -45,6 +56,10 @@ RANK_ATTIRE: dict[str, dict[str, str]] = {
 REGIONAL_AESTHETIC: dict[str, dict[str, str]] = {
     "reverend-insanity": {
         "southern border": "mountainous cultivation-sect robes, bamboo accessories",
+    },
+    "lord-of-the-mysteries": {
+        "tingen": "Loen kingdom Victorian street attire, formal suits and bowler hats",
+        "backlund": "formal Victorian high-society attire, dark double-breasted coats, tailcoats, top hats",
     },
 }
 
@@ -154,7 +169,156 @@ _DEFAULT_WORLD = "detailed background environment"
 #: same budget discipline as the rest of this entry.
 WORLD_CONTEXT: dict[str, str] = {
     "reverend-insanity": "Gu cultivation, Gu Masters, moonblade attacks not swords, hanfu",
+    # **Citation-verified against `data/reruns/lord-of-the-mysteries.db`'s
+    # `span` table, same discipline as the RI entry above (nothing here that
+    # isn't a literal substring or a directly counted claim from the source
+    # text).**
+    # - "what can I do to become a Beyonder?" / "join the Churches of either
+    #   the Evernight Goddess, the Lord of Storms, or the God of Steam and
+    #   Machinery" -- Beyonders and named Churches are the world's power
+    #   system, not a generic "magic".
+    # - "I have two sets of Sequence 9 potion formulas" / "humanity can only
+    #   depend on potions to become real Beyonders" -- power comes from
+    #   drunk/injected potions tied to a numbered "Sequence", not a cast
+    #   spell or a cultivated internal energy.
+    # - "My tarot divination is very accurate" -- tarot cards are an actual
+    #   in-world divination tool, not set dressing.
+    # - "the most common gas lamp of the times" / "using candles was most
+    #   apt for their standing and stature" / "installing gas pipes" --
+    #   gaslight-era interiors, not electric light.
+    # - Trope-check, counted rather than assumed: "sword" appears 53 times
+    #   across the volume's spans versus "gun"/"revolver" 230 times --
+    #   firearms, not blades, are this world's default weapon.
+    "lord-of-the-mysteries": (
+        "Beyonder potions, Sequence pathways, tarot divination, "
+        "gaslamp Victorian era, revolvers not swords"
+    ),
 }
+
+#: **The genre/rendering-style anchor, per novel.** `STYLE_ANCHOR` used to be
+#: one hardcoded module-level string in `persona/prompt.py`
+#: ("guofeng illustration, chinese ink painting, xianxia") applied to every
+#: panel of every novel regardless of `novel_id` -- confirmed as the actual
+#: root cause of LOTM renders coming out xianxia-styled (its own
+#: `WORLD_CONTEXT`/`WORLD_SETTING`/`SCENE_LOCALES` entries were already
+#: correct and novel-keyed; only the style/rendering layer was not). Kept
+#: short for the same budget reason `STYLE_ANCHOR`'s own comment gives: it
+#: sits at tier 0, the highest-priority slot, so it should stay a handful of
+#: words.
+STYLE_ANCHOR_BY_NOVEL: dict[str, str] = {
+    "reverend-insanity": "guofeng illustration, chinese ink painting, xianxia",
+    "lord-of-the-mysteries": "gothic engraving illustration, Victorian ink etching, occult mystery",
+    "omniscient-readers-viewpoint": "modern manhwa illustration, high contrast urban apocalypse",
+}
+
+#: The fuller style/rendering block appended late in the prompt (`_MANGA_BASE`
+#: in `persona/prompt.py`), per novel. RI's text is the pipeline's original,
+#: unchanged; LOTM's swaps every China/xianxia-specific term (ink wash, hanfu,
+#: wuxia) for a Victorian-gothic equivalent grounded in the same
+#: `WORLD_CONTEXT` citations above (gaslamp fog, tailored coats, engraving
+#: linework) rather than invented genre assumptions.
+MANGA_BASE_BY_NOVEL: dict[str, str] = {
+    "reverend-insanity": (
+        "guofeng illustration, chinese ink painting, xianxia, wuxia, "
+        "ancient chinese fantasy, hanfu with long wide sleeves, "
+        "ink wash, muted limited palette, "
+        "elegant brushwork, negative space, subtle gradients, "
+        "solemn atmosphere, mature serious art style"
+    ),
+    "lord-of-the-mysteries": (
+        "gothic engraving illustration, Victorian occult mystery, "
+        "period-accurate tailored coats and waistcoats, "
+        "cross-hatched linework, desaturated muted palette, fog and gaslight, "
+        "ornate negative space, subtle gradients, "
+        "solemn atmosphere, mature serious art style"
+    ),
+}
+
+_DEFAULT_STYLE_ANCHOR = STYLE_ANCHOR_BY_NOVEL["reverend-insanity"]
+_DEFAULT_MANGA_BASE = MANGA_BASE_BY_NOVEL["reverend-insanity"]
+
+
+def style_anchor(novel_id: str) -> str:
+    """The short tier-0 genre/rendering anchor for this novel.
+
+    Falls back to RI's own value for an unmapped `novel_id` -- the same
+    behaviour every call site had before this table existed, so an
+    unconfigured novel does not silently lose its style entirely.
+    """
+    return STYLE_ANCHOR_BY_NOVEL.get(novel_id, _DEFAULT_STYLE_ANCHOR)
+
+
+def manga_base(novel_id: str) -> str:
+    """The fuller style/rendering block for this novel. See `style_anchor`."""
+    return MANGA_BASE_BY_NOVEL.get(novel_id, _DEFAULT_MANGA_BASE)
+
+
+#: Reference-sheet equivalents of `STYLE_ANCHOR_BY_NOVEL`/`MANGA_BASE_BY_NOVEL`
+#: -- same hardcoding-to-per-novel fix, for `persona/reference_gen.py`'s
+#: `REFERENCE_ANCHOR`/`REFERENCE_STYLE`, which shared the RI-only vocabulary
+#: deliberately (see that module's own comment on why it mirrors
+#: `persona/prompt.py`).
+REFERENCE_ANCHOR_BY_NOVEL: dict[str, str] = {
+    "reverend-insanity": (
+        "three-quarter shot from head to thigh, "
+        "guofeng illustration, chinese ink painting, xianxia"
+    ),
+    "lord-of-the-mysteries": (
+        "three-quarter shot from head to thigh, "
+        "gothic engraving illustration, Victorian ink etching, occult mystery"
+    ),
+}
+
+REFERENCE_STYLE_BY_NOVEL: dict[str, str] = {
+    "reverend-insanity": (
+        "solo, single character, three-quarter shot from head to thigh, "
+        "facing viewer, detailed face, plain background, "
+        "guofeng illustration, chinese ink painting, xianxia, wuxia, "
+        "hanfu with long wide sleeves, ink wash, muted limited palette, "
+        "serious cold expression, mature proportions, sharp features"
+    ),
+    "lord-of-the-mysteries": (
+        "solo, single character, three-quarter shot from head to thigh, "
+        "facing viewer, detailed face, plain background, "
+        "gothic engraving illustration, Victorian occult mystery, "
+        "period-accurate tailored coat and waistcoat, "
+        "cross-hatched linework, desaturated muted palette, "
+        "serious cold expression, mature proportions, sharp features"
+    ),
+}
+
+_DEFAULT_REFERENCE_ANCHOR = REFERENCE_ANCHOR_BY_NOVEL["reverend-insanity"]
+_DEFAULT_REFERENCE_STYLE = REFERENCE_STYLE_BY_NOVEL["reverend-insanity"]
+
+
+def reference_anchor(novel_id: str) -> str:
+    """The short reference-sheet framing/medium anchor for this novel."""
+    return REFERENCE_ANCHOR_BY_NOVEL.get(novel_id, _DEFAULT_REFERENCE_ANCHOR)
+
+
+def reference_style(novel_id: str) -> str:
+    """The fuller reference-sheet style block for this novel."""
+    return REFERENCE_STYLE_BY_NOVEL.get(novel_id, _DEFAULT_REFERENCE_STYLE)
+
+
+#: **The cheapest fix for hands is to not show them -- but "long draping
+#: sleeves" is hanfu, not a universal.** Found the same way as
+#: `STYLE_ANCHOR_BY_NOVEL`: this was one hardcoded RI-specific clause
+#: (`persona/prompt.py::hands_clause`) applied to every novel's empty-handed
+#: beats, so a Victorian LOTM panel was getting "hands concealed in long
+#: draping sleeves" -- garment vocabulary this novel's own `GENRE_MISMATCH_
+#: PROPS` negatives out elsewhere. Gloved hands and coat pockets are the
+#: period-appropriate equivalent concealment for Victorian dress.
+HANDS_CLAUSE_BY_NOVEL: dict[str, str] = {
+    "reverend-insanity": "hands concealed in long draping sleeves",
+    "lord-of-the-mysteries": "gloved hands, one resting in a coat pocket",
+}
+_DEFAULT_HANDS_CLAUSE = HANDS_CLAUSE_BY_NOVEL["reverend-insanity"]
+
+
+def hands_default_clause(novel_id: str) -> str:
+    """The genre-appropriate hands-concealed fallback for this novel."""
+    return HANDS_CLAUSE_BY_NOVEL.get(novel_id, _DEFAULT_HANDS_CLAUSE)
 
 #: Props/clothing this novel's genre (xianxia) suggests by default but
 #: the text itself does not support -- see `WORLD_CONTEXT`'s trope-
@@ -175,6 +339,10 @@ GENRE_MISMATCH_PROPS: dict[str, tuple[str, ...]] = {
         "modern clothes", "modern clothing", "turtleneck", "sweater",
         "school uniform", "hoodie", "jeans", "business suit", "necktie",
         "collared shirt",
+    ),
+    "lord-of-the-mysteries": (
+        "xianxia", "hanfu", "cultivator", "gu worm", "magic wand",
+        "samurai", "kimono", "cyberpunk", "futuristic armor",
     ),
 }
 
