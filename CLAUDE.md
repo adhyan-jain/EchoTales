@@ -16,11 +16,13 @@ alone — read the source doc for the thing you're touching:
   and Section 11's ten non-negotiables (below).
 - [`plans.md`](plans.md) — the full phase-by-phase specification.
 - [`details.md`](details.md) — per-file design rationale.
-- [`HANDOFF.md`](HANDOFF.md) — **the session log.** Every real bug found,
-  every fix shipped, every open defect, in chronological numbered sections
-  (currently past 4.51). **Read the last 2-3 sections before starting render
-  or persona work** — it is the actual current-state-of-the-world doc, more
-  current than any of the others.
+- [`HANDOFF.md`](HANDOFF.md) — **current open tasks only, ephemeral** (restructured
+  2026-08-31). "Pick up here" + "Open defects" are the actual
+  current-state-of-the-world doc — read those before starting render or
+  persona work. The permanent, append-only numbered session log (every
+  real bug found, every fix shipped, in chronological sections, currently
+  past 4.53) now lives in [`EVOLUTION.md`](EVOLUTION.md), not here — a
+  resolved/superseded HANDOFF item moves there instead of being deleted.
 - [`EVOLUTION.md`](EVOLUTION.md) — architecture decisions and reversals over
   time, with the measured reason each one happened.
 
@@ -134,8 +136,9 @@ real data without touching the canonical `data/<novel>.db`.
 
 ## Current known issues
 
-See HANDOFF.md's latest numbered section for the actual current state —
-it changes every session. As of Section 4.51, the live area of work is
+See HANDOFF.md's "Pick up here" section for the actual current state —
+it changes every session (the numbered session log itself moved to
+EVOLUTION.md, latest section 4.53). As of EVOLUTION 4.52, the live area of work is
 the render/direction pipeline (`packages/pipeline/src/echotales/pipeline/render/`):
 getting the LLM art director to draw only what a beat actually supports —
 the correct cast, not an invented or out-of-scene one; the correct gender
