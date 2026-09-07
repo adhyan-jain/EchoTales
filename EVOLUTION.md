@@ -5318,11 +5318,69 @@ setup, stated plainly rather than glossed over:** no browser was
 available to click through the built UI visually; correctness rests on
 ESLint + a clean production build + the backend endpoints' own live curl
 verification, not on someone having actually looked at the rendered
-page. `TRANSFERABLE_TITLE` end-to-end resolution (Section 5) also still
-needs a fresh mentions-extraction run against real chapter text to
-confirm the clan-leader/blocks-68-78 case, deliberately deferred to avoid
-an LLM/ollama call this session. Both are the natural next things to
-check before calling any of this "shipped," not just "committed."
+page.
+
+---
+
+### 4.61 TRANSFERABLE_TITLE end-to-end validation: FAILS — real root cause is one level upstream of Section 5, found and precisely located, not yet fixed *(2026-09-07)*
+
+Ollama restriction lifted mid-session specifically to finish this. Ran
+the real, non-cached pipeline (`echotales run`, no `--no-llm`) twice
+against a scratch copy for RI ch1-15 — first accidentally hit a stale
+NER cache from 2026-08-15 (mentions stage returned in 1.4s, obviously not
+live), caught it, moved `data/lexicons/reverend-insanity-ner-cache.json`
+aside, re-ran fresh (109.5s, genuine live ollama/qwen2.5:7b calls),
+restored the cache afterward. Scratch DBs deleted; canonical DB never
+touched.
+
+**Result: 0 `TRANSFERABLE_TITLE` mentions produced. RI ch1 blocks 68-78
+still produce an empty cast**, verified directly against the fresh
+scratch DB — blocks 68-79 (confirmed against real source text: "the clan
+head" is the sole subject/speaker across ~6 blocks there) have zero
+mention rows; only "Fang Yuan" mentions bracket the range at blocks 67
+and 80.
+
+**Root cause, found by calling `QwenNerDetector.detect()` directly on
+that exact block range and reading its output, not by inspecting Section
+5's own code:** the detector returned only proper names/locations ("Gu
+Yue Fang Yuan", "Fang Zhi", "Gu Yue Village") — never "the clan head".
+`mentions/ner.py::_NER_SYSTEM` (the LLM's own system prompt) explicitly
+instructs: **"Do NOT return generic role words on their own (the guard,
+the innkeeper, the old man) — those are descriptions, not names."** That
+is non-negotiable #4's old blanket exclusion, hard-coded directly into
+the LLM prompt, one level upstream of everything Section 5 built
+(`mentions/alias_type.py::classify_alias_type`, `resolve/runner.py`'s
+sole-co-presence mechanism). The classifier and resolver are real,
+correct, and separately verified — `RELATIONAL_DEICTIC` (which reaches
+mentions through a different, deterministic direct-address path, not
+`QwenNerDetector`) resolved 24/31 (77%) on this same fresh run, real
+evidence the resolution mechanism works whenever it actually receives a
+candidate. It just never receives one for a bare title, because the LLM
+is explicitly told not to propose it.
+
+**Six-Wang guard:** untestable against real data this run — zero title
+mentions exist to guard against at all. Remains verified only by the
+synthetic end-to-end test (`test_transferable_title_resolve.py`).
+
+**On HANDOFF's "219 title occurrences across ch1-15" figure:** could not
+independently reproduce it this session. A narrow regex over the same
+chapters (matching `(the|his|her|my|your|our|this) + role-noun`, a
+curated subset) found 21 occurrences — likely a different, narrower
+counting rule than whatever produced 219 originally. Flagged as a
+discrepancy, not resolved either way; do not treat either number as
+authoritative without re-deriving the methodology.
+
+**Not fixed this session, deliberately** — the user's own instruction
+was to report both validation items before drawing conclusions, and item
+2 (full fresh real render) was explicitly gated on item 1 passing. It
+didn't, so item 2 was not attempted. **The precise next fix**: loosen
+`_NER_SYSTEM` in `mentions/ner.py` to let the LLM propose single-holder-
+office title phrases (the same curated shape already in
+`alias_type.py::_TRANSFERABLE_TITLE_NOUNS` — clan head, sect leader,
+city lord, etc.) while keeping the exclusion for genuinely generic roles
+(guard, innkeeper, old man) — then re-run this exact same validation
+(scratch DB, cache moved aside, RI ch1-15) before calling Section 5
+complete or moving to a full real render.
 
 ---
 
