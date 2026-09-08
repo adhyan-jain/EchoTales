@@ -139,6 +139,19 @@ def classify_alias_type(
     if lowered in _TRANSFERABLE_TITLE_NOUNS:
         return AliasType.TRANSFERABLE_TITLE, 0.65
 
+    # A title compounded with a proper-noun qualifier ("Gu Yue clan head")
+    # names the office at least as specifically as the bare noun -- and is
+    # what the chapter-level NER pass actually returns once it has enough
+    # context to know which clan/sect/village, instead of the article-led
+    # "the clan head" form (EVOLUTION 4.62: measured directly against RI ch1
+    # full-chapter output, not just the isolated-block form used to first
+    # verify the LLM would propose the phrase at all).
+    for title in _TRANSFERABLE_TITLE_NOUNS:
+        if lowered != title and lowered.endswith(" " + title):
+            prefix = text[: -(len(title) + 1)].strip()
+            if prefix and prefix[0].isupper():
+                return AliasType.TRANSFERABLE_TITLE, 0.6
+
     # Bare role nouns with no article are still generic.
     if lowered in _ROLE_NOUNS:
         return AliasType.GENERIC_DESCRIPTOR, 0.8
@@ -152,3 +165,42 @@ def classify_alias_type(
 def is_persistable(alias_type: AliasType) -> bool:
     """Whether a binding of this type may reach the graph."""
     return alias_type.enters_graph
+
+
+def is_transferable_title_phrase(surface: str) -> bool:
+    """True if `surface` is a (possibly article-led) single-holder office title.
+
+    Exposed for `chapter_ner.py::plausible_name`, whose "starts uppercase"
+    grammatical gate would otherwise reject "the clan head" before it ever
+    reaches `classify_alias_type` above — the LLM can be told to propose the
+    phrase (EVOLUTION 4.62) but a lowercase-article-led surface still failed
+    the earlier plausibility filter, so the two gates have to agree on the
+    same curated list.
+    """
+    text = surface.strip()
+    if _ARTICLE_LED.match(text):
+        return _ARTICLE_LED.sub("", text).casefold() in _TRANSFERABLE_TITLE_NOUNS
+    return text.casefold() in _TRANSFERABLE_TITLE_NOUNS
+
+
+def bare_title_variant(surface: str) -> str | None:
+    """The bare "the <title>" form of a proper-noun-qualified title, or None.
+
+    "Gu Yue clan head" -> "the clan head". Measured gap (EVOLUTION 4.62): the
+    chapter-level vocabulary the LLM discovers is matched *deterministically*
+    over every block afterward (`chapter_ner.py`'s whole reason for existing
+    -- one model call per chapter, not per span), which means an exact-string
+    sweep only ever finds the one surface form the model happened to return.
+    RI ch1 uses "the Gu Yue clan head" once and bare "the clan head" four
+    times later in the same chapter; without this, only the first form's
+    occurrences ever became mentions. Folding the bare form into the same
+    chapter's discovered vocabulary lets the existing deterministic sweep
+    catch both, the same way a gazetteer entry covers every surface variant
+    once seeded.
+    """
+    text = surface.strip()
+    lowered = text.casefold()
+    for title in _TRANSFERABLE_TITLE_NOUNS:
+        if lowered != title and lowered.endswith(" " + title):
+            return f"the {title}"
+    return None

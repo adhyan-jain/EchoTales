@@ -24,6 +24,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from echotales.core.enums import AliasType
+from echotales.pipeline.mentions.alias_type import (
+    bare_title_variant,
+    is_transferable_title_phrase,
+)
 from echotales.pipeline.mentions.gazetteer import Gazetteer
 from echotales.pipeline.mentions.ner import MentionDetector, NerSpan
 
@@ -104,8 +108,15 @@ def plausible_name(surface: str) -> bool:
         return False
     if not any(c.isalpha() for c in surface):
         return False
-    # Names in these translations are capitalised without exception. A wholly
-    # lowercase return is a description the model paraphrased.
+    # Names in these translations are capitalised without exception -- except
+    # a single-holder office title used bare in place of a name ("the clan
+    # head"), which is legitimately lowercase and article-led. Checked against
+    # the same curated list `classify_alias_type` uses, not a blanket
+    # allowance, so this doesn't reopen non-negotiable #4 for the
+    # article-led descriptions ("the innkeeper") that plausible_name still
+    # needs to catch (EVOLUTION 4.62).
+    if is_transferable_title_phrase(surface):
+        return True
     return surface[0].isupper()
 
 
@@ -189,6 +200,14 @@ def extract_chapter_names(
             # worse than carrying an extra location.
             if result.surfaces.get(surface) != "character":
                 result.surfaces[surface] = label
+            # A proper-noun-qualified title ("Gu Yue clan head") earns its
+            # bare form ("the clan head") a place in the same chapter's
+            # vocabulary too -- the deterministic sweep below only matches
+            # exact strings, and this novel uses both forms of the same
+            # office in the same chapter (EVOLUTION 4.62).
+            if label == "character" and (variant := bare_title_variant(surface)):
+                if result.surfaces.get(variant) != "character":
+                    result.surfaces[variant] = "character"
     if cache is not None and result.calls:
         cache.put(text, result.surfaces)
     return result

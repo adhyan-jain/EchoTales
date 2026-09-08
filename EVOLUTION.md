@@ -5384,6 +5384,140 @@ complete or moving to a full real render.
 
 ---
 
+### 4.62 TRANSFERABLE_TITLE fixed end-to-end — three independent gates, not one bug, plus a fourth deterministic-vocabulary gap found while verifying blocks 68-78 *(2026-09-08)*
+
+4.61 found one root cause (`_NER_SYSTEM`'s blanket exclusion) and proposed
+one fix. That fix alone did not close the defect — three more gates had to
+be found and fixed in turn, each with its own measured before/after. All
+four verified live against real ollama + qwen2.5:7b, RI ch1-15, scratch
+DB `data/reruns/validation-4.62.db` (deleted after use, canonical DB never
+touched), NER cache moved aside for each run and restored after (same
+discipline as 4.61, to force a genuinely live pass rather than 4.61's
+first accidental stale-cache hit).
+
+**Gate 1 — `mentions/ner.py::_NER_SYSTEM`, the LLM's own system prompt.**
+4.61's proposed fix was a soft addition ("also return these as
+candidates"). Tested directly by calling
+`QwenNerDetector.detect_with_context()` on the same RI ch1 blocks 67-79
+before and after: **output identical, the soft wording changed nothing.**
+Rewritten as an imperative MUST clause with concrete examples ("You MUST
+return single-holder office titles like 'the clan head', 'the sect
+leader' exactly as written including the leading article") — this version
+did change the model's output, verified the same way: "the clan head"
+now appears in the detector's raw candidates. Kept the exclusion for
+genuinely generic roles (guard, innkeeper, old man) narrow, per 4.61's own
+warning about not reopening non-negotiable #4 wholesale. **Lesson worth
+keeping for this specific prompt**: a soft instruction addition was not
+sufficient to move qwen2.5:7b's behavior here; it took an explicit MUST +
+worked examples.
+
+**Gate 2 — `mentions/chapter_ner.py::plausible_name`.** Even with the LLM
+now proposing "the clan head", a second, independent filter rejected it:
+`plausible_name`'s final check requires `surface[0].isupper()`, and this
+novel's translation legitimately renders the title lowercase, article-led
+("the clan head", not "The Clan Head"). Fixed by adding
+`alias_type.py::is_transferable_title_phrase()` (reuses the same curated
+`_TRANSFERABLE_TITLE_NOUNS` list `classify_alias_type` already keys off)
+and calling it as an exception in `plausible_name` before the
+capitalization check. This gate is independent of gate 1 — fixing the
+prompt alone did not get a mention past this check.
+
+**Gate 3 — `mentions/alias_type.py::classify_alias_type`.** With gates 1
+and 2 fixed, chapter-level extraction (whole chapter, not the isolated
+block range used to debug gate 1) surfaced a different surface form than
+expected: the LLM returned the proper-noun-qualified compound "Gu Yue
+clan head", not the bare "the clan head" seen in the narrower test —
+because full-chapter context gives the model enough to know which clan.
+`classify_alias_type` didn't recognize this compound-suffix shape and
+fell through to `GENERIC_DESCRIPTOR` (the final `_TITLE_CASE` check fails
+because "clan"/"head" aren't capitalized, landing at the 0.4-confidence
+generic fallback). Fixed with a new suffix-match branch: a surface ending
+in a known title noun, preceded by a capitalized qualifier, now also
+classifies as `TRANSFERABLE_TITLE` (confidence 0.6).
+
+**Gate 4 — deterministic per-chapter vocabulary matching, found while
+verifying blocks 68-78 specifically (the case 4.61 named).** Gates 1-3
+alone got `TRANSFERABLE_TITLE` mentions at blocks 40, 57, 61 (surface "Gu
+Yue clan head") but blocks 68-78 — the exact case 4.61 flagged —
+**stayed empty.** Cause: `chapter_ner.py` runs the LLM once per chapter
+and then sweeps every block deterministically (exact-string Aho-Corasick,
+`VocabularyDetector`) against the vocabulary that one call returned —
+that's the whole point of one call per chapter instead of one per span.
+RI ch1 uses "the Gu Yue clan head" once early (block 40) and then the
+shorter bare form "the clan head" four more times later in the same
+chapter (blocks 64, 68, 73, 75, 78) — a different surface string the
+model never separately returned, so the deterministic sweep had nothing
+to match there. Fixed by adding `alias_type.py::bare_title_variant()`
+(given "Gu Yue clan head", returns "the clan head") and folding that
+derived bare form into the chapter's discovered vocabulary in
+`chapter_ner.py::extract_chapter_names`, so the existing sweep now catches
+both forms.
+
+**Measured before/after, same live RI ch1-15 run repeated at each stage:**
+
+| Stage | `TRANSFERABLE_TITLE` count | Note |
+|---|---|---|
+| 4.61 baseline (unfixed) | 0 | blocks 68-78 empty cast |
+| Gate 1 alone, soft wording | 0 | confirmed no behavior change |
+| Gate 1 (strong) + gate 2 + gate 3 | 3 | ch1 blocks 40/57/61 only, "Gu Yue clan head"; 68-78 still empty |
+| + gate 4 | 9 (across ch1-15) | ch1 now has all 8 occurrences: blocks 40, 57, 61, 64, 68, 73, 75, 78 |
+
+**Resolution outcome — not a remaining bug.** Every one of ch1's
+`TRANSFERABLE_TITLE` mentions resolves to `target_id=None` (DEFER,
+logged under the run's `deictic_only` counter, which went 7→16). Checked
+directly against RI's source text (blocks 25-65 read in full): the clan
+head is never given a proper name anywhere in chapter 1, referred to only
+by title throughout. `resolve/runner.py`'s sole-co-presence mechanism
+(Section 5.1) correctly declines to mint a new entity for a title-only
+group and correctly finds no single co-present named candidate to link
+to, because none exists in this chapter's mentions — its own comment
+("the position outlives whoever holds it... leaving it unresolved is the
+honest outcome") is exactly what happened. This is non-negotiable #9
+(precision over recall) working as designed: the fix's job was to stop
+the title from being silently invisible (0 mentions, not even a deferred
+candidate visible in review/webview), not to force a resolution the text
+doesn't support.
+
+**Six-Wang guard**: `python3 -m pytest packages/pipeline/tests/ -k
+"six_wang or transferable_title" -v` — 10 passed
+(`test_contradiction.py`, `test_mentions.py`,
+`test_transferable_title_resolve.py`), no false merge. Full suite
+(`python3 -m pytest packages/pipeline/tests/ -q`) re-run clean after each
+of the four fixes — no regressions at any stage.
+
+**Recall@k gate (4.60's `echotales eval --report`)**: the self-retrieval
+smoke test still reports "GATE: untested — no TRANSFERABLE_TITLE cases in
+this set" — that fixture set is separate from this run's data, unaffected
+by this fix either way. Gold comparison against `data/gold/reverend-
+insanity.jsonl` (3,457 mentions over 60 chapters) is not a meaningful
+signal here either: this scratch run only covers ch1-15 of a 60-chapter
+gold set, so most gold mentions outside ch1-15 trivially show
+"(unresolved)" and deflate the aggregate number regardless of this fix.
+One relevant data point from the worst-disagreements list: `ch1 'clan
+head': gold='Gu Yue clan head' system='(unresolved)'` — consistent with
+the DEFER-by-design outcome above, not a new problem. A meaningful
+recall@k number for `TRANSFERABLE_TITLE` needs either a full-novel run or
+gold annotations confirmed specifically within ch1-15's coverage — not
+done this session.
+
+**Files changed (uncommitted, working tree only — left for the user to
+review and commit)**: `packages/pipeline/src/echotales/pipeline/mentions/
+ner.py` (`_NER_SYSTEM`), `packages/pipeline/src/echotales/pipeline/
+mentions/alias_type.py` (new `is_transferable_title_phrase()`, new
+`bare_title_variant()`, new suffix-match branch in
+`classify_alias_type()`), `packages/pipeline/src/echotales/pipeline/
+mentions/chapter_ner.py` (`plausible_name()` exception,
+`extract_chapter_names()` variant-folding).
+
+**Not attempted this session, gated on this passing per the user's own
+ordering**: the full fresh real render + Section 1.3 relevance-harness
+numbers compared against the pre-remediation baseline (HANDOFF's item 4,
+now this session's item 1) — see HANDOFF's "Pick up here" for the exact
+next command. Also unchanged and lower priority: the visual browser check
+of the webview UI (no browser tool available this session either).
+
+---
+
 ### Section 10 (superseded "suggested next steps" list, as of the 2026-08-31 cleanup)
 
 This was HANDOFF's own "suggested next steps, in order" section before

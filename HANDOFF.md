@@ -19,56 +19,52 @@ conflated.
 | `details.md` | Per-file detail |
 | `plans.md` | The original spec. Amended three times; the amendments win and are marked *(revised)* |
 
-**Last updated:** 2026-09-07.
+**Last updated:** 2026-09-08.
 
 ## Pick up here
 
-**Start here — the actual next fix is small and precisely located
-(EVOLUTION 4.61).** `TRANSFERABLE_TITLE` end-to-end validation was run
-for real this session (ollama restriction lifted, RI ch1-15, fresh
-non-cached LLM pass) and **it FAILS**: 0 `TRANSFERABLE_TITLE` mentions
-produced, RI ch1 blocks 68-78 (the clan-leader case) still produce an
-empty cast. Root cause is **not** in anything Section 5 built — the
-classifier and sole-co-presence resolver are correct and separately
-verified (`RELATIONAL_DEICTIC` resolved 24/31 = 77% on this same fresh
-run). The real gap is one level upstream: `mentions/ner.py::_NER_SYSTEM`
-(the LLM's own system prompt) explicitly tells the model *"Do NOT return
-generic role words on their own (the guard, the innkeeper, the old man)
-— those are descriptions, not names,"* so `QwenNerDetector` never
-proposes "the clan head" as a candidate at all, and Section 5's
-classifier/resolver never get a candidate to work with.
+**`TRANSFERABLE_TITLE` end-to-end is fixed and verified (EVOLUTION 4.62)
+— this item is closed, do not re-derive it.** 4.61's validation failure
+(0 mentions, RI ch1 blocks 68-78 empty) turned out to be four independent
+gates, not one: the NER system prompt's exclusion (needed an imperative
+MUST rewrite, a soft addition measurably did nothing),
+`chapter_ner.py::plausible_name`'s capitalization check, `alias_type.py::
+classify_alias_type` not recognizing a proper-noun-qualified compound
+title ("Gu Yue clan head"), and `chapter_ner.py`'s deterministic
+per-chapter vocabulary sweep not folding in a shorter bare-form variant
+("the clan head") of the surface the LLM actually returned. All four
+fixed; live-verified against real ollama/qwen2.5:7b on RI ch1-15
+(`data/reruns/validation-4.62.db`, scratch, deleted after use):
+`TRANSFERABLE_TITLE` went 0 → 9 mentions across ch1-15, RI ch1's clan-head
+case specifically now has all 8 occurrences (blocks 40, 57, 61, 64, 68,
+73, 75, 78). All of ch1's title mentions correctly DEFER to
+`target_id=None` — verified against the source text that the clan head is
+genuinely never named in ch1, so this is non-negotiable #9 working as
+designed, not a remaining defect. Six-Wang guard and full suite both
+clean throughout. Files changed (uncommitted): `mentions/ner.py`,
+`mentions/alias_type.py`, `mentions/chapter_ner.py`. See EVOLUTION 4.62
+for the full four-gate breakdown and exact numbers.
 
-**Next fix, in order:**
-1. Loosen `_NER_SYSTEM` to let the LLM propose single-holder-office title
-   phrases specifically (mirror the curated list already in
-   `mentions/alias_type.py::_TRANSFERABLE_TITLE_NOUNS` — clan head, sect
-   leader, city lord, etc.) while keeping the exclusion for genuinely
-   generic roles (guard, innkeeper, old man). This needs care: it's
-   reopening exactly the door non-negotiable #4 closed, so keep the
-   exclusion narrow and curated, not a blanket "return role words too."
-2. Re-run the *exact* validation from EVOLUTION 4.61: `echotales run`
-   against a scratch DB (never the canonical one) for RI ch1-15 with the
-   real LLM (`ollama serve` must be running — it is not by default; check
-   `curl localhost:11434/api/tags` first), moving
-   `data/lexicons/reverend-insanity-ner-cache.json` aside first and
-   restoring it after (the cache silently serves 2026-08-15 output
-   otherwise and the run looks live but isn't — this cost real time to
-   catch once already). Confirm blocks 68-78 resolve to a real entity,
-   and that the six-Wang guard still holds (no false merge) — the guard
-   was untestable last time because zero title mentions existed to test
-   it against.
-3. Re-run `echotales eval`'s recall@k gate to see whether
-   `TRANSFERABLE_TITLE` moves off its measured 0% (Section 1.2/EVOLUTION
-   4.60).
-4. **Only after that passes**: the full fresh real render + Section 1.3
-   relevance-harness numbers the user asked for as step 2, compared
-   against the last recorded pre-remediation numbers, regressions flagged
-   explicitly — not attempted this session because step 1 didn't pass and
-   the user gated step 2 on it.
+**Start here now — the item EVOLUTION 4.62 gated on this passing:**
+
+1. **The full fresh real render + Section 1.3 relevance-harness numbers**
+   (this was HANDOFF's old item 4, now unblocked). Run a real, non-stub
+   render on RI against a scratch DB (never canonical), then `uv run
+   echotales relevance --novel reverend-insanity` and compare against the
+   last recorded pre-remediation baseline (EVOLUTION 4.53/4.56 era
+   numbers), flagging any regression explicitly rather than assuming the
+   TRANSFERABLE_TITLE fix is a strict improvement everywhere it touches.
+   Not attempted this session — 4.62 was scoped to validation only, per
+   the user's own gating.
+2. Once that render exists, re-run `echotales eval`'s recall@k gate
+   against the *full* run (not just ch1-15) to get a real
+   `TRANSFERABLE_TITLE` recall@10 number — 4.62's ch1-15 scratch run
+   wasn't wide enough to compare meaningfully against the 60-chapter gold
+   set (`data/gold/reverend-insanity.jsonl`).
 
 Also still open, lower priority than the above:
 
-5. **Visual browser check of the new webview UI still genuinely open,
+3. **Visual browser check of the new webview UI still genuinely open,
    but the runtime-correctness half is now closed.** No browser tool was
    available in this session (checked; the user had started installing
    the Claude-in-Chrome extension but opted to continue without it) --
@@ -83,14 +79,14 @@ Also still open, lower priority than the above:
    start` in `webview/` against a real `echotales webview-server`
    instance and eyeball it before calling this fully done.
 
-(Item 4 above already covers re-running `echotales relevance`/speaker-
+(Item 1 above already covers re-running `echotales relevance`/speaker-
 attribution numbers against a full fresh real render — this was folded
 in rather than duplicated as its own item.)
 
-See EVOLUTION 4.60/4.61 (search for them) for the full section-by-section
-numbers and reasoning. Before this pass, the live area of work was the
-render/direction pipeline — see EVOLUTION's 4.51-4.59 entries if picking
-that thread back up instead.
+See EVOLUTION 4.60/4.61/4.62 (search for them) for the full
+section-by-section numbers and reasoning. Before this pass, the live area
+of work was the render/direction pipeline — see EVOLUTION's 4.51-4.59
+entries if picking that thread back up instead.
 
 Before this pass, the live area of work was the render/direction pipeline
 (`packages/pipeline/src/echotales/pipeline/render/`). Most recently
@@ -252,11 +248,14 @@ genuinely unresolved *today*.
    4.60):** title/relational mentions now resolve via sole-co-presence
    (never surface similarity); verified on real RI data,
    `RELATIONAL_DEICTIC` resolution 0/99 -> 59/99. `TRANSFERABLE_TITLE`
-   itself still has zero real mentions in the current mention table
-   (needs a fresh mentions-extraction run to actually produce them, which
-   this session skipped to avoid any LLM/ollama call) — **re-run mentions
-   on RI ch1 next and confirm the clan-leader/blocks-68-78 case for real**,
-   then re-run this recall@k gate to see if the number moves off 0%.
+   itself now produces real mentions (EVOLUTION 4.62, 2026-09-08 — four
+   independent gates fixed, 0 -> 9 mentions on RI ch1-15, blocks 68-78
+   confirmed for real). Correctly resolved to `target_id=None` throughout
+   ch1 (the clan head is genuinely never named there) rather than merged,
+   which is why the recall@10 number hasn't been re-measured yet at any
+   meaningful scale: 4.62's validation only covered ch1-15 against a
+   60-chapter gold set. **Re-running this recall@k gate against a full
+   real render is HANDOFF's current top "Pick up here" item.**
 5. **Contradiction detector unvalidated on real data** — fires correctly
    on constructed over-merges, finds zero on 60 real chapters, which is
    diagnostic (Phase 6 over-splits, so nothing accumulates enough aliases

@@ -130,8 +130,15 @@ _NER_SYSTEM = (
     "as an ordinary noun phrase but is a proper name\n"
     "- cultivation or rank prefixes attached to a personal name\n"
     "- creature and item names that function as personal names\n"
+    "- a single-holder office title used ON ITS OWN in place of a name, such "
+    "as \"the clan head\", \"the sect leader\", \"the city lord\", \"the "
+    "patriarch\", \"the village chief\", \"the guild master\" — when context "
+    "makes clear exactly one specific person holds it. You MUST return these "
+    "as character candidates, exactly as written including the leading "
+    "article \"the\".\n"
     "Treat such compound forms as single character entities. Do NOT return "
-    "generic role words on their own (the guard, the innkeeper, the old man) — "
+    "generic role words that any number of people could hold and that name no "
+    "specific individual (a guard, an innkeeper, an old man, a merchant) — "
     "those are descriptions, not names."
 )
 
