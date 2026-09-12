@@ -136,6 +136,55 @@ def build_query(novel_title: str, character_label: str) -> str:
     return f"{character_label} {novel_title} character art"
 
 
+
+# Aggregator/wallpaper domains and generic stock sites that yield mislabeled reference images
+SPAM_DOMAINS = (
+    "wallpapercave.com",
+    "wallpapersafari.com",
+    "desktopbackground.org",
+    "wallpaperflare.com",
+    "wallpaperaccess.com",
+    "wallpapercrafter.com",
+    "getwallpapers.com",
+    "fanfiction.net",
+    "wattpad.com",
+    "stock.adobe.com",
+    "shutterstock.com",
+    "freepik.com",
+)
+
+
+def evaluate_candidate_quality(candidate: RawHit, character_label: str, novel_title: str) -> float:
+    """Score candidate relevance and filter generic/mislabeled sources.
+
+    Returns a quality score between 0.0 (unusable/spam) and 1.0 (high confidence).
+    """
+    url_lower = (candidate.source_url + " " + candidate.source_page).lower()
+    title_lower = candidate.title.lower()
+
+    # Domain blocklist check
+    if any(domain in url_lower for domain in SPAM_DOMAINS):
+        return 0.0
+
+    score = 0.5
+    char_tokens = [t.lower() for t in re.findall(r"\w+", character_label) if len(t) > 2]
+    novel_tokens = [t.lower() for t in re.findall(r"\w+", novel_title) if len(t) > 2]
+
+    # Matching character name tokens boosts score
+    if char_tokens and any(token in title_lower or token in url_lower for token in char_tokens):
+        score += 0.3
+
+    # Matching novel title tokens boosts score
+    if novel_tokens and any(token in title_lower or token in url_lower for token in novel_tokens):
+        score += 0.2
+
+    # Generic uninformative titles receive a penalty
+    if len(title_lower.strip()) < 5 or title_lower.startswith("image") or title_lower.startswith("photo"):
+        score -= 0.2
+
+    return max(0.0, min(1.0, score))
+
+
 def search_candidates(
     novel_id: str,
     novel_title: str,
@@ -145,6 +194,7 @@ def search_candidates(
     backend: SearchBackend | None = None,
     max_results: int = DEFAULT_MAX_RESULTS,
     query: str | None = None,
+    filter_spam: bool = True,
 ):
     """Search for reference-image candidates for one character.
 
@@ -158,8 +208,15 @@ def search_candidates(
 
     backend = backend or default_backend()
     query = query or build_query(novel_title, character_label)
-    hits = backend.search(query, max_results)
+    raw_hits = backend.search(query, max_results * 2 if filter_spam else max_results)
     found_at = time.time()
+
+    hits = raw_hits
+    if filter_spam:
+        # Sort and filter out candidates scoring 0.0 (spam/aggregators)
+        evaluated = [(h, evaluate_candidate_quality(h, character_label, novel_title)) for h in raw_hits]
+        hits = [h for h, score in evaluated if score > 0.0]
+        hits.sort(key=lambda item: evaluate_candidate_quality(item, character_label, novel_title), reverse=True)
 
     candidates = []
     for i, hit in enumerate(hits[:max_results]):
@@ -182,3 +239,4 @@ def search_candidates(
             )
         )
     return candidates
+
