@@ -274,11 +274,17 @@ export default function App() {
       if (!textToUse) return;
 
       const localStart = span.text.indexOf(textToUse);
-      if (localStart === -1 && !selectedText) {
+      if (localStart === -1) {
         window.alert(`Text "${textToUse}" not found in line.`);
         return;
       }
-      const start = localStart === -1 ? 0 : localStart;
+      if (span.text.indexOf(textToUse, localStart + 1) !== -1) {
+        window.alert(
+          `"${textToUse}" appears more than once in this line -- please select the exact text instead of typing it, so the correct occurrence can be located.`
+        );
+        return;
+      }
+      const start = localStart;
       const end = start + textToUse.length;
 
       setPicker({
@@ -295,7 +301,7 @@ export default function App() {
   );
 
   const handlePickerClear = useCallback(() => {
-    if (!picker || !novelId) return;
+    if (!picker || !novelId || picker.kind === 'create_mention') return;
     const call =
       picker.kind === 'mention'
         ? api.reassignMention(novelId, picker.mentionId, null)
@@ -550,7 +556,7 @@ export default function App() {
           anchor={picker.anchor}
           onSelect={handlePickerSelect}
           onCreateNew={handlePickerCreate}
-          onClear={handlePickerClear}
+          onClear={picker.kind === 'create_mention' ? undefined : handlePickerClear}
           onAnonSlot={picker.kind === 'speaker' ? handlePickerAnonSlot : undefined}
           onCancel={closePicker}
         />
