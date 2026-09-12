@@ -938,6 +938,8 @@ bind to.
 a second body, and from which position. This is what makes
 `architecture.md Section 4`'s reincarnation row real rather than aspirational.
 
+**`refimg_search.py`** — automated candidate search & domain quality scoring. `evaluate_candidate_quality()` scores candidate hits against character/novel title token alignment and filters aggregator spam domains (`wallpapercave.com` etc.), preventing mislabeled wallpaper candidates without human intervention.
+
 - **Cues were grepped out of the corpus, not imagined.** RI ch1's "I have
   been reborn, going back to the time of 500 years ago" and LOTM ch1's
   "memories began flooding him" are both in the pattern tables verbatim.

@@ -795,9 +795,16 @@ gate, not a diagnostic.
 
 **Comic/Manga:** Anifusion, Dashtoon, Jenova, TextToManga. Reference sheets + IP-Adapter/LoRA. None connect to identity resolution.
 
-**Academic:** LlmLink (COLING 2025) — closest work. Dual LLMs with memorisation. **Treats identity as static.** No temporal binding, transfer, deception, correction. This is the primary positioning target.
+**Academic:** LlmLink (COLING 2025) — closest prior work. Dual LLMs with memorisation. **Treats identity as static.** No temporal binding, transfer, deception, correction.
 
-**Gap:** No product bridges audiobook + comic through shared temporal identity model. No system handles web-novel naming volatility as first-class constraint.
+**LINK-KG (arXiv:2510.26486, Oct 2025)** — the current state of the art, and now the primary positioning target in place of LlmLink alone. Extends LlmLink's dual-LLM memorisation architecture but is still evaluated as this project's own competitive research confirms:
+
+- **No temporal axis.** LINK-KG resolves identity as a single static graph, the same category gap as LlmLink — no `state_of()`-equivalent, no interval-scoped facts, no distinction between "true when asserted" and "true now." Chapter-ordinal position is not a substitute for this project's three-axis (chapter / story-time / discourse-time) model.
+- **No truth-status.** LINK-KG has no mechanism for a narrator-asserted claim later contradicted (deception, unreliable narration, retraction) — every extracted fact is treated as equally authoritative. This project's `retract` vs `close_interval` distinction (Section 11 architecture non-negotiable #5) and the contradiction detector (`resolve/contradiction.py`) are direct answers to exactly this gap.
+- **No persona/embodiment split.** LINK-KG's identity graph has one node per name-cluster; it cannot represent a reincarnation, body-swap, or disguise as one continuity of consciousness (`Self`) bound to more than one body (`Persona`) over time. That distinction (architecture.md Section 4) is this project's structural answer to a case class LINK-KG's own evaluation set does not appear to contain.
+- **No downstream multimodal consumption.** LINK-KG stops at the resolved graph — it is evaluated purely as a coreference/linking result, not as an input to any generation task. This project's graph is consumed by voice casting, panel/persona-conditioned image generation, and evidence-grounded review UI, so the resolution quality bar is set by what a downstream consumer needs (e.g. correct body-state at time of illustration), not by a linking metric in isolation.
+
+**Gap:** No product bridges audiobook + comic through shared temporal identity model. No system — LlmLink, LINK-KG, or the audiobook/comic products above — handles web-novel naming volatility, temporal identity, or truth-status as first-class constraints, and none feed a resolved graph into downstream generation.
 
 ---
 

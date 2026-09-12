@@ -7,6 +7,7 @@ optional dependencies installed so `--help` works on a bare checkout.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from collections.abc import Sequence
 
@@ -399,6 +400,19 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    # Lower scheduling priority so a long pipeline run (mention detection,
+    # CPU-offloaded SDXL passes -- render/panels.py's SDXLEngine deliberately
+    # shuttles most of the model to CPU because the 8GB card OOMs otherwise)
+    # yields to whatever else is running on the same machine, rather than
+    # competing with it. os.nice() only ever raises niceness here (lowers
+    # priority), which needs no privileges and never fails for a positive
+    # delta. GPU work itself is unaffected -- this only affects CPU
+    # scheduling, and Ollama/diffusers already put what they can on the GPU.
+    try:
+        os.nice(10)
+    except OSError:
+        pass
+
     parser = build_parser()
     args = parser.parse_args(argv)
 

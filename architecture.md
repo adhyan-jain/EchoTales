@@ -598,6 +598,14 @@ and each answers a different failure that prompt wording cannot:
 - **`render/factions.py`** — role words are qualified with the faction that
   owns them ("Gu Yue clan elders", not "elders"). One novel runs that word
   past four clans in a volume; unqualified, the same role cannot be drawn
+
+## 8e. Short-Form 9:16 Video Reels Engine (`render/reels.py`)
+
+For short-form mobile delivery (TikTok, Instagram Reels, YouTube Shorts), visual pacing and framing follow specialized constraints:
+- **9:16 Vertical Aspect Ratio Specs**: Frames and prompts are framed for vertical mobile viewports rather than traditional 16:9 landscape.
+- **Dynamic Pacing Rules**: Beat duration is calculated dynamically (`derive_reel_pacing`) — high-action combat cuts fast (1.2s–2.0s), while inner monologues and reveals hold longer (2.5s–3.5s).
+- **Genre Visual Presets**: Visual styles are assigned per novel theme (`DARK_FANTASY_ANIME`, `MANHWA_ACTION`, `MYSTIC_NOIR`, `EPIC_CULTIVATION`).
+- **Kinetic Captioning & Motion Cues**: Centered bold captions and camera movement heuristics (`SLOW_ZOOM_IN`, `QUICK_PAN_RIGHT`, `DUTCH_ANGLE_SHAKE`) operate fully autonomously without requiring human supervision or live GPU generation during planning.
   consistently. Scoped per scene, which is also what makes a character
   moving between clans need no rule at all.
 - **`world/lexicon.py`** — what this novel's *words* denote, derived from
