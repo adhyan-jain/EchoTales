@@ -1,11 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* Design-system tokens (EchoTales editorial/archive rebuild). RGB triples,
+   not hex, so Tailwind's `rgb(var(--x) / <alpha-value>)` pattern can apply
+   opacity. Dark ("ink") is the default theme; [data-theme="light"] ("paper")
+   overrides the same set -- see src/theme.js. Legacy --bg/--fg/--panel/
+   --muted/--accent aliases below are kept so any not-yet-redesigned rule
+   further down this file doesn't break mid-migration.
+
+   Not blue/purple-AI -- but also deliberately moved OFF the other
+   recognizable AI-generated-page cluster (warm cream ~#F4F1EA + terracotta
+   ~#D97757, i.e. Anthropic's own interaction accent) that the first pass of
+   this palette landed on almost exactly. Dark is a cooler, deeper ink
+   (not warm brown-black); light is a greyer, less-yellow paper; the accent
+   is brass/gold -- a production-archive nameplate color, not a clay pot. */
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --c-bg: 16 17 19;
+  --c-surface: 24 25 28;
+  --c-surface-2: 33 34 38;
+  --c-border: 54 54 58;
+  --c-text: 227 224 216;
+  --c-muted: 143 140 132;
+  --c-accent: 179 138 46;
+  --c-accent-2: 214 173 84;
+  --c-success: 111 145 100;
+  --c-warning: 199 130 58;
+  --c-danger: 168 70 58;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --c-bg: 233 231 221;
+  --c-surface: 241 239 232;
+  --c-surface-2: 224 221 208;
+  --c-border: 199 195 178;
+  --c-text: 28 27 24;
+  --c-muted: 101 97 85;
+  --c-accent: 143 106 27;
+  --c-accent-2: 110 79 16;
+  --c-success: 82 108 68;
+  --c-warning: 150 100 30;
+  --c-danger: 140 58 48;
+}
+
+/* Legacy aliases: full color values, so the ~100 not-yet-redesigned rules
+   below (var(--bg)/--fg/--panel/--muted/--border/--accent) keep working
+   unchanged while new components consume the --c-* triples above directly. */
 :root {
-  color-scheme: light dark;
-  --bg: Canvas;
-  --fg: CanvasText;
-  --muted: color-mix(in srgb, CanvasText 55%, transparent);
-  --panel: color-mix(in srgb, CanvasText 6%, Canvas);
-  --border: color-mix(in srgb, CanvasText 15%, transparent);
-  --accent: #4E79A7;
+  --bg: rgb(var(--c-bg));
+  --fg: rgb(var(--c-text));
+  --panel: rgb(var(--c-surface));
+  --muted: rgb(var(--c-muted));
+  --border: rgb(var(--c-border));
+  --accent: rgb(var(--c-accent));
 }
 
 * {

@@ -29,6 +29,19 @@ import Login from '../Login';
 import NewProject from '../NewProject';
 // eslint-disable-next-line import/first
 import CharacterDashboard from '../CharacterDashboard';
+// eslint-disable-next-line import/first
+import { ToastProvider } from '../ui/Toast';
+
+// CharacterDashboard uses useToast() to surface override results -- it must
+// be mounted under a ToastProvider the way index.js actually wraps the app,
+// or the hook throws instead of the component under test rendering at all.
+function renderDashboard(props) {
+  return render(
+    <ToastProvider>
+      <CharacterDashboard {...props} />
+    </ToastProvider>
+  );
+}
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -62,11 +75,14 @@ describe('Login', () => {
 });
 
 describe('NewProject', () => {
+  // Content type is a set of clickable cards now, not a <select> -- and
+  // "Roleplay" is deliberately disabled (coming soon, per the client brief),
+  // so the non-default case this test exercises is "Short story" instead.
   test('derives a slug id from the title and submits content_type', async () => {
     api.createProject.mockResolvedValueOnce({
       id: 'my-cool-story',
       title: 'My Cool Story!',
-      content_type: 'roleplay',
+      content_type: 'short_story',
     });
     const onCreated = jest.fn();
     render(<NewProject onCreated={onCreated} />);
@@ -76,20 +92,26 @@ describe('NewProject', () => {
     });
     expect(screen.getByText('my-cool-story')).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText(/content type/i), { target: { value: 'roleplay' } });
+    fireEvent.click(screen.getByRole('button', { name: /short story/i }));
     fireEvent.click(screen.getByRole('button', { name: /create project/i }));
 
     await waitFor(() =>
-      expect(api.createProject).toHaveBeenCalledWith('my-cool-story', 'My Cool Story!', 'roleplay')
+      expect(api.createProject).toHaveBeenCalledWith('my-cool-story', 'My Cool Story!', 'short_story')
     );
     await waitFor(() => expect(onCreated).toHaveBeenCalledWith({
       id: 'my-cool-story',
       title: 'My Cool Story!',
-      content_type: 'roleplay',
+      content_type: 'short_story',
     }));
 
+    // Roleplay is present but not selectable yet.
+    expect(screen.getByRole('button', { name: /roleplay/i })).toBeDisabled();
+
     // The honesty note about ingest being a separate step must actually render.
-    expect(screen.getByText(/ingest the source text separately/i)).toBeInTheDocument();
+    expect(screen.getByText(/ingested separately, via the CLI/i)).toBeInTheDocument();
+    // ...and there's no fake upload/progress -- the file input is disabled,
+    // with the real CLI command shown instead.
+    expect(screen.getByText(/upload isn't wired up yet/i)).toBeInTheDocument();
   });
 
   test('shows an inline error on failure', async () => {
@@ -106,56 +128,58 @@ describe('NewProject', () => {
 });
 
 describe('CharacterDashboard', () => {
-  test('renders characters, voice, references, and evidence from real-shaped data', async () => {
-    api.characters.mockResolvedValueOnce({
-      novel_id: 'reverend-insanity',
-      characters: [
-        {
-          self_id: 'reverend-insanity:self1',
-          persona_id: 'reverend-insanity:self1:body1',
-          label: 'Fang Yuan',
-          prominence: 'PRINCIPAL',
-          voice: {
-            speaker_id: 'reverend-insanity:self1',
-            speaker_label: 'Fang Yuan',
-            voice: 'p227',
-            sample_audio_path: 'data/audio/reverend-insanity/ch1/x.wav',
-          },
-          traits: [
-            {
-              key: 'eye_color',
-              value: 'red',
-              evidence: 'attested ch18; 60 passages',
-              confidence: 0.9,
-              provenance: 'NARRATOR',
-            },
-          ],
-          reference_images: [
-            { id: 'r1', source_url: 'https://example.com/a.png', thumbnail_url: '', title: 'A', selected: true, user_uploaded: false },
-            { id: 'r2', source_url: 'https://example.com/b.png', thumbnail_url: '', title: 'B', selected: false, user_uploaded: false },
-          ],
+  const baseCharacters = () => ({
+    novel_id: 'reverend-insanity',
+    characters: [
+      {
+        self_id: 'reverend-insanity:self1',
+        persona_id: 'reverend-insanity:self1:body1',
+        label: 'Fang Yuan',
+        prominence: 'PRINCIPAL',
+        voice: {
+          speaker_id: 'reverend-insanity:self1',
+          speaker_label: 'Fang Yuan',
+          voice: 'p227',
+          sample_audio_path: 'data/audio/reverend-insanity/ch1/x.wav',
         },
-      ],
-    });
+        traits: [
+          {
+            key: 'eye_color',
+            value: 'red',
+            evidence: 'attested ch18; 60 passages',
+            confidence: 0.9,
+            provenance: 'NARRATOR',
+          },
+        ],
+        reference_images: [
+          { id: 'r1', source_url: 'https://example.com/a.png', thumbnail_url: '', title: 'A', selected: true, user_uploaded: false },
+          { id: 'r2', source_url: 'https://example.com/b.png', thumbnail_url: '', title: 'B', selected: false, user_uploaded: false },
+        ],
+      },
+    ],
+  });
 
-    render(<CharacterDashboard novelId="reverend-insanity" />);
+  test('lists the cast, then drills into a character to show voice, references, and evidence', async () => {
+    api.characters.mockResolvedValueOnce(baseCharacters());
 
-    expect(await screen.findByText('Fang Yuan')).toBeInTheDocument();
+    renderDashboard({ novelId: "reverend-insanity" });
+
+    // Cast list first -- name shown via the row, not the full detail yet.
+    const row = await screen.findByText('Fang Yuan');
+    expect(screen.queryByText(/eye_color/)).not.toBeInTheDocument();
+
+    fireEvent.click(row);
+
+    expect(await screen.findByText(/eye_color: red/)).toBeInTheDocument();
     expect(screen.getByText(/attested ch18; 60 passages/)).toBeInTheDocument();
-    expect(screen.getByText(/eye_color/)).toBeInTheDocument();
     expect(screen.getByText(/90% confidence/)).toBeInTheDocument();
 
-    // Clicking the unselected reference image calls the select endpoint.
+    // "Replace" on the unselected reference image calls the select endpoint.
     api.selectReference.mockResolvedValueOnce({ id: 'r2', source_url: 'https://example.com/b.png' });
-    api.characters.mockResolvedValueOnce({
-      novel_id: 'reverend-insanity',
-      characters: [],
-    });
-    const thumbs = screen.getAllByRole('button').filter((b) =>
-      b.className.includes('ref-thumb')
-    );
-    expect(thumbs.length).toBe(2);
-    fireEvent.click(thumbs[1]);
+    api.characters.mockResolvedValueOnce(baseCharacters());
+    const replaceButtons = screen.getAllByRole('button', { name: 'Replace' });
+    expect(replaceButtons.length).toBe(1); // the selected candidate has no Replace button
+    fireEvent.click(replaceButtons[0]);
     await waitFor(() =>
       expect(api.selectReference).toHaveBeenCalledWith(
         'reverend-insanity',
@@ -164,6 +188,31 @@ describe('CharacterDashboard', () => {
         'selected via dashboard'
       )
     );
+
+    // img2img isn't wired up server-side yet -- rendered honestly disabled.
+    expect(screen.getAllByRole('button', { name: 'Edit reference' })[0]).toBeDisabled();
+  });
+
+  test('incidental characters are collapsed behind a real count until expanded', async () => {
+    api.characters.mockResolvedValueOnce({
+      novel_id: 'reverend-insanity',
+      characters: [
+        ...baseCharacters().characters,
+        { self_id: 'x1', label: 'Innkeeper', prominence: 'INCIDENTAL', traits: [], reference_images: [] },
+        { self_id: 'x2', label: 'Guard', prominence: 'INCIDENTAL', traits: [], reference_images: [] },
+      ],
+    });
+
+    renderDashboard({ novelId: "reverend-insanity" });
+
+    await screen.findByText('Fang Yuan');
+    expect(screen.queryByText('Innkeeper')).not.toBeInTheDocument();
+
+    const toggle = screen.getByText('Show 2 incidental characters');
+    fireEvent.click(toggle);
+
+    expect(await screen.findByText('Innkeeper')).toBeInTheDocument();
+    expect(screen.getByText('Guard')).toBeInTheDocument();
   });
 
   test('a fresh project with no character data yet degrades to an honest empty state, not a crash', async () => {
@@ -171,14 +220,14 @@ describe('CharacterDashboard', () => {
     err.status = 404;
     api.characters.mockRejectedValueOnce(err);
 
-    render(<CharacterDashboard novelId="brand-new-project" />);
+    renderDashboard({ novelId: "brand-new-project" });
 
     expect(await screen.findByText(/haven.t been generated/i)).toBeInTheDocument();
   });
 
   test('a real backend error is shown, not swallowed', async () => {
     api.characters.mockRejectedValueOnce(new Error('HTTP 500'));
-    render(<CharacterDashboard novelId="reverend-insanity" />);
+    renderDashboard({ novelId: "reverend-insanity" });
     expect(await screen.findByText(/HTTP 500/)).toBeInTheDocument();
   });
 });
