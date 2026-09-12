@@ -21,6 +21,7 @@ export default function ScriptLine({
   onMergeUp,
   canMergeUp,
   onRetype,
+  onCreateMention,
 }) {
   const isDialogue = span.type === 'DIALOGUE';
   // Whose thought this is matters as much as who's speaking -- the pipeline
@@ -136,6 +137,14 @@ export default function ScriptLine({
         )}
         {editMode && (
           <span className="line-actions">
+            {onCreateMention && (
+              <button
+                title="Create a mention for text in this line that detector missed"
+                onClick={(e) => onCreateMention(span, e)}
+              >
+                + mention
+              </button>
+            )}
             <button onClick={() => onFlagLine(span)}>flag</button>
             {canMergeUp && <button onClick={onMergeUp}>merge&nbsp;&uarr;</button>}
           </span>

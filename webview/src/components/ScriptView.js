@@ -13,6 +13,7 @@ export default function ScriptView({
   onFlagLine,
   onMergeLines,
   onRetype,
+  onCreateMention,
 }) {
   return (
     <div id="script">
@@ -33,6 +34,7 @@ export default function ScriptView({
             canMergeUp={editMode && !!prev && !!prev.span_id && !!span.span_id}
             onMergeUp={() => onMergeLines(prev.span_id, span.span_id, chapter.number)}
             onRetype={(s, newType) => onRetype(s, newType, chapter.number)}
+            onCreateMention={onCreateMention ? (s, e) => onCreateMention(s, e, chapter.number) : undefined}
           />
         );
       })}

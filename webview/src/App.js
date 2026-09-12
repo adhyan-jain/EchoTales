@@ -226,7 +226,17 @@ export default function App() {
     (entityId) => {
       if (!picker || !novelId) return;
       const call =
-        picker.kind === 'mention'
+        picker.kind === 'create_mention'
+          ? api.createMention(
+              novelId,
+              picker.spanId,
+              picker.chapter,
+              picker.localStart,
+              picker.localEnd,
+              picker.text,
+              entityId
+            )
+          : picker.kind === 'mention'
           ? api.reassignMention(novelId, picker.mentionId, entityId)
           : api.reassignSpeaker(novelId, picker.spanId, picker.chapter, entityId);
       call.then(afterCorrection).catch((e) => setLoadError(e.message));
@@ -239,12 +249,49 @@ export default function App() {
       if (!picker || !novelId) return;
       const target = { new_label: label };
       const call =
-        picker.kind === 'mention'
+        picker.kind === 'create_mention'
+          ? api.createMention(
+              novelId,
+              picker.spanId,
+              picker.chapter,
+              picker.localStart,
+              picker.localEnd,
+              picker.text,
+              target
+            )
+          : picker.kind === 'mention'
           ? api.reassignMention(novelId, picker.mentionId, target)
           : api.reassignSpeaker(novelId, picker.spanId, picker.chapter, target);
       call.then(afterCorrection).catch((e) => setLoadError(e.message));
     },
     [picker, novelId, afterCorrection]
+  );
+
+  const handleCreateMentionPrompt = useCallback(
+    (span, e, chapterNumber) => {
+      const selectedText = window.getSelection() ? window.getSelection().toString().trim() : '';
+      const textToUse = selectedText || window.prompt('Enter mention text from this line:');
+      if (!textToUse) return;
+
+      const localStart = span.text.indexOf(textToUse);
+      if (localStart === -1 && !selectedText) {
+        window.alert(`Text "${textToUse}" not found in line.`);
+        return;
+      }
+      const start = localStart === -1 ? 0 : localStart;
+      const end = start + textToUse.length;
+
+      setPicker({
+        kind: 'create_mention',
+        spanId: span.span_id,
+        chapter: chapterNumber,
+        localStart: start,
+        localEnd: end,
+        text: textToUse,
+        anchor: { x: e.clientX, y: e.clientY },
+      });
+    },
+    []
   );
 
   const handlePickerClear = useCallback(() => {
@@ -479,6 +526,7 @@ export default function App() {
               onFlagLine={handleFlagLine}
               onMergeLines={handleMergeLines}
               onRetype={handleRetype}
+              onCreateMention={handleCreateMentionPrompt}
             />
           </>
         )}
