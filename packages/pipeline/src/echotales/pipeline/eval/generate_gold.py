@@ -73,10 +73,23 @@ def _extract_gold_from_db(
                     kind=kind,
                     alias_type=alias_enum,
                     context=f"{text} mentioned in chapter {ch:g}.",
-                    provenance=Provenance.HUMAN,
+                    # Extracted straight from the pipeline's own resolved `mention`
+                    # table (target_id/offset/alias_type are all pipeline output) --
+                    # it is a draft to be audited, never ground truth. See
+                    # eval/gold.py's module docstring: a label expressed in the
+                    # system's own ids can only ever agree with it, and a recall
+                    # number computed from model-drafted labels stops being a
+                    # measurement of anything. Do not flip this to
+                    # Provenance.HUMAN/confirmed=True without an actual human
+                    # review pass (see `GoldSet.confirmed_only`).
+                    provenance=Provenance.MODEL,
                     drafted_by="gold-auto-builder",
-                    confirmed=True,
-                    note=f"[golden_qa] Ground-truth mention for {identity_name}.",
+                    confirmed=False,
+                    note=(
+                        f"[golden_qa] Auto-extracted candidate mention for {identity_name}, "
+                        "drawn from the pipeline's own resolution output -- NOT independently "
+                        "verified. Requires a human confirmation pass before use as ground truth."
+                    ),
                 )
             )
 

@@ -26,7 +26,7 @@ conflated.
 **Status, verified vs. not:**
 - `Login.js` / `NewProject.js` / `CharacterDashboard.js` — **done**, `Section7Smoke.test.js` passing (8/8).
 - `create_mention` frontend UI — **done**, wired via `+ mention` action button in edit mode (`App.js`, `ScriptView.js`, `ScriptLine.js`).
-- Gold QA Datasets — **done**, all 3 web novels (`reverend-insanity`, `lord-of-the-mysteries`, `omniscient-readers-viewpoint`) fully populated in `data/gold/`.
+- Gold QA Datasets — **partial**, all 3 web novels have files in `data/gold/`, but only `reverend-insanity` has been through a human review pass (bulk-approved). `lord-of-the-mysteries` and `omniscient-readers-viewpoint` are auto-extracted from the pipeline's own resolution output (`generate_gold.py`) and correctly stamped `Provenance.MODEL`/`confirmed=False` — they are drafts to audit, not ground truth, and any recall/precision number computed against them is measuring the resolver against itself, not against an independent label.
 - Reference Image Quality Filtering — **done**, automated domain/title evaluation filters aggregator spam (`wallpapercave.com` etc.) without human intervention (`refimg_search.py`).
 - LOTM Persona Split — **done**, multi-persona body split emission verified for transmigrations (`test_lotm_persona_split.py`).
 - ORV System Windows — **done**, bracketed status notifications classified cleanly (`test_orv_system_window_classify.py`).
