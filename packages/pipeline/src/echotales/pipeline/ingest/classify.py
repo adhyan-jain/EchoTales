@@ -90,8 +90,7 @@ _KV_LINE = re.compile(r"^\s*[-*+•]?\s*(?P<key>[\w \t'/()-]{1,40}?)\s*[:：]\s*
 
 _SYSTEM_KEYWORDS = re.compile(
     r"\b(?:status|window|system|quest|skill|attribute|stat|notification|"
-    r"achievement|level up|ding|alert|constellation|scenario|fable|coins?|"
-    r"sponsor|channel|stigma|dokkaebi|probability)\b",
+    r"achievement|level up|ding|alert|constellation|scenario|dokkaebi)\b",
     re.IGNORECASE,
 )
 
@@ -149,8 +148,17 @@ def is_system_window(text: str, *, min_fields: int = 2) -> bool:
     # a notification rather than a sentence.
     if bool(fields) and _looks_bracketed(text) and len(text) < 200:
         return True
-    # Bracketed prose status notifications (e.g. ORV system alerts: "[The constellation ...]")
-    if _looks_bracketed(text) and _SYSTEM_KEYWORDS.search(text):
+    # Bracketed prose status notifications (e.g. ORV system alerts: "[The constellation
+    # ...]"). Gated the same way as the one-field case above (short, single-line) --
+    # without this, a long bracketed internal-monologue paragraph that happens to use
+    # one of these words in an ordinary sense would be misclassified as a system
+    # window and diverted out of prose/identity processing.
+    if (
+        _looks_bracketed(text)
+        and _SYSTEM_KEYWORDS.search(text)
+        and len(text) < 200
+        and "\n" not in text.strip()
+    ):
         return True
     return False
 
