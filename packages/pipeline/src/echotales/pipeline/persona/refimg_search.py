@@ -213,10 +213,13 @@ def search_candidates(
 
     hits = raw_hits
     if filter_spam:
-        # Sort and filter out candidates scoring 0.0 (spam/aggregators)
+        # Sort and filter out candidates scoring 0.0 (spam/aggregators). Score each
+        # hit once and reuse it for both the filter and the sort key -- the sort key
+        # previously re-invoked evaluate_candidate_quality on every comparison.
         evaluated = [(h, evaluate_candidate_quality(h, character_label, novel_title)) for h in raw_hits]
-        hits = [h for h, score in evaluated if score > 0.0]
-        hits.sort(key=lambda item: evaluate_candidate_quality(item, character_label, novel_title), reverse=True)
+        kept = [(h, score) for h, score in evaluated if score > 0.0]
+        kept.sort(key=lambda pair: pair[1], reverse=True)
+        hits = [h for h, _ in kept]
 
     candidates = []
     for i, hit in enumerate(hits[:max_results]):
