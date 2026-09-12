@@ -1,9 +1,13 @@
-"""Trending Short-Form Reels/TikTok Visual & Motion Preset Engine.
+"""Short-form reel style/pacing planning helper -- NOT a composition engine.
 
-Provides automated visual direction, dynamic pacing, 9:16 vertical crop composition,
-kinetic caption placement, and visual hook styling tailored for web novel video adaptations.
-Designed to operate fully autonomously without requiring human-in-the-loop verification
-or external reference image providers.
+Produces a `ReelCompositionPlan`: a style preset, per-beat duration, and a
+camera-motion label for each beat, derived from pure rule-based dataclass/enum
+logic. It does not touch ffmpeg, does not depend on `render/compose.py`, does
+not crop or composite video, and is not called from anywhere in the pipeline
+outside its own test file (`test_reels_render.py`) -- `grep -rn "reels"
+packages/pipeline/src/echotales/` confirms no caller in `cli.py` or elsewhere.
+Wiring an actual 9:16 vertical-crop/caption-placement render path onto this
+plan is unbuilt; see HANDOFF.md's "Pick up here" section.
 """
 
 from __future__ import annotations
