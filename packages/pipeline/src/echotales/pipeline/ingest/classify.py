@@ -90,7 +90,8 @@ _KV_LINE = re.compile(r"^\s*[-*+•]?\s*(?P<key>[\w \t'/()-]{1,40}?)\s*[:：]\s*
 
 _SYSTEM_KEYWORDS = re.compile(
     r"\b(?:status|window|system|quest|skill|attribute|stat|notification|"
-    r"achievement|level up|ding|alert)\b",
+    r"achievement|level up|ding|alert|constellation|scenario|fable|coins?|"
+    r"sponsor|channel|stigma|dokkaebi|probability)\b",
     re.IGNORECASE,
 )
 
@@ -134,11 +135,10 @@ def parse_system_window(text: str) -> dict[str, str]:
 
 
 def is_system_window(text: str, *, min_fields: int = 2) -> bool:
-    """Whether a block is a status screen rather than prose.
+    """Whether a block is a status screen or bracketed system message rather than prose.
 
-    Requires either an explicit system keyword or a bracketed block, *and*
-    enough key-value lines to be structured. A single "Name: Klein" line inside
-    ordinary prose is not a status screen.
+    Requires either structured key-value lines or bracketed system notification
+    phrasing common in system/LitRPG web novels (e.g. ORV constellation alerts).
     """
     if not (_looks_bracketed(text) or _SYSTEM_KEYWORDS.search(text)):
         return False
@@ -147,7 +147,12 @@ def is_system_window(text: str, *, min_fields: int = 2) -> bool:
         return True
     # A short bracketed line with one field still counts when it is clearly
     # a notification rather than a sentence.
-    return bool(fields) and _looks_bracketed(text) and len(text) < 200
+    if bool(fields) and _looks_bracketed(text) and len(text) < 200:
+        return True
+    # Bracketed prose status notifications (e.g. ORV system alerts: "[The constellation ...]")
+    if _looks_bracketed(text) and _SYSTEM_KEYWORDS.search(text):
+        return True
+    return False
 
 
 def classify_block(
