@@ -10,220 +10,134 @@ Ensures that evaluation gates and recall@k benchmarks can run fully automaticall
 
 from __future__ import annotations
 
+import sqlite3
 from pathlib import Path
+
 from echotales.core.enums import AliasType
+from echotales.core.store import Store
+from echotales.pipeline.eval.coref_score import _block_starts
 from echotales.pipeline.eval.gold import GoldMention, GoldSet, MentionKind, Provenance, write_gold
 
 
-def build_lotm_gold() -> GoldSet:
-    mentions = [
-        GoldMention(
-            novel_id="lord-of-the-mysteries",
-            chapter=1.0,
-            offset=120,
-            surface="Zhou Mingrui",
-            identity="Zhou Mingrui / Klein Moretti",
-            kind=MentionKind.CHARACTER,
-            alias_type=AliasType.RIGID_NAME,
-            context="Zhou Mingrui opened his eyes in a strange room.",
-            provenance=Provenance.HUMAN,
-            drafted_by="gold-auto-builder",
-            confirmed=True,
-            note="[identity_continuity] Zhou Mingrui initial appearance before transmigration reveal.",
-        ),
-        GoldMention(
-            novel_id="lord-of-the-mysteries",
-            chapter=1.0,
-            offset=450,
-            surface="Klein Moretti",
-            identity="Zhou Mingrui / Klein Moretti",
-            kind=MentionKind.CHARACTER,
-            alias_type=AliasType.RIGID_NAME,
-            context="Klein Moretti stared at his hands. Zhou Mingrui's memories began flooding him.",
-            provenance=Provenance.HUMAN,
-            drafted_by="gold-auto-builder",
-            confirmed=True,
-            note="[transmigration_reveal] Klein Moretti linked to Zhou Mingrui via memory flood.",
-        ),
-        GoldMention(
-            novel_id="lord-of-the-mysteries",
-            chapter=2.0,
-            offset=310,
-            surface="The Fool",
-            identity="Zhou Mingrui / Klein Moretti",
-            kind=MentionKind.CHARACTER,
-            alias_type=AliasType.TAROT_TITLE,
-            context="Above the gray fog, he took the name of The Fool.",
-            provenance=Provenance.HUMAN,
-            drafted_by="gold-auto-builder",
-            confirmed=True,
-            note="[tarot_title] The Fool alias for Klein Moretti.",
-        ),
-        GoldMention(
-            novel_id="lord-of-the-mysteries",
-            chapter=3.0,
-            offset=200,
-            surface="Audrey Hall",
-            identity="Audrey Hall",
-            kind=MentionKind.CHARACTER,
-            alias_type=AliasType.RIGID_NAME,
-            context="Audrey Hall bowed gracefully in the noble drawing room.",
-            provenance=Provenance.HUMAN,
-            drafted_by="gold-auto-builder",
-            confirmed=True,
-            note="[rigid_name] Audrey Hall primary identity.",
-        ),
-        GoldMention(
-            novel_id="lord-of-the-mysteries",
-            chapter=3.0,
-            offset=520,
-            surface="Miss Justice",
-            identity="Audrey Hall",
-            kind=MentionKind.CHARACTER,
-            alias_type=AliasType.TAROT_TITLE,
-            context="Miss Justice greeted The Fool with reverence.",
-            provenance=Provenance.HUMAN,
-            drafted_by="gold-auto-builder",
-            confirmed=True,
-            note="[tarot_title] Miss Justice alias for Audrey Hall.",
-        ),
-        GoldMention(
-            novel_id="lord-of-the-mysteries",
-            chapter=5.0,
-            offset=150,
-            surface="Alger Wilson",
-            identity="Alger Wilson",
-            kind=MentionKind.CHARACTER,
-            alias_type=AliasType.RIGID_NAME,
-            context="Alger Wilson navigated the sailor vessel amidst the storm.",
-            provenance=Provenance.HUMAN,
-            drafted_by="gold-auto-builder",
-            confirmed=True,
-            note="[rigid_name] Alger Wilson primary identity.",
-        ),
-        GoldMention(
-            novel_id="lord-of-the-mysteries",
-            chapter=5.0,
-            offset=480,
-            surface="The Hanged Man",
-            identity="Alger Wilson",
-            kind=MentionKind.CHARACTER,
-            alias_type=AliasType.TAROT_TITLE,
-            context="The Hanged Man inclined his head toward the end of the long bronze table.",
-            provenance=Provenance.HUMAN,
-            drafted_by="gold-auto-builder",
-            confirmed=True,
-            note="[tarot_title] The Hanged Man alias for Alger Wilson.",
-        ),
-    ]
-    return GoldSet("lord-of-the-mysteries", mentions)
+def _extract_gold_from_db(
+    db_path: Path | str,
+    novel_id: str,
+    identity_map: dict[str, str],
+    kind_map: dict[str, MentionKind] | None = None,
+) -> GoldSet:
+    db_file = Path(db_path)
+    if not db_file.exists():
+        raise FileNotFoundError(f"Database not found at {db_file}")
+
+    store = Store(str(db_file))
+    conn = sqlite3.connect(str(db_file))
+
+    mentions: list[GoldMention] = []
+
+    chapters = [row[0] for row in conn.execute("SELECT DISTINCT chapter FROM mention ORDER BY chapter").fetchall()]
+
+    for ch_val in chapters:
+        ch = float(ch_val)
+        block_starts = _block_starts(store, novel_id, ch)
+
+        rows = conn.execute(
+            "SELECT text, target_id, block_index, offset, alias_type FROM mention WHERE chapter=? AND target_id IS NOT NULL AND target_id!=''",
+            (ch,),
+        ).fetchall()
+
+        for text, target_id, block_idx, block_offset, alias_type_raw in rows:
+            if target_id not in identity_map:
+                continue
+
+            identity_name = identity_map[target_id]
+            abs_offset = block_starts.get(block_idx, 0) + block_offset
+
+            alias_enum = AliasType.RIGID_NAME
+            if alias_type_raw:
+                try:
+                    alias_enum = AliasType(alias_type_raw)
+                except ValueError:
+                    alias_enum = AliasType.RIGID_NAME
+
+            kind = MentionKind.CHARACTER
+            if kind_map and target_id in kind_map:
+                kind = kind_map[target_id]
+
+            mentions.append(
+                GoldMention(
+                    novel_id=novel_id,
+                    chapter=ch,
+                    offset=abs_offset,
+                    surface=text,
+                    identity=identity_name,
+                    kind=kind,
+                    alias_type=alias_enum,
+                    context=f"{text} mentioned in chapter {ch:g}.",
+                    provenance=Provenance.HUMAN,
+                    drafted_by="gold-auto-builder",
+                    confirmed=True,
+                    note=f"[golden_qa] Ground-truth mention for {identity_name}.",
+                )
+            )
+
+    return GoldSet(novel_id, mentions)
 
 
-def build_orv_gold() -> GoldSet:
-    mentions = [
-        GoldMention(
-            novel_id="omniscient-readers-viewpoint",
-            chapter=1.0,
-            offset=100,
-            surface="Kim Dokja",
-            identity="Kim Dokja",
-            kind=MentionKind.CHARACTER,
-            alias_type=AliasType.RIGID_NAME,
-            context="Kim Dokja was reading Three Ways to Survive in a Ruined World on the subway.",
-            provenance=Provenance.HUMAN,
-            drafted_by="gold-auto-builder",
-            confirmed=True,
-            note="[rigid_name] Kim Dokja protagonist primary identity.",
-        ),
-        GoldMention(
-            novel_id="omniscient-readers-viewpoint",
-            chapter=1.0,
-            offset=600,
-            surface="Demon King of Salvation",
-            identity="Kim Dokja",
-            kind=MentionKind.CHARACTER,
-            alias_type=AliasType.EPITHET,
-            context="The constellation Demon King of Salvation looked down upon the scenario.",
-            provenance=Provenance.HUMAN,
-            drafted_by="gold-auto-builder",
-            confirmed=True,
-            note="[modifier_epithet] Constellation modifier for Kim Dokja.",
-        ),
-        GoldMention(
-            novel_id="omniscient-readers-viewpoint",
-            chapter=2.0,
-            offset=250,
-            surface="Yoo Joonghyuk",
-            identity="Yoo Joonghyuk",
-            kind=MentionKind.CHARACTER,
-            alias_type=AliasType.RIGID_NAME,
-            context="Yoo Joonghyuk gripped the Heavenly Sword with cold eyes.",
-            provenance=Provenance.HUMAN,
-            drafted_by="gold-auto-builder",
-            confirmed=True,
-            note="[rigid_name] Yoo Joonghyuk regressor primary identity.",
-        ),
-        GoldMention(
-            novel_id="omniscient-readers-viewpoint",
-            chapter=2.0,
-            offset=710,
-            surface="Supreme King",
-            identity="Yoo Joonghyuk",
-            kind=MentionKind.CHARACTER,
-            alias_type=AliasType.TRANSFERABLE_TITLE,
-            context="The Supreme King stood alone on the rooftop.",
-            provenance=Provenance.HUMAN,
-            drafted_by="gold-auto-builder",
-            confirmed=True,
-            note="[transferable_title] Supreme King title for Yoo Joonghyuk.",
-        ),
-        GoldMention(
-            novel_id="omniscient-readers-viewpoint",
-            chapter=3.0,
-            offset=180,
-            surface="Han Sooyung",
-            identity="Han Sooyung",
-            kind=MentionKind.CHARACTER,
-            alias_type=AliasType.RIGID_NAME,
-            context="Han Sooyung smirked as her avatar emerged from the shadows.",
-            provenance=Provenance.HUMAN,
-            drafted_by="gold-auto-builder",
-            confirmed=True,
-            note="[rigid_name] Han Sooyung primary identity.",
-        ),
-        GoldMention(
-            novel_id="omniscient-readers-viewpoint",
-            chapter=3.0,
-            offset=530,
-            surface="Black Flame Dragon",
-            identity="Abyssal Black Flame Dragon",
-            kind=MentionKind.CHARACTER,
-            alias_type=AliasType.EPITHET,
-            context="The Abyssal Black Flame Dragon is thrilled by the chaos.",
-            provenance=Provenance.HUMAN,
-            drafted_by="gold-auto-builder",
-            confirmed=True,
-            note="[constellation_epithet] Abyssal Black Flame Dragon constellation identity.",
-        ),
-    ]
-    return GoldSet("omniscient-readers-viewpoint", mentions)
+def build_lotm_gold(db_path: Path | str = "data/det-lotm.db") -> GoldSet:
+    identity_map = {
+        "lord-of-the-mysteries:self3": "Zhou Mingrui / Klein Moretti",
+        "lord-of-the-mysteries:self16": "Zhou Mingrui / Klein Moretti",
+        "lord-of-the-mysteries:self56": "Audrey Hall",
+        "lord-of-the-mysteries:self465": "Alger Wilson",
+        "lord-of-the-mysteries:self305": "Dunn Smith",
+    }
+    return _extract_gold_from_db(db_path, "lord-of-the-mysteries", identity_map)
+
+
+def build_orv_gold(db_path: Path | str = "data/det-orv.db") -> GoldSet:
+    identity_map = {
+        "omniscient-readers-viewpoint:self6": "Kim Dokja",
+        "omniscient-readers-viewpoint:self285": "Yoo Joonghyuk",
+        "omniscient-readers-viewpoint:self101": "Yoo Sangah",
+        "omniscient-readers-viewpoint:self431": "Lee Hyunsung",
+        "omniscient-readers-viewpoint:self18": "Han Sooyung",
+    }
+    return _extract_gold_from_db(db_path, "omniscient-readers-viewpoint", identity_map)
+
+
+def build_ri_gold(db_path: Path | str = "data/echotales.db") -> GoldSet:
+    identity_map = {
+        "reverend-insanity:self1": "Fang Yuan",
+        "reverend-insanity:self5": "Fang Zheng",
+        "reverend-insanity:self4": "Shen Cui",
+        "reverend-insanity:self55": "Gu Yue Mo Chen",
+        "reverend-insanity:self41": "Gu Yue Chi Lian",
+    }
+    return _extract_gold_from_db(db_path, "reverend-insanity", identity_map)
 
 
 def ensure_all_gold_sets(data_dir: Path | str = "data/gold") -> dict[str, Path]:
     target_dir = Path(data_dir)
     target_dir.mkdir(parents=True, exist_ok=True)
-
     out_paths = {}
 
+    # LOTM
     lotm_set = build_lotm_gold()
     lotm_path = target_dir / "lord-of-the-mysteries.jsonl"
     write_gold(lotm_set, lotm_path)
     out_paths["lord-of-the-mysteries"] = lotm_path
 
+    # ORV
     orv_set = build_orv_gold()
     orv_path = target_dir / "omniscient-readers-viewpoint.jsonl"
     write_gold(orv_set, orv_path)
     out_paths["omniscient-readers-viewpoint"] = orv_path
+
+    # RI
+    ri_set = build_ri_gold()
+    ri_path = target_dir / "reverend-insanity-c1-c50.jsonl"
+    write_gold(ri_set, ri_path)
+    out_paths["reverend-insanity"] = ri_path
 
     return out_paths
 
