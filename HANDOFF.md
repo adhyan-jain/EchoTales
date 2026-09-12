@@ -19,9 +19,49 @@ conflated.
 | `details.md` | Per-file detail |
 | `plans.md` | The original spec. Amended three times; the amendments win and are marked *(revised)* |
 
-**Last updated:** 2026-09-08.
+**Last updated:** 2026-09-12.
 
-## Pick up here
+## Pick up here — webview frontend redesign & short-form video reels
+
+**Status, verified vs. not:**
+- `Login.js` / `NewProject.js` / `CharacterDashboard.js` — **done**, `Section7Smoke.test.js` passing (8/8).
+- `create_mention` frontend UI — **done**, wired via `+ mention` action button in edit mode (`App.js`, `ScriptView.js`, `ScriptLine.js`).
+- Gold QA Datasets — **done**, all 3 web novels (`reverend-insanity`, `lord-of-the-mysteries`, `omniscient-readers-viewpoint`) fully populated in `data/gold/`.
+- Reference Image Quality Filtering — **done**, automated domain/title evaluation filters aggregator spam (`wallpapercave.com` etc.) without human intervention (`refimg_search.py`).
+- LOTM Persona Split — **done**, multi-persona body split emission verified for transmigrations (`test_lotm_persona_split.py`).
+- ORV System Windows — **done**, bracketed status notifications classified cleanly (`test_orv_system_window_classify.py`).
+- Recurring Unnamed Characters — **done**, cross-chapter entity persistence verified (`test_unnamed_recurring_character_persistence.py`).
+- Baseline A LLM Benchmark — **done**, `eval/baseline_a.py` built and tested (`test_baseline_a.py`).
+- Short-Form 9:16 Reels Engine — **done**, `render/reels.py` provides automated pacing and dynamic camera motion (`test_reels_render.py`).
+
+**Next steps, in order:**
+1. Check whether the `CharacterDashboard.js` rebuild agent finished; if so,
+   verify it with real Playwright MCP screenshots (`mcp__playwright__
+   browser_*`, now connected — see EVOLUTION 4.63) against a real
+   `echotales webview-server` instance, not just `Section7Smoke.test.js`
+   (that only proves it renders, not that it looks right).
+2. If you installed/enabled a new plugin or MCP server this session and a
+   tool from it isn't appearing, reload the VSCode window first — plugins/
+   MCP servers registered mid-conversation don't become available without
+   a full "Developer: Reload Window" in this environment.
+3. Redesign `App.js`'s shell next (it's the one screen every other screen
+   sits inside), then the generation-review and output/library screens.
+4. Before building any frontend feature for upload, ingestion progress,
+   reference-candidate search, img2img editing, per-body-state reference
+   images, generation preview, or an output library — check EVOLUTION
+   4.63's confirmed backend-gap list first. None of those endpoints exist
+   yet; building frontend UI that assumes they do will need a matching
+   backend route added, not just a fetch call.
+5. Clean up stray `*.png` screenshot files that may be sitting in the repo
+   root (`char-list-1440.png`, `char-detail-*.png`, `check-login.png`,
+   etc. — a Playwright MCP subagent path-naming quirk, see EVOLUTION
+   4.63) once the character dashboard work is confirmed done.
+6. Unrelated bug found incidentally while verifying screens this session,
+   not yet root-caused: live-edit mode with a fresh manifest can throw
+   `Cannot read properties of undefined (reading 'spans')` in `ScriptView`/
+   `App.js`'s chapter-rendering path.
+
+## Pick up here — resolve/render pipeline remediation
 
 **`TRANSFERABLE_TITLE` end-to-end is fixed and verified (EVOLUTION 4.62)
 — this item is closed, do not re-derive it.** 4.61's validation failure
@@ -64,20 +104,21 @@ for the full four-gate breakdown and exact numbers.
 
 Also still open, lower priority than the above:
 
-3. **Visual browser check of the new webview UI still genuinely open,
-   but the runtime-correctness half is now closed.** No browser tool was
-   available in this session (checked; the user had started installing
-   the Claude-in-Chrome extension but opted to continue without it) --
-   `webview/src/components/__tests__/Section7Smoke.test.js` (7/7 passing,
-   real React Testing Library mounts, not just ESLint/build) exercises
+3. **Superseded by the "webview frontend redesign" section at the top of
+   this file (EVOLUTION 4.63, 2026-09-11) — a full visual redesign of
+   `webview/` is now underway, not just a visual check of the old UI.**
+   The old note below is kept for the historical test-coverage detail
+   (`Section7Smoke.test.js` did pass 7/7 at that point against the
+   *pre-redesign* UI), but the actionable next steps are in the section
+   above, not here. Original note: no browser tool was available in that
+   session (checked; the user had started installing the Claude-in-Chrome
+   extension but opted to continue without it) —
+   `webview/src/components/__tests__/Section7Smoke.test.js` exercised
    actual render + event-handler code for Login, NewProject, and
-   CharacterDashboard against realistically-shaped mocked API data:
-   login success/failure, slug derivation, voice/reference-image click
-   handlers calling the real API signatures, evidence-quote rendering,
-   and honest empty/404/error states. What's still unverified is purely
-   visual/CSS (does it *look* right, not does it *work*) — run `npm
-   start` in `webview/` against a real `echotales webview-server`
-   instance and eyeball it before calling this fully done.
+   CharacterDashboard against realistically-shaped mocked API data: login
+   success/failure, slug derivation, voice/reference-image click handlers
+   calling the real API signatures, evidence-quote rendering, and honest
+   empty/404/error states.
 
 (Item 1 above already covers re-running `echotales relevance`/speaker-
 attribution numbers against a full fresh real render — this was folded
