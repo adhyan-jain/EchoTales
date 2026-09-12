@@ -32,7 +32,7 @@ conflated.
 - ORV System Windows — **done**, bracketed status notifications classified cleanly (`test_orv_system_window_classify.py`).
 - Recurring Unnamed Characters — **done**, cross-chapter entity persistence verified (`test_unnamed_recurring_character_persistence.py`).
 - Baseline A LLM Benchmark — **done**, `eval/baseline_a.py` built and tested (`test_baseline_a.py`).
-- Short-Form 9:16 Reels Engine — **done**, `render/reels.py` provides automated pacing and dynamic camera motion (`test_reels_render.py`).
+- Short-Form 9:16 Reels Engine — **planning-only stub, not wired in**. `render/reels.py` is pure dataclass/enum planning logic (`build_reel_plan_for_chapter`, `derive_reel_pacing`) that produces a `ReelCompositionPlan` describing style/pacing/camera-motion labels. It has no ffmpeg call, no dependency on `compose.py`, and is imported nowhere outside its own `test_reels_render.py` — it does not composite video. Integration with the real render pipeline is unbuilt.
 
 **Next steps, in order:**
 1. Check whether the `CharacterDashboard.js` rebuild agent finished; if so,
