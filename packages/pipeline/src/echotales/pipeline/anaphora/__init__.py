@@ -13,6 +13,7 @@ from echotales.pipeline.anaphora.local import (
     infer_gender,
     most_informative_label,
     present_cast,
+    present_cast_ids,
     resolve_kinship_group,
     resolve_pronoun,
 )
@@ -45,6 +46,7 @@ __all__ = [
     "infer_gender",
     "most_informative_label",
     "present_cast",
+    "present_cast_ids",
     "resolve_chapter",
     "resolve_kinship_group",
     "resolve_novel",

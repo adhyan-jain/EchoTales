@@ -19,6 +19,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--db", default="data/echotales.db", help="path to the SQLite graph")
     parser.add_argument("-v", "--verbose", action="store_true", help="print each stage's report")
+    parser.add_argument(
+        "--seed",
+        dest="global_seed",
+        type=int,
+        default=20260923,
+        help=(
+            "seed for every sampling decision that is not a render seed: "
+            "bootstrap resampling in `eval`, task shuffling in `annotate`. "
+            "Named `global_seed` internally so it never collides with "
+            "`render --seed`, which is an image seed and a different thing."
+        ),
+    )
     sub = parser.add_subparsers(dest="command", required=True)
 
     # The verb most people want: every phase, in dependency order.
@@ -46,6 +58,13 @@ def build_parser() -> argparse.ArgumentParser:
             "number, where the deterministic tiers have no established context yet "
             "(default: 3; 0 disables tier 4 entirely)"
         ),
+    )
+    p_run.add_argument(
+        "--force-rewipe",
+        action="store_true",
+        help="see `resolve --force-rewipe` -- required to re-run the whole "
+        "pipeline (which re-resolves) against a canonical DB that already "
+        "has resolution state.",
     )
 
     p_review = sub.add_parser("review", help="human-readable review of what the run produced")
@@ -92,6 +111,33 @@ def build_parser() -> argparse.ArgumentParser:
             "gap before it silently reaches voice/panel casting."
         ),
     )
+    p_resolve.add_argument(
+        "--capture-evidence",
+        action="store_true",
+        help=(
+            "Write every scored (mention, candidate) evidence vector to the "
+            "scoring_evidence table, so `echotales ablate` can re-score them "
+            "instead of re-resolving the volume per condition. Off by default: "
+            "RI alone captures tens of thousands of rows."
+        ),
+    )
+    p_resolve.add_argument(
+        "--evidence-run-tag",
+        default="",
+        help="label this capture so several can coexist in one database",
+    )
+    p_resolve.add_argument(
+        "--force-rewipe",
+        action="store_true",
+        help=(
+            "Required to resolve against a canonical DB (registered in "
+            "data/canonical_dbs.json, e.g. data/webview-working/*.db) that "
+            "already has resolution state -- resolve_novel refuses to run "
+            "without it (Core Pipeline Hardening #6) since it deletes and "
+            "rebuilds self_entity from scratch and a canonical DB is the run "
+            "of record. Not needed against a scratch/experimental --db."
+        ),
+    )
 
     p_query = sub.add_parser("query", help="query the graph")
     q_sub = p_query.add_subparsers(dest="query_command", required=True)
@@ -110,6 +156,96 @@ def build_parser() -> argparse.ArgumentParser:
     p_eval = sub.add_parser("eval", help="run the evaluation harness")
     p_eval.add_argument("--novel", required=True)
     p_eval.add_argument("--report", action="store_true")
+    p_eval.add_argument(
+        "--gold",
+        default=None,
+        help=(
+            "annotation file (default: data/gold/<novel>.jsonl). `cmd_eval` has "
+            "read this via getattr() since it was written, but no flag ever set "
+            "it, so the corpus's one alias-type-diverse file "
+            "(reverend-insanity-hardcases.jsonl -- the only source of "
+            "TRANSFERABLE_TITLE / EPITHET / RELATIONAL_DEICTIC records) was "
+            "unreachable from the CLI, and every printed recall@k breakdown was "
+            "100% RIGID_NAME by construction."
+        ),
+    )
+    p_eval.add_argument(
+        "--validate-gold",
+        action="store_true",
+        help=(
+            "structurally validate the annotation file (colliding keys, malformed "
+            "spans, impossible targets, prefix collisions) and exit without scoring"
+        ),
+    )
+
+    p_ablate = sub.add_parser(
+        "ablate",
+        help="re-score the cached evidence under each ablation condition",
+    )
+    p_ablate.add_argument("--novel", required=True)
+    p_ablate.add_argument(
+        "--run-tag",
+        default="",
+        help="which capture to read (matches `resolve --evidence-run-tag`)",
+    )
+    p_ablate.add_argument(
+        "--condition",
+        action="append",
+        default=None,
+        help=(
+            "run only this condition (repeatable). Default: every condition. "
+            "See eval/ablate.py::CONDITIONS, and REQUIRES_RERESOLVE for the "
+            "conditions that cannot honestly be answered from the cache."
+        ),
+    )
+    p_ablate.add_argument("--link-threshold", type=float, default=0.8)
+
+    p_blind = sub.add_parser(
+        "annotate",
+        help="write/read a BLIND annotation file (the reviewer never sees the system's answer)",
+    )
+    p_blind.add_argument("--novel", required=True)
+    p_blind.add_argument(
+        "--tasks", required=True, help="JSONL path: written by --emit, read back otherwise"
+    )
+    p_blind.add_argument(
+        "--emit", action="store_true", help="write tasks instead of reading answers"
+    )
+    p_blind.add_argument("--chapters", default=None, help="range, e.g. 1-5")
+    p_blind.add_argument(
+        "--sample",
+        type=int,
+        default=0,
+        help=(
+            "cap the task count. Applied AFTER shuffling, so a subset is a "
+            "random sample of the volume rather than its first N mentions -- "
+            "early chapters are the easy case and annotating only those would "
+            "overstate agreement."
+        ),
+    )
+    p_blind.add_argument("--seed", type=int, default=20260923)
+    p_blind.add_argument(
+        "--confirmed-by",
+        default="",
+        help="required when reading answers back: the person who adjudicated",
+    )
+    p_blind.add_argument("--out", default=None, help="gold JSONL to write when reading back")
+
+    p_obs = sub.add_parser(
+        "observations",
+        help="record who witnessed each reveal, populating the observer axis",
+    )
+    p_obs.add_argument("--novel", required=True)
+    p_obs.add_argument(
+        "--include-revealed-self",
+        action="store_true",
+        help=(
+            "also record the revealed character as having learned their own "
+            "identity at the reveal. Off by default: they already knew, and "
+            "dating their self-knowledge to when someone *else* found out is "
+            "the Self-vs-Persona confusion non-negotiable #3 exists to prevent."
+        ),
+    )
 
     p_voice = sub.add_parser(
         "voice", help="Phase 8: cast voices and render the script to audio"
@@ -214,6 +350,18 @@ def build_parser() -> argparse.ArgumentParser:
         "burned, so sync is exact at any speed",
     )
     p_render.add_argument("--seed", type=int, default=20260812)
+    p_render.add_argument(
+        "--observer",
+        default="READER",
+        help=(
+            "whose knowledge the panels depict. READER (default) is the "
+            "omniscient-to-the-page view every render before 2026-09-23 "
+            "produced; a character's entity id renders the scene as that "
+            "character believes it, so a concealed identity they never "
+            "witnessed is not drawn under its true name. Populate the axis "
+            "first with `echotales observations --novel <id>`."
+        ),
+    )
     p_render.add_argument(
         "--clips-per-chapter", type=int, default=2,
         help="hard cap on motion-clip cutaways per chapter (default: 2). "

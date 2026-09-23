@@ -17,7 +17,14 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from echotales.core.enums import TargetKind
+from echotales.core.enums import OBSERVER_READER, TargetKind
+from echotales.core.models import StageStatus
+from echotales.core.pipeline_run import (
+    PartialStageFailure,
+    digest_text,
+    ensure_pipeline_run,
+    source_digest_of,
+)
 from echotales.core.state import StateResolver
 from echotales.core.store import Store
 from echotales.pipeline.config import get_settings
@@ -118,10 +125,44 @@ def cmd_run(args: argparse.Namespace) -> int:
     # is a silent quality drop, not a crash.
     client = _build_client(store, no_llm=getattr(args, "no_llm", False))
 
+    # Core Pipeline Hardening #5: `RunReport`/`StageTiming` above are
+    # in-memory only and lost on crash -- this is the actual persisted
+    # record. `source_digest` keys off the EPUB's real bytes (not the novel
+    # id alone), so a re-run against unchanged source text can eventually be
+    # recognised as such; per-stage `input_digest` here is deliberately
+    # coarse (source_digest + stage name + this pipeline_version) rather than
+    # a full per-stage data-dependency hash -- genuine per-chapter incremental
+    # resume is explicitly out of scope for this phase (see the approved
+    # plan's Resumability strategy section), so this only ever answers "did
+    # this stage run at all against this exact source, this run" rather than
+    # "did any upstream input actually change".
+    source_digest = source_digest_of(config.path)
+    pipeline_run = ensure_pipeline_run(store, novel_id=novel, source_digest=source_digest)
+
     def stage(name: str, fn):  # type: ignore[no-untyped-def]
+        """Timing/report wrapper around `jobs.run_stage` -- the one code
+        path this and `jobs.py::run_job` both go through for StageRun
+        bookkeeping, rather than each keeping its own copy."""
+        from echotales.pipeline.jobs import run_stage
+
         started = time.perf_counter()
+        input_digest = digest_text(f"{source_digest}|{name}|v1")
         try:
-            result = fn()
+            # `skip_if_succeeded=False`: `echotales run` has always executed
+            # every phase unconditionally (its coarse digest doesn't depend
+            # on upstream output, only source+stage-name+version); the new
+            # skip-on-matching-digest behaviour is for HTTP-triggered jobs
+            # (`jobs.py::_dispatch`'s finer per-stage digests), not a change
+            # to this command's existing behaviour.
+            result = run_stage(
+                store, run_id=pipeline_run.run_id, stage_name=name,
+                input_digest=input_digest, fn=fn, skip_if_succeeded=False,
+            )
+        except PartialStageFailure as exc:
+            report.failed = name
+            print(report.render())
+            print(f"\npartial failure in {name}: {exc}", file=sys.stderr)
+            raise
         except Exception as exc:
             report.failed = name
             print(report.render())
@@ -135,46 +176,62 @@ def cmd_run(args: argparse.Namespace) -> int:
             print(detail)
         return result
 
-    stage("0 ingest", lambda: ingest_novel(novel, store, chapters=chapters))
-    stage("2 segment", lambda: segment_novel(novel, store))
-    stage("3 mentions", lambda: detect_mentions(novel, store, lexicon=lexicon, client=client))
-    stage(
-        "4 speakers",
-        lambda: attribute_novel(
-            novel,
-            store,
-            client=client,
-            llm_chapter_cutoff=getattr(args, "llm_attribution_chapters", 0.0),
-        ),
-    )
-    stage("5 anaphora", lambda: anaphora_resolve(novel, store))
-    from echotales.pipeline.corrections import CorrectionLog
+    try:
+        stage("0 ingest", lambda: ingest_novel(novel, store, chapters=chapters))
+        stage("2 segment", lambda: segment_novel(novel, store))
+        stage("3 mentions", lambda: detect_mentions(novel, store, lexicon=lexicon, client=client))
+        stage(
+            "4 speakers",
+            lambda: attribute_novel(
+                novel,
+                store,
+                client=client,
+                llm_chapter_cutoff=getattr(args, "llm_attribution_chapters", 0.0),
+            ),
+        )
+        stage("5 anaphora", lambda: anaphora_resolve(novel, store))
+        from echotales.pipeline.corrections import CorrectionLog
 
-    # Keyed by the *database's* stem, not just the novel id: entity ids
-    # (self1, self2, ...) are a fresh in-memory counter every resolve run
-    # (see resolve/runner.py), never resumed from what's on disk, so a run
-    # against a non-canonical --db (a throwaway rerun, an experiment) mints
-    # ids that do not correspond to the same characters in the canonical
-    # data/webview-working/<novel>.db. Auto-flags referencing those ids must
-    # never land in that novel's real corrections log. A canonical run's db
-    # stem already equals the novel id, so this is a no-op there.
-    corrections_log = CorrectionLog(Path("data/corrections") / f"{Path(store.path).stem}.jsonl")
-    stage(
-        "6 resolve",
-        lambda: global_resolve(novel, store, lexicon=lexicon, corrections_log=corrections_log),
-    )
-    # Phase 7 runs last because it reads what every earlier phase produced:
-    # resolved entities, their attributed dialogue, and the NER-derived kind
-    # that says which of them are people at all.
-    stage("7 personas", lambda: build_personas(novel, store, client=client))
-    # 7b reads the personas 7 just minted and needs a model: appearance is
-    # never stated by an honorific the way age is, so there is no
-    # deterministic path to fall back to (see appearance_extract's docstring).
-    if client is not None and not getattr(args, "skip_appearance", False):
-        from echotales.pipeline.resolve.appearance_extract import extract_appearance
+        # Keyed by the *database's* stem, not just the novel id. Entity ids are
+        # now a stable function of (novel_id, first alias surface, first
+        # discourse position) rather than an in-process counter (Core Pipeline
+        # Hardening #9.1, resolve/runner.py::_stable_entity_id) -- a rerun over
+        # *identical* upstream input reproduces the same ids. A scratch --db run
+        # over different or partial chapter data can still legitimately mint
+        # different first-attested positions than the canonical
+        # data/webview-working/<novel>.db for the same character, so this
+        # per-DB-stem keying stays as a safety measure: auto-flags referencing
+        # those ids must never land in that novel's real corrections log. A
+        # canonical run's db stem already equals the novel id, so this is a
+        # no-op there.
+        corrections_log = CorrectionLog(Path("data/corrections") / f"{Path(store.path).stem}.jsonl")
+        stage(
+            "6 resolve",
+            lambda: global_resolve(
+                novel,
+                store,
+                lexicon=lexicon,
+                corrections_log=corrections_log,
+                force_rewipe=getattr(args, "force_rewipe", False),
+            ),
+        )
+        # Phase 7 runs last because it reads what every earlier phase produced:
+        # resolved entities, their attributed dialogue, and the NER-derived kind
+        # that says which of them are people at all.
+        stage("7 personas", lambda: build_personas(novel, store, client=client))
+        # 7b reads the personas 7 just minted and needs a model: appearance is
+        # never stated by an honorific the way age is, so there is no
+        # deterministic path to fall back to (see appearance_extract's docstring).
+        if client is not None and not getattr(args, "skip_appearance", False):
+            from echotales.pipeline.resolve.appearance_extract import extract_appearance
 
-        stage("7b appearance", lambda: extract_appearance(novel, store, client=client))
+            stage("7b appearance", lambda: extract_appearance(novel, store, client=client))
+    except Exception:
+        store.update_pipeline_run_status(pipeline_run.run_id, StageStatus.FAILED)
+        store.close()
+        raise
 
+    store.update_pipeline_run_status(pipeline_run.run_id, StageStatus.SUCCEEDED)
     print(report.render())
     print(f"\ngraph written to: {store.path}")
     print(f"review it with:   uv run echotales review --novel {novel}")
@@ -282,6 +339,81 @@ def cmd_export(args: argparse.Namespace) -> int:
     return 0
 
 
+
+def _recall_at_k_report(
+    store: "Store", novel_id: str, tier_gold: "GoldSet", args: object, *, tier: str
+) -> dict[str, object]:
+    """Retriever recall@k for one gold tier, broken down by alias type.
+
+    Factored out of `cmd_eval` when the SILVER tier arrived, because the block
+    it replaces sat inside `if confirmed.mentions:` and confirmed gold has been
+    empty corpus-wide since EVOLUTION 4.74 -- so the only recall number this
+    tool ever printed was the self-retrieval smoke test, which hardcodes
+    RIGID_NAME and cannot exercise the TRANSFERABLE_TITLE gate at all.
+
+    The retriever is rebuilt here from resolved mentions rather than reused
+    from resolution, and it is given each mention's real surrounding text.
+    Passing `""` as context -- as this code did until 2026-09-24 -- silently
+    zeroes the 0.35 contextual half of `CandidateRetriever.retrieve`'s blend,
+    so the reported number described a lexical-only retriever that no
+    production path uses.
+    """
+    from echotales.pipeline.eval.retriever_eval import (
+        DEFAULT_KS,
+        EvalMode,
+        build_gold_retrieval_cases,
+        evaluate_recall,
+        miss_report,
+    )
+    from echotales.pipeline.resolve.retrieve import CandidateRetriever
+
+    # `Mention` carries no context field, so the surrounding prose is read back
+    # out of the block it was found in -- one fetch per chapter, not per
+    # mention, because RI has ~7,900 of them.
+    block_text: dict[tuple[float, int], str] = {}
+
+    def _context_for(chapter: float, block_index: int) -> str:
+        if (chapter, block_index) not in block_text:
+            chapter_obj = store.get_chapter(novel_id, chapter)
+            for block in chapter_obj.blocks if chapter_obj else []:
+                block_text[(chapter, block.index)] = block.text
+        return block_text.get((chapter, block_index), "")
+
+    retriever = CandidateRetriever()
+    for mention in store.get_mentions(novel_id, resolved_only=True):
+        if not mention.target_id:
+            continue
+        retriever.observe(
+            mention.target_id,
+            mention.text,
+            _context_for(mention.chapter, mention.block_index),
+            mention.chapter,
+            label=mention.text,
+        )
+    cases, unmapped = build_gold_retrieval_cases(tier_gold, store, novel_id)
+    print(
+        f"\n  -- {tier} retriever recall@k "
+        f"({len(cases):,} cases, {unmapped} identities unmapped) --"
+    )
+    if not cases:
+        print("  no gold mention mapped to a system target_id -- recall@k untested.")
+        return {"cases": 0, "unmapped": unmapped}
+    result = evaluate_recall(retriever, cases, mode=EvalMode.GOLD)
+    print("  " + result.summary().replace("\n", "\n  "))
+    if getattr(args, "report", False):
+        print("  " + miss_report(result).replace("\n", "\n  "))
+    return {
+        "cases": len(cases),
+        "unmapped": unmapped,
+        "overall": {str(k): result.recall_at(k) for k in DEFAULT_KS},
+        "by_alias_type": {
+            alias: {str(k): result.recall_at_by_type(alias, k) for k in DEFAULT_KS}
+            for alias in sorted(result.by_alias_type_total)
+        },
+        "by_alias_type_n": dict(result.by_alias_type_total),
+    }
+
+
 def cmd_eval(args: argparse.Namespace) -> int:
     from echotales.pipeline.eval import (
         EvalMode,
@@ -290,8 +422,8 @@ def cmd_eval(args: argparse.Namespace) -> int:
         evaluate_recall,
         miss_report,
     )
-    from echotales.pipeline.eval.coref_score import score_b3
-    from echotales.pipeline.eval.gold import read_gold
+    from echotales.pipeline.eval.coref_score import score_all, score_b3
+    from echotales.pipeline.eval.gold import SILVER_BANNER, read_gold
     from echotales.pipeline.resolve.retrieve import CandidateRetriever
 
     store = _open_store(args)
@@ -301,6 +433,36 @@ def cmd_eval(args: argparse.Namespace) -> int:
             retriever.observe(
                 mention.target_id, mention.text, "", mention.chapter, label=mention.text
             )
+
+    # Escalation rate, printed first because it describes the run being
+    # scored rather than the scoring. Non-negotiable #7 calls this "a reported
+    # metric, not a failure mode" and `architecture.md` Section 7 calls it a
+    # claimed contribution; until 2026-09-23 nothing called the function that
+    # computed it (EVOLUTION 4.79).
+    escalation = store.escalation_summary()
+    print("=== LLM escalation (from the persisted llm_call table) ===")
+    if not escalation["calls"]:
+        print(
+            "  no LLM calls recorded for this database -- a deterministic or "
+            "stub-mode run, or a database whose calls predate llm_call logging."
+        )
+    else:
+        print(
+            f"  calls={escalation['calls']:,}  escalations={escalation['escalations']:,}"
+            f"  rate={escalation['escalation_rate']:.1%}"
+            f"  tokens={escalation['tokens']:,}"
+            f"  avg latency={escalation['avg_latency_ms']:,.0f}ms"
+        )
+        for row in escalation["by_stage"]:
+            calls = row.get("calls") or 0
+            esc = row.get("escalations") or 0
+            print(
+                f"    {row.get('stage', '?'):<22} tier={row.get('tier', '?'):<10}"
+                f" calls={calls:>6,} escalated={esc:>5,}"
+                f" ({(esc / calls if calls else 0):.1%})"
+            )
+
+    metrics: dict[str, object] = {"escalation": escalation}
 
     cases = build_self_retrieval_cases(retriever)
     result = evaluate_recall(retriever, cases, mode=EvalMode.SELF_RETRIEVAL)
@@ -319,6 +481,20 @@ def cmd_eval(args: argparse.Namespace) -> int:
     # blending the two would make that distinction invisible in the printout.
     gold_path = Path(getattr(args, "gold", None) or f"data/gold/{args.novel}.jsonl")
     gold = read_gold(gold_path, novel_id=args.novel)
+
+    # Structural validation before scoring, not after: a file with colliding
+    # keys or spans that do not sit at their offsets produces a number that
+    # looks fine and means nothing, and that number is what gets quoted.
+    if getattr(args, "validate_gold", False):
+        from echotales.pipeline.eval.validate_gold import validate_gold, write_report
+
+        report = validate_gold(gold, str(gold_path), store)
+        print("\n" + report.summary())
+        out = write_report(report, Path("data/eval/validation") / f"{gold_path.stem}.json")
+        print(f"\nvalidation report: {out}")
+        store.close()
+        return 0 if report.ok else 1
+
     print(f"\n=== gold comparison: {gold_path} ===")
     if not gold.mentions:
         print(f"  no gold file at {gold_path} -- skipping. See `echotales export`/eval/draft.py.")
@@ -327,11 +503,111 @@ def cmd_eval(args: argparse.Namespace) -> int:
         draft_score = score_b3(store, args.novel, gold.entities_only)
         print("\n  -- all drafted annotations (not a result, see confirmed-only below) --")
         print("  " + draft_score.summary().replace("\n", "\n  "))
+        # Standard metrics alongside the project's own B-cubed variant. They
+        # answer the same question under the textbook definitions (an unlinked
+        # mention is a singleton, not a penalty), which is the only form
+        # comparable to BookNLP/LitBank/LINK-KG numbers. Printed together so
+        # nobody has to guess which convention a reported figure used.
+        print("\n  -- standard metrics, same mentions, textbook definitions --")
+        for metric in score_all(store, args.novel, gold.entities_only):
+            print("  " + metric.summary())
+        # Recall@1 with a 95% bootstrap interval, so a difference between two
+        # runs can be read as a difference rather than as noise. Computed over
+        # the same mentions `score_all` used.
+        from echotales.pipeline.eval.coref_score import _system_partition
+        from echotales.pipeline.eval.stats import bootstrap_ci, rate
+
+        # `_system_partition`, not a fresh lookup: a gold offset is
+        # chapter-absolute and `mention.offset` is block-local, so keying on
+        # the raw pair silently matches almost nothing. Writing that lookup a
+        # third time is how `score_b3`'s documented "silently matches nothing
+        # past the chapter's first block" bug happened; there is one
+        # translation and this uses it.
+        entities_only = gold.entities_only
+        partition = _system_partition(store, args.novel, entities_only)
+        linked = [bool(partition.get(m.key)) for m in entities_only.mentions]
+        if linked:
+            interval = bootstrap_ci(
+                linked, rate, seed=getattr(args, "global_seed", 20260923)
+            )
+            print(
+                f"\n  gold mentions the system linked at all: "
+                f"{interval.summary()} (n={len(linked):,}, "
+                f"{interval.resamples:,} resamples)"
+            )
+            metrics["linked_share"] = {
+                "point": interval.point,
+                "ci_low": interval.low,
+                "ci_high": interval.high,
+                "n": len(linked),
+                "resamples": interval.resamples,
+            }
+
+        # Held-out conformal coverage: the (1-alpha) guarantee validated on a
+        # LATER chapter range than it was calibrated on. `calibrate_from_gold`
+        # fits and reports on the same samples, which is a fit statistic.
+        from echotales.pipeline.eval.calibrate import held_out_coverage
+
+        coverage = held_out_coverage(args.novel, store, gold.confirmed_only.entities_only)
+        print("\n  -- held-out conformal coverage --")
+        print("  " + coverage.summary().replace("\n", "\n  "))
+        metrics["held_out_coverage"] = {
+            "split_chapter": coverage.split_chapter,
+            "calibration_size": coverage.calibration_size,
+            "test_size": coverage.test_size,
+            "empirical": coverage.empirical_coverage,
+            "target": coverage.target_coverage,
+            "false_links": coverage.false_links,
+        }
+
+        # SILVER tier. The honest middle ground between the draft tier (which
+        # includes records the pipeline drafted from its own output, so it
+        # cannot score that pipeline) and the confirmed tier (empty, and
+        # staying empty until a person adjudicates record by record). These
+        # were drafted by a different model family than the one under test,
+        # reading chapter text rather than the `mention` table.
+        #
+        # This is the tier every number in docs/ is computed from as of
+        # 2026-09-24, and the banner travels with the number precisely because
+        # the retracted B-cubed result (EVOLUTION 4.74) was quoted for six
+        # weeks by people reading a printout rather than the provenance note
+        # beside it.
+        silver = gold.silver_only.entities_only
+        if silver.mentions:
+            print(f"\n  -- SILVER tier ({len(silver.mentions):,} records) --")
+            print(f"  {SILVER_BANNER}")
+            silver_score = score_b3(store, args.novel, silver)
+            print("  " + silver_score.summary().replace("\n", "\n  "))
+            silver_metrics: dict[str, object] = {
+                "banner": SILVER_BANNER,
+                "records": len(silver.mentions),
+                "b3_project_variant": {
+                    "precision": silver_score.precision,
+                    "recall": silver_score.recall,
+                    "f1": silver_score.f1,
+                },
+            }
+            for metric in score_all(store, args.novel, silver):
+                print("  " + metric.summary())
+                silver_metrics[metric.name.lower().replace("-", "_")] = {
+                    "precision": metric.precision,
+                    "recall": metric.recall,
+                    "f1": metric.f1,
+                }
+            silver_metrics["recall_at_k"] = _recall_at_k_report(
+                store, args.novel, silver, args, tier="SILVER"
+            )
+            metrics["silver"] = silver_metrics
+        else:
+            print("\n  -- SILVER tier: 0 records (every record here is circular) --")
+
         confirmed = gold.confirmed_only.entities_only
         if confirmed.mentions:
             confirmed_score = score_b3(store, args.novel, confirmed)
             print("\n  -- confirmed only (this is the reportable result) --")
             print("  " + confirmed_score.summary().replace("\n", "\n  "))
+            for metric in score_all(store, args.novel, confirmed):
+                print("  " + metric.summary())
             if args.report:
                 print(confirmed_score.worst_report())
 
@@ -363,6 +639,23 @@ def cmd_eval(args: argparse.Namespace) -> int:
             )
         if args.report:
             print(draft_score.worst_report())
+
+    # Persist so a reported number traces back to a database, a gold file, a
+    # seed and a commit -- `pipeline_run.py` has had this machinery with zero
+    # callers outside `cmd_run` since it was written.
+    from echotales.pipeline.eval.persist import persist_eval
+
+    try:
+        out_dir = persist_eval(
+            store,
+            args.novel,
+            metrics=metrics,
+            gold_path=str(gold_path),
+            seed=getattr(args, "global_seed", 20260923),
+        )
+        print(f"\nresults persisted: {out_dir}")
+    except (OSError, ValueError) as exc:
+        print(f"\nwarning: could not persist results: {exc}", file=sys.stderr)
 
     store.close()
     return 0
@@ -407,8 +700,115 @@ def cmd_resolve(args: argparse.Namespace) -> int:
             store,
             lexicon=lexicon,
             strict_kind_check=getattr(args, "strict_kind_check", False),
+            force_rewipe=getattr(args, "force_rewipe", False),
+            capture_evidence=getattr(args, "capture_evidence", False),
+            evidence_run_tag=getattr(args, "evidence_run_tag", ""),
         ).summary()
     )
+    store.close()
+    return 0
+
+
+def cmd_annotate(args: argparse.Namespace) -> int:
+    from echotales.pipeline.eval.blind_review import (
+        build_tasks,
+        read_answers,
+        write_tasks,
+    )
+    from echotales.pipeline.eval.gold import write_gold
+
+    store = _open_store(args)
+    try:
+        if args.emit:
+            tasks = build_tasks(
+                store,
+                args.novel,
+                chapters=_chapter_range(args.chapters),
+                sample=args.sample,
+                seed=args.seed,
+            )
+            path = write_tasks(tasks, args.tasks)
+            print(f"{len(tasks):,} blind tasks written to {path}")
+            print(
+                "Fill in `identity` (your own name for the referent) or set "
+                "`not_an_entity` to true.\nLeave a task blank to skip it -- a "
+                "blank is 'nobody looked', never agreement."
+            )
+            return 0
+
+        if not args.confirmed_by:
+            print(
+                "error: --confirmed-by is required when reading answers back. A "
+                "confirmation that names nobody is how 6,952 machine-drafted "
+                "records became 'human' provenance (EVOLUTION 4.74).",
+                file=sys.stderr,
+            )
+            return 2
+        gold = read_answers(
+            args.tasks, novel_id=args.novel, confirmed_by=args.confirmed_by, store=store
+        )
+        out = Path(args.out or f"data/gold/{args.novel}-blind.jsonl")
+        write_gold(gold, out)
+        print(f"{len(gold.mentions):,} confirmed records written to {out}")
+        print(f"  {gold.coverage()}")
+        return 0
+    finally:
+        store.close()
+
+
+def cmd_observations(args: argparse.Namespace) -> int:
+    from echotales.pipeline.resolve.detect_observations import detect_observations
+
+    store = _open_store(args)
+    report = detect_observations(
+        store, args.novel, include_revealed_self=args.include_revealed_self
+    )
+    print(report.summary())
+    if not report.observations_written and not store.count_observations():
+        # Said plainly: an empty observer axis makes every character-observer
+        # query return nothing, which looks identical to "this character knows
+        # nothing" and is the state every shipped database was in before
+        # EVOLUTION 4.80.
+        print(
+            "\nno observations recorded -- every `--observer <character>` query will\n"
+            "return an empty result, which is not the same claim as 'they know less'."
+        )
+    store.close()
+    return 0
+
+
+def cmd_ablate(args: argparse.Namespace) -> int:
+    from echotales.pipeline.eval.ablate import REQUIRES_RERESOLVE, run_ablations
+
+    store = _open_store(args)
+    tag = getattr(args, "run_tag", "")
+    captured = store.count_scoring_evidence(args.novel, tag)
+    if not captured:
+        print(
+            f"no cached evidence for {args.novel!r} (run tag {tag!r}).\n"
+            "Capture it first:\n"
+            f"  echotales --db <db> resolve --novel {args.novel} --capture-evidence",
+            file=sys.stderr,
+        )
+        store.close()
+        return 2
+
+    print(f"=== ablations: {args.novel} ({captured:,} cached evidence vectors) ===")
+    for row in run_ablations(
+        store,
+        args.novel,
+        run_tag=tag,
+        conditions=getattr(args, "condition", None),
+        link_threshold=getattr(args, "link_threshold", 0.8),
+    ):
+        print(row.summary())
+
+    # Printed every run, not buried in a docstring: a reader comparing
+    # conditions needs to know which ones are missing and why, or the absence
+    # reads as "this axis did not matter".
+    print("\nNot answerable from the cache (would need a real re-resolve):")
+    for name, why in REQUIRES_RERESOLVE.items():
+        print(f"  {name}: {why}")
     store.close()
     return 0
 
@@ -633,6 +1033,7 @@ def cmd_render(args: argparse.Namespace) -> int:
                 block_range=block_range,
                 prompt_cache_path=cache_path,
                 version=_version,
+                observer_id=getattr(args, "observer", OBSERVER_READER),
             )
             print(direction_report.summary())
 
@@ -656,6 +1057,7 @@ def cmd_render(args: argparse.Namespace) -> int:
                 block_range=block_range,
                 prompt_cache_path=cache_path,
                 version=_version,
+                observer_id=getattr(args, "observer", OBSERVER_READER),
             )
             import shutil as _shutil
 
@@ -673,6 +1075,7 @@ def cmd_render(args: argparse.Namespace) -> int:
                 client=director_client,
                 max_panels=args.max_panels,
                 block_range=block_range,
+                observer_id=getattr(args, "observer", OBSERVER_READER),
             )
         print(report.summary())
 
@@ -1033,6 +1436,9 @@ _DISPATCH = {
     "resolve": cmd_resolve,
     "query": cmd_query,
     "eval": cmd_eval,
+    "ablate": cmd_ablate,
+    "observations": cmd_observations,
+    "annotate": cmd_annotate,
     "export": cmd_export,
     "webview": cmd_webview,
     "webview-server": cmd_webview_server,

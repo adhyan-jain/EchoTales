@@ -306,6 +306,15 @@ class ResolutionMethod(StrEnum):
 
     GAZETTEER_EXACT = "GAZETTEER_EXACT"
     DECLARATION = "DECLARATION"
+    #: The two remaining hard pre-filter force-links. They are not
+    #: `SCORED` -- they short-circuit the scorer exactly as the two above do
+    #: -- and they are not gazetteer or declaration matches either. They exist
+    #: because `by_method` reported 100% `SCORED` by construction until
+    #: 2026-09-23 (EVOLUTION 4.77), which made the escalation-ladder metric
+    #: unable to say anything, and folding these two into `SCORED` would have
+    #: kept a smaller version of the same lie.
+    NAME_CONTAINMENT = "NAME_CONTAINMENT"
+    RELATIONAL_COPRESENCE = "RELATIONAL_COPRESENCE"
     SCORED = "SCORED"
     LLM_ADJUDICATED = "LLM_ADJUDICATED"
     DEFERRED_RERESOLVED = "DEFERRED_RERESOLVED"

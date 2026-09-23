@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 
+from echotales.core.enums import ResolutionMethod
 from echotales.core.models import SCORED_FEATURES, Candidate, EvidenceVector
 
 #: Hand-initialised weights over the five *scored* features.
@@ -96,10 +97,50 @@ class PrefilterResult:
     verdict: PrefilterVerdict
     reason: str = ""
     confidence: float = 1.0
+    #: Which rung of the escalation ladder actually settled this, recorded
+    #: here rather than inferred by the caller. `ConformalGate.decide` used to
+    #: fold `reason` into a string and throw the distinction away, and
+    #: `runner.py` then stamped `ResolutionMethod.SCORED` on every link
+    #: including the ones that never reached the scorer -- so
+    #: `ResolveReport.by_method` read 100% SCORED by construction.
+    method: ResolutionMethod = ResolutionMethod.SCORED
 
 
-def prefilter(evidence: EvidenceVector) -> PrefilterResult:
+#: The hard pre-filter gates, by the evidence field each keys off. Named so
+#: an ablation can switch one off: `ScoringModel.ablate` can only zero the
+#: five *scored* weights, and the measured reality (EVOLUTION 4.77) is that
+#: on RI the scorer settles **zero** of 880 links -- every one is a
+#: pre-filter, 98.9% of them `gazetteer_exact_match`. Zeroing scored weights
+#: would therefore change nothing at all, which makes "no gazetteer
+#: compounding" -- the paper's central ablation -- inexpressible without this.
+PREFILTER_GATES: tuple[str, ...] = (
+    "co_presence_violation",
+    "temporal_validity",
+    "declaration_match",
+    "gazetteer_exact_match",
+    "name_containment",
+    "relationship_deictic_resolution",
+)
+
+
+def prefilter(
+    evidence: EvidenceVector,
+    *,
+    disabled_prefilters: frozenset[str] = frozenset(),
+) -> PrefilterResult:
     """Decide the cases that do not need a model, before scoring.
+
+    `disabled_prefilters` names gates (from `PREFILTER_GATES`) to skip, for
+    ablation only. A disabled gate falls through to the next one rather than
+    being treated as absent evidence, so disabling `gazetteer_exact_match`
+    means "do not let an exact alias short-circuit" and not "pretend the alias
+    did not match" -- the mention still reaches the scorer with its evidence
+    intact, which is the comparison an ablation is actually asking for.
+
+    Disabling a *blocker* (`co_presence_violation`, `temporal_validity`) is
+    allowed and is a distinct, useful condition: it measures what the hard
+    negatives are buying, which is not the same question as what the hard
+    positives are buying.
 
     Three signals are categorical rather than gradual, and treating them as
     weighted features was actively harmful:
@@ -122,39 +163,43 @@ def prefilter(evidence: EvidenceVector) -> PrefilterResult:
     because a co-present pair that also matches a declaration is far more
     likely to be a detector error than a genuine identity.
     """
-    if evidence.co_presence_violation >= 1.0:
+    if "co_presence_violation" not in disabled_prefilters and evidence.co_presence_violation >= 1.0:
         return PrefilterResult(
             PrefilterVerdict.BLOCK,
             "co-present and distinct: cannot be one persona",
         )
-    if evidence.temporal_validity <= 0.0:
+    if "temporal_validity" not in disabled_prefilters and evidence.temporal_validity <= 0.0:
         return PrefilterResult(
             PrefilterVerdict.BLOCK,
             "candidate's binding is not temporally valid here",
         )
-    if evidence.declaration_match >= 1.0:
+    if "declaration_match" not in disabled_prefilters and evidence.declaration_match >= 1.0:
         return PrefilterResult(
             PrefilterVerdict.FORCE_LINK,
             "explicit identity declaration in context",
             confidence=0.98,
+            method=ResolutionMethod.DECLARATION,
         )
-    if evidence.gazetteer_exact_match >= 1.0:
+    if "gazetteer_exact_match" not in disabled_prefilters and evidence.gazetteer_exact_match >= 1.0:
         return PrefilterResult(
             PrefilterVerdict.FORCE_LINK,
             "exact match on a confirmed alias",
             confidence=0.95,
+            method=ResolutionMethod.GAZETTEER_EXACT,
         )
-    if evidence.name_containment >= NAME_CONTAINMENT_FLOOR:
+    if "name_containment" not in disabled_prefilters and evidence.name_containment >= NAME_CONTAINMENT_FLOOR:
         return PrefilterResult(
             PrefilterVerdict.FORCE_LINK,
             "name contained as a suffix: same personal name, house prefix dropped",
             confidence=0.90,
+            method=ResolutionMethod.NAME_CONTAINMENT,
         )
-    if evidence.relationship_deictic_resolution >= 1.0:
+    if "relationship_deictic_resolution" not in disabled_prefilters and evidence.relationship_deictic_resolution >= 1.0:
         return PrefilterResult(
             PrefilterVerdict.FORCE_LINK,
             "title/relational mention: sole candidate established as present",
             confidence=0.85,
+            method=ResolutionMethod.RELATIONAL_COPRESENCE,
         )
     return PrefilterResult(PrefilterVerdict.SCORE)
 

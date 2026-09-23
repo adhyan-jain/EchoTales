@@ -6,13 +6,21 @@ task the resolver does -- no incremental evidence accumulation, no
 gazetteer, no temporal scoping. This module is that baseline, run for real
 against Reverend Insanity and scored with the project's own B-cubed scorer
 (`eval/coref_score.py`) against the same `data/gold/reverend-insanity.jsonl`
-the resolver is measured against. See EVOLUTION.md's "gold-set comparison
-wired into `eval`" entry for the resolver's own last-measured number on this
-file (precision=100% recall=95% f1=97.4% over 1,816 entity mentions,
-ch1-60) -- that number predates the gold set's confirmation pass, and
-`data/gold/reverend-insanity.jsonl` is 100% human-confirmed as of this
-writing, so it is now both the draft and the confirmed-tier number
-(`GoldSet.confirmed_only` is a no-op on this file today).
+the resolver is measured against.
+
+**This baseline currently has nothing to be scored against, and that is the
+honest state** (2026-09-23, EVOLUTION 4.74). `data/gold/reverend-insanity.jsonl`
+is 0% confirmed: 4,422 of its 7,879 records were drafted by `gold-auto-builder`
+from the pipeline's own `mention` table, and the 3,457 that carried
+`confirmed=True` did so from a 2026-08-12 bulk approval, which `gold.py` no
+longer accepts as gold. The resolver numbers this docstring used to cite
+(precision=100% recall=95% f1=97.4%, ch1-60) came from that same set and are
+retracted -- a 100% precision against a self-drafted partition is an identity,
+not a result. `GoldSet.confirmed_only` is empty on this file today, so the
+confirmed tier below prints nothing until a real per-record pass exists.
+
+A baseline comparison is only meaningful once both sides are scored against
+labels neither of them produced.
 
 **Local Ollama only, zero API spend** -- this reuses `OllamaProvider`
 directly (`pipeline/llm/ollama.py`) rather than `LLMRouter`
@@ -368,10 +376,11 @@ def run_baseline(
 def score(store: Store, novel_id: str, gold: GoldSet, max_chapter: int) -> None:
     sub = GoldSet(novel_id, [m for m in gold.mentions if m.chapter <= max_chapter])
     # Same two-tier report cli.py's `cmd_eval` uses for the real resolver
-    # (draft vs. `GoldSet.confirmed_only`) -- this file is 100% confirmed as
-    # of this writing, so the two happen to coincide, but printing both keeps
-    # this baseline's output shape identical to the resolver's for an
-    # apples-to-apples diff.
+    # (draft vs. `GoldSet.confirmed_only`). The confirmed tier is empty on every
+    # shipped gold file as of 2026-09-23, so only the draft line prints -- and
+    # the draft line is scored against labels the resolver itself drafted, which
+    # makes it a self-agreement figure for the resolver and an unanchored one
+    # for this baseline. Printing both tiers is what keeps that visible.
     for label, g in (
         ("draft (entities_only)", gold.entities_only),
         ("confirmed (entities_only)", gold.confirmed_only.entities_only),

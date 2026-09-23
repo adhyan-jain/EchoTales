@@ -37,6 +37,12 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+from echotales.pipeline.render.contract import RenderBackendCapabilities
+
+if TYPE_CHECKING:
+    from echotales.pipeline.render.panels import PanelImageRequest
 
 log = logging.getLogger(__name__)
 
@@ -109,6 +115,19 @@ class OpenRouterImageEngine:
     #: Retry the same panel with violence abstracted after a refusal.
     soften_on_refusal: bool = True
 
+    @property
+    def capabilities(self) -> RenderBackendCapabilities:
+        # "Reference images are accepted and ignored" (docstring above).
+        return RenderBackendCapabilities(
+            supports_multi_reference=False,
+            max_references=0,
+            supports_img2img=False,
+            supports_lora=False,
+            supports_negative_prompt=False,
+            is_hosted=True,
+            model_family="openrouter",
+        )
+
     def _request(self, prompt: str) -> tuple[bytes | None, str]:
         """`(png bytes, finish_reason)` for one prompt."""
         key = api_key()
@@ -147,9 +166,9 @@ class OpenRouterImageEngine:
         url = images[0]["image_url"]["url"]
         return base64.b64decode(url.split(",", 1)[1]), "stop"
 
-    def generate(self, request: object) -> Path:
-        prompt = request.prompt  # type: ignore[attr-defined]
-        out_path: Path = request.out_path  # type: ignore[attr-defined]
+    def generate(self, request: "PanelImageRequest") -> Path:
+        prompt = request.prompt
+        out_path: Path = request.out_path
 
         data, reason = self._request(prompt)
         if data is None and reason == "content_filter" and self.soften_on_refusal:

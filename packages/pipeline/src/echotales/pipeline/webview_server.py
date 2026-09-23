@@ -49,9 +49,13 @@ import time
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
+from echotales.core.models import Job, StageStatus
 from echotales.core.store import Store
+from echotales.pipeline import paths
+from echotales.pipeline._multipart import MultipartError, parse_single_file
+from echotales.pipeline.jobs import ALLOWED_HTTP_ENGINES, JOB_KINDS, JobQueue, new_job_id
 from echotales.pipeline.corrections import (
     Correction,
     CorrectionLog,
@@ -394,13 +398,41 @@ def _overlay_corrections(payload: dict, corrections: CorrectionLog) -> dict:  # 
 class Registry:
     """Holds one `NovelHandle` per configured source, keyed by novel id."""
 
-    def __init__(self, sources: list[NovelSource], corrections_dir: Path) -> None:
+    def __init__(
+        self,
+        sources: list[NovelSource],
+        corrections_dir: Path,
+        *,
+        projects_dir: Path | None = None,
+    ) -> None:
         self.corrections_dir = corrections_dir
+        #: Product Orchestration track: where `create_project`/the HTTP
+        #: upload route write a user-created project's `.db` file (and,
+        #: per-project, a `<id>/` subdirectory for its uploaded source and
+        #: `sources.toml`). Distinct from `data/canonical_dbs.json`, which
+        #: is the fixed registry of the three research-canonical novels and
+        #: must never be conflated with projects created through this API.
+        self.projects_dir = projects_dir or (corrections_dir.parent / "projects")
         self.handles: dict[str, NovelHandle] = {}
         for src in sources:
             store = Store(src.db_path)
             corrections = CorrectionLog(corrections_dir / f"{src.novel_id}.jsonl")
             self.handles[src.novel_id] = NovelHandle(src, store, corrections)
+        # A project created via `create_project` (or a previous server run)
+        # disappears on restart unless it's discovered here -- `--source`
+        # flags only ever list the explicitly-configured novels.
+        if self.projects_dir.is_dir():
+            for db_path in sorted(self.projects_dir.glob("*.db")):
+                novel_id = db_path.stem
+                if novel_id in self.handles:
+                    continue
+                store = Store(str(db_path))
+                row = store.get_novel(novel_id) or {}
+                source = NovelSource(
+                    db_path=str(db_path), novel_id=novel_id, label=row.get("title", novel_id)
+                )
+                corrections = CorrectionLog(corrections_dir / f"{novel_id}.jsonl")
+                self.handles[novel_id] = NovelHandle(source, store, corrections)
 
     def manifest(self) -> list[dict[str, str]]:
         return [
@@ -414,23 +446,26 @@ class Registry:
             for h in self.handles.values()
         ]
 
-    def create_project(
-        self, novel_id: str, title: str, content_type: str, *, db_dir: Path
-    ) -> NovelHandle:
+    def project_asset_dir(self, novel_id: str) -> Path:
+        """Where an uploaded source EPUB and its per-project `sources.toml`
+        live -- a subdirectory alongside (not inside) the project's `.db`
+        file, so the existing `<projects_dir>/<id>.db` path `create_project`
+        already uses stays unchanged."""
+        return self.projects_dir / novel_id
+
+    def create_project(self, novel_id: str, title: str, content_type: str) -> NovelHandle:
         """Section 7.2: register a new project, content-type included.
 
         This creates the *project* (a store with a `novel` row a reviewer
         can immediately see in the sidebar and dashboard) -- it does not run
-        ingest. Ingest (turning a source text into chapters/blocks) is a
-        separate, heavier pipeline stage (`echotales ingest`) with its own
-        format-specific adapters; wiring a raw-text upload through that
-        stage from an HTTP request is future work, not something to fake
-        here as if it already existed.
+        ingest. Ingest (turning a source text into chapters/blocks) needs a
+        source file first; see `POST /api/projects/<id>/source` and
+        `POST /api/projects/<id>/ingest`.
         """
         if novel_id in self.handles:
             raise ValueError(f"project {novel_id!r} already exists")
-        db_dir.mkdir(parents=True, exist_ok=True)
-        db_path = db_dir / f"{novel_id}.db"
+        self.projects_dir.mkdir(parents=True, exist_ok=True)
+        db_path = self.projects_dir / f"{novel_id}.db"
         store = Store(str(db_path))
         store.add_novel(novel_id, title, "", "generic", content_type=content_type)
         source = NovelSource(db_path=str(db_path), novel_id=novel_id, label=title)
@@ -439,8 +474,139 @@ class Registry:
         self.handles[novel_id] = handle
         return handle
 
+    def is_canonical_id(self, novel_id: str) -> bool:
+        handle = self.handles.get(novel_id)
+        return handle is not None and handle.store.is_canonical
 
-def make_handler(registry: Registry) -> type[BaseHTTPRequestHandler]:
+    def delete_project(self, novel_id: str) -> bool:
+        """Remove a project created through this API. Refuses a canonical
+        novel outright (`data/canonical_dbs.json` is not this registry's to
+        touch) -- a hard-to-reverse action gets a hard guard, not just a
+        confirmation dialog on the client side that a direct API call could
+        skip entirely."""
+        handle = self.handles.get(novel_id)
+        if handle is None:
+            return False
+        if handle.store.is_canonical:
+            raise PermissionError(f"{novel_id!r} is a canonical database -- refusing to delete")
+        db_path = Path(handle.source.db_path)
+        handle.store.close()
+        del self.handles[novel_id]
+        db_path.unlink(missing_ok=True)
+        asset_dir = self.project_asset_dir(novel_id)
+        if asset_dir.is_dir():
+            for child in asset_dir.iterdir():
+                child.unlink()
+            asset_dir.rmdir()
+        return True
+
+
+def _job_json(job: Job) -> dict:  # type: ignore[type-arg]
+    return {
+        "job_id": job.job_id,
+        "novel_id": job.novel_id,
+        "kind": job.kind,
+        "run_id": job.run_id,
+        "status": job.status.value,
+        "created_at": job.created_at,
+        "started_at": job.started_at,
+        "finished_at": job.finished_at,
+        "error_summary": job.error_summary,
+    }
+
+
+def _plan_json(plan) -> dict:  # type: ignore[type-arg, no-untyped-def]
+    """`VisualRenderPlan` is a plain frozen dataclass, not a pydantic
+    `BaseModel` -- no `.model_dump()` to reuse, and `Path` fields need an
+    explicit `str()` to be JSON-serialisable."""
+    return {
+        "novel_id": plan.novel_id,
+        "chapter": plan.chapter,
+        "beat_id": plan.beat_id,
+        "panel_seq": plan.panel_seq,
+        "plan_digest": plan.plan_digest,
+        "state_digest": plan.state_digest,
+        "resolver": plan.resolver,
+        "characters": [
+            {
+                "persona_id": c.persona_id,
+                "self_id": c.self_id,
+                "role": c.role.value,
+                "reference_paths": [str(p) for p in c.reference_paths],
+                "pose_hint": c.pose_hint,
+                "expression_hint": c.expression_hint,
+            }
+            for c in plan.characters
+        ],
+        "environment": {
+            "location": plan.environment.location,
+            "lighting": plan.environment.lighting,
+            "time_of_day": plan.environment.time_of_day,
+            "mood": plan.environment.mood,
+        },
+        "composition": {
+            "shot": plan.composition.shot,
+            "layout": plan.composition.layout,
+            "is_crowd_cut": plan.composition.is_crowd_cut,
+        },
+    }
+
+
+def _project_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
+    novel_row = handle.store.get_novel(handle.source.novel_id) or {}
+    chapters = handle.store.chapter_numbers(handle.source.novel_id)
+    jobs = handle.store.list_jobs(handle.source.novel_id)
+    return {
+        "id": handle.source.novel_id,
+        "title": handle.source.label,
+        "content_type": novel_row.get("content_type", "novel"),
+        "source_uploaded": bool(novel_row.get("source_path")),
+        "ingested": bool(chapters),
+        "chapter_count": len(chapters),
+        "job_count": len(jobs),
+        "last_job": _job_json(jobs[0]) if jobs else None,
+    }
+
+
+#: `pipeline/paths.py`'s `data/<CODE>/<kind>/ch<N>/v<M>/` layout is already
+#: the source of truth for what's been rendered -- no separate output
+#: metadata table needed, just a filesystem walk (CLAUDE.md's "Versioned
+#: output directories, and name them" convention).
+_OUTPUT_KINDS = ("panels", "video", "audio", "references")
+
+
+def _list_output(novel_id: str) -> dict:  # type: ignore[type-arg]
+    root = paths.novel_root(novel_id)
+    kinds: dict[str, list[dict]] = {}  # type: ignore[type-arg]
+    for kind in _OUTPUT_KINDS:
+        kind_dir = root / kind
+        entries: list[dict] = []  # type: ignore[type-arg]
+        if kind_dir.is_dir():
+            for entry in sorted(kind_dir.rglob("*")):
+                if not entry.is_file():
+                    continue
+                rel = entry.relative_to(root)
+                stat = entry.stat()
+                entries.append(
+                    {"path": str(rel), "size": stat.st_size, "mtime": stat.st_mtime}
+                )
+        kinds[kind] = entries
+    return {"novel_id": novel_id, "root": str(root), "kinds": kinds}
+
+
+def _resolve_output_path(novel_id: str, rel: str) -> Path:
+    """Resolve a caller-supplied relative path against this novel's output
+    root, refusing anything that escapes it -- the one route in this track
+    that serves a file at a path named by the request, so it gets the
+    strictest check (approved plan, Section 8)."""
+    root = paths.novel_root(novel_id).resolve()
+    candidate = (root / rel).resolve()
+    if candidate != root and root not in candidate.parents:
+        raise ValueError(f"path {rel!r} escapes the novel's output directory")
+    return candidate
+
+
+def make_handler(registry: Registry, job_queue: JobQueue) -> type[BaseHTTPRequestHandler]:
     password = os.environ.get(_AUTH_ENV_VAR)
     sessions = SessionStore()
 
@@ -459,11 +625,41 @@ def make_handler(registry: Registry) -> type[BaseHTTPRequestHandler]:
             self.end_headers()
             self.wfile.write(data)
 
-        def _read_json(self) -> dict:  # type: ignore[type-arg]
+        def _read_body_bytes(self) -> bytes:
             length = int(self.headers.get("Content-Length", 0))
-            if length == 0:
-                return {}
-            return json.loads(self.rfile.read(length))
+            return self.rfile.read(length) if length else b""
+
+        def _read_json(self) -> dict:  # type: ignore[type-arg]
+            body = self._read_body_bytes()
+            return json.loads(body) if body else {}
+
+        def _enqueue(self, handle: NovelHandle, kind: str, params: dict) -> dict:  # type: ignore[type-arg]
+            job = Job(
+                job_id=new_job_id(handle.source.novel_id, kind),
+                novel_id=handle.source.novel_id,
+                kind=kind,
+                params_json=json.dumps(params),
+                created_at=time.time(),
+            )
+            handle.store.add_job(job)
+            job_queue.submit(
+                job_id=job.job_id, novel_id=job.novel_id,
+                db_path=handle.source.db_path, params=params,
+            )
+            handle.invalidate()
+            return {"job_id": job.job_id, "kind": kind, "status": job.status.value}
+
+        def _serve_file(self, path: Path) -> None:
+            import mimetypes
+
+            content_type = mimetypes.guess_type(str(path))[0] or "application/octet-stream"
+            data = path.read_bytes()
+            self.send_response(200)
+            self._cors()
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
 
         def _authorized(self) -> bool:
             """No password configured means auth is off (unchanged default
@@ -510,6 +706,131 @@ def make_handler(registry: Registry) -> type[BaseHTTPRequestHandler]:
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
                     return self._json(200, build_character_dashboard(handle.store, parts[2]))
+
+                # --- Product Orchestration track ---------------------------
+
+                if parts == ["api", "projects"]:
+                    return self._json(200, [_project_status(h) for h in registry.handles.values()])
+
+                if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "jobs":
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    return self._json(
+                        200, [_job_json(j) for j in handle.store.list_jobs(parts[2])]
+                    )
+
+                if (
+                    len(parts) == 5 and parts[:2] == ["api", "projects"] and parts[3] == "jobs"
+                ):
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    job = handle.store.get_job(parts[4])
+                    if job is None:
+                        return self._json(404, {"error": f"unknown job {parts[4]!r}"})
+                    run_rows = handle.store.list_stage_runs(job.run_id) if job.run_id else []
+                    return self._json(
+                        200,
+                        {
+                            **_job_json(job),
+                            "stage_runs": [
+                                {
+                                    "stage_run_id": r.stage_run_id,
+                                    "stage_name": r.stage_name,
+                                    "status": r.status.value,
+                                    "started_at": r.started_at,
+                                    "finished_at": r.finished_at,
+                                    "error_summary": r.error_summary,
+                                }
+                                for r in run_rows
+                            ],
+                        },
+                    )
+
+                if (
+                    len(parts) == 7 and parts[:2] == ["api", "novels"]
+                    and parts[3] == "characters" and parts[5] == "reference"
+                    and parts[6] == "candidates"
+                ):
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    from echotales.pipeline.persona import refimg
+
+                    candidates = refimg.list_candidates(handle.store, parts[2], parts[4])
+                    return self._json(
+                        200,
+                        [
+                            {
+                                "id": c.id,
+                                "source_url": c.source_url,
+                                "title": c.title,
+                                "selected": c.selected,
+                                "user_uploaded": c.user_uploaded,
+                                "backend": c.backend,
+                            }
+                            for c in candidates
+                        ],
+                    )
+
+                if len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3] == "render" and parts[4] == "preview":
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    query = parse_qs(urlparse(self.path).query)
+
+                    def _one(key: str, default: str = "") -> str:
+                        return query.get(key, [default])[0]
+
+                    try:
+                        chapter = float(_one("chapter"))
+                        panel_seq = int(_one("panel_seq", "0"))
+                    except ValueError:
+                        return self._json(400, {"error": "chapter and panel_seq must be numeric"})
+                    beat_id = _one("beat_id")
+                    cast_self_ids = query.get("cast_self_id", [])
+                    if not beat_id or not cast_self_ids:
+                        return self._json(
+                            400, {"error": "beat_id and at least one cast_self_id are required"}
+                        )
+                    from echotales.pipeline.render.plan_builder import build_render_plan
+
+                    plan = build_render_plan(
+                        handle.store, parts[2],
+                        chapter=chapter, beat_id=beat_id, panel_seq=panel_seq,
+                        cast_self_ids=cast_self_ids,
+                        lead_self_id=_one("lead_self_id") or None,
+                        location=_one("location"), lighting=_one("lighting"),
+                        time_of_day=_one("time_of_day"), mood=_one("mood"),
+                        shot=_one("shot"), layout=_one("layout"),
+                    )
+                    return self._json(200, _plan_json(plan))
+
+                if len(parts) == 4 and parts[:2] == ["api", "novels"] and parts[3] == "output":
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    return self._json(200, _list_output(parts[2]))
+
+                if (
+                    len(parts) == 5 and parts[:2] == ["api", "novels"]
+                    and parts[3] == "output" and parts[4] == "file"
+                ):
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    query = parse_qs(urlparse(self.path).query)
+                    rel = query.get("path", [""])[0]
+                    if not rel:
+                        return self._json(400, {"error": "path is required"})
+                    try:
+                        file_path = _resolve_output_path(parts[2], rel)
+                    except ValueError as exc:
+                        return self._json(400, {"error": str(exc)})
+                    if not file_path.is_file():
+                        return self._json(404, {"error": "no such output file"})
+                    return self._serve_file(file_path)
             except Exception as exc:
                 log.exception("GET %s failed", self.path)
                 return self._json(500, {"error": str(exc)})
@@ -543,10 +864,7 @@ def make_handler(registry: Registry) -> type[BaseHTTPRequestHandler]:
                     if content_type not in ("novel", "short_story", "general_text", "roleplay"):
                         return self._json(400, {"error": f"unknown content_type {content_type!r}"})
                     try:
-                        handle = registry.create_project(
-                            novel_id, title, content_type,
-                            db_dir=registry.corrections_dir.parent / "projects",
-                        )
+                        handle = registry.create_project(novel_id, title, content_type)
                     except ValueError as exc:
                         return self._json(409, {"error": str(exc)})
                     return self._json(
@@ -647,6 +965,166 @@ def make_handler(registry: Registry) -> type[BaseHTTPRequestHandler]:
                     result = apply_pending(handle.store, handle.corrections)
                     handle.invalidate()
                     return self._json(200, result)
+
+                # --- Product Orchestration track ---------------------------
+
+                if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "source":
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    content_type_header = self.headers.get("Content-Type", "")
+                    if "multipart/form-data" not in content_type_header:
+                        return self._json(400, {"error": "expected multipart/form-data upload"})
+                    try:
+                        filename, data = parse_single_file(
+                            content_type_header, self._read_body_bytes()
+                        )
+                    except MultipartError as exc:
+                        return self._json(400, {"error": str(exc)})
+                    if not filename.lower().endswith(".epub"):
+                        # CLAUDE.md: "EPUB only, never PDF" -- PDF loses
+                        # italics, an independent inner-monologue signal.
+                        return self._json(400, {"error": "only .epub sources are accepted"})
+                    asset_dir = registry.project_asset_dir(parts[2])
+                    asset_dir.mkdir(parents=True, exist_ok=True)
+                    epub_path = asset_dir / "source.epub"
+                    epub_path.write_bytes(data)
+                    from echotales.pipeline.ingest.epub import Epub
+
+                    try:
+                        Epub(epub_path).close()
+                    except Exception as exc:
+                        epub_path.unlink(missing_ok=True)
+                        return self._json(400, {"error": f"not a valid EPUB: {exc}"})
+                    sources_path = asset_dir / "sources.toml"
+                    sources_path.write_text(
+                        "[[novel]]\n"
+                        f'id = "{parts[2]}"\n'
+                        f'title = "{handle.source.label}"\n'
+                        f'path = "{epub_path}"\n'
+                        'adapter = "lightnovelworld"\n'
+                    )
+                    novel_row = handle.store.get_novel(parts[2]) or {}
+                    handle.store.add_novel(
+                        parts[2], handle.source.label, str(epub_path), "lightnovelworld",
+                        content_type=novel_row.get("content_type", "novel"),
+                    )
+                    handle.invalidate()
+                    return self._json(
+                        201, {"filename": filename, "path": str(epub_path), "bytes": len(data)}
+                    )
+
+                if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] in JOB_KINDS:
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    body = self._read_json()
+                    kind = parts[3]
+                    params = dict(body)
+                    if kind in ("render", "reference_gen") and "engine" in params:
+                        if params["engine"] not in ALLOWED_HTTP_ENGINES:
+                            return self._json(
+                                400,
+                                {
+                                    "error": f"engine {params['engine']!r} is not allowed over "
+                                    f"HTTP; allowed: {sorted(ALLOWED_HTTP_ENGINES)}"
+                                },
+                            )
+                    if "sources_path" not in params:
+                        default_sources = registry.project_asset_dir(parts[2]) / "sources.toml"
+                        if default_sources.is_file():
+                            params["sources_path"] = str(default_sources)
+                    return self._json(202, self._enqueue(handle, kind, params))
+
+                if (
+                    len(parts) == 5 and parts[:2] == ["api", "novels"]
+                    and parts[3] == "render" and parts[4] == "generate"
+                ):
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    body = self._read_json()
+                    engine_name = str(body.get("engine", "stub"))
+                    if engine_name not in ALLOWED_HTTP_ENGINES:
+                        return self._json(
+                            400,
+                            {
+                                "error": f"engine {engine_name!r} is not allowed over HTTP; "
+                                f"allowed: {sorted(ALLOWED_HTTP_ENGINES)}"
+                            },
+                        )
+                    return self._json(202, self._enqueue(handle, "render", dict(body)))
+
+                if (
+                    len(parts) == 5 and parts[:2] == ["api", "novels"]
+                    and parts[3] == "reference" and parts[4] == "generate"
+                ):
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    body = self._read_json()
+                    engine_name = str(body.get("engine", "stub"))
+                    if engine_name not in ALLOWED_HTTP_ENGINES:
+                        return self._json(
+                            400,
+                            {
+                                "error": f"engine {engine_name!r} is not allowed over HTTP; "
+                                f"allowed: {sorted(ALLOWED_HTTP_ENGINES)}"
+                            },
+                        )
+                    return self._json(202, self._enqueue(handle, "reference_gen", dict(body)))
+
+                if (
+                    len(parts) == 5 and parts[:2] == ["api", "projects"]
+                    and parts[3] == "reference" and parts[4] == "search"
+                ):
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    body = self._read_json()
+                    params = {"self_ids": body.get("self_ids")} if body.get("self_ids") else {}
+                    return self._json(202, self._enqueue(handle, "refimg_search", params))
+
+                if (
+                    len(parts) == 7 and parts[:2] == ["api", "novels"]
+                    and parts[3] == "characters" and parts[5] == "reference"
+                    and parts[6] == "search"
+                ):
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    return self._json(
+                        202, self._enqueue(handle, "refimg_search", {"self_ids": [parts[4]]})
+                    )
+
+                if (
+                    len(parts) == 7 and parts[:2] == ["api", "novels"]
+                    and parts[3] == "characters" and parts[5] == "reference"
+                    and parts[6] == "upload"
+                ):
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    content_type_header = self.headers.get("Content-Type", "")
+                    if "multipart/form-data" not in content_type_header:
+                        return self._json(400, {"error": "expected multipart/form-data upload"})
+                    try:
+                        filename, data = parse_single_file(
+                            content_type_header, self._read_body_bytes()
+                        )
+                    except MultipartError as exc:
+                        return self._json(400, {"error": str(exc)})
+                    asset_dir = registry.project_asset_dir(parts[2]) / "reference_uploads"
+                    asset_dir.mkdir(parents=True, exist_ok=True)
+                    image_path = asset_dir / f"{parts[4]}_{filename}"
+                    image_path.write_bytes(data)
+                    from echotales.pipeline.persona import refimg
+
+                    candidate = refimg.register_user_image(
+                        handle.store, parts[2], parts[4], str(image_path), actor="reviewer",
+                    )
+                    handle.invalidate()
+                    return self._json(201, {"id": candidate.id, "source_url": candidate.source_url})
             except Exception as exc:
                 log.exception("POST %s failed", self.path)
                 return self._json(500, {"error": str(exc)})
@@ -669,6 +1147,13 @@ def make_handler(registry: Registry) -> type[BaseHTTPRequestHandler]:
                     if removed:
                         handle.invalidate()
                     return self._json(200, {"removed": removed})
+
+                if len(parts) == 3 and parts[:2] == ["api", "projects"]:
+                    try:
+                        removed = registry.delete_project(parts[2])
+                    except PermissionError as exc:
+                        return self._json(403, {"error": str(exc)})
+                    return self._json(200, {"removed": removed})
             except Exception as exc:
                 log.exception("DELETE %s failed", self.path)
                 return self._json(500, {"error": str(exc)})
@@ -687,7 +1172,13 @@ def serve(sources: list[NovelSource], *, host: str = "127.0.0.1", port: int = 87
     # need a connection per request thread (or a lock) to fix that; neither is
     # worth it for a tool with exactly one user clicking around at a time.
     registry = Registry(sources, corrections_dir=Path("data/corrections"))
-    handler = make_handler(registry)
+    # One worker thread, strictly sequential job execution process-wide --
+    # see jobs.py's module docstring for why (the same GPU-sharing
+    # constraint `config.json::render.direction_first` already establishes
+    # for local-model stages, generalized here).
+    job_queue = JobQueue()
+    job_queue.start()
+    handler = make_handler(registry, job_queue)
     httpd = HTTPServer((host, port), handler)
     print(f"webview backend on http://{host}:{port}  (novels: {[s.novel_id for s in sources]})")
     try:

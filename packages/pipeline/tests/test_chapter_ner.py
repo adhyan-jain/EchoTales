@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import json
+from types import SimpleNamespace
 
 import pytest
 from echotales.pipeline.ingest.normalize import display_label, name_containment
+from echotales.pipeline.mentions import ner
 from echotales.pipeline.mentions.chapter_ner import (
     NameCache,
     VocabularyDetector,
@@ -13,7 +15,17 @@ from echotales.pipeline.mentions.chapter_ner import (
     extract_chapter_names,
     plausible_name,
 )
-from echotales.pipeline.mentions.ner import MentionDetector, NerSpan
+from echotales.pipeline.mentions.ner import (
+    DEFAULT_LABELS,
+    NER_WINDOW_CHARS,
+    NER_WINDOW_OVERLAP,
+    MentionDetector,
+    NerEntity,
+    NerSpan,
+    QwenNerDetector,
+    _outranks,
+    _windows,
+)
 
 
 class FakeDetector(MentionDetector):
@@ -147,6 +159,27 @@ class TestNameCache:
         extract_chapter_names(detector, "re-ingested", known_names=[], cache=cache)
         assert detector.calls == 2
 
+    def test_a_changed_ner_pass_invalidates(self, tmp_path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+        """Without this the 2026-09-23 windowing fix is inert on any novel
+        with a cache file: same text, same model, so the truncated vocabulary
+        is replayed and the measurement run reports no change."""
+        path = tmp_path / "cache.json"
+        detector = FakeDetector([("Fang Yuan", "character")])
+        cache = NameCache(path, model="qwen2.5:7b")
+        extract_chapter_names(detector, "chapter text", known_names=[], cache=cache)
+        cache.flush()
+
+        monkeypatch.setattr(ner, "NER_WINDOW_CHARS", 3_000)
+        reloaded = NameCache(path, model="qwen2.5:7b")
+        result = extract_chapter_names(
+            detector, "chapter text", known_names=[], cache=reloaded
+        )
+        assert detector.calls == 2
+        assert not result.cached
+
+    def test_the_fingerprint_is_stable_across_calls(self) -> None:
+        assert ner.ner_pass_fingerprint() == ner.ner_pass_fingerprint()
+
     def test_corrupt_cache_file_is_survivable(self, tmp_path) -> None:  # type: ignore[no-untyped-def]
         path = tmp_path / "cache.json"
         path.write_text("{not json")
@@ -243,3 +276,126 @@ class TestDisplayLabel:
 
     def test_empty_input(self) -> None:
         assert display_label([]) == ""
+
+
+class RecordingClient:
+    """Stands in for `ModelClient`, recording every passage it was sent.
+
+    Returns whichever entities the scripted map says are visible in the
+    passage it actually received — so a window the detector never sent is a
+    window whose entities never come back, which is exactly the failure this
+    class exists to detect.
+    """
+
+    def __init__(self, visible: dict[str, str], *, confidence: float = 0.8) -> None:
+        self.visible = visible
+        self.confidence = confidence
+        self.passages: list[str] = []
+
+    def complete(self, task, prompt, schema, **kwargs):  # type: ignore[no-untyped-def]
+        passage = prompt.split("Passage:\n", 1)[1].rsplit("\n\n", 2)[0]
+        self.passages.append(passage)
+        value = schema(
+            entities=[
+                {"text": surface, "label": label}
+                for surface, label in self.visible.items()
+                if surface in passage
+            ],
+            confidence=self.confidence,
+        )
+        return SimpleNamespace(value=value)
+
+
+class TestNerWindows:
+    def test_short_text_is_one_window(self) -> None:
+        assert _windows("a chapter", size=100, overlap=10) == ["a chapter"]
+
+    def test_empty_text_produces_no_call(self) -> None:
+        assert _windows("") == []
+
+    def test_windows_cover_every_character(self) -> None:
+        """The property the old `text[:6000]` violated: no offset is invisible."""
+        text = "".join(chr(ord("a") + i % 26) for i in range(20_000))
+        windows = _windows(text)
+        stride = NER_WINDOW_CHARS - NER_WINDOW_OVERLAP
+        assert all(len(w) <= NER_WINDOW_CHARS for w in windows)
+        for offset in range(len(text)):
+            assert any(
+                i * stride <= offset < i * stride + len(w)
+                for i, w in enumerate(windows)
+            ), offset
+
+    def test_consecutive_windows_overlap(self) -> None:
+        text = "x" * 15_000
+        windows = _windows(text, size=1_000, overlap=200)
+        assert len(windows) > 1
+        # A name on a seam is whole in the next window because of this.
+        assert all(len(w) <= 1_000 for w in windows)
+        assert len(windows) == 19
+
+    def test_a_pathological_overlap_is_refused_loudly(self) -> None:
+        """A zero/negative stride, clamped to 1, would turn one chapter into
+        thousands of calls. This file exists because a cost decision was made
+        invisibly once already."""
+        with pytest.raises(ValueError, match="overlap"):
+            _windows("y" * 5_000, size=100, overlap=500)
+
+
+class TestQwenDetectorCoversTheWholeChapter:
+    def test_an_entity_past_6000_chars_is_found(self) -> None:
+        """The 2026-09-23 defect: RI ch1 names Bai Ning Bing first at offset
+        6746 of 13,100 chars, and she had zero mentions until chapter 108."""
+        filler = "The village was quiet. " * 400  # ~9,200 chars
+        text = filler + "Bai Ning Bing stepped out of the snow. " + filler
+        offset = text.index("Bai Ning Bing")
+        assert offset > 6_000, "the fixture must actually exercise the old cut"
+
+        client = RecordingClient({"Bai Ning Bing": "character"})
+        spans = QwenNerDetector(client, novel_id="ri").detect_with_context(text, [])
+
+        assert [s.start for s in spans] == [offset]
+        assert len(client.passages) > 1
+
+    def test_the_same_span_seen_twice_is_emitted_once(self) -> None:
+        """A name in the overlap region is returned by two windows; the union
+        must not double-count it into a false prominence signal."""
+        text = "a" * 5_800 + " Fang Yuan walked. " + "b" * 5_800
+        client = RecordingClient({"Fang Yuan": "character"})
+        spans = QwenNerDetector(client).detect_with_context(text, [])
+        assert len(client.passages) >= 2
+        assert len(spans) == 1
+
+    def test_character_wins_a_tied_label_disagreement(self) -> None:
+        """Window order must not decide whether an entity is a person."""
+        location_first = NerSpan("Gu Yue", 0, 6, "location", 0.8)
+        character = NerSpan("Gu Yue", 0, 6, "character", 0.8)
+        assert _outranks(character, location_first)
+        assert not _outranks(location_first, character)
+
+    def test_higher_confidence_wins_regardless_of_label(self) -> None:
+        assert _outranks(
+            NerSpan("Gu Yue", 0, 6, "location", 0.9),
+            NerSpan("Gu Yue", 0, 6, "character", 0.8),
+        )
+
+    def test_spans_come_back_sorted_by_offset(self) -> None:
+        text = "Fang Yuan spoke. " + "c" * 8_000 + " Gu Yue Bo answered."
+        client = RecordingClient({"Fang Yuan": "character", "Gu Yue Bo": "character"})
+        spans = QwenNerDetector(client).detect_with_context(text, [])
+        assert [s.start for s in spans] == sorted(s.start for s in spans)
+        assert [s.text for s in spans] == ["Fang Yuan", "Gu Yue Bo"]
+
+
+class TestItemLabel:
+    def test_item_survives_the_keep_list(self) -> None:
+        """`resolve/runner.py::_KIND_BY_LABEL` has mapped "item" to
+        TargetKind.ITEM all along, but this filter dropped it before it could
+        ever arrive — so a named Gu was typed as a person."""
+        detector = FakeDetector([("Spring Autumn Cicada", "item")])
+        names = extract_chapter_names(detector, "text", known_names=[])
+        assert names.surfaces == {"Spring Autumn Cicada": "item"}
+        assert names.rejected == 0
+
+    def test_item_is_offered_in_the_schema(self) -> None:
+        assert "item" in NerEntity.model_fields["label"].description
+        assert "item" in DEFAULT_LABELS

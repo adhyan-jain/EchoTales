@@ -144,6 +144,33 @@ class TestRenderPanels:
         assert report.skipped_cached == 1
         assert report.panels == 1
 
+    def test_seed_change_forces_new_generation_not_stale_reuse(self, tmp_path) -> None:
+        """Visual Rendering Track Phase 1b: the pre-Phase-1 cache was pure
+        `image_path.exists()` -- swapping seed (or engine/checkpoint/steps)
+        and re-rendering into the same directory silently served the
+        previous config's image. `compute_render_cache_key` includes seed,
+        so a second run with a different seed must regenerate, not reuse."""
+        store = _seeded_store(tmp_path)
+        out_dir = tmp_path / "panels"
+        render_panels("t", store, out_dir=out_dir, seed=1)
+        report = render_panels("t", store, out_dir=out_dir, seed=2)
+        assert report.skipped_cached == 0
+        assert report.panels == 1
+
+    def test_legacy_directory_without_cache_index_is_a_safe_miss(self, tmp_path) -> None:
+        """A directory holding images from before Phase 1b/1c (no
+        `cache_index.json`) carries no record of what config produced them
+        -- treated as a miss (regenerate, start recording keys from here on)
+        rather than a silent, unproven hit, which is the exact failure this
+        phase exists to close. Must not crash on the missing index either."""
+        store = _seeded_store(tmp_path)
+        out_dir = tmp_path / "panels"
+        render_panels("t", store, out_dir=out_dir)
+        (out_dir / "ch1" / "cache_index.json").unlink()
+        report = render_panels("t", store, out_dir=out_dir)
+        assert report.skipped_cached == 0
+        assert report.panels == 1
+
     def test_unknown_engine_raises_rather_than_silently_stubbing(self) -> None:
         with pytest.raises(ValueError, match="unknown image engine"):
             get_engine("nope")

@@ -14,6 +14,7 @@ event log instead.
 
 from __future__ import annotations
 
+import hashlib
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -32,13 +33,15 @@ from echotales.core.interval import FuzzyInterval
 from echotales.core.models import (
     AliasBinding,
     Candidate,
+    DiscoursePosition,
     Mention,
     ResolutionEvent,
     ResolutionOutcome,
     Self,
 )
+from echotales.core.pipeline_run import PartialStageFailure
 from echotales.core.readset import ReadSetRecorder, entity_ref
-from echotales.core.store import Store
+from echotales.core.store import Store, normalize_alias
 from echotales.pipeline.config import Settings, get_settings
 from echotales.pipeline.corrections import Correction, CorrectionLog, CorrectionType
 from echotales.pipeline.ingest.normalize import display_label, name_tokens
@@ -74,6 +77,28 @@ _NON_FOUNDING_ALIAS_TYPES = frozenset({AliasType.RELATIONAL_DEICTIC, AliasType.T
 _KIND_UNKNOWN_WARN_THRESHOLD = 0.30
 
 
+def _stable_entity_id(novel_id: str, label: str, position: DiscoursePosition) -> str:
+    """Deterministic replacement for an in-process counter (Core Pipeline
+    Hardening #9.1).
+
+    Derived from `(novel_id, first alias surface, first discourse
+    position)` -- a rerun over unchanged upstream input reprocesses mentions
+    in the same discourse order and founds each entity on the same first
+    mention, so this mints the same id every time. The prior counter
+    (`self1`, `self2`, ...) did not: any two runs could silently permute
+    which entity got which id, so a gold set or corrections log that
+    hard-coded a self_id went stale on the next resolve without warning
+    (HANDOFF's `generate_gold.py` note; `commands.py:153-161`'s own
+    comment on the same problem). Deliberately not a DB auto-increment id,
+    per the project's explicit rule that a row id must never stand in for
+    semantic identity.
+    """
+    normalized = normalize_alias(label)
+    key = f"{normalized}|{position.chapter}|{position.offset}"
+    digest = hashlib.sha256(key.encode("utf-8")).hexdigest()[:10]
+    return f"{novel_id}:self:{digest}"
+
+
 @dataclass(slots=True)
 class ResolveReport:
     novel_id: str
@@ -95,6 +120,12 @@ class ResolveReport:
     #: real resolved entities, they just must never be cast a voice.
     by_kind: dict[str, int] = field(default_factory=dict)
     by_method: dict[str, int] = field(default_factory=dict)
+    #: The resolution half of the gazetteer compounding curve (non-negotiable
+    #: #8): window index -> method counts for the links made in that window.
+    #: Only meaningful since the methods stopped being hardcoded to SCORED
+    #: (EVOLUTION 4.77) -- before that every window read 100% SCORED and the
+    #: curve was a flat line by construction.
+    link_method_by_window: dict[int, dict[str, int]] = field(default_factory=dict)
     detector_hits: dict[str, int] = field(default_factory=dict)
     events: int = 0
     #: Section 2.2: entities whose raw `self_entity.kind` column is still
@@ -104,10 +135,29 @@ class ResolveReport:
     #: `by_kind` (which only counts entities *positively* typed non-person):
     #: a novel can have zero `by_kind` entries and still be mostly untyped.
     kind_unknown: int = 0
+    #: (mention, candidate) pairs written to `scoring_evidence`. Zero unless
+    #: the run opted into `capture_evidence`.
+    evidence_captured: int = 0
 
     @property
     def defer_rate(self) -> float:
         return self.deferred / self.groups if self.groups else 0.0
+
+    def gazetteer_hit_rate_by_window(self) -> list[tuple[int, float, int]]:
+        """Share of each window's links settled by an exact gazetteer match.
+
+        Returned with the window's link count, never the bare rate: an early
+        window with four links at 100% is not evidence of compounding, and a
+        rate shown without its denominator invites reading it as though it
+        were.
+        """
+        out: list[tuple[int, float, int]] = []
+        for window in sorted(self.link_method_by_window):
+            counts = self.link_method_by_window[window]
+            total = sum(counts.values())
+            hits = counts.get(ResolutionMethod.GAZETTEER_EXACT.value, 0)
+            out.append((window, hits / total if total else 0.0, total))
+        return out
 
     @property
     def kind_unknown_fraction(self) -> float:
@@ -119,6 +169,14 @@ class ResolveReport:
             ", ".join(f"{k}={v}" for k, v in sorted(self.detector_hits.items())) or "none"
         )
         non_person = ", ".join(f"{k}={v}" for k, v in sorted(self.by_kind.items())) or "none"
+        curve = self.gazetteer_hit_rate_by_window()
+        compounding = (
+            "  gazetteer share of links by window: "
+            + " ".join(f"w{w}={rate:.0%}(n={n})" for w, rate, n in curve)
+            + "\n"
+            if curve
+            else ""
+        )
         kind_line = (
             f"  kind coverage: {self.entities - self.kind_unknown:,}/{self.entities:,} typed "
             f"({self.kind_unknown:,} unknown, {self.kind_unknown_fraction:.0%}) "
@@ -135,6 +193,7 @@ class ResolveReport:
             f"  methods: {methods}\n"
             f"  detectors: {detectors}\n"
             f"  contradictions: {self.contradictions} -> {self.splits} split(s)\n"
+            f"{compounding}"
             f"  events logged: {self.events:,}"
         )
 
@@ -178,7 +237,13 @@ class GlobalResolver:
         self.retriever = CandidateRetriever()
         self.queue = DeferredQueue()
         self.report = ResolveReport(novel_id=novel_id)
-        self._next_entity = 0
+        #: Guards against the one collision case stable ids can't rule out
+        #: on their own -- two distinct founding mentions sharing an
+        #: identical (normalized label, discourse position) key. Resolved
+        #: by a deterministic suffix (see `_create_entity`), not a random
+        #: one, so the collision -- and its resolution -- reproduce
+        #: identically across reruns of the same input.
+        self._minted_entity_ids: set[str] = set()
         #: When set, a newly-created entity founded mostly on mentions NER
         #: itself labeled "location"/"organization" rather than "character"
         #: gets an automatic review flag -- see `_maybe_flag_non_character`.
@@ -236,8 +301,13 @@ class GlobalResolver:
     def _create_entity(
         self, mention: Mention, label: str, kind: TargetKind = TargetKind.SELF
     ) -> str:
-        self._next_entity += 1
-        target_id = f"{self.novel_id}:self{self._next_entity}"
+        target_id = _stable_entity_id(self.novel_id, label, mention.position)
+        suffix = 2
+        base_id = target_id
+        while target_id in self._minted_entity_ids:
+            target_id = f"{base_id}-{suffix}"
+            suffix += 1
+        self._minted_entity_ids.add(target_id)
         self.store.add_self(
             Self(
                 id=target_id,
@@ -419,7 +489,8 @@ class GlobalResolver:
             )
         candidates = self.model.score_candidates(candidates)
 
-        decision, best, rationale = self.gate.decide(candidates)
+        gated = self.gate.decide(candidates)
+        decision, best, rationale = gated.decision, gated.candidate, gated.rationale
         group_id = head.local_group_id or head.id
 
         if decision is Decision.DEFER:
@@ -442,14 +513,19 @@ class GlobalResolver:
             )
 
         if decision is Decision.LINK and best is not None:
-            self._apply_link(mentions, best.target_id, context, ResolutionMethod.SCORED)
+            # `gated.method`, not a hardcoded SCORED: a gazetteer or
+            # declaration force-link never reached the scorer, and claiming
+            # otherwise is what made `by_method` 100% SCORED by construction.
+            self._apply_link(
+                mentions, best.target_id, context, gated.method, rationale=rationale
+            )
             return ResolutionOutcome(
                 group_id=group_id,
                 decision=Decision.LINK,
                 target_kind=TargetKind.SELF,
                 target_id=best.target_id,
                 probability=best.probability,
-                method=ResolutionMethod.SCORED,
+                method=gated.method,
                 candidates=candidates,
                 rationale=rationale,
             )
@@ -477,13 +553,15 @@ class GlobalResolver:
 
         target_id = self._create_entity(head, label, self._entity_kind(mentions))
         self._maybe_flag_non_character(target_id, label, mentions)
-        self._apply_link(mentions, target_id, context, ResolutionMethod.SCORED, new=True)
+        self._apply_link(
+            mentions, target_id, context, gated.method, new=True, rationale=rationale
+        )
         return ResolutionOutcome(
             group_id=group_id,
             decision=Decision.NEW,
             target_kind=TargetKind.SELF,
             target_id=target_id,
-            method=ResolutionMethod.SCORED,
+            method=gated.method,
             candidates=candidates,
             rationale=rationale,
         )
@@ -496,6 +574,7 @@ class GlobalResolver:
         method: ResolutionMethod,
         *,
         new: bool = False,
+        rationale: str = "",
     ) -> None:
         head = mentions[0]
         label = display_label(m.text for m in mentions)
@@ -517,10 +596,27 @@ class GlobalResolver:
         if not new:
             self.report.linked += 1
         self.report.by_method[method.value] = self.report.by_method.get(method.value, 0) + 1
+        # Same tally, bucketed by window, so the compounding claim can be read
+        # as a curve rather than a single volume-wide average that hides
+        # whether anything actually changed as reading proceeded.
+        window = int(head.chapter // max(1, self.settings.window_size))
+        bucket = self.report.link_method_by_window.setdefault(window, {})
+        bucket[method.value] = bucket.get(method.value, 0) + 1
+        # `rationale` into the event payload: `payload` is already a
+        # free-form JSON column, so this needs no schema change, and without
+        # it the gate's own explanation of a link exists only in memory --
+        # `ResolutionOutcome` is never persisted anywhere.
+        payload: dict[str, object] = {
+            "target_id": target_id,
+            "label": label,
+            "mentions": len(mentions),
+        }
+        if rationale:
+            payload["rationale"] = rationale
         self._log(
             EventType.NEW_ENTITY if new else EventType.LINK,
             head,
-            {"target_id": target_id, "label": label, "mentions": len(mentions)},
+            payload,
             method=method,
             read_set=[entity_ref(TargetKind.SELF, target_id)],
         )
@@ -550,7 +646,8 @@ class GlobalResolver:
                     self.retriever.profiles.get(candidate.target_id), ctx,
                 )
             candidates = self.model.score_candidates(candidates)
-            decision, best, _ = self.gate.decide(candidates)
+            regated = self.gate.decide(candidates)
+            decision, best = regated.decision, regated.candidate
             if decision is Decision.LINK and best is not None:
                 self.queue.remove(case.group_id)
                 recovered += 1
@@ -681,6 +778,15 @@ def _synthetic_mention(case: DeferredCase) -> Mention:
     )
 
 
+class CanonicalRewipeBlocked(RuntimeError):
+    """Raised when `resolve_novel` would wipe existing resolution state on a
+    registered canonical DB (`data/canonical_dbs.json`) without
+    `force_rewipe=True`. Core Pipeline Hardening #6: nothing previously
+    stopped a scratch/experimental invocation from silently destroying
+    `data/webview-working/*.db` -- the run of record -- since the startup
+    DELETE ran unconditionally."""
+
+
 def resolve_novel(
     novel_id: str,
     store: Store,
@@ -694,8 +800,31 @@ def resolve_novel(
     commit_every: int = 10,
     corrections_log: CorrectionLog | None = None,
     strict_kind_check: bool = False,
+    force_rewipe: bool = False,
+    capture_evidence: bool = False,
+    evidence_run_tag: str = "",
 ) -> ResolveReport:
-    """Run global resolution over a whole novel, in discourse order."""
+    """Run global resolution over a whole novel, in discourse order.
+
+    `capture_evidence` writes every scored (mention, candidate) pair to the
+    `scoring_evidence` table so an ablation can re-score it rather than
+    re-resolving the volume (EVOLUTION 4.78). Off by default: RI alone
+    produces tens of thousands of rows, and a production resolve should not
+    pay for an evaluation artifact nobody asked for.
+    """
+    existing_entities = store.conn.execute(
+        "SELECT COUNT(*) AS n FROM self_entity WHERE novel_id=?", (novel_id,)
+    ).fetchone()["n"]
+    if store.is_canonical and existing_entities and not force_rewipe:
+        raise CanonicalRewipeBlocked(
+            f"resolve_novel({novel_id!r}) would wipe {existing_entities} existing"
+            f" self_entity rows on canonical DB {store.path!r} (registered in"
+            " data/canonical_dbs.json). Pass force_rewipe=True (CLI:"
+            " --force-rewipe) if this is intentional -- a canonical DB is the"
+            " run of record and a silent full-rewipe here has previously been"
+            " the accidental-destruction failure mode this guard exists to stop."
+        )
+
     # Prevent UNIQUE constraint violations by clearing existing resolution state for this novel
     store.conn.execute("DELETE FROM resolution_event WHERE id LIKE ?", (f"{novel_id}:%",))
     store.conn.execute("DELETE FROM alias_binding WHERE novel_id=?", (novel_id,))
@@ -716,41 +845,83 @@ def resolve_novel(
         corrections_log=corrections_log,
     )
 
-    for i, chapter in enumerate(store.iter_chapters(novel_id), start=1):
-        mentions = store.get_mentions(novel_id, chapter.number)
-        if not mentions:
-            continue
-        chapter_text = chapter.story_text
+    # Core Pipeline Hardening #9.7: the per-chapter loop body previously had
+    # no exception handling at all -- an unhandled LLM/scoring failure
+    # aborted the run, and whatever was written since the last commit_every
+    # boundary was silently left in an uncommitted, unreachable state (never
+    # persisted, never explicitly discarded either). `last_committed_chapter`
+    # tracks how far real, durable progress reached; on failure, `rollback()`
+    # discards only the current *uncommitted* chunk (SQLite's rollback never
+    # touches an already-committed transaction), and the raised
+    # `PartialStageFailure` carries which chapter it died on and how much
+    # survived, so the failure is attributable rather than silent.
+    last_committed_chapter: float | None = None
+    chapter = None
+    from contextlib import ExitStack
 
-        # Group by the local group id from Phase 5; ungrouped mentions resolve
-        # individually rather than being silently dropped.
-        groups: dict[str, list[Mention]] = {}
-        for mention in mentions:
-            groups.setdefault(mention.local_group_id or mention.id, []).append(mention)
+    from echotales.pipeline.eval.evidence_cache import capture_evidence as _capture
 
-        co_present = frozenset(
-            m.text for m in mentions if m.reference_mode.is_physically_present
-        )
+    stack = ExitStack()
+    capture_stats: dict[str, int] = {}
+    if capture_evidence:
+        capture_stats = stack.enter_context(_capture(store, novel_id, run_tag=evidence_run_tag))
+    try:
+        for i, chapter in enumerate(store.iter_chapters(novel_id), start=1):
+            mentions = store.get_mentions(novel_id, chapter.number)
+            if not mentions:
+                continue
+            chapter_text = chapter.story_text
 
-        for group in groups.values():
-            resolver.resolve_group(group, chapter_text, co_present=co_present)
-            resolver.report.groups += 1
+            # Group by the local group id from Phase 5; ungrouped mentions resolve
+            # individually rather than being silently dropped.
+            groups: dict[str, list[Mention]] = {}
+            for mention in mentions:
+                groups.setdefault(mention.local_group_id or mention.id, []).append(mention)
 
-        if mentions:
-            resolver.run_detectors_on(chapter_text, mentions[0])
+            co_present = frozenset(
+                m.text for m in mentions if m.reference_mode.is_physically_present
+            )
 
-        # Window boundary: re-check committed links, then retry deferrals.
-        #
-        # Order matters. The contradiction sweep runs first so that a link
-        # withdrawn this window is back in the deferred queue before the retry
-        # pass considers it -- otherwise a wrong link survives an extra window
-        # and keeps attracting mentions through the gazetteer.
-        if i % cfg.window_size == 0:
-            resolver.sweep_contradictions(window=i // cfg.window_size)
-            resolver.retry_deferred()
+            for group in groups.values():
+                resolver.resolve_group(group, chapter_text, co_present=co_present)
+                resolver.report.groups += 1
 
-        if i % commit_every == 0:
-            store.conn.commit()
+            if mentions:
+                resolver.run_detectors_on(chapter_text, mentions[0])
+
+            # Window boundary: re-check committed links, then retry deferrals.
+            #
+            # Order matters. The contradiction sweep runs first so that a link
+            # withdrawn this window is back in the deferred queue before the retry
+            # pass considers it -- otherwise a wrong link survives an extra window
+            # and keeps attracting mentions through the gazetteer.
+            if i % cfg.window_size == 0:
+                resolver.sweep_contradictions(window=i // cfg.window_size)
+                resolver.retry_deferred()
+
+            if i % commit_every == 0:
+                store.conn.commit()
+                last_committed_chapter = chapter.number
+    except Exception as exc:
+        stack.close()
+        store.conn.rollback()
+        died_at = chapter.number if chapter is not None else "?"
+        if last_committed_chapter is not None:
+            raise PartialStageFailure(
+                f"resolve_novel({novel_id!r}) failed at chapter {died_at}: {exc}",
+                progress=f"committed through chapter {last_committed_chapter}",
+            ) from exc
+        raise RuntimeError(
+            f"resolve_novel({novel_id!r}) failed at chapter {died_at} with no prior"
+            f" commit this run: {exc}"
+        ) from exc
+
+    # Closed before the final sweeps: those re-score deferred cases, and
+    # capturing their evidence a second time would double-count pairs the
+    # ablation re-scorer then reads as independent observations.
+    stack.close()
+    if capture_stats:
+        resolver.report.evidence_captured = capture_stats.get("captured", 0)
 
     # Final sweep: the last partial window never hit a boundary.
     resolver.sweep_contradictions(window=-1)
@@ -760,6 +931,21 @@ def resolve_novel(
 
     resolver.report.unresolved = len(resolver.queue)
     resolver.report.entities = len(resolver.retriever)
+
+    # The resolution half of the compounding curve. Only became a real
+    # measurement once methods stopped being hardcoded to SCORED (EVOLUTION
+    # 4.77); before that every window read 0% gazetteer and the curve was a
+    # flat line that said nothing.
+    from echotales.pipeline.eval.compounding import record_resolution_half
+
+    try:
+        record_resolution_half(
+            novel_id,
+            window_size=cfg.window_size,
+            by_window=resolver.report.link_method_by_window,
+        )
+    except OSError as exc:
+        log.warning("could not persist the compounding curve for %s: %s", novel_id, exc)
 
     # Legacy-kind backfill, always run (EVOLUTION 4.54): `_entity_kind`
     # above only types entities minted *this* run. A novel resolved before

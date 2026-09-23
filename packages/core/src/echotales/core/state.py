@@ -30,7 +30,7 @@ timeline but stay reachable for "what did the reader believe at the time".
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 
 from echotales.core.enums import (
     OBSERVER_READER,
@@ -47,7 +47,12 @@ from echotales.core.models import (
     StateOfResult,
     TemporalFact,
 )
-from echotales.core.readset import ReadSetRecorder, alias_ref, entity_ref
+from echotales.core.readset import (
+    ReadSetRecorder,
+    alias_ref,
+    entity_ref,
+    observable_ref,
+)
 from echotales.core.store import Store, normalize_alias
 
 
@@ -71,8 +76,19 @@ def _visible_to_observer(
     fact: TemporalFact,
     observer_id: str,
     knowledge_pos: DiscoursePosition,
+    observations: Mapping[str, DiscoursePosition] | None = None,
 ) -> bool:
-    """Apply the knowledge-time and truth-status filters."""
+    """Apply the knowledge-time and truth-status filters.
+
+    `observations` is the character observer's own record of what they
+    witnessed (`Store.observations_for`). It is what makes a character
+    observer able to see anything at all: every fact this pipeline writes is
+    stamped `observer_id=READER`, so before 2026-09-23 a character scope
+    matched nothing and `state_of(observer=WU_CLAN)` returned an empty result
+    rather than a *smaller* one. Empty is not the claim -- "the Wu clan
+    believes something different from what the reader knows" is
+    (EVOLUTION 4.80).
+    """
     scope = observer_scope(observer_id)
 
     # SYSTEM is omniscient: it sees FALSE facts and ignores knowledge time,
@@ -80,11 +96,28 @@ def _visible_to_observer(
     if scope is None:
         return True
 
+    witnessed_at: DiscoursePosition | None = None
     if fact.observer_id not in scope:
-        return False
+        # A character observer may still hold a reader-stamped fact, but only
+        # via an explicit observation. This is the one door: absent an
+        # observation row, a character does not inherit the reader's
+        # knowledge, which is the spoiler bug this whole model exists to
+        # prevent.
+        if observations is None or fact.observer_id != OBSERVER_READER:
+            return False
+        try:
+            ref = observable_ref(fact)
+        except TypeError:
+            return False
+        witnessed_at = observations.get(ref)
+        if witnessed_at is None:
+            return False
 
-    # The observer has not reached the point where this became known.
-    if fact.learned_at_pos > knowledge_pos:
+    # The observer has not reached the point where this became known. For a
+    # witnessed fact that is when *they* saw it, not when the narrator told
+    # the reader -- the two diverge, and that divergence is the whole point.
+    learned = witnessed_at if witnessed_at is not None else fact.learned_at_pos
+    if learned > knowledge_pos:
         return False
 
     if fact.retracted_at is not None:
@@ -120,11 +153,35 @@ class StateResolver:
     the database per fact.
     """
 
-    def __init__(self, store: Store, novel_id: str) -> None:
+    def __init__(
+        self,
+        store: Store,
+        novel_id: str,
+        *,
+        default_observer: str = OBSERVER_READER,
+    ) -> None:
         self.store = store
         self.novel_id = novel_id
+        # The observer belongs to the *viewing context*, not to each query.
+        # Putting it here rather than threading `observer_id` through every
+        # caller is what lets `render --observer` work at all: the render tree
+        # makes `state_of` calls several layers below the CLI
+        # (`plan_builder.build_render_plan`, `panels.character_looks`), and a
+        # per-call parameter would have to be passed identically through all
+        # of them, with any missed one silently falling back to READER and
+        # quietly reintroducing the spoiler it was set to avoid.
+        self.default_observer = default_observer
         self._voided_timelines: set[str] = set()
+        self._observation_cache: dict[str, Mapping[str, DiscoursePosition]] = {}
         self._refresh_voided()
+
+    def _observations_for(self, observer_id: str) -> Mapping[str, DiscoursePosition]:
+        """Cached per resolver, since a render asks for many entities at once."""
+        cached = self._observation_cache.get(observer_id)
+        if cached is None:
+            cached = self.store.observations_for(observer_id)
+            self._observation_cache[observer_id] = cached
+        return cached
 
     def _refresh_voided(self) -> None:
         """Timelines that are wholly voided.
@@ -148,7 +205,7 @@ class StateResolver:
         target_kind: TargetKind = TargetKind.SELF,
         timeline_id: str = MAIN_TIMELINE,
         position: StoryPos | None = None,
-        observer_id: str = OBSERVER_READER,
+        observer_id: str | None = None,
         knowledge_pos: DiscoursePosition | None = None,
         include_plausible: bool = True,
         recorder: ReadSetRecorder | None = None,
@@ -164,6 +221,7 @@ class StateResolver:
         are returned. Generation wants them (a panel needs *some* appearance);
         evaluation usually does not.
         """
+        observer_id = observer_id or self.default_observer
         if position is None:
             position = float("inf")
         if knowledge_pos is None:
@@ -181,12 +239,22 @@ class StateResolver:
         rec = recorder or ReadSetRecorder()
         rec.record(entity_ref(target_kind, target_id))
 
+        # Loaded once per query, not per fact: `state_of` filters every
+        # candidate fact of an entity and a per-fact round trip would put a
+        # query inside the hot loop of the operation this project most wants
+        # to be cheap. READER and SYSTEM never consult it.
+        observations = (
+            self._observations_for(observer_id)
+            if observer_id not in (OBSERVER_READER, OBSERVER_SYSTEM)
+            else None
+        )
+
         accepted: list[Certainty] = []
 
         def keep(fact: TemporalFact) -> Certainty | None:
             if fact.timeline_id in self._voided_timelines:
                 return None
-            if not _visible_to_observer(fact, observer_id, knowledge_pos):
+            if not _visible_to_observer(fact, observer_id, knowledge_pos, observations):
                 return None
             cert = _temporal_certainty(fact, timeline_id, position)
             if cert is Certainty.EXCLUDED:

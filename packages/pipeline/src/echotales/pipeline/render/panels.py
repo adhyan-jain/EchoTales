@@ -26,8 +26,9 @@ from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Protocol
 
-from echotales.core.enums import ReferenceMode, SpanType
+from echotales.core.enums import OBSERVER_READER, ReferenceMode, SpanType
 from echotales.core.models import Chapter, DiscoursePosition, Mention, Span
+from echotales.core.state import StateResolver
 from echotales.core.store import Store
 from echotales.pipeline.persona.attire import (
     hostile_confrontation_modifier,
@@ -43,8 +44,8 @@ from echotales.pipeline.persona.prompt import (
     build_image_prompt,
     cast_tags,
     count_tokens,
-    fit_to_budget,
     fit_tiers_to_budget,
+    fit_to_budget,
     gender_negative,
     genre_mismatch_negative,
     negative_for,
@@ -52,9 +53,17 @@ from echotales.pipeline.persona.prompt import (
 from echotales.pipeline.persona.runner import get_panel_cast
 from echotales.pipeline.render._png import write_solid_png
 from echotales.pipeline.render.beat_canon import beat_canon_for
+from echotales.pipeline.render.cache_key import compute_render_cache_key
+from echotales.pipeline.render.contract import (
+    GenerationAttempt,
+    GenerationRequest,
+    RenderArtifact,
+    RenderBackendCapabilities,
+)
 from echotales.pipeline.render.direction import direct_beat, sanitize_prompt
 from echotales.pipeline.render.factions import qualify_role, scene_faction
 from echotales.pipeline.render.palette import Palette, PaletteSpec, apply_palette
+from echotales.pipeline.render.plan_builder import build_render_plan
 from echotales.pipeline.render.scene_refs import (
     curated_character_reference,
     match_scene_references,
@@ -158,6 +167,16 @@ class PanelImageEngine(Protocol):
         """Render one panel to `request.out_path` and return it."""
         ...
 
+    @property
+    def capabilities(self) -> RenderBackendCapabilities:
+        """What this backend can actually do (Visual Rendering Track Phase
+        1a) -- generalizes the one hardcoded `hasattr` capability check that
+        existed before this (`persona/reference_gen.py::
+        _supports_img2img_subprocess`) into a declared attribute set every
+        concrete engine below provides.
+        """
+        ...
+
 
 @dataclass(slots=True)
 class StubImageEngine:
@@ -192,6 +211,22 @@ class StubImageEngine:
         )
         write_solid_png(request.out_path, request.width, request.height, colour)
         return request.out_path
+
+    @property
+    def capabilities(self) -> RenderBackendCapabilities:
+        # Stub honors init_image in its colour hash (see generate() above)
+        # but does no real image conditioning -- declared True only for
+        # supports_img2img since that's the one thing tests rely on the stub
+        # visibly distinguishing.
+        return RenderBackendCapabilities(
+            supports_multi_reference=False,
+            max_references=0,
+            supports_img2img=True,
+            supports_lora=False,
+            supports_negative_prompt=True,
+            is_hosted=False,
+            model_family="stub",
+        )
 
 
 @dataclass(slots=True)
@@ -251,6 +286,18 @@ class SDXLEngine:
         request.out_path.parent.mkdir(parents=True, exist_ok=True)
         image.save(request.out_path)
         return request.out_path
+
+    @property
+    def capabilities(self) -> RenderBackendCapabilities:
+        return RenderBackendCapabilities(
+            supports_multi_reference=False,
+            max_references=0,
+            supports_img2img=False,
+            supports_lora=False,
+            supports_negative_prompt=True,
+            is_hosted=False,
+            model_family="sdxl",
+        )
 
 
 @dataclass(slots=True)
@@ -452,6 +499,18 @@ class MangaDiffusersEngine:
         request.out_path.parent.mkdir(parents=True, exist_ok=True)
         image.save(request.out_path)
         return request.out_path
+
+    @property
+    def capabilities(self) -> RenderBackendCapabilities:
+        return RenderBackendCapabilities(
+            supports_multi_reference=self.max_references > 1,
+            max_references=self.max_references,
+            supports_img2img=False,
+            supports_lora=False,
+            supports_negative_prompt=True,
+            is_hosted=False,
+            model_family="guofeng3",
+        )
 
 
 @dataclass(slots=True)
@@ -738,6 +797,21 @@ class IllustriousEngine:
         image.save(request.out_path)
         return request.out_path
 
+    @property
+    def capabilities(self) -> RenderBackendCapabilities:
+        return RenderBackendCapabilities(
+            supports_multi_reference=self.max_references > 1,
+            max_references=self.max_references,
+            # This class builds `_ensure_img2img_pipe` (above) -- genuinely
+            # supported, though only exercised via `persona/reference_gen.py`'s
+            # experimental reference_transition_mode, never ordinary panels.
+            supports_img2img=True,
+            supports_lora=False,
+            supports_negative_prompt=True,
+            is_hosted=False,
+            model_family="illustrious",
+        )
+
 
 @dataclass(slots=True)
 class RefinedEngine:
@@ -834,6 +908,21 @@ class RefinedEngine:
             base_path.unlink(missing_ok=True)
         return request.out_path
 
+    @property
+    def capabilities(self) -> RenderBackendCapabilities:
+        base_caps = self._ensure_base().capabilities
+        return RenderBackendCapabilities(
+            supports_multi_reference=base_caps.supports_multi_reference,
+            max_references=base_caps.max_references,
+            # The refiner pass is itself an img2img restyle of the base's
+            # output, always -- distinct from the opt-in transition path
+            # `supports_img2img` means elsewhere, but real nonetheless.
+            supports_img2img=True,
+            supports_lora=False,
+            supports_negative_prompt=True,
+            is_hosted=False,
+            model_family=f"refined({base_caps.model_family}+guofeng3)",
+        )
 
 
 @dataclass(slots=True)
@@ -867,10 +956,26 @@ class NoobAIEngine(IllustriousEngine):
     # boilerplate (headcount tag, style anchor, framing, character name)
     # was accounted for -- measured directly on RI ch1 block 25's actual
     # delivered prompt, which contained nothing past "Fang Yuan, solo".
-    # `masterpiece` is kept per this class's own docstring caveat that the
-    # *rest* of Illustrious's taxonomy pulls NoobAI toward its raw prior --
-    # worth re-measuring if this specific tag turns out to do the same.
-    quality_prefix: str = "score_9, score_8_up, masterpiece"
+    # **`masterpiece` removed, Visual Rendering Track Phase 1 (2026-09-21).**
+    # This class's own prior docstring caveat already flagged it as "worth
+    # re-measuring" whether this specific pre-score-tag-era token pulls
+    # NoobAI toward its raw prior the same way the rest of Illustrious's
+    # taxonomy does -- NoobAI was trained on score_9/score_8_up tags
+    # specifically (see class docstring), not the older masterpiece/
+    # best-quality vocabulary, so keeping it was an untested carry-over
+    # rather than a measured choice. Score tags only, until a benchmark
+    # (Phase 2/3) shows otherwise.
+    quality_prefix: str = "score_9, score_8_up"
+
+    @property
+    def capabilities(self) -> RenderBackendCapabilities:
+        # Explicit two-arg super(): `@dataclass(slots=True)` rebuilds the
+        # class object to add `__slots__`, which leaves the zero-arg form's
+        # implicit `__class__` cell pointing at the pre-rebuild class and
+        # raises "obj must be an instance or subtype of type" here.
+        base_caps = super(NoobAIEngine, self).capabilities
+        base_caps.model_family = "noobai"
+        return base_caps
 
 
 def get_engine(name: str = "stub", **kwargs: object) -> PanelImageEngine:
@@ -924,6 +1029,12 @@ class PanelImage:
     #: after the fact: the positive prompt and the image are both visible,
     #: but the negative that was (or was not) applied is not.
     negative_prompt: str = ""
+    #: `render/cache_key.py::compute_render_cache_key`'s output for this
+    #: panel -- the provenance link `RenderArtifact.cache_key`
+    #: (`contract.py`) was designed to carry. Empty for manifests written
+    #: before Visual Rendering Track Phase 1b/1c wired the real cache
+    #: decision to it.
+    cache_key: str = ""
 
 
 def _is_flat(image: object, *, threshold: float = 6.0) -> bool:
@@ -1191,6 +1302,7 @@ def character_looks(
     crowd: bool = False,
     beat_text: str = "",
     floor_severity: str = "",
+    resolver: StateResolver | None = None,
 ) -> tuple[str, str, Path | None, str, str] | None:
     """`(label, appearance clause, reference sheet, gender, condition)` for one entity.
 
@@ -1216,6 +1328,14 @@ def character_looks(
     which is the right answer for a cast list and the wrong one for a
     panel -- so panel rendering always passes a real position.
 
+    `resolver`, when given, is the same `StateResolver` instance
+    `plan_builder.py::build_render_plan` uses to compute this panel's
+    `state_digest` -- passing it makes both the cache key and the rendered
+    content provably derived from one `state_of()` call, closing the
+    resolver-disagreement risk `contract.py`'s own `resolver` field exists
+    to make auditable (Core Pipeline Hardening #8.2). `resolver=None` keeps
+    the direct `persona_at` lookup for any caller not yet passing one.
+
     Returns None for a non-person entity -- Section 10 item 5's typing again: a
     location resolves like a name but has no face to draw. The clause and
     the sheet are independent: a character can have extracted appearance but
@@ -1236,7 +1356,16 @@ def character_looks(
     )
     from echotales.pipeline.persona.split import persona_at
 
-    persona_id = persona_at(store, entity_id, chapter)
+    if resolver is not None:
+        state = resolver.state_of(entity_id, position=chapter)
+        if not state.persona_ids:
+            return None
+        # Concurrent bindings (clones, disguises) are legitimate; take the
+        # first, matching `plan_builder.py::build_render_plan`'s identical
+        # choice exactly -- this is what keeps the two in agreement.
+        persona_id = state.persona_ids[0]
+    else:
+        persona_id = persona_at(store, entity_id, chapter)
     # Position-scoped: an attribute the text only reveals later (a scar
     # disclosed at chapter 100) must not appear on a chapter 5 panel just
     # because it is now known to be true. `None` (a cast list, not a panel)
@@ -1418,6 +1547,16 @@ def render_panels(
     #: budget and phase 2's real prefix silently ate into them anyway.
     #: Defaults to `engine` itself, which is correct for a single-phase run.
     target_engine: PanelImageEngine | None = None,
+    #: Whose knowledge the panels depict. `READER` (the default) is the
+    #: omniscient-to-the-page view every render before 2026-09-23 produced.
+    #: A character id renders the scene *as that character believes it* --
+    #: a concealed identity they never witnessed is not drawn under its true
+    #: name, because `state_of` will not return it for them. This is
+    #: `architecture.md`'s headline acceptance test made reachable from the
+    #: generation side (EVOLUTION 4.80); it is carried on the shared
+    #: `StateResolver` rather than threaded per call, so no `state_of` site
+    #: below can silently fall back to READER and reintroduce the spoiler.
+    observer_id: str = OBSERVER_READER,
 ) -> PanelReport:
     """Render one cached panel image per story-bearing block.
 
@@ -1490,6 +1629,23 @@ def render_panels(
     out_dir = Path(out_dir)
     report = PanelReport(novel_id=novel_id, engine=engine.name)
     generated_by_digest: dict[str, Path] = {}
+    # **Real cache identity, Visual Rendering Track Phase 1b/1c.** Keyed
+    # per output directory (a versioned `chapter_dir`, never shared across
+    # versions -- `out_dir`/`version` already isolate one run's directory
+    # from another's, and a cache key crossing that boundary would silently
+    # defeat the "every version gets its own directory" convention). One
+    # shared `StateResolver` avoids repeating its voided-timeline pre-pass
+    # once per panel.
+    cache_indexes: dict[Path, dict[str, str]] = {}
+    # Core Pipeline Hardening #15/provenance: `RenderArtifact` (contract.py)
+    # was fully typed but never instantiated -- provenance existed only as
+    # a `cache_key` string plus manifest fields, recoverable only by
+    # recomputing the hash. One entry per panel (cached, deduped, or freshly
+    # generated -- all three are real provenance, not just the generate
+    # branch), written to `render_artifact.jsonl` alongside `manifest.jsonl`
+    # so seed/checkpoint/persona-id/plan_digest are independently queryable.
+    render_artifacts: list[RenderArtifact] = []
+    _state_resolver = StateResolver(store, novel_id, default_observer=observer_id)
 
     prompt_cache: dict[str, str] = {}
     cache_path = Path(prompt_cache_path) if prompt_cache_path is not None else None
@@ -1837,6 +1993,28 @@ def render_panels(
                     f"{stem}_crowd.png" if is_crowd_cut else f"{stem}.png"
                 )
 
+                if chapter_dir not in cache_indexes:
+                    _idx_path = chapter_dir / "cache_index.json"
+                    if _idx_path.exists():
+                        try:
+                            cache_indexes[chapter_dir] = json.loads(
+                                _idx_path.read_text(encoding="utf-8")
+                            )
+                        except json.JSONDecodeError:
+                            cache_indexes[chapter_dir] = {}
+                    else:
+                        # **No recorded key means no provenance, not "assume
+                        # it's fine".** A directory with images on disk but
+                        # no `cache_index.json` predates Phase 1b/1c wiring
+                        # -- there is no way to know what config produced
+                        # those files, so every panel in it is honestly a
+                        # miss (regenerate, and start recording keys from
+                        # here on) rather than a silent, unproven hit. This
+                        # is the same principle the old `image_path.exists()`
+                        # check violated.
+                        cache_indexes[chapter_dir] = {}
+                cache_index = cache_indexes[chapter_dir]
+
                 cast = get_panel_cast(
                     novel_id,
                     chapter,
@@ -1888,6 +2066,7 @@ def render_panels(
                         crowd=bool(_chunk_mobs),
                         beat_text=_chunk_text,
                         floor_severity=_scene_state.default_severity,
+                        resolver=_state_resolver,
                     )
                     if looks is None:
                         continue
@@ -1984,6 +2163,7 @@ def render_panels(
                             crowd=bool(_chunk_mobs),
                             beat_text=_chunk_text,
                             floor_severity=_scene_state.default_severity,
+                            resolver=_state_resolver,
                         )
                         if fresh is None:
                             _scene_last_present_bodies.pop(entity_id, None)
@@ -2427,14 +2607,107 @@ def render_panels(
                     references = []
                     conditioned = []
 
+                # **Negative prompt is computed here, before the cache
+                # decision, not inside the generation branch.** It is one of
+                # `compute_render_cache_key`'s required inputs -- a cache
+                # key that can't see the negative prompt can't tell a panel
+                # apart from one whose only difference is what it suppresses.
+                # Every input below is already available at this point
+                # regardless of whether this turns out to be a cache hit.
+                gender_neg = gender_negative(
+                    genders,
+                    beat=(
+                        f"{beat_prose} "
+                        f"{directed.direction.action or '' if directed is not None else ''} "
+                        f"{directed.direction.layout or '' if directed is not None else ''}"
+                    ),
+                )
+                _base_neg = _form.filtered_negative(
+                    negative_for(style) + _lexicon_negatives
+                )
+                _crowd_gore_neg = (
+                    "gore, blood splatter, muscular, bare chest, screaming, western comic, corpses, fire"
+                    if is_crowd_cut
+                    else ""
+                )
+                _crowd_female_neg = (
+                    "girl, girls, female, woman, women, bishoujo"
+                    if is_crowd_cut
+                    else ""
+                )
+                _color_neg = (
+                    "teal clothing, cyan robe, blue-green robe, turquoise outfit"
+                    if "white robe" in prompt.lower()
+                    else ""
+                )
+                _genre_neg = genre_mismatch_negative(novel_id, beat_prose)
+                _neg_parts = (
+                    ([p.strip() for p in _color_neg.split(",") if p.strip()] if _color_neg else [])
+                    + ([p.strip() for p in _genre_neg.split(",") if p.strip()] if _genre_neg else [])
+                    + ([p.strip() for p in gender_neg.split(",") if p.strip()] if gender_neg else [])
+                    + ([p.strip() for p in _crowd_female_neg.split(",") if p.strip()] if _crowd_female_neg else [])
+                    + [p.strip() for p in _base_neg.split(",") if p.strip()]
+                    + ([p.strip() for p in _crowd_gore_neg.split(",") if p.strip()] if _crowd_gore_neg else [])
+                )
+                neg_prompt = fit_to_budget(_neg_parts)
+
+                # **Visual Rendering Track Phase 1b/1c: real cache identity.**
+                # `cast_self_ids` mirrors whichever cast this beat actually
+                # ended up with -- the fresh PRESENT scan when this beat had
+                # one, else the carried-forward scene cast (see the two
+                # branches above this block) -- so the plan's cast always
+                # matches what the prompt was actually built from.
+                _cast_self_ids = list(_beat_bodies.keys()) or list(
+                    _scene_last_present_bodies.keys()
+                )
+                _lead_self_id = _cast_self_ids[0] if _cast_self_ids else None
+                _plan = build_render_plan(
+                    store,
+                    novel_id,
+                    chapter=chapter_number,
+                    beat_id=f"{novel_id}:{chapter_number:g}:{_panel_seq}",
+                    panel_seq=_panel_seq,
+                    cast_self_ids=_cast_self_ids,
+                    lead_self_id=_lead_self_id,
+                    location=_scene_state.location,
+                    lighting=directed.direction.lighting if directed is not None else "",
+                    mood=directed.direction.mood if directed is not None else "",
+                    shot=directed.direction.shot if directed is not None else "",
+                    layout=directed.direction.layout if directed is not None else "",
+                    is_crowd_cut=is_crowd_cut,
+                    pose_hint=directed.direction.action if directed is not None else "",
+                    expression_hint=directed.direction.expression if directed is not None else "",
+                    resolver=_state_resolver,
+                )
+                _panel_request = PanelImageRequest(
+                    prompt=prompt,
+                    out_path=image_path,
+                    negative_prompt=neg_prompt,
+                    width=width,
+                    height=height,
+                    seed=seed,
+                    reference_images=[],
+                    reference_weight=0.0,
+                )
+                _gen_request = GenerationRequest(
+                    base=_panel_request,
+                    backend_name=engine.name,
+                    checkpoint_id=getattr(engine, "model_id", ""),
+                    steps=getattr(engine, "steps", 0),
+                    guidance_scale=getattr(engine, "guidance_scale", 0.0),
+                    renderer_version="1",
+                )
+                render_cache_key = compute_render_cache_key(_plan, _gen_request)
+
                 digest = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
-                neg_prompt = ""  # set in the generation branch; "" on cache hit
-                if image_path.exists():
+                _cached_image = cache_index.get(render_cache_key)
+                if _cached_image and Path(_cached_image).exists():
                     report.skipped_cached += 1
                 elif digest in generated_by_digest:
                     image_path.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copyfile(generated_by_digest[digest], image_path)
                     report.deduped_panels += 1
+                    cache_index[render_cache_key] = str(image_path)
                 else:
                     # 0.65 (the default) is right for a close-up -- a face
                     # is exactly what the reference sheet is meant to
@@ -2515,98 +2788,17 @@ def render_panels(
                         weight = 0.3
                     else:
                         weight = 0.45
-                    # **Gender clause has the highest priority and must
-                    # survive truncation.** `negative_for(style)` alone
-                    # uses ~69 tokens; the gender clause adds ~14 more,
-                    # pushing the total to ~83 against CLIP's 75-token
-                    # limit. CLIP silently truncates from the right -- so
-                    # appending `gender_neg` LAST meant it was the first
-                    # thing dropped. Verified: the assembled string
-                    # `negative_for(STYLE_SCENE) + _NEGATIVE_FEMININE`
-                    # measured at 98 tokens, 23 over budget, meaning the
-                    # entire gender clause was discarded on every
-                    # male-cast panel, removing the one guard against
-                    # feminisation at inference time.
-                    #
-                    # Fix: re-fit the full assembled negative as a
-                    # comma-split part list with gender terms at the
-                    # front. `fit_to_budget` adds parts in priority
-                    # order -- earlier = higher priority -- so gender
-                    # terms fill the first slots and style terms use
-                    # whatever space remains. Crowd terms get lowest
-                    # priority (least critical to prevent feminisation).
-                    # Same pronoun-coverage fix as `cast_tags` above:
-                    # dialogue-only beats have no he/him/his in
-                    # `beat_prose`, so also scan the director's own
-                    # action/layout text where those pronouns appear.
-                    gender_neg = gender_negative(
-                        genders,
-                        beat=(
-                            f"{beat_prose} "
-                            f"{directed.direction.action or '' if directed is not None else ''} "
-                            f"{directed.direction.layout or '' if directed is not None else ''}"
-                        ),
-                    )
-                    _base_neg = _form.filtered_negative(
-                        negative_for(style) + _lexicon_negatives
-                    )
-                    _crowd_gore_neg = (
-                        "gore, blood splatter, muscular, bare chest, screaming, western comic, corpses, fire"
-                        if is_crowd_cut
-                        else ""
-                    )
-                    # Crowd cuts need explicit female suppression beyond gender_neg:
-                    # the model's prior for xianxia group scenes includes a female
-                    # cultivator student even when gender_neg has "1girl, female,
-                    # woman". Placed BEFORE base_neg so it survives budget trimming.
-                    _crowd_female_neg = (
-                        "girl, girls, female, woman, women, bishoujo"
-                        if is_crowd_cut
-                        else ""
-                    )
-                    # When the positive prompt calls for white robes, suppress the
-                    # NoobAI xianxia checkpoint's strong teal/cyan prior. Placed
-                    # FIRST so it survives budget trimming ahead of gender terms
-                    # and the base negative tail.
-                    _color_neg = (
-                        "teal clothing, cyan robe, blue-green robe, turquoise outfit"
-                        if "white robe" in prompt.lower()
-                        else ""
-                    )
-                    # **Backstop for the genre-prop hallucination.**
-                    # `world_context` (fed to the director above) is the
-                    # positive-side fix; this suppresses whatever slips
-                    # through anyway. Gated on `beat_prose` -- the source
-                    # text itself, not the director's own output -- so a
-                    # beat that genuinely names one of these isn't
-                    # overridden by its own suppression.
-                    _genre_neg = genre_mismatch_negative(novel_id, beat_prose)
-                    _neg_parts = (
-                        ([p.strip() for p in _color_neg.split(",") if p.strip()] if _color_neg else [])
-                        + ([p.strip() for p in _genre_neg.split(",") if p.strip()] if _genre_neg else [])
-                        + ([p.strip() for p in gender_neg.split(",") if p.strip()] if gender_neg else [])
-                        + ([p.strip() for p in _crowd_female_neg.split(",") if p.strip()] if _crowd_female_neg else [])
-                        + [p.strip() for p in _base_neg.split(",") if p.strip()]
-                        + ([p.strip() for p in _crowd_gore_neg.split(",") if p.strip()] if _crowd_gore_neg else [])
-                    )
-                    neg_prompt = fit_to_budget(_neg_parts)
+                    # Negative prompt (`neg_prompt`) and the request/plan
+                    # objects (`_panel_request`/`_plan`/`_gen_request`) are
+                    # already built above -- needed by the cache key before
+                    # this branch could even be reached.
                     # Reference conditioning removed: IP-Adapter reference
                     # sheets caused color/composition contamination and cannot
                     # generalise across novels. Appearance is constrained by
                     # prompt text (appearance clause + style anchor) instead.
-                    engine.generate(
-                        PanelImageRequest(
-                            prompt=prompt,
-                            out_path=image_path,
-                            negative_prompt=neg_prompt,
-                            width=width,
-                            height=height,
-                            seed=seed,
-                            reference_images=[],
-                            reference_weight=0.0,
-                        )
-                    )
+                    engine.generate(_panel_request)
                     generated_by_digest[digest] = image_path
+                    cache_index[render_cache_key] = str(image_path)
                     if conditioned:
                         report.conditioned_panels += 1
                     else:
@@ -2619,8 +2811,18 @@ def render_panels(
                     image_path=str(image_path),
                     conditioned_on=conditioned,
                     negative_prompt=neg_prompt,
+                    cache_key=render_cache_key,
                 )
                 report.panels += 1
+                render_artifacts.append(
+                    RenderArtifact(
+                        plan=_plan,
+                        attempt=GenerationAttempt(
+                            request=_gen_request, seed_used=seed, output_path=image_path
+                        ),
+                        cache_key=render_cache_key,
+                    )
+                )
 
             # One manifest row per block, all blocks sharing a slot
             # pointing at the same (already generated) image -- this is
@@ -2637,6 +2839,7 @@ def render_panels(
                         image_path=image.image_path,
                         conditioned_on=image.conditioned_on,
                         negative_prompt=image.negative_prompt,
+                        cache_key=image.cache_key,
                     )
                 )
 
@@ -2645,7 +2848,24 @@ def render_panels(
         "\n".join(json.dumps(asdict(p)) for p in manifest) + "\n",
         encoding="utf-8",
     )
+    # `default=str` (not strict round-trip JSON): this is a provenance
+    # sidecar for audit/query, the real `render/bench/manifest.py`
+    # (contract.py's own "Phase 2") is explicitly out of scope this
+    # session -- see the plan's "what must NOT be changed" list.
+    if render_artifacts:
+        (out_dir / "render_artifact.jsonl").write_text(
+            "\n".join(json.dumps(asdict(a), default=str) for a in render_artifacts) + "\n",
+            encoding="utf-8",
+        )
     if cache_path is not None:
         cache_path.parent.mkdir(parents=True, exist_ok=True)
         cache_path.write_text(json.dumps(prompt_cache, indent=2), encoding="utf-8")
+    # Visual Rendering Track Phase 1b: persist every chapter_dir's real
+    # cache index so a later run (or a later phase of a two-phase render)
+    # sees this run's cache-key -> image-path records, not just its files.
+    for _cache_dir, _index in cache_indexes.items():
+        _cache_dir.mkdir(parents=True, exist_ok=True)
+        (_cache_dir / "cache_index.json").write_text(
+            json.dumps(_index, indent=2), encoding="utf-8"
+        )
     return report

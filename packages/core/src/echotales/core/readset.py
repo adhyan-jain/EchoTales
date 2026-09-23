@@ -54,6 +54,36 @@ def alias_ref(novel_id: str, alias_norm: str) -> str:
     return fact_ref("alias", novel_id, alias_norm)
 
 
+def observable_ref(fact: object) -> str:
+    """A stable id for one temporal fact, for the `observation` table.
+
+    The observation table keys on `(observer_id, fact_ref)`, and until
+    2026-09-23 nothing produced a `fact_ref` because nothing ever wrote an
+    observation (EVOLUTION 4.80). The ref has to be derivable from the fact
+    itself rather than from a row id: the same assertion re-derived by a
+    re-resolve must land on the same ref, or a character's knowledge silently
+    resets every time the pipeline runs.
+
+    Deliberately excludes interval, learned-at position and truth status --
+    those are *when and how* the fact is held, and an observer who witnessed
+    an event does not un-witness it because the interval was later refined.
+    """
+    from echotales.core.models import AliasBinding, Attribute, Relation
+
+    if isinstance(fact, AliasBinding):
+        return fact_ref("alias", fact.target_id, normalize(fact.alias))
+    if isinstance(fact, Attribute):
+        return fact_ref("attr", fact.target_id, fact.key, fact.value)
+    if isinstance(fact, Relation):
+        return fact_ref("rel", fact.src_self, fact.type, fact.dst_self)
+    raise TypeError(f"no observable ref defined for {type(fact).__name__}")
+
+
+def normalize(text: str) -> str:
+    """Casefolded, whitespace-collapsed, for ref stability across renderings."""
+    return " ".join(text.split()).casefold()
+
+
 def segment_ref(segment_id: str) -> str:
     return fact_ref("segment", segment_id)
 

@@ -43,8 +43,11 @@ from echotales.core.models import (
     Attribute,
     Chapter,
     DiscoursePosition,
+    Job,
     Mention,
     NarrativeSegment,
+    Observation,
+    PipelineRun,
     Persona,
     RefImageCandidate,
     RefImageSelectionEvent,
@@ -54,6 +57,9 @@ from echotales.core.models import (
     Self,
     SelfPersonaBinding,
     Span,
+    StageArtifact,
+    StageRun,
+    StageStatus,
 )
 
 SCHEMA_VERSION = 3
@@ -365,6 +371,99 @@ CREATE TABLE IF NOT EXISTS ref_image_selection_log (
     at REAL NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS ix_refimg_log_self ON ref_image_selection_log(novel_id, self_id);
+
+-- Pipeline-run / provenance tracking (Core Pipeline Hardening, session 1).
+-- `pipeline_run` is one `echotales run` invocation or a manually-chained
+-- stage sequence sharing a run_id. Deliberately not using AUTOINCREMENT
+-- anywhere in this group -- run_id/stage_run_id/artifact_id are minted by
+-- pipeline_run.py as stable, human-legible strings, matching the project's
+-- explicit rule that a DB row id must never stand in for semantic identity.
+CREATE TABLE IF NOT EXISTS pipeline_run (
+    run_id TEXT PRIMARY KEY,
+    novel_id TEXT NOT NULL,
+    source_digest TEXT NOT NULL,
+    pipeline_version TEXT NOT NULL DEFAULT '',
+    config_json TEXT NOT NULL DEFAULT '{}',
+    model_versions_json TEXT NOT NULL DEFAULT '{}',
+    created_at REAL NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'PENDING'
+);
+CREATE INDEX IF NOT EXISTS ix_pipeline_run_novel ON pipeline_run(novel_id);
+
+-- One stage invocation within a pipeline_run. `input_digest` is the
+-- resumability/cache-invalidation signal: a stage command checks for an
+-- existing SUCCEEDED row with a matching (stage_name, input_digest) before
+-- doing any work.
+CREATE TABLE IF NOT EXISTS stage_run (
+    stage_run_id TEXT PRIMARY KEY,
+    run_id TEXT NOT NULL REFERENCES pipeline_run(run_id),
+    stage_name TEXT NOT NULL,
+    input_digest TEXT NOT NULL DEFAULT '',
+    output_digest TEXT NOT NULL DEFAULT '',
+    config_json TEXT NOT NULL DEFAULT '{}',
+    started_at REAL NOT NULL DEFAULT 0,
+    finished_at REAL,
+    status TEXT NOT NULL DEFAULT 'PENDING',
+    error_summary TEXT NOT NULL DEFAULT '',
+    parent_stage_run_ids_json TEXT NOT NULL DEFAULT '[]'
+);
+CREATE INDEX IF NOT EXISTS ix_stage_run_run ON stage_run(run_id);
+CREATE INDEX IF NOT EXISTS ix_stage_run_lookup ON stage_run(stage_name, input_digest, status);
+
+-- What a stage_run produced -- a pointer (manifest path, image dir, DB
+-- row-range descriptor), not a duplicate of the output itself.
+CREATE TABLE IF NOT EXISTS stage_artifact (
+    artifact_id TEXT PRIMARY KEY,
+    stage_run_id TEXT NOT NULL REFERENCES stage_run(stage_run_id),
+    kind TEXT NOT NULL,
+    path_or_ref TEXT NOT NULL,
+    content_digest TEXT NOT NULL DEFAULT '',
+    created_at REAL NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS ix_stage_artifact_stage ON stage_artifact(stage_run_id);
+
+-- HTTP-facing unit of work (Product Orchestration track). Distinct from
+-- pipeline_run/stage_run: those stay the internal provenance record a
+-- job's execution writes into; this is "what did I ask the server to do,
+-- and is it done" for the webview_server job queue.
+CREATE TABLE IF NOT EXISTS job (
+    job_id TEXT PRIMARY KEY,
+    novel_id TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    run_id TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'PENDING',
+    params_json TEXT NOT NULL DEFAULT '{}',
+    created_at REAL NOT NULL DEFAULT 0,
+    started_at REAL,
+    finished_at REAL,
+    error_summary TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS ix_job_novel ON job(novel_id, created_at);
+
+-- Every (mention, candidate) evidence vector the resolver scored, captured
+-- so an ablation can re-score it instead of re-resolving the volume.
+-- `details.md` and `plans.md` have claimed since the design phase that
+-- ablations "cost no additional LLM passes because they re-score cached
+-- evidence vectors"; that cache did not exist, `EvidenceVector` lived only
+-- in memory inside `resolve_group`, and every ablation was therefore a full
+-- re-resolve (EVOLUTION 4.78).
+--
+-- Written only when a run opts in (`resolve --capture-evidence`): RI alone
+-- produces tens of thousands of rows and the default resolve path should not
+-- pay for an evaluation artifact nobody asked for.
+CREATE TABLE IF NOT EXISTS scoring_evidence (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    novel_id TEXT NOT NULL,
+    run_tag TEXT NOT NULL DEFAULT '',
+    chapter REAL NOT NULL DEFAULT 0,
+    mention_id TEXT NOT NULL DEFAULT '',
+    surface TEXT NOT NULL DEFAULT '',
+    candidate_id TEXT NOT NULL DEFAULT '',
+    candidate_label TEXT NOT NULL DEFAULT '',
+    features_json TEXT NOT NULL DEFAULT '{}'
+);
+CREATE INDEX IF NOT EXISTS ix_scoring_evidence_novel
+    ON scoring_evidence(novel_id, run_tag, chapter);
 """
 
 
@@ -381,6 +480,7 @@ def _interval_cols(iv: FuzzyInterval) -> tuple[float, float, float, float]:
 
 
 def _refimg_from_row(row: sqlite3.Row) -> RefImageCandidate:
+    keys = row.keys()
     return RefImageCandidate(
         id=row["id"],
         novel_id=row["novel_id"],
@@ -395,6 +495,8 @@ def _refimg_from_row(row: sqlite3.Row) -> RefImageCandidate:
         found_at=row["found_at"],
         user_uploaded=bool(row["user_uploaded"]),
         selected=bool(row["selected"]),
+        persona_id=row["persona_id"] if "persona_id" in keys else None,
+        quality_score=row["quality_score"] if "quality_score" in keys else None,
     )
 
 
@@ -475,6 +577,20 @@ class Store:
             self.conn.execute(
                 "ALTER TABLE novel ADD COLUMN content_type TEXT NOT NULL DEFAULT 'novel'"
             )
+
+        # Visual Rendering Track Phase 1d: reconcile ref_image_candidate's
+        # self_id-only keying with reference_gen.py's persona_id (body)
+        # keying, and stop discarding evaluate_candidate_quality's score
+        # after search. Both nullable -- a pre-existing row has neither.
+        existing = {row["name"] for row in self.conn.execute("PRAGMA table_info(ref_image_candidate)")}
+        if "persona_id" not in existing:
+            self.conn.execute("ALTER TABLE ref_image_candidate ADD COLUMN persona_id TEXT")
+        if "quality_score" not in existing:
+            self.conn.execute("ALTER TABLE ref_image_candidate ADD COLUMN quality_score REAL")
+
+        existing = {row["name"] for row in self.conn.execute("PRAGMA table_info(ref_image_selection_log)")}
+        if "persona_id" not in existing:
+            self.conn.execute("ALTER TABLE ref_image_selection_log ADD COLUMN persona_id TEXT")
 
     def close(self) -> None:
         self.conn.close()
@@ -992,7 +1108,8 @@ class Store:
         self.conn.execute(
             "INSERT OR REPLACE INTO ref_image_candidate(id, novel_id, self_id,"
             " character_label, source_url, thumbnail_url, title, source_page, query,"
-            " backend, found_at, user_uploaded, selected) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            " backend, found_at, user_uploaded, selected, persona_id, quality_score)"
+            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (
                 candidate.id,
                 candidate.novel_id,
@@ -1007,6 +1124,8 @@ class Store:
                 candidate.found_at,
                 int(candidate.user_uploaded),
                 int(candidate.selected),
+                candidate.persona_id,
+                candidate.quality_score,
             ),
         )
         self.conn.commit()
@@ -1030,7 +1149,7 @@ class Store:
     def log_ref_image_event(self, event: RefImageSelectionEvent) -> int:
         cur = self.conn.execute(
             "INSERT INTO ref_image_selection_log(novel_id, self_id, candidate_id, action,"
-            " actor, note, at) VALUES (?,?,?,?,?,?,?)",
+            " actor, note, at, persona_id) VALUES (?,?,?,?,?,?,?,?)",
             (
                 event.novel_id,
                 event.self_id,
@@ -1039,6 +1158,7 @@ class Store:
                 event.actor,
                 event.note,
                 event.at,
+                event.persona_id,
             ),
         )
         self.conn.commit()
@@ -1062,6 +1182,7 @@ class Store:
                 actor=r["actor"],
                 note=r["note"],
                 at=r["at"],
+                persona_id=r["persona_id"] if "persona_id" in r.keys() else None,
             )
             for r in cur
         ]
@@ -1563,6 +1684,105 @@ class Store:
         )
         return [dict(r) for r in cur]
 
+    # ---- observations (the observer axis) -----------------------------
+
+    def add_observation(self, observation: Observation) -> None:
+        """Record that `observer_id` learned `fact_ref` at a discourse position.
+
+        The `observation` table has existed since the first schema and was
+        **empty in every shipped database** -- there was no writer, so
+        `architecture.md`'s headline acceptance test (`state_of(observer=X)`
+        differing from `observer=READER`) could not return anything different
+        (EVOLUTION 4.80).
+
+        `INSERT OR IGNORE`, not `REPLACE`: knowledge time only moves forward,
+        so the *earliest* moment an observer learned something is the true
+        one, and a later re-witnessing must not push their knowledge later.
+        """
+        chapter, offset = _pos_cols(observation.learned_at_pos)
+        self.conn.execute(
+            "INSERT OR IGNORE INTO observation(observer_id, fact_ref,"
+            " learned_chapter, learned_offset) VALUES (?,?,?,?)",
+            (observation.observer_id, observation.fact_ref, chapter, offset),
+        )
+
+    def add_observations(self, observations: Sequence[Observation]) -> int:
+        if not observations:
+            return 0
+        self.conn.executemany(
+            "INSERT OR IGNORE INTO observation(observer_id, fact_ref,"
+            " learned_chapter, learned_offset) VALUES (?,?,?,?)",
+            [
+                (o.observer_id, o.fact_ref, *_pos_cols(o.learned_at_pos))
+                for o in observations
+            ],
+        )
+        return len(observations)
+
+    def observations_for(self, observer_id: str) -> dict[str, DiscoursePosition]:
+        """fact_ref -> the position this observer learned it.
+
+        Returned whole rather than queried per fact: `state_of` filters every
+        candidate fact of an entity, and a per-fact round trip would put a
+        query inside the hot loop of the one operation this project most wants
+        to be cheap.
+        """
+        cur = self.conn.execute(
+            "SELECT fact_ref, learned_chapter, learned_offset FROM observation"
+            " WHERE observer_id=?",
+            (observer_id,),
+        )
+        return {
+            r["fact_ref"]: DiscoursePosition(
+                chapter=r["learned_chapter"], offset=r["learned_offset"]
+            )
+            for r in cur
+        }
+
+    def count_observations(self, observer_id: str = "") -> int:
+        if observer_id:
+            return int(
+                self.conn.execute(
+                    "SELECT COUNT(*) FROM observation WHERE observer_id=?", (observer_id,)
+                ).fetchone()[0]
+            )
+        return int(self.conn.execute("SELECT COUNT(*) FROM observation").fetchone()[0])
+
+    def observers(self) -> list[str]:
+        return [
+            r[0]
+            for r in self.conn.execute(
+                "SELECT DISTINCT observer_id FROM observation ORDER BY observer_id"
+            )
+        ]
+
+    def escalation_summary(self) -> dict[str, Any]:
+        """Volume-wide escalation, from the persisted record rather than a router.
+
+        `llm/router.py::report()` computes the same rate from in-process
+        counters and had **zero callers** -- so the escalation rate, which
+        `architecture.md` Section 7 names as a claimed contribution and
+        non-negotiable #7 calls "a reported metric, not a failure mode", was
+        never reported anywhere. A router's counters are also the wrong source
+        for `eval`, which runs in a separate process that makes no LLM calls
+        at all and would truthfully report zero.
+        """
+        row = self.conn.execute(
+            "SELECT COUNT(*) AS calls, COALESCE(SUM(escalated),0) AS escalations,"
+            " COALESCE(SUM(prompt_tokens+completion_tokens),0) AS tokens,"
+            " COALESCE(AVG(latency_ms),0) AS avg_ms FROM llm_call"
+        ).fetchone()
+        calls = int(row["calls"] or 0)
+        escalations = int(row["escalations"] or 0)
+        return {
+            "calls": calls,
+            "escalations": escalations,
+            "escalation_rate": round(escalations / calls, 4) if calls else 0.0,
+            "tokens": int(row["tokens"] or 0),
+            "avg_latency_ms": round(float(row["avg_ms"] or 0.0), 1),
+            "by_stage": self.escalation_stats(),
+        }
+
     # ---- derived artifacts / cache ------------------------------------
 
     def record_artifact(
@@ -1596,6 +1816,327 @@ class Store:
             self.conn.execute("UPDATE derived_artifact SET invalidated=1 WHERE id=?", (aid,))
             n += 1
         return n
+
+    # ---- pipeline run / provenance ------------------------------------
+
+    #: Repo-relative path to the canonical-DB registry (pipeline/paths.py's
+    #: DATA_ROOT convention: `data/` resolved against CWD, not this module's
+    #: location, since the project already runs CLI/tests from the repo
+    #: root). Resolved lazily per call, not cached, so editing the registry
+    #: takes effect without restarting a long-lived process.
+    _CANONICAL_REGISTRY = Path("data/canonical_dbs.json")
+
+    @property
+    def is_canonical(self) -> bool:
+        """Whether this store's path is a registered run-of-record DB.
+
+        Absence of the registry file means "nothing is registered", not "an
+        error" -- a scratch/test DB never created one and should not be
+        blocked from working. A path is compared after resolving both sides
+        to absolute, so `data/webview-working/x.db` and
+        `./data/webview-working/x.db` are recognised as the same file.
+        """
+        if self.path == ":memory:":
+            return False
+        if not self._CANONICAL_REGISTRY.is_file():
+            return False
+        try:
+            registry = json.loads(self._CANONICAL_REGISTRY.read_text())
+        except (OSError, json.JSONDecodeError):
+            return False
+        this_path = Path(self.path).resolve()
+        for entry in registry.get("paths", []):
+            if Path(entry).resolve() == this_path:
+                return True
+        return False
+
+    def add_pipeline_run(self, run: PipelineRun) -> None:
+        self.conn.execute(
+            "INSERT OR REPLACE INTO pipeline_run(run_id, novel_id, source_digest,"
+            " pipeline_version, config_json, model_versions_json, created_at, status)"
+            " VALUES (?,?,?,?,?,?,?,?)",
+            (
+                run.run_id,
+                run.novel_id,
+                run.source_digest,
+                run.pipeline_version,
+                run.config_json,
+                run.model_versions_json,
+                run.created_at,
+                run.status.value,
+            ),
+        )
+        self.conn.commit()
+
+    def update_pipeline_run_status(self, run_id: str, status: StageStatus) -> None:
+        self.conn.execute(
+            "UPDATE pipeline_run SET status=? WHERE run_id=?", (status.value, run_id)
+        )
+        self.conn.commit()
+
+    def get_pipeline_run(self, run_id: str) -> PipelineRun | None:
+        row = self.conn.execute(
+            "SELECT * FROM pipeline_run WHERE run_id=?", (run_id,)
+        ).fetchone()
+        if row is None:
+            return None
+        return PipelineRun(
+            run_id=row["run_id"],
+            novel_id=row["novel_id"],
+            source_digest=row["source_digest"],
+            pipeline_version=row["pipeline_version"],
+            config_json=row["config_json"],
+            model_versions_json=row["model_versions_json"],
+            created_at=row["created_at"],
+            status=StageStatus(row["status"]),
+        )
+
+    def _stage_run_from_row(self, row: sqlite3.Row) -> StageRun:
+        return StageRun(
+            stage_run_id=row["stage_run_id"],
+            run_id=row["run_id"],
+            stage_name=row["stage_name"],
+            input_digest=row["input_digest"],
+            output_digest=row["output_digest"],
+            config_json=row["config_json"],
+            started_at=row["started_at"],
+            finished_at=row["finished_at"],
+            status=StageStatus(row["status"]),
+            error_summary=row["error_summary"],
+            parent_stage_run_ids=json.loads(row["parent_stage_run_ids_json"]),
+        )
+
+    def add_stage_run(self, stage: StageRun) -> None:
+        self.conn.execute(
+            "INSERT OR REPLACE INTO stage_run(stage_run_id, run_id, stage_name,"
+            " input_digest, output_digest, config_json, started_at, finished_at,"
+            " status, error_summary, parent_stage_run_ids_json)"
+            " VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            (
+                stage.stage_run_id,
+                stage.run_id,
+                stage.stage_name,
+                stage.input_digest,
+                stage.output_digest,
+                stage.config_json,
+                stage.started_at,
+                stage.finished_at,
+                stage.status.value,
+                stage.error_summary,
+                json.dumps(stage.parent_stage_run_ids),
+            ),
+        )
+        self.conn.commit()
+
+    def update_stage_run(
+        self,
+        stage_run_id: str,
+        *,
+        status: StageStatus,
+        finished_at: float | None = None,
+        output_digest: str | None = None,
+        error_summary: str | None = None,
+    ) -> None:
+        """Finalize (or re-mark) a stage_run. `None` args leave the column unchanged."""
+        current = self.get_stage_run(stage_run_id)
+        if current is None:
+            raise KeyError(f"no stage_run {stage_run_id!r}")
+        self.conn.execute(
+            "UPDATE stage_run SET status=?, finished_at=?, output_digest=?,"
+            " error_summary=? WHERE stage_run_id=?",
+            (
+                status.value,
+                finished_at if finished_at is not None else current.finished_at,
+                output_digest if output_digest is not None else current.output_digest,
+                error_summary if error_summary is not None else current.error_summary,
+                stage_run_id,
+            ),
+        )
+        self.conn.commit()
+
+    def get_stage_run(self, stage_run_id: str) -> StageRun | None:
+        row = self.conn.execute(
+            "SELECT * FROM stage_run WHERE stage_run_id=?", (stage_run_id,)
+        ).fetchone()
+        return self._stage_run_from_row(row) if row is not None else None
+
+    def find_succeeded_stage_run(self, stage_name: str, input_digest: str) -> StageRun | None:
+        """The resumability/cache-invalidation check: a prior SUCCEEDED run
+        with an identical input_digest means this stage's work is already
+        done and can be skipped. Most recent match wins if more than one
+        (should not normally happen, but a reprocessed stage_name/digest
+        pair is not itself an error)."""
+        row = self.conn.execute(
+            "SELECT * FROM stage_run WHERE stage_name=? AND input_digest=?"
+            " AND status=? ORDER BY started_at DESC LIMIT 1",
+            (stage_name, input_digest, StageStatus.SUCCEEDED.value),
+        ).fetchone()
+        return self._stage_run_from_row(row) if row is not None else None
+
+    def list_stage_runs(self, run_id: str) -> list[StageRun]:
+        cur = self.conn.execute(
+            "SELECT * FROM stage_run WHERE run_id=? ORDER BY started_at", (run_id,)
+        )
+        return [self._stage_run_from_row(r) for r in cur.fetchall()]
+
+    # ---- scoring evidence (ablation cache) ---------------------------
+
+    def add_scoring_evidence(self, rows: Sequence[tuple[str, str, float, str, str, str, str, str]]) -> int:
+        """Bulk-insert captured evidence vectors.
+
+        `executemany` and a positional tuple rather than a model per row: a
+        single RI resolve captures tens of thousands of pairs, and the point
+        of the cache is that writing it is cheaper than recomputing it.
+        """
+        if not rows:
+            return 0
+        self.conn.executemany(
+            "INSERT INTO scoring_evidence(novel_id, run_tag, chapter, mention_id,"
+            " surface, candidate_id, candidate_label, features_json)"
+            " VALUES (?,?,?,?,?,?,?,?)",
+            rows,
+        )
+        return len(rows)
+
+    def clear_scoring_evidence(self, novel_id: str, run_tag: str = "") -> int:
+        """Drop a previous capture before re-capturing.
+
+        Without this a second `--capture-evidence` run silently doubles every
+        pair, and an ablation re-scoring the table would weight those pairs
+        twice.
+        """
+        cur = self.conn.execute(
+            "DELETE FROM scoring_evidence WHERE novel_id=? AND run_tag=?",
+            (novel_id, run_tag),
+        )
+        self.conn.commit()
+        return cur.rowcount or 0
+
+    def iter_scoring_evidence(
+        self, novel_id: str, run_tag: str = ""
+    ) -> Iterator[tuple[float, str, str, str, str, str]]:
+        """(chapter, mention_id, surface, candidate_id, candidate_label, features_json)."""
+        cur = self.conn.execute(
+            "SELECT chapter, mention_id, surface, candidate_id, candidate_label,"
+            " features_json FROM scoring_evidence WHERE novel_id=? AND run_tag=?"
+            " ORDER BY chapter, id",
+            (novel_id, run_tag),
+        )
+        for row in cur:
+            yield (row[0], row[1], row[2], row[3], row[4], row[5])
+
+    def count_scoring_evidence(self, novel_id: str, run_tag: str = "") -> int:
+        return int(
+            self.conn.execute(
+                "SELECT COUNT(*) FROM scoring_evidence WHERE novel_id=? AND run_tag=?",
+                (novel_id, run_tag),
+            ).fetchone()[0]
+        )
+
+    def add_stage_artifact(self, artifact: StageArtifact) -> None:
+        self.conn.execute(
+            "INSERT OR REPLACE INTO stage_artifact(artifact_id, stage_run_id, kind,"
+            " path_or_ref, content_digest, created_at) VALUES (?,?,?,?,?,?)",
+            (
+                artifact.artifact_id,
+                artifact.stage_run_id,
+                artifact.kind,
+                artifact.path_or_ref,
+                artifact.content_digest,
+                artifact.created_at,
+            ),
+        )
+        self.conn.commit()
+
+    def list_stage_artifacts(self, stage_run_id: str) -> list[StageArtifact]:
+        cur = self.conn.execute(
+            "SELECT * FROM stage_artifact WHERE stage_run_id=? ORDER BY created_at",
+            (stage_run_id,),
+        )
+        return [
+            StageArtifact(
+                artifact_id=r["artifact_id"],
+                stage_run_id=r["stage_run_id"],
+                kind=r["kind"],
+                path_or_ref=r["path_or_ref"],
+                content_digest=r["content_digest"],
+                created_at=r["created_at"],
+            )
+            for r in cur.fetchall()
+        ]
+
+    def _job_from_row(self, row: sqlite3.Row) -> Job:
+        return Job(
+            job_id=row["job_id"],
+            novel_id=row["novel_id"],
+            kind=row["kind"],
+            run_id=row["run_id"],
+            status=StageStatus(row["status"]),
+            params_json=row["params_json"],
+            created_at=row["created_at"],
+            started_at=row["started_at"],
+            finished_at=row["finished_at"],
+            error_summary=row["error_summary"],
+        )
+
+    def add_job(self, job: Job) -> None:
+        self.conn.execute(
+            "INSERT OR REPLACE INTO job(job_id, novel_id, kind, run_id, status,"
+            " params_json, created_at, started_at, finished_at, error_summary)"
+            " VALUES (?,?,?,?,?,?,?,?,?,?)",
+            (
+                job.job_id,
+                job.novel_id,
+                job.kind,
+                job.run_id,
+                job.status.value,
+                job.params_json,
+                job.created_at,
+                job.started_at,
+                job.finished_at,
+                job.error_summary,
+            ),
+        )
+        self.conn.commit()
+
+    def update_job(
+        self,
+        job_id: str,
+        *,
+        status: StageStatus | None = None,
+        run_id: str | None = None,
+        started_at: float | None = None,
+        finished_at: float | None = None,
+        error_summary: str | None = None,
+    ) -> None:
+        """Partial update -- `None` args leave the column unchanged, same
+        convention as `update_stage_run`."""
+        current = self.get_job(job_id)
+        if current is None:
+            raise KeyError(f"no job {job_id!r}")
+        self.conn.execute(
+            "UPDATE job SET status=?, run_id=?, started_at=?, finished_at=?,"
+            " error_summary=? WHERE job_id=?",
+            (
+                status.value if status is not None else current.status.value,
+                run_id if run_id is not None else current.run_id,
+                started_at if started_at is not None else current.started_at,
+                finished_at if finished_at is not None else current.finished_at,
+                error_summary if error_summary is not None else current.error_summary,
+                job_id,
+            ),
+        )
+        self.conn.commit()
+
+    def get_job(self, job_id: str) -> Job | None:
+        row = self.conn.execute("SELECT * FROM job WHERE job_id=?", (job_id,)).fetchone()
+        return self._job_from_row(row) if row is not None else None
+
+    def list_jobs(self, novel_id: str) -> list[Job]:
+        cur = self.conn.execute(
+            "SELECT * FROM job WHERE novel_id=? ORDER BY created_at DESC", (novel_id,)
+        )
+        return [self._job_from_row(r) for r in cur.fetchall()]
 
     # ---- misc ---------------------------------------------------------
 

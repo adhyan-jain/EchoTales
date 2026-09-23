@@ -18,6 +18,7 @@ contesting one persona is possession.
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import Annotated, Literal
 from typing import Self as SelfType
 
@@ -562,6 +563,15 @@ class RefImageCandidate(BaseModel):
     found_at: float = 0.0
     user_uploaded: bool = False
     selected: bool = False
+    #: Which body this candidate is for, when known -- `self_id` alone can't
+    #: distinguish a reincarnation/transmigration self's bodies (Visual
+    #: Rendering Track Phase 1d). Nullable: pre-existing rows and searches
+    #: run before a body split is known genuinely don't have this yet.
+    persona_id: str | None = None
+    #: `persona/refimg_search.py::evaluate_candidate_quality`'s score,
+    #: persisted instead of used transiently-only, so a stored candidate
+    #: carries its own quality signal rather than losing it after search.
+    quality_score: float | None = None
 
 
 class RefImageSelectionEvent(BaseModel):
@@ -582,6 +592,122 @@ class RefImageSelectionEvent(BaseModel):
     actor: str
     note: str = ""
     at: float = 0.0
+    #: Same reconciliation as `RefImageCandidate.persona_id` -- nullable for
+    #: the same reason (Visual Rendering Track Phase 1d).
+    persona_id: str | None = None
+
+
+# ---------------------------------------------------------------------------
+# Pipeline run / provenance tracking
+# ---------------------------------------------------------------------------
+
+
+class StageStatus(StrEnum):
+    """Lifecycle of one `StageRun`.
+
+    `RUNNING` with no terminal transition is how a killed process is
+    detected on the next invocation: a `stage_run` row stuck at `RUNNING`
+    was never finalized, so a resume check must treat it as "needs rerun",
+    never as "already done" (a `SUCCEEDED`/`FAILED`/`PARTIAL` input-digest
+    match is the only thing allowed to short-circuit re-execution).
+    """
+
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    SUCCEEDED = "SUCCEEDED"
+    FAILED = "FAILED"
+    #: At least one commit-chunk succeeded before failure -- distinct from
+    #: FAILED so "12/40 chapters done" is visible instead of indistinguishable
+    #: from a run that made zero progress.
+    PARTIAL = "PARTIAL"
+
+
+class PipelineRun(BaseModel):
+    """One `echotales run` invocation (or a manually-chained stage sequence
+    sharing a `run_id`).
+
+    `run_id` is a stable, human-legible function of `(novel_id, timestamp,
+    source_digest)` -- deliberately never a DB auto-increment id, per the
+    project's explicit instruction that auto-increment row ids must never
+    stand in for semantic identity (see `resolve/runner.py`'s self-id
+    stability fix for the case this generalizes from).
+    """
+
+    run_id: str
+    novel_id: str
+    source_digest: str
+    pipeline_version: str = ""
+    config_json: str = "{}"
+    model_versions_json: str = "{}"
+    created_at: float = 0.0
+    status: StageStatus = StageStatus.PENDING
+
+
+class StageRun(BaseModel):
+    """One stage invocation within a `PipelineRun`.
+
+    `input_digest` is what makes resumability and cache invalidation real:
+    a stage command checks for an existing `SUCCEEDED` `StageRun` with a
+    matching `input_digest` before doing any work, mirroring the pattern
+    `render/cache_key.py` already uses for individual panels, generalized to
+    every stage.
+    """
+
+    stage_run_id: str
+    run_id: str
+    stage_name: str
+    input_digest: str = ""
+    output_digest: str = ""
+    config_json: str = "{}"
+    started_at: float = 0.0
+    finished_at: float | None = None
+    status: StageStatus = StageStatus.PENDING
+    error_summary: str = ""
+    #: Which prior stage_run(s) this one's input was actually read from --
+    #: lets a later stage assert its input came from a specific completed
+    #: run rather than "whatever happens to be in the DB right now".
+    parent_stage_run_ids: list[str] = Field(default_factory=list)
+
+
+class StageArtifact(BaseModel):
+    """A pointer to what a `StageRun` produced.
+
+    `path_or_ref` is a DB row-range descriptor, a manifest.jsonl path, or an
+    image directory -- whatever the stage's real output already is; this
+    table does not duplicate that output, only makes it queryable by
+    provenance without recomputing a hash.
+    """
+
+    artifact_id: str
+    stage_run_id: str
+    kind: str
+    path_or_ref: str
+    content_digest: str = ""
+    created_at: float = 0.0
+
+
+class Job(BaseModel):
+    """The HTTP-facing unit of work `webview_server.py`'s orchestration
+    routes enqueue -- "what did I ask the server to do, and is it done."
+
+    Distinct from `PipelineRun`/`StageRun`: those stay the pipeline-internal
+    provenance record a job's execution writes into (via
+    `pipeline_run.py::stage()`), reused as-is rather than duplicated. A job
+    wraps exactly one call into one existing stage function (`ingest_novel`,
+    `resolve_novel`, `render_panels`, ...), so `run_id` here is the
+    `PipelineRun` that call's `StageRun` bookkeeping lands under.
+    """
+
+    job_id: str
+    novel_id: str
+    kind: str
+    run_id: str = ""
+    status: StageStatus = StageStatus.PENDING
+    params_json: str = "{}"
+    created_at: float = 0.0
+    started_at: float | None = None
+    finished_at: float | None = None
+    error_summary: str = ""
 
 
 class StateOfResult(BaseModel):

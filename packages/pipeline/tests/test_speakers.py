@@ -438,6 +438,126 @@ def test_anonymous_slots_still_alternate_within_one_scene() -> None:
     ]
 
 
+def _unresolved_span(block_index: int, *, chapter: float = 1.0) -> Span:
+    from echotales.core.enums import AttributionMethod, SpanType
+    from echotales.core.models import Span
+
+    return Span(
+        id=f"ri:{chapter:g}:{block_index}",
+        novel_id="ri",
+        chapter=chapter,
+        block_index=block_index,
+        start=0,
+        end=5,
+        span_type=SpanType.DIALOGUE,
+        text="“...”",
+        attribution_method=AttributionMethod.UNRESOLVED,
+    )
+
+
+def _present_mention(block_index: int, target_id: str | None, *, chapter: float = 1.0) -> Mention:
+    return Mention(
+        id=f"m:{chapter:g}:{block_index}:{target_id}",
+        novel_id="ri",
+        segment_id="s",
+        chapter=chapter,
+        offset=0,
+        text="the Guard Captain",
+        alias_type=AliasType.EPITHET,
+        span_type=SpanType.NARRATION_ACTION,
+        reference_mode=ReferenceMode.PRESENT,
+        block_index=block_index,
+        target_kind=None,
+        target_id=target_id,
+    )
+
+
+class TestAnonymousSlotsKeyOffAResolvedRecurringEntity:
+    """Core Pipeline Hardening #11 (HANDOFF defect #8): an unattributed
+    line must use a resolved, cross-chapter-stable target_id instead of a
+    fresh per-scene slot, when exactly one already-resolved, present
+    entity shares its block."""
+
+    def test_single_resolved_present_entity_is_used_instead_of_a_slot(self) -> None:
+        from echotales.pipeline.speakers.runner import _assign_anonymous_slots
+
+        span_ = _unresolved_span(0)
+        mentions = [_present_mention(0, "ri:self:guard-captain")]
+
+        _assign_anonymous_slots("ri", 1.0, [span_], [(0, 30)], mentions)
+
+        assert span_.speaker_self_id == "ri:self:guard-captain"
+        assert span_.attribution_method is AttributionMethod.ANONYMOUS_SLOT
+
+    def test_same_resolved_entity_in_a_later_chapter_gets_the_same_id(self) -> None:
+        """The direct fix for defect #8: a recurring unnamed character
+        must not get a fresh voice every chapter."""
+        from echotales.pipeline.speakers.runner import _assign_anonymous_slots
+
+        span_ch1 = _unresolved_span(0, chapter=1.0)
+        _assign_anonymous_slots(
+            "ri", 1.0, [span_ch1], [(0, 30)], [_present_mention(0, "ri:self:guard-captain", chapter=1.0)]
+        )
+
+        span_ch5 = _unresolved_span(0, chapter=5.0)
+        _assign_anonymous_slots(
+            "ri", 5.0, [span_ch5], [(0, 30)], [_present_mention(0, "ri:self:guard-captain", chapter=5.0)]
+        )
+
+        assert span_ch1.speaker_self_id == span_ch5.speaker_self_id == "ri:self:guard-captain"
+
+    def test_ambiguous_two_candidates_falls_back_to_the_slot_path(self) -> None:
+        """The module's own stated reason ANONYMOUS_SLOT exists at all:
+        two resolved-but-unnamed people in one scene must not have one
+        guessed onto the other's dialogue."""
+        from echotales.pipeline.speakers.runner import _assign_anonymous_slots
+
+        span_ = _unresolved_span(0)
+        mentions = [
+            _present_mention(0, "ri:self:guard-a"),
+            _present_mention(0, "ri:self:guard-b"),
+        ]
+
+        _assign_anonymous_slots("ri", 1.0, [span_], [(0, 30)], mentions)
+
+        assert span_.speaker_self_id == "ri:anon:1:s0:1"
+
+    def test_no_mentions_argument_keeps_the_pure_slot_behaviour(self) -> None:
+        """Backward compatibility: a caller that doesn't pass mentions
+        (mentions=None, the default) must see byte-identical behaviour to
+        before this fix."""
+        from echotales.pipeline.speakers.runner import _assign_anonymous_slots
+
+        span_ = _unresolved_span(0)
+        _assign_anonymous_slots("ri", 1.0, [span_], [(0, 30)])
+
+        assert span_.speaker_self_id == "ri:anon:1:s0:1"
+
+    def test_non_present_resolved_mention_is_not_used(self) -> None:
+        """A resolved entity merely *referenced* in the scene (not
+        physically present) is not a plausible dialogue speaker."""
+        from echotales.pipeline.speakers.runner import _assign_anonymous_slots
+
+        span_ = _unresolved_span(0)
+        mention = Mention(
+            id="m1",
+            novel_id="ri",
+            segment_id="s",
+            chapter=1.0,
+            offset=0,
+            text="the Guard Captain",
+            alias_type=AliasType.EPITHET,
+            span_type=SpanType.NARRATION_EXPOSITION,
+            reference_mode=ReferenceMode.NARRATOR_REFERENCE,
+            block_index=0,
+            target_id="ri:self:guard-captain",
+        )
+
+        _assign_anonymous_slots("ri", 1.0, [span_], [(0, 30)], [mention])
+
+        assert span_.speaker_self_id == "ri:anon:1:s0:1"
+
+
 def test_delivery_markers_ignore_words_inside_the_quote() -> None:
     """A marker describes how a line is said, not what it demands.
 

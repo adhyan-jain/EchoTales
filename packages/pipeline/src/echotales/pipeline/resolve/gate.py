@@ -25,12 +25,36 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from echotales.core.enums import Decision
+from echotales.core.enums import Decision, ResolutionMethod
 from echotales.core.models import Candidate
 
 #: Uncalibrated fallbacks. Wide DEFER band on purpose.
 FALLBACK_LINK_THRESHOLD = 0.80
 FALLBACK_NEW_THRESHOLD = 0.35
+
+
+@dataclass(frozen=True, slots=True)
+class GateDecision:
+    """What the gate decided, and which rung of the ladder decided it.
+
+    `method` is the honest answer to "how was this settled", and it exists
+    because the previous 3-tuple had no room for it: `runner.py` hardcoded
+    `ResolutionMethod.SCORED` at both `_apply_link` call sites, so
+    `ResolveReport.by_method` reported 100% SCORED on every run by
+    construction -- including for the gazetteer hits that carry essentially
+    every real link and never reach the scorer at all. That made the
+    project's "% resolved by gazetteer vs declaration vs scorer" claim
+    unmeasurable from its own output (EVOLUTION 4.77).
+
+    `SCORED` is the right default: every path that reaches the scorer, and
+    every NEW-entity path, genuinely went through it or through no candidate
+    at all.
+    """
+
+    decision: Decision
+    candidate: Candidate | None
+    rationale: str
+    method: ResolutionMethod = ResolutionMethod.SCORED
 
 
 @dataclass(slots=True)
@@ -48,6 +72,12 @@ class ConformalGate:
     calibrated: bool = False
     #: Nonconformity scores from calibration, retained for auditing.
     calibration_size: int = 0
+    #: Hard pre-filter gates to switch off, for ablation only (see
+    #: `score.PREFILTER_GATES`). Empty on every production path. Lives on the
+    #: gate rather than being passed per call because an ablation condition
+    #: holds for a whole run, and a per-call parameter would have to be
+    #: threaded through `resolve_group` and `retry_deferred` identically.
+    disabled_prefilters: frozenset[str] = frozenset()
 
     def calibrate(
         self,
@@ -106,30 +136,39 @@ class ConformalGate:
         self.calibration_size = len(examples)
         return self
 
-    def decide(self, candidates: list[Candidate]) -> tuple[Decision, Candidate | None, str]:
+    def decide(self, candidates: list[Candidate]) -> GateDecision:
         """Choose between linking to the best candidate, creating, or deferring.
 
         Hard pre-filters run first. A blocked candidate is removed from
         consideration entirely rather than being outvoted, and a
         declaration/exact-alias match links immediately without scoring.
+
+        Returns a `GateDecision` rather than a bare tuple since 2026-09-23:
+        the pre-filter already knew which rung of the ladder settled the case
+        and that fact was being flattened into `rationale` and then discarded,
+        so every link in the database claimed to be `SCORED` (EVOLUTION 4.77).
         """
         from echotales.pipeline.resolve.score import PrefilterVerdict, prefilter
 
         if not candidates:
-            return Decision.NEW, None, "no candidates retrieved"
+            return GateDecision(Decision.NEW, None, "no candidates retrieved")
 
         allowed: list[Candidate] = []
         for candidate in candidates:
-            result = prefilter(candidate.evidence)
+            result = prefilter(
+                candidate.evidence, disabled_prefilters=self.disabled_prefilters
+            )
             if result.verdict is PrefilterVerdict.FORCE_LINK:
                 candidate.probability = max(candidate.probability, result.confidence)
-                return Decision.LINK, candidate, result.reason
+                return GateDecision(
+                    Decision.LINK, candidate, result.reason, method=result.method
+                )
             if result.verdict is PrefilterVerdict.BLOCK:
                 continue
             allowed.append(candidate)
 
         if not allowed:
-            return Decision.NEW, None, "every candidate blocked by a hard filter"
+            return GateDecision(Decision.NEW, None, "every candidate blocked by a hard filter")
 
         candidates = allowed
         best = max(candidates, key=lambda c: c.probability)
@@ -140,17 +179,21 @@ class ConformalGate:
             # false merge the deferred queue exists to avoid.
             runner_up = sorted((c.probability for c in candidates), reverse=True)
             if len(runner_up) > 1 and runner_up[0] - runner_up[1] < 0.05:
-                return (
+                return GateDecision(
                     Decision.DEFER,
                     best,
                     f"top two candidates within {runner_up[0] - runner_up[1]:.3f}",
                 )
-            return Decision.LINK, best, f"p={best.probability:.3f} >= {self.link_threshold:.3f}"
+            return GateDecision(
+                Decision.LINK, best, f"p={best.probability:.3f} >= {self.link_threshold:.3f}"
+            )
 
         if best.probability <= self.new_threshold:
-            return Decision.NEW, None, f"p={best.probability:.3f} <= {self.new_threshold:.3f}"
+            return GateDecision(
+                Decision.NEW, None, f"p={best.probability:.3f} <= {self.new_threshold:.3f}"
+            )
 
-        return Decision.DEFER, best, f"p={best.probability:.3f} in deferred band"
+        return GateDecision(Decision.DEFER, best, f"p={best.probability:.3f} in deferred band")
 
     def save(self, path: Path | str) -> None:
         Path(path).parent.mkdir(parents=True, exist_ok=True)

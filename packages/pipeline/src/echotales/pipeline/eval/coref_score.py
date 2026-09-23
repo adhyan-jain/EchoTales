@@ -33,7 +33,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 
 from echotales.core.store import Store
-from echotales.pipeline.eval.gold import GoldMention, GoldSet
+from echotales.pipeline.eval.gold import GoldMention, GoldSet, MentionKey
 
 
 @dataclass(slots=True)
@@ -121,7 +121,7 @@ def _block_starts(store: Store, novel_id: str, chapter: float) -> dict[int, int]
 
 def _system_partition(
     store: Store, novel_id: str, gold: GoldSet
-) -> dict[tuple[str, float, int], str | None]:
+) -> dict[MentionKey, str | None]:
     """Mention key -> system target_id, restricted to gold-annotated positions.
 
     Matched by chapter-absolute offset after translating each system mention
@@ -134,7 +134,7 @@ def _system_partition(
     for m in gold.mentions:
         gold_positions[m.chapter].append(m)
 
-    result: dict[tuple[str, float, int], str | None] = {}
+    result: dict[MentionKey, str | None] = {}
     for chapter, wanted in gold_positions.items():
         block_starts = _block_starts(store, novel_id, chapter)
         mentions = store.get_mentions(novel_id, chapter=chapter)
@@ -158,12 +158,12 @@ def _system_partition(
 
 def score_b3(store: Store, novel_id: str, gold: GoldSet) -> B3Result:
     """B-cubed precision/recall/F1 of the system's partition against gold."""
-    gold_clusters: dict[str, set[tuple[str, float, int]]] = defaultdict(set)
+    gold_clusters: dict[str, set[MentionKey]] = defaultdict(set)
     for m in gold.mentions:
         if m.identity:
             gold_clusters[m.identity].add(m.key)
     system_of = _system_partition(store, novel_id, gold)
-    system_clusters: dict[str, set[tuple[str, float, int]]] = defaultdict(set)
+    system_clusters: dict[str, set[MentionKey]] = defaultdict(set)
     for key, target_id in system_of.items():
         if target_id:
             system_clusters[target_id].add(key)
@@ -216,3 +216,231 @@ def score_b3(store: Store, novel_id: str, gold: GoldSet) -> B3Result:
         total_gold=len(scorable),
         worst=disagreements,
     )
+
+
+# ---------------------------------------------------------------------------
+# Standard coreference metrics: MUC, B-cubed, CEAF-e, CoNLL F1
+#
+# `score_b3` above is this project's own variant and stays as it is: it reports
+# against the resolver's real behaviour, where declining to link is a first-class
+# outcome (non-negotiable #9, precision over recall), so it penalises an
+# unresolved mention in the recall denominator and excludes it from precision.
+# That asymmetry is deliberate and documented, and it makes the number
+# incomparable to anything in the literature.
+#
+# The functions below are the textbook definitions instead, so a number computed
+# here can sit beside BookNLP, LitBank and LINK-KG results without an asterisk.
+# They differ from `score_b3` in exactly one modelling choice: a gold mention the
+# system never linked becomes a **singleton system cluster**, which is what every
+# published scorer does. Both views are worth having; silently blending them is
+# not, which is why they are separate functions rather than a flag.
+#
+# These are pure partition math -- no Store, no database, no offsets. That is the
+# point: `score_b3` had no test coverage for four months because exercising it
+# required building a novel first, and a scoring bug invalidates every number
+# downstream of it.
+# ---------------------------------------------------------------------------
+
+#: Re-exported under the scorer's short local name; the definition lives in
+#: `eval/gold.py` so the key shape cannot drift between the two modules.
+Key = MentionKey
+
+
+@dataclass(frozen=True, slots=True)
+class MetricScore:
+    name: str
+    precision: float
+    recall: float
+    #: The CoNLL figure is an average of three F1s and has no precision or
+    #: recall of its own. Printing invented ones would invite someone to quote
+    #: "CoNLL precision", which is not a quantity.
+    f1_only: bool = False
+
+    @property
+    def f1(self) -> float:
+        total = self.precision + self.recall
+        return 2 * self.precision * self.recall / total if total else 0.0
+
+    def summary(self) -> str:
+        if self.f1_only:
+            return f"{self.name:<8} F1={self.f1:6.1%}  (mean of MUC/B3/CEAFe F1)"
+        return (
+            f"{self.name:<8} P={self.precision:6.1%}  R={self.recall:6.1%}  "
+            f"F1={self.f1:6.1%}"
+        )
+
+
+def _grouped(partition: dict[Key, str]) -> list[set[Key]]:
+    """Cluster-id -> member set, as a list of sets. Order is deterministic."""
+    buckets: dict[str, set[Key]] = defaultdict(set)
+    for key, cluster_id in partition.items():
+        buckets[cluster_id].add(key)
+    return [buckets[cid] for cid in sorted(buckets)]
+
+
+def _ratio(numerator: float, denominator: float) -> float:
+    return numerator / denominator if denominator else 0.0
+
+
+def muc(gold: dict[Key, str], system: dict[Key, str]) -> MetricScore:
+    """Vilain et al. (1995) link-based F1.
+
+    Counts the minimum number of merges needed to turn one partition into the
+    other. It is reported because it is conventional, not because it is
+    informative here: MUC is blind to singletons, so a system that correctly
+    isolates a one-scene walk-on gets no credit for it. On a cast with a long
+    tail of single-mention characters -- which is every chapter of this corpus --
+    that is most of the decisions. Read it next to B-cubed, never alone.
+    """
+
+    def _side(a: list[set[Key]], b_of: dict[Key, str]) -> tuple[float, float]:
+        num = den = 0.0
+        for cluster in a:
+            if len(cluster) < 2:
+                continue  # contributes 0/0; MUC simply cannot see singletons
+            partitions = len({b_of.get(k, f"__unlinked__{k}") for k in cluster})
+            num += len(cluster) - partitions
+            den += len(cluster) - 1
+        return num, den
+
+    r_num, r_den = _side(_grouped(gold), system)
+    p_num, p_den = _side(_grouped(system), gold)
+    return MetricScore("MUC", _ratio(p_num, p_den), _ratio(r_num, r_den))
+
+
+def b_cubed(gold: dict[Key, str], system: dict[Key, str]) -> MetricScore:
+    """Bagga & Baldwin (1998), the standard per-mention formulation.
+
+    Unlike `score_b3`, both precision and recall average over the same mention
+    set, and an unlinked mention is its own singleton rather than a special case.
+    """
+    gold_of = _index(gold)
+    sys_of = _index(system)
+    keys = sorted(set(gold) | set(system))
+    precisions: list[float] = []
+    recalls: list[float] = []
+    for key in keys:
+        g = gold_of.get(key, {key})
+        s = sys_of.get(key, {key})
+        overlap = len(g & s)
+        precisions.append(_ratio(overlap, len(s)))
+        recalls.append(_ratio(overlap, len(g)))
+    n = len(keys)
+    return MetricScore("B3", _ratio(sum(precisions), n), _ratio(sum(recalls), n))
+
+
+def _index(partition: dict[Key, str]) -> dict[Key, set[Key]]:
+    buckets: dict[str, set[Key]] = defaultdict(set)
+    for key, cluster_id in partition.items():
+        buckets[cluster_id].add(key)
+    return {key: buckets[cid] for key, cid in partition.items()}
+
+
+def ceafe(gold: dict[Key, str], system: dict[Key, str]) -> MetricScore:
+    """Luo (2005) entity-based CEAF, φ₄ similarity.
+
+    Each gold entity is aligned to at most one system entity, which is the one
+    property MUC and B-cubed lack: it charges for inventing an entity and for
+    dropping one, rather than scoring every mention independently. That matters
+    for this project specifically, where the documented failure mode is
+    over-splitting one character into several selves.
+    """
+    gold_clusters = _grouped(gold)
+    sys_clusters = _grouped(system)
+    if not gold_clusters or not sys_clusters:
+        return MetricScore("CEAFe", 0.0, 0.0)
+    weights = [
+        [_ratio(2 * len(g & s), len(g) + len(s)) for s in sys_clusters]
+        for g in gold_clusters
+    ]
+    total = _max_weight_matching(weights)
+    return MetricScore("CEAFe", _ratio(total, len(sys_clusters)), _ratio(total, len(gold_clusters)))
+
+
+def conll_f1(*scores: MetricScore) -> float:
+    """The unweighted mean of MUC, B-cubed and CEAF-e F1 -- the CoNLL-2012 headline."""
+    return sum(s.f1 for s in scores) / len(scores) if scores else 0.0
+
+
+def _max_weight_matching(weights: list[list[float]]) -> float:
+    """Maximum-weight one-to-one assignment (Jonker-Volgenant, O(n^3)).
+
+    Written out rather than taken from `scipy.optimize.linear_sum_assignment`
+    because scipy is not a declared dependency of this package -- it arrives
+    transitively via the optional `ml`/`render` extras. A metric whose value
+    depends on which optional extras happen to be installed is not a metric.
+    """
+    rows, cols = len(weights), len(weights[0]) if weights else 0
+    if not rows or not cols:
+        return 0.0
+    size = max(rows, cols)
+    inf = float("inf")
+    # Minimise negated weight; pad to square with zero-cost dummy cells.
+    cost = [[0.0] * size for _ in range(size)]
+    for i in range(rows):
+        for j in range(cols):
+            cost[i][j] = -weights[i][j]
+
+    u = [0.0] * (size + 1)
+    v = [0.0] * (size + 1)
+    match = [0] * (size + 1)  # column -> row
+    way = [0] * (size + 1)
+    for i in range(1, size + 1):
+        match[0] = i
+        j0 = 0
+        minv = [inf] * (size + 1)
+        used = [False] * (size + 1)
+        while True:
+            used[j0] = True
+            i0, delta, j1 = match[j0], inf, 0
+            for j in range(1, size + 1):
+                if used[j]:
+                    continue
+                cur = cost[i0 - 1][j - 1] - u[i0] - v[j]
+                if cur < minv[j]:
+                    minv[j], way[j] = cur, j0
+                if minv[j] < delta:
+                    delta, j1 = minv[j], j
+            for j in range(size + 1):
+                if used[j]:
+                    u[match[j]] += delta
+                    v[j] -= delta
+                else:
+                    minv[j] -= delta
+            j0 = j1
+            if match[j0] == 0:
+                break
+        while j0:
+            j1 = way[j0]
+            match[j0] = match[j1]
+            j0 = j1
+
+    total = 0.0
+    for j in range(1, size + 1):
+        i = match[j]
+        if 1 <= i <= rows and 1 <= j <= cols:
+            total += weights[i - 1][j - 1]
+    return total
+
+
+def score_all(store: Store, novel_id: str, gold: GoldSet) -> list[MetricScore]:
+    """MUC, B-cubed and CEAF-e over one gold set, plus the CoNLL average.
+
+    Uses the same offset-translated mention matching as `score_b3`, so the two
+    disagree only where their definitions disagree, never because they looked at
+    different mentions.
+    """
+    system_of = _system_partition(store, novel_id, gold)
+    gold_partition: dict[Key, str] = {m.key: m.identity for m in gold.mentions if m.identity}
+    system_partition: dict[Key, str] = {
+        key: target_id
+        for key, target_id in system_of.items()
+        if target_id and key in gold_partition
+    }
+    scores = [
+        muc(gold_partition, system_partition),
+        b_cubed(gold_partition, system_partition),
+        ceafe(gold_partition, system_partition),
+    ]
+    average = conll_f1(*scores)
+    return [*scores, MetricScore("CoNLL", average, average, f1_only=True)]

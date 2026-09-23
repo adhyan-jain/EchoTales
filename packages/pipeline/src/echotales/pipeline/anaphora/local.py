@@ -426,3 +426,24 @@ def present_cast(
         if m.reference_mode is ReferenceMode.PRESENT
         and (person_ids is None or m.target_id in person_ids)
     }
+
+
+def present_cast_ids(
+    mentions: list[Mention], person_ids: frozenset[str] | None = None
+) -> set[str]:
+    """`present_cast` by entity id rather than by surface form.
+
+    Same rule, same file, deliberately: co-presence is decided in exactly one
+    place, and a second copy of "physically present means `reference_mode is
+    PRESENT`, filtered by `Self.kind`" would drift from this one. Surfaces are
+    what a scoring feature wants; ids are what an *observer* wants, since the
+    observer axis names who witnessed something and a surface form is not a
+    who (EVOLUTION 4.80).
+    """
+    return {
+        m.target_id
+        for m in mentions
+        if m.target_id
+        and m.reference_mode is ReferenceMode.PRESENT
+        and (person_ids is None or m.target_id in person_ids)
+    }

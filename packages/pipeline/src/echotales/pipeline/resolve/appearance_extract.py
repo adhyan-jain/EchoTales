@@ -48,6 +48,7 @@ from echotales.core.enums import (
 )
 from echotales.core.interval import FuzzyInterval
 from echotales.core.models import Attribute, DiscoursePosition
+from echotales.core.pipeline_run import PartialStageFailure
 from echotales.core.store import Store
 from pydantic import BaseModel, Field
 
@@ -1011,6 +1012,7 @@ def extract_appearance(
     client: object,
     chapters: list[float] | None = None,
     max_chapters: int = 40,
+    commit_every: int = 20,
 ) -> AppearanceReport:
     """Read appearance out of narration and store it under each persona.
 
@@ -1025,94 +1027,121 @@ def extract_appearance(
     report = AppearanceReport(novel_id=novel_id)
     allowed = set(chapters) if chapters is not None else None
 
-    for entity in store.all_selves(novel_id):
-        if not entity.kind.is_person:
-            continue
-        report.entities_considered += 1
+    # Core Pipeline Hardening #6: the per-LLM-call try/except below already
+    # keeps one bad model response from aborting the run (logged, counted,
+    # skipped). What it does not cover is an exception anywhere else in the
+    # loop body (citation/grounding filters, `_write_appearance`) -- that
+    # still propagated with zero commit, since the only commit was at the
+    # very end. This outer try/except adds the same periodic-commit +
+    # rollback-and-attribute boundary `build_personas`/`resolve_novel` use.
+    last_committed_index = 0
+    idx = 0
+    entity = None
+    try:
+        for idx, entity in enumerate(store.all_selves(novel_id), start=1):
+            if not entity.kind.is_person:
+                continue
+            report.entities_considered += 1
 
-        if eligible_prominence(store, novel_id, entity) not in _ELIGIBLE:
-            report.skipped_not_prominent += 1
-            continue
+            if eligible_prominence(store, novel_id, entity) not in _ELIGIBLE:
+                report.skipped_not_prominent += 1
+                continue
 
-        # **One call per body, not per character.** A regressor's two bodies
-        # are described in disjoint stretches of the novel, and pooling their
-        # evidence into one call asks the model to average a 500-year-old and
-        # a fifteen-year-old into a single face -- it will answer, and the
-        # answer will describe neither. Splitting the evidence by epoch is
-        # what lets each body be read out of the text rather than written
-        # down by hand (`persona/canon.py::CANON_BY_BODY` was the stopgap).
-        #
-        # Chapter granularity here, deliberately: a body change can fall
-        # mid-chapter (RI's does), but evidence is gathered per chapter, so
-        # the transition chapter goes wholly to the body that holds most of
-        # it. Splitting evidence per block would be more precise and is not
-        # worth the complexity until a novel needs it.
-        bodies = _chapters_by_body(store, novel_id, entity.id, allowed)
-        if not bodies:
-            # No chapters in range at all. Counted rather than skipped
-            # silently: a stage whose output is invisible until a panel
-            # renders wrong must not quietly drop entities from its own
-            # accounting.
-            report.skipped_no_evidence += 1
-            continue
-
-        for persona_id, epoch_chapters in bodies:
-            evidence = gather_appearance_evidence(
-                store,
-                novel_id,
-                entity.id,
-                max_chapters=max_chapters,
-                allowed_chapters=epoch_chapters,
-            )
-            passages = [t for _c, t in evidence]
-            if not passages:
+            # **One call per body, not per character.** A regressor's two bodies
+            # are described in disjoint stretches of the novel, and pooling their
+            # evidence into one call asks the model to average a 500-year-old and
+            # a fifteen-year-old into a single face -- it will answer, and the
+            # answer will describe neither. Splitting the evidence by epoch is
+            # what lets each body be read out of the text rather than written
+            # down by hand (`persona/canon.py::CANON_BY_BODY` was the stopgap).
+            #
+            # Chapter granularity here, deliberately: a body change can fall
+            # mid-chapter (RI's does), but evidence is gathered per chapter, so
+            # the transition chapter goes wholly to the body that holds most of
+            # it. Splitting evidence per block would be more precise and is not
+            # worth the complexity until a novel needs it.
+            bodies = _chapters_by_body(store, novel_id, entity.id, allowed)
+            if not bodies:
+                # No chapters in range at all. Counted rather than skipped
+                # silently: a stage whose output is invisible until a panel
+                # renders wrong must not quietly drop entities from its own
+                # accounting.
                 report.skipped_no_evidence += 1
                 continue
 
-            try:
-                result = client.complete(  # type: ignore[attr-defined]
-                    Task.APPEARANCE_EXTRACTION,
-                    build_prompt(entity.canonical_label, passages),
-                    AppearanceResponse,
-                    system=SYSTEM,
-                    novel_id=novel_id,
+            for persona_id, epoch_chapters in bodies:
+                evidence = gather_appearance_evidence(
+                    store,
+                    novel_id,
+                    entity.id,
+                    max_chapters=max_chapters,
+                    allowed_chapters=epoch_chapters,
                 )
-            except Exception as exc:
-                log.warning("appearance extraction failed for %s: %s", entity.id, exc)
-                report.failures += 1
-                continue
+                passages = [t for _c, t in evidence]
+                if not passages:
+                    report.skipped_no_evidence += 1
+                    continue
 
-            report.entities_called += 1
-            surfaces = _surface_forms(store, novel_id, entity.id)
-            # Citation checks first (Fix 2): a claim whose quote doesn't
-            # verifiably exist, or isn't about this target, never reaches
-            # `_clean_values`. What survives is still run through the
-            # existing transient/self-reference/overlength/grounding
-            # filters -- citation and word-grounding are independent
-            # defences against the same failure mode, not a replacement
-            # for each other.
-            cited_values = _verify_citations(
-                _claims_from(result.value), passages, surfaces, report
-            )
-            values = _clean_values(
-                cited_values,
-                entity.canonical_label,
-                surfaces,
-                passages,
-            )
-            if not values:
-                continue
+                try:
+                    result = client.complete(  # type: ignore[attr-defined]
+                        Task.APPEARANCE_EXTRACTION,
+                        build_prompt(entity.canonical_label, passages),
+                        AppearanceResponse,
+                        system=SYSTEM,
+                        novel_id=novel_id,
+                    )
+                except Exception as exc:
+                    log.warning("appearance extraction failed for %s: %s", entity.id, exc)
+                    report.failures += 1
+                    continue
 
-            _write_appearance(
-                store,
-                novel_id,
-                entity,
-                persona_id,
-                values,
-                evidence,
-                surfaces,
-                report=report,
-            )
+                report.entities_called += 1
+                surfaces = _surface_forms(store, novel_id, entity.id)
+                # Citation checks first (Fix 2): a claim whose quote doesn't
+                # verifiably exist, or isn't about this target, never reaches
+                # `_clean_values`. What survives is still run through the
+                # existing transient/self-reference/overlength/grounding
+                # filters -- citation and word-grounding are independent
+                # defences against the same failure mode, not a replacement
+                # for each other.
+                cited_values = _verify_citations(
+                    _claims_from(result.value), passages, surfaces, report
+                )
+                values = _clean_values(
+                    cited_values,
+                    entity.canonical_label,
+                    surfaces,
+                    passages,
+                )
+                if not values:
+                    continue
+
+                _write_appearance(
+                    store,
+                    novel_id,
+                    entity,
+                    persona_id,
+                    values,
+                    evidence,
+                    surfaces,
+                    report=report,
+                )
+
+            if idx % commit_every == 0:
+                store.conn.commit()
+                last_committed_index = idx
+    except Exception as exc:
+        store.conn.rollback()
+        label = entity.canonical_label if entity is not None else "?"
+        if last_committed_index > 0:
+            raise PartialStageFailure(
+                f"extract_appearance({novel_id!r}) failed at entity #{idx} ({label}): {exc}",
+                progress=f"committed through entity #{last_committed_index}",
+            ) from exc
+        raise RuntimeError(
+            f"extract_appearance({novel_id!r}) failed at entity #{idx} ({label}) with"
+            f" no prior commit this run: {exc}"
+        ) from exc
 
     store.conn.commit()
     return report

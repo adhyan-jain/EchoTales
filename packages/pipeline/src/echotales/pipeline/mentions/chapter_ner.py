@@ -3,9 +3,10 @@
 The design rule in Section 3 of the handoff is that no stage may call a model per span
 or per mention: at 1.9 s/call a per-span pass over this corpus is 34.5 hours.
 So the model is not asked *where* the mentions are — it is asked *which surface
-forms in this chapter are names*, once per chapter, and the resulting vocabulary
-is then matched deterministically over every span with the same Aho-Corasick
-machinery layer 2 already uses.
+forms in this chapter are names*, at chapter granularity (a handful of
+overlapping windows, not one call — see `ner.NER_WINDOW_CHARS`), and the
+resulting vocabulary is then matched deterministically over every span with the
+same Aho-Corasick machinery layer 2 already uses.
 
 That split matters for more than cost. The model contributes the one thing
 capitalisation matching cannot do — deciding that "Spring Autumn Cicada" is a
@@ -29,13 +30,20 @@ from echotales.pipeline.mentions.alias_type import (
     is_transferable_title_phrase,
 )
 from echotales.pipeline.mentions.gazetteer import Gazetteer
-from echotales.pipeline.mentions.ner import MentionDetector, NerSpan
+from echotales.pipeline.mentions.ner import (
+    MentionDetector,
+    NerSpan,
+    ner_pass_fingerprint,
+)
 
 log = logging.getLogger(__name__)
 
-#: Characters per model call. A chapter in this corpus is 9-14k characters and
-#: `num_ctx=8192` tokens holds roughly 24k, so most chapters are one call. The
-#: split is at paragraph boundaries so a name is never cut in half.
+#: Characters per *chunk* handed to the detector. Since 2026-09-23 this is no
+#: longer "characters per model call": `QwenNerDetector.detect_with_context`
+#: windows whatever it is given at `NER_WINDOW_CHARS` internally, so a 12k
+#: chunk is 3 calls, not 1. The chunking here is kept because it is
+#: paragraph-aligned and the windowing is not, and because it bounds the size
+#: of any single detector invocation for detectors that do not window at all.
 CHUNK_CHARS = 12_000
 
 #: A returned surface longer than this is a sentence the model copied out of
@@ -44,8 +52,13 @@ MAX_NAME_CHARS = 48
 MAX_NAME_TOKENS = 6
 
 #: Labels the model is allowed to return. Anything else is dropped rather than
-#: coerced, since a label it invented is not evidence of anything.
-_KEEP_LABELS = frozenset({"character", "location", "organization"})
+#: coerced, since a label it invented is not evidence of anything. "item" was
+#: added 2026-09-23 with the same label in `ner.py`: `resolve/runner.py`'s
+#: `_KIND_BY_LABEL` had mapped it to `TargetKind.ITEM` all along, but the
+#: model was never offered it and this set would have dropped it anyway, so
+#: named objects were typed as people -- the defect an independent annotator
+#: recorded against the Spring Autumn Cicada ("an item, not a character").
+_KEEP_LABELS = frozenset({"character", "location", "organization", "item"})
 
 #: A name contains none of these. The comma matters as much as the full stop:
 #: the model's commonest overreach is returning an apposition it copied whole
@@ -129,8 +142,13 @@ class NameCache:
     threshold change costs a full re-read of the volume and the iteration loop
     stops being usable.
 
-    Keyed by a hash of the chapter text so an ingestion change or a different
-    model invalidates the entry rather than silently reusing a stale one.
+    Keyed by a hash of the chapter text **and of the pass itself**
+    (`ner_pass_fingerprint`), so an ingestion change, a different model, or a
+    change to the prompt/label/window geometry invalidates the entry rather
+    than silently reusing a stale one. The pass half was added 2026-09-23:
+    the entry is a function of the procedure as much as of the text, and
+    without it the windowing fix would have been invisible on every novel
+    that already had a cache file.
     """
 
     def __init__(self, path: Path, *, model: str = "") -> None:
@@ -146,7 +164,7 @@ class NameCache:
 
     def _key(self, text: str) -> str:
         digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
-        return f"{self.model}:{digest}"
+        return f"{self.model}:{ner_pass_fingerprint()}:{digest}"
 
     def get(self, text: str) -> dict[str, str] | None:
         return self._data.get(self._key(text))

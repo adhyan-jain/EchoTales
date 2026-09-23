@@ -27,8 +27,13 @@ import os
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
+from echotales.pipeline.render.contract import RenderBackendCapabilities
 from echotales.pipeline.render.openrouter import soften
+
+if TYPE_CHECKING:
+    from echotales.pipeline.render.panels import PanelImageRequest
 
 log = logging.getLogger(__name__)
 
@@ -81,6 +86,21 @@ class GeminiImageEngine:
     timeout: float = 120.0
     soften_on_refusal: bool = True
 
+    @property
+    def capabilities(self) -> RenderBackendCapabilities:
+        # "Reference images are accepted and ignored" (docstring above) --
+        # supports_multi_reference/supports_img2img are False, not merely
+        # unset, because the request field is silently dropped, not rejected.
+        return RenderBackendCapabilities(
+            supports_multi_reference=False,
+            max_references=0,
+            supports_img2img=False,
+            supports_lora=False,
+            supports_negative_prompt=False,
+            is_hosted=True,
+            model_family="gemini",
+        )
+
     def _request(self, prompt: str) -> tuple[bytes | None, str]:
         key = api_key()
         if not key:
@@ -111,9 +131,9 @@ class GeminiImageEngine:
 
         return None, str(candidate.get("finishReason", "no_image"))
 
-    def generate(self, request: object) -> Path:
-        prompt = request.prompt  # type: ignore[attr-defined]
-        out_path: Path = request.out_path  # type: ignore[attr-defined]
+    def generate(self, request: "PanelImageRequest") -> Path:
+        prompt = request.prompt
+        out_path: Path = request.out_path
 
         data, reason = self._request(prompt)
         if data is None and self.soften_on_refusal and reason.upper() in _REFUSALS:

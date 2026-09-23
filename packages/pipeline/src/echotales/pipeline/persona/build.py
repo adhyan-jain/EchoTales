@@ -34,6 +34,7 @@ from echotales.core.enums import (
 )
 from echotales.core.interval import FuzzyInterval
 from echotales.core.models import Attribute
+from echotales.core.pipeline_run import PartialStageFailure
 from echotales.core.store import Store
 from echotales.pipeline.persona.split import (
     SplitReport,
@@ -147,6 +148,7 @@ def build_personas(
     *,
     client: object | None = None,
     llm_mention_floor: int = LLM_MENTION_FLOOR,
+    commit_every: int = 20,
 ) -> PersonaReport:
     """Mint a persona per character entity, bind it, and profile it.
 
@@ -157,129 +159,156 @@ def build_personas(
     report.split = SplitReport(novel_id=novel_id)
     profiles: dict[str, TraitProfile] = {}
 
-    for entity in store.all_selves(novel_id):
-        # Section 10 item 5's typing, doing the job it was added for: a location or
-        # a faction has no body to draw and no voice to cast.
-        if not entity.kind.is_person:
-            report.skipped_non_person += 1
-            continue
+    # Core Pipeline Hardening #6: previously this whole function committed
+    # exactly once, at the very end -- an exception anywhere in the loop
+    # (a body-change detector call, an attribute write) discarded every
+    # entity processed so far, with no record of how far it got. Periodic
+    # commits plus an explicit rollback-and-attribute-the-failure on
+    # exception bounds that blast radius to `commit_every` entities,
+    # matching `resolve_novel`'s own commit_every pattern (#9.7).
+    last_committed_index = 0
+    idx = 0
+    entity = None
+    try:
+        for idx, entity in enumerate(store.all_selves(novel_id), start=1):
+            # Section 10 item 5's typing, doing the job it was added for: a location or
+            # a faction has no body to draw and no voice to cast.
+            if not entity.kind.is_person:
+                report.skipped_non_person += 1
+                continue
 
-        mention_count = store.mention_count_for(novel_id, entity.id)
-        prominence = _prominence_for(mention_count)
-        if prominence is not entity.prominence:
-            store.set_prominence(entity.id, prominence)
+            mention_count = store.mention_count_for(novel_id, entity.id)
+            prominence = _prominence_for(mention_count)
+            if prominence is not entity.prominence:
+                store.set_prominence(entity.id, prominence)
 
-        dialogue, narration, surfaces, dialogue_total = _gather_evidence(
-            store, novel_id, entity.id
-        )
-
-        profile = infer_traits_deterministic(
-            entity.id,
-            entity.canonical_label,
-            surfaces=surfaces or [entity.canonical_label],
-            dialogue_lines=dialogue_total,
-            mention_count=mention_count,
-            prominence=prominence,
-            pronoun_passages=narration,
-        )
-        if client is not None and mention_count >= llm_mention_floor:
-            from echotales.pipeline.persona.extract import extract_traits
-
-            profile = extract_traits(
-                profile,
-                dialogue=dialogue,
-                narration=narration,
-                client=client,
-                novel_id=novel_id,
+            dialogue, narration, surfaces, dialogue_total = _gather_evidence(
+                store, novel_id, entity.id
             )
 
-        if profile.provenance == "llm":
-            report.profiled_llm += 1
-        else:
-            report.profiled_deterministic += 1
+            profile = infer_traits_deterministic(
+                entity.id,
+                entity.canonical_label,
+                surfaces=surfaces or [entity.canonical_label],
+                dialogue_lines=dialogue_total,
+                mention_count=mention_count,
+                prominence=prominence,
+                pronoun_passages=narration,
+            )
+            if client is not None and mention_count >= llm_mention_floor:
+                from echotales.pipeline.persona.extract import extract_traits
 
-        # One persona per *body*, not per character. A character with no
-        # detected body change gets exactly one epoch, so the common case is
-        # byte-identical to what this stage produced before `split.py`
-        # existed -- `self1:body1`, open-ended from their first sighting.
-        report.split.entities_scanned += 1
-        changes = detect_body_changes(
-            store, novel_id, entity, client=client, report=report.split
-        )
-        # Section 3: a lasting injury to the SAME body is a boundary too,
-        # not just a rebirth/regression -- fed into the exact same
-        # `epochs_for`/`write_epochs` call below rather than a parallel
-        # body-creation path. Scoped to PRINCIPAL/RECURRING only (3.1);
-        # `prominence` here is this loop's own live computation just above,
-        # not a stored column (matches `eligible_prominence()`'s own
-        # stale-column caution elsewhere in this pipeline).
-        injuries = detect_permanent_injuries(store, novel_id, entity, prominence=prominence)
-        if injuries:
-            changes = sorted(changes + injuries, key=lambda c: c.story_pos)
-        report.split.confirmed += len(changes)
-        if changes:
-            report.split.by_entity[entity.canonical_label] = [c.kind for c in changes]
-            report.split_characters += 1
-
-        seen_chapters = store.chapters_for_target(novel_id, entity.id)
-        epochs = epochs_for(
-            entity.id,
-            entity.canonical_label,
-            entity.first_attested_pos.chapter,
-            changes,
-            last_pos=seen_chapters[-1] if seen_chapters else None,
-        )
-        # Rebuilding, not appending: bindings are a plain INSERT because one
-        # self legitimately has several, so a re-run would otherwise double
-        # them (see `Store.clear_self_persona_bindings`).
-        store.clear_self_persona_bindings(entity.id)
-        write_epochs(
-            store,
-            novel_id,
-            entity,
-            epochs,
-            observer_id=OBSERVER_READER,
-            notes=f"auto-built from {entity.id}; {profile.provenance} traits",
-        )
-        report.personas += len(epochs)
-        report.bindings += len(epochs)
-
-        # Traits are demographics and personality -- properties of the
-        # *consciousness*, not of the body it currently wears -- so they are
-        # written to every epoch rather than only the first. Appearance is
-        # the opposite and is dated per attestation by
-        # `appearance_extract`, which is why that stage picks its persona by
-        # position and this one does not.
-        for epoch in epochs:
-            for key, value in (
-                ("age_band", profile.age_band),
-                ("gender", profile.gender),
-                ("register", profile.register),
-                ("archetype", profile.archetype),
-                ("big_five", _big_five_str(profile)),
-                ("trait_provenance", profile.provenance),
-            ):
-                store.add_attribute(
-                    novel_id,
-                    Attribute(
-                        target_kind=TargetKind.PERSONA,
-                        target_id=epoch.persona_id,
-                        key=key,
-                        value=value,
-                        interval=FuzzyInterval.open_ended(
-                            epoch.from_pos,
-                            last_evidence=epoch.last_evidence or epoch.from_pos,
-                        ),
-                        learned_at_pos=entity.first_attested_pos,
-                        observer_id=OBSERVER_READER,
-                        evidence=profile.evidence[:200],
-                    ),
+                profile = extract_traits(
+                    profile,
+                    dialogue=dialogue,
+                    narration=narration,
+                    client=client,
+                    novel_id=novel_id,
                 )
 
-        report.by_archetype[profile.archetype] = (
-            report.by_archetype.get(profile.archetype, 0) + 1
-        )
-        profiles[entity.id] = profile
+            if profile.provenance == "llm":
+                report.profiled_llm += 1
+            else:
+                report.profiled_deterministic += 1
+
+            # One persona per *body*, not per character. A character with no
+            # detected body change gets exactly one epoch, so the common case is
+            # byte-identical to what this stage produced before `split.py`
+            # existed -- `self1:body1`, open-ended from their first sighting.
+            report.split.entities_scanned += 1
+            changes = detect_body_changes(
+                store, novel_id, entity, client=client, report=report.split
+            )
+            # Section 3: a lasting injury to the SAME body is a boundary too,
+            # not just a rebirth/regression -- fed into the exact same
+            # `epochs_for`/`write_epochs` call below rather than a parallel
+            # body-creation path. Scoped to PRINCIPAL/RECURRING only (3.1);
+            # `prominence` here is this loop's own live computation just above,
+            # not a stored column (matches `eligible_prominence()`'s own
+            # stale-column caution elsewhere in this pipeline).
+            injuries = detect_permanent_injuries(store, novel_id, entity, prominence=prominence)
+            if injuries:
+                changes = sorted(changes + injuries, key=lambda c: c.story_pos)
+            report.split.confirmed += len(changes)
+            if changes:
+                report.split.by_entity[entity.canonical_label] = [c.kind for c in changes]
+                report.split_characters += 1
+
+            seen_chapters = store.chapters_for_target(novel_id, entity.id)
+            epochs = epochs_for(
+                entity.id,
+                entity.canonical_label,
+                entity.first_attested_pos.chapter,
+                changes,
+                last_pos=seen_chapters[-1] if seen_chapters else None,
+            )
+            # Rebuilding, not appending: bindings are a plain INSERT because one
+            # self legitimately has several, so a re-run would otherwise double
+            # them (see `Store.clear_self_persona_bindings`).
+            store.clear_self_persona_bindings(entity.id)
+            write_epochs(
+                store,
+                novel_id,
+                entity,
+                epochs,
+                observer_id=OBSERVER_READER,
+                notes=f"auto-built from {entity.id}; {profile.provenance} traits",
+            )
+            report.personas += len(epochs)
+            report.bindings += len(epochs)
+
+            # Traits are demographics and personality -- properties of the
+            # *consciousness*, not of the body it currently wears -- so they are
+            # written to every epoch rather than only the first. Appearance is
+            # the opposite and is dated per attestation by
+            # `appearance_extract`, which is why that stage picks its persona by
+            # position and this one does not.
+            for epoch in epochs:
+                for key, value in (
+                    ("age_band", profile.age_band),
+                    ("gender", profile.gender),
+                    ("register", profile.register),
+                    ("archetype", profile.archetype),
+                    ("big_five", _big_five_str(profile)),
+                    ("trait_provenance", profile.provenance),
+                ):
+                    store.add_attribute(
+                        novel_id,
+                        Attribute(
+                            target_kind=TargetKind.PERSONA,
+                            target_id=epoch.persona_id,
+                            key=key,
+                            value=value,
+                            interval=FuzzyInterval.open_ended(
+                                epoch.from_pos,
+                                last_evidence=epoch.last_evidence or epoch.from_pos,
+                            ),
+                            learned_at_pos=entity.first_attested_pos,
+                            observer_id=OBSERVER_READER,
+                            evidence=profile.evidence[:200],
+                        ),
+                    )
+
+            report.by_archetype[profile.archetype] = (
+                report.by_archetype.get(profile.archetype, 0) + 1
+            )
+            profiles[entity.id] = profile
+
+            if idx % commit_every == 0:
+                store.conn.commit()
+                last_committed_index = idx
+    except Exception as exc:
+        store.conn.rollback()
+        label = entity.canonical_label if entity is not None else "?"
+        if last_committed_index > 0:
+            raise PartialStageFailure(
+                f"build_personas({novel_id!r}) failed at entity #{idx} ({label}): {exc}",
+                progress=f"committed through entity #{last_committed_index}",
+            ) from exc
+        raise RuntimeError(
+            f"build_personas({novel_id!r}) failed at entity #{idx} ({label}) with no"
+            f" prior commit this run: {exc}"
+        ) from exc
 
     store.conn.commit()
     return report
@@ -292,20 +321,33 @@ def _big_five_str(p: TraitProfile) -> str:
     )
 
 
-def load_trait_profiles(novel_id: str, store: Store) -> dict[str, TraitProfile]:
+def load_trait_profiles(
+    novel_id: str, store: Store, *, position: float | None = None
+) -> dict[str, TraitProfile]:
     """Rebuild trait profiles from stored persona attributes.
 
     Lets voice casting run as its own stage against an already-built graph
     instead of only inside the same process that built the personas.
+
+    `position`, when given, selects which body's attribute rows to read via
+    `persona_at(..., position)` -- the same pattern
+    `world/context.py::_appearance_brief` already uses for appearance (Core
+    Pipeline Hardening #8.1/#14). `position=None` (the default, and what
+    every caller passes today) keeps "their latest body", which is a real,
+    stated limitation, not a fixed one: `build_personas` currently computes
+    one trait profile per *entity* and writes that same profile's values to
+    every body epoch, so a transmigrated character's traits do not actually
+    differ by body yet even once this accessor is asked for a specific
+    position -- the write side, not this read side, is the remaining gap.
+    See HANDOFF for the follow-up (rework `build_personas` to gather
+    evidence and infer traits per epoch, the way `extract_appearance`
+    already does per body for appearance).
     """
     out: dict[str, TraitProfile] = {}
     for entity in store.all_selves(novel_id):
         if not entity.kind.is_person:
             continue
-        # Traits are body-independent, so any epoch answers -- but ask
-        # `persona_at` rather than assuming `:body1`, so a re-split character
-        # still resolves through one accessor.
-        persona_id = persona_at(store, entity.id)
+        persona_id = persona_at(store, entity.id, position)
         attrs = {
             a.key: a.value
             for a in store.get_attributes(TargetKind.PERSONA, persona_id)

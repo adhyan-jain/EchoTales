@@ -29,7 +29,7 @@ from dataclasses import dataclass, field
 
 from echotales.core.store import Store
 from echotales.pipeline.eval.coref_score import _system_partition
-from echotales.pipeline.eval.gold import GoldSet
+from echotales.pipeline.eval.gold import GoldSet, MentionKey
 from echotales.pipeline.resolve.gate import ConformalGate
 
 
@@ -112,7 +112,7 @@ def collect_samples(
 
     identity_to_target, unmapped = _identity_to_target(store, novel_id, confirmed)
     # Gold mention position -> the system entity gold implies it belongs to.
-    want: dict[tuple[str, float, int], str] = {}
+    want: dict[MentionKey, str] = {}
     for m in confirmed.mentions:
         if m.identity and (target := identity_to_target.get(m.identity)):
             want[m.key] = target
@@ -159,6 +159,118 @@ def collect_samples(
     return samples, unmapped
 
 
+@dataclass(slots=True)
+class HeldOutCoverage:
+    """Empirical coverage of a conformal gate on data it did not see.
+
+    A conformal predictor's (1-alpha) guarantee is about *unseen* exchangeable
+    data. `calibrate_from_gold` fits and reports on the identical sample set,
+    so the number it produces is a fit statistic and the guarantee is never
+    validated -- a gate could memorise its calibration set and still look
+    perfect (COMPLETION_PLAN Track 2 item 9, EVOLUTION 4.81).
+
+    **Split by chapter range, never randomly.** Knowledge time only moves
+    forward, and this system's whole claim is that the gazetteer compounds as
+    reading proceeds. A random split leaks late-volume evidence about an
+    entity into the calibration of an early-volume decision about the same
+    entity, which is the same self-agreement failure as 4.74 wearing different
+    clothes. Calibrating on chapters 1..k and testing on k+1.. is the only
+    split that respects the arrow the model is built around.
+    """
+
+    novel_id: str
+    split_chapter: float = 0.0
+    alpha: float = 0.05
+    calibration_size: int = 0
+    test_size: int = 0
+    #: Test pairs whose *correct* label the gate would have linked.
+    covered: int = 0
+    #: Test pairs the gate linked that were in fact wrong.
+    false_links: int = 0
+    link_threshold: float = 0.0
+
+    @property
+    def empirical_coverage(self) -> float:
+        positives = self.covered + self.missed
+        return self.covered / positives if positives else 0.0
+
+    #: Correct pairs the gate would NOT have linked -- the guarantee's misses.
+    missed: int = 0
+
+    @property
+    def target_coverage(self) -> float:
+        return 1.0 - self.alpha
+
+    def summary(self) -> str:
+        if not self.test_size:
+            return (
+                f"{self.novel_id}: no held-out pairs after the chapter-"
+                f"{self.split_chapter:g} split -- coverage not evaluated"
+            )
+        verdict = (
+            "MET" if self.empirical_coverage >= self.target_coverage else "**NOT MET**"
+        )
+        return (
+            f"{self.novel_id}: calibrated on chapters <= {self.split_chapter:g} "
+            f"({self.calibration_size:,} pairs), tested on later chapters "
+            f"({self.test_size:,} pairs)\n"
+            f"  link threshold from calibration half: {self.link_threshold:.3f}\n"
+            f"  empirical coverage {self.empirical_coverage:.1%} vs target "
+            f"{self.target_coverage:.1%} -- {verdict}\n"
+            f"  false links on held-out data: {self.false_links:,}"
+        )
+
+
+def held_out_coverage(
+    novel_id: str,
+    store: Store,
+    gold: GoldSet,
+    *,
+    alpha: float = 0.05,
+    split_fraction: float = 0.6,
+) -> HeldOutCoverage:
+    """Calibrate on an early chapter range, report coverage on a later one."""
+    samples, _unmapped = collect_samples(novel_id, store, gold)
+    result = HeldOutCoverage(novel_id=novel_id, alpha=alpha)
+    if not samples:
+        return result
+
+    chapters = sorted({s.chapter for s in samples})
+    if len(chapters) < 2:
+        # One chapter cannot be split forwards in time. Reported as
+        # "not evaluated" rather than silently returning a fit statistic
+        # dressed as a held-out one.
+        result.split_chapter = chapters[0] if chapters else 0.0
+        result.calibration_size = len(samples)
+        return result
+
+    index = max(0, min(len(chapters) - 2, int(len(chapters) * split_fraction) - 1))
+    split = chapters[index]
+    result.split_chapter = split
+
+    calibration = [s for s in samples if s.chapter <= split]
+    test = [s for s in samples if s.chapter > split]
+    result.calibration_size = len(calibration)
+    result.test_size = len(test)
+    if not calibration or not test:
+        return result
+
+    gate = ConformalGate(alpha=alpha).calibrate(
+        [(s.probability, s.is_correct) for s in calibration], alpha=alpha
+    )
+    result.link_threshold = gate.link_threshold
+    for sample in test:
+        would_link = sample.probability >= gate.link_threshold
+        if sample.is_correct:
+            if would_link:
+                result.covered += 1
+            else:
+                result.missed += 1
+        elif would_link:
+            result.false_links += 1
+    return result
+
+
 def calibrate_from_gold(
     novel_id: str,
     store: Store,
@@ -166,7 +278,12 @@ def calibrate_from_gold(
     *,
     alpha: float = 0.05,
 ) -> tuple[ConformalGate, CalibrationReport]:
-    """Fit a gate to confirmed gold and report what it saw."""
+    """Fit a gate to confirmed gold and report what it saw.
+
+    **This is a fit statistic, not a validated guarantee** -- it calibrates
+    and reports on the same samples. Use `held_out_coverage` for the
+    out-of-sample number.
+    """
     samples, unmapped = collect_samples(novel_id, store, gold)
     report = CalibrationReport(
         novel_id=novel_id, samples=samples, alpha=alpha, unmapped_identities=unmapped

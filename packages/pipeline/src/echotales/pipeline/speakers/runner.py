@@ -6,7 +6,7 @@ import re
 from dataclasses import dataclass, field
 
 from echotales.core.enums import AliasType, AttributionMethod, SpanType
-from echotales.core.models import Chapter, Span
+from echotales.core.models import Chapter, Mention, Span
 from echotales.core.store import Store
 from echotales.pipeline.ingest.normalize import comparison_key
 from echotales.pipeline.mentions.ner import HeuristicDetector
@@ -301,11 +301,46 @@ def _scene_key(block_index: int, scene_bounds: list[tuple[int, int]]) -> str:
     return "s0"
 
 
+def _resolved_present_entity_for_block(
+    block_index: int, mentions: list[Mention]
+) -> str | None:
+    """Core Pipeline Hardening #11 (HANDOFF defect #8): the one case where an
+    "anonymous" line actually has a stable identity to key off.
+
+    Entity-resolution can link an unnamed-but-recurring reference (an
+    `EPITHET` like "the Guard Captain", or any other alias type that
+    `enters_graph`) to a stable `target_id` -- see
+    `test_unnamed_recurring_character_persistence.py`. That link is
+    unrelated to speaker *attribution*, which can still fail to confidently
+    tag a specific dialogue line (ambiguous adjacency, no speech verb
+    nearby). When exactly one physically-present, already-resolved entity
+    shares this dialogue span's block, an unattributed line here most
+    plausibly belongs to them -- so this keys the voice off their real,
+    cross-chapter-stable `target_id` instead of minting a fresh scene-slot
+    id. **Deliberately returns `None` (falls back to the slot path) the
+    moment there is more than one candidate**: the two-unnamed-guards case
+    this module's own docstring warns about is exactly the ambiguous case,
+    and guessing which of two resolved entities is speaking would be a
+    confident-sounding wrong answer, worse than an honest anonymous slot.
+    """
+    candidates = {
+        m.target_id
+        for m in mentions
+        if m.block_index == block_index
+        and m.target_id is not None
+        and m.reference_mode.is_physically_present
+    }
+    if len(candidates) == 1:
+        return next(iter(candidates))
+    return None
+
+
 def _assign_anonymous_slots(
     novel_id: str,
     chapter_number: float,
     spans: list[Span],
     scene_bounds: list[tuple[int, int]] | None = None,
+    mentions: list[Mention] | None = None,
 ) -> None:
     """Give unresolved dialogue a locally-distinct voice slot, not an identity.
 
@@ -325,6 +360,13 @@ def _assign_anonymous_slots(
     restarts the count at slot 1. That encodes one fact confidently -- "the
     same nobody twice in a row is the less likely reading of ordinary
     back-and-forth dialogue" -- and claims nothing beyond it.
+
+    `mentions`, when given, lets a genuinely-unattributed line still get a
+    stable, cross-chapter voice when entity-resolution has already linked
+    the scene's one present-but-unnamed character to a real `target_id`
+    (`_resolved_present_entity_for_block`) -- HANDOFF defect #8. `None`
+    (the default) keeps the pure scene-slot behaviour for any caller not
+    yet passing mentions through.
     """
     slot = 0
     fresh_run = True
@@ -336,6 +378,19 @@ def _assign_anonymous_slots(
         if span.speaker_self_id or span.attribution_method is not AttributionMethod.UNRESOLVED:
             fresh_run = True
             continue
+
+        resolved_id = (
+            _resolved_present_entity_for_block(span.block_index, mentions)
+            if mentions is not None
+            else None
+        )
+        if resolved_id is not None:
+            span.speaker_self_id = resolved_id
+            span.attribution_method = AttributionMethod.ANONYMOUS_SLOT
+            span.confidence = 0.35
+            fresh_run = False
+            continue
+
         scene_key = _scene_key(span.block_index, scene_bounds)
         if scene_key != current_scene:
             # A scene change restarts the numbering as well as the scope, so
@@ -488,7 +543,7 @@ def attribute_novel(
         # Runs after the ladder, over what the ladder left UNRESOLVED. Never
         # counted in `report.attributed` -- that number means "linked to a
         # known identity," and an anonymous slot deliberately is not one.
-        _assign_anonymous_slots(novel_id, chapter.number, spans, scene_bounds)
+        _assign_anonymous_slots(novel_id, chapter.number, spans, scene_bounds, mentions)
 
         # Full re-derivation, not an incremental update -- clear the
         # chapter's existing rows first so a re-run that produces fewer
