@@ -338,6 +338,66 @@ def _alias_type_coverage(gold: GoldSet) -> Finding:
     return Finding("alias-type-coverage", severity, len(counts), detail)
 
 
+def _surface_triviality(gold: GoldSet) -> Finding:
+    """Can this partition be reproduced by grouping on the surface string?
+
+    **The single most important check in this module.** A coreference gold set
+    where every surface maps to exactly one identity encodes the assertion
+    "these N strings denote these M people, one-to-one". Any exact-string
+    matcher reproduces it perfectly, so agreeing with it measures string
+    matching, not identity resolution, and the resulting F1 is a tautology
+    rather than a result.
+
+    Measured 2026-09-24, and it explains a retracted headline from a second,
+    independent direction. EVOLUTION 4.74 withdrew B-cubed P=100.0% R=94.6%
+    F1=97.2% because the gold had been drafted from the pipeline's own
+    `mention` table. But scoring the *non-circular* subset of the same file
+    reproduces those numbers exactly -- 1,816 mentions over **23 distinct
+    surfaces** and 20 identities, **100% surface-recoverable**. So the figure
+    was doomed twice over: circular in provenance, and trivial in task.
+
+    For contrast, `reverend-insanity-hardcases.jsonl` sits at 63.6%, which is
+    why it is the only file in this corpus that measures anything at all.
+
+    A high score here is not a data error -- the annotations are correct. It
+    means the file cannot serve as an evaluation set for a resolver, which is
+    a different and more dangerous problem, because nothing else catches it.
+    """
+    by_surface: dict[str, set[str]] = defaultdict(set)
+    scorable = [m for m in gold.mentions if m.identity and m.kind.is_entity]
+    for m in scorable:
+        by_surface[m.surface.strip().casefold()].add(m.identity)
+    if not scorable:
+        return Finding("surface-triviality", "info", 0, "no scorable entity mentions")
+    ambiguous = sum(
+        1 for m in scorable if len(by_surface[m.surface.strip().casefold()]) > 1
+    )
+    trivial = (len(scorable) - ambiguous) / len(scorable)
+    identities = len({m.identity for m in scorable})
+    detail = (
+        f"{trivial:.1%} of {len(scorable):,} mentions are resolvable from the "
+        f"surface string alone ({len(by_surface)} distinct surfaces, "
+        f"{identities} identities)"
+    )
+    if trivial >= 0.99:
+        return Finding(
+            "surface-triviality",
+            "error",
+            len(scorable),
+            detail + "  <- a string matcher reproduces this partition exactly; "
+            "any P/R/F1 computed from it measures string matching, NOT identity "
+            "resolution, and must not be reported as a resolver result",
+        )
+    if trivial >= 0.90:
+        return Finding(
+            "surface-triviality",
+            "warning",
+            len(scorable),
+            detail + "  <- near-trivial; report the non-trivial subset separately",
+        )
+    return Finding("surface-triviality", "info", len(scorable), detail)
+
+
 def validate_gold(gold: GoldSet, path: str, store: Store | None = None) -> ValidationReport:
     """Run every structural check.
 
@@ -352,6 +412,7 @@ def validate_gold(gold: GoldSet, path: str, store: Store | None = None) -> Valid
         _self_referential(gold),
         _contradictory_negatives(gold),
         _alias_type_coverage(gold),
+        _surface_triviality(gold),
         _malformed_spans(gold, store),
         _missing_entities(gold, store),
     ]
