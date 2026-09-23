@@ -37,6 +37,22 @@ data/gold/*.jsonl
 !data/gold/reverend-insanity.jsonl
 !data/gold/lord-of-the-mysteries.jsonl
 !data/gold/omniscient-readers-viewpoint.jsonl
+# The two non-circular files, added 2026-09-24. The exception list above held
+# only the three novel-level files -- all of which are wholly or mostly
+# `gold-auto-builder` output (LOTM and ORV are 100%). The repo was therefore
+# committing the annotations that cannot score the pipeline and excluding the
+# only two that can. `-hardcases` is the corpus's single source of
+# TRANSFERABLE_TITLE / EPITHET / RELATIONAL_DEICTIC records, so without it
+# nobody who clones this repo can compute a per-alias-type recall@k at all.
+# Both store character offsets plus a ~70-char evidence snippet -- the
+# CoNLL/OntoNotes convention README.md commits to, never chapter text.
+!data/gold/reverend-insanity-hardcases.jsonl
+!data/gold/reverend-insanity-c1-c5.jsonl
+# Quarantined annotations (data/gold/_unusable/) stay out of the repo, but the
+# README explaining WHY each one is unusable is the point of keeping them --
+# track that, never the 2.4 MB of falsified records beside it.
+data/gold/_unusable/*.jsonl
+!data/gold/_unusable/README.md
 data/webview/
 
 # React viewer (packages/pipeline/.../webview.py generates its data)
@@ -146,3 +162,10 @@ graphify-out/
 
 # Playwright MCP's own snapshot/console-log scratch output.
 .playwright-mcp/
+
+# Invention disclosure (COMPLETION_PLAN Track 6). NEVER committed: this repo
+# has been public since its first commit (2026-08-07), and publishing a
+# disclosure document is itself a disclosure. Making the repo private later
+# does not undo one that already happened. The document exists to be handed
+# to VIT for filing, by a route that is not this remote.
+docs/IP/

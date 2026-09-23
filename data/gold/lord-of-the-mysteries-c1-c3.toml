@@ -1,0 +1,254 @@
+# Annotation source for Lord of the Mysteries, chapters 1-3.
+#
+# PROVENANCE: drafted by a language model (Claude Opus 5) reading the chapter
+# text directly, NOT by a person, and NOT by inspecting the pipeline's output.
+# Every record it expands to carries provenance = "model" and confirmed =
+# false. It is a second opinion and a draft for review. It is not gold, and no
+# number computed from it may be reported as a recall or accuracy result until
+# a person has reviewed it and flipped `confirmed`.
+#
+# WHY THIS FILE EXISTS. `data/gold/lord-of-the-mysteries.jsonl` is **100%
+# circular** -- all 6,756 records were built by `eval/generate_gold.py`
+# SELECTing the pipeline's own resolved `mention` table, so scoring against it
+# compares the system to itself (EVOLUTION 4.74). This file is the start of
+# the independent replacement (COMPLETION_PLAN Track 2 item 5). It covers
+# chapters 1-3 of 40. **It does not replace that file yet** -- three chapters
+# is a start, not a volume.
+#
+# INDEPENDENCE. The drafter read the chapter text for these three chapters and
+# wrote every identity below from it, without querying the pipeline's entity
+# list for this novel at any point. That is a stronger claim than the RI
+# c1-c5 draft could make (its own header records an anchoring risk). The
+# corpus-level facts quoted elsewhere in the drafting session -- mention
+# counts, method splits -- concern reverend-insanity, not this novel.
+#
+# FORMAT: one block per real-world referent, with every surface form the text
+# uses for it. `surfaces` are matched case-sensitively on word boundaries and
+# expanded to one gold record per occurrence.
+#
+# SCOPE NOTE, and it is load-bearing: within these three chapters each surface
+# listed below denotes exactly one referent, verified by reading.
+# `eval/draft.py::_assert_unambiguous` (EVOLUTION 4.79) now enforces that no
+# surface is claimed twice in this file, but it cannot check the thing that
+# actually matters -- that a surface has one referent *in the text*. That
+# remains a reading claim.
+#
+# TWO DELIBERATE OMISSIONS, recorded so a reviewer can disagree with them
+# rather than discover them:
+#
+#  1. Bare "Tingen" is NOT listed as a location, although the text uses
+#     "Tingen City" and "City of Tingen". Word-boundary matching would make
+#     bare "Tingen" also match inside "Tingen University" and "Tingen
+#     Technical School", labelling the first token of an organization as a
+#     location. Only the full forms are annotated.
+#  2. "Klein Moretti" is NOT listed as a surface, only bare "Klein". A
+#     word-boundary PREFIX collides: both match at the same start offset, and
+#     `GoldMention.key` is (novel, chapter, offset), so one record would
+#     silently overwrite the other. Bare "Klein" covers all 23 positions
+#     including the 3 full-name ones. Same reason "Sunday school" is dropped
+#     in favour of "Sunday". `_prefix_collisions` now refuses this
+#     mechanically -- it was added *because* drafting this file produced five
+#     such collisions in a file that otherwise expanded without a warning.
+#  3. Bare "Moretti" is NOT listed. Klein, Benson and Melissa share it, so it
+#     is a family name, not a person -- the same reason RI's gold refuses a
+#     bare surname, and the behaviour `name_containment` is documented to
+#     have.
+
+schema = 1
+novel_id = "lord-of-the-mysteries"
+chapters = [1.0, 2.0, 3.0]
+drafted_by = "claude-opus-5"
+
+# ---------------------------------------------------------------------------
+# Characters
+# ---------------------------------------------------------------------------
+
+[[identity]]
+name = "Klein Moretti"
+kind = "character"
+surfaces = ["Zhou Mingrui", "Klein"]
+note = """Protagonist, and THE HARD CASE in this slice -- the reason these three chapters are worth annotating at all. Zhou Mingrui is a modern Chinese man whose consciousness wakes in the body of Klein Moretti, a Loen history graduate who has just died of a gunshot to the temple; Klein's memories then surface and merge. The narration uses "Zhou Mingrui" for the acting viewpoint character throughout, "Klein" for the body's biography and memories, and Melissa addresses him aloud as "Klein" in ch3.
+
+Annotated as ONE referent, which a reviewer may reasonably overturn. For one: from ch1 onward every mention of either name picks out the single person standing in that room, and a partition that split them would fail on "Melissa gave her elder brother a piercing stare" -- Melissa's brother is Klein, the person being stared at is Zhou Mingrui. For two: passages such as the father's army service and "how Klein had died" describe the original Klein, before the merge.
+
+In this project's own vocabulary the split is Self vs Persona, not two Selves: one continuity of consciousness bound to one body. This file annotates coreference over mentions, which has no way to express that, so it says "one referent" and records the disagreement here rather than hiding it."""
+
+[[identity]]
+name = "Benson"
+kind = "character"
+surfaces = ["Benson"]
+note = "Elder brother. A clerk at an import and export company and the family's sole earner. The surname is never used bare for him in these chapters."
+
+[[identity]]
+name = "Melissa"
+kind = "character"
+surfaces = ["Melissa"]
+note = "Younger sister, fifteen, a student in Tingen Technical School's Steam and Machinery department. The only character besides the protagonist with on-page dialogue in ch1-3."
+
+[[identity]]
+name = "Mr. Franky"
+kind = "character"
+surfaces = ["Mr. Franky"]
+note = "The landlord, ch2. Appears only in recalled scenes and never on-page in this range -- a real individual and a real mention, but not physically present, which is exactly the distinction `reference_mode` exists to draw. Only the honorific form is listed: bare \"Franky\" never occurs without \"Mr.\" here, and listing it would double-label the same span."
+
+[[identity]]
+name = "King George III"
+kind = "character"
+surfaces = ["King George III"]
+note = "The Loen monarch under whom the copper penny was minted (ch2). A single named individual mentioned in passing. Listed as a character because he is one, not because he participates."
+
+# ---------------------------------------------------------------------------
+# Deities. Named individuals in-world, referenced and never present. Kept as
+# `character` rather than invented into a sixth kind: `MentionKind` has no
+# deity value, they are single named referents rather than places or
+# organizations, and typing them `not_an_entity` would be false -- the text
+# treats them as persons with will. Their churches are separate entries below.
+# ---------------------------------------------------------------------------
+
+[[identity]]
+name = "Evernight Goddess"
+kind = "character"
+surfaces = ["Evernight Goddess"]
+note = "One of the seven orthodox gods. Klein's mother was a devotee (ch1); named again in ch3's enumeration. Distinct from the Church of Evernight, which is the organization."
+
+[[identity]]
+name = "Lord of Storms"
+kind = "character"
+surfaces = ["Lord of Storms"]
+note = "One of the seven orthodox gods (ch3)."
+
+[[identity]]
+name = "God of Steam and Machinery"
+kind = "character"
+surfaces = ["God of Steam and Machinery"]
+note = "One of the seven orthodox gods (ch3)."
+
+[[identity]]
+name = "Eternal Blazing Sun"
+kind = "character"
+surfaces = ["Eternal Blazing Sun"]
+note = "One of the seven orthodox gods, named only in ch3's enumeration."
+
+[[identity]]
+name = "God of Knowledge and Wisdom"
+kind = "character"
+surfaces = ["God of Knowledge and Wisdom"]
+note = "One of the seven orthodox gods, named only in ch3's enumeration."
+
+[[identity]]
+name = "Earth Mother"
+kind = "character"
+surfaces = ["Earth Mother"]
+note = "One of the seven orthodox gods, named only in ch3's enumeration."
+
+[[identity]]
+name = "God of Combat"
+kind = "character"
+surfaces = ["God of Combat"]
+note = "One of the seven orthodox gods, named only in ch3's enumeration."
+
+# ---------------------------------------------------------------------------
+# Locations
+# ---------------------------------------------------------------------------
+
+[[identity]]
+name = "Northern Continent"
+kind = "location"
+surfaces = ["Northern Continent"]
+
+[[identity]]
+name = "Southern Continent"
+kind = "location"
+surfaces = ["Southern Continent"]
+
+[[identity]]
+name = "Loen Kingdom"
+kind = "location"
+surfaces = ["Loen Kingdom"]
+note = "The state. Bare \"Loen\" is not listed: in this range it occurs only as the modifier in \"Loen Kingdom\", so annotating it would double-label the same span."
+
+[[identity]]
+name = "Awwa County"
+kind = "location"
+surfaces = ["Awwa County"]
+
+[[identity]]
+name = "Tingen City"
+kind = "location"
+surfaces = ["Tingen City", "City of Tingen"]
+note = "Bare \"Tingen\" deliberately excluded -- see the header. It would match the first token of Tingen University and Tingen Technical School."
+
+# ---------------------------------------------------------------------------
+# Organizations
+# ---------------------------------------------------------------------------
+
+[[identity]]
+name = "Khoy University"
+kind = "organization"
+surfaces = ["Khoy University"]
+
+[[identity]]
+name = "Tingen University"
+kind = "organization"
+surfaces = ["Tingen University"]
+
+[[identity]]
+name = "Tingen Technical School"
+kind = "organization"
+surfaces = ["Tingen Technical School"]
+
+[[identity]]
+name = "Backlund University"
+kind = "organization"
+surfaces = ["Backlund University"]
+note = "Named once in ch3 as a recommendation-letter destination. The city of Backlund is never named bare in this range, so only the institution is annotated."
+
+[[identity]]
+name = "Church of Evernight"
+kind = "organization"
+surfaces = ["Church of Evernight"]
+note = "The institution, distinct from the Evernight Goddess above. Keeping them apart is the point: one is worshipped, the other runs Sunday schools."
+
+[[identity]]
+name = "Imperial Army"
+kind = "organization"
+surfaces = ["Imperial Army"]
+note = "Klein's father was a sergeant of it (ch1), and the ch3 pocket watch is the Imperial Army sergeant's."
+
+[[identity]]
+name = "Primary and Secondary Education Committee"
+kind = "organization"
+surfaces = ["Primary and Secondary Education Committee"]
+note = "Established under the Basic Education Law (ch3). A named body, mentioned once."
+
+# ---------------------------------------------------------------------------
+# Negatives. Surfaces a capitalisation- or NER-based detector plausibly
+# proposes here, which denote no individual. These are as much of the
+# annotation as the positives: without them, precision at the
+# entity-existence level cannot be measured at all -- only coreference among
+# things already assumed to be entities.
+# ---------------------------------------------------------------------------
+
+[[not_entity]]
+reason = "A legendary figure from a Chinese proverb, appearing ONLY in the translator's footnote appended to chapter 1, outside the narrative entirely. A capitalised personal name inside a non-diegetic block is precisely what the NON_DIEGETIC/AUTHOR_NOTE span types exist to exclude, so a mention here is a segmentation failure rather than a cast member -- which makes it the most useful single negative in this file."
+surfaces = ["Lord Ye"]
+
+[[not_entity]]
+reason = "Languages, not entities. Capitalised, proper-noun-shaped and named after a god and a nation, which is exactly what makes them a realistic false positive."
+surfaces = ["Hermes language", "Feysac language"]
+
+[[not_entity]]
+reason = "Legislation, not a named individual or an organization with agency."
+surfaces = ["Basic Education Law"]
+
+[[not_entity]]
+reason = "A book title, and the strongest ITEM candidate in this slice -- deliberately typed not-an-entity rather than `item` because it is a real-world Chinese text Zhou Mingrui owned before transmigration, not an object in the story world's graph. A reviewer who disagrees should retype it rather than delete it."
+surfaces = ["Quintessential Divination and Arcane Arts"]
+
+[[not_entity]]
+reason = "A weekday, and a class of school named after it. Both capitalised and both routinely proposed by capitalisation-based detection."
+surfaces = ["Sunday"]
+
+[[not_entity]]
+reason = "A university department, not an organization in its own right. Listed so the annotation says something about it rather than leaving it silently unlabelled."
+surfaces = ["Department of History"]
