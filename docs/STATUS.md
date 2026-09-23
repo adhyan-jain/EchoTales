@@ -62,9 +62,15 @@ already-stored mentions), and there is still zero confirmed gold.
    unnamed character still gets a fresh anonymous **voice** every chapter.
    Open defect #8 is real and unfixed in the audio path; the HANDOFF bullet
    describes an adjacent, already-fixed problem in a different layer.
-2. **The `TRANSFERABLE_TITLE` recall@k gate** (HANDOFF's former top "Pick up
-   here" item) was resolved this session (EVOLUTION §4.69) as an
-   eval-design defect, not a data-coverage gap: `generate_gold.py` only
+2. **The `TRANSFERABLE_TITLE` recall@k gate.** **OVERTURNED 2026-09-24 --
+   the gate was measured and it FAILS at recall@10 = 66.7% (n=9, threshold
+   80%); see `docs/EVAL_RETRIEVER.md`.** What blocked it was mechanical, not
+   structural: `eval` had no `--gold` flag, so the corpus's one
+   alias-diverse file (`reverend-insanity-hardcases.jsonl`, hand-drafted, 17
+   TRANSFERABLE_TITLE records) was unreachable from the CLI *and* gitignored.
+   The reasoning below holds only for `generate_gold.py`-derived gold, not
+   for hand-drafted gold, and the "no matter how much more gets annotated"
+   conclusion does not follow. Original text: `generate_gold.py` only
    admits mentions with a resolved `target_id`, but every real
    `TRANSFERABLE_TITLE` mention on RI correctly resolves to `None` by
    design (non-negotiable #9). The gate cannot produce a number on this
@@ -98,6 +104,55 @@ already-stored mentions), and there is still zero confirmed gold.
    (`CIRCULAR_DRAFTERS`, `GoldProvenanceError`, `ReviewDepth`), so a
    repeat of this specific failure should raise instead of silently
    producing a number.
+
+---
+
+## New findings, 2026-09-24 (evidence pass)
+
+Added by the validation/evidence pass. Each is measured, with a reproducible
+command behind it; see `docs/VALIDATION_BASELINE.md` for the checkpoint.
+
+1. **The ollama blocker was a misdiagnosis.** Every doc recorded the re-run as
+   blocked because "ollama is unreachable from a sandboxed Claude Code shell".
+   The daemon was simply not running; `ollama serve` brought it up in **one
+   second**. The re-run that gated the most in this project was never
+   environmentally blocked.
+2. **Gold sets in this corpus are surface-trivial, and that independently
+   re-condemns the retracted headline.** `reverend-insanity.jsonl`'s
+   *non-circular* silver subset is 1,816 mentions over **23 distinct
+   surfaces**, 100% recoverable by grouping on the surface string. Scoring
+   against it returns B3 P=100.0% R=94.6% F1=97.2% -- byte-identical to the
+   figure 4.74 retracted for circularity. Two independent reasons, same
+   number. `eval/validate_gold.py::_surface_triviality` now fails any file at
+   >=99%. **`reverend-insanity-hardcases.jsonl` (63.6%) is the only
+   evaluation set in the corpus that measures anything.**
+3. **The gold key was destroying records.** `GoldMention.key` was
+   `(novel, chapter, offset)`, so a word-boundary prefix surface overwrote the
+   longer surface it prefixes -- **55 of c1-c5's 343 annotations (16%) died at
+   load time**, silently, passing CI for six weeks. Fixed by carrying the
+   normalised surface in the key.
+4. **770 spans in the circular tier are shifted by exactly +1** (all
+   `gold-auto-builder`, all ch61-199). The silver tier is clean: 3,457/3,457
+   spans verified against chapter text.
+5. **The retraction writer has zero callers.** `retract_alias_bindings` is
+   never invoked; `retracted_chapter IS NOT NULL` is **0 rows across all 27
+   databases**. The query semantics are implemented and tested; nothing ever
+   retracts on real data. The invention disclosure calls this "Verified
+   today. Implemented" and needs downgrading.
+6. **"Concurrent" Self/Persona bindings are unit-tests-only.** Real data has
+   one self with >1 persona (sequential reincarnation). **0** personas bound
+   to >1 self, **0** non-MAIN-timeline bindings, **0** `FABRICATED` aliases in
+   any database.
+7. **No fact is ever attached to a non-MAIN timeline.** Dream and flashback
+   segments are detected, but every `alias_binding` / `attribute` /
+   `self_persona_binding` row is `MAIN_TIMELINE`. The story-time axis is
+   defined and unused at fact level.
+8. **`GenerationState` does not exist** (zero hits repo-wide). The visual half
+   exists (`plan_builder.py::build_render_plan`); the **voice path never calls
+   `state_of`, never touches `Persona`, and has no observer parameter**.
+   `state.py:6`'s claim that voice selection consumes the query is false.
+9. **Baseline B now exists** (`eval/baseline_b.py`), dual-LLM memorisation
+   targeting LLMLINK. Neither baseline has been executed yet.
 
 ---
 
@@ -150,7 +205,7 @@ not merely undocumented).
 | Baselines | Baseline A (long-context LLM, `eval/baseline_a.py`) built and tested (2/2) — its module docstring previously claimed RI gold was "100% human-confirmed" and cited the now-retracted B³ numbers as a comparison point; both were false and have been corrected in the code. A baseline comparison is meaningless until both sides are scored against gold neither produced, which doesn't exist yet. Baseline B (LLMLink-style dual-LLM) **not started** | Partial | — | paper needs both to be defensible, and neither has a real number to be defensible with | build Baseline B; build actual gold before either baseline's number means anything | gold datasets |
 | Ablations | **Built §4.78 (2026-09-23)**, superseding the "None found" verdict this row carried before — `eval/evidence_cache.py` (opt-in `resolve --capture-evidence`, a `scoring_evidence` table) + `eval/ablate.py`/`echotales ablate`, nine conditions re-scoring cached real evidence with no re-inference. Real result on RI's 10,058-pair cache: `no-gazetteer-compounding` drops force-links from 9.2% to 1.2%; `no-temporal-scoping` changes nothing (temporal blocking is inert on this corpus); the scorer's own maximum output across every condition is 0.527 vs. the 0.80 link threshold. Three of the plan's named conditions (no alias typing, no Self/Persona split, no truth status) are not answerable by re-scoring this cache and are printed as such (`REQUIRES_RERESOLVE`) rather than silently omitted. The central `state_of`-vs-flat downstream visual ablation (Part M) still does not exist | Verified as infrastructure and measured on real data; the visual/render ablation is still Missing | — | this is the sharpest resolver finding in the project's life — the scorer cannot link *anything*, not merely under-tuned | build the visual ablation next — it's the paper's likely central figure | resolver, render pipeline |
 | Paper artifacts | **None found** — no figure/diagram/table generation scripts exist | Missing | — | — | build once ablations/baselines exist; premature before that | ablations, baselines |
-| IP/patent documentation | No invention-disclosure draft exists. `docs/VISUAL_RENDERING.md`'s Phase 5c section is a **planned** flag-list (state-triggered cache invalidation, canonical-state-to-render-plan compilation), not yet written as an actual disclosure | Missing (as a real document); a candidate-mechanism list exists in planning form only | — | — | write the internal disclosure draft (never committed publicly) once the flagged mechanisms are actually built, not before | Visual Rendering Track Phase 1+ |
+| IP/patent documentation | `docs/IP/invention_disclosure.md` exists (written 2026-09-24, EVOLUTION 4.82, gitignored -- the repo is public and publishing a disclosure is itself a disclosure). Its self-declared blocking item (§3.1, the four unverified LINK-KG claims) is **closed**: `docs/PRIOR_ART_LINKKG.md` verifies all four TRUE against the full paper, and corrects two framing errors -- LINK-KG is SOTA for *legal-document* KG construction scored on node-duplication rates, not narrative coreference, and **LLMLINK is the real positioning target**. Three claims inside the disclosure still need downgrading against this pass's findings: the retraction writer has zero callers (0 retracted rows in all 27 DBs), concurrent Self/Persona bindings are unit-tests-only, and `GenerationState` does not exist | Partial -- the document is real and current; three of its own claims are stronger than the code | — | positioning is now evidence-backed rather than asserted | apply the three downgrades; verify LLMLINK itself before it goes to VIT | prior-art verification |
 
 ---
 
