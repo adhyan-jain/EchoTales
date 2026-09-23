@@ -8,7 +8,6 @@ not as coverage.
 from __future__ import annotations
 
 import pytest
-
 from echotales.pipeline.eval.gold import GoldMention, GoldSet, MentionKind, Provenance
 from echotales.pipeline.eval.validate_gold import validate_gold
 

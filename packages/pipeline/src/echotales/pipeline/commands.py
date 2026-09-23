@@ -16,6 +16,7 @@ import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from echotales.core.enums import OBSERVER_READER, TargetKind
 from echotales.core.models import StageStatus
@@ -340,8 +341,12 @@ def cmd_export(args: argparse.Namespace) -> int:
 
 
 
+if TYPE_CHECKING:  # `GoldSet` is imported lazily inside cmd_eval at runtime
+    from echotales.pipeline.eval.gold import GoldSet
+
+
 def _recall_at_k_report(
-    store: "Store", novel_id: str, tier_gold: "GoldSet", args: object, *, tier: str
+    store: Store, novel_id: str, tier_gold: GoldSet, args: object, *, tier: str
 ) -> dict[str, object]:
     """Retriever recall@k for one gold tier, broken down by alias type.
 
