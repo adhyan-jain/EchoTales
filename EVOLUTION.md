@@ -7738,12 +7738,12 @@ What listening to the manifest shows, and the old bank's sameness had masked:
   the-NER-fix. It is the audio twin of the render track's "wrong character in
   panel" class, and a better bank makes it *more* audible, not less.
 
-Environment note, carried from the previous attempt: `resemble-perth` needs
-`pkg_resources`, so the venv has `setuptools<81` installed by hand. That pin
-exists nowhere in a `pyproject.toml` — `chatterbox-tts` itself is undeclared
-in every package — so a fresh `uv sync` reproduces a venv that cannot run this
-render. Same trap as the lines 348–353 entry, recurring because it was never
-declared.
+Environment note: this render ran with `chatterbox-tts` 0.1.7 and
+`setuptools` 80.10.2 installed directly into `.venv`, not through the
+documented overlay (`uv run --with chatterbox-tts --with "setuptools<81"`,
+see the "Real audio, finally" entry). Chatterbox is kept out of every
+`pyproject.toml` on purpose, so a fresh `uv sync` gives a venv without it —
+use the overlay. The venv install is local drift, not a new convention.
 
 **Retriever recall@K by hard-case category** (`scripts/recall_by_category.py`,
 `docs/EVAL_RETRIEVER.md` Section 7). The snippet-query row reproduces the CLI's

@@ -39,7 +39,8 @@ That file is the single status record. The short version:
 - **EARS voice bank** rendered RI ch1 (`data/audio-ears-native/`, EVOLUTION
   4.87). Next audio work is speaker attribution, not the bank: the opening
   siege lines are attributed to the vocative addressee and to Bai Ning Bing.
-  Declare `chatterbox-tts` + `setuptools<81` somewhere a fresh sync picks up.
+  Run Chatterbox via the `uv run --with chatterbox-tts --with "setuptools<81"`
+  overlay; this session's venv has both installed directly, which is drift.
 - **Before any patent filing:** read Narrative Graph Prompting (ICCVW 2025)
   and StoryWeaver (arXiv:2412.07375); the repo has been public since
   2026-08-07.
