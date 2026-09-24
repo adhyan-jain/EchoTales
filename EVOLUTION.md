@@ -7702,3 +7702,14 @@ chain so VCTK and CREMA-D behave exactly as before. A balanced 22-speaker
 subset was downloaded; a full-bank Chatterbox render of chapter 1 was queued.
 
 Suite: 1,071 passed.
+
+### 4.86 Recall@K re-measured with production-exact context — the title gate passes, by one case *(2026-09-25)*
+
+The recall@K figures in 4.84/4.85 were computed while the evaluation retriever
+received block text. Production passes `_context_for(mention, story_text)`;
+since `ce622aa` the evaluation calls the same function. Re-measured on the
+hard cases (SILVER): overall recall@10 84.4%, RIGID_NAME 90.3%,
+TRANSFERABLE_TITLE **88.9% — gate passes** (7/9 → 8/9), RELATIONAL_DEICTIC
+25.0%. Historical documents carry a supersession note rather than an edit.
+The headline stands: most hard-case spans are never detected as mentions, so
+they never reach retrieval in the real pipeline.

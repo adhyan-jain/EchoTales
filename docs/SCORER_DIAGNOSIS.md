@@ -89,7 +89,7 @@ blocker, not a modelling one.
 By category, detection failure is where the project claims difficulty:
 `relational_deictic` 25 of 29 undetected, `title_transfer` 16 of 17. This
 reconciles an apparent contradiction with `docs/EVAL_RETRIEVER.md`, where
-TRANSFERABLE_TITLE recall@10 is 77.8%: that evaluation hands the gold span
+TRANSFERABLE_TITLE recall@10 is 88.9%: that evaluation hands the gold span
 straight to the retriever and so bypasses detection. **Retrieval is adequate
 when given the span; the mention layer rarely produces the span.**
 

@@ -19,7 +19,7 @@ IAA**.
 | Read-set-derived invalidation | Cast change invalidates, offstage change does not — `test_readset_invalidation.py` |
 | Self/Persona, sequential case | One Self, two disjoint bodies — `docs/SELF_PERSONA_VALIDATION.md` |
 | Baselines A and B | 10 and 133 mentions vs 359, at 1 and 177 calls vs 0 at resolution — `docs/BASELINES.md` |
-| Retriever recall@K by alias type | Given the span: rigid 83.9%, title 77.8%, relational 25.0% @10 — `docs/EVAL_RETRIEVER.md` |
+| Retriever recall@K by alias type | Given the span, production-exact context: rigid 90.3%, title 88.9% (gate passes, n=9), relational 25.0% @10 — `docs/EVAL_RETRIEVER.md` |
 | Scorer diagnosis | Ranks correctly 94.2%; capped at p=0.550 by three inert features; refit does not help — `docs/SCORER_DIAGNOSIS.md` |
 | Ablations | Gazetteer carries 66% of links; temporal gate fires on 0 pairs |
 | Prior art | LLMLINK and LINK-KG verified against full text — `docs/PRIOR_ART_LINKKG.md` |

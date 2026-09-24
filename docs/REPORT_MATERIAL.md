@@ -200,8 +200,8 @@ relationships, persona, certainty}`. [I]
   recall 25.2% → 48.9%; CoNLL F1 78.1 → 86.5; speaker identifiability
   48.8% → 63.0%; contradictions detected 0 → 50. A pre-registered prediction
   that mentions would double was **refuted** (+14.6%).
-- Retriever recall@10 given the gold span: rigid names 83.9%, transferable
-  titles 77.8%, relational/deictic 25.0%.
+- Retriever recall@10 given the gold span, production-exact context: rigid
+  names 90.3%, transferable titles 88.9% (n=9), relational/deictic 25.0% (n=4).
 - **Hard cases are lost at detection:** 59 of 89 never become mentions
   (relational/deictic 25/29; title transfer 16/17).
 - **Scorer:** ranks the correct candidate first 97/103 (94.2%), but three of

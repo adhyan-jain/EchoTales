@@ -147,3 +147,31 @@ measured bottleneck on exactly the alias types the project is about, and that
 fixing the scorer first would have been the wrong order. The ablation re-run
 against the post-NER-fix evidence cache is what separates the remaining
 alternatives.
+
+
+---
+
+## 6. Re-measured with production-exact context — 2026-09-25
+
+Section 2 was measured before commit `ce622aa`, when the evaluation retriever
+received each mention's *block* text. Production (`resolve/runner.py`) gives
+it `_context_for(mention, chapter.story_text)` — a fixed window around the
+surface in the whole chapter. The evaluation now calls that same function.
+
+| Alias type | n | @1 | @5 | @10 | @20 |
+|---|---:|---:|---:|---:|---:|
+| **Overall** | 45 | 62.2% | 77.8% | **84.4%** | 95.6% |
+| RIGID_NAME | 31 | 77.4% | 83.9% | **90.3%** | 100% |
+| TRANSFERABLE_TITLE | 9 | 33.3% | 77.8% | **88.9%** | 100% |
+| RELATIONAL_DEICTIC | 4 | 0.0% | 25.0% | 25.0% | 50.0% |
+| EPITHET | 1 | 100% | 100% | 100% | 100% |
+
+**Gate: PASS** — TRANSFERABLE_TITLE recall@10 88.9% against 80%. That is
+one case (7/9 → 8/9) and must be reported with its n.
+
+**This does not change the headline finding.** Retrieval is adequate *when
+handed the span*; `docs/SCORER_DIAGNOSIS.md` Section 4 shows 16 of 17
+title-transfer mentions and 25 of 29 relational/deictic mentions are never
+detected as mentions at all, so in the real pipeline they never reach
+retrieval. Relational/deictic retrieval (25% @10) remains weak even when given
+the span.

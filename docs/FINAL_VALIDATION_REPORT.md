@@ -98,7 +98,7 @@ Each row has a reproducible command behind it.
 - **Mentions per chapter: +14.6%**, against a predicted doubling.
 - **`RELATIONAL_DEICTIC` recall@10: 25.0% → 25.0%.** Unmoved, and the weakest
   part of the system by a wide margin (n=4; directional only).
-- **The retriever gate still FAILS** — 77.8% against an 80% threshold.
+- **The retriever gate still FAILS** — 77.8% against an 80% threshold. *(Superseded 2026-09-25: 88.9% with production-exact context, gate passes by one case at n=9; `docs/EVAL_RETRIEVER.md` Section 6.)*
 - **The learned scorer still links nothing**, on 57% more evidence.
 - **Confirmed gold: still 0 records**, by owner decision this pass.
 
@@ -150,7 +150,7 @@ Retriever, hardcases silver set (the non-trivial one), post-fix:
 |---|---:|---:|---:|---:|
 | Overall | 45 | 62.2% | 77.8% | 91.1% |
 | RIGID_NAME | 31 | 77.4% | 83.9% | 96.8% |
-| TRANSFERABLE_TITLE | 9 | 33.3% | **77.8%** (gate FAIL) | 100% |
+| TRANSFERABLE_TITLE | 9 | 33.3% | **77.8%** (gate FAIL; 88.9% and PASS with production context, see EVAL_RETRIEVER Section 6) | 100% |
 | RELATIONAL_DEICTIC | 4 | 0.0% | 25.0% | 25.0% |
 
 ## 7. Baseline results

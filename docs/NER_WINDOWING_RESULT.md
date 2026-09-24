@@ -199,6 +199,9 @@ Against the hardcases silver set (the only non-trivial evaluation set):
 points rather than 13.3. `RELATIONAL_DEICTIC` did not move at all and is the
 weakest part of the system by a wide margin (n=4; directional only).
 
+> **Superseded 2026-09-25.** Re-measured with the retriever given *production's exact* context (`resolve/runner.py::_context_for`, commit `ce622aa`) rather than block text: TRANSFERABLE_TITLE recall@10 **88.9%**, so the gate **passes** — by one case at n=9. See `docs/EVAL_RETRIEVER.md` Section 6.
+
+
 ---
 
 ## 8. Status changes this run justifies
