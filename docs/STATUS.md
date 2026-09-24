@@ -32,12 +32,20 @@ contradict a later HANDOFF entry.
 "Temporal state (`state_of`)" rows below were re-reconciled against
 `EVOLUTION.md` 4.76-4.82 (mention-layer truncation fix, resolution
 provenance, the ablation harness, the observer axis, the evidence layer).
-**Truth constraint that must survive any future edit to this file:** the
-real ollama re-run that would show 4.76's effect on recall/attribution has
-**not been run** — nothing below may say or imply mention recall, CEAF-e,
-or speaker attribution improved. Everything attributed to 4.77-4.81 below
-**is** measured on real data (resolution needs no LLM and runs off
-already-stored mentions), and there is still zero confirmed gold.
+**Truth constraint — DISCHARGED 2026-09-24.** This file carried the
+constraint that "the real ollama re-run that would show 4.76's effect on
+recall/attribution has **not been run** — nothing below may say or imply
+mention recall, CEAF-e, or speaker attribution improved." **That re-run has
+now happened** (`docs/NER_WINDOWING_RESULT.md`, full volume, 47 min, 660
+calls): CEAF-e recall 25.2% → 48.9%, entities 82 → 261, speaker
+identifiability 48.8% → 63.0%, and the "mentions roughly double" half of
+the recorded prediction is **refuted** (+14.6% — the fix finds *entities*,
+not mentions, because `_locate` already searched the whole chapter). Those
+are measured and may be cited. **The constraint's successor:** the B³/MUC
+figures from that run are **tautological** on a surface-trivial gold set
+(`docs/EVAL_RETRIEVER.md` §1) and must never be quoted as accuracy.
+Everything attributed to 4.77-4.81 below **is** measured on real data, and
+there is still zero confirmed gold.
 
 **How this relates to other docs:**
 - `EVOLUTION.md` stays the historical, append-only reasoning log — never
@@ -168,7 +176,7 @@ not merely undocumented).
 |---|---|---|---|---|---|---|
 | Ingestion | EPUB→chapters/blocks, 3 novels fully ingested (198-213 ch each) | Verified | none — works | none | — | — |
 | Block/span classification | `ingest/classify.py`; ORV bracketed `SYSTEM_WINDOW` fixed (§4.64); 188 stray `HEADING` blocks/novel remain (open defect #9) | Partial | minor: a few blocks misclassified per novel | small noise in span-type-conditioned metrics | root-cause the residual HEADING blocks (bounded, not urgent) | — |
-| Mention detection | Qwen2.5 NER + gazetteer; `TRANSFERABLE_TITLE` fixed end-to-end (§4.62). Root cause of the recall ceiling found and fixed in code (EVOLUTION 4.76, 2026-09-23): `ner.py` was sending only `text[:6000]` per chapter and stopping, invisible to roughly half of every novel (RI median chapter 11,667 chars, 199/199 chapters over 6,000, only 51.9% of text ever reaching the model; `item` also missing from the label set). Now windows the full chapter (~3 calls/chapter) and offers `item`. **Landed and unit-tested, not yet run against real ollama output — effect on real recall is unmeasured**, see HANDOFF's "Pick up here" | Partial | some dialogue still goes unattributed as of the last real run; whether the fix changes that is unknown | recall ceiling mechanism identified and patched, real-data effect unadjudicated | run the real re-resolve (`docs/COMPLETION_PLAN.md` Track 1 item 3) and report the delta, favourable or not | — |
+| Mention detection | Qwen2.5 NER + gazetteer; `TRANSFERABLE_TITLE` fixed end-to-end (§4.62). Root cause of the recall ceiling found and fixed in code (EVOLUTION 4.76, 2026-09-23; **measured 2026-09-24, see `docs/NER_WINDOWING_RESULT.md`**): `ner.py` was sending only `text[:6000]` per chapter and stopping, invisible to roughly half of every novel (RI median chapter 11,667 chars, 199/199 chapters over 6,000, only 51.9% of text ever reaching the model; `item` also missing from the label set). Now windows the full chapter (~3 calls/chapter) and offers `item`. **Landed and unit-tested, not yet run against real ollama output — effect on real recall is unmeasured**, see HANDOFF's "Pick up here" | Partial | some dialogue still goes unattributed as of the last real run; whether the fix changes that is unknown | recall ceiling mechanism identified and patched, real-data effect unadjudicated | run the real re-resolve (`docs/COMPLETION_PLAN.md` Track 1 item 3) and report the delta, favourable or not | — |
 | Speaker attribution | 45.5% identifiable (§4.60), honestly measured after removing a turn-taking tier proven wrong 82.9% of the time — **this number predates the NER windowing fix above and has not been re-measured against it** | Partial | ~half of dialogue lines have no confident speaker | limits audiobook casting quality | re-run against the windowed NER path before doing any more attribution-layer tuning | mention detection |
 | Identity resolution / resolver | Hand-tuned pre-filters carry every real link; the learned scorer is confirmed structurally too weak (defect #1, precision plateaus 0.66-0.77, six clan members merge under calibration). **Measured on real RI data (§4.77/4.78, 2026-09-23):** `by_method` no longer hardcodes `SCORED` — real breakdown of 880 links is `GAZETTEER_EXACT=870, DECLARATION=5, NAME_CONTAINMENT=2, RELATIONAL_COPRESENCE=3, SCORED=0` — i.e. **the scorer settles no link at all**. (`resolve`'s printout shows `SCORED=82`; that is exactly the count of *created* entities, not links, so the two agree.) Re-scoring a 10,058-pair evidence cache under every ablation condition shows the scorer's real maximum output is 0.527 against the 0.80 link threshold; `temporal_validity` blocks zero of 2,051 real pre-filter blocks (all from `co_presence_violation`) | Partial | none directly (pre-filters cover the real cases) | scorer is not a defensible ML contribution as-is — now confirmed on real pairs, not only the theoretical 0.711 bound | new candidate-evidence feature family (Part K), not reweighting | — |
 | Candidate retrieval | `resolve/retrieve.py::CandidateRetriever`; recall@10 real: `RIGID_NAME` ~100%, `RELATIONAL_DEICTIC` 0%→59% (§4.60 fix), `TRANSFERABLE_TITLE` structurally unmeasurable (§4.69, stale-claim #2 above) | Partial | none | 1/3 alias types has no defensible recall@k number, ever, on this novel, under the current eval design | redesign the eval question for `TRANSFERABLE_TITLE` (score correct-DEFER, or use a novel with an eventual reveal) | mention detection, gold set |

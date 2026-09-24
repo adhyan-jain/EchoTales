@@ -10,7 +10,7 @@ here and never in `EVOLUTION.md` — a HANDOFF/EVOLUTION section number
 (like "4.52") is not a render version, and the two must never be
 conflated.
 
-**The other three, in the order you want them:**
+**The others, in the order you want them:**
 
 | File | Answers |
 |---|---|
@@ -18,19 +18,278 @@ conflated.
 | `architecture.md` | The model: three axes of time, self vs persona, observers |
 | `details.md` | Per-file detail |
 | `plans.md` | The original spec. Amended three times; the amendments win and are marked *(revised)* |
+| `docs/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-09-12.
+**Last updated:** 2026-09-24.
+
+## Pick up here — Tracks 1-4, 6 largely landed; **three things are blocked and one of them gates everything**
+
+**Session of 2026-09-23/24.** `docs/COMPLETION_PLAN.md` carries DONE markers
+per item; `EVOLUTION.md` 4.76-4.83 has the detail. Suite **1,038 passed**
+(was 928). **Read this list of blocked items before starting anything.**
+
+### Blocked, in priority order
+
+1. **Track 1 item 3 — the measuring re-run. DONE 2026-09-24.** Full account
+   in `docs/NER_WINDOWING_RESULT.md`. The blocker was a **misdiagnosis**:
+   ollama was not unreachable from a sandboxed shell, the daemon was simply
+   not running (`ollama serve` brought it up in one second). Full volume,
+   47 min, 660 calls, 0 escalations.
+
+   **Prediction adjudicated as recorded — one part refuted.** CEAF-e recall
+   25.2% → **48.9%** (confirmed); identifiability 48.8% → **63.0%**
+   (confirmed); "mentions roughly double" → **+14.6%, REFUTED**. The fix
+   finds *entities*, not mentions: **82 → 261 (+218%)**, because `_locate`
+   already searched the whole chapter, so truncation only ever hid entities
+   appearing *solely* past 6,000 chars. Bai Ning Bing now has ch1 mentions
+   at exactly the three gold offsets (6697/6814/8757), first appearance
+   ch108 → **ch1**.
+
+   Side effects: the contradiction detector fires on real data for the first
+   time (**50 contradictions → 50 splits**, was zero on 60 chapters); entity
+   typing is now 261/261 with 0 unknown; `TURN_TAKING` is gone from
+   attribution. **The scorer still links nothing** on a 57% larger evidence
+   cache (15,796 pairs), which closes the starvation defence.
+
+2. **Track 5 items 19-21 — CLIPScore pixel QA. The plan's premise was
+   wrong.** It assumed `torch`+`transformers` was enough. Only CLIP's
+   *tokenizer* is cached locally; `openai/clip-vit-large-patch14` has **no
+   config and no vision weights** on disk, so the bench needs a ~1.7GB
+   download. 1,182 panels are on disk waiting to be scored.
+
+3. **Track 6 item 27 — verify the four LINK-KG claims** (`plans.md:800-806`)
+   against arXiv:2510.26486. Needs network. The disclosure's whole positioning
+   rests on them and they have never been checked.
+
+Also needing a GPU, not a blocker for the above: item 18 (the two
+observer-contrast figures), item 25 (real-render cache invalidation).
+
+### Landed this session, verified against real data
+
+- **4.76 NER windowing + `item` label** — `text[:6000]` meant **51.9% of RI
+  ever reached the model**; 199/199 chapters over the cut. Unit-tested only;
+  see blocker 1.
+- **4.77 resolution provenance + compounding curve** — `by_method` said 100%
+  `SCORED` by construction. With the lie removed: **the scorer settles 0 of
+  880 links.** All 880 are hard pre-filters, 870 of them gazetteer. First real
+  compounding curve: `w0=81% w1=93% w2=89% w3=96% w4=91%`.
+- **4.78 evidence cache + `echotales ablate`** — over 10,058 real pairs the
+  scorer's **max output is 0.527 against a 0.80 threshold**, so a scored link
+  is arithmetically impossible. `temporal_validity` blocks **zero** pairs.
+- **4.79 draft ambiguity guard + escalation rate** — the ladder has **never
+  escalated** (0 of 370 calls).
+- **4.80 observer axis** — `architecture.md`'s headline acceptance test
+  **passes on real data for the first time**: READER 2 aliases, a witness 1
+  (strict subset), a non-witness 0.
+- **4.81 blind annotation / held-out coverage / bootstrap CIs / traceable
+  results** — `eval` now prints intervals and persists to
+  `data/eval/results/<run_id>/` with a `-dirty` commit marker.
+- **4.82 invention disclosure** — `docs/IP/invention_disclosure.md`, gitignored.
+
+### Needs your decision, not more work
+
+**Both shipped RI gold drafts have silently colliding records** (4.83).
+`GoldMention.key` is `(novel, chapter, offset)`, so a word-boundary *prefix*
+surface lands two records on one offset and one overwrites the other.
+`reverend-insanity-c1-c5.toml` has **14** — `"Gu Yue"` is annotated as the
+clan and prefixes its own members' names, so every clan member's position also
+carries an organization record. The extended file has **13**, including bare
+`"Gu"` (a negative) prefixing `"Gu Yue"` (a real entity). This is the file
+4.74 called the project's best artifact. **Left unedited deliberately** —
+changing what an annotator asserted is your call — and pinned by an
+expect-to-raise test so it cannot be lost. Nothing in production expands these
+TOMLs, so nothing is broken today.
+
+### Still open and not blocked (just long)
+
+- **Track 2 item 5** — LOTM ch1-3 of 40 drafted (4.83,
+  `data/gold/lord-of-the-mysteries-c1-c3.toml`, 173 mentions, 24 identities).
+  ch4-40 and all of ORV remain; it is a reading task, not a code one.
+- **Track 5 items 22-23** — depend on the blocked bench.
+
+### The thing not to forget
+
+**There is still zero confirmed gold.** Every coreference number printed is
+scored against unconfirmed drafts, 56% of the RI file is circular, and `eval`
+says so on every run. The blind annotation tool (`echotales annotate`) is
+built and round-trip tested; running it is the owner's call, after exams.
+
+## Pick up here — gold retraction: there is still no gold set (docs-only pass, verified)
+
+**Status: done and verified for what it claims — a false number was removed;
+no true one was produced.** Full account in `EVOLUTION.md` 4.74 (do not
+re-derive it from this summary). The confirmed-tier B³ result this file
+and `docs/STATUS.md` used to cite (precision=100.0%, recall=94.6%,
+f1=97.2%, RI ch1-60) is **retracted**: the gold it was scored against
+(`reverend-insanity-c1-c50.jsonl`, 6,952 records) was built by
+`eval/generate_gold.py::_extract_gold_from_db` `SELECT`ing the pipeline's
+own resolved `mention` table, then flipped to
+`provenance: human, confirmed: true` on 2026-08-12 without an independent
+human review pass. It measured the system against itself. The draft-tier
+figure (98.1% F1) is equally circular. Do not cite either number, and do
+not "fix" this by re-running eval against an older copy of the gold file.
+
+- **Verified:** the file is quarantined at
+  `data/gold/_unusable/reverend-insanity-c1-c50.jsonl` (see its
+  `README.md` for exactly why, and why it's not curable by review).
+  `eval/gold.py` now has a structural contract that would have caught
+  this — `CIRCULAR_DRAFTERS`, `GoldProvenanceError`/`CircularGoldError`/
+  `UnattributedConfirmationError`, a `ReviewDepth{NONE,BULK,PER_RECORD}`
+  enum, `confirmed_by` required whenever `confirmed=True`. New
+  `test_gold_provenance.py` (9 tests) drives every branch.
+  `test_all_novels_gold_sets.py` was rewritten so it can no longer assert
+  the false claim it used to assert. Full suite green: 914 passed in
+  26.6s, run at time of writing (per EVOLUTION 4.74).
+- **Not verified / not done:** this pass did not produce any new gold.
+  **Zero gold records exist across the whole corpus right now** — every
+  file in `data/gold/` is `confirmed: false` (including the two
+  genuinely independent drafts, `reverend-insanity-c1-c5.jsonl` and
+  `reverend-insanity-hardcases.jsonl`, which were bulk-approved rather
+  than circular and are the better starting point for an actual human
+  pass). No resolver accuracy number, Baseline A comparison, or recall@k
+  result in this codebase is anchored to anything right now.
+
+See `docs/STATUS.md`'s "Stale claims found this pass" #5 and its "Gold
+datasets"/"Evaluation harness"/"Baselines" rows for the corrected
+component-status detail.
+
+## Pick up here — Product Orchestration track (backend done, no frontend yet)
+
+**Status: backend contracts complete and tested; explicitly no frontend
+work done, per the approved plan's scope limit.** Implemented per
+`~/.claude/plans/cheerful-orbiting-squirrel.md`. This closes
+`docs/STATUS.md`'s "Jobs/progress", "File upload", "Output library" rows
+(previously all **Missing**) and widens "Backend API" past its old
+review/correction-only scope.
+
+- New `Job` model (`core/models.py`) + `job` table/CRUD (`core/store.py`),
+  following the existing `pipeline_run`/`stage_run` schema pattern.
+- New `packages/pipeline/src/echotales/pipeline/jobs.py` — `JobQueue` (one
+  daemon worker thread, strictly sequential process-wide, matching the
+  existing ollama/diffusion GPU-sharing constraint), `run_stage`/`run_job`/
+  `_dispatch` (maps `Job.kind` to the real stage functions), and
+  `ALLOWED_HTTP_ENGINES` (excludes `gemini`/`openrouter` from the HTTP path
+  entirely — those stay CLI-only). `commands.py::cmd_run`'s closure now
+  delegates to `jobs.py::run_stage` (`skip_if_succeeded=False`, so `echotales
+  run`'s always-execute CLI behavior is unchanged — the new resumability
+  skip is opt-in, scoped to HTTP-triggered jobs).
+- New `packages/pipeline/src/echotales/pipeline/_multipart.py` — minimal
+  stdlib-only `multipart/form-data` parser for the two upload routes.
+- `webview_server.py` gained project lifecycle (`GET`/`DELETE
+  /api/projects`), EPUB upload (`POST /api/projects/<id>/source`), job
+  triggers for every stage (`POST /api/projects/<id>/{ingest,resolve,
+  appearance,persona,render,voice,refimg_search,reference_gen}`), job
+  status (`GET /api/projects/<id>/jobs`, `.../jobs/<job_id>`), reference
+  candidate/search/upload routes, a read-only render preview
+  (`GET /api/novels/<id>/render/preview`, wraps `plan_builder.py::
+  build_render_plan`), real generation jobs (`POST .../render/generate`,
+  `.../reference/generate`, engine allowlist-checked), and an output
+  library (`GET /api/novels/<id>/output`, `.../output/file`, filesystem
+  walk of `pipeline/paths.py`'s existing layout, path-escape-guarded).
+  `Registry` now scans `data/projects/*.db` at startup so a project
+  created via the API survives a restart. Found and fixed in passing:
+  `Store.is_canonical` is a `@property`, not a method — two new call sites
+  were calling it as `.is_canonical()` (would have thrown `TypeError` the
+  first time `DELETE /api/projects/<id>` hit a canonical id), caught while
+  writing the integration test, before it shipped broken.
+- Tests: `packages/pipeline/tests/test_jobs.py` and
+  `test_webview_server_jobs.py` (new file — `webview_server.py` had zero
+  test coverage before this). Full suite green.
+- **Verified:** unit/integration tests pass, stub-mode dispatch and
+  resumability-skip both exercised for real in `test_jobs.py`. **Not
+  verified:** no real end-to-end manual walkthrough (upload → ingest →
+  resolve → persona → render/preview → render/generate → output) was run
+  against a live server with a real EPUB this session — only the
+  automated test suite. **Not done at all, and out of scope per the
+  approved plan:** any frontend/webview UI wiring — `ManuscriptProgress.js`
+  still shows a hardcoded placeholder list, and the upload `<input>` is
+  still rendered `disabled`. Next session picking this up should wire the
+  frontend to these routes, or run the manual end-to-end check first if
+  that hasn't happened yet.
+
+See `EVOLUTION.md` 4.73 for the full design rationale (reused vs. new
+mechanisms) and `docs/STATUS.md`'s "Backend API"/"Jobs/progress"/"File
+upload"/"Output library" rows for the corrected component-status detail.
+
+## Pick up here — Core Pipeline Hardening (session 1 of the 24-section plan)
+
+**Status, verified vs. not — see EVOLUTION 4.72 for the full detail.** This
+session executed a scoped subset of `~/.claude/plans/mighty-squishing-
+feigenbaum.md` (see `~/.claude/plans/dynamic-rolling-sun.md` for the exact
+scoping). Full suite green (`python3 -m pytest packages/core/tests/
+packages/pipeline/tests/ -q`).
+
+- **Done and verified for real:** `PipelineRun`/`StageRun`/`StageArtifact`
+  provenance tables + dataclasses, wired into `commands.py::cmd_run`
+  (confirmed via direct SQL against a real stub-mode run); deterministic
+  self-ids (`resolve/runner.py::_stable_entity_id`, no more in-process
+  counter); per-chunk transaction/rollback safety + `PartialStageFailure`
+  across `resolve_novel`/`build_personas`/`extract_appearance`; canonical-
+  vs-scratch DB guard (`Store.is_canonical`, `data/canonical_dbs.json`,
+  `CanonicalRewipeBlocked`, `--force-rewipe` flag) — confirmed for real
+  against `data/webview-working/reverend-insanity.db` (refused to wipe,
+  real 82-row table untouched); `RenderArtifact` instantiated for the
+  first time (`render/panels.py`, sidecar `render_artifact.jsonl`,
+  confirmed present on all 47 panels of a stub-mode RI ch1 smoke run);
+  render's half of the canonical `state_of()` boundary
+  (`character_looks` now takes the same `StateResolver` instance
+  `plan_builder.py` uses); a new direct Self/Persona boundary property
+  test (`test_self_persona_boundary.py`, no code change needed —
+  `state_of()` was already correct).
+- **NOT done — do not read as complete:** resumability is built but not
+  live — `cmd_run` doesn't yet call the skip-if-succeeded `stage()`
+  context manager, so a real CLI rerun still re-executes every stage from
+  scratch even when nothing changed. Voice's half of the `state_of()`
+  boundary is read-side only: `load_trait_profiles` can now accept a
+  `position`, but `build_personas` still writes one trait profile per
+  *entity*, not per body-epoch, so a transmigrated character's voice still
+  doesn't differ by body (unchanged from EVOLUTION 4.71's finding — this
+  session made it fixable later, not fixed now). No full non-stub render
+  was run against this session's changes — everything above is verified
+  via unit tests, a stub-mode smoke run, or a real read-only query, never
+  a real end-to-end render.
+- **Defect #8 (recurring unnamed characters get a fresh voice every
+  chapter) is now partially fixed**, not fully — see the "Open defects"
+  entry below for the exact boundary of what's fixed vs. still open, and
+  the new distinct `EPITHET_SLOT` finding.
+
+**Next steps, in order (from the unexecuted tail of the 24-section plan):**
+1. Wire `cmd_run` onto the skip-if-succeeded `stage()` context manager so
+   resumability is actually live, not just unit-tested.
+2. Decide whether to fix the `EPITHET_SLOT` chapter-scoping bug found this
+   session (see Open defects) in the same pass as defect #8 or separately
+   — the fix shape differs (drop `chapter.number` from that tier's key,
+   not add a resolved-entity lookup).
+3. World/appearance wiring (plan §12), scene/beat/panel boundary docs+test
+   (§13), video QA (§16-17), the full 8-scenario failure-injection suite
+   (§18), and the real E2E fixture (§19) remain untouched — pick up from
+   `mighty-squishing-feigenbaum.md`'s original section numbering.
+4. If picking up voice/persona body-state work: the write-side fix
+   (`build_personas` computing a trait profile per body-epoch, not per
+   entity) is the actual remaining gap, not another read-side accessor.
 
 ## Pick up here — webview frontend redesign & short-form video reels
 
 **Status, verified vs. not:**
 - `Login.js` / `NewProject.js` / `CharacterDashboard.js` — **done**, `Section7Smoke.test.js` passing (8/8).
 - `create_mention` frontend UI — **done**, wired via `+ mention` action button in edit mode (`App.js`, `ScriptView.js`, `ScriptLine.js`).
-- Gold QA Datasets — **full-volume coverage, still not human-confirmed for 2 of 3**. All three now cover their entire sources.toml volume: `reverend-insanity` 198/199 ch (ch164 has zero resolved character mentions at all -- worth checking as a possible extraction gap, not yet root-caused), `lord-of-the-mysteries` 213/213 ch, `omniscient-readers-viewpoint` 186/188 ch (ch14/121 genuinely feature only side characters outside the 5 tracked leads). Only `reverend-insanity`'s original ch1-60 is human-reviewed (bulk-approved, untouched by the extension); everything else, including all of LOTM/ORV, is `Provenance.MODEL`/`confirmed=False` -- drafts to audit, not ground truth. `generate_gold.py`'s `identity_map`s had drifted wrong (self-ids are per-resolve-run, not stable) and were re-derived by looking up each character's current target_id directly in the DB being used -- see the module's own docstring before rebuilding these again after any resolve rerun. LOTM's resolver also leaves bare given/family names (`"Klein"`, `"Moretti"`) as separate self-ids from the full-name id for every tracked character in `data/lotm-vol1.db` -- folded into identity_map correctly for gold-labeling, but the underlying non-merge is a resolver characteristic worth root-causing separately.
+- Gold QA Datasets — **full-volume draft coverage, zero records confirmed anywhere (EVOLUTION 4.74, 2026-09-23 — supersedes this bullet's earlier claim that RI ch1-60 was human-reviewed)**. All three novels now cover their entire sources.toml volume: `reverend-insanity` 198/199 ch (ch164 has zero resolved character mentions at all -- **root-caused as far as possible without a full re-run, EVOLUTION 4.66: not a current-code defect** -- standalone replay of ch164's real content and its real cached NER output produces 39 valid mentions on today's code, so the canonical DB most likely just predates the 4.62 alias-type fix and needs a re-resolve; not fully confirmed, check ch164 again after the full RI re-resolve in the "start here now" section above), `lord-of-the-mysteries` 213/213 ch, `omniscient-readers-viewpoint` 186/188 ch (ch14/121 genuinely feature only side characters outside the 5 tracked leads). **`reverend-insanity`'s original ch1-60 file (6,952 records) was never human-reviewed at all** — it was drafted by `eval/generate_gold.py::_extract_gold_from_db` from the pipeline's own `mention` table and flipped to `confirmed: true` on 2026-08-12 without an independent pass; it is circular (the system scored against itself) and is now quarantined at `data/gold/_unusable/reverend-insanity-c1-c50.jsonl`. Every remaining record everywhere, including all of LOTM/ORV, is `confirmed: false` -- drafts to audit, not ground truth; the two files that are genuinely independent of pipeline output (`reverend-insanity-c1-c5.jsonl`, `reverend-insanity-hardcases.jsonl`) are unconfirmed but not circular, and are the actual starting point for a real human pass. `generate_gold.py`'s `identity_map`s had drifted wrong (self-ids are per-resolve-run, not stable) and were re-derived by looking up each character's current target_id directly in the DB being used -- see the module's own docstring before rebuilding these again after any resolve rerun. LOTM's resolver also leaves bare given/family names (`"Klein"`, `"Moretti"`) as separate self-ids from the full-name id for every tracked character in `data/lotm-vol1.db` -- folded into identity_map correctly for gold-labeling, but the underlying non-merge is a resolver characteristic worth root-causing separately.
 - Reference Image Quality Filtering — **done**, automated domain/title evaluation filters aggregator spam (`wallpapercave.com` etc.) without human intervention (`refimg_search.py`).
 - LOTM Persona Split — **done**, multi-persona body split emission verified for transmigrations (`test_lotm_persona_split.py`).
 - ORV System Windows — **done**, bracketed status notifications classified cleanly (`test_orv_system_window_classify.py`).
-- Recurring Unnamed Characters — **done**, cross-chapter entity persistence verified (`test_unnamed_recurring_character_persistence.py`).
+- Recurring Unnamed Characters — **entity-resolution half done**;
+  cross-chapter `target_id` persistence verified
+  (`test_unnamed_recurring_character_persistence.py`). **The voice half is
+  now partially fixed (EVOLUTION 4.72, 2026-09-22, same day as this
+  section's original 4.71 finding):** `speakers/runner.py::
+  _assign_anonymous_slots` now keys off a resolved `target_id` when
+  exactly one already-resolved, present entity shares an anonymous span's
+  block — but genuinely-unresolved anonymous dialogue (the ambiguous
+  zero-or-2+-candidate case) still mints a fresh
+  `{chapter_number}:{scene_key}:{slot}` id every chapter, and a separate
+  `EPITHET_SLOT` attribution tier in the same file was found to have the
+  identical chapter-scoping bug, untouched. See open defect #8 for the
+  exact boundary — don't read this bullet as fully closing #8.
 - Baseline A LLM Benchmark — **done**, `eval/baseline_a.py` built and tested (`test_baseline_a.py`).
 - Short-Form 9:16 Reels Engine — **planning-only stub, not wired in**. `render/reels.py` is pure dataclass/enum planning logic (`build_reel_plan_for_chapter`, `derive_reel_pacing`) that produces a `ReelCompositionPlan` describing style/pacing/camera-motion labels. It has no ffmpeg call, no dependency on `compose.py`, and is imported nowhere outside its own `test_reels_render.py` — it does not composite video. Integration with the real render pipeline is unbuilt.
 
@@ -44,22 +303,37 @@ conflated.
    tool from it isn't appearing, reload the VSCode window first — plugins/
    MCP servers registered mid-conversation don't become available without
    a full "Developer: Reload Window" in this environment.
-3. Redesign `App.js`'s shell next (it's the one screen every other screen
-   sits inside), then the generation-review and output/library screens.
+3. ~~Redesign `App.js`'s shell next (it's the one screen every other
+   screen sits inside)~~ **Done, unverified visually, EVOLUTION 4.68
+   (2026-09-13)** — header/view-tabs/corrections button now use the
+   `Button`/`Label` primitives and `font-display` heading, matching
+   Login/NewProject. `Section7Smoke.test.js` 8/8 and `react-scripts
+   build` both clean, but no Playwright MCP connection this session to
+   actually see it — confirm visually before calling this screen done
+   the way Login/NewProject were. Then the generation-review and
+   output/library screens (still not started — see item 4, both need new
+   backend routes first).
 4. Before building any frontend feature for upload, ingestion progress,
    reference-candidate search, img2img editing, per-body-state reference
    images, generation preview, or an output library — check EVOLUTION
    4.63's confirmed backend-gap list first. None of those endpoints exist
    yet; building frontend UI that assumes they do will need a matching
    backend route added, not just a fetch call.
-5. Clean up stray `*.png` screenshot files that may be sitting in the repo
-   root (`char-list-1440.png`, `char-detail-*.png`, `check-login.png`,
-   etc. — a Playwright MCP subagent path-naming quirk, see EVOLUTION
-   4.63) once the character dashboard work is confirmed done.
-6. Unrelated bug found incidentally while verifying screens this session,
-   not yet root-caused: live-edit mode with a fresh manifest can throw
-   `Cannot read properties of undefined (reading 'spans')` in `ScriptView`/
-   `App.js`'s chapter-rendering path.
+5. Checked this session — no stray `*.png` screenshot files at the repo
+   root currently (searched for `char-list-1440.png`, `char-detail-*.png`,
+   `check-login.png`, and any other root-level `*.png`; found none). The
+   Playwright MCP path-naming quirk from EVOLUTION 4.63 either didn't
+   recur or was already cleaned up — nothing to do here right now.
+6. ~~Unrelated bug found incidentally while verifying screens, not yet
+   root-caused: live-edit mode with a fresh manifest can throw `Cannot
+   read properties of undefined (reading 'spans')` in `ScriptView`/
+   `App.js`'s chapter-rendering path.~~ **Fixed, EVOLUTION 4.67
+   (2026-09-13)** — an out-of-range `chapterIdx` after a manifest refresh
+   handed `ScriptView` an `undefined` chapter with no guard. `App.js` now
+   clamps the index on refresh; `ScriptView.js` also gained a defensive
+   empty-state guard. `Section7Smoke.test.js` still 8/8 green. Not
+   confirmed live in a browser (no working Playwright MCP connection this
+   session) — see EVOLUTION 4.67 for the exact caveat.
 
 ## Pick up here — resolve/render pipeline remediation
 
@@ -81,26 +355,69 @@ case specifically now has all 8 occurrences (blocks 40, 57, 61, 64, 68,
 `target_id=None` — verified against the source text that the clan head is
 genuinely never named in ch1, so this is non-negotiable #9 working as
 designed, not a remaining defect. Six-Wang guard and full suite both
-clean throughout. Files changed (uncommitted): `mentions/ner.py`,
-`mentions/alias_type.py`, `mentions/chapter_ner.py`. See EVOLUTION 4.62
-for the full four-gate breakdown and exact numbers.
+clean throughout. Files changed, now committed (`3577143`):
+`mentions/ner.py`, `mentions/alias_type.py`, `mentions/chapter_ner.py`.
+See EVOLUTION 4.62 for the full four-gate breakdown and exact numbers.
 
-**Start here now — the item EVOLUTION 4.62 gated on this passing:**
+**4.65 update (2026-09-13): pipeline confirmed still healthy post-4.62 on
+a 3-chapter real (non-stub) smoke run — full-scale run still not done,
+see EVOLUTION 4.65 for exact numbers and the `ingest`+`resolve` vs. `run`
+gotcha found while setting it up.** User explicitly gated the full render
+down to a 3-chapter check first ("we havent tested the pipeline after the
+multiple changes so need a small run first"). `echotales run --novel
+reverend-insanity --chapters 1-3` against a scratch DB
+(`data/reruns/smoke-4.64-ch1-3.db`) with real ollama `qwen2.5:7b`
+completed cleanly end to end in ~2 minutes, `TRANSFERABLE_TITLE=8` in
+ch1-3 alone — consistent with 4.62's ch1-15 numbers, no regression at
+this scale. `eval --report` against a 3-chapter DB is not a real recall@k
+result (gold set spans 198 chapters, so almost everything reports
+`(unresolved)` by construction) — don't read that number as a finding.
 
-1. **The full fresh real render + Section 1.3 relevance-harness numbers**
-   (this was HANDOFF's old item 4, now unblocked). Run a real, non-stub
-   render on RI against a scratch DB (never canonical), then `uv run
-   echotales relevance --novel reverend-insanity` and compare against the
-   last recorded pre-remediation baseline (EVOLUTION 4.53/4.56 era
-   numbers), flagging any regression explicitly rather than assuming the
-   TRANSFERABLE_TITLE fix is a strict improvement everywhere it touches.
-   Not attempted this session — 4.62 was scoped to validation only, per
-   the user's own gating.
-2. Once that render exists, re-run `echotales eval`'s recall@k gate
-   against the *full* run (not just ch1-15) to get a real
-   `TRANSFERABLE_TITLE` recall@10 number — 4.62's ch1-15 scratch run
-   wasn't wide enough to compare meaningfully against the 60-chapter gold
-   set (`data/gold/reverend-insanity.jsonl`).
+**Item 1 below is DONE, EVOLUTION 4.69 (2026-09-21) — no new run was
+needed, a full real render already existed uncommitted.** Item 2's
+recall@k re-run also happened, but the honest result is that the
+`TRANSFERABLE_TITLE` gate is *structurally* unmeasurable on RI, not merely
+untested — read 4.69 before trying to "finish" this by annotating more
+gold or re-running the render again; neither would change the result.
+
+1. ~~The full fresh real render + Section 1.3 relevance-harness
+   numbers.~~ **The render itself is done, EVOLUTION 4.69 — the B³ number
+   reported here is RETRACTED, EVOLUTION 4.74 (2026-09-23), do not cite
+   it:**
+   `data/reruns/ollama-eval-reverend-insanity.db` (produced as a side
+   effect of the 2026-09-12 gold-QA commit, postdating the 4.62 fix) is a
+   real, non-stub, full 199-chapter render — verified directly (312 real
+   `qwen2.5:7b` `llm_call` rows, `TRANSFERABLE_TITLE=30` mentions present).
+   That part stands. What does not stand: the "confirmed-only B-cubed"
+   figure this bullet used to report (precision=100.0%, recall=94.6%,
+   f1=97.2%) was scored against `reverend-insanity-c1-c50.jsonl`, gold
+   built from the pipeline's own `mention` table and marked
+   `confirmed: true` without an independent human pass — it measured the
+   system against itself, and the "no regression vs. the pre-remediation
+   baseline (precision=100%, recall=95%, f1=97.4%)" framing is equally
+   meaningless, since that older figure was circular too. See EVOLUTION
+   4.74 and `data/gold/_unusable/README.md`. There is currently no gold
+   set this render can be honestly scored against. Note for next time:
+   check `data/reruns/` and `git status` for an existing uncommitted
+   artifact before spending GPU/LLM hours re-deriving one — this file sat
+   there for over a week with no doc pointing at it.
+2. ~~Re-run `echotales eval`'s recall@k gate against the full run.~~
+   **Done, EVOLUTION 4.69 — result is a root cause, not a number.**
+   `TRANSFERABLE_TITLE` recall@10 still reads "GATE: untested," and it
+   always will on this novel with the current eval design: every real
+   `TRANSFERABLE_TITLE` mention on RI correctly resolves to
+   `target_id=None` (0/30, by design — non-negotiable #9), but
+   `generate_gold.py` and `build_gold_retrieval_cases` both only admit
+   mentions with a *resolved* `target_id` into gold/recall@k cases. So
+   100% of gold (6,238/6,238 mentions, all confirmation tiers) is typed
+   `RIGID_NAME` — zero `TRANSFERABLE_TITLE`/`EPITHET`/`RELATIONAL_DEICTIC`
+   records exist anywhere in it, structurally, not from a coverage gap.
+   **New open item, not yet attempted:** the eval question needs to
+   change for this alias type — either test retrieval against a novel/arc
+   where a title-holder *is* eventually revealed, or score correct
+   DEFER-to-`None` itself as the measured behaviour. See EVOLUTION 4.69
+   for the exact reasoning; this is an eval-design decision, not a bounded
+   patch.
 
 Also still open, lower priority than the above:
 
@@ -330,9 +647,23 @@ genuinely unresolved *today*.
    renders non-person entities distinctly (kind badge, dashed inline
    underline). Verified against real data: 18/82 RI entities flagged,
    Qing Mao Mountain among them. **This defect is now fully closed.**
-8. **Recurring unnamed characters have no cross-chapter persistence** — a
-   named character's retinue or a minor recurring character gets a fresh
-   anonymous voice slot every chapter.
+8. **Recurring unnamed characters have no cross-chapter persistence —
+   PARTIALLY FIXED, EVOLUTION 4.72 (2026-09-22).**
+   `speakers/runner.py::_assign_anonymous_slots` now keys an anonymous
+   dialogue span's voice off a real resolved `target_id` when exactly one
+   physically-present, already-resolved entity (e.g. an `EPITHET` mention
+   like "the Guard Captain") shares its block — verified with 6 new tests
+   including a direct cross-chapter-persistence case. **Still open:**
+   genuinely unresolved anonymous dialogue (zero or 2+ present candidates
+   — the ambiguous two-unnamed-guards case) still gets a fresh
+   `{chapter}:{scene}:{slot}` id every chapter, deliberately, to avoid
+   guessing. **New, distinct, not fixed:** the same file's `EPITHET_SLOT`
+   tier (`speaker = f"{novel_id}:epithet:{chapter.number:g}:{role...}"`,
+   line ~450) is *also* chapter-scoped despite that tier's own docstring
+   claiming a stable title-keyed id — same defect class, different
+   attribution tier, found while reading the code for this fix but not in
+   this session's scope. Fix shape differs from #8's fix (drop
+   `chapter.number` from the key, not add a resolved-entity lookup).
 9. **ORV block classification gaps**: 188 `HEADING` blocks survive per
    novel; `SYSTEM_WINDOW` detection under-fires because this source's
    status messages are bracketed prose, not `Key: Value` lines.
