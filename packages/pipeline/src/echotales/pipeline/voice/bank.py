@@ -44,6 +44,15 @@ _AGE_BANDS: tuple[tuple[int, str], ...] = (
 )
 
 
+#: Where a request goes when a bank lacks it. Kept to requests the delivery
+#: layer can actually make; anything else falls straight to the neutral clip.
+_EMOTION_FALLBACK: dict[str, str] = {
+    "whisper": "fear",
+    "loud": "angry",
+    "sad": "neutral",
+}
+
+
 def age_band_for(age: int) -> str:
     for ceiling, band in _AGE_BANDS:
         if age < ceiling:
@@ -71,8 +80,23 @@ class BankVoice:
     emotion_clips: dict[str, Path] = field(default_factory=dict)
 
     def clip_for(self, emotion: str) -> Path | None:
-        """This speaker performing `emotion`, or their default clip."""
-        return self.emotion_clips.get(emotion) or self.reference_clip
+        """This speaker performing `emotion`, or the nearest thing they have.
+
+        Falls back through `_EMOTION_FALLBACK` before the neutral clip, so a
+        request a bank cannot satisfy degrades to the closest recording it
+        *does* have rather than straight to neutral. That is what lets the
+        delivery layer ask for `whisper` (only EARS records it) without
+        changing what VCTK or CREMA-D produce for the same line -- they still
+        get `fear`, exactly as before whisper existed.
+        """
+        seen: set[str] = set()
+        while emotion and emotion not in seen:
+            seen.add(emotion)
+            clip = self.emotion_clips.get(emotion)
+            if clip is not None:
+                return clip
+            emotion = _EMOTION_FALLBACK.get(emotion, "")
+        return self.reference_clip
 
     @property
     def age_band(self) -> str:
@@ -334,3 +358,95 @@ def load_cremad(
             )
         )
     return VoiceBank([v for v in voices if v.gender and v.age])
+
+
+#: EARS emotion recordings mapped onto the delivery layer's vocabulary
+#: (`voice/delivery.py::EMOTION_FOR_POLARITY`). Every EARS emotion is *also*
+#: kept under its own name, so a future polarity can request `pride` or
+#: `distress` directly; these entries are only the ones asked for today.
+#: `contentment` rather than `amusement` for WARM: the polarity marks a warm
+#: line, and amusement reads as laughter.
+_EARS_TO_PIPELINE: dict[str, str] = {
+    "neutral": "neutral",
+    "anger": "angry",
+    "disgust": "disgust",
+    "fear": "fear",
+    "contentment": "happy",
+    "sadness": "sad",
+}
+#: Reading-style recordings: the reason this bank exists. A HUSHED line is
+#: whispered speech, not frightened speech, and until EARS no bank in this
+#: project had a whisper to clone -- `fear` was the least-wrong stand-in.
+_EARS_STYLES: dict[str, str] = {
+    "whisper": "rainbow_01_whisper",
+    "loud": "rainbow_01_loud",
+}
+
+
+def _ears_age(band: str) -> int:
+    """Midpoint of an EARS age band (``"36-45"`` -> 40); 0 when undisclosed."""
+    try:
+        lo, hi = (int(x) for x in band.split("-"))
+    except ValueError:
+        return 0
+    return (lo + hi) // 2
+
+
+def load_ears(root: str | Path, *, metadata: str | Path | None = None) -> VoiceBank:
+    """Load EARS as an emotion- and style-capable voice bank.
+
+    **EARS** (Expressive Anechoic Recordings of Speech; Richter et al.,
+    Interspeech 2024): 107 speakers recorded in an anechoic studio at 48 kHz,
+    each performing 22 emotions and 7 reading styles (regular, loud, whisper,
+    high/low pitch, fast, slow). It replaces the two gaps the older banks
+    left: VCTK is read speech with no emotion at all, and CREMA-D has six
+    emotions but at 16 kHz and with no whisper or projection.
+
+    **Licence: CC BY-NC 4.0.** Fine for research and coursework; *not* for a
+    commercial release. Any product build needs a different bank.
+
+    Speakers whose gender or age band is undisclosed are skipped rather than
+    guessed, for the same reason `load_cremad` skips them: an unknown would
+    silently cast into one bucket.
+    """
+    import json
+
+    root = Path(root)
+    meta_path = Path(metadata) if metadata else root / "speaker_statistics.json"
+    if not meta_path.exists():
+        raise FileNotFoundError(f"EARS speaker_statistics.json not found at {meta_path}")
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+
+    voices: list[BankVoice] = []
+    for speaker_dir in sorted(p for p in root.iterdir() if p.is_dir()):
+        info = meta.get(speaker_dir.name)
+        if not info:
+            continue
+        gender = str(info.get("gender", "")).casefold()
+        age = _ears_age(str(info.get("age", "")))
+        if gender not in ("male", "female") or not age:
+            continue
+        clips: dict[str, Path] = {}
+        for clip in sorted(speaker_dir.glob("emo_*_sentences.wav")):
+            ears_emotion = clip.stem.split("_")[1]
+            clips[ears_emotion] = clip
+            if ears_emotion in _EARS_TO_PIPELINE:
+                clips[_EARS_TO_PIPELINE[ears_emotion]] = clip
+        for style, stem in _EARS_STYLES.items():
+            clip = speaker_dir / f"{stem}.wav"
+            if clip.exists():
+                clips[style] = clip
+        if not clips:
+            continue
+        regular = speaker_dir / "rainbow_01_regular.wav"
+        voices.append(
+            BankVoice(
+                speaker_id=f"ears{speaker_dir.name}",
+                gender=gender,
+                age=age,
+                accent=str(info.get("native language", "")),
+                reference_clip=clips.get("neutral") or (regular if regular.exists() else None),
+                emotion_clips=clips,
+            )
+        )
+    return VoiceBank(voices)

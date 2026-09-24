@@ -239,7 +239,18 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         from echotales.pipeline import paths
 
         engine_name = params.get("engine", "stub")
-        bank = load_vctk(params.get("bank", "data/voice"))
+        # Same bank selection as `cmd_voice`; the HTTP job path hardcoded VCTK
+        # and so could never use an emotion-capable bank.
+        from echotales.pipeline.voice.bank import load_cremad, load_ears
+
+        bank_root = params.get("bank", "data/voice")
+        bank_kind = params.get("bank_kind", "vctk")
+        if bank_kind == "ears":
+            bank = load_ears(bank_root)
+        elif bank_kind == "cremad":
+            bank = load_cremad(bank_root)
+        else:
+            bank = load_vctk(bank_root)
         out_dir = params.get("out_dir") or str(paths.asset_dir(novel_id, "audio"))
         run_stage(
             store, run_id=pipeline_run.run_id, stage_name="voice",

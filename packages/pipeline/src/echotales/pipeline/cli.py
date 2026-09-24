@@ -259,7 +259,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_voice.add_argument(
         "--bank-kind",
         default="vctk",
-        choices=["vctk", "cremad"],
+        choices=["vctk", "cremad", "ears"],
         help=(
             "vctk is read speech (110 speakers, clean, lifeless); cremad is "
             "91 actors performing six emotions, which lets a shouted line be "

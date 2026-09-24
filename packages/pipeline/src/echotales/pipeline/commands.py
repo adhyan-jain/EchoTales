@@ -876,15 +876,17 @@ def cmd_webview_server(args: argparse.Namespace) -> int:
 def cmd_voice(args: argparse.Namespace) -> int:
     """Phase 8: cast voices and render the script."""
     from echotales.pipeline.voice import get_engine, load_vctk, render_novel
-    from echotales.pipeline.voice.bank import load_cremad
+    from echotales.pipeline.voice.bank import load_cremad, load_ears
 
     store = _open_store(args)
+    kind = getattr(args, "bank_kind", "vctk")
     try:
-        bank = (
-            load_cremad(args.bank)
-            if getattr(args, "bank_kind", "vctk") == "cremad"
-            else load_vctk(args.bank)
-        )
+        if kind == "cremad":
+            bank = load_cremad(args.bank)
+        elif kind == "ears":
+            bank = load_ears(args.bank)
+        else:
+            bank = load_vctk(args.bank)
     except FileNotFoundError as exc:
         print(f"error: {exc}", file=sys.stderr)
         print(

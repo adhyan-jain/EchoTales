@@ -47,7 +47,10 @@ EMOTION_FOR_POLARITY: dict[DeliveryPolarity, str] = {
     DeliveryPolarity.HEIGHTENED: "angry",
     DeliveryPolarity.COLD: "disgust",
     DeliveryPolarity.WARM: "happy",
-    DeliveryPolarity.HUSHED: "fear",
+    # A hushed line is whispered speech. Banks without a whisper recording
+    # fall back to `fear` inside `BankVoice.clip_for`, which is exactly what
+    # this entry used to request, so only EARS changes behaviour.
+    DeliveryPolarity.HUSHED: "whisper",
     DeliveryPolarity.HESITANT: "fear",
     DeliveryPolarity.FLAT: "neutral",
 }
