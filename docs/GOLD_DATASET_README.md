@@ -144,6 +144,22 @@ Found by `eval/validate_gold.py`, left in place, flagged rather than edited.
    with will. Their churches are separate `organization` entries.
 6. **`alias_type` defaults to `RIGID_NAME`** for records drafted before the
    field existed. That default is a known undercount, not a measurement.
+7. **Span drift: 7 silver records fall outside chapter 1 on the rerun
+   database** (`data/reruns/ner-window-ri.db`, measured 2026-09-25). "3,457 of
+   3,457 verified" in item 1 was checked against the older
+   `data/webview-working/` database and remains true there. The rerun's
+   ingest classifies chapter 1's three closing author's-note blocks
+   (*"This novel has another name, Daoist Gu."*) as `TRANSLATOR_NOTE`, where
+   the older ingest had them as `PROSE`, so `story_text` shrinks from 13,100 to
+   12,484 characters. The 7 affected records (`ch1@12522`–`ch1@13089`, all
+   `'Gu'`) annotate words *inside that note* — they were never diegetic
+   mentions, and the new exclusion is the correct behaviour. Every other
+   chapter-1 record precedes the notes and is unaffected. Effect on scoring:
+   those 7 are unmatchable and count as unresolved, a recall cost of at most
+   7 / 1,816 = 0.4 pts on the SILVER tier. Left in place rather than deleted,
+   per this section's rule. **Lesson:** gold offsets are only valid against
+   the ingest that produced them — a classifier change silently invalidates
+   them, which is why `--validate-gold` takes `--db`.
 
 ---
 

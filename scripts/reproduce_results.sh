@@ -16,14 +16,18 @@
 #     starting one from a "reproduce results" script would be a surprise.
 #   * data/raw/*.epub is gitignored (copyrighted source texts). A fresh
 #     checkout cannot regenerate a database from nothing.
-#   * There is currently NO confirmed gold (EVOLUTION 4.74). Every coreference
-#     number this produces is scored against unconfirmed drafts and is
-#     labelled as such in the output. That is not a bug in this script.
+#   * There is NO human gold (EVOLUTION 4.74). Metrics are scored against the
+#     SILVER tier -- LLM-drafted, non-circular records (docs/GOLD_DATASET_README.md)
+#     -- and every report carries that banner. That is not a bug in this script.
+#   * The default DB is the post-NER-fix full-volume rerun (EVOLUTION 4.84),
+#     which every figure in docs/FINAL_VALIDATION_REPORT.md was measured on.
+#     The scripts in the "diagnostics" block hardcode it for the same reason.
 
 set -euo pipefail
 
 NOVEL="${1:-reverend-insanity}"
-DB="${2:-data/webview-working/${NOVEL}.db}"
+DB="${2:-data/reruns/ner-window-ri.db}"
+HARDCASES="data/gold/${NOVEL}-hardcases.jsonl"
 SEED="${ECHOTALES_SEED:-20260923}"
 
 if [[ ! -f "$DB" ]]; then
@@ -54,6 +58,29 @@ python3 -m pytest packages/core/tests packages/pipeline/tests -q
 echo
 echo "=== evaluation (coreference metrics, escalation, CIs, held-out coverage) ==="
 echotales --seed "$SEED" --db "$DB" eval --novel "$NOVEL"
+
+echo
+echo "=== silver reference set: automatic validation ==="
+# Exits non-zero on the main RI file by design: its circular records fail the
+# surface-triviality check, and 777 spans no longer sit at their offset (7 of
+# them silver -- see docs/GOLD_DATASET_README.md "Span drift"). The verdict is
+# the finding; it must not abort the rest of the reproduction.
+echotales --db "$DB" eval --novel "$NOVEL" --validate-gold || echo "  (validation verdict: FAIL -- expected, see above)"
+
+if [[ -f "$HARDCASES" ]]; then
+  echo
+  echo "=== hard-case set: per-alias-type recall@K (SILVER) ==="
+  echotales --seed "$SEED" --db "$DB" eval --novel "$NOVEL" --gold "$HARDCASES"
+fi
+
+if [[ "$NOVEL" == "reverend-insanity" ]]; then
+  echo
+  echo "=== diagnostics (RI only; hardcoded to the measured rerun DB) ==="
+  python3 scripts/recall_by_category.py      # -> data/eval/recall_by_category.json
+  python3 scripts/scorer_diagnosis.py --db "$DB"
+  python3 scripts/scorer_fit_probe.py
+  python3 scripts/make_paper_artifacts.py    # -> docs/paper/TABLES.md, FIGURES.md
+fi
 
 echo
 echo "=== gazetteer compounding curve ==="
