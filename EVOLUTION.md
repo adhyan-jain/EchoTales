@@ -7813,3 +7813,37 @@ same as the pronoun path — a name present in or near the line is chosen over
 the speaker. Deciding its fate needs a labelled speaker set, which does not
 exist. Voice casting ignores span confidence entirely, so a 0.48 guess and a
 0.95 explicit tag cast identically; that is the cheaper lever if tier 4 stays.
+
+### 4.89 Three defects in the baseline comparison; hard-case resolution outcome; report figures rendered *(2026-09-25)*
+
+**Baseline comparison.** Building Figure 9 from files, not prose, found three
+defects:
+1. `baseline_b.py` never committed after `materialize_mentions`, and
+   `Store.close()` does not commit. The 133 mentions were scored in-process and
+   then discarded, so `data/reruns/baseline-b.db` was empty. Fixed. The re-run
+   (`baseline-b-r2.db`) reproduces 133 mentions, 177 calls, and P 95.4 /
+   R 4.6 exactly at temperature 0.
+2. `baseline_a.py` scored against `entities_only`, which includes the
+   circular records, while B used SILVER. Re-run on SILVER: identical 0.2%,
+   so the published figure stood by luck of the range. Both now write
+   `--out` records carrying their scores.
+3. **BASELINES.md compared the baselines' ch1-10 B³ recall with EchoTales'
+   full-volume 96.3%.** On the same 356 ch1-10 silver mentions EchoTales
+   scores **79.1%** (65 unresolved). Every finding keeps its direction, but
+   the lead is smaller. `scripts/baseline_comparison.py` is now the only
+   source (Table 7).
+
+**Hard cases the resolver does detect** (`scripts/hardcase_resolution.py`,
+SCORER_DIAGNOSIS Section 4a): of 88 hardcases records, 59 are undetected
+under overlap alignment (reproducing the diagnosis script's 59 exactly) and
+68 under the coreference scorer's exact rule. Of the detected, decidable
+ones, **23 of 23 are linked correctly**, with no wrong links and no
+deferrals; 6 are undecidable because their gold identity has no system
+entity. The resolver is precise on what it sees, and the loss is at detection.
+
+**Paper artifacts.** `ablate --out` persists ablation rows (Table 6).
+`make_paper_artifacts.py` pins Tables 4 and 5 to their gold files: taking
+"the newest metrics.json" had silently swapped Table 4 to the 45-case
+hardcases run. `scripts/plot_paper_figures.py` renders Figures 6a, 8, 9
+and 10 as SVG from the CSVs. `reproduce_results.sh` runs all of it and
+exits 0.
