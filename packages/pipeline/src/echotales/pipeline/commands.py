@@ -372,17 +372,23 @@ def _recall_at_k_report(
     )
     from echotales.pipeline.resolve.retrieve import CandidateRetriever
 
-    # `Mention` carries no context field, so the surrounding prose is read back
-    # out of the block it was found in -- one fetch per chapter, not per
-    # mention, because RI has ~7,900 of them.
-    block_text: dict[tuple[float, int], str] = {}
+    # Context must be built exactly as production builds it, or the number
+    # describes a retriever no path uses. Production (`resolve/runner.py`)
+    # calls `_context_for(mention, chapter.story_text)` -- a fixed window
+    # around the surface in the whole chapter. An earlier fix here passed the
+    # mention's block text instead: better than the empty string it replaced,
+    # but still not what resolution sees. Reusing the function is the only way
+    # the two cannot drift again.
+    from echotales.pipeline.resolve.runner import _context_for
 
-    def _context_for(chapter: float, block_index: int) -> str:
-        if (chapter, block_index) not in block_text:
+    chapter_text: dict[float, str] = {}
+
+    def _production_context(mention: object) -> str:
+        chapter = mention.chapter  # type: ignore[attr-defined]
+        if chapter not in chapter_text:
             chapter_obj = store.get_chapter(novel_id, chapter)
-            for block in chapter_obj.blocks if chapter_obj else []:
-                block_text[(chapter, block.index)] = block.text
-        return block_text.get((chapter, block_index), "")
+            chapter_text[chapter] = chapter_obj.story_text if chapter_obj else ""
+        return _context_for(mention, chapter_text[chapter])  # type: ignore[arg-type]
 
     retriever = CandidateRetriever()
     for mention in store.get_mentions(novel_id, resolved_only=True):
@@ -391,7 +397,7 @@ def _recall_at_k_report(
         retriever.observe(
             mention.target_id,
             mention.text,
-            _context_for(mention.chapter, mention.block_index),
+            _production_context(mention),
             mention.chapter,
             label=mention.text,
         )
