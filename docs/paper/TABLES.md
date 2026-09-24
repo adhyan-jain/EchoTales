@@ -26,7 +26,7 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 | CoNLL | 86.5 | 86.5 | 86.5 |
 | B3 (project variant) | 100.0 | 95.8 | 97.8 |
 
-*Source: data/eval/results/reverend-insanity-1790289643-f0cf184d/metrics.json (gold: data/gold/reverend-insanity.jsonl, db: data/reruns/ner-window-ri.db)*
+*Source: data/eval/results/reverend-insanity-1790291709-f0cf184d/metrics.json (gold: data/gold/reverend-insanity.jsonl, db: data/reruns/ner-window-ri.db)*
 
 *Scored against an LLM-derived SILVER reference set, not human gold, with no inter-annotator agreement. See docs/GOLD_DATASET_README.md. B3/MUC are TAUTOLOGICAL on a surface-trivial gold set and must not be quoted as accuracy; CEAF-e is entity-based and is the discriminative one here.*
 
@@ -41,7 +41,7 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 | RIGID_NAME | 31 | 77.4% | 83.9% | 90.3% | 100.0% |
 | TRANSFERABLE_TITLE | 9 | 33.3% | 77.8% | 88.9% | 100.0% |
 
-*Source: data/eval/results/reverend-insanity-1790289645-f0cf184d/metrics.json (gold: data/gold/reverend-insanity-hardcases.jsonl, db: data/reruns/ner-window-ri.db)*
+*Source: data/eval/results/reverend-insanity-1790291711-f0cf184d/metrics.json (gold: data/gold/reverend-insanity-hardcases.jsonl, db: data/reruns/ner-window-ri.db)*
 
 *Scored against an LLM-derived SILVER reference set, not human gold, with no inter-annotator agreement. See docs/GOLD_DATASET_README.md. n is small for the hard alias types; single cases move TRANSFERABLE_TITLE by roughly 11 points and RELATIONAL_DEICTIC by 25.*
 
