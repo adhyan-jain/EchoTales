@@ -370,7 +370,7 @@ def main() -> int:
         return 2
 
     store = Store(args.db)
-    ingest_novel(store, args.novel, sources_path="data/sources.toml", chapters=f"{lo}-{hi}")
+    ingest_novel(args.novel, store, sources_path="data/sources.toml", chapters=f"{lo}-{hi}")
 
     result = run_baseline_b(store, args.novel, provider, lo, hi)
     print("\n" + result.summary())
