@@ -144,6 +144,14 @@ data/*/panels/
 # `panels/` rule does not match and its PNGs become committable. Found
 # 2026-09-25 when `data/RI/panels-obs-*` (13 MB) showed up as untracked.
 data/*/panels-*/
+# ...but VERSIONS.md is the point of the convention, not an artifact. CLAUDE.md
+# tells every future session to read `data/RI/panels/ch1/VERSIONS.md` for the
+# format and to add an entry per render -- and until 2026-09-25 that file was
+# ignored, so it existed only on one machine and a clone could not read it.
+# The rule above already says a novel's README/manifest should stay trackable;
+# this is what makes that true.
+!data/*/panels/**/VERSIONS.md
+!data/*/panels/VERSIONS.md
 # RI's panels were tracked deliberately for an earlier session's
 # prompt-composition work (versioned renders reviewed directly from git);
 # disabled for now -- re-enable `!data/RI/panels/` if that's needed again.
