@@ -21,7 +21,7 @@ alone — read the source doc for the thing you're touching:
   current-state-of-the-world doc — read those before starting render or
   persona work. The permanent, append-only numbered session log (every
   real bug found, every fix shipped, in chronological sections, currently
-  past 4.82) now lives in [`EVOLUTION.md`](EVOLUTION.md), not here — a
+  past 4.87) now lives in [`EVOLUTION.md`](EVOLUTION.md), not here — a
   resolved/superseded HANDOFF item moves there instead of being deleted.
 - [`EVOLUTION.md`](EVOLUTION.md) — architecture decisions and reversals over
   time, with the measured reason each one happened.
@@ -140,14 +140,14 @@ real data without touching the canonical `data/<novel>.db`.
 
 See HANDOFF.md's "Pick up here" section for the actual current state — it
 changes every session (the numbered session log itself moved to
-EVOLUTION.md, latest section 4.82). As of that session (2026-09-23/24), the
-top blocker is Track 1 item 3: the NER-windowing fix (EVOLUTION 4.76 — half
-of every chapter was silently truncated before reaching the model) is
-landed and unit-tested but its effect on real recall/resolution/attribution
-is unmeasured, because `ollama` was unreachable from that session's
-sandboxed shell. Everything in 4.77-4.81 (resolution provenance, the
-ablation harness, the observer axis, bootstrap CIs) is measured on real
-data and does not depend on that re-run. The render/direction pipeline work
+EVOLUTION.md, latest section 4.87). The NER-windowing re-run (EVOLUTION
+4.76) that an earlier session left unmeasured did run (4.84): the
+"`ollama` unreachable" blocker was a misdiagnosis — the daemon was simply
+not started — and the fix is now measured on real data (CEAF-e recall
+25.2%→48.9%). The current top finding is that the scorer cannot link by
+arithmetic (max probability 0.550 vs. the 0.80 threshold, `docs/
+SCORER_DIAGNOSIS.md`) and that hard cases are lost at mention detection,
+not retrieval (EVOLUTION 4.85/4.86). The render/direction pipeline work
 described in 4.51/4.52 is still open but is no longer the top priority;
 `.claude/agents/image-gen-debugger.md` is still scoped to it if you're
 picking up that thread specifically.
