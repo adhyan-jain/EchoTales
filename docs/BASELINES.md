@@ -61,13 +61,48 @@ count tokens, not characters, and would fabricate one. It quotes the exact
 surface plus a short verbatim window, and `_locate` finds the literal offset
 by substring search with `difflib` context tie-breaking.
 
-### Status: BUILT, NOT YET RUN
+### Status: RUN 2026-09-24 — first execution in the project's life
 
-Two tests (`test_baseline_a.py`) cover `_locate` and `materialize_mentions`;
-**neither touches Ollama**, so the suite passes offline and the baseline has
-never actually executed. No output artifact exists anywhere in the repository.
-Its run is queued behind the NER re-run's use of the GPU — one model at a
-time, by design.
+One section, chapters 1-10, `qwen2.5:7b`, `num_ctx` 32,768.
+
+| | |
+|---|---:|
+| LLM calls | **1** |
+| Prompt tokens | 24,302 |
+| Output tokens | **697** |
+| Wall time | **146 s** |
+| Entities found | **7** |
+| Mentions found | **10** |
+| B³ precision | 100.0% |
+| **B³ recall** | **0.2%** |
+| B³ F1 | 0.3% |
+
+Scored against the silver ch1-10 subset (356 gold mentions); **346 of them the
+baseline never produced at all**.
+
+**The failure mode is output budget, not comprehension.** The prompt consumed
+24,302 of the model's 32,768-token combined budget, leaving roughly 8k tokens
+of headroom, and it emitted 697 — **10 mentions for 10 chapters**, about one
+per chapter. On the same range the silver gold annotates **356** and the
+EchoTales pipeline finds **359** (312 before the NER fix). The model was not
+asked a question it answered badly; it was asked to enumerate hundreds of
+spans in a single completion, and it stopped after ten.
+
+| ch1-10, same range | mentions |
+|---|---:|
+| Silver gold | 356 |
+| EchoTales, post-NER-fix | **359** |
+| EchoTales, pre-NER-fix | 312 |
+| **Baseline A** | **10** |
+
+Precision of 100.0% on 10 mentions is not a quality signal — it is ten easy
+RIGID_NAME hits on a surface-trivial gold subset (see §0). **Recall is the
+informative half here**, and 0.2% is the number that matters.
+
+This is the honest, non-strawman result of the architecture `plans.md`
+specified: a long-context LLM given a whole section at once, with no graph and
+no gazetteer, does not scale to volume-length coreference — not because it
+reasons poorly, but because one completion cannot carry the output.
 
 ---
 
