@@ -130,6 +130,42 @@ def figure10_ablation(rows: list[dict[str, str]]) -> str:
                 "Source: docs/paper/tables/table6_ablation.csv.")
 
 
+def figure9_baselines(rows: list[dict[str, str]]) -> str:
+    """Two panels side by side: LLM calls and mentions found, per system.
+
+    Calls and mentions rather than B3: on ch1-10 the gold is surface-trivial,
+    so recall is an extraction-coverage number and is printed as a label,
+    not drawn as if it were coreference quality.
+    """
+    left, top, plot_h, bar_w, panel_w = 40, 70, 200, 60, 330
+    width = left + 2 * panel_w + 20
+    height = top + plot_h + 110
+    body: list[str] = []
+    for pi, (col, label) in enumerate((("LLM calls", "LLM calls"), ("Mentions", "Mentions found"))):
+        px = left + pi * panel_w
+        vals = [_int(r[col]) if r[col] not in ("—", "") else 0 for r in rows]
+        vmax = max(vals) or 1
+        body.append(_text(px, top - 16, label, size=12, weight="bold"))
+        body.append(f'<line x1="{px}" y1="{top + plot_h}" x2="{px + panel_w - 40}" '
+                    f'y2="{top + plot_h}" stroke="{GRID}"/>')
+        for i, (r, v) in enumerate(zip(rows, vals, strict=True)):
+            x = px + 10 + i * (bar_w + 30)
+            h = plot_h * v / vmax
+            body.append(f'<rect x="{x}" y="{top + plot_h - h:.1f}" width="{bar_w}" '
+                        f'height="{h:.1f}" fill="{SERIES[i % len(SERIES)]}"/>')
+            body.append(_text(x + bar_w / 2, top + plot_h - h - 5, f"{v:,}", size=10,
+                              anchor="middle"))
+            short = r["System"].split(" (")[0]
+            body.append(_text(x + bar_w / 2, top + plot_h + 16, short, size=10, anchor="middle"))
+            if pi == 1:
+                body.append(_text(x + bar_w / 2, top + plot_h + 30, f"B3 R {r['B3 R (%)']}%",
+                                  size=9, anchor="middle", fill=MUTED))
+    return _svg(width, height, body,
+                "Figure 9. Cost and coverage: baselines vs EchoTales, chapters 1-10",
+                "Same model, host, scorer, SILVER gold. EchoTales calls = resolution only. "
+                "Source: docs/paper/tables/table7_baselines.csv.")
+
+
 def figure_compounding(rows: list[dict[str, str]]) -> str:
     """Gazetteer share of links per window, bar height = share, n on top."""
     left, top, plot_h, bar_w, step = 60, 50, 220, 34, 46
@@ -168,6 +204,7 @@ def main() -> int:
     jobs = (
         ("table5_recall_at_k.csv", "fig08_recall_at_k.svg", figure8_recall),
         ("table6_ablation.csv", "fig10_ablation.svg", figure10_ablation),
+        ("table7_baselines.csv", "fig09_baselines.svg", figure9_baselines),
         ("table6a_compounding.csv", "fig06a_compounding.svg", figure_compounding),
     )
     for csv_name, svg_name, draw in jobs:

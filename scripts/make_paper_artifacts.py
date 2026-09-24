@@ -225,6 +225,38 @@ def table_compounding() -> Table | None:
     )
 
 
+def table_baselines() -> Table | None:
+    path = Path("data/eval/baseline_comparison.json")
+    if not path.exists():
+        return None
+    try:
+        d = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return None
+
+    def cell(v: object, fmt: str = "{:,}") -> str:
+        return "—" if v is None else fmt.format(v)
+
+    rows = [
+        [s["name"], cell(s["calls"]), cell(s["prompt_tokens"]), cell(s["wall_seconds"], "{:,.0f} s"),
+         cell(s["mentions"]), f"{s['b3_precision'] * 100:.1f}", f"{s['b3_recall'] * 100:.1f}"]
+        for s in d.get("systems", [])
+    ]
+    if not rows:
+        return None
+    lo, hi = d.get("chapters", ["?", "?"])
+    return Table(
+        "7",
+        f"Baselines vs EchoTales, chapters {lo}-{hi} ({d.get('gold_mentions', '?')} silver mentions)",
+        ["System", "LLM calls", "Prompt tokens", "Wall time", "Mentions", "B3 P (%)", "B3 R (%)"],
+        rows,
+        note=SILVER_NOTE + " The gold for this range is surface-trivial, so B3 recall here "
+        "measures extraction coverage, not coreference quality. EchoTales' calls column counts "
+        "resolution only; its upstream NER calls are excluded.",
+        source=f"{path} (scripts/baseline_comparison.py)",
+    )
+
+
 def table_ablation() -> Table | None:
     path = ABLATION / "reverend-insanity.json"
     if not path.exists():
@@ -280,15 +312,12 @@ def figures() -> list[Figure]:
                source="docs/paper/figures/fig08_recall_at_k.svg (scripts/plot_paper_figures.py "
                       "from docs/paper/tables/table5_recall_at_k.csv)",
                columns=["alias_type", "n", "k", "recall"]),
-        Figure("9", "Baseline comparison", "plot", "DATA READY",
-               source="docs/BASELINES.md section 4",
-               columns=["system", "calls", "prompt_tokens", "wall_seconds",
-                        "mentions_found", "b3_recall"],
-               blocked_on="Both baselines ran (ch1-10); the values live only in "
-                          "BASELINES.md, not a persisted file, and EchoTales has no "
-                          "comparable prompt-token or wall-time figure for that range. "
-                          "Plot calls and mentions found; do not plot B3 as accuracy -- "
-                          "the gold for that range is surface-trivial."),
+        Figure("9", "Baseline comparison", "plot", "RENDERED",
+               source="docs/paper/figures/fig09_baselines.svg (scripts/plot_paper_figures.py "
+                      "from docs/paper/tables/table7_baselines.csv)",
+               columns=["System", "LLM calls", "Mentions", "B3 R (%)"],
+               blocked_on="Plot calls and mentions, not B3 as accuracy -- the gold for "
+                          "ch1-10 is surface-trivial."),
         Figure("10", "Ablation results", "plot", "RENDERED",
                source="docs/paper/figures/fig10_ablation.svg (scripts/plot_paper_figures.py "
                       "from docs/paper/tables/table6_ablation.csv)",
@@ -334,6 +363,7 @@ def main() -> int:
         (table_coref(coref_metrics), "table4_coref"),
         (table_recall(recall_metrics), "table5_recall_at_k"),
         (table_ablation(), "table6_ablation"),
+        (table_baselines(), "table7_baselines"),
         (table_compounding(), "table6a_compounding"),
     ):
         if table is None:

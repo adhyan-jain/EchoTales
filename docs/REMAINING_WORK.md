@@ -39,7 +39,7 @@ Tags used below:
 | Metric | State | Why |
 |---|---|---|
 | Baselines on the **full volume** | Not run | A and B ran on chapters 1–10 only. B takes 177 calls for 10 chapters, which extrapolates to about 3,500 calls and roughly 2.4 h of GPU time per volume. |
-| Baselines on **non-trivial** gold | Blocked by data | Chapters 1–10 silver gold is surface-trivial, so the B³ columns measure extraction coverage, not coreference quality (`BASELINES.md` Section 4). |
+| Baselines on **non-trivial** gold | Blocked by data | Chapters 1–10 silver gold is surface-trivial, so the B³ columns (A 0.2%, B 4.6%, EchoTales 79.1% on the same range; Table 7) measure extraction coverage, not coreference quality. |
 | A **GraphRAG / CORE-KG** baseline | Not built | These are the baselines LINK-KG itself used. Neither is implemented here. |
 | **BOOKCOREF / LitBank** numbers | Not run | This is the only route to an externally comparable, non-silver figure. It needs an adapter from their formats to `GoldMention`, and those corpora do not contain the transfer and disguise phenomena this project targets. |
 | **Generalisation** to LOTM / ORV | Not run on the current code | LOTM has 173 independent silver records (ch1–3, EVOLUTION 4.83); ORV has only circular records. No post-NER-fix LOTM run has been scored. So "one primary novel" is the limitation, and generalisation is asserted, not measured. |
@@ -125,7 +125,7 @@ The disclosure itself lives in `docs/IP/` (gitignored, never committed).
 - The ≥5-papers-per-member related-work requirement needs each member to confirm their papers and write their own limitations paragraph (human-only).
 - Team confirmation of the Section 7 work split.
 - Draw the 7 hand-drawn diagram figures (`docs/paper/FIGURES.md` Figures 1–7).
-- Figures 8, 10 and 6a are rendered as SVG (`scripts/plot_paper_figures.py`, `docs/paper/figures/`). Figure 9 (baselines) is not, because its numbers live only in `BASELINES.md` prose, not in a persisted file.
+- Figures 6a, 8, 9 and 10 are rendered as SVG (`scripts/plot_paper_figures.py`, `docs/paper/figures/`) from generated CSVs. Only Figure 11 (escalation, all zeros) and the seven diagrams remain.
 - Figure 11 (escalation) stays a sentence rather than a chart: it would be a bar chart of zeros.
 
 ---
@@ -140,7 +140,7 @@ The disclosure itself lives in `docs/IP/` (gitignored, never committed).
 | Lint / types | Clean on touched files. Repo-wide, `mypy` reports `import-untyped` noise, and `cli.py:567` has one pre-existing ruff SIM105. |
 | Venv drift | `chatterbox-tts` 0.1.7 and `setuptools` 80.10.2 are installed directly in `.venv`. The documented route is the `uv run --with` overlay. |
 | `reproduce_results.sh` | Runs end to end (exit 0, 2026-09-25) against an **existing** database. It cannot regenerate one from a clean checkout, because the source EPUBs are copyrighted and never committed. |
-| Eval outputs | Every table in `docs/paper/TABLES.md` names its source file, gold file, and database. Baseline numbers exist only in `BASELINES.md` prose, not in a persisted file. |
+| Eval outputs | Every table in `docs/paper/TABLES.md`, including the baseline comparison (Table 7), names its source file, gold file, and database. |
 
 ---
 

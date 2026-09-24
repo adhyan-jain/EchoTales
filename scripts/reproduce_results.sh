@@ -80,6 +80,7 @@ if [[ "$NOVEL" == "reverend-insanity" ]]; then
   python3 scripts/hardcase_resolution.py --db "$DB"  # -> data/eval/hardcase_resolution.json
   python3 scripts/scorer_diagnosis.py --db "$DB"
   python3 scripts/scorer_fit_probe.py
+  python3 scripts/baseline_comparison.py --db "$DB"  # -> data/eval/baseline_comparison.json
   python3 scripts/make_paper_artifacts.py    # -> docs/paper/TABLES.md, FIGURES.md
   python3 scripts/plot_paper_figures.py      # -> docs/paper/figures/*.svg
 fi

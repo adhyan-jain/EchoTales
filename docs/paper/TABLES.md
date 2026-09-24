@@ -64,6 +64,19 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 *Re-scores cached evidence; it does not re-run resolution. 'Scorer would link' is 0 under every condition because the scorer's output is capped below its threshold (docs/SCORER_DIAGNOSIS.md), so this table measures the pre-filters. Not answerable from the cache: no-alias-typing, no-self-persona-split, no-truth-status.*
 
 
+### Table 7 — Baselines vs EchoTales, chapters 1-10 (356 silver mentions)
+
+| System | LLM calls | Prompt tokens | Wall time | Mentions | B3 P (%) | B3 R (%) |
+|---|---|---|---|---|---|---|
+| Baseline A (long-context) | 1 | 24,302 | 129 s | 10 | 100.0 | 0.2 |
+| Baseline B (dual-LLM memorisation) | 177 | 142,835 | 354 s | 133 | 95.4 | 4.6 |
+| EchoTales | 0 | — | — | 359 | 100.0 | 79.1 |
+
+*Source: data/eval/baseline_comparison.json (scripts/baseline_comparison.py)*
+
+*Scored against an LLM-derived SILVER reference set, not human gold, with no inter-annotator agreement. See docs/GOLD_DATASET_README.md. The gold for this range is surface-trivial, so B3 recall here measures extraction coverage, not coreference quality. EchoTales' calls column counts resolution only; its upstream NER calls are excluded.*
+
+
 ### Table 6a — Gazetteer compounding by window (size 40)
 
 | Window | Gazetteer share of links | n (links in window) |

@@ -1,0 +1,328 @@
+{
+  "baseline": "B",
+  "architecture": "dual-LLM memorisation (LLMLINK-style)",
+  "model": "qwen2.5:7b",
+  "num_ctx": 8192,
+  "chunk_chars": 3000,
+  "memory_limit": 60,
+  "chapters": [
+    1,
+    10
+  ],
+  "extractor_calls": 43,
+  "linker_calls": 134,
+  "prompt_tokens": 142835,
+  "output_tokens": 8487,
+  "wall_seconds": 354.35962755100627,
+  "mentions": 133,
+  "entities": [
+    {
+      "id": "b1",
+      "name": "Fang Yuan",
+      "descriptors": [
+        "man in deep green robes, being surrounded by enemies",
+        "old man, antagonist",
+        "man who insulted the speaker 300 years ago",
+        "man who made a decision",
+        "father or guardian of the young genius",
+        "young man being chased",
+        "man using the Spring Autumn Cicada",
+        "young man pondering",
+        "older brother",
+        "younger twin brother",
+        "caretaker of the entire household",
+        "elder brother",
+        "main character, elder sibling of Fang Zheng",
+        "man walking across a river",
+        "person receiving the Hope Gu",
+        "older brother of Fang Zheng, calm",
+        "sleeping in class",
+        "ancestor who established Gu Yue Village",
+        "man buying wine",
+        "older brother of Gu Yue Fang Zheng",
+        "young man walking out of the village",
+        "C grade talent, younger relative of Fang Zheng",
+        "man searching for something",
+        "man meditating",
+        "young man trying to refine a Gu",
+        "young master who failed to refine Moonlight Gu"
+      ]
+    },
+    {
+      "id": "b2",
+      "name": "Ancestors",
+      "descriptors": [
+        "ancestors"
+      ]
+    },
+    {
+      "id": "b3",
+      "name": "Gu Yue Clan Head",
+      "descriptors": [
+        "middle-aged man leading the ceremony",
+        "clan leader",
+        "clan elder, disapproving"
+      ]
+    },
+    {
+      "id": "b4",
+      "name": "Gu Yue Fang Yuan",
+      "descriptors": [
+        "young genius from Gu Yue clan",
+        "young genius with high potential",
+        "young man",
+        "young man observing",
+        "a youth from the Gu Yue clan",
+        "A grade talent",
+        "A grade talent, older brother",
+        "younger brother",
+        "older brother of Gu Yue Fang Zheng",
+        "uncle to Fang Zheng"
+      ]
+    },
+    {
+      "id": "b5",
+      "name": "Bai Ning Bing",
+      "descriptors": [
+        "person"
+      ]
+    },
+    {
+      "id": "b6",
+      "name": "Fang Zhi\u2019s Bloodline",
+      "descriptors": [
+        "ancestral lineage"
+      ]
+    },
+    {
+      "id": "b7",
+      "name": "Young Teenager",
+      "descriptors": [
+        "young teenager addressing someone"
+      ]
+    },
+    {
+      "id": "b8",
+      "name": "Aunt",
+      "descriptors": [
+        "uncle's sister",
+        "uncle",
+        "aunt to Fang Zheng",
+        "uncle to Fang Zheng",
+        "Uncle presiding over the family",
+        "Aunt managing the family fortune",
+        "a person giving advice to someone",
+        "a person reacting positively to a plan",
+        "the antagonists of the main character",
+        "people who took in Fang Yuan and Fang Zheng"
+      ]
+    },
+    {
+      "id": "b9",
+      "name": "Younger Brother",
+      "descriptors": [
+        "brother with C grade talent",
+        "brother causing trouble",
+        "elder sibling",
+        "younger brother",
+        "young brother following behind",
+        "elder sibling of Fang Yuan",
+        "younger brother of Fang Yuan"
+      ]
+    },
+    {
+      "id": "b10",
+      "name": "A grade talent",
+      "descriptors": [
+        "highly talented individual"
+      ]
+    },
+    {
+      "id": "b11",
+      "name": "Shen Cui",
+      "descriptors": [
+        "personal servant",
+        "young woman, possibly a spy for Fang Yuan's family",
+        "a servant of Fang Yuan",
+        "servant of Fang Yuan"
+      ]
+    },
+    {
+      "id": "b12",
+      "name": "clan elders",
+      "descriptors": [
+        "clan elders"
+      ]
+    },
+    {
+      "id": "b13",
+      "name": "the elder of the academy",
+      "descriptors": [
+        "high-spirited clan elder leading youths",
+        "presiding clan elder",
+        "academy elder presiding",
+        "an elder of an academy"
+      ]
+    },
+    {
+      "id": "b14",
+      "name": "Gu Yue Chen Bo",
+      "descriptors": [
+        "young man being tested",
+        "third person to be tested",
+        "clan head making a statement"
+      ]
+    },
+    {
+      "id": "b15",
+      "name": "Gu Yue Young Man",
+      "descriptors": [
+        "next person to be tested"
+      ]
+    },
+    {
+      "id": "b16",
+      "name": "Gu Yue B grade talent youth",
+      "descriptors": [
+        "B grade talent youth"
+      ]
+    },
+    {
+      "id": "b17",
+      "name": "Gu Yue Mo Chen",
+      "descriptors": [
+        "elder, Gu Yue Mo Bei's grandfather",
+        "young man being suppressed by his grandfather",
+        "clan elder, opposing Gue Yue Chi Lian"
+      ]
+    },
+    {
+      "id": "b18",
+      "name": "Gu Yue Chi Chen",
+      "descriptors": [
+        "young man being chased"
+      ]
+    },
+    {
+      "id": "b19",
+      "name": "Gu Yue Chi Lian",
+      "descriptors": [
+        "clan elder with authority",
+        "clan elder, proposing adoption"
+      ]
+    },
+    {
+      "id": "b20",
+      "name": "Ren Zu",
+      "descriptors": [
+        "first man in the legend"
+      ]
+    },
+    {
+      "id": "b21",
+      "name": "the first man in the legend",
+      "descriptors": [
+        "old man giving away his youth"
+      ]
+    },
+    {
+      "id": "b22",
+      "name": "strength and wisdom Gu",
+      "descriptors": [
+        "Gu entities that abandoned Ren Zu"
+      ]
+    },
+    {
+      "id": "b23",
+      "name": "third Gu",
+      "descriptors": [
+        "Gu entity offering to help Ren Zu"
+      ]
+    },
+    {
+      "id": "b24",
+      "name": "third Gu",
+      "descriptors": [
+        "Gu entity that provides hope to Ren Zu"
+      ]
+    },
+    {
+      "id": "b25",
+      "name": "Fang Zheng",
+      "descriptors": [
+        "a youth from the Gu Yue clan",
+        "young man being chased",
+        "younger brother",
+        "Young man being chased by Aunt and Uncle",
+        "the main character being introduced to his new room",
+        "younger brother studying at home",
+        "young master",
+        "young man with A grade talent"
+      ]
+    },
+    {
+      "id": "b26",
+      "name": "the fourth clan head",
+      "descriptors": [
+        "clan leader with remarkable talent"
+      ]
+    },
+    {
+      "id": "b27",
+      "name": "Flower Wine Monk",
+      "descriptors": [
+        "rank five Gu Master known for his thievery and later conflict with the fourth clan head",
+        "a monk known as Flower Wine Monk"
+      ]
+    },
+    {
+      "id": "b28",
+      "name": "Gu Master",
+      "descriptors": [
+        "a master of Gu",
+        "clan elder presiding",
+        "an authority figure giving advice",
+        "item to be refined by Fang Zheng"
+      ]
+    },
+    {
+      "id": "b29",
+      "name": "lover",
+      "descriptors": [
+        "someone the Gu Master used to be with"
+      ]
+    },
+    {
+      "id": "b30",
+      "name": "Father, Mother",
+      "descriptors": [
+        "addressing his adoptive parents"
+      ]
+    },
+    {
+      "id": "b31",
+      "name": "Mother Shen",
+      "descriptors": [
+        "a housekeeper and slave overseer in the household"
+      ]
+    },
+    {
+      "id": "b32",
+      "name": "Moonlight Gu",
+      "descriptors": [
+        "Gu being refined by Fang Yuan"
+      ]
+    }
+  ],
+  "gold": "data/gold/reverend-insanity.jsonl",
+  "gold_tier": "SILVER",
+  "scores": {
+    "ch1-10": {
+      "b3_precision": 0.9542592592592593,
+      "b3_recall": 0.045916891925905756,
+      "b3_f1": 0.08761780457328744,
+      "gold_mentions": 356,
+      "gold_unresolved": 284
+    }
+  }
+}

@@ -61,10 +61,10 @@ ship as CSV so any plotting tool can consume them.
 ### Figure 9 — Baseline comparison
 
 - **Kind:** plot
-- **Status:** DATA READY
-- **Data source:** `docs/BASELINES.md section 4`
-- **Required columns:** `system`, `calls`, `prompt_tokens`, `wall_seconds`, `mentions_found`, `b3_recall`
-- **Blocked on:** Both baselines ran (ch1-10); the values live only in BASELINES.md, not a persisted file, and EchoTales has no comparable prompt-token or wall-time figure for that range. Plot calls and mentions found; do not plot B3 as accuracy -- the gold for that range is surface-trivial.
+- **Status:** RENDERED
+- **Data source:** `docs/paper/figures/fig09_baselines.svg (scripts/plot_paper_figures.py from docs/paper/tables/table7_baselines.csv)`
+- **Required columns:** `System`, `LLM calls`, `Mentions`, `B3 R (%)`
+- **Blocked on:** Plot calls and mentions, not B3 as accuracy -- the gold for ch1-10 is surface-trivial.
 
 ### Figure 10 — Ablation results
 

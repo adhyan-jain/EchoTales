@@ -1,0 +1,4 @@
+System,LLM calls,Prompt tokens,Wall time,Mentions,B3 P (%),B3 R (%)
+Baseline A (long-context),1,"24,302",129 s,10,100.0,0.2
+Baseline B (dual-LLM memorisation),177,"142,835",354 s,133,95.4,4.6
+EchoTales,0,—,—,359,100.0,79.1

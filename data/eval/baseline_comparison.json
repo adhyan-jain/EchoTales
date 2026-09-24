@@ -1,0 +1,41 @@
+{
+  "banner": "SILVER -- LLM-derived reference set (Claude), not human gold; no IAA",
+  "chapters": [
+    1,
+    10
+  ],
+  "gold": "data/gold/reverend-insanity.jsonl",
+  "gold_mentions": 356,
+  "systems": [
+    {
+      "name": "Baseline A (long-context)",
+      "calls": 1,
+      "prompt_tokens": 24302,
+      "wall_seconds": 128.9,
+      "mentions": 10,
+      "b3_precision": 1.0,
+      "b3_recall": 0.0016143613586465193,
+      "source": "data/eval/results/baseline-a-ch1-10.json"
+    },
+    {
+      "name": "Baseline B (dual-LLM memorisation)",
+      "calls": 177,
+      "prompt_tokens": 142835,
+      "wall_seconds": 354.4,
+      "mentions": 133,
+      "b3_precision": 0.9542592592592593,
+      "b3_recall": 0.045916891925905756,
+      "source": "data/eval/results/baseline-b-ch1-10-r2.json"
+    },
+    {
+      "name": "EchoTales",
+      "calls": 0,
+      "prompt_tokens": null,
+      "wall_seconds": null,
+      "mentions": 359,
+      "b3_precision": 1.0,
+      "b3_recall": 0.7912415062886836,
+      "source": "data/reruns/ner-window-ri.db scored here"
+    }
+  ]
+}
