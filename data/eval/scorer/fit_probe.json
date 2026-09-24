@@ -1,0 +1,57 @@
+{
+  "banner": "SILVER -- LLM-derived reference set (Claude), not human gold; no IAA",
+  "split_chapters": {
+    "train_le": 38.0,
+    "dev_le": 50.0
+  },
+  "sizes": {
+    "train_pairs": 920,
+    "dev_pairs": 160,
+    "test_pairs": 190,
+    "train_positive": 68
+  },
+  "test_prefilter_verdicts": {
+    "SCORE": 132,
+    "FORCE_LINK": 19,
+    "BLOCK": 39
+  },
+  "raw": {
+    "cases": 19,
+    "link_coverage": 0.0,
+    "defer_rate": 0.0,
+    "new_rate": 1.0,
+    "false_link_rate": 0.0,
+    "link_accuracy": 0.0
+  },
+  "fitted": {
+    "cases": 19,
+    "link_coverage": 0.0,
+    "defer_rate": 0.0,
+    "new_rate": 1.0,
+    "false_link_rate": 0.0,
+    "link_accuracy": 0.0
+  },
+  "calibrated": {
+    "cases": 19,
+    "link_coverage": 0.0,
+    "defer_rate": 0.0,
+    "new_rate": 1.0,
+    "false_link_rate": 0.0,
+    "link_accuracy": 0.0
+  },
+  "fitted_weights": {
+    "surface_similarity": 1.269,
+    "context_embedding_similarity": 1.72,
+    "speech_partner_compatibility": 1.228,
+    "temporal_validity": 0.741,
+    "first_attested_soft_prior": 0.327
+  },
+  "fitted_bias": -4.093,
+  "scored_features": [
+    "surface_similarity",
+    "context_embedding_similarity",
+    "speech_partner_compatibility",
+    "temporal_validity",
+    "first_attested_soft_prior"
+  ]
+}
