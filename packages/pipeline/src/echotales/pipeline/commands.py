@@ -190,7 +190,14 @@ def cmd_run(args: argparse.Namespace) -> int:
                 llm_chapter_cutoff=getattr(args, "llm_attribution_chapters", 0.0),
             ),
         )
-        stage("5 anaphora", lambda: anaphora_resolve(novel, store))
+        stage(
+            "5 anaphora",
+            lambda: anaphora_resolve(
+                novel,
+                store,
+                recover_pronoun_speakers=getattr(args, "recover_pronoun_speakers", False),
+            ),
+        )
         from echotales.pipeline.corrections import CorrectionLog
 
         # Keyed by the *database's* stem, not just the novel id. Entity ids are

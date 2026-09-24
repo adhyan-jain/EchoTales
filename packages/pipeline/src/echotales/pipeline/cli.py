@@ -50,6 +50,14 @@ def build_parser() -> argparse.ArgumentParser:
         "entity); CI and deterministic runs want this",
     )
     p_run.add_argument(
+        "--recover-pronoun-speakers",
+        action="store_true",
+        help=(
+            "let Phase 5 attribute 'he said' lines through pronoun antecedents. "
+            "Off by default: measured right 2 times in 15 on RI (EVOLUTION 4.88)"
+        ),
+    )
+    p_run.add_argument(
         "--llm-attribution-chapters",
         type=float,
         default=3.0,

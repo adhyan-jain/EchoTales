@@ -1,9 +1,9 @@
 """Phase 5 orchestration: group and validate mentions chapter by chapter.
 
-Also feeds pronoun resolutions back into Phase 4. A large share of the speech
-spans that attribution leaves unresolved are pronoun subjects ("he said"), and
-those become attributable once the pronoun has an antecedent -- so the two
-phases are run in sequence rather than independently.
+Can also feed pronoun resolutions back into Phase 4: speech spans whose
+subject is a pronoun ("he said") become attributable once the pronoun has an
+antecedent. That feedback is opt-in (`resolve_novel(recover_pronoun_speakers=
+True)`) because, measured, it was right 2 times in 15 -- see `resolve_novel`.
 """
 
 from __future__ import annotations
@@ -75,8 +75,22 @@ def resolve_novel(
     *,
     concurrent_personas: frozenset[str] = frozenset(),
     commit_every: int = 25,
+    recover_pronoun_speakers: bool = False,
 ) -> AnaphoraReport:
-    """Run local anaphora over a whole novel and write group ids onto mentions."""
+    """Run local anaphora over a whole novel and write group ids onto mentions.
+
+    `recover_pronoun_speakers` re-enables `_recover_attributions`, off by
+    default since 2026-09-25 (EVOLUTION 4.88). Measured on the post-NER-fix RI
+    volume, it wrote 879 of 5,192 speech-span speakers and a seeded sample of
+    15 was right twice. Most misses have the true speaker named in the tag
+    beside the line ("Xiong Li grinned", "Tie Ruo Nan asked"); the nearest
+    pronoun within 50 chars resolves to someone else, often the addressee.
+    That fails the rule the turn-taking tier was deleted under (wrong >20% of
+    the time is worse than leaving the line to an anonymous voice), and it
+    was overwriting exactly those anonymous slots. Kept, not deleted, because
+    the idea (a "he said" becomes attributable once the pronoun has an
+    antecedent) is right and the failure is in `resolve_pronoun`'s choice.
+    """
     report = AnaphoraReport(novel_id=novel_id)
 
     for i, chapter in enumerate(store.iter_chapters(novel_id), start=1):
@@ -106,7 +120,11 @@ def resolve_novel(
             store.add_mentions(kinship_mentions)
         report.kinship_links += len(kinship_mentions)
 
-        recovered = _recover_attributions(store, novel_id, chapter, spans, links)
+        recovered = (
+            _recover_attributions(store, novel_id, chapter, spans, links)
+            if recover_pronoun_speakers
+            else 0
+        )
 
         report.chapters += 1
         report.groups += len(result.groups)
@@ -275,6 +293,9 @@ def _recover_attributions(
             continue
         antecedent, confidence, _ = resolved
         existing.speaker_self_id = antecedent.text
+        # Mislabelled: no model is involved here. It shares CONTEXTUAL_LLM with
+        # the real tier-4 LLM pass, so 879 deterministic guesses read as LLM
+        # output in every report until 2026-09-25 (EVOLUTION 4.88).
         existing.attribution_method = AttributionMethod.CONTEXTUAL_LLM
         # Discount: this is a two-step inference (pronoun -> antecedent ->
         # speaker), so it must not carry the confidence of a direct link.

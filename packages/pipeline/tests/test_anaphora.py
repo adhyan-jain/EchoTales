@@ -346,6 +346,27 @@ class TestRunner:
         assert report.chapters == 1
         assert report.groups >= 1
 
+    def test_pronoun_speaker_recovery_is_opt_in(
+        self, store: Store, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Measured right 2 times in 15 on RI (EVOLUTION 4.88) and it overwrote
+        anonymous voice slots, so a default run must not call it at all."""
+        from echotales.pipeline.anaphora import runner
+
+        calls: list[float] = []
+
+        def fake(_store, _novel, chapter, _spans, _links):  # type: ignore[no-untyped-def]
+            calls.append(chapter.number)
+            return 1
+
+        monkeypatch.setattr(runner, "_recover_attributions", fake)
+        assert resolve_novel("t", store).recovered_attributions == 0
+        assert calls == []
+
+        report = resolve_novel("t", store, recover_pronoun_speakers=True)
+        assert calls == [1.0]
+        assert report.recovered_attributions == 1
+
 
 # ---------------------------------------------------------------------------
 # Kinship coreference
