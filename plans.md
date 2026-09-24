@@ -822,6 +822,32 @@ gate, not a diagnostic.
 - **No persona/embodiment split.** LINK-KG's identity graph has one node per name-cluster; it cannot represent a reincarnation, body-swap, or disguise as one continuity of consciousness (`Self`) bound to more than one body (`Persona`) over time. That distinction (architecture.md Section 4) is this project's structural answer to a case class LINK-KG's own evaluation set does not appear to contain.
 - **No downstream multimodal consumption.** LINK-KG stops at the resolved graph — it is evaluated purely as a coreference/linking result, not as an input to any generation task. This project's graph is consumed by voice casting, panel/persona-conditioned image generation, and evidence-grounded review UI, so the resolution quality bar is set by what a downstream consumer needs (e.g. correct body-state at time of illustration), not by a linking metric in isolation.
 
+> **Correction, verified against the full paper (arXiv:2510.26486) 2026-09-24
+> — EVOLUTION.md 4.84.** All four claims above hold — checked, not just
+> asserted — but the framing above needs two corrections, not a retraction:
+>
+> 1. **LINK-KG is a legal-document system, not a narrative one.** It resolves
+>    entities across 16 US court opinions on human smuggling, scored on
+>    node-duplication and noise-reduction rates, not on narrative
+>    coreference. The four negatives above are true, but they are trivially
+>    true of that domain — the paper never claims to address chapter/story
+>    time, truth-status, or persona/embodiment, because its target documents
+>    have none of those phenomena. This project's negatives are still
+>    accurate; they should be read as "outside LINK-KG's scope entirely,"
+>    not "attempted and failed."
+> 2. **LlmLink, not LINK-KG, is the real positioning target for the web-novel
+>    domain claim.** LINK-KG's own related-work section describes LlmLink as
+>    evaluated on "book chapters" and struggling with "multi-role entities"
+>    and "shifting aliases" — i.e. LINK-KG itself identifies LlmLink, not
+>    itself, as the prior work that touches this project's actual domain.
+>    LINK-KG also reports no P/R/F1 of its own, stating "no annotated ground
+>    truth exists ... in this domain" (their domain, legal documents) — so
+>    there is no LINK-KG accuracy number to be positioned against in the
+>    first place, only an architectural comparison.
+>
+> The original bullets are left as written below; read them as "true and
+> checked" but reframed by the two points above.
+
 **Gap:** No product bridges audiobook + comic through shared temporal identity model. No system — LlmLink, LINK-KG, or the audiobook/comic products above — handles web-novel naming volatility, temporal identity, or truth-status as first-class constraints, and none feed a resolved graph into downstream generation.
 
 ---

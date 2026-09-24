@@ -61,6 +61,15 @@ across two timelines are **not comparable**. Comparing them would invent an
 ordering the text never supplies, so cross-timeline facts are excluded rather
 than ranked.
 
+The multi-timeline shape above is modeled and unit-tested, but as of the
+2026-09-24 validation pass no fact has ever been written to a non-`MAIN`
+timeline on real data: across all 27 real-novel DBs, zero `Self`↔`Persona`
+bindings are concurrent (bound to more than one self at once) and zero
+bindings sit on a timeline other than `MAIN_TIMELINE`. `DREAM_<id>`,
+`MEMORY_<id>` and the "concurrent personas" cases in Section 4's table
+(clone, possession, sustained disguise) are exercised only by tests written
+against synthetic fixtures.
+
 ### Fuzzy endpoints
 
 Text almost never states when a binding *stopped*. Each endpoint is a bounded
@@ -197,6 +206,15 @@ state_of(fang_yuan, observer=WU_CLAN)  -> {Wu Yi Hai}
 `SYSTEM` is the omniscient oracle: it ignores knowledge time and sees `FALSE`
 facts. It exists for evaluation and debugging, and is never used for
 generation.
+
+Observation density is bounded by how much of the text the mention layer
+ever saw: EVOLUTION 4.80 measured only 3 reveals across 199 RI chapters
+yielding 13 observations, because each reveal block held a single mention at
+the time. The mention-sweep windowing fix (EVOLUTION 4.76, re-run and
+confirmed on real data 2026-09-24 as 4.84) should visibly move that count —
+more of each chapter now reaches the model — but the observer axis itself
+was not re-measured in that pass; whether reveal/observation density
+actually grew is still open.
 
 ### Retraction ≠ interval end
 
@@ -448,6 +466,19 @@ is 3 calls, not 1: the 600-chapter corpus costs ~1,800 calls and ~57 min local
 rather than ~600 calls and 19 min. The rule's intent is intact — the
 granularity is still O(chapter) and the forbidden per-span shape is 36×
 further away — but the number in the table is the old one. See EVOLUTION 4.76.
+
+**Re-run against real data, measured 2026-09-24 (EVOLUTION 4.84).** The fix
+above landed 2026-09-23 but its effect on recall/resolution had not been run
+end-to-end (the prior session's `ollama` daemon simply was not running, which
+had been misdiagnosed as "unreachable from a sandboxed shell"). A full-volume
+RI run took 47 min and 660 calls with 0 escalations — closer to the
+estimate's shape than its exact numbers. The fix's dominant effect is on
+*entities found*, not mention count: 82 → 261 entities (+218%), against a
+predicted "mentions roughly double" that the same run refutes (+14.6%
+mentions). CEAF-e recall rose 25.2% → 48.9% and identifiability 48.8% → 63.0%,
+both confirmed against the predictions on file. Concretely, Bai Ning Bing's
+chapter-1 mentions went from `[]` to `[6697, 6814, 8757]` — exactly the gold
+offsets — moving her first appearance from chapter 108 to chapter 1.
 
 ---
 

@@ -1469,12 +1469,39 @@ state: zero confirmed records exist anywhere** — every shipped file is
 `confirmed=False` (draft, either derived from pipeline output or, for two
 small RI files, independent of it but still unreviewed).
 
+**`GoldMention.key`, changed 2026-09-24 (EVOLUTION 4.84).** Was `(novel_id,
+chapter, offset)` — position alone, deliberately, since two occurrences of
+one name can denote two different people. That was also its bug: two listed
+surfaces where one is a word-boundary prefix of the other (e.g. `"Klein"` /
+`"Klein Moretti"`, `"Gu Yue"` / `"Gu Yue Chen Bo"`) both start at the same
+offset, so under the old key one silently overwrote the other on load,
+destroying 55 of `reverend-insanity-c1-c5.toml`'s 343 records (16%) — a
+different, independent defect from the one `_prefix_collisions` (EVOLUTION
+4.83) was written to catch, though it surfaces the same collisions. The key
+now carries the normalised surface as well as the offset, so a prefix and
+the longer surface it prefixes coexist as distinct records instead of one
+clobbering the other; both RI TOMLs expand to their full record count again.
+Prefix collisions are still flagged (they remain evidence the annotation
+disagrees with itself about where an entity's mention boundary is), but as
+an advisory count, not a fatal overwrite.
+
 **`retriever_eval.py`** — recall@k, the plans.md Section 8.2 gate: recall@10 on
 `TRANSFERABLE_TITLE` below 80% means candidate retrieval is the research
 problem and scorer tuning is premature. `SELF_RETRIEVAL` mode needs no
 annotations and is a smoke test only (proves there's no indexing/
 tokenisation bug); `GOLD` mode is the real measurement and needs
 `GoldSet.confirmed_only` data that does not exist yet at any scale.
+
+**Measured for the first time 2026-09-24 (EVOLUTION 4.84)**, against
+`hardcases.jsonl` silver (draft, not confirmed — see the corpus-state note
+above; this is a first measurement, not a passed gate): overall recall@10
+77.8%; `RIGID_NAME` 83.9%; `TRANSFERABLE_TITLE` **77.8%, below the 80%
+gate**; `RELATIONAL_DEICTIC` 25.0%. This overturns EVOLUTION 4.69's claim
+that the `TRANSFERABLE_TITLE` gate "cannot produce a number on this novel no
+matter how much more gets annotated" — it can, from hand-drafted gold; what
+had actually blocked it was that `cmd_eval` had no `--gold` flag and the
+gold file was gitignored, not a structural property of the novel. `eval
+--gold <file>` (new 2026-09-24) is the flag that was missing.
 
 **`coref_score.py`, `draft.py`** — coreference scoring and gold-drafting
 support. `data/gold/reverend-insanity-c1-c5.toml` is the first draft this
@@ -1501,10 +1528,38 @@ because scipy arrives only via the optional `ml`/`render` extras and a metric
 whose value depends on which extras are installed is not a metric; it is
 cross-checked against scipy on random matrices in the test suite.
 
-**Still not built:** Baseline B (dual-LLM memorisation per COLING 2025 —
-Baseline A exists in `eval/baseline_a.py`). Note that this cannot produce a
-reportable number yet regardless: there is no confirmed gold to score against
-(EVOLUTION 4.74).
+**Baseline A ran for the first time 2026-09-24 (EVOLUTION 4.84)**, against
+silver (unconfirmed, per the caveat above): 1 call, 24,302 prompt tokens,
+146s, and it found 10 mentions where silver gold has 356 (ch1-10) and
+EchoTales itself finds 359 — recall 0.2%. The failure mode is the model's
+output budget, not comprehension: a single whole-context call cannot emit
+hundreds of mentions in one completion, which is itself evidence for this
+project's per-chapter/per-window LLM-call design (Section 7 of
+`architecture.md`) rather than a single-shot extraction call.
+
+**`baseline_b.py`, added 2026-09-24 (EVOLUTION 4.84)** — Baseline B, the
+dual-LLM memorisation architecture COLING 2025 (LlmLink) and LINK-KG both
+build on: one LLM pass builds a running character memory/summary, a second
+pass resolves each mention against it. Existed only as a documented gap
+before this; `cmd_eval`'s API is `Store.add_mentions` (batched), which an
+earlier, uncommitted draft of this file got wrong by calling the
+unbatched, nonexistent `add_mention` (fixed same session, see commit
+`e9dcdc2`). As with Baseline A, there is still no confirmed gold to compute
+a reportable accuracy number against (EVOLUTION 4.74) — this closes the
+"not built" gap, not the "no gold" one.
+
+**`validate_gold.py`, added 2026-09-24 (EVOLUTION 4.84)** — automated gold-file
+health checks, run via `eval --validate-gold`. `_surface_triviality` fails
+any file where grouping mentions by their literal surface string alone
+recovers ≥99% of the silver clustering — the check that caught
+`reverend-insanity.jsonl`'s silver subset (1,816 mentions, 23 distinct
+surfaces, 100% recoverable this way) and `reverend-insanity-c1-c5.jsonl`
+(308 scorable, 34 surfaces, also 100%); see README.md's "Known limitations".
+The threshold is deliberately not 100%: a file that happens to land at 98%
+by chance on a small sample is still not exercising coreference, so the gate
+errs toward flagging too much rather than missing a second `EVOLUTION.md`
+4.74-shaped result. Runs alongside the existing `_prefix_collisions` check
+(EVOLUTION 4.83) under the same subcommand.
 
 **The ablation harness is built (EVOLUTION 4.78, 2026-09-23)** — this section
 used to claim the "no additional LLM calls" property as a design intent ahead
@@ -1524,6 +1579,16 @@ entities exist or what `state_of` returns, not the evidence vector — and are
 listed in `REQUIRES_RERESOLVE`, printed on every `ablate` run rather than
 silently omitted.
 
+**Re-run post-NER-windowing-fix 2026-09-24 (EVOLUTION 4.84):** the cache
+grew to 15,796 pairs (+57%, since the fixed mention layer now sees the whole
+chapter) and the result is unchanged — the scorer still settles **0** links.
+This was a specific, named prediction in `docs/COMPLETION_PLAN.md`
+(hypothesis A: the 0-link result was retrieval starvation, and a fuller
+mention layer would produce scoreable pairs) and it is **refuted** by this
+number, not merely unconfirmed. The gazetteer carries 66% of links in this
+run; temporal blocking still fires on zero pairs. The real explanation is
+B+C+D (scorer weighting / threshold / feature calibration), not starvation.
+
 ### Compute and cost budget
 
 Measured baseline: **1.9 s/call** (`qwen2.5:7b`, steady state, RTX 4060 8 GB).
@@ -1535,7 +1600,7 @@ chapters each = **209 chapters** of LLM processing.
 | Pass | Granularity | Calls | Local wall-clock |
 |---|---|---|---|
 | Lexicon induction | 12 samples × 3 novels, one-off | 36 | ~1 min |
-| Layer 1 NER | per chapter *window* (since 2026-09-23, EVOLUTION 4.76 — was one call per chapter, truncated at `text[:6000]`; median chapter now costs ~3 calls, not 1) | ~600 (RI alone; not re-totalled below) | not yet re-measured |
+| Layer 1 NER | per chapter *window* (since 2026-09-23, EVOLUTION 4.76 — was one call per chapter, truncated at `text[:6000]`; median chapter now costs ~3 calls, not 1) | 660, measured 2026-09-24 full-volume RI (EVOLUTION 4.84) | 47 min, 0 escalations |
 | Layer 3 gap-fill sweep | per chapter | 209 | ~7 min |
 | Segmentation | gated (~44% of chapters) | ~92 | ~3 min |
 | Coreference | per *ambiguous paragraph* | ~2,400 | **~76 min** |

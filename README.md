@@ -8,8 +8,14 @@ The graph answers one query:
 
 ```
 state_of(target, timeline, position, observer=READER)
-  -> {aliases, attributes, relationships, persona, truth_status}
+  -> {aliases, attributes, relationships, persona, certainty}
 ```
+
+(`StateOfResult` also carries a `truth_status` field, defaulted to `TRUE`,
+but `state_of()` never assigns it from the underlying fact — as of the
+2026-09-24 validation pass it is inert on every call. `certainty`, which
+*is* set from the accepted facts, is the field that actually distinguishes
+"we know this" from "this is the best reading available".)
 
 Everything downstream — voice selection, prosody, reference images, panel
 casting — consumes that query. **The graph is the research contribution.** Audio
@@ -142,6 +148,19 @@ Stated here because they are load-bearing, not incidental.
   are independent of pipeline output but still unconfirmed. No standard
   coreference metric or long-span hard-case result in this repository is
   currently anchored to human-reviewed ground truth.
+- **The "independent" RI silver set is also trivially easy, for a second,
+  unrelated reason.** Measured 2026-09-24:
+  `reverend-insanity.jsonl`'s silver subset is 1,816 mentions over only 23
+  distinct surface strings, 100% recoverable by grouping on the literal
+  surface — no coreference resolution required to score well on it.
+  `reverend-insanity-c1-c5.jsonl` is 100% recoverable too, over 308 scorable
+  mentions and 34 surfaces. Scoring
+  it reproduces exactly the B³ P=100.0/R=94.6/F1=97.2 that `EVOLUTION.md`
+  4.74 already retracted for a different reason (gold drafted from the
+  pipeline's own output). `reverend-insanity-hardcases.jsonl` (63.6%) is the
+  only evaluation set in this repository that measures anything. An
+  automated check (`eval/validate_gold.py::_surface_triviality`) now fails
+  any gold file that scores ≥99% recoverable this way.
 - **No global collision-free voice assignment.** In a long cultivation novel the
   co-occurrence graph over principals is near-complete, so the chromatic number
   exceeds any archetype-appropriate palette. Colouring runs within archetype

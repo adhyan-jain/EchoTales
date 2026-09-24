@@ -7530,3 +7530,124 @@ worth re-reading whenever the guard gets stricter.
 `draft.py` and the test file. The LOTM draft expands to 0 colliding keys,
 confirmed by counting `GoldMention.key` collisions directly rather than
 trusting the guard that was just written.
+
+---
+
+### 4.84 The NER-windowing re-run finally ran — predictions adjudicated, one overturned claim confirmed, one confirmed with a caveat, a second independent reason the old B³ number is meaningless, and a gold-key defect that silently deleted 16% of a file *(2026-09-24)*
+
+The blocker HANDOFF called out as "top priority, ollama unreachable from a
+sandboxed shell" was a **misdiagnosis**, not a real constraint: the daemon was
+simply not running. `ollama serve` brought it up in one second, and the
+re-run 4.76 landed unit-tested-only in the previous session finally ran
+against real data. Full account in `docs/NER_WINDOWING_RESULT.md`.
+
+**Full-volume RI, 47 min, 660 calls, 0 escalations.** The predictions on file
+were adjudicated, not assumed: CEAF-e recall 25.2% → **48.9%**, confirmed.
+Identifiability 48.8% → **63.0%**, confirmed. "Mentions roughly double" is
+**refuted** — mentions moved only +14.6%. What actually moved is *entities
+found*: 82 → 261 (+218%), because `_locate` already searched the whole
+chapter, so truncation only ever hid entities that appeared *solely* past
+character 6,000. Bai Ning Bing's chapter-1 mentions went from `[]` to
+`[6697, 6814, 8757]` — exactly the gold offsets — moving her first appearance
+from chapter 108 to chapter 1. Two side effects, both first-time-on-real-data
+results: the contradiction detector fires for the first time (0 hits on 60
+chapters → 50 contradictions → 50 splits), and the scorer's evidence cache
+grew 57% (10,058 → 15,796 pairs) and **still settles 0 links** — which
+specifically refutes `docs/COMPLETION_PLAN.md`'s hypothesis A (retrieval
+starvation explains the 0-link result from 4.78); the real explanation is
+B+C+D (scorer weighting/threshold/calibration), not an underfed mention
+layer. The gazetteer carries 66% of links in the re-scored run; temporal
+blocking still fires on zero pairs.
+
+**A second, independent reason the retracted B³ number (4.74) is
+meaningless.** `reverend-insanity.jsonl`'s silver subset — the 3,457
+non-circular records inside it, i.e. the half `README.md` and 4.83 both lean
+on as "independent of pipeline output" — is 1,816 scorable entity mentions
+over only **23 distinct surface strings**, 100% recoverable
+by grouping on the literal surface. Scoring it reproduces the exact
+P=100.0/R=94.6/F1=97.2 that 4.74 already retracted for an unrelated reason
+(gold drafted from the pipeline's own output). Two independent defects
+converging on the same suspiciously-clean number is a stronger signal than
+either alone. `hardcases.jsonl` (63.6%) is the only evaluation set in this
+corpus that measures anything, and `eval/validate_gold.py::_surface_triviality`
+now fails any file that scores ≥99% this way — `eval --validate-gold`.
+
+**`TRANSFERABLE_TITLE` recall@k, measured for the first time.** Overall
+recall@10 on `hardcases.jsonl` silver: 77.8%. By alias type: `RIGID_NAME`
+83.9%, `TRANSFERABLE_TITLE` **77.8% — the 80% gate fails**, `RELATIONAL_DEICTIC`
+25.0%. This overturns 4.69's own claim (also repeated in `docs/STATUS.md`'s
+stale-claim list until this session) that the gate "cannot produce a number
+on this novel no matter how much more gets annotated." It can, and does, from
+hand-drafted gold; what had actually blocked it the whole time was that
+`eval` had no `--gold` flag and the gold file was gitignored — a tooling gap,
+not a structural property of the novel. Both are fixed: `eval --gold <file>`
+is new, and the gitignore rule was narrowed.
+
+**`GoldMention.key` was silently destroying records.** `(novel, chapter,
+offset)` was the key on the theory that position alone identifies a mention
+(deliberate — two occurrences of one name can denote two people). Its
+consequence, found while re-checking the RI drafts after 4.83's
+`_prefix_collisions` guard: a word-boundary *prefix* surface and the longer
+surface it prefixes both match at the same start offset, so one silently
+overwrote the other in every partition dict the scorers build — a second,
+independent defect from the one 4.83 flagged (4.83 caught that the
+*annotation* was ambiguous about where a mention's boundary sat; this is a
+*loader* bug that discards one interpretation without saying so). Under the
+old key, 55 of `reverend-insanity-c1-c5.toml`'s 343 records (16%) never made
+it into a scored partition at all. `GoldMention.key` now carries the
+normalised surface alongside the offset, so a prefix and the surface it
+prefixes coexist as distinct records; both RI TOMLs expand to their full
+record count again. Prefix collisions are still counted (they remain
+evidence the annotator disagreed with themself about a mention boundary) but
+are advisory, not fatal.
+
+**Baseline A ran for the first time**, against silver: 1 call, 24,302 prompt
+tokens, 146 s, and it found 10 mentions where silver gold has 356 (ch1-10)
+and EchoTales itself finds 359 — recall 0.2%. The failure mode is the
+model's output budget, not comprehension: one whole-context call cannot
+emit hundreds of mentions in a single completion. That is itself evidence
+for this project's per-chapter/per-window LLM-call design over a
+single-shot extraction call. **Baseline B now exists** (`eval/baseline_b.py`,
+the dual-LLM memorisation architecture LlmLink/LINK-KG both build on) and
+was running at session end; a prior uncommitted draft of it called the
+nonexistent unbatched `Store.add_mention` instead of the real
+`add_mentions`, fixed in commit `e9dcdc2`.
+
+**LINK-KG verified against the full paper (arXiv:2510.26486)**, closing
+Track 6 item 27. All four negatives `plans.md` claims (no temporal axis, no
+truth-status, no persona/embodiment split, no downstream multimodal
+consumption) are true — checked against the paper, not a summary — but the
+framing needed two corrections, marked in `plans.md` rather than silently
+rewritten: LINK-KG is a *legal-document* system (16 US court opinions on
+human smuggling, scored on node-duplication/noise rates), so the four
+negatives are true but trivially true — outside LINK-KG's scope entirely,
+not "attempted and failed" at narrative coreference. And LlmLink, not
+LINK-KG, is the real positioning target for the web-novel domain claim:
+LINK-KG's own related-work section describes LlmLink as evaluated on "book
+chapters" and struggling with "multi-role entities" and "shifting aliases."
+LINK-KG itself reports no P/R/F1, stating "no annotated ground truth exists
+... in this domain" — there was never a LINK-KG accuracy number to be
+positioned against, only an architectural comparison.
+
+**Nine new defects found and left flagged, not silently fixed** (owner's
+call, per this project's convention of recording a defect before deciding
+whether to repair it): 770 spans in the circular tier shifted by exactly +1
+(gold-auto-builder, ch61-199); 1 `hardcases.jsonl` record is `not_an_entity`
+*with* an identity (ch3@7926); the `retract` writer (architecture.md's
+"Retraction ≠ interval end" table) has **zero callers** — 0 retracted rows
+across all 27 real-novel DBs; the "concurrent" Self/Persona bindings
+architecture.md documents (clone, possession, sustained disguise) are
+unit-tests-only on real data — 0 personas bound to more than one self, 0
+bindings on a non-`MAIN_TIMELINE` timeline, 0 `FABRICATED` aliases; and
+`GenerationState` does not exist as a type anywhere in the codebase — the
+voice pipeline never calls `state_of` or reads a `Persona` row at all.
+
+**New CLI/modules:** `eval --gold <file>`, `eval --validate-gold`,
+`eval/validate_gold.py`, `eval/baseline_b.py`, `scripts/make_paper_artifacts.py`
+(generates the paper's report tables/figure specs from real run artifacts,
+not hand-typed numbers).
+
+**Verified.** Full suite **1,051 passed** (was 1,038), ruff clean on every
+new/changed file. `docs/STATUS.md`'s truth-status constraint is discharged
+and its stale-claim #2 (the `TRANSFERABLE_TITLE` gate) is overturned in
+place, both cross-referenced from this entry rather than duplicated here.
