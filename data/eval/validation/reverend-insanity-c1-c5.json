@@ -2,7 +2,7 @@
   "path": "data/gold/reverend-insanity-c1-c5.jsonl",
   "novel_id": "reverend-insanity",
   "records": 343,
-  "ok": true,
+  "ok": false,
   "findings": [
     {
       "check": "provenance",
@@ -75,11 +75,20 @@
       "examples": []
     },
     {
-      "check": "malformed-spans",
-      "severity": "info",
-      "count": 0,
-      "detail": "all 343 checked spans sit at their offset",
+      "check": "surface-triviality",
+      "severity": "error",
+      "count": 308,
+      "detail": "100.0% of 308 mentions are resolvable from the surface string alone (34 distinct surfaces, 26 identities)  <- a string matcher reproduces this partition exactly; any P/R/F1 computed from it measures string matching, NOT identity resolution, and must not be reported as a resolver result",
       "examples": []
+    },
+    {
+      "check": "malformed-spans",
+      "severity": "error",
+      "count": 1,
+      "detail": "1 of 343 spans do not match the chapter text at their offset",
+      "examples": [
+        "ch1@12914 'Gu Yue': offset outside chapter"
+      ]
     },
     {
       "check": "missing-entities",
