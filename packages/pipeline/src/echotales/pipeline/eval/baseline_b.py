@@ -323,20 +323,24 @@ def materialize_mentions(store: Store, novel_id: str, result: BaselineBResult) -
         for i, row in enumerate(rows):
             block_index, local = _to_block_local(starts, lengths, row["abs_offset"])
             batch.append(
+                # Mirrors baseline_a's construction exactly. Note `Provenance`
+                # here is `core.enums.Provenance` (MACHINE / HUMAN_VERIFIED /
+                # HUMAN_AUTHORED), NOT `eval.gold.Provenance` (MODEL / HUMAN) --
+                # two different enums with the same name, and guessing MODEL
+                # here costs a completed 433s run before it raises.
                 Mention(
-                    id=f"{novel_id}:baseline_b:{chapter:g}:{i}",
+                    id=f"baseline-b-{chapter:g}-{i}",
                     novel_id=novel_id,
+                    segment_id="baseline_b",
                     chapter=chapter,
-                    block_index=block_index,
                     offset=local,
                     text=row["surface"],
                     alias_type=AliasType.RIGID_NAME,
-                    span_type=SpanType.NARRATION,
-                    reference_mode=ReferenceMode.DIRECT,
+                    span_type=SpanType.NARRATION_ACTION,
+                    reference_mode=ReferenceMode.PRESENT,
                     target_id=f"baseline_b_{row['entity_id']}",
-                    confidence=1.0,
-                    method="baseline_b",
-                    provenance=Provenance.MODEL,
+                    provenance=Provenance.MACHINE,
+                    block_index=block_index,
                 )
             )
         # `add_mentions`, plural and batched -- Store has no singular form, and
