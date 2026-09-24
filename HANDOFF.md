@@ -22,6 +22,26 @@ conflated.
 
 **Last updated:** 2026-09-24.
 
+## Pick up here — 2026-09-25: completion pass landed; read `docs/FINAL_ECHOTALES_READINESS.md` first
+
+That file is the single status record. The short version:
+
+- **Verified on real data:** observer-conditioned generation on a real image
+  engine; observer and knowledge-time query axes; read-set invalidation;
+  sequential Self/Persona; both baselines; retriever recall@K; scorer
+  diagnosis. Details in EVOLUTION 4.85.
+- **The scorer cannot link by arithmetic** (max p = 0.550 vs 0.80) because
+  three of its five weighted features are inert on this corpus. Ranking is 94%
+  correct. Do not retune weights; see `docs/SCORER_DIAGNOSIS.md` Section 6.
+- **Hard cases are lost at mention detection** — the next real research work.
+- **Run-order trap:** `resolve` deletes persona bindings. Never run it after
+  `run` without rebuilding personas.
+- **EARS voice bank** landed; a full-bank ch1 render was queued behind the
+  download — check `data/audio-ears/` and `/tmp/claude-1000/ears_voice.log`.
+- **Before any patent filing:** read Narrative Graph Prompting (ICCVW 2025)
+  and StoryWeaver (arXiv:2412.07375); the repo has been public since
+  2026-08-07.
+
 ## Pick up here — Tracks 1-4, 6 largely landed; **three things are blocked and one of them gates everything**
 
 **Session of 2026-09-23/24.** `docs/COMPLETION_PLAN.md` carries DONE markers

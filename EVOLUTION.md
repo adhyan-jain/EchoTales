@@ -7651,3 +7651,54 @@ not hand-typed numbers).
 new/changed file. `docs/STATUS.md`'s truth-status constraint is discharged
 and its stale-claim #2 (the `TRANSFERABLE_TITLE` gate) is overturned in
 place, both cross-referenced from this entry rather than duplicated here.
+
+### 4.85 Observer-conditioned generation on a real engine; the scorer's ceiling is arithmetic; EARS voice bank *(2026-09-25)*
+
+**Observer-conditioned generation, end to end.** Chapter 169, blocks 1-10,
+NoobAI XL on the local RTX 4060, everything held constant but `--observer`.
+Reader: 5/5 panels reference-conditioned, prompt names Bai Ning Bing and
+depicts two people. Non-witness: 0/5 conditioned, prompt says "a figure",
+one person, solo. Cache keys and pixels differ on 10/10 blocks. Closes
+COMPLETION_PLAN item 18. `docs/OBSERVER_CONTRAST_VALIDATION.md`.
+
+**Read-set invalidation, controlled.** A change to a cast character's
+attributes or bodies changes the cache key; a change to an offstage character
+does not. `state_digest` does **not** hash aliases, so a name-only reveal does
+not invalidate a panel — pinned by a test as current behaviour.
+
+**Scorer diagnosis — the starvation hypothesis stays closed and something
+simpler replaces it.** Over every silver mention whose correct candidate was
+scored, the scorer ranks it first 97/103 (94.2%). But `speech_partner_
+compatibility` is 0 on all 15,796 pairs, `temporal_validity` is 1 on all of
+them, and `first_attested_soft_prior` is never positive, so the best
+achievable logit is 0.200 and the maximum probability 0.550 — the 0.80 link
+threshold is unreachable by arithmetic. A chronologically-split refit of the
+existing model barely moves it and links nothing. And every one of the 103
+labelled gold candidates is decided by a pre-filter, so the scorer's own
+operating region contains no labels: neither a fitted scorer nor a bounded
+investigator can be evaluated there, so neither was built.
+`docs/SCORER_DIAGNOSIS.md`, `docs/STORYTRACE_TRANSFER.md`.
+
+**Hard cases are lost at detection.** 59 of 89 never become mentions
+(relational/deictic 25/29, title transfer 16/17). The retriever's 77.8%
+title recall@10 was measured with the gold span handed to it; detection is
+the bottleneck, not retrieval.
+
+**Defects fixed along the way.** `StubComposeEngine` lacked the `speed`
+field `cmd_render` passes, so the no-GPU compose path had raised `TypeError`
+since `speed` was added to the ffmpeg engine alone. `resolve` deletes every
+persona binding for the novel (`resolve/runner.py:832`); running it after
+`run` silently emptied all 92 and made every render plan generic — rebuilt,
+and documented as a run-order trap in `docs/RUNPOD_MIGRATION.md`. The recall@k
+evaluation now builds retriever context with production's own `_context_for`.
+Suffixed panel directories and `VERSIONS.md` handling in `.gitignore` were
+both wrong and are fixed.
+
+**EARS voice bank.** VCTK is read speech; CREMA-D is six emotions at 16 kHz
+with no whisper. EARS (Interspeech 2024): 107 studio speakers, 48 kHz, 22
+emotions, 7 reading styles, CC BY-NC 4.0 (research only). `load_ears`,
+`--bank-kind ears`; HUSHED lines now request a real whisper, with a fallback
+chain so VCTK and CREMA-D behave exactly as before. A balanced 22-speaker
+subset was downloaded; a full-bank Chatterbox render of chapter 1 was queued.
+
+Suite: 1,071 passed.
