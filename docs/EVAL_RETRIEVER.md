@@ -175,3 +175,43 @@ title-transfer mentions and 25 of 29 relational/deictic mentions are never
 detected as mentions at all, so in the real pipeline they never reach
 retrieval. Relational/deictic retrieval (25% @10) remains weak even when given
 the span.
+
+## 7. By hard-case category, and which context the *query* gets — 2026-09-25
+
+`scripts/recall_by_category.py` → `data/eval/recall_by_category.json`. Same
+cases as the CLI (`build_gold_retrieval_cases`), same index (`_context_for`
+over each chapter's story text). The hard-case category is the `[tag]` in each
+hardcases record's note.
+
+Section 6's wording needs one correction: `ce622aa` moved the **index** side to
+`_context_for`, but the **query** is still the gold record's ~70-char evidence
+snippet (`RetrievalCase.context = m.context`). The real resolver queries with
+`_context_for` too. Both are reported; the snippet row reproduces Section 6's
+84.4% exactly, which is how the script was checked against the CLI.
+
+| Category | n | snippet @1 | @5 | @10 | @20 | production @1 | @5 | @10 | @20 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| **All** | 45 | 62.2% | 77.8% | 84.4% | 95.6% | 66.7% | 86.7% | **88.9%** | 97.8% |
+| disguise | 9 | 100% | 100% | 100% | 100% | 100% | 100% | 100% | 100% |
+| reveal | 15 | 73.3% | 80.0% | 86.7% | 100% | 80.0% | 93.3% | 93.3% | 100% |
+| title_transfer | 9 | 33.3% | 77.8% | 88.9% | 100% | 33.3% | 88.9% | 88.9% | 100% |
+| body_change | 8 | 62.5% | 75.0% | 87.5% | 100% | 75.0% | 75.0% | 75.0% | 87.5% |
+| relational_deictic | 4 | 0.0% | 25.0% | 25.0% | 50.0% | 0.0% | 50.0% | 75.0% | 100% |
+
+Reading it honestly:
+
+- **Production context is mildly better overall (+4.5 pts @10, 2 cases of
+  45).** It is not uniformly better: `body_change` *drops* one case at @10 —
+  a wider window pulls in the other body's co-occurring names.
+- **Relational/deictic moves from 1/4 to 3/4 @10** — the largest relative
+  change, and on n=4 it is anecdote, not a result. These mentions carry no
+  name, so the wider window is the only signal they have; that direction is
+  expected, the magnitude is unmeasurable at this n.
+- **@1 is where title transfer fails** (33.3% either way): the right holder is
+  found but ranked below the title's other holders. That is exactly the
+  decision the scorer — not the retriever — must make, and
+  `docs/SCORER_DIAGNOSIS.md` shows it never gets the chance.
+- Every per-category n is ≤ 15. No category-level difference in this table is
+  statistically distinguishable; the table exists to say *where* retrieval is
+  not the bottleneck (disguise, reveal), not to rank categories.
+- All numbers are against the SILVER LLM-derived set, not human gold.
