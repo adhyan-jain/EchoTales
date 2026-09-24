@@ -101,7 +101,7 @@ fi
 
 echo
 echo "=== ablations (re-scores cached evidence; needs --capture-evidence first) ==="
-if echotales --db "$DB" ablate --novel "$NOVEL" 2>/dev/null; then
+if echotales --db "$DB" ablate --novel "$NOVEL" --out "data/eval/ablation/${NOVEL}.json" 2>/dev/null; then
   :
 else
   echo "  no cached evidence. Capture it with:"

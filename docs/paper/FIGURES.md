@@ -61,10 +61,10 @@ ship as CSV so any plotting tool can consume them.
 ### Figure 9 — Baseline comparison
 
 - **Kind:** plot
-- **Status:** TODO
+- **Status:** DATA READY
 - **Data source:** `docs/BASELINES.md section 4`
 - **Required columns:** `system`, `calls`, `prompt_tokens`, `wall_seconds`, `mentions_found`, `b3_recall`
-- **Blocked on:** Baseline A measured; Baseline B result pending. Do not plot a two-bar chart and call it a comparison of three systems.
+- **Blocked on:** Both baselines ran (ch1-10); the values live only in BASELINES.md, not a persisted file, and EchoTales has no comparable prompt-token or wall-time figure for that range. Plot calls and mentions found; do not plot B3 as accuracy -- the gold for that range is surface-trivial.
 
 ### Figure 10 — Ablation results
 
@@ -80,8 +80,9 @@ ship as CSV so any plotting tool can consume them.
 - **Required columns:** `stage`, `calls`, `escalations`, `rate`
 - **Blocked on:** Escalation is 0 of 660 calls and deferrals are 2 of 1,532 groups. A bar chart of zeros is not a figure -- report it as a sentence unless a corpus produces non-zero escalation.
 
-### Figure 12 — Temporal consistency showcase (observer contrast)
+### Figure 12 — Observer contrast: one scene, two observers
 
-- **Kind:** plot
-- **Status:** TODO
-- **Blocked on:** Needs the observer-contrast render (COMPLETION_PLAN item 18). The generation half has never run against a real image engine.
+- **Kind:** image
+- **Status:** RENDERED
+- **Data source:** `data/RI/panels-obs-reader/, data/RI/panels-obs-nonwitness/; docs/OBSERVER_CONTRAST_VALIDATION.md`
+- **Blocked on:** Five blocks, one chapter, NoobAI XL on the local card. It shows the cast changing with the observer (2boys vs 1boy solo); it cannot show two depictions of one character, which needs a sustained disguise the corpus does not contain.

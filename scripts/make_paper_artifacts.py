@@ -34,6 +34,7 @@ from pathlib import Path
 RESULTS = Path("data/eval/results")
 COMPOUNDING = Path("data/eval/compounding")
 VALIDATION = Path("data/eval/validation")
+ABLATION = Path("data/eval/ablation")
 
 SILVER_NOTE = (
     "Scored against an LLM-derived SILVER reference set, not human gold, with "
@@ -68,7 +69,7 @@ class Figure:
     number: str
     title: str
     kind: str  # "diagram" | "plot"
-    status: str  # "DATA READY" | "TODO" | "HAND-DRAWN"
+    status: str  # "DATA READY" | "RENDERED" | "TODO" | "HAND-DRAWN"
     source: str = ""
     columns: list[str] = field(default_factory=list)
     blocked_on: str = ""
@@ -224,6 +225,34 @@ def table_compounding() -> Table | None:
     )
 
 
+def table_ablation() -> Table | None:
+    path = ABLATION / "reverend-insanity.json"
+    if not path.exists():
+        return None
+    try:
+        d = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return None
+    rows = [
+        [r["condition"], f"{r['pairs']:,}", f"{r['force_links']:,}", f"{r['blocks']:,}",
+         f"{r['scored']:,}", str(r["links_above_threshold"])]
+        for r in d.get("rows", [])
+    ]
+    if not rows:
+        return None
+    return Table(
+        "6",
+        f"Ablations over {d.get('cached_evidence_vectors', 0):,} cached evidence vectors",
+        ["Condition", "Pairs", "Force-link", "Blocked", "Reached scorer", "Scorer would link"],
+        rows,
+        note="Re-scores cached evidence; it does not re-run resolution. 'Scorer would link' "
+        "is 0 under every condition because the scorer's output is capped below its "
+        "threshold (docs/SCORER_DIAGNOSIS.md), so this table measures the pre-filters. "
+        "Not answerable from the cache: " + ", ".join(sorted(d.get("requires_reresolve", {}))) + ".",
+        source=f"{path} (echotales ablate --out, db: {d.get('db', '?')})",
+    )
+
+
 def figures() -> list[Figure]:
     return [
         Figure("1", "Overall EchoTales architecture", "diagram", "HAND-DRAWN",
@@ -250,12 +279,15 @@ def figures() -> list[Figure]:
         Figure("8", "Retriever Recall@K by alias type", "plot", "DATA READY",
                source="docs/paper/tables/table5_recall_at_k.csv",
                columns=["alias_type", "n", "k", "recall"]),
-        Figure("9", "Baseline comparison", "plot", "TODO",
+        Figure("9", "Baseline comparison", "plot", "DATA READY",
                source="docs/BASELINES.md section 4",
                columns=["system", "calls", "prompt_tokens", "wall_seconds",
                         "mentions_found", "b3_recall"],
-               blocked_on="Baseline A measured; Baseline B result pending. Do not plot a "
-                          "two-bar chart and call it a comparison of three systems."),
+               blocked_on="Both baselines ran (ch1-10); the values live only in "
+                          "BASELINES.md, not a persisted file, and EchoTales has no "
+                          "comparable prompt-token or wall-time figure for that range. "
+                          "Plot calls and mentions found; do not plot B3 as accuracy -- "
+                          "the gold for that range is surface-trivial."),
         Figure("10", "Ablation results", "plot", "DATA READY",
                source="docs/paper/tables/table6_ablation.csv",
                columns=["condition", "force_links", "reached_scorer", "scorer_would_link"]),
@@ -264,9 +296,13 @@ def figures() -> list[Figure]:
                blocked_on="Escalation is 0 of 660 calls and deferrals are 2 of 1,532 "
                           "groups. A bar chart of zeros is not a figure -- report it as a "
                           "sentence unless a corpus produces non-zero escalation."),
-        Figure("12", "Temporal consistency showcase (observer contrast)", "plot", "TODO",
-               blocked_on="Needs the observer-contrast render (COMPLETION_PLAN item 18). "
-                          "The generation half has never run against a real image engine."),
+        Figure("12", "Observer contrast: one scene, two observers", "image", "RENDERED",
+               source="data/RI/panels-obs-reader/, data/RI/panels-obs-nonwitness/; "
+                      "docs/OBSERVER_CONTRAST_VALIDATION.md",
+               blocked_on="Five blocks, one chapter, NoobAI XL on the local card. It shows "
+                          "the cast changing with the observer (2boys vs 1boy solo); it "
+                          "cannot show two depictions of one character, which needs a "
+                          "sustained disguise the corpus does not contain."),
     ]
 
 
@@ -295,6 +331,7 @@ def main() -> int:
         (table_dataset(), "table2_dataset"),
         (table_coref(coref_metrics), "table4_coref"),
         (table_recall(recall_metrics), "table5_recall_at_k"),
+        (table_ablation(), "table6_ablation"),
         (table_compounding(), "table6a_compounding"),
     ):
         if table is None:
@@ -329,7 +366,7 @@ def main() -> int:
 
     print(f"wrote {len(built)} table(s) -> {out / 'TABLES.md'} (+ CSV)")
     print(f"wrote {len(figures())} figure spec(s) -> {out / 'FIGURES.md'}")
-    ready = sum(1 for f in figures() if f.status == "DATA READY")
+    ready = sum(1 for f in figures() if f.status in ("DATA READY", "RENDERED"))
     todo = sum(1 for f in figures() if f.status == "TODO")
     print(
         f"  figures: {ready} data-ready, {todo} TODO, "

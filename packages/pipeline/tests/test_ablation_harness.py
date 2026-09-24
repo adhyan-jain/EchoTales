@@ -178,3 +178,33 @@ class TestConditionAccounting:
             "no-truth-status",
         }
         assert not set(REQUIRES_RERESOLVE) & set(CONDITIONS)
+
+
+class TestAblateOut:
+    def test_out_writes_every_printed_row(self, tmp_path) -> None:  # type: ignore[no-untyped-def]
+        """`ablate` was stdout-only, so the report's ablation figure cited a
+        table6_ablation.csv that no command could produce. The file must carry
+        the same rows the terminal shows, plus the conditions it cannot answer."""
+        import argparse
+        import json
+
+        from echotales.pipeline.commands import cmd_ablate
+
+        db = tmp_path / "a.db"
+        s = Store(str(db))
+        s.add_scoring_evidence(
+            [("ri", "", 1.0, "m1", "Fang Yuan", "ri:e1", "Fang Yuan",
+              '{"gazetteer_exact_match": 1.0, "surface_similarity": 1.0}')]
+        )
+        s.conn.commit()
+        s.close()
+
+        out = tmp_path / "nested" / "ablation.json"
+        args = argparse.Namespace(db=str(db), novel="ri", run_tag="", condition=None,
+                                  link_threshold=0.8, out=str(out))
+        assert cmd_ablate(args) == 0
+        payload = json.loads(out.read_text())
+        assert payload["cached_evidence_vectors"] == 1
+        assert {r["condition"] for r in payload["rows"]} >= {"full", "no-prefilters-at-all"}
+        assert all(r["pairs"] == 1 for r in payload["rows"])
+        assert payload["requires_reresolve"]

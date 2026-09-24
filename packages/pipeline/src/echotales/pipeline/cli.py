@@ -199,6 +199,14 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     p_ablate.add_argument("--link-threshold", type=float, default=0.8)
+    p_ablate.add_argument(
+        "--out",
+        default=None,
+        help=(
+            "also write the rows as JSON here. Stdout-only output left the "
+            "report's ablation figure citing a CSV that never existed."
+        ),
+    )
 
     p_blind = sub.add_parser(
         "annotate",

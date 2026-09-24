@@ -1,0 +1,9 @@
+Condition,Pairs,Force-link,Blocked,Reached scorer,Scorer would link
+full,"15,796","1,318","2,888","11,590",0
+no-gazetteer-compounding,"15,796",448,"2,888","12,460",0
+no-declaration,"15,796","1,273","2,888","11,635",0
+no-name-containment,"15,796","1,285","2,888","11,623",0
+no-relational-copresence,"15,796","1,314","2,888","11,594",0
+no-temporal-scoping,"15,796","1,318","2,888","11,590",0
+no-copresence-blocking,"15,796","1,329",0,"14,467",0
+no-prefilters-at-all,"15,796",0,0,"15,796",0

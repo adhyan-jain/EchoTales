@@ -46,6 +46,24 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 *Scored against an LLM-derived SILVER reference set, not human gold, with no inter-annotator agreement. See docs/GOLD_DATASET_README.md. n is small for the hard alias types; single cases move TRANSFERABLE_TITLE by roughly 11 points and RELATIONAL_DEICTIC by 25.*
 
 
+### Table 6 — Ablations over 15,796 cached evidence vectors
+
+| Condition | Pairs | Force-link | Blocked | Reached scorer | Scorer would link |
+|---|---|---|---|---|---|
+| full | 15,796 | 1,318 | 2,888 | 11,590 | 0 |
+| no-gazetteer-compounding | 15,796 | 448 | 2,888 | 12,460 | 0 |
+| no-declaration | 15,796 | 1,273 | 2,888 | 11,635 | 0 |
+| no-name-containment | 15,796 | 1,285 | 2,888 | 11,623 | 0 |
+| no-relational-copresence | 15,796 | 1,314 | 2,888 | 11,594 | 0 |
+| no-temporal-scoping | 15,796 | 1,318 | 2,888 | 11,590 | 0 |
+| no-copresence-blocking | 15,796 | 1,329 | 0 | 14,467 | 0 |
+| no-prefilters-at-all | 15,796 | 0 | 0 | 15,796 | 0 |
+
+*Source: data/eval/ablation/reverend-insanity.json (echotales ablate --out, db: data/reruns/ner-window-ri.db)*
+
+*Re-scores cached evidence; it does not re-run resolution. 'Scorer would link' is 0 under every condition because the scorer's output is capped below its threshold (docs/SCORER_DIAGNOSIS.md), so this table measures the pre-filters. Not answerable from the cache: no-alias-typing, no-self-persona-split, no-truth-status.*
+
+
 ### Table 6a — Gazetteer compounding by window (size 40)
 
 | Window | Gazetteer share of links | n (links in window) |

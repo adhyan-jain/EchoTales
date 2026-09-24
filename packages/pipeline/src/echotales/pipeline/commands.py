@@ -805,14 +805,34 @@ def cmd_ablate(args: argparse.Namespace) -> int:
         return 2
 
     print(f"=== ablations: {args.novel} ({captured:,} cached evidence vectors) ===")
-    for row in run_ablations(
+    rows = run_ablations(
         store,
         args.novel,
         run_tag=tag,
         conditions=getattr(args, "condition", None),
         link_threshold=getattr(args, "link_threshold", 0.8),
-    ):
+    )
+    for row in rows:
         print(row.summary())
+
+    out = getattr(args, "out", None)
+    if out:
+        import dataclasses
+        import json
+        from pathlib import Path
+
+        payload = {
+            "novel_id": args.novel,
+            "db": getattr(args, "db", None) or get_settings().db_path,
+            "run_tag": tag,
+            "cached_evidence_vectors": captured,
+            "link_threshold": getattr(args, "link_threshold", 0.8),
+            "rows": [dataclasses.asdict(r) for r in rows],
+            "requires_reresolve": dict(REQUIRES_RERESOLVE),
+        }
+        Path(out).parent.mkdir(parents=True, exist_ok=True)
+        Path(out).write_text(json.dumps(payload, indent=2) + "\n")
+        print(f"\nablation rows written: {out}")
 
     # Printed every run, not buried in a docstring: a reader comparing
     # conditions needs to know which ones are missing and why, or the absence
