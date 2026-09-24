@@ -108,6 +108,15 @@ class StubComposeEngine:
     width: int = OUTPUT_WIDTH
     height: int = OUTPUT_HEIGHT
     captions_path: Path | None = None
+    #: Mirrors `FfmpegComposeEngine.speed`, and is deliberately inert here --
+    #: the stub writes no mux to re-time. It exists because `cmd_render` passes
+    #: `speed=args.speed` to whichever engine `--compose-engine` selected, so a
+    #: field present on only one of them makes the *stub* path raise
+    #: `TypeError: unexpected keyword argument 'speed'`. That is the no-GPU/CI
+    #: path, and it had been broken since `speed` was added to the real engine
+    #: alone -- found 2026-09-25 by a stub render of RI ch169, which crashed at
+    #: compose after every panel had already been generated.
+    speed: float = 1.0
 
     def render(self, timeline: list[TimedShot], audio_paths: list[Path], out_path: Path) -> Path:
         out_path.parent.mkdir(parents=True, exist_ok=True)

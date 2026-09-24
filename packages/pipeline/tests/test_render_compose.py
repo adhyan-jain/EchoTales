@@ -152,3 +152,42 @@ class TestFfmpegComposeEngineIntegration:
         out = tmp_path / "ch1.mp4"
         FfmpegComposeEngine(speed=1.0).render(timeline, [wav], out)
         assert out.exists() and out.stat().st_size > 0
+
+
+class TestEnginesShareOneConfigurationSurface:
+    """`cmd_render` passes the same kwargs to whichever engine
+    `--compose-engine` selected, so any field on one and not the other makes
+    that engine's CLI path raise.
+
+    This is not hypothetical. `speed` was added to `FfmpegComposeEngine` alone,
+    and `--compose-engine stub` -- the no-GPU/CI path -- raised
+    `TypeError: unexpected keyword argument 'speed'` from then until
+    2026-09-25, when a stub render of RI ch169 hit it *after* generating every
+    panel. `StubComposeEngine`'s own docstring already promised "same fields as
+    the real engine"; nothing enforced it.
+    """
+
+    def test_stub_accepts_every_field_the_real_engine_accepts(self) -> None:
+        import dataclasses
+
+        from echotales.pipeline.render.compose import (
+            FfmpegComposeEngine,
+            StubComposeEngine,
+        )
+
+        real = {f.name for f in dataclasses.fields(FfmpegComposeEngine)}
+        stub = {f.name for f in dataclasses.fields(StubComposeEngine)}
+        missing = real - stub - {"name"}
+        assert not missing, (
+            f"StubComposeEngine is missing {sorted(missing)}, so "
+            f"`--compose-engine stub` will raise when cmd_render passes them"
+        )
+
+    def test_get_engine_builds_both_from_one_kwarg_set(self) -> None:
+        """The construction path `cmd_render` actually uses."""
+        from echotales.pipeline.render.compose import get_engine
+
+        kwargs = {"width": 1920, "height": 1080, "speed": 1.25}
+        for name in ("stub", "ffmpeg"):
+            engine = get_engine(name, **kwargs)
+            assert engine.speed == 1.25
