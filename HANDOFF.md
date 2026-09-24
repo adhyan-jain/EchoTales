@@ -36,8 +36,10 @@ That file is the single status record. The short version:
 - **Hard cases are lost at mention detection** — the next real research work.
 - **Run-order trap:** `resolve` deletes persona bindings. Never run it after
   `run` without rebuilding personas.
-- **EARS voice bank** landed; a full-bank ch1 render was queued behind the
-  download — check `data/audio-ears/` and `/tmp/claude-1000/ears_voice.log`.
+- **EARS voice bank** rendered RI ch1 (`data/audio-ears-native/`, EVOLUTION
+  4.87). Next audio work is speaker attribution, not the bank: the opening
+  siege lines are attributed to the vocative addressee and to Bai Ning Bing.
+  Declare `chatterbox-tts` + `setuptools<81` somewhere a fresh sync picks up.
 - **Before any patent filing:** read Narrative Graph Prompting (ICCVW 2025)
   and StoryWeaver (arXiv:2412.07375); the repo has been public since
   2026-08-07.

@@ -30,7 +30,7 @@ IAA**.
 |---|---|
 | Three-axis time | No fact is ever written to a non-main timeline |
 | Temporal identity bindings for hard alias types | 16/17 title-transfer and 25/29 relational mentions never detected |
-| EARS voice bank | Loader, whisper routing and tests landed; full-bank Chatterbox render of ch1 **queued behind the download** (see `data/audio-ears/`, log `/tmp/claude-1000/ears_voice.log`) |
+| EARS voice bank | **Rendered.** RI ch1, 97 lines, 892 s audio, 7 native-English voices, exit 0 (`data/audio-ears-native/manifest.jsonl`, EVOLUTION 4.87). Exposed a speaker-attribution defect: opening lines go to the vocative addressee (Fang Yuan) and to Bai Ning Bing, who is not in the scene. Needs `setuptools<81`, declared nowhere |
 
 ## DESIGNED — specified, not exercised end to end
 - Retraction distinct from interval end: query tested, **writer has no caller**.

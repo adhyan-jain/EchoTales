@@ -7713,3 +7713,52 @@ TRANSFERABLE_TITLE **88.9% — gate passes** (7/9 → 8/9), RELATIONAL_DEICTIC
 25.0%. Historical documents carry a supersession note rather than an edit.
 The headline stands: most hard-case spans are never detected as mentions, so
 they never reach retrieval in the real pipeline.
+
+### 4.87 EARS full-bank render of RI ch1; retriever recall by hard-case category; a span-drift defect in the silver set *(2026-09-25)*
+
+**EARS render — mechanically clean, and it exposed an attribution defect the
+old bank hid.** `voice --bank-kind ears --engine chatterbox` over RI chapter 1
+on `data/reruns/ner-window-ri.db` → `data/audio-ears-native/`: 97 lines,
+892 s of audio, 514 s wall on the RTX 4060, exit 0, 7 distinct voices, every
+one a native-English EARS speaker (the German-native `p001` narrator of the
+first attempt is gone — commit `9227dd3`). One file is 0.12 s: the line is
+`'……'`, which is correct. Distinct anonymous speakers (`anon:1:s42`,
+`anon:1:s64`) get distinct voices, as intended.
+
+What listening to the manifest shows, and the old bank's sameness had masked:
+
+- The chapter's opening siege lines are addressed *to* Fang Yuan by the
+  righteous-path crowd. Line 0 (*"Fang Yuan, quietly hand over the Spring
+  Autumn Cicada…"*) is attributed **to Fang Yuan** — the vocative addressee
+  taken as the speaker. Lines 1–3 are attributed to **Bai Ning Bing**, who is
+  not in that scene; line 3 (*"…took away my body's purity, killed my entire
+  family"*) is plainly a woman speaking and is voiced by a male speaker.
+- This is the speaker-attribution stage, not the voice bank. It is consistent
+  with STATUS's "45.5% identifiable" row and is now also unmeasured-against-
+  the-NER-fix. It is the audio twin of the render track's "wrong character in
+  panel" class, and a better bank makes it *more* audible, not less.
+
+Environment note, carried from the previous attempt: `resemble-perth` needs
+`pkg_resources`, so the venv has `setuptools<81` installed by hand. That pin
+exists nowhere in a `pyproject.toml` — `chatterbox-tts` itself is undeclared
+in every package — so a fresh `uv sync` reproduces a venv that cannot run this
+render. Same trap as the lines 348–353 entry, recurring because it was never
+declared.
+
+**Retriever recall@K by hard-case category** (`scripts/recall_by_category.py`,
+`docs/EVAL_RETRIEVER.md` Section 7). The snippet-query row reproduces the CLI's
+84.4% @10 on 45 cases exactly. Querying with production's `_context_for`
+instead gives 88.9%: relational/deictic 1/4 → 3/4, body_change 7/8 → 6/8,
+disguise 9/9 either way, title transfer @1 stuck at 33.3%. Every category has
+n ≤ 15; nothing in that table is a statistically distinguishable difference.
+An earlier draft of the script used a 400-char query window, called it
+"exactly as the CLI builds it", and got 95.6% — caught because the ALL row did
+not match the CLI.
+
+**Silver span drift.** `reproduce_results.sh` now runs `--validate-gold`
+against the rerun DB, and it flags 7 silver records past the end of chapter 1.
+The rerun's ingest classifies ch1's closing author's note as `TRANSLATOR_NOTE`
+(it was `PROSE`), so `story_text` drops 13,100 → 12,484 chars, and those 7
+records annotated `'Gu'` inside the note. The new classification is right;
+the cost is ≤ 0.4 pts SILVER recall. `docs/GOLD_DATASET_README.md` Section 5
+item 7.
