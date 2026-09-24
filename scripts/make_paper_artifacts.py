@@ -276,8 +276,9 @@ def figures() -> list[Figure]:
                           "compiler that does not exist."),
         Figure("7", "Evaluation pipeline and provenance tiers", "diagram", "HAND-DRAWN",
                source="eval/gold.py tiers; eval/validate_gold.py checks"),
-        Figure("8", "Retriever Recall@K by alias type", "plot", "DATA READY",
-               source="docs/paper/tables/table5_recall_at_k.csv",
+        Figure("8", "Retriever Recall@K by alias type", "plot", "RENDERED",
+               source="docs/paper/figures/fig08_recall_at_k.svg (scripts/plot_paper_figures.py "
+                      "from docs/paper/tables/table5_recall_at_k.csv)",
                columns=["alias_type", "n", "k", "recall"]),
         Figure("9", "Baseline comparison", "plot", "DATA READY",
                source="docs/BASELINES.md section 4",
@@ -288,8 +289,9 @@ def figures() -> list[Figure]:
                           "comparable prompt-token or wall-time figure for that range. "
                           "Plot calls and mentions found; do not plot B3 as accuracy -- "
                           "the gold for that range is surface-trivial."),
-        Figure("10", "Ablation results", "plot", "DATA READY",
-               source="docs/paper/tables/table6_ablation.csv",
+        Figure("10", "Ablation results", "plot", "RENDERED",
+               source="docs/paper/figures/fig10_ablation.svg (scripts/plot_paper_figures.py "
+                      "from docs/paper/tables/table6_ablation.csv)",
                columns=["condition", "force_links", "reached_scorer", "scorer_would_link"]),
         Figure("11", "Human review / escalation rate", "plot", "TODO",
                columns=["stage", "calls", "escalations", "rate"],

@@ -54,8 +54,8 @@ ship as CSV so any plotting tool can consume them.
 ### Figure 8 — Retriever Recall@K by alias type
 
 - **Kind:** plot
-- **Status:** DATA READY
-- **Data source:** `docs/paper/tables/table5_recall_at_k.csv`
+- **Status:** RENDERED
+- **Data source:** `docs/paper/figures/fig08_recall_at_k.svg (scripts/plot_paper_figures.py from docs/paper/tables/table5_recall_at_k.csv)`
 - **Required columns:** `alias_type`, `n`, `k`, `recall`
 
 ### Figure 9 — Baseline comparison
@@ -69,8 +69,8 @@ ship as CSV so any plotting tool can consume them.
 ### Figure 10 — Ablation results
 
 - **Kind:** plot
-- **Status:** DATA READY
-- **Data source:** `docs/paper/tables/table6_ablation.csv`
+- **Status:** RENDERED
+- **Data source:** `docs/paper/figures/fig10_ablation.svg (scripts/plot_paper_figures.py from docs/paper/tables/table6_ablation.csv)`
 - **Required columns:** `condition`, `force_links`, `reached_scorer`, `scorer_would_link`
 
 ### Figure 11 — Human review / escalation rate

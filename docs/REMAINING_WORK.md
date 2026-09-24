@@ -125,7 +125,7 @@ The disclosure itself lives in `docs/IP/` (gitignored, never committed).
 - The ≥5-papers-per-member related-work requirement needs each member to confirm their papers and write their own limitations paragraph (human-only).
 - Team confirmation of the Section 7 work split.
 - Draw the 7 hand-drawn diagram figures (`docs/paper/FIGURES.md` Figures 1–7).
-- Plot Figures 8–10 from the generated CSVs. The data exists and nobody has drawn them.
+- Figures 8, 10 and 6a are rendered as SVG (`scripts/plot_paper_figures.py`, `docs/paper/figures/`). Figure 9 (baselines) is not, because its numbers live only in `BASELINES.md` prose, not in a persisted file.
 - Figure 11 (escalation) stays a sentence rather than a chart: it would be a bar chart of zeros.
 
 ---
