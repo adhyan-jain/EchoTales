@@ -35,7 +35,7 @@ change the project's evidentiary position.
 
 | Item | Before | Now |
 |---|---|---|
-| Observer-conditioned **generation** | "wired, never exercised" | **Demonstrated at the plan level.** Same panel, varying only the observer: READER yields `characters=1`, digest `de02bdbf…`; a non-witness yields `characters=0`, digest `3ce24425…`. `cache_key.py` derives the artifact key from that digest, so the observer changes what would be generated *and* cached. |
+| Observer-conditioned **generation** | "wired, never exercised" | **Demonstrated end to end on a real image engine** (`docs/OBSERVER_CONTRAST_RESULT.md`): same chapter/blocks/checkpoint/seed, only the observer varies — READER gets 5/5 reference-conditioned panels naming `Bai Ning Bing`; a non-witness gets 5/5 prompt-only panels saying `a figure`, and `1boy … solo` instead of `2boys`. Cache keys and pixels differ on 10/10 blocks. Also demonstrated at the plan level: Same panel, varying only the observer: READER yields `characters=1`, digest `de02bdbf…`; a non-witness yields `characters=0`, digest `3ce24425…`. `cache_key.py` derives the artifact key from that digest, so the observer changes what would be generated *and* cached. |
 | Real image engine | never run | **Run.** NoobAI XL produced a 1.59 MB panel for ch169 under a real observer parameter — not a stub. |
 | LLMLINK prior art | unread, carrying the positioning weight | **Verified against the full paper.** All four claims hold, and unlike LINK-KG the negatives are substantive: same task, same data class (LitBank, DOC-ARC), same metrics (MUC/B³/CoNLL), and it still models identity as static. |
 | Self/Persona on real data | asserted | **Bounded.** One real case (Fang Yuan, two temporally disjoint bodies); five case classes are tests-only with row counts. |
@@ -200,12 +200,24 @@ and the scorer is unnecessary to this corpus as built.
 
 ## 9. Multimodal demonstration status
 
-**Not attempted this pass.** The observer-contrast render (`COMPLETION_PLAN`
-item 18) and the real-render cache-invalidation check (item 25) both need the
-GPU, which the re-run and the baselines occupied for the whole session. The
-query they would consume is verified (`docs/STATE_OF_VALIDATION.md`); the
-generation half has still **never produced a real image**, and no document in
-this repository may imply otherwise.
+**COMPLETE for the observer contrast** (`docs/OBSERVER_CONTRAST_RESULT.md`).
+Run 2026-09-25, local RTX 4060, NoobAI XL, 5 panels per observer, everything
+held constant but the observer:
+
+| | READER | non-witness |
+|---|---:|---:|
+| Reference-conditioned panels | **5** | **0** |
+| Prompt-only panels | 0 | **5** |
+| Cache key / pixels differ | 10/10 blocks | — |
+
+The prompt names the character for one observer (`Bai Ning Bing`) and not the
+other (`a figure`), and the cast count differs (`2boys` vs `1boy … solo`)
+because the non-witness does not have her in their scene at all. That is a
+property of the graph query, not of two authored prompts.
+
+**Still open:** a two-*depiction* contrast (both observers see a character,
+but a different one) needs a sustained disguise, which RI does not contain;
+and no rendered pixel has been scored, so nothing here claims image quality.
 
 ## 10. Remaining blockers
 
@@ -271,7 +283,7 @@ Academic project report:      NEEDS RESULTS
 End-to-end product:           PARTIAL
 Gold evaluation:              IN PROGRESS
 Baseline comparison:          COMPLETE (both executed)
-Multimodal demonstration:     PARTIAL (plan-level proven; real engine run)
+Multimodal demonstration:     COMPLETE (observer contrast, real engine)
 ```
 
 **Research contribution — PARTIALLY VERIFIED.** Verified: the NER repair and
