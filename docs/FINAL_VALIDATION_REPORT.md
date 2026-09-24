@@ -124,18 +124,28 @@ Retriever, hardcases silver set (the non-trivial one), post-fix:
 ## 7. Baseline results
 
 | | Baseline A | Baseline B | EchoTales |
-|---|---|---|---|
-| Architecture | long-context, one call/section | dual-LLM memorisation | graph + gazetteer |
-| Calls (ch1-10) | **1** | O(mentions), hundreds | ~30 NER, **0** resolution |
-| Wall time | 146 s | pending | — |
-| Mentions found (ch1-10) | **10** | pending | **359** |
-| B³ recall | **0.2%** | pending | — |
+|---|---:|---:|---:|
+| Architecture | long-context, 1 call/section | dual-LLM memorisation | graph + gazetteer |
+| **LLM calls** | **1** | **177** (43 extract + 134 link) | ~30 NER, **0** resolution |
+| Prompt tokens | 24,302 | 142,835 | — |
+| Wall time | 146 s | 435 s | — |
+| **Mentions found (ch1-10)** | **10** | **133** | **359** |
+| B³ precision | 100.0% | 95.4% | 100.0% |
+| **B³ recall** | **0.2%** | **4.6%** | 96.3% |
 
-Silver gold for ch1-10 holds 356 mentions. Baseline A's failure mode is
-**output budget, not comprehension**: 24,302 prompt tokens left roughly 8k of
-headroom and it emitted 697 tokens containing ten mentions. Baseline B was
-still executing when this report was written; its result belongs in
-`docs/BASELINES.md` §4 and is **not** estimated here.
+Silver gold for ch1-10 holds 356 mentions. Both baselines ran 2026-09-24, same
+model, same host, same scorer.
+
+Baseline A's failure mode is **output budget, not comprehension**: 24,302
+prompt tokens left roughly 8k of headroom and it emitted 697 tokens containing
+ten mentions. Baseline B's chunked extractor fixes exactly that — **13× more
+mentions** — and pays **177× the calls** for it.
+
+**On this corpus the recall column is an extraction-coverage comparison, not a
+coreference-quality one.** EchoTales' 96.3% is measured against gold that is
+100% recoverable by grouping on the surface string; the baselines are
+handicapped on the same axis in the opposite direction, having to find a
+mention before they can match it.
 
 ## 8. Ablation results
 
@@ -228,7 +238,7 @@ Patent technical disclosure:  NEEDS EVIDENCE (close)
 Academic project report:      NEEDS RESULTS
 End-to-end product:           PARTIAL
 Gold evaluation:              IN PROGRESS
-Baseline comparison:          IN PROGRESS
+Baseline comparison:          COMPLETE (both executed)
 Multimodal demonstration:     MISSING
 ```
 

@@ -137,10 +137,36 @@ architecture is given its real advantage: the linker sees a compact memory
 rather than 23k tokens of raw text, so it should not degrade with section
 length the way a long-context prompt does.
 
-### Status: BUILT, NOT YET RUN
+### Status: RUN 2026-09-24 — first execution
 
-Imports clean, chunking verified to reassemble losslessly on paragraph
-boundaries, lint clean, full suite green (1,051). Queued behind the same GPU.
+Chapters 1-10, `qwen2.5:7b`, `num_ctx` 8,192, 3,000-char chunks.
+
+| | |
+|---|---:|
+| Extractor calls | 43 |
+| Linker calls | **134** |
+| Total LLM calls | **177** |
+| Prompt tokens | 142,835 |
+| Output tokens | 8,487 |
+| Wall time | **435 s** |
+| Entities found | **32** |
+| Mentions found | **133** |
+| B³ precision | 95.4% |
+| **B³ recall** | **4.6%** |
+| B³ F1 | 8.8% |
+
+72 of 356 silver gold mentions matched; 284 unresolved.
+
+**The memorisation architecture works, and it is expensive.** Against Baseline
+A on the identical range it finds **13× more mentions** (133 vs 10) — the
+chunked extractor is not fighting a single completion's output budget, which
+is exactly the weakness LLMLINK's design addresses. It pays **177× the calls**
+and **5.9× the prompt tokens** for that, and still recovers under 5% of the
+reference set.
+
+Precision stays high (95.4%) because what it does find is mostly easy
+RIGID_NAME material. Recall is the honest number, and the gap to EchoTales
+(359 mentions on the same range) is the result.
 
 ---
 
@@ -166,13 +192,45 @@ comparison this corpus currently supports best.
 
 ## 4. Results
 
-**PENDING — not run.** Both baselines are queued behind the NER re-run's use
-of the single GPU. When they run, this section will carry, per baseline:
-model, context size, section/chunk size, call counts split by role, prompt and
-output tokens, wall time, B³/MUC/CEAF-e/CoNLL against the silver tier with the
-banner attached, and observed failure cases.
+Both baselines executed 2026-09-24 on chapters 1-10, same model, same host,
+same scorer. **Scored against an LLM-derived silver reference set, not human
+gold** — and on a range whose gold is 100% surface-trivial, so **precision is
+tautological and recall is the informative half.**
 
-No number is recorded here until the run happens. A blank is a blank.
+| | Baseline A | Baseline B | EchoTales |
+|---|---:|---:|---:|
+| Architecture | long-context, 1 call/section | dual-LLM memorisation | graph + gazetteer |
+| **LLM calls** | **1** | **177** (43 extract + 134 link) | ~30 NER, **0** resolution |
+| Prompt tokens | 24,302 | 142,835 | — |
+| Wall time | 146 s | 435 s | — |
+| Entities found | 7 | 32 | 261 (full volume) |
+| **Mentions found** | **10** | **133** | **359** |
+| B³ precision | 100.0% | 95.4% | 100.0% |
+| **B³ recall** | **0.2%** | **4.6%** | 96.3% |
+
+Silver gold for ch1-10 holds **356** mentions.
+
+**Three findings this table supports:**
+
+1. **Long-context single-pass extraction does not scale.** Baseline A's prompt
+   consumed 24,302 of a 32,768-token combined budget and it emitted 697 output
+   tokens — ten mentions for ten chapters. The failure is output budget, not
+   comprehension.
+2. **Memorisation fixes that, at a steep price.** Baseline B's chunked
+   extractor finds 13× more mentions than A, because no single completion has
+   to carry the whole answer. It costs 177× the calls.
+3. **The resolver's cost advantage is structural, not incidental.** Its
+   resolution stage makes **zero** LLM calls — every link is a deterministic
+   pre-filter. Both baselines spend model calls on work a dictionary lookup
+   does.
+
+**Caveat that limits all three:** EchoTales' 96.3% B³ recall is measured
+against gold that is 100% recoverable by grouping on the surface string, so it
+substantially measures string matching. The baselines are handicapped on the
+same axis in the opposite direction — they must *find* the mention before they
+can match it. Treat the recall column as an extraction-coverage comparison,
+which it genuinely is, and not as a coreference-quality comparison, which this
+corpus cannot currently support.
 
 ---
 
