@@ -1,0 +1,115 @@
+ M .gitignore
+ M CLAUDE.md
+ M EVOLUTION.md
+ M HANDOFF.md
+ M README.md
+ M architecture.md
+ M data/gold/reverend-insanity.jsonl
+ M details.md
+ M packages/core/src/echotales/core/enums.py
+ M packages/core/src/echotales/core/models.py
+ M packages/core/src/echotales/core/readset.py
+ M packages/core/src/echotales/core/state.py
+ M packages/core/src/echotales/core/store.py
+ M packages/pipeline/src/echotales/pipeline/anaphora/__init__.py
+ M packages/pipeline/src/echotales/pipeline/anaphora/local.py
+ M packages/pipeline/src/echotales/pipeline/cli.py
+ M packages/pipeline/src/echotales/pipeline/commands.py
+ M packages/pipeline/src/echotales/pipeline/eval/baseline_a.py
+ M packages/pipeline/src/echotales/pipeline/eval/calibrate.py
+ M packages/pipeline/src/echotales/pipeline/eval/coref_score.py
+ M packages/pipeline/src/echotales/pipeline/eval/draft.py
+ M packages/pipeline/src/echotales/pipeline/eval/gold.py
+ M packages/pipeline/src/echotales/pipeline/mentions/chapter_ner.py
+ M packages/pipeline/src/echotales/pipeline/mentions/ner.py
+ M packages/pipeline/src/echotales/pipeline/mentions/runner.py
+ M packages/pipeline/src/echotales/pipeline/persona/build.py
+ M packages/pipeline/src/echotales/pipeline/render/gemini.py
+ M packages/pipeline/src/echotales/pipeline/render/openrouter.py
+ M packages/pipeline/src/echotales/pipeline/render/panels.py
+ M packages/pipeline/src/echotales/pipeline/resolve/appearance_extract.py
+ M packages/pipeline/src/echotales/pipeline/resolve/gate.py
+ M packages/pipeline/src/echotales/pipeline/resolve/runner.py
+ M packages/pipeline/src/echotales/pipeline/resolve/score.py
+ M packages/pipeline/src/echotales/pipeline/speakers/runner.py
+ M packages/pipeline/src/echotales/pipeline/webview_server.py
+ M packages/pipeline/tests/test_all_novels_gold_sets.py
+ M packages/pipeline/tests/test_chapter_ner.py
+ M packages/pipeline/tests/test_render_panels.py
+ M packages/pipeline/tests/test_speakers.py
+ M plans.md
+ M webview/src/App.js
+ M webview/src/api.js
+ M webview/src/components/CharacterDashboard.js
+ M webview/src/components/Login.js
+ M webview/src/components/NewProject.js
+ M webview/src/components/ScriptView.js
+ M webview/src/components/__tests__/Section7Smoke.test.js
+ M webview/src/index.css
+ M webview/src/index.js
+ M webview/tailwind.config.js
+?? data/canonical_dbs.json
+?? data/corrections/ollama-eval-lord-of-the-mysteries.jsonl
+?? data/corrections/ollama-eval-omniscient-readers-viewpoint.jsonl
+?? data/corrections/ollama-eval-reverend-insanity.jsonl
+?? data/corrections/smoke-4.64-ch1-3.jsonl
+?? data/corrections/timing-ri-3ch.jsonl
+?? data/corrections/validation-4.63-ch1.jsonl
+?? data/corrections/validation-4.63-full.jsonl
+?? data/eval/
+?? data/gold/_unusable/
+?? data/gold/lord-of-the-mysteries-c1-c3.toml
+?? data/lexicons/reverend-insanity-ner-cache.json.aside
+?? data/lexicons/reverend-insanity-ner-cache.json.pre-4.76-backup
+?? docs/
+?? packages/core/src/echotales/core/pipeline_run.py
+?? packages/core/tests/test_observer_axis.py
+?? packages/core/tests/test_pipeline_run.py
+?? packages/core/tests/test_refimg_persona_reconciliation.py
+?? packages/core/tests/test_self_persona_boundary.py
+?? packages/pipeline/src/echotales/pipeline/_multipart.py
+?? packages/pipeline/src/echotales/pipeline/eval/ablate.py
+?? packages/pipeline/src/echotales/pipeline/eval/blind_review.py
+?? packages/pipeline/src/echotales/pipeline/eval/compounding.py
+?? packages/pipeline/src/echotales/pipeline/eval/evidence_cache.py
+?? packages/pipeline/src/echotales/pipeline/eval/persist.py
+?? packages/pipeline/src/echotales/pipeline/eval/stats.py
+?? packages/pipeline/src/echotales/pipeline/jobs.py
+?? packages/pipeline/src/echotales/pipeline/render/cache_key.py
+?? packages/pipeline/src/echotales/pipeline/render/contract.py
+?? packages/pipeline/src/echotales/pipeline/render/plan_builder.py
+?? packages/pipeline/src/echotales/pipeline/resolve/detect_observations.py
+?? packages/pipeline/src/echotales/pipeline/resolve/experimental_clan_features.py
+?? packages/pipeline/tests/conftest.py
+?? packages/pipeline/tests/test_ablation_harness.py
+?? packages/pipeline/tests/test_blind_review.py
+?? packages/pipeline/tests/test_compounding_curve.py
+?? packages/pipeline/tests/test_coref_metrics.py
+?? packages/pipeline/tests/test_detect_observations.py
+?? packages/pipeline/tests/test_draft_ambiguity_guard.py
+?? packages/pipeline/tests/test_eval_stats.py
+?? packages/pipeline/tests/test_gold_provenance.py
+?? packages/pipeline/tests/test_jobs.py
+?? packages/pipeline/tests/test_plan_builder.py
+?? packages/pipeline/tests/test_render_cache_key.py
+?? packages/pipeline/tests/test_render_contract.py
+?? packages/pipeline/tests/test_resolution_provenance.py
+?? packages/pipeline/tests/test_resolve_self_id_stability.py
+?? packages/pipeline/tests/test_webview_server_jobs.py
+?? scripts/ner_window_delta.py
+?? scripts/reproduce_results.sh
+?? webview/src/Viewer.js
+?? webview/src/__tests__/
+?? webview/src/components/GenerationWorkspace.js
+?? webview/src/components/OutputLibrary.js
+?? webview/src/components/ProjectHome.js
+?? webview/src/components/__tests__/ProductScreens.test.js
+?? webview/src/components/ui/ArchiveRow.js
+?? webview/src/components/ui/DepthCard.js
+?? webview/src/components/ui/DossierHeader.js
+?? webview/src/components/ui/InspectorSection.js
+?? webview/src/components/ui/JobStatusBadge.js
+?? webview/src/components/ui/ManuscriptSurface.js
+?? webview/src/components/ui/MediaArtifact.js
+?? webview/src/components/ui/StateNode.js
+?? webview/src/components/ui/TimelineRail.js

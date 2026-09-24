@@ -1,0 +1,82 @@
+{
+  "path": "data/gold/reverend-insanity-hardcases.jsonl",
+  "novel_id": "reverend-insanity",
+  "records": 89,
+  "ok": false,
+  "findings": [
+    {
+      "check": "provenance",
+      "severity": "info",
+      "count": 0,
+      "detail": "confirmed=0 silver=89 circular=0 (claude-sonnet-5-gold-hardcases=89)",
+      "examples": []
+    },
+    {
+      "check": "colliding-keys",
+      "severity": "info",
+      "count": 0,
+      "detail": "every record has a distinct key",
+      "examples": []
+    },
+    {
+      "check": "positional-overlap",
+      "severity": "info",
+      "count": 0,
+      "detail": "no offset carries two surfaces",
+      "examples": []
+    },
+    {
+      "check": "impossible-targets",
+      "severity": "error",
+      "count": 1,
+      "detail": "1 record(s) violate kind/identity",
+      "examples": [
+        "ch3@7926 'the Awakening Ceremony': not_an_entity with identity"
+      ]
+    },
+    {
+      "check": "self-referential",
+      "severity": "warning",
+      "count": 1,
+      "detail": "1 surface(s) denote 2+ identities within one chapter",
+      "examples": [
+        "ch32 'fang zheng' -> ['Fang Yuan (hypothetical misidentification)', \"Fang Yuan (the servants' guess is wrong)\"]"
+      ]
+    },
+    {
+      "check": "contradictory-negatives",
+      "severity": "info",
+      "count": 0,
+      "detail": "no surface is both entity and negative",
+      "examples": []
+    },
+    {
+      "check": "alias-type-coverage",
+      "severity": "info",
+      "count": 4,
+      "detail": "RIGID_NAME=41, RELATIONAL_DEICTIC=29, TRANSFERABLE_TITLE=17, EPITHET=1",
+      "examples": []
+    },
+    {
+      "check": "surface-triviality",
+      "severity": "info",
+      "count": 88,
+      "detail": "63.6% of 88 mentions are resolvable from the surface string alone (44 distinct surfaces, 26 identities)",
+      "examples": []
+    },
+    {
+      "check": "malformed-spans",
+      "severity": "info",
+      "count": 0,
+      "detail": "all 89 checked spans sit at their offset",
+      "examples": []
+    },
+    {
+      "check": "missing-entities",
+      "severity": "info",
+      "count": 0,
+      "detail": "all 51 annotated chapters have mentions",
+      "examples": []
+    }
+  ]
+}

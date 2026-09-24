@@ -1,0 +1,99 @@
+{
+  "path": "data/gold/reverend-insanity.jsonl",
+  "novel_id": "reverend-insanity",
+  "records": 7879,
+  "ok": false,
+  "findings": [
+    {
+      "check": "provenance",
+      "severity": "warning",
+      "count": 4422,
+      "detail": "confirmed=0 silver=3,457 circular=4,422 (gold-auto-builder=4,422; claude-sonnet-5=3,347; claude-opus-5=110)  <- circular records were drafted by ['gold-auto-builder'] from the pipeline's own output and cannot score it",
+      "examples": []
+    },
+    {
+      "check": "colliding-keys",
+      "severity": "info",
+      "count": 0,
+      "detail": "every record has a distinct key",
+      "examples": []
+    },
+    {
+      "check": "positional-overlap",
+      "severity": "info",
+      "count": 0,
+      "detail": "no offset carries two surfaces",
+      "examples": []
+    },
+    {
+      "check": "impossible-targets",
+      "severity": "info",
+      "count": 0,
+      "detail": "kind and identity agree on every record",
+      "examples": []
+    },
+    {
+      "check": "self-referential",
+      "severity": "info",
+      "count": 0,
+      "detail": "no surface denotes two identities within a chapter",
+      "examples": []
+    },
+    {
+      "check": "contradictory-negatives",
+      "severity": "info",
+      "count": 0,
+      "detail": "no surface is both entity and negative",
+      "examples": []
+    },
+    {
+      "check": "alias-type-coverage",
+      "severity": "warning",
+      "count": 1,
+      "detail": "RIGID_NAME=6,238  <- 100% is a single type; a per-alias-type breakdown from this file does not measure the hard types",
+      "examples": []
+    },
+    {
+      "check": "surface-triviality",
+      "severity": "error",
+      "count": 6238,
+      "detail": "100.0% of 6,238 mentions are resolvable from the surface string alone (25 distinct surfaces, 22 identities)  <- a string matcher reproduces this partition exactly; any P/R/F1 computed from it measures string matching, NOT identity resolution, and must not be reported as a resolver result",
+      "examples": []
+    },
+    {
+      "check": "malformed-spans",
+      "severity": "error",
+      "count": 770,
+      "detail": "770 of 7,879 spans do not match the chapter text at their offset",
+      "examples": [
+        "ch61@1477 expected 'Fang Yuan', text has ' Fang Yua'",
+        "ch61@2551 expected 'Fang Yuan', text has ' Fang Yua'",
+        "ch61@3863 expected 'Fang Yuan', text has ' Fang Yua'",
+        "ch61@8484 expected 'Fang Yuan', text has ' Fang Yua'",
+        "ch61@8983 expected 'Fang Yuan', text has ' Fang Yua'",
+        "ch61@10028 expected 'Fang Yuan', text has ' Fang Yua'",
+        "ch62@3170 expected 'Fang Yuan', text has ' Fang Yua'",
+        "ch62@7121 expected 'Fang Yuan', text has ' Fang Yua'",
+        "ch62@9121 expected 'Fang Yuan', text has ' Fang Yua'",
+        "ch62@10464 expected 'Fang Yuan', text has ' Fang Yua'",
+        "ch62@11638 expected 'Fang Yuan', text has ' Fang Yua'",
+        "ch62@11997 expected 'Fang Zheng', text has ' Fang Zhen'",
+        "ch63@833 expected 'Fang Zheng', text has ' Fang Zhen'",
+        "ch63@1252 expected 'Fang Zheng', text has ' Fang Zhen'",
+        "ch63@2268 expected 'Fang Zheng', text has ' Fang Zhen'",
+        "ch63@2290 expected 'Fang Yuan', text has ' Fang Yua'",
+        "ch63@2565 expected 'Fang Zheng', text has ' Fang Zhen'",
+        "ch63@4468 expected 'Fang Zheng', text has ' Fang Zhen'",
+        "ch63@4739 expected 'Fang Zheng', text has ' Fang Zhen'",
+        "ch63@5326 expected 'Fang Zheng', text has ' Fang Zhen'"
+      ]
+    },
+    {
+      "check": "missing-entities",
+      "severity": "info",
+      "count": 0,
+      "detail": "all 198 annotated chapters have mentions",
+      "examples": []
+    }
+  ]
+}

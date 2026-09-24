@@ -1,0 +1,92 @@
+{
+  "path": "data/gold/reverend-insanity-c1-c5.jsonl",
+  "novel_id": "reverend-insanity",
+  "records": 343,
+  "ok": true,
+  "findings": [
+    {
+      "check": "provenance",
+      "severity": "info",
+      "count": 0,
+      "detail": "confirmed=0 silver=343 circular=0 (claude-opus-5=343)",
+      "examples": []
+    },
+    {
+      "check": "colliding-keys",
+      "severity": "info",
+      "count": 0,
+      "detail": "every record has a distinct key",
+      "examples": []
+    },
+    {
+      "check": "positional-overlap",
+      "severity": "info",
+      "count": 52,
+      "detail": "52 offset(s) carry 2+ distinct surfaces -- expected where a name prefixes another (clan vs member); both records are preserved",
+      "examples": [
+        "ch1@4505: ['Gu Yue', 'Gu Yue(1) Village']",
+        "ch1@4614: ['Gu Yue', 'Gu Yue Village']",
+        "ch1@4957: ['Gu Yue', 'Gu Yue clan']",
+        "ch1@5614: ['Gu Yue', 'Gu Yue clan', 'Gu Yue clan head']",
+        "ch1@6572: ['Gu Yue', 'Gu Yue clan']",
+        "ch1@8032: ['Gu Yue', 'Gu Yue clan', 'Gu Yue clan head']",
+        "ch1@8287: ['Gu Yue', 'Gu Yue Fang Yuan']",
+        "ch1@8445: ['Gu Yue', 'Gu Yue Fang Yuan']",
+        "ch1@8903: ['Gu Yue', 'Gu Yue Clan']",
+        "ch1@9063: ['Gu Yue', 'Gu Yue clan', 'Gu Yue clan head']",
+        "ch1@9767: ['Gu Yue', 'Gu Yue Fang Yuan']",
+        "ch1@10926: ['Gu Yue', 'Gu Yue Village']",
+        "ch1@11519: ['Gu Yue', 'Gu Yue Village']",
+        "ch2@4991: ['Gu Yue', 'Gu Yue Village']",
+        "ch4@1488: ['Gu Yue', 'Gu Yue clan']",
+        "ch4@1785: ['Gu Yue', 'Gu Yue village']",
+        "ch4@2363: ['Gu Yue', 'Gu Yue Clan']",
+        "ch4@3583: ['Gu Yue', 'Gu Yue Chen Bo']",
+        "ch4@4521: ['Gu Yue', 'Gu Yue Chen Bo']",
+        "ch4@4585: ['Gu Yue', 'Gu Yue Zao Xie']"
+      ]
+    },
+    {
+      "check": "impossible-targets",
+      "severity": "info",
+      "count": 0,
+      "detail": "kind and identity agree on every record",
+      "examples": []
+    },
+    {
+      "check": "self-referential",
+      "severity": "info",
+      "count": 0,
+      "detail": "no surface denotes two identities within a chapter",
+      "examples": []
+    },
+    {
+      "check": "contradictory-negatives",
+      "severity": "info",
+      "count": 0,
+      "detail": "no surface is both entity and negative",
+      "examples": []
+    },
+    {
+      "check": "alias-type-coverage",
+      "severity": "warning",
+      "count": 1,
+      "detail": "RIGID_NAME=308  <- 100% is a single type; a per-alias-type breakdown from this file does not measure the hard types",
+      "examples": []
+    },
+    {
+      "check": "malformed-spans",
+      "severity": "info",
+      "count": 0,
+      "detail": "all 343 checked spans sit at their offset",
+      "examples": []
+    },
+    {
+      "check": "missing-entities",
+      "severity": "info",
+      "count": 0,
+      "detail": "all 5 annotated chapters have mentions",
+      "examples": []
+    }
+  ]
+}

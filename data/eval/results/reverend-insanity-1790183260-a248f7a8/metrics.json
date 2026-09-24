@@ -1,0 +1,69 @@
+{
+  "database": "data/reruns/ablate-ri.db",
+  "git_commit": "6aed9f9-dirty",
+  "gold_path": "data/gold/reverend-insanity.jsonl",
+  "metrics": {
+    "escalation": {
+      "avg_latency_ms": 7508.5,
+      "by_stage": [
+        {
+          "avg_ms": 13034.758620689656,
+          "calls": 29,
+          "escalations": 0,
+          "stage": "appearance_extraction",
+          "tier": "local",
+          "tokens": 56074
+        },
+        {
+          "avg_ms": 4571.817204301075,
+          "calls": 93,
+          "escalations": 0,
+          "stage": "character_profile",
+          "tier": "local",
+          "tokens": 88524
+        },
+        {
+          "avg_ms": 8508.325892857143,
+          "calls": 224,
+          "escalations": 0,
+          "stage": "ner",
+          "tier": "local",
+          "tokens": 403074
+        },
+        {
+          "avg_ms": 2878.8333333333335,
+          "calls": 24,
+          "escalations": 0,
+          "stage": "persona_split",
+          "tier": "local",
+          "tokens": 15549
+        }
+      ],
+      "calls": 370,
+      "escalation_rate": 0.0,
+      "escalations": 0,
+      "tokens": 563221
+    },
+    "held_out_coverage": {
+      "calibration_size": 0,
+      "empirical": 0.0,
+      "false_links": 0,
+      "split_chapter": 0.0,
+      "target": 0.95,
+      "test_size": 0
+    },
+    "linked_share": {
+      "ci_high": 0.9886181468419365,
+      "ci_low": 0.9828470663674255,
+      "n": 6238,
+      "point": 0.985732606604681,
+      "resamples": 2000
+    }
+  },
+  "novel_id": "reverend-insanity",
+  "platform": "Linux-7.2.4-arch1-2-x86_64-with-glibc2.44",
+  "python": "3.12.13",
+  "run_id": "reverend-insanity-1790183260-a248f7a8",
+  "seed": 20260923,
+  "written_at": 1790183261.0117035
+}
