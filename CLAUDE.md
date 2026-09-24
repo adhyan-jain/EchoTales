@@ -21,7 +21,7 @@ alone — read the source doc for the thing you're touching:
   current-state-of-the-world doc — read those before starting render or
   persona work. The permanent, append-only numbered session log (every
   real bug found, every fix shipped, in chronological sections, currently
-  past 4.53) now lives in [`EVOLUTION.md`](EVOLUTION.md), not here — a
+  past 4.82) now lives in [`EVOLUTION.md`](EVOLUTION.md), not here — a
   resolved/superseded HANDOFF item moves there instead of being deleted.
 - [`EVOLUTION.md`](EVOLUTION.md) — architecture decisions and reversals over
   time, with the measured reason each one happened.
@@ -51,7 +51,9 @@ project makes structurally, not just in prose.
 
 Pipeline stages run roughly in this order (see `cli.py` subcommands:
 `ingest`, `resolve`, `appearance`, `persona`, `voice`, `render`, `eval`,
-`query`, `graph`, `export`, `webview`): raw EPUB -> chapters/blocks ->
+`query`, `graph`, `export`, `webview`, plus `ablate`, `observations` and
+`annotate` added 2026-09-23 for the evaluation/observer-axis work — see
+`EVOLUTION.md` 4.78/4.80/4.81): raw EPUB -> chapters/blocks ->
 spans -> mentions (gazetteer + NER) -> identity resolution -> personas
 (bodies/appearance/canon) -> world context -> panel direction + image
 generation -> voice casting + synthesis -> per-chapter video composite.
@@ -136,16 +138,16 @@ real data without touching the canonical `data/<novel>.db`.
 
 ## Current known issues
 
-See HANDOFF.md's "Pick up here" section for the actual current state —
-it changes every session (the numbered session log itself moved to
-EVOLUTION.md, latest section 4.53). As of EVOLUTION 4.52, the live area of work is
-the render/direction pipeline (`packages/pipeline/src/echotales/pipeline/render/`):
-getting the LLM art director to draw only what a beat actually supports —
-the correct cast, not an invented or out-of-scene one; the correct gender
-default for someone unstated; a bounded panel count; and, per 4.51, a
-beat's own narrated physical state (torn robes, blood, disheveled hair)
-actually appearing on screen instead of the canon default — the
-prompt-level bug there is fixed, but the fix doesn't reliably survive
-CLIP's 77-token budget and the checkpoint doesn't reliably render it even
-when it does. `.claude/agents/image-gen-debugger.md` is scoped to exactly
-this area if you're picking up that thread.
+See HANDOFF.md's "Pick up here" section for the actual current state — it
+changes every session (the numbered session log itself moved to
+EVOLUTION.md, latest section 4.82). As of that session (2026-09-23/24), the
+top blocker is Track 1 item 3: the NER-windowing fix (EVOLUTION 4.76 — half
+of every chapter was silently truncated before reaching the model) is
+landed and unit-tested but its effect on real recall/resolution/attribution
+is unmeasured, because `ollama` was unreachable from that session's
+sandboxed shell. Everything in 4.77-4.81 (resolution provenance, the
+ablation harness, the observer axis, bootstrap CIs) is measured on real
+data and does not depend on that re-run. The render/direction pipeline work
+described in 4.51/4.52 is still open but is no longer the top priority;
+`.claude/agents/image-gen-debugger.md` is still scoped to it if you're
+picking up that thread specifically.

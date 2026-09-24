@@ -437,6 +437,18 @@ deterministic passes are not an optimisation, they are what makes the system
 run at all. An API tier changes the cost but not the shape — 65k calls is
 expensive at any price.
 
+**Amendment (2026-09-23): the mention sweep is per chapter *window*, and the
+table above understates it by 3×.** Rule 1 used to be satisfied literally —
+one call per chapter — because the detector sent only the chapter's first
+6,000 characters and stopped. That made roughly half of every novel invisible
+to the mention layer (RI 51.9% of text reaching the model; 199 of 199 chapters
+over the cut), so `mentions/ner.py` now sends overlapping 6,000-character
+windows covering the whole chapter. At a median 11,667-character chapter that
+is 3 calls, not 1: the 600-chapter corpus costs ~1,800 calls and ~57 min local
+rather than ~600 calls and 19 min. The rule's intent is intact — the
+granularity is still O(chapter) and the forbidden per-span shape is 36×
+further away — but the number in the table is the old one. See EVOLUTION 4.76.
+
 ---
 
 ## 8. Caching and invalidation
@@ -628,8 +640,9 @@ at one image while the narration moves on.
 
 ```
 packages/core/       models, store, state_of()   <- imports nothing from pipeline
-packages/pipeline/   ingest, resolve, eval
-apps/api/            orchestration, correction UI
+packages/pipeline/   ingest, resolve, eval, and webview_server.py (the orchestration/
+                     correction HTTP API -- job queue, upload, render preview/generate,
+                     output library; no separate `apps/api` package exists)
 tools/               annotation CLI, replay debugger
 ```
 

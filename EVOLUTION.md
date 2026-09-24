@@ -5660,6 +5660,218 @@ User reported the pipeline "uses too much CPU" and asked to move computation to 
 
 ---
 
+### 4.65 Post-4.62 smoke test: real (non-stub) pipeline confirmed still working end-to-end on RI ch1-3, full-scale run deliberately deferred *(2026-09-13)*
+
+HANDOFF's "start here now" item wanted a full real render + Section 1.3
+relevance-harness numbers on all of RI, to check the 4.62
+`TRANSFERABLE_TITLE` fix (and everything since) for regressions. Given the
+user's own explicit gating ("do it for 3 chapters, that should be enough
+to understand what level we are on, we havent tested the pipeline after
+the multiple changes so need a small run first"), this session ran a
+bounded smoke test instead of the full 199-chapter real render, which
+would be GPU-hours of local-diffusion work — that full run is still
+open, not done here.
+
+**What was actually run**, against a fresh scratch DB
+(`data/reruns/smoke-4.64-ch1-3.db`, never the canonical
+`data/reverend-insanity.db`): `echotales run --novel reverend-insanity
+--chapters 1-3` with `ECHOTALES_LLM_MODE=local` (real ollama
+`qwen2.5:7b`, not stub). Note the CLI has no standalone way to run
+mentions/anaphora ahead of `resolve` — `resolve_novel()` only reads
+mentions already in the store (`store.get_mentions`), it does not detect
+them; `run` is the only subcommand that chains ingest through personas.
+Discovered this by tracing a false-negative first: `ingest` then `resolve`
+as two separate commands silently produced 0 groups / 0 entities, not
+because anything is broken, but because `cmd_resolve` never calls
+`detect_mentions` — only `cmd_run` does. Worth remembering next time
+someone reaches for `ingest` + `resolve` as a pair.
+
+**Result — pipeline is healthy, `TRANSFERABLE_TITLE` fix intact:**
+```
+0 ingest       0.1s   3 chapters, 208 blocks
+2 segment      0.1s   3 segments over 3 chapters
+3 mentions     0.2s   105 mentions -- RIGID_NAME=96, TRANSFERABLE_TITLE=8, RELATIONAL_DEICTIC=1
+4 speakers    81.1s   50/61 speech spans attributed (82.0%)
+5 anaphora     0.1s   11 local groups over 3 chapters
+6 resolve      0.8s   20 groups -> 7 entities, kind coverage 7/7 (0 unknown)
+7 personas     8.9s   6 personas, 6 bindings, 1 body-split (Fang Yuan)
+7b appearance 30.8s   0 appearance attributes from 2 model calls
+TOTAL        122.1s
+```
+`TRANSFERABLE_TITLE=8` in ch1-3 alone is consistent with 4.62's own
+measured "0 -> 9 mentions across ch1-15" — no regression visible at this
+scale. No exceptions, no failed stage.
+
+**`eval --report` against this 3-chapter DB is not a meaningful recall@k
+result and should not be read as one** — the gold set spans all 198
+chapters, so a DB with only 3 chapters resolved reports almost everything
+as `(unresolved)` by construction (recall 0.1%/0.6% on the confirmed-only
+split). That is a scale artifact, not a regression signal; the eval
+harness needs a full-volume run to say anything real. The one genuine
+data point worth keeping: `ch1 'clan head': gold='Gu Yue clan head'
+system='(unresolved)'` still correctly DEFERs rather than mis-linking —
+matches 4.62's verified finding that the clan head is genuinely never
+named in ch1 (non-negotiable #9 working as designed).
+
+**Still open, in order (unchanged from HANDOFF's prior "start here now",
+just now gated on a passing smoke test instead of an unknown pipeline
+state):**
+1. The full 199-chapter real resolve run on RI (scratch DB), then
+   `echotales eval --report` for a real full-volume recall@k number
+   against `data/gold/reverend-insanity.jsonl`, compared against the
+   4.53/4.56-era baseline for regressions.
+2. The full real image render (local diffusion, `--image-engine` not
+   stub) + `echotales relevance --novel reverend-insanity`, which is a
+   separate, GPU-heavy stage from resolve and was not attempted here at
+   any scale. Note `render.direction_first` in `config.json` — ollama and
+   local diffusion must not share the GPU at once, so this cannot run
+   concurrently with another real resolve pass.
+3. Ollama was started manually this session (`ollama serve`, backgrounded)
+   because it was not already running — whoever picks this up next should
+   check `curl localhost:11434/api/tags` before assuming a real (non-stub)
+   run will work.
+
+---
+
+### 4.66 RI ch164's zero-mentions gap (HANDOFF's open question) root-caused as far as possible without a full re-run: not a current-code defect, canonical DB is just stale *(2026-09-13)*
+
+HANDOFF flagged `reverend-insanity` ch164 as having zero resolved
+character mentions at all, "worth checking as a possible extraction gap,
+not yet root-caused," found while extending the gold QA set to full-volume
+coverage. Investigated against `data/webview-working/reverend-insanity.db`
+(read-only queries only, canonical file never modified).
+
+**Confirmed real, not a query artifact**: `select count(*) from mention
+where novel_id='reverend-insanity' and chapter=164` returns 0 (tried both
+the float and string chapter forms). Neighboring chapters 158-163/165-170
+have 10-78 mentions each. Ch164 ("Intense Battle") is a normal chapter —
+108 real blocks, 24KB of text, no bracketed/system-window content, and
+`span` (116 rows) and `narrative_segment` (1 row) both exist for it, so
+the speaker-attribution stage read and processed it fine; only `mention`
+is empty.
+
+**Ruled out as the cause, with evidence, not by assumption:**
+- Not a span-classification failure — `spans.classify.classify_chapter()`
+  run standalone against ch164's actual blocks today produces 116 spans,
+  none `NON_DIEGETIC`/`SYSTEM_WINDOW` (which would have been skipped by
+  `mentions/runner.py`'s span loop).
+- Not a current mention-detection defect — `mentions/runner.py::
+  detect_mentions_in_chapter()` run standalone against ch164's real text
+  with the *actual* cached NER extraction for this exact chapter (see
+  below) produces 39 valid mentions on today's code: `Gu Yue Bo` ×15 via
+  `GAZETTEER_EXACT`, `Gu Masters`/`Therapy Light Gu`/`Moon-invite Gu` via
+  `SCORED`, and — notably — `the clan leader`/`Lord clan leader` both
+  correctly classified `TRANSFERABLE_TITLE`, which is exactly the family
+  of case 4.62 (`3577143`) fixed. With a default heuristic detector
+  instead of the cached vocabulary it's 87 mentions. Either way, nonzero.
+- The chapter's on-disk NER cache entry
+  (`data/lexicons/reverend-insanity-ner-cache.json`, key
+  `qwen2.5:7b:7ddda1a8c1fe2bb4`, content-hash keyed) already holds a
+  sensible six-surface result (`Gu Yue Bo: character`, `Gu Masters:
+  organization`, `the clan leader: character`, etc.) — the LLM extraction
+  step itself did not fail for this chapter.
+
+**Working conclusion, not fully closed**: since current code reliably
+produces mentions from this exact chapter's real content and its real
+cached NER output, the most likely explanation is that
+`data/webview-working/reverend-insanity.db` predates one of this cycle's
+mention/alias-type fixes (most plausibly 4.62/`3577143`, given the
+overlap with the `the clan leader` bare-title-variant case) and simply
+has never been re-resolved since. **Not fully verified** — that would
+require replaying the real pipeline from ch1 through ch164 to reproduce
+the original zero-mention run byte-for-byte and watch it go wrong live,
+which is hours of real ollama work and was out of scope here (this
+session's real-run budget was spent on the 4.65 3-chapter smoke test per
+the user's own gating). **Action for whoever picks this up next**: this
+almost certainly resolves itself as a side effect of item 1 in the "start
+here now" list above (the full real re-resolve of RI) — re-check ch164's
+mention count specifically after that run before spending more time on
+it as a standalone investigation.
+
+---
+
+### 4.67 Fixed HANDOFF's other open incidental bug: live-edit `ScriptView` crash ("Cannot read properties of undefined (reading 'spans')") on a chapter-index out of range after a manifest refresh *(2026-09-13)*
+
+Root cause, found by reading, not guessing: `App.js` derives `chapter =
+novel.chapters[chapterIdx]`. `handleSelectNovel` resets `chapterIdx` to 0
+when switching novels, but a live-edit manifest refresh
+(`refetchNovel`/`api.manifest()`) for the *currently selected* novel can
+report a chapter list that shrank (a re-ingest/resolve rerun rebuilding
+the chapter table) without going through that reset path. An out-of-range
+index into a JS array returns `undefined`, not `null`, and
+`ScriptView.js` had no guard at all before doing `chapter.spans.map(...)`
+— hence the exact reported error.
+
+**Fix, two layers (`webview/src/App.js`, `webview/src/components/
+ScriptView.js`):**
+1. `App.js`: a `useEffect` clamps `chapterIdx` back into range whenever
+   `novel.chapters.length` shrinks past it, so the common case self-heals
+   instead of ever reaching `ScriptView` with an invalid index.
+2. `ScriptView.js`: added a defensive `if (!chapter)` guard rendering the
+   existing `EmptyState` primitive ("No chapter selected") instead of
+   crashing — belt-and-braces for any other path that can hand it an
+   undefined chapter, consistent with EVOLUTION 4.63's "render honestly,
+   no crash on missing data" convention already used elsewhere in this
+   redesign.
+
+Verified: `Section7Smoke.test.js` still 8/8 passing after the change (ran
+`CI=true npx react-scripts test --watchAll=false` in `webview/`). Not
+independently reproduced live in a browser — no working Playwright MCP
+connection this session (cached recent-failure retry) — so this is
+"should work by inspection + existing suite green," not "watched the
+crash disappear on screen." Flagging that distinction per this repo's
+"verified, not asserted" convention rather than claiming more than was
+actually checked.
+
+---
+
+### 4.68 App.js's shell brought onto the 4.63 design system — the last unstyled screen in the webview redesign, applied without visual verification by explicit user agreement *(2026-09-13)*
+
+HANDOFF's webview-redesign "next steps" named `App.js`'s shell (the frame
+every other screen sits inside — header, novel picker, view tabs, live-edit
+toggle, corrections button) as the next screen to redesign after
+Login/NewProject/CharacterDashboard. Playwright MCP is not connected this
+session (cached recent-failure retry), so this could not be checked in a
+real browser; user was asked explicitly and chose to proceed anyway,
+accepting an unverified-visually result over waiting.
+
+**What changed, `webview/src/App.js` only — structure, state, and event
+wiring untouched, purely a primitive swap-in:**
+- `<h1>EchoTales viewer</h1>` now carries `font-display text-xl text-text`
+  (Fraunces), matching `Login.js`'s heading treatment instead of the
+  browser-default bold sans it had.
+- The three view-tab `<button>`s (Script / Characters / + New project) and
+  the Corrections toggle button now render through the `Button` primitive
+  (`components/ui/Button.js`) — sentence case, `secondary`/`primary`
+  variant switched on active state, no more raw unstyled `<button>`
+  elements in the header.
+- The "N chapters loaded" indicator now renders through the `Label`
+  primitive (bracketed mono tag) instead of a plain `<span className="sub">`.
+- The novel `<select>` got the `border-border`/`bg`/`text` token classes
+  directly (no dedicated Select primitive exists yet in `components/ui/`,
+  so this is inline Tailwind against the same tokens, not a new
+  component).
+- Left alone deliberately: the `.stats-strip`/`.edit-toggle`/`#root` grid
+  CSS in `index.css` — those already inherit the correct brass/gold
+  palette via the legacy `--bg`/--fg`/--border` aliases (EVOLUTION 4.63's
+  palette revision applied there too, this isn't new drift), and
+  restructuring them wasn't asked for.
+
+**Verified:** `Section7Smoke.test.js` 8/8 passing; `react-scripts build`
+compiles cleanly (73.42 kB gzipped, +91 B). **Not verified:** how it
+actually looks — no screenshot, no live browser check. Whoever next has a
+working Playwright MCP connection should load the webview dev server and
+visually confirm the header before trusting this as "done" the way
+Login/NewProject were confirmed in 4.63.
+
+**Still open, unchanged:** the generation-review and output/library
+screens (never built at all — HANDOFF's backend-gap list says the
+generation-preview and output-library endpoints don't exist yet either,
+so those need backend routes before any frontend work, not just a
+presentation pass).
+
+---
+
 ### Section 10 (superseded "suggested next steps" list, as of the 2026-08-31 cleanup)
 
 This was HANDOFF's own "suggested next steps, in order" section before
@@ -5843,4 +6055,1478 @@ none fixed yet, with a suggested order at the end of that section.
    - Dynamic pacing rules adjust beat durations automatically (1.2s–2.0s for combat/action, 2.5s–3.5s for dramatic monologues/reveals) with automated camera motion assignments (`SLOW_ZOOM_IN`, `QUICK_PAN_RIGHT`, `DUTCH_ANGLE_SHAKE`).
    - Tested and verified in `test_reels_render.py` (3/3 passed).
 
+### 4.69 HANDOFF's top "start here now" item resolved without a new run — the full real render already existed uncommitted; the honest result is the retriever recall@k gate for `TRANSFERABLE_TITLE` is structurally unmeasurable on RI, not merely untested *(2026-09-21)*
 
+**Context:** HANDOFF's highest-priority open item was "run a real, non-stub,
+full 199-chapter render on RI, then re-run `echotales eval`'s recall@k gate
+against it" — gated behind the 4.65 3-chapter smoke test, which had passed.
+Before spending ~2 hours re-running `ollama`/qwen2.5:7b over all 199
+chapters, checked whether this had already happened: it had. The
+`generate_gold.py`-driven "Build automated Golden QA datasets" commit
+(9bf227a, 2026-09-12) produced `data/reruns/ollama-eval-reverend-insanity.db`
+as a side effect, and it postdates the 4.62 `TRANSFERABLE_TITLE` fix
+(3577143, 2026-09-08). Verified directly rather than assumed: 199/199
+chapters present, 312 real `llm_call` rows all against `qwen2.5:7b` (no stub
+rows), `TRANSFERABLE_TITLE=30` mentions exist (the fix is live in this
+data). This file was sitting untracked (`git status`) with no HANDOFF/
+EVOLUTION note pointing at it — a second finding in its own right: the gold
+QA work already did what the resolve-remediation thread was waiting on, and
+nothing recorded that.
+
+**Ran `echotales --db data/reruns/ollama-eval-reverend-insanity.db eval
+--novel reverend-insanity --report` for real, no code changed:**
+
+- Confirmed-only B-cubed (RI ch1-60, the only human-reviewed slice, 1,816
+  scored mentions): precision=100.0%, recall=94.6%, f1=97.2%, 88 unresolved.
+  Consistent with the last recorded pre-remediation number (Section "4.21
+  and earlier" era: precision=100%, recall=95%, f1=97.4% over the same
+  1,816-mention slice) — **no regression from the 4.62 title-linking fix at
+  this scale**, within noise.
+- Draft-tier B-cubed (all 198 chapters, 6,238 scored mentions, 0-44%
+  confirmed depending on chapter): precision=100.0%, recall=96.2%,
+  f1=98.1%.
+- `TRANSFERABLE_TITLE` recall@10: **still printed as "GATE: untested — no
+  TRANSFERABLE_TITLE cases in this set,"** both for the confirmed-only
+  1,816-mention gold recall@k run and, checked separately, for the *entire*
+  6,238-mention draft gold set — not a chapter-coverage gap, a total
+  absence.
+
+**Root-caused why, rather than leaving it as "still untested":** two
+independent checks on the same command line, both against the real DB
+whose `mention` table already contains the fixed `TRANSFERABLE_TITLE`
+rows:
+```
+select alias_type, count(*), sum(target_id is not null and target_id!='')
+from mention group by alias_type
+-- EPITHET 1/1, RELATIONAL_DEICTIC 125/104, RIGID_NAME 10146/10146,
+-- TRANSFERABLE_TITLE 30/0
+```
+Every one of the 30 real `TRANSFERABLE_TITLE` mentions in the whole novel
+resolves to `target_id=None` — correctly, per non-negotiable #9 (precision
+over recall) and per HANDOFF's own ch1 spot-check (the Gu Yue clan head is
+genuinely never named in ch1). But `generate_gold.py` line 61 selects gold
+candidates with `WHERE ... target_id IS NOT NULL AND target_id!=''`, and
+`build_gold_retrieval_cases` (`eval/retriever_eval.py`) only turns a gold
+mention into a `RetrievalCase` when its identity maps to a resolved
+`target_id` (`_identity_to_target`). The result: **it is currently
+structurally impossible for a `TRANSFERABLE_TITLE` mention to ever appear
+in `data/gold/reverend-insanity.jsonl`, at any confirmation level, on this
+novel's real data** — the gate isn't failing to reach enough annotation,
+it is measuring the wrong thing for a mention type whose entire correct
+behaviour on this book is "stay unresolved." (`RELATIONAL_DEICTIC` doesn't
+have this problem — 104/125 real mentions do resolve, which is why 4.60
+could report a real 0%→59% number for it.) Confirmed independently: of the
+6,238 gold mentions across the full draft set, 100% are typed
+`RIGID_NAME` — zero `TRANSFERABLE_TITLE`/`EPITHET`/`RELATIONAL_DEICTIC`
+records exist anywhere in gold, for the same reason.
+
+**What this means, stated plainly for whoever picks this up:** the 4.62
+fix cannot be validated by *this* recall@k gate on *this* novel, ever,
+without changing what's being measured — not by annotating more chapters,
+and not by re-running the render again. Two honest paths forward, neither
+attempted here (deliberately — this was a measurement/verification pass,
+not a fix):
+1. Change the eval question for `TRANSFERABLE_TITLE` from "did retrieval
+   rank the correct final `target_id` in the top-k" (impossible when the
+   correct answer is "no target_id") to something like "when the title
+   *is* eventually revealed elsewhere in the book, does retrieval surface
+   the right candidate" — which needs a novel/arc where a title-holder is
+   actually named, not RI vol. 1.
+2. Or score DEFER-to-`None` itself as the measured behaviour (precision of
+   correctly declining to link) rather than trying to force it through a
+   recall@k harness built for resolved mentions.
+Neither is a bounded patch; both are eval-design decisions for whoever
+owns `eval/retriever_eval.py` next.
+
+**Not done, explicitly out of scope for this pass:** no code changed, no
+resolver or gold-generation logic touched, no new full render run (the
+existing one was reused as-is). `ollama serve` was started locally to
+confirm the config was live, but the eval commands run here only read the
+existing DB — no new LLM calls were made.
+
+### 4.70 Visual Rendering Track kicked off — full render-pipeline audit done, phased plan approved, `docs/VISUAL_RENDERING.md` seeded *(2026-09-21)*
+
+**Context:** v54 (`data/RI/panels/ch1/VERSIONS.md`) is the best visual output
+that exists and is still, by the user's own standard, not a convincing MVP.
+Rather than assume the fix (bigger model vs. weak architecture), a three-part
+parallel audit was run against the real render/persona code before any change
+was made: engine inventory and cache/QA architecture
+(`render/panels.py` and collaborators), persona/reference identity
+(`persona/*`, `core/models.py`/`state.py`), and render history/hardware/test
+coverage (`VERSIONS.md`, EVOLUTION's own render sections, existing tests).
+
+**Findings that reframe the problem, not yet acted on:**
+- The image cache is pure file-path existence (panels.py:1836-1838,
+  2430-2437) — swapping engine/checkpoint/seed/steps and re-running into the
+  same output dir silently serves a stale image. This is a bigger practical
+  risk than any single model choice and is fixed first, in Phase 1.
+- IP-Adapter is not removed from the SDXL engine classes (`IllustriousEngine`/
+  `NoobAIEngine` still have working IP-Adapter code) — only the
+  `render_panels` call site was changed to pass empty references
+  (panels.py:2597-2607), and dead code above it (`match_scene_references`,
+  2478-2482) computes references that are silently discarded while the
+  manifest's `conditioned_on` field could still claim conditioning happened.
+- Multi-persona-per-self (reincarnation/transmigration/possession) is
+  **already fully supported at the schema level** (`Self`/`Persona`/
+  `SelfPersonaBinding`, `StateOfResult.persona_ids: list[str]`) — this is not
+  a gap to build, contrary to how the visual-quality problem could be
+  misdiagnosed as a data-model gap.
+- `RefImageCandidate`/`RefImageSelectionEvent` (core/models.py:539-584) are
+  keyed by `self_id`; generated reference sheets are already keyed by the
+  finer-grained `persona_id`. Real mismatch, not yet reconciled.
+- The img2img body-transition path (`reference_gen.py`, `_img2img_worker.py`,
+  `panels.py::IllustriousEngine._ensure_img2img_pipe`) is fully implemented
+  end-to-end, but its own code comments defer the "does this complete on real
+  GPU hardware" verdict to HANDOFF rather than asserting success — genuinely
+  unresolved, matching (not contradicting) HANDOFF's existing framing.
+- No render test exercises real diffusers weights; all real-engine
+  verification to date has been manual CLI runs recorded in VERSIONS.md, per
+  the codebase's own repeated, documented lesson that prompt-wording changes
+  alone have failed multiple times on multi-character composition
+  (§4.45/§4.46) and only checkpoint/architecture changes measured with real
+  images have moved that number.
+
+**What was decided, not yet built:** a five-phase plan (Phase 0 docs → Phase 1
+typed contract + cache fix, local-only → Phase 2 benchmark harness, stub-safe
+→ Phase 3 the only paid phase, a $5-10 RunPod experiment comparing current
+engines against FLUX.2 Klein as controls-vs-candidate, not a replacement
+assumed in advance → Phase 4 evidence-gated decisions, each independently
+skippable → Phase 5 docs/human-review/IP-flagging), approved by the user with
+three scoping decisions locked in: fix `NoobAIEngine.quality_prefix`'s
+"masterpiece" tag in Phase 1 (contradicts the user's own "score tags, not
+masterpiece" preference, and the code's own comment already flags it as
+worth re-measuring); drop per-persona LoRA from the conditioning benchmark
+entirely (won't fit the budget); treat FLUX.2 Klein 9B as disposable,
+dropped first under any budget pressure. Full plan:
+`/home/adhyan/.claude/plans/happy-weaving-crescent.md`. Status doc:
+`docs/VISUAL_RENDERING.md`.
+
+**Not done this entry:** no rendering code changed yet — this is the audit
+and planning record; Phase 1 implementation is tracked separately as it
+lands.
+
+### 4.71 `docs/STATUS.md` created — whole-system reconciliation against real code, not docs; two stale HANDOFF claims found and corrected *(2026-09-22)*
+
+**Context:** a broader planning pass asked for the true current state across
+every subsystem (resolver, render, audio, frontend, backend, eval/research),
+reconciled against actual code rather than trusted from HANDOFF/EVOLUTION.
+Two parallel audits covered what §4.70 hadn't yet: webview/backend/job
+system, and the audio/TTS pipeline.
+
+**Stale claims found and corrected in `docs/STATUS.md`:**
+- **HANDOFF's "Recurring Unnamed Characters — done"** is misleading: it
+  cites `test_unnamed_recurring_character_persistence.py`, which verifies
+  only that `resolve/runner.py` assigns a stable `target_id` to a recurring
+  epithet mention across chapters. It says nothing about voice.
+  `speakers/runner.py::_assign_anonymous_slots` mints ids as
+  `f"{novel_id}:anon:{chapter_number:g}:{scene_key}:{slot}"` — chapter-scoped
+  by construction — so a recurring unnamed character (a named character's
+  retinue, a minor recurring role) still gets a **freshly re-cast voice
+  every chapter**. Open defect #8 is real and unfixed in the audio path;
+  the fix that landed was in a different layer (entity resolution) than the
+  one the defect actually describes (voice-slot identity).
+- **Backend API gaps from §4.63** re-confirmed genuinely still open, nothing
+  added since: no file upload (`_read_json()` is the only body parser, the
+  upload `<input>` is rendered `disabled`), no ingestion-trigger/progress
+  route (`POST /api/projects` only inserts a project row), no
+  reference-candidate-search HTTP route, no img2img/preview/output-library
+  routes. Confirmed via a full read of `webview_server.py`'s `do_GET`/
+  `do_POST`/`do_DELETE` (12 routes total, all listed in `docs/STATUS.md`).
+  **No persistent job/queue/worker system exists anywhere in the codebase**
+  (zero grep hits) — the CLI subcommands remain the only way any pipeline
+  stage actually runs; `webview-server` is read/correction-only.
+
+**New findings, not previously documented anywhere:**
+- The live-edit `ScriptView`/`App.js` crash fix (§4.67) is **confirmed
+  present in code today** (`App.js:149-160`'s chapter-index clamp,
+  `ScriptView.js:19-30`'s empty-state guard) — not reverted, not stale.
+- Temporal voice/persona state **does not exist**: `persona/build.py::
+  load_trait_profiles` calls `persona_at(store, entity.id)` and produces one
+  body-independent `TraitProfile` per Self for the whole novel: a
+  transmigrated character (LOTM's Zhou Mingrui -> Klein Moretti) sounds
+  identical in both bodies. This is the audio-side twin of the render
+  track's central state-aware-vs-flat downstream ablation, and neither the
+  audio nor the ablation exists yet.
+- Delivery markers ARE genuinely wired into synthesis parameters, not just
+  detected upstream and left unused: `voice/delivery.py::settings_for`
+  feeds `SynthesisRequest.exaggeration`/`cfg_weight` and even selects which
+  emotion-tagged reference clip conditions the Chatterbox clone
+  (`voice/runner.py:419-426`) — a real, working mechanism worth keeping as
+  claimed.
+- Real Chatterbox (non-stub) TTS synthesis has genuinely happened twice
+  (RI ch1, 545.1s; LOTM ch1) with real, non-silent, verified-amplitude WAV
+  output — but `voice/runner.py::render_novel`, the actual end-to-end
+  orchestrator, has **zero direct test coverage anywhere in the suite**.
+  Confidence in the real audio path rests on those two manual artifacts,
+  not on CI.
+- `render/reels.py` reconfirmed exactly as HANDOFF already stated: pure
+  planning logic, no ffmpeg call, not imported by any real generation path.
+
+**Ablations, Baseline B, paper artifacts, IP-disclosure draft: confirmed
+absent, not merely undocumented** — no ablation harness/scripts, no LLMLink-
+style dual-LLM baseline implementation, no figure/table generation scripts,
+and no actual invention-disclosure document exist anywhere in the repo
+(only a planned flag-list in `docs/VISUAL_RENDERING.md`'s Phase 5c section).
+
+**Not done this entry:** no code changed — this is a documentation and
+reconciliation pass. `docs/STATUS.md` is now the authoritative 30-second-scan
+status doc; `HANDOFF.md`'s "Recurring Unnamed Characters" line should be
+corrected or annotated the next time that file is touched, rather than left
+to mislead a future session the way it did this one.
+
+### 4.72 Core Pipeline Hardening, session 1: PipelineRun/StageRun provenance, deterministic self-ids, canonical-DB rewipe guard, per-chunk transaction safety, RenderArtifact instantiation, canonical `state_of()` boundary (read half only), one anonymous-voice cross-chapter fix — a second, distinct instance of the same defect class found but not fixed *(2026-09-22)*
+
+**Context:** `~/.claude/plans/mighty-squishing-feigenbaum.md` is a 24-section
+"pre-RunPod hardening" plan reconciled against real code the same day
+(`docs/STATUS.md`, EVOLUTION 4.71). This session executed a scoped subset of
+it (`~/.claude/plans/dynamic-rolling-sun.md`): run/provenance model,
+deterministic identities, canonical-vs-scratch DB safety, per-chunk
+transaction safety, the render half of the `state_of()` boundary, and one
+open HANDOFF defect. Explicitly out of scope: any spend/RunPod/FLUX, the
+frontend, world/appearance wiring (plan §12), scene/beat/panel docs (§13),
+video QA (§16-17), the full failure-injection suite (§18), the real E2E
+fixture (§19), and several resolver-quality items (§9.2/9.3/9.5/9.6). All
+claims below are what a real pytest run and real stub-mode/production-DB
+checks actually showed, not what the plan intended.
+
+**1. New provenance tables, wired into the real CLI but only half-wired.**
+`core/store.py` gained `pipeline_run`/`stage_run`/`stage_artifact` tables
+(additive, `_migrate()`); `core/models.py` gained `PipelineRun`/`StageRun`/
+`StageArtifact`/`StageStatus`; new `core/pipeline_run.py` holds the
+lifecycle helpers, `PartialStageFailure`, and a skip-if-already-succeeded
+`stage()` context manager. `commands.py::cmd_run` now writes real rows —
+verified with a real stub-mode `run` against a scratch DB
+(`/tmp/smoke-hardening2.db`): direct SQL confirmed all 7 stages recorded
+`SUCCEEDED` and `pipeline_run.status` finalized `SUCCEEDED`. **Caveat that
+matters for the next session:** `cmd_run` calls `start_stage`/`finish_stage`
+directly, not the skip-if-succeeded `stage()` context manager, so a real CLI
+`run` does **not** currently auto-skip an already-succeeded stage on rerun —
+that logic exists and is unit-tested at the module level
+(`test_pipeline_run.py`, 13 tests) but isn't reachable from the CLI yet.
+Resumability is therefore built but not live. Do not read this as "done."
+
+**2. Self-ids are now deterministic across reruns.** `resolve/runner.py`'s
+`_create_entity` no longer mints `self1`, `self2`, ... from an in-process
+counter; new `_stable_entity_id` derives
+`f"{novel_id}:self:{sha256(normalized_label|chapter|offset)[:10]}"`. This
+was the standing root cause behind `generate_gold.py`'s `identity_map`s
+drifting wrong on every re-resolve (HANDOFF's webview section, gold-QA
+bullet, still references the old workaround of re-deriving the map by hand
+— that workaround should no longer be needed going forward, though it
+wasn't re-tested against a live gold regeneration this session).
+`test_resolve_self_id_stability.py` (8 tests) covers this plus the
+transaction/rollback and rewipe-guard items below.
+
+**3. Per-chunk transaction safety + `PartialStageFailure`.**
+`resolve_novel`, `build_personas`, `extract_appearance` now wrap their loops
+in try/except with periodic commits, rolling back only the current
+uncommitted chunk on failure and raising `PartialStageFailure` (which
+entity/chapter it died at, how much survived) once at least one chunk has
+already committed. No real failure-injection run was done this session
+(that's plan §18, explicitly deferred) — this is verified by the new unit
+tests, not by observing a real mid-run crash recover cleanly.
+
+**4. Canonical-vs-scratch DB guard, verified against the real production
+file.** New `Store.is_canonical` reads a new registry `data/canonical_dbs.json`
+(the three real `data/webview-working/*.db` paths, sourced from this file's
+own §4.5x "canonical operational DB" language, not guessed).
+`resolve_novel` gained `force_rewipe: bool = False` and a new
+`CanonicalRewipeBlocked` exception. Verified for real: querying
+`data/webview-working/reverend-insanity.db` and calling `resolve_novel`
+against it without the flag raises `CanonicalRewipeBlocked` and leaves the
+real 82-row `self_entity` table untouched. New `--force-rewipe` flag on
+both `resolve` and `run` CLI subcommands.
+
+**5. Canonical `state_of()` boundary — read side only, both call sites
+consolidated on render but not on voice.** `render/panels.py::
+character_looks` now accepts an optional `resolver: StateResolver | None`;
+both real `render_panels` call sites pass the same `_state_resolver`
+instance `plan_builder.py` already used, closing the two-resolver-
+disagreement risk `contract.py`'s own `resolver` field existed to make
+auditable. Verified for real: a stub-mode render smoke test's
+`render_artifact.jsonl` shows `"resolver": "state_of"` on every panel plan.
+`persona/build.py::load_trait_profiles` gained an optional
+`position: float | None` param threaded to `persona_at` (matching
+`world/context.py::_appearance_brief`'s existing pattern) — **but this is
+read-side only.** `build_personas` still computes one trait profile per
+*entity*, not per body-epoch, and writes the identical value to every
+persona's epoch — a transmigrated character's voice/trait profile still
+does not differ by body, exactly as EVOLUTION 4.71 found. The new parameter
+makes that fixable later without a second refactor; it does not fix it now.
+`voice/runner.py::render_novel` was deliberately **not** changed to thread
+position per line — doing so today would be inert (the write-side gap
+above means there's nothing position-dependent to read yet) and risks a
+real perf regression for zero behavior change. **4.71's "temporal voice/
+persona state does not exist" finding stands, unchanged by this session.**
+
+**6. `RenderArtifact` instantiated for the first time.** `contract.py::
+RenderArtifact` was fully typed but never constructed anywhere (confirmed
+via grep before this session — zero hits for `RenderArtifact(`).
+`render/panels.py::render_panels` now builds one per panel (cached,
+deduped, or freshly generated) and writes them to a new sidecar file
+`render_artifact.jsonl` next to the existing `manifest.jsonl` — a sidecar,
+not a `stage_artifact` DB row, because render's per-panel loop doesn't
+currently have a `stage_run_id` to attach rows to (the plan allowed either
+form). Verified for real via the same stub-mode render smoke test: real
+JSON with plan/attempt/cache_key present on all 47 panels of RI ch1.
+
+**7. Self/Persona boundary now has a direct property test.** New
+`test_self_persona_boundary.py` (5 tests) proves a Persona's own attributes
+never leak to its sibling Persona under the same Self, and that Self-level
+and Persona-level attributes occupy disjoint namespaces, across a
+reincarnation boundary. No code changed — `state_of()` itself was
+confirmed correct, not modified. This directly tests non-negotiable #3;
+previously only covered implicitly via the LOTM reincarnation test.
+
+**8. Anonymous-voice cross-chapter identity fix — HANDOFF defect #8,
+narrow slice, closed for exactly one case.** `speakers/runner.py::
+_assign_anonymous_slots` gained an optional `mentions` param and a new
+`_resolved_present_entity_for_block` helper: when exactly one physically-
+present, already-resolved entity (e.g. an `EPITHET` mention like "the Guard
+Captain" entity-resolution already linked to a stable `target_id`) shares
+an anonymous dialogue span's block, the span now keys its voice off that
+real `target_id` instead of a fresh `{chapter}:{scene}:{slot}` id. Falls
+back to the existing per-scene-slot behavior whenever there are zero or
+2+ candidates — the two-unnamed-guards ambiguous case still does not get a
+guessed identity, deliberately. 6 new tests
+(`TestAnonymousSlotsKeyOffAResolvedRecurringEntity`,
+`test_speakers.py`), including a direct cross-chapter-persistence case.
+**This closes the specific sub-case defect #8 as HANDOFF describes it
+(named/epitheted recurring character), but not the general anonymous-voice
+identity problem** — see the new finding below, which is a second,
+separate instance of the same defect class that this fix does not touch.
+
+**New open item found while reading this code, not previously
+documented anywhere, not fixed this session:** the `EPITHET_SLOT`
+attribution tier in the same file (`speakers/runner.py`, line ~450:
+`speaker = f"{novel_id}:epithet:{chapter.number:g}:{role...}"`) is *also*
+chapter-scoped, despite that tier's own docstring explicitly claiming "this
+gets one stable id keyed by the title instead of a round-robin slot." That
+claim is false as written today — it's the same defect class as #8
+(chapter-scoped id where a stable one is claimed/needed), in a different
+attribution tier, untouched by item 8's fix. Flagging this as a distinct
+open item below rather than folding it into #8, since the fix shape is
+different (the slot key needs to drop `chapter.number` for this tier
+specifically, not add a resolved-entity lookup).
+
+**Verification for the whole session:** `python3 -m pytest
+packages/core/tests/ packages/pipeline/tests/ -q` green, no failures,
+across all new and existing tests. Everything marked "verified for real"
+above used a real stub-mode run or a real read-only query against
+`data/webview-working/reverend-insanity.db` (never a write) — nothing here
+was tested against a full non-stub render.
+
+**Explicitly deferred, confirm this doesn't read as done anywhere:**
+world/appearance wiring (§12), scene/beat/panel boundary docs+test (§13),
+video silent-gap counter and video failure-injection (§16),
+visual/audio QA gate promotion (§17), the full 8-scenario failure-injection
+suite (§18), the real E2E fixture with controlled cache invalidation (§19),
+the `TRANSFERABLE_TITLE` gold-schema fix (§9.2),
+`experimental_clan_features.py`'s evaluation gate (§9.3),
+`kind_backfill.py`'s first dedicated test (§9.5), a real-data contradiction
+regression test (§9.6), and reference-conditioning re-enablement (still off).
+
+### 4.73 Product Orchestration track — persistent jobs, project lifecycle, upload, reference/generation/output HTTP APIs *(2026-09-22)*
+
+Implemented per the approved plan at
+`~/.claude/plans/cheerful-orbiting-squirrel.md`. Closes `docs/STATUS.md`'s
+"Jobs/progress", "File upload", and "Output library" rows (all previously
+**Missing — confirmed absent by grep**) and widens "Backend API" past its
+prior review/correction-only scope. Backend contracts only, by explicit
+scope limit — no frontend/webview UI work is part of this entry.
+
+**New persistence layer, built on top of the existing provenance tables,
+not a parallel one.** `core/models.py` gains a `Job` model; `core/store.py`
+gains a `job` table + `add_job`/`update_job`/`get_job`/`list_jobs`,
+following the `pipeline_run`/`stage_run` schema pattern exactly
+(`store.py:379-419`, `1709-1866`). A `Job` is the HTTP-facing "what did I
+ask the server to do and is it done" record; `PipelineRun`/`StageRun` stay
+the pipeline-internal provenance a job's execution writes into — a job
+wraps exactly one call into one of the existing stage functions.
+
+**`jobs.py` (new) makes an existing-but-dormant mechanism actually run
+end-to-end for the first time.** `pipeline_run.py`'s `stage()` context
+manager already had skip-on-matching-`SUCCEEDED`-digest resumability, but
+per this session's exploration (confirmed again before writing this
+entry) it was wired into exactly one place —
+`commands.py::cmd_run`'s ad hoc closure — and had zero integration test
+exercising a real stage through it. `jobs.py::run_stage` now calls the
+same `stage()` context manager from a second call path (the job queue),
+and `commands.py::cmd_run`'s closure was refactored to call
+`jobs.py::run_stage` too (with `skip_if_succeeded=False`, preserving
+`echotales run`'s existing always-execute CLI behavior — the new
+resumability skip is opt-in, scoped to HTTP-triggered jobs only; this was
+a deliberate decision, not an oversight, so a CLI operator's expectations
+don't silently change). `JobQueue` is one in-process daemon worker thread,
+strictly sequential process-wide — matches the existing GPU-sharing
+constraint documented in `config.json`'s `direction_first` toggle (ollama
+and local diffusion must never run at once); a single worker thread avoids
+needing a separate GPU lock. `_dispatch()` maps `Job.kind` to the real
+stage function (`ingest_novel`, `resolve_novel`, `build_personas`,
+`extract_appearance`, `render_panels`, `render_novel`,
+`refimg.search_batch`, `reference_gen.generate_references`).
+`ALLOWED_HTTP_ENGINES` is a local-only allowlist
+(`stub`/`sdxl`/`illustrious`/`noobai`/`refined`/`manga`) that excludes
+`gemini`/`openrouter` from the HTTP path entirely — a locked-in decision
+from this session's plan, not a bug: paid engines stay CLI-only, operated
+by a human who opts in consciously each time via `--image-engine`.
+
+**`_multipart.py` (new)** — a minimal stdlib-only `multipart/form-data`
+parser (`parse_single_file`, single-file-part only) for the two upload
+routes, rather than pulling in a dependency for a two-call-site need.
+
+**`webview_server.py` gains the actual product surface.** New routes:
+`GET`/`DELETE /api/projects` (project lifecycle; delete refuses a
+canonical `novel_id` per `data/canonical_dbs.json`); `POST
+/api/projects/<id>/source` (EPUB upload, validated by actually opening the
+file with `ingest/epub.py::Epub()` before accepting, so a bad upload 400s
+immediately rather than failing an ingest job minutes later); `POST
+/api/projects/<id>/{ingest,resolve,appearance,persona,render,voice,
+refimg_search,reference_gen}` (job triggers); `GET
+/api/projects/<id>/jobs` and `.../jobs/<job_id>` (status, the latter
+including nested `StageRun` rows for a "what actually happened" view);
+reference candidate/search/upload routes wrapping the already-real
+`persona/refimg.py` functions (no new business logic there, just HTTP
+exposure); `GET /api/novels/<id>/render/preview` (wraps
+`render/plan_builder.py::build_render_plan` — a pure, synchronous
+data-aggregator over already-computed state, no generation, no job
+needed); `POST /api/novels/<id>/render/generate` and
+`.../reference/generate` (real generation jobs, engine
+allowlist-checked); `GET /api/novels/<id>/output` and `.../output/file`
+(output library — filesystem walk of `pipeline/paths.py`'s existing
+`data/<CODE>/{panels,video,audio,references}/` layout, no new metadata
+table needed since the directory structure is already the source of
+truth; the file-serving route is path-escape-guarded against `..`, the one
+route in this track that reads an arbitrary-looking path from user input).
+`Registry.__init__` now also scans `data/projects/*.db` at startup, so a
+project created via `POST /api/projects` survives a server restart —
+previously it silently didn't.
+
+**Real bug found and fixed while writing the integration test, not by
+inspection:** `Store.is_canonical` is a `@property`, not a method — two
+new call sites in this file were written as `.is_canonical()`, which would
+have thrown `TypeError` the first time `DELETE /api/projects/<id>` was
+hit on a canonical project id. Caught before shipping by the test actually
+exercising the delete-guard path, not by re-reading the code.
+
+**Verification, stated honestly:** `packages/pipeline/tests/test_jobs.py`
+(new) and `test_webview_server_jobs.py` (new — `webview_server.py` had
+zero test coverage before this track) both pass; full suite
+(`packages/core/tests/ packages/pipeline/tests/`) green, exit 0, no
+failures, re-run at the time of writing this entry. All test coverage is
+stub-mode/unit/integration-against-a-real-sqlite-db — resumability's skip
+path and sequential dispatch are exercised for real in `test_jobs.py`, not
+just asserted. **Not verified this session:** no manual end-to-end walk
+(`POST` a real EPUB → poll `/ingest` → `/resolve` → `/persona` →
+`/render/preview` → `/render/generate` with `engine=stub` → confirm via
+`GET /output`) was run against a live server process — the plan's own
+verification section calls this out explicitly and it was not done. Do
+not read this entry as claiming that manual walkthrough happened.
+
+**Explicitly out of scope, not started:** any frontend/webview UI
+consuming these routes. `ManuscriptProgress.js` still shows a hardcoded
+placeholder list; the upload `<input>` is still rendered `disabled`. The
+approved plan's scope limit was backend contracts first, and that limit
+was honored.
+
+
+
+---
+
+### 4.74 The headline coreference result is retracted — gold was drafted from the pipeline's own output and then marked human-confirmed *(2026-09-23)*
+
+**Retracted: B³ precision=100.0%, recall=94.6%, f1=97.2% (1,816 entity
+mentions, RI ch1-60), reported in §4.69 and repeated in `docs/STATUS.md`.**
+It is not a weak result or an over-tuned one. It is not a measurement. Do not
+cite it, and do not re-derive it by re-running `eval` against an older gold
+file.
+
+**What the number actually was.** `eval/generate_gold.py::_extract_gold_from_db`
+builds gold by reading the pipeline's own resolution output:
+
+```sql
+SELECT text, target_id, block_index, offset, alias_type
+FROM mention WHERE chapter=? AND target_id IS NOT NULL AND target_id!=''
+```
+
+A human supplied only `identity_map` — a display name per `target_id` the
+system had already decided. So the "annotation" is the system's own partition
+with friendlier labels on it, and scoring the system against it compares a
+partition to itself. Precision of exactly 100.0% is the arithmetic signature of
+that, not evidence of quality; recall fell short of 100% only because
+`identity_map` covered 5 characters and the run resolved mentions it had no
+entry for.
+
+**The guard existed and was prose.** `generate_gold.py:95-102` — in the
+function that wrote these rows — already said: *"a label expressed in the
+system's own ids can only ever agree with it, and a recall number computed from
+model-drafted labels stops being a measurement of anything. Do not flip this to
+Provenance.HUMAN/confirmed=True without an actual human review pass."*
+`eval/gold.py`'s module docstring said the same thing in different words. Both
+were correct, both were comments, and on 2026-08-12 the flag was flipped
+anyway: 6,952 records in `reverend-insanity-c1-c50.jsonl` became
+`provenance: human, confirmed: true` while keeping
+`drafted_by: gold-auto-builder`, and the generator's own per-record warning
+("NOT independently verified. Requires a human confirmation pass") was replaced
+with "[golden_qa] Ground-truth mention for Fang Yuan." Nothing in the codebase
+could detect that, because nothing in the codebase was checking.
+
+**Two failures, and they are not the same failure.** Separating them is what
+this entry is for, because the first pass of this work wrongly treated them
+alike and quarantined a file that did not deserve it:
+
+| | `reverend-insanity-c1-c50.jsonl` | `reverend-insanity-c1-c5.jsonl` |
+|---|---|---|
+| Drafted by | `gold-auto-builder`, from the `mention` table | `claude-opus-5`, reading chapter text |
+| Independent of the system? | **No** | **Yes** — its TOML source says so, and self-documents its anchoring risk |
+| Defect | circular | bulk-approved without adjudication |
+| Curable by a human pass? | **No** | **Yes** |
+| Action | quarantined | kept, `confirmed` reset |
+
+*Circular* and *unconfirmed* are different states. An unconfirmed independent
+draft is one human pass away from being gold. A circular record is not gold at
+any amount of review, because reviewing it means checking whether the system
+agrees with the system. `data/gold/reverend-insanity-c1-c5.jsonl` is the better
+artifact of the two by some distance — 27 identities across 5 chapters
+including 35 `not_an_entity` negatives, versus 5 identities and zero negatives
+— and it was nearly discarded for the other file's sin.
+
+**True state of the corpus after this pass — zero gold records exist:**
+
+| File | Records | Confirmed | Drafted from pipeline output |
+|---|---:|---:|---:|
+| `reverend-insanity.jsonl` | 7,879 | 0 | 4,422 (56%) |
+| `lord-of-the-mysteries.jsonl` | 6,756 | 0 | 6,756 (100%) |
+| `omniscient-readers-viewpoint.jsonl` | 4,836 | 0 | 4,836 (100%) |
+| `reverend-insanity-c1-c5.jsonl` | 343 | 0 | 0 |
+| `reverend-insanity-hardcases.jsonl` | 89 | 0 | 0 |
+| `_unusable/reverend-insanity-c1-c50.jsonl` | 6,952 | quarantined | 6,952 (100%) |
+
+The `confirmed_only` tier was empty all along. Only the flag said otherwise.
+
+**The contract is now code, not prose** (`eval/gold.py`):
+
+- `CIRCULAR_DRAFTERS = {"gold-auto-builder"}` — a record from one of these
+  raises `CircularGoldError` if confirmed, at any review depth.
+- `ReviewDepth{NONE, BULK, PER_RECORD}` replaces a boolean that could not
+  express what went wrong. The 2026-08-12 approver's own note said "reviewed by
+  glancing over the set, not record by record" — accurate, and living in a
+  `note` field no scorer reads. `BULK` is now a first-class value that is
+  recorded and does not make a record gold.
+- `confirmed=True` requires a non-empty `confirmed_by`. The 6,952 records
+  became "human" provenance with no person attached to the claim.
+- `GoldSet.circular` and `coverage()` surface the circular share wherever
+  coverage is printed, because the draft-tier figure (98.1% F1) is *also*
+  self-agreement and was one line above the confirmed one in every `eval`
+  printout.
+
+**Verified, not asserted.** Full suite green
+(`packages/core/tests packages/pipeline/tests`, 914 passed in 26.6s) after the
+change, run at the time of writing. `test_gold_provenance.py` (new, 9 tests)
+drives every branch of the validator, including a reconstruction of the exact
+falsified record shape. `test_all_novels_gold_sets.py` rewritten: it asserted
+`confirmed_only > 0` for `reverend-insanity`, which is precisely the false
+claim, and now asserts the invariant on every shipped file instead. Ruff clean
+on every file touched; the two pre-existing mypy findings in `gold.py` and the
+five pre-existing ruff findings in `baseline_a.py` were confirmed identical at
+HEAD and deliberately left alone.
+
+**Also corrected:** `eval/baseline_a.py`'s module docstring asserted
+"`data/gold/reverend-insanity.jsonl` is 100% human-confirmed as of this
+writing" and cited the retracted resolver numbers as its comparison point. Both
+were false when written. A baseline comparison means nothing until both sides
+are scored against labels neither produced.
+
+**What this does not fix.** There is still no gold set. Everything downstream —
+the resolver's accuracy claim, Baseline A's comparison, the recall@k gate, any
+ablation — is unanchored until a person adjudicates records against the source
+text. The route planned for that is public human-annotated corpora (LitBank,
+PDNC) for the standard metrics, plus ~150 blind hard cases on RI for the
+temporal/identity claims that no existing corpus contains. Neither exists yet.
+Nothing in this entry should be read as progress toward a number; it is the
+removal of a number that was never there.
+
+---
+
+### 4.75 MUC, CEAF-e and CoNLL F1 built; the B³ scorer gets its first tests, four months in *(2026-09-23)*
+
+Follows directly from 4.74. Having removed a number that was never a
+measurement, the next question is whether the machinery that produced it is
+even correct — and `eval/coref_score.py::score_b3` had **zero test coverage**
+since it was written, while every figure this project has ever reported passed
+through it. A scoring bug does not announce itself; it returns a plausible
+number.
+
+**Why there were no tests, and what fixed it.** `score_b3` interleaves two
+separate jobs: translating mention offsets out of block-local coordinates into
+chapter-absolute ones (`_block_starts`, genuinely hard, and the site of a real
+past bug that "silently matches nothing past the chapter's first block"), and
+comparing two partitions (pure arithmetic). Only the first needs a `Store`, so
+testing the second meant building a novel first, and nobody did. The partition
+math is now pure functions over `dict[Key, str]` with no database anywhere near
+them.
+
+**Built** (`coref_score.py`): `muc`, `b_cubed`, `ceafe`, `conll_f1`,
+`MetricScore`, and `score_all`, which reports all four off the same
+offset-translated mention matching `score_b3` uses — so the two can disagree
+only where their *definitions* disagree, never because they looked at different
+mentions. `cmd_eval` now prints them beside `score_b3` on both tiers.
+
+**The definitional difference is deliberate and is the point.** `score_b3`
+stays exactly as it was: it penalises an unresolved mention in the recall
+denominator, because declining to link is a first-class outcome for this
+resolver (non-negotiable #9) and a metric that ignored it would reward refusing
+hard cases. The new functions use the textbook convention instead — an unlinked
+mention is a singleton cluster — because that is what BookNLP, LitBank and
+LINK-KG numbers mean, and a comparison against published work has to use the
+published convention. Both views are printed; blending them silently is what
+would be wrong. `plans.md` §8 asked for MUC/B³/CEAF and until today only B³
+existed, in a non-standard variant, which would not have survived a reviewer
+checking it against the definition.
+
+**CEAF-e's assignment step is hand-written, on purpose.** CEAF needs a
+maximum-weight one-to-one alignment between gold and system entities.
+`scipy.optimize.linear_sum_assignment` is the obvious call, and scipy *is*
+importable in this environment — but it is not a declared dependency of
+`echotales-pipeline`; it arrives transitively through the optional `ml`/`render`
+extras. A metric whose value silently depends on which extras happen to be
+installed is not a metric. So `_max_weight_matching` is a Jonker-Volgenant
+O(n³) implementation in the module, and the test suite cross-checks it against
+scipy on 25 random rectangular matrices (skipped, not failed, where scipy is
+absent).
+
+**Verified, not asserted.** `test_coref_metrics.py` (new, 14 tests): every
+expected value is worked out by hand from the metric's definition in a comment
+above the assertion, never captured from a run. Worked cases include an
+over-merge (gold {1..5},{6,7} → one system cluster: MUC R=1.0 P=5/6; B³
+P=29/49; CEAF-e P=5/6 R=5/12) and an over-split (gold {1,2,3,4} → {1,2},{3,4}:
+MUC R=2/3 P=1.0; B³ P=1.0 R=1/2; CEAF-e P=1/3 R=2/3), chosen because
+over-splitting is this resolver's documented failure mode and a metric that
+cannot distinguish it from its opposite is useless here — there is an explicit
+test that it does. One test pins the property that MUC is blind to singletons,
+so nobody reads it alone on a cast with a long tail of one-scene walk-ons.
+`_max_weight_matching` is tested against a case where greedy selection gives 10
+and the true optimum is 15. Full suite **928 passed in 28.0s**; ruff clean on
+every file touched.
+
+**What this does not do.** It produces no number. There is still no confirmed
+gold (4.74), so `cmd_eval`'s new metric lines have nothing real to score
+against on any shipped file. This is instrumentation built ahead of the data,
+deliberately — the alternative is annotating first and then discovering the
+scorer was wrong.
+
+**First real run, and it immediately earned the work** (read-only
+`eval --novel reverend-insanity` against
+`data/webview-working/reverend-insanity.db`, 6,238 gold mentions):
+
+```
+  -- standard metrics, same mentions, textbook definitions --
+  MUC      P=100.0%  R= 98.8%  F1= 99.4%
+  B3       P=100.0%  R= 98.7%  F1= 99.3%
+  CEAFe    P= 88.3%  R= 32.1%  F1= 47.1%
+  CoNLL    F1= 81.9%  (mean of MUC/B3/CEAFe F1)
+```
+
+Two mention-level metrics say 99%. The entity-level metric says 47%. Both are
+computed from the identical partition, so the disagreement is structural, and
+the cause is directly checkable: over the same gold-annotated positions there
+are **22 gold identities and 8 system clusters**. The resolver's entity
+inventory is nearly three times too coarse, and MUC and B³ cannot see it,
+because they average per mention and most mentions belong to the handful of
+principals the system does get right. CEAF-e aligns entities one-to-one, so the
+14 gold identities with no system counterpart cost it directly.
+
+This is also a second, independent signature of 4.74's contamination: the file
+is 56% `gold-auto-builder` records, which agree with the system by
+construction and dominate any per-mention average. A per-entity metric is
+much harder to fool that way. Neither number is a result — the gold is still
+not gold — but "the three metrics disagree by 52 points on the same data" is
+exactly the diagnostic `plans.md` §8 wanted all three for, and it would have
+stayed invisible under B³ alone.
+
+---
+
+### 4.76 Half of every novel was never sent to the mention layer — `text[:6000]` replaced with overlapping windows, `item` added to the label vocabulary, and the cache key that would have hidden both *(2026-09-23)*
+
+Executes Track 1 items 1–2 of `docs/COMPLETION_PLAN.md`. Item 3 — the real
+ollama re-run that decides whether this diagnosis is right — **has not been
+run**; see "What is not verified" below, and do not read anything here as a
+measured improvement.
+
+**The defect.** `mentions/ner.py`'s `QwenNerDetector.detect_with_context` built
+its prompt with `f"Passage:\n{text[:6000]}\n\n"`. Every chapter in this corpus
+is longer than that. Re-measured this session from
+`data/webview-working/reverend-insanity.db` rather than taken from the plan:
+RI's 199 chapters have a median length of 11,667 characters, **199 of 199 are
+over 6,000**, and **51.9% of the novel's text is all that ever reached the
+model**. This is not low recall. The text was structurally invisible.
+
+**Why it did not look like a 50% loss, which is why it survived this long.**
+`_locate()` searches the *whole* chapter for each surface form the model
+returns, so an entity named anywhere gets every one of its occurrences found —
+48.3% of the mentions in the shipped RI database sit past offset 6,000 and look
+like evidence the tail is covered. The damage is confined to entities named
+**only** past the cut: nothing names them, so nothing looks for them, and they
+do not exist. Verified on the plan's named case, against real chapter text:
+`Bai Ning Bing` occurs at chapter-1 offsets **6697, 6814 and 8757** of 13,033
+characters, and has **zero** chapter-1 mentions in the shipped database. Her
+first mention anywhere is chapter 108, where the system builds a perfectly
+good entity for her.
+
+**The fix.** One `client.complete` call per 6,000-character window with 600
+characters of overlap, covering the whole chapter. It is much smaller than it
+sounds because no offset arithmetic is involved: each window's returns are
+passed to `_locate(entities, FULL_text, confidence)`, not to the window, so a
+name introduced in window 2 picks up its window-1 occurrences for free. The
+per-window results are unioned and deduped on `(start, end, text)`.
+
+`_outranks` decides ties, and exists because the obvious "keep max score"
+leaves the surviving *label* dependent on window order — one model at one
+temperature returns the same `confidence` for most windows, so most collisions
+are ties. On a tie `character` wins, for the same reason `chapter_ner` already
+applies that rule downstream: clan names double as place names, and mistyping
+a person as a location silently drops them from voice and panel casting, while
+the reverse costs one visible row in a cast list.
+
+**Cost, stated against `architecture.md` §7 rather than buried.** That
+section's design rule is *"per chapter — one call covering the whole chapter"*.
+This is now a median of **3 calls per chapter** (11,667 chars over a 5,400-char
+stride), so the 600-chapter corpus goes from ~600 calls / 19 min to ~1,800
+calls / ~57 min at the measured 1.9 s/call. It stays inside the rule's actual
+intent — the granularity is O(chapter), not O(span), and the forbidden
+65,296-call shape is 36× further away — but §7's table now understates this
+stage by 3×, and `architecture.md` says so. `NameCache` absorbs it on every
+rerun; only a first pass pays.
+
+**The second bug in the same file.** `NerEntity.label` offered *"one of:
+character, location, organization"*. `item` was never among them, although
+`resolve/runner.py::_KIND_BY_LABEL` and `resolve/kind_backfill.py` have both
+mapped `"item"` → `TargetKind.ITEM` all along. `chapter_ner._KEEP_LABELS`
+would have dropped it even if the model had volunteered it, so the label was
+unreachable from two directions at once. This is the literal mechanism behind
+an independent annotator's note in `data/gold/reverend-insanity.jsonl` on the
+Spring Autumn Cicada: *"An item, not a character — the pipeline currently types
+it as a character."* Both sites now carry `item`, and `_NER_SYSTEM` defines it
+narrowly (a **named** object, artifact, technique or creature that is
+possessed, used or sought; `character` only if it speaks or acts of its own
+will; a generic unnamed object is not an item and must not be returned at all)
+so this does not reopen non-negotiable #4.
+
+**The third bug, which is the one that would have wasted the whole
+measurement.** `NameCache._key` was `f"{self.model}:{sha256(chapter_text)}"`.
+That was correct while the pass was a pure function of model and text. It
+stopped being correct the instant the passage stopped being `text[:6000]` —
+same text, same model, cache hit, **the truncated vocabulary replayed**. The
+re-run designed to measure this fix would have reported no change on every
+novel that already has a cache file (all three do), and the diagnosis would
+have looked refuted by its own fix. `ner_pass_fingerprint()` now hashes the
+system prompt, the user prompt template, the label vocabulary and the window
+geometry into the key. Derived rather than hand-bumped deliberately: a future
+prompt edit invalidates the cache by itself and nobody has to remember an
+integer. `_NER_PROMPT` was extracted to a module constant so it is hashable.
+
+**`_windows` raises on `overlap >= size` instead of clamping.** Clamping to a
+stride of 1 turns one chapter into ~4,900 model calls. A file being repaired
+for making a cost decision invisibly does not get to make a second one
+invisibly.
+
+**Verified.** Full suite **942 passed in 27.8s** (was 928), ruff clean on
+`ner.py`, `chapter_ner.py`, `test_chapter_ner.py` and the new
+`scripts/ner_window_delta.py`. 14 new tests in `test_chapter_ner.py`: every
+offset of a 20,000-character chapter falls inside some window; an entity
+planted past offset 6,000 of an 18,000-character fixture is found and the
+detector is shown to have issued more than one call for it; a name in the
+overlap region is emitted **once**, not twice, so the union cannot manufacture
+a false prominence signal; `character` wins a tied label disagreement and
+higher confidence wins regardless of label; `item` survives `_KEEP_LABELS`;
+and a changed `NER_WINDOW_CHARS` forces a cache miss on identical text. The
+pre-existing `SIM102` finding in `chapter_ner.py` was confirmed identical at
+HEAD and left alone.
+
+**What is not verified, and it is the part that matters.** No real
+(non-stub) run has been made. The `ollama` daemon is not reachable from this
+session's sandboxed shell — `127.0.0.1:11434` refuses the connection and
+nothing is listening from inside that namespace — so Track 1 item 3 is
+untouched. Everything above is a unit-tested code change and a re-measured
+diagnosis; **none of it is a measured improvement in mention recall, CEAF-e,
+or speaker attribution.** The prediction stays recorded and unadjudicated:
+CEAF-e recall rises well above 32.1%, mentions per chapter roughly doubles,
+identifiability rises from its current level. The harness is ready —
+`scripts/ner_window_delta.py` takes a before/after DB pair and reports mention
+counts, per-chapter density, entity-kind and NER-label distributions, mentions
+past offset 6,000, the Bai Ning Bing chapter-1 check, and identifiability
+recomputed with `attribute_novel`'s exact tallying rule (read off `span`, not
+`mention`, whose `speaker_self_id` column is unpopulated on every shipped
+database and yields a flat, wrong 0%).
+
+**A confound the next session must not step in.** The obvious "before" is
+`data/webview-working/reverend-insanity.db`, and for mention counts it is fine.
+For identifiability it is **not**: that database still contains 478
+`TURN_TAKING` attributions, a tier removed in 3.3 after it was measured wrong
+82.9% of the time, and it therefore reports 48.8% — the old inflated figure,
+not the honest 45.5% baseline. A clean A/B needs the control arm run from
+today's code with the windowing reverted, not a comparison against a database
+built by an older pipeline.
+
+---
+
+### 4.77 `by_method` said 100% SCORED by construction; with the lie removed, the scorer turns out to settle **none** of the 880 links, and the gazetteer compounding curve gets its first real measurement *(2026-09-23)*
+
+Executes Track 3 items 11–12 of `docs/COMPLETION_PLAN.md`. Unlike 4.76, this
+one is **measured on real data** — resolution needs no LLM (it runs off
+already-stored mentions), so a full RI resolve ran in this session.
+
+**The defect.** `resolve/runner.py` hardcoded `ResolutionMethod.SCORED` at
+both `_apply_link` call sites, regardless of how the decision was reached.
+`ConformalGate.decide` already knew better: its pre-filter stage distinguishes
+a declaration match, a confirmed-alias gazetteer hit, a name-containment
+suffix match and a sole-co-present relational resolution, and folded each into
+a human-readable `rationale` string which was then dropped on the floor
+(`ResolutionOutcome` is never persisted anywhere). So `ResolveReport.by_method`
+— the readout behind the project's "% resolved by gazetteer vs declaration vs
+scorer" claim and behind non-negotiable #8 — reported ~100% `SCORED` on every
+run ever made, by construction.
+
+**The fix.** `decide` returns a `GateDecision` dataclass rather than a
+3-tuple, carrying `method` alongside the decision, candidate and rationale;
+`PrefilterResult` gained a `method` field so the rung is named at the one
+place that knows it rather than inferred by a caller. `runner.py` passes
+`gated.method` through to `_apply_link` and into `ResolutionOutcome`, and
+`rationale` now goes into `resolution_event.payload` — a free-form JSON column
+already, so no schema change.
+
+**Two new `ResolutionMethod` members**, `NAME_CONTAINMENT` and
+`RELATIONAL_COPRESENCE`. There was a cheaper option — call those two
+force-link paths `SCORED` since no enum member fitted — and it was rejected:
+they short-circuit the scorer exactly as declaration and gazetteer do, and
+filing them under `SCORED` would have kept a smaller version of the same lie
+in a file being repaired for telling it.
+
+**The measurement, and it is not what anyone was tuning for.** Real resolve of
+RI (`data/reruns/provenance-ri.db`, copied from the shipped canonical DB;
+stub LLM mode, which resolution does not use anyway), 1,002 groups → 82
+entities:
+
+```
+methods: DECLARATION=5, DEFERRED_RERESOLVED=10, GAZETTEER_EXACT=870,
+         NAME_CONTAINMENT=2, RELATIONAL_COPRESENCE=3, SCORED=82
+```
+
+870 + 5 + 2 + 3 = **880, which is exactly `linked`**. The residual `SCORED=82`
+is exactly `created` — entity minting, not linking. **The scorer settles zero
+links on this novel.** Every single one is a hard pre-filter, and 98.9% of
+them are the gazetteer.
+
+That reframes a question this project has spent months on. The scorer's
+"structural weakness" (observed probability range 0.049–0.349 against a 0.80
+threshold, EVOLUTION 4.x and `gate.py`'s own calibration comment) was being
+treated as a live component that scores badly. It is not in the loop at all:
+the pre-filters consume every case before it arrives. Track 1 item 4's
+instruction — *"the scorer's measured weakness may be substantially a
+starvation artifact — do not touch until after the re-run"* — is now better
+supported than when it was written, and for a different reason than the one
+given. It also makes Track 3 item 14 (`disabled_prefilters`) not a nice-to-have
+but the only way any ablation of this system can say anything: zeroing the five
+scored weights would change nothing at all, because nothing reaches them.
+
+**The compounding curve, first measurement in the project's life.**
+`MentionReport.gazetteer_hit_rate_by_window` has been computed on every run
+since the mentions stage was written and printed into a terminal, never
+stored. The resolver half could not exist while every window read 100%
+`SCORED`. Both now persist to `data/eval/compounding/<novel>.json` —
+`eval/compounding.py`, each stage writing only its own half so a `resolve`
+does not clobber a `mentions` run minutes earlier, and a corrupt file is
+treated as empty rather than failing a 35-minute stage. RI, window size 40:
+
+```
+gazetteer share of links by window: w0=81%(n=145) w1=93%(n=166)
+                                    w2=89%(n=201) w3=96%(n=223) w4=91%(n=227)
+```
+
+**It compounds, and then it plateaus.** 81% → 93% across the first two
+windows is a real rise; w2–w4 oscillate in the high 80s/90s with no further
+trend. That is a more honest and more interesting result than a monotone
+climb, and it is the first time non-negotiable #8 has been a number rather
+than an assertion. Every point carries its link count deliberately: a rate
+printed without its denominator invites reading an early window of four links
+at 100% as evidence of something.
+
+**Caveat, load-bearing.** This curve was measured over the *pre-Track-1*
+mentions — the shipped database's, produced by the truncating NER path. It is
+the baseline the post-NER-fix curve gets compared against, not a final number,
+and 4.76's fix should visibly change its shape. If it does not, that is
+informative too.
+
+**Verified.** Full suite **953 passed** (was 942), ruff clean on every file
+touched. `test_resolution_provenance.py` (11 tests) pins that each pre-filter
+reports its own rung, that a path which really did reach the scorer still
+reports `SCORED`, and that a hard blocker still beats a force-link.
+`test_compounding_curve.py` (8 tests) pins that the two halves do not clobber
+each other, that a rerun replaces only its own half, that a corrupt or missing
+file is survivable, and that a rate always arrives with its denominator. The
+pre-existing `RUF012` finding in `resolve/runner.py` was confirmed identical
+at HEAD and left alone.
+
+---
+
+### 4.78 The ablation cache the docs promised for months is built — and re-scoring 10,058 real evidence vectors shows the scorer's maximum output is 0.53 against a 0.80 threshold, so it cannot link anything, ever *(2026-09-23)*
+
+Executes Track 3 items 13–15 of `docs/COMPLETION_PLAN.md`. Measured on real
+data, like 4.77 and unlike 4.76.
+
+**The cache that was cited but never existed.** `plans.md` and `details.md`
+have both said since the design phase that ablations "cost no additional LLM
+passes because they re-score cached evidence vectors." `EvidenceVector` was
+built inside `resolve_group`, handed to the scorer, and dropped when the group
+finished. Nothing was cached, so every ablation condition was a full
+re-resolve of the volume, and the claim was load-bearing in a cost argument
+that had no mechanism under it.
+
+Built: a `scoring_evidence` table and `eval/evidence_cache.py`, reusing the
+`score_evidence` monkeypatch shape `eval/calibrate.py::collect_samples`
+already uses rather than adding a `capture=` parameter to the resolver's hot
+loop. Opt-in (`resolve --capture-evidence [--evidence-run-tag TAG]`) because
+RI alone writes 10,058 rows and a production resolve should not pay for an
+evaluation artifact nobody asked for. The patch is restored in a `finally`,
+not after the yield: a resolve that dies at chapter 140 must not leave a
+traced `score_evidence` installed for the rest of the process, quietly
+appending to a table the caller believes it finished. Capture is closed
+*before* the final contradiction/deferral sweeps, since those re-score
+existing cases and would double-count pairs the re-scorer reads as
+independent.
+
+**`disabled_prefilters`, and why 4.77 made it the whole ballgame.**
+`ScoringModel.ablate` could only zero the five scored weights. 4.77 measured
+the scorer settling **zero** of 880 links on RI, so that ablation would have
+moved nothing whatsoever — the paper's central condition, "no gazetteer
+compounding", was inexpressible. `prefilter()` now takes
+`disabled_prefilters` over a named `PREFILTER_GATES` tuple, threaded through
+`ConformalGate.disabled_prefilters` (on the gate, not per call: a condition
+holds for a whole run, and a per-call parameter would need identical
+threading through `resolve_group` and `retry_deferred`).
+
+A disabled gate **falls through to the next gate** rather than pretending the
+evidence is absent. That is the counterfactual an ablation is asking for
+("do not let an exact alias short-circuit"), not a different one ("pretend the
+alias did not match"), and the distinction shows up immediately in the
+numbers: disabling the gazetteer gate raises `NAME_CONTAINMENT` force-links
+from 2 to 74, because the gazetteer had been short-circuiting before
+containment ever got to fire. A cascade like that is invisible to an ablation
+that zeroes evidence instead of disabling gates.
+
+**Scope correction on item 15, stated rather than quietly narrowed.** The plan
+named five conditions. Only two — *no temporal scoping* and *no gazetteer
+compounding* — are answerable by re-scoring a cache. *No alias typing* is
+decided in the mentions stage, upstream of any evidence vector. *No
+Self/Persona split* and *no truth status* change which entities exist and what
+`state_of` returns, neither of which the resolver consulted. Those three live
+in `REQUIRES_RERESOLVE` and are **printed on every `ablate` run** with the
+reason, so the gap reads as "the cache cannot answer this" rather than "this
+axis did not matter" — which is precisely how an ablation table stops being
+honest. Four further cache-answerable conditions were added
+(`no-declaration`, `no-name-containment`, `no-relational-copresence`,
+`no-prefilters-at-all`).
+
+**The measurement, and it is the sharpest thing in this session.** RI,
+10,058 captured pairs, every condition:
+
+```
+full                       force-link=  922 (9.2%)  blocked=2,051  reached-scorer= 7,085  scorer-would-link=0
+no-gazetteer-compounding   force-link=  122 (1.2%)  blocked=2,051  reached-scorer= 7,885  scorer-would-link=0
+no-declaration             force-link=  891 (8.9%)  blocked=2,051  reached-scorer= 7,116  scorer-would-link=0
+no-temporal-scoping        force-link=  922 (9.2%)  blocked=2,051  reached-scorer= 7,085  scorer-would-link=0
+no-copresence-blocking     force-link=  936 (9.3%)  blocked=    0  reached-scorer= 9,122  scorer-would-link=0
+no-prefilters-at-all       force-link=    0 (0.0%)  blocked=    0  reached-scorer=10,058  scorer-would-link=0
+```
+
+**`scorer-would-link = 0` in every row, including the one where all 10,058
+pairs reach the scorer with nothing filtered.** The probability distribution
+over those pairs explains it exactly:
+
+```
+n=10,058  min=0.0474  p50=0.0761  p90=0.2083  p99=0.3118  max=0.5269
+would link at 0.80: 0     at 0.50: 3     at 0.35: 31     at 0.30: 137
+```
+
+The scorer is not badly calibrated. **Its maximum output over every real
+(mention, candidate) pair in the novel is 0.527, and `FALLBACK_LINK_THRESHOLD`
+is 0.80, so a scored link is arithmetically impossible.** `gate.py`'s
+calibration comment already cited an observed range of 0.049–0.349 and
+correctly identified the 0.5 floor as the blocker; the full-volume range is
+0.047–0.527, wider than measured before and still entirely below the
+threshold. This arrives at 4.77's conclusion from a completely independent
+direction — that one counted what the resolver *did*, this one replays what
+the scorer *could have* done with every filter removed — and they agree.
+
+**Second finding, smaller but free:** `no-temporal-scoping` changes nothing at
+all. `blocked` stays at exactly 2,051, and `no-copresence-blocking` drops it
+to 0, so every block in the volume comes from `co_presence_violation` and the
+`temporal_validity <= 0.0` gate fires on **zero** pairs. Non-negotiable #2's
+temporal machinery is real in the graph; as a *resolution blocker* it is
+currently inert, which is worth knowing before anyone reports it as
+contributing to precision.
+
+**What this does not establish.** All of it is measured over the pre-Track-1
+mentions — the shipped database's, produced by the truncating NER path
+(4.76). Whether a repaired mention layer gives the scorer pairs it can
+actually score is exactly Track 1 item 3's open question, and this entry
+deliberately does not pre-answer it. What it does settle is that the scorer's
+weakness cannot be a *purely* downstream starvation artifact in the way the
+plan's item 4 supposed: at a 0.80 threshold, no amount of extra candidates
+raises a maximum of 0.53 above it. Either the threshold comes down on real
+calibration data, or the feature weights change; more candidates alone will
+not do it.
+
+**Verified.** Full suite **976 passed** (was 961), ruff clean on every new
+file (`ablate.py`, `evidence_cache.py`, `compounding.py`,
+`test_ablation_harness.py`). `test_ablation_harness.py` (15 tests) pins that a
+disabled gate falls through instead of erasing evidence, that the patch is
+restored even when the wrapped run raises, that a re-capture replaces rather
+than doubles, that run tags are independent, that every pair lands in exactly
+one bucket, that an unknown condition ablates nothing and is reported as the
+control, and that no condition name is a typo for a gate that does not exist.
+The three pre-existing ruff findings in `store.py` and five in `baseline_a.py`
+come from earlier uncommitted work, sit outside every line touched here, and
+were left alone.
+
+---
+
+### 4.79 Two guards the docs already specified in prose: `expand_draft` now refuses an ambiguous surface, and the escalation rate is reported for the first time — revealing it has never escalated once *(2026-09-23)*
+
+Executes `docs/COMPLETION_PLAN.md` Track 2 item 5's blocking prerequisite and
+Track 2 item 8. Both are cases of this codebase's recurring failure shape,
+the same one 4.74 and 4.77 were about: **a correct statement living in a
+comment where nothing enforces it.**
+
+**1. `expand_draft` could silently mislabel a whole volume.** `eval/draft.py`'s
+module docstring has said since it was written that expanding a surface to
+every occurrence "is only correct because chapters 1-5 of this novel happen to
+use each surface for exactly one referent", and that a later chapter range
+"would need to fail loudly on an ambiguous surface rather than silently pick
+the first match." It did not fail loudly. It did not check at all.
+
+That is the blocking prerequisite for Track 2 item 5 (re-drafting LOTM and ORV
+gold independently) because the failure is invisible downstream: a draft where
+"the elder" is two people expands into records that are perfectly well-formed,
+pass `eval/gold.py`'s whole provenance contract, and are wrong for every
+occurrence after the first referent. Exactly the shape of 4.74, where the only
+thing wrong with 6,952 records was a fact no scorer could see.
+
+`AmbiguousSurfaceError` + `_assert_unambiguous` now refuse three cases: one
+surface under two identities, one surface claimed as both an identity and a
+`not_entity`, and a surface the drafter explicitly flagged `ambiguous = true`
+(a drafter who *saw* the ambiguity needs a way to say so that is not "leave it
+out and hope"). It runs before the store is read, since an ambiguous draft is
+a drafting error and reporting it should not require the novel to be ingested
+first, and it names every offending surface in one message rather than one per
+round — a volume-scale draft fixed one error at a time is a many-hour loop.
+Duplication of a surface *within* one identity is explicitly allowed: the
+referent is unchanged, so rejecting it would be a false positive.
+
+**Verified against the real drafts, which is the part that mattered.** A guard
+that rejected `data/gold/reverend-insanity-c1-c5.toml` — the project's one
+genuinely independent draft (4.74), and the better of the two artifacts by
+some distance — would have been worse than no guard. Both shipped TOMLs expand
+unchanged: `c1-c5` to its recorded 343 mentions, `c1-c60-extended` to 3,927.
+
+**2. The escalation rate had never been reported anywhere.**
+`llm/router.py::report()` computes `escalation_rate` and has **zero callers**.
+`architecture.md` Section 7 calls "% routed to expensive inference vs. accuracy
+gained" a claimed contribution, and non-negotiable #7 calls the escalation rate
+"a reported metric, not a failure mode". It appeared in no output of any
+command.
+
+Wired as `Store.escalation_summary()`, printed at the top of every `eval` run.
+Deliberately read off the persisted `llm_call` table rather than a router's
+in-process counters: `eval` runs in a separate process that makes no LLM calls
+at all, so a router would have truthfully reported 0 of 0 and looked like a
+working metric.
+
+**First reading, RI (`data/reruns/ablate-ri.db`, copied from canonical):**
+
+```
+calls=370  escalations=0  rate=0.0%  tokens=563,221  avg latency=7,508ms
+  appearance_extraction  tier=local  calls=  29  escalated=0 (0.0%)
+  character_profile      tier=local  calls=  93  escalated=0 (0.0%)
+  ner                    tier=local  calls= 224  escalated=0 (0.0%)
+  persona_split          tier=local  calls=  24  escalated=0 (0.0%)
+```
+
+**The ladder has never escalated, on any stage, in 370 calls.** That is not a
+defect — every call was settled at the local tier — but "0%" is a very
+different claim from "we escalate only what needs it", and the difference was
+invisible while nothing printed the number. It also means the Section 7
+contribution, as currently worded ("% routed to expensive inference *vs.
+accuracy gained*"), has no variation to report on this corpus yet.
+
+**A free confirmation of 4.76, from a direction that does not depend on
+4.76's own reasoning.** `ner` shows **224 calls across 199 chapters** — about
+1.1 per chapter, which is what a single truncated pass per chapter looks like.
+After the windowing fix the same counter should read roughly 600. That makes
+it a cheap, independent check on whether Track 1 item 3's re-run actually did
+what it claims, available without touching any gold.
+
+**Verified.** Full suite **986 passed** (was 976), ruff clean on every file
+touched. `test_draft_ambiguity_guard.py` (8 tests) covers all three ambiguity
+shapes, the multi-surface message, the allowed within-identity duplicate, the
+guard running before the store, and a regression test that the real shipped
+draft is not a false positive. `TestEscalationSummary` (2 tests) pins that an
+empty table is 0.0% rather than a division error and that the rate, token
+total and per-stage split are what they claim.
+
+---
+
+### 4.80 The observer axis was schema, model and query with no writer — `state_of(observer=X)` now returns a strictly smaller fact set than `observer=READER`, on real data, for the first time *(2026-09-23)*
+
+Executes Track 4 items 16–17 of `docs/COMPLETION_PLAN.md`. Item 18 (the two
+paper figures) stays open: it needs a real render, which needs a GPU.
+
+**The gap.** `architecture.md`'s headline acceptance test is that
+`state_of(observer=WU_CLAN)` differs from `state_of(observer=READER)` — the Wu
+clan never learns that Wu Yi Hai is Fang Yuan, though the reader has known
+since chapter one. Verified against `data/webview-working/reverend-insanity.db`
+before touching anything: every row in `self_persona_binding` (83),
+`alias_binding` (9,469) and `attribute` (536) is stamped `READER`; the
+`observation` table is **empty**; there was no `add_observation` in
+`store.py`; and no generation path accepted an observer.
+
+The query logic was not broken. `_visible_to_observer` required
+`fact.observer_id in scope`, every fact was READER, so a character observer
+matched nothing and got an **empty** result. That is a different claim from a
+smaller one, and only one of them is the contribution: *"the Wu clan knows
+less than the reader"* and *"we have no idea what the Wu clan knows"* are not
+the same sentence.
+
+**What was built.**
+
+- `Store.add_observation`/`add_observations`/`observations_for`/
+  `count_observations`/`observers`. `INSERT OR IGNORE`, not `REPLACE`:
+  knowledge time only moves forward, so the *earliest* witnessing is the true
+  one and a later re-witnessing must not push a character's knowledge later.
+- `readset.observable_ref(fact)` — a stable id per temporal fact. Derived from
+  the fact's content, never a row id, because the same assertion re-derived by
+  a re-resolve must land on the same ref or every character's knowledge
+  silently resets on each pipeline run. It deliberately excludes interval,
+  learned-at position and truth status: those are *when and how* a fact is
+  held, and someone who witnessed an event does not un-witness it because the
+  interval was later refined.
+- `state.py::_visible_to_observer` consults observations. A character observer
+  may hold a READER-stamped fact **only** through an explicit observation row
+  — the one door — and their knowledge time is when *they* saw it, not when
+  the narrator told the reader. That divergence is the axis.
+- `anaphora/local.py::present_cast_ids`, beside `present_cast` and in the same
+  file on purpose: co-presence is decided in exactly one place. Surfaces are
+  what a scoring feature wants; ids are what an observer wants, since an
+  observer is a *who* and a surface form is not.
+- `resolve/detect_observations.py` + `echotales observations`. Reuses
+  `find_reveals` (which already stamps `OBSERVER_READER` unconditionally at
+  `detect_reveals.py:254`) rather than adding a detector.
+
+**Granularity: measured, then corrected.** The first implementation drew
+witnesses from the reveal's own block, matching
+`detect_reveals.py::reveal_target_for_block`. Run against RI it produced
+**zero** observations from all three reveals — and the diagnosis mattered more
+than the fix. It was not a bug: each reveal block contained exactly one person
+mention, the revealed character themselves, excluded by definition. Block
+granularity is right for *panel casting* (who is in this frame) and wrong for
+*witnessing* (who is in the room); someone standing there is a witness whether
+or not their name recurs in the same paragraph. Widened to the enclosing
+`NarrativeSegment`, which is the scene unit this codebase already has, with a
+fallback to the block so an unsegmented novel yields fewer observations rather
+than silently none:
+
+```
+reverend-insanity: 3 reveals, 3 with a co-present witness
+                   -> 13 observations across 11 observers
+```
+
+**The acceptance test, run for real.** RI, Bai Ning Bing
+(`reverend-insanity:self:e464f4dee6`), chapter 200:
+
+| observer | aliases returned |
+|---|---|
+| `READER` | 2 — `Bai Ning Bing`, `Bai Ningbing` |
+| a witness present at the reveal | **1** — `Bai Ning Bing` |
+| a non-witness | **0** |
+
+A strict subset, not an empty set. Reproducible from the CLI:
+`query state-of --novel reverend-insanity --target <id> --chapter 200
+--observer <id>`. This is the first time `architecture.md`'s own acceptance
+test has returned a differing result on real data in the project's life.
+
+**Threading the observer through render, and why it is on the resolver.**
+`render --observer` and `plan_builder`/`panels` take `observer_id`, but it is
+carried on the shared `StateResolver` (`default_observer=`) rather than passed
+per call. An observer is a property of the *viewing context*, not of each
+query, and the render tree makes `state_of` calls several layers below the CLI
+— a per-call parameter would have to be threaded identically through all of
+them, and any one site missed would silently fall back to READER and
+reintroduce exactly the spoiler the axis exists to prevent. Every existing
+caller is unaffected: `state_of`'s `observer_id` became `str | None` resolving
+to the resolver's default, which is `READER`.
+
+**Honest limits.** An observation claims only that an entity was physically
+present in the scene where the narrator revealed a name, so they plausibly
+learned it. It does not claim they believed it, understood it, or told anyone.
+Presence is the only witnessing signal this text reliably provides; inferring
+knowledge from dialogue is the unbounded "replay who witnessed what" approach
+`architecture.md` Section 8b already rejected for
+`audience_scope_compatibility` on the grounds that it silently becomes a
+constant. Three reveals across 199 chapters is also thin, and the reason is
+the same starvation 4.76 is about: each reveal block held a single mention.
+A repaired mention layer should produce more reveals and denser scenes, so
+this axis is another thing Track 1 item 3's re-run should visibly move.
+
+**Verified.** Full suite **1,005 passed** (was 986), ruff clean on every file
+touched. `test_observer_axis.py` (10 tests, core) pins the acceptance test
+itself (witness set is a strict subset of the reader's, not merely non-equal),
+that a character with no observations sees nothing, that a witness does not
+know *before* they witnessed it, that SYSTEM is unaffected as the evaluation
+oracle, that the resolver default is what an unqualified `state_of` uses, that
+the earliest witnessing wins, and that an `observable_ref` is stable across
+whitespace/case and across truth-status and interval changes.
+`test_detect_observations.py` (9 tests) pins that a merely-named character is
+not a witness, that the revealed character is not recorded as learning their
+own identity (non-negotiable #3), that re-running does not duplicate, and both
+the scene-granularity behaviour and its block fallback.
+
+---
+
+### 4.81 The evidence layer: blind annotation that cannot leak the system's answer, out-of-sample conformal coverage, bootstrap intervals on every reported number, and results that trace to a commit *(2026-09-23)*
+
+Executes `docs/COMPLETION_PLAN.md` Track 2 items 7, 9 and 10. Item 6
+(multi-model agreement) stays open: it needs a second model family, which
+needs network access this session does not have.
+
+**1. Blind annotation (item 7).** 4.74's structural guard
+(`gold.py::CIRCULAR_DRAFTERS`) catches a record *drafted* from pipeline
+output. It cannot catch the softer failure: a human shown the system's
+`target_id` beside the text, who agrees because it is there. Anchoring leaves
+no trace in the finished record, so no validator can find it afterwards. The
+only defence is not showing it.
+
+`eval/blind_review.py` + `echotales annotate` emit tasks carrying the surface
+and a ±240-character source window and nothing else. `FORBIDDEN_TASK_FIELDS`
+makes that an enforced property rather than a habit — a field added later
+"just for debugging" would silently void every annotation made against the
+file, so the writer refuses instead. A **pre-filled answer is refused too**: a
+suggested answer anchors exactly as the system's own would, whatever produced
+it.
+
+Two design points that are the difference between this and 4.74's failure:
+tasks are shuffled by an explicit seed and `--sample` applies *after* the
+shuffle (early chapters are the easy case — few entities, no aliases yet — and
+annotating the first N mentions would overstate agreement); and a blank task
+is **skipped, never defaulted**. A blank is "nobody looked", and counting it
+as agreement is the entire 2026-08-12 failure restated. Everything that comes
+back is `Provenance.HUMAN`, `ReviewDepth.PER_RECORD`, with a required
+`confirmed_by` — the format has no bulk mode to fall into.
+
+Round-tripped end to end against RI: 3 tasks emitted, one answered with an
+identity, one marked `not_an_entity`, one left blank → 2 confirmed records,
+`review depth: per_record=2`, blank skipped.
+
+**2. Held-out conformal coverage (item 9).** `calibrate_from_gold` calibrates
+and reports on the identical sample set, so its number is a fit statistic and
+the (1−α) guarantee — which is a claim about *unseen* exchangeable data — was
+never validated. A gate could memorise its calibration set and look perfect.
+
+`held_out_coverage` splits **by chapter range, never randomly**, and that is
+the load-bearing choice. Knowledge time only moves forward, and this system's
+central claim is that the gazetteer compounds as reading proceeds; a random
+split leaks late-volume evidence about an entity into the calibration of an
+early-volume decision about the same entity, which is 4.74's self-agreement
+failure wearing different clothes. A single-chapter sample reports "not
+evaluated" rather than returning a fit statistic dressed as a held-out one.
+
+It currently evaluates nothing on any shipped novel and says so plainly —
+there is no confirmed gold to calibrate on. Instrumentation ahead of the data,
+deliberately, as in 4.75.
+
+**3. Bootstrap intervals and traceable results (item 10).** Every number this
+project has ever reported was a point estimate. That is how a 52-point
+MUC-vs-CEAF-e disagreement over 6,238 mentions (4.75) and an 81%→93%
+compounding rise between windows of 145 and 166 links (4.77) both arrive
+looking equally solid. One is a structural fact; the other may be noise. Only
+an interval separates them.
+
+`eval/stats.py` provides percentile bootstrap CIs and a paired bootstrap for
+A-vs-B. Two things are stated in the module rather than left implicit because
+they are what a reviewer asks about: resampling *mentions* rather than
+chapters slightly understates variance (mentions within a chapter are not
+independent), but the alternative on this corpus is a bootstrap over 40–199
+units, which is worse; and the returned `p_value` is a **bootstrap p-value**,
+a statement about this resampling procedure on this corpus, not a frequentist
+test — it is labelled that way in the code so it cannot be quoted as one.
+
+`eval/persist.py` writes `data/eval/results/<run_id>/metrics.json` recording
+the commit, database, gold path, seed, Python version and platform beside the
+metrics, and registers the directory as a `StageArtifact` through
+`core/pipeline_run.py` — machinery that has been fully built with **zero
+callers outside `cmd_run`** since 4.72. The commit string carries a `-dirty`
+marker when the tree is uncommitted, which it deliberately does not hide: this
+repository's numbers have been produced from an uncommitted tree for most of
+its life, and a bare hash would imply a reproducibility it does not have.
+Plus a global `--seed` (named `global_seed` internally so it can never collide
+with `render --seed`, which is an image seed and a different thing) and
+`scripts/reproduce_results.sh`.
+
+**A real bug the interval caught on its first run, which is the argument for
+having built it.** The linked-share CI was first computed by keying gold
+`(chapter, offset)` against `mention.offset` directly. It reported **0.4%**.
+Gold offsets are chapter-absolute; `mention.offset` is block-local — the exact
+defect 4.75 documents in `score_b3` ("silently matches nothing past the
+chapter's first block"), reintroduced by writing the lookup a third time.
+Rewired through `coref_score._system_partition`, the single translation that
+already exists, it reads **98.6% [98.3%, 98.9%] over n=6,238**, consistent
+with the MUC/B³ recall of ~98.7%. A point estimate of 0.4% might have been
+explained away as a hard corpus; an interval that tight around a wildly wrong
+value is obviously a coordinate bug.
+
+**Verified.** Full suite **1,032 passed** (was 1,005), ruff clean on every new
+file. `test_blind_review.py` (11 tests) pins that no system field reaches a
+task, that a leaking or pre-filled task is refused, that a sample spans more
+than the first chapter, that the seed reproduces, and that a blank answer is
+skipped rather than counted. `test_eval_stats.py` (16 tests) pins that more
+examples give a tighter interval, that a single example reports no spread
+rather than inventing one, that a real improvement excludes zero while a tiny
+difference on 20 examples does not, that a missed conformal guarantee is
+flagged rather than rounded away, and that a results directory records what
+produced the numbers.
+
+---
+
+### 4.82 Invention disclosure drafted, and gitignored before it was written *(2026-09-24)*
+
+Executes `docs/COMPLETION_PLAN.md` Track 6 items 26 and 28. Item 27 (verifying
+the LINK-KG claims) stays open — it needs the actual paper, and this session
+has no network access.
+
+**`.gitignore` first, document second.** `docs/IP/` was added to `.gitignore`
+(line 160) and confirmed with `git check-ignore` *before* the file was
+created. The repository has been public since its first commit
+(2026-08-07); publishing a disclosure document is itself a disclosure, and
+writing it into a public tree to "sort out later" is the kind of ordering
+mistake that cannot be undone by a later commit. The document's own §0 says
+the same thing about the repository as a whole and flags it as the
+time-critical question for counsel.
+
+**Six mechanisms, each split into verified vs asserted.** Self/Persona with
+concurrent temporally-scoped bindings; observer-scoped knowledge time;
+`retract` vs `close_interval`; fuzzy-interval partial-order story time;
+graph-conditioned rendering with a state-derived cache key; and
+observer-conditioned generation. The split is the point of the format, not
+decoration — two entries come out materially weaker than the planning
+documents imply, and the disclosure says so in the place counsel would look:
+
+- §2.5 (cache key) is **stub-mode only**; the real-render invalidation check
+  is still open (item 25).
+- §2.6 (observer-conditioned generation), the strongest and newest claim, has
+  a **verified query half and an unexercised generation half** — it has never
+  run against a real image engine. §6 asks counsel directly whether that
+  affects enablement, because if it does, running it becomes a filing
+  prerequisite rather than a nice-to-have.
+
+**§4 is a list of what is NOT claimed**, and it exists because this project
+has already shipped a claim that outran its implementation (4.74): no Mondrian
+calibration, no validated accuracy number of any kind, no working scorer
+(4.78's 0.527-vs-0.80 finding is stated outright), no production-validated
+render path, no claim about output quality.
+
+**§3.1 refuses to let the prior-art table pass as checked.** `plans.md`'s four
+LINK-KG claims are the sharpest positioning material available and have never
+been verified against arXiv:2510.26486 — they were written from a summary.
+Every unverified row in the table is marked, and §3.1 states that a disclosure
+resting on four unchecked negatives about the nearest prior art is not ready
+to file. That is deliberately phrased as a blocker on sending the document,
+not as a caveat inside it.
+
+**Every legal statement carries an `ASSERT — VERIFY WITH COUNSEL` callout**
+(item 28), including the one the author is most confident about. The
+reduction-to-practice timeline in §5 is factual and sourced to dated
+`EVOLUTION.md` sections; whether an append-only file is *sufficient* as
+evidence is marked as counsel's call rather than answered.
+
+**Verified.** `git check-ignore -v docs/IP/invention_disclosure.md` returns
+`.gitignore:160`, and `git status --short docs/` offers only `?? docs/` with
+the IP directory excluded. No code changed; suite unaffected at 1,032 passed.
+
+---
+
+### 4.83 LOTM gold re-drafted independently for ch1-3 — and the drafting found a silent offset-collision defect in *both* shipped RI drafts *(2026-09-24)*
+
+Partial execution of `docs/COMPLETION_PLAN.md` Track 2 item 5. The headline is
+not the new file; it is what writing it exposed.
+
+**The new draft.** `data/gold/lord-of-the-mysteries-c1-c3.toml`, expanding to
+**173 mentions, 24 identities, 18 negatives** over chapters 1-3 of 40. Written
+by reading the chapter text, without consulting the pipeline's entity list for
+this novel at any point — a stronger independence claim than the RI c1-c5
+draft could make, whose own header records an anchoring risk. It replaces
+nothing yet: `lord-of-the-mysteries.jsonl` is 100% `gold-auto-builder` and
+therefore circular (4.74), and three chapters is a start, not a volume. ORV is
+untouched.
+
+The slice was chosen because it contains this project's central hard case in
+its purest form: Zhou Mingrui's consciousness wakes in Klein Moretti's body
+and the two sets of memories merge. The annotation calls them **one referent**
+and argues both sides in the note rather than asserting it — a partition that
+split them would fail on "Melissa gave her elder brother a piercing stare"
+(the brother is Klein, the person stared at is Zhou Mingrui), while the
+father's army service genuinely describes the original Klein. In the project's
+own vocabulary this is Self vs Persona, which a coreference partition has no
+way to express; recording the disagreement is the honest move.
+
+Two omissions are documented in the file because a reviewer should be able to
+disagree with them rather than discover them: bare "Tingen" is excluded (it
+would label the first token of "Tingen University" as a location), and bare
+"Moretti" is excluded (three siblings share it, so it is a family name — the
+same reason RI's gold refuses a bare surname).
+
+**The defect, which is the real finding.** `GoldMention.key` is
+`(novel_id, chapter, offset)` — position identifies a mention, deliberately,
+since two occurrences of one name can denote two people. It follows that two
+listed surfaces where one is a **word-boundary prefix** of the other always
+collide: both match at the same start offset, and one silently overwrites the
+other in every partition dict the scorers build. A *suffix* is harmless and
+common ("Fang Yuan" inside "Gu Yue Fang Yuan" starts 8 characters later, so
+both records survive), which is exactly why the new `_prefix_collisions`
+check is about prefixes specifically rather than about substrings.
+
+Drafting LOTM produced **5 collisions** — "Klein"/"Klein Moretti" and
+"Sunday"/"Sunday school" — in a file that expanded without a single warning
+and looked clean by every check that existed. That is the whole problem: the
+records are well-formed, the counts look plausible, and nothing downstream can
+tell.
+
+**Then the same check was run against the shipped drafts:**
+
+| file | collisions | the harmful case |
+|---|---:|---|
+| `reverend-insanity-c1-c5.toml` | **14** | `"Gu Yue"` is annotated as the **clan** and prefixes `"Gu Yue Chen Bo"`, `"Gu Yue Mo Chen"`, `"Gu Yue Zao Xie"` … so **every clan member's offset also carries an organization record** |
+| `reverend-insanity-c1-c60-extended.toml` | **13** | bare `"Gu"` is a `not_entity` prefixing `"Gu Yue"` — **a real entity's position is also annotated as a negative** |
+
+`reverend-insanity-c1-c5.toml` is the file 4.74 called "the better of the two
+artifacts by some distance" and nearly discarded for another file's sin. It
+has been quietly mislabelling clan-member positions the entire time, and its
+recorded 343-mention count includes those collisions.
+
+**Left unedited, on purpose.** Changing what an annotator asserted is the
+owner's call, not a passing repair, and these files are the only independent
+annotation the project has. Instead the finding is pinned by a parametrised
+expect-to-raise test, so it cannot be lost and cannot be rediscovered as a
+surprise. Nothing in production expands these TOMLs — `expand_draft` has no
+caller outside tests — so raising costs nothing today and blocks the next
+volume-scale draft from inheriting the defect, which is the point.
+
+**A correction to 4.79's own test.** That entry added a regression test
+asserting `reverend-insanity-c1-c5.toml` "is not a false positive" for the
+ambiguity guard. With the prefix check added, that assertion is **wrong** —
+the file does collide, and the guard is right. The test now asserts the
+opposite and says why. A test written to protect an artifact from a guard is
+worth re-reading whenever the guard gets stricter.
+
+**Verified.** Full suite **1,038 passed** (was 1,032), ruff clean on
+`draft.py` and the test file. The LOTM draft expands to 0 colliding keys,
+confirmed by counting `GoldMention.key` collisions directly rather than
+trusting the guard that was just written.

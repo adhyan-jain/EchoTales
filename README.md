@@ -69,8 +69,10 @@ full volume demonstrates the contribution better than three shallow novels.
 
 ```
 packages/core/       models, store, state_of()  — imports nothing from pipeline
-packages/pipeline/   ingest, spans, segment, mentions, speakers, anaphora, resolve
-apps/api/            orchestration and correction UI
+packages/pipeline/   ingest, spans, segment, mentions, speakers, anaphora, resolve;
+                     webview_server.py is also the orchestration/correction HTTP API
+                     (job queue, EPUB upload, render preview/generate, output library)
+                     — there is no separate `apps/api` package; it lives here
 data/raw/            source EPUBs (not committed)
 data/gold/           annotations — offsets and short evidence snippets only
 data/lexicons/       genre-neutral seed + per-novel induced vocabulary
@@ -121,13 +123,25 @@ Stated here because they are load-bearing, not incidental.
 - **Exchangeability violation in conformal prediction.** The gazetteer is
   designed to make decisions easier as the volume progresses; that is the
   compounding contribution. It also breaks the exchangeability assumption
-  standard conformal prediction requires. Mitigated with Mondrian
-  (class-conditional) calibration keyed on `alias_type` and within-novel
-  calibration, but a residual violation remains and is reported as a limitation.
-- **Annotation covers hard cases, not full volumes.** The primary gold set is
-  ~200 sparse, long-span decision points. Dense annotation exists for only 5
-  chapters per novel. Standard coreference metrics therefore rest on a small
-  sample; the long-span hard-case results are the defensible claim.
+  standard conformal prediction requires. **Not yet mitigated**: `resolve/
+  gate.py` implements standard (non-Mondrian) conformal calibration — a
+  single global `alpha` over the whole score distribution, not a
+  class-conditional split keyed on `alias_type` (see `HANDOFF.md`'s
+  "Architecture-review items not yet implemented" item 4, "not started").
+  The residual violation is unmitigated, not merely residual, and is
+  reported as an open limitation.
+- **There is currently no confirmed gold set at all.** Every file in
+  `data/gold/` is draft coverage — model-drafted, `confirmed: false` — and
+  the one file that previously read `confirmed: true` (RI ch1-60, 6,952
+  records) was retracted 2026-09-23: it was built by reading the
+  pipeline's own resolved output back out of its database, so scoring
+  against it measured the system against itself (`EVOLUTION.md` 4.74).
+  It is quarantined at `data/gold/_unusable/`. Full-volume draft coverage
+  exists for all three novels; two small files
+  (`reverend-insanity-c1-c5.jsonl`, `reverend-insanity-hardcases.jsonl`)
+  are independent of pipeline output but still unconfirmed. No standard
+  coreference metric or long-span hard-case result in this repository is
+  currently anchored to human-reviewed ground truth.
 - **No global collision-free voice assignment.** In a long cultivation novel the
   co-occurrence graph over principals is near-complete, so the chromatic number
   exceeds any archetype-appropriate palette. Colouring runs within archetype

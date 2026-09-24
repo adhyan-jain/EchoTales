@@ -124,6 +124,13 @@ Pydantic v2 models for every table in Section 5.
   blockers — see `resolve/score.py::prefilter`. Ordering is frozen so weights
   stay aligned across runs.
 - `Candidate`, `ResolutionOutcome`, `StateOfResult`.
+- `Job` — the Product Orchestration track's HTTP-facing unit of work
+  (`kind`, `run_id`, `status`, `params_json`, timestamps, `error_summary`).
+  Deliberately a thin layer on top of `PipelineRun`/`StageRun`
+  (`pipeline_run.py`), not a replacement: a `Job` is "what did I ask the
+  server to do and is it done," `PipelineRun`/`StageRun` stay the
+  pipeline-internal provenance record the job's execution writes into.
+  `status` reuses `StageStatus` rather than inventing a parallel enum.
 
 ### `src/echotales/core/store.py`
 SQLite persistence. Schema as a single `executescript` string; WAL mode;
@@ -148,7 +155,19 @@ Design commitments:
   looks like a bug worth "fixing".
 - `llm_call` table — every routed call with tier, model, escalation reason,
   tokens, latency. Evaluation data, not telemetry. `escalation_stats()`
-  aggregates it.
+  aggregates it. **`escalation_summary()` (EVOLUTION 4.79, 2026-09-23)** is
+  the version actually wired to output — printed at the top of every `eval`
+  run, read off this table directly rather than a router's in-process
+  counter, because `eval` runs in a separate process that makes no LLM calls
+  and a router-side counter would truthfully report 0 of 0 and look like a
+  working metric. First real reading on RI: 370 calls, **0 escalations,
+  0.0%** — the ladder has never escalated on this corpus.
+- `observation` table + `add_observation`/`add_observations`/
+  `observations_for`/`count_observations`/`observers` (EVOLUTION 4.80,
+  2026-09-23) — the observer axis's writer, which did not exist before this
+  session; the table was empty on every shipped database. `INSERT OR
+  IGNORE`, not `REPLACE`: the earliest witnessing is the true one, and a
+  later re-witnessing must not push a character's knowledge later.
 - `derived_artifact` + `invalidate_by_facts()` — read-set intersection.
 - `ref_image_candidate` / `ref_image_selection_log` (`SCHEMA_VERSION` 3) —
   reference-image review queue, see `persona/refimg.py` below.
@@ -156,6 +175,11 @@ Design commitments:
   `self.conn.commit()` every other write method here has; writes were
   silently lost on process exit until a restart-persistence check caught
   it (EVOLUTION 4.53).
+- `job` table + `add_job`/`update_job`/`get_job`/`list_jobs` (Product
+  Orchestration track) — follows the exact `pipeline_run`/`stage_run`
+  schema pattern (`store.py:379-419`, `1709-1866`) rather than a new
+  parallel persistence style. `list_jobs(novel_id)` is what
+  `GET /api/projects/<id>/jobs` reads.
 
 ### `src/echotales/core/readset.py`
 Read-set tracking for incremental invalidation.
@@ -168,6 +192,13 @@ Read-set tracking for incremental invalidation.
 - `hash_read_set()` sorts before hashing (blake2b, 16 bytes), so two artifacts
   that read the same facts in different orders share a digest.
 - `ReadSetRecorder` — context manager threaded through `state_of`.
+- `observable_ref(fact)` (EVOLUTION 4.80, 2026-09-23) — a stable id per
+  temporal fact for the observer axis, derived from the fact's content, never
+  a row id, so the same assertion re-derived by a re-resolve lands on the
+  same ref and a character's recorded knowledge doesn't silently reset on
+  every pipeline run. Deliberately excludes interval, learned-at position and
+  truth status — those are *when and how* a fact is held, not whether someone
+  witnessed it.
 
 ### `src/echotales/core/state.py`
 `state_of()` — the central query. Four filters compose:
@@ -179,6 +210,17 @@ Read-set tracking for incremental invalidation.
 2. **Knowledge time** — `learned_at_pos <= knowledge_pos`. `observer_scope()`
    returns `None` (= all) only for `SYSTEM`; a character observer sees only
    facts recorded for them and **does not inherit reader knowledge**.
+   `_visible_to_observer` (EVOLUTION 4.80, 2026-09-23) is the enforcement: a
+   character observer may hold a READER-stamped fact only through an
+   explicit `observation` row — the one door — and their knowledge time is
+   when *they* witnessed it, not when the narrator told the reader. Before
+   4.80 this filter was logically correct but vacuous: every fact in every
+   shipped database was stamped `READER` and the `observation` table was
+   empty, so a character observer matched nothing and got an empty result
+   rather than a genuinely smaller one. `StateResolver.default_observer`
+   lets a resolver-wide observer be set once (used by `render --observer`)
+   rather than threaded per call, so a missed call site can't silently fall
+   back to `READER` and reintroduce the spoiler the axis exists to prevent.
 3. **Truth status** — with the subtlety that a fact carrying `retracted_at` is
    governed by *position alone*: visible before the reveal, hidden after. The
    standalone `FALSE` filter must not also fire for it, or the observer's past
@@ -214,7 +256,15 @@ store mechanics (event log, invalidation, read sets).
 
 The headline test is
 `TestSustainedDisguise::test_the_two_views_differ` — one query, differing only
-in observer, returning different alias sets.
+in observer, returning different alias sets. As of EVOLUTION 4.80
+(2026-09-23) this is also confirmed on real data, not only the unit test:
+RI's Bai Ning Bing at chapter 200 returns 2 aliases for `READER`, 1 (a strict
+subset) for a witness present at her reveal, and 0 for a non-witness — the
+first time `architecture.md`'s own acceptance test has returned a differing
+result on real data in the project's life. `packages/core/tests/
+test_observer_axis.py` (10 tests) now pins the subset property itself, plus
+that a witness does not know *before* they witnessed it and that `SYSTEM` is
+unaffected as the evaluation oracle.
 
 ---
 
@@ -558,11 +608,35 @@ RI 55→62→65→64→63%; LOTM 23→28→28→31→35→33%. LOTM is the clean
 demonstration; RI plateaus, consistent with a cast introduced early.
 
 ### `src/echotales/pipeline/mentions/ner.py`
-Layer 1. `GlinerDetector` is the intended path (zero-shot, so it handles
-invented entity types like "Gu Master"), loaded lazily and `lru_cache`d because
-the model costs seconds and hundreds of MB.
+Layer 1. `QwenNerDetector` is the intended path, not GLiNER — the module
+docstring explains why: Qwen2.5 is trained on Chinese web-novel content and
+its English translations, so it has priors for the compound epithet-plus-name
+forms this corpus uses that a Western-trained zero-shot NER model parses as
+plain descriptions and misses entirely.
 
-`HeuristicDetector` is the fallback when the `ml` extra is absent, and is
+`detect_with_context` sends the model **overlapping windows covering the
+whole chapter** (`NER_WINDOW_CHARS=6_000`, `NER_WINDOW_OVERLAP=600`, built by
+`_windows()`, which raises on `overlap >= size`) — one `client.complete` call
+per window, same system prompt and working-name-list context each time. Until
+2026-09-23 (EVOLUTION 4.76) this sent `text[:6000]` once and stopped, which on
+this corpus's median ~11,600-char chapter meant **about half of every novel
+was never seen by the model** (RI 51.9% of text reaching NER, re-measured from
+the shipped DB). Each window's entities are located with the existing
+`_locate(entities, FULL_text, confidence)` against the *whole* chapter, so
+there is no offset arithmetic to get wrong; results across windows are unioned
+and deduped on `(start, end, text)` by `_outranks()` (higher score wins, a tie
+prefers the `character` label). `ner_pass_fingerprint()` hashes the system
+prompt, user-prompt template, `DEFAULT_LABELS`, and window geometry so
+`chapter_ner.py`'s on-disk cache invalidates itself whenever any of those
+change instead of silently serving stale results from the old prompt.
+
+`DEFAULT_LABELS` is `("character", "location", "organization", "item")` — a
+character-vs-item confusion (the legendary Gu the plot's rebirths hinge on
+was typed as a character because `item` was not an offered label at all)
+predates the `item` addition and is a genuine cross-model gold annotation
+that could not have come from the pipeline agreeing with itself.
+
+`HeuristicDetector` is the fallback when no LLM client is configured, and is
 genuinely useful rather than a placeholder — these translations capitalise
 personal names consistently. It **trims** leading stopwords rather than
 dropping the span, so "Then Fang Yuan" yields "Fang Yuan". Recall is favoured
@@ -626,22 +700,37 @@ which path a given run actually took — never assume from the code alone
 that a run used the model.
 
 ### `src/echotales/pipeline/mentions/chapter_ner.py`
-Layer 1's LLM path. **Never asks the model where a mention is** — only,
-once per chapter, which surface forms in the chapter are names — and the
-returned vocabulary (`VocabularyDetector`) is matched over spans with the
-same Aho-Corasick machinery `gazetteer.py` already uses. Per-span prompting
-is 34.5h against this corpus by the measured 1.9s/call budget; per-chapter
-is ~35 min for 199 chapters, and offsets stay exact instead of being
-hallucinated back as character positions by the model.
+Layer 1's LLM path. **Never asks the model where a mention is** — only which
+surface forms in the chapter are names, at chapter granularity (a handful of
+overlapping windows via `QwenNerDetector.detect_with_context`, not one call
+— see `ner.py`'s `NER_WINDOW_CHARS`) — and the returned vocabulary is matched
+over every span with the same Aho-Corasick machinery `gazetteer.py` already
+uses. Per-span prompting is 34.5h against this corpus by the measured
+1.9s/call budget; per-chapter is ~35 min for 199 chapters, and offsets stay
+exact instead of being hallucinated back as character positions by the model.
+`CHUNK_CHARS` (12,000, paragraph-aligned) is a separate, coarser chunking
+kept to bound any detector that doesn't window internally — since 2026-09-23
+it is no longer "characters per model call", because `detect_with_context`
+windows whatever it's given at the finer `NER_WINDOW_CHARS` (6,000) itself.
 
-`NameCache` keys on a hash of the chapter text plus the model name, and
-flushes on the same `commit_every` cadence as the store commit — it used to
-flush only once, at the very end, and an interrupted 199-chapter run lost
-the whole run's GPU work with nothing written yet. `plausible_name()`
-rejects the concrete failure modes actually observed from a small local
-model: whole copied sentences, punctuation-bearing fragments, wholly
-lowercase returns (this corpus's translations capitalise names without
-exception, so a lowercase return is a paraphrased description).
+`_KEEP_LABELS` gained `"item"` alongside `ner.py` (EVOLUTION 4.76) —
+previously a named object was either dropped or typed as `character` (the
+literal mechanism behind an independent annotator's note that the Spring
+Autumn Cicada is "an item, not a character").
+
+`NameCache` keys on `f"{model}:{ner_pass_fingerprint()}:{text_digest}"`, not
+just the model and text digest — `ner_pass_fingerprint()` hashes the system
+prompt, prompt template, label set, and window geometry, so any change to
+the pass (like the 2026-09-23 windowing fix itself) invalidates every
+existing cache entry once instead of silently serving results computed under
+the old, truncated prompt. It flushes on the same `commit_every` cadence as
+the store commit — it used to flush only once, at the very end, and an
+interrupted 199-chapter run lost the whole run's GPU work with nothing
+written yet. `plausible_name()` rejects the concrete failure modes actually
+observed from a small local model: whole copied sentences, punctuation-
+bearing fragments, wholly lowercase returns (this corpus's translations
+capitalise names without exception, so a lowercase return is a paraphrased
+description).
 
 ### `src/echotales/pipeline/mentions/commonness.py`
 Separates a capitalised common noun (a role word, an item name, a
@@ -750,6 +839,14 @@ stale when the resolver's typing pass later reclassifies an entity) to
 exclude locations and organisations from a cast that is meant to be people.
 `person_ids=None` keeps the old unfiltered behaviour for callers with no
 store handy.
+
+`present_cast_ids()` (EVOLUTION 4.80, 2026-09-23) — same co-presence logic as
+`present_cast()`, but returns entity ids rather than surface strings,
+deliberately placed beside it in the same file rather than in a new module:
+co-presence is decided in exactly one place. It exists for the observer axis
+and `resolve/detect_observations.py`, which need *who* was in the scene, not
+what surface form named them — a scoring feature wants a surface, an
+observer is a person.
 
 ### `src/echotales/pipeline/anaphora/validate.py`
 Where precision comes back. A violating group is **split, not repaired** —
@@ -873,6 +970,28 @@ explanation for the over-splitting the table above shows, not merely
 untuned thresholds. Not fixed by hand-rebalancing the bias (that is fitting
 to nothing without gold); the real fix is `ConformalGate.calibrate()`
 against confirmed examples once enough exist.
+
+**Confirmed on real data, not just the theoretical maximum above (EVOLUTION
+4.77/4.78, 2026-09-23).** `resolve/runner.py` also hardcoded
+`ResolutionMethod.SCORED` at both `_apply_link` call sites regardless of how
+a link was actually decided, so `ResolveReport.by_method` reported ~100%
+`SCORED` on every run ever made, by construction — the non-negotiable #8
+compounding claim had never been read off a true breakdown. Fixed:
+`ConformalGate.decide` now returns a `GateDecision` dataclass (`method`,
+`decision`, `candidate`, `rationale`) rather than a 3-tuple, and two new
+`ResolutionMethod` members (`NAME_CONTAINMENT`, `RELATIONAL_COPRESENCE`) name
+the two force-link paths that previously had no home and would otherwise
+have been mis-filed under `SCORED`. Real RI resolve, 1,002 groups -> 82
+entities, 880 links: `GAZETTEER_EXACT=870, DECLARATION=5, NAME_CONTAINMENT=2,
+RELATIONAL_COPRESENCE=3, SCORED=0` (the residual `SCORED=82` in the raw
+counter is exactly the count of newly *created* entities, not links).
+Re-scoring the full 10,058-pair evidence cache under every ablation
+condition (built the same session, see "Ablations" below) shows the scorer's
+actual maximum over real pairs is **0.527**, tighter than the 0.711
+theoretical bound above and still nowhere near 0.80 — a scored link is not
+merely rare on this corpus, it is arithmetically impossible.
+`temporal_validity` also blocks zero of the 2,051 real pre-filter blocks;
+every one comes from `co_presence_violation`.
 
 **`name_containment` is now a fourth pre-filter row**, added after the
 above was diagnosed: one name is the other with a leading house-prefix
@@ -1334,6 +1453,21 @@ may legitimately be computed from; nothing in this codebase should read a
 detector's false positive (a role noun, an item, a translation credit) is
 itself something gold needs to be able to say, or precision has no way to
 be measured at the entity-existence level, only at the coreference level.
+**As of 2026-09-23 (EVOLUTION 4.74)** this schema is enforced, not just
+documented: `CIRCULAR_DRAFTERS` (currently `{"gold-auto-builder"}`) names
+drafters whose output is read from the pipeline's own tables, and
+`__post_init__` raises `CircularGoldError` if such a record is ever marked
+confirmed, at any review depth — the failure mode this closes is a real
+one, not hypothetical (`reverend-insanity-c1-c50.jsonl`, 6,952 records,
+was exactly this, quarantined at `data/gold/_unusable/`). `confirmed=True`
+now also requires a non-empty `confirmed_by` (`UnattributedConfirmationError`
+otherwise), and a `ReviewDepth{NONE, BULK, PER_RECORD}` enum replaces the
+boolean's inability to distinguish a per-record human pass from a bulk
+glance-over. `GoldSet.circular` and `coverage()` surface the circular/
+review-depth breakdown wherever coverage is printed. **Current corpus
+state: zero confirmed records exist anywhere** — every shipped file is
+`confirmed=False` (draft, either derived from pipeline output or, for two
+small RI files, independent of it but still unreviewed).
 
 **`retriever_eval.py`** — recall@k, the plans.md Section 8.2 gate: recall@10 on
 `TRANSFERABLE_TITLE` below 80% means candidate retrieval is the research
@@ -1349,10 +1483,46 @@ source text directly, deliberately *not* reading the pipeline's own output
 first, to avoid grading the system against its own guess) and explicitly
 not gold until a person reviews it and flips `confirmed`.
 
-**Not built:** MUC/B³/CEAF coreference metrics, the two baselines (long-
-context LLM, dual-LLM memorisation per COLING 2025), and the ablation
-harness (would cost no additional LLM calls, since it re-scores cached
-evidence vectors with zeroed weights).
+**Built 2026-09-23:** MUC, B³ and CEAF-e under their textbook definitions,
+plus the CoNLL F1 average (`coref_score.py::muc`/`b_cubed`/`ceafe`/
+`conll_f1`, reported by `cmd_eval` beside the existing `score_b3`). These are
+pure partition math with no `Store` dependency — `score_b3` went four months
+untested because exercising it meant building a novel first, and a scoring bug
+does not announce itself. `test_coref_metrics.py` works each expected value out
+by hand from the metric's definition rather than capturing it from a run.
+
+Two deliberate differences from `score_b3`, which stays as it is: the standard
+metrics treat an unlinked mention as a singleton (what every published scorer
+does, and what makes a number comparable to BookNLP/LitBank/LINK-KG), whereas
+`score_b3` penalises it in the recall denominator to reflect the resolver's
+real behaviour under non-negotiable #9. CEAF-e's assignment step is a
+hand-written Jonker-Volgenant rather than `scipy.optimize.linear_sum_assignment`,
+because scipy arrives only via the optional `ml`/`render` extras and a metric
+whose value depends on which extras are installed is not a metric; it is
+cross-checked against scipy on random matrices in the test suite.
+
+**Still not built:** Baseline B (dual-LLM memorisation per COLING 2025 —
+Baseline A exists in `eval/baseline_a.py`). Note that this cannot produce a
+reportable number yet regardless: there is no confirmed gold to score against
+(EVOLUTION 4.74).
+
+**The ablation harness is built (EVOLUTION 4.78, 2026-09-23)** — this section
+used to claim the "no additional LLM calls" property as a design intent ahead
+of the mechanism that would make it true, which it now is. `eval/
+evidence_cache.py`'s `capture_evidence` context manager monkeypatches
+`score_evidence` for the duration of a resolve (opt-in via `resolve
+--capture-evidence`) and writes every `(mention, candidate)` pair's
+`EvidenceVector` to a new `scoring_evidence` table; `eval/ablate.py` re-scores
+that cache under each named condition with no re-inference. Run for real on
+RI (10,058 captured pairs): the scorer's maximum output across every
+condition, including the one where all 10,058 pairs reach it unfiltered, is
+**0.527 against the 0.80 `FALLBACK_LINK_THRESHOLD`** — a scored link is
+arithmetically impossible on this corpus, not merely rare. Three of the
+plan's five named conditions (no alias typing, no Self/Persona split, no
+truth status) are not answerable by re-scoring this cache — they change what
+entities exist or what `state_of` returns, not the evidence vector — and are
+listed in `REQUIRES_RERESOLVE`, printed on every `ablate` run rather than
+silently omitted.
 
 ### Compute and cost budget
 
@@ -1365,19 +1535,22 @@ chapters each = **209 chapters** of LLM processing.
 | Pass | Granularity | Calls | Local wall-clock |
 |---|---|---|---|
 | Lexicon induction | 12 samples × 3 novels, one-off | 36 | ~1 min |
-| Layer 1 NER | per chapter | 209 | ~7 min |
+| Layer 1 NER | per chapter *window* (since 2026-09-23, EVOLUTION 4.76 — was one call per chapter, truncated at `text[:6000]`; median chapter now costs ~3 calls, not 1) | ~600 (RI alone; not re-totalled below) | not yet re-measured |
 | Layer 3 gap-fill sweep | per chapter | 209 | ~7 min |
 | Segmentation | gated (~44% of chapters) | ~92 | ~3 min |
 | Coreference | per *ambiguous paragraph* | ~2,400 | **~76 min** |
 | Adjudication | deferred cases only | ~200–1,000 | 6–32 min |
-| **Total** | | **~3,150** | **≈1.7–2.2 h** |
+| **Total** | | **~3,150 (pre-4.76; stale — Layer 1's call count above roughly tripled and this row has not been recomputed)** | **≈1.7–2.2 h (pre-4.76)** |
 
 Coreference dominates and is the pass to watch: it is the only stage below
 chapter granularity, and its cost scales with how often the deterministic
 routes fail.
 
-**Ablations add no LLM cost** — five ablations re-score cached evidence vectors
-with zeroed weights; no re-inference.
+**Ablations add no LLM cost** — as of 2026-09-23 (EVOLUTION 4.78) this is a
+built and measured property, not a design intent: `eval/ablate.py`'s nine
+conditions re-score `scoring_evidence`-cached vectors, with prefilter
+conditions disabled via `disabled_prefilters` rather than zeroed evidence; no
+re-inference for any of them.
 
 Token estimate: ~1,500 tokens/call average (prompt + completion) × ~3,150 calls
 ≈ **4.7M tokens** per full run. Local: free but ~2 h of GPU. On an API backend
@@ -1436,12 +1609,91 @@ same-origin policy on `file://` and `<script src>` is not).
 React app's `public/data/`, which needs a server either way.
 
 ### `src/echotales/pipeline/webview_server.py`
-The live backend for the React app's "Live edit" mode. Stdlib
-`http.server` only, single-threaded deliberately: `Store` opens its
-sqlite3 connection once in the main thread, and sqlite3 forbids
+The live backend for the React app's "Live edit" mode, plus (as of the
+Product Orchestration track) the project-lifecycle/job/upload/output HTTP
+API. Stdlib `http.server` only, single-threaded deliberately: `Store`
+opens its sqlite3 connection once in the main thread, and sqlite3 forbids
 cross-thread use by default -- `ThreadingHTTPServer` crashed on the first
 concurrent request during verification, caught by actually calling the
-endpoint rather than by reading the code.
+endpoint rather than by reading the code. The one exception is the new
+`JobQueue` worker thread (`jobs.py`), which opens its **own** `Store`
+connection rather than sharing the request thread's, for the same
+single-thread-per-connection reason.
+
+**Product Orchestration track routes** (previously this file's scope was
+review/correction only -- `docs/STATUS.md`'s "Backend API" row used to say
+it "cannot upload, trigger ingestion, search references, preview, or
+browse output over HTTP"; that is no longer true):
+- `GET /api/projects`, `DELETE /api/projects/<id>` -- project lifecycle
+  listing and deletion. Delete refuses a `novel_id` present in
+  `data/canonical_dbs.json` (`Store.is_canonical`, a `@property` -- two
+  call sites here were written as `.is_canonical()` and would have thrown
+  `TypeError` the first time this route was actually hit; caught while
+  writing the integration test, fixed to `.is_canonical`).
+- `POST /api/projects/<id>/source` -- EPUB upload via `_multipart.py`'s
+  parser; validates by actually opening the file with `ingest/epub.py`'s
+  `Epub()` before accepting, so a bad upload 400s immediately instead of
+  surfacing as an ingest-job failure minutes later; writes a per-project
+  `sources.toml`.
+- `POST /api/projects/<id>/{ingest,resolve,appearance,persona,render,voice,
+  refimg_search,reference_gen}` -- job triggers, `jobs.py::JOB_KINDS`.
+- `GET /api/projects/<id>/jobs`, `.../jobs/<job_id>` -- status/progress,
+  the latter including nested `StageRun` detail
+  (`store.list_stage_runs(job.run_id)`) for a "what actually happened"
+  view, not just a status string.
+- `GET /api/novels/<id>/characters/<self_id>/reference/candidates` +
+  `POST .../reference/search` + `POST .../reference/upload` -- thin HTTP
+  wrappers around the already-real `persona/refimg.py` functions
+  (`list_candidates`, `search_and_store` via a job, `register_user_image`).
+- `GET /api/novels/<id>/render/preview` -- wraps
+  `render/plan_builder.py::build_render_plan` read-only, no generation.
+- `POST /api/novels/<id>/render/generate`, `.../reference/generate` --
+  real generation jobs, engine checked against `jobs.py::
+  ALLOWED_HTTP_ENGINES` (a 400 on `gemini`/`openrouter`, not a silent
+  downgrade to stub -- those stay CLI-only, operated by a human via
+  `--image-engine` directly).
+- `GET /api/novels/<id>/output`, `.../output/file` -- output library:
+  lists/serves `data/<CODE>/{panels,video,audio,references}/` per
+  `pipeline/paths.py`'s existing layout, pure filesystem walk (no new
+  metadata table). `.../output/file`'s `path` query param is resolved and
+  checked to land inside `paths.novel_root(novel_id)` before serving --
+  the one route in this file that reads an arbitrary-looking path from
+  user input, so it gets the strictest check.
+
+`Registry.__init__` now also scans `data/projects/*.db` at startup (not
+just the explicit `--source` list), so a project created via
+`POST /api/projects` survives a server restart -- previously it didn't.
+`data/canonical_dbs.json` stays a separate, untouched registry (the three
+research-canonical novels), never conflated with user-created projects.
+
+### `src/echotales/pipeline/jobs.py`
+The job queue backing the Product Orchestration track's HTTP API. One
+in-process daemon worker thread (`JobQueue`), strictly sequential across
+all projects -- matches the existing GPU-sharing constraint
+(`config.json`'s `direction_first` toggle exists for exactly this reason:
+ollama and local diffusion must never run at once), so a single worker
+thread avoids needing a separate GPU lock. `run_stage()` wraps a stage
+call in `pipeline_run.py`'s existing `stage()` context manager (reused,
+not reimplemented) for `StageRun`/`StageArtifact` bookkeeping and
+skip-on-matching-`SUCCEEDED`-digest resumability -- this is the first
+place that skip logic actually runs end-to-end; before this track
+`pipeline_run.py` had the mechanism but nothing called it except
+`commands.py::cmd_run`'s own closure with `skip_if_succeeded=False`.
+`_dispatch()` maps `Job.kind` to the real stage function (`ingest_novel`,
+`resolve_novel`, `build_personas`, `extract_appearance`, `render_panels`,
+`render_novel`, `refimg.search_batch`, `reference_gen.generate_references`).
+`ALLOWED_HTTP_ENGINES` is the local-only image-engine allowlist
+(`stub`/`sdxl`/`illustrious`/`noobai`/`refined`/`manga`) -- `gemini` and
+`openrouter` are excluded from the HTTP path entirely by design, so a paid
+engine can only be invoked deliberately, by a human, via the CLI's
+`--image-engine` flag.
+
+### `src/echotales/pipeline/_multipart.py`
+Minimal stdlib-only `multipart/form-data` parser, scoped to exactly the
+one shape the two upload routes need (a single file part) rather than
+pulling in a dependency for it. `parse_single_file()` returns
+`(filename, bytes)`; raises `MultipartError` on anything malformed, which
+both upload routes turn into a 400.
 
 `_overlay_corrections()` recomputes the full payload fresh on every
 request from `corrections.py`'s pending-and-applied log, rather than
@@ -1547,6 +1799,14 @@ state at any discourse position) is `core/state.py::StateResolver`, already
 built and exposed as `echotales query state-of`. `check_deps.py` (fail CI
 if `core` imports `pipeline`) is still genuinely unbuilt -- the rule is
 enforced by convention only, not by a check.
+
+**A same-named but distinct tool now exists (EVOLUTION 4.81, 2026-09-23):**
+`echotales annotate` (`eval/blind_review.py`) is a *different* job than the
+`annotate.py` this section retires — it emits blind annotation tasks (surface
++ a ±240-char source window, `FORBIDDEN_TASK_FIELDS` refuses any system field
+or pre-filled answer) for a human to confirm gold against, not a bulk
+promotion pass over an existing draft. Round-tripped against RI: 3 tasks
+emitted, 2 answered, 1 left blank and correctly skipped rather than defaulted.
 
 ---
 

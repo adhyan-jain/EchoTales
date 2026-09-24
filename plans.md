@@ -704,6 +704,24 @@ fields nobody can actually adjudicate.
 split; cheap-LLM only; strong-LLM only. All are implemented by zeroing named
 weights, so they cost no additional LLM passes.
 
+**Built (EVOLUTION 4.75/4.78, 2026-09-23), scope corrected against what was
+actually answerable.** MUC, B³ and CEAF-e (plus CoNLL F1) exist in
+`eval/coref_score.py`, cross-checked by hand-computed tests. The ablation
+harness (`eval/ablate.py` + `eval/evidence_cache.py`, `echotales ablate`) re-
+scores a cache of real captured evidence vectors under nine named conditions
+with no re-inference — but only *no temporal scoping* and *no gazetteer
+compounding* from this list are answerable that way. *No alias typing*
+happens upstream of the evidence vector (mentions stage); *no self/persona
+split* and *no truth status* change what entities exist or what `state_of`
+returns, not a score. Those three are listed in `REQUIRES_RERESOLVE` and
+printed on every `ablate` run rather than silently dropped. Neither
+cheap-LLM-only nor strong-LLM-only has been built. Measured on RI's real
+10,058-pair cache: `no-gazetteer-compounding` drops force-links from 9.2% to
+1.2%; `no-temporal-scoping` changes nothing (`temporal_validity` blocks zero
+real pairs); the scorer's own maximum output across every condition,
+including the one where every pair reaches it unfiltered, is 0.527 against
+the 0.80 link threshold.
+
 ### 8.1 Baselines must be implemented, not merely cited
 
 "BookNLP scores zero on transfers" is a strawman and reviewers will say so. Two
