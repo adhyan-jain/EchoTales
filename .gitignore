@@ -139,6 +139,11 @@ data/*-split.db-*
 # the whole novel dir, so a novel's README/manifest stays trackable while its
 # 1.9 GB of PNGs and mp4s does not.
 data/*/panels/
+# ...and any panel directory with a suffix. `render --panel-dir` accepts an
+# arbitrary path, so an observer-contrast or A/B run lands somewhere the bare
+# `panels/` rule does not match and its PNGs become committable. Found
+# 2026-09-25 when `data/RI/panels-obs-*` (13 MB) showed up as untracked.
+data/*/panels-*/
 # RI's panels were tracked deliberately for an earlier session's
 # prompt-composition work (versioned renders reviewed directly from git);
 # disabled for now -- re-enable `!data/RI/panels/` if that's needed again.
