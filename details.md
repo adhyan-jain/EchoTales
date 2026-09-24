@@ -1529,7 +1529,7 @@ that the `TRANSFERABLE_TITLE` gate "cannot produce a number on this novel no
 matter how much more gets annotated" — it can, from hand-drafted gold; what
 had actually blocked it was that `cmd_eval` had no `--gold` flag and the
 gold file was gitignored, not a structural property of the novel. `eval
---gold <file>` (new 2026-09-24) is the flag that was missing.
+--gold <file>` (new 2026-09-24) is the flag that was missing. *(Superseded 2026-09-25: 88.9% with production-exact retriever context, gate passes by one case at n=9 -- EVOLUTION 4.86.)*
 
 **`coref_score.py`, `draft.py`** — coreference scoring and gold-drafting
 support. `data/gold/reverend-insanity-c1-c5.toml` is the first draft this

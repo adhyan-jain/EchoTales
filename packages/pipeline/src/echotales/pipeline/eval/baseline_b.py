@@ -56,6 +56,7 @@ import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from echotales.core.store import Store
 from echotales.pipeline.eval.baseline_a import _locate, _to_block_local
@@ -148,8 +149,8 @@ alone. Do not speculate beyond them.
 @dataclass
 class BaselineBResult:
     chapters: tuple[int, int]
-    mentions: list[dict]
-    entities: list[dict]
+    mentions: list[dict[str, Any]]
+    entities: list[dict[str, Any]]
     extractor_calls: int
     linker_calls: int
     prompt_tokens: int
@@ -196,7 +197,7 @@ def run_baseline_b(
 ) -> BaselineBResult:
     memory: list[MemoryEntry] = []
     by_id: dict[str, MemoryEntry] = {}
-    mentions: list[dict] = []
+    mentions: list[dict[str, Any]] = []
     extractor_calls = linker_calls = 0
     prompt_tokens = output_tokens = 0
     started = time.monotonic()
@@ -306,7 +307,7 @@ def materialize_mentions(store: Store, novel_id: str, result: BaselineBResult) -
     from echotales.core.enums import AliasType, Provenance, ReferenceMode, SpanType
     from echotales.core.models import Mention
 
-    by_chapter: dict[float, list[dict]] = {}
+    by_chapter: dict[float, list[dict[str, Any]]] = {}
     for m in result.mentions:
         by_chapter.setdefault(m["chapter"], []).append(m)
 
