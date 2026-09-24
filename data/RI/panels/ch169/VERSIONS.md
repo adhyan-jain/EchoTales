@@ -22,4 +22,4 @@ reference-conditioned 5/5; the non-witness's say `a figure`, are prompt-only
 The *images themselves* are not reviewed here and no claim is made about their
 quality — they are below the product bar in the same ways v54 was, and no
 rendered pixel in this project has ever been scored. Full account in
-`docs/OBSERVER_CONTRAST_RESULT.md`.
+`docs/OBSERVER_CONTRAST_VALIDATION.md`.

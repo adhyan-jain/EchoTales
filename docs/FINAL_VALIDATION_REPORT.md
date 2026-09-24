@@ -35,7 +35,7 @@ change the project's evidentiary position.
 
 | Item | Before | Now |
 |---|---|---|
-| Observer-conditioned **generation** | "wired, never exercised" | **Demonstrated end to end on a real image engine** (`docs/OBSERVER_CONTRAST_RESULT.md`): same chapter/blocks/checkpoint/seed, only the observer varies — READER gets 5/5 reference-conditioned panels naming `Bai Ning Bing`; a non-witness gets 5/5 prompt-only panels saying `a figure`, and `1boy … solo` instead of `2boys`. Cache keys and pixels differ on 10/10 blocks. Also demonstrated at the plan level: Same panel, varying only the observer: READER yields `characters=1`, digest `de02bdbf…`; a non-witness yields `characters=0`, digest `3ce24425…`. `cache_key.py` derives the artifact key from that digest, so the observer changes what would be generated *and* cached. |
+| Observer-conditioned **generation** | "wired, never exercised" | **Demonstrated end to end on a real image engine** (`docs/OBSERVER_CONTRAST_VALIDATION.md`): same chapter/blocks/checkpoint/seed, only the observer varies — READER gets 5/5 reference-conditioned panels naming `Bai Ning Bing`; a non-witness gets 5/5 prompt-only panels saying `a figure`, and `1boy … solo` instead of `2boys`. Cache keys and pixels differ on 10/10 blocks. Also demonstrated at the plan level: Same panel, varying only the observer: READER yields `characters=1`, digest `de02bdbf…`; a non-witness yields `characters=0`, digest `3ce24425…`. `cache_key.py` derives the artifact key from that digest, so the observer changes what would be generated *and* cached. |
 | Real image engine | never run | **Run.** NoobAI XL produced a 1.59 MB panel for ch169 under a real observer parameter — not a stub. |
 | LLMLINK prior art | unread, carrying the positioning weight | **Verified against the full paper.** All four claims hold, and unlike LINK-KG the negatives are substantive: same task, same data class (LitBank, DOC-ARC), same metrics (MUC/B³/CoNLL), and it still models identity as static. |
 | Self/Persona on real data | asserted | **Bounded.** One real case (Fang Yuan, two temporally disjoint bodies); five case classes are tests-only with row counts. |
@@ -200,7 +200,7 @@ and the scorer is unnecessary to this corpus as built.
 
 ## 9. Multimodal demonstration status
 
-**COMPLETE for the observer contrast** (`docs/OBSERVER_CONTRAST_RESULT.md`).
+**COMPLETE for the observer contrast** (`docs/OBSERVER_CONTRAST_VALIDATION.md`).
 Run 2026-09-25, local RTX 4060, NoobAI XL, 5 panels per observer, everything
 held constant but the observer:
 

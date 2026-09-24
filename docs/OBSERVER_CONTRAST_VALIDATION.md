@@ -1,4 +1,4 @@
-# Observer-conditioned generation — measured end to end
+# Observer-contrast validation — generation and read-set invalidation
 
 **Run 2026-09-25 on the local RTX 4060.** Closes `docs/COMPLETION_PLAN.md`
 item 18, open since the observer axis was built, and removes the "never run
@@ -111,3 +111,41 @@ attributes" rather than "omit her". The binding row already carries an
 `observer_id` column; `detect_observations.py` simply has no writer for it.
 Until that exists the contrast is sharper than the model really intends —
 worth stating plainly rather than presenting the starker figure as the design.
+
+
+---
+
+## 6. Exact records for the contrast run
+
+| | READER | non-witness (`reverend-insanity:self:a8bdaf3bfb`) |
+|---|---|---|
+| `state_of(Bai Ning Bing, position=169)` aliases | 2 | 0 |
+| `state_of(...)` persona_ids | `…:0035e71331:body1` | none |
+| Plan `characters` | 1 | 0 |
+| `state_digest` | `de02bdbf43ff8294` | `3ce2442598531a35` |
+| Block 1 cache key | `5066f03cc44fef0a` | `a27b42d9057e64a3` |
+| Block 1 output | `data/RI/panels-obs-reader/ch169/v1/p001_b0001.png` | `data/RI/panels-obs-nonwitness/ch169/v1/p001_b0001.png` |
+| Seed | CLI default, identical for both runs | identical |
+
+## 7. Controlled read-set invalidation
+
+`packages/pipeline/tests/test_readset_invalidation.py` — five tests on a
+controlled store, stub path, no GPU. The claim has two halves and both hold:
+
+| State change | Cache key |
+|---|---|
+| None (rebuild the same plan) | **unchanged** |
+| Attribute added to a character **in** the panel's cast | **changes** |
+| Attribute added to a character **not** in the cast | **unchanged** |
+| New body bound to a cast character | **changes** |
+| New alias for a cast character | **unchanged** — see below |
+
+The offstage case is the one that matters: it is what makes this precise
+invalidation rather than "any change busts every cache".
+
+**A limit this exposed.** `render/plan_builder.py` hashes persona ids and
+attributes into `state_digest`, **not aliases**. A revelation that only adds a
+name to a character therefore does not invalidate a panel that already depicts
+them. The test pins this as current behaviour so a future change to it is a
+deliberate decision, and the disclosure's P6 should describe the read set as
+"embodiment and attribute facts", not "all facts consulted".
