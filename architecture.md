@@ -495,6 +495,23 @@ work.
 | `GRAPH` | resolutions, `state_of` results | events intersecting the read set |
 | `RENDER` | audio segments, panels | upstream state changes |
 
+**Verified as a controlled experiment (EVOLUTION 4.85, `test_readset_
+invalidation.py`).** A change to a cast character's attributes or bodies
+changes `compute_render_cache_key`'s output; a change to an offstage
+character does not. One real limitation this pinned rather than hid:
+`plan_builder.state_digest` hashes persona ids and attributes but **not**
+aliases, so a name-only reveal on an already-bound persona does not
+invalidate a panel rendered before the reveal — current, intentional
+behaviour, not yet a defect fix.
+
+**Observer-conditioned generation now demonstrated on a real image engine**
+(EVOLUTION 4.85, `docs/OBSERVER_CONTRAST_VALIDATION.md`), not only in the
+`state_of` query layer above: chapter 169, blocks 1-10, NoobAI XL on local
+hardware, everything held constant but `--observer`. Reader: 5/5 panels
+reference-conditioned, prompt names the character and depicts two people.
+Non-witness: 0/5 conditioned, prompt says "a figure," one person, solo.
+Cache keys and pixels differ on all 10/10 blocks.
+
 ---
 
 ## 8b. Two features with scoped definitions

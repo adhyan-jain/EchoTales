@@ -85,7 +85,9 @@ data/lexicons/       genre-neutral seed + per-novel induced vocabulary
 data/<CODE>/         one novel's outputs: panels/, video/, audio/, references/,
                      canon/ — each versioned per run (`pipeline/paths.py`)
 data/scene-references/  hand-collected composition/character images (input)
-data/voice/          VCTK (read speech) and CREMA-D (91 actors, six emotions)
+data/voice/          VCTK (read speech), CREMA-D (91 actors, six emotions),
+                     and EARS (107 speakers, 22 emotions, whisper/loud
+                     reading styles, CC BY-NC 4.0 — research only)
 tools/               annotation CLI, replay debugger
 ```
 

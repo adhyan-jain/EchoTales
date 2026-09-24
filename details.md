@@ -1173,6 +1173,22 @@ elicitation paragraph for every speaker and often start with a breath.
 `nearest_bucket` relaxes **age before gender**. `pick_mob_voice` takes an
 explicit `Random` so re-rendering a chapter cannot silently recast extras.
 
+**`load_ears` (EVOLUTION 4.85, `--bank-kind ears`)** — EARS (Interspeech
+2024): 107 studio speakers at 48 kHz, 22 emotions and 7 reading styles,
+where VCTK is read speech with no emotion at all and CREMA-D has six
+emotions but no whisper. **Licence: CC BY-NC 4.0 — research only, not a
+commercial release.** `_EARS_STYLES` maps `whisper`/`loud` onto real
+`rainbow_01_whisper`/`rainbow_01_loud` recordings; `delivery.py`'s HUSHED
+polarity now requests `"whisper"` by name instead of the `fear` stand-in it
+used before this bank existed. `BankVoice.clip_for` walks a fallback chain
+(`_EMOTION_FALLBACK`: `whisper`→`fear`, `loud`→`angry`, `sad`→`neutral`)
+before the neutral clip, so a request a bank can't satisfy degrades to the
+closest recording it has rather than silently going flat — this is what
+lets VCTK/CREMA-D keep producing exactly what they did before whisper
+existed, for the same request, while EARS answers it directly. Speakers
+with an undisclosed gender or age band are skipped, same discipline as
+`load_cremad`.
+
 **`casting.py`** — within-bucket graph colouring per `architecture.md Section 8b`,
 principals first. Collisions are recorded in the report, not avoided at all
 costs, because Section 8b explicitly declines to claim global collision-freedom.
@@ -1182,7 +1198,12 @@ together in opposite directions (raising intensity speeds speech; lowering
 guidance is the documented compensation). **Non-negotiable #10 is enforced
 here**: a `FLAT` marker overrides scene sentiment *and* the speaker's Big
 Five baseline. `pace_text` inserts pauses as punctuation only, and only for
-em-dash interruptions and long narration runs.
+em-dash interruptions and long narration runs. As of the EARS bank
+(EVOLUTION 4.85), `DeliveryPolarity.HUSHED` requests the emotion clip
+`"whisper"` by name rather than the `fear` stand-in every earlier bank was
+limited to — `bank.py::BankVoice.clip_for`'s fallback chain means a bank
+without a whisper recording still gets `fear`, so this changed nothing for
+VCTK/CREMA-D output, only for EARS.
 
 **`engine.py`** — `TTSEngine` protocol, `StubEngine`, `ChatterboxEngine`;
 same shape as `llm/` for the same reason. Chatterbox over XTTS-v2 (MIT vs
@@ -1416,6 +1437,13 @@ same "make the gap visible" instinct as `AttributionMethod.ANONYMOUS_SLOT`.
 WAVs at the sample level via stdlib `wave`, raising on a format mismatch
 rather than resampling silently. `StubComposeEngine` does that real
 concatenation plus writes a JSON shot manifest, needing no `ffmpeg`.
+`StubComposeEngine.speed` (a dataclass field mirroring
+`FfmpegComposeEngine.speed`, deliberately inert on the stub path) was
+missing entirely until EVOLUTION 4.85: `cmd_render` always passes
+`speed=args.speed` to whichever engine `--compose-engine` selected, so the
+no-GPU/CI compose path had raised `TypeError: unexpected keyword argument
+'speed'` since `speed` was added to the real engine — found and fixed in
+the same session as the observer-conditioning and scorer-diagnosis work.
 `FfmpegComposeEngine` renders each shot to its own segment (`zoompan` for a
 still, a trimmed/looped frame sequence for a clip) at a **portrait 1080x1920
 frame** (phone-native; the panel itself is generated 2:3 rather than 9:16,
@@ -1588,6 +1616,44 @@ mention layer would produce scoreable pairs) and it is **refuted** by this
 number, not merely unconfirmed. The gazetteer carries 66% of links in this
 run; temporal blocking still fires on zero pairs. The real explanation is
 B+C+D (scorer weighting / threshold / feature calibration), not starvation.
+
+### `scripts/scorer_diagnosis.py`, `scripts/scorer_fit_probe.py` (EVOLUTION 4.85)
+
+Where the "starvation hypothesis is closed, what replaces it" question from
+the paragraph above actually got answered. `scorer_diagnosis.py` is
+read-only: it joins the captured `scoring_evidence` cache to the non-trivial
+SILVER hard-case set and asks, per gold mention, whether the correct
+candidate was retrieved, ranked first, and scored above threshold — in that
+order, so a "the scorer links nothing" result can't be mistaken for a
+retrieval failure. Its gold→entity mapping is deliberately **not**
+`calibrate._identity_to_target` (that helper votes over the system's own
+links, which would be circular for a ranking diagnosis on identities with
+only 1-3 hard-case records); instead an identity's base name is mapped by
+majority vote across the entire silver corpus, and identities with no silver
+support elsewhere are reported unmapped rather than guessed. Real result: the
+scorer ranks the correct candidate first 97/103 times (94.2%) — it is not
+blind — but `speech_partner_compatibility` is 0 and `temporal_validity` is 1
+on every one of 15,796 real pairs and `first_attested_soft_prior` is never
+positive, so the best reachable logit is 0.200 and the best reachable
+probability is 0.550, below the 0.80 link threshold by construction, not by
+mistuning. This narrows (does not contradict) the ablation harness's
+0.527-max-observed figure above: 0.527 is what the existing weights actually
+produced on the cache, 0.550 is the hard ceiling three dead features impose
+regardless of weights.
+
+`scorer_fit_probe.py` asks the follow-up the diagnosis makes possible: would
+*fitting* `ScoringModel` (no new architecture, no new features) help? Split
+chronologically by chapter — train on the earliest 60% of labelled chapters,
+calibrate on the next 20%, evaluate on the final 20% — never randomly,
+because a random split would let late-volume evidence about a character
+calibrate an early decision about the same one. It writes the fitted model
+to `data/eval/scorer/fitted.json` as an ablation artifact only; the default
+scorer is untouched. The refit does not help and links nothing, and — the
+harder finding — every one of the 103 labelled gold candidates turns out to
+be decided by a pre-filter before the scorer ever sees it, so the scorer's
+own operating region contains no labels at all: neither a fitted scorer nor
+a bounded investigator can be evaluated there, which is why neither was
+built past this probe. See `docs/SCORER_DIAGNOSIS.md`.
 
 ### Compute and cost budget
 
@@ -1849,6 +1915,24 @@ math against hand-written WAVs (including the carried-over-shot path), and
 voice manifest. **None of this exercises a real novel, a real voice bank,
 or a real generation model** — same limitation as `test_voice.py`, and for
 the same reason (no VCTK download, no GPU in this environment).
+
+### `tests/test_readset_invalidation.py` (EVOLUTION 4.85)
+
+Read-set-derived cache invalidation as a controlled experiment, not a unit
+test of one function: it asserts both halves the disclosure's P6 claim
+needs — a change to a character **in** a panel's cast changes
+`compute_render_cache_key`'s output, and a change to a character **not** in
+the cast leaves it alone. The second half is what separates "invalidates
+correctly" from "any change busts every cache," which would pass a
+one-sided test.
+
+It also pins a real limitation rather than hiding it:
+`plan_builder.state_digest` hashes persona ids and attributes but **not**
+aliases, so a reveal that only adds a name to an existing persona does not
+invalidate a cached panel that was rendered before the reveal.
+`test_alias_change_is_not_in_the_read_set` records this as current,
+intentional behaviour to be changed deliberately (and the test updated with
+it), not silently.
 
 ---
 
