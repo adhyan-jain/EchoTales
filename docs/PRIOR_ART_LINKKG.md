@@ -1,4 +1,4 @@
-# Prior art verification — LINK-KG and LLMLINK
+# Prior art verification — LLMLINK and LINK-KG
 
 **Verified 2026-09-24 against the full paper text**, not a summary. Closes
 `docs/COMPLETION_PLAN.md` Track 6 item 27 and the blocking item in
@@ -122,12 +122,51 @@ this repository may imply that it is.
 
 ---
 
-## 5. What still needs checking
+## 5. LLMLINK — VERIFIED 2026-09-25, and it is the real comparable
 
-- **LLMLINK (Zhu, Wang, He) has not been read.** It is now the more important
-  of the two, and its asserted negatives at `plans.md:816` ("treats identity as
-  static; no temporal binding, transfer, deception, correction") carry the
-  positioning weight. Verify before the disclosure goes to VIT.
+Full text fetched from the ACL Anthology and grepped, same method as Section 1.
+
+> **LLMLINK: Dual LLMs for Dynamic Entity Linking on Long Narratives with
+> Collaborative Memorisation and Prompt Optimisation** — Lixing Zhu (KCL),
+> Jun Wang (Warwick / KCL), Yulan He (KCL / Alan Turing Institute).
+> COLING 2025, pages 11334–11347.
+
+| | |
+|---|---|
+| **Task** | Coreference resolution in **chunked long narratives** — the same task |
+| **Architecture** | A lower-level LLM for local NER that also emits auxiliary descriptions, and an upper-level LLM specialising in distant coreference, exchanging information through two memorisation schemes |
+| **Datasets** | **Coreference-Annotated LitBank** (Bamman et al. 2019) and **DOC-ARC** (Jörke et al. 2020) |
+| **Metrics** | **MUC, B³, CoNLL** — the same metric family this project reports |
+| **Backbones** | GPT-3.5-turbo and Mixtral-8x7B-Instruct; GPT-4 Turbo as the ranker |
+| **Claimed gain** | Performance over other LLM-based and fine-tuning approaches, "significantly reducing the resources required for inference and training" |
+
+### The four claims at `plans.md:816` — all VERIFIED TRUE
+
+| Claim | Verdict | Evidence (occurrences in the full paper) |
+|---|---|---|
+| Treats identity as static / no temporal binding | **VERIFIED** | One occurrence of "temporal", inside a *citation* to Piper et al. 2021 about "locations and temporal specifications" — not its own mechanism. Zero occurrences of timeline, chronology or valid time. |
+| No title transfer | **VERIFIED** | Zero occurrences of transfer, transferable, or alias typing of any kind. |
+| No deception / truth status | **VERIFIED** | Zero occurrences of deception, retraction, unreliable narration, truth status or contradiction. |
+| No correction loop | **VERIFIED** | Zero occurrences of human-in-the-loop, correction loop, or deferral. |
+
+**Why this matters more than the LINK-KG verification.** LINK-KG's four
+negatives are true but *trivially* so — it is a legal-document system that
+never attempts any of them (Section 3.1). LLMLINK attempts **the same task on
+the same kind of data with the same metrics**, so its negatives are
+substantive: a system built for long-narrative coreference, evaluated on
+LitBank, that still models identity as static and atemporal. That is the gap
+this project addresses, and LLMLINK is therefore the legitimate head-to-head
+comparable.
+
+**Baseline B is faithful to it.** `eval/baseline_b.py` implements exactly the
+described split — a chunk-local extractor that emits a surface plus a short
+descriptor, and a separate linker that sees only the descriptor and a compact
+running memory. The paper's own architecture, reimplemented on the same model
+family as the system under test.
+
+---
+
+## 6. What still needs checking
 - **CORE-KG**, LINK-KG's own baseline, is unexamined and may sit closer to this
   project than LINK-KG does.
 - No professional prior-art search has been performed. This is an engineer's
