@@ -72,7 +72,7 @@ invisible for 107 chapters is now present from chapter 1.
 
 ## 3. Coreference metrics, like for like
 
-Same gold file, same scorer, both databases. **Read §5 before quoting any of
+Same gold file, same scorer, both databases. **Read Section 5 before quoting any of
 these.**
 
 | Metric | before | after |
@@ -129,7 +129,7 @@ bound is currently zero.
 **The B³/MUC figures above are tautological on this gold set and must not be
 quoted as accuracy.** The silver subset of `reverend-insanity.jsonl` is 1,816
 mentions over **23 distinct surfaces**, 100% recoverable by grouping on the
-surface string (`docs/EVAL_RETRIEVER.md` §1). Any exact-string matcher scores
+surface string (`docs/EVAL_RETRIEVER.md` Section 1). Any exact-string matcher scores
 ~100% precision on it. The pre-fix triple P=100.0/R=94.6/F1=97.2 is
 byte-identical to the headline `EVOLUTION.md` 4.74 retracted.
 
@@ -208,7 +208,7 @@ weakest part of the system by a wide margin (n=4; directional only).
 - Contradiction detection: **Experimental → Verified as firing** (50 real
   contradictions; whether each is *correct* is unreviewed).
 - Scorer: stays **Experimental**, and the starvation defence is now closed.
-- Speaker attribution: 45.5% (§4.60) → **63.0%**, on a restructured tier mix.
+- Speaker attribution: 45.5% (Section 4.60) → **63.0%**, on a restructured tier mix.
 - `docs/STATUS.md`'s standing truth constraint — "nothing below may say or
   imply mention recall, CEAF-e, or speaker attribution improved" — is
   **discharged**. They improved; this document is the measurement.

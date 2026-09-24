@@ -46,7 +46,7 @@ stale image from the previous configuration, with no error or warning.
 
 IP-Adapter is **not removed from the SDXL engine classes** —
 `IllustriousEngine`/`NoobAIEngine` still carry full, working IP-Adapter code.
-What was removed (EVOLUTION §4.47, measured colour/composition contamination
+What was removed (EVOLUTION Section 4.47, measured colour/composition contamination
 that didn't generalize across novels) is the **call site**:
 `render_panels`'s per-panel loop unconditionally passes `reference_images=[],
 reference_weight=0.0` (panels.py:2597-2607). Dead code just above it

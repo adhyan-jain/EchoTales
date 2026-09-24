@@ -24,7 +24,7 @@ mechanisms and the ablations, not from these two numbers.
 
 **And a coreference number from this corpus is worth little on its own.** The
 silver files that cover enough chapters to make a baseline comparison
-meaningful are **100% surface-trivial** (`docs/EVAL_RETRIEVER.md` §1): their
+meaningful are **100% surface-trivial** (`docs/EVAL_RETRIEVER.md` Section 1): their
 partitions are reproducible by grouping on the surface string, so a baseline
 that merely string-matches competently scores ~100% precision too. The only
 non-trivial set, `reverend-insanity-hardcases.jsonl`, is 89 records spread
@@ -96,7 +96,7 @@ spans in a single completion, and it stopped after ten.
 | **Baseline A** | **10** |
 
 Precision of 100.0% on 10 mentions is not a quality signal — it is ten easy
-RIGID_NAME hits on a surface-trivial gold subset (see §0). **Recall is the
+RIGID_NAME hits on a surface-trivial gold subset (see Section 0). **Recall is the
 informative half here**, and 0.2% is the number that matters.
 
 This is the honest, non-strawman result of the architecture `plans.md`

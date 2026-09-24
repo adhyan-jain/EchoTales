@@ -88,13 +88,13 @@ premature.*
 
 ## 3. A documented claim this refutes
 
-`docs/STATUS.md` "Stale claims found this pass" #2, and `EVOLUTION.md` §4.69,
+`docs/STATUS.md` "Stale claims found this pass" #2, and `EVOLUTION.md` Section 4.69,
 conclude that the TRANSFERABLE_TITLE recall@k gate:
 
 > "cannot produce a number on this novel no matter how much more gets
 > annotated."
 
-**It can, and the table above is one.** §4.69 was correct about its actual
+**It can, and the table above is one.** Section 4.69 was correct about its actual
 subject: `generate_gold.py` only admits mentions carrying a resolved
 `target_id`, and real TRANSFERABLE_TITLE mentions on RI correctly resolve to
 `None` by design (non-negotiable #9), so gold derived *that way* can never

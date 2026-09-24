@@ -59,11 +59,11 @@ position that observer is taken to be asking from**:
 | chapter 200 | **1** — `Bai Ning Bing` |
 
 The witness learns at chapter 166 and knows nothing before it. This is a
-**different axis** from §2: §2 varies *who* is asking, §3 varies *when they
+**different axis** from Section 2: Section 2 varies *who* is asking, Section 3 varies *when they
 are asking from*, and both are needed for the claim that identity is observer-
 and time-scoped rather than globally true.
 
-EVOLUTION 4.80 demonstrated §2 on real data. **§3 on real data is new here**,
+EVOLUTION 4.80 demonstrated Section 2 on real data. **Section 3 on real data is new here**,
 and it is the sharper of the two — a fact that is true, known to this
 observer, and still correctly invisible at an earlier position is not
 something an access-control filter or a post-hoc redaction produces.
@@ -97,7 +97,7 @@ coherently.
   `StateResolver(default_observer=…)` is wired and unit-tested, and the query
   half above is real, but the two comparison figures the paper wants
   (`COMPLETION_PLAN` item 18 — one scene as the reader knows it versus as a
-  witness does) do not exist. Do not describe §2/§3 as demonstrating
+  witness does) do not exist. Do not describe Section 2/Section 3 as demonstrating
   observer-conditioned generation. They demonstrate the query it would consume.
 - **The observer axis is thinly populated.** 12 observations from 3 reveals
   across a 199-chapter volume. The mechanism is exercised; it is not

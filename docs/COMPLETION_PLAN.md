@@ -153,7 +153,7 @@ this track.**
      score, sort by start.
 
    Cost: median chapter 11,556 chars → 3 calls instead of 1. State that
-   honestly against `architecture.md` §7's call-budget rule; do not hide it.
+   honestly against `architecture.md` Section 7's call-budget rule; do not hide it.
    `mentions/chapter_ner.py:182-186` already calls `detect_with_context` and
    has its own chunking path — check it for interaction before changing.
 
@@ -513,10 +513,10 @@ counting). `QATier` and `VisualQAResult` are fully typed in
     Written 2026-09-24. `docs/IP/` added to `.gitignore` (line 160) and
     verified uncommittable with `git check-ignore` — the repo is public, and
     publishing a disclosure is itself a disclosure. Each mechanism separates
-    *verified* from *asserted*, which matters here: §2.5 and the generation
-    half of §2.6 are **stub-mode only and have never run against a real image
+    *verified* from *asserted*, which matters here: Section 2.5 and the generation
+    half of Section 2.6 are **stub-mode only and have never run against a real image
     engine**, and the document says so in the place counsel would look rather
-    than in a footnote. §4 lists what is explicitly NOT claimed (no Mondrian
+    than in a footnote. Section 4 lists what is explicitly NOT claimed (no Mondrian
     calibration, no validated accuracy number, no working scorer, no
     production-validated render).
 

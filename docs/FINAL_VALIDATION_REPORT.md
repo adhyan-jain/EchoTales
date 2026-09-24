@@ -102,7 +102,7 @@ Recorded because they are results, not failures.
 ## 6. Core metrics
 
 Silver tier, `reverend-insanity.jsonl`, same gold and scorer on both sides.
-**§5.1 applies: B³/MUC here are tautological and must not be quoted as
+**Section 5.1 applies: B³/MUC here are tautological and must not be quoted as
 accuracy.**
 
 | Metric | pre-fix | post-fix |
@@ -218,12 +218,12 @@ place and stays gitignored.
 
 ## 13. Exact next steps
 
-1. Finish Baseline B; record it in `docs/BASELINES.md` §4.
+1. Finish Baseline B; record it in `docs/BASELINES.md` Section 4.
 2. Run the observer-contrast render on the idle GPU (item 18) — the one figure
    nothing else can produce.
 3. Read LLMLINK; it now carries the positioning weight.
 4. Attack `RELATIONAL_DEICTIC` retrieval (25% @10), not the scorer.
-5. Adjudicate the two flagged hardcases records (`GOLD_DATASET_README.md` §5).
+5. Adjudicate the two flagged hardcases records (`GOLD_DATASET_README.md` Section 5).
 6. Build the figure/table generation scripts; no paper artifact exists yet.
 
 ---

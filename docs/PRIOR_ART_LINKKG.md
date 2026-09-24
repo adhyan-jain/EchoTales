@@ -2,7 +2,7 @@
 
 **Verified 2026-09-24 against the full paper text**, not a summary. Closes
 `docs/COMPLETION_PLAN.md` Track 6 item 27 and the blocking item in
-`docs/IP/invention_disclosure.md` §3.1, which recorded the four claims in
+`docs/IP/invention_disclosure.md` Section 3.1, which recorded the four claims in
 `plans.md:818-823` as "asserted, not checked" and required verification
 "before this document goes to VIT."
 
@@ -97,7 +97,7 @@ Three things follow:
 
 > "**Since no annotated ground truth exists for structured knowledge graphs in
 > this domain**, we adopt both a qualitative and quantitative evaluation
-> framework." — §D, Evaluation Measures
+> framework." — Section D, Evaluation Measures
 
 LINK-KG reports no precision, recall or F1 against gold **because it has no
 gold**. It substitutes two proxy metrics, detecting duplicates with RapidFuzz
