@@ -90,7 +90,47 @@ id, so a re-resolve does not reset every character's knowledge. This re-run is
 the proof: the volume was fully re-resolved and the observations regenerated
 coherently.
 
-## 5. What is NOT validated here
+## 5. Observer-conditioned GENERATION — demonstrated at the plan level
+
+**Measured 2026-09-25.** The previous revision of this document said the
+generation half was "wired and unit-tested" but unexercised. It is now
+exercised on real data, at the level where the mechanism actually lives.
+
+One panel request, chapter 169, cast = Bai Ning Bing, varying **only** the
+observer passed to `build_render_plan`:
+
+| Observer | aliases | persona_ids | characters in plan | `state_digest` |
+|---|---:|---|---:|---|
+| `READER` | 2 | `…:body1` | **1** | `de02bdbf43ff8294` |
+| a witness to the ch166 reveal | 1 | — | 0 | `3ce2442598531a35` |
+| a non-witness | 0 | — | 0 | `3ce2442598531a35` |
+
+`render/cache_key.py:43` derives the artifact cache key from
+`plan.state_digest`, so **a different observer produces a different cache key
+for the same panel request**. That is the composition the disclosure calls
+P3 ∘ P6: the generator is handed different facts, so it would produce — and
+cache — a different image. The excluded information never reaches the prompt,
+because the query never returned it.
+
+**What this still is not.** No image has been generated from these two plans.
+The claim demonstrated here is that *the instruction to the generator differs
+by observer*, which is the mechanism; producing the side-by-side pair remains
+`COMPLETION_PLAN` item 18 and needs GPU time.
+
+### A gap this measurement exposed
+
+The witness sees **1 alias but 0 personas**. Every row in
+`self_persona_binding` carries `observer_id = READER` (92 of 92), so a
+character observer can learn someone's *name* and still not resolve their
+*body*. For panel casting that means a witness-conditioned render drops the
+character entirely rather than depicting them with partial knowledge, which is
+almost certainly not the intended semantics. `resolve/detect_observations.py`
+records observations against alias facts only; persona bindings have no
+equivalent writer.
+
+---
+
+## 6. What is NOT validated here
 
 - **Observer-conditioned *generation* has never produced a real image.**
   `render --observer` → `render_panels(observer_id=…)` →
