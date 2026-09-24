@@ -319,9 +319,10 @@ def materialize_mentions(store: Store, novel_id: str, result: BaselineBResult) -
         lengths = {
             b.index: len(b.text) for b in chapter_obj.blocks if b.block_type.is_story_content
         }
+        batch: list[Mention] = []
         for i, row in enumerate(rows):
             block_index, local = _to_block_local(starts, lengths, row["abs_offset"])
-            store.add_mention(
+            batch.append(
                 Mention(
                     id=f"{novel_id}:baseline_b:{chapter:g}:{i}",
                     novel_id=novel_id,
@@ -338,7 +339,10 @@ def materialize_mentions(store: Store, novel_id: str, result: BaselineBResult) -
                     provenance=Provenance.MODEL,
                 )
             )
-            inserted += 1
+        # `add_mentions`, plural and batched -- Store has no singular form, and
+        # Baseline A already inserts this way.
+        store.add_mentions(batch)
+        inserted += len(batch)
     return inserted
 
 
