@@ -31,6 +31,38 @@ change the project's evidentiary position.
 
 ---
 
+## 1b. Session 2 (2026-09-25) — what changed
+
+| Item | Before | Now |
+|---|---|---|
+| Observer-conditioned **generation** | "wired, never exercised" | **Demonstrated at the plan level.** Same panel, varying only the observer: READER yields `characters=1`, digest `de02bdbf…`; a non-witness yields `characters=0`, digest `3ce24425…`. `cache_key.py` derives the artifact key from that digest, so the observer changes what would be generated *and* cached. |
+| Real image engine | never run | **Run.** NoobAI XL produced a 1.59 MB panel for ch169 under a real observer parameter — not a stub. |
+| LLMLINK prior art | unread, carrying the positioning weight | **Verified against the full paper.** All four claims hold, and unlike LINK-KG the negatives are substantive: same task, same data class (LitBank, DOC-ARC), same metrics (MUC/B³/CoNLL), and it still models identity as static. |
+| Self/Persona on real data | asserted | **Bounded.** One real case (Fang Yuan, two temporally disjoint bodies); five case classes are tests-only with row counts. |
+| `--compose-engine stub` | believed working | **Was broken.** `StubComposeEngine` lacked the `speed` field `cmd_render` passes, so the CI/no-GPU path raised `TypeError`. Fixed, with a dataclass-parity test. |
+| Persona bindings after a re-resolve | assumed durable | **`resolve` deletes them.** `resolve/runner.py:832` drops every binding for the novel. Running it after `run` silently emptied all 92, which empties every render plan three stages later. |
+
+### Two defects found by doing, not by reading
+
+1. **The stub compose path had never worked since `speed` was added.** It
+   crashed *after* generating 100 panels, which is the worst place to fail.
+   Nothing caught it because no test built both engines from one kwarg set.
+2. **`resolve` is destructive to persona state and says so nowhere.** The
+   symptom (generic prompts, no character identity in any panel) appears three
+   stages downstream and looks nothing like the cause. Documented in
+   `docs/RUNPOD_MIGRATION.md` Section 4, because on a rented GPU it costs the
+   whole session.
+
+### A gap the observer work exposed
+
+All 92 `self_persona_binding` rows carry `observer_id = READER`, so a witness
+to a reveal learns the **alias** but cannot resolve the **persona** — a
+witness-conditioned render drops the character rather than depicting them with
+partial knowledge. `detect_observations.py` writes alias observations only.
+The binding row already has an `observer_id` column; it has no writer.
+
+---
+
 ## 2. What is verified
 
 Each row has a reproducible command behind it.
@@ -239,7 +271,7 @@ Academic project report:      NEEDS RESULTS
 End-to-end product:           PARTIAL
 Gold evaluation:              IN PROGRESS
 Baseline comparison:          COMPLETE (both executed)
-Multimodal demonstration:     MISSING
+Multimodal demonstration:     PARTIAL (plan-level proven; real engine run)
 ```
 
 **Research contribution — PARTIALLY VERIFIED.** Verified: the NER repair and
