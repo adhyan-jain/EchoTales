@@ -206,9 +206,17 @@ tautological and recall is the informative half.**
 | Entities found | 7 | 32 | 261 (full volume) |
 | **Mentions found** | **10** | **133** | **359** |
 | B³ precision | 100.0% | 95.4% | 100.0% |
-| **B³ recall** | **0.2%** | **4.6%** | 96.3% |
+| **B³ recall** | **0.2%** | **4.6%** | **79.1%** (ch1-10) |
 
 Silver gold for ch1-10 holds **356** mentions.
+
+> **Corrected 2026-09-25.** This table first showed EchoTales at 96.3% B³
+> recall, which is its *full-volume* figure (Table 4), beside the baselines'
+> ch1-10 figures. On the same 356 ch1-10 silver mentions it is **79.1%** (65
+> unresolved). The comparison now comes from one script,
+> `scripts/baseline_comparison.py` → `data/eval/baseline_comparison.json` →
+> `docs/paper/TABLES.md` Table 7. The direction of every finding below is
+> unchanged; the size of EchoTales' lead is smaller.
 
 **Three findings this table supports:**
 
@@ -224,7 +232,7 @@ Silver gold for ch1-10 holds **356** mentions.
    pre-filter. Both baselines spend model calls on work a dictionary lookup
    does.
 
-**Caveat that limits all three:** EchoTales' 96.3% B³ recall is measured
+**Caveat that limits all three:** EchoTales' 79.1% B³ recall is measured
 against gold that is 100% recoverable by grouping on the surface string, so it
 substantially measures string matching. The baselines are handicapped on the
 same axis in the opposite direction — they must *find* the mention before they

@@ -76,7 +76,7 @@ from echotales.core.enums import AliasType, Provenance, ReferenceMode, SpanType
 from echotales.core.models import Mention
 from echotales.core.store import Store
 from echotales.pipeline.eval.coref_score import _block_starts, score_b3
-from echotales.pipeline.eval.gold import GoldSet, read_gold
+from echotales.pipeline.eval.gold import SILVER_BANNER, GoldSet, read_gold
 from echotales.pipeline.ingest.adapters import ChapterRange
 from echotales.pipeline.ingest.runner import ingest_novel
 from echotales.pipeline.llm.base import LLMRequest, LLMUnavailable
@@ -373,24 +373,33 @@ def run_baseline(
     return store, sections
 
 
-def score(store: Store, novel_id: str, gold: GoldSet, max_chapter: int) -> None:
-    sub = GoldSet(novel_id, [m for m in gold.mentions if m.chapter <= max_chapter])
-    # Same two-tier report cli.py's `cmd_eval` uses for the real resolver
-    # (draft vs. `GoldSet.confirmed_only`). The confirmed tier is empty on every
-    # shipped gold file as of 2026-09-23, so only the draft line prints -- and
-    # the draft line is scored against labels the resolver itself drafted, which
-    # makes it a self-agreement figure for the resolver and an unanchored one
-    # for this baseline. Printing both tiers is what keeps that visible.
-    for label, g in (
-        ("draft (entities_only)", gold.entities_only),
-        ("confirmed (entities_only)", gold.confirmed_only.entities_only),
-    ):
-        sub_g = GoldSet(novel_id, [m for m in g.mentions if m.chapter <= max_chapter])
-        if not sub_g.mentions:
-            continue
-        r = score_b3(store, novel_id, sub_g)
-        print(f"\n--- baseline A, ch1-{max_chapter}, {label} ---")
-        print(r.summary())
+def score(store: Store, novel_id: str, gold: GoldSet, max_chapter: int) -> dict[str, float | int]:
+    """B-cubed against the SILVER tier through `max_chapter`, printed and returned.
+
+    SILVER, not `entities_only`: until 2026-09-25 this scored every entity
+    record including the circular `gold-auto-builder` ones, while Baseline B
+    and BASELINES.md used SILVER -- so the two baselines' published recalls
+    were measured against different reference sets. The confirmed tier is
+    empty on every shipped file and is not printed.
+    """
+    sub = GoldSet(
+        novel_id,
+        [m for m in gold.silver_only.entities_only.mentions if m.chapter <= max_chapter],
+    )
+    if not sub.mentions:
+        print(f"\nno silver records through ch{max_chapter} -- not scored.")
+        return {}
+    r = score_b3(store, novel_id, sub)
+    print(f"\n--- baseline A vs SILVER, ch1-{max_chapter} ---")
+    print(f"    {SILVER_BANNER}")
+    print(r.summary())
+    return {
+        "b3_precision": r.precision,
+        "b3_recall": r.recall,
+        "b3_f1": r.f1,
+        "gold_mentions": r.total_gold,
+        "gold_unresolved": r.unresolved,
+    }
 
 
 def main() -> int:
@@ -407,6 +416,7 @@ def main() -> int:
         help="capped at the model's real architecture ceiling regardless of value passed",
     )
     parser.add_argument("--timeout", type=float, default=1800.0)
+    parser.add_argument("--out", default=None, help="write the run record here as JSON")
     parser.add_argument(
         "--sections",
         default="1-10,11-20,21-30,31-40,41-50,51-60",
@@ -452,10 +462,35 @@ def main() -> int:
         print(f"no gold at {args.gold}", file=sys.stderr)
         return 1
 
-    cumulative_hi = 0
-    for lo, hi in bounds:
-        cumulative_hi = hi
-        score(store, args.novel, gold, cumulative_hi)
+    scores = {f"ch1-{hi}": score(store, args.novel, gold, hi) for _lo, hi in bounds}
+
+    if args.out:
+        out = Path(args.out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(
+            json.dumps(
+                {
+                    "baseline": "A",
+                    "architecture": "long-context single pass per section, running roster",
+                    "model": args.model,
+                    "num_ctx": num_ctx,
+                    "sections": [list(b) for b in bounds],
+                    "calls": len(sections),
+                    "prompt_tokens": total_prompt,
+                    "output_tokens": total_output,
+                    "wall_seconds": total_wall,
+                    "mentions": sum(len(s.mentions) for s in sections),
+                    "entities": sum(len(s.entities) for s in sections),
+                    "gold": args.gold,
+                    "gold_tier": "SILVER",
+                    "scores": scores,
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        print(f"run record: {out}")
 
     return 0
 

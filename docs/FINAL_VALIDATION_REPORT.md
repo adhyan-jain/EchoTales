@@ -165,9 +165,11 @@ Retriever, hardcases silver set (the non-trivial one), post-fix:
 | Wall time | 146 s | 435 s | — |
 | **Mentions found (ch1-10)** | **10** | **133** | **359** |
 | B³ precision | 100.0% | 95.4% | 100.0% |
-| **B³ recall** | **0.2%** | **4.6%** | 96.3% |
+| **B³ recall** | **0.2%** | **4.6%** | **79.1%** |
 
-Silver gold for ch1-10 holds 356 mentions. Both baselines ran 2026-09-24, same
+Silver gold for ch1-10 holds 356 mentions. (EchoTales' column first showed
+96.3%, its full-volume figure; 79.1% is the same-range number, corrected
+2026-09-25 — `docs/BASELINES.md`.) Both baselines ran 2026-09-24, same
 model, same host, same scorer.
 
 Baseline A's failure mode is **output budget, not comprehension**: 24,302
@@ -176,7 +178,7 @@ ten mentions. Baseline B's chunked extractor fixes exactly that — **13× more
 mentions** — and pays **177× the calls** for it.
 
 **On this corpus the recall column is an extraction-coverage comparison, not a
-coreference-quality one.** EchoTales' 96.3% is measured against gold that is
+coreference-quality one.** EchoTales' 79.1% is measured against gold that is
 100% recoverable by grouping on the surface string; the baselines are
 handicapped on the same axis in the opposite direction, having to find a
 mention before they can match it.

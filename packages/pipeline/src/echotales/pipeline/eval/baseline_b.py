@@ -390,8 +390,13 @@ def main() -> int:
     result = run_baseline_b(store, args.novel, provider, lo, hi)
     print("\n" + result.summary())
     inserted = materialize_mentions(store, args.novel, result)
+    # `Store.close()` does not commit. Without this the first real run scored
+    # its 133 mentions in-process and then discarded them, leaving the
+    # `--db` it reported "materialized into" empty (found 2026-09-25).
+    store.conn.commit()
     print(f"materialized {inserted:,} mentions into {args.db}")
 
+    scores: dict[str, float | int] = {}
     gold_path = Path(args.gold or f"data/gold/{args.novel}.jsonl")
     if gold_path.exists():
         gold = read_gold(gold_path, novel_id=args.novel)
@@ -402,7 +407,15 @@ def main() -> int:
         if silver.mentions:
             print(f"\n--- baseline B vs SILVER, ch{lo}-{hi} ---")
             print(f"    {SILVER_BANNER}")
-            print(score_b3(store, args.novel, silver).summary())
+            r = score_b3(store, args.novel, silver)
+            print(r.summary())
+            scores = {
+                "b3_precision": r.precision,
+                "b3_recall": r.recall,
+                "b3_f1": r.f1,
+                "gold_mentions": r.total_gold,
+                "gold_unresolved": r.unresolved,
+            }
         else:
             print(f"\nno silver records in ch{lo}-{hi} of {gold_path} -- not scored.")
 
@@ -426,6 +439,9 @@ def main() -> int:
                     "wall_seconds": result.wall_seconds,
                     "mentions": len(result.mentions),
                     "entities": result.entities,
+                    "gold": str(gold_path),
+                    "gold_tier": "SILVER",
+                    "scores": {f"ch{lo}-{hi}": scores} if scores else {},
                 },
                 indent=2,
             )

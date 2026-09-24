@@ -1,0 +1,29 @@
+{
+  "baseline": "A",
+  "architecture": "long-context single pass per section, running roster",
+  "model": "qwen2.5:7b",
+  "num_ctx": 32768,
+  "sections": [
+    [
+      1,
+      10
+    ]
+  ],
+  "calls": 1,
+  "prompt_tokens": 24302,
+  "output_tokens": 697,
+  "wall_seconds": 128.9473611059948,
+  "mentions": 10,
+  "entities": 7,
+  "gold": "data/gold/reverend-insanity.jsonl",
+  "gold_tier": "SILVER",
+  "scores": {
+    "ch1-10": {
+      "b3_precision": 1.0,
+      "b3_recall": 0.0016143613586465193,
+      "b3_f1": 0.0032235187931145635,
+      "gold_mentions": 356,
+      "gold_unresolved": 346
+    }
+  }
+}
