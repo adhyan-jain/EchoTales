@@ -32,6 +32,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass, field
 
+from echotales.core.models import Mention
 from echotales.core.store import Store
 from echotales.pipeline.eval.gold import GoldMention, GoldSet, MentionKey
 
@@ -124,6 +125,20 @@ def _system_partition(
 ) -> dict[MentionKey, str | None]:
     """Mention key -> system target_id, restricted to gold-annotated positions.
 
+    None means either "no system mention there" or "a mention with no target";
+    callers that must tell those apart use `align_system_mentions` directly.
+    """
+    return {
+        key: (sm.target_id if sm is not None else None)
+        for key, sm in align_system_mentions(store, novel_id, gold).items()
+    }
+
+
+def align_system_mentions(
+    store: Store, novel_id: str, gold: GoldSet
+) -> dict[MentionKey, Mention | None]:
+    """Mention key -> the system mention aligned to it, or None if undetected.
+
     Matched by chapter-absolute offset after translating each system mention
     out of its block-local coordinates (see `_block_starts`). A small window is
     still allowed on top of that, since gold offsets come from a fresh
@@ -134,7 +149,7 @@ def _system_partition(
     for m in gold.mentions:
         gold_positions[m.chapter].append(m)
 
-    result: dict[MentionKey, str | None] = {}
+    result: dict[MentionKey, Mention | None] = {}
     for chapter, wanted in gold_positions.items():
         block_starts = _block_starts(store, novel_id, chapter)
         mentions = store.get_mentions(novel_id, chapter=chapter)
@@ -152,7 +167,7 @@ def _system_partition(
                 dist = abs(abs_offset - gm.offset)
                 if dist < best_dist:
                     best, best_dist = sm, dist
-            result[gm.key] = best.target_id if best is not None else None
+            result[gm.key] = best
     return result
 
 

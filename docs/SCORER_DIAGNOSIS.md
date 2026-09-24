@@ -93,6 +93,34 @@ TRANSFERABLE_TITLE recall@10 is 88.9%: that evaluation hands the gold span
 straight to the retriever and so bypasses detection. **Retrieval is adequate
 when given the span; the mention layer rarely produces the span.**
 
+### 4a. What the resolver decides for the hard cases it *does* detect — 2026-09-25
+
+`scripts/hardcase_resolution.py` → `data/eval/hardcase_resolution.json`. Uses
+the coreference scorer's own identity mapping, and reports two alignments:
+**overlap** (the rule above, which reproduces the 59 exactly) and **exact**
+(the scorer's surface-and-offset rule, what B³/MUC actually see).
+
+| Category | n | not detected (overlap) | correct | wrong | unresolved | gold unmapped |
+|---|---:|---:|---:|---:|---:|---:|
+| **All** | 88 | 59 | **23** | **0** | 0 | 6 |
+| reveal | 17 | 7 | 10 | 0 | 0 | 0 |
+| disguise | 13 | 2 | 9 | 0 | 0 | 2 |
+| body_change | 11 | 8 | 3 | 0 | 0 | 0 |
+| title_transfer | 17 | 16 | 1 | 0 | 0 | 0 |
+| relational_deictic | 29 | 25 | 0 | 0 | 0 | 4 |
+
+- **Every decidable detected hard case is linked correctly: 23 of 23, no wrong
+  links, no deferrals.** That fits non-negotiable 9 (precision over recall):
+  the resolver is precise on what it sees. The loss is entirely upstream.
+- Under **exact** alignment only 20 are detected (68 not detected): nine
+  hard-case spans are found with different boundaries (e.g. a longer name
+  span), so the coreference metrics undercount detection slightly relative to
+  this table.
+- The 6 "gold unmapped" are detected, but their gold identity has no system
+  entity, so correct/wrong cannot be decided. They are not counted as correct.
+- n is small and SILVER. "23/23" has a 95% Wilson lower bound of about 86%;
+  it does not establish a precision figure for the hard types in general.
+
 ## 5. Would fitting help? Measured, not assumed
 
 `scripts/scorer_fit_probe.py` fits the existing `ScoringModel` (logistic, no new

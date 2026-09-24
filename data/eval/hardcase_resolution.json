@@ -1,0 +1,123 @@
+{
+  "banner": "SILVER -- LLM-derived reference set (Claude), not human gold; no IAA",
+  "db": "data/reruns/ner-window-ri.db",
+  "gold": "data/gold/reverend-insanity-hardcases.jsonl",
+  "outcomes": {
+    "exact": {
+      "ALL": {
+        "not-detected": 68,
+        "unresolved": 0,
+        "correct": 20,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 88
+      },
+      "body_change": {
+        "not-detected": 8,
+        "unresolved": 0,
+        "correct": 3,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 11
+      },
+      "disguise": {
+        "not-detected": 5,
+        "unresolved": 0,
+        "correct": 8,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 13
+      },
+      "not_entity_control": {
+        "not-detected": 1,
+        "unresolved": 0,
+        "correct": 0,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 1
+      },
+      "relational_deictic": {
+        "not-detected": 29,
+        "unresolved": 0,
+        "correct": 0,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 29
+      },
+      "reveal": {
+        "not-detected": 8,
+        "unresolved": 0,
+        "correct": 9,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 17
+      },
+      "title_transfer": {
+        "not-detected": 17,
+        "unresolved": 0,
+        "correct": 0,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 17
+      }
+    },
+    "overlap": {
+      "ALL": {
+        "not-detected": 59,
+        "unresolved": 0,
+        "correct": 23,
+        "wrong": 0,
+        "gold-unmapped": 6,
+        "n": 88
+      },
+      "body_change": {
+        "not-detected": 8,
+        "unresolved": 0,
+        "correct": 3,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 11
+      },
+      "disguise": {
+        "not-detected": 2,
+        "unresolved": 0,
+        "correct": 9,
+        "wrong": 0,
+        "gold-unmapped": 2,
+        "n": 13
+      },
+      "not_entity_control": {
+        "not-detected": 1,
+        "unresolved": 0,
+        "correct": 0,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 1
+      },
+      "relational_deictic": {
+        "not-detected": 25,
+        "unresolved": 0,
+        "correct": 0,
+        "wrong": 0,
+        "gold-unmapped": 4,
+        "n": 29
+      },
+      "reveal": {
+        "not-detected": 7,
+        "unresolved": 0,
+        "correct": 10,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 17
+      },
+      "title_transfer": {
+        "not-detected": 16,
+        "unresolved": 0,
+        "correct": 1,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 17
+      }
+    }
+  }
+}
