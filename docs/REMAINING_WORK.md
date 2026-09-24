@@ -32,7 +32,7 @@ Tags used below:
 | **Review burden / escalation rate** | Measured, but degenerate | The escalation rate is **0 of 703 LLM calls**. The review queue is effectively empty, so non-negotiable 7's "bounded, measurable review queue" is bounded at zero. That is either excellent or a sign the ladder cannot fire; nothing distinguishes the two. | A corpus or a fault injection that forces escalation, to show the ladder works when needed. |
 | **Held-out conformal coverage** | Not evaluable | "No held-out pairs after the chapter-0 split": calibration has nothing to hold out, because pre-filters decide every labelled pair. | Same fix as LINK/NEW/DEFER: labelled SCORE-region pairs. |
 | **Scorer contribution** | Measured: **zero** | Under all 8 cache-answerable ablation conditions (Table 6), "scorer would link" is 0. Output is capped at p = 0.550 against a threshold of 0.80, and three features are inert. A refit does not help. | A design decision, not a measurement: retire the scorer, or make it comparative (rank plus margin). Ranking is already 94.2% correct. |
-| **Speaker attribution accuracy** | Stale | 45.5% "identifiable" was measured **before** the NER-windowing fix and has not been re-run. The EARS render shows concrete errors: vocative addressees taken as speakers, and Bai Ning Bing credited with lines in a scene she is not in. | Re-run the attribution measurement on `ner-window-ri.db`. Precision needs a labelled speaker set, which does not exist, so this is human-only for a real number. |
+| **Speaker attribution accuracy** | Coverage re-measured; precision spot-checked only | 46.1% attributed after the fix (EVOLUTION 4.88). Precision exists only as LLM-judged spot checks: the pronoun pass was right 2 times in 15 (now opt-in), and the real LLM tier 12 right / 16 wrong over ch1-3. | A labelled speaker set (human-only for a real number). Until then, make casting respect span confidence. |
 
 ### 1.2 Baselines and external comparison
 
@@ -95,7 +95,7 @@ There is also no **visual ablation** (render with a flat, non-temporal state ver
 
 ## 3. Open defects
 
-1. **Speaker attribution** in RI ch1: vocatives are read as the speaker, and characters are credited with lines in scenes they are not in (EVOLUTION 4.87).
+1. **Speaker attribution**: the real LLM tier (ch1-3) credits lines to vocative addressees and absent characters (EVOLUTION 4.87/4.88). The worse, pronoun-based pass is now opt-in. Voice casting ignores span confidence.
 2. **Silver span drift**: 7 records past the end of ch1 on the rerun database. The new ingest correctly drops the author's note (`GOLD_DATASET_README.md` Section 5, item 7).
 3. **Two hardcases records need adjudication** (`GOLD_DATASET_README.md` Section 5, items 2–3): one `not_an_entity` record carrying an identity, and one within-chapter identity conflict. This is human-only.
 4. **Render pipeline items** from EVOLUTION 4.51/4.52 are still open (see `HANDOFF.md`).

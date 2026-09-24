@@ -7762,3 +7762,54 @@ The rerun's ingest classifies ch1's closing author's note as `TRANSLATOR_NOTE`
 records annotated `'Gu'` inside the note. The new classification is right;
 the cost is ≤ 0.4 pts SILVER recall. `docs/GOLD_DATASET_README.md` Section 5
 item 7.
+
+### 4.88 Speaker attribution audited: "63% attributed" was 879 mislabelled pronoun guesses; the honest rate did not move with the NER fix *(2026-09-25)*
+
+The EARS render (4.87) made wrong speakers audible, so the attribution tiers
+were audited on `data/reruns/ner-window-ri.db`. Judgements below are the
+session model's reading of each line against its chapter context: an
+**LLM-derived spot check, not gold**, and every sample is small.
+
+**Coverage as persisted: 3,272 / 5,192 speech spans (63.0%)**, against
+4.60's 45.5%. The deterministic tiers are unchanged from 4.60: EXPLICIT 1,229,
+PROXIMAL 830 (4.60: 1,229 / 831). The whole gain is lines labelled
+`CONTEXTUAL_LLM`, and 879 of those 911 **involve no model at all**.
+`anaphora/runner.py::_recover_attributions`, added 2026-08-13 inside a render
+commit (`de3c4d0`) and never measured or logged here, resolves the nearest
+pronoun within 50 chars of an unattributed line to an antecedent. It then
+writes that name as the speaker, labels it `CONTEXTUAL_LLM` at confidence
+×0.8, and overwrites anonymous voice slots. 4.60's measurement ran
+`attribute_novel` alone, so it never saw this pass.
+
+| Tier | Lines | Sample | Correct | Wrong | Unclear |
+|---|---:|---|---:|---:|---:|
+| Pronoun recovery (conf 0.48) | 879 | 15, seed 20260925, ch25-186 | **2** | 12 | 1 |
+| Real LLM tier 4 (conf 0.65, ch1-3 cutoff) | 32 | all 33 incl. one ch7 line | 12 | 16 | 5 |
+
+In the pronoun sample, most misses have the speaker named in the tag beside
+the line ("Xiong Li grinned", "Fang Zheng's eyes brightened", "Tie Ruo Nan
+asked"), yet the pronoun resolves to someone else, often the addressee. One
+"line" was narration with a quoted word. 2/15 has a 95% Wilson interval of
+roughly 4–38% correct: at best, wrong more than 60% of the time.
+
+**Action, by the rule turn-taking was deleted under in 4.60 (wrong >20% of
+the time is worse than deferring):** pronoun recovery is now opt-in
+(`run --recover-pronoun-speakers`, `resolve_novel(recover_pronoun_speakers=
+True)`), kept rather than deleted because the idea is sound and the failure
+is in `resolve_pronoun`'s choice. The mislabel is commented at the write.
+Re-run on a scratch copy (`data/reruns/attrib-nopronoun-ri.db`,
+`attribute_novel` with the LLM tier through ch3, then anaphora):
+**2,392 / 5,192 attributed (46.1%)**; anonymous voice slots 1,920 → 2,800.
+
+**The honest attribution rate did not move with the NER fix: 45.5% → 46.1%.**
+More mentions did not reach the deterministic tiers' gate in a way that
+changed what they attribute.
+
+**Not acted on: tier 4 itself** (the real LLM, ch1–3). It also fails the 20%
+rule, 16 wrong against 12 right, but covers 32 lines, and ch1 is the cold
+start it exists for. Its ch1 errors are the ones the EARS render made audible:
+the siege crowd voiced as Fang Yuan and Bai Ning Bing. The pattern is the
+same as the pronoun path — a name present in or near the line is chosen over
+the speaker. Deciding its fate needs a labelled speaker set, which does not
+exist. Voice casting ignores span confidence entirely, so a 0.48 guess and a
+0.95 explicit tag cast identically; that is the cheaper lever if tier 4 stays.
