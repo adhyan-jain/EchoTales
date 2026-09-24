@@ -11,9 +11,9 @@
     "train_positive": 68
   },
   "test_prefilter_verdicts": {
-    "SCORE": 132,
+    "BLOCK": 39,
     "FORCE_LINK": 19,
-    "BLOCK": 39
+    "SCORE": 132
   },
   "raw": {
     "cases": 19,

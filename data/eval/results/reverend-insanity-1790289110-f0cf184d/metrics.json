@@ -1,0 +1,148 @@
+{
+  "database": "data/reruns/ner-window-ri.db",
+  "git_commit": "9227dd3-dirty",
+  "gold_path": "data/gold/reverend-insanity-hardcases.jsonl",
+  "metrics": {
+    "escalation": {
+      "avg_latency_ms": 4016.7,
+      "by_stage": [
+        {
+          "avg_ms": 7186.69696969697,
+          "calls": 33,
+          "escalations": 0,
+          "stage": "appearance_extraction",
+          "tier": "local",
+          "tokens": 64457
+        },
+        {
+          "avg_ms": 3045.171875,
+          "calls": 64,
+          "escalations": 0,
+          "stage": "character_profile",
+          "tier": "local",
+          "tokens": 62218
+        },
+        {
+          "avg_ms": 4251.804029304029,
+          "calls": 546,
+          "escalations": 0,
+          "stage": "ner",
+          "tier": "local",
+          "tokens": 1193544
+        },
+        {
+          "avg_ms": 1792.4545454545455,
+          "calls": 22,
+          "escalations": 0,
+          "stage": "persona_split",
+          "tier": "local",
+          "tokens": 14292
+        },
+        {
+          "avg_ms": 810.4473684210526,
+          "calls": 38,
+          "escalations": 0,
+          "stage": "speaker_attribution",
+          "tier": "local",
+          "tokens": 17981
+        }
+      ],
+      "calls": 703,
+      "escalation_rate": 0.0,
+      "escalations": 0,
+      "tokens": 1352492
+    },
+    "held_out_coverage": {
+      "calibration_size": 0,
+      "empirical": 0.0,
+      "false_links": 0,
+      "split_chapter": 0.0,
+      "target": 0.95,
+      "test_size": 0
+    },
+    "linked_share": {
+      "ci_high": 0.3181818181818182,
+      "ci_low": 0.13636363636363635,
+      "n": 88,
+      "point": 0.22727272727272727,
+      "resamples": 2000
+    },
+    "silver": {
+      "b3": {
+        "f1": 0.5060341071901765,
+        "precision": 0.9303030303030302,
+        "recall": 0.3475378787878788
+      },
+      "b3_project_variant": {
+        "f1": 0.21924276920482336,
+        "precision": 0.6933333333333334,
+        "recall": 0.13020833333333334
+      },
+      "banner": "SILVER -- LLM-derived reference set (Claude), not human gold; no IAA",
+      "ceafe": {
+        "f1": 0.21463482753805335,
+        "precision": 0.6653679653679654,
+        "recall": 0.12795537795537795
+      },
+      "conll": {
+        "f1": 0.33546107348083853,
+        "precision": 0.33546107348083853,
+        "recall": 0.33546107348083853
+      },
+      "muc": {
+        "f1": 0.2857142857142857,
+        "precision": 0.7333333333333333,
+        "recall": 0.1774193548387097
+      },
+      "recall_at_k": {
+        "by_alias_type": {
+          "EPITHET": {
+            "1": 1.0,
+            "10": 1.0,
+            "20": 1.0,
+            "5": 1.0
+          },
+          "RELATIONAL_DEICTIC": {
+            "1": 0.0,
+            "10": 0.25,
+            "20": 0.5,
+            "5": 0.25
+          },
+          "RIGID_NAME": {
+            "1": 0.7741935483870968,
+            "10": 0.9032258064516129,
+            "20": 1.0,
+            "5": 0.8387096774193549
+          },
+          "TRANSFERABLE_TITLE": {
+            "1": 0.3333333333333333,
+            "10": 0.8888888888888888,
+            "20": 1.0,
+            "5": 0.7777777777777778
+          }
+        },
+        "by_alias_type_n": {
+          "EPITHET": 1,
+          "RELATIONAL_DEICTIC": 4,
+          "RIGID_NAME": 31,
+          "TRANSFERABLE_TITLE": 9
+        },
+        "cases": 45,
+        "overall": {
+          "1": 0.6222222222222222,
+          "10": 0.8444444444444444,
+          "20": 0.9555555555555556,
+          "5": 0.7777777777777778
+        },
+        "unmapped": 17
+      },
+      "records": 88
+    }
+  },
+  "novel_id": "reverend-insanity",
+  "platform": "Linux-7.2.4-arch1-2-x86_64-with-glibc2.44",
+  "python": "3.12.13",
+  "run_id": "reverend-insanity-1790289110-f0cf184d",
+  "seed": 20260923,
+  "written_at": 1790289110.9088326
+}

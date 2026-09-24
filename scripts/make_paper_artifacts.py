@@ -89,11 +89,15 @@ class Figure:
         return "\n".join(out) + "\n"
 
 
-def _latest_metrics() -> dict:
-    """Newest persisted run that actually carries silver metrics.
+def _latest_metrics(gold_path: str) -> dict:
+    """Newest persisted run over `gold_path` that actually carries silver metrics.
 
     Several early runs predate the silver tier and carry only escalation and
     linked_share, so "newest" alone would select a file with nothing in it.
+    Filtered by gold file because "newest" also silently swapped Table 4 to the
+    45-case hardcases run the first time reproduce_results.sh evaluated both
+    files back to back (2026-09-25): coreference over 45 hard cases and over
+    1,816 silver records are different measurements, not a refresh.
     """
     best: dict = {}
     for path in sorted(RESULTS.glob("*/metrics.json")):
@@ -101,7 +105,7 @@ def _latest_metrics() -> dict:
             data = json.loads(path.read_text())
         except (OSError, json.JSONDecodeError):
             continue
-        if "silver" in data.get("metrics", {}):
+        if "silver" in data.get("metrics", {}) and data.get("gold_path") == gold_path:
             best = data
     return best
 
@@ -163,7 +167,7 @@ def table_recall(metrics: dict) -> Table | None:
         rows,
         note=SILVER_NOTE + " n is small for the hard alias types; single cases move "
         "TRANSFERABLE_TITLE by roughly 11 points and RELATIONAL_DEICTIC by 25.",
-        source=f"data/eval/results/{metrics.get('run_id', '?')}/metrics.json",
+        source=f"data/eval/results/{metrics.get('run_id', '?')}/metrics.json (gold: {metrics.get('gold_path', '?')}, db: {metrics.get('database', '?')})",
     )
 
 
@@ -194,7 +198,7 @@ def table_coref(metrics: dict) -> Table | None:
         note=SILVER_NOTE + " B3/MUC are TAUTOLOGICAL on a surface-trivial gold set "
         "and must not be quoted as accuracy; CEAF-e is entity-based and is the "
         "discriminative one here.",
-        source=f"data/eval/results/{metrics.get('run_id', '?')}/metrics.json",
+        source=f"data/eval/results/{metrics.get('run_id', '?')}/metrics.json (gold: {metrics.get('gold_path', '?')}, db: {metrics.get('database', '?')})",
     )
 
 
@@ -281,12 +285,16 @@ def main() -> int:
     out = Path(args.out)
     (out / "tables").mkdir(parents=True, exist_ok=True)
 
-    metrics = _latest_metrics()
+    # Coreference is scored over the full silver file; recall@K over the
+    # hardcases file, the only one with non-RIGID_NAME alias types (on the full
+    # file every case is RIGID_NAME and recall is 99.9% by construction).
+    coref_metrics = _latest_metrics("data/gold/reverend-insanity.jsonl")
+    recall_metrics = _latest_metrics("data/gold/reverend-insanity-hardcases.jsonl")
     built: list[Table] = []
     for table, stem in (
         (table_dataset(), "table2_dataset"),
-        (table_coref(metrics), "table4_coref"),
-        (table_recall(metrics), "table5_recall_at_k"),
+        (table_coref(coref_metrics), "table4_coref"),
+        (table_recall(recall_metrics), "table5_recall_at_k"),
         (table_compounding(), "table6a_compounding"),
     ):
         if table is None:
@@ -327,11 +335,12 @@ def main() -> int:
         f"  figures: {ready} data-ready, {todo} TODO, "
         f"{len(figures()) - ready - todo} hand-drawn diagrams"
     )
-    if not metrics:
-        print(
-            "  WARNING: no persisted run carried silver metrics -- run "
-            "`echotales eval --novel <id> --gold <file>` first"
-        )
+    for label, found in (("coreference", coref_metrics), ("recall@K", recall_metrics)):
+        if not found:
+            print(
+                f"  WARNING: no persisted {label} run carried silver metrics -- run "
+                "`echotales eval --novel <id> --gold <file>` first"
+            )
     return 0
 
 

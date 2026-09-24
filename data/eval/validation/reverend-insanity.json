@@ -63,9 +63,16 @@
     {
       "check": "malformed-spans",
       "severity": "error",
-      "count": 770,
-      "detail": "770 of 7,879 spans do not match the chapter text at their offset",
+      "count": 777,
+      "detail": "777 of 7,879 spans do not match the chapter text at their offset",
       "examples": [
+        "ch1@12522 'Gu': offset outside chapter",
+        "ch1@12566 'Gu': offset outside chapter",
+        "ch1@12579 'Gu': offset outside chapter",
+        "ch1@12722 'Gu': offset outside chapter",
+        "ch1@12914 'Gu': offset outside chapter",
+        "ch1@13021 'Gu': offset outside chapter",
+        "ch1@13089 'Gu': offset outside chapter",
         "ch61@1477 expected 'Fang Yuan', text has ' Fang Yua'",
         "ch61@2551 expected 'Fang Yuan', text has ' Fang Yua'",
         "ch61@3863 expected 'Fang Yuan', text has ' Fang Yua'",
@@ -78,14 +85,7 @@
         "ch62@10464 expected 'Fang Yuan', text has ' Fang Yua'",
         "ch62@11638 expected 'Fang Yuan', text has ' Fang Yua'",
         "ch62@11997 expected 'Fang Zheng', text has ' Fang Zhen'",
-        "ch63@833 expected 'Fang Zheng', text has ' Fang Zhen'",
-        "ch63@1252 expected 'Fang Zheng', text has ' Fang Zhen'",
-        "ch63@2268 expected 'Fang Zheng', text has ' Fang Zhen'",
-        "ch63@2290 expected 'Fang Yuan', text has ' Fang Yua'",
-        "ch63@2565 expected 'Fang Zheng', text has ' Fang Zhen'",
-        "ch63@4468 expected 'Fang Zheng', text has ' Fang Zhen'",
-        "ch63@4739 expected 'Fang Zheng', text has ' Fang Zhen'",
-        "ch63@5326 expected 'Fang Zheng', text has ' Fang Zhen'"
+        "ch63@833 expected 'Fang Zheng', text has ' Fang Zhen'"
       ]
     },
     {
