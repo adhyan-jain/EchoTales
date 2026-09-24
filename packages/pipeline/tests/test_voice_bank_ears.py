@@ -76,3 +76,13 @@ def test_a_read_speech_bank_falls_back_to_its_reference(tmp_path: Path) -> None:
     voice = BankVoice("x", "male", 40, reference_clip=ref)
     assert voice.clip_for("whisper") == ref
     assert voice.clip_for("angry") == ref
+
+
+def test_non_native_speakers_are_excluded_by_default(tmp_path: Path) -> None:
+    """A German-native speaker was cast as narrator for 81/97 lines once."""
+    _make_ears(tmp_path)
+    meta = json.loads((tmp_path / "speaker_statistics.json").read_text())
+    meta["p001"]["native language"] = "german"
+    (tmp_path / "speaker_statistics.json").write_text(json.dumps(meta))
+    assert load_ears(tmp_path).voices == []
+    assert [v.speaker_id for v in load_ears(tmp_path, native_english_only=False).voices] == ["earsp001"]

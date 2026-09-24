@@ -392,7 +392,12 @@ def _ears_age(band: str) -> int:
     return (lo + hi) // 2
 
 
-def load_ears(root: str | Path, *, metadata: str | Path | None = None) -> VoiceBank:
+def load_ears(
+    root: str | Path,
+    *,
+    metadata: str | Path | None = None,
+    native_english_only: bool = True,
+) -> VoiceBank:
     """Load EARS as an emotion- and style-capable voice bank.
 
     **EARS** (Expressive Anechoic Recordings of Speech; Richter et al.,
@@ -408,6 +413,12 @@ def load_ears(root: str | Path, *, metadata: str | Path | None = None) -> VoiceB
     Speakers whose gender or age band is undisclosed are skipped rather than
     guessed, for the same reason `load_cremad` skips them: an unknown would
     silently cast into one bucket.
+
+    `native_english_only` (default on): the output is English audio, and the
+    first full-bank render cast a German-native speaker as narrator for 81 of
+    97 chapter-1 lines because he happened to be in the directory. EARS records
+    each speaker's native language; a non-native speaker is still loadable by
+    turning this off, but is never picked up silently.
     """
     import json
 
@@ -425,6 +436,8 @@ def load_ears(root: str | Path, *, metadata: str | Path | None = None) -> VoiceB
         gender = str(info.get("gender", "")).casefold()
         age = _ears_age(str(info.get("age", "")))
         if gender not in ("male", "female") or not age:
+            continue
+        if native_english_only and "english" not in str(info.get("native language", "")).casefold():
             continue
         clips: dict[str, Path] = {}
         for clip in sorted(speaker_dir.glob("emo_*_sentences.wav")):
