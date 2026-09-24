@@ -61,6 +61,7 @@ from echotales.core.store import Store
 from echotales.pipeline.eval.baseline_a import _locate, _to_block_local
 from echotales.pipeline.eval.coref_score import _block_starts, score_b3
 from echotales.pipeline.eval.gold import SILVER_BANNER, GoldSet, read_gold
+from echotales.pipeline.ingest.adapters import ChapterRange
 from echotales.pipeline.ingest.runner import ingest_novel
 from echotales.pipeline.llm.base import LLMRequest, LLMUnavailable
 from echotales.pipeline.llm.ollama import OllamaProvider
@@ -370,7 +371,12 @@ def main() -> int:
         return 2
 
     store = Store(args.db)
-    ingest_novel(args.novel, store, sources_path="data/sources.toml", chapters=f"{lo}-{hi}")
+    # ChapterRange, not the "1-10" string: `adapter.chapters()` does
+    # `parsed.number not in wanted`, which on a str tests substring membership
+    # of a float and raises. Baseline A already does it this way.
+    ingest_novel(
+        args.novel, store, sources_path="data/sources.toml", chapters=ChapterRange(lo, hi)
+    )
 
     result = run_baseline_b(store, args.novel, provider, lo, hi)
     print("\n" + result.summary())
