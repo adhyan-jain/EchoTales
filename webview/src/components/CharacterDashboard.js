@@ -8,6 +8,8 @@ import { Card, CardBody } from './ui/Card';
 import EvidenceBlock from './ui/EvidenceBlock';
 import CharacterRow from './ui/CharacterRow';
 import AudioPlayer from './ui/AudioPlayer';
+import DossierHeader from './ui/DossierHeader';
+import TimelineRail from './ui/TimelineRail';
 import { EmptyState, LoadingState } from './ui/EmptyState';
 import { useToast } from './ui/Toast';
 
@@ -26,7 +28,7 @@ const PROMINENCE_LABEL = {
  * not just the current value, or the override is a guess instead of a
  * correction.
  */
-export default function CharacterDashboard({ novelId }) {
+export default function CharacterDashboard({ novelId, readOnly = false }) {
   const [status, setStatus] = useState('loading'); // 'loading' | 'ready' | 'error' | 'not_found'
   const [characters, setCharacters] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
@@ -107,6 +109,25 @@ export default function CharacterDashboard({ novelId }) {
     );
   };
 
+  // Enqueues a real `refimg_search` job (Product Orchestration track) --
+  // the search itself runs async server-side, so this only confirms the
+  // job was queued; the new candidates show up on the next `load()` a
+  // reviewer triggers (there's no push channel to auto-refresh on job
+  // completion).
+  const handleSearchReferences = (selfId) => {
+    return withPending(selfId, () =>
+      api
+        .searchReferences(novelId, selfId)
+        .then(() => {
+          push('Reference search queued. Refresh this page in a moment to see new candidates.', 'success');
+        })
+        .catch((err) => {
+          push((err && err.message) || 'Could not queue reference search.', 'danger');
+          throw err;
+        })
+    );
+  };
+
   const q = search.toLowerCase();
   const filtered = characters.filter((c) => (c.label || '').toLowerCase().includes(q));
   const mainCast = filtered.filter((c) => c.prominence !== 'INCIDENTAL');
@@ -121,9 +142,11 @@ export default function CharacterDashboard({ novelId }) {
       <CharacterDetail
         character={selected}
         busy={pendingAction === selected.self_id}
+        readOnly={readOnly}
         onBack={() => setSelectedId(null)}
-        onSetVoice={(speakerId) => handleSetVoice(selected.self_id, speakerId)}
-        onSelectReference={(candidateId) => handleSelectReference(selected.self_id, candidateId)}
+        onSetVoice={readOnly ? undefined : (speakerId) => handleSetVoice(selected.self_id, speakerId)}
+        onSelectReference={readOnly ? undefined : (candidateId) => handleSelectReference(selected.self_id, candidateId)}
+        onSearchReferences={readOnly ? undefined : () => handleSearchReferences(selected.self_id)}
       />
     );
   }
@@ -221,7 +244,7 @@ export default function CharacterDashboard({ novelId }) {
   );
 }
 
-function CharacterDetail({ character, busy, onBack, onSetVoice, onSelectReference }) {
+function CharacterDetail({ character, busy, readOnly, onBack, onSetVoice, onSelectReference, onSearchReferences }) {
   const { label, prominence, voice, traits = [], reference_images: refs = [] } = character;
   const [voiceFormOpen, setVoiceFormOpen] = useState(false);
   const [voiceDraft, setVoiceDraft] = useState('');
@@ -239,20 +262,27 @@ function CharacterDetail({ character, busy, onBack, onSetVoice, onSelectReferenc
         &larr; Back to cast
       </Button>
 
-      <div className="mt-6 flex flex-wrap items-baseline gap-4 border-b border-border pb-6">
-        <h1 className="font-display text-5xl text-text">{label}</h1>
-        {prominence && (
-          <Label tone={prominence === 'PRINCIPAL' ? 'accent' : 'neutral'}>
-            {PROMINENCE_LABEL[prominence] || prominence}
-          </Label>
-        )}
+      <div className="mt-6">
+        <DossierHeader
+          eyebrow="Character dossier"
+          title={label}
+          tone={prominence === 'PRINCIPAL' ? 'accent' : 'neutral'}
+          badge={prominence ? PROMINENCE_LABEL[prominence] || prominence : null}
+        />
       </div>
 
       <Divider label="Reference & voice" className="mb-6 mt-10" />
       <div className="grid gap-8 md:grid-cols-2">
         <div>
-          <div className="font-mono text-xs uppercase tracking-wider text-muted mb-3">
-            Reference images
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="font-mono text-xs uppercase tracking-wider text-muted">
+              Reference images
+            </div>
+            {onSearchReferences && (
+              <Button variant="ghost" size="sm" disabled={busy} onClick={onSearchReferences}>
+                Search for more
+              </Button>
+            )}
           </div>
           {refs.length === 0 ? (
             <EmptyState title="No reference images yet" />
@@ -281,23 +311,25 @@ function CharacterDetail({ character, busy, onBack, onSetVoice, onSelectReferenc
                         <span className="mt-1 block font-mono text-xs text-muted">User uploaded</span>
                       )}
                     </div>
-                    <div className="flex shrink-0 gap-2">
-                      {!r.selected && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          disabled={busy}
-                          onClick={() => onSelectReference(r.id)}
-                        >
-                          Replace
-                        </Button>
-                      )}
-                      <span title="Image-to-image editing isn't wired up in the backend yet.">
-                        <Button variant="ghost" size="sm" disabled>
-                          Edit reference
-                        </Button>
-                      </span>
-                    </div>
+                    {!readOnly && (
+                      <div className="flex shrink-0 gap-2">
+                        {!r.selected && (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            disabled={busy}
+                            onClick={() => onSelectReference(r.id)}
+                          >
+                            Replace
+                          </Button>
+                        )}
+                        <span title="Image-to-image editing isn't wired up in the backend yet.">
+                          <Button variant="ghost" size="sm" disabled>
+                            Edit reference
+                          </Button>
+                        </span>
+                      </div>
+                    )}
                   </CardBody>
                 </Card>
               ))}
@@ -326,36 +358,39 @@ function CharacterDetail({ character, busy, onBack, onSetVoice, onSelectReferenc
                 <div className="font-sans text-sm text-muted">No voice assigned yet.</div>
               )}
 
-              <Divider className="my-4" />
-
-              {voiceFormOpen ? (
-                <div className="flex items-center gap-2">
-                  <Input
-                    placeholder="speaker id (e.g. p227)"
-                    value={voiceDraft}
-                    disabled={busy}
-                    onChange={(e) => setVoiceDraft(e.target.value)}
-                    autoFocus
-                  />
-                  <Button size="sm" disabled={busy || !voiceDraft.trim()} onClick={submitVoice}>
-                    Save
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled={busy}
-                    onClick={() => {
-                      setVoiceFormOpen(false);
-                      setVoiceDraft('');
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              ) : (
-                <Button variant="secondary" size="sm" disabled={busy} onClick={() => setVoiceFormOpen(true)}>
-                  Replace voice
-                </Button>
+              {!readOnly && (
+                <>
+                  <Divider className="my-4" />
+                  {voiceFormOpen ? (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="speaker id (e.g. p227)"
+                        value={voiceDraft}
+                        disabled={busy}
+                        onChange={(e) => setVoiceDraft(e.target.value)}
+                        autoFocus
+                      />
+                      <Button size="sm" disabled={busy || !voiceDraft.trim()} onClick={submitVoice}>
+                        Save
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => {
+                          setVoiceFormOpen(false);
+                          setVoiceDraft('');
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button variant="secondary" size="sm" disabled={busy} onClick={() => setVoiceFormOpen(true)}>
+                      Replace voice
+                    </Button>
+                  )}
+                </>
               )}
             </CardBody>
           </Card>
@@ -382,6 +417,13 @@ function CharacterDetail({ character, busy, onBack, onSetVoice, onSelectReferenc
           })}
         </div>
       )}
+
+      <Divider label="State history" className="mb-6 mt-10" />
+      {/* No `epochs` field exists on this payload (`build_character_dashboard`,
+          webview.py, confirmed by reading it) -- TimelineRail renders its own
+          honest "not yet available" state rather than this component
+          fabricating a single-persona timeline from the current snapshot. */}
+      <TimelineRail epochs={character.epochs} />
     </div>
   );
 }

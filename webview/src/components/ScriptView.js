@@ -1,5 +1,7 @@
 import React from 'react';
 import ScriptLine from './ScriptLine';
+import { EmptyState } from './ui/EmptyState';
+import ManuscriptSurface from './ui/ManuscriptSurface';
 
 export default function ScriptView({
   chapter,
@@ -15,7 +17,20 @@ export default function ScriptView({
   onRetype,
   onCreateMention,
 }) {
+  // `chapter` can be undefined for a beat after a manifest refresh --
+  // App.js derives it as `novel.chapters[chapterIdx]`, and a fresh/updated
+  // manifest can report fewer chapters than the index still selected from
+  // before the refresh, which threw "Cannot read properties of undefined
+  // (reading 'spans')" here instead of rendering an honest empty state.
+  if (!chapter) {
+    return (
+      <div id="script">
+        <EmptyState title="No chapter selected" description="Pick a chapter, or wait for the manifest to finish loading." />
+      </div>
+    );
+  }
   return (
+    <ManuscriptSurface chapterLabel={`Chapter ${String(chapter.number).padStart(2, '0')}${chapter.title ? ` · ${chapter.title}` : ''}`}>
     <div id="script">
       {chapter.spans.map((span, i) => {
         const prev = i > 0 ? chapter.spans[i - 1] : null;
@@ -39,5 +54,6 @@ export default function ScriptView({
         );
       })}
     </div>
+    </ManuscriptSurface>
   );
 }

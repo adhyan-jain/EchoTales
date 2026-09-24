@@ -12,7 +12,11 @@ import Input from './ui/Input';
 // tokens (per brief): this is a single shared server password, not a
 // per-user account system, so there's nothing here to dress up -- a name,
 // a field, a button.
-export default function Login({ onLoggedIn }) {
+export default function Login({
+  onLoggedIn,
+  title = 'EchoTales Review',
+  description = 'This review tool is password-protected.',
+}) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -43,8 +47,8 @@ export default function Login({ onLoggedIn }) {
         onSubmit={handleSubmit}
       >
         <div>
-          <h1 className="font-display text-xl text-text">EchoTales Review</h1>
-          <p className="mt-1 text-sm text-muted">This review tool is password-protected.</p>
+          <h1 className="font-display text-xl text-text">{title}</h1>
+          <p className="mt-1 text-sm text-muted">{description}</p>
         </div>
 
         <div className="space-y-1.5">

@@ -8,7 +8,27 @@ import EntityPicker from './components/EntityPicker';
 import Login from './components/Login';
 import NewProject from './components/NewProject';
 import CharacterDashboard from './components/CharacterDashboard';
+import GenerationWorkspace from './components/GenerationWorkspace';
+import OutputLibrary from './components/OutputLibrary';
+import ProjectHome from './components/ProjectHome';
+import TimelineRail from './components/ui/TimelineRail';
+import Label from './components/ui/Label';
+import InspectorSection from './components/ui/InspectorSection';
+import { getStoredTheme, applyTheme } from './theme';
 import { api } from './api';
+
+// Left-rail navigation. Every item is always shown (never hidden for being
+// "not implemented yet") -- each screen is responsible for its own honest
+// empty/error state when the data it needs isn't there, the same pattern
+// CharacterDashboard already uses for a 404/500 from the live backend.
+const NAV_ITEMS = [
+  { key: 'script', label: 'Script' },
+  { key: 'characters', label: 'Characters' },
+  { key: 'state', label: 'State' },
+  { key: 'generation', label: 'Generation' },
+  { key: 'outputs', label: 'Outputs' },
+  { key: 'project', label: 'Project' },
+];
 
 const DATA_BASE = process.env.PUBLIC_URL + '/data';
 
@@ -63,7 +83,17 @@ export default function App() {
   const [authChecked, setAuthChecked] = useState(false);
   const [authRequired, setAuthRequired] = useState(false);
   const [authed, setAuthed] = useState(api.hasToken());
-  const [view, setView] = useState('script'); // 'script' | 'characters' | 'new-project'
+  // 'script' | 'characters' | 'state' | 'generation' | 'outputs' | 'project' | 'new-project'
+  const [view, setView] = useState('script');
+  const [theme, setTheme] = useState(() => getStoredTheme() || 'dark');
+
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     if (!editMode) {
@@ -143,6 +173,19 @@ export default function App() {
   }, [refreshCorrections]);
 
   const novel = novels[novelId];
+
+  // A live-edit manifest refresh (`refetchNovel`) can report fewer chapters
+  // than before for the currently-selected novel -- e.g. a re-ingest/resolve
+  // rerun rebuilding the chapter table -- without going through
+  // `handleSelectNovel`'s reset. Left unclamped, `novel.chapters[chapterIdx]`
+  // silently returns `undefined` and crashed ScriptView with "Cannot read
+  // properties of undefined (reading 'spans')".
+  useEffect(() => {
+    if (!novel) return;
+    if (chapterIdx >= novel.chapters.length) {
+      setChapterIdx(Math.max(0, novel.chapters.length - 1));
+    }
+  }, [novel, chapterIdx]);
 
   const handleSelectNovel = useCallback((id) => {
     setNovelId(id);
@@ -427,40 +470,24 @@ export default function App() {
   return (
     <>
       <header>
-        <h1>EchoTales viewer</h1>
+        <div className="flex items-baseline gap-2">
+          <span className="font-mono text-[0.65rem] uppercase tracking-widest text-muted">EchoTales</span>
+          <h1 className="font-display text-xl text-text">
+            {(manifest.find((m) => m.id === novelId) || {}).label || novelId}
+          </h1>
+        </div>
         <select
           id="novel-select"
           value={novelId}
           onChange={(e) => handleSelectNovel(e.target.value)}
+          className="h-8 rounded-sm border border-border bg-bg px-2 font-sans text-sm text-text"
         >
           {manifest.map((m) => (
             <option key={m.id} value={m.id}>{m.label}</option>
           ))}
         </select>
-        <span className="sub" id="novel-sub">{novel.chapters.length} chapters loaded</span>
-        <div className="view-tabs">
-          <button
-            className={view === 'script' ? 'view-tab-active' : ''}
-            onClick={() => setView('script')}
-          >
-            Script
-          </button>
-          <button
-            className={view === 'characters' ? 'view-tab-active' : ''}
-            onClick={() => setView('characters')}
-          >
-            Characters
-          </button>
-          {editMode && (
-            <button
-              className={view === 'new-project' ? 'view-tab-active' : ''}
-              onClick={() => setView('new-project')}
-            >
-              + New project
-            </button>
-          )}
-        </div>
-        <label className="edit-toggle">
+        <Label tone="neutral" id="novel-sub">{novel.chapters.length} chapters loaded</Label>
+        <label className="edit-toggle flex items-center gap-2 font-sans text-sm text-text">
           <input
             type="checkbox"
             checked={editMode}
@@ -472,11 +499,29 @@ export default function App() {
           Live edit
         </label>
         {editMode && (
-          <button onClick={() => setShowAnalysis((v) => !v)}>
+          <button
+            type="button"
+            onClick={() => setShowAnalysis((v) => !v)}
+            className="h-8 rounded-sm border border-border px-3 font-sans text-sm text-text hover:border-accent hover:text-accent"
+          >
             Corrections ({correctionsSummary.pending_actionable ?? correctionsSummary.pending} pending
             {correctionsSummary.flags_open > 0 ? `, ${correctionsSummary.flags_open} flags` : ''})
           </button>
         )}
+        <button
+          type="button"
+          onClick={toggleTheme}
+          aria-label={`Switch to ${theme === 'dark' ? 'paper' : 'ink'} theme`}
+          className="ml-auto h-8 rounded-sm border border-border px-3 font-mono text-xs uppercase tracking-wider text-muted hover:border-accent hover:text-accent"
+        >
+          {theme === 'dark' ? 'Ink' : 'Paper'}
+        </button>
+        <a
+          href="/"
+          className="font-mono text-xs uppercase tracking-wider text-muted underline decoration-border underline-offset-4 hover:text-accent hover:decoration-accent"
+        >
+          &larr; Back to viewer
+        </a>
         <div className="stats-strip" id="stats-strip">
           <div><b>{s.chapters}</b> chapters</div>
           <div><b>{s.mentions.toLocaleString()}</b> mentions</div>
@@ -496,22 +541,21 @@ export default function App() {
         </div>
       </header>
 
-      {view === 'script' && (
-        <EntitySidebar
-          entities={novel.entities}
-          search={search}
-          onSearchChange={setSearch}
-          focusId={focusId}
-          onToggleFocus={handleToggleFocus}
-          editMode={editMode}
-          mergeSourceId={mergeSourceId}
-          onStartMerge={handleStartMerge}
-          onConfirmMerge={handleConfirmMerge}
-          onCancelMerge={handleCancelMerge}
-        />
-      )}
+      <nav className="rail" aria-label="Sections">
+        {NAV_ITEMS.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            className={`rail-nav-item${view === item.key ? ' active' : ''}`}
+            aria-current={view === item.key ? 'page' : undefined}
+            onClick={() => setView(item.key)}
+          >
+            {item.label}
+          </button>
+        ))}
+      </nav>
 
-      <main className={view !== 'script' ? 'main-full-width' : ''}>
+      <main>
         {view === 'script' && (
           <>
             <ChapterNav
@@ -537,16 +581,64 @@ export default function App() {
           </>
         )}
         {view === 'characters' && <CharacterDashboard novelId={novelId} />}
+        {view === 'state' && (
+          <div className="mx-auto max-w-3xl px-6 py-10">
+            <header className="border-b border-border pb-6">
+              <div className="font-mono text-xs uppercase tracking-widest text-muted">{novelId}</div>
+              <h1 className="mt-2 font-display text-4xl text-text">State &amp; timeline</h1>
+              <p className="mt-2 max-w-xl text-sm text-muted">
+                A character's body/persona history over story time -- Self ≠ persona is one of
+                EchoTales' central concepts. Open a character in the Cast archive to see its
+                timeline once the backend exposes epoch data.
+              </p>
+            </header>
+            <div className="mt-8">
+              <TimelineRail epochs={null} />
+            </div>
+          </div>
+        )}
+        {view === 'generation' && <GenerationWorkspace novelId={novelId} />}
+        {view === 'outputs' && <OutputLibrary novelId={novelId} />}
+        {view === 'project' && (
+          <ProjectHome
+            novelId={novelId}
+            onNewProject={() => setView('new-project')}
+          />
+        )}
         {view === 'new-project' && (
           <NewProject
             onCreated={(created) => {
               api.manifest().then(setManifest);
               handleSelectNovel(created.id);
-              setView('characters');
+              setView('project');
             }}
           />
         )}
       </main>
+
+      <aside className="inspector">
+        {view === 'script' && (
+          <EntitySidebar
+            entities={novel.entities}
+            search={search}
+            onSearchChange={setSearch}
+            focusId={focusId}
+            onToggleFocus={handleToggleFocus}
+            editMode={editMode}
+            mergeSourceId={mergeSourceId}
+            onStartMerge={handleStartMerge}
+            onConfirmMerge={handleConfirmMerge}
+            onCancelMerge={handleCancelMerge}
+          />
+        )}
+        {view !== 'script' && (
+          <InspectorSection title="Inspector">
+            <p className="text-sm text-muted">
+              No contextual detail for this screen yet.
+            </p>
+          </InspectorSection>
+        )}
+      </aside>
 
       <Tooltip tip={tip} />
 

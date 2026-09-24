@@ -14,9 +14,14 @@ jest.mock('../../api', () => ({
     login: jest.fn(),
     authStatus: jest.fn(),
     createProject: jest.fn(),
+    uploadSource: jest.fn(),
     characters: jest.fn(),
     setVoice: jest.fn(),
     selectReference: jest.fn(),
+    searchReferences: jest.fn(),
+    listProjects: jest.fn(),
+    listJobs: jest.fn(),
+    listOutput: jest.fn(),
     hasToken: jest.fn(() => false),
   },
 }));
@@ -108,10 +113,10 @@ describe('NewProject', () => {
     expect(screen.getByRole('button', { name: /roleplay/i })).toBeDisabled();
 
     // The honesty note about ingest being a separate step must actually render.
-    expect(screen.getByText(/ingested separately, via the CLI/i)).toBeInTheDocument();
-    // ...and there's no fake upload/progress -- the file input is disabled,
-    // with the real CLI command shown instead.
-    expect(screen.getByText(/upload isn't wired up yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/ingested separately, from Project home/i)).toBeInTheDocument();
+
+    // No file was picked in this test -- uploadSource must not have been called.
+    expect(api.uploadSource).not.toHaveBeenCalled();
   });
 
   test('shows an inline error on failure', async () => {
@@ -124,6 +129,30 @@ describe('NewProject', () => {
     fireEvent.click(screen.getByRole('button', { name: /create project/i }));
 
     expect(await screen.findByText(/project already exists/i)).toBeInTheDocument();
+  });
+
+  // The upload input is real now (Product Orchestration track) -- picking a
+  // file and submitting must call the real upload route, not render it
+  // disabled the way it used to.
+  test('uploads the picked source file after creating the project', async () => {
+    api.createProject.mockResolvedValueOnce({ id: 'my-cool-story', title: 'My Cool Story!', content_type: 'novel' });
+    api.uploadSource.mockResolvedValueOnce({ filename: 'book.epub', path: 'data/projects/my-cool-story/book.epub', bytes: 10 });
+    const onCreated = jest.fn();
+    render(<NewProject onCreated={onCreated} />);
+
+    fireEvent.change(screen.getByPlaceholderText(/reverend insanity/i), {
+      target: { value: 'My Cool Story!' },
+    });
+    const file = new File(['epub-bytes'], 'book.epub', { type: 'application/epub+zip' });
+    const fileInput = document.querySelector('input[type="file"]');
+    expect(fileInput).not.toBeDisabled();
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    expect(await screen.findByText(/Selected: book.epub/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /create project/i }));
+
+    await waitFor(() => expect(api.uploadSource).toHaveBeenCalledWith('my-cool-story', file));
+    await waitFor(() => expect(onCreated).toHaveBeenCalled());
   });
 });
 

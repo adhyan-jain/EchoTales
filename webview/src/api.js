@@ -176,6 +176,69 @@ export const api = {
   undoCorrection: (novelId, correctionId) =>
     request(`/api/novels/${novelId}/corrections/${correctionId}`, { method: 'DELETE' }),
   applyCorrections: (novelId) => request(`/api/novels/${novelId}/apply`, { method: 'POST' }),
+
+  // -- Product Orchestration track (project lifecycle, jobs, reference
+  // search, render preview/generate, output library) -- these wrap real,
+  // already-shipped `webview_server.py` routes; see that module's own
+  // docstring for the full route list.
+
+  listProjects: () => request('/api/projects'),
+  deleteProject: (novelId) => request(`/api/projects/${novelId}`, { method: 'DELETE' }),
+
+  uploadSource: (novelId, file) => {
+    const form = new FormData();
+    form.append('file', file);
+    return request(`/api/projects/${novelId}/source`, { method: 'POST', body: form });
+  },
+
+  // `kind` is one of ingest/resolve/appearance/persona/render/voice/
+  // refimg_search/reference_gen (`jobs.py::JOB_KINDS`) -- one trigger
+  // route per stage, all shaped the same.
+  triggerStage: (novelId, kind, params = {}) =>
+    request(`/api/projects/${novelId}/${kind}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    }),
+
+  listJobs: (novelId) => request(`/api/projects/${novelId}/jobs`),
+  getJob: (novelId, jobId) => request(`/api/projects/${novelId}/jobs/${jobId}`),
+
+  listReferenceCandidates: (novelId, selfId) =>
+    request(`/api/novels/${novelId}/characters/${selfId}/reference/candidates`),
+
+  searchReferences: (novelId, selfId) =>
+    request(`/api/novels/${novelId}/characters/${selfId}/reference/search`, { method: 'POST' }),
+
+  uploadReference: (novelId, selfId, file) => {
+    const form = new FormData();
+    form.append('file', file);
+    return request(`/api/novels/${novelId}/characters/${selfId}/reference/upload`, {
+      method: 'POST',
+      body: form,
+    });
+  },
+
+  renderPreview: (novelId, params) =>
+    request(`/api/novels/${novelId}/render/preview?${new URLSearchParams(params)}`),
+
+  renderGenerate: (novelId, body) =>
+    request(`/api/novels/${novelId}/render/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+
+  referenceGenerate: (novelId, body = {}) =>
+    request(`/api/novels/${novelId}/reference/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+
+  listOutput: (novelId) => request(`/api/novels/${novelId}/output`),
+  outputFileUrl: (novelId, path) =>
+    `${API_BASE}/api/novels/${novelId}/output/file?path=${encodeURIComponent(path)}`,
 };
 
 // Mirrors `SpanType` in packages/core/.../enums.py. NON_DIEGETIC and the

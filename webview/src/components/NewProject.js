@@ -52,16 +52,22 @@ function slugify(title) {
     .replace(/^-+|-+$/g, '');
 }
 
-// Section 7.2: registers a new project via POST /api/projects. This does NOT
-// run text ingestion, and there is no upload or ingestion-progress endpoint
-// in webview_server.py today (_read_json() only parses JSON bodies -- no
-// multipart handling exists). That gap is rendered honestly below rather
-// than faked: the file picker is present but disabled, with the real CLI
-// command a person needs to run instead.
+// Section 7.2: registers a new project via POST /api/projects. Section
+// 7.2's original gap -- no upload/ingestion route existed at all -- is
+// closed by the Product Orchestration track (`POST .../source`,
+// `POST .../ingest`); this form now uploads the picked EPUB (if any)
+// right after creating the project, and reports the real result rather
+// than a placeholder. Ingestion itself still runs as its own explicit
+// step (triggered from Project home / ManuscriptProgress), not
+// automatically on upload -- uploading and ingesting are different jobs
+// with different failure modes, and conflating them would hide which one
+// actually failed.
 export default function NewProject({ onCreated }) {
   const [title, setTitle] = useState('');
   const [contentType, setContentType] = useState('novel');
+  const [file, setFile] = useState(null);
   const [error, setError] = useState(null);
+  const [uploadError, setUploadError] = useState(null);
   const [busy, setBusy] = useState(false);
 
   const id = useMemo(() => slugify(title), [title]);
@@ -70,9 +76,21 @@ export default function NewProject({ onCreated }) {
     e.preventDefault();
     if (busy || !title.trim() || !id) return;
     setError(null);
+    setUploadError(null);
     setBusy(true);
     try {
       const result = await api.createProject(id, title.trim(), contentType);
+      if (file) {
+        try {
+          await api.uploadSource(id, file);
+        } catch (err) {
+          // The project itself was created successfully -- an upload
+          // failure is reported alongside it, not swallowed into a
+          // generic "could not create project" error that would be
+          // misleading (the project *was* created).
+          setUploadError(err.message || 'Could not upload the source file.');
+        }
+      }
       onCreated(result);
     } catch (err) {
       setError(err.message || 'Could not create project');
@@ -151,18 +169,21 @@ export default function NewProject({ onCreated }) {
               <div className="flex items-center gap-3">
                 <input
                   type="file"
-                  disabled
-                  className="block flex-1 cursor-not-allowed text-sm text-muted file:mr-3 file:rounded-sm file:border file:border-border file:bg-transparent file:px-3 file:py-1.5 file:font-sans file:text-sm file:text-muted"
+                  accept=".epub"
+                  onChange={(e) => setFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
+                  className="block flex-1 cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded-sm file:border file:border-border file:bg-transparent file:px-3 file:py-1.5 file:font-sans file:text-sm file:text-text"
                 />
               </div>
               <p className="text-sm text-muted">
-                Upload isn't wired up yet — there's no file-upload endpoint on the
-                webview server today. Ingest the source text from the CLI instead,
-                then come back and this project will pick up its chapters:
+                EPUB only (per this project's own "italics carry inner-monologue
+                signal" rule -- a PDF would lose that). Uploading here does not
+                ingest the text yet -- ingestion is a separate step, triggered from
+                Project home once the file is attached, so a reviewer can see the
+                upload and the ingest result as two distinct outcomes.
               </p>
-              <pre className="overflow-x-auto rounded-sm border border-border bg-bg px-3 py-2 font-mono text-xs text-text">
-                uv run echotales --db data/{id || '<id>'}.db ingest --novel {id || '<id>'} --sources data/sources.toml
-              </pre>
+              {file && (
+                <div className="font-mono text-xs text-text">Selected: {file.name}</div>
+              )}
               <div>
                 <div className="mb-2 font-mono text-xs uppercase tracking-wider text-muted">
                   Once ingestion runs (preview)
@@ -178,13 +199,19 @@ export default function NewProject({ onCreated }) {
             {error}
           </div>
         )}
+        {uploadError && (
+          <div className="rounded-sm border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-warning">
+            Project created, but the upload failed: {uploadError}. You can retry it from Project home.
+          </div>
+        )}
 
         <div className="flex items-center gap-4">
           <Button type="submit" disabled={busy || !title.trim()}>
             {busy ? 'Creating…' : 'Create project'}
           </Button>
           <p className="text-sm text-muted">
-            This only registers the project. Source text is ingested separately, via the CLI.
+            This only registers the project. Source text is ingested separately, from Project home
+            (or via the CLI).
           </p>
         </div>
       </form>

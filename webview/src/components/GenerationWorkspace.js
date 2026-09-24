@@ -1,0 +1,172 @@
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { api } from '../api';
+import Button from './ui/Button';
+import Divider from './ui/Divider';
+import DepthCard from './ui/DepthCard';
+import { CardBody } from './ui/Card';
+import InspectorSection from './ui/InspectorSection';
+import JobStatusBadge from './ui/JobStatusBadge';
+import { EmptyState } from './ui/EmptyState';
+import { useToast } from './ui/Toast';
+
+/* The production workstation for panel generation (plan Section 7) --
+   deliberately scoped to what the backend actually supports today:
+   triggering a real `render` job (`POST .../render/generate`, stub engine
+   only -- see `jobs.py::ALLOWED_HTTP_ENGINES`) and watching its real
+   status. Per-beat render *preview* needs a `beat_id`/`cast_self_ids`
+   the webview payload has no way to discover today (no "list beats for a
+   chapter" route exists) -- rather than build a form that can never
+   submit correctly, that panel is an honest "not yet available" state.
+   Regeneration/QA have no backend route at all and are the same.
+
+   Chapters are fetched here directly (`api.novel`), not taken from
+   `App.js`'s `novels` cache -- that cache is only refetched on specific
+   correction actions or a novel switch (`refetchNovel`), so right after a
+   real ingest job finishes elsewhere (Project home) it stays stale at
+   "0 chapters," which left this screen's chapter picker permanently
+   empty and "Generate panels" permanently disabled. Every other new
+   screen this session added (CharacterDashboard, ProjectHome,
+   OutputLibrary) already fetches its own data independently for the same
+   reason; this was the one inconsistent one. */
+export default function GenerationWorkspace({ novelId }) {
+  const [chapters, setChapters] = useState([]);
+  const [selected, setSelected] = useState('');
+  const [jobs, setJobs] = useState([]);
+  const [jobsError, setJobsError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const push = useToast();
+  const pollRef = useRef(null);
+
+  useEffect(() => {
+    if (!novelId) return;
+    api
+      .novel(novelId)
+      .then((payload) => {
+        const ch = (payload && payload.chapters) || [];
+        setChapters(ch);
+        setSelected((prev) => (prev && ch.some((c) => c.number === Number(prev)) ? prev : ch[0] ? ch[0].number : ''));
+      })
+      .catch(() => setChapters([]));
+  }, [novelId]);
+
+  const loadJobs = useCallback(() => {
+    if (!novelId) return;
+    api
+      .listJobs(novelId)
+      .then((list) => {
+        setJobs((list || []).filter((j) => j.kind === 'render'));
+        setJobsError(null);
+      })
+      .catch((err) => setJobsError((err && err.message) || 'Could not load jobs.'));
+  }, [novelId]);
+
+  useEffect(() => {
+    loadJobs();
+  }, [loadJobs]);
+
+  // Poll while any render job is still in flight -- stops itself once
+  // nothing is PENDING/RUNNING, so this doesn't hammer the server forever
+  // after a job finishes.
+  useEffect(() => {
+    const inFlight = jobs.some((j) => j.status === 'PENDING' || j.status === 'RUNNING');
+    clearInterval(pollRef.current);
+    if (inFlight) {
+      pollRef.current = setInterval(loadJobs, 2000);
+    }
+    return () => clearInterval(pollRef.current);
+  }, [jobs, loadJobs]);
+
+  const handleGenerate = () => {
+    if (!selected) return;
+    setSubmitting(true);
+    api
+      .renderGenerate(novelId, { chapters: [Number(selected)], engine: 'stub' })
+      .then(() => {
+        push('Render job queued (stub engine).', 'success');
+        loadJobs();
+      })
+      .catch((err) => push((err && err.message) || 'Could not queue render.', 'danger'))
+      .finally(() => setSubmitting(false));
+  };
+
+  return (
+    <div className="mx-auto max-w-4xl px-6 py-10">
+      <header className="border-b border-border pb-6">
+        <div className="font-mono text-xs uppercase tracking-widest text-muted">{novelId}</div>
+        <h1 className="mt-2 font-display text-4xl text-text">Generation</h1>
+      </header>
+
+      <div className="mt-8">
+        <Divider label="Render a chapter" className="mb-4" />
+        <DepthCard interactive={false}>
+          <CardBody className="flex flex-wrap items-end gap-4">
+            <div>
+              <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-muted" htmlFor="gen-chapter">
+                Chapter
+              </label>
+              <select
+                id="gen-chapter"
+                value={selected}
+                onChange={(e) => setSelected(e.target.value)}
+                className="h-10 rounded-sm border border-border bg-transparent px-3 font-sans text-text"
+              >
+                {chapters.map((c) => (
+                  <option key={c.number} value={c.number}>
+                    Chapter {c.number}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <div className="mb-1 font-mono text-xs uppercase tracking-wider text-muted">Engine</div>
+              <div className="h-10 rounded-sm border border-border px-3 font-mono text-sm leading-10 text-muted">
+                stub (placeholder panels, no GPU)
+              </div>
+            </div>
+            <Button size="md" disabled={submitting || !selected} onClick={handleGenerate}>
+              {submitting ? 'Queuing…' : 'Generate panels'}
+            </Button>
+          </CardBody>
+        </DepthCard>
+        <p className="mt-2 text-sm text-muted">
+          Real image engines (SDXL/Illustrious/NoobAI/Refined) exist server-side but aren&rsquo;t
+          exposed here yet -- this workspace only ever submits the deterministic stub engine, so
+          trying it costs no GPU time.
+        </p>
+      </div>
+
+      <div className="mt-8">
+        <Divider label="Job status" className="mb-4" />
+        {jobsError && <div className="text-sm text-danger">{jobsError}</div>}
+        {!jobsError && jobs.length === 0 && (
+          <EmptyState title="No render jobs yet" description="Queue one above to see it here." />
+        )}
+        {jobs.length > 0 && (
+          <div className="space-y-2">
+            {jobs.map((j) => (
+              <div key={j.job_id} className="flex items-center justify-between border-b border-border py-2">
+                <div className="font-mono text-sm text-text">{j.job_id}</div>
+                <JobStatusBadge status={j.status} />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <InspectorSection title="Render preview" defaultOpen>
+          <EmptyState
+            title="Not yet available"
+            description="Per-beat render preview needs a beat/cast selection the webview doesn't expose yet -- the backend's render/preview route exists, but nothing here can supply valid beat_id/cast_self_ids without a beat-listing endpoint."
+          />
+        </InspectorSection>
+        <InspectorSection title="QA &amp; regeneration" defaultOpen>
+          <EmptyState
+            title="Not yet available"
+            description="No QA-result or regenerate-specific backend route exists today."
+          />
+        </InspectorSection>
+      </div>
+    </div>
+  );
+}

@@ -60,6 +60,12 @@ module.exports = {
       boxShadow: {
         rule: 'inset 0 -1px 0 0 rgb(var(--c-border) / 1)',
         popover: '0 20px 48px rgb(0 0 0 / 0.45), 0 0 0 1px rgb(var(--c-border) / 1)',
+        // Layered-surface depth (plan Section 1/2, DepthCard) -- hairline
+        // border + soft shadow, never a glow/blue drop shadow. Three steps
+        // so a hover/focus lift can move one step up, not invent a new one.
+        'depth-1': '0 1px 2px rgb(0 0 0 / 0.18), 0 0 0 1px rgb(var(--c-border) / 1)',
+        'depth-2': '0 4px 10px rgb(0 0 0 / 0.22), 0 0 0 1px rgb(var(--c-border) / 1)',
+        'depth-3': '0 10px 24px rgb(0 0 0 / 0.28), 0 0 0 1px rgb(var(--c-border) / 1)',
       },
       keyframes: {
         'toast-in': { '0%': { opacity: 0, transform: 'translateY(6px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
