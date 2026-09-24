@@ -1,7 +1,7 @@
 # EchoTales — final readiness
 
 **Written 2026-09-25**, branch `validation/evidence-pass-2026-09-24`.
-1,071 tests passing; touched files ruff-clean; `.env` never committed (checked
+1,073 tests passing; touched files ruff-clean; `.env` never committed (checked
 against all refs); `docs/IP/` untracked. All accuracy figures are scored
 against an **LLM-derived SILVER reference set (Claude), not human gold, no
 IAA**.
@@ -82,4 +82,6 @@ figures.
 4. Blind-annotate SCORE-verdict pairs so any scorer change can be evaluated.
 5. Write observer-scoped persona bindings.
 6. Evaluate on BOOKCOREF for a non-silver, externally comparable number.
-7. Rotate the API keys in `.env`; remove the stray `./file:data/` directory.
+7. Rotate the API keys in `.env` (the stray `./file:data/` directory was removed 2026-09-25).
+
+The full inventory of what is still missing, by metric, mechanism and audience, is `docs/REMAINING_WORK.md`.
