@@ -197,9 +197,10 @@ relationships, persona, certainty}`. [I]
 - Full volume end to end: 199 chapters, 47 min, 660 model calls, 0 escalations,
   2 deferrals of 1,532 decision groups (0.1%).
 - Mention-layer repair: entities 82 → 261; typed entities 18 → 261; CEAF-e
-  recall 25.2% → 48.9%; CoNLL F1 78.1 → 86.5; speaker identifiability
-  48.8% → 63.0%; contradictions detected 0 → 50. A pre-registered prediction
-  that mentions would double was **refuted** (+14.6%).
+  recall 25.2% → 48.9%; CoNLL F1 78.1 → 86.5; speaker attribution
+  flat at 46.1% (first reported as 63.0%; EVOLUTION 4.88); contradictions detected 0 → 50. Two of three
+  pre-registered predictions were **refuted**: mentions did not double
+  (+14.6%) and attribution did not rise.
 - Retriever recall@10 given the gold span, production-exact context: rigid
   names 90.3%, transferable titles 88.9% (n=9), relational/deictic 25.0% (n=4).
 - **Hard cases are lost at detection:** 59 of 89 never become mentions

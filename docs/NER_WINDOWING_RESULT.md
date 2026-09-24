@@ -31,7 +31,14 @@ min)** for the pipeline, 660 LLM calls, 1.31 M tokens, 0 escalations.
 |---|---|---|---|
 | 1 | "CEAF-e recall rises well above 32.1%" | **25.2% → 48.9%** (same gold file, same scorer) | **CONFIRMED** |
 | 2 | "mentions per chapter roughly doubles" | 48.1 → 55.1, **+14.6%** | **REFUTED** |
-| 3 | "identifiability rises from 45.5%" | 48.8% → **63.0%** | **CONFIRMED** |
+| 3 | "identifiability rises from 45.5%" | 48.8% → 63.0% as persisted; **46.1%** honest (see note) | ~~CONFIRMED~~ **REFUTED** (2026-09-25) |
+
+> **Superseded 2026-09-25 (EVOLUTION 4.88):** prediction 3 was first
+> adjudicated CONFIRMED on the persisted 63.0%. 879 of those attributions came
+> from a pronoun-recovery pass, mislabelled `CONTEXTUAL_LLM`, that a spot check
+> found right 2 times in 15. With it off, the rate is 46.1% (2,392/5,192),
+> flat against 45.5%. **Two of three predictions are refuted.** The rows below
+> this note keep the original wording.
 
 **Prediction 2 is refuted, and that is the interesting part.** The fix did not
 find many more *mentions*. It found many more *entities*:
@@ -211,7 +218,9 @@ weakest part of the system by a wide margin (n=4; directional only).
 - Contradiction detection: **Experimental → Verified as firing** (50 real
   contradictions; whether each is *correct* is unreviewed).
 - Scorer: stays **Experimental**, and the starvation defence is now closed.
-- Speaker attribution: 45.5% (Section 4.60) → **63.0%**, on a restructured tier mix.
+- Speaker attribution: 45.5% (Section 4.60) → 63.0% as first reported; **46.1%** once 879 low-precision pronoun guesses are excluded (EVOLUTION 4.88). Not improved.
 - `docs/STATUS.md`'s standing truth constraint — "nothing below may say or
   imply mention recall, CEAF-e, or speaker attribution improved" — is
-  **discharged**. They improved; this document is the measurement.
+  **discharged** for mention detection and CEAF-e, which improved. Speaker
+  attribution did not (46.1% vs 45.5%, EVOLUTION 4.88) and must not be
+  described as improved.

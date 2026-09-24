@@ -46,7 +46,8 @@ recall/attribution has **not been run** — nothing below may say or imply
 mention recall, CEAF-e, or speaker attribution improved." **That re-run has
 now happened** (`docs/NER_WINDOWING_RESULT.md`, full volume, 47 min, 660
 calls): CEAF-e recall 25.2% → 48.9%, entities 82 → 261, speaker
-identifiability 48.8% → 63.0%, and the "mentions roughly double" half of
+attribution flat at 46.1% (the first-reported 63.0% was inflated by a
+mislabelled pronoun pass, EVOLUTION 4.88), and the "mentions roughly double" half of
 the recorded prediction is **refuted** (+14.6% — the fix finds *entities*,
 not mentions, because `_locate` already searched the whole chapter). Those
 are measured and may be cited. **The constraint's successor:** the B³/MUC

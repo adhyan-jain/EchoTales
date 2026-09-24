@@ -13,7 +13,7 @@ IAA**.
 | Item | Evidence |
 |---|---|
 | Full-volume pipeline on local hardware | 199 chapters, 47 min, 660 calls, 0 escalations — `docs/NER_WINDOWING_RESULT.md` |
-| Mention-layer repair and its adjudicated prediction | Entities 82→261; CEAF-e recall 25.2→48.9%; "mentions double" **refuted** |
+| Mention-layer repair and its adjudicated prediction | Entities 82→261; CEAF-e recall 25.2→48.9%; "mentions double" and "attribution rises" **refuted** (EVOLUTION 4.88) |
 | Observer-scoped knowledge state, both axes | Reader 2 / witness 1 / non-witness 0; witness 0 before the reveal, 1 after — `docs/STATE_OF_VALIDATION.md` |
 | Observer-conditioned visual generation on a real engine | Reader 5/5 reference-conditioned, non-witness 0/5; keys and pixels differ on 10/10 blocks — `docs/OBSERVER_CONTRAST_VALIDATION.md` |
 | Read-set-derived invalidation | Cast change invalidates, offstage change does not — `test_readset_invalidation.py` |

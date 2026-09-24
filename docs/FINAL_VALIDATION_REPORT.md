@@ -15,9 +15,11 @@ change the project's evidentiary position.
    measuring re-run as blocked because "ollama is unreachable from a sandboxed
    shell." The daemon was not running. `ollama serve` brought it up in **one
    second**, and the run that "gates the most" completed in 47 minutes.
-2. **The re-run's pre-registered prediction was adjudicated, and one third of
-   it is refuted.** CEAF-e recall and speaker attribution improved as
-   predicted; "mentions roughly double" did not (+14.6%). The fix finds
+2. **The re-run's pre-registered prediction was adjudicated, and two thirds
+   of it are refuted.** CEAF-e recall improved as predicted; "mentions
+   roughly double" did not (+14.6%), and speaker attribution did not either
+   (46.1% vs 45.5% — first reported as 63.0% before a mislabelled pronoun
+   pass was found, EVOLUTION 4.88). The fix finds
    **entities** (82 → 261, +218%), not mentions.
 3. **The project's gold sets are surface-trivial**, which re-condemns the
    already-retracted headline from a second, independent direction. Scoring
@@ -73,7 +75,7 @@ Each row has a reproducible command behind it.
 | Entity inventory tripled | 82 → **261**; entity typing 64 unknown → **0 unknown** |
 | Bai Ning Bing recovered at the predicted offsets | ch1 mentions `[]` → `[6697, 6814, 8757]`, matching gold exactly; first appearance ch108 → **ch1** |
 | CEAF-e entity clustering roughly doubled | recall **25.2% → 48.9%**, F1 38.8% → 63.1%, same gold and scorer |
-| Speaker attribution improved | identifiability **48.8% → 63.0%**; `TURN_TAKING` (82.9% wrong) eliminated |
+| Speaker attribution audited | honest rate **46.1%** (flat vs 45.5%); a pronoun pass right 2/15 made opt-in; `TURN_TAKING` (82.9% wrong) eliminated earlier — EVOLUTION 4.88 |
 | Contradiction detector fires on real data | 0 hits on 60 chapters → **50 contradictions → 50 splits** |
 | Observer-conditioned **query** | READER 2 / witness 1 / non-witness 0, on a freshly resolved volume |
 | **Knowledge-time axis** (new) | same witness: **0** aliases at ch150, **1** at ch166, **1** at ch200 |
@@ -248,7 +250,8 @@ place and stays gitignored.
 ## 12. Paper-relevant contributions
 
 1. **A measured, pre-registered, partially-refuted repair.** The prediction was
-   recorded before the run and one third of it is wrong in print.
+   recorded before the run and two thirds of it are wrong in print (mention
+   doubling, and speaker attribution once a mislabelled pass was found).
 2. **Surface triviality as an evaluation-design finding.** A gold set
    reproducible by string grouping cannot measure a resolver — with a corpus
    demonstration and an automated check.
