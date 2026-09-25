@@ -112,6 +112,47 @@ class TestObserverScoping:
         assert early.aliases == []
         assert late.aliases == ["True Name"]
 
+    def test_one_fact_one_identity_visibility_varies(self, store) -> None:  # type: ignore[no-untyped-def]
+        """The invention-disclosure centrepiece in one assertion chain
+        (scripts/observer_evidence.py is the real-data twin): the SAME fact
+        about the SAME Self is read by every observer -- its reference is
+        derived from the fact, not a row id -- and only what is *visible*
+        differs, by observer and by when they ask from."""
+        fact = _binding("True Name", learned=5)
+        ref = observable_ref(fact)
+        store.add_observation(
+            Observation(observer_id=WITNESS, fact_ref=ref,
+                        learned_at_pos=DiscoursePosition(chapter=80))
+        )
+        store.conn.commit()
+        resolver = StateResolver(store, "n")
+
+        def ask(observer: str, known_from: int) -> tuple[str, list[str], list[str]]:
+            r = resolver.state_of(TARGET, position=100, observer_id=observer,
+                                  knowledge_pos=DiscoursePosition(chapter=known_from))
+            return r.target_id, r.aliases, r.read_set
+
+        reader = ask(OBSERVER_READER, 100)
+        witness_after = ask(WITNESS, 100)
+        witness_before = ask(WITNESS, 50)
+        absentee = ask(ABSENTEE, 100)
+
+        assert {reader[0], witness_after[0], witness_before[0], absentee[0]} == {TARGET}
+        # Two fact-derived keys, neither a row id: the observation key is
+        # scoped to the Self (`observable_ref`); the read-set key used for
+        # cache invalidation is scoped to the novel (`alias_ref`). Both
+        # observers who can see the fact record the same read-set key.
+        assert ref == "alias:n:self:target:true name"
+        assert "alias:n:true name" in reader[2] and "alias:n:true name" in witness_after[2]
+        assert "alias:n:true name" not in absentee[2]
+        assert "True Name" in reader[1]
+        assert witness_after[1] == ["True Name"]
+        assert witness_before[1] == []
+        assert absentee[1] == []
+        # Re-deriving the reference from a freshly built copy of the fact gives
+        # the same key, which is what lets observations survive a re-resolve.
+        assert observable_ref(_binding("True Name", learned=5)) == ref
+
     def test_system_still_sees_everything(self, store) -> None:  # type: ignore[no-untyped-def]
         """SYSTEM is the evaluation oracle and must not be affected."""
         result = StateResolver(store, "n").state_of(

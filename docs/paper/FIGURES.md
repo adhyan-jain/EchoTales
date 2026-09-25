@@ -64,7 +64,7 @@ ship as CSV so any plotting tool can consume them.
 - **Status:** RENDERED
 - **Data source:** `docs/paper/figures/fig09_baselines.svg (scripts/plot_paper_figures.py from docs/paper/tables/table7_baselines.csv)`
 - **Required columns:** `System`, `LLM calls`, `Mentions`, `B3 R (%)`
-- **Blocked on:** Plot calls and mentions, not B3 as accuracy -- the gold for ch1-10 is surface-trivial.
+- **Blocked on:** Plot calls and mentions, not B3 as accuracy -- the reference set for ch1-10 is surface-trivial.
 
 ### Figure 10 — Ablation results
 

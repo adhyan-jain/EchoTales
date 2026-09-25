@@ -37,7 +37,7 @@ VALIDATION = Path("data/eval/validation")
 ABLATION = Path("data/eval/ablation")
 
 SILVER_NOTE = (
-    "Scored against an LLM-derived SILVER reference set, not human gold, with "
+    "Scored against the LLM-DRAFTED SILVER REFERENCE SET -- not human-annotated, "
     "no inter-annotator agreement. See docs/GOLD_DATASET_README.md."
 )
 
@@ -144,31 +144,41 @@ def table_dataset() -> Table:
     )
 
 
-def table_recall(metrics: dict) -> Table | None:
-    rk = metrics.get("metrics", {}).get("silver", {}).get("recall_at_k")
-    if not rk or "by_alias_type" not in rk:
+def table_recall() -> Table | None:
+    """Recall@K by alias type under the *production* query context.
+
+    Read from `recall_by_category.json` rather than the CLI's metrics.json:
+    the CLI queries with the gold record's ~70-char snippet, the resolver
+    with `_context_for`. The paper reports the context the system actually
+    uses, and the snippet figure only as a footnote (finalization pass).
+    """
+    path = Path("data/eval/recall_by_category.json")
+    if not path.exists():
         return None
-    ns = rk.get("by_alias_type_n", {})
-    rows = []
-    overall = rk.get("overall", {})
-    if overall:
-        rows.append(
-            ["**Overall**", str(rk.get("cases", "?"))]
-            + [f"{overall.get(k, 0) * 100:.1f}%" for k in ("1", "5", "10", "20")]
-        )
-    for alias, at_k in sorted(rk["by_alias_type"].items()):
-        rows.append(
-            [alias, str(ns.get(alias, "?"))]
-            + [f"{at_k.get(k, 0) * 100:.1f}%" for k in ("1", "5", "10", "20")]
-        )
+    try:
+        d = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return None
+    prod = d.get("recall_by_alias_type", {}).get("production")
+    snip = d.get("recall_by_alias_type", {}).get("snippet", {}).get("ALL", {})
+    if not prod:
+        return None
+
+    def row(name: str, r: dict) -> list[str]:
+        return [name, str(r["n"])] + [f"{r[f'@{k}'] * 100:.1f}%" for k in (1, 5, 10, 20)]
+
+    rows = [row("**Overall**", prod["ALL"])] + [row(a, r) for a, r in prod.items() if a != "ALL"]
     return Table(
         "5",
-        "Retriever Recall@K by alias type",
+        "Retriever Recall@K by alias type, production query context",
         ["Alias type", "n", "@1", "@5", "@10", "@20"],
         rows,
-        note=SILVER_NOTE + " n is small for the hard alias types; single cases move "
-        "TRANSFERABLE_TITLE by roughly 11 points and RELATIONAL_DEICTIC by 25.",
-        source=f"data/eval/results/{metrics.get('run_id', '?')}/metrics.json (gold: {metrics.get('gold_path', '?')}, db: {metrics.get('database', '?')})",
+        note="LLM-DRAFTED SILVER REFERENCE SET (hardcases file), not human-annotated, no IAA. "
+        "The reference span is handed to the retriever, so this measures retrieval, not "
+        "detection. n is small for the hard types: one case moves TRANSFERABLE_TITLE "
+        f"about 11 points and RELATIONAL_DEICTIC 25. With the CLI's snippet context "
+        f"instead, overall @10 is {snip.get('@10', 0) * 100:.1f}%.",
+        source=f"{path} (scripts/recall_by_category.py, db: {d.get('db', '?')})",
     )
 
 
@@ -196,10 +206,10 @@ def table_coref(metrics: dict) -> Table | None:
         "Coreference metrics, current run",
         ["Metric", "P (%)", "R (%)", "F1 (%)"],
         rows,
-        note=SILVER_NOTE + " B3/MUC are TAUTOLOGICAL on a surface-trivial gold set "
+        note=SILVER_NOTE + " B3/MUC are TAUTOLOGICAL on a surface-trivial reference set "
         "and must not be quoted as accuracy; CEAF-e is entity-based and is the "
         "discriminative one here.",
-        source=f"data/eval/results/{metrics.get('run_id', '?')}/metrics.json (gold: {metrics.get('gold_path', '?')}, db: {metrics.get('database', '?')})",
+        source=f"data/eval/results/{metrics.get('run_id', '?')}/metrics.json (reference: {metrics.get('gold_path', '?')}, db: {metrics.get('database', '?')})",
     )
 
 
@@ -250,7 +260,7 @@ def table_baselines() -> Table | None:
         f"Baselines vs EchoTales, chapters {lo}-{hi} ({d.get('gold_mentions', '?')} silver mentions)",
         ["System", "LLM calls", "Prompt tokens", "Wall time", "Mentions", "B3 P (%)", "B3 R (%)"],
         rows,
-        note=SILVER_NOTE + " The gold for this range is surface-trivial, so B3 recall here "
+        note=SILVER_NOTE + " The reference set for this range is surface-trivial, so B3 recall here "
         "measures extraction coverage, not coreference quality. EchoTales' calls column counts "
         "resolution only; its upstream NER calls are excluded.",
         source=f"{path} (scripts/baseline_comparison.py)",
@@ -316,8 +326,8 @@ def figures() -> list[Figure]:
                source="docs/paper/figures/fig09_baselines.svg (scripts/plot_paper_figures.py "
                       "from docs/paper/tables/table7_baselines.csv)",
                columns=["System", "LLM calls", "Mentions", "B3 R (%)"],
-               blocked_on="Plot calls and mentions, not B3 as accuracy -- the gold for "
-                          "ch1-10 is surface-trivial."),
+               blocked_on="Plot calls and mentions, not B3 as accuracy -- the reference set "
+                          "for ch1-10 is surface-trivial."),
         Figure("10", "Ablation results", "plot", "RENDERED",
                source="docs/paper/figures/fig10_ablation.svg (scripts/plot_paper_figures.py "
                       "from docs/paper/tables/table6_ablation.csv)",
@@ -356,12 +366,11 @@ def main() -> int:
     # hardcases file, the only one with non-RIGID_NAME alias types (on the full
     # file every case is RIGID_NAME and recall is 99.9% by construction).
     coref_metrics = _latest_metrics("data/gold/reverend-insanity.jsonl")
-    recall_metrics = _latest_metrics("data/gold/reverend-insanity-hardcases.jsonl")
     built: list[Table] = []
     for table, stem in (
         (table_dataset(), "table2_dataset"),
         (table_coref(coref_metrics), "table4_coref"),
-        (table_recall(recall_metrics), "table5_recall_at_k"),
+        (table_recall(), "table5_recall_at_k"),
         (table_ablation(), "table6_ablation"),
         (table_baselines(), "table7_baselines"),
         (table_compounding(), "table6a_compounding"),
@@ -404,7 +413,7 @@ def main() -> int:
         f"  figures: {ready} data-ready, {todo} TODO, "
         f"{len(figures()) - ready - todo} hand-drawn diagrams"
     )
-    for label, found in (("coreference", coref_metrics), ("recall@K", recall_metrics)):
+    for label, found in (("coreference", coref_metrics),):
         if not found:
             print(
                 f"  WARNING: no persisted {label} run carried silver metrics -- run "

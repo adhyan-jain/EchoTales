@@ -28,6 +28,7 @@ SILVER -- LLM-derived reference set (Claude), not human gold; no IAA.
 
 from __future__ import annotations
 
+import argparse
 import json
 from collections import defaultdict
 from pathlib import Path
@@ -49,7 +50,10 @@ def category(note: str) -> str:
 
 
 def main() -> int:
-    store = Store(DB)
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--db", default=DB)
+    args = ap.parse_args()
+    store = Store(args.db)
     gold = read_gold("data/gold/reverend-insanity-hardcases.jsonl", novel_id=NOVEL).silver_only.entities_only
     mapping, _unmapped = _identity_to_target(store, NOVEL, gold)
 
@@ -75,6 +79,10 @@ def main() -> int:
             self.text = text
 
     hits: dict[str, dict[str, list[int | None]]] = {"snippet": defaultdict(list), "production": defaultdict(list)}
+    # Alias-type rows as well, so the paper's Table 5 can use the same
+    # (production) context as the category table instead of the CLI's
+    # snippet-context numbers -- one context throughout (finalization pass).
+    by_alias: dict[str, dict[str, list[int | None]]] = {"snippet": defaultdict(list), "production": defaultdict(list)}
     for g, case in zip(mapped, cases, strict=True):
         for mode, ctx in (("snippet", case.context),
                           ("production", _context_for(_Q(case.surface), story(g.chapter)))):  # type: ignore[arg-type]
@@ -82,7 +90,16 @@ def main() -> int:
             rank = ranked.index(case.expected_target_id) + 1 if case.expected_target_id in ranked else None
             hits[mode][category(g.note)].append(rank)
             hits[mode]["ALL"].append(rank)
+            by_alias[mode][case.alias_type.value if case.alias_type else "UNKNOWN"].append(rank)
+            by_alias[mode]["ALL"].append(rank)
 
+    def rows(groups: dict[str, list[int | None]]) -> dict[str, dict[str, float | int]]:
+        return {
+            g: {"n": len(r), **{f"@{k}": round(sum(1 for x in r if x and x <= k) / len(r), 3) for k in KS}}
+            for g, r in sorted(groups.items())
+        }
+
+    alias_table = {mode: rows(groups) for mode, groups in by_alias.items()}
     table = {
         mode: {
             cat: {"n": len(r), **{f"@{k}": round(sum(1 for x in r if x and x <= k) / len(r), 3) for k in KS}}
@@ -91,13 +108,20 @@ def main() -> int:
         for mode, by_cat in hits.items()
     }
     out = Path("data/eval/recall_by_category.json")
-    out.write_text(json.dumps({"banner": SILVER_BANNER, "db": DB, "recall": table}, indent=2) + "\n")
+    out.write_text(json.dumps(
+        {"banner": SILVER_BANNER, "db": args.db, "recall": table, "recall_by_alias_type": alias_table},
+        indent=2,
+    ) + "\n")
     print(SILVER_BANNER)
     for mode, rows in table.items():
         print(f"\nquery context = {mode}")
         print(f"{'category':22} {'n':>4} " + " ".join(f"{'@'+str(k):>7}" for k in KS))
         for cat, row in rows.items():
             print(f"{cat:22} {row['n']:>4} " + " ".join(f"{row['@'+str(k)]:>7.1%}" for k in KS))
+    for mode, arows in alias_table.items():
+        print(f"\nby alias type, query context = {mode}")
+        for g, row in arows.items():
+            print(f"{g:22} {row['n']:>4} " + " ".join(f"{row['@'+str(k)]:>7.1%}" for k in KS))
     return 0
 
 

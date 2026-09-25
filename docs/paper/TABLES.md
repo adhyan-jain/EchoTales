@@ -7,6 +7,7 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 
 | File | Records | Silver | Circular | Surface-trivial | Validator |
 |---|---|---|---|---|---|
+| `lord-of-the-mysteries-c1-c3.jsonl` | 173 | 173 | 0 | 100.0% | FAIL |
 | `reverend-insanity-c1-c5.jsonl` | 343 | 343 | 0 | 100.0% | FAIL |
 | `reverend-insanity-hardcases.jsonl` | 89 | 89 | 0 | 63.6% | FAIL |
 | `reverend-insanity.jsonl` | 7,879 | 3,457 | 4,422 | 100.0% | FAIL |
@@ -26,24 +27,24 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 | CoNLL | 86.5 | 86.5 | 86.5 |
 | B3 (project variant) | 100.0 | 95.8 | 97.8 |
 
-*Source: data/eval/results/reverend-insanity-1790291709-f0cf184d/metrics.json (gold: data/gold/reverend-insanity.jsonl, db: data/reruns/ner-window-ri.db)*
+*Source: data/eval/results/reverend-insanity-1790291709-f0cf184d/metrics.json (reference: data/gold/reverend-insanity.jsonl, db: data/reruns/ner-window-ri.db)*
 
-*Scored against an LLM-derived SILVER reference set, not human gold, with no inter-annotator agreement. See docs/GOLD_DATASET_README.md. B3/MUC are TAUTOLOGICAL on a surface-trivial gold set and must not be quoted as accuracy; CEAF-e is entity-based and is the discriminative one here.*
+*Scored against the LLM-DRAFTED SILVER REFERENCE SET -- not human-annotated, no inter-annotator agreement. See docs/GOLD_DATASET_README.md. B3/MUC are TAUTOLOGICAL on a surface-trivial reference set and must not be quoted as accuracy; CEAF-e is entity-based and is the discriminative one here.*
 
 
-### Table 5 — Retriever Recall@K by alias type
+### Table 5 — Retriever Recall@K by alias type, production query context
 
 | Alias type | n | @1 | @5 | @10 | @20 |
 |---|---|---|---|---|---|
-| **Overall** | 45 | 62.2% | 77.8% | 84.4% | 95.6% |
+| **Overall** | 45 | 66.7% | 86.7% | 88.9% | 97.8% |
 | EPITHET | 1 | 100.0% | 100.0% | 100.0% | 100.0% |
-| RELATIONAL_DEICTIC | 4 | 0.0% | 25.0% | 25.0% | 50.0% |
-| RIGID_NAME | 31 | 77.4% | 83.9% | 90.3% | 100.0% |
-| TRANSFERABLE_TITLE | 9 | 33.3% | 77.8% | 88.9% | 100.0% |
+| RELATIONAL_DEICTIC | 4 | 0.0% | 50.0% | 75.0% | 100.0% |
+| RIGID_NAME | 31 | 83.9% | 90.3% | 90.3% | 96.8% |
+| TRANSFERABLE_TITLE | 9 | 33.3% | 88.9% | 88.9% | 100.0% |
 
-*Source: data/eval/results/reverend-insanity-1790291711-f0cf184d/metrics.json (gold: data/gold/reverend-insanity-hardcases.jsonl, db: data/reruns/ner-window-ri.db)*
+*Source: data/eval/recall_by_category.json (scripts/recall_by_category.py, db: data/reruns/ner-window-ri.db)*
 
-*Scored against an LLM-derived SILVER reference set, not human gold, with no inter-annotator agreement. See docs/GOLD_DATASET_README.md. n is small for the hard alias types; single cases move TRANSFERABLE_TITLE by roughly 11 points and RELATIONAL_DEICTIC by 25.*
+*LLM-DRAFTED SILVER REFERENCE SET (hardcases file), not human-annotated, no IAA. The reference span is handed to the retriever, so this measures retrieval, not detection. n is small for the hard types: one case moves TRANSFERABLE_TITLE about 11 points and RELATIONAL_DEICTIC 25. With the CLI's snippet context instead, overall @10 is 84.4%.*
 
 
 ### Table 6 — Ablations over 15,796 cached evidence vectors
@@ -74,18 +75,18 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 
 *Source: data/eval/baseline_comparison.json (scripts/baseline_comparison.py)*
 
-*Scored against an LLM-derived SILVER reference set, not human gold, with no inter-annotator agreement. See docs/GOLD_DATASET_README.md. The gold for this range is surface-trivial, so B3 recall here measures extraction coverage, not coreference quality. EchoTales' calls column counts resolution only; its upstream NER calls are excluded.*
+*Scored against the LLM-DRAFTED SILVER REFERENCE SET -- not human-annotated, no inter-annotator agreement. See docs/GOLD_DATASET_README.md. The reference set for this range is surface-trivial, so B3 recall here measures extraction coverage, not coreference quality. EchoTales' calls column counts resolution only; its upstream NER calls are excluded.*
 
 
 ### Table 6a — Gazetteer compounding by window (size 40)
 
 | Window | Gazetteer share of links | n (links in window) |
 |---|---|---|
-| w0 | 72.8% | 217 |
-| w1 | 78.7% | 267 |
-| w2 | 84.7% | 288 |
-| w3 | 81.8% | 362 |
-| w4 | 82.1% | 335 |
+| w0 | 73.5% | 234 |
+| w1 | 79.3% | 285 |
+| w2 | 85.0% | 301 |
+| w3 | 81.7% | 367 |
+| w4 | 82.0% | 338 |
 
 *Source: data/eval/compounding/reverend-insanity.json*
 

@@ -44,6 +44,18 @@ _DETERMINERS = (
     "his|her|their|its|my|your|our"
 )
 
+#: The same list without demonstratives, applied to multi-word surfaces only.
+#: Translated web fiction puts a demonstrative before a full name as an idiom
+#: -- "this Wang Er was rather intractable", "that Gu Yue Fang Yuan" -- so on
+#: RI 5 of Wang Er's 7 determiner hits were "this/that" and he was filtered as
+#: a class noun, invisible for the whole volume (EVOLUTION 4.90). Measured over
+#: all 493 RI candidates, dropping demonstratives flips 11 surfaces: all 8
+#: multi-word ones are named individuals (Wang Er, Gao Wan, Gu Yue Fang Yuan,
+#: Gu Yue Jiao San, Gu Yue Ding Zong, Gu Yue Ye, Jia Gui, Mother Shen) and all
+#: 3 single-word ones are role nouns or fragments (Grandpa, Lad, Tie). Hence
+#: the word-count split rather than removing demonstratives outright.
+_DETERMINERS_MULTIWORD = _DETERMINERS.replace("this|that|these|those|", "")
+
 #: Above this share of determiner-preceded occurrences, treat as a common noun.
 #: Well clear of the ~1% that real names pick up incidentally.
 DETERMINER_RATE_THRESHOLD = 0.08
@@ -153,7 +165,8 @@ def _measure_into(profile: CommonnessProfile, key: str, lowered: str) -> None:
         profile.occurrences[key] = 0
         return
 
-    determiner_hits = len(re.findall(rf"\b(?:{_DETERMINERS})\s+{escaped}\b", lowered))
+    determiners = _DETERMINERS_MULTIWORD if " " in key.strip() else _DETERMINERS
+    determiner_hits = len(re.findall(rf"\b(?:{determiners})\s+{escaped}\b", lowered))
     # Plural counted against singular+plural so the rate is the share of
     # occurrences that are plural, not a ratio that can exceed 1.
     plural_hits = len(re.findall(rf"\b{escaped}s\b", lowered))

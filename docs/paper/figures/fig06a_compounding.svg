@@ -7,20 +7,20 @@
 <text x="52.0" y="164.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="end" fill="#6b7280" font-weight="normal">50%</text>
 <line x1="60" y1="50.0" x2="610" y2="50.0" stroke="#e5e7eb"/>
 <text x="52.0" y="54.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="end" fill="#6b7280" font-weight="normal">100%</text>
-<rect x="97" y="109.8" width="34" height="160.2" fill="#0891b2"/>
-<text x="114.0" y="105.8" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6b7280" font-weight="normal">n=217</text>
+<rect x="97" y="108.3" width="34" height="161.7" fill="#0891b2"/>
+<text x="114.0" y="104.3" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6b7280" font-weight="normal">n=234</text>
 <text x="114.0" y="286.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#1f2933" font-weight="normal">w0</text>
-<rect x="205" y="96.9" width="34" height="173.1" fill="#0891b2"/>
-<text x="222.0" y="92.9" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6b7280" font-weight="normal">n=267</text>
+<rect x="205" y="95.5" width="34" height="174.5" fill="#0891b2"/>
+<text x="222.0" y="91.5" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6b7280" font-weight="normal">n=285</text>
 <text x="222.0" y="286.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#1f2933" font-weight="normal">w1</text>
-<rect x="313" y="83.7" width="34" height="186.3" fill="#0891b2"/>
-<text x="330.0" y="79.7" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6b7280" font-weight="normal">n=288</text>
+<rect x="313" y="83.0" width="34" height="187.0" fill="#0891b2"/>
+<text x="330.0" y="79.0" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6b7280" font-weight="normal">n=301</text>
 <text x="330.0" y="286.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#1f2933" font-weight="normal">w2</text>
-<rect x="421" y="90.0" width="34" height="180.0" fill="#0891b2"/>
-<text x="438.0" y="86.0" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6b7280" font-weight="normal">n=362</text>
+<rect x="421" y="90.3" width="34" height="179.7" fill="#0891b2"/>
+<text x="438.0" y="86.3" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6b7280" font-weight="normal">n=367</text>
 <text x="438.0" y="286.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#1f2933" font-weight="normal">w3</text>
-<rect x="529" y="89.4" width="34" height="180.6" fill="#0891b2"/>
-<text x="546.0" y="85.4" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6b7280" font-weight="normal">n=335</text>
+<rect x="529" y="89.6" width="34" height="180.4" fill="#0891b2"/>
+<text x="546.0" y="85.6" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6b7280" font-weight="normal">n=338</text>
 <text x="546.0" y="286.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#1f2933" font-weight="normal">w4</text>
 <text x="20.0" y="336.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">Denominator shown per window. Source: docs/paper/tables/table6a_compounding.csv.</text>
 </svg>

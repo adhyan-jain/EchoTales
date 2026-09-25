@@ -90,8 +90,8 @@ def figure8_recall(rows: list[dict[str, str]]) -> str:
         body.append(_text(lx + 16, top - 12, f"recall{k}", size=10))
         lx += 90
     return _svg(width, height, body,
-                "Figure 8. Retriever recall@K by alias type, given the gold span",
-                "SILVER reference set (LLM-derived, no IAA). Source: docs/paper/tables/table5_recall_at_k.csv. "
+                "Figure 8. Retriever recall@K by alias type (production context, reference span given)",
+                "LLM-drafted silver reference set, no IAA. Source: docs/paper/tables/table5_recall_at_k.csv. "
                 "Small-n groups are anecdotal.")
 
 
@@ -162,7 +162,7 @@ def figure9_baselines(rows: list[dict[str, str]]) -> str:
                                   size=9, anchor="middle", fill=MUTED))
     return _svg(width, height, body,
                 "Figure 9. Cost and coverage: baselines vs EchoTales, chapters 1-10",
-                "Same model, host, scorer, SILVER gold. EchoTales calls = resolution only. "
+                "Same model, host, scorer, LLM-drafted silver reference set. EchoTales calls = resolution only. "
                 "Source: docs/paper/tables/table7_baselines.csv.")
 
 
