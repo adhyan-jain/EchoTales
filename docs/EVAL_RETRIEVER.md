@@ -215,3 +215,22 @@ Reading it honestly:
   statistically distinguishable; the table exists to say *where* retrieval is
   not the bottleneck (disguise, reveal), not to rank categories.
 - All numbers are against the SILVER LLM-derived set, not human gold.
+
+## 8. Final table — canonical v1 run, production context — 2026-09-25
+
+This is the table the report uses (`docs/paper/TABLES.md` Table 5,
+`data/eval/recall_by_category.json`, db `data/reverend-insanity.db`). One
+context is used throughout: `_context_for`, the query the resolver actually
+issues. Reference set: **LLM-DRAFTED SILVER REFERENCE SET**, hardcases file.
+
+| Alias type | n | @1 | @5 | @10 | @20 |
+|---|---:|---:|---:|---:|---:|
+| **Overall** | 46 | 67.4% | 87.0% | **89.1%** | 95.7% |
+| RIGID_NAME | 32 | 84.4% | 90.6% | 90.6% | 96.9% |
+| TRANSFERABLE_TITLE | 9 | 33.3% | 88.9% | 88.9% | 100% |
+| RELATIONAL_DEICTIC | 4 | 0.0% | 50.0% | 75.0% | 75.0% |
+| EPITHET | 1 | 100% | 100% | 100% | 100% |
+
+- n rose from 45 to 46 because the demonstrative fix (EVOLUTION 4.90) gave "Wang Er" a system entity to map to.
+- Sections 2, 6 and 7 are earlier measurements on `ner-window-ri.db`, kept as measured.
+- With the CLI's snippet context, overall @10 is 84.4%.

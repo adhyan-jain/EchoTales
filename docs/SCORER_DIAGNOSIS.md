@@ -95,6 +95,12 @@ when given the span; the mention layer rarely produces the span.**
 
 ### 4a. What the resolver decides for the hard cases it *does* detect — 2026-09-25
 
+> **Canonical v1 run (EVOLUTION 4.90):** 30 detected, **24 of 24** decidable
+> linked correctly, 0 wrong, 58 undetected; the recovered case is "Wang Er"
+> (ch175, disguise). The failure taxonomy of the remaining 58 is in
+> `docs/FINAL_EVIDENCE_TABLE.md` Section 3. The table below is the 4.84
+> database and is kept as measured.
+
 `scripts/hardcase_resolution.py` → `data/eval/hardcase_resolution.json`. Uses
 the coreference scorer's own identity mapping, and reports two alignments:
 **overlap** (the rule above, which reproduces the 59 exactly) and **exact**

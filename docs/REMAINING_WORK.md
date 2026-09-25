@@ -1,6 +1,6 @@
 # EchoTales — what is left after the completion pass
 
-**Written 2026-09-25**, branch `validation/evidence-pass-2026-09-24` (not yet
+**Written 2026-09-25, updated after the finalization pass (EVOLUTION 4.90; `docs/FINAL_EVIDENCE_TABLE.md` is the current per-claim status)**, branch `validation/evidence-pass-2026-09-24` (not yet
 pushed or merged). This lists everything the project will **not** have when the
 current plan is done: missing metrics, unbuilt mechanisms, open defects, and
 gaps in the patent, report, and reproducibility work. It is organised by
@@ -135,7 +135,7 @@ The disclosure itself lives in `docs/IP/` (gitignored, never committed).
 | Item | State |
 |---|---|
 | Branch `validation/evidence-pass-2026-09-24` | **50+ commits, not pushed, not merged to `master`.** A disk failure loses the whole pass. Pushing is the owner's call, because the repo is public. |
-| Canonical database | `data/reverend-insanity.db` is a **0-byte trap**. The webview uses `data/webview-working/reverend-insanity.db`, while every measurement here used `data/reruns/ner-window-ri.db`. The rerun has not been promoted. |
+| Canonical database | **Promoted 2026-09-25**: `data/reverend-insanity.db` (sha256 `42107645…`), built from scratch by the current code (`docs/CANONICAL_RUN.md`). The webview still defaults to `data/webview-working/`. |
 | `.env` API keys | Never committed, but printed into an earlier session. **Rotate them.** |
 | Lint / types | Clean on touched files. Repo-wide, `mypy` reports `import-untyped` noise, and `cli.py:567` has one pre-existing ruff SIM105. |
 | Venv drift | `chatterbox-tts` 0.1.7 and `setuptools` 80.10.2 are installed directly in `.venv`. The documented route is the `uv run --with` overlay. |

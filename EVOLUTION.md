@@ -7847,3 +7847,74 @@ entity. The resolver is precise on what it sees, and the loss is at detection.
 hardcases run. `scripts/plot_paper_figures.py` renders Figures 6a, 8, 9
 and 10 as SVG from the CSVs. `reproduce_results.sh` runs all of it and
 exits 0.
+
+### 4.90 Finalization pass — one structural detection bug fixed, canonical v1 run promoted, LOTM generalisation measured *(2026-09-25)*
+
+**Hard-case failure taxonomy** (`scripts/hardcase_taxonomy.py`). Of the 59
+undetected hard cases, classified by rule:
+- address-term 16, relational 15, definite-title 11, pronoun 10;
+- gold-span defect 2, rigid-name 3, possessive 1, the control record 1.
+
+Only the rigid-name class could hold a structural bug, and one did.
+
+**"Wang Er" was invisible for the whole volume.** The NER model tagged him 10
+times. The commonness filter then dropped him as a class noun: 5 of his 7
+determiner hits were "this / that Wang Er", the translation idiom, which put
+his rate at 12.5% against an 8% threshold. Measured over all 493 RI
+candidates, excluding demonstratives flips 11 surfaces:
+- all 8 multi-word ones are named individuals: Wang Er, Gao Wan, Gu Yue Fang Yuan, Gu Yue Jiao San, Gu Yue Ding Zong, Gu Yue Ye, Jia Gui, Mother Shen;
+- all 3 single-word ones are role nouns or fragments: Grandpa, Lad, Tie.
+
+So demonstratives are now ignored for multi-word surfaces only
+(`mentions/commonness.py`, 3 tests). The other hard-case classes need
+coreference research (vocatives, persistent relation graphs, title-holder
+resolution) or are by design (pronouns); they are documented, not patched.
+
+**Canonical run.** `data/reruns/v1-final-ri.db` was built from scratch by
+the current code (run, then evidence capture, then personas rebuilt, then
+observations; 12 min with NER cached). It was promoted to
+`data/reverend-insanity.db`, replacing the 0-byte file, with sha256
+`42107645…` (`docs/CANONICAL_RUN.md`). Against the 4.84 database:
+
+| | before | after |
+|---|---:|---|
+| Silver CEAF-e F1 | 63.1 | **67.4** (recall 48.9 → 53.9) |
+| Silver B³ P / R | 100 / 96.3 | 100 / 94.2 (boundary artefact, below) |
+| Hard cases detected / correct / wrong | 29 / 23 / 0 | 30 / **24** / 0 |
+| Retrieval @10, production context | 88.9% (45) | **89.1%** (46) |
+| Baselines ch1–10, EchoTales B³ R | 79.1% | 78.9% |
+| Ablation pairs; scorer links | 15,796; 0 | 16,538; 0 |
+
+The B³/MUC recall dip is **23 "Fang Yuan" silver spans now covered by a "Gu
+Yue Fang Yuan" mention linked to the same Self**. The exact-span alignment
+counts that as undetected; it is not a resolution loss. Against it, 7 "Mother
+Shen" mentions are newly linked.
+
+**The LLM attribution tier is not deterministic.** The aggregate reproduced
+(46.1%, 2,392 / 5,192), but 10 of 29 tier-4 speaker assignments in ch1–3
+changed between the two runs. The changes are not corrections: in the lines
+checked, the canonical run credits the elders'-meeting lines to "Gu Yue Fang Yuan",
+the earlier one to "Bai Ning Bing"; neither is present. That is further
+evidence for 4.88's reading, that tier 4 guesses from names near the line.
+
+**Retrieval now uses one context.** Table 5 and Figure 8 use the
+production query context (`_context_for`), the one the resolver uses, via
+`recall_by_category.py`'s new alias-type breakdown. The CLI's snippet-context
+figure (84.4%) is a footnote. All paper captions now say "LLM-drafted silver
+reference set"; none says "gold".
+
+**Observer evidence as one artifact.** `scripts/observer_evidence.py` →
+`data/eval/observer_evidence.json` passes 6/6 checks on the canonical
+database: reader 2 / witness 1 / non-witness 0, the witness 0 / 1 / 1 asking
+from ch150 / 166 / 200, and the same `self_id` in every query. The synthetic
+twin is `test_observer_axis.py::test_one_fact_one_identity_visibility_varies`.
+Writing that test exposed that a fact has **two** fact-derived keys: the
+observation key is Self-scoped (`observable_ref`) and the read-set key is
+novel-scoped (`alias_ref`). Neither is a row id, and they are not the same
+string. Documented rather than unified.
+
+**Generalisation: LOTM ch1–20, current code, scored on the 155 independent
+Opus-drafted records for ch1–3.**
+- B³ P / R 99.4 / 62.3; CEAF-e F1 41.4; CoNLL 68.2. That is well below RI, and this reference set is also 100% surface-trivial.
+- 44 of 155 mentions are undetected: bare "Klein" 10 times, plus continents, kingdoms, deities and churches.
+- **Zhou Mingrui and Klein are resolved as two Selves.** The project's own model says a transmigrated consciousness is one Self with a new Persona. The central hard case is mis-modelled on real data, and the persona stage has no transmigration detector to merge them.

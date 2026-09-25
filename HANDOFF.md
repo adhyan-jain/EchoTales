@@ -22,7 +22,16 @@ conflated.
 
 **Last updated:** 2026-09-24.
 
-## Pick up here — 2026-09-25: completion pass landed; read `docs/FINAL_ECHOTALES_READINESS.md` first
+## Pick up here — 2026-09-25 (finalization pass, EVOLUTION 4.90)
+
+- **Canonical database:** `data/reverend-insanity.db`, sha256 `42107645…`. Every script defaults to it (`docs/CANONICAL_RUN.md`). Per-claim status is in `docs/FINAL_EVIDENCE_TABLE.md`.
+- **Next research work, in order:**
+  1. Transmigration: LOTM's Zhou Mingrui and Klein are resolved as two Selves.
+  2. Hard-case detection: address terms 16, relational 15, definite titles 11 (`data/eval/hardcase_taxonomy.json`).
+  3. Attribution tier 4: 12 right / 16 wrong, and unstable across runs.
+- **Do not re-run** anything that the canonical database already measured; `scripts/reproduce_results.sh` regenerates every artifact in about 10 minutes.
+
+## Earlier — 2026-09-25: completion pass landed; read `docs/FINAL_ECHOTALES_READINESS.md` first
 
 That file is the single status record. The short version:
 
