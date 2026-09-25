@@ -1,110 +1,110 @@
 {
   "novel_id": "reverend-insanity",
-  "db": "data/reruns/ner-window-ri.db",
+  "db": "data/reverend-insanity.db",
   "run_tag": "",
-  "cached_evidence_vectors": 15796,
+  "cached_evidence_vectors": 16538,
   "link_threshold": 0.8,
   "rows": [
     {
       "condition": "full",
-      "pairs": 15796,
-      "force_links": 1318,
-      "blocks": 2888,
-      "scored": 11590,
+      "pairs": 16538,
+      "force_links": 1376,
+      "blocks": 3072,
+      "scored": 12090,
       "links_above_threshold": 0,
       "by_method": {
-        "GAZETTEER_EXACT": 1231,
-        "RELATIONAL_COPRESENCE": 4,
-        "NAME_CONTAINMENT": 33,
-        "DECLARATION": 50
+        "NAME_CONTAINMENT": 35,
+        "GAZETTEER_EXACT": 1281,
+        "DECLARATION": 57,
+        "RELATIONAL_COPRESENCE": 3
       }
     },
     {
       "condition": "no-gazetteer-compounding",
-      "pairs": 15796,
-      "force_links": 448,
-      "blocks": 2888,
-      "scored": 12460,
+      "pairs": 16538,
+      "force_links": 704,
+      "blocks": 3072,
+      "scored": 12762,
       "links_above_threshold": 0,
       "by_method": {
-        "RELATIONAL_COPRESENCE": 13,
-        "NAME_CONTAINMENT": 385,
-        "DECLARATION": 50
+        "NAME_CONTAINMENT": 637,
+        "DECLARATION": 57,
+        "RELATIONAL_COPRESENCE": 10
       }
     },
     {
       "condition": "no-declaration",
-      "pairs": 15796,
-      "force_links": 1273,
-      "blocks": 2888,
-      "scored": 11635,
+      "pairs": 16538,
+      "force_links": 1325,
+      "blocks": 3072,
+      "scored": 12141,
       "links_above_threshold": 0,
       "by_method": {
-        "GAZETTEER_EXACT": 1236,
-        "RELATIONAL_COPRESENCE": 4,
-        "NAME_CONTAINMENT": 33
+        "NAME_CONTAINMENT": 35,
+        "GAZETTEER_EXACT": 1287,
+        "RELATIONAL_COPRESENCE": 3
       }
     },
     {
       "condition": "no-name-containment",
-      "pairs": 15796,
-      "force_links": 1285,
-      "blocks": 2888,
-      "scored": 11623,
+      "pairs": 16538,
+      "force_links": 1341,
+      "blocks": 3072,
+      "scored": 12125,
       "links_above_threshold": 0,
       "by_method": {
-        "GAZETTEER_EXACT": 1231,
-        "RELATIONAL_COPRESENCE": 4,
-        "DECLARATION": 50
+        "GAZETTEER_EXACT": 1281,
+        "DECLARATION": 57,
+        "RELATIONAL_COPRESENCE": 3
       }
     },
     {
       "condition": "no-relational-copresence",
-      "pairs": 15796,
-      "force_links": 1314,
-      "blocks": 2888,
-      "scored": 11594,
+      "pairs": 16538,
+      "force_links": 1373,
+      "blocks": 3072,
+      "scored": 12093,
       "links_above_threshold": 0,
       "by_method": {
-        "GAZETTEER_EXACT": 1231,
-        "NAME_CONTAINMENT": 33,
-        "DECLARATION": 50
+        "NAME_CONTAINMENT": 35,
+        "GAZETTEER_EXACT": 1281,
+        "DECLARATION": 57
       }
     },
     {
       "condition": "no-temporal-scoping",
-      "pairs": 15796,
-      "force_links": 1318,
-      "blocks": 2888,
-      "scored": 11590,
+      "pairs": 16538,
+      "force_links": 1376,
+      "blocks": 3072,
+      "scored": 12090,
       "links_above_threshold": 0,
       "by_method": {
-        "GAZETTEER_EXACT": 1231,
-        "RELATIONAL_COPRESENCE": 4,
-        "NAME_CONTAINMENT": 33,
-        "DECLARATION": 50
+        "NAME_CONTAINMENT": 35,
+        "GAZETTEER_EXACT": 1281,
+        "DECLARATION": 57,
+        "RELATIONAL_COPRESENCE": 3
       }
     },
     {
       "condition": "no-copresence-blocking",
-      "pairs": 15796,
-      "force_links": 1329,
+      "pairs": 16538,
+      "force_links": 1390,
       "blocks": 0,
-      "scored": 14467,
+      "scored": 15148,
       "links_above_threshold": 0,
       "by_method": {
-        "GAZETTEER_EXACT": 1231,
-        "RELATIONAL_COPRESENCE": 4,
-        "NAME_CONTAINMENT": 33,
-        "DECLARATION": 61
+        "NAME_CONTAINMENT": 35,
+        "GAZETTEER_EXACT": 1281,
+        "DECLARATION": 71,
+        "RELATIONAL_COPRESENCE": 3
       }
     },
     {
       "condition": "no-prefilters-at-all",
-      "pairs": 15796,
+      "pairs": 16538,
       "force_links": 0,
       "blocks": 0,
-      "scored": 15796,
+      "scored": 16538,
       "links_above_threshold": 0,
       "by_method": {}
     }

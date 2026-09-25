@@ -29,7 +29,7 @@ Uses the overlap alignment from `hardcase_resolution.py` (which reproduces
 scorer_diagnosis's 59), so "undetected" means no system span overlaps at all.
 
 Usage:
-    python3 scripts/hardcase_taxonomy.py [--db data/reruns/ner-window-ri.db]
+    python3 scripts/hardcase_taxonomy.py [--db data/reverend-insanity.db]
 """
 
 from __future__ import annotations
@@ -92,7 +92,7 @@ def classify(surface: str) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--db", default="data/reruns/ner-window-ri.db")
+    ap.add_argument("--db", default="data/reverend-insanity.db")
     ap.add_argument("--out", default="data/eval/hardcase_taxonomy.json")
     args = ap.parse_args()
 

@@ -1,0 +1,19 @@
+{
+  "detection": [
+    [
+      1,
+      0.7509184423218221
+    ]
+  ],
+  "detection_written_at": 1790302274.8526833,
+  "novel_id": "lord-of-the-mysteries",
+  "resolution": [
+    [
+      0,
+      0.5583333333333333,
+      240
+    ]
+  ],
+  "resolution_written_at": 1790302304.8526912,
+  "window_size": 40
+}

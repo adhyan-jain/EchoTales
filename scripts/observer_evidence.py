@@ -16,7 +16,7 @@ redaction applied after the query.
   different visible result  the aliases each query returns
 
 Usage:
-    python3 scripts/observer_evidence.py [--db data/reruns/ner-window-ri.db]
+    python3 scripts/observer_evidence.py [--db data/reverend-insanity.db]
 """
 
 from __future__ import annotations
@@ -38,7 +38,7 @@ POSITION = 200.0
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--db", default="data/reruns/ner-window-ri.db")
+    ap.add_argument("--db", default="data/reverend-insanity.db")
     ap.add_argument("--out", default="data/eval/observer_evidence.json")
     args = ap.parse_args()
 

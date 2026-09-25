@@ -13,7 +13,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 11,ri-hardcases,32.0,his master,relational_deictic,RELATIONAL_DEICTIC,,,0,,,,,,mention_not_detected
 12,ri-hardcases,32.0,an uncle,relational_deictic,RELATIONAL_DEICTIC,,,0,,,,,,mention_not_detected
 13,ri-hardcases,32.0,I,reveal,RIGID_NAME,reverend-insanity:self:476821534c,,0,,,,,,mention_not_detected
-14,ri-hardcases,32.0,Fang Zheng,reveal,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:a785fbd308,10,2,0.3074,0.346,-0.0386,BLOCK,prefilter_blocks_gold
+14,ri-hardcases,32.0,Fang Zheng,reveal,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:a785fbd308,10,2,0.3092,0.346,-0.0368,BLOCK,prefilter_blocks_gold
 15,ri-hardcases,32.0,Fang Zheng,reveal,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 16,ri-hardcases,32.0,he is really Fang Yuan,reveal,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 17,ri-hardcases,37.0,his master,relational_deictic,RELATIONAL_DEICTIC,,,0,,,,,,mention_not_detected
@@ -26,7 +26,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 24,ri-hardcases,77.0,Fang Zheng,disguise,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 25,ri-hardcases,77.0,Fang Zheng,disguise,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 26,ri-hardcases,78.0,the clan leader,title_transfer,TRANSFERABLE_TITLE,,,0,,,,,,mention_not_detected
-27,ri-hardcases,78.0,he,title_transfer,TRANSFERABLE_TITLE,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2777,0.2327,0.0449,FORCE_LINK,prefilter_force_link
+27,ri-hardcases,78.0,he,title_transfer,TRANSFERABLE_TITLE,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2777,0.2331,0.0446,FORCE_LINK,prefilter_force_link
 28,ri-hardcases,78.0,the clan leader,title_transfer,TRANSFERABLE_TITLE,,,0,,,,,,mention_not_detected
 29,ri-hardcases,78.0,Wang Da’s true identity,disguise,RIGID_NAME,,reverend-insanity:self:8e53ff2823,0,,,,,,gold_unmapped
 30,ri-hardcases,78.0,Wang Da,disguise,RIGID_NAME,,reverend-insanity:self:8e53ff2823,0,,,,,,gold_unmapped
@@ -60,13 +60,13 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 58,ri-hardcases,118.0,the previous clan leader,title_transfer,TRANSFERABLE_TITLE,,,0,,,,,,mention_not_detected
 59,ri-hardcases,118.0,clan leader,title_transfer,TRANSFERABLE_TITLE,,,0,,,,,,mention_not_detected
 60,ri-hardcases,134.0,the other master,relational_deictic,RELATIONAL_DEICTIC,,,0,,,,,,mention_not_detected
-61,ri-hardcases,139.0,Fang Yuan,reveal,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.3178,0.2502,0.0676,FORCE_LINK,prefilter_force_link
+61,ri-hardcases,139.0,Fang Yuan,reveal,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.3183,0.2502,0.068,FORCE_LINK,prefilter_force_link
 62,ri-hardcases,148.0,he,reveal,RIGID_NAME,reverend-insanity:self:476821534c,,0,,,,,,mention_not_detected
 63,ri-hardcases,154.0,Gu Yue Chi Cheng’s fake aptitude,disguise,RIGID_NAME,,reverend-insanity:self:852e6a60a5,0,,,,,,gold_unmapped
 64,ri-hardcases,155.0,Fang Yuan,reveal,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 65,ri-hardcases,158.0,his uncle,relational_deictic,RELATIONAL_DEICTIC,,,0,,,,,,mention_not_detected
 66,ri-hardcases,159.0,his uncle,relational_deictic,RELATIONAL_DEICTIC,,,0,,,,,,mention_not_detected
-67,ri-hardcases,175.0,Wang Er,disguise,RIGID_NAME,,,0,,,,,,mention_not_detected
+67,ri-hardcases,175.0,Wang Er,disguise,RIGID_NAME,,reverend-insanity:self:c33bd48e97,0,,,,,,gold_unmapped
 68,ri-hardcases,175.0,Fang Zheng,disguise,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 69,ri-hardcases,178.0,big brother’s,reveal,RIGID_NAME,reverend-insanity:self:476821534c,,0,,,,,,mention_not_detected
 70,ri-hardcases,178.0,Gu Yue Yao Ji,reveal,RIGID_NAME,,reverend-insanity:self:a8bdaf3bfb,0,,,,,,gold_unmapped
@@ -131,12 +131,12 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 129,ri-c1-c5,1.0,Gu Yue clan,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,,0,,,,,,mention_not_detected
 130,ri-c1-c5,1.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,,0,,,,,,mention_not_detected
 131,ri-c1-c5,1.0,clan head,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
-132,ri-c1-c5,1.0,Gu Yue Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,,0,,,,,,mention_not_detected
-133,ri-c1-c5,1.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,,0,,,,,,mention_not_detected
-134,ri-c1-c5,1.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,,0,,,,,,mention_not_detected
-135,ri-c1-c5,1.0,Gu Yue Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,,0,,,,,,mention_not_detected
-136,ri-c1-c5,1.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,,0,,,,,,mention_not_detected
-137,ri-c1-c5,1.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,,0,,,,,,mention_not_detected
+132,ri-c1-c5,1.0,Gu Yue Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,7,2,0.0652,0.1342,-0.0689,FORCE_LINK,prefilter_force_link
+133,ri-c1-c5,1.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,reverend-insanity:self:476821534c,7,,,,,,retrieval_failure
+134,ri-c1-c5,1.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,7,2,0.0652,0.1342,-0.0689,FORCE_LINK,prefilter_force_link
+135,ri-c1-c5,1.0,Gu Yue Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
+136,ri-c1-c5,1.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,reverend-insanity:self:476821534c,0,,,,,,not_scored
+137,ri-c1-c5,1.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 138,ri-c1-c5,1.0,Bai Ning Bing,uncategorised,RIGID_NAME,,,0,,,,,,gold_unmapped
 139,ri-c1-c5,1.0,Gu Yue Clan,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,,0,,,,,,mention_not_detected
 140,ri-c1-c5,1.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,,0,,,,,,mention_not_detected
@@ -145,9 +145,9 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 143,ri-c1-c5,1.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,,0,,,,,,mention_not_detected
 144,ri-c1-c5,1.0,clan head,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
 145,ri-c1-c5,1.0,clan head,uncategorised,RIGID_NAME,,,0,,,,,,gold_unmapped
-146,ri-c1-c5,1.0,Gu Yue Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,,0,,,,,,mention_not_detected
-147,ri-c1-c5,1.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,,0,,,,,,mention_not_detected
-148,ri-c1-c5,1.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,,0,,,,,,mention_not_detected
+146,ri-c1-c5,1.0,Gu Yue Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
+147,ri-c1-c5,1.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,reverend-insanity:self:476821534c,0,,,,,,not_scored
+148,ri-c1-c5,1.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 149,ri-c1-c5,1.0,Fang Zhi,uncategorised,RIGID_NAME,reverend-insanity:self:60117b7f5a,reverend-insanity:self:60117b7f5a,0,,,,,,not_scored
 150,ri-c1-c5,1.0,clan head,uncategorised,RIGID_NAME,,,0,,,,,,gold_unmapped
 151,ri-c1-c5,1.0,clan head,uncategorised,RIGID_NAME,,,0,,,,,,gold_unmapped
@@ -167,7 +167,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 165,ri-c1-c5,2.0,Spring Autumn Cicada,uncategorised,RIGID_NAME,reverend-insanity:self:50169b8b6f,,0,,,,,,mention_not_detected
 166,ri-c1-c5,2.0,Spring Autumn Cicada,uncategorised,RIGID_NAME,reverend-insanity:self:50169b8b6f,,0,,,,,,mention_not_detected
 167,ri-c1-c5,2.0,Spring Autumn Cicada,uncategorised,RIGID_NAME,reverend-insanity:self:50169b8b6f,,0,,,,,,mention_not_detected
-168,ri-c1-c5,2.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,7,1,0.2452,0.1329,0.1123,FORCE_LINK,prefilter_force_link
+168,ri-c1-c5,2.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,7,1,0.2501,0.1329,0.1172,FORCE_LINK,prefilter_force_link
 169,ri-c1-c5,2.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 170,ri-c1-c5,2.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 171,ri-c1-c5,2.0,Spring Autumn Cicada,uncategorised,RIGID_NAME,reverend-insanity:self:50169b8b6f,,0,,,,,,mention_not_detected
@@ -196,7 +196,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 194,ri-c1-c5,2.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 195,ri-c1-c5,2.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 196,ri-c1-c5,2.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
-197,ri-c1-c5,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,5,1,0.1821,0.14,0.0421,FORCE_LINK,prefilter_force_link
+197,ri-c1-c5,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,5,1,0.1833,0.14,0.0433,FORCE_LINK,prefilter_force_link
 198,ri-c1-c5,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 199,ri-c1-c5,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 200,ri-c1-c5,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -209,7 +209,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 207,ri-c1-c5,3.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,0,,,,,,not_scored
 208,ri-c1-c5,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 209,ri-c1-c5,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-210,ri-c1-c5,3.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,9,1,0.1767,0.1602,0.0165,FORCE_LINK,prefilter_force_link
+210,ri-c1-c5,3.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,9,1,0.1767,0.1609,0.0158,FORCE_LINK,prefilter_force_link
 211,ri-c1-c5,3.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,0,,,,,,not_scored
 212,ri-c1-c5,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 213,ri-c1-c5,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -221,8 +221,8 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 219,ri-c1-c5,3.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 220,ri-c1-c5,3.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 221,ri-c1-c5,3.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,0,,,,,,not_scored
-222,ri-c1-c5,3.0,Mother Shen,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
-223,ri-c1-c5,3.0,Mother Shen,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
+222,ri-c1-c5,3.0,Mother Shen,uncategorised,RIGID_NAME,reverend-insanity:self:0926fccc88,reverend-insanity:self:0926fccc88,8,,,,,,retrieval_failure
+223,ri-c1-c5,3.0,Mother Shen,uncategorised,RIGID_NAME,reverend-insanity:self:0926fccc88,reverend-insanity:self:0926fccc88,0,,,,,,not_scored
 224,ri-c1-c5,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 225,ri-c1-c5,3.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,0,,,,,,not_scored
 226,ri-c1-c5,3.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,0,,,,,,not_scored
@@ -250,11 +250,11 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 248,ri-c1-c5,3.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,0,,,,,,not_scored
 249,ri-c1-c5,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 250,ri-c1-c5,3.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,0,,,,,,not_scored
-251,ri-c1-c5,3.0,Mother Shen,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
+251,ri-c1-c5,3.0,Mother Shen,uncategorised,RIGID_NAME,reverend-insanity:self:0926fccc88,reverend-insanity:self:0926fccc88,0,,,,,,not_scored
 252,ri-c1-c5,4.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,,0,,,,,,mention_not_detected
 253,ri-c1-c5,4.0,clan head,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
 254,ri-c1-c5,4.0,elder of the academy,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
-255,ri-c1-c5,4.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,9,1,0.1886,0.1476,0.041,FORCE_LINK,prefilter_force_link
+255,ri-c1-c5,4.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.192,0.1476,0.0444,FORCE_LINK,prefilter_force_link
 256,ri-c1-c5,4.0,Gu Yue clan,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,,0,,,,,,mention_not_detected
 257,ri-c1-c5,4.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,,0,,,,,,mention_not_detected
 258,ri-c1-c5,4.0,Qing Mao Mountain,uncategorised,RIGID_NAME,reverend-insanity:self:c9367ac31c,,0,,,,,,mention_not_detected
@@ -274,8 +274,8 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 272,ri-c1-c5,4.0,Gu Yue Chen Bo,uncategorised,RIGID_NAME,reverend-insanity:self:c428cac488,reverend-insanity:self:c428cac488,0,,,,,,not_scored
 273,ri-c1-c5,4.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,reverend-insanity:self:c428cac488,0,,,,,,not_scored
 274,ri-c1-c5,4.0,Chen Bo,uncategorised,RIGID_NAME,reverend-insanity:self:c428cac488,reverend-insanity:self:c428cac488,0,,,,,,not_scored
-275,ri-c1-c5,4.0,Gu Yue Zao Xie,uncategorised,RIGID_NAME,reverend-insanity:self:fae3791b88,reverend-insanity:self:fae3791b88,8,,,,,,retrieval_failure
-276,ri-c1-c5,4.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,reverend-insanity:self:fae3791b88,8,,,,,,retrieval_failure
+275,ri-c1-c5,4.0,Gu Yue Zao Xie,uncategorised,RIGID_NAME,reverend-insanity:self:fae3791b88,reverend-insanity:self:fae3791b88,9,,,,,,retrieval_failure
+276,ri-c1-c5,4.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,reverend-insanity:self:fae3791b88,9,,,,,,retrieval_failure
 277,ri-c1-c5,4.0,Chen Bo,uncategorised,RIGID_NAME,reverend-insanity:self:c428cac488,,0,,,,,,mention_not_detected
 278,ri-c1-c5,4.0,Gu Yue clan,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,,0,,,,,,mention_not_detected
 279,ri-c1-c5,4.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,,0,,,,,,mention_not_detected
@@ -361,10 +361,10 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 359,ri-c1-c5,4.0,Gu Yue Chi Lian,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,reverend-insanity:self:d090530fc6,0,,,,,,not_scored
 360,ri-c1-c5,4.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,reverend-insanity:self:d090530fc6,0,,,,,,not_scored
 361,ri-c1-c5,4.0,academy elder,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
-362,ri-c1-c5,4.0,Gu Yue Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-363,ri-c1-c5,4.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,,0,,,,,,mention_not_detected
-364,ri-c1-c5,4.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-365,ri-c1-c5,5.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1862,0.1691,0.0171,FORCE_LINK,prefilter_force_link
+362,ri-c1-c5,4.0,Gu Yue Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2035,0.1634,0.0401,FORCE_LINK,prefilter_force_link
+363,ri-c1-c5,4.0,Gu Yue,uncategorised,RIGID_NAME,reverend-insanity:self:d090530fc6,reverend-insanity:self:476821534c,10,6,0.1484,0.2035,-0.0551,BLOCK,prefilter_blocks_gold
+364,ri-c1-c5,4.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2035,0.1634,0.0401,FORCE_LINK,prefilter_force_link
+365,ri-c1-c5,5.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1877,0.1691,0.0185,FORCE_LINK,prefilter_force_link
 366,ri-c1-c5,5.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 367,ri-c1-c5,5.0,Hope Gu,uncategorised,RIGID_NAME,reverend-insanity:self:01c7f0ce91,reverend-insanity:self:01c7f0ce91,10,,,,,,retrieval_failure
 368,ri-c1-c5,5.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -425,12 +425,12 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 423,ri,1.0,Bai clan,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
 424,ri,1.0,Fang Zhi,uncategorised,RIGID_NAME,reverend-insanity:self:60117b7f5a,reverend-insanity:self:60117b7f5a,6,,,,,,retrieval_failure
 425,ri,1.0,clan head,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
-426,ri,1.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,,0,,,,,,mention_not_detected
-427,ri,1.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,,0,,,,,,mention_not_detected
+426,ri,1.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,7,2,0.0652,0.1342,-0.0689,FORCE_LINK,prefilter_force_link
+427,ri,1.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 428,ri,1.0,Bai Ning Bing,uncategorised,RIGID_NAME,,,0,,,,,,gold_unmapped
 429,ri,1.0,clan head,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
 430,ri,1.0,clan head,uncategorised,RIGID_NAME,,,0,,,,,,gold_unmapped
-431,ri,1.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,,0,,,,,,mention_not_detected
+431,ri,1.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 432,ri,1.0,Fang Zhi,uncategorised,RIGID_NAME,reverend-insanity:self:60117b7f5a,reverend-insanity:self:60117b7f5a,0,,,,,,not_scored
 433,ri,1.0,clan head,uncategorised,RIGID_NAME,,,0,,,,,,gold_unmapped
 434,ri,1.0,clan head,uncategorised,RIGID_NAME,,,0,,,,,,gold_unmapped
@@ -445,7 +445,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 443,ri,2.0,Spring Autumn Cicada,uncategorised,RIGID_NAME,reverend-insanity:self:50169b8b6f,,0,,,,,,mention_not_detected
 444,ri,2.0,Spring Autumn Cicada,uncategorised,RIGID_NAME,reverend-insanity:self:50169b8b6f,,0,,,,,,mention_not_detected
 445,ri,2.0,Spring Autumn Cicada,uncategorised,RIGID_NAME,reverend-insanity:self:50169b8b6f,,0,,,,,,mention_not_detected
-446,ri,2.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,7,1,0.2452,0.1329,0.1123,FORCE_LINK,prefilter_force_link
+446,ri,2.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,7,1,0.2501,0.1329,0.1172,FORCE_LINK,prefilter_force_link
 447,ri,2.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 448,ri,2.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 449,ri,2.0,Spring Autumn Cicada,uncategorised,RIGID_NAME,reverend-insanity:self:50169b8b6f,,0,,,,,,mention_not_detected
@@ -472,7 +472,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 470,ri,2.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 471,ri,2.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 472,ri,2.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
-473,ri,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,5,1,0.1821,0.14,0.0421,FORCE_LINK,prefilter_force_link
+473,ri,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,5,1,0.1833,0.14,0.0433,FORCE_LINK,prefilter_force_link
 474,ri,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 475,ri,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 476,ri,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -485,7 +485,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 483,ri,3.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,0,,,,,,not_scored
 484,ri,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 485,ri,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-486,ri,3.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,9,1,0.1767,0.1602,0.0165,FORCE_LINK,prefilter_force_link
+486,ri,3.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,9,1,0.1767,0.1609,0.0158,FORCE_LINK,prefilter_force_link
 487,ri,3.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,0,,,,,,not_scored
 488,ri,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 489,ri,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -497,8 +497,8 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 495,ri,3.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 496,ri,3.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 497,ri,3.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,0,,,,,,not_scored
-498,ri,3.0,Mother Shen,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
-499,ri,3.0,Mother Shen,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
+498,ri,3.0,Mother Shen,uncategorised,RIGID_NAME,reverend-insanity:self:0926fccc88,reverend-insanity:self:0926fccc88,8,,,,,,retrieval_failure
+499,ri,3.0,Mother Shen,uncategorised,RIGID_NAME,reverend-insanity:self:0926fccc88,reverend-insanity:self:0926fccc88,0,,,,,,not_scored
 500,ri,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 501,ri,3.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,0,,,,,,not_scored
 502,ri,3.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,0,,,,,,not_scored
@@ -526,10 +526,10 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 524,ri,3.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,0,,,,,,not_scored
 525,ri,3.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 526,ri,3.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,0,,,,,,not_scored
-527,ri,3.0,Mother Shen,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
+527,ri,3.0,Mother Shen,uncategorised,RIGID_NAME,reverend-insanity:self:0926fccc88,reverend-insanity:self:0926fccc88,0,,,,,,not_scored
 528,ri,4.0,clan head,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
 529,ri,4.0,elder of the academy,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
-530,ri,4.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,9,1,0.1886,0.1476,0.041,FORCE_LINK,prefilter_force_link
+530,ri,4.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.192,0.1476,0.0444,FORCE_LINK,prefilter_force_link
 531,ri,4.0,Qing Mao Mountain,uncategorised,RIGID_NAME,reverend-insanity:self:c9367ac31c,,0,,,,,,mention_not_detected
 532,ri,4.0,South Border,uncategorised,RIGID_NAME,reverend-insanity:self:84239be018,,0,,,,,,mention_not_detected
 533,ri,4.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -562,8 +562,8 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 560,ri,4.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 561,ri,4.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 562,ri,4.0,academy elder,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
-563,ri,4.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-564,ri,5.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1862,0.1691,0.0171,FORCE_LINK,prefilter_force_link
+563,ri,4.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2035,0.1634,0.0401,FORCE_LINK,prefilter_force_link
+564,ri,5.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1877,0.1691,0.0185,FORCE_LINK,prefilter_force_link
 565,ri,5.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 566,ri,5.0,Hope Gu,uncategorised,RIGID_NAME,reverend-insanity:self:01c7f0ce91,reverend-insanity:self:01c7f0ce91,10,,,,,,retrieval_failure
 567,ri,5.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -594,14 +594,14 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 592,ri,5.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 593,ri,5.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 594,ri,5.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-595,ri,6.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1824,0.1439,0.0385,FORCE_LINK,prefilter_force_link
+595,ri,6.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.183,0.1439,0.0391,FORCE_LINK,prefilter_force_link
 596,ri,6.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 597,ri,6.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 598,ri,6.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 599,ri,6.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 600,ri,6.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 601,ri,6.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-602,ri,6.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2173,0.1937,0.0236,FORCE_LINK,prefilter_force_link
+602,ri,6.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2173,0.1966,0.0207,FORCE_LINK,prefilter_force_link
 603,ri,6.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 604,ri,6.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 605,ri,6.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -622,9 +622,9 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 620,ri,6.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 621,ri,6.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 622,ri,6.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
-623,ri,7.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2011,0.163,0.0382,FORCE_LINK,prefilter_force_link
-624,ri,7.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1928,0.1599,0.0329,FORCE_LINK,prefilter_force_link
-625,ri,7.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
+623,ri,7.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2011,0.164,0.0371,FORCE_LINK,prefilter_force_link
+624,ri,7.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1946,0.1442,0.0503,FORCE_LINK,prefilter_force_link
+625,ri,7.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2005,0.1599,0.0406,FORCE_LINK,prefilter_force_link
 626,ri,7.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 627,ri,7.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 628,ri,7.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -632,7 +632,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 630,ri,7.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 631,ri,7.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 632,ri,7.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-633,ri,8.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1693,0.1378,0.0315,FORCE_LINK,prefilter_force_link
+633,ri,8.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1698,0.1378,0.032,FORCE_LINK,prefilter_force_link
 634,ri,8.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 635,ri,8.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 636,ri,8.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -647,13 +647,13 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 645,ri,8.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 646,ri,8.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 647,ri,8.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-648,ri,8.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2533,0.1784,0.0749,FORCE_LINK,prefilter_force_link
+648,ri,8.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2533,0.1812,0.0721,FORCE_LINK,prefilter_force_link
 649,ri,8.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 650,ri,8.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 651,ri,8.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 652,ri,8.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 653,ri,8.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
-654,ri,8.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
+654,ri,8.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.235,0.1479,0.0871,FORCE_LINK,prefilter_force_link
 655,ri,8.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 656,ri,8.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 657,ri,8.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -666,8 +666,8 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 664,ri,8.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 665,ri,8.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 666,ri,8.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-667,ri,9.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2058,0.1682,0.0375,FORCE_LINK,prefilter_force_link
-668,ri,9.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,2,0.1972,0.2215,-0.0244,FORCE_LINK,prefilter_force_link
+667,ri,9.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2069,0.1682,0.0386,FORCE_LINK,prefilter_force_link
+668,ri,9.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,2,0.1972,0.2223,-0.0252,FORCE_LINK,prefilter_force_link
 669,ri,9.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 670,ri,9.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 671,ri,9.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -701,14 +701,14 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 699,ri,9.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 700,ri,9.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 701,ri,9.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
-702,ri,9.0,Mother Shen,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
+702,ri,9.0,Mother Shen,uncategorised,RIGID_NAME,reverend-insanity:self:0926fccc88,reverend-insanity:self:0926fccc88,10,1,0.2459,0.0885,0.1574,FORCE_LINK,prefilter_force_link
 703,ri,9.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 704,ri,9.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
-705,ri,9.0,Mother Shen,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
-706,ri,9.0,Mother Shen,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
+705,ri,9.0,Mother Shen,uncategorised,RIGID_NAME,reverend-insanity:self:0926fccc88,reverend-insanity:self:0926fccc88,0,,,,,,not_scored
+706,ri,9.0,Mother Shen,uncategorised,RIGID_NAME,reverend-insanity:self:0926fccc88,reverend-insanity:self:0926fccc88,0,,,,,,not_scored
 707,ri,9.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,0,,,,,,not_scored
 708,ri,9.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-709,ri,9.0,Mother Shen,uncategorised,RIGID_NAME,,,0,,,,,,mention_not_detected
+709,ri,9.0,Mother Shen,uncategorised,RIGID_NAME,reverend-insanity:self:0926fccc88,reverend-insanity:self:0926fccc88,0,,,,,,not_scored
 710,ri,9.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 711,ri,9.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 712,ri,9.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -724,7 +724,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 722,ri,9.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 723,ri,9.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 724,ri,9.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
-725,ri,10.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2056,0.1458,0.0598,FORCE_LINK,prefilter_force_link
+725,ri,10.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2064,0.1458,0.0607,FORCE_LINK,prefilter_force_link
 726,ri,10.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 727,ri,10.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 728,ri,10.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -744,15 +744,15 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 742,ri,10.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 743,ri,10.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 744,ri,10.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-745,ri,10.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2322,0.1568,0.0754,FORCE_LINK,prefilter_force_link
+745,ri,10.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2322,0.1575,0.0747,FORCE_LINK,prefilter_force_link
 746,ri,10.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 747,ri,10.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 748,ri,10.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 749,ri,10.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-750,ri,10.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,10,1,0.2402,0.0871,0.1531,FORCE_LINK,prefilter_force_link
+750,ri,10.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,10,1,0.2402,0.0887,0.1515,FORCE_LINK,prefilter_force_link
 751,ri,10.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-752,ri,11.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2009,0.1629,0.0381,FORCE_LINK,prefilter_force_link
-753,ri,11.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,10,1,0.2141,0.112,0.102,FORCE_LINK,prefilter_force_link
+752,ri,11.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2028,0.1629,0.0399,FORCE_LINK,prefilter_force_link
+753,ri,11.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,10,1,0.2141,0.1129,0.1011,FORCE_LINK,prefilter_force_link
 754,ri,11.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 755,ri,11.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 756,ri,11.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -803,7 +803,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 801,ri,11.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 802,ri,11.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 803,ri,11.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-804,ri,12.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2177,0.1623,0.0553,FORCE_LINK,prefilter_force_link
+804,ri,12.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2202,0.1623,0.0579,FORCE_LINK,prefilter_force_link
 805,ri,12.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 806,ri,12.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 807,ri,12.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -820,7 +820,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 818,ri,12.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 819,ri,12.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 820,ri,12.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-821,ri,13.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1923,0.1545,0.0378,FORCE_LINK,prefilter_force_link
+821,ri,13.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1946,0.1545,0.0401,FORCE_LINK,prefilter_force_link
 822,ri,13.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 823,ri,13.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 824,ri,13.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -845,7 +845,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 843,ri,13.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 844,ri,13.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 845,ri,13.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-846,ri,14.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1881,0.1424,0.0457,FORCE_LINK,prefilter_force_link
+846,ri,14.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1893,0.1424,0.0469,FORCE_LINK,prefilter_force_link
 847,ri,14.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 848,ri,14.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 849,ri,14.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -876,14 +876,14 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 874,ri,14.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 875,ri,14.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 876,ri,14.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-877,ri,15.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2136,0.1576,0.056,FORCE_LINK,prefilter_force_link
+877,ri,15.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2144,0.1576,0.0568,FORCE_LINK,prefilter_force_link
 878,ri,15.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 879,ri,15.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 880,ri,15.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 881,ri,15.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 882,ri,15.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 883,ri,15.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-884,ri,16.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2137,0.1414,0.0723,FORCE_LINK,prefilter_force_link
+884,ri,16.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2144,0.1414,0.073,FORCE_LINK,prefilter_force_link
 885,ri,16.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 886,ri,16.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 887,ri,16.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -902,7 +902,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 900,ri,16.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 901,ri,16.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 902,ri,16.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-903,ri,17.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2128,0.1692,0.0436,FORCE_LINK,prefilter_force_link
+903,ri,17.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2134,0.1692,0.0442,FORCE_LINK,prefilter_force_link
 904,ri,17.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 905,ri,17.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 906,ri,17.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -934,8 +934,8 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 932,ri,17.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 933,ri,17.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 934,ri,17.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-935,ri,17.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2248,0.1663,0.0585,FORCE_LINK,prefilter_force_link
-936,ri,18.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2536,0.2154,0.0382,FORCE_LINK,prefilter_force_link
+935,ri,17.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2248,0.1673,0.0575,FORCE_LINK,prefilter_force_link
+936,ri,18.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2566,0.2154,0.0413,FORCE_LINK,prefilter_force_link
 937,ri,18.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,2,0.2466,0.3173,-0.0707,FORCE_LINK,prefilter_force_link
 938,ri,18.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 939,ri,18.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -945,7 +945,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 943,ri,18.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 944,ri,18.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 945,ri,18.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-946,ri,18.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
+946,ri,18.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2621,0.1518,0.1103,FORCE_LINK,prefilter_force_link
 947,ri,18.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,0,,,,,,not_scored
 948,ri,18.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 949,ri,18.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
@@ -1018,7 +1018,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1016,ri,18.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1017,ri,18.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,0,,,,,,not_scored
 1018,ri,18.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1019,ri,19.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2193,0.156,0.0633,FORCE_LINK,prefilter_force_link
+1019,ri,19.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2196,0.156,0.0636,FORCE_LINK,prefilter_force_link
 1020,ri,19.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1021,ri,19.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1022,ri,19.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1042,7 +1042,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1040,ri,19.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1041,ri,19.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1042,ri,19.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1043,ri,20.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2116,0.1446,0.0669,FORCE_LINK,prefilter_force_link
+1043,ri,20.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2117,0.1446,0.0671,FORCE_LINK,prefilter_force_link
 1044,ri,20.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1045,ri,20.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1046,ri,20.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1060,9 +1060,9 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1058,ri,20.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1059,ri,20.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1060,ri,20.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1061,ri,20.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2201,0.1936,0.0265,FORCE_LINK,prefilter_force_link
+1061,ri,20.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2201,0.1952,0.0249,FORCE_LINK,prefilter_force_link
 1062,ri,20.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1063,ri,20.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
+1063,ri,20.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.3298,0.1717,0.158,FORCE_LINK,prefilter_force_link
 1064,ri,20.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1065,ri,20.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1066,ri,20.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1080,13 +1080,13 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1078,ri,20.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1079,ri,20.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1080,ri,20.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1081,ri,21.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.1903,0.1681,0.0222,FORCE_LINK,prefilter_force_link
+1081,ri,21.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.1903,0.1688,0.0215,FORCE_LINK,prefilter_force_link
 1082,ri,21.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1083,ri,21.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1084,ri,21.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
-1085,ri,21.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,2,0.244,0.245,-0.001,FORCE_LINK,prefilter_force_link
+1085,ri,21.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2462,0.1608,0.0854,FORCE_LINK,prefilter_force_link
 1086,ri,21.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
-1087,ri,21.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
+1087,ri,21.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2556,0.245,0.0105,FORCE_LINK,prefilter_force_link
 1088,ri,21.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1089,ri,21.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1090,ri,21.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
@@ -1097,7 +1097,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1095,ri,21.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1096,ri,21.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1097,ri,21.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1098,ri,21.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,10,1,0.1699,0.061,0.1088,FORCE_LINK,prefilter_force_link
+1098,ri,21.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,10,1,0.1699,0.0611,0.1088,FORCE_LINK,prefilter_force_link
 1099,ri,21.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1100,ri,21.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1101,ri,21.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1114,18 +1114,18 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1112,ri,21.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1113,ri,21.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1114,ri,21.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
-1115,ri,22.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1967,0.1497,0.047,FORCE_LINK,prefilter_force_link
+1115,ri,22.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1971,0.1497,0.0474,FORCE_LINK,prefilter_force_link
 1116,ri,22.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1117,ri,22.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1118,ri,22.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1119,ri,22.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1120,ri,22.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2206,0.1948,0.0258,FORCE_LINK,prefilter_force_link
+1120,ri,22.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2206,0.1964,0.0242,FORCE_LINK,prefilter_force_link
 1121,ri,22.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1122,ri,22.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1123,ri,22.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1124,ri,22.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1125,ri,22.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
-1126,ri,23.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2392,0.1888,0.0504,FORCE_LINK,prefilter_force_link
+1126,ri,23.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2397,0.1888,0.0509,FORCE_LINK,prefilter_force_link
 1127,ri,23.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1128,ri,23.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1129,ri,23.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1146,7 +1146,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1144,ri,23.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1145,ri,23.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1146,ri,23.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1147,ri,23.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2206,0.2082,0.0124,FORCE_LINK,prefilter_force_link
+1147,ri,23.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2206,0.2093,0.0113,FORCE_LINK,prefilter_force_link
 1148,ri,23.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1149,ri,23.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1150,ri,23.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1161,17 +1161,17 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1159,ri,23.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1160,ri,23.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1161,ri,23.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1162,ri,24.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1914,0.1593,0.0321,FORCE_LINK,prefilter_force_link
+1162,ri,24.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1923,0.1593,0.033,FORCE_LINK,prefilter_force_link
 1163,ri,24.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1164,ri,24.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1165,ri,24.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1166,ri,24.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2548,0.1822,0.0727,FORCE_LINK,prefilter_force_link
+1166,ri,24.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2548,0.184,0.0708,FORCE_LINK,prefilter_force_link
 1167,ri,24.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1168,ri,24.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1169,ri,24.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1170,ri,24.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
-1171,ri,25.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.3279,0.3082,0.0197,FORCE_LINK,prefilter_force_link
-1172,ri,25.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.3469,0.3333,0.0136,FORCE_LINK,prefilter_force_link
+1171,ri,25.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.3315,0.3082,0.0233,FORCE_LINK,prefilter_force_link
+1172,ri,25.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.3469,0.336,0.0109,FORCE_LINK,prefilter_force_link
 1173,ri,25.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1174,ri,25.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1175,ri,25.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
@@ -1216,14 +1216,14 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1214,ri,25.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1215,ri,25.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1216,ri,25.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1217,ri,26.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2488,0.2133,0.0355,FORCE_LINK,prefilter_force_link
-1218,ri,26.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
+1217,ri,26.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2524,0.1788,0.0736,FORCE_LINK,prefilter_force_link
+1218,ri,26.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2538,0.2133,0.0405,FORCE_LINK,prefilter_force_link
 1219,ri,26.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1220,ri,26.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1221,ri,26.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1222,ri,26.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1223,ri,26.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1224,ri,26.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.3347,0.2722,0.0626,FORCE_LINK,prefilter_force_link
+1224,ri,26.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.3347,0.2755,0.0593,FORCE_LINK,prefilter_force_link
 1225,ri,26.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1226,ri,26.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1227,ri,26.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1239,7 +1239,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1237,ri,26.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1238,ri,26.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1239,ri,26.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1240,ri,27.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.217,0.1959,0.0211,FORCE_LINK,prefilter_force_link
+1240,ri,27.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2189,0.1959,0.0229,FORCE_LINK,prefilter_force_link
 1241,ri,27.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1242,ri,27.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1243,ri,27.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1270,7 +1270,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1268,ri,27.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1269,ri,27.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1270,ri,27.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1271,ri,28.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2052,0.1678,0.0374,FORCE_LINK,prefilter_force_link
+1271,ri,28.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2062,0.1678,0.0384,FORCE_LINK,prefilter_force_link
 1272,ri,28.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1273,ri,28.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1274,ri,28.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1290,7 +1290,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1288,ri,28.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1289,ri,28.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1290,ri,28.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1291,ri,28.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2995,0.2304,0.0691,FORCE_LINK,prefilter_force_link
+1291,ri,28.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2995,0.2319,0.0675,FORCE_LINK,prefilter_force_link
 1292,ri,28.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1293,ri,28.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1294,ri,28.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1309,7 +1309,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1307,ri,28.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1308,ri,28.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1309,ri,28.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1310,ri,29.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2968,0.2168,0.08,FORCE_LINK,prefilter_force_link
+1310,ri,29.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2974,0.2168,0.0807,FORCE_LINK,prefilter_force_link
 1311,ri,29.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1312,ri,29.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1313,ri,29.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1333,8 +1333,8 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1331,ri,29.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1332,ri,29.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1333,ri,29.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1334,ri,30.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2751,0.2122,0.0629,FORCE_LINK,prefilter_force_link
-1335,ri,30.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,2,0.2431,0.2698,-0.0267,FORCE_LINK,prefilter_force_link
+1334,ri,30.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2751,0.2132,0.0619,FORCE_LINK,prefilter_force_link
+1335,ri,30.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,2,0.2442,0.2698,-0.0256,FORCE_LINK,prefilter_force_link
 1336,ri,30.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1337,ri,30.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1338,ri,30.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
@@ -1366,7 +1366,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1364,ri,30.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1365,ri,30.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1366,ri,30.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1367,ri,31.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1972,0.168,0.0293,FORCE_LINK,prefilter_force_link
+1367,ri,31.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.198,0.168,0.0301,FORCE_LINK,prefilter_force_link
 1368,ri,31.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1369,ri,31.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1370,ri,31.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1378,12 +1378,12 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1376,ri,31.0,Southern Border,uncategorised,RIGID_NAME,reverend-insanity:self:84239be018,,0,,,,,,mention_not_detected
 1377,ri,31.0,Southern Border,uncategorised,RIGID_NAME,reverend-insanity:self:84239be018,,0,,,,,,mention_not_detected
 1378,ri,31.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1379,ri,31.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
+1379,ri,31.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.3008,0.2113,0.0895,FORCE_LINK,prefilter_force_link
 1380,ri,31.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1381,ri,31.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1382,ri,31.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1383,ri,31.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1384,ri,32.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2057,0.178,0.0277,FORCE_LINK,prefilter_force_link
+1384,ri,32.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2066,0.178,0.0286,FORCE_LINK,prefilter_force_link
 1385,ri,32.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1386,ri,32.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1387,ri,32.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1401,10 +1401,10 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1399,ri,32.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1400,ri,32.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1401,ri,32.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1402,ri,32.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
+1402,ri,32.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2631,0.1983,0.0648,FORCE_LINK,prefilter_force_link
 1403,ri,32.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1404,ri,32.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1405,ri,32.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.346,0.3074,0.0386,FORCE_LINK,prefilter_force_link
+1405,ri,32.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.346,0.3092,0.0368,FORCE_LINK,prefilter_force_link
 1406,ri,32.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1407,ri,32.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1408,ri,32.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1425,7 +1425,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1423,ri,32.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1424,ri,32.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1425,ri,32.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1426,ri,33.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.3083,0.238,0.0703,FORCE_LINK,prefilter_force_link
+1426,ri,33.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.3106,0.238,0.0727,FORCE_LINK,prefilter_force_link
 1427,ri,33.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1428,ri,33.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1429,ri,33.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1461,7 +1461,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1459,ri,33.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1460,ri,33.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1461,ri,33.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1462,ri,34.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2477,0.2024,0.0453,FORCE_LINK,prefilter_force_link
+1462,ri,34.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2486,0.2024,0.0462,FORCE_LINK,prefilter_force_link
 1463,ri,34.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1464,ri,34.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1465,ri,34.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1494,7 +1494,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1492,ri,34.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1493,ri,34.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1494,ri,34.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1495,ri,35.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2085,0.1657,0.0428,FORCE_LINK,prefilter_force_link
+1495,ri,35.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2086,0.1657,0.0429,FORCE_LINK,prefilter_force_link
 1496,ri,35.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1497,ri,35.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1498,ri,35.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1519,7 +1519,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1517,ri,35.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1518,ri,35.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1519,ri,35.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1520,ri,36.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.3026,0.2377,0.0649,FORCE_LINK,prefilter_force_link
+1520,ri,36.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.3034,0.2377,0.0657,FORCE_LINK,prefilter_force_link
 1521,ri,36.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1522,ri,36.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1523,ri,36.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1560,7 +1560,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1558,ri,36.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1559,ri,36.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1560,ri,36.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1561,ri,37.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2414,0.1916,0.0498,FORCE_LINK,prefilter_force_link
+1561,ri,37.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2419,0.1916,0.0503,FORCE_LINK,prefilter_force_link
 1562,ri,37.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1563,ri,37.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1564,ri,37.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1583,7 +1583,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1581,ri,37.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1582,ri,37.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1583,ri,37.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1584,ri,38.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2002,0.1629,0.0373,FORCE_LINK,prefilter_force_link
+1584,ri,38.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2003,0.1629,0.0374,FORCE_LINK,prefilter_force_link
 1585,ri,38.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1586,ri,38.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1587,ri,38.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1591,7 +1591,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1589,ri,38.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1590,ri,38.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1591,ri,38.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1592,ri,38.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,10,1,0.1762,0.0564,0.1199,FORCE_LINK,prefilter_force_link
+1592,ri,38.0,Shen Cui,uncategorised,RIGID_NAME,reverend-insanity:self:b1ef741901,reverend-insanity:self:b1ef741901,10,1,0.1762,0.0647,0.1116,FORCE_LINK,prefilter_force_link
 1593,ri,38.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1594,ri,38.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1595,ri,38.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1600,13 +1600,13 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1598,ri,38.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1599,ri,38.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1600,ri,38.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1601,ri,39.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2013,0.1663,0.035,FORCE_LINK,prefilter_force_link
+1601,ri,39.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2017,0.1663,0.0354,FORCE_LINK,prefilter_force_link
 1602,ri,39.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1603,ri,39.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1604,ri,39.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1605,ri,39.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1606,ri,39.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1607,ri,40.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1937,0.1569,0.0368,FORCE_LINK,prefilter_force_link
+1607,ri,40.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.194,0.1569,0.037,FORCE_LINK,prefilter_force_link
 1608,ri,40.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1609,ri,40.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1610,ri,40.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1683,7 +1683,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1681,ri,42.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1682,ri,42.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1683,ri,42.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1684,ri,43.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2075,0.1767,0.0308,FORCE_LINK,prefilter_force_link
+1684,ri,43.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2075,0.1767,0.0307,FORCE_LINK,prefilter_force_link
 1685,ri,43.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1686,ri,43.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1687,ri,43.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1701,9 +1701,9 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1699,ri,43.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1700,ri,43.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1701,ri,43.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1702,ri,43.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2158,0.1578,0.058,FORCE_LINK,prefilter_force_link
+1702,ri,43.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2158,0.1583,0.0575,FORCE_LINK,prefilter_force_link
 1703,ri,43.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1704,ri,44.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2534,0.1951,0.0583,FORCE_LINK,prefilter_force_link
+1704,ri,44.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2538,0.1951,0.0587,FORCE_LINK,prefilter_force_link
 1705,ri,44.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1706,ri,44.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1707,ri,44.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1724,7 +1724,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1722,ri,44.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1723,ri,44.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1724,ri,44.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1725,ri,45.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2114,0.163,0.0484,FORCE_LINK,prefilter_force_link
+1725,ri,45.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2115,0.163,0.0485,FORCE_LINK,prefilter_force_link
 1726,ri,45.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1727,ri,45.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1728,ri,45.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1747,7 +1747,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1745,ri,45.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1746,ri,45.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1747,ri,45.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1748,ri,46.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1932,0.156,0.0372,FORCE_LINK,prefilter_force_link
+1748,ri,46.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1934,0.156,0.0373,FORCE_LINK,prefilter_force_link
 1749,ri,46.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1750,ri,46.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1751,ri,46.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1763,7 +1763,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1761,ri,46.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1762,ri,46.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1763,ri,46.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1764,ri,47.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2046,0.1606,0.0439,FORCE_LINK,prefilter_force_link
+1764,ri,47.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2045,0.1606,0.0439,FORCE_LINK,prefilter_force_link
 1765,ri,47.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1766,ri,47.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1767,ri,47.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1781,8 +1781,8 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1779,ri,47.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1780,ri,47.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1781,ri,47.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1782,ri,48.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2075,0.1655,0.042,FORCE_LINK,prefilter_force_link
-1783,ri,48.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
+1782,ri,48.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.208,0.1655,0.0425,FORCE_LINK,prefilter_force_link
+1783,ri,48.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2839,0.2734,0.0105,FORCE_LINK,prefilter_force_link
 1784,ri,48.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1785,ri,48.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1786,ri,48.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1790,7 +1790,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1788,ri,48.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1789,ri,48.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1790,ri,48.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1791,ri,48.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2671,0.2193,0.0478,FORCE_LINK,prefilter_force_link
+1791,ri,48.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2671,0.2203,0.0468,FORCE_LINK,prefilter_force_link
 1792,ri,48.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1793,ri,48.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1794,ri,48.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1837,7 +1837,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1835,ri,48.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1836,ri,48.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1837,ri,48.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1838,ri,49.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.273,0.2018,0.0712,FORCE_LINK,prefilter_force_link
+1838,ri,49.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2737,0.2018,0.0719,FORCE_LINK,prefilter_force_link
 1839,ri,49.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1840,ri,49.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1841,ri,49.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1851,7 +1851,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1849,ri,49.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1850,ri,49.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1851,ri,49.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1852,ri,49.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2273,0.1759,0.0514,FORCE_LINK,prefilter_force_link
+1852,ri,49.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2273,0.1764,0.0509,FORCE_LINK,prefilter_force_link
 1853,ri,49.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1854,ri,49.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1855,ri,49.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1865,9 +1865,9 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1863,ri,49.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1864,ri,49.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1865,ri,49.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1866,ri,50.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2223,0.1705,0.0517,FORCE_LINK,prefilter_force_link
+1866,ri,50.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2229,0.1705,0.0523,FORCE_LINK,prefilter_force_link
 1867,ri,50.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1868,ri,50.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2234,0.1808,0.0425,FORCE_LINK,prefilter_force_link
+1868,ri,50.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2234,0.1809,0.0425,FORCE_LINK,prefilter_force_link
 1869,ri,50.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1870,ri,50.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 1871,ri,50.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
@@ -1884,7 +1884,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1882,ri,50.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1883,ri,50.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1884,ri,50.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1885,ri,51.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2794,0.2175,0.062,FORCE_LINK,prefilter_force_link
+1885,ri,51.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2802,0.2175,0.0628,FORCE_LINK,prefilter_force_link
 1886,ri,51.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1887,ri,51.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1888,ri,51.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1896,7 +1896,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1894,ri,51.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1895,ri,51.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1896,ri,51.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1897,ri,51.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2618,0.2046,0.0571,FORCE_LINK,prefilter_force_link
+1897,ri,51.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2618,0.2054,0.0563,FORCE_LINK,prefilter_force_link
 1898,ri,51.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1899,ri,51.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1900,ri,51.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1917,7 +1917,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1915,ri,51.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1916,ri,51.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1917,ri,51.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1918,ri,52.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2665,0.1965,0.07,FORCE_LINK,prefilter_force_link
+1918,ri,52.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2674,0.1965,0.0709,FORCE_LINK,prefilter_force_link
 1919,ri,52.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1920,ri,52.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1921,ri,52.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1928,7 +1928,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1926,ri,52.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1927,ri,52.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1928,ri,52.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1929,ri,52.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2121,0.167,0.0451,FORCE_LINK,prefilter_force_link
+1929,ri,52.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2121,0.1674,0.0446,FORCE_LINK,prefilter_force_link
 1930,ri,52.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1931,ri,52.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1932,ri,52.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -1966,14 +1966,14 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 1964,ri,52.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1965,ri,52.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1966,ri,52.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1967,ri,53.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2581,0.1872,0.0708,FORCE_LINK,prefilter_force_link
+1967,ri,53.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2581,0.1872,0.0709,FORCE_LINK,prefilter_force_link
 1968,ri,53.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1969,ri,53.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1970,ri,53.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1971,ri,53.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1972,ri,53.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2642,0.2219,0.0423,FORCE_LINK,prefilter_force_link
+1972,ri,53.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2642,0.2229,0.0413,FORCE_LINK,prefilter_force_link
 1973,ri,53.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-1974,ri,53.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
+1974,ri,53.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.316,0.2352,0.0808,FORCE_LINK,prefilter_force_link
 1975,ri,53.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1976,ri,53.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 1977,ri,53.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -2012,9 +2012,9 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 2010,ri,53.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2011,ri,53.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2012,ri,53.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
-2013,ri,54.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2118,0.1728,0.039,FORCE_LINK,prefilter_force_link
+2013,ri,54.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2122,0.1728,0.0394,FORCE_LINK,prefilter_force_link
 2014,ri,54.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-2015,ri,54.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2537,0.177,0.0767,FORCE_LINK,prefilter_force_link
+2015,ri,54.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2537,0.1777,0.076,FORCE_LINK,prefilter_force_link
 2016,ri,54.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2017,ri,54.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 2018,ri,54.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -2055,8 +2055,8 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 2053,ri,54.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2054,ri,54.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2055,ri,54.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-2056,ri,55.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2897,0.2255,0.0642,FORCE_LINK,prefilter_force_link
-2057,ri,55.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
+2056,ri,55.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2908,0.2165,0.0743,FORCE_LINK,prefilter_force_link
+2057,ri,55.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2921,0.2255,0.0666,FORCE_LINK,prefilter_force_link
 2058,ri,55.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2059,ri,55.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2060,ri,55.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -2072,7 +2072,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 2070,ri,55.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2071,ri,55.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2072,ri,55.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-2073,ri,55.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.3478,0.2924,0.0554,FORCE_LINK,prefilter_force_link
+2073,ri,55.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.3478,0.2931,0.0547,FORCE_LINK,prefilter_force_link
 2074,ri,55.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2075,ri,55.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 2076,ri,55.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -2093,7 +2093,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 2091,ri,55.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2092,ri,55.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2093,ri,55.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-2094,ri,56.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2393,0.1868,0.0525,FORCE_LINK,prefilter_force_link
+2094,ri,56.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2394,0.1868,0.0526,FORCE_LINK,prefilter_force_link
 2095,ri,56.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2096,ri,56.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2097,ri,56.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -2120,7 +2120,7 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 2118,ri,56.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2119,ri,56.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2120,ri,56.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-2121,ri,57.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2083,0.1908,0.0175,FORCE_LINK,prefilter_force_link
+2121,ri,57.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2082,0.1908,0.0174,FORCE_LINK,prefilter_force_link
 2122,ri,57.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2123,ri,57.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2124,ri,57.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -2156,11 +2156,11 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 2154,ri,57.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2155,ri,57.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2156,ri,57.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-2157,ri,58.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2029,0.1743,0.0286,FORCE_LINK,prefilter_force_link
+2157,ri,58.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2037,0.1743,0.0294,FORCE_LINK,prefilter_force_link
 2158,ri,58.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2159,ri,58.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2160,ri,58.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-2161,ri,58.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.3164,0.2577,0.0587,FORCE_LINK,prefilter_force_link
+2161,ri,58.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.3164,0.2582,0.0582,FORCE_LINK,prefilter_force_link
 2162,ri,58.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2163,ri,58.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
 2164,ri,58.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
@@ -2173,19 +2173,19 @@ case_id,source,chapter,surface,category,alias_type,gold_target,system_target,n_c
 2171,ri,58.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2172,ri,58.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2173,ri,58.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,0,,,,,,not_scored
-2174,ri,59.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1919,0.1596,0.0323,FORCE_LINK,prefilter_force_link
+2174,ri,59.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.1921,0.1596,0.0325,FORCE_LINK,prefilter_force_link
 2175,ri,59.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2176,ri,59.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2177,ri,59.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2178,ri,59.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2179,ri,59.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2180,ri,59.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-2181,ri,59.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2286,0.1647,0.0639,FORCE_LINK,prefilter_force_link
+2181,ri,59.0,Fang Zheng,uncategorised,RIGID_NAME,reverend-insanity:self:a785fbd308,reverend-insanity:self:a785fbd308,10,1,0.2286,0.1653,0.0633,FORCE_LINK,prefilter_force_link
 2182,ri,59.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2183,ri,59.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2184,ri,59.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2185,ri,59.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
-2186,ri,60.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2067,0.1614,0.0453,FORCE_LINK,prefilter_force_link
+2186,ri,60.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,10,1,0.2069,0.1614,0.0455,FORCE_LINK,prefilter_force_link
 2187,ri,60.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2188,ri,60.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored
 2189,ri,60.0,Fang Yuan,uncategorised,RIGID_NAME,reverend-insanity:self:476821534c,reverend-insanity:self:476821534c,0,,,,,,not_scored

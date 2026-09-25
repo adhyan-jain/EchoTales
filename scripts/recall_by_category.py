@@ -40,7 +40,7 @@ from echotales.pipeline.eval.retriever_eval import build_gold_retrieval_cases
 from echotales.pipeline.resolve.retrieve import CandidateRetriever
 from echotales.pipeline.resolve.runner import _context_for
 
-DB = "data/reruns/ner-window-ri.db"
+DB = "data/reverend-insanity.db"
 NOVEL = "reverend-insanity"
 KS = (1, 5, 10, 20)
 

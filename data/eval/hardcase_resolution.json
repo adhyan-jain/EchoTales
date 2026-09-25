@@ -1,13 +1,13 @@
 {
   "banner": "SILVER -- LLM-derived reference set (Claude), not human gold; no IAA",
-  "db": "data/reruns/ner-window-ri.db",
+  "db": "data/reverend-insanity.db",
   "gold": "data/gold/reverend-insanity-hardcases.jsonl",
   "outcomes": {
     "exact": {
       "ALL": {
-        "not-detected": 68,
+        "not-detected": 67,
         "unresolved": 0,
-        "correct": 20,
+        "correct": 21,
         "wrong": 0,
         "gold-unmapped": 0,
         "n": 88
@@ -21,9 +21,9 @@
         "n": 11
       },
       "disguise": {
-        "not-detected": 5,
+        "not-detected": 4,
         "unresolved": 0,
-        "correct": 8,
+        "correct": 9,
         "wrong": 0,
         "gold-unmapped": 0,
         "n": 13
@@ -63,9 +63,9 @@
     },
     "overlap": {
       "ALL": {
-        "not-detected": 59,
+        "not-detected": 58,
         "unresolved": 0,
-        "correct": 23,
+        "correct": 24,
         "wrong": 0,
         "gold-unmapped": 6,
         "n": 88
@@ -79,9 +79,9 @@
         "n": 11
       },
       "disguise": {
-        "not-detected": 2,
+        "not-detected": 1,
         "unresolved": 0,
-        "correct": 9,
+        "correct": 10,
         "wrong": 0,
         "gold-unmapped": 2,
         "n": 13

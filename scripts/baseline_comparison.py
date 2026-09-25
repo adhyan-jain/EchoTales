@@ -8,7 +8,7 @@ come from, so that cannot recur: the baselines from their persisted run
 records, EchoTales scored here from its database with the same `score_b3`.
 
 Usage:
-    python3 scripts/baseline_comparison.py [--db data/reruns/ner-window-ri.db]
+    python3 scripts/baseline_comparison.py [--db data/reverend-insanity.db]
 """
 
 from __future__ import annotations
@@ -56,7 +56,7 @@ def _from_record(name: str, path: Path) -> dict[str, Any] | None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--db", default="data/reruns/ner-window-ri.db")
+    ap.add_argument("--db", default="data/reverend-insanity.db")
     ap.add_argument("--out", default="data/eval/baseline_comparison.json")
     args = ap.parse_args()
 

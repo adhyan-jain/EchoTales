@@ -32,10 +32,10 @@
       "calls": 0,
       "prompt_tokens": null,
       "wall_seconds": null,
-      "mentions": 359,
+      "mentions": 369,
       "b3_precision": 1.0,
-      "b3_recall": 0.7912415062886836,
-      "source": "data/reruns/ner-window-ri.db scored here"
+      "b3_recall": 0.7890782620680973,
+      "source": "data/reverend-insanity.db scored here"
     }
   ]
 }

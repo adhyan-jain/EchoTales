@@ -1,0 +1,4794 @@
+{
+  "db": "data/reverend-insanity.db",
+  "target": {
+    "self_id": "reverend-insanity:self:0035e71331",
+    "label": "Bai Ning Bing"
+  },
+  "fact": {
+    "fact_ref": "alias:reverend-insanity:self:0035e71331:bai ning bing",
+    "reveal_chapter": 166,
+    "alias_binding_rows": [
+      {
+        "id": 13018,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 45.0,
+        "learned_chapter": 45,
+        "observer_id": "READER"
+      },
+      {
+        "id": 13527,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 55.0,
+        "learned_chapter": 55,
+        "observer_id": "READER"
+      },
+      {
+        "id": 14464,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 74.0,
+        "learned_chapter": 74,
+        "observer_id": "READER"
+      },
+      {
+        "id": 14956,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 82.0,
+        "learned_chapter": 82,
+        "observer_id": "READER"
+      },
+      {
+        "id": 15057,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 83.0,
+        "learned_chapter": 83,
+        "observer_id": "READER"
+      },
+      {
+        "id": 15058,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 83.0,
+        "learned_chapter": 83,
+        "observer_id": "READER"
+      },
+      {
+        "id": 16598,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 108.0,
+        "learned_chapter": 108,
+        "observer_id": "READER"
+      },
+      {
+        "id": 16599,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 108.0,
+        "learned_chapter": 108,
+        "observer_id": "READER"
+      },
+      {
+        "id": 16600,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 108.0,
+        "learned_chapter": 108,
+        "observer_id": "READER"
+      },
+      {
+        "id": 16635,
+        "alias": "Bai Ningbing",
+        "story_from_lb": 109.0,
+        "learned_chapter": 109,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17275,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 121.0,
+        "learned_chapter": 121,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17276,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 121.0,
+        "learned_chapter": 121,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17528,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 125.0,
+        "learned_chapter": 125,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17529,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 125.0,
+        "learned_chapter": 125,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17530,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 125.0,
+        "learned_chapter": 125,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17531,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 125.0,
+        "learned_chapter": 125,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17532,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 125.0,
+        "learned_chapter": 125,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17533,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 125.0,
+        "learned_chapter": 125,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17534,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 125.0,
+        "learned_chapter": 125,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17535,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 125.0,
+        "learned_chapter": 125,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17864,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 131.0,
+        "learned_chapter": 131,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17865,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 131.0,
+        "learned_chapter": 131,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17866,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 131.0,
+        "learned_chapter": 131,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17869,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 132.0,
+        "learned_chapter": 132,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17870,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 132.0,
+        "learned_chapter": 132,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17871,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 132.0,
+        "learned_chapter": 132,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17872,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 132.0,
+        "learned_chapter": 132,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17873,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 132.0,
+        "learned_chapter": 132,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17874,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 132.0,
+        "learned_chapter": 132,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17875,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 132.0,
+        "learned_chapter": 132,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17876,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 132.0,
+        "learned_chapter": 132,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17877,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 132.0,
+        "learned_chapter": 132,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17878,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 132.0,
+        "learned_chapter": 132,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17879,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 132.0,
+        "learned_chapter": 132,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17880,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 132.0,
+        "learned_chapter": 132,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17881,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 132.0,
+        "learned_chapter": 132,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17882,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 132.0,
+        "learned_chapter": 132,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17883,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 132.0,
+        "learned_chapter": 132,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17884,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 132.0,
+        "learned_chapter": 132,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17885,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 132.0,
+        "learned_chapter": 132,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17977,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17978,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17979,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17980,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17981,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17982,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17983,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17984,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17985,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17986,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17987,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17988,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17989,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17990,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17991,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17992,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17993,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17994,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17995,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17996,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17997,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 133.0,
+        "learned_chapter": 133,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17998,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 17999,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18000,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18001,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18002,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18003,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18004,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18005,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18006,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18007,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18008,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18009,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18010,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18011,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18012,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18013,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18014,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18015,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18016,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18017,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18018,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18019,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18020,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18021,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18022,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18023,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18024,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18025,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18026,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18027,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18028,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18029,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18030,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18031,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18032,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18033,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18034,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18035,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18036,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18037,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18038,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 134.0,
+        "learned_chapter": 134,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18103,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18104,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18105,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18106,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18107,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18108,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18109,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18110,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18111,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18112,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18113,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18114,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18115,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18116,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18117,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18118,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18119,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18120,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18121,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18122,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18123,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18124,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18125,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18126,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18127,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18128,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18129,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18130,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18131,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18132,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18133,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18134,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18135,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18136,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18137,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18138,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18139,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 135.0,
+        "learned_chapter": 135,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18175,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18176,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18177,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18178,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18179,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18180,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18181,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18182,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18183,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18184,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18185,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18186,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18187,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18188,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18189,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18190,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18191,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18192,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18193,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18194,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18195,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18196,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18197,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18198,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18199,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18200,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18201,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18202,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18203,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18204,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18205,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18206,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18207,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18208,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18209,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18210,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18211,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18212,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18213,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18214,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18215,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18216,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18217,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18218,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18219,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18220,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18221,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18222,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18223,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18224,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 136.0,
+        "learned_chapter": 136,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18269,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18270,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18271,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18272,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18273,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18274,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18275,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18276,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18277,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18278,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18279,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18280,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18281,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18282,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18283,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18284,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18285,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18286,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18287,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18288,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18289,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18290,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18291,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18292,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18293,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18294,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18295,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18296,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18297,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18298,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18299,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18300,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18301,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18302,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18303,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18304,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18305,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18306,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18307,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18308,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18309,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18310,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18311,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18312,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18313,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 137.0,
+        "learned_chapter": 137,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18415,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18416,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18417,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18418,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18419,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18420,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18421,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18422,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18423,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18424,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18425,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18426,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18427,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18428,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18429,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18430,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18431,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18432,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18433,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18434,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18435,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18436,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18437,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18438,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18439,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18440,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18441,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18442,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18443,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18444,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18445,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18446,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 138.0,
+        "learned_chapter": 138,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18490,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18491,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18492,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18493,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18494,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18495,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18496,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18497,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18498,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18499,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18500,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18501,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18502,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18503,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18504,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18505,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18506,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18507,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18508,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18509,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18510,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18511,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18512,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18513,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18514,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18515,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18516,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18517,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18518,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18519,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18520,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18521,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18522,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18523,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 139.0,
+        "learned_chapter": 139,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18606,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18607,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18608,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18609,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18610,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18611,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18612,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18613,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18614,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18615,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18616,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18617,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18618,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18619,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18620,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18621,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18622,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18623,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18624,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18625,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18626,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18627,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18628,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18629,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 140.0,
+        "learned_chapter": 140,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18681,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18682,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18683,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18684,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18685,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18686,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18687,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18688,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18689,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18690,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18691,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18692,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18693,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18694,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18695,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18696,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18697,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18698,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18699,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18700,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18701,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18702,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18703,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18704,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18705,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18706,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 141.0,
+        "learned_chapter": 141,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18756,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18757,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18758,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18759,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18760,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18761,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18762,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18763,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18764,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18765,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18766,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18767,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18768,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18769,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18770,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18771,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18772,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18773,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18774,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18775,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18776,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18777,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18778,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18779,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18780,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18781,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18782,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18783,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18784,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18785,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18786,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18787,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18788,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 142.0,
+        "learned_chapter": 142,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18872,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18873,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18874,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18875,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18876,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18877,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18878,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18879,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18880,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18881,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18882,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18883,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18884,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18885,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18886,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18887,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18888,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18889,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18890,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 143.0,
+        "learned_chapter": 143,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18933,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 144.0,
+        "learned_chapter": 144,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18934,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 144.0,
+        "learned_chapter": 144,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18935,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 144.0,
+        "learned_chapter": 144,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18936,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 144.0,
+        "learned_chapter": 144,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18937,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 144.0,
+        "learned_chapter": 144,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18938,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 144.0,
+        "learned_chapter": 144,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18939,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 144.0,
+        "learned_chapter": 144,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18940,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 144.0,
+        "learned_chapter": 144,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18941,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 144.0,
+        "learned_chapter": 144,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18942,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 144.0,
+        "learned_chapter": 144,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18943,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 144.0,
+        "learned_chapter": 144,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18988,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 145.0,
+        "learned_chapter": 145,
+        "observer_id": "READER"
+      },
+      {
+        "id": 18989,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 145.0,
+        "learned_chapter": 145,
+        "observer_id": "READER"
+      },
+      {
+        "id": 19079,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 147.0,
+        "learned_chapter": 147,
+        "observer_id": "READER"
+      },
+      {
+        "id": 19080,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 147.0,
+        "learned_chapter": 147,
+        "observer_id": "READER"
+      },
+      {
+        "id": 19081,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 147.0,
+        "learned_chapter": 147,
+        "observer_id": "READER"
+      },
+      {
+        "id": 19082,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 147.0,
+        "learned_chapter": 147,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20026,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 161.0,
+        "learned_chapter": 161,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20155,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20156,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20157,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20158,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20159,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20160,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20161,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20162,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20163,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20164,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20165,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20166,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20167,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20168,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20169,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20170,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20171,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20172,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20173,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20174,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20175,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20176,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20177,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 166.0,
+        "learned_chapter": 166,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20230,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 167.0,
+        "learned_chapter": 167,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20231,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 167.0,
+        "learned_chapter": 167,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20232,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 167.0,
+        "learned_chapter": 167,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20233,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 167.0,
+        "learned_chapter": 167,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20234,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 167.0,
+        "learned_chapter": 167,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20235,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 167.0,
+        "learned_chapter": 167,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20236,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 167.0,
+        "learned_chapter": 167,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20237,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 167.0,
+        "learned_chapter": 167,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20238,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 167.0,
+        "learned_chapter": 167,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20314,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 168.0,
+        "learned_chapter": 168,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20318,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20319,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20320,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20321,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20322,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20323,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20324,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20325,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20326,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20327,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20328,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20329,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20330,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20331,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20332,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20333,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20334,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20335,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20336,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20337,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20338,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20339,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20340,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20341,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20342,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20343,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20344,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20345,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20346,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20347,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20348,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20349,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20350,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20351,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20352,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 169.0,
+        "learned_chapter": 169,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20415,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 170.0,
+        "learned_chapter": 170,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20416,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 170.0,
+        "learned_chapter": 170,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20417,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 170.0,
+        "learned_chapter": 170,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20418,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 170.0,
+        "learned_chapter": 170,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20599,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20600,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20601,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20602,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20603,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20604,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20605,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20606,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20607,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20608,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20609,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20610,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20611,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20612,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20613,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20614,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20615,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20616,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 173.0,
+        "learned_chapter": 173,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20700,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 174.0,
+        "learned_chapter": 174,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20968,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 178.0,
+        "learned_chapter": 178,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20969,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 178.0,
+        "learned_chapter": 178,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20970,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 178.0,
+        "learned_chapter": 178,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20971,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 178.0,
+        "learned_chapter": 178,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20972,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 178.0,
+        "learned_chapter": 178,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20973,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 178.0,
+        "learned_chapter": 178,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20974,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 178.0,
+        "learned_chapter": 178,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20975,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 178.0,
+        "learned_chapter": 178,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20976,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 178.0,
+        "learned_chapter": 178,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20977,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 178.0,
+        "learned_chapter": 178,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20978,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 178.0,
+        "learned_chapter": 178,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20979,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 178.0,
+        "learned_chapter": 178,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20980,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 178.0,
+        "learned_chapter": 178,
+        "observer_id": "READER"
+      },
+      {
+        "id": 20981,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 178.0,
+        "learned_chapter": 178,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21072,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 180.0,
+        "learned_chapter": 180,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21466,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 186.0,
+        "learned_chapter": 186,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21498,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 187.0,
+        "learned_chapter": 187,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21499,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 187.0,
+        "learned_chapter": 187,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21562,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 188.0,
+        "learned_chapter": 188,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21563,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 188.0,
+        "learned_chapter": 188,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21564,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 188.0,
+        "learned_chapter": 188,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21578,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21579,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21580,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21581,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21582,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21583,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21584,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21585,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21586,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21587,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21588,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21589,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21590,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21591,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21592,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21593,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21594,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21595,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21596,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21597,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21598,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21599,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21600,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21601,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21602,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21603,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21604,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 189.0,
+        "learned_chapter": 189,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21656,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21657,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21658,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21659,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21660,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21661,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21662,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21663,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21664,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21665,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21666,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21667,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21668,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21669,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21670,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21671,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21672,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21673,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21674,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21675,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21676,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21677,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21678,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21679,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21680,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 190.0,
+        "learned_chapter": 190,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21835,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 193.0,
+        "learned_chapter": 193,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21836,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 193.0,
+        "learned_chapter": 193,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21845,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 194.0,
+        "learned_chapter": 194,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21846,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 194.0,
+        "learned_chapter": 194,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21847,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 194.0,
+        "learned_chapter": 194,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21848,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 194.0,
+        "learned_chapter": 194,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21897,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21898,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21899,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21900,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21901,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21902,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21903,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21904,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21905,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21906,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21907,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21908,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21909,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21910,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21911,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21912,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21913,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21914,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 195.0,
+        "learned_chapter": 195,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21955,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 196.0,
+        "learned_chapter": 196,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21956,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 196.0,
+        "learned_chapter": 196,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21962,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 197.0,
+        "learned_chapter": 197,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21963,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 197.0,
+        "learned_chapter": 197,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21964,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 197.0,
+        "learned_chapter": 197,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21965,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 197.0,
+        "learned_chapter": 197,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21966,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 197.0,
+        "learned_chapter": 197,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21967,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 197.0,
+        "learned_chapter": 197,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21968,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 197.0,
+        "learned_chapter": 197,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21969,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 197.0,
+        "learned_chapter": 197,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21970,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 197.0,
+        "learned_chapter": 197,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21971,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 197.0,
+        "learned_chapter": 197,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21972,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 197.0,
+        "learned_chapter": 197,
+        "observer_id": "READER"
+      },
+      {
+        "id": 21973,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 197.0,
+        "learned_chapter": 197,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22074,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22075,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22076,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22077,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22078,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22079,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22080,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22081,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22082,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22083,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22084,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22085,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22086,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22087,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22088,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22089,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22090,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22091,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22092,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22093,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22094,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 198.0,
+        "learned_chapter": 198,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22146,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22147,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22148,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22149,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22150,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22151,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22152,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22153,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22154,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22155,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22156,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22157,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22158,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22159,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22160,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22161,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22162,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22163,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22164,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22165,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22166,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22167,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      },
+      {
+        "id": 22168,
+        "alias": "Bai Ning Bing",
+        "story_from_lb": 199.0,
+        "learned_chapter": 199,
+        "observer_id": "READER"
+      }
+    ]
+  },
+  "observers": {
+    "witness": {
+      "id": "reverend-insanity:self:0fab26886a",
+      "label": "Qing Shu"
+    },
+    "non_witness": {
+      "id": "reverend-insanity:self:a785fbd308",
+      "label": "Fang Zheng"
+    },
+    "all_witnesses": [
+      "reverend-insanity:self:0fab26886a",
+      "reverend-insanity:self:476821534c",
+      "reverend-insanity:self:7fc3b9af53"
+    ]
+  },
+  "queries": [
+    {
+      "axis": "who is asking",
+      "observer": "READER",
+      "observer_label": "READER",
+      "target_id": "reverend-insanity:self:0035e71331",
+      "position": 200.0,
+      "knowledge_chapter": null,
+      "aliases": [
+        "Bai Ning Bing",
+        "Bai Ningbing"
+      ],
+      "alias_read_set": [
+        "alias:reverend-insanity:bai ning bing",
+        "alias:reverend-insanity:bai ningbing"
+      ]
+    },
+    {
+      "axis": "who is asking",
+      "observer": "SYSTEM",
+      "observer_label": "SYSTEM",
+      "target_id": "reverend-insanity:self:0035e71331",
+      "position": 200.0,
+      "knowledge_chapter": null,
+      "aliases": [
+        "Bai Ning Bing",
+        "Bai Ningbing"
+      ],
+      "alias_read_set": [
+        "alias:reverend-insanity:bai ning bing",
+        "alias:reverend-insanity:bai ningbing"
+      ]
+    },
+    {
+      "axis": "who is asking",
+      "observer": "reverend-insanity:self:0fab26886a",
+      "observer_label": "Qing Shu",
+      "target_id": "reverend-insanity:self:0035e71331",
+      "position": 200.0,
+      "knowledge_chapter": null,
+      "aliases": [
+        "Bai Ning Bing"
+      ],
+      "alias_read_set": [
+        "alias:reverend-insanity:bai ning bing"
+      ]
+    },
+    {
+      "axis": "who is asking",
+      "observer": "reverend-insanity:self:a785fbd308",
+      "observer_label": "Fang Zheng",
+      "target_id": "reverend-insanity:self:0035e71331",
+      "position": 200.0,
+      "knowledge_chapter": null,
+      "aliases": [],
+      "alias_read_set": []
+    },
+    {
+      "axis": "asking from when",
+      "observer": "reverend-insanity:self:0fab26886a",
+      "observer_label": "Qing Shu",
+      "target_id": "reverend-insanity:self:0035e71331",
+      "position": 200.0,
+      "knowledge_chapter": 150,
+      "aliases": [],
+      "alias_read_set": []
+    },
+    {
+      "axis": "asking from when",
+      "observer": "reverend-insanity:self:0fab26886a",
+      "observer_label": "Qing Shu",
+      "target_id": "reverend-insanity:self:0035e71331",
+      "position": 200.0,
+      "knowledge_chapter": 166,
+      "aliases": [
+        "Bai Ning Bing"
+      ],
+      "alias_read_set": [
+        "alias:reverend-insanity:bai ning bing"
+      ]
+    },
+    {
+      "axis": "asking from when",
+      "observer": "reverend-insanity:self:0fab26886a",
+      "observer_label": "Qing Shu",
+      "target_id": "reverend-insanity:self:0035e71331",
+      "position": 200.0,
+      "knowledge_chapter": 200,
+      "aliases": [
+        "Bai Ning Bing"
+      ],
+      "alias_read_set": [
+        "alias:reverend-insanity:bai ning bing"
+      ]
+    }
+  ],
+  "checks": {
+    "same_identity_in_every_query": true,
+    "reader_2_witness_1_nonwitness_0": true,
+    "witness_learns_at_reveal_0_1_1": true,
+    "witness_sees_subset_of_reader": true,
+    "witness_read_set_records_the_alias": true,
+    "non_witness_read_set_omits_it": true
+  }
+}

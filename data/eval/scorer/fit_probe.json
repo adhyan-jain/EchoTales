@@ -5,18 +5,18 @@
     "dev_le": 50.0
   },
   "sizes": {
-    "train_pairs": 920,
-    "dev_pairs": 160,
-    "test_pairs": 190,
-    "train_positive": 68
+    "train_pairs": 1098,
+    "dev_pairs": 170,
+    "test_pairs": 210,
+    "train_positive": 84
   },
   "test_prefilter_verdicts": {
-    "FORCE_LINK": 19,
-    "BLOCK": 39,
-    "SCORE": 132
+    "SCORE": 144,
+    "FORCE_LINK": 21,
+    "BLOCK": 45
   },
   "raw": {
-    "cases": 19,
+    "cases": 21,
     "link_coverage": 0.0,
     "defer_rate": 0.0,
     "new_rate": 1.0,
@@ -24,7 +24,7 @@
     "link_accuracy": 0.0
   },
   "fitted": {
-    "cases": 19,
+    "cases": 21,
     "link_coverage": 0.0,
     "defer_rate": 0.0,
     "new_rate": 1.0,
@@ -32,7 +32,7 @@
     "link_accuracy": 0.0
   },
   "calibrated": {
-    "cases": 19,
+    "cases": 21,
     "link_coverage": 0.0,
     "defer_rate": 0.0,
     "new_rate": 1.0,
@@ -40,13 +40,13 @@
     "link_accuracy": 0.0
   },
   "fitted_weights": {
-    "surface_similarity": 1.269,
-    "context_embedding_similarity": 1.72,
+    "surface_similarity": 1.246,
+    "context_embedding_similarity": 1.735,
     "speech_partner_compatibility": 1.228,
-    "temporal_validity": 0.741,
+    "temporal_validity": 0.736,
     "first_attested_soft_prior": 0.327
   },
-  "fitted_bias": -4.093,
+  "fitted_bias": -4.099,
   "scored_features": [
     "surface_similarity",
     "context_embedding_similarity",

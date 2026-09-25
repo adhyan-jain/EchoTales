@@ -19,14 +19,14 @@
 #   * There is NO human gold (EVOLUTION 4.74). Metrics are scored against the
 #     SILVER tier -- LLM-drafted, non-circular records (docs/GOLD_DATASET_README.md)
 #     -- and every report carries that banner. That is not a bug in this script.
-#   * The default DB is the post-NER-fix full-volume rerun (EVOLUTION 4.84),
-#     which every figure in docs/FINAL_VALIDATION_REPORT.md was measured on.
-#     The scripts in the "diagnostics" block hardcode it for the same reason.
+#   * The default DB is the canonical v1 run (docs/CANONICAL_RUN.md, EVOLUTION
+#     4.90), promoted to data/reverend-insanity.db with its sha256 recorded.
+#     The diagnostics scripts default to the same path.
 
 set -euo pipefail
 
 NOVEL="${1:-reverend-insanity}"
-DB="${2:-data/reruns/ner-window-ri.db}"
+DB="${2:-data/reverend-insanity.db}"
 HARDCASES="data/gold/${NOVEL}-hardcases.jsonl"
 SEED="${ECHOTALES_SEED:-20260923}"
 

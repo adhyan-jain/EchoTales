@@ -21,13 +21,13 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 
 | Metric | P (%) | R (%) | F1 (%) |
 |---|---|---|---|
-| MUC | 100.0 | 96.8 | 98.4 |
-| B3 | 100.0 | 96.3 | 98.1 |
-| CEAF-e | 89.0 | 48.9 | 63.1 |
-| CoNLL | 86.5 | 86.5 | 86.5 |
-| B3 (project variant) | 100.0 | 95.8 | 97.8 |
+| MUC | 100.0 | 95.8 | 97.9 |
+| B3 | 100.0 | 94.2 | 97.0 |
+| CEAF-e | 89.8 | 53.9 | 67.4 |
+| CoNLL | 87.4 | 87.4 | 87.4 |
+| B3 (project variant) | 100.0 | 93.6 | 96.7 |
 
-*Source: data/eval/results/reverend-insanity-1790291709-f0cf184d/metrics.json (reference: data/gold/reverend-insanity.jsonl, db: data/reruns/ner-window-ri.db)*
+*Source: data/eval/results/reverend-insanity-1790342230-8ff45048/metrics.json (reference: data/gold/reverend-insanity.jsonl, db: data/reverend-insanity.db)*
 
 *Scored against the LLM-DRAFTED SILVER REFERENCE SET -- not human-annotated, no inter-annotator agreement. See docs/GOLD_DATASET_README.md. B3/MUC are TAUTOLOGICAL on a surface-trivial reference set and must not be quoted as accuracy; CEAF-e is entity-based and is the discriminative one here.*
 
@@ -36,15 +36,15 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 
 | Alias type | n | @1 | @5 | @10 | @20 |
 |---|---|---|---|---|---|
-| **Overall** | 45 | 66.7% | 86.7% | 88.9% | 97.8% |
+| **Overall** | 46 | 67.4% | 87.0% | 89.1% | 95.7% |
 | EPITHET | 1 | 100.0% | 100.0% | 100.0% | 100.0% |
-| RELATIONAL_DEICTIC | 4 | 0.0% | 50.0% | 75.0% | 100.0% |
-| RIGID_NAME | 31 | 83.9% | 90.3% | 90.3% | 96.8% |
+| RELATIONAL_DEICTIC | 4 | 0.0% | 50.0% | 75.0% | 75.0% |
+| RIGID_NAME | 32 | 84.4% | 90.6% | 90.6% | 96.9% |
 | TRANSFERABLE_TITLE | 9 | 33.3% | 88.9% | 88.9% | 100.0% |
 
-*Source: data/eval/recall_by_category.json (scripts/recall_by_category.py, db: data/reruns/ner-window-ri.db)*
+*Source: data/eval/recall_by_category.json (scripts/recall_by_category.py, db: data/reverend-insanity.db)*
 
-*LLM-DRAFTED SILVER REFERENCE SET (hardcases file), not human-annotated, no IAA. The reference span is handed to the retriever, so this measures retrieval, not detection. n is small for the hard types: one case moves TRANSFERABLE_TITLE about 11 points and RELATIONAL_DEICTIC 25. With the CLI's snippet context instead, overall @10 is 84.4%.*
+*LLM-DRAFTED SILVER REFERENCE SET (hardcases file), not human-annotated, no IAA. The reference span is handed to the retriever, so this measures retrieval, not detection. n is small for the hard types: one case moves TRANSFERABLE_TITLE about 11 points and RELATIONAL_DEICTIC 25. With the CLI's snippet context instead, overall @10 is 84.8%.*
 
 
 ### Table 6 — Ablations over 15,796 cached evidence vectors
@@ -71,7 +71,7 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 |---|---|---|---|---|---|---|
 | Baseline A (long-context) | 1 | 24,302 | 129 s | 10 | 100.0 | 0.2 |
 | Baseline B (dual-LLM memorisation) | 177 | 142,835 | 354 s | 133 | 95.4 | 4.6 |
-| EchoTales | 0 | — | — | 359 | 100.0 | 79.1 |
+| EchoTales | 0 | — | — | 369 | 100.0 | 78.9 |
 
 *Source: data/eval/baseline_comparison.json (scripts/baseline_comparison.py)*
 

@@ -32,7 +32,7 @@ For title transfer, `unresolved` is not automatically a failure: EVOLUTION
 as "declined to commit", not as an error.
 
 Usage:
-    python3 scripts/hardcase_resolution.py [--db data/reruns/ner-window-ri.db]
+    python3 scripts/hardcase_resolution.py [--db data/reverend-insanity.db]
 """
 
 from __future__ import annotations
@@ -59,7 +59,7 @@ def category(note: str) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--db", default="data/reruns/ner-window-ri.db")
+    ap.add_argument("--db", default="data/reverend-insanity.db")
     ap.add_argument("--out", default="data/eval/hardcase_resolution.json")
     args = ap.parse_args()
 

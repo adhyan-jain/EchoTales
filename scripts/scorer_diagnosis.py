@@ -26,7 +26,7 @@ as unmapped rather than guessed.
 SILVER -- LLM-derived reference set (Claude), not human gold; no IAA.
 
 Usage:
-    python3 scripts/scorer_diagnosis.py [--db data/reruns/ner-window-ri.db]
+    python3 scripts/scorer_diagnosis.py [--db data/reverend-insanity.db]
 """
 
 from __future__ import annotations
@@ -79,7 +79,7 @@ def pct(xs: list[float], q: float) -> float:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--db", default="data/reruns/ner-window-ri.db")
+    ap.add_argument("--db", default="data/reverend-insanity.db")
     ap.add_argument("--gold", nargs="+", default=[
         "data/gold/reverend-insanity-hardcases.jsonl",
         "data/gold/reverend-insanity-c1-c5.jsonl",

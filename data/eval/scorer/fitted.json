@@ -1,12 +1,12 @@
 {
   "weights": {
-    "surface_similarity": 1.269318898708118,
-    "context_embedding_similarity": 1.7202874383041376,
+    "surface_similarity": 1.246039543771158,
+    "context_embedding_similarity": 1.7347039646010844,
     "speech_partner_compatibility": 1.2279732442179536,
-    "temporal_validity": 0.7409418892075011,
+    "temporal_validity": 0.7362100070073689,
     "first_attested_soft_prior": 0.3274595317914544
   },
-  "bias": -4.093090471135629,
+  "bias": -4.098798009595463,
   "platt_a": 1.0,
   "platt_b": 0.0
 }

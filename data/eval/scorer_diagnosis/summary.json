@@ -1,6 +1,6 @@
 {
   "banner": "SILVER -- LLM-derived reference set (Claude), not human gold; no IAA",
-  "db": "data/reruns/ner-window-ri.db",
+  "db": "data/reverend-insanity.db",
   "hard_cases": 2212,
   "link_threshold": 0.8,
   "weights": {
@@ -11,37 +11,37 @@
     "first_attested_soft_prior": 0.4
   },
   "bias": -4.0,
-  "identities_mapped_independently": 19,
+  "identities_mapped_independently": 20,
   "outcomes": {
-    "not_scored": 1850,
-    "mention_not_detected": 192,
-    "gold_unmapped": 29,
-    "prefilter_blocks_gold": 2,
-    "prefilter_force_link": 101,
-    "retrieval_failure": 38
+    "not_scored": 1851,
+    "mention_not_detected": 168,
+    "gold_unmapped": 30,
+    "prefilter_blocks_gold": 3,
+    "prefilter_force_link": 119,
+    "retrieval_failure": 41
   },
   "outcomes_by_source": {
     "ri-hardcases": {
       "not_scored": 13,
-      "mention_not_detected": 59,
-      "gold_unmapped": 13,
+      "mention_not_detected": 58,
+      "gold_unmapped": 14,
       "prefilter_blocks_gold": 1,
       "prefilter_force_link": 2
     },
     "ri-c1-c5": {
-      "not_scored": 185,
-      "retrieval_failure": 26,
-      "mention_not_detected": 83,
+      "not_scored": 191,
+      "retrieval_failure": 28,
+      "mention_not_detected": 70,
       "gold_unmapped": 8,
-      "prefilter_force_link": 5,
-      "prefilter_blocks_gold": 1
+      "prefilter_force_link": 9,
+      "prefilter_blocks_gold": 2
     },
     "ri": {
-      "not_scored": 1652,
-      "retrieval_failure": 12,
-      "mention_not_detected": 50,
+      "not_scored": 1647,
+      "retrieval_failure": 13,
+      "mention_not_detected": 40,
       "gold_unmapped": 8,
-      "prefilter_force_link": 94
+      "prefilter_force_link": 108
     }
   },
   "hardcases_outcomes_by_category": {
@@ -50,8 +50,8 @@
       "mention_not_detected": 8
     },
     "disguise": {
-      "gold_unmapped": 6,
-      "mention_not_detected": 2,
+      "gold_unmapped": 7,
+      "mention_not_detected": 1,
       "not_scored": 5
     },
     "reveal": {
@@ -76,8 +76,8 @@
   "hardcases_outcomes_by_alias_type": {
     "RIGID_NAME": {
       "not_scored": 13,
-      "mention_not_detected": 17,
-      "gold_unmapped": 9,
+      "mention_not_detected": 16,
+      "gold_unmapped": 10,
       "prefilter_blocks_gold": 1,
       "prefilter_force_link": 1
     },
@@ -95,74 +95,74 @@
   },
   "score_distribution": {
     "gold": {
-      "n": 103,
-      "min": 0.1693,
-      "p50": 0.2173,
-      "p90": 0.2995,
+      "n": 122,
+      "min": 0.0652,
+      "p50": 0.2196,
+      "p90": 0.3008,
       "max": 0.3478,
-      "mean": 0.2313
+      "mean": 0.2302
     },
     "best_wrong": {
-      "n": 103,
-      "min": 0.0564,
-      "p50": 0.1691,
-      "p90": 0.245,
+      "n": 122,
+      "min": 0.0611,
+      "p50": 0.1688,
+      "p90": 0.238,
       "max": 0.346,
-      "mean": 0.1848
+      "mean": 0.1832
     },
     "all_candidates": {
-      "n": 1270,
+      "n": 1478,
       "min": 0.0487,
-      "p50": 0.0705,
-      "p90": 0.1959,
+      "p50": 0.0745,
+      "p90": 0.1972,
       "max": 0.4071,
-      "mean": 0.1033
+      "mean": 0.1081
     },
     "margin": {
-      "n": 103,
+      "n": 122,
       "min": -0.0707,
-      "p50": 0.0436,
-      "p90": 0.0749,
-      "max": 0.1531,
-      "mean": 0.0465
+      "p50": 0.0444,
+      "p90": 0.0854,
+      "max": 0.158,
+      "mean": 0.047
     }
   },
-  "score_auc_gold_vs_wrong": 0.7975303987180695,
+  "score_auc_gold_vs_wrong": 0.7900094060736361,
   "feature_auc_gold_vs_wrong": {
-    "declaration_match": 0.5,
-    "gazetteer_exact_match": 0.989862813121355,
-    "name_containment": 0.5,
-    "surface_similarity": 0.9984151546160182,
-    "context_embedding_similarity": 0.8128967313083918,
+    "declaration_match": 0.5007797765849412,
+    "gazetteer_exact_match": 0.9746723729387301,
+    "name_containment": 0.8312297499879104,
+    "surface_similarity": 0.989013612843948,
+    "context_embedding_similarity": 0.8138177619807534,
     "speech_partner_compatibility": 0.5,
     "temporal_validity": 0.5,
-    "co_presence_violation": 0.4085947704262028,
+    "co_presence_violation": 0.39835702886986796,
     "audience_scope_compatibility": 0.5,
     "relationship_deictic_resolution": 0.5,
     "first_attested_soft_prior": 0.5
   },
   "feature_mean_gold": {
-    "declaration_match": 0.0,
-    "gazetteer_exact_match": 0.9806,
-    "name_containment": 0.0,
-    "surface_similarity": 0.9978,
-    "context_embedding_similarity": 0.2935,
+    "declaration_match": 0.0082,
+    "gazetteer_exact_match": 0.9508,
+    "name_containment": 0.5809,
+    "surface_similarity": 0.9905,
+    "context_embedding_similarity": 0.2992,
     "speech_partner_compatibility": 0.0,
     "temporal_validity": 1.0,
-    "co_presence_violation": 0.0194,
+    "co_presence_violation": 0.0246,
     "audience_scope_compatibility": 0.0,
     "relationship_deictic_resolution": 0.0,
     "first_attested_soft_prior": 0.0
   },
   "feature_mean_wrong": {
-    "declaration_match": 0.0,
-    "gazetteer_exact_match": 0.0009,
-    "name_containment": 0.0,
-    "surface_similarity": 0.6181,
-    "context_embedding_similarity": 0.1651,
+    "declaration_match": 0.0066,
+    "gazetteer_exact_match": 0.0015,
+    "name_containment": 0.0013,
+    "surface_similarity": 0.6345,
+    "context_embedding_similarity": 0.1674,
     "speech_partner_compatibility": 0.0,
     "temporal_validity": 1.0,
-    "co_presence_violation": 0.2022,
+    "co_presence_violation": 0.2279,
     "audience_scope_compatibility": 0.0,
     "relationship_deictic_resolution": 0.0,
     "first_attested_soft_prior": 0.0

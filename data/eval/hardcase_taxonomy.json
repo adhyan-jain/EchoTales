@@ -1,0 +1,449 @@
+{
+  "banner": "SILVER -- LLM-derived reference set (Claude), not human gold; no IAA",
+  "db": "data/reverend-insanity.db",
+  "undetected": 58,
+  "counts": {
+    "annotation-control": 1,
+    "gold-span-defect": 2,
+    "pronoun": 10,
+    "relational": 15,
+    "address-term": 16,
+    "definite-title": 11,
+    "possessive-np": 1,
+    "rigid-name": 2
+  },
+  "by_category": {
+    "body_change": {
+      "pronoun": 5,
+      "rigid-name": 2,
+      "address-term": 1
+    },
+    "disguise": {
+      "pronoun": 1
+    },
+    "not_entity_control": {
+      "annotation-control": 1
+    },
+    "relational_deictic": {
+      "relational": 15,
+      "address-term": 10
+    },
+    "reveal": {
+      "pronoun": 4,
+      "gold-span-defect": 2,
+      "possessive-np": 1
+    },
+    "title_transfer": {
+      "definite-title": 11,
+      "address-term": 5
+    }
+  },
+  "records": [
+    {
+      "chapter": 2.0,
+      "offset": 1086,
+      "surface": "He",
+      "category": "body_change",
+      "mode": "pronoun"
+    },
+    {
+      "chapter": 2.0,
+      "offset": 1428,
+      "surface": "he",
+      "category": "body_change",
+      "mode": "pronoun"
+    },
+    {
+      "chapter": 9.0,
+      "offset": 437,
+      "surface": "his Uncle",
+      "category": "relational_deictic",
+      "mode": "relational"
+    },
+    {
+      "chapter": 12.0,
+      "offset": 12470,
+      "surface": "a junior brother",
+      "category": "relational_deictic",
+      "mode": "address-term"
+    },
+    {
+      "chapter": 23.0,
+      "offset": 2143,
+      "surface": "junior brother",
+      "category": "relational_deictic",
+      "mode": "address-term"
+    },
+    {
+      "chapter": 29.0,
+      "offset": 10294,
+      "surface": "you",
+      "category": "disguise",
+      "mode": "pronoun"
+    },
+    {
+      "chapter": 32.0,
+      "offset": 2169,
+      "surface": "his master",
+      "category": "relational_deictic",
+      "mode": "relational"
+    },
+    {
+      "chapter": 32.0,
+      "offset": 6239,
+      "surface": "an uncle",
+      "category": "relational_deictic",
+      "mode": "relational"
+    },
+    {
+      "chapter": 32.0,
+      "offset": 6668,
+      "surface": "I",
+      "category": "reveal",
+      "mode": "pronoun"
+    },
+    {
+      "chapter": 37.0,
+      "offset": 11536,
+      "surface": "his master",
+      "category": "relational_deictic",
+      "mode": "relational"
+    },
+    {
+      "chapter": 38.0,
+      "offset": 13781,
+      "surface": "his master",
+      "category": "relational_deictic",
+      "mode": "relational"
+    },
+    {
+      "chapter": 50.0,
+      "offset": 8070,
+      "surface": "his uncle and aunt",
+      "category": "relational_deictic",
+      "mode": "relational"
+    },
+    {
+      "chapter": 54.0,
+      "offset": 10645,
+      "surface": "his identity",
+      "category": "reveal",
+      "mode": "gold-span-defect"
+    },
+    {
+      "chapter": 67.0,
+      "offset": 6905,
+      "surface": "his master",
+      "category": "relational_deictic",
+      "mode": "relational"
+    },
+    {
+      "chapter": 78.0,
+      "offset": 1038,
+      "surface": "the clan leader",
+      "category": "title_transfer",
+      "mode": "definite-title"
+    },
+    {
+      "chapter": 78.0,
+      "offset": 1783,
+      "surface": "the clan leader",
+      "category": "title_transfer",
+      "mode": "definite-title"
+    },
+    {
+      "chapter": 86.0,
+      "offset": 6554,
+      "surface": "he turned out to be C grade",
+      "category": "reveal",
+      "mode": "gold-span-defect"
+    },
+    {
+      "chapter": 88.0,
+      "offset": 521,
+      "surface": "he",
+      "category": "reveal",
+      "mode": "pronoun"
+    },
+    {
+      "chapter": 89.0,
+      "offset": 9109,
+      "surface": "his uncle",
+      "category": "relational_deictic",
+      "mode": "relational"
+    },
+    {
+      "chapter": 90.0,
+      "offset": 5115,
+      "surface": "his uncle and aunt",
+      "category": "relational_deictic",
+      "mode": "relational"
+    },
+    {
+      "chapter": 101.0,
+      "offset": 11157,
+      "surface": "this uncle of his",
+      "category": "relational_deictic",
+      "mode": "relational"
+    },
+    {
+      "chapter": 103.0,
+      "offset": 316,
+      "surface": "Young lord",
+      "category": "title_transfer",
+      "mode": "address-term"
+    },
+    {
+      "chapter": 103.0,
+      "offset": 1390,
+      "surface": "the landlord",
+      "category": "title_transfer",
+      "mode": "definite-title"
+    },
+    {
+      "chapter": 103.0,
+      "offset": 1428,
+      "surface": "The previous landlord",
+      "category": "title_transfer",
+      "mode": "definite-title"
+    },
+    {
+      "chapter": 103.0,
+      "offset": 4014,
+      "surface": "Young lord",
+      "category": "title_transfer",
+      "mode": "address-term"
+    },
+    {
+      "chapter": 103.0,
+      "offset": 4026,
+      "surface": "the previous landlord",
+      "category": "title_transfer",
+      "mode": "definite-title"
+    },
+    {
+      "chapter": 103.0,
+      "offset": 9486,
+      "surface": "his uncle",
+      "category": "relational_deictic",
+      "mode": "relational"
+    },
+    {
+      "chapter": 105.0,
+      "offset": 3604,
+      "surface": "the Spring Autumn Cicada",
+      "category": "not_entity_control",
+      "mode": "annotation-control"
+    },
+    {
+      "chapter": 105.0,
+      "offset": 11022,
+      "surface": "the next clan leader",
+      "category": "title_transfer",
+      "mode": "definite-title"
+    },
+    {
+      "chapter": 105.0,
+      "offset": 11518,
+      "surface": "a clan leader",
+      "category": "title_transfer",
+      "mode": "definite-title"
+    },
+    {
+      "chapter": 117.0,
+      "offset": 7505,
+      "surface": "Young master",
+      "category": "title_transfer",
+      "mode": "address-term"
+    },
+    {
+      "chapter": 117.0,
+      "offset": 7634,
+      "surface": "the old landlord",
+      "category": "title_transfer",
+      "mode": "definite-title"
+    },
+    {
+      "chapter": 117.0,
+      "offset": 8028,
+      "surface": "young landlord",
+      "category": "title_transfer",
+      "mode": "address-term"
+    },
+    {
+      "chapter": 117.0,
+      "offset": 8137,
+      "surface": "your landlord",
+      "category": "title_transfer",
+      "mode": "definite-title"
+    },
+    {
+      "chapter": 117.0,
+      "offset": 8552,
+      "surface": "young landlord",
+      "category": "title_transfer",
+      "mode": "address-term"
+    },
+    {
+      "chapter": 118.0,
+      "offset": 677,
+      "surface": "his master",
+      "category": "relational_deictic",
+      "mode": "relational"
+    },
+    {
+      "chapter": 118.0,
+      "offset": 10141,
+      "surface": "the previous clan leader",
+      "category": "title_transfer",
+      "mode": "definite-title"
+    },
+    {
+      "chapter": 118.0,
+      "offset": 10432,
+      "surface": "clan leader",
+      "category": "title_transfer",
+      "mode": "definite-title"
+    },
+    {
+      "chapter": 134.0,
+      "offset": 8614,
+      "surface": "the other master",
+      "category": "relational_deictic",
+      "mode": "relational"
+    },
+    {
+      "chapter": 148.0,
+      "offset": 6441,
+      "surface": "he",
+      "category": "reveal",
+      "mode": "pronoun"
+    },
+    {
+      "chapter": 158.0,
+      "offset": 9651,
+      "surface": "his uncle",
+      "category": "relational_deictic",
+      "mode": "relational"
+    },
+    {
+      "chapter": 159.0,
+      "offset": 9970,
+      "surface": "his uncle",
+      "category": "relational_deictic",
+      "mode": "relational"
+    },
+    {
+      "chapter": 178.0,
+      "offset": 437,
+      "surface": "big brother\u2019s",
+      "category": "reveal",
+      "mode": "possessive-np"
+    },
+    {
+      "chapter": 190.0,
+      "offset": 11363,
+      "surface": "senior brother",
+      "category": "relational_deictic",
+      "mode": "address-term"
+    },
+    {
+      "chapter": 190.0,
+      "offset": 11407,
+      "surface": "your junior brother",
+      "category": "relational_deictic",
+      "mode": "address-term"
+    },
+    {
+      "chapter": 190.0,
+      "offset": 11824,
+      "surface": "Senior brother",
+      "category": "relational_deictic",
+      "mode": "address-term"
+    },
+    {
+      "chapter": 191.0,
+      "offset": 11945,
+      "surface": "Senior brother",
+      "category": "relational_deictic",
+      "mode": "address-term"
+    },
+    {
+      "chapter": 192.0,
+      "offset": 4055,
+      "surface": "Gu Yue",
+      "category": "body_change",
+      "mode": "rigid-name"
+    },
+    {
+      "chapter": 192.0,
+      "offset": 4471,
+      "surface": "First gen Gu Yue",
+      "category": "body_change",
+      "mode": "rigid-name"
+    },
+    {
+      "chapter": 192.0,
+      "offset": 5068,
+      "surface": "Senior brother",
+      "category": "relational_deictic",
+      "mode": "address-term"
+    },
+    {
+      "chapter": 193.0,
+      "offset": 1710,
+      "surface": "He",
+      "category": "body_change",
+      "mode": "pronoun"
+    },
+    {
+      "chapter": 194.0,
+      "offset": 841,
+      "surface": "senior brother",
+      "category": "relational_deictic",
+      "mode": "address-term"
+    },
+    {
+      "chapter": 194.0,
+      "offset": 3602,
+      "surface": "Junior brother",
+      "category": "relational_deictic",
+      "mode": "address-term"
+    },
+    {
+      "chapter": 195.0,
+      "offset": 194,
+      "surface": "Junior brother",
+      "category": "relational_deictic",
+      "mode": "address-term"
+    },
+    {
+      "chapter": 199.0,
+      "offset": 7559,
+      "surface": "I",
+      "category": "body_change",
+      "mode": "pronoun"
+    },
+    {
+      "chapter": 199.0,
+      "offset": 8139,
+      "surface": "Brother Bai",
+      "category": "body_change",
+      "mode": "address-term"
+    },
+    {
+      "chapter": 199.0,
+      "offset": 8143,
+      "surface": "her",
+      "category": "body_change",
+      "mode": "pronoun"
+    },
+    {
+      "chapter": 199.0,
+      "offset": 9881,
+      "surface": "him",
+      "category": "reveal",
+      "mode": "pronoun"
+    }
+  ]
+}
