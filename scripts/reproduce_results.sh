@@ -76,7 +76,7 @@ fi
 if [[ "$NOVEL" == "reverend-insanity" ]]; then
   echo
   echo "=== diagnostics (RI only; hardcoded to the measured rerun DB) ==="
-  python3 scripts/recall_by_category.py      # -> data/eval/recall_by_category.json
+  python3 scripts/recall_by_category.py --db "$DB"  # -> data/eval/recall_by_category.json
   python3 scripts/hardcase_resolution.py --db "$DB"  # -> data/eval/hardcase_resolution.json
   python3 scripts/scorer_diagnosis.py --db "$DB"
   python3 scripts/scorer_fit_probe.py

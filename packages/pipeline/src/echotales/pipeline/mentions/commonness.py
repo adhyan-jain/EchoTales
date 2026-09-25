@@ -55,6 +55,9 @@ _DETERMINERS = (
 #: 3 single-word ones are role nouns or fragments (Grandpa, Lad, Tie). Hence
 #: the word-count split rather than removing demonstratives outright.
 _DETERMINERS_MULTIWORD = _DETERMINERS.replace("this|that|these|those|", "")
+# Loud, not silent: if `_DETERMINERS` is ever reflowed so the substring above
+# no longer matches, the replace is a no-op and the 4.90 bug returns unnoticed.
+assert _DETERMINERS_MULTIWORD != _DETERMINERS, "demonstratives not removed for multi-word surfaces"
 
 #: Above this share of determiner-preceded occurrences, treat as a common noun.
 #: Well clear of the ~1% that real names pick up incidentally.
