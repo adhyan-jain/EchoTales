@@ -744,6 +744,16 @@ seed list never contained it) silently skipped the filter entirely, which
 is how "Grandpa" became an entity before possessive pronouns were added to
 `_DETERMINERS`.
 
+The determiner list is not applied uniformly: multi-word surfaces measure
+against `_DETERMINERS_MULTIWORD`, which drops `this|that|these|those`.
+Translated web fiction idiomatically prefixes a full name with a
+demonstrative ("this Wang Er was rather intractable"), which is not a class-
+noun signal the way "this elder" is — on RI, 5 of Wang Er's 7 determiner hits
+were demonstratives, his rate cleared the 8% threshold, and he was filtered
+from all 199 chapters despite 10 real NER tags (EVOLUTION 4.90).
+
+
+
 `credit_surfaces()` catches translation-group names specifically: a
 character occasionally appears near the word "translator", a translation
 group's name essentially always does, so a high co-occurrence rate with

@@ -480,6 +480,15 @@ both confirmed against the predictions on file. Concretely, Bai Ning Bing's
 chapter-1 mentions went from `[]` to `[6697, 6814, 8757]` — exactly the gold
 offsets — moving her first appearance from chapter 108 to chapter 1.
 
+**Correction (2026-09-25, EVOLUTION 4.88):** the 63.0% identifiability/speaker-
+attribution figure above included 879 pronoun-recovery guesses mislabelled
+`CONTEXTUAL_LLM`, a spot check found right 2 times in 15. With pronoun
+recovery off (default since 4.88), the honest rate is **46.1%** (2,392/5,192),
+essentially flat against the pre-fix 45.5%. CEAF-e recall (48.9%, now 67.4% on
+the canonical run, `docs/CANONICAL_RUN.md`) is unaffected and stays confirmed.
+Speaker attribution is not improved. See `docs/NER_WINDOWING_RESULT.md`
+Section 8 and `docs/STATUS.md`.
+
 ---
 
 ## 8. Caching and invalidation
