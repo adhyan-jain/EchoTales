@@ -24,16 +24,15 @@ Existing systems produce one static entity graph seen by one global reader.
 queried by `state_of(target, timeline, position, observer)`, resolving
 identity incrementally with evidence accumulation, and drives visual
 generation from that query rather than the text.
-**Results.** On a 199-chapter volume processed in 47 minutes on a consumer GPU
-with zero paid-model escalations, repairing a mention-layer defect raised the
-entity inventory from 82 to 261 and CEAF-e clustering recall from 25.2% to
-48.9%. Against matched long-context and dual-LLM baselines, the system recovers
-359 mentions where they recover 10 and 133, with zero model calls at
-resolution. Observer-conditioned generation is demonstrated on a real image
-engine: holding everything else constant, a reader's panels name the character
-and a non-witness's say "a figure".
-**Limitations.** No human-annotated gold; the learned scorer ranks correctly
-but cannot link; hard alias types are mostly missed at mention detection.
+**Results.** On a 199-chapter volume, against an LLM-drafted silver reference set:
+- entity-level CEAF-e F1 is 67.4, with B³ precision at 100%;
+- repairing two mention-layer defects raised the entity inventory from 82 to 267;
+- every hard case the system detects is linked correctly (24/24), and the misses are at mention detection (58/88);
+- given the span, retrieval finds the right entity in the top 10 for 89.1% of hard cases;
+- on ten chapters, matched baselines reach 0.2% and 4.6% B³ recall against 78.9%;
+- a character who witnessed a reveal sees the revealed name only from the chapter it happened, a non-witness never sees it, and a real image engine renders the difference.
+
+**Limitations.** No human-annotated gold; the learned scorer contributes no links; hard alias types are mostly missed at detection; a transmigrated protagonist in a second novel is split into two identities; speaker attribution covers 46.1% of speech.
 
 ## 3. Introduction
 Long-form serialised fiction — translated Chinese and Korean web novels running
@@ -138,8 +137,9 @@ no generation consumer.
    reincarnation case. [M] (concurrent cases [D])
 5. **A validity criterion for coreference reference sets** — surface
    recoverability — that caught a retracted headline from a second direction. [M]
-6. **An evidence-backed negative result on learned scoring**: ranks correctly
-   94% of the time, arithmetically capped at p=0.55 against a 0.80 threshold. [M]
+6. **An evidence-backed negative result on learned scoring**: every link is made
+   by deterministic evidence rules; the learned scorer makes none and is kept
+   as an optional, experimental layer. [M]
 7. **A cost asymmetry** against matched baselines: zero model calls at
    resolution versus 1 and 177. [M]
 
@@ -156,9 +156,10 @@ no generation consumer.
 Python 3.12 (uv); SQLite with an explicit bitemporal schema; Ollama serving
 `qwen2.5:7b` locally for NER, attribution, appearance and direction; diffusers
 with NoobAI XL / Illustrious / GuoFeng3 checkpoints; Chatterbox TTS with
-reference-clip cloning; ffmpeg (composition, pitch); React review interface
-over a stdlib HTTP API; pytest (1,071 tests), ruff, mypy. Hardware: NVIDIA RTX
-4060 Laptop, 8 GB. External API spend: zero.
+reference-clip cloning over the EARS studio speech corpus; ffmpeg
+(composition, pitch); React and static HTML review interfaces over a stdlib
+HTTP API; pytest (1,078 tests), ruff, mypy. Hardware: NVIDIA RTX 4060 Laptop,
+8 GB. External API spend: zero.
 
 ## 9. Methodology
 **Pipeline [I].** Ingest → segment and detect timelines → detect mentions and
@@ -178,11 +179,20 @@ sections, and a reimplementation of LLMLINK's dual-LLM memorisation.
 ## 10. Dataset
 Three novels ingested in full: Reverend Insanity (199 chapters, primary), Lord
 of the Mysteries (213), Omniscient Reader's Viewpoint (188). [M]
-Reference sets: 3,889 LLM-derived silver records on the primary novel, drafted
-by a different model family than the system under test. [M]
-**[L]** No human-annotated gold. Two of three reference files are 100%
-reproducible by surface-string grouping and therefore cannot discriminate
-systems; only the 89-record hard-case file (63.6% recoverable) does.
+
+Reference sets are the **LLM-DRAFTED SILVER REFERENCE SET**, drafted by Claude models, not the system under test [M]:
+
+| File | Records | Use |
+|---|---:|---|
+| RI main file | 1,816 silver entity mentions | coreference |
+| RI hardcases | 88 records with identity; alias types rigid / title / relational / epithet; five categories (body change, disguise, reveal, title transfer, relational) | hard cases and retrieval |
+| LOTM ch1–3 | 155 entity records, drafted without seeing the pipeline's output | generalisation |
+
+**[L]** No human-annotated gold and no IAA. The RI main file and the LOTM file
+are 100% reproducible by surface-string grouping, so their MUC/B³ figures
+measure string matching; CEAF-e and the hardcases file are the discriminative
+measures.
+
 **[L]** Source novels are copyrighted; annotations store offsets and short
 snippets only. Voice references: VCTK, CREMA-D, and EARS (CC BY-NC 4.0 —
 research use only).
@@ -191,68 +201,91 @@ research use only).
 See the one-page flowchart in `docs/IP/EchoTales_Project_Documentation.html`
 Section 3 and `docs/paper/FIGURES.md`. Central query:
 `state_of(target, timeline, position, observer) → {aliases, attributes,
-relationships, persona, certainty}`. [I]
+relationships, persona, certainty, read_set}`. [I]
+
+**Resolution is layered, and the layers are measured separately**
+(`docs/FINAL_EVIDENCE_TABLE.md` Section 4, 16,538 candidate pairs) [M]:
+
+| Layer | Role | Measured |
+|---|---|---|
+| Hard constraints (co-presence, temporal gate) | veto | 3,072 blocked |
+| Deterministic evidence rules (gazetteer, declaration, name containment) | link | 1,376 links: all of them |
+| Retrieval | candidate generation | recall@10 89.1% given the span |
+| Learned scorer | optional ranking | 0 links; **OPTIONAL / EXPERIMENTAL** |
 
 ## 12. Results and discussion [M]
-- Full volume end to end: 199 chapters, 47 min, 660 model calls, 0 escalations,
-  2 deferrals of 1,532 decision groups (0.1%).
-- Mention-layer repair: entities 82 → 261; typed entities 18 → 261; CEAF-e
-  recall 25.2% → 48.9%; CoNLL F1 78.1 → 86.5; speaker attribution
-  flat at 46.1% (first reported as 63.0%; EVOLUTION 4.88); contradictions detected 0 → 50. Two of three
-  pre-registered predictions were **refuted**: mentions did not double
-  (+14.6%) and attribution did not rise.
-- Retriever recall@10 given the gold span, production-exact context: rigid
-  names 90.3%, transferable titles 88.9% (n=9), relational/deictic 25.0% (n=4).
-- **Hard cases are lost at detection:** 59 of 89 never become mentions
-  (relational/deictic 25/29; title transfer 16/17).
-- **Scorer:** ranks the correct candidate first 97/103 (94.2%), but three of
-  its five weighted features never vary on this corpus, capping probability at
-  0.550 against a 0.80 threshold. A chronologically-split refit does not help,
-  and every labelled decision is taken by a pre-filter before the scorer.
-- Ablation: the accumulated gazetteer accounts for 66% of links.
-- Observer contrast: reader 5/5 reference-conditioned panels naming the
-  character; non-witness 0/5, "a figure", one person.
+All figures are from the canonical run (`docs/CANONICAL_RUN.md`) against the
+LLM-drafted silver reference set, unless stated otherwise.
 
-**Discussion.** The system's quality comes from its deterministic,
-evidence-accumulating filters, not its learned component; that is reported
-plainly. The contribution is the representation and what it enables — the
-observer and embodiment axes, and generation that respects them.
+- **End to end:** 199 chapters on one 8 GB laptop GPU; 47 min cold, 12 min with the NER cache.
+- **Coreference (Table 4):** CEAF-e P / R / F1 **89.8 / 53.9 / 67.4**; B³ precision 100%. MUC/B³ F1 (97.9 / 97.0) are reported but mostly measure string matching on this set.
+- **Hard cases (88):** 30 detected, and of the decidable ones **24/24 linked correctly, 0 wrong**; 58 undetected.
+  - Failure taxonomy: address terms 16, relational 15, definite titles 11, pronouns 10 (by design), other 6.
+  - Detection, not linking, is the bottleneck.
+- **Retrieval (Table 5, Figure 8):** given the reference span, production context, recall@1/5/10/20 = 67.4 / 87.0 / **89.1** / 95.7% (n=46; titles 88.9% @10, n=9).
+- **Resolution layers:** deterministic rules make every link; the learned scorer makes none (maximum score 0.41 against a 0.80 threshold) and is reported as optional/experimental.
+- **Observer-conditioned state** (`data/eval/observer_evidence.json`): the same fact about the same character is visible to the reader (2 aliases), a witness (1) and a non-witness (0). The witness sees 0 / 1 / 1 aliases asking from ch150 / 166 / 200.
+- **Observer-conditioned generation:** reader 5/5 reference-conditioned panels naming the character; non-witness 0/5, "a figure", one person.
+- **One detection bug found and fixed:** "Wang Er" was invisible for 199 chapters (demonstrative idiom); CEAF-e F1 63.1 → 67.4.
+- **Speaker attribution:** 46.1% of speech spans. A pronoun pass that inflated this to 63.0% was measured at 2/15 correct and removed from the default. The LLM tier is 12 right / 16 wrong and unstable across runs.
+- **Generalisation (LOTM ch1–3):** B³ recall 62.3%, CEAF-e F1 41.4. The transmigrated protagonist is split into two Selves.
+- **Pre-registered predictions:** two of three were refuted (mentions did not double; attribution did not rise).
+
+**Discussion.** Quality comes from deterministic, evidence-accumulating
+rules, and precision holds at 100% on silver. Recall is lost at mention
+detection for the hard reference types. The contribution is the
+representation and what it enables: the observer and embodiment axes, and
+generation that respects them. The weakest points are stated as results, not
+hidden.
 
 ## 13. Comparative analysis [M]
-| Chapters 1–10 | Baseline A (long-context) | Baseline B (dual-LLM) | EchoTales |
+Same model, host, scorer and reference set; chapters 1–10, 356 silver mentions
+(`docs/paper/TABLES.md` Table 7, Figure 9):
+
+| | Baseline A (long-context) | Baseline B (dual-LLM, LLMLINK-style) | EchoTales |
 |---|---:|---:|---:|
 | Model calls | 1 | 177 | 0 at resolution |
 | Prompt tokens | 24,302 | 142,835 | — |
-| Wall time | 146 s | 435 s | — |
-| Mentions recovered (reference 356) | 10 | 133 | 359 |
+| Wall time | 129 s | 354 s | — |
+| Mentions recovered | 10 | 133 | 369 |
+| B³ precision / recall | 100.0 / 0.2% | 95.4 / 4.6% | 100.0 / **78.9%** |
 
-Baseline A is bounded by output budget: 697 output tokens, ten mentions for ten
-chapters. Baseline B's chunking fixes that at 177× the calls. **[L]** On this
-range the reference set is surface-trivial, so this is an extraction-coverage
-comparison, not a coreference-quality one.
+**Scope correction.** An earlier version of this table put EchoTales'
+*full-volume* recall (96.3%) beside the baselines' ch1–10 figures. The row
+above is the same-range number.
+
+**[L]** On this range the reference set is surface-trivial, so this compares
+extraction coverage, not coreference quality.
+
+LLMLINK, LINK-KG, BOOKCOREF and LitBank figures are **not directly comparable
+and not reproduced in this evaluation**: different corpora, and for LINK-KG
+different metrics (node duplication over legal documents).
 
 ## 14. User manual
 ```bash
 source .venv/bin/activate
 ollama serve &                                        # local model server
-echotales --db data/novel.db run --novel reverend-insanity          # full pipeline
-echotales --db data/novel.db observations --novel reverend-insanity # observer axis
-echotales --db data/novel.db query state-of --novel reverend-insanity \
-    --target <self_id> --chapter 200 --observer READER               # the core query
-echotales --db data/novel.db eval --novel reverend-insanity \
-    --gold data/gold/reverend-insanity-hardcases.jsonl               # metrics
-echotales --db data/novel.db eval --novel reverend-insanity --gold <file> --validate-gold
-echotales --db data/novel.db ablate --novel reverend-insanity
-echotales --db data/novel.db render --novel reverend-insanity --chapters 169 \
-    --image-engine noobai --observer <id> --max-panels 3               # panels
-echotales --db data/novel.db voice --novel reverend-insanity \
-    --bank data/voice/ears --bank-kind ears --engine chatterbox        # audio
-python3 scripts/scorer_diagnosis.py && python3 scripts/make_paper_artifacts.py
-python3 -m pytest packages/                                            # 1,071 tests
+DB=data/reverend-insanity.db                          # canonical (docs/CANONICAL_RUN.md)
+echotales --db $DB run --novel reverend-insanity                  # full pipeline
+echotales --db $DB observations --novel reverend-insanity         # observer axis
+echotales --db $DB query state-of --novel reverend-insanity \
+    --target "Bai Ning Bing" --chapter 200 --observer READER     # the core query
+echotales --db $DB eval --novel reverend-insanity                 # coreference, silver
+echotales --db $DB eval --novel reverend-insanity \
+    --gold data/gold/reverend-insanity-hardcases.jsonl --validate-gold
+echotales --db $DB ablate --novel reverend-insanity --out data/eval/ablation/reverend-insanity.json
+echotales --db $DB render --novel reverend-insanity --chapters 169 \
+    --image-engine noobai --observer <self_id> --max-panels 3       # panels
+echotales --db $DB voice --novel reverend-insanity \
+    --bank data/voice/ears --bank-kind ears --engine chatterbox     # audio
+echotales webview --source "$DB:reverend-insanity:Reverend Insanity" --format static
+bash scripts/reproduce_results.sh                                # every reported number
+python3 -m pytest packages/core/tests packages/pipeline/tests    # 1,078 tests
 ```
-Stub mode (`ECHOTALES_LLM_MODE=stub`, `--image-engine stub`) runs everything
-with no GPU and no network. **Run-order warning:** `resolve` deletes persona
-bindings; never run it after `run` without rebuilding personas.
+
+- Stub mode (`ECHOTALES_LLM_MODE=stub`, `--image-engine stub`) runs everything with no GPU and no network.
+- **Run-order warning:** `resolve` deletes persona bindings; never run it after `run` without rebuilding personas.
+- **Screenshots** (private, because they contain copyrighted chapter text): `docs/IP/screenshots/webview-overview.png` shows the review viewer, with entity list, per-line speaker and method, and highlighted mentions. Rendered panels are under `data/RI/panels-obs-reader/` and `data/RI/panels-obs-nonwitness/`.
 
 ## 15. References
 1. Zhu, L., Wang, J., He, Y. LlmLink: Dual LLMs for Dynamic Entity Linking on Long Narratives with Collaborative Memorisation and Prompt Optimisation. COLING 2025, 11334–11347.
