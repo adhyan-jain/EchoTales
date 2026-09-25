@@ -11,7 +11,7 @@ import { EmptyState, LoadingState } from './ui/EmptyState';
    state this project is in and what to do next. Wires the real
    `GET /api/projects` listing (Product Orchestration track) -- source
    uploaded / ingested / last job -- rather than fabricating progress. */
-export default function ProjectHome({ novelId, onNewProject }) {
+export default function ProjectHome({ novelId, onNewProject, hideHeader = false }) {
   const [status, setStatus] = useState('loading');
   const [projects, setProjects] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
@@ -47,7 +47,8 @@ export default function ProjectHome({ novelId, onNewProject }) {
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-10">
+    <div className={hideHeader ? '' : 'mx-auto max-w-3xl px-6 py-10'}>
+      {!hideHeader && (
       <header className="flex items-start justify-between gap-4 border-b border-border pb-6">
         <div>
           <div className="font-mono text-xs uppercase tracking-widest text-muted">Production desk</div>
@@ -57,6 +58,7 @@ export default function ProjectHome({ novelId, onNewProject }) {
           + New project
         </Button>
       </header>
+      )}
 
       {status === 'loading' && <LoadingState label="Loading project status" />}
 

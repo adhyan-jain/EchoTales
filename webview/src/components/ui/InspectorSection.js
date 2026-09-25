@@ -5,8 +5,8 @@ import React from 'react';
    <details>/<summary> -- native keyboard/AT support, no JS state needed. */
 export default function InspectorSection({ title, defaultOpen = true, children }) {
   return (
-    <details className="border-b border-border px-4 py-3" open={defaultOpen}>
-      <summary className="cursor-pointer select-none font-mono text-xs uppercase tracking-wider text-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent">
+    <details className="rounded-2xl border border-border bg-surface px-4 py-3" open={defaultOpen}>
+      <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-[0.14em] text-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent">
         {title}
       </summary>
       <div className="mt-3">{children}</div>

@@ -18,7 +18,7 @@ const FORMATS = [
   { key: 'panels', label: 'Panels' },
 ];
 
-export default function OutputLibrary({ novelId }) {
+export default function OutputLibrary({ novelId, hideHeader = false }) {
   const [status, setStatus] = useState('loading');
   const [output, setOutput] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
@@ -54,11 +54,13 @@ export default function OutputLibrary({ novelId }) {
     .sort((a, b) => (b.mtime || 0) - (a.mtime || 0))[0];
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-10">
+    <div className={hideHeader ? '' : 'mx-auto max-w-4xl px-6 py-10'}>
+      {!hideHeader && (
       <header className="border-b border-border pb-6">
         <div className="font-mono text-xs uppercase tracking-widest text-muted">{novelId}</div>
         <h1 className="mt-2 font-display text-4xl text-text">Output library</h1>
       </header>
+      )}
 
       {status === 'loading' && <LoadingState label="Reading output directory" />}
 

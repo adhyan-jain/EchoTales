@@ -28,12 +28,18 @@ const PROMINENCE_LABEL = {
  * not just the current value, or the override is a guess instead of a
  * correction.
  */
-export default function CharacterDashboard({ novelId, readOnly = false }) {
+// `selectedId`/`onSelect` are optional: the routed Characters page passes
+// them so the open dossier lives in the URL (/cast/:selfId) and the back
+// button returns to the grid. Without them the component keeps its own
+// selection state, as it always has.
+export default function CharacterDashboard({ novelId, readOnly = false, selectedId: controlledId, onSelect }) {
   const [status, setStatus] = useState('loading'); // 'loading' | 'ready' | 'error' | 'not_found'
   const [characters, setCharacters] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [search, setSearch] = useState('');
-  const [selectedId, setSelectedId] = useState(null);
+  const [ownSelectedId, setOwnSelectedId] = useState(null);
+  const selectedId = controlledId !== undefined ? controlledId : ownSelectedId;
+  const setSelectedId = onSelect || setOwnSelectedId;
   const [showIncidental, setShowIncidental] = useState(false);
   const [pendingAction, setPendingAction] = useState(null); // selfId currently mid-request, for disabling controls
   const push = useToast();
@@ -152,22 +158,25 @@ export default function CharacterDashboard({ novelId, readOnly = false }) {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-10">
-      <header className="border-b border-border pb-6">
-        <div className="font-mono text-xs uppercase tracking-widest text-muted">
-          {novelId}
+    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-8">
+      <header className="flex flex-wrap items-end justify-between gap-4 pb-8">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Characters</div>
+          <h1 className="mt-1.5 font-display text-3xl font-bold tracking-tight text-text sm:text-4xl">Cast</h1>
+          <p className="mt-2 max-w-2xl text-sm text-muted">
+            Everyone the book resolved, with the voice, reference look and evidence behind each one.
+          </p>
         </div>
-        <h1 className="mt-2 font-display text-4xl text-text">Cast</h1>
+        <div className="w-full sm:w-72">
+          <Input
+            type="search"
+            aria-label="Filter characters"
+            placeholder="Filter characters…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
       </header>
-
-      <div className="mt-6">
-        <Input
-          type="search"
-          placeholder="Filter characters…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
 
       {status === 'loading' && <LoadingState label="Loading cast" />}
 
@@ -200,7 +209,7 @@ export default function CharacterDashboard({ novelId, readOnly = false }) {
 
       {status === 'ready' && filtered.length > 0 && (
         <div className="mt-4">
-          <div className="border-t border-border">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {mainCast.map((c) => (
               <CharacterRow
                 key={c.self_id}
@@ -224,7 +233,7 @@ export default function CharacterDashboard({ novelId, readOnly = false }) {
                   : `Show ${incidentalCast.length} incidental character${incidentalCast.length === 1 ? '' : 's'}`}
               </Button>
               {showIncidental && (
-                <div className="mt-2 border-t border-border">
+                <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {incidentalCast.map((c) => (
                     <CharacterRow
                       key={c.self_id}
@@ -257,7 +266,7 @@ function CharacterDetail({ character, busy, readOnly, onBack, onSetVoice, onSele
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-10">
+    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-8">
       <Button variant="ghost" size="sm" onClick={onBack}>
         &larr; Back to cast
       </Button>

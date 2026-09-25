@@ -28,7 +28,7 @@ import { useToast } from './ui/Toast';
    screen this session added (CharacterDashboard, ProjectHome,
    OutputLibrary) already fetches its own data independently for the same
    reason; this was the one inconsistent one. */
-export default function GenerationWorkspace({ novelId }) {
+export default function GenerationWorkspace({ novelId, hideHeader = false }) {
   const [chapters, setChapters] = useState([]);
   const [selected, setSelected] = useState('');
   const [jobs, setJobs] = useState([]);
@@ -90,11 +90,13 @@ export default function GenerationWorkspace({ novelId }) {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-10">
+    <div className={hideHeader ? '' : 'mx-auto max-w-4xl px-6 py-10'}>
+      {!hideHeader && (
       <header className="border-b border-border pb-6">
         <div className="font-mono text-xs uppercase tracking-widest text-muted">{novelId}</div>
         <h1 className="mt-2 font-display text-4xl text-text">Generation</h1>
       </header>
+      )}
 
       <div className="mt-8">
         <Divider label="Render a chapter" className="mb-4" />

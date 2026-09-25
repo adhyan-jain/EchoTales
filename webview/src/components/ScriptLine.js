@@ -131,7 +131,10 @@ export default function ScriptLine({
           <>
             {span.speaker || 'unattributed'}
             <span className="method">
-              {span.anonymous_speaker ? 'anonymous' : span.speaker ? span.method : ''}
+              {/* The attribution method (e.g. CONTEXTUAL_LLM) is evidence a
+                  reviewer weighs; for a reader it is noise, so the reader
+                  (editMode off) shows only whether the voice is anonymous. */}
+              {span.anonymous_speaker ? 'anonymous' : span.speaker && editMode ? span.method : ''}
             </span>
           </>
         )}

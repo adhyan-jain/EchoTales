@@ -2,6 +2,19 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Serving a production build
+
+Since the 2026-09-26 redesign this app is routed client-side with
+`react-router-dom` (`src/router.js`: `/`, `/projects`, `/p/:projectId`,
+`/p/:projectId/read/:chapter?`, `/cast/:selfId?`, `/studio`, `/review`,
+`/settings`, `/design`). Any static server that serves `npm run build`'s
+output **must** fall back to `index.html` for unknown paths (an SPA history
+fallback) or deep links like `/p/<id>/read/3` will 404. `npm start` does
+this automatically in development; a plain static file server does not
+unless configured to. The app always talks to a live `webview_server.py`
+instance for data (see `src/lib/ProjectContext.js`) — there is no
+static-JSON fallback mode.
+
 ## Available Scripts
 
 In the project directory, you can run:

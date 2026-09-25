@@ -1,20 +1,19 @@
 import React from 'react';
 
-/* Replaces the generic colored pill badge. A bracketed mono tag reads as an
-   archival classification stamp ([ PRINCIPAL ]) rather than an "AI SaaS
-   status chip" -- no fill, no rounding, color carried by text only. */
+/* Small status chip. Was a bracketed mono stamp ([ PRINCIPAL ]) in the
+   archive direction; a tinted pill reads faster in the cinematic one. */
 const TONES = {
-  neutral: 'text-muted',
-  accent: 'text-accent',
-  success: 'text-success',
-  warning: 'text-warning',
-  danger: 'text-danger',
+  neutral: 'text-muted bg-surface2 border-border',
+  accent: 'text-accent bg-accent/10 border-accent/30',
+  success: 'text-success bg-success/10 border-success/30',
+  warning: 'text-warning bg-warning/10 border-warning/30',
+  danger: 'text-danger bg-danger/10 border-danger/30',
 };
 
 export default function Label({ tone = 'neutral', className = '', children }) {
   return (
-    <span className={`font-mono text-xs uppercase tracking-wider ${TONES[tone]} ${className}`}>
-      [&nbsp;{children}&nbsp;]
+    <span className={`inline-flex items-center whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-medium ${TONES[tone]} ${className}`}>
+      {children}
     </span>
   );
 }

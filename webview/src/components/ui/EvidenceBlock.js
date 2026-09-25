@@ -5,11 +5,11 @@ import React from 'react';
    scholarly annotation than an "AI explanation" callout. */
 export default function EvidenceBlock({ trait, source, quote }) {
   return (
-    <div className="border-l-2 border-border pl-4 py-1">
-      <div className="font-mono text-xs uppercase tracking-wider text-accent">{trait}</div>
+    <div className="rounded-xl border border-border bg-surface p-4">
+      <div className="text-sm font-semibold text-accent">{trait}</div>
       {source && <div className="mt-0.5 font-mono text-xs text-muted">{source}</div>}
       {quote && (
-        <blockquote className="mt-1.5 font-display italic text-lg leading-snug text-text">
+        <blockquote className="mt-2 border-l-2 border-accent/40 pl-3 text-base italic leading-relaxed text-text">
           &ldquo;{quote}&rdquo;
         </blockquote>
       )}

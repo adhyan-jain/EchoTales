@@ -338,6 +338,19 @@ packages/pipeline/tests/ -q`).
 
 ## Pick up here — webview frontend redesign & short-form video reels
 
+**Superseded in part by the 2026-09-26 visual/routing redesign** (uncommitted
+at time of writing): `App.js`/`Viewer.js` referenced throughout this section
+no longer exist — they were deleted and replaced by `webview/src/router.js`
+(react-router-dom v7 routes: `/`, `/projects`, `/p/:projectId`,
+`/p/:projectId/read/:chapter?`, `/cast/:selfId?`, `/studio`, `/review`,
+`/settings`, `/design`) plus `webview/src/pages/`. The old `?review`/
+`?gallery` query-param screens now redirect to `/review`/`/design`. Visual
+direction also moved from the Fraunces/brass "editorial archive" look
+described below to a dark, violet-accented ("cinematic dark") design system
+in `webview/src/index.css`/`tailwind.config.js`. The bullets below predate
+that redesign and describe file paths that no longer exist; read them for
+history of what was fixed, not as a map of the current tree.
+
 **Status, verified vs. not:**
 - `Login.js` / `NewProject.js` / `CharacterDashboard.js` — **done**, `Section7Smoke.test.js` passing (8/8).
 - `create_mention` frontend UI — **done**, wired via `+ mention` action button in edit mode (`App.js`, `ScriptView.js`, `ScriptLine.js`).

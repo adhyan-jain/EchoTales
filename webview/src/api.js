@@ -1,5 +1,12 @@
 const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:8787';
 
+// Every id segment is encoded. Ids now arrive from the browser URL
+// (/p/:projectId, /cast/:selfId) rather than only from a server-populated
+// <select>, so a hand-edited URL must not be able to inject `/` or `?` into
+// a backend path. Entity ids contain ':' (e.g. "novel:self:4768..."), which
+// encodes to %3A and is decoded by the server's router.
+const enc = encodeURIComponent;
+
 // sessionStorage (not localStorage) so the token clears when the tab closes --
 // every route but /api/auth/status and /api/auth/login requires it once the
 // server has auth_required: true.
@@ -50,7 +57,7 @@ async function request(path, options) {
 }
 
 function postCorrection(novelId, type, payload) {
-  return request(`/api/novels/${novelId}/corrections`, {
+  return request(`/api/novels/${enc(novelId)}/corrections`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type, payload }),
@@ -60,8 +67,8 @@ function postCorrection(novelId, type, payload) {
 export const api = {
   base: API_BASE,
   manifest: () => request('/api/manifest'),
-  novel: (id) => request(`/api/novels/${id}`),
-  corrections: (id) => request(`/api/novels/${id}/corrections`),
+  novel: (id) => request(`/api/novels/${enc(id)}`),
+  corrections: (id) => request(`/api/novels/${enc(id)}/corrections`),
 
   authStatus: () => request('/api/auth/status'),
 
@@ -95,17 +102,17 @@ export const api = {
       body: JSON.stringify({ id, title, content_type: contentType }),
     }),
 
-  characters: (novelId) => request(`/api/novels/${novelId}/characters`),
+  characters: (novelId) => request(`/api/novels/${enc(novelId)}/characters`),
 
   setVoice: (novelId, selfId, speakerId, note) =>
-    request(`/api/novels/${novelId}/characters/${selfId}/voice`, {
+    request(`/api/novels/${enc(novelId)}/characters/${enc(selfId)}/voice`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ speaker_id: speakerId, note }),
     }),
 
   selectReference: (novelId, selfId, candidateId, note) =>
-    request(`/api/novels/${novelId}/characters/${selfId}/reference`, {
+    request(`/api/novels/${enc(novelId)}/characters/${enc(selfId)}/reference`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ candidate_id: candidateId, note }),
@@ -174,8 +181,8 @@ export const api = {
     postCorrection(novelId, 'reassign_span_type', { span_id: spanId, chapter, new_type: newType }),
 
   undoCorrection: (novelId, correctionId) =>
-    request(`/api/novels/${novelId}/corrections/${correctionId}`, { method: 'DELETE' }),
-  applyCorrections: (novelId) => request(`/api/novels/${novelId}/apply`, { method: 'POST' }),
+    request(`/api/novels/${enc(novelId)}/corrections/${enc(correctionId)}`, { method: 'DELETE' }),
+  applyCorrections: (novelId) => request(`/api/novels/${enc(novelId)}/apply`, { method: 'POST' }),
 
   // -- Product Orchestration track (project lifecycle, jobs, reference
   // search, render preview/generate, output library) -- these wrap real,
@@ -183,62 +190,62 @@ export const api = {
   // docstring for the full route list.
 
   listProjects: () => request('/api/projects'),
-  deleteProject: (novelId) => request(`/api/projects/${novelId}`, { method: 'DELETE' }),
+  deleteProject: (novelId) => request(`/api/projects/${enc(novelId)}`, { method: 'DELETE' }),
 
   uploadSource: (novelId, file) => {
     const form = new FormData();
     form.append('file', file);
-    return request(`/api/projects/${novelId}/source`, { method: 'POST', body: form });
+    return request(`/api/projects/${enc(novelId)}/source`, { method: 'POST', body: form });
   },
 
   // `kind` is one of ingest/resolve/appearance/persona/render/voice/
   // refimg_search/reference_gen (`jobs.py::JOB_KINDS`) -- one trigger
   // route per stage, all shaped the same.
   triggerStage: (novelId, kind, params = {}) =>
-    request(`/api/projects/${novelId}/${kind}`, {
+    request(`/api/projects/${enc(novelId)}/${kind}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(params),
     }),
 
-  listJobs: (novelId) => request(`/api/projects/${novelId}/jobs`),
-  getJob: (novelId, jobId) => request(`/api/projects/${novelId}/jobs/${jobId}`),
+  listJobs: (novelId) => request(`/api/projects/${enc(novelId)}/jobs`),
+  getJob: (novelId, jobId) => request(`/api/projects/${enc(novelId)}/jobs/${enc(jobId)}`),
 
   listReferenceCandidates: (novelId, selfId) =>
-    request(`/api/novels/${novelId}/characters/${selfId}/reference/candidates`),
+    request(`/api/novels/${enc(novelId)}/characters/${enc(selfId)}/reference/candidates`),
 
   searchReferences: (novelId, selfId) =>
-    request(`/api/novels/${novelId}/characters/${selfId}/reference/search`, { method: 'POST' }),
+    request(`/api/novels/${enc(novelId)}/characters/${enc(selfId)}/reference/search`, { method: 'POST' }),
 
   uploadReference: (novelId, selfId, file) => {
     const form = new FormData();
     form.append('file', file);
-    return request(`/api/novels/${novelId}/characters/${selfId}/reference/upload`, {
+    return request(`/api/novels/${enc(novelId)}/characters/${enc(selfId)}/reference/upload`, {
       method: 'POST',
       body: form,
     });
   },
 
   renderPreview: (novelId, params) =>
-    request(`/api/novels/${novelId}/render/preview?${new URLSearchParams(params)}`),
+    request(`/api/novels/${enc(novelId)}/render/preview?${new URLSearchParams(params)}`),
 
   renderGenerate: (novelId, body) =>
-    request(`/api/novels/${novelId}/render/generate`, {
+    request(`/api/novels/${enc(novelId)}/render/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     }),
 
   referenceGenerate: (novelId, body = {}) =>
-    request(`/api/novels/${novelId}/reference/generate`, {
+    request(`/api/novels/${enc(novelId)}/reference/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     }),
 
-  listOutput: (novelId) => request(`/api/novels/${novelId}/output`),
+  listOutput: (novelId) => request(`/api/novels/${enc(novelId)}/output`),
   outputFileUrl: (novelId, path) =>
-    `${API_BASE}/api/novels/${novelId}/output/file?path=${encodeURIComponent(path)}`,
+    `${API_BASE}/api/novels/${enc(novelId)}/output/file?path=${encodeURIComponent(path)}`,
 };
 
 // Mirrors `SpanType` in packages/core/.../enums.py. NON_DIEGETIC and the

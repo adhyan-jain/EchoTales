@@ -1775,13 +1775,22 @@ that id for `store.get_self()` to find.
 plus one `<script src>`-loaded JS data file per novel (not `fetch`,
 specifically because `fetch()` of local JSON is blocked by the browser's
 same-origin policy on `file://` and `<script src>` is not).
-`write_webview_json()` emits the same payload as plain JSON files for the
-React app's `public/data/`, which needs a server either way.
+`write_webview_json()` emits the same payload as plain JSON files, originally
+for a `public/data/` static-JSON mode the React app could fall back to when
+its live-server toggle was off. **The 2026-09-26 redesign (router.js, see
+`webview_server.py` below) removed that toggle** — every page now reads
+`ProjectContext` fetching the live `webview-server` API unconditionally, so
+`write_webview_json()`'s `public/data/` output is no longer consumed by the
+React app at all; the function is still callable but has no current caller.
 
 ### `src/echotales/pipeline/webview_server.py`
-The live backend for the React app's "Live edit" mode, plus (as of the
-Product Orchestration track) the project-lifecycle/job/upload/output HTTP
-API. Stdlib `http.server` only, single-threaded deliberately: `Store`
+The live backend the React app talks to. Before the 2026-09-26 redesign this
+was an opt-in "Live edit" mode toggled against a static `public/data/`
+export (`webview.py::write_webview_json()`); the redesign (new
+`webview/src/router.js`, `ProjectContext`) removed the toggle, so every page
+now always reads this server's API — there is no longer a static-data mode
+in the app itself. Also (as of the Product Orchestration track) the
+project-lifecycle/job/upload/output HTTP API. Stdlib `http.server` only, single-threaded deliberately: `Store`
 opens its sqlite3 connection once in the main thread, and sqlite3 forbids
 cross-thread use by default -- `ThreadingHTTPServer` crashed on the first
 concurrent request during verification, caught by actually calling the
@@ -1882,7 +1891,8 @@ back into the resolver as input -- HANDOFF Section 6 already rules that out for
 hand-curated alias mappings, and a correction is the same category of
 thing: a resolver graded against its own answer key measures nothing.
 Instead a correction does two things: preview (`webview_server.py`,
-immediate) and, on request, a one-time patch to *this run's* store
+immediate, always live since the 2026-09-26 frontend redesign removed the
+static/live toggle) and, on request, a one-time patch to *this run's* store
 (rebind, delete an absorbed span, append a `ResolutionEvent`) -- the same
 relationship a human copy-editor has to a draft, not a change to how
 future runs decide anything.
@@ -1992,7 +2002,9 @@ tightened.
 
 `check_deps.py`/`annotate.py`/`replay.py` as originally planned do not
 exist. The human-promotion job `annotate.py` was meant for is now
-`corrections.py` + `webview_server.py` + the React app's "Live edit" mode
+`corrections.py` + `webview_server.py` + the React app's review UI
+(`webview/src/pages/project/Review.js`, `/review` route since the
+2026-09-26 redesign; previously the `?review` query-param screen)
 -- an interactive tool rather than a batch script, because the actual need
 turned out to be "click the wrong mention and fix it while reading," not
 "run a promotion pass over a dump." `replay.py`'s job (reconstruct graph

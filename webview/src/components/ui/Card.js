@@ -1,11 +1,11 @@
 import React from 'react';
 
-/* A surface, not a "card" in the SaaS sense: hairline border, no drop
-   shadow, sharp corners. Composition (rules, spacing) carries hierarchy
-   instead of nested elevation. */
+/* Base surface: hairline border on a slightly lifted panel, generous
+   radius (cinematic redesign, 2026-09-26). Depth comes from DepthCard's
+   shadow steps, not from nesting cards inside cards. */
 export function Card({ className = '', children, ...props }) {
   return (
-    <div className={`bg-surface border border-border rounded-sm ${className}`} {...props}>
+    <div className={`bg-surface border border-border rounded-2xl ${className}`} {...props}>
       {children}
     </div>
   );

@@ -27,7 +27,7 @@ export function ToastProvider({ children }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`animate-toast-in max-w-sm break-words rounded-sm border-l-2 px-4 py-3 font-sans text-sm text-text shadow-popover ${TONES[t.tone]}`}
+            className={`animate-toast-in max-w-sm break-words rounded-xl border px-4 py-3 font-sans text-sm text-text shadow-popover ${TONES[t.tone]}`}
           >
             {t.message}
           </div>

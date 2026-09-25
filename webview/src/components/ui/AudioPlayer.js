@@ -20,7 +20,8 @@ export default function AudioPlayer({ label, duration, src }) {
       <button
         onClick={toggle}
         aria-label={playing ? 'Pause' : 'Play'}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-border text-text hover:border-accent hover:text-accent"
+        type="button"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-glow hover:bg-primary-2"
       >
         {playing ? (
           <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor"><rect width="3" height="12" /><rect x="6" width="3" height="12" /></svg>
@@ -30,7 +31,7 @@ export default function AudioPlayer({ label, duration, src }) {
       </button>
       <div className="flex h-9 flex-1 items-end gap-[2px]">
         {BARS.map((h, i) => (
-          <div key={i} className="w-1 bg-border" style={{ height: `${h * 3.2}px` }} />
+          <div key={i} className="w-1 rounded-full bg-accent/40" style={{ height: `${h * 3.2}px` }} />
         ))}
       </div>
       <div className="shrink-0 font-mono text-xs text-muted">{label} &middot; {duration}</div>

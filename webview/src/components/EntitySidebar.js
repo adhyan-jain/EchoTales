@@ -27,7 +27,7 @@ export default function EntitySidebar({
   const picking = editMode && mergeSourceId != null;
 
   return (
-    <aside>
+    <aside className="entity-sidebar">
       <div className="search">
         <input
           type="search"

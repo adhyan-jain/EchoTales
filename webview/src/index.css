@@ -2,64 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Design tokens -- cinematic dark (default) and light. RGB triples so
+   Tailwind's `rgb(var(--x) / <alpha-value>)` can apply opacity.
 
-/* Design-system tokens (EchoTales editorial/archive rebuild). RGB triples,
-   not hex, so Tailwind's `rgb(var(--x) / <alpha-value>)` pattern can apply
-   opacity. Dark ("ink") is the default theme; [data-theme="light"] ("paper")
-   overrides the same set -- see src/theme.js. Legacy --bg/--fg/--panel/
-   --muted/--accent aliases below are kept so any not-yet-redesigned rule
-   further down this file doesn't break mid-migration.
-
-   Not blue/purple-AI -- but also deliberately moved OFF the other
-   recognizable AI-generated-page cluster (warm cream ~#F4F1EA + terracotta
-   ~#D97757, i.e. Anthropic's own interaction accent) that the first pass of
-   this palette landed on almost exactly. Dark is a cooler, deeper ink
-   (not warm brown-black); light is a greyer, less-yellow paper; the accent
-   is brass/gold -- a production-archive nameplate color, not a clay pot.
-
-   Contrast (2026-09-26 audit): every text-bearing token clears WCAG AA 4.5:1
-   on bg, surface and surface-2 in its theme. Before it, dark danger was
-   3.24:1 (error text and the unattributed-speaker label were hard to read)
-   and light accent was 3.99:1 -- the primary button's own label. Each was
-   moved the minimum distance along its own hue to pass. */
+   Contrast (checked 2026-09-26): every text token clears WCAG AA 4.5:1 on
+   bg, surface and surface-2 in its own theme; white on `primary` is 5.05:1
+   (dark) / 6.18:1 (light). The earlier palette failed on two pairs (dark
+   danger 3.24:1, light accent 3.99:1), which is why this is checked rather
+   than eyeballed. */
 :root,
 [data-theme='dark'] {
   color-scheme: dark;
-  --c-bg: 16 17 19;
-  --c-surface: 24 25 28;
-  --c-surface-2: 33 34 38;
-  --c-border: 54 54 58;
-  --c-text: 227 224 216;
-  --c-muted: 143 140 132;
-  --c-accent: 179 138 46;
-  --c-accent-2: 214 173 84;
-  --c-success: 114 147 103;
-  --c-warning: 199 130 58;
-  --c-danger: 208 108 90;
+  --c-bg: 7 7 10;
+  --c-surface: 15 15 19;
+  --c-surface-2: 24 24 30;
+  --c-border: 39 39 48;
+  --c-text: 244 244 246;
+  --c-muted: 155 155 168;
+  --c-accent: 139 112 255;
+  --c-accent-2: 170 150 255;
+  --c-primary: 112 80 245;
+  --c-primary-2: 118 86 250;
+  --c-cyan: 94 234 212;
+  --c-success: 74 222 158;
+  --c-warning: 250 190 70;
+  --c-danger: 255 120 120;
 }
 
 [data-theme='light'] {
   color-scheme: light;
-  --c-bg: 233 231 221;
-  --c-surface: 241 239 232;
-  --c-surface-2: 224 221 208;
-  --c-border: 199 195 178;
-  --c-text: 28 27 24;
-  --c-muted: 101 97 85;
-  --c-accent: 123 91 23;
-  --c-accent-2: 110 79 16;
-  --c-success: 78 103 65;
-  --c-warning: 130 87 26;
-  --c-danger: 140 58 48;
+  --c-bg: 250 250 251;
+  --c-surface: 255 255 255;
+  --c-surface-2: 241 241 244;
+  --c-border: 226 226 232;
+  --c-text: 12 12 16;
+  --c-muted: 90 90 104;
+  --c-accent: 98 64 230;
+  --c-accent-2: 84 52 210;
+  --c-primary: 98 64 230;
+  --c-primary-2: 84 52 210;
+  --c-cyan: 13 148 136;
+  --c-success: 10 125 80;
+  --c-warning: 150 95 0;
+  --c-danger: 200 40 40;
 }
 
-/* Legacy aliases: full color values, so the ~100 not-yet-redesigned rules
-   below (var(--bg)/--fg/--panel/--muted/--border/--accent) keep working
-   unchanged while new components consume the --c-* triples above directly. */
+/* Full-colour aliases for the hand-written component rules below. */
 :root {
   --bg: rgb(var(--c-bg));
   --fg: rgb(var(--c-text));
   --panel: rgb(var(--c-surface));
+  --panel-2: rgb(var(--c-surface-2));
   --muted: rgb(var(--c-muted));
   --border: rgb(var(--c-border));
   --accent: rgb(var(--c-accent));
@@ -67,441 +60,234 @@
   --success: rgb(var(--c-success));
 }
 
-* {
-  box-sizing: border-box;
+@layer base {
+  * { box-sizing: border-box; }
+  html { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  body {
+    margin: 0;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    font-feature-settings: 'cv11', 'ss01';
+    background: var(--bg);
+    color: var(--fg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3 { text-wrap: balance; }
+  ::selection { background: rgb(var(--c-accent) / 0.35); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  select option { background: var(--panel); color: var(--fg); }
 }
 
-/* One sans for the whole app. The redesigned screens use Source Sans 3 via
-   Tailwind's font-sans while every legacy rule inherited 15px system-ui from
-   here, so the review desk changed typeface between views. 16px is the
-   readable-body floor. */
-body {
-  margin: 0;
-  font: 16px/1.6 "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--fg);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer components {
+  /* Soft radial glow used behind hero sections. Pure CSS, no image. */
+  .hero-glow {
+    background:
+      radial-gradient(60% 50% at 20% 0%, rgb(var(--c-primary) / 0.28), transparent 70%),
+      radial-gradient(40% 40% at 90% 10%, rgb(var(--c-cyan) / 0.12), transparent 70%);
+  }
+  .text-gradient {
+    background: linear-gradient(120deg, rgb(var(--c-text)) 30%, rgb(var(--c-accent-2)) 70%, rgb(var(--c-cyan)) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .glass {
+    background: rgb(var(--c-surface) / 0.72);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+  }
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
 }
 
-/* Shell grid: top identity bar spans all three columns; below it, a
-   narrow nav rail, the workspace, and a contextual inspector -- the
-   product-desk layout (plan Section 3), replacing the old two-column
-   sidebar+main. Inspector collapses to zero width below 1280px (Section
-   12) so the manuscript column is always preserved. */
-#root {
-  display: grid;
-  grid-template-columns: 220px 1fr 300px;
-  grid-template-rows: auto 1fr;
-  height: 100vh;
-}
-@media (max-width: 1279px) {
-  #root { grid-template-columns: 220px 1fr; }
-}
+/* ---------------------------------------------------------------------
+   Reader / review surface. These rules style the reused ScriptView,
+   ScriptLine, ChapterNav, EntitySidebar, EntityPicker, AnalysisPanel and
+   Tooltip components by their class hooks. They were global element rules
+   (header, aside, main, #root grid) before the 2026-09-26 redesign, which
+   would have leaked into every new page; everything is class- or id-scoped
+   now.
+   --------------------------------------------------------------------- */
 
-header {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: .6rem 1rem;
+/* Chapter navigation bar */
+#chapter-nav {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .75rem 1.25rem;
   border-bottom: 1px solid var(--border);
-  background: var(--panel);
+  background: rgb(var(--c-bg) / .8);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 5;
 }
-header h1 { font-size: 1rem; margin: 0; font-weight: 600; }
-header .sub { font-size: .8rem; color: var(--muted); }
-header button {
-  font: inherit;
-  padding: .35rem .6rem;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--fg);
-  cursor: pointer;
+#chapter-nav button {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 2.25rem; height: 2.25rem; border-radius: .6rem;
+  border: 1px solid var(--border); background: var(--panel); color: var(--fg);
+  cursor: pointer; transition: border-color .15s, color .15s;
 }
-.edit-toggle {
-  display: flex;
-  align-items: center;
-  gap: .35rem;
-  font-size: .85rem;
-  cursor: pointer;
-  user-select: none;
+#chapter-nav button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+#chapter-nav button:disabled { opacity: .35; cursor: default; }
+#chapter-nav select {
+  height: 2.25rem; padding: 0 .75rem; border-radius: .6rem;
+  border: 1px solid var(--border); background: var(--panel); color: var(--fg);
+  font: inherit; font-size: .9rem; font-weight: 500;
 }
+#chapter-nav .cov { margin-left: auto; font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 
-select, input[type=search] {
-  font: inherit;
-  padding: .35rem .5rem;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--fg);
+/* The manuscript column */
+#script { max-width: 760px; margin: 0 auto; padding: 1.75rem 1.5rem 6rem; }
+.line { display: grid; grid-template-columns: 9rem 1fr; gap: 1rem; padding: .7rem 0; font-size: 1.02rem; line-height: 1.75; }
+.line + .line { border-top: 1px solid rgb(var(--c-border) / .6); }
+.line.dialogue {
+  background: linear-gradient(90deg, rgb(var(--c-primary) / .10), rgb(var(--c-primary) / .03));
+  border: 1px solid rgb(var(--c-accent) / .14);
+  border-radius: .9rem;
+  padding-inline: .9rem; margin-inline: -.9rem;
 }
-/* The dropdown's open option list is rendered by the OS/browser, not the
-   page, and reliably ignores `Canvas`/`CanvasText` -- it shows up with a
-   light popup background regardless of theme, so `color: var(--fg)` alone
-   can land as near-white text on that light background. Pin option text to
-   dark explicitly; background/color are the only two properties browsers
-   honor on <option> anyway. */
-select option {
-  color: #1a1a1a;
-  background: #fff;
-}
-#novel-select { font-weight: 600; }
-
-.stats-strip { display: flex; gap: 1.1rem; margin-left: auto; font-size: .78rem; color: var(--muted); }
-.stats-strip b { color: var(--fg); font-variant-numeric: tabular-nums; }
-.stats-strip .warn b { color: var(--danger); }
-
-/* `aside` is now the right-hand inspector column (plan Section 3) -- was
-   the left sidebar under the old two-column grid. Border moves to the
-   side that now touches the workspace. */
-aside {
-  border-left: 1px solid var(--border);
-  overflow-y: auto;
-  background: var(--panel);
-  display: flex;
-  flex-direction: column;
-}
-aside .search {
-  padding: .6rem;
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  background: var(--panel);
-}
-aside .search input { width: 100%; }
-
-#entity-list { list-style: none; margin: 0; padding: .3rem; overflow-y: auto; flex: 1; }
-#entity-list li {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  padding: .38rem .5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: .86rem;
-}
-#entity-list li:hover, #entity-list li:focus-within { background: color-mix(in srgb, CanvasText 8%, transparent); }
-#entity-list li.active { background: color-mix(in srgb, var(--accent) 22%, transparent); }
-#entity-list .swatch { width: .7rem; height: .7rem; border-radius: 50%; flex: none; }
-#entity-list .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#entity-list .name.not-person { font-style: italic; opacity: .8; }
-#entity-list .kind-badge {
-  font-size: .65rem; text-transform: uppercase; letter-spacing: .03em;
-  color: var(--muted); border: 1px solid var(--muted); border-radius: 3px;
-  padding: 0 .3em; flex: none;
-}
-#entity-list .count { color: var(--muted); font-variant-numeric: tabular-nums; font-size: .78rem; }
-#entity-list li.merge-source { background: color-mix(in srgb, var(--danger) 25%, transparent); }
-#entity-list li.merge-target:hover { background: color-mix(in srgb, var(--success) 25%, transparent); cursor: pointer; }
-#entity-list .merge-icon {
-  border: none;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  font-size: .9rem;
-  padding: 0 .2rem;
-  border-radius: 4px;
-  flex: none;
-}
-#entity-list .merge-icon:hover { background: color-mix(in srgb, CanvasText 15%, transparent); color: var(--fg); }
-.merge-hint {
-  font-size: .78rem;
-  color: var(--muted);
-  padding-top: .4rem;
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-}
-.merge-hint button { font: inherit; border: none; background: none; color: var(--accent); cursor: pointer; text-decoration: underline; padding: 0; }
-
-.analysis-panel {
-  position: fixed;
-  top: 3.5rem;
-  right: 1rem;
-  width: 320px;
-  max-height: 70vh;
-  overflow-y: auto;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1rem;
-  box-shadow: 0 8px 30px rgba(0,0,0,.25);
-  z-index: 40;
-  font-size: .86rem;
-}
-.analysis-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .6rem; }
-.analysis-header .close { border: none; background: none; font-size: 1.1rem; cursor: pointer; color: var(--muted); }
-.analysis-panel .muted { color: var(--muted); }
-.analysis-panel .muted.small { font-size: .76rem; margin-top: .6rem; }
-.analysis-panel .by-type { list-style: none; padding: 0; margin: .4rem 0; }
-.analysis-panel .by-type li { padding: .1rem 0; }
-.analysis-panel button {
-  font: inherit;
-  width: 100%;
-  padding: .5rem;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--accent);
-  color: white;
-  cursor: pointer;
-  margin-top: .4rem;
-}
-.analysis-panel button:disabled { opacity: .5; cursor: default; }
-.apply-result { margin-top: .8rem; padding-top: .8rem; border-top: 1px solid var(--border); }
-.apply-result ul { padding-left: 1.1rem; margin: .4rem 0; }
-
-.picker-backdrop {
-  position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.15);
-}
-.entity-picker {
-  width: 300px; max-height: 360px; display: flex; flex-direction: column;
-  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
-  box-shadow: 0 10px 35px rgba(0,0,0,.35); overflow: hidden;
-}
-.entity-picker input {
-  width: 100%; border: none; border-bottom: 1px solid var(--border); border-radius: 0;
-  padding: .6rem .7rem; font: inherit; background: var(--bg); color: var(--fg);
-}
-.entity-picker ul { list-style: none; margin: 0; padding: .3rem; overflow-y: auto; overscroll-behavior: contain; flex: 1; }
-.entity-picker li {
-  display: flex; align-items: center; gap: .5rem; padding: .4rem .5rem;
-  border-radius: 6px; cursor: pointer; font-size: .86rem;
-}
-.entity-picker li:has(.picker-row:hover), .entity-picker .picker-row:focus-visible { background: color-mix(in srgb, CanvasText 8%, transparent); }
-.entity-picker li .swatch { width: .65rem; height: .65rem; border-radius: 50%; flex: none; }
-.entity-picker li .count { margin-left: auto; color: var(--muted); font-size: .76rem; }
-.entity-picker .create-row { color: var(--accent); font-weight: 600; }
-.entity-picker .clear-row { color: var(--danger); border-bottom: 1px solid var(--border); border-radius: 0; margin-bottom: .2rem; }
-.entity-picker li.hint { color: var(--muted); cursor: default; }
-.entity-picker li.hint:hover { background: none; }
-.entity-picker li.anon-slot-row {
-  cursor: default; border-bottom: 1px solid var(--border); border-radius: 0; margin-bottom: .2rem;
-}
-.entity-picker li.anon-slot-row:hover { background: none; }
-.anon-slot-label { color: var(--muted); font-size: .78rem; }
-.anon-slot-btn {
-  font: inherit; width: 1.6rem; height: 1.6rem; border-radius: 50%;
-  border: 1px solid var(--border); background: var(--bg); color: var(--fg);
-  cursor: pointer; padding: 0;
-}
-.anon-slot-btn:hover { background: color-mix(in srgb, CanvasText 12%, transparent); }
-
+.line.dialogue + .line, .line + .line.dialogue { border-top-color: transparent; }
+.line.dim .body { opacity: .3; }
 .body { position: relative; }
-.line-actions {
-  display: none; position: absolute; right: 0; top: -.1rem; gap: .3rem;
+.speaker { text-align: right; font-weight: 600; font-size: .85rem; padding-top: .2rem; }
+.speaker.missing { color: var(--danger); font-weight: 500; font-style: italic; }
+/* A distinct voice with no known identity: a design category, not a defect,
+   so neither the "missing" red nor the bold of a named speaker. */
+.speaker.anonymous { font-weight: 500; font-style: italic; }
+.speaker .method { display: block; font-weight: 400; font-size: .68rem; color: var(--muted); letter-spacing: .02em; }
+.speaker .thinking { font-weight: 500; font-style: italic; opacity: .85; }
+.tag, .tag-select {
+  display: inline-block; font-size: .62rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--muted); margin-right: .6rem; vertical-align: 2px;
 }
-.line:hover .line-actions, .line:focus-within .line-actions { display: flex; }
-.line-actions button {
-  font-size: .72rem; border: 1px solid var(--border); background: var(--panel); color: var(--muted);
-  border-radius: 5px; padding: .1rem .4rem; cursor: pointer;
+.tag-select {
+  font-family: inherit; background: var(--panel); border: 1px solid var(--border);
+  border-radius: .4rem; padding: .05rem .3rem; cursor: pointer;
 }
-.line-actions button:hover { color: var(--fg); }
+mark {
+  background: transparent; color: inherit; font-weight: 600;
+  border-bottom: 2px solid var(--mk, #8a8a8a); padding: 0 1px; cursor: help;
+}
+mark.unresolved { border-bottom-style: dotted; font-weight: 400; }
+mark.dim { opacity: .3; }
+mark.focus { background: color-mix(in srgb, var(--mk, #8a8a8a) 28%, transparent); border-radius: 4px; }
+/* A non-person entity (place/org/item) must look different, not only
+   behave differently in casting: dashed underline instead of solid. */
+mark.not-person { border-bottom-style: dashed; font-style: italic; }
+mark.editable { cursor: pointer; }
+mark.editable:hover { background: color-mix(in srgb, var(--mk, #8a8a8a) 18%, transparent); border-radius: 4px; }
+.speaker.editable { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
 .flag-badge {
   display: inline-block; font-size: .72rem; margin-left: .4rem; cursor: help;
   border-bottom: 1px dashed var(--danger);
 }
-mark.editable { cursor: pointer; }
-mark.editable:hover { filter: brightness(1.3); }
-.speaker.editable { cursor: pointer; text-decoration: underline dotted; }
-#entity-list .speaks { opacity: .55; font-size: .7rem; }
+.line-actions { display: none; position: absolute; right: 0; top: -.35rem; gap: .3rem; }
+.line:hover .line-actions, .line:focus-within .line-actions { display: flex; }
+.line-actions button {
+  font: inherit; font-size: .72rem; border: 1px solid var(--border); background: var(--panel-2);
+  color: var(--muted); border-radius: .45rem; padding: .1rem .5rem; cursor: pointer;
+}
+.line-actions button:hover { color: var(--fg); border-color: var(--accent); }
 
-main { overflow-y: auto; padding: 0; }
-#chapter-nav {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  padding: .5rem 1.2rem;
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  background: var(--bg);
-  z-index: 2;
+/* Cast sidebar (reader + review) */
+.entity-sidebar { display: flex; flex-direction: column; min-height: 0; height: 100%; }
+.entity-sidebar .search { padding: .75rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--panel); z-index: 1; }
+.entity-sidebar .search input {
+  width: 100%; height: 2.25rem; padding: 0 .75rem; border-radius: .6rem;
+  border: 1px solid var(--border); background: var(--bg); color: var(--fg); font: inherit; font-size: .9rem;
 }
-#chapter-nav button {
-  font: inherit;
-  border: 1px solid var(--border);
-  background: var(--panel);
-  color: var(--fg);
-  border-radius: 6px;
-  padding: .3rem .6rem;
-  cursor: pointer;
+#entity-list { list-style: none; margin: 0; padding: .4rem; overflow-y: auto; flex: 1; }
+#entity-list li {
+  display: flex; align-items: center; gap: .5rem; padding: .45rem .6rem;
+  border-radius: .6rem; font-size: .88rem;
 }
-#chapter-nav button:disabled { opacity: .35; cursor: default; }
-#chapter-nav select { flex: none; }
-#chapter-nav .cov { margin-left: auto; font-size: .78rem; color: var(--muted); }
+#entity-list li:hover, #entity-list li:focus-within { background: var(--panel-2); }
+#entity-list li.active { background: rgb(var(--c-primary) / .18); box-shadow: inset 0 0 0 1px rgb(var(--c-accent) / .35); }
+#entity-list .swatch { width: .6rem; height: .6rem; border-radius: 50%; flex: none; }
+#entity-list .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#entity-list .name.not-person { font-style: italic; opacity: .8; }
+#entity-list .kind-badge {
+  font-size: .6rem; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--muted); border: 1px solid var(--border); border-radius: .3rem; padding: 0 .3em; flex: none;
+}
+#entity-list .count { color: var(--muted); font-size: .75rem; font-variant-numeric: tabular-nums; }
+#entity-list .speaks { color: var(--accent); font-size: .55rem; }
+#entity-list li.merge-source { background: color-mix(in srgb, var(--danger) 18%, transparent); }
+#entity-list li.merge-target:hover { background: color-mix(in srgb, var(--success) 18%, transparent); }
+#entity-list .merge-icon {
+  border: none; background: transparent; color: var(--muted); cursor: pointer;
+  font-size: .9rem; padding: .1rem .3rem; border-radius: .4rem;
+}
+#entity-list .merge-icon:hover { background: var(--border); color: var(--fg); }
+.merge-hint { font-size: .78rem; color: var(--muted); padding-top: .5rem; display: flex; align-items: center; gap: .5rem; }
+.merge-hint button { font: inherit; border: none; background: none; color: var(--accent); cursor: pointer; text-decoration: underline; padding: 0; }
 
-#script { max-width: 780px; margin: 0 auto; padding: 1.4rem 1.4rem 6rem; }
-.line { display: grid; grid-template-columns: 9.5rem 1fr; gap: .8rem; padding: .55rem 0; }
-.line + .line { border-top: 1px solid color-mix(in srgb, CanvasText 8%, transparent); }
-.line.dialogue {
-  background: color-mix(in srgb, var(--accent) 6%, transparent);
-  border-radius: 8px;
-  padding-inline: .6rem;
-  margin-inline: -.6rem;
-}
-.line.dim .body { opacity: .35; }
-.speaker { text-align: right; font-weight: 600; font-size: .86rem; padding-top: .05rem; }
-.speaker.missing { color: var(--danger); font-weight: 400; font-style: italic; opacity: .8; }
-/* Distinct voice, not a known identity -- deliberately neither the red
-   "missing" treatment (this isn't a defect, it's a design category) nor bold
-   like a real named speaker (that would overclaim what's actually known). */
-.speaker.anonymous { font-weight: 400; font-style: italic; }
-.speaker .method { display: block; font-weight: 400; font-size: .68rem; color: var(--muted); }
-.speaker .thinking { font-weight: 400; font-style: italic; opacity: .85; }
-.tag {
-  display: inline-block;
-  font-size: .65rem;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-  color: var(--muted);
-  margin-right: .5rem;
-  vertical-align: 1px;
-}
-.tag-select {
-  font: inherit;
-  font-size: .65rem;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-  color: var(--muted);
-  margin-right: .5rem;
-  vertical-align: 1px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 0 .2rem;
-  cursor: pointer;
-}
-
-mark {
-  background: transparent;
-  color: inherit;
-  font-weight: 600;
-  border-bottom: 2px solid var(--mk, #8a8a8a);
-  padding: 0 1px;
-  cursor: help;
-  position: relative;
-}
-mark.unresolved { border-bottom-style: dotted; font-weight: 400; }
-mark.dim { opacity: .3; }
-mark.focus { background: color-mix(in srgb, var(--mk, #8a8a8a) 30%, transparent); border-radius: 3px; }
-/* Section 2.3: a non-person entity (LOCATION/ORGANIZATION/ITEM) must look
-   different here, not just behave differently in voice/panel casting --
-   a square-dash underline instead of the person's solid one. */
-mark.not-person { border-bottom-style: dashed; font-style: italic; }
-
-#tooltip {
-  position: fixed;
-  pointer-events: none;
-  background: var(--fg);
-  color: var(--bg);
-  font-size: .78rem;
-  padding: .3rem .55rem;
-  border-radius: 5px;
-  z-index: 50;
-  max-width: 260px;
-  box-shadow: 0 2px 10px rgba(0,0,0,.25);
-}
-#empty { padding: 3rem; text-align: center; color: var(--muted); }
-
-/* Rail/inspector depth + manuscript-surface tokens (editorial rebuild).
-   Everything below reads --c-* tokens only -- no new hardcoded colors,
-   matching the rest of this file's rule. */
-.rail {
-  border-right: 1px solid var(--border);
-  background: var(--panel);
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-.rail-nav-item {
-  display: flex;
-  align-items: center;
-  gap: .6rem;
-  width: 100%;
-  text-align: left;
-  padding: .55rem .9rem;
-  font: inherit;
-  font-size: .86rem;
-  border: none;
-  border-left: 2px solid transparent;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-}
-.rail-nav-item:hover { color: var(--fg); background: color-mix(in srgb, CanvasText 6%, transparent); }
-.rail-nav-item.active {
-  color: var(--fg);
-  border-left-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-}
-.rail-nav-item .badge-soon {
-  margin-left: auto;
-  font-size: .62rem;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-  color: var(--muted);
-  opacity: .7;
-}
-
-.inspector {
-  border-left: 1px solid var(--border);
-  overflow-y: auto;
-  background: var(--panel);
-  display: flex;
-  flex-direction: column;
-}
-/* Below 1280px, #root drops to two grid columns (rail + workspace) -- this
-   rule must come AFTER .inspector's own `display: flex` above, not just
-   inside a media query, or the later unconditional rule wins the cascade
-   regardless of which one the media condition matches (found via manual
-   Playwright verification: the inspector was falling into a stray
-   implicit grid row instead of actually hiding). */
-@media (max-width: 1279px) {
-  .inspector { display: none; }
-}
-
-@media (min-width: 1280px) {
-  .depth-hover {
-    transition: transform 150ms ease-out, box-shadow 150ms ease-out;
-  }
-  .depth-hover:hover {
-    transform: translateY(-2px);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .depth-hover { transition: none; }
-  .depth-hover:hover { transform: none; }
-}
-
-/* Accessibility pass (web-design-guidelines audit, 2026-09-26). */
-
-/* Rows that were clickable <li>s are now <button>s: reset the UA button
-   chrome so they look exactly as the rows did. */
+/* Rows that were clickable <li>s are <button>s (keyboard access pass,
+   2026-09-26); reset the UA chrome so they look like rows. */
 .entity-row, .picker-row {
   all: unset; box-sizing: border-box;
-  display: flex; align-items: center; gap: .5rem; flex: 1; min-width: 0;
-  cursor: pointer;
+  display: flex; align-items: center; gap: .5rem; flex: 1; min-width: 0; cursor: pointer;
 }
 .entity-row:disabled { cursor: default; }
-.picker-row { width: 100%; padding: .4rem .5rem; border-radius: 6px; }
-.picker-row .picker-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.entity-picker li:has(.picker-row) { padding: 0; }
-#entity-list .count, .entity-picker .count, #chapter-nav .cov { font-variant-numeric: tabular-nums; }
 
-/* One visible focus ring for every legacy control (the Tailwind components
-   carry their own focus-visible:ring). */
-.entity-row:focus-visible, .picker-row:focus-visible, .anon-slot-btn:focus-visible,
-.merge-icon:focus-visible, .merge-hint button:focus-visible, .line-actions button:focus-visible,
-#chapter-nav button:focus-visible, #chapter-nav select:focus-visible, header button:focus-visible,
-select:focus-visible, input[type=search]:focus-visible, .tag-select:focus-visible,
-mark.editable:focus-visible, .speaker.editable:focus-visible, .analysis-panel button:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 3px;
+/* Entity picker (popover) */
+.picker-backdrop { position: fixed; inset: 0; z-index: 60; background: rgb(0 0 0 / .35); }
+.entity-picker {
+  width: 320px; max-height: 380px; display: flex; flex-direction: column;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 1rem;
+  box-shadow: 0 24px 60px rgb(0 0 0 / .5); overflow: hidden;
+}
+.entity-picker input {
+  width: 100%; border: none; border-bottom: 1px solid var(--border); border-radius: 0;
+  padding: .8rem .9rem; font: inherit; background: transparent; color: var(--fg);
+}
+.entity-picker input:focus-visible { outline: none; box-shadow: inset 0 -2px 0 var(--accent); }
+.entity-picker ul { list-style: none; margin: 0; padding: .35rem; overflow-y: auto; overscroll-behavior: contain; flex: 1; }
+.entity-picker li { display: flex; align-items: center; gap: .5rem; border-radius: .6rem; font-size: .88rem; }
+.picker-row { width: 100%; padding: .5rem .6rem; border-radius: .6rem; }
+.entity-picker li:has(.picker-row:hover), .entity-picker .picker-row:focus-visible { background: var(--panel-2); }
+.picker-row .picker-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.entity-picker .swatch { width: .6rem; height: .6rem; border-radius: 50%; flex: none; }
+.entity-picker .count { margin-left: auto; color: var(--muted); font-size: .75rem; font-variant-numeric: tabular-nums; }
+.entity-picker .create-row { color: var(--accent); font-weight: 600; }
+.entity-picker .clear-row { color: var(--danger); }
+.entity-picker li.hint { color: var(--muted); padding: .6rem; }
+.entity-picker li.anon-slot-row { padding: .45rem .6rem; gap: .35rem; border-bottom: 1px solid var(--border); border-radius: 0; margin-bottom: .2rem; }
+.anon-slot-label { color: var(--muted); font-size: .78rem; margin-right: auto; }
+.anon-slot-btn {
+  width: 1.75rem; height: 1.75rem; border-radius: .45rem; border: 1px solid var(--border);
+  background: var(--bg); color: var(--fg); cursor: pointer; font: inherit; font-size: .8rem;
+}
+.anon-slot-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Corrections panel (review) */
+.analysis-panel {
+  position: fixed; top: 5rem; right: 1.25rem; width: 340px; z-index: 40;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 1rem;
+  padding: 1rem 1.1rem; font-size: .88rem; box-shadow: 0 24px 60px rgb(0 0 0 / .5);
+  max-height: calc(100vh - 7rem); overflow-y: auto; overscroll-behavior: contain;
+}
+.analysis-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .6rem; }
+.analysis-header .close { border: none; background: none; font-size: 1.2rem; cursor: pointer; color: var(--muted); border-radius: .4rem; }
+.analysis-panel .muted { color: var(--muted); }
+.analysis-panel .muted.small { font-size: .76rem; margin-top: .6rem; }
+.analysis-panel .by-type { list-style: none; padding: 0; margin: .4rem 0; }
+.analysis-panel .by-type li { padding: .1rem 0; font-variant-numeric: tabular-nums; }
+.analysis-panel button:not(.close) {
+  width: 100%; margin-top: .5rem; padding: .6rem .8rem; border-radius: .7rem; border: none;
+  background: rgb(var(--c-primary)); color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+}
+.analysis-panel button:disabled { opacity: .45; cursor: default; }
+.apply-result { margin-top: .8rem; padding-top: .8rem; border-top: 1px solid var(--border); }
+.apply-result ul { padding-left: 1.1rem; margin: .4rem 0; }
+
+/* Hover tooltip on mentions */
+#tooltip {
+  position: fixed; pointer-events: none; z-index: 70; max-width: 280px;
+  background: var(--fg); color: var(--bg); font-size: .78rem; line-height: 1.4;
+  padding: .4rem .6rem; border-radius: .5rem; box-shadow: 0 8px 24px rgb(0 0 0 / .35);
 }
 
-/* Every animation, not only .depth-hover, honours reduced motion. */
+/* Motion: every animation honours reduced motion. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 1ms !important;
@@ -510,25 +296,3 @@ mark.editable:focus-visible, .speaker.editable:focus-visible, .analysis-panel bu
     scroll-behavior: auto !important;
   }
 }
-
-html { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-
-/* Header (2026-09-26 render check at 1440px): the stats strip squeezed its
-   siblings until the novel title, "Live edit", "Back to viewer" and the
-   chapter count each broke onto two lines, and "20% seen / once" split
-   mid-label while its neighbours did not. Controls now never wrap; each stat
-   is deliberately a number stacked over a one-line label; and the strip is
-   the only item allowed to shrink: it fades out at its right edge and
-   scrolls sideways, rather than cutting a label mid-word or breaking the
-   controls. */
-header > * { white-space: nowrap; flex-shrink: 0; }
-header > .stats-strip {
-  flex-shrink: 1; min-width: 0;
-  overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
-  padding-right: 1.5rem;
-  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 1.5rem), transparent);
-  mask-image: linear-gradient(to right, #000 calc(100% - 1.5rem), transparent);
-}
-header > .stats-strip::-webkit-scrollbar { display: none; }
-.stats-strip > div { display: flex; flex-direction: column; line-height: 1.3; white-space: nowrap; }
-.stats-strip b { font-size: .9rem; font-weight: 600; }

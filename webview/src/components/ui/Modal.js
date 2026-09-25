@@ -26,11 +26,11 @@ export default function Modal({ open, onClose, title, children, footer }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overscroll-contain bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center overscroll-contain bg-black/60 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-sm border border-border bg-surface shadow-popover animate-reveal focus:outline-none"
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-2xl border border-border bg-surface shadow-popover animate-reveal focus:outline-none"
         onClick={(e) => e.stopPropagation()}
         ref={panelRef}
         tabIndex={-1}
@@ -40,7 +40,7 @@ export default function Modal({ open, onClose, title, children, footer }) {
       >
         {title && (
           <div className="border-b border-border px-5 py-4">
-            <h2 id={titleId} className="font-display text-xl text-text">{title}</h2>
+            <h2 id={titleId} className="font-display text-xl font-semibold text-text">{title}</h2>
           </div>
         )}
         <div className="p-5">{children}</div>
