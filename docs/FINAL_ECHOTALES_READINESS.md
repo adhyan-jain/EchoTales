@@ -21,7 +21,7 @@ Real data, with a persisted artifact:
 - Deterministic evidence rules make every link; hard constraints block 3,072 of 16,538 pairs.
 - Gazetteer compounding: removing it halves forced links (1,376 → 704).
 - Observer-scoped knowledge state: reader 2 / witness 1 / non-witness 0 aliases, and the witness 0 / 1 / 1 asking from ch150 / 166 / 200. Same identity in every query; 6/6 checks pass.
-- Observer-conditioned visual generation on a real engine: reader 5/5 conditioned panels, non-witness 0/5.
+- Observer-conditioned visual generation on a real engine: reader 5/5 conditioned panels, non-reader 0/5.
 - Sequential Self/Persona: one Self, two disjoint bodies.
 - Read-set-derived cache invalidation (controlled tests).
 - Same-range baseline comparison, cost and coverage.
@@ -68,7 +68,7 @@ Real data, with a persisted artifact:
 | Baselines ch1–10, B³ recall: A / B / EchoTales | 0.2% / 4.6% / **78.9%** (1 / 177 / 0 resolution calls) | Table 7 |
 | Ablation, 16,538 pairs: force-link / blocked / scorer links | 1,376 / 3,072 / 0 | Table 6 |
 | Observer query: reader / witness / non-witness; witness ch150 / 166 / 200 | 2 / 1 / 0; 0 / 1 / 1 | `observer_evidence.json` |
-| Observer render: reader / non-witness conditioned panels | 5/5 / 0/5 | `OBSERVER_CONTRAST_VALIDATION.md` |
+| Observer render: reader / non-reader conditioned panels | 5/5 / 0/5 | `OBSERVER_CONTRAST_VALIDATION.md` |
 | Speaker attribution coverage | 46.1% (2,392 / 5,192) | `CANONICAL_RUN.md` |
 | LOTM ch1–3: B³ recall; CEAF-e F1 | 62.3%; 41.4 | LOTM results dir |
 
@@ -92,9 +92,13 @@ It defaults to the canonical database and exited 0 on 2026-09-25. Rebuilding the
 
 ## H. Patent / invention disclosure status
 
-`docs/IP/ECHOTALES_INVENTION_DISCLOSURE_DRAFT.md` (gitignored) is restructured around ten mechanisms, each labelled, with the observer evidence as the centrepiece.
-- **Blocking before filing:** the repository has been public since 2026-08-07, a timing question for counsel. Narrative Graph Prompting, StoryWeaver and CORE-KG are unread. Temporal-KG literature has not been searched.
-- No wording claims novelty or patentability.
+A prior-art and disclosure due-diligence pass was completed on 2026-09-25. Its results are kept **privately** in `docs/IP/` (gitignored) and handed to the VIT IPR cell. They are deliberately not summarised here, because this file is tracked in a public repository.
+
+What can be stated publicly:
+- The public repository (activity from 2026-08-06) already describes the system's core concepts.
+- Close third-party prior art exists for most of them.
+- Any filing decision rests with the IPR cell.
+- **Do not push this branch or post a preprint until that decision is made.** The branch contains implementation not yet public.
 
 ## I. Course-report status
 

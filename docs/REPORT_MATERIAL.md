@@ -225,7 +225,7 @@ LLM-drafted silver reference set, unless stated otherwise.
 - **Retrieval (Table 5, Figure 8):** given the reference span, production context, recall@1/5/10/20 = 67.4 / 87.0 / **89.1** / 95.7% (n=46; titles 88.9% @10, n=9).
 - **Resolution layers:** deterministic rules make every link; the learned scorer makes none (maximum score 0.41 against a 0.80 threshold) and is reported as optional/experimental.
 - **Observer-conditioned state** (`data/eval/observer_evidence.json`): the same fact about the same character is visible to the reader (2 aliases), a witness (1) and a non-witness (0). The witness sees 0 / 1 / 1 aliases asking from ch150 / 166 / 200.
-- **Observer-conditioned generation:** reader 5/5 reference-conditioned panels naming the character; non-witness 0/5, "a figure", one person.
+- **Observer-conditioned generation:** reader 5/5 reference-conditioned panels naming the character; non-reader 0/5, "a figure", one person.
 - **One detection bug found and fixed:** "Wang Er" was invisible for 199 chapters (demonstrative idiom); CEAF-e F1 63.1 → 67.4.
 - **Speaker attribution:** 46.1% of speech spans. A pronoun pass that inflated this to 63.0% was measured at 2/15 correct and removed from the default. The LLM tier is 12 right / 16 wrong and unstable across runs.
 - **Generalisation (LOTM ch1–3):** B³ recall 62.3%, CEAF-e F1 41.4. The transmigrated protagonist is split into two Selves.

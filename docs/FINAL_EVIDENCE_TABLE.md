@@ -49,7 +49,7 @@ Status key:
 | Observer-scoped knowledge | `data/eval/observer_evidence.json` | RI, Bai Ning Bing, reveal ch166 | aliases by observer | reader 2 / witness 1 / non-witness 0 | 12 observations total, 3 reveals |
 | Knowledge time per observer | same | same witness, asking from ch150/166/200 | aliases | **0 / 1 / 1** | same |
 | Same fact, same identity, visibility differs | same (6 checks, all pass); `test_observer_axis.py::test_one_fact_one_identity_visibility_varies` | real + synthetic | identity and read-set checks | pass | — |
-| Observer-conditioned visual generation | `OBSERVER_CONTRAST_VALIDATION.md` | ch169, 5 blocks, NoobAI XL | reference-conditioned panels | reader 5/5, non-witness 0/5; keys differ 10/10 | one chapter; cast-change contrast, not two depictions of one person |
+| Observer-conditioned visual generation | `OBSERVER_CONTRAST_VALIDATION.md` | ch169, 5 blocks, NoobAI XL | reference-conditioned panels | reader 5/5, non-reader 0/5; keys differ 10/10 | one chapter; cast-change contrast, not two depictions of one person |
 | Self/Persona, sequential | `SELF_PERSONA_VALIDATION.md` | RI protagonist | bindings | one Self, two disjoint bodies | one real case |
 | Read-set invalidation | `test_readset_invalidation.py` (5 tests) | synthetic | key change on state change | cast change invalidates; offstage does not | aliases are not in the read set |
 | Baselines, same range | `data/eval/baseline_comparison.json`; Table 7 | RI ch1–10, 356 silver mentions | calls; B³ recall | A: 1 call, 0.2%; B: 177 calls, 4.6%; EchoTales: 0 resolution calls, **78.9%** | surface-trivial range, so this measures extraction coverage; an earlier table compared against the full-volume 96.3% by mistake |
@@ -105,3 +105,11 @@ Status key:
 | Deterministic evidence rules (gazetteer, declaration, name containment, relational co-presence) | force a link | 1,376 (8.3%): **every link made** |
 | Retrieval | candidate generation | Recall@10 89.1% given the span |
 | Learned scorer | optional ranking and threshold | 12,090 pairs reach it; **0 links**; max score 0.41 against a 0.80 threshold. **OPTIONAL / EXPERIMENTAL** |
+
+## 5. Prior-art status (paper-side summary)
+
+The paper-side comparison is `docs/paper/RELATED_WORK_FINAL.md` and `CONTRIBUTION_MATRIX.md`. In short:
+- observer-scoped knowledge, time-scoped narrative state, incremental resolution and state-driven story visualisation are all crowded research areas;
+- EchoTales' distinction is the pairing of time- and observer-scoped *identity* with generation, and its empirical findings.
+
+The patent-side analysis is private (`docs/IP/`, not tracked).
