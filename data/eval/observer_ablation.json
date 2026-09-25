@@ -1,0 +1,159 @@
+{
+  "db": "data/reverend-insanity.db",
+  "rules": "(fixed here, in code, before any number was computed):\n\n  Reveal events   every (fact, learned chapter r) in `observation`; the fact is\n                  an alias of a target Self.\n  Observers       every Self recorded as observing that fact (witnesses), plus\n                  the 20 most-mentioned Selves that are neither witnesses of\n                  that fact nor its target (non-witnesses).\n  Positions       r-1, r, 200 (story position = knowledge position unless an\n                  ablation overrides knowledge).\n  Should-know     observer o should resolve alias a at position p iff o has an\n                  observation of that fact with learned_chapter <= p. This is\n                  the system's own record; whether the record is *right* is the\n                  witness-derivation precision question (human review), not\n                  this experiment.\n  Leak            a is returned for (o, p) although o should not know it.\n  Under-exposure  a is not returned although o should know it.\n  Wrong exposure  any returned alias that is not an alias binding of the target.\n  Generation leak the render plan built for o at chapter p, with the target in\n                  the cast, carries the target's persona (identity-conditioned\n                  drawing) although o should not know the alias.\n\nConditions\n  FULL  state_of(target, position=p, observer=o)\n  A1    observer collapsed: state_of(..., observer=READER)   (\"who\" axis removed)\n  A2    knowledge time removed: state_of(..., observer=o, knowledge_pos=+inf)\n        (\"when\" axis removed; the observer filter itself is kept)\n\nBecause leak is defined against the system's own records, FULL scores 0 by\nconstruction on the state level; the experiment measures how much output\nchanges when an axis is removed, which is the causal question.",
+  "reveal_events": 3,
+  "total": {
+    "queries": 228,
+    "should_know": 34,
+    "FULL": {
+      "leak": 0,
+      "under_exposure": 9,
+      "wrong_exposure": 0,
+      "generation_leak": 0,
+      "generation_drawn_when_known": 0
+    },
+    "A1": {
+      "leak": 194,
+      "under_exposure": 0,
+      "wrong_exposure": 0,
+      "generation_leak": 194,
+      "generation_drawn_when_known": 34
+    },
+    "A2": {
+      "leak": 14,
+      "under_exposure": 0,
+      "wrong_exposure": 0,
+      "generation_leak": 0,
+      "generation_drawn_when_known": 0
+    }
+  },
+  "by_event": {
+    "alias:reverend-insanity:self:0035e71331:bai ning bing@166": {
+      "queries": 72,
+      "should_know": 7,
+      "FULL": {
+        "leak": 0,
+        "under_exposure": 0,
+        "wrong_exposure": 0,
+        "generation_leak": 0,
+        "generation_drawn_when_known": 0
+      },
+      "A1": {
+        "leak": 65,
+        "under_exposure": 0,
+        "wrong_exposure": 0,
+        "generation_leak": 65,
+        "generation_drawn_when_known": 7
+      },
+      "A2": {
+        "leak": 5,
+        "under_exposure": 0,
+        "wrong_exposure": 0,
+        "generation_leak": 0,
+        "generation_drawn_when_known": 0
+      }
+    },
+    "alias:reverend-insanity:self:0035e71331:bai ning bing@197": {
+      "queries": 72,
+      "should_know": 11,
+      "FULL": {
+        "leak": 0,
+        "under_exposure": 1,
+        "wrong_exposure": 0,
+        "generation_leak": 0,
+        "generation_drawn_when_known": 0
+      },
+      "A1": {
+        "leak": 61,
+        "under_exposure": 0,
+        "wrong_exposure": 0,
+        "generation_leak": 61,
+        "generation_drawn_when_known": 11
+      },
+      "A2": {
+        "leak": 1,
+        "under_exposure": 0,
+        "wrong_exposure": 0,
+        "generation_leak": 0,
+        "generation_drawn_when_known": 0
+      }
+    },
+    "alias:reverend-insanity:self:a8bdaf3bfb:gu yue yao ji@178": {
+      "queries": 84,
+      "should_know": 16,
+      "FULL": {
+        "leak": 0,
+        "under_exposure": 8,
+        "wrong_exposure": 0,
+        "generation_leak": 0,
+        "generation_drawn_when_known": 0
+      },
+      "A1": {
+        "leak": 68,
+        "under_exposure": 0,
+        "wrong_exposure": 0,
+        "generation_leak": 68,
+        "generation_drawn_when_known": 16
+      },
+      "A2": {
+        "leak": 8,
+        "under_exposure": 0,
+        "wrong_exposure": 0,
+        "generation_leak": 0,
+        "generation_drawn_when_known": 0
+      }
+    }
+  },
+  "by_observer_class": {
+    "non_witness": {
+      "queries": 180,
+      "should_know": 0,
+      "FULL": {
+        "leak": 0,
+        "under_exposure": 0,
+        "wrong_exposure": 0,
+        "generation_leak": 0,
+        "generation_drawn_when_known": 0
+      },
+      "A1": {
+        "leak": 180,
+        "under_exposure": 0,
+        "wrong_exposure": 0,
+        "generation_leak": 180,
+        "generation_drawn_when_known": 0
+      },
+      "A2": {
+        "leak": 0,
+        "under_exposure": 0,
+        "wrong_exposure": 0,
+        "generation_leak": 0,
+        "generation_drawn_when_known": 0
+      }
+    },
+    "witness": {
+      "queries": 48,
+      "should_know": 34,
+      "FULL": {
+        "leak": 0,
+        "under_exposure": 9,
+        "wrong_exposure": 0,
+        "generation_leak": 0,
+        "generation_drawn_when_known": 0
+      },
+      "A1": {
+        "leak": 14,
+        "under_exposure": 0,
+        "wrong_exposure": 0,
+        "generation_leak": 14,
+        "generation_drawn_when_known": 34
+      },
+      "A2": {
+        "leak": 14,
+        "under_exposure": 0,
+        "wrong_exposure": 0,
+        "generation_leak": 0,
+        "generation_drawn_when_known": 0
+      }
+    }
+  }
+}

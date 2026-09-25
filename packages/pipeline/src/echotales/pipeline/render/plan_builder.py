@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from echotales.core.enums import OBSERVER_READER
+from echotales.core.enums import OBSERVER_READER, TargetKind
 from echotales.core.state import StateResolver
 from echotales.core.store import Store
 from echotales.pipeline.persona.reference_gen import reference_path_for
@@ -84,11 +84,27 @@ def build_render_plan(
     state_parts: list[str] = []
     for self_id in cast_self_ids:
         result = resolver.state_of(self_id, position=chapter)
+        # The drawn persona's own attributes are hashed too. `state_of` on a
+        # Self returns only Self-targeted attributes, and every appearance
+        # attribute in the corpus is Persona-targeted, so before this a hair
+        # or attire change reached neither the digest nor the prompt: the A7
+        # ablation measured 23/23 affected panels served stale by the shipped
+        # key (EVOLUTION 4.91). All bound persona ids stay in the digest on
+        # purpose -- it over-invalidates on a new concurrent body, but keeps a
+        # multi-binding case auditable (see below).
+        drawn_attrs: tuple[tuple[str, str], ...] = ()
+        if result.persona_ids:
+            drawn_attrs = tuple(sorted(
+                (a.key, a.value)
+                for a in store.get_attributes(TargetKind.PERSONA, result.persona_ids[0])
+                if a.is_standing
+            ))
         state_parts.append(
             _digest(
                 self_id,
                 tuple(result.persona_ids),
                 tuple(sorted(result.attributes.items())),
+                drawn_attrs,
             )
         )
         if not result.persona_ids:

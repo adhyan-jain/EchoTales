@@ -187,3 +187,14 @@ graphify-out/
 # does not undo one that already happened. The document exists to be handed
 # to VIT for filing, by a route that is not this remote.
 docs/IP/
+
+# Human-review sheets (scripts/prepare_human_review.py). They carry short
+# windows of the copyrighted novel text for the reviewer, so they stay local
+# like data/review/ -- share them only with the review team.
+data/eval/human_review_*.csv
+# External benchmark corpora (LitBank etc.) -- redistributed under their own
+# licences; re-download rather than commit.
+data/external/
+# Per-document compounding curves written as a side effect of the LitBank
+# run (each excerpt is its own one-chapter "novel"); meaningless individually.
+data/eval/compounding/litbank-*.json

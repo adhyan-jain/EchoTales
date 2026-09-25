@@ -1,0 +1,490 @@
+{
+  "dataset": "LitBank coreference (Bamman, Lewke & Mansoor, LREC 2020), CC BY 4.0",
+  "docs": 100,
+  "subset_seed": null,
+  "model": "qwen2.5:7b via local ollama (NER only)",
+  "runtime_s": 1001.3,
+  "sanity_gold_vs_gold_standard_P1": {
+    "MUC_P": 100.0,
+    "MUC_R": 100.0,
+    "MUC_F1": 100.0,
+    "B3_P": 100.0,
+    "B3_R": 100.0,
+    "B3_F1": 100.0,
+    "CEAFe_P": 100.0,
+    "CEAFe_R": 100.0,
+    "CEAFe_F1": 100.0,
+    "CoNLL_F1": 100.0,
+    "gold_mentions": 24180,
+    "system_mentions": 24180,
+    "exact_span_matches": 24180
+  },
+  "protocols": {
+    "P1_full_person_key": {
+      "key_restricted": {
+        "MUC_P": 97.76,
+        "MUC_R": 3.18,
+        "MUC_F1": 6.17,
+        "B3_P": 99.81,
+        "B3_R": 21.09,
+        "B3_F1": 34.82,
+        "CEAFe_P": 28.44,
+        "CEAFe_R": 2.01,
+        "CEAFe_F1": 3.76,
+        "CoNLL_F1": 14.92,
+        "gold_mentions": 24180,
+        "system_mentions": 977,
+        "exact_span_matches": 977
+      },
+      "standard": {
+        "MUC_P": 51.65,
+        "MUC_R": 3.18,
+        "MUC_F1": 6.0,
+        "B3_P": 97.2,
+        "B3_R": 23.98,
+        "B3_F1": 38.48,
+        "CEAFe_P": 13.43,
+        "CEAFe_R": 1.93,
+        "CEAFe_F1": 3.38,
+        "CoNLL_F1": 15.95,
+        "gold_mentions": 24180,
+        "system_mentions": 1898,
+        "exact_span_matches": 977
+      }
+    },
+    "P2_proper_name_mentions_only": {
+      "key_restricted": {
+        "MUC_P": 98.96,
+        "MUC_R": 29.16,
+        "MUC_F1": 45.05,
+        "B3_P": 99.68,
+        "B3_R": 43.12,
+        "B3_F1": 60.2,
+        "CEAFe_P": 57.39,
+        "CEAFe_R": 25.08,
+        "CEAFe_F1": 34.9,
+        "CoNLL_F1": 46.72,
+        "gold_mentions": 2665,
+        "system_mentions": 887,
+        "exact_span_matches": 887
+      },
+      "standard": {
+        "MUC_P": 48.02,
+        "MUC_R": 29.16,
+        "MUC_F1": 36.29,
+        "B3_P": 80.54,
+        "B3_R": 58.76,
+        "B3_F1": 67.95,
+        "CEAFe_P": 23.11,
+        "CEAFe_R": 23.07,
+        "CEAFe_F1": 23.09,
+        "CoNLL_F1": 42.44,
+        "gold_mentions": 2665,
+        "system_mentions": 1898,
+        "exact_span_matches": 887
+      }
+    }
+  },
+  "per_doc": {
+    "1023_bleak_house": {
+      "key_mentions": 256,
+      "system_mentions": 13
+    },
+    "105_persuasion": {
+      "key_mentions": 286,
+      "system_mentions": 27
+    },
+    "1064_the_masque_of_the_red_death": {
+      "key_mentions": 131,
+      "system_mentions": 2
+    },
+    "110_tess_of_the_durbervilles_a_pure_woman": {
+      "key_mentions": 308,
+      "system_mentions": 12
+    },
+    "11231_bartleby_the_scrivener_a_story_of_wallstreet": {
+      "key_mentions": 306,
+      "system_mentions": 26
+    },
+    "113_the_secret_garden": {
+      "key_mentions": 329,
+      "system_mentions": 20
+    },
+    "1155_the_secret_adversary": {
+      "key_mentions": 290,
+      "system_mentions": 36
+    },
+    "11_alices_adventures_in_wonderland": {
+      "key_mentions": 226,
+      "system_mentions": 3
+    },
+    "1206_the_flying_u_ranch": {
+      "key_mentions": 237,
+      "system_mentions": 34
+    },
+    "120_treasure_island": {
+      "key_mentions": 345,
+      "system_mentions": 0
+    },
+    "1245_night_and_day": {
+      "key_mentions": 318,
+      "system_mentions": 39
+    },
+    "1260_jane_eyre_an_autobiography": {
+      "key_mentions": 295,
+      "system_mentions": 20
+    },
+    "12677_personality_plus_some_experiences_of_emma_mcchesney_and_her_son_jock": {
+      "key_mentions": 275,
+      "system_mentions": 26
+    },
+    "1327_elizabeth_and_her_german_garden": {
+      "key_mentions": 197,
+      "system_mentions": 0
+    },
+    "1342_pride_and_prejudice": {
+      "key_mentions": 370,
+      "system_mentions": 13
+    },
+    "1400_great_expectations": {
+      "key_mentions": 354,
+      "system_mentions": 20
+    },
+    "145_middlemarch": {
+      "key_mentions": 256,
+      "system_mentions": 37
+    },
+    "15265_the_quest_of_the_silver_fleece_a_novel": {
+      "key_mentions": 231,
+      "system_mentions": 3
+    },
+    "155_the_moonstone": {
+      "key_mentions": 273,
+      "system_mentions": 15
+    },
+    "158_emma": {
+      "key_mentions": 319,
+      "system_mentions": 19
+    },
+    "160_the_awakening_and_selected_short_stories": {
+      "key_mentions": 301,
+      "system_mentions": 22
+    },
+    "16357_mary_a_fiction": {
+      "key_mentions": 278,
+      "system_mentions": 7
+    },
+    "1661_the_adventures_of_sherlock_holmes": {
+      "key_mentions": 287,
+      "system_mentions": 1
+    },
+    "1695_the_man_who_was_thursday_a_nightmare": {
+      "key_mentions": 253,
+      "system_mentions": 19
+    },
+    "171_charlotte_temple": {
+      "key_mentions": 310,
+      "system_mentions": 24
+    },
+    "174_the_picture_of_dorian_gray": {
+      "key_mentions": 284,
+      "system_mentions": 16
+    },
+    "18581_adrift_in_new_york_tom_and_florence_braving_the_world": {
+      "key_mentions": 355,
+      "system_mentions": 68
+    },
+    "2005_piccadilly_jim": {
+      "key_mentions": 299,
+      "system_mentions": 15
+    },
+    "2084_the_way_of_all_flesh": {
+      "key_mentions": 340,
+      "system_mentions": 11
+    },
+    "208_daisy_miller_a_study": {
+      "key_mentions": 314,
+      "system_mentions": 21
+    },
+    "2095_clotelle_a_tale_of_the_southern_states": {
+      "key_mentions": 316,
+      "system_mentions": 28
+    },
+    "209_the_turn_of_the_screw": {
+      "key_mentions": 269,
+      "system_mentions": 7
+    },
+    "215_the_call_of_the_wild": {
+      "key_mentions": 319,
+      "system_mentions": 27
+    },
+    "2166_king_solomons_mines": {
+      "key_mentions": 301,
+      "system_mentions": 10
+    },
+    "217_sons_and_lovers": {
+      "key_mentions": 298,
+      "system_mentions": 7
+    },
+    "219_heart_of_darkness": {
+      "key_mentions": 233,
+      "system_mentions": 8
+    },
+    "233_sister_carrie_a_novel": {
+      "key_mentions": 250,
+      "system_mentions": 1
+    },
+    "238_dear_enemy": {
+      "key_mentions": 328,
+      "system_mentions": 22
+    },
+    "2489_moby_dick": {
+      "key_mentions": 300,
+      "system_mentions": 1
+    },
+    "24_o_pioneers": {
+      "key_mentions": 334,
+      "system_mentions": 21
+    },
+    "2641_a_room_with_a_view": {
+      "key_mentions": 320,
+      "system_mentions": 47
+    },
+    "271_black_beauty": {
+      "key_mentions": 350,
+      "system_mentions": 11
+    },
+    "2775_the_good_soldier": {
+      "key_mentions": 314,
+      "system_mentions": 25
+    },
+    "27_far_from_the_madding_crowd": {
+      "key_mentions": 238,
+      "system_mentions": 14
+    },
+    "2807_to_have_and_to_hold": {
+      "key_mentions": 316,
+      "system_mentions": 17
+    },
+    "2814_dubliners": {
+      "key_mentions": 333,
+      "system_mentions": 8
+    },
+    "2852_the_hound_of_the_baskervilles": {
+      "key_mentions": 290,
+      "system_mentions": 5
+    },
+    "2891_howards_end": {
+      "key_mentions": 332,
+      "system_mentions": 36
+    },
+    "3268_the_mysteries_of_udolpho": {
+      "key_mentions": 223,
+      "system_mentions": 0
+    },
+    "32_herland": {
+      "key_mentions": 305,
+      "system_mentions": 22
+    },
+    "33_the_scarlet_letter": {
+      "key_mentions": 216,
+      "system_mentions": 0
+    },
+    "3457_the_man_of_the_forest": {
+      "key_mentions": 244,
+      "system_mentions": 44
+    },
+    "345_dracula": {
+      "key_mentions": 340,
+      "system_mentions": 8
+    },
+    "351_of_human_bondage": {
+      "key_mentions": 393,
+      "system_mentions": 45
+    },
+    "367_country_of_the_pointed_firs": {
+      "key_mentions": 206,
+      "system_mentions": 15
+    },
+    "36_the_war_of_the_worlds": {
+      "key_mentions": 218,
+      "system_mentions": 4
+    },
+    "4051_lady_bridget_in_the_nevernever_land_a_story_of_australian_life": {
+      "key_mentions": 215,
+      "system_mentions": 26
+    },
+    "41286_miss_marjoribanks": {
+      "key_mentions": 350,
+      "system_mentions": 27
+    },
+    "41_the_legend_of_sleepy_hollow": {
+      "key_mentions": 247,
+      "system_mentions": 2
+    },
+    "4217_a_portrait_of_the_artist_as_a_young_man": {
+      "key_mentions": 316,
+      "system_mentions": 22
+    },
+    "4276_north_and_south": {
+      "key_mentions": 320,
+      "system_mentions": 77
+    },
+    "4300_ulysses": {
+      "key_mentions": 361,
+      "system_mentions": 46
+    },
+    "432_the_ambassadors": {
+      "key_mentions": 287,
+      "system_mentions": 18
+    },
+    "434_the_circular_staircase": {
+      "key_mentions": 305,
+      "system_mentions": 38
+    },
+    "44_the_song_of_the_lark": {
+      "key_mentions": 301,
+      "system_mentions": 15
+    },
+    "45_anne_of_green_gables": {
+      "key_mentions": 296,
+      "system_mentions": 11
+    },
+    "472_the_house_behind_the_cedars": {
+      "key_mentions": 227,
+      "system_mentions": 17
+    },
+    "502_desert_gold": {
+      "key_mentions": 270,
+      "system_mentions": 39
+    },
+    "514_little_women": {
+      "key_mentions": 288,
+      "system_mentions": 51
+    },
+    "521_the_life_and_adventures_of_robinson_crusoe": {
+      "key_mentions": 352,
+      "system_mentions": 1
+    },
+    "5230_the_invisible_man_a_grotesque_romance": {
+      "key_mentions": 275,
+      "system_mentions": 19
+    },
+    "5348_ragged_dick_or_street_life_in_new_york_with_the_bootblacks": {
+      "key_mentions": 320,
+      "system_mentions": 47
+    },
+    "541_the_age_of_innocence": {
+      "key_mentions": 231,
+      "system_mentions": 21
+    },
+    "543_main_street": {
+      "key_mentions": 342,
+      "system_mentions": 14
+    },
+    "550_silas_marner": {
+      "key_mentions": 251,
+      "system_mentions": 8
+    },
+    "599_vanity_fair": {
+      "key_mentions": 285,
+      "system_mentions": 60
+    },
+    "6053_evelina_or_the_history_of_a_young_ladys_entrance_into_the_world": {
+      "key_mentions": 353,
+      "system_mentions": 38
+    },
+    "60_the_scarlet_pimpernel": {
+      "key_mentions": 265,
+      "system_mentions": 23
+    },
+    "62_a_princess_of_mars": {
+      "key_mentions": 297,
+      "system_mentions": 1
+    },
+    "6593_history_of_tom_jones_a_foundling": {
+      "key_mentions": 219,
+      "system_mentions": 12
+    },
+    "711_allan_quatermain": {
+      "key_mentions": 282,
+      "system_mentions": 36
+    },
+    "730_oliver_twist": {
+      "key_mentions": 226,
+      "system_mentions": 8
+    },
+    "73_the_red_badge_of_courage_an_episode_of_the_american_civil_war": {
+      "key_mentions": 271,
+      "system_mentions": 0
+    },
+    "74_the_adventures_of_tom_sawyer": {
+      "key_mentions": 288,
+      "system_mentions": 8
+    },
+    "766_david_copperfield": {
+      "key_mentions": 285,
+      "system_mentions": 15
+    },
+    "768_wuthering_heights": {
+      "key_mentions": 233,
+      "system_mentions": 17
+    },
+    "76_adventures_of_huckleberry_finn": {
+      "key_mentions": 294,
+      "system_mentions": 14
+    },
+    "77_the_house_of_the_seven_gables": {
+      "key_mentions": 241,
+      "system_mentions": 13
+    },
+    "78_tarzan_of_the_apes": {
+      "key_mentions": 317,
+      "system_mentions": 10
+    },
+    "805_this_side_of_paradise": {
+      "key_mentions": 315,
+      "system_mentions": 23
+    },
+    "829_gullivers_travels_into_several_remote_nations_of_the_world": {
+      "key_mentions": 501,
+      "system_mentions": 6
+    },
+    "84_frankenstein_or_the_modern_prometheus": {
+      "key_mentions": 381,
+      "system_mentions": 3
+    },
+    "876_life_in_the_ironmills_or_the_korl_woman": {
+      "key_mentions": 261,
+      "system_mentions": 7
+    },
+    "8867_the_magnificent_ambersons": {
+      "key_mentions": 233,
+      "system_mentions": 3
+    },
+    "932_the_fall_of_the_house_of_usher": {
+      "key_mentions": 176,
+      "system_mentions": 3
+    },
+    "940_the_last_of_the_mohicans_a_narrative_of_1757": {
+      "key_mentions": 311,
+      "system_mentions": 6
+    },
+    "95_the_prisoner_of_zenda": {
+      "key_mentions": 357,
+      "system_mentions": 22
+    },
+    "969_the_tenant_of_wildfell_hall": {
+      "key_mentions": 314,
+      "system_mentions": 13
+    },
+    "974_the_secret_agent_a_simple_tale": {
+      "key_mentions": 320,
+      "system_mentions": 28
+    },
+    "9830_the_beautiful_and_damned": {
+      "key_mentions": 315,
+      "system_mentions": 28
+    }
+  }
+}

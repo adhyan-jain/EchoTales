@@ -115,3 +115,46 @@ def test_alias_change_is_not_in_the_read_set(store: Store) -> None:
         target_id="cast", interval=OPEN, learned_at_pos=AT1, observer_id=OBSERVER_READER))
     store.conn.commit()
     assert _key(store) == before
+
+
+def _persona_attr(store: Store, sid: str, key: str, value: str) -> None:
+    store.add_attribute(NOVEL, Attribute(target_kind=TargetKind.PERSONA, target_id=f"{sid}:body1",
+                                         key=key, value=value, interval=OPEN, learned_at_pos=AT1,
+                                         observer_id=OBSERVER_READER))
+    store.conn.commit()
+
+
+def test_an_appearance_change_on_the_drawn_persona_invalidates(store: Store) -> None:
+    """Regression for the A7 finding (EVOLUTION 4.91): appearance attributes
+    live on the Persona, `state_of` on a Self never returns them, and the key
+    used to serve the stale panel after a hair or attire change."""
+    before = _key(store)
+    _persona_attr(store, "cast", "hair_color", "silver")
+    assert _key(store) != before
+
+
+def test_an_appearance_change_on_an_offstage_persona_does_not(store: Store) -> None:
+    before = _key(store)
+    _persona_attr(store, "offstage", "hair_color", "silver")
+    assert _key(store) == before
+
+
+def test_the_a7_harness_reproduces_the_shipped_key(store: Store) -> None:
+    """scripts/a7_cache_ablation.py mirrors the key field-for-field so it can
+    drop layers; condition A must equal the shipped function exactly."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "a7", Path(__file__).resolve().parents[3] / "scripts" / "a7_cache_ablation.py")
+    assert spec and spec.loader
+    a7 = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(a7)
+    plan = build_render_plan(store, NOVEL, chapter=5.0, beat_id="b1", panel_seq=1,
+                             cast_self_ids=["cast"], lead_self_id="cast")
+    request = GenerationRequest(
+        base=PanelImageRequest(prompt="a scene", out_path=Path("/tmp/x.png"), seed=0),
+        backend_name="noobai", steps=30, guidance_scale=7.0,
+    )
+    keys = a7.keys_for(plan, request)
+    assert keys["A"] == compute_render_cache_key(plan, request)
+    assert keys["B"] != keys["A"]
