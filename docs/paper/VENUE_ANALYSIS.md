@@ -17,6 +17,12 @@
 
 **Recommended path:** WNU 2027 or an ACL 2027 demo as the first target. ACL 2027 main (January ARR cycle) is realistic only if the MUST experiments in `PUBLICATION_READINESS.md` are completed. Every public version must be sequenced after any IP decision.
 
+**Decision (2026-09-26, after the evidence-upgrade pass):**
+- **First target: WNU 2027, or the ACL 2027 System Demonstrations.** A1/A2, A7 and LitBank are done. The human sample is prepared but unlabelled, and labelling it is the gate for any submission.
+- **ACL 2027 main track (January ARR cycle):** only if two reviewers label the 200-row sample in time and κ is acceptable.
+- **ARR October 2026:** dropped.
+- **Dates:** not re-checked in this pass. The WNU 2027 and ACL 2027 demo calls were still unannounced as of 2026-09-25; re-check after 2026-10-02.
+
 ---
 
 ## Detailed venue research (as gathered)

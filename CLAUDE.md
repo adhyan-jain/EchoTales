@@ -62,7 +62,7 @@ generation -> voice casting + synthesis -> per-chapter video composite.
 
 ```bash
 source .venv/bin/activate      # uv-managed venv already present at repo root
-python3 -m pytest packages/pipeline/tests/ -q     # ~400 tests, no GPU needed
+python3 -m pytest packages/core/tests packages/pipeline/tests   # 1,085 tests (2026-09-26), no GPU needed
 ```
 
 Everything is stub-first: `ECHOTALES_LLM_MODE=stub` and `--image-engine

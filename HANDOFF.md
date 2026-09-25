@@ -72,8 +72,9 @@ per item; `EVOLUTION.md` 4.76-4.83 has the detail. Suite **1,038 passed**
    47 min, 660 calls, 0 escalations.
 
    **Prediction adjudicated as recorded — one part refuted.** CEAF-e recall
-   25.2% → **48.9%** (confirmed); identifiability 48.8% → **63.0%**
-   (confirmed); "mentions roughly double" → **+14.6%, REFUTED**. The fix
+   25.2% → **48.9%** (confirmed); identifiability 48.8% → 63.0% was first
+   marked confirmed but is **superseded** (EVOLUTION 4.88: the honest rate is
+   46.1%, flat, so REFUTED); "mentions roughly double" → **+14.6%, REFUTED**. The fix
    finds *entities*, not mentions: **82 → 261 (+218%)**, because `_locate`
    already searched the whole chapter, so truncation only ever hid entities
    appearing *solely* past 6,000 chars. Bai Ning Bing now has ch1 mentions

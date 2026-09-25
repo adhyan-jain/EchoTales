@@ -113,3 +113,28 @@ The paper-side comparison is `docs/paper/RELATED_WORK_FINAL.md` and `CONTRIBUTIO
 - EchoTales' distinction is the pairing of time- and observer-scoped *identity* with generation, and its empirical findings.
 
 The patent-side analysis is private (`docs/IP/`, not tracked).
+
+## 6. Causal evidence matrix (evidence-upgrade pass, 2026-09-26)
+
+Reference types:
+- **silver**: the LLM-drafted reference set.
+- **system records**: the system's own observation records.
+- **external-human**: LitBank's human annotation.
+- **controlled**: synthetic or stub experiments.
+
+| # | Claim | Mechanism | Ablation / baseline | Result | Dataset | Reference type | Evidence file | Status | Limitation |
+|---|---|---|---|---|---|---|---|---|---|
+| C1 | Observer knowledge changes what an observer can resolve | `state_of(observer, knowledge_pos)` with observation records | A1: observer → READER; A2: knowledge time removed | 228 queries: FULL 0 leaks, A1 **194**, A2 **14** | RI canonical, 3 reveal events | system records | `docs/eval/A1_OBSERVER_ABLATION.md`, `A2_…` | **SUPPORTED** | Only 3 events / 2 facts; leak is defined against the system's own records; 9 FULL under-exposures from mid-chapter reveals |
+| C2 | Observer-conditioned state changes generated media | render plan built from observer-conditioned `state_of` | A1 at the render-plan level; real-engine contrast | A1: 194 render plans draw an identity FULL withholds; real engine: reader 5/5 vs non-reader 0/5 | RI ch169 (render); 3 reveals (plans) | controlled + real engine | A1 doc; `OBSERVER_CONTRAST_VALIDATION.md` | **SUPPORTED, reader vs non-reader only** | No character observer is ever drawn (READER-scoped persona bindings), so witness-level rendering is **not supported** |
+| C3 | The cache key separates state-dependent artifacts | `state_digest` (drawn persona + attributes, persona ids, Self attributes) inside the render key | A7: full key vs digest removed (B) vs all state-derived parts removed (C), with prompt/plan/seed held fixed | Fixed key: 0 stale reuses on every event; without the digest, **46** stale reuses (E1, E1b). The shipped key had served those 46 stale too; now fixed | 218 panels, 5 chapters | controlled | `docs/eval/A7_CACHE_ABLATION.md`, `data/eval/a7_cache_ablation*.json` | **SUPPORTED after a fix found by this experiment** | Aliases are not in the key; reference bytes are not hashed; stub engine |
+| C4 | Artifacts whose dependencies do not change are reused | cache lookup by key | A7 E0 / E2 / E5 | 218/218 reused under every condition; **274 unnecessary** regenerations on non-drawn changes (E3, E6) | same | controlled | same | **PARTIAL**: reuse holds, but the digest over-invalidates | GPU saving only estimated (22 s/panel); no measured compute effect |
+| C5 | Removing observer state increases information leakage | as C1 | A1, A2 | +194 (A1) and +14 (A2) leaks | as C1 | system records | as C1 | **SUPPORTED** (same caveats as C1) | Whether the records themselves are right needs human review |
+| C6 | Resolves long-span identity better than the tested simple baselines | deterministic evidence resolution with a compounding gazetteer | long-context LLM; two-LLM memory (ch1–10) | B³ recall 78.9% vs 0.2% / 4.6%, at 0 resolution calls | RI ch1–10, 356 mentions | silver | Table 7 | **SUPPORTED on silver, as extraction coverage** | Surface-trivial range; on human-annotated LitBank the name-level CoNLL F1 is 42.4 (standard) and recall is limited by detection |
+
+**External human-annotated check** (LitBank, 100 documents, zero-shot):
+- Full person key: CoNLL F1 **15.9**.
+- Proper-name mentions: **42.4** (standard scoring) / 46.7 (key-restricted).
+- Name-link precision: MUC 99.0, B³ 99.7 (key-restricted).
+- Not comparable to LitBank's supervised 68.1 (`docs/eval/EXTERNAL_BENCHMARK.md`).
+
+**Human validation:** the package is prepared (200 + 88 rows), with **no labels**. κ is not computed.

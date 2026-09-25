@@ -1,6 +1,6 @@
 # Publication readiness
 
-**2026-09-25.** A fact-based assessment. It gives no acceptance estimates.
+**2026-09-25; status updated 2026-09-26.** A fact-based assessment. It gives no acceptance estimates.
 
 ## Where the evidence stands
 
@@ -12,7 +12,23 @@
   4. no external benchmark;
   5. the generation evidence is five panels in one chapter with no quality metric.
 
-## Minimum experiment set
+## Status after the evidence-upgrade pass (2026-09-26)
+
+| MUST item | Status |
+|---|---|
+| 1. Human confirmation sample | **Package prepared** (`data/eval/human_review_200.csv`, `human_review_hardcases_88.csv`, gitignored; protocol in `docs/eval/HUMAN_REVIEW_PROTOCOL.md`). **0 labels. Waiting on reviewers.** |
+| 2. A1 + A2 | Done (`docs/eval/A1_OBSERVER_ABLATION.md`, `A2_OBSERVER_ABLATION.md`) |
+| 3. A7 | Done. It found and fixed a real key defect (`docs/eval/A7_CACHE_ABLATION.md`). |
+| 4. External benchmark | Done on LitBank, 100 documents (`docs/eval/EXTERNAL_BENCHMARK.md`). The result is weak on the full key (15.9) and moderate on names only (42.4). |
+| 5. LOTM limitation | Already measured; in `EXPERIMENT_TABLE.md` |
+
+**Evidence-standard decision.**
+- *Main track (ARR → ACL 2027):* **not yet.** The human sample is the single blocker. Without it, every in-domain number remains silver, and the only external number is weak.
+- *Workshop (WNU 2027) or ACL 2027 demo:* **ready in evidence terms** once the human sample has at least one reviewer's labels, reported as silver-vs-human agreement.
+- *ARR October 2026 (2026-10-12):* **do not target.**
+- *Any public version:* sequenced after the IPR cell's decision (see below).
+
+## Minimum experiment set (as planned 2026-09-25)
 
 ### MUST DO BEFORE SUBMISSION
 

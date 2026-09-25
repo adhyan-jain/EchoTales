@@ -1,6 +1,6 @@
 # Paper claim boundaries
 
-**2026-09-25.** What the paper may say, what it may say only with a qualifier, and what it must not say. Grounded in `docs/FINAL_EVIDENCE_TABLE.md`, `CONTRIBUTION_MATRIX.md` and `RELATED_WORK_FINAL.md`.
+**2026-09-25; revised 2026-09-26 after the evidence-upgrade pass.** What the paper may say, what it may say only with a qualifier, and what it must not say. Grounded in `docs/FINAL_EVIDENCE_TABLE.md`, `CONTRIBUTION_MATRIX.md` and `RELATED_WORK_FINAL.md`.
 
 ## May claim (with the evidence cited)
 
@@ -34,5 +34,24 @@
 - Witness-level visual conditioning (embodiment bindings are reader-scoped).
 - Image or audio quality (not measured).
 - Retraction or dream/flashback handling on real data (0 rows).
-- Any "first", "novel" or state-of-the-art claim, or comparison numbers against LLMLink, LINK-KG, BOOKCOREF or LitBank that were not reproduced.
+- Any "first", "novel" or state-of-the-art claim, or comparison numbers against LLMLink, LINK-KG or BOOKCOREF, none of which were reproduced.
+- A LitBank comparison against published supervised systems. Our LitBank numbers (standard CoNLL F1 15.9 on the full person key, 42.4 on proper-name mentions) are zero-shot and cover names only. The published 68.1 uses a different mention-detection setting. They may be reported side by side only with that stated, and never as "competitive".
+- That the render cache saves GPU time. A7 measured correctness (0 vs 46 stale reuses) and 274 *extra* regenerations. The GPU-hour figure is an estimate; it was not measured.
 - The superseded figures: 63.0% attribution (it is 46.1%), or 96.3% as the same-range baseline comparison (it is 78.9%).
+
+## Evidence-upgrade pass (2026-09-26): how each result may be used
+
+| Result | Class | Use in paper |
+|---|---|---|
+| A1: observer collapsed to READER → 194 state leaks and 194 render-plan leaks (full: 0) across 3 reveals, 228 queries | **Empirical finding** (causal ablation, scored against the system's own records) | Evidence that the observer axis is load-bearing. It is not evidence that the recorded observations are *correct*: witness derivation is unvalidated. |
+| A2: knowledge time removed → 14 state leaks, 0 render leaks | Empirical finding | Knowledge time matters at the state level only. At the render level it is currently redundant, because bindings are reader-scoped. Say so. |
+| FULL: 9 under-exposures (mid-chapter reveals) | Negative result | Report. Chapter-granular knowledge position is too coarse for mid-chapter reveals. |
+| A7: without the state digest, 46 stale reuses (appearance changes); the shipped key had the same defect until it was fixed in this pass | **Engineering correctness finding** | A limitation and correctness note in the system section. **Not a research contribution.** The digest also over-invalidates (274 unnecessary regenerations on binding/offstage events). |
+| A7 observer switch: separated by the prompt in every condition | Negative for the digest | Observer separation at render time is prompt-driven; the digest adds nothing there. |
+| LitBank: 15.9 / 42.4 standard CoNLL F1 (P1 / P2), sanity check 100 | **External, human-annotated** | The only non-silver number. It shows a precision-heavy, names-only resolver (P2 key-restricted: MUC P 99.0, R 29.2; standard-mode MUC P falls to 48.0 once spurious system mentions count). Frame it as external validity of the design's precision/recall trade-off, not as coreference competitiveness. |
+| Human-review package: 200 + 88 rows prepared, 0 labelled | Pending | Nothing may be claimed until it is labelled. With one reviewer, report agreement with silver only, not κ. |
+
+**Engineering vs research vs empirical.**
+- *Engineering:* the pipeline, the cache key, the stub-first harness, the fix to the appearance digest.
+- *Research:* the representation (identity scoped by story time, observer and knowledge position) and its use to condition generation.
+- *Empirical findings:* A1/A2, the detection bottleneck, the surface-trivial metric effect, the refuted predictions, attribution instability, LitBank.
