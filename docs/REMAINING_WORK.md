@@ -42,7 +42,7 @@ Tags used below:
 | Baselines on **non-trivial** gold | Blocked by data | Chapters 1–10 silver gold is surface-trivial, so the B³ columns (A 0.2%, B 4.6%, EchoTales 79.1% on the same range; Table 7) measure extraction coverage, not coreference quality. |
 | A **GraphRAG / CORE-KG** baseline | Not built | These are the baselines LINK-KG itself used. Neither is implemented here. |
 | **BOOKCOREF / LitBank** numbers | Not run | This is the only route to an externally comparable, non-silver figure. It needs an adapter from their formats to `GoldMention`, and those corpora do not contain the transfer and disguise phenomena this project targets. |
-| **Generalisation** to LOTM / ORV | Not run on the current code | LOTM has 173 independent silver records (ch1–3, EVOLUTION 4.83); ORV has only circular records. No post-NER-fix LOTM run has been scored. So "one primary novel" is the limitation, and generalisation is asserted, not measured. |
+| **Generalisation** to LOTM / ORV | Measured on LOTM ch1–3 only (EVOLUTION 4.90) | Current code on LOTM ch1–20, scored on 155 independent silver records: B³ recall 62.3%, CEAF-e F1 41.4, well below RI; the transmigration (Zhou Mingrui / Klein) is split into two Selves. ORV has only circular records. LOTM full volume is not scored. |
 
 ### 1.3 Ablations that need a re-resolve
 
@@ -88,6 +88,7 @@ There is also no **visual ablation** (render with a flat, non-temporal state ver
 | Observer-scoped persona bindings | Column exists; **no writer** | A witness learns the alias but not the persona, so a witness-conditioned render drops the character (`SELF_PERSONA_VALIDATION.md` Section 3). |
 | Shared multimodal `GenerationState` | **Not built** | The visual path consumes `state_of` through `build_render_plan`; audio does not. `state.py:6` still implies otherwise. |
 | Aliases in the render read set | **Missing** | The render digest hashes persona ids and attributes, not aliases, so a name-only reveal does not invalidate a panel. |
+| Transmigration merge (one Self, new Persona) | **Not built** | LOTM ch1–3: Zhou Mingrui and Klein resolved as two Selves (EVOLUTION 4.90). |
 | Detection of relational / deictic and title spans | **Weak** | 25 of 29 relational and 16 of 17 title mentions are never detected. This is the real bottleneck for the hard cases. |
 | Bounded LLM investigator for uncertain pairs | **Not built, deliberately** | There are no labelled SCORE-region pairs to show it would help ("do not add architecture to make claims true"). |
 
