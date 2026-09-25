@@ -1,87 +1,107 @@
-# EchoTales — final readiness
+# EchoTales v1 — final readiness
 
-**Written 2026-09-25**, branch `validation/evidence-pass-2026-09-24`.
-1,073 tests passing; touched files ruff-clean; `.env` never committed (checked
-against all refs); `docs/IP/` untracked. All accuracy figures are scored
-against an **LLM-derived SILVER reference set (Claude), not human gold, no
-IAA**.
+**2026-09-25**, branch `validation/evidence-pass-2026-09-24` (not pushed).
+Canonical database `data/reverend-insanity.db`, sha256 `42107645…`
+(`docs/CANONICAL_RUN.md`). 1,078 tests pass.
 
----
-
-## VERIFIED — measured on real data, command recorded
-
-| Item | Evidence |
-|---|---|
-| Full-volume pipeline on local hardware | 199 chapters, 47 min, 660 calls, 0 escalations — `docs/NER_WINDOWING_RESULT.md` |
-| Mention-layer repair and its adjudicated prediction | Entities 82→261; CEAF-e recall 25.2→48.9%; "mentions double" and "attribution rises" **refuted** (EVOLUTION 4.88) |
-| Observer-scoped knowledge state, both axes | Reader 2 / witness 1 / non-witness 0; witness 0 before the reveal, 1 after — `docs/STATE_OF_VALIDATION.md` |
-| Observer-conditioned visual generation on a real engine | Reader 5/5 reference-conditioned, non-witness 0/5; keys and pixels differ on 10/10 blocks — `docs/OBSERVER_CONTRAST_VALIDATION.md` |
-| Read-set-derived invalidation | Cast change invalidates, offstage change does not — `test_readset_invalidation.py` |
-| Self/Persona, sequential case | One Self, two disjoint bodies — `docs/SELF_PERSONA_VALIDATION.md` |
-| Baselines A and B | 10 and 133 mentions vs 359, at 1 and 177 calls vs 0 at resolution — `docs/BASELINES.md` |
-| Retriever recall@K by alias type | Given the span, production-exact context: rigid 90.3%, title 88.9% (gate passes, n=9), relational 25.0% @10 — `docs/EVAL_RETRIEVER.md` |
-| Scorer diagnosis | Ranks correctly 94.2%; capped at p=0.550 by three inert features; refit does not help — `docs/SCORER_DIAGNOSIS.md` |
-| Ablations | Gazetteer carries 66% of links; temporal gate fires on 0 pairs |
-| Prior art | LLMLINK and LINK-KG verified against full text — `docs/PRIOR_ART_LINKKG.md` |
-
-## EXPERIMENTAL — implemented, exercised only in part
-
-| Item | What is missing |
-|---|---|
-| Three-axis time | No fact is ever written to a non-main timeline |
-| Temporal identity bindings for hard alias types | 16/17 title-transfer and 25/29 relational mentions never detected |
-| EARS voice bank | **Rendered.** RI ch1, 97 lines, 892 s audio, 7 native-English voices, exit 0 (`data/audio-ears-native/manifest.jsonl`, EVOLUTION 4.87). Exposed a speaker-attribution defect: opening lines go to the vocative addressee (Fang Yuan) and to Bai Ning Bing, who is not in the scene. Chatterbox runs via the documented `uv run --with` overlay |
-
-## DESIGNED — specified, not exercised end to end
-- Retraction distinct from interval end: query tested, **writer has no caller**.
-- Concurrent Self/Persona, disguise, body-swap, possession, clone, dream persona: unit tests only.
-- Observer-scoped persona bindings: the `observer_id` column exists; no writer.
-
-## BLOCKED
-| Item | Blocker |
-|---|---|
-| Any human-anchored accuracy figure | No human annotation, by owner decision |
-| Evaluating a fitted scorer or an investigator | No labelled pairs in the scorer's operating region (all 103 labelled gold candidates are pre-filter-decided) |
-| CLIPScore pixel QA | 1.7 GB model download; not attempted |
-| Two-depiction observer contrast | Needs a sustained disguise; the primary corpus has none |
-
-## MISSING
-- A shared multimodal `GenerationState`: the audio path does not consume `state_of`.
-- Detection of relational/deictic and title spans — where the hard cases are lost.
-- Aliases in the render read set: a name-only reveal does not invalidate a panel.
+Every accuracy figure is scored against the **LLM-DRAFTED SILVER REFERENCE
+SET**: drafted by Claude, not human-annotated, no IAA. Per-claim evidence
+files are in `docs/FINAL_EVIDENCE_TABLE.md`; what is still missing is in
+`docs/REMAINING_WORK.md`.
 
 ---
 
-## Final research limitations
-1. Silver-only evaluation; two of three reference files are surface-trivial.
-2. The learned scorer contributes nothing; resolution is rule-driven.
-3. Hard cases are lost at mention detection, before retrieval or scoring.
-4. One primary novel; generalisation asserted, not measured.
-5. No image-quality measurement; five-panel demonstrations, not benchmarks.
+## A. Verified
 
-## Final patent-disclosure limitations
-1. **Public since 2026-08-07** — timing is counsel's first question.
-2. Two close prior works (Narrative Graph Prompting, ICCVW 2025; StoryWeaver,
-   2024) are **unread** and must be before filing.
-3. Temporal KG literature not searched.
-4. Mechanisms M2–M4 are EXPERIMENTAL or DESIGNED, not VERIFIED —
-   `docs/IP/ECHOTALES_INVENTION_DISCLOSURE_DRAFT.md`.
+Real data, with a persisted artifact:
+- End-to-end pipeline over 199 chapters on an 8 GB laptop GPU, with no paid API.
+- Entity-level coreference: CEAF-e F1 67.4; B³ precision 100%.
+- Hard cases the resolver detects are linked correctly: 24 of 24 decidable, 0 wrong.
+- Retrieval given the reference span: recall@10 89.1% (production context).
+- Deterministic evidence rules make every link; hard constraints block 3,072 of 16,538 pairs.
+- Gazetteer compounding: removing it halves forced links (1,376 → 704).
+- Observer-scoped knowledge state: reader 2 / witness 1 / non-witness 0 aliases, and the witness 0 / 1 / 1 asking from ch150 / 166 / 200. Same identity in every query; 6/6 checks pass.
+- Observer-conditioned visual generation on a real engine: reader 5/5 conditioned panels, non-witness 0/5.
+- Sequential Self/Persona: one Self, two disjoint bodies.
+- Read-set-derived cache invalidation (controlled tests).
+- Same-range baseline comparison, cost and coverage.
 
-## Final report readiness
-All 16 sections have source material (`docs/REPORT_MATERIAL.md`); tables are
-generated from artifacts (`docs/paper/TABLES.md`); data-dependent figures are
-explicit TODOs (`docs/paper/FIGURES.md`). **Remaining:** complete author lists
-for references 3–12; team confirmation of Section 7; draw the seven diagram
-figures.
+## B. Partially verified
 
-## Exact remaining work, in priority order
-1. Read Narrative Graph Prompting and StoryWeaver before any filing.
-2. Improve mention detection for relational/deictic and title spans.
-3. Retire or activate the three inert scorer features; if kept, make the
-   decision comparative (rank + margin) — ranking is already 94% correct.
-4. Blind-annotate SCORE-verdict pairs so any scorer change can be evaluated.
-5. Write observer-scoped persona bindings.
-6. Evaluate on BOOKCOREF for a non-silver, externally comparable number.
-7. Rotate the API keys in `.env` (the stray `./file:data/` directory was removed 2026-09-25).
+- **Speaker attribution:** 46.1% of speech spans. Precision only spot-checked. The LLM tier is 12 right / 16 wrong and changed 10 of 29 lines between runs.
+- **Generalisation, LOTM ch1–3:** B³ recall 62.3%, CEAF-e F1 41.4. Transmigration is split into two Selves.
+- **Typed alias and title bindings:** 11,092 bindings exist, but 16 of 17 annotated title-transfer mentions are never detected.
+- **Audio rendering:** 97 lines, 7 voices, no failures. No listening test; attribution errors are audible.
 
-The full inventory of what is still missing, by metric, mechanism and audience, is `docs/REMAINING_WORK.md`.
+## C. Experimental
+
+- **Learned scorer:** OPTIONAL / EXPERIMENTAL; 0 links, maximum score 0.41 against a 0.80 threshold.
+- **LLM attribution tier (ch1–3):** on by default, low precision, unstable across runs.
+- **Pronoun speaker recovery:** opt-in (`--recover-pronoun-speakers`); measured 2 of 15 correct.
+
+## D. Not implemented / not evaluated
+
+- **Implemented and tested, never exercised on real data:** retraction (0 rows); facts on a non-main timeline (0); concurrent, possession, body-swap, clone, disguise and dream personas (0 instances).
+- **Not implemented:**
+  - observer-scoped persona bindings (no writer);
+  - aliases in the render read set;
+  - audio consuming `state_of` / Persona;
+  - a shared multimodal `GenerationState`;
+  - a transmigration merge;
+  - vocative, relation-graph and title-holder detection.
+- **Not evaluated:**
+  - human-anchored P/R/F1 and IAA;
+  - LINK / NEW / DEFER accuracy and calibration coverage;
+  - CLIPScore, identity consistency and image rating;
+  - audio MOS and speaker similarity;
+  - BOOKCOREF, LitBank, GraphRAG and CORE-KG (not directly comparable, not reproduced here);
+  - LOTM full volume and ORV.
+
+## E. Final benchmark numbers
+
+| Measure | Result | Source |
+|---|---|---|
+| Silver coreference, 1,816 mentions: MUC / B³ / CEAF-e F1; CoNLL | 97.9 / 97.0 / **67.4**; 87.4 | Table 4 |
+| Hard cases, 88: detected; correct / wrong among decidable | 30; **24 / 0** | `hardcase_resolution.json` |
+| Hard-case misses, 58: address / relational / title / pronoun / other | 16 / 15 / 11 / 10 / 6 | `hardcase_taxonomy.json` |
+| Retrieval Recall@1 / 5 / 10 / 20, n=46, production context | 67.4 / 87.0 / **89.1** / 95.7% | Table 5 |
+| Baselines ch1–10, B³ recall: A / B / EchoTales | 0.2% / 4.6% / **78.9%** (1 / 177 / 0 resolution calls) | Table 7 |
+| Ablation, 16,538 pairs: force-link / blocked / scorer links | 1,376 / 3,072 / 0 | Table 6 |
+| Observer query: reader / witness / non-witness; witness ch150 / 166 / 200 | 2 / 1 / 0; 0 / 1 / 1 | `observer_evidence.json` |
+| Observer render: reader / non-witness conditioned panels | 5/5 / 0/5 | `OBSERVER_CONTRAST_VALIDATION.md` |
+| Speaker attribution coverage | 46.1% (2,392 / 5,192) | `CANONICAL_RUN.md` |
+| LOTM ch1–3: B³ recall; CEAF-e F1 | 62.3%; 41.4 | LOTM results dir |
+
+## F. Remaining limitations
+
+1. Silver-only evaluation, and most of it is surface-trivial. CEAF-e and the hardcases file are the discriminative measures.
+2. Recall is lost at mention detection for vocatives, relational references and definite titles. These need new coreference work, not tuning.
+3. The learned component contributes nothing; resolution is rule-driven.
+4. One novel at volume scale. The second is weaker, and its central transmigration case is mis-modelled.
+5. Speaker attribution is incomplete and its LLM tier is unreliable.
+6. Visual evidence is a five-panel mechanism demonstration, not a quality benchmark. Audio does not consume graph state.
+
+## G. Reproducibility instructions
+
+```bash
+source .venv/bin/activate && ollama serve &
+bash scripts/reproduce_results.sh        # tests, eval, validation, diagnostics, tables, figures
+```
+
+It defaults to the canonical database and exited 0 on 2026-09-25. Rebuilding the database from source needs the EPUB, which is copyrighted and not committed; the build order is in `CANONICAL_RUN.md` Section 2.
+
+## H. Patent / invention disclosure status
+
+`docs/IP/ECHOTALES_INVENTION_DISCLOSURE_DRAFT.md` (gitignored) is restructured around ten mechanisms, each labelled, with the observer evidence as the centrepiece.
+- **Blocking before filing:** the repository has been public since 2026-08-07, a timing question for counsel. Narrative Graph Prompting, StoryWeaver and CORE-KG are unread. Temporal-KG literature has not been searched.
+- No wording claims novelty or patentability.
+
+## I. Course-report status
+
+`docs/REPORT_MATERIAL.md` covers all 16 sections with canonical-run numbers. `docs/paper/` has 6 generated tables and 4 rendered figures. A private webview screenshot is in `docs/IP/screenshots/`.
+
+**Still needed, all human:**
+- author lists for references 3–12;
+- each member's own papers and limitations paragraphs;
+- team sign-off on Section 7;
+- drawing the 7 diagram figures.
