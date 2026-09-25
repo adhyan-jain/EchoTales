@@ -113,8 +113,8 @@ export default function DesignGallery() {
         <section className="mt-14">
           <Divider label="Inputs" className="mb-6" />
           <div className="max-w-sm space-y-3">
-            <Input placeholder="Search the cast..." />
-            <Input placeholder="Disabled" disabled />
+            <Input aria-label="Search the cast" placeholder="Search the cast…" />
+            <Input aria-label="Disabled example" placeholder="Disabled" disabled />
           </div>
         </section>
 

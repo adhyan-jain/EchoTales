@@ -21,7 +21,7 @@ export default function AnalysisPanel({ summary, onApply, applyResult, applying,
     <div className="analysis-panel">
       <div className="analysis-header">
         <b>Corrections</b>
-        <button className="close" onClick={onClose}>&times;</button>
+        <button type="button" className="close" aria-label="Close corrections" onClick={onClose}>&times;</button>
       </div>
       {summary.total === 0 ? (
         <p className="muted">

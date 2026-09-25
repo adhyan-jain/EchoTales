@@ -26,8 +26,15 @@ export default function EntityPicker({
   const [query, setQuery] = useState('');
   const inputRef = useRef(null);
 
+  // Focus goes into the picker on open and back to whatever opened it (the
+  // mention or speaker) on close, so a keyboard reviewer keeps their place in
+  // the script instead of landing on <body> after every edit.
   useEffect(() => {
+    const opener = document.activeElement;
     inputRef.current?.focus();
+    return () => {
+      if (opener && opener !== document.body && document.contains(opener)) opener.focus();
+    };
   }, []);
 
   const q = query.trim().toLowerCase();
@@ -38,24 +45,70 @@ export default function EntityPicker({
     ? { position: 'fixed', left: Math.min(anchor.x, window.innerWidth - 320), top: Math.min(anchor.y, window.innerHeight - 360) }
     : {};
 
+  // Rows are real <button>s so the picker works from the keyboard: the input
+  // takes focus on open, ArrowDown moves into the list, Escape closes from
+  // anywhere. Clickable <li>s were mouse-only (web-design-guidelines audit,
+  // 2026-09-26), which locked keyboard reviewers out of every edit action.
+  const listRef = useRef(null);
+  const moveFocus = (e) => {
+    if (e.key === 'Escape') {
+      onCancel();
+      return;
+    }
+    if (e.key === 'Tab') {
+      // Keep Tab inside the picker while it is open: the backdrop covers the
+      // page, so tabbing into the script behind it would be invisible.
+      const stops = [inputRef.current, ...(listRef.current?.querySelectorAll('button[data-row]') || [])];
+      const first = stops[0];
+      const last = stops[stops.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+      return;
+    }
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    const rows = Array.from(listRef.current?.querySelectorAll('button[data-row]') || []);
+    if (!rows.length) return;
+    e.preventDefault();
+    const i = rows.indexOf(document.activeElement);
+    const next = e.key === 'ArrowDown' ? Math.min(i + 1, rows.length - 1) : i - 1;
+    (next < 0 ? inputRef.current : rows[next])?.focus();
+  };
+
   return (
     <div className="picker-backdrop" onClick={onCancel}>
-      <div className="entity-picker" style={style} onClick={(e) => e.stopPropagation()}>
+      <div
+        className="entity-picker"
+        style={style}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Choose a character"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={moveFocus}
+      >
         <input
           ref={inputRef}
           type="text"
+          aria-label="Search or type a new name"
+          autoComplete="off"
+          spellCheck={false}
           placeholder="Search or type a new name…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Escape') onCancel();
             if (e.key === 'Enter' && query.trim() && !exactMatch) onCreateNew(query.trim());
           }}
         />
-        <ul>
+        <ul ref={listRef}>
           {onClear && (
-            <li className="clear-row" onClick={onClear}>
-              &empty; Unassign / mark unresolved
+            <li>
+              <button type="button" data-row className="picker-row clear-row" onClick={onClear}>
+                <span aria-hidden="true">&empty;</span> Unassign / mark unresolved
+              </button>
             </li>
           )}
           {onAnonSlot && (
@@ -65,8 +118,10 @@ export default function EntityPicker({
                 <button
                   key={n}
                   type="button"
+                  data-row
                   className="anon-slot-btn"
                   onClick={() => onAnonSlot(n)}
+                  aria-label={`Unknown speaker ${n}`}
                   title={`Give this line "Unknown Speaker ${n}"'s voice slot`}
                 >
                   {n}
@@ -75,15 +130,19 @@ export default function EntityPicker({
             </li>
           )}
           {query.trim() && !exactMatch && (
-            <li className="create-row" onClick={() => onCreateNew(query.trim())}>
-              + Create new character &ldquo;{query.trim()}&rdquo;
+            <li>
+              <button type="button" data-row className="picker-row create-row" onClick={() => onCreateNew(query.trim())}>
+                + Create new character &ldquo;{query.trim()}&rdquo;
+              </button>
             </li>
           )}
           {filtered.slice(0, 60).map((ent) => (
-            <li key={ent.id} onClick={() => onSelect(ent.id)}>
-              <span className="swatch" style={{ background: ent.colour }} />
-              {ent.label}
-              <span className="count">{ent.count}</span>
+            <li key={ent.id}>
+              <button type="button" data-row className="picker-row" onClick={() => onSelect(ent.id)}>
+                <span className="swatch" style={{ background: ent.colour }} aria-hidden="true" />
+                <span className="picker-label">{ent.label}</span>
+                <span className="count">{ent.count}</span>
+              </button>
             </li>
           ))}
           {filtered.length === 0 && !query.trim() && (

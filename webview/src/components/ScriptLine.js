@@ -8,6 +8,20 @@ import { SPAN_TYPES } from '../api';
  * in `webview.py`), so this only has to slice and interleave -- no coordinate
  * translation happens in the browser.
  */
+// Edit targets stay inline <mark>/<div> elements (a <button> would break the
+// running text's line flow), so they get role="button" plus Enter/Space. The
+// picker is anchored at the pointer (`clientX/Y`), which a key event does not
+// carry, so a keyboard activation anchors at the element's own corner instead.
+function keyActivate(handler) {
+  return (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    e.stopPropagation();
+    const r = e.currentTarget.getBoundingClientRect();
+    handler({ clientX: r.left, clientY: r.bottom, currentTarget: e.currentTarget });
+  };
+}
+
 export default function ScriptLine({
   span,
   focusId,
@@ -69,6 +83,13 @@ export default function ScriptLine({
         onMouseMove={onMarkMove}
         onMouseLeave={onMarkLeave}
         onClick={editMode ? (e) => { e.stopPropagation(); onMentionClick(m, e); } : undefined}
+        {...(editMode && {
+          role: 'button',
+          tabIndex: 0,
+          'aria-label': `Reassign mention ${span.text.slice(m.s, m.e)}`,
+          'aria-haspopup': 'dialog',
+          onKeyDown: keyActivate((e) => onMentionClick(m, e)),
+        })}
       >
         {span.text.slice(m.s, m.e)}
         {m.flags && m.flags.length > 0 && <span className="flag-badge">&#9873;</span>}
@@ -91,6 +112,13 @@ export default function ScriptLine({
         }
         style={span.anonymous_speaker && span.speaker_colour ? { color: span.speaker_colour } : undefined}
         onClick={speakerEditable ? (e) => onSpeakerClick(span, e) : undefined}
+        {...(speakerEditable && {
+          role: 'button',
+          tabIndex: 0,
+          'aria-haspopup': 'dialog',
+          'aria-label': span.speaker ? `Reassign speaker ${span.speaker}` : 'Assign a speaker',
+          onKeyDown: keyActivate((e) => onSpeakerClick(span, e)),
+        })}
         title={
           speakerEditable
             ? span.anonymous_speaker
@@ -118,6 +146,7 @@ export default function ScriptLine({
         {editMode ? (
           <select
             className="tag-select"
+            aria-label="Line type"
             value={span.type}
             title="Reclassify this line -- e.g. mark it NON_DIEGETIC to drop it from audio and panels"
             onChange={(e) => onRetype(span, e.target.value)}
@@ -139,14 +168,15 @@ export default function ScriptLine({
           <span className="line-actions">
             {onCreateMention && (
               <button
+                type="button"
                 title="Create a mention for text in this line that detector missed"
                 onClick={(e) => onCreateMention(span, e)}
               >
-                + mention
+                + Mention
               </button>
             )}
-            <button onClick={() => onFlagLine(span)}>flag</button>
-            {canMergeUp && <button onClick={onMergeUp}>merge&nbsp;&uarr;</button>}
+            <button type="button" onClick={() => onFlagLine(span)}>Flag</button>
+            {canMergeUp && <button type="button" onClick={onMergeUp}>Merge&nbsp;&uarr;</button>}
           </span>
         )}
       </div>

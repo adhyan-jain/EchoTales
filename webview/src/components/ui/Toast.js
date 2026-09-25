@@ -23,11 +23,11 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={push}>
       {children}
-      <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2">
+      <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2" role="status" aria-live="polite">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`animate-toast-in rounded-sm border-l-2 px-4 py-3 font-sans text-sm text-text shadow-popover ${TONES[t.tone]}`}
+            className={`animate-toast-in max-w-sm break-words rounded-sm border-l-2 px-4 py-3 font-sans text-sm text-text shadow-popover ${TONES[t.tone]}`}
           >
             {t.message}
           </div>

@@ -478,6 +478,7 @@ export default function App() {
         </div>
         <select
           id="novel-select"
+          aria-label="Novel"
           value={novelId}
           onChange={(e) => handleSelectNovel(e.target.value)}
           className="h-8 rounded-sm border border-border bg-bg px-2 font-sans text-sm text-text"

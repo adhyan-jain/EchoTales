@@ -31,13 +31,16 @@ export default function EntitySidebar({
       <div className="search">
         <input
           type="search"
+          aria-label="Filter entities"
+          autoComplete="off"
+          spellCheck={false}
           placeholder="Filter entities…"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
         />
         {picking && (
           <div className="merge-hint">
-            Pick the entity to merge into&hellip; <button onClick={onCancelMerge}>cancel</button>
+            Pick the entity to merge into&hellip; <button type="button" onClick={onCancelMerge}>Cancel</button>
           </div>
         )}
       </div>
@@ -52,36 +55,51 @@ export default function EntitySidebar({
                 isSource ? 'merge-source' : '',
                 picking && !isSource ? 'merge-target' : '',
               ].filter(Boolean).join(' ')}
-              title={`${ent.aliases.join(', ')}  ·  ch${ent.first_chapter}–${ent.last_chapter}`}
-              onClick={() => {
-                if (picking) {
-                  if (!isSource) onConfirmMerge(ent.id);
-                  return;
-                }
-                onToggleFocus(ent.id);
-              }}
             >
-              <span className="swatch" style={{ background: ent.colour }} />
-              <span className={ent.is_person === false ? 'name not-person' : 'name'}>
-                {ent.label}
-              </span>
-              {ent.is_person === false && (
-                <span className="kind-badge" title={`${ent.kind} -- not a person: excluded from voice/panel casting`}>
-                  {ent.kind}
+              {/* The row is a <button> (it was a clickable <li>, mouse-only);
+                  the merge icon stays a sibling button, since a button cannot
+                  contain another interactive element. */}
+              <button
+                type="button"
+                className="entity-row"
+                aria-label={`${ent.label}, ${ent.count} mentions${ent.is_person === false ? `, ${ent.kind}` : ''}`}
+                aria-pressed={picking ? undefined : ent.id === focusId}
+                disabled={picking && isSource}
+                title={`${ent.aliases.join(', ')}  ·  ch${ent.first_chapter}–${ent.last_chapter}`}
+                onClick={() => {
+                  if (picking) {
+                    if (!isSource) onConfirmMerge(ent.id);
+                    return;
+                  }
+                  onToggleFocus(ent.id);
+                }}
+              >
+                <span className="swatch" style={{ background: ent.colour }} aria-hidden="true" />
+                <span className={ent.is_person === false ? 'name not-person' : 'name'}>
+                  {ent.label}
                 </span>
-              )}
-              {ent.speaks && <span className="speaks">🗣</span>}
-              <span className="count">{ent.count}</span>
+                {ent.is_person === false && (
+                  <span className="kind-badge" title={`${ent.kind} -- not a person: excluded from voice/panel casting`}>
+                    {ent.kind}
+                  </span>
+                )}
+                {ent.speaks && (
+                  <span className="speaks" title="Has attributed dialogue">
+                    <span aria-hidden="true">&#9679;</span>
+                    <span className="sr-only">speaks</span>
+                  </span>
+                )}
+                <span className="count">{ent.count}</span>
+              </button>
               {editMode && !picking && (
                 <button
+                  type="button"
                   className="merge-icon"
+                  aria-label={`Merge ${ent.label} into another entity`}
                   title="Merge this entity into another"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onStartMerge(ent.id);
-                  }}
+                  onClick={() => onStartMerge(ent.id)}
                 >
-                  ⇄
+                  <span aria-hidden="true">⇄</span>
                 </button>
               )}
             </li>

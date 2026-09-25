@@ -4,7 +4,12 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#101113" />
+    <!-- Fonts load from <link>, not a CSS @import, so the request starts with
+         the HTML instead of after the stylesheet has downloaded. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" />
     <meta
       name="description"
       content="EchoTales coref and speaker attribution viewer"
@@ -24,7 +29,7 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>EchoTales viewer</title>
+    <title>EchoTales</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
