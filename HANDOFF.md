@@ -20,7 +20,39 @@ conflated.
 | `plans.md` | The original spec. Amended three times; the amendments win and are marked *(revised)* |
 | `docs/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-09-24.
+**Last updated:** 2026-09-26.
+
+## Pick up here — 2026-09-26 (evidence-upgrade pass, EVOLUTION 4.91)
+
+- **A7 cache-key ablation found and fixed a real defect**: the shipped
+  render cache key served 23/23 panels stale on a drawn-persona hair or
+  attire change (`state_of` on a Self only returns Self-targeted
+  attributes; appearance attributes are Persona-targeted). Fixed in
+  `render/plan_builder.py`, which now hashes the drawn persona's standing
+  attributes into `state_digest`; two regression tests added. After the
+  fix: 0 stale reuses, but 274 unnecessary regenerations over 218 stub
+  panels — the digest now over-invalidates (an undrawn concurrent body, a
+  non-visual Self attribute). Aliases are still not in the key. This was
+  stub-mode only, no GPU; docs/COMPLETION_PLAN.md item 25's real-render leg
+  (change a seed on a real image engine, confirm invalidation) is still
+  open.
+- **A1/A2 make the observer axis causal, not just descriptive.** Collapsing
+  observer to READER: 194/194 state and render-plan leaks. Removing
+  knowledge time (+inf): 14 state leaks, 0 render leaks (embodiment
+  bindings are reader-scoped). FULL: 0 leaks, 9 mid-chapter under-exposures.
+- **LitBank gives the first human-annotated external number** (not the
+  project's own LLM-drafted silver set — never call that set "gold"):
+  standard CoNLL F1 15.9 (full person key) / 42.4 (proper-name mentions
+  only), 100 documents. Not comparable to the published supervised 68.1
+  (different task scope: no pronoun/nominal resolution by design).
+- **Human-review package prepared, not run**: 200 stratified mentions + 88
+  hard cases as gitignored CSVs. 0 labels, κ not computed — still the
+  single largest gap per `docs/FINAL_ECHOTALES_READINESS.md`'s readiness
+  gate (Area 8, WAITING ON HUMAN).
+- Full detail: EVOLUTION 4.91, `docs/eval/A7_CACHE_ABLATION.md`,
+  `docs/eval/EXTERNAL_BENCHMARK.md`, `docs/eval/HUMAN_REVIEW_PROTOCOL.md`,
+  `docs/FINAL_ECHOTALES_READINESS.md` (readiness gate, updated 2026-09-26).
+- Suite: **1,085 passed** (was 1,078).
 
 ## Pick up here — 2026-09-25 (finalization pass, EVOLUTION 4.90)
 

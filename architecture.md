@@ -513,6 +513,18 @@ aliases, so a name-only reveal on an already-bound persona does not
 invalidate a panel rendered before the reveal — current, intentional
 behaviour, not yet a defect fix.
 
+**A defect in "and attributes" was found and fixed (EVOLUTION 4.91, A7
+cache-key ablation).** `state_of` on a Self returns only Self-targeted
+attributes, while every appearance attribute in the corpus is
+Persona-targeted, so a drawn character's hair-colour or attire change
+reached neither the digest nor the prompt: the shipped key served 23/23
+panels stale on each. `plan_builder.py` now hashes the drawn persona's
+standing attributes into `state_digest` as well. Measured after the fix:
+0 stale reuses (was 46 across conditions) but 274 unnecessary
+regenerations over 218 panels, because the digest also reacts to an
+undrawn concurrent body and a non-visual Self attribute — over-invalidation
+in the other direction, not yet tightened. Aliases are still not in the key.
+
 **Observer-conditioned generation now demonstrated on a real image engine**
 (EVOLUTION 4.85, `docs/OBSERVER_CONTRAST_VALIDATION.md`), not only in the
 `state_of` query layer above: chapter 169, blocks 1-10, NoobAI XL on local

@@ -7918,3 +7918,41 @@ Opus-drafted records for ch1–3.**
 - B³ P / R 99.4 / 62.3; CEAF-e F1 41.4; CoNLL 68.2. That is well below RI, and this reference set is also 100% surface-trivial.
 - 44 of 155 mentions are undetected: bare "Klein" 10 times, plus continents, kingdoms, deities and churches.
 - **Zhou Mingrui and Klein are resolved as two Selves.** The project's own model says a transmigrated consciousness is one Self with a new Persona. The central hard case is mis-modelled on real data, and the persona stage has no transmigration detector to merge them.
+
+### 4.91 Evidence-upgrade pass — A7 found a stale-cache defect in the render key; A1/A2 make the observer axis causal; LitBank gives the first human-annotated number *(2026-09-26)*
+
+**A7: cache-key ablation** (`scripts/a7_cache_ablation.py`, `docs/eval/A7_CACHE_ABLATION.md`).
+- Setup: 218 stub panels (ch1, 2, 166, 178, 197) and 8 state-edit events. Keys A (shipped), B (no `state_digest`, also removed from `plan_digest`) and C (B plus no persona ids) are computed from the same captured plan and request objects.
+- **Defect found.** The shipped key served 23/23 panels stale on a drawn-persona hair change, and 23/23 on an attire change.
+  - `state_of` on a Self returns only Self-targeted attributes, while every appearance attribute is Persona-targeted.
+  - So the change reached neither the digest nor the prompt.
+- **Fixed** in `render/plan_builder.py`: the drawn persona's standing attributes are now hashed. Two regression tests were added to `test_readset_invalidation.py`.
+- **After the fix:**
+  - A serves 0 stale; B and C serve 46.
+  - A regenerates 274 panels needlessly (an undrawn concurrent body; a non-visual Self attribute). That is about 1.7 GPU-h at 22 s/panel, an estimate.
+  - Observer switch: all conditions separate the 188 changed panels, because 182 of them changed prompt. **The digest is not what separates observers**; the earlier "keys differ 10/10" was prompt-driven.
+  - Aliases are still not in the key.
+
+**A1/A2: observer ablations** (`scripts/observer_ablation.py`, pre-registered rules in its docstring).
+- Setup: 3 reveals, 228 queries, 34 should-know.
+- FULL: 0 leaks and 9 under-exposures. The under-exposures are mid-chapter reveals at chapter-granular knowledge position.
+- A1 (observer → READER): 194 state leaks and 194 render-plan leaks.
+- A2 (knowledge position → +inf): 14 state leaks, 0 render leaks, because embodiment bindings are reader-scoped.
+- Leaks are counted against the system's own observation records, whose precision is unvalidated. FULL never draws a witness (0/34).
+
+**LitBank** (`eval/litbank.py`, `scripts/litbank_eval.py`, `docs/eval/EXTERNAL_BENCHMARK.md`).
+- 100 documents, qwen2.5:7b NER, 1,001 s. Gold scored against itself: 100.
+- Standard CoNLL F1:
+  - 15.9 on the full person key;
+  - 42.4 on proper-name mentions (key-restricted: 46.7; MUC P 99.0 / R 29.2).
+- The system finds no pronoun or nominal mentions, which is by design. Only 887 of 2,665 proper-name spans match exactly.
+- Not comparable to the published supervised 68.1.
+- **Parser bugs found along the way:**
+  - cluster-name T-lines overwrote the mention types;
+  - pooled CEAF-e over 100 documents did not finish, so matching is now per document with pooled numerators and denominators.
+- **Scorer caveat:** the house `b_cubed` scores unmatched system mentions against themselves, so standard-mode B³ precision is lenient. This is documented and tested.
+
+**Human-review package** (`scripts/prepare_human_review.py`, `docs/eval/HUMAN_REVIEW_PROTOCOL.md`).
+- 200 stratified mentions plus the 88 hard cases.
+- The CSVs are gitignored, since they contain text windows.
+- **0 labels; κ is not computed.**

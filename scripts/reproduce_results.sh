@@ -81,6 +81,11 @@ if [[ "$NOVEL" == "reverend-insanity" ]]; then
   python3 scripts/scorer_diagnosis.py --db "$DB"
   python3 scripts/scorer_fit_probe.py
   python3 scripts/baseline_comparison.py --db "$DB"  # -> data/eval/baseline_comparison.json
+  python3 scripts/observer_ablation.py --db "$DB"   # A1/A2 -> data/eval/observer_ablation.json
+  # A7 is slow (8 full stub render passes, ~30 min) and LitBank needs a local
+  # ollama plus the corpus under data/external/litbank; run them explicitly:
+  #   python3 scripts/a7_cache_ablation.py --db "$DB"
+  #   python3 scripts/litbank_eval.py
   python3 scripts/make_paper_artifacts.py    # -> docs/paper/TABLES.md, FIGURES.md
   python3 scripts/plot_paper_figures.py      # -> docs/paper/figures/*.svg
 fi

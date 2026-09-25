@@ -1,13 +1,43 @@
 # EchoTales v1 — final readiness
 
-**2026-09-25**, branch `validation/evidence-pass-2026-09-24` (not pushed).
+**2026-09-25; gate re-scored 2026-09-26 after the evidence-upgrade pass**, branch `validation/evidence-pass-2026-09-24` (not pushed).
 Canonical database `data/reverend-insanity.db`, sha256 `42107645…`
-(`docs/CANONICAL_RUN.md`). 1,078 tests pass.
+(`docs/CANONICAL_RUN.md`). 1,085 tests pass (2026-09-26).
 
 Every accuracy figure is scored against the **LLM-DRAFTED SILVER REFERENCE
 SET**: drafted by Claude, not human-annotated, no IAA. Per-claim evidence
 files are in `docs/FINAL_EVIDENCE_TABLE.md`; what is still missing is in
 `docs/REMAINING_WORK.md`.
+
+---
+
+## Readiness gate (2026-09-26)
+
+**Definition of 100%:** every item the project set out to show is either measured on real data with a persisted artifact, or explicitly out of scope, with nothing waiting on work the team could do alone. "WAITING ON HUMAN/IPR" means the team's part is finished and the next step belongs to reviewers, the IPR cell or counsel.
+
+| # | Area | Status | Basis |
+|---|---|---|---|
+| 1 | ENGINEERING | **DONE** | Pipeline end to end over 199 chapters; 1,085 tests; the A7 stale-appearance cache defect was found and fixed, with regression tests |
+| 2 | REPRODUCIBILITY | **DONE** | `scripts/reproduce_results.sh` (now includes A1/A2; A7 and LitBank are documented as explicit slow/ollama steps); canonical DB hash pinned |
+| 3 | CORE RESOLUTION | **PARTIAL** | Silver CEAF-e 67.4, B³ P 100, hard cases 24/24 decidable; but 58/88 hard cases are undetected, LOTM is weaker, and transmigration is mis-modelled |
+| 4 | OBSERVER STATE | **DONE** (mechanism) / **PARTIAL** (coverage) | A1: 194 → 0 leaks, A2: 14 → 0; 9 mid-chapter under-exposures; witness derivation unvalidated; no witness-level embodiment |
+| 5 | MULTIMODAL GENERATION | **PARTIAL** | Observer-conditioned render 5/5 vs 0/5 on one chapter; cache key correct after the fix but over-invalidates (274); no image-quality metric; audio does not consume state |
+| 6 | ABLATIONS | **DONE** | A1, A2, A7 plus the existing resolution ablation; negative results reported (digest not observer-causal; over-invalidation) |
+| 7 | EXTERNAL VALIDATION | **DONE** (one benchmark), result weak | LitBank, 100 documents, human key: standard CoNLL F1 15.9 (full person key) / 42.4 (names only); not comparable to supervised systems |
+| 8 | HUMAN VALIDATION | **WAITING ON HUMAN** | 200 + 88 rows and a protocol prepared; **0 labels**; κ is not computed and is not reported with one reviewer |
+| 9 | PATENT / IP | **WAITING ON IPR** | Private packet complete (kept out of this public-tracked file; see Section H); the decision rests with the IPR cell and counsel |
+| 10 | PUBLICATION | **PARTIAL** | Experiment table, claim boundaries and venue decision done (workshop/demo first; main track only after human labels); no paper draft yet; sequenced after the IPR decision |
+| 11 | SECURITY | **PARTIAL** | `.env` untracked and never committed; no key patterns in tracked files or history; nothing pushed since `6aed9f9`. **The live keys in `.env` were exposed in session transcripts and must be rotated by the owner.** |
+| 12 | DOCUMENTATION | **DONE** | EVOLUTION 4.91, experiment docs under `docs/eval/`, evidence matrix (`FINAL_EVIDENCE_TABLE.md` section 6), CLAUDE.md test count fixed |
+
+**Overall:**
+
+| | % | What is missing |
+|---|---:|---|
+| Engineering | 90 | Observer-scoped persona bindings, a transmigration merge, and less over-invalidation in the digest |
+| Research evidence | 65 | Human labels (the single largest gap); witness-derivation precision; multi-chapter render evidence |
+| Patent package | 90 | Counsel's reading of the closest patent's full text, and the IPR cell's decision |
+| Publication package | 55 | Human labels, a paper draft, and the IPR go-ahead |
 
 ---
 
@@ -23,7 +53,9 @@ Real data, with a persisted artifact:
 - Observer-scoped knowledge state: reader 2 / witness 1 / non-witness 0 aliases, and the witness 0 / 1 / 1 asking from ch150 / 166 / 200. Same identity in every query; 6/6 checks pass.
 - Observer-conditioned visual generation on a real engine: reader 5/5 conditioned panels, non-reader 0/5.
 - Sequential Self/Persona: one Self, two disjoint bodies.
-- Read-set-derived cache invalidation (controlled tests).
+- Read-set-derived cache invalidation: controlled tests, plus the A7 ablation (218 panels). The digest prevents 46 stale reuses; it also over-invalidates 274.
+- Observer ablations A1/A2: collapsing the observer yields 194 leaks; removing knowledge time yields 14 (full: 0).
+- External LitBank benchmark, human-annotated key: standard CoNLL F1 15.9 / 42.4 (full person key / names only).
 - Same-range baseline comparison, cost and coverage.
 
 ## B. Partially verified
@@ -54,7 +86,8 @@ Real data, with a persisted artifact:
   - LINK / NEW / DEFER accuracy and calibration coverage;
   - CLIPScore, identity consistency and image rating;
   - audio MOS and speaker similarity;
-  - BOOKCOREF, LitBank, GraphRAG and CORE-KG (not directly comparable, not reproduced here);
+  - BOOKCOREF, GraphRAG and CORE-KG (not reproduced here); LitBank was run, see A;
+  - GPU time saved or spent by the render cache (A7 is stub-only);
   - LOTM full volume and ORV.
 
 ## E. Final benchmark numbers
@@ -71,6 +104,9 @@ Real data, with a persisted artifact:
 | Observer render: reader / non-reader conditioned panels | 5/5 / 0/5 | `OBSERVER_CONTRAST_VALIDATION.md` |
 | Speaker attribution coverage | 46.1% (2,392 / 5,192) | `CANONICAL_RUN.md` |
 | LOTM ch1–3: B³ recall; CEAF-e F1 | 62.3%; 41.4 | LOTM results dir |
+| A1 / A2 observer ablations: state leaks (full → ablated) | 0 → 194 / 0 → 14 | `observer_ablation.json` |
+| A7 cache key: stale reuses without / with the digest; unnecessary regenerations | 46 / 0; 274 | `a7_cache_ablation.json` |
+| LitBank (human key, 100 docs): standard CoNLL F1, full / names only | 15.9 / 42.4 | `litbank_results.json` |
 
 ## F. Remaining limitations
 

@@ -493,10 +493,19 @@ counting). `QATier` and `VisualQAResult` are fully typed in
     hosted engines **ignore reference images entirely**, Gemini refuses this
     novel's gore outright, OpenRouter's free tier stops at 2 images.
 
-25. **Close Phase 1's own exit criterion.** `cache_key.py`/`plan_builder.py`
-    *are* wired (EVOLUTION 4.72 — `docs/VISUAL_RENDERING.md` is stale on this)
-    but were only ever exercised in stub mode. Run one real render, change the
-    seed, confirm the cache invalidates instead of serving a stale image.
+25. **Close Phase 1's own exit criterion. PARTIAL — the stub-mode ablation
+    found and fixed a real defect (EVOLUTION 4.91, `docs/eval/A7_CACHE_ABLATION.md`);
+    the real-render/GPU leg is still open.** `cache_key.py`/`plan_builder.py`
+    *are* wired (EVOLUTION 4.72 — `docs/VISUAL_RENDERING.md` is stale on this).
+    The A7 cache-key ablation (`scripts/a7_cache_ablation.py`, stub image
+    engine, no GPU) isolated the state-derived part of the key and found the
+    shipped key served 23/23 panels stale on a drawn-persona hair or attire
+    change, because `state_of` on a Self returns only Self-targeted
+    attributes while appearance attributes are Persona-targeted. Fixed in
+    `render/plan_builder.py`, which now hashes the drawn persona's standing
+    attributes into `state_digest`. Aliases are still not in the key. Still
+    needed: run one real render on a real image engine, change the seed,
+    confirm the cache invalidates instead of serving a stale image.
 
 ---
 

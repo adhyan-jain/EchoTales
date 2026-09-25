@@ -1665,6 +1665,35 @@ own operating region contains no labels at all: neither a fitted scorer nor
 a bounded investigator can be evaluated there, which is why neither was
 built past this probe. See `docs/SCORER_DIAGNOSIS.md`.
 
+### `scripts/observer_ablation.py`, `eval/litbank.py`, `scripts/prepare_human_review.py` (EVOLUTION 4.91, 2026-09-26)
+
+**A1/A2** make the observer axis's `architecture.md` acceptance test
+causal rather than descriptive: `observer_ablation.py` re-runs the same 228
+queries over 3 reveals with the observer collapsed to `READER` (A1) or
+knowledge position set to `+inf` (A2), against FULL as the baseline (0
+leaks). A1 leaks 194/194; A2 leaks 14 state but 0 render, because
+embodiment bindings are reader-scoped and only `state_of` sees the
+difference. Pre-registered rules are in the script's own docstring so the
+comparison can't be tuned after seeing the result.
+
+**LitBank** (`eval/litbank.py`, `scripts/litbank_eval.py`) is the project's
+first score against a human-annotated key rather than the project's own
+LLM-drafted silver set — do not call the silver set "gold" and do not
+conflate this with it. 100 documents, `qwen2.5:7b` NER, standard CoNLL F1:
+15.9 on the full person key, 42.4 restricted to proper-name mentions (the
+system does no pronoun/nominal resolution by design, so the full-key number
+is expected to be low, not a bug). Two scorer bugs were found and fixed
+while building this: cluster-name T-lines were overwriting mention types,
+and pooled CEAF-e across all 100 documents did not terminate, so matching
+is now per-document with pooled numerators/denominators. Not comparable to
+the published supervised 68.1 — different task setup, not a claim of parity.
+
+**Human review** (`scripts/prepare_human_review.py`) produces a 200-row
+stratified sample plus the 88 known hard cases as gitignored CSVs (they
+contain chapter text windows, which `data/gold/` policy excludes from git).
+**0 rows are labelled and no κ is computed** — this is a prepared package,
+not a completed human-validation pass.
+
 ### Compute and cost budget
 
 Measured baseline: **1.9 s/call** (`qwen2.5:7b`, steady state, RTX 4060 8 GB).
@@ -1943,6 +1972,19 @@ invalidate a cached panel that was rendered before the reveal.
 `test_alias_change_is_not_in_the_read_set` records this as current,
 intentional behaviour to be changed deliberately (and the test updated with
 it), not silently.
+
+**"and attributes" was not actually true until 2026-09-26.** The A7
+cache-key ablation (`scripts/a7_cache_ablation.py`, EVOLUTION 4.91) found
+that `state_of` on a Self returns only Self-targeted attributes while every
+appearance attribute in the corpus is Persona-targeted, so a drawn
+character's hair or attire change never reached the digest: the shipped
+key served 23/23 panels stale on each. Fixed in `render/plan_builder.py`,
+which now hashes the drawn persona's standing attributes too, with two new
+regression tests (`test_an_appearance_change_on_the_drawn_persona_
+invalidates`, `..._offstage_persona_does_not`). The fix over-corrects in
+the other direction: 274 unnecessary regenerations over 218 panels
+(an undrawn concurrent body, a non-visual Self attribute), not yet
+tightened.
 
 ---
 
