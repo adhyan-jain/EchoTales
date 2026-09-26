@@ -26,7 +26,7 @@ Old links keep working: `/?review` goes to `/projects`, `/?gallery` to `/design`
 Both need the backend running. `--source` names a database, a novel id and a label:
 
 ```bash
-uv run echotales webview-server --source data/reverend-insanity.db:reverend-insanity:"Reverend Insanity"
+uv run echotales webview-server --source data/db/reverend-insanity.db:reverend-insanity:"Reverend Insanity"
 ```
 
 **Development** (hot reload; talks to the backend on `http://localhost:8787`):
@@ -53,7 +53,7 @@ Set `ECHOTALES_WEBVIEW_PASSWORD` in the server's environment to require a passwo
 
 ## Design
 
-The direction was changed on 2026-09-26/27 (details in `EVOLUTION.md` 4.92/4.93; token history in the comment at the top of `tailwind.config.js`):
+The direction was changed on 2026-09-26/27 (details in `docs/EVOLUTION.md` 4.92/4.93; token history in the comment at the top of `tailwind.config.js`):
 
 1. an "editorial archive" (Fraunces, brass, 2 px corners) was rejected as too quiet;
 2. "cinematic dark" (violet accent, glow, Inter / Inter Tight) was rejected as generic;
@@ -68,7 +68,7 @@ Current (commit `ec6a1d2`): the violet cinematic-dark look, with a light theme; 
 Corrections are a JSONL log per novel (`<corrections-dir>/<novel>.jsonl`), **not** rows in the database, until you press Apply. The default corrections directory is `data/corrections`, relative to the server's working directory, which is inside the tracked repo. To try the Review tools without touching real data, work on copies and start the server from a scratch directory:
 
 ```bash
-mkdir -p /tmp/qa/data/corrections && cp data/reverend-insanity.db /tmp/qa/ri.db
+mkdir -p /tmp/qa/data/corrections && cp data/db/reverend-insanity.db /tmp/qa/ri.db
 cd /tmp/qa && uv run --project <repo> echotales webview-server \
   --source /tmp/qa/ri.db:reverend-insanity:"Reverend Insanity" \
   --corrections-dir /tmp/qa/data/corrections --static-dir <repo>/webview/build --port 8788

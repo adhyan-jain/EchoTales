@@ -1,4 +1,4 @@
-"""Candidate retrieval for global resolution (plans.md Section 6 Phase 6, step 1).
+"""Candidate retrieval for global resolution (docs/design/plans.md Section 6 Phase 6, step 1).
 
 Given a local mention group, produce the top-k entities it might denote. k=10
 is enough: the point of retrieval is to bound the scoring work, not to decide

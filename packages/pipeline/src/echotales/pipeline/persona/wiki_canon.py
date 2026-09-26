@@ -387,7 +387,7 @@ def canon_path(novel_id: str, *, data_root: str | Path = "data") -> Path:
     """Where this novel's wiki canon is cached.
 
     Written to disk rather than the graph on purpose: it is *input*, like
-    `data/scene-references/`, re-derivable at any time, and keeping it out
+    `data/novels/RI/scene-references/`, re-derivable at any time, and keeping it out
     of the store means a bad wiki edit can never corrupt attested facts.
     """
     from echotales.pipeline.paths import novel_root

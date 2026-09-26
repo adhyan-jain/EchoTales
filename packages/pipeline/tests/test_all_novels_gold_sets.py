@@ -5,7 +5,7 @@ from echotales.pipeline.eval.gold import CIRCULAR_DRAFTERS, ReviewDepth, read_go
 # No novel has confirmed gold. This used to say reverend-insanity did, on the
 # strength of a 2026-08-12 bulk approval, and that claim is what let a B-cubed
 # number (P=100.0%, R=94.6%, F1=97.2%) be reported from labels the pipeline had
-# drafted for itself -- see EVOLUTION.md 4.74 and data/gold/_unusable/README.md.
+# drafted for itself -- see docs/EVOLUTION.md 4.74 and data/gold/_unusable/README.md.
 # The set is empty now because it was always empty; only the flag said otherwise.
 #
 # When a real per-record pass lands, add the novel here and the test starts

@@ -1,4 +1,4 @@
-"""Phase 4: speaker attribution by escalation (plans.md Section 6 Phase 4).
+"""Phase 4: speaker attribution by escalation (docs/design/plans.md Section 6 Phase 4).
 
 Each tier is cheaper and more precise than the next, so a line is only handed
 down when the tier above it cannot answer:
@@ -87,7 +87,7 @@ _NAME_THEN_ACTION = re.compile(
 # inner monologue with his name sitting directly next to the quote -- the
 # easiest possible case -- and this tier was silently missing both because
 # the verb list is a fixed enumeration, letting both fall through to
-# anonymous slots. Not a speculative vocabulary expansion (EVOLUTION.md
+# anonymous slots. Not a speculative vocabulary expansion (docs/EVOLUTION.md
 # warns against that -- the combat-vocabulary mechanism that scored zero
 # from guessing): these two verbs are added because they were caught
 # missing two real, checkable lines, not because they seemed plausible.
@@ -102,7 +102,7 @@ _PRONOUN_SUBJECT = re.compile(r"\b(?:he|she|they|it)\s+(?:\w+\s+){0,2}?(?:" + _S
 #: vocabulary: RI ch1's ancestral-hall scene repeats "the clan head"/"the
 #: Gu Yue clan head" as its speaker tag four separate times and none of them
 #: were ever resolved (Section 4.34); extend this list only against other real,
-#: checked chapters, not speculatively -- see EVOLUTION.md on the combat-
+#: checked chapters, not speculatively -- see docs/EVOLUTION.md on the combat-
 #: vocabulary mechanism that scored zero from guessing instead of measuring.
 _ROLE_EPITHETS = ("clan head",)
 
@@ -316,7 +316,7 @@ def attribute_proximal(
 ) -> Attribution | None:
     """Tier 2: the speaker is the character acting next to the line.
 
-    The failure mode plans.md calls out is the split sentence: in "Wu Liao
+    The failure mode docs/design/plans.md calls out is the split sentence: in "Wu Liao
     excused himself, but Wu An hesitated and said softly:" the speaker is Wu
     An, not Wu Liao. So the *last* name before the line wins, not the first --
     proximity is measured from the quote outward.

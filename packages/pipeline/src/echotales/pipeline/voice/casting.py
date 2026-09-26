@@ -1,7 +1,7 @@
-"""Assign a reference voice to every character (`architecture.md Section 8b`).
+"""Assign a reference voice to every character (`docs/design/architecture.md Section 8b`).
 
 **Graph colouring runs within each archetype bucket, never globally**, and
-that decision is already made and reasoned in `architecture.md Section 8b`: in a long
+that decision is already made and reasoned in `docs/design/architecture.md Section 8b`: in a long
 cultivation novel the co-occurrence graph over principal characters is close
 to complete, so the chromatic number exceeds any archetype-appropriate
 palette and global collision-free assignment is not achievable. A young
@@ -67,7 +67,7 @@ class CastingReport:
             f"{self.novel_id}: {self.assigned:,} characters cast",
             f"  bucket pressure: {pressure}",
             f"  co-occurring same-voice collisions: {len(self.collisions)}"
-            " (accepted by design -- architecture.md Section 8b)",
+            " (accepted by design -- docs/design/architecture.md Section 8b)",
         ]
         for a, b in self.collisions[:5]:
             lines.append(f"    {a} shares a voice with {b}")

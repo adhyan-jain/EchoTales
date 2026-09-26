@@ -1,4 +1,4 @@
-"""Log-linear scoring over the evidence vector (plans.md Section 6 Phase 6, step 3; Section 7).
+"""Log-linear scoring over the evidence vector (docs/design/plans.md Section 6 Phase 6, step 3; Section 7).
 
 A linear model on interpretable features, not a black box. Two reasons that
 matters here beyond taste:
@@ -6,11 +6,11 @@ matters here beyond taste:
 - Every decision can be explained by naming which feature carried it, which is
   what makes the resolution event log auditable at chapter 190 for a link made
   at chapter 40.
-- The ablations plans.md requires (no temporal scoping, no alias typing, no
+- The ablations docs/design/plans.md requires (no temporal scoping, no alias typing, no
   self/persona split) are implemented by zeroing named weights, rather than by
   retraining a different model each time.
 
-Weights are hand-initialised from the priors in plans.md and then fitted by
+Weights are hand-initialised from the priors in docs/design/plans.md and then fitted by
 logistic regression on gold. Hand-initialisation is not a placeholder: it makes
 the system work sensibly on a novel with no annotations yet, which is the
 normal state when a new source is added.
@@ -36,7 +36,7 @@ from echotales.core.models import SCORED_FEATURES, Candidate, EvidenceVector
 #: signal that must be corroborated by context or speech partners.
 #:
 #: `first_attested_soft_prior` stays small so a late reveal can override it
-#: (plans.md Section 4.4).
+#: (docs/design/plans.md Section 4.4).
 DEFAULT_WEIGHTS: dict[str, float] = {
     "surface_similarity": 1.2,
     "context_embedding_similarity": 2.0,

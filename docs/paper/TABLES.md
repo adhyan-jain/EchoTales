@@ -1,6 +1,6 @@
 # Report tables — generated, do not hand-edit
 
-Regenerate with `python3 scripts/make_paper_artifacts.py`.
+Regenerate with `python3 scripts/paper/make_paper_artifacts.py`.
 Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 
 ### Table 2 — Dataset characteristics and structural validation
@@ -14,7 +14,7 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 
 *Source: data/eval/validation/*.json (echotales eval --validate-gold)*
 
-*Surface-trivial = share of mentions whose identity is recoverable from the surface string alone. A file near 100% cannot measure an identity resolver; see docs/EVAL_RETRIEVER.md section 1.*
+*Surface-trivial = share of mentions whose identity is recoverable from the surface string alone. A file near 100% cannot measure an identity resolver; see docs/results/EVAL_RETRIEVER.md section 1.*
 
 
 ### Table 4 — Coreference metrics, current run
@@ -27,9 +27,9 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 | CoNLL | 87.4 | 87.4 | 87.4 |
 | B3 (project variant) | 100.0 | 93.6 | 96.7 |
 
-*Source: data/eval/results/reverend-insanity-1790342230-8ff45048/metrics.json (reference: data/gold/reverend-insanity.jsonl, db: data/reverend-insanity.db)*
+*Source: data/eval/results/reverend-insanity-1790342230-8ff45048/metrics.json (reference: data/gold/reverend-insanity.jsonl, db: data/db/reverend-insanity.db)*
 
-*Scored against the LLM-DRAFTED SILVER REFERENCE SET -- not human-annotated, no inter-annotator agreement. See docs/GOLD_DATASET_README.md. B3/MUC are TAUTOLOGICAL on a surface-trivial reference set and must not be quoted as accuracy; CEAF-e is entity-based and is the discriminative one here.*
+*Scored against the LLM-DRAFTED SILVER REFERENCE SET -- not human-annotated, no inter-annotator agreement. See docs/results/GOLD_DATASET_README.md. B3/MUC are TAUTOLOGICAL on a surface-trivial reference set and must not be quoted as accuracy; CEAF-e is entity-based and is the discriminative one here.*
 
 
 ### Table 5 — Retriever Recall@K by alias type, production query context
@@ -42,7 +42,7 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 | RIGID_NAME | 32 | 84.4% | 90.6% | 90.6% | 96.9% |
 | TRANSFERABLE_TITLE | 9 | 33.3% | 88.9% | 88.9% | 100.0% |
 
-*Source: data/eval/recall_by_category.json (scripts/recall_by_category.py, db: data/reverend-insanity.db)*
+*Source: data/eval/recall_by_category.json (scripts/eval/recall_by_category.py, db: data/db/reverend-insanity.db)*
 
 *LLM-DRAFTED SILVER REFERENCE SET (hardcases file), not human-annotated, no IAA. The reference span is handed to the retriever, so this measures retrieval, not detection. n is small for the hard types: one case moves TRANSFERABLE_TITLE about 11 points and RELATIONAL_DEICTIC 25. With the CLI's snippet context instead, overall @10 is 84.8%.*
 
@@ -60,9 +60,9 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 | no-copresence-blocking | 15,796 | 1,329 | 0 | 14,467 | 0 |
 | no-prefilters-at-all | 15,796 | 0 | 0 | 15,796 | 0 |
 
-*Source: data/eval/ablation/reverend-insanity.json (echotales ablate --out, db: data/reruns/ner-window-ri.db)*
+*Source: data/eval/ablation/reverend-insanity.json (echotales ablate --out, db: data/scratch/reruns/ner-window-ri.db)*
 
-*Re-scores cached evidence; it does not re-run resolution. 'Scorer would link' is 0 under every condition because the scorer's output is capped below its threshold (docs/SCORER_DIAGNOSIS.md), so this table measures the pre-filters. Not answerable from the cache: no-alias-typing, no-self-persona-split, no-truth-status.*
+*Re-scores cached evidence; it does not re-run resolution. 'Scorer would link' is 0 under every condition because the scorer's output is capped below its threshold (docs/results/SCORER_DIAGNOSIS.md), so this table measures the pre-filters. Not answerable from the cache: no-alias-typing, no-self-persona-split, no-truth-status.*
 
 
 ### Table 7 — Baselines vs EchoTales, chapters 1-10 (356 silver mentions)
@@ -73,9 +73,9 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 | Baseline B (dual-LLM memorisation) | 177 | 142,835 | 354 s | 133 | 95.4 | 4.6 |
 | EchoTales | 0 | — | — | 369 | 100.0 | 78.9 |
 
-*Source: data/eval/baseline_comparison.json (scripts/baseline_comparison.py)*
+*Source: data/eval/baseline_comparison.json (scripts/eval/baseline_comparison.py)*
 
-*Scored against the LLM-DRAFTED SILVER REFERENCE SET -- not human-annotated, no inter-annotator agreement. See docs/GOLD_DATASET_README.md. The reference set for this range is surface-trivial, so B3 recall here measures extraction coverage, not coreference quality. EchoTales' calls column counts resolution only; its upstream NER calls are excluded.*
+*Scored against the LLM-DRAFTED SILVER REFERENCE SET -- not human-annotated, no inter-annotator agreement. See docs/results/GOLD_DATASET_README.md. The reference set for this range is surface-trivial, so B3 recall here measures extraction coverage, not coreference quality. EchoTales' calls column counts resolution only; its upstream NER calls are excluded.*
 
 
 ### Table 6a — Gazetteer compounding by window (size 40)

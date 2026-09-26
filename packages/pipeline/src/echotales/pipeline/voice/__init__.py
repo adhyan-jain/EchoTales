@@ -1,4 +1,4 @@
-"""Phase 8: voice casting and speech synthesis (`4b`, `architecture.md Section 8b`).
+"""Phase 8: voice casting and speech synthesis (`4b`, `docs/design/architecture.md Section 8b`).
 
 Four pieces, in dependency order:
 

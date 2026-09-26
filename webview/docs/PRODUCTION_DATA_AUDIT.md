@@ -23,4 +23,4 @@ An earlier process removed the local `webview/public/data/*.json` files. They ar
 ## Not covered
 
 - Images: the landing page and library show renders of copyrighted novels' scenes (art, not text). They are served from local `data/`, are not in the repository (`data/*/panels/**` and `data/cache/` are gitignored), and are not part of the build.
-- The screenshot of the webview containing chapter text kept under `docs/IP/` is private and unrelated to the build.
+- The screenshot of the webview containing chapter text kept under `docs/private/IP/` is private and unrelated to the build.

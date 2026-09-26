@@ -37,7 +37,7 @@ from echotales.core.enums import TargetKind
 #: Deliberately excludes appearance: that is
 #: `resolve/appearance_extract.py`'s vocabulary and belongs on the PERSONA
 #: (the body), while these belong on the SELF (the continuity of
-#: consciousness) -- the split `architecture.md Section 4` draws and the one
+#: consciousness) -- the split `docs/design/architecture.md Section 4` draws and the one
 #: `models.Attribute` routes on.
 PERSON_KEYS: tuple[str, ...] = (
     "role",

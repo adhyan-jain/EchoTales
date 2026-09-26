@@ -1,7 +1,7 @@
 # Research contribution matrix
 
 **2026-09-25.** Separates genuine research contributions from engineering integration.
-- Evidence comes from `docs/FINAL_EVIDENCE_TABLE.md`, scored against the **LLM-drafted silver reference set** (not human-annotated).
+- Evidence comes from `docs/results/FINAL_EVIDENCE_TABLE.md`, scored against the **LLM-drafted silver reference set** (not human-annotated).
 - Prior-work details are in `docs/paper/RELATED_WORK_FINAL.md`.
 - Patent novelty is a different question, handled separately and privately; paper novelty is assessed here on its own terms.
 

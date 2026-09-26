@@ -70,7 +70,7 @@ _NON_FOUNDING_ALIAS_TYPES = frozenset({AliasType.RELATIONAL_DEICTIC, AliasType.T
 #: (never positively typed, backfill included) above which the SELF default
 #: is standing in for "unknown" often enough to be a pipeline gap, not
 #: individually-fine unknowns. Calibrated against the real production RI
-#: database (`data/webview-working/reverend-insanity.db`), which sits at 78%
+#: database (`data/archive/db/reverend-insanity-webview-working.db`), which sits at 78%
 #: post-backfill and is HANDOFF-documented as spot-checked mostly-correct
 #: (2/15 real gaps) -- so this warns well below that, but does not treat
 #: RI's own current, known, partially-typed state as fatal.
@@ -783,7 +783,7 @@ class CanonicalRewipeBlocked(RuntimeError):
     registered canonical DB (`data/canonical_dbs.json`) without
     `force_rewipe=True`. Core Pipeline Hardening #6: nothing previously
     stopped a scratch/experimental invocation from silently destroying
-    `data/webview-working/*.db` -- the run of record -- since the startup
+    `data/db/*.db` -- the run of record -- since the startup
     DELETE ran unconditionally."""
 
 

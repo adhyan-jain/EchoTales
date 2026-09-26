@@ -1,74 +1,72 @@
-# Source novels — NEVER commit.
-#
-# These are copyrighted texts supplied by the user for local coursework. Git
-# retains blobs in history even after a later deletion, so an accidental commit
-# is not cleanly reversible. Everything downstream is designed around this:
-# data/gold/ stores character offsets and short evidence snippets rather than
-# chapter text, precisely so annotations stay shareable without the novels.
-data/raw/
+# EchoTales .gitignore -- layout of record: data/README.md, docs/README.md.
+
+# ---- Source novels: NEVER commit ------------------------------------------
+# Copyrighted texts supplied locally. Git keeps blobs in history even after a
+# deletion, so an accidental commit is not cleanly reversible. data/gold/
+# stores offsets and short evidence snippets, never chapter text, for exactly
+# this reason.
 *.epub
 *.pdf
 *.mobi
 *.azw3
 
-# Built graph databases — regenerate with `echotales run`.
-data/*.db
-data/*.db-wal
-data/*.db-shm
-data/echotales.db*
+# ---- data/: ignored by default, tracked by exception -----------------------
+# Every earlier rule here was a wildcard added after some new output folder
+# (data/audio_real/, data/panels_v3/, ...) slipped past an exact-name rule.
+# A whitelist cannot drift that way: a new folder under data/ is local until
+# someone deliberately tracks it below.
+data/*
+!data/README.md
+!data/sources.toml
+!data/canonical_dbs.json
 
-# Section 7.2: per-project databases the webview's "New project" flow
-# creates via Registry.create_project -- generated, user-specific, same
-# reasoning as every other data/*.db pattern above.
-data/projects/
+# Evaluation results (small JSON/CSV, every paper number cites one). The
+# human-review sheets contain windows of copyrighted text: local only.
+!data/eval/
+data/eval/human_review_*.csv
+data/eval/hardcase_review_*.csv
+data/eval/compounding/litbank-*.json
 
-# Archived pre-promotion DB snapshots (paths.py-adjacent convention: never
-# overwrite, keep the old one aside) -- same reason as the rule above, just
-# a different directory.
-data/archive/
+# Correction logs (the review desk's JSONL; replayable onto a database).
+!data/corrections/
 
-# Working copies the webview backend edits, so a correction can never mutate
-# the originals above. Regenerate with the copy step in HANDOFF Section 4.18.
-data/webview-working/
-
-# Generated review artifacts (contain short text snippets from the sources).
-data/review/
+# Reference sets. Only the files that can score the pipeline are tracked;
+# quarantined sets keep just the README that says why.
+!data/gold/
 data/gold/*.jsonl
 !data/gold/reverend-insanity.jsonl
 !data/gold/lord-of-the-mysteries.jsonl
 !data/gold/omniscient-readers-viewpoint.jsonl
-# The two non-circular files, added 2026-09-24. The exception list above held
-# only the three novel-level files -- all of which are wholly or mostly
-# `gold-auto-builder` output (LOTM and ORV are 100%). The repo was therefore
-# committing the annotations that cannot score the pipeline and excluding the
-# only two that can. `-hardcases` is the corpus's single source of
-# TRANSFERABLE_TITLE / EPITHET / RELATIONAL_DEICTIC records, so without it
-# nobody who clones this repo can compute a per-alias-type recall@k at all.
-# Both store character offsets plus a ~70-char evidence snippet -- the
-# CoNLL/OntoNotes convention README.md commits to, never chapter text.
 !data/gold/reverend-insanity-hardcases.jsonl
 !data/gold/reverend-insanity-c1-c5.jsonl
-# Quarantined annotations (data/gold/_unusable/) stay out of the repo, but the
-# README explaining WHY each one is unusable is the point of keeping them --
-# track that, never the 2.4 MB of falsified records beside it.
 data/gold/_unusable/*.jsonl
-!data/gold/_unusable/README.md
-data/webview/
 
-# React viewer (packages/pipeline/.../webview.py generates its data)
+# Lexicons: induced ones and NER caches regenerate; the seed and the
+# hand-written archive are the only authored inputs.
+!data/lexicons/
+data/lexicons/*.toml
+data/lexicons/*-ner-cache.json*
+!data/lexicons/_seed.toml
+
+# Per-novel output: binary media stays local; the notes about it are tracked
+# (VERSIONS.md is the only record of what each render version was).
+!data/novels/
+data/novels/**
+!data/novels/**/
+!data/novels/*/README.md
+!data/novels/*/canon/*.json
+!data/novels/*/panels/**/VERSIONS.md
+
+# ---- docs/ ------------------------------------------------------------------
+# Patent packet and anything embargoed until the IPR decision.
+docs/private/
+
+# ---- webview ----------------------------------------------------------------
 webview/node_modules/
 webview/build/
 webview/public/data/
 
-# Induced lexicons are regenerable; keep the genre-neutral seed tracked.
-data/lexicons/*.toml
-!data/lexicons/_seed.toml
-
-# Chapter-NER cache (mentions/chapter_ner.py::NameCache) -- pure cache, keyed
-# by a hash of chapter text, regenerates on the next LLM-backed run.
-data/lexicons/*-ner-cache.json
-
-# Python
+# ---- Python -----------------------------------------------------------------
 __pycache__/
 *.py[cod]
 *.egg-info/
@@ -77,128 +75,22 @@ venv/
 .mypy_cache/
 .pytest_cache/
 .ruff_cache/
+.hypothesis/
 htmlcov/
 .coverage
 .coverage.*
 dist/
 build/
 
-# Environment
+# ---- Environment and local tooling ------------------------------------------
 .env
 .env.local
-# Machine-specific (e.g. a local gateway port) -- config.json.example is
-# the committed template, same pattern as .env/.env.example.
+# Machine-specific (e.g. a local gateway port); config.json.example is the template.
 config.json
-
-# Editors / OS
+.claude
+graphify-out/
+.playwright-mcp/
 .DS_Store
 .idea/
 .vscode/
 *.swp
-
-# Local-only Claude Code working rules — never share/commit.
-.claude
-
-# Phase 8: voice bank (~11 GB corpus) and synthesised audio. Both are
-# regenerable -- the bank by re-downloading VCTK, the audio by re-running
-# `echotales voice` -- and neither belongs in git.
-#
-# Wildcarded (`data/audio*/` not `data/audio/`), because every scratch/testing
-# rerun in this project has landed in a suffixed sibling directory --
-# `data/audio_real/`, `data/panels_v2/`, `data/panels_v3/`, `data/video_v3/`
-# -- so an exact-name-only rule silently stopped covering the very output it
-# was written for the moment anyone iterated on it. If a real, permanent
-# output directory needs tracking, `!data/whatever/` after this block is the
-# right way to carve out that exception explicitly, not renaming the rule
-# back to an exact match.
-data/voice*/
-data/audio*/
-data/reruns*/
-# Phase 9 render output. Regenerable with `echotales render`, and binary --
-# panels are one PNG per block (thousands per novel), video is one mp4 per
-# chapter. Same reasoning as data/audio*/ above, same wildcarding.
-data/panels*/
-data/motion*/
-data/references*/
-data/video*/
-
-# Ad hoc experiment / scratch databases that aren't the canonical per-novel
-# run (that's `data/<novel>.db`, matched by the `data/*.db` rule above).
-# Session scratch work has repeatedly landed here as `data/*-body.db`,
-# `data/*-split.db` and similar throwaway copies used to test a code change
-# against real data without touching the canonical graph.
-data/*-body.db
-data/*-body.db-*
-data/*-split.db
-data/*-split.db-*
-
-# Per-novel output roots (pipeline/paths.py::novel_root -> data/RI, data/LOTM,
-# data/ORV, ...). The rules above matched the old flat layout -- data/panels*,
-# data/video*, data/audio* -- and stopped covering anything the moment output
-# moved under a novel directory. Matched one asset kind at a time rather than
-# the whole novel dir, so a novel's README/manifest stays trackable while its
-# 1.9 GB of PNGs and mp4s does not.
-data/*/panels/**
-# ...and any panel directory with a suffix. `render --panel-dir` accepts an
-# arbitrary path, so an observer-contrast or A/B run lands somewhere the bare
-# `panels/` rule does not match and its PNGs become committable. Found
-# 2026-09-25 when `data/RI/panels-obs-*` (13 MB) showed up as untracked.
-data/*/panels-*/
-# ...but VERSIONS.md is the point of the convention, not an artifact. CLAUDE.md
-# tells every future session to read `data/RI/panels/ch1/VERSIONS.md` for the
-# format and to add an entry per render -- and until 2026-09-25 that file was
-# ignored, so it existed only on one machine and a clone could not read it.
-# The rule above already says a novel's README/manifest should stay trackable;
-# this is what makes that true.
-# Git cannot re-include a file inside an *excluded directory*, so the rule
-# above excludes panel **contents** (`panels/**`) rather than the directory,
-# re-includes subdirectories, then re-includes VERSIONS.md. The first version
-# of this exception excluded `panels/` itself and silently did nothing -- the
-# two VERSIONS.md files were tracked only because they were force-added.
-!data/*/panels/**/
-!data/*/panels/**/VERSIONS.md
-# RI's panels were tracked deliberately for an earlier session's
-# prompt-composition work (versioned renders reviewed directly from git);
-# disabled for now -- re-enable `!data/RI/panels/` if that's needed again.
-# !data/RI/panels/
-data/*/video/
-data/*/audio/
-data/*/motion/
-data/*/references/
-data/*/scratch/
-data/diag/
-
-# Hand-collected composition references (Pinterest fan art). Deliberately not
-# committed: these are other artists' copyrighted work, gathered as local
-# conditioning input. Pushing them to a public repo is redistribution, which
-# is a different act from using them locally -- same reasoning as data/raw/.
-data/scene-references/
-data/voice/cremad/
-
-# graphify knowledge-graph output -- regenerate with `/graphify`.
-graphify-out/
-
-# Playwright MCP's own snapshot/console-log scratch output.
-.playwright-mcp/
-
-# Invention disclosure (COMPLETION_PLAN Track 6). NEVER committed: this repo
-# has been public since its first commit (2026-08-07), and publishing a
-# disclosure document is itself a disclosure. Making the repo private later
-# does not undo one that already happened. The document exists to be handed
-# to VIT for filing, by a route that is not this remote.
-docs/IP/
-
-# Human-review sheets (scripts/prepare_human_review.py). They carry short
-# windows of the copyrighted novel text for the reviewer, so they stay local
-# like data/review/ -- share them only with the review team.
-data/eval/human_review_*.csv
-# External benchmark corpora (LitBank etc.) -- redistributed under their own
-# licences; re-download rather than commit.
-data/external/
-# Per-document compounding curves written as a side effect of the LitBank
-# run (each excerpt is its own one-chapter "novel"); meaningless individually.
-data/eval/compounding/litbank-*.json
-
-# Server-side WebP thumbnails of generated panels (webview_server.py ?w=); a
-# derived cache, regenerated on demand.
-data/cache/

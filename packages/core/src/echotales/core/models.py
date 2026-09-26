@@ -1,4 +1,4 @@
-"""Pydantic models for the narrative knowledge graph (plans.md Section 5).
+"""Pydantic models for the narrative knowledge graph (docs/design/plans.md Section 5).
 
 Two ideas shape this module and are worth stating before the code.
 
@@ -128,7 +128,7 @@ class Chapter(BaseModel):
 
 
 class Span(BaseModel):
-    """A classified span within a chapter (plans.md Section 6 Phase 1)."""
+    """A classified span within a chapter (docs/design/plans.md Section 6 Phase 1)."""
 
     id: str
     novel_id: str
@@ -158,7 +158,7 @@ class Span(BaseModel):
 
 
 class NarrativeSegment(BaseModel):
-    """Maps a discourse span onto a story-time span (plans.md Section 2.4).
+    """Maps a discourse span onto a story-time span (docs/design/plans.md Section 2.4).
 
     Default behaviour is one chapter -> one MAIN segment with
     `story_seq = chapter index`, which reduces the whole temporal apparatus to
@@ -443,7 +443,7 @@ class EvidenceVector(BaseModel):
 
     `temporal_validity` is a filter rather than a scorer, and
     `first_attested_soft_prior` is deliberately weak so a late reveal can
-    override it (plans.md Section 4.4).
+    override it (docs/design/plans.md Section 4.4).
     """
 
     declaration_match: float = 0.0

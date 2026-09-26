@@ -140,12 +140,12 @@ def test_an_appearance_change_on_an_offstage_persona_does_not(store: Store) -> N
 
 
 def test_the_a7_harness_reproduces_the_shipped_key(store: Store) -> None:
-    """scripts/a7_cache_ablation.py mirrors the key field-for-field so it can
+    """scripts/eval/a7_cache_ablation.py mirrors the key field-for-field so it can
     drop layers; condition A must equal the shipped function exactly."""
     import importlib.util
 
     spec = importlib.util.spec_from_file_location(
-        "a7", Path(__file__).resolve().parents[3] / "scripts" / "a7_cache_ablation.py")
+        "a7", Path(__file__).resolve().parents[3] / "scripts" / "eval" / "a7_cache_ablation.py")
     assert spec and spec.loader
     a7 = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(a7)

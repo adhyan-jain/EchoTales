@@ -1,4 +1,4 @@
-"""Voice bank, casting and delivery (Phase 8, `4b`, `architecture.md Section 8b`)."""
+"""Voice bank, casting and delivery (Phase 8, `4b`, `docs/design/architecture.md Section 8b`)."""
 
 from __future__ import annotations
 

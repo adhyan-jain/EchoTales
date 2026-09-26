@@ -207,7 +207,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         # *identical* upstream input reproduces the same ids. A scratch --db run
         # over different or partial chapter data can still legitimately mint
         # different first-attested positions than the canonical
-        # data/webview-working/<novel>.db for the same character, so this
+        # data/db/<novel>.db for the same character, so this
         # per-DB-stem keying stays as a safety measure: auto-flags referencing
         # those ids must never land in that novel's real corrections log. A
         # canonical run's db stem already equals the novel id, so this is a
@@ -454,7 +454,7 @@ def cmd_eval(args: argparse.Namespace) -> int:
 
     # Escalation rate, printed first because it describes the run being
     # scored rather than the scoring. Non-negotiable #7 calls this "a reported
-    # metric, not a failure mode" and `architecture.md` Section 7 calls it a
+    # metric, not a failure mode" and `docs/design/architecture.md` Section 7 calls it a
     # claimed contribution; until 2026-09-23 nothing called the function that
     # computed it (EVOLUTION 4.79).
     escalation = store.escalation_summary()
@@ -964,7 +964,7 @@ def cmd_voice(args: argparse.Namespace) -> int:
         synthesize=not args.dry_run,
     )
     print(report.summary())
-    print(f"\nmanifest: {Path(args.out) / args.novel / 'manifest.jsonl'}")
+    print(f"\nmanifest: {Path(args.out) / 'manifest.jsonl'}")
     store.close()
     return 0
 
@@ -1041,7 +1041,7 @@ def cmd_render(args: argparse.Namespace) -> int:
             # LLM backend that needs the local GPU (ollama) never has to
             # share it with the local diffusion engine in the same process
             # -- see render_panels's own docstring on prompt_cache_path and
-            # EVOLUTION.md section 9 for the measured OOM this avoids.
+            # docs/EVOLUTION.md section 9 for the measured OOM this avoids.
             # Phase 1 uses a stub image engine deliberately: no GPU cost,
             # every beat's director call still runs and gets cached.
             #

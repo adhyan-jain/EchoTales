@@ -17,16 +17,16 @@
 #   * data/raw/*.epub is gitignored (copyrighted source texts). A fresh
 #     checkout cannot regenerate a database from nothing.
 #   * There is NO human gold (EVOLUTION 4.74). Metrics are scored against the
-#     SILVER tier -- LLM-drafted, non-circular records (docs/GOLD_DATASET_README.md)
+#     SILVER tier -- LLM-drafted, non-circular records (docs/results/GOLD_DATASET_README.md)
 #     -- and every report carries that banner. That is not a bug in this script.
-#   * The default DB is the canonical v1 run (docs/CANONICAL_RUN.md, EVOLUTION
-#     4.90), promoted to data/reverend-insanity.db with its sha256 recorded.
+#   * The default DB is the canonical v1 run (docs/results/CANONICAL_RUN.md, EVOLUTION
+#     4.90), promoted to data/db/reverend-insanity.db with its sha256 recorded.
 #     The diagnostics scripts default to the same path.
 
 set -euo pipefail
 
 NOVEL="${1:-reverend-insanity}"
-DB="${2:-data/reverend-insanity.db}"
+DB="${2:-data/db/reverend-insanity.db}"
 HARDCASES="data/gold/${NOVEL}-hardcases.jsonl"
 SEED="${ECHOTALES_SEED:-20260923}"
 
@@ -63,7 +63,7 @@ echo
 echo "=== silver reference set: automatic validation ==="
 # Exits non-zero on the main RI file by design: its circular records fail the
 # surface-triviality check, and 777 spans no longer sit at their offset (7 of
-# them silver -- see docs/GOLD_DATASET_README.md "Span drift"). The verdict is
+# them silver -- see docs/results/GOLD_DATASET_README.md "Span drift"). The verdict is
 # the finding; it must not abort the rest of the reproduction.
 echotales --db "$DB" eval --novel "$NOVEL" --validate-gold || echo "  (validation verdict: FAIL -- expected, see above)"
 
@@ -76,18 +76,18 @@ fi
 if [[ "$NOVEL" == "reverend-insanity" ]]; then
   echo
   echo "=== diagnostics (RI only; hardcoded to the measured rerun DB) ==="
-  python3 scripts/recall_by_category.py --db "$DB"  # -> data/eval/recall_by_category.json
-  python3 scripts/hardcase_resolution.py --db "$DB"  # -> data/eval/hardcase_resolution.json
-  python3 scripts/scorer_diagnosis.py --db "$DB"
-  python3 scripts/scorer_fit_probe.py
-  python3 scripts/baseline_comparison.py --db "$DB"  # -> data/eval/baseline_comparison.json
-  python3 scripts/observer_ablation.py --db "$DB"   # A1/A2 -> data/eval/observer_ablation.json
+  python3 scripts/eval/recall_by_category.py --db "$DB"  # -> data/eval/recall_by_category.json
+  python3 scripts/eval/hardcase_resolution.py --db "$DB"  # -> data/eval/hardcase_resolution.json
+  python3 scripts/eval/scorer_diagnosis.py --db "$DB"
+  python3 scripts/eval/scorer_fit_probe.py
+  python3 scripts/eval/baseline_comparison.py --db "$DB"  # -> data/eval/baseline_comparison.json
+  python3 scripts/eval/observer_ablation.py --db "$DB"   # A1/A2 -> data/eval/observer_ablation.json
   # A7 is slow (8 full stub render passes, ~30 min) and LitBank needs a local
   # ollama plus the corpus under data/external/litbank; run them explicitly:
-  #   python3 scripts/a7_cache_ablation.py --db "$DB"
-  #   python3 scripts/litbank_eval.py
-  python3 scripts/make_paper_artifacts.py    # -> docs/paper/TABLES.md, FIGURES.md
-  python3 scripts/plot_paper_figures.py      # -> docs/paper/figures/*.svg
+  #   python3 scripts/eval/a7_cache_ablation.py --db "$DB"
+  #   python3 scripts/eval/litbank_eval.py
+  python3 scripts/paper/make_paper_artifacts.py    # -> docs/paper/TABLES.md, FIGURES.md
+  python3 scripts/paper/plot_paper_figures.py      # -> docs/paper/figures/*.svg
 fi
 
 echo

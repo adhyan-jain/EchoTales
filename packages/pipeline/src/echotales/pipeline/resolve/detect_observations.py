@@ -1,10 +1,10 @@
 """Record *who witnessed* each reveal, populating the observer axis.
 
-`architecture.md`'s headline acceptance test is that `state_of(observer=X)`
+`docs/design/architecture.md`'s headline acceptance test is that `state_of(observer=X)`
 returns something different from `state_of(observer=READER)` -- the Wu clan
 does not know Wu Yi Hai is Fang Yuan, even though the reader has known since
 chapter one. That test could not pass, and not because the query was wrong:
-verified against `data/webview-working/reverend-insanity.db`, every row in
+verified against `data/archive/db/reverend-insanity-webview-working.db`, every row in
 `self_persona_binding` (83), `alias_binding` (9,469) and `attribute` (536) is
 stamped `READER`, the `observation` table is **empty**, and nothing in the
 codebase ever wrote to it. The schema, the model and the query logic all
@@ -22,7 +22,7 @@ was physically present in the scene where the narrator revealed a name, so
 they plausibly learned it. It does not claim they believed it, understood it,
 or told anyone. Presence is the only witnessing signal this text reliably
 provides -- the alternative, inferring knowledge from dialogue, is the
-unbounded "replay who witnessed what" approach `architecture.md` Section 8b
+unbounded "replay who witnessed what" approach `docs/design/architecture.md` Section 8b
 already rejected for `audience_scope_compatibility` on the grounds that it
 silently becomes a constant.
 

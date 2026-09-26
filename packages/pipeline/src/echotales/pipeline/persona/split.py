@@ -1,6 +1,6 @@
 """Body changes: when one continuity of consciousness occupies a second body.
 
-`architecture.md Section 4`'s whole reason for splitting `Self` from `Persona` is
+`docs/design/architecture.md Section 4`'s whole reason for splitting `Self` from `Persona` is
 that a consciousness can outlive a body -- and until this module existed the
 pipeline never detected one, so `persona/build.py` minted exactly one persona
 per self and said so as a known limitation. Every downstream consumer

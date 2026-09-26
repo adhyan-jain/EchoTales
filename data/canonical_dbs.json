@@ -1,8 +1,8 @@
 {
-  "_comment": "Registry of canonical (run-of-record) databases, enforced in code by Store.is_canonical. Paths are relative to the repo root, matching the existing data/<path> convention (pipeline/paths.py::DATA_ROOT). Never add data/reruns/*.db or any other scratch copy here -- see CLAUDE.md and EVOLUTION.md 1099-1102 on webview-working being the run of record.",
+  "_comment": "Run-of-record databases, enforced in code by Store.is_canonical (resolve refuses to wipe them without --force-rewipe). One per novel under data/db/. Scratch copies live in data/scratch/ and must never be listed here. History: until 2026-09-27 the webview working copies were registered here while the evaluation canonical sat unregistered at data/reverend-insanity.db; the restructure moved both into one place (docs/EVOLUTION.md 4.94).",
   "paths": [
-    "data/webview-working/reverend-insanity.db",
-    "data/webview-working/lord-of-the-mysteries.db",
-    "data/webview-working/omniscient-readers-viewpoint.db"
+    "data/db/reverend-insanity.db",
+    "data/db/lord-of-the-mysteries.db",
+    "data/db/omniscient-readers-viewpoint.db"
   ]
 }

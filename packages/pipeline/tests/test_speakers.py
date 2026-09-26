@@ -115,7 +115,7 @@ class TestProximal:
         assert out.method is AttributionMethod.PROXIMAL
 
     def test_split_sentence_takes_the_nearest_name(self) -> None:
-        """The case plans.md calls out.
+        """The case docs/design/plans.md calls out.
 
         In "Wu Liao excused himself, but Wu An hesitated and said softly:" the
         speaker is Wu An -- the last name before the line, not the first.
@@ -329,7 +329,7 @@ class TestContextualTier:
         assert report.by_method.get(AttributionMethod.UNRESOLVED.value, 0) == 1
 
     def test_scene_roster_narrows_to_active_cast(self) -> None:
-        """xyz.md Step 3's scene-constrained pass, reusing tier 4 per HANDOFF.md.
+        """xyz.md Step 3's scene-constrained pass, reusing tier 4 per docs/HANDOFF.md.
 
         Chapter-wide roster has three names, but only two are present in the
         scene covering this block -- the roster handed to the model should be

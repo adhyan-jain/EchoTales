@@ -1,4 +1,4 @@
-"""Structured evidence scoring (plans.md Section 6 Phase 6, step 2).
+"""Structured evidence scoring (docs/design/plans.md Section 6 Phase 6, step 2).
 
 Ten signals are computed per (mention, candidate) pair. A **vector**, not a
 scalar similarity, because the two failure directions on this content need
@@ -21,7 +21,7 @@ Two of the scored five behave distinctively, deliberately:
 
 - **`temporal_validity`** doubles as the pre-filter's hard exclusion: an
   invalid binding is removed from consideration, not merely penalised.
-- **`first_attested_soft_prior` is weak on purpose** (plans.md Section 4.4). A hard
+- **`first_attested_soft_prior` is weak on purpose** (docs/design/plans.md Section 4.4). A hard
   first-appearance constraint would forbid the exact reveal the system exists
   to handle — a late chapter disclosing that a binding held from the start.
 """

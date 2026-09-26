@@ -1,7 +1,7 @@
 # Quarantined annotations — not gold, not usable as a measurement
 
 Files here are kept, not deleted. What went wrong is worth more as a record
-than as an absence, and this project's convention (`EVOLUTION.md`) is to
+than as an absence, and this project's convention (`docs/EVOLUTION.md`) is to
 append a correction rather than erase the mistake.
 
 **Nothing in this directory may be read by an eval path, cited in a paper, or
@@ -56,8 +56,8 @@ the quantity being measured was never independent of the thing under test.
 
 ### What it invalidated
 
-The headline coreference result, reported in `EVOLUTION.md` 4.69 and repeated
-in `docs/STATUS.md`:
+The headline coreference result, reported in `docs/EVOLUTION.md` 4.69 and repeated
+in `docs/status/STATUS.md`:
 
     confirmed-tier B-cubed, RI ch1-60, 1,816 scored mentions
     precision = 100.0%   recall = 94.6%   f1 = 97.2%
@@ -67,7 +67,7 @@ result. It is the arithmetic signature of scoring a partition against itself;
 the only reason recall is not also 100% is that the `identity_map` covers 5
 characters and the run resolved a few mentions the map had no entry for.
 
-**That number is retracted.** See `EVOLUTION.md` §4.74.
+**That number is retracted.** See `docs/EVOLUTION.md` §4.74.
 
 ### What was *not* quarantined, and why
 

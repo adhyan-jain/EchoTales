@@ -30,6 +30,7 @@ from echotales.core.enums import OBSERVER_READER, ReferenceMode, SpanType
 from echotales.core.models import Chapter, DiscoursePosition, Mention, Span
 from echotales.core.state import GenerationState, StateResolver
 from echotales.core.store import Store
+from echotales.pipeline import paths
 from echotales.pipeline.persona.attire import (
     hostile_confrontation_modifier,
     world_context,
@@ -323,7 +324,7 @@ class MangaDiffusersEngine:
     blends the images it is given, and past two the blend stops resembling
     any of them. The rest of the cast stays in the prompt as background
     figures, which is the same principal/background split
-    `plans.md` Phase 10 specifies for 3+ character panels.
+    `docs/design/plans.md` Phase 10 specifies for 3+ character panels.
     """
 
     name: str = "manga"
@@ -950,7 +951,7 @@ class NoobAIEngine(IllustriousEngine):
     # (ancient china, xianxia, wuxia, hanfu, chinese clothes) and asserted
     # "manhwa style, webtoon art" -- a Korean webtoon/comic line-and-colour
     # aesthetic with no documented reason to coexist with the ink-painting
-    # anchor, found nowhere in HANDOFF.md or EVOLUTION.md. At 47 tokens,
+    # anchor, found nowhere in docs/HANDOFF.md or docs/EVOLUTION.md. At 47 tokens,
     # `render_panels`'s own budget reservation (`_prompt_limit = 75 - 47 =
     # 28`) left no room for scene content once the always-present
     # boilerplate (headcount tag, style anchor, framing, character name)
@@ -1541,7 +1542,7 @@ def render_panels(
     novel_id: str,
     store: Store,
     *,
-    out_dir: str | Path = "data/panels",
+    out_dir: str | Path | None = None,
     engine: PanelImageEngine | None = None,
     chapters: list[float] | None = None,
     seed: int = 0,
@@ -1570,7 +1571,7 @@ def render_panels(
     #: A character id renders the scene *as that character believes it* --
     #: a concealed identity they never witnessed is not drawn under its true
     #: name, because `state_of` will not return it for them. This is
-    #: `architecture.md`'s headline acceptance test made reachable from the
+    #: `docs/design/architecture.md`'s headline acceptance test made reachable from the
     #: generation side (EVOLUTION 4.80); it is carried on the shared
     #: `StateResolver` rather than threaded per call, so no `state_of` site
     #: below can silently fall back to READER and reintroduce the spoiler.
@@ -1594,7 +1595,7 @@ def render_panels(
     separate "image" run (`client=None`, the real local diffusion engine)
     that generates every image from the cache with zero further LLM calls
     -- avoiding the VRAM conflict a resident ollama model and a local
-    diffusion pipeline have in the same process (`EVOLUTION.md` section 9).
+    diffusion pipeline have in the same process (`docs/EVOLUTION.md` section 9).
     Config: `render_direction_first` in `config.json`/`Settings`;
     `commands.py::cmd_render` is what actually runs the two passes.
 
@@ -1642,9 +1643,9 @@ def render_panels(
     _reserved_tokens = count_tokens(getattr(_budget_engine, "quality_prefix", "") or "")
     _prompt_limit = max(_USABLE_TOKENS - _reserved_tokens, 1)
     # No novel level here: `paths.novel_root` already scopes the output
-    # root to this novel (`data/RI/panels`), so repeating the id below it
+    # root to this novel (`data/novels/RI/panels`), so repeating the id below it
     # only buried the chapters one directory deeper.
-    out_dir = Path(out_dir)
+    out_dir = Path(out_dir) if out_dir is not None else paths.asset_dir(novel_id, "panels")
     report = PanelReport(novel_id=novel_id, engine=engine.name)
     generated_by_digest: dict[str, Path] = {}
     # **Real cache identity, Visual Rendering Track Phase 1b/1c.** Keyed
@@ -2116,7 +2117,10 @@ def render_panels(
                     # prevent (Fang Yuan kept coming back bulked and
                     # bright-eyed), while the curated image is ground truth.
                     sheet = (
-                        curated_character_reference(label, chapter=story_position)
+                        curated_character_reference(
+                            label, chapter=story_position,
+                            root=paths.asset_dir(novel_id, "scene-references"),
+                        )
                         or sheet
                     )
                     if sheet is not None:
@@ -2217,7 +2221,10 @@ def render_panels(
                         if new_condition:
                             conditions[new_label] = new_condition
                         new_sheet = (
-                            curated_character_reference(new_label, chapter=story_position)
+                            curated_character_reference(
+                                new_label, chapter=story_position,
+                                root=paths.asset_dir(novel_id, "scene-references"),
+                            )
                             or new_sheet
                         )
                         if new_sheet is not None:
@@ -2796,6 +2803,7 @@ def render_panels(
                         _chunk_text,
                         has_mob=bool(_chunk_mobs),
                         closeup=closeup,
+                        root=paths.asset_dir(novel_id, "scene-references"),
                     )
                     # **Section 4.4: `conditioned_on` must not claim
                     # conditioning that never happens.** `engine.generate`

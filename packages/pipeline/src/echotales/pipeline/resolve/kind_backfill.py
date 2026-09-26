@@ -9,7 +9,7 @@ behaving like characters"). That logic is real and already runs on every
 The gap it does not close: `entity_label` is written only by the Layer-1
 per-mention NER pass in `mentions/runner.py`, and it is `NULL` for every
 mention in any database whose mentions stage last ran before that pass
-existed (verified directly: `data/webview-working/reverend-insanity.db`
+existed (verified directly: `data/archive/db/reverend-insanity-webview-working.db`
 has 9568/9568 mentions with `entity_label IS NULL`, despite 9469 of them
 being `method=SCORED` -- i.e. exactly the rows that pass is supposed to
 label). `Store.get_self()` reads a `NULL` `kind` back as `TargetKind.SELF`

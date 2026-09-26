@@ -102,7 +102,7 @@ class TestGateCarriesTheMethodOut:
 class TestEscalationSummary:
     """`router.report()` computed the escalation rate and had zero callers.
 
-    `architecture.md` Section 7 names it a claimed contribution and
+    `docs/design/architecture.md` Section 7 names it a claimed contribution and
     non-negotiable #7 calls it "a reported metric, not a failure mode", yet it
     appeared in no output anywhere (COMPLETION_PLAN Track 2 item 8,
     EVOLUTION 4.79). Read off the persisted `llm_call` table rather than a

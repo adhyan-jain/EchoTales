@@ -106,7 +106,7 @@ WORLD_SETTING: dict[str, str] = {
 _DEFAULT_WORLD = "detailed background environment"
 
 #: **Grounded in the novel's own text, not wiki paraphrase.** Every claim
-#: below is a verified quote pulled from `data/echotales.db`'s `span`
+#: below is a verified quote pulled from `data/archive/db/echotales.db`'s `span`
 #: table (novel `reverend-insanity`, chapter<=30, narration/exposition
 #: spans only) via the same citation-forcing discipline as
 #: `resolve/appearance_extract.py` -- an LLM extraction pass over these
@@ -169,7 +169,7 @@ _DEFAULT_WORLD = "detailed background environment"
 #: same budget discipline as the rest of this entry.
 WORLD_CONTEXT: dict[str, str] = {
     "reverend-insanity": "Gu cultivation, Gu Masters, moonblade attacks not swords, hanfu",
-    # **Citation-verified against `data/reruns/lord-of-the-mysteries.db`'s
+    # **Citation-verified against `data/scratch/reruns/lord-of-the-mysteries.db`'s
     # `span` table, same discipline as the RI entry above (nothing here that
     # isn't a literal substring or a directly counted claim from the source
     # text).**

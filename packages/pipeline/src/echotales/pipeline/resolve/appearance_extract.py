@@ -24,7 +24,7 @@ chapter 40. Re-running on more chapters *adds* attestations rather than
 replacing them, so a profile grows monotonically as evidence arrives. A key
 whose value is already recorded is not written twice; a genuinely new value
 lands as an additional `Attribute` row, which is exactly what the temporal
-fact model is for (`architecture.md Section 3`).
+fact model is for (`docs/design/architecture.md Section 3`).
 
 Everything written here is `truth_status=INFERRED` /
 `asserted_by=INFERENCE`: it is a model's reading of the prose, not the
@@ -112,7 +112,7 @@ def eligible_prominence(store: Store, novel_id: str, entity: object) -> Prominen
 
     `Self.prominence` is written by `persona/build.py`, but every database
     built before that write landed still carries the `INCIDENTAL` default
-    for its entire cast -- measured on `data/reruns/reverend-insanity.db`,
+    for its entire cast -- measured on `data/scratch/reruns/reverend-insanity.db`,
     where all 120 entities read `INCIDENTAL` including Fang Yuan at 5,191
     mentions. Trusting the column there would make this stage silently
     process nothing, which is the worst possible failure for a stage whose
@@ -408,7 +408,7 @@ def find_reveal_blocks(
     preceding blocks would catch the two-paragraph form too, but it also
     invents attributions whenever the reveal follows unrelated narration,
     and there is no way to tell those apart without the coreference the
-    resolver does not yet do (`EVOLUTION.md`'s open declaration-pre-filter
+    resolver does not yet do (`docs/EVOLUTION.md`'s open declaration-pre-filter
     defect is the same missing mechanism).
     """
     surfaces = {s for s in _surface_forms(store, novel_id, target_id) if " " in s or len(s) > 3}

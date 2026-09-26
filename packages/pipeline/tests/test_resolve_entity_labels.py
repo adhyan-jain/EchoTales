@@ -198,7 +198,7 @@ def _seed_legacy_self(store: Store, self_id: str, novel_id: str, label: str) -> 
     """Insert a `self_entity` row the way pre-a17ea32 code did: no `kind`
     column at all. `add_self` (current code) always writes an explicit
     value, so this bypasses it to reproduce the actual on-disk shape of
-    `data/webview-working/reverend-insanity.db` (82/82 rows, `kind` NULL) --
+    `data/archive/db/reverend-insanity-webview-working.db` (82/82 rows, `kind` NULL) --
     a real ALTER-added column on rows an older INSERT statement never knew
     about, not a value anyone chose."""
     store.conn.execute(
@@ -212,7 +212,7 @@ def _seed_legacy_self(store: Store, self_id: str, novel_id: str, label: str) -> 
 class TestKindBackfill:
     """EVOLUTION 4.54: `self_entity.kind` populated once by hand on exactly
     one database, never made a standard resolve stage, so every other/newer
-    database (verified: `data/webview-working/reverend-insanity.db`, 82
+    database (verified: `data/archive/db/reverend-insanity-webview-working.db`, 82
     rows) had `kind` NULL for everything -- which `Store.get_self()` reads
     back as SELF (a person). `backfill_kinds` closes that for *existing*
     rows using the same on-disk NER cache `mentions/chapter_ner.py` writes.
@@ -395,7 +395,7 @@ class TestKindCoverageGuard:
             db_path = Path(d) / "ri-guard.db"
             import shutil
 
-            src = Path("data/webview-working/reverend-insanity.db")
+            src = Path("data/archive/db/reverend-insanity-webview-working.db")
             if not src.exists():
                 import pytest
 

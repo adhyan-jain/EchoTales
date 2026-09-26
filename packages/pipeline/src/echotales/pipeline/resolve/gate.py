@@ -1,4 +1,4 @@
-"""Three-way decision gate via conformal prediction (plans.md Section 6 Phase 6, step 4).
+"""Three-way decision gate via conformal prediction (docs/design/plans.md Section 6 Phase 6, step 4).
 
 The gate returns LINK / NEW / **DEFER**. The third option is the important one:
 without it, every ambiguous mention forces a guess, and a wrong guess made at

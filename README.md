@@ -21,9 +21,9 @@ Everything downstream — voice selection, prosody, reference images, panel
 casting — consumes that query. **The graph is the research contribution.** Audio
 and visual are demonstration surface.
 
-See [`HANDOFF.md`](HANDOFF.md) for current status and open defects,
-[`architecture.md`](architecture.md) for the model, [`details.md`](details.md)
-for per-file detail, and [`plans.md`](plans.md) for the full specification.
+See [`docs/HANDOFF.md`](docs/HANDOFF.md) for current status and open defects,
+[`docs/design/architecture.md`](docs/design/architecture.md) for the model, [`docs/design/details.md`](docs/design/details.md)
+for per-file detail, and [`docs/design/plans.md`](docs/design/plans.md) for the full specification.
 
 ## Why this is hard
 
@@ -74,22 +74,22 @@ full volume demonstrates the contribution better than three shallow novels.
 ## Layout
 
 ```
-packages/core/       models, store, state_of()  — imports nothing from pipeline
-packages/pipeline/   ingest, spans, segment, mentions, speakers, anaphora, resolve;
-                     webview_server.py is also the orchestration/correction HTTP API
-                     (job queue, EPUB upload, render preview/generate, output library)
-                     — there is no separate `apps/api` package; it lives here
-data/raw/            source EPUBs (not committed)
-data/gold/           annotations — offsets and short evidence snippets only
-data/lexicons/       genre-neutral seed + per-novel induced vocabulary
-data/<CODE>/         one novel's outputs: panels/, video/, audio/, references/,
-                     canon/ — each versioned per run (`pipeline/paths.py`)
-data/scene-references/  hand-collected composition/character images (input)
-data/voice/          VCTK (read speech), CREMA-D (91 actors, six emotions),
-                     and EARS (107 speakers, 22 emotions, whisper/loud
-                     reading styles, CC BY-NC 4.0 — research only)
-tools/               annotation CLI, replay debugger
+packages/core/       models, store, state_of()  (imports nothing from pipeline)
+packages/pipeline/   ingest -> spans -> mentions -> resolve -> persona -> render -> voice -> eval;
+                     webview_server.py is also the job / correction HTTP API
+webview/             React review and production UI
+scripts/             eval/, paper/, review/, maintenance/, reproduce_results.sh
+docs/                README.md is the index: HANDOFF (current state), EVOLUTION (history),
+                     design/, results/, status/, paper/, ops/, archive/
+data/                README.md is the map. The parts you touch:
+  db/<novel-id>.db     each novel's database (run of record)
+  novels/<CODE>/       everything generated for one novel: panels/, video/, audio/, ...
+  gold/ eval/          reference sets and every measured result
+  scratch/             disposable: reruns, test databases, debug output
 ```
+
+Every default output path comes from `packages/pipeline/src/echotales/pipeline/paths.py`;
+nothing else in the code names a folder under `data/`.
 
 `core` importing `pipeline` is a CI failure, because "generation pipelines do
 not need to understand the novel" is a claim the paper makes.
@@ -134,7 +134,7 @@ Stated here because they are load-bearing, not incidental.
   standard conformal prediction requires. **Not yet mitigated**: `resolve/
   gate.py` implements standard (non-Mondrian) conformal calibration — a
   single global `alpha` over the whole score distribution, not a
-  class-conditional split keyed on `alias_type` (see `HANDOFF.md`'s
+  class-conditional split keyed on `alias_type` (see `docs/HANDOFF.md`'s
   "Architecture-review items not yet implemented" item 4, "not started").
   The residual violation is unmitigated, not merely residual, and is
   reported as an open limitation.
@@ -143,7 +143,7 @@ Stated here because they are load-bearing, not incidental.
   the one file that previously read `confirmed: true` (RI ch1-60, 6,952
   records) was retracted 2026-09-23: it was built by reading the
   pipeline's own resolved output back out of its database, so scoring
-  against it measured the system against itself (`EVOLUTION.md` 4.74).
+  against it measured the system against itself (`docs/EVOLUTION.md` 4.74).
   It is quarantined at `data/gold/_unusable/`. Full-volume draft coverage
   exists for all three novels; two small files
   (`reverend-insanity-c1-c5.jsonl`, `reverend-insanity-hardcases.jsonl`)
@@ -157,7 +157,7 @@ Stated here because they are load-bearing, not incidental.
   surface — no coreference resolution required to score well on it.
   `reverend-insanity-c1-c5.jsonl` is 100% recoverable too, over 308 scorable
   mentions and 34 surfaces. Scoring
-  it reproduces exactly the B³ P=100.0/R=94.6/F1=97.2 that `EVOLUTION.md`
+  it reproduces exactly the B³ P=100.0/R=94.6/F1=97.2 that `docs/EVOLUTION.md`
   4.74 already retracted for a different reason (gold drafted from the
   pipeline's own output). `reverend-insanity-hardcases.jsonl` (63.6%) is the
   only evaluation set in this repository that measures anything. An
@@ -169,7 +169,7 @@ Stated here because they are load-bearing, not incidental.
   buckets and residual collisions between non-co-occurring minor characters are
   accepted and logged.
 - **Visual pipeline is a 3-chapter showcase**, not a volume-scale system.
-- **Phase 6 thresholds are untuned.** See `HANDOFF.md` Section 4.1.
+- **Phase 6 thresholds are untuned.** See `docs/HANDOFF.md` Section 4.1.
 - **Copyright.** For internal coursework only. Not for distribution. Source
   texts are not redistributed by this repository and must be supplied by the
   user.

@@ -10,7 +10,7 @@ prompt cannot state at all.
 
 So this module is the second, hand-curated half of the reference story: a
 small fixed set of images collected for *this* novel, sitting in
-`data/scene-references/`, selected per panel by keyword and by what the panel
+`data/novels/RI/scene-references/`, selected per panel by keyword and by what the panel
 already knows about itself (is there a mob? is it a close-up?) and handed to
 the same IP-Adapter slot the character sheets use.
 
@@ -33,10 +33,13 @@ from dataclasses import dataclass
 from pathlib import Path
 
 #: Where the curated images live. Novel-scoped output lives under
-#: `data/RI/` (see `pipeline/paths.py`), but these are *inputs* -- collected
+#: `data/novels/RI/` (see `pipeline/paths.py`), but these are *inputs* -- collected
 #: by hand, not generated, and never versioned per run -- so they sit in
 #: their own top-level directory rather than in a novel's output tree.
-SCENE_REFERENCE_DIR = Path("data/scene-references")
+#: Hand-picked images are per novel (`data/novels/<CODE>/scene-references`);
+#: `render_panels` passes the novel's folder. This default is Reverend
+#: Insanity's, the only novel that has any, kept so direct callers still work.
+SCENE_REFERENCE_DIR = Path("data/novels/RI/scene-references")
 
 
 @dataclass(frozen=True, slots=True)

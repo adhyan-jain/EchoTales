@@ -2,7 +2,7 @@
 
 Investigation task (2026-09-10): the scorer's existing five `SCORED_FEATURES`
 cannot separate distinct clan members sharing a surname ("six-Wang, six-Chi",
-EVOLUTION.md Section 2 / 4.1b -- "Chi Chen/Chi Lian/Mo Chen/Chi Shan/Chi
+docs/EVOLUTION.md Section 2 / 4.1b -- "Chi Chen/Chi Lian/Mo Chen/Chi Shan/Chi
 She/Chi Zhong collapse into one entity"). `_ambiguous_tokens`
 (`resolve/runner.py`) already addresses this correctly as a **negative**
 signal: it knows a bare "Wang"/"Chi" token is shared by several people and

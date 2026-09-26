@@ -73,7 +73,7 @@ def server(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     assert conn.getresponse().status == 201
     conn.close()
 
-    panels = tmp_path / "data" / "toy" / "panels"
+    panels = tmp_path / "data" / "novels" / "toy" / "panels"
     panels.mkdir(parents=True)
     Image.new("RGB", (1200, 1600), (120, 80, 200)).save(panels / "p001.png")
     (panels / "notes.md").write_text("not an image")
@@ -169,13 +169,13 @@ class TestThumbnails:
 
     def test_a_corrupt_image_is_served_unresized(self, server) -> None:
         port, tmp = server
-        (tmp / "data" / "toy" / "panels" / "bad.png").write_bytes(b"\x89PNG not really")
+        (tmp / "data" / "novels" / "toy" / "panels" / "bad.png").write_bytes(b"\x89PNG not really")
         status, _, body = _get(port, "/api/novels/toy/output/file?path=panels/bad.png&w=320")
         assert status == 200 and body == b"\x89PNG not really"
 
     def test_a_symlink_out_of_the_output_tree_is_rejected(self, server) -> None:
         port, tmp = server
-        (tmp / "data" / "toy" / "panels" / "link.png").symlink_to(tmp / "secret.txt")
+        (tmp / "data" / "novels" / "toy" / "panels" / "link.png").symlink_to(tmp / "secret.txt")
         status, _, body = _get(port, "/api/novels/toy/output/file?path=panels/link.png")
         assert status == 400 and b"TOP SECRET" not in body
 
@@ -300,7 +300,7 @@ class TestByteRanges:
 
     def test_empty_file_with_a_range_is_an_empty_200(self, server) -> None:
         port, tmp = server
-        (tmp / "data" / "toy" / "panels" / "empty.md").write_bytes(b"")
+        (tmp / "data" / "novels" / "toy" / "panels" / "empty.md").write_bytes(b"")
         status, _, body = _get_h(
             port, "/api/novels/toy/output/file?path=panels/empty.md", {"Range": "bytes=0-"}
         )
@@ -308,7 +308,7 @@ class TestByteRanges:
 
     def test_a_large_file_is_streamed_in_chunks(self, server) -> None:
         port, tmp = server
-        big = tmp / "data" / "toy" / "video"
+        big = tmp / "data" / "novels" / "toy" / "video"
         big.mkdir(parents=True)
         payload = bytes(range(256)) * 2048  # 512 KiB, several 64 KiB chunks
         (big / "v.mp4").write_bytes(payload)
@@ -348,7 +348,7 @@ class TestSlowClient:
                          headers={"Content-Type": "application/json"})
             assert conn.getresponse().status == 201
             conn.close()
-            big = tmp_path / "data" / "toy" / "video"
+            big = tmp_path / "data" / "novels" / "toy" / "video"
             big.mkdir(parents=True)
             (big / "big.mp4").write_bytes(b"\0" * (64 << 20))  # far beyond the socket buffers
 
@@ -388,7 +388,7 @@ class TestMediaAuth:
                          headers={"Content-Type": "application/json", **hdr})
             assert conn.getresponse().status == 201
             conn.close()
-            out = tmp_path / "data" / "toy" / "panels"
+            out = tmp_path / "data" / "novels" / "toy" / "panels"
             out.mkdir(parents=True)
             (out / "a.md").write_text("hello")
             media = "/api/novels/toy/output/file?path=panels/a.md"

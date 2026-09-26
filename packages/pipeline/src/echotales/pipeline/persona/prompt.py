@@ -427,7 +427,7 @@ def cast_tags(genders: list[str], *, beat: str = "") -> str:
     # measured insufficient on its own: RI ch1 blocks 0 and 36, both
     # unresolved-cast beats whose prose plainly reads male ("he"/"his"
     # throughout), still rendered feminine-presenting subjects even with
-    # `gender_negative`'s exclusion applied (`data/diag/noobai/panels/ch1/
+    # `gender_negative`'s exclusion applied (`data/scratch/diag/noobai/panels/ch1/
     # v1/p001_b0000.png`, `p016_b0036.png`) -- excluding a look is not the
     # same as asking for one, and this checkpoint needs to be asked. Uses
     # the beat's own pronouns, same signal `gender_negative` already

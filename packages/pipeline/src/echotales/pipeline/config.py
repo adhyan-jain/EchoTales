@@ -109,7 +109,7 @@ class Settings(BaseSettings):
     #: pass. False: direct and generate interleaved, one panel at a time
     #: (the original behaviour) -- only safe when direction doesn't need
     #: the local GPU (gateway/API backends), never with `ollama` alongside
-    #: a local image engine (`EVOLUTION.md` section 9's measured OOM).
+    #: a local image engine (`docs/EVOLUTION.md` section 9's measured OOM).
     render_direction_first: bool = True
 
     #: Below this confidence a local answer is escalated in hybrid mode.
@@ -119,12 +119,12 @@ class Settings(BaseSettings):
     #: misconfiguration turning a 600-chapter job into an unbounded API bill.
     max_escalations_per_run: int = 5000
 
-    db_path: Path = Path("data/echotales.db")
+    db_path: Path = Path("data/db/reverend-insanity.db")
     sources_path: Path = Path("data/sources.toml")
     gold_path: Path = Path("data/gold")
     lexicon_path: Path = Path("data/lexicons")
 
-    #: Chapters per LLM processing window (plans.md Section 6).
+    #: Chapters per LLM processing window (docs/design/plans.md Section 6).
     window_size: int = 40
 
     #: Conformal target error rate for the LINK decision.

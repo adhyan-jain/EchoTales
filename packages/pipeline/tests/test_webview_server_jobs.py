@@ -4,7 +4,7 @@ ingestion trigger, job polling, and the output library.
 
 Runs a real `HTTPServer` on an ephemeral port in a background thread (no
 existing `test_webview_server.py` to extend -- the module had zero test
-coverage before this track, per `docs/STATUS.md`'s own audit). Everything
+coverage before this track, per `docs/status/STATUS.md`'s own audit). Everything
 here is local/stub: no GPU, no network, no real novel data.
 """
 

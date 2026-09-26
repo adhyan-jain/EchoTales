@@ -1,4 +1,4 @@
-"""Phase 1: span-level classification (plans.md Section 6 Phase 1).
+"""Phase 1: span-level classification (docs/design/plans.md Section 6 Phase 1).
 
 Blocks are split into spans and each span is typed. This is what stops a
 chapter that merely *names* nine characters from producing a panel containing
@@ -43,7 +43,7 @@ _QUOTE_PAIRS = {
     "«": "»",
 }
 
-# Verbs that mark reported thought rather than speech. plans.md lists these
+# Verbs that mark reported thought rather than speech. docs/design/plans.md lists these
 # explicitly; the "in his/her heart" forms are calques common in translated
 # Chinese web fiction and are the highest-yield members of the set.
 _THOUGHT_VERBS = (

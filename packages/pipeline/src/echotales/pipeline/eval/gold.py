@@ -24,7 +24,7 @@ pipeline's own `mention` table were marked `provenance: human, confirmed:
 true`, their "NOT independently verified" notes replaced with "Ground-truth
 mention", and a B-cubed result (P=100.0%, R=94.6%, F1=97.2%) was reported from
 them. Precision of exactly 100.0% is the arithmetic signature of scoring a
-partition against itself. See `EVOLUTION.md` 4.74 and
+partition against itself. See `docs/EVOLUTION.md` 4.74 and
 `data/gold/_unusable/README.md`.
 
 So the contract is now enforced at construction rather than described:
@@ -150,7 +150,7 @@ class GoldMention:
     #: `NOT_AN_ENTITY`, since a non-entity denotes nobody.
     identity: str = ""
     kind: MentionKind = MentionKind.CHARACTER
-    #: plans.md Section 4.1 binding type. Needed to split retriever recall@k
+    #: docs/design/plans.md Section 4.1 binding type. Needed to split retriever recall@k
     #: by alias_type (eval/retriever_eval.py's TRANSFERABLE_TITLE gate) --
     #: without this field every gold mention silently reported as RIGID_NAME,
     #: which is exactly the easy case and hides a retrieval ceiling on the

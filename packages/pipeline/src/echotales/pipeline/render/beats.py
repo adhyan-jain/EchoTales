@@ -9,7 +9,7 @@ every paragraph produces near-duplicates, spends the entire render budget on
 scenery, and still misses the moments, because each panel only ever sees one
 paragraph's worth of context.
 
-This is `plans.md` Phase 10's beat segmentation, which that section always
+This is `docs/design/plans.md` Phase 10's beat segmentation, which that section always
 specified and which the first implementation skipped.
 
 **A beat starts where the picture would change**, on any of:
@@ -53,7 +53,7 @@ _MAX_BEAT_BLOCKS = 14
 #: argument about quality-per-image still holds and this is a real
 #: trade-off, not a free change -- 5x the panels is roughly 5x the render
 #: wall-clock for the same GPU (measured: 14 panels was ~31 minutes with
-#: --no-director; see EVOLUTION.md section 9 for the timing).
+#: --no-director; see docs/EVOLUTION.md section 9 for the timing).
 DEFAULT_MAX_PANELS = 70
 
 

@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from echotales.core.store import Store
+from echotales.pipeline import paths
 from echotales.pipeline.render.captions import build_captions, write_ass
 from echotales.pipeline.render.compose import ComposeEngine, get_engine
 from echotales.pipeline.render.director import build_shot_plan
@@ -82,10 +83,10 @@ def render_videos(
     novel_id: str,
     store: Store,
     *,
-    panel_dir: str | Path = "data/panels",
-    motion_dir: str | Path = "data/motion",
-    voice_dir: str | Path = "data/audio",
-    out_dir: str | Path = "data/video",
+    panel_dir: str | Path | None = None,
+    motion_dir: str | Path | None = None,
+    voice_dir: str | Path | None = None,
+    out_dir: str | Path | None = None,
     engine: ComposeEngine | None = None,
     chapters: list[float] | None = None,
     clips_per_chapter: int = 2,
@@ -101,7 +102,10 @@ def render_videos(
     """
     engine = engine or get_engine("stub")
     report = VideoReport(novel_id=novel_id, engine=engine.name)
-    out_dir = Path(out_dir)
+    panel_dir = panel_dir if panel_dir is not None else paths.asset_dir(novel_id, "panels")
+    motion_dir = motion_dir if motion_dir is not None else paths.asset_dir(novel_id, "motion")
+    voice_dir = voice_dir if voice_dir is not None else paths.asset_dir(novel_id, "audio")
+    out_dir = Path(out_dir) if out_dir is not None else paths.asset_dir(novel_id, "video")
 
     panels = [PanelImage(**raw) for raw in _read_jsonl(Path(panel_dir) / "manifest.jsonl")]
     audio_lines = [_AudioLine.from_json(raw) for raw in _read_jsonl(Path(voice_dir) / "manifest.jsonl")]

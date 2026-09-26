@@ -1,6 +1,6 @@
 """Ablation harness: re-score cached evidence under one condition at a time.
 
-`plans.md` and `details.md` have claimed since the design phase that ablations
+`docs/design/plans.md` and `docs/design/details.md` have claimed since the design phase that ablations
 "cost no additional LLM passes because they re-score cached evidence vectors."
 That is now true (`eval/evidence_cache.py`, EVOLUTION 4.78); it was not before,
 because no cache existed.

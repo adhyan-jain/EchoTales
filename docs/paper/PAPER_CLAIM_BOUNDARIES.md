@@ -1,6 +1,6 @@
 # Paper claim boundaries
 
-**2026-09-25; revised 2026-09-26 after the evidence-upgrade pass.** What the paper may say, what it may say only with a qualifier, and what it must not say. Grounded in `docs/FINAL_EVIDENCE_TABLE.md`, `CONTRIBUTION_MATRIX.md` and `RELATED_WORK_FINAL.md`.
+**2026-09-25; revised 2026-09-26 after the evidence-upgrade pass.** What the paper may say, what it may say only with a qualifier, and what it must not say. Grounded in `docs/results/FINAL_EVIDENCE_TABLE.md`, `CONTRIBUTION_MATRIX.md` and `RELATED_WORK_FINAL.md`.
 
 ## May claim (with the evidence cited)
 

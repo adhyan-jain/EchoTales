@@ -339,7 +339,7 @@ def detect_translator_handoffs(
     by romanization variants of themselves. One name changing is noise; twenty
     changing together at a single boundary is a new translator.
 
-    `min_changed` follows plans.md Section 6 Phase 0 (20+ simultaneous changes).
+    `min_changed` follows docs/design/plans.md Section 6 Phase 0 (20+ simultaneous changes).
     """
     chapters = list(store.iter_chapters(novel_id))
     if len(chapters) < window * 2:

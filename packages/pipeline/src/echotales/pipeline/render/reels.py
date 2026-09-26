@@ -7,7 +7,7 @@ not crop or composite video, and is not called from anywhere in the pipeline
 outside its own test file (`test_reels_render.py`) -- `grep -rn "reels"
 packages/pipeline/src/echotales/` confirms no caller in `cli.py` or elsewhere.
 Wiring an actual 9:16 vertical-crop/caption-placement render path onto this
-plan is unbuilt; see HANDOFF.md's "Pick up here" section.
+plan is unbuilt; see docs/HANDOFF.md's "Pick up here" section.
 """
 
 from __future__ import annotations

@@ -1,6 +1,6 @@
 # Review flow QA
 
-**Run:** 2026-09-26, against an isolated scratch backend. Nothing here touched `data/reverend-insanity.db` (sha256 prefix `86c4dbf4d691a647` before and after) or the tracked `data/corrections/` log.
+**Run:** 2026-09-26, against an isolated scratch backend. Nothing here touched `data/db/reverend-insanity.db` (sha256 prefix `86c4dbf4d691a647` before and after) or the tracked `data/corrections/` log.
 
 **Setup:** a copy of the canonical DB at `<scratch>/qa/ri.db`, a scratch corrections directory, and a 73-file copy of panels, sheets, audio and one video (no symlinks into the real data). The server was started from the scratch directory:
 

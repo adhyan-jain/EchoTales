@@ -304,7 +304,7 @@ CREATE TABLE IF NOT EXISTS observation (
     PRIMARY KEY (observer_id, fact_ref)
 );
 
--- Every LLM call routed by the escalation ladder. plans.md Section 7 names
+-- Every LLM call routed by the escalation ladder. docs/design/plans.md Section 7 names
 -- "% routed to expensive inference vs accuracy gained" as a contribution, so
 -- this table is evaluation data, not telemetry.
 CREATE TABLE IF NOT EXISTS llm_call (
@@ -323,7 +323,7 @@ CREATE TABLE IF NOT EXISTS llm_call (
 );
 CREATE INDEX IF NOT EXISTS ix_llm_stage ON llm_call(stage, tier);
 
--- Read-set tracking for cache invalidation (plans.md Section 6 Phase 7).
+-- Read-set tracking for cache invalidation (docs/design/plans.md Section 6 Phase 7).
 CREATE TABLE IF NOT EXISTS derived_artifact (
     id TEXT PRIMARY KEY,
     tier TEXT NOT NULL,
@@ -442,7 +442,7 @@ CREATE INDEX IF NOT EXISTS ix_job_novel ON job(novel_id, created_at);
 
 -- Every (mention, candidate) evidence vector the resolver scored, captured
 -- so an ablation can re-score it instead of re-resolving the volume.
--- `details.md` and `plans.md` have claimed since the design phase that
+-- `docs/design/details.md` and `docs/design/plans.md` have claimed since the design phase that
 -- ablations "cost no additional LLM passes because they re-score cached
 -- evidence vectors"; that cache did not exist, `EvidenceVector` lived only
 -- in memory inside `resolve_group`, and every ablation was therefore a full
@@ -831,7 +831,7 @@ class Store:
         ]
 
     def void_span(self, segment_ids: Sequence[str]) -> None:
-        """Flip segments to VOIDED (the illusion-arc case, plans.md Section 2.4).
+        """Flip segments to VOIDED (the illusion-arc case, docs/design/plans.md Section 2.4).
 
         Facts inside a voided span stop contributing to canonical-timeline
         queries but remain fully queryable for "what did the reader believe at
@@ -1691,7 +1691,7 @@ class Store:
 
         The `observation` table has existed since the first schema and was
         **empty in every shipped database** -- there was no writer, so
-        `architecture.md`'s headline acceptance test (`state_of(observer=X)`
+        `docs/design/architecture.md`'s headline acceptance test (`state_of(observer=X)`
         differing from `observer=READER`) could not return anything different
         (EVOLUTION 4.80).
 
@@ -1761,7 +1761,7 @@ class Store:
 
         `llm/router.py::report()` computes the same rate from in-process
         counters and had **zero callers** -- so the escalation rate, which
-        `architecture.md` Section 7 names as a claimed contribution and
+        `docs/design/architecture.md` Section 7 names as a claimed contribution and
         non-negotiable #7 calls "a reported metric, not a failure mode", was
         never reported anywhere. A router's counters are also the wrong source
         for `eval`, which runs in a separate process that makes no LLM calls
@@ -1833,7 +1833,7 @@ class Store:
         Absence of the registry file means "nothing is registered", not "an
         error" -- a scratch/test DB never created one and should not be
         blocked from working. A path is compared after resolving both sides
-        to absolute, so `data/webview-working/x.db` and
+        to absolute, so `data/db/x.db` and
         `./data/webview-working/x.db` are recognised as the same file.
         """
         if self.path == ":memory:":

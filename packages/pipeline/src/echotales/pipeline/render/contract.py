@@ -15,7 +15,7 @@ and attached to manifests (Phase 1c); it does not yet replace how prompts are
 built (`panels.py::render_panels`'s existing logic) -- that is a Phase 4
 decision, gated on real benchmark evidence, per this codebase's own repeated
 lesson that architecture changes need a measured before/after
-(EVOLUTION.md SS4.45/4.46).
+(docs/EVOLUTION.md SS4.45/4.46).
 
 `GenerationRequest` wraps `PanelImageRequest` rather than duplicating its
 fields -- see `GenerationRequest.base`.
@@ -42,7 +42,7 @@ class CharacterRole(StrEnum):
     4a, gated on benchmark evidence) can insert principals first and
     background figures last, rather than stacking every reference into one
     IP-Adapter call the way the removed conditioning path used to
-    (EVOLUTION.md SS4.47's documented contamination).
+    (docs/EVOLUTION.md SS4.47's documented contamination).
     """
 
     PRINCIPAL = "PRINCIPAL"

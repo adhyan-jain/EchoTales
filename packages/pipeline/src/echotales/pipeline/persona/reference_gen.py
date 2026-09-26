@@ -17,7 +17,7 @@ skipped when the digest still matches -- re-generating every principal on
 every run is not viable at a few seconds of GPU time each, and the source
 data changes far more rarely than the pipeline is run.
 
-**Prominence decides the budget**, as `plans.md` Phase 8 always specified:
+**Prominence decides the budget**, as `docs/design/plans.md` Phase 8 always specified:
 principals get a full detailed sheet, recurring characters a shorter prompt,
 and incidental characters no reference image at all (they fall back to the
 archetype/faction defaults in `persona/attire.py`, which is what those tiers
@@ -46,6 +46,7 @@ from echotales.core.enums import (
 from echotales.core.interval import FuzzyInterval
 from echotales.core.models import Attribute
 from echotales.core.store import Store
+from echotales.pipeline import paths
 from echotales.pipeline.persona.attire import (
     reference_anchor,
     reference_style,
@@ -446,7 +447,7 @@ def generate_references(
     store: Store,
     *,
     engine: object | None = None,
-    out_dir: str | Path = "data/references",
+    out_dir: str | Path | None = None,
     top: int | None = None,
     include_recurring: bool = True,
     width: int = 768,
@@ -489,7 +490,9 @@ def generate_references(
     from echotales.pipeline.resolve.appearance_extract import eligible_prominence
 
     engine = engine or get_engine("stub")
-    out_dir = Path(out_dir) / novel_id
+    # The novel-scoped folder already names the novel; the old default
+    # (`data/references`) needed the extra level, `data/novels/<CODE>/references` does not.
+    out_dir = Path(out_dir) if out_dir is not None else paths.asset_dir(novel_id, "references")
     report = ReferenceReport(novel_id=novel_id, engine=getattr(engine, "name", "?"))
 
     people = [e for e in store.all_selves(novel_id) if e.kind.is_person]
@@ -699,7 +702,7 @@ def _generate_one(
     # restyle -- low enough to keep the same face and hair reading as the
     # same character, high enough that "younger" or an added permanent
     # injury actually lands. Not independently tuned per-transition-kind
-    # yet; see this experiment's honest verdict in HANDOFF.md before
+    # yet; see this experiment's honest verdict in docs/HANDOFF.md before
     # promoting it.
     transition_strength = 0.5
 

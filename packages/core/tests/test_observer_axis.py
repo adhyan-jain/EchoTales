@@ -1,6 +1,6 @@
 """`state_of(observer=X)` must differ from `state_of(observer=READER)`.
 
-This is `architecture.md`'s headline acceptance test and it could not pass
+This is `docs/design/architecture.md`'s headline acceptance test and it could not pass
 until 2026-09-23 (EVOLUTION 4.80) -- not because the query was wrong, but
 because nothing ever wrote an observation. Every fact this pipeline produces
 is stamped `READER`, so a character scope matched nothing and a character
@@ -114,7 +114,7 @@ class TestObserverScoping:
 
     def test_one_fact_one_identity_visibility_varies(self, store) -> None:  # type: ignore[no-untyped-def]
         """The invention-disclosure centrepiece in one assertion chain
-        (scripts/observer_evidence.py is the real-data twin): the SAME fact
+        (scripts/eval/observer_evidence.py is the real-data twin): the SAME fact
         about the SAME Self is read by every observer -- its reference is
         derived from the fact, not a row id -- and only what is *visible*
         differs, by observer and by when they ask from."""

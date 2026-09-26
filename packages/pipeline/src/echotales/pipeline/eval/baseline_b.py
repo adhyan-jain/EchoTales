@@ -1,4 +1,4 @@
-"""Baseline B -- LLMLINK-style dual-LLM memorisation (plans.md Section 11/13, item 7).
+"""Baseline B -- LLMLINK-style dual-LLM memorisation (docs/design/plans.md Section 11/13, item 7).
 
 The second academic comparison point. Where Baseline A gives one long-context
 model everything at once, this reproduces the **dual-LLM + reference-tracking**
@@ -13,7 +13,7 @@ architecture LLMLINK introduced and LINK-KG extends:
                      memory and the descriptor alone -- the whole point of a
                      memorisation architecture.
 
-`docs/PRIOR_ART_LINKKG.md` verifies (2026-09-24, against the full paper) that
+`docs/paper/PRIOR_ART_LINKKG.md` verifies (2026-09-24, against the full paper) that
 LINK-KG describes LLMLINK as "effective on structured, homogeneous datasets
 like book chapters" while it "struggles with complex texts involving
 multi-role entities, shifting aliases, and plural references". Those are this
@@ -44,7 +44,7 @@ instead of one. Wall time and call counts are recorded per run for exactly
 that reason.
 
 Scored against an LLM-derived SILVER reference set, never human gold; see
-`docs/GOLD_DATASET_README.md`.
+`docs/results/GOLD_DATASET_README.md`.
 """
 
 from __future__ import annotations
@@ -355,7 +355,7 @@ def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
     parser = argparse.ArgumentParser(description="Baseline B -- dual-LLM memorisation")
     parser.add_argument("--novel", default="reverend-insanity")
-    parser.add_argument("--db", default="data/reruns/baseline-b.db")
+    parser.add_argument("--db", default="data/scratch/reruns/baseline-b.db")
     parser.add_argument("--model", default="qwen2.5:7b")
     parser.add_argument("--host", default="http://localhost:11434")
     parser.add_argument("--chapters", default="1-5", help="range, e.g. 1-5")

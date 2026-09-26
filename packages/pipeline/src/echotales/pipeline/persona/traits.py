@@ -99,7 +99,7 @@ class TraitProfile:
 
     @property
     def archetype(self) -> str:
-        """The voice-bank bucket key (`4b` step 2, `architecture.md Section 8b`).
+        """The voice-bank bucket key (`4b` step 2, `docs/design/architecture.md Section 8b`).
 
         Gender/age/register only. Big Five picks a voice *within* a bucket and
         shapes delivery; it deliberately does not partition the bank, because

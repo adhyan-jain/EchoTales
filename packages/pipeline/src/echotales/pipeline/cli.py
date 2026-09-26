@@ -18,7 +18,10 @@ def build_parser() -> argparse.ArgumentParser:
         prog="echotales",
         description="Bitemporal narrative knowledge graphs for web-novel adaptation.",
     )
-    parser.add_argument("--db", default="data/echotales.db", help="path to the SQLite graph")
+    parser.add_argument(
+        "--db", default=None,
+        help="path to the SQLite graph (default: data/db/<novel>.db, see pipeline/paths.py)",
+    )
     parser.add_argument("-v", "--verbose", action="store_true", help="print each stage's report")
     parser.add_argument(
         "--seed",
@@ -80,7 +83,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_review.add_argument("--novel", required=True)
     p_review.add_argument("--top", type=int, default=30, help="entities to show in the console")
     p_review.add_argument("--samples", type=int, default=3, help="evidence citations per entity")
-    p_review.add_argument("--out", default="data/review", help="directory for HTML and JSONL")
+    p_review.add_argument("--out", default="data/exports/review", help="directory for HTML and JSONL")
     p_review.add_argument("--no-files", action="store_true", help="console output only")
     p_review.add_argument(
         "--script",
@@ -140,7 +143,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help=(
             "Required to resolve against a canonical DB (registered in "
-            "data/canonical_dbs.json, e.g. data/webview-working/*.db) that "
+            "data/canonical_dbs.json, e.g. data/db/*.db) that "
             "already has resolution state -- resolve_novel refuses to run "
             "without it (Core Pipeline Hardening #6) since it deletes and "
             "rebuilds self_entity from scratch and a canonical DB is the run "
@@ -283,7 +286,7 @@ def build_parser() -> argparse.ArgumentParser:
             "prompted with an actually angry recording"
         ),
     )
-    p_voice.add_argument("--out", default="data/RI/audio")
+    p_voice.add_argument("--out", default=None, help="default: data/novels/<CODE>/audio")
     p_voice.add_argument("--chapters", help="range, e.g. 1-5; default: all")
     p_voice.add_argument(
         "--engine",
@@ -305,12 +308,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_render.add_argument("--novel", required=True)
     p_render.add_argument("--chapters", help="range, e.g. 1-5; default: all")
-    p_render.add_argument("--panel-dir", default="data/RI/panels")
-    p_render.add_argument("--motion-dir", default="data/RI/motion")
+    p_render.add_argument("--panel-dir", default=None, help="default: data/novels/<CODE>/panels")
+    p_render.add_argument("--motion-dir", default=None, help="default: data/novels/<CODE>/motion")
     p_render.add_argument(
-        "--voice-dir", default="data/RI/audio", help="must already hold `echotales voice`'s output"
+        "--voice-dir", default=None,
+        help="must already hold `echotales voice`'s output (default: data/novels/<CODE>/audio)"
     )
-    p_render.add_argument("--out", default="data/RI/video")
+    p_render.add_argument("--out", default=None, help="default: data/novels/<CODE>/video")
     p_render.add_argument(
         "--image-engine", default="stub", choices=["stub", "sdxl", "manga", "illustrious", "noobai", "refined", "gemini", "openrouter"],
         help="stub writes solid-colour placeholder panels; sdxl and manga need "
@@ -427,7 +431,7 @@ def build_parser() -> argparse.ArgumentParser:
         "reference", help="generate one cached reference sheet per prominent character"
     )
     pe_ref.add_argument("--novel", required=True)
-    pe_ref.add_argument("--out", default="data/RI/references")
+    pe_ref.add_argument("--out", default=None, help="default: data/novels/<CODE>/references")
     pe_ref.add_argument(
         "--top", type=int, default=None,
         help="limit to the N most-mentioned eligible characters",
@@ -513,14 +517,14 @@ def build_parser() -> argparse.ArgumentParser:
         "relevance", help="score rendered panels against the blocks they play under"
     )
     p_rel.add_argument("--novel", required=True)
-    p_rel.add_argument("--manifest", default="data/RI/panels/manifest.jsonl")
+    p_rel.add_argument("--manifest", default=None, help="default: data/novels/<CODE>/panels/manifest.jsonl")
     p_rel.add_argument("--worst", type=int, default=10)
 
     p_graph = sub.add_parser(
         "graph", help="render the knowledge graph as one self-contained HTML page"
     )
     p_graph.add_argument("--novel", required=True)
-    p_graph.add_argument("--out", default="data/webview/graph.html")
+    p_graph.add_argument("--out", default="data/exports/webview/graph.html")
     p_graph.add_argument("--top", type=int, default=60)
 
     p_export = sub.add_parser("export", help="emit the annotation dataset")
@@ -538,7 +542,7 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="DB_PATH:NOVEL_ID[:LABEL]",
         help="one novel's data; repeat for each novel shown in the viewer",
     )
-    p_webview.add_argument("--out", default="data/webview")
+    p_webview.add_argument("--out", default="data/exports/webview")
     p_webview.add_argument(
         "--format",
         choices=["static", "react"],
@@ -574,6 +578,36 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+#: `(command, attribute) -> asset kind` for outputs that belong to one novel.
+_PER_NOVEL_OUTPUTS = {
+    ("voice", "out"): "audio",
+    ("render", "panel_dir"): "panels",
+    ("render", "motion_dir"): "motion",
+    ("render", "voice_dir"): "audio",
+    ("render", "out"): "video",
+    ("persona", "out"): "references",
+}
+
+
+def _fill_path_defaults(args: argparse.Namespace) -> None:
+    """Resolve path defaults from the novel, via `pipeline/paths.py`.
+
+    Defaults used to be literals, several hard-coded to `data/RI/...`, so
+    `echotales voice --novel lord-of-the-mysteries` wrote into Reverend
+    Insanity's audio folder unless `--out` was given (docs/EVOLUTION.md 4.94).
+    """
+    from echotales.pipeline import paths
+
+    novel = getattr(args, "novel", None)
+    if args.db is None:
+        args.db = str(paths.db_path(novel))
+    for (command, attr), kind in _PER_NOVEL_OUTPUTS.items():
+        if args.command == command and getattr(args, attr, "") is None and novel:
+            setattr(args, attr, str(paths.asset_dir(novel, kind)))
+    if args.command == "relevance" and args.manifest is None:
+        args.manifest = str(paths.asset_dir(novel, "panels") / "manifest.jsonl")
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     # Lower scheduling priority so a long pipeline run (mention detection,
     # CPU-offloaded SDXL passes -- render/panels.py's SDXLEngine deliberately
@@ -588,6 +622,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     parser = build_parser()
     args = parser.parse_args(argv)
+    _fill_path_defaults(args)
 
     from echotales.pipeline.commands import dispatch
 

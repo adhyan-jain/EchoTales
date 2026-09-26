@@ -1,4 +1,4 @@
-"""Block-level content classification (plans.md Section 6 Phase 0).
+"""Block-level content classification (docs/design/plans.md Section 6 Phase 0).
 
 Every block of a chapter is sorted into one of the `BlockType` categories
 before any identity processing happens. Two of these carry most of the value:
@@ -11,7 +11,7 @@ would hand the reader knowledge they do not have yet and quietly defeat the
 knowledge-time model.
 
 ``SYSTEM_WINDOW`` -- stat blocks and status screens, parsed into structured
-key-value pairs rather than treated as prose. plans.md calls this the
+key-value pairs rather than treated as prose. docs/design/plans.md calls this the
 highest-precision attribute source in the novel, which it is: "Level: 7" is
 unambiguous in a way that a sentence describing someone's level never is.
 

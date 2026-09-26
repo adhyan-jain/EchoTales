@@ -1,4 +1,4 @@
-"""Building narrative segments from markers (plans.md Section 6 Phase 2).
+"""Building narrative segments from markers (docs/design/plans.md Section 6 Phase 2).
 
 Turns per-block markers into `NarrativeSegment` rows mapping discourse spans
 onto story-time spans.
@@ -6,7 +6,7 @@ onto story-time spans.
 The default is **one chapter, one MAIN segment, `story_seq = chapter index`**,
 which reduces the entire temporal apparatus to naive behaviour for a linear
 novel. Non-linear structure is an override applied only on clear evidence,
-because of the asymmetry plans.md names: a missed flashback costs one temporal
+because of the asymmetry docs/design/plans.md names: a missed flashback costs one temporal
 misattribution, while a false one costs that *plus* a spurious timeline that
 every subsequent fact gets attached to.
 

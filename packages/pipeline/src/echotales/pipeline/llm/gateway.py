@@ -10,7 +10,7 @@ problem, not this client's.
 
 Exists specifically to get panel direction (`render/direction.py`) off
 ollama: the local diffusion engine and a resident ollama model cannot both
-fit in 8 GB VRAM (`EVOLUTION.md` section 9), and routing direction calls
+fit in 8 GB VRAM (`docs/EVOLUTION.md` section 9), and routing direction calls
 through this gateway instead removes ollama from the GPU picture entirely
 for that stage, at zero API cost (free-tier keys only).
 """

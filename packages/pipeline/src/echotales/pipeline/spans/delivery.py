@@ -1,4 +1,4 @@
-"""Delivery-marker extraction (plans.md Section 6 Phase 4).
+"""Delivery-marker extraction (docs/design/plans.md Section 6 Phase 4).
 
 Non-negotiable #10: **delivery markers override scene-level sentiment.**
 

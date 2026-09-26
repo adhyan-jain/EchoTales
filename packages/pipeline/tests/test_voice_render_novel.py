@@ -1,6 +1,6 @@
 """`voice/runner.py::render_novel`, the audio orchestrator, end to end.
 
-docs/STATUS.md recorded it as having zero direct test coverage: casting,
+docs/status/STATUS.md recorded it as having zero direct test coverage: casting,
 delivery and the engine each had unit tests, but nothing ran the whole path --
 cast, script, synthesise, write the manifest -- so a break in the wiring would
 have passed CI. This runs it against the stub engine, which writes real WAV

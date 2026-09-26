@@ -9,7 +9,7 @@ for a person to spot a wrong merge or a missed speaker, because it is close to
 how the mistake would actually be experienced by a reader or a TTS listener.
 
 One static HTML file plus one small JS data file per novel. No server, no
-build step, no framework: `data/webview/index.html` opens directly in a
+build step, no framework: `data/exports/webview/index.html` opens directly in a
 browser (`file://` works — data is loaded via `<script src>`, not `fetch`,
 specifically so the same-origin restriction that blocks local `fetch()` of
 `file://` JSON never bites). Every entity gets a stable colour from its rank by

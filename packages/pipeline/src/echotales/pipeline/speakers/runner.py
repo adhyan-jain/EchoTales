@@ -207,7 +207,7 @@ def _scene_roster(
     """Narrow the tier-4 candidate pool to who's actually in the room.
 
     `xyz.md` Step 3 asked for a separate scene-constrained LLM pass; per
-    `HANDOFF.md` this instead feeds `spans/scene.py`'s registry into the
+    `docs/HANDOFF.md` this instead feeds `spans/scene.py`'s registry into the
     existing tier 4 (`speakers/contextual.py`) rather than duplicating it --
     same problem, same call site, only the roster changes. A roster of 2-4
     active names is a much easier disambiguation than the full chapter cast,

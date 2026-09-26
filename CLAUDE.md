@@ -12,38 +12,50 @@ concisely than anything below.
 Do not try to hold this project's architecture in your head from this file
 alone — read the source doc for the thing you're touching:
 
-- [`architecture.md`](architecture.md) — the bitemporal model, `state_of()`,
+- [`docs/design/architecture.md`](docs/design/architecture.md) — the bitemporal model, `state_of()`,
   and Section 11's ten non-negotiables (below).
-- [`plans.md`](plans.md) — the full phase-by-phase specification.
-- [`details.md`](details.md) — per-file design rationale.
-- [`HANDOFF.md`](HANDOFF.md) — **current open tasks only, ephemeral** (restructured
+- [`docs/design/plans.md`](docs/design/plans.md) — the full phase-by-phase specification.
+- [`docs/design/details.md`](docs/design/details.md) — per-file design rationale.
+- [`docs/HANDOFF.md`](docs/HANDOFF.md) — **current open tasks only, ephemeral** (restructured
   2026-08-31). "Pick up here" + "Open defects" are the actual
   current-state-of-the-world doc — read those before starting render or
   persona work. The permanent, append-only numbered session log (every
   real bug found, every fix shipped, in chronological sections, currently
-  past 4.93) now lives in [`EVOLUTION.md`](EVOLUTION.md), not here — a
+  past 4.93) now lives in [`docs/EVOLUTION.md`](docs/EVOLUTION.md), not here — a
   resolved/superseded HANDOFF item moves there instead of being deleted.
-- [`EVOLUTION.md`](EVOLUTION.md) — architecture decisions and reversals over
+- [`docs/EVOLUTION.md`](docs/EVOLUTION.md) — architecture decisions and reversals over
   time, with the measured reason each one happened.
 
 If you fix something and it's the kind of finding future sessions need
 (a root cause, a measured result, a defect that's only partly fixed), add a
-new numbered section to HANDOFF.md rather than leaving it only in a commit
+new numbered section to docs/HANDOFF.md rather than leaving it only in a commit
 message. That log is what makes a fresh session productive in five minutes
 instead of an hour of re-discovery.
 
 ## Layout
 
 ```
-packages/core/       models, store, state_of() -- imports nothing from pipeline
-packages/pipeline/   ingest -> spans -> segment -> mentions -> anaphora ->
-                      resolve -> persona -> world -> render -> voice -> eval
-webview/              React correction/review UI
-data/<CODE>/          one novel's outputs (panels/, video/, audio/, references/),
-                      versioned per run -- see pipeline/paths.py
-data/gold/             annotations: offsets + short evidence snippets only,
-                      never chapter text
+packages/core/       models, store, state_of()  (imports nothing from pipeline)
+packages/pipeline/   ingest -> spans -> mentions -> resolve -> persona -> render -> voice -> eval;
+                     webview_server.py is also the job / correction HTTP API
+webview/             React review and production UI
+scripts/             eval/, paper/, review/, maintenance/, reproduce_results.sh
+docs/                README.md is the index: HANDOFF (current state), EVOLUTION (history),
+                     design/, results/, status/, paper/, ops/, archive/
+data/                README.md is the map. The parts you touch:
+  db/<novel-id>.db     each novel's database (run of record)
+  novels/<CODE>/       everything generated for one novel: panels/, video/, audio/, ...
+  gold/ eval/          reference sets and every measured result
+  scratch/             disposable: reruns, test databases, debug output
 ```
+
+Every default output path comes from `packages/pipeline/src/echotales/pipeline/paths.py`;
+nothing else in the code names a folder under `data/`.
+
+Where new files go: a novel's generated media under `data/novels/<CODE>/<kind>/`
+(`paths.asset_dir`), an experiment's throwaway database under `data/scratch/`,
+a measured result under `data/eval/`, a write-up under `docs/results/`. Never a
+new top-level folder in `data/` or a new loose doc in `docs/`.
 
 `packages/core` importing from `packages/pipeline` is a CI failure —
 "generation pipelines do not need to understand the novel" is a claim the
@@ -53,7 +65,7 @@ Pipeline stages run roughly in this order (see `cli.py` subcommands:
 `ingest`, `resolve`, `appearance`, `persona`, `voice`, `render`, `eval`,
 `query`, `graph`, `export`, `webview`, plus `ablate`, `observations` and
 `annotate` added 2026-09-23 for the evaluation/observer-axis work — see
-`EVOLUTION.md` 4.78/4.80/4.81): raw EPUB -> chapters/blocks ->
+`docs/EVOLUTION.md` 4.78/4.80/4.81): raw EPUB -> chapters/blocks ->
 spans -> mentions (gazetteer + NER) -> identity resolution -> personas
 (bodies/appearance/canon) -> world context -> panel direction + image
 generation -> voice casting + synthesis -> per-chapter video composite.
@@ -75,10 +87,10 @@ passes so ollama and a local diffusion pipeline never share the GPU at once.
 
 Running a real render against a novel needs `--db <path> render --novel
 <id> ...` — `--db` is a *global* flag before the subcommand, not after it.
-`data/reruns/*.db` are scratch copies used to test extraction fixes against
-real data without touching the canonical `data/<novel>.db`.
+`data/scratch/reruns/*.db` are scratch copies used to test extraction fixes against
+real data without touching the canonical `data/db/<novel-id>.db`.
 
-## Non-negotiables (architecture.md Section 11)
+## Non-negotiables (docs/design/architecture.md Section 11)
 
 1. No clustering — incremental resolution with evidence accumulation
 2. Chapter ≠ time — three-axis temporal model
@@ -102,16 +114,16 @@ real data without touching the canonical `data/<novel>.db`.
   run against real data (with numbers) from one that's only "should work."
   Do the same — a real render/query beats reasoning about the code.
 - **Versioned output directories, and name them.** Render/voice output goes
-  under `data/<novel>/panels/vN/` etc. (`pipeline/paths.py::next_version`)
+  under `data/novels/<CODE>/panels/chN/vN/` etc. (`pipeline/paths.py::next_version`)
   so a rerun never silently overwrites the previous one. `v1`-`v9` had
   descriptive suffixes (`v9_short-clause-scene-restored`); `v10`-`v40`
   didn't, and turned into 31 directories nobody could tell apart without
   re-reading HANDOFF by date. **Every new version gets a short suffix**
   (`next_version` doesn't add one — pass it explicitly, e.g.
   `v44_carry-forward-cast-fix`), and a one-line entry in that novel's
-  `data/<novel>/panels/ch<N>/VERSIONS.md` (what was tried, and an honest
+  `data/novels/<CODE>/panels/ch<N>/VERSIONS.md` (what was tried, and an honest
   verdict from a viewer's point of view) **at the same time**, not as a
-  follow-up. See `data/RI/panels/ch1/VERSIONS.md` for the format and the
+  follow-up. See `data/novels/RI/panels/ch1/VERSIONS.md` for the format and the
   backfilled history of what v10-v43 actually were (or, for v10-v27,
   weren't — genuinely undocumented, said so rather than guessed).
 - **Config split**: `.env` for environment-dependent values (LLM mode,
@@ -131,16 +143,16 @@ real data without touching the canonical `data/<novel>.db`.
 - **After a considerable change, invoke the `docs-sync` subagent** (Agent
   tool, `.claude/agents/docs-sync.md`) before ending the turn — a new
   pipeline stage, a call path rerouted, a bug fixed that a doc calls open,
-  a new flag/config value. This is how HANDOFF.md and friends stay true
+  a new flag/config value. This is how docs/HANDOFF.md and friends stay true
   rather than drifting (see 4.49/4.50: a fix documented as "not yet
   implemented" was actually already half-written and broken). Skip it for
   trivial edits (typos, formatting, comment-only changes).
 
 ## Current known issues
 
-See HANDOFF.md's "Pick up here" section for the actual current state — it
+See docs/HANDOFF.md's "Pick up here" section for the actual current state — it
 changes every session (the numbered session log itself moved to
-EVOLUTION.md, latest section 4.93). The NER-windowing re-run (EVOLUTION
+docs/EVOLUTION.md, latest section 4.93). The NER-windowing re-run (EVOLUTION
 4.76) that an earlier session left unmeasured did run (4.84): the
 "`ollama` unreachable" blocker was a misdiagnosis — the daemon was simply
 not started — and the fix is now measured on real data (CEAF-e recall

@@ -30,6 +30,7 @@ from pathlib import Path
 from echotales.core.enums import AttributionMethod, SpanType
 from echotales.core.models import Span
 from echotales.core.store import Store
+from echotales.pipeline import paths
 from echotales.pipeline.ingest.normalize import comparison_key
 from echotales.pipeline.persona import load_trait_profiles
 from echotales.pipeline.persona.traits import gender_from_pronouns, self_reference_gender
@@ -164,7 +165,7 @@ def render_novel(
     store: Store,
     bank: VoiceBank,
     *,
-    out_dir: str | Path = "data/audio",
+    out_dir: str | Path | None = None,
     engine: TTSEngine | None = None,
     chapters: list[float] | None = None,
     seed: int = DEFAULT_SEED,
@@ -176,7 +177,7 @@ def render_novel(
     how casting decisions are reviewed before spending GPU time on them.
     """
     engine = engine or get_engine("stub")
-    out_dir = Path(out_dir)
+    out_dir = Path(out_dir) if out_dir is not None else paths.asset_dir(novel_id, "audio")
     report = VoiceReport(novel_id=novel_id, engine=engine.name)
 
     # Casting is per entity for the whole run -- a character keeps one voice

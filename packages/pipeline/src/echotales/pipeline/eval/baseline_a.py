@@ -1,6 +1,6 @@
-"""Baseline A -- long-context LLM, no graph, no gazetteer (plans.md Section 11/13).
+"""Baseline A -- long-context LLM, no graph, no gazetteer (docs/design/plans.md Section 11/13).
 
-The comparison plans.md asks for: one call per volume section, given raw
+The comparison docs/design/plans.md asks for: one call per volume section, given raw
 chapter text plus a running entity list, asked to do the same coreference
 task the resolver does -- no incremental evidence accumulation, no
 gazetteer, no temporal scoping. This module is that baseline, run for real
@@ -30,7 +30,7 @@ what the unaided local tier alone can do, so routing to the API would
 defeat the point, not just cost money.
 
 **Section size is capped by the model's real context window, not by
-plans.md's "30 chapters" figure.** `ollama show qwen2.5:7b` reports a
+docs/design/plans.md's "30 chapters" figure.** `ollama show qwen2.5:7b` reports a
 32768-token architecture limit, and it is a hard ceiling, not a request
 knob: a 30-chapter section measured at prompt_eval_count=32768 regardless
 of whether `num_ctx` in the request was 32768 or 65536 -- the model
@@ -41,7 +41,7 @@ at the ceiling. `num_ctx` covers *input + output combined* in ollama, so a
 10-chapter section (not 30) is the largest that leaves real headroom for
 the growing roster and an output budget large enough for a chapter with
 hundreds of mentions -- the default section size below reflects that
-measurement, not plans.md's figure taken at face value.
+measurement, not docs/design/plans.md's figure taken at face value.
 
 Offset recovery: the model is not asked for a character offset (LLMs count
 tokens, not characters, and would fabricate one). It is asked for the exact

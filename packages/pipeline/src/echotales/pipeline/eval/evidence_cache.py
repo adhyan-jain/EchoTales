@@ -1,6 +1,6 @@
 """Capture every scored (mention, candidate) evidence vector to the database.
 
-`details.md` and `plans.md` have claimed since the design phase that ablations
+`docs/design/details.md` and `docs/design/plans.md` have claimed since the design phase that ablations
 "cost no additional LLM passes because they re-score cached evidence vectors."
 **No such cache existed.** `EvidenceVector` was built inside `resolve_group`,
 consumed by the scorer, and dropped when the group finished, so every ablation

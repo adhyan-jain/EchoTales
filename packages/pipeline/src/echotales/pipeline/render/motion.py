@@ -33,6 +33,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Protocol
 
+from echotales.pipeline import paths
 from echotales.pipeline.render._png import write_solid_png
 from echotales.pipeline.spans.delivery import (
     DeliveryPolarity,
@@ -255,7 +256,7 @@ class MotionLibraryReport:
 def build_motion_library(
     novel_id: str,
     *,
-    out_dir: str | Path = "data/motion",
+    out_dir: str | Path | None = None,
     engine: MotionClipEngine | None = None,
     seed_images: dict[str, Path] | None = None,
     tags: tuple[str, ...] = GENERIC_TAGS,
@@ -271,7 +272,7 @@ def build_motion_library(
     look like this novel.
     """
     engine = engine or get_engine("stub")
-    out_dir = Path(out_dir)
+    out_dir = Path(out_dir) if out_dir is not None else paths.asset_dir(novel_id, "motion")
     report = MotionLibraryReport(novel_id=novel_id, engine=engine.name)
     seed_images = seed_images or {}
 
@@ -311,9 +312,9 @@ def build_motion_library(
     return report
 
 
-def load_motion_library(novel_id: str, out_dir: str | Path = "data/motion") -> dict[str, MotionClip]:
+def load_motion_library(novel_id: str, out_dir: str | Path | None = None) -> dict[str, MotionClip]:
     """Reload a previously built library, keyed by tag."""
-    manifest_path = Path(out_dir) / "manifest.json"
+    manifest_path = (Path(out_dir) if out_dir is not None else paths.asset_dir(novel_id, "motion")) / "manifest.json"
     if not manifest_path.exists():
         return {}
     raw = json.loads(manifest_path.read_text(encoding="utf-8"))

@@ -17,7 +17,7 @@ silently skips any target_id not in the map, so a stale map quietly produces
 an empty or wrong-character gold set with no error (this happened here twice:
 LOTM/ORV's original map, built against the small `det-*.db` runs, resolved to
 unrelated entities -- e.g. "self3" was a location, not a character -- against
-the full-volume DBs; and two of RI's five ids drifted after `data/echotales.db`
+the full-volume DBs; and two of RI's five ids drifted after `data/archive/db/echotales.db`
 was rebuilt the same day). Before pointing a build_*_gold() function at a new
 db_path, re-derive identity_map by looking up each character's current
 self-id (`SELECT target_id, text, COUNT(*) FROM mention WHERE text LIKE
@@ -113,11 +113,11 @@ def _extract_gold_from_db(
     return GoldSet(novel_id, mentions)
 
 
-def build_lotm_gold(db_path: Path | str = "data/lotm-vol1.db") -> GoldSet:
-    """`data/lotm-vol1.db` is the full-volume run (213 chapters, sources.toml).
+def build_lotm_gold(db_path: Path | str = "data/archive/db/lotm-vol1.db") -> GoldSet:
+    """`data/archive/db/lotm-vol1.db` is the full-volume run (213 chapters, sources.toml).
 
     self1/self2 both map to the combined "Zhou Mingrui / Klein Moretti" label:
-    two distinct personas (bodies) for one continuous self, per architecture.md's
+    two distinct personas (bodies) for one continuous self, per docs/design/architecture.md's
     self != persona axis -- collapsing them to one identity string here is
     intentional, not a resolution error.
 
@@ -147,9 +147,9 @@ def build_lotm_gold(db_path: Path | str = "data/lotm-vol1.db") -> GoldSet:
     return _extract_gold_from_db(db_path, "lord-of-the-mysteries", identity_map)
 
 
-def build_orv_gold(db_path: Path | str = "data/reruns/omniscient-readers-viewpoint.db") -> GoldSet:
+def build_orv_gold(db_path: Path | str = "data/scratch/reruns/omniscient-readers-viewpoint.db") -> GoldSet:
     """The only full-volume (188 chapters, sources.toml) ORV run on disk is a
-    `data/reruns/` scratch copy -- no canonical `data/omniscient-readers-viewpoint.db`
+    `data/scratch/reruns/` scratch copy -- no canonical `data/omniscient-readers-viewpoint.db`
     exists yet. Using it here is deliberate (it's the only full-range data
     available), but it means this gold set traces back to a scratch run, not
     the canonical DB `_extract_gold_from_db`'s docstring assumes elsewhere.
@@ -166,8 +166,8 @@ def build_orv_gold(db_path: Path | str = "data/reruns/omniscient-readers-viewpoi
     return _extract_gold_from_db(db_path, "omniscient-readers-viewpoint", identity_map)
 
 
-def build_ri_gold(db_path: Path | str = "data/echotales.db") -> GoldSet:
-    """`data/echotales.db` is the full-volume run (199 chapters, sources.toml).
+def build_ri_gold(db_path: Path | str = "data/archive/db/echotales.db") -> GoldSet:
+    """`data/archive/db/echotales.db` is the full-volume run (199 chapters, sources.toml).
 
     These ids must be re-verified against `db_path` any time it is rebuilt --
     self55/self41 previously pointed at "Gu Yue Mo Chen"/"Gu Yue Chi Lian" and

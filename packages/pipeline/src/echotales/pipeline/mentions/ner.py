@@ -1,4 +1,4 @@
-"""Layer 1 mention detection (plans.md Section 6 Phase 3).
+"""Layer 1 mention detection (docs/design/plans.md Section 6 Phase 3).
 
 **Qwen2.5, not GLiNER.** The deciding factor is training data rather than
 architecture: Qwen is trained on Chinese web-novel content *and* its English
@@ -218,7 +218,7 @@ class QwenNerDetector(MentionDetector):
     by searching the source text for each returned surface form, because a
     model cannot be relied on to report character positions accurately.
 
-    **Cost, stated plainly against `architecture.md` Section 7.** That section's
+    **Cost, stated plainly against `docs/design/architecture.md` Section 7.** That section's
     design rule is "per chapter -- one call covering the whole chapter", and
     this is now a median of 3 calls per chapter (11,667 chars / a 5,400-char
     stride), rising with chapter length. Over the 600-chapter corpus that is

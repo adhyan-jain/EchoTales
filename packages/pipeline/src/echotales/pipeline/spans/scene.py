@@ -57,7 +57,7 @@ _MOB_RE = re.compile(
     # strictly-adjacent quantifier+noun match missed entirely (Section 4.31 item 11:
     # the ancestral-hall scene's repeated "the clan elders" never fired).
     # Bounded to exactly one word, not an open-ended list, to avoid the
-    # vocabulary-growth trap EVOLUTION.md already flagged once.
+    # vocabulary-growth trap docs/EVOLUTION.md already flagged once.
     rf"(?:\w+\s+)?({'|'.join(_MOB_ROLE_NOUNS)})\b",
     re.IGNORECASE,
 )
