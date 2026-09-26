@@ -7956,3 +7956,24 @@ Opus-drafted records for ch1–3.**
 - 200 stratified mentions plus the 88 hard cases.
 - The CSVs are gitignored, since they contain text windows.
 - **0 labels; κ is not computed.**
+
+### 4.92 Webview redesign, production QA, and what the QA found *(2026-09-26)*
+
+**The webview was rebuilt** from three query-param screens into routed pages: a public landing page built from the project's own renders, a library dashboard, and a per-project workspace (Overview, Read, Characters, Studio, Review, Settings). The visual direction moved from the "editorial archive" (Fraunces, brass, 2 px corners) to a dark, violet-accent system adapted from Runway's design system; every text colour is contrast-checked, including status chips on their own tint. `App.js` and `Viewer.js` are gone; the reviewer logic moved to `pages/project/Review.js`. There is no offline JSON mode any more. Route table and run instructions: `webview/README.md`.
+
+**QA record:** `webview/docs/FINAL_WEBVIEW_QA.md` (routes, accessibility, responsive, error states, performance, production server) and `webview/docs/REVIEW_FLOW_QA.md` (the nine correction flows, verified in the UI and the database). Axe: 0 violations on 128 runs (16 routes × 4 widths × 2 themes). Tests: webview 28 to 82, backend 1,085 to 1,120.
+
+**Defects and leaks the QA found, all fixed:**
+- **A "scratch" QA run wrote into the tracked corrections log.** Corrections are a JSONL log at `./data/corrections`, relative to the server's working directory, not database rows. `webview-server` gained `--corrections-dir`. `docs/STATUS.md` had claimed "scratch DB only"; corrected.
+- **Production builds shipped full novel text.** CRA copies `public/` into `build/`, so the gitignored `public/data/*.json` exports (~14 MB, three novels) landed in `build/data/`. `postbuild` now deletes `build/data`; source maps are off (they embedded every source comment).
+- **Landing page pulled ~23 MB of full-size PNGs.** `output/file` takes `?w=320|480|960` and serves cached WebP thumbnails (`data/cache/`, now gitignored): 624 KB.
+- **Every project page downloaded the 9.4 MB novel payload, twice in the Studio.** It now loads only for Overview, Read and Review; a `GET /api/novels/<id>/chapters` route serves the Studio's chapter list.
+- **The output file route read whole files into memory** (a 262 MB chapter video) and could not seek. It now streams in chunks and answers HTTP Range.
+- **API errors were raw server text.** A 500 with a Python traceback was shown to users verbatim and every failure read "can't reach the server". Errors now carry a status, requests time out after 30 s, and the copy is plain language.
+- **Review:** the picker's Unassign row fired on Enter after typing a name; Merge up was offered across blocks (which the backend rejects at Apply, leaving an un-removable pending correction); per-line actions were hover-only (unreachable on touch); merging entities was impossible below 1024 px. The Corrections panel now lists pending items with Undo and names exactly the ones that failed on Apply. Unknown speakers are no longer capped at 4 (slot ids already carry the chapter, so numbering restarts per chapter; colours extended to 8).
+- **The landing page made claims the project cannot support** ("every voice", a character "stays one person through a change of body" (fails on LOTM), "never leave your computer" (false with a cloud model), panels "drawn from" reference sheets). Rewritten and pinned by `CopyClaims.test.js`.
+- **A tracked public doc named a patent-sensitive mechanism** (`FINAL_ECHOTALES_READINESS.md`, rewritten by another effort). Removed; the file now states why it says nothing about it.
+
+**Re-assessed, not built:** the 9:16 "reels engine" listed as Missing. `render/compose.py` already produces 1080×1920 30 fps h264/AAC chapter video (checked with ffprobe on a real render); `render/reels.py` is an unused planner that duplicates `director.py`. Only an automatic short highlight cut does not exist, and nothing measured says one is needed. The Library's permanently-empty Reels tab was removed.
+
+**Tests added for code that had none:** `render_novel` (the audio orchestrator, six tests against the stub engine with real WAV output).
