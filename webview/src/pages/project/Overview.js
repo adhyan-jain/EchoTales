@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { api } from '../../api';
 import { ProjectProblem, StatCard } from '../../components/app/Chrome';
-import { useProject } from '../../lib/ProjectContext';
+import { useNovelData } from '../../lib/ProjectContext';
 import { countKind, pickPanels, thumbUrl } from '../../lib/media';
 
 const pct = (x) => (typeof x === 'number' ? `${Math.round(x * 100)}%` : '—');
@@ -29,22 +29,17 @@ const num = (x) => (typeof x === 'number' ? new Intl.NumberFormat().format(x) : 
  * labelled that way.
  */
 export default function Overview() {
-  const { novelId, novel, error, errorStatus, refetch } = useProject();
+  const { novelId, novel, error, errorStatus, refetch, projects } = useNovelData();
   const [output, setOutput] = useState(null);
-  const [project, setProject] = useState(null);
+  const project = (projects || []).find((p) => p.id === novelId) || null;
 
   useEffect(() => {
     let alive = true;
     setOutput(null);
-    setProject(null);
     api
       .listOutput(novelId)
       .then((o) => alive && setOutput(o))
       .catch(() => alive && setOutput({ kinds: {} }));
-    api
-      .listProjects()
-      .then((l) => alive && setProject((l || []).find((p) => p.id === novelId) || null))
-      .catch(() => {});
     return () => {
       alive = false;
     };

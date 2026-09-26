@@ -106,6 +106,8 @@ export const api = {
   base: API_BASE,
   manifest: () => request('/api/manifest'),
   novel: (id) => request(`/api/novels/${enc(id)}`),
+  // Chapter numbers/titles only -- the full novel payload is ~9.4 MB.
+  chapters: (id) => request(`/api/novels/${enc(id)}/chapters`),
   corrections: (id) => request(`/api/novels/${enc(id)}/corrections`),
 
   authStatus: () => request('/api/auth/status'),

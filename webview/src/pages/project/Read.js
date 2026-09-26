@@ -6,7 +6,7 @@ import EntitySidebar from '../../components/EntitySidebar';
 import ScriptView from '../../components/ScriptView';
 import Tooltip from '../../components/Tooltip';
 import { CenterMessage, ProjectProblem } from '../../components/app/Chrome';
-import { useProject } from '../../lib/ProjectContext';
+import { useNovelData } from '../../lib/ProjectContext';
 
 /**
  * Read-only reader. The chapter lives in the path (/read/12) and a focused
@@ -16,7 +16,7 @@ import { useProject } from '../../lib/ProjectContext';
  * they live on the Review page.
  */
 export default function Read() {
-  const { novel, error, errorStatus, refetch } = useProject();
+  const { novel, error, errorStatus, refetch } = useNovelData();
   const { chapter: chapterParam } = useParams();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();

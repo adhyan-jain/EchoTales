@@ -166,3 +166,34 @@ class TestThumbnails:
         listing = json.loads(_get(port, "/api/novels/toy/output")[2])
         paths = [i["path"] for items in listing["kinds"].values() for i in items]
         assert not any(p.endswith(".webp") for p in paths)
+
+
+class TestChapterList:
+    def test_unknown_novel_is_404(self, server) -> None:
+        port, _ = server
+        assert _get(port, "/api/novels/nope/chapters")[0] == 404
+
+    def test_list_is_small_and_has_numbers(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Uses a registry handle with a stubbed payload: the route must return
+        only number/title, never the spans that make the full payload large."""
+        monkeypatch.chdir(tmp_path)
+        registry = Registry([], corrections_dir=tmp_path / "corrections", projects_dir=tmp_path / "projects")
+
+        class _Handle:
+            def payload(self):
+                return {"chapters": [{"number": 1.0, "spans": ["x" * 10000]}, {"number": 12.5, "title": "Half", "spans": []}]}
+
+        registry.handles["toy"] = _Handle()  # type: ignore[assignment]
+        queue = JobQueue()
+        queue.start()
+        httpd = HTTPServer(("127.0.0.1", 0), make_handler(registry, queue))
+        thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+        thread.start()
+        try:
+            status, _, body = _get(httpd.server_address[1], "/api/novels/toy/chapters")
+        finally:
+            httpd.shutdown()
+            thread.join(timeout=5)
+        assert status == 200
+        assert json.loads(body) == [{"number": 1.0, "title": ""}, {"number": 12.5, "title": "Half"}]
+        assert len(body) < 200

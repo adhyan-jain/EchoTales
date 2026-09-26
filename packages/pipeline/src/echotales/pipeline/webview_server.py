@@ -774,6 +774,20 @@ def make_handler(
                             "summary": handle.corrections.summary(),
                         },
                     )
+                if len(parts) == 4 and parts[:2] == ["api", "novels"] and parts[3] == "chapters":
+                    # Chapter numbers and titles only. The Studio's chapter
+                    # picker downloaded the whole novel payload (9.4 MB for a
+                    # 199-chapter book, twice per visit) just to list them.
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    return self._json(
+                        200,
+                        [
+                            {"number": c["number"], "title": c.get("title", "")}
+                            for c in handle.payload().get("chapters", [])
+                        ],
+                    )
                 if len(parts) == 4 and parts[:2] == ["api", "novels"] and parts[3] == "characters":
                     handle = registry.handles.get(parts[2])
                     if handle is None:

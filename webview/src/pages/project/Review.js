@@ -10,7 +10,7 @@ import ScriptView from '../../components/ScriptView';
 import Tooltip from '../../components/Tooltip';
 import { CenterMessage, ProjectProblem } from '../../components/app/Chrome';
 import { useToast } from '../../components/ui/Toast';
-import { useProject } from '../../lib/ProjectContext';
+import { useNovelData } from '../../lib/ProjectContext';
 import PromptModal from '../../components/ui/PromptModal';
 import { describeError } from '../../lib/errors';
 
@@ -43,7 +43,7 @@ function mentionProblem(text, span) {
  * App.js carried is gone -- every page of the new app reads the live server.
  */
 export default function Review() {
-  const { novelId, novel, error, errorStatus, refetch } = useProject();
+  const { novelId, novel, error, errorStatus, refetch } = useNovelData();
   const push = useToast();
   const [params, setParams] = useSearchParams();
   const [editMode, setEditMode] = useState(true);

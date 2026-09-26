@@ -11,9 +11,8 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import { api } from '../api';
 import { Logo, ThemeToggle } from '../components/app/Chrome';
-import { ProjectProvider } from '../lib/ProjectContext';
+import { ProjectProvider, useProject } from '../lib/ProjectContext';
 
 /**
  * Workspace shell for one project. Each job the old single screen crammed
@@ -68,7 +67,10 @@ function Sidebar({ novelId, projects, onNavigate, idPrefix }) {
       </div>
 
       <div>
-        <label htmlFor={`${idPrefix}-project-switch`} className="px-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+        <label
+          htmlFor={`${idPrefix}-project-switch`}
+          className="px-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted"
+        >
           Project
         </label>
         <select
@@ -117,21 +119,20 @@ export default function ProjectLayout() {
   const { projectId } = useParams();
   // useParams() already decodes; decoding again would throw URIError on any
   // id containing a literal '%' and take down the whole workspace.
-  const novelId = projectId;
-  const [projects, setProjects] = useState([]);
+  return (
+    <ProjectProvider novelId={projectId}>
+      <LayoutBody novelId={projectId} />
+    </ProjectProvider>
+  );
+}
+
+function LayoutBody({ novelId }) {
+  // The project list is fetched once by the provider and shared with the
+  // Overview page (it used to be fetched by both).
+  const { projects: sharedProjects } = useProject();
+  const projects = sharedProjects || [];
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
-
-  useEffect(() => {
-    let alive = true;
-    api
-      .listProjects()
-      .then((l) => alive && setProjects(l || []))
-      .catch(() => alive && setProjects([]));
-    return () => {
-      alive = false;
-    };
-  }, []);
 
   // The mobile drawer closes on navigation and on Escape.
   useEffect(() => setDrawerOpen(false), [location.pathname]);
@@ -143,46 +144,48 @@ export default function ProjectLayout() {
   }, [drawerOpen]);
 
   return (
-    <ProjectProvider novelId={novelId}>
-      <div className="flex min-h-screen bg-bg text-text">
-        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border bg-surface lg:block">
-          <Sidebar novelId={novelId} projects={projects} idPrefix="rail" />
-        </aside>
+    <div className="flex min-h-screen bg-bg text-text">
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border bg-surface lg:block">
+        <Sidebar novelId={novelId} projects={projects} idPrefix="rail" />
+      </aside>
 
-        {drawerOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Navigation">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDrawerOpen(false)} aria-hidden="true" />
-            <div className="absolute inset-y-0 left-0 w-72 overscroll-contain border-r border-border bg-surface">
-              <button
-                type="button"
-                onClick={() => setDrawerOpen(false)}
-                aria-label="Close navigation"
-                className="absolute right-3 top-4 inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:text-text"
-              >
-                <X className="h-5 w-5" aria-hidden="true" />
-              </button>
-              <Sidebar novelId={novelId} projects={projects} idPrefix="drawer" onNavigate={() => setDrawerOpen(false)} />
-            </div>
-          </div>
-        )}
-
-        <div className="flex min-w-0 flex-1 flex-col">
-          <div className="glass sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border/60 px-4 lg:hidden">
+      {drawerOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Navigation">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setDrawerOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="absolute inset-y-0 left-0 w-72 overscroll-contain border-r border-border bg-surface">
             <button
               type="button"
-              onClick={() => setDrawerOpen(true)}
-              aria-label="Open navigation"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border text-text"
+              onClick={() => setDrawerOpen(false)}
+              aria-label="Close navigation"
+              className="absolute right-3 top-4 inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:text-text"
             >
-              <Menu className="h-5 w-5" aria-hidden="true" />
+              <X className="h-5 w-5" aria-hidden="true" />
             </button>
-            <Logo to="/projects" />
+            <Sidebar novelId={novelId} projects={projects} idPrefix="drawer" onNavigate={() => setDrawerOpen(false)} />
           </div>
-          <main className="flex min-w-0 flex-1 flex-col">
-            <Outlet />
-          </main>
         </div>
+      )}
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="glass sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border/60 px-4 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Open navigation"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border text-text"
+          >
+            <Menu className="h-5 w-5" aria-hidden="true" />
+          </button>
+          <Logo to="/projects" />
+        </div>
+        <main className="flex min-w-0 flex-1 flex-col">
+          <Outlet />
+        </main>
       </div>
-    </ProjectProvider>
+    </div>
   );
 }

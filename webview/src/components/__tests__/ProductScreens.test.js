@@ -14,6 +14,7 @@ jest.mock('../../api', () => ({
     listJobs: jest.fn(),
     renderGenerate: jest.fn(),
     novel: jest.fn(),
+    chapters: jest.fn(),
   },
 }));
 
@@ -124,16 +125,17 @@ describe('GenerationWorkspace', () => {
   // cache, which goes stale the moment an ingest job finishes elsewhere
   // (nothing refetches it) -- the chapter picker was silently empty and
   // "Generate panels" stayed permanently disabled. It now fetches its own
-  // chapter list via `api.novel`, matching every other new screen.
+  // chapter list via the light `api.chapters` route, matching every other new screen.
   beforeEach(() => {
-    api.novel.mockResolvedValue({ chapters: [{ number: 1 }, { number: 2 }] });
+    api.chapters.mockResolvedValue([{ number: 1 }, { number: 2 }]);
   });
 
   test('fetches its own chapter list rather than trusting a stale prop', async () => {
     api.listJobs.mockResolvedValue([]);
     withToast(<GenerationWorkspace novelId="toy" />);
 
-    await waitFor(() => expect(api.novel).toHaveBeenCalledWith('toy'));
+    await waitFor(() => expect(api.chapters).toHaveBeenCalledWith('toy'));
+    expect(api.novel).not.toHaveBeenCalled(); // the full ~9 MB payload is not needed for a chapter picker
     expect(await screen.findByRole('option', { name: 'Chapter 1' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /generate panels/i })).not.toBeDisabled();
   });

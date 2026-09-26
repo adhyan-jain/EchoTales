@@ -43,9 +43,9 @@ export default function GenerationWorkspace({ novelId, hideHeader = false }) {
   useEffect(() => {
     if (!novelId) return;
     api
-      .novel(novelId)
-      .then((payload) => {
-        const ch = (payload && payload.chapters) || [];
+      .chapters(novelId)
+      .then((list) => {
+        const ch = list || [];
         setChapters(ch);
         setChaptersError(null);
         setSelected((prev) => (prev && ch.some((c) => c.number === Number(prev)) ? prev : ch[0] ? ch[0].number : ''));

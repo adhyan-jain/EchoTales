@@ -17,16 +17,19 @@ export function ProjectProvider({ novelId, children }) {
   const [novel, setNovel] = useState(null);
   const [error, setError] = useState(null);
   const [errorStatus, setErrorStatus] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [projects, setProjects] = useState(null);
 
   // `current` guards against a slow response for the previous project (the
   // payload is up to ~9.6 MB) landing after the new one and overwriting it
   // when the user switches projects quickly.
   const current = useRef(novelId);
   current.current = novelId;
+  const wanted = useRef(false); // some mounted page needs the novel payload
 
   const refetch = useCallback(() => {
     if (!novelId) return Promise.resolve();
+    setLoading(true);
     return api
       .novel(novelId)
       .then((payload) => {
@@ -43,16 +46,40 @@ export function ProjectProvider({ novelId, children }) {
       .finally(() => current.current === novelId && setLoading(false));
   }, [novelId]);
 
-  useEffect(() => {
-    setNovel(null);
-    setError(null);
-    setErrorStatus(null);
-    setLoading(true);
+  // The novel payload is the whole book (9.4 MB for Reverend Insanity), and
+  // Characters, Studio and Settings never read it -- fetching it for every
+  // page cost ~9 MB per visit, ~19 MB in the Studio (perf sanity, 2026-09-26).
+  // It now loads when a page that reads it asks (`useNovelData`), and stays
+  // cached across those pages.
+  const requestNovel = useCallback(() => {
+    if (wanted.current) return;
+    wanted.current = true;
     refetch();
   }, [refetch]);
 
+  useEffect(() => {
+    wanted.current = false;
+    setNovel(null);
+    setError(null);
+    setErrorStatus(null);
+    setLoading(false);
+  }, [novelId]);
+
+  const refreshProjects = useCallback(() => {
+    return api
+      .listProjects()
+      .then((l) => current.current === novelId && setProjects(l || []))
+      .catch(() => current.current === novelId && setProjects([]));
+  }, [novelId]);
+
+  useEffect(() => {
+    refreshProjects();
+  }, [refreshProjects]);
+
   return (
-    <ProjectContext.Provider value={{ novelId, novel, error, errorStatus, loading, refetch }}>
+    <ProjectContext.Provider
+      value={{ novelId, novel, error, errorStatus, loading, refetch, requestNovel, projects, refreshProjects }}
+    >
       {children}
     </ProjectContext.Provider>
   );
@@ -61,5 +88,15 @@ export function ProjectProvider({ novelId, children }) {
 export function useProject() {
   const ctx = useContext(ProjectContext);
   if (!ctx) throw new Error('useProject must be used inside ProjectProvider');
+  return ctx;
+}
+
+/** Like useProject, and makes sure the novel payload is being fetched. */
+export function useNovelData() {
+  const ctx = useProject();
+  const { requestNovel } = ctx;
+  useEffect(() => {
+    requestNovel();
+  }, [requestNovel]);
   return ctx;
 }
