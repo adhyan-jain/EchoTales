@@ -9,7 +9,12 @@
    bg, surface and surface-2 in its own theme; white on `primary` is 5.05:1
    (dark) / 6.18:1 (light). The earlier palette failed on two pairs (dark
    danger 3.24:1, light accent 3.99:1), which is why this is checked rather
-   than eyeballed. */
+   than eyeballed.
+
+   Status chips are text on a 10% tint of their own colour, which lowers
+   contrast below the plain-background figure; the accent (dark), success,
+   warning, danger and accent (light) tokens were nudged so text on that
+   tint also clears 4.5:1 (axe pass, 2026-09-26). */
 :root,
 [data-theme='dark'] {
   color-scheme: dark;
@@ -19,7 +24,7 @@
   --c-border: 39 39 48;
   --c-text: 244 244 246;
   --c-muted: 155 155 168;
-  --c-accent: 139 112 255;
+  --c-accent: 146 120 255;
   --c-accent-2: 170 150 255;
   --c-primary: 112 80 245;
   --c-primary-2: 118 86 250;
@@ -37,14 +42,14 @@
   --c-border: 226 226 232;
   --c-text: 12 12 16;
   --c-muted: 90 90 104;
-  --c-accent: 98 64 230;
+  --c-accent: 94 60 226;
   --c-accent-2: 84 52 210;
   --c-primary: 98 64 230;
   --c-primary-2: 84 52 210;
   --c-cyan: 13 148 136;
-  --c-success: 10 125 80;
-  --c-warning: 150 95 0;
-  --c-danger: 200 40 40;
+  --c-success: 8 112 70;
+  --c-warning: 138 88 0;
+  --c-danger: 190 34 34;
 }
 
 /* Full-colour aliases for the hand-written component rules below. */

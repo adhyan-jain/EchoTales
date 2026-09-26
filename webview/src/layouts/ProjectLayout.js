@@ -171,7 +171,7 @@ function LayoutBody({ novelId }) {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="glass sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border/60 px-4 lg:hidden">
+        <header className="glass sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border/60 px-4 lg:hidden">
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
@@ -181,7 +181,7 @@ function LayoutBody({ novelId }) {
             <Menu className="h-5 w-5" aria-hidden="true" />
           </button>
           <Logo to="/projects" />
-        </div>
+        </header>
         <main className="flex min-w-0 flex-1 flex-col">
           <Outlet />
         </main>

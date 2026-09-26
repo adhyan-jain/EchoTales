@@ -33,7 +33,7 @@ export default function DesignGallery() {
   };
 
   return (
-    <div className="min-h-screen bg-bg font-sans text-text">
+    <main className="min-h-screen bg-bg font-sans text-text">
       <div className="mx-auto max-w-4xl px-8 py-14">
         <header className="flex items-end justify-between border-b border-border pb-6">
           <div>
@@ -194,6 +194,6 @@ export default function DesignGallery() {
         <p className="font-mono text-xs uppercase tracking-wider text-muted mb-2">Describe the transformation</p>
         <Input placeholder="Show her after the battle, injured and exhausted." />
       </Modal>
-    </div>
+    </main>
   );
 }

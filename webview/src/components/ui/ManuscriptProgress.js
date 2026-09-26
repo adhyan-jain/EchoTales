@@ -21,12 +21,15 @@ export default function ManuscriptProgress({ chapters, stats }) {
             <span
               className={
                 c.status === 'processing'
-                  ? 'animate-pulse text-accent'
+                  ? 'text-accent'
                   : c.status === 'found'
                   ? 'text-muted'
                   : 'text-muted'
               }
             >
+              {c.status === 'processing' && (
+                <span className="mr-1.5 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-accent align-middle" aria-hidden="true" />
+              )}
               {STATUS_LABEL[c.status] || STATUS_LABEL.pending}
             </span>
           </div>

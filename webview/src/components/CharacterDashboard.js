@@ -151,6 +151,7 @@ export default function CharacterDashboard({ novelId, readOnly = false, selected
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 sm:px-8">
         <EmptyState
+          as="h1"
           title="Character not found"
           description="This link points to a character this book doesn't have. It may have been merged into another character during review."
           action={
