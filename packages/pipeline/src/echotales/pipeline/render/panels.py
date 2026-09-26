@@ -28,7 +28,7 @@ from typing import Protocol
 
 from echotales.core.enums import OBSERVER_READER, ReferenceMode, SpanType
 from echotales.core.models import Chapter, DiscoursePosition, Mention, Span
-from echotales.core.state import StateResolver
+from echotales.core.state import GenerationState, StateResolver
 from echotales.core.store import Store
 from echotales.pipeline.persona.attire import (
     hostile_confrontation_modifier,
@@ -63,7 +63,7 @@ from echotales.pipeline.render.contract import (
 from echotales.pipeline.render.direction import direct_beat, sanitize_prompt
 from echotales.pipeline.render.factions import qualify_role, scene_faction
 from echotales.pipeline.render.palette import Palette, PaletteSpec, apply_palette
-from echotales.pipeline.render.plan_builder import build_render_plan
+from echotales.pipeline.render.plan_builder import build_render_plan, compile_render_state
 from echotales.pipeline.render.scene_refs import (
     curated_character_reference,
     match_scene_references,
@@ -1303,6 +1303,7 @@ def character_looks(
     beat_text: str = "",
     floor_severity: str = "",
     resolver: StateResolver | None = None,
+    gen_state: GenerationState | None = None,
 ) -> tuple[str, str, Path | None, str, str] | None:
     """`(label, appearance clause, reference sheet, gender, condition)` for one entity.
 
@@ -1336,6 +1337,13 @@ def character_looks(
     to make auditable (Core Pipeline Hardening #8.2). `resolver=None` keeps
     the direct `persona_at` lookup for any caller not yet passing one.
 
+    `gen_state`, when it covers `entity_id`, is the compiled state the persona
+    and the position-scoped appearance are read from -- the same object
+    `build_render_plan` hashes into the cache key, so the drawn body and the
+    key cannot come from two different `state_of()` calls at two different
+    positions. Without it (or without this entity in it) the direct
+    `resolver`/`persona_at` path below is unchanged.
+
     Returns None for a non-person entity -- Section 10 item 5's typing again: a
     location resolves like a name but has no face to draw. The clause and
     the sheet are independent: a character can have extracted appearance but
@@ -1356,7 +1364,13 @@ def character_looks(
     )
     from echotales.pipeline.persona.split import persona_at
 
-    if resolver is not None:
+    compiled_appearance: dict[str, str] | None = None
+    if gen_state is not None and gen_state.covers([entity_id]):
+        persona_id = gen_state.persona_for(entity_id)
+        if persona_id is None:
+            return None
+        compiled_appearance = gen_state.appearance_for(persona_id)
+    elif resolver is not None:
         state = resolver.state_of(entity_id, position=chapter)
         if not state.persona_ids:
             return None
@@ -1370,7 +1384,11 @@ def character_looks(
     # disclosed at chapter 100) must not appear on a chapter 5 panel just
     # because it is now known to be true. `None` (a cast list, not a panel)
     # keeps the old flattened behaviour -- see `appearance_of`.
-    appearance = appearance_of(store, persona_id, position=chapter, standing_only=False)
+    appearance = (
+        compiled_appearance
+        if compiled_appearance is not None
+        else appearance_of(store, persona_id, position=chapter, standing_only=False)
+    )
     # Canon, then genre defaults -- the same chain `reference_gen` applies.
     # Without it here the panels were running on raw extraction only: Fang
     # Yuan has no extracted hair colour, so the image model invented one and
@@ -2051,13 +2069,28 @@ def render_panels(
                 _beat_bodies: dict[str, str] = {}
                 _beat_entity_labels: dict[str, str] = {}
                 _beat_entity_genders: dict[str, str] = {}
-                for entity_id in present_beat_entities_with_reveals(
-                    mentions,
-                    _chunk_blocks,
-                    store=store,
-                    novel_id=novel_id,
-                    chapter_number=chapter_number,
-                ):
+                _present_entities = list(
+                    present_beat_entities_with_reveals(
+                        mentions,
+                        _chunk_blocks,
+                        store=store,
+                        novel_id=novel_id,
+                        chapter_number=chapter_number,
+                    )
+                )
+                # One compile per beat, at the fractional in-chapter position:
+                # the persona and appearance the prompt is built from below
+                # are read out of it, and the plan's cache-key digest is
+                # computed from the same object (`build_render_plan(gen_state=)`).
+                _beat_state = compile_render_state(
+                    store,
+                    novel_id,
+                    _present_entities,
+                    position=story_position,
+                    observer_id=observer_id,
+                    resolver=_state_resolver,
+                )
+                for entity_id in _present_entities:
                     looks = character_looks(
                         store,
                         entity_id,
@@ -2067,6 +2100,7 @@ def render_panels(
                         beat_text=_chunk_text,
                         floor_severity=_scene_state.default_severity,
                         resolver=_state_resolver,
+                        gen_state=_beat_state,
                     )
                     if looks is None:
                         continue
@@ -2164,6 +2198,14 @@ def render_panels(
                             beat_text=_chunk_text,
                             floor_severity=_scene_state.default_severity,
                             resolver=_state_resolver,
+                            gen_state=compile_render_state(
+                                store,
+                                novel_id,
+                                [entity_id],
+                                position=story_position,
+                                observer_id=observer_id,
+                                resolver=_state_resolver,
+                            ),
                         )
                         if fresh is None:
                             _scene_last_present_bodies.pop(entity_id, None)
@@ -2678,6 +2720,8 @@ def render_panels(
                     pose_hint=directed.direction.action if directed is not None else "",
                     expression_hint=directed.direction.expression if directed is not None else "",
                     resolver=_state_resolver,
+                    position=story_position,
+                    gen_state=_beat_state,
                 )
                 _panel_request = PanelImageRequest(
                     prompt=prompt,

@@ -26,18 +26,47 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from echotales.core.enums import OBSERVER_READER, TargetKind
-from echotales.core.state import StateResolver
+from echotales.core.enums import OBSERVER_READER
+from echotales.core.state import GenerationState, StateResolver, compile_generation_state
 from echotales.core.store import Store
-from echotales.pipeline.persona.reference_gen import reference_path_for
+from echotales.pipeline.persona.reference_gen import appearance_of, reference_path_for
 from echotales.pipeline.render.contract import (
     CharacterRenderSpec,
     CharacterRole,
     CompositionSpec,
     EnvironmentRenderSpec,
     VisualRenderPlan,
-    _digest,
 )
+
+
+def compile_render_state(
+    store: Store,
+    novel_id: str,
+    self_ids: Sequence[str],
+    *,
+    position: float,
+    observer_id: str = OBSERVER_READER,
+    resolver: StateResolver | None = None,
+) -> GenerationState:
+    """The one compile the image path reads.
+
+    The persona reader is `appearance_of(position=..., standing_only=False)`,
+    the same call the panel prompt's `character_looks` makes, so the attributes
+    hashed into the cache key are the attributes the prompt was built from --
+    by construction rather than by two call sites agreeing. Concurrent
+    bindings keep all persona ids in the state, but only the drawn (first)
+    persona's attributes are read: an appearance change on a persona nobody
+    draws must not invalidate the panel.
+    """
+    return compile_generation_state(
+        store,
+        novel_id,
+        self_ids,
+        position=position,
+        observer_id=observer_id,
+        resolver=resolver,
+        persona_reader=lambda pid: appearance_of(store, pid, position=position, standing_only=False),
+    )
 
 
 def build_render_plan(
@@ -62,59 +91,40 @@ def build_render_plan(
     #: Only consulted when `resolver` is not supplied; a caller sharing a
     #: resolver has already chosen the observer on it.
     observer_id: str = OBSERVER_READER,
+    #: Where in the story the panel is set. Defaults to `chapter` (the chapter
+    #: start). `render_panels` passes the fractional in-chapter position its
+    #: prompt was built at: a body change lands mid-chapter (RI's Fang Yuan is
+    #: reborn partway through chapter 1), and resolving at the chapter start
+    #: hashed the pre-rebirth body into the cache key of a panel that was
+    #: drawn from the post-rebirth one.
+    position: float | None = None,
+    #: A state the caller already compiled for this cast at this position
+    #: (the same one the prompt was built from). Recompiled when it does not
+    #: cover `cast_self_ids`.
+    gen_state: GenerationState | None = None,
 ) -> VisualRenderPlan:
-    """Build one panel's `VisualRenderPlan` from canonical state.
+    """Build one panel's `VisualRenderPlan` from a compiled `GenerationState`.
 
-    `resolver`, when given, lets a caller rendering many panels in one run
-    (`render_panels`'s per-chapter loop) share one `StateResolver` instead
-    of re-running its voided-timeline pre-pass per panel -- constructing a
-    fresh one here would be correct but wasteful across a whole chapter.
-
-    A `self_id` whose `state_of()` returns no `persona_ids` (no body bound
-    yet at this story position) is recorded in `state_digest` -- its
-    presence still affects provenance -- but produces no
-    `CharacterRenderSpec`, since there is no persona to draw. This is the
-    concrete mechanism behind the invariant "a panel at position P must use
-    state corresponding to P": `state_of(..., position=chapter)` is what
-    prevents a panel from picking up a body bound only later in the story.
+    A `self_id` with no bound persona at this position is recorded in the state
+    (its presence still affects the digest) but produces no
+    `CharacterRenderSpec`, since there is no persona to draw. The persona is
+    the compiled state's first bound persona -- the same "take the first" rule
+    `character_looks` uses; concurrent bindings stay in the state so a
+    multi-binding case is auditable rather than silent.
     """
     resolver = resolver or StateResolver(store, novel_id, default_observer=observer_id)
+    at = chapter if position is None else position
+    if gen_state is None or not gen_state.covers(cast_self_ids):
+        gen_state = compile_render_state(
+            store, novel_id, cast_self_ids, position=at,
+            observer_id=resolver.default_observer, resolver=resolver,
+        )
 
     characters: list[CharacterRenderSpec] = []
-    state_parts: list[str] = []
     for self_id in cast_self_ids:
-        result = resolver.state_of(self_id, position=chapter)
-        # The drawn persona's own attributes are hashed too. `state_of` on a
-        # Self returns only Self-targeted attributes, and every appearance
-        # attribute in the corpus is Persona-targeted, so before this a hair
-        # or attire change reached neither the digest nor the prompt: the A7
-        # ablation measured 23/23 affected panels served stale by the shipped
-        # key (EVOLUTION 4.91). All bound persona ids stay in the digest on
-        # purpose -- it over-invalidates on a new concurrent body, but keeps a
-        # multi-binding case auditable (see below).
-        drawn_attrs: tuple[tuple[str, str], ...] = ()
-        if result.persona_ids:
-            drawn_attrs = tuple(sorted(
-                (a.key, a.value)
-                for a in store.get_attributes(TargetKind.PERSONA, result.persona_ids[0])
-                if a.is_standing
-            ))
-        state_parts.append(
-            _digest(
-                self_id,
-                tuple(result.persona_ids),
-                tuple(sorted(result.attributes.items())),
-                drawn_attrs,
-            )
-        )
-        if not result.persona_ids:
+        persona_id = gen_state.persona_for(self_id)
+        if persona_id is None:
             continue
-        # Concurrent bindings (clones, disguises) are legitimate per
-        # `StateOfResult.persona_ids`'s own docstring, but resolving which
-        # one a panel should draw is a Phase 4+ decision -- take the first
-        # and let `state_digest` (which hashes every id returned, not just
-        # this one) make a multi-binding case auditable rather than silent.
-        persona_id = result.persona_ids[0]
         role = (
             CharacterRole.PRINCIPAL
             if self_id == lead_self_id
@@ -147,6 +157,6 @@ def build_render_plan(
         composition=CompositionSpec(
             shot=shot, layout=layout, is_crowd_cut=is_crowd_cut
         ),
-        state_digest=_digest(*state_parts),
+        state_digest=gen_state.digest(),
         resolver="state_of",
     )

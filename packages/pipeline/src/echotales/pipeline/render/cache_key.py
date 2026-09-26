@@ -26,7 +26,10 @@ from echotales.pipeline.render.contract import GenerationRequest, VisualRenderPl
 #: reordered in a way that would otherwise produce a same-looking digest for
 #: semantically different inputs). Not bumped for an ordinary content change
 #: -- that's what the digest itself is for.
-RENDER_CACHE_VERSION = "1"
+#: "2": `state_digest` is now `GenerationState.digest()` at the panel's own
+#: in-chapter position (it was hashed at the chapter start from a different
+#: attribute set), so every key from "1" is stale by construction.
+RENDER_CACHE_VERSION = "2"
 
 
 def compute_render_cache_key(plan: VisualRenderPlan, request: GenerationRequest) -> str:

@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import hashlib
 from collections.abc import Iterable
+from dataclasses import dataclass
 from enum import StrEnum
 
 from echotales.core.enums import TargetKind
@@ -130,3 +131,42 @@ class ReadSetRecorder:
 
     def __exit__(self, *exc: object) -> None:
         return None
+
+
+@dataclass(slots=True, frozen=True)
+class EpistemicLeakageResult:
+    is_valid: bool
+    leaked_facts: tuple[str, ...] = ()
+    reason: str = ""
+
+
+class EpistemicLeakageValidator:
+    """Structural validator checking prompts and plan specifications for secret leaks."""
+
+    def validate(
+        self, gen_state: object, text_to_check: str
+    ) -> EpistemicLeakageResult:
+        forbidden_facts: tuple[str, ...] = getattr(gen_state, "forbidden_facts", ())
+        if not forbidden_facts:
+            return EpistemicLeakageResult(is_valid=True)
+
+        normalized_text = " " + text_to_check.casefold() + " "
+        leaks: list[str] = []
+
+        for forbidden in forbidden_facts:
+            forbidden_clean = forbidden.strip().casefold()
+            if not forbidden_clean or len(forbidden_clean) < 3:
+                continue
+            # Structural substring/boundary check
+            if forbidden_clean in normalized_text:
+                leaks.append(forbidden)
+
+        if leaks:
+            return EpistemicLeakageResult(
+                is_valid=False,
+                leaked_facts=tuple(leaks),
+                reason=f"Detected {len(leaks)} forbidden epistemic leak(s): {', '.join(leaks)}",
+            )
+
+        return EpistemicLeakageResult(is_valid=True)
+

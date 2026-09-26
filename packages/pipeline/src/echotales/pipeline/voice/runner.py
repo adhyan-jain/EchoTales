@@ -179,6 +179,11 @@ def render_novel(
     out_dir = Path(out_dir)
     report = VoiceReport(novel_id=novel_id, engine=engine.name)
 
+    # Casting is per entity for the whole run -- a character keeps one voice
+    # across the book -- and reads whole-novel trait profiles. Nothing here is
+    # position- or observer-scoped, so there is no `GenerationState` field to
+    # consume; compiling one per chapter changed no output (a first attempt did
+    # exactly that). Revisit only if a body change should re-cast a voice.
     profiles = load_trait_profiles(novel_id, store)
     assignments, casting = cast_voices(
         novel_id, profiles, bank, store=store, seed=seed

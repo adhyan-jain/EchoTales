@@ -46,8 +46,20 @@ from echotales.core.models import (
     Span,
     StateOfResult,
 )
-from echotales.core.readset import CacheTier, ReadSetRecorder, hash_read_set
-from echotales.core.state import StateResolver, state_of
+from echotales.core.readset import (
+    CacheTier,
+    EpistemicLeakageResult,
+    EpistemicLeakageValidator,
+    ReadSetRecorder,
+    hash_read_set,
+)
+from echotales.core.state import (
+    GenerationState,
+    StateResolver,
+    TargetState,
+    compile_generation_state,
+    state_of,
+)
 from echotales.core.store import Store, normalize_alias
 
 __all__ = [
@@ -68,9 +80,12 @@ __all__ = [
     "Chapter",
     "Decision",
     "DiscoursePosition",
+    "EpistemicLeakageResult",
+    "EpistemicLeakageValidator",
     "EventType",
     "EvidenceVector",
     "FuzzyInterval",
+    "GenerationState",
     "Mention",
     "NarrativeLayer",
     "NarrativeSegment",
@@ -93,7 +108,9 @@ __all__ = [
     "Store",
     "StoryPos",
     "TargetKind",
+    "TargetState",
     "TruthStatus",
+    "compile_generation_state",
     "hash_read_set",
     "normalize_alias",
     "state_of",

@@ -861,3 +861,28 @@ class TestEscalationAccounting:
         store.conn.commit()
         stats = {(r["stage"], r["tier"]): r for r in store.escalation_stats()}
         assert stats[("resolve", "api")]["escalations"] == 1
+
+
+class TestGenerationStateAndValidator:
+    def test_compile_generation_state_and_validate_epistemic_leaks(self, store: Store) -> None:
+        from echotales.core.readset import EpistemicLeakageValidator
+        from echotales.core.state import compile_generation_state
+
+        make_self(store, "s_secret", "Secret Identity")
+        bind_alias(store, "Secret Alias", "s_secret", learned_at=10, observer=OBSERVER_READER)
+        store.conn.commit()
+
+        # Query at chapter 5 for a witness observer who does not know the secret
+        gen_state = compile_generation_state(store, NOVEL, ["s_secret"], position=5.0, observer_id="WITNESS")
+        assert "alias:Secret Alias" not in gen_state.allowed_facts
+
+        validator = EpistemicLeakageValidator()
+        # Prompt containing forbidden secret alias fails validation
+        leak_result = validator.validate(gen_state, "Character Secret Alias walks quietly into the room")
+        assert not leak_result.is_valid
+        assert len(leak_result.leaked_facts) > 0
+
+        # Safe prompt passes validation
+        safe_result = validator.validate(gen_state, "A mysterious figure walks quietly into the room")
+        assert safe_result.is_valid
+
