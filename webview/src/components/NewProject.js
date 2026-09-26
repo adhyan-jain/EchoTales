@@ -103,7 +103,7 @@ export default function NewProject({ onCreated }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 font-sans text-text">
       <div className="mb-8">
-        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
+        <div className="text-sm text-muted">
           New project
         </div>
         <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-text">New project</h1>
@@ -184,7 +184,7 @@ export default function NewProject({ onCreated }) {
                 <div className="font-mono text-xs text-text">Selected: {file.name}</div>
               )}
               <div>
-                <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                <div className="mb-2 text-sm font-medium text-muted">
                   Once ingestion runs (preview)
                 </div>
                 <ManuscriptProgress chapters={PREVIEW_CHAPTERS} />

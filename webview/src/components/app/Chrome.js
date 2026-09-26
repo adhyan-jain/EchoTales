@@ -3,16 +3,13 @@ import { Link } from 'react-router-dom';
 import { Moon, Sun } from 'lucide-react';
 import { applyTheme, getStoredTheme } from '../../theme';
 
-/** Wordmark + a sound-wave mark (story in, voice out). Pure SVG, no asset. */
+/** Wordmark only: set in the reading serif, the way a book's title would be. */
 export function Logo({ to = '/', className = '' }) {
   return (
-    <Link to={to} className={`group inline-flex items-center gap-2.5 ${className}`} aria-label="EchoTales home">
-      <span className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-accent-gradient shadow-glow">
-        <svg viewBox="0 0 24 24" className="h-4 w-4 text-black" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
-          <path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2" />
-        </svg>
+    <Link to={to} className={`inline-flex items-baseline ${className}`} aria-label="EchoTales home">
+      <span className="font-display text-xl font-semibold tracking-tight text-text">
+        Echo<span className="italic text-accent">Tales</span>
       </span>
-      <span className="font-display text-lg font-bold tracking-tight text-text">EchoTales</span>
     </Link>
   );
 }
@@ -44,9 +41,9 @@ export function PageHeader({ eyebrow, title, description, actions }) {
     <header className="flex flex-wrap items-end justify-between gap-4 pb-8">
       <div className="min-w-0">
         {eyebrow && (
-          <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">{eyebrow}</div>
+          <div className="text-sm text-muted">{eyebrow}</div>
         )}
-        <h1 className="mt-1.5 font-display text-3xl font-bold tracking-tight text-text sm:text-4xl">{title}</h1>
+        <h1 className="mt-1 font-display text-4xl font-medium tracking-tight text-text sm:text-5xl">{title}</h1>
         {description && <p className="mt-2 max-w-2xl text-sm text-muted">{description}</p>}
       </div>
       {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
@@ -54,16 +51,13 @@ export function PageHeader({ eyebrow, title, description, actions }) {
   );
 }
 
-/** A single KPI tile. `hint` is the small line under the number. */
-export function StatCard({ icon: Icon, label, value, hint, tone = 'default' }) {
-  const toneRing = tone === 'warn' ? 'text-warning' : tone === 'good' ? 'text-success' : 'text-accent';
+/** One figure in a ledger row: label, number, note. No box, no icon. */
+export function StatCard({ label, value, hint, tone = 'default' }) {
+  const colour = tone === 'warn' ? 'text-warning' : 'text-text';
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 transition-colors hover:border-accent/40">
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-muted">{label}</span>
-        {Icon && <Icon className={`h-4 w-4 ${toneRing}`} aria-hidden="true" />}
-      </div>
-      <div className="mt-3 font-display text-3xl font-bold tracking-tight text-text tabular-nums">{value}</div>
+    <div className="px-1 py-5 lg:px-6 lg:first:pl-0">
+      <div className="text-sm text-muted">{label}</div>
+      <div className={`mt-1 font-display text-4xl font-medium tabular-nums ${colour}`}>{value}</div>
       {hint && <div className="mt-1 text-xs text-muted">{hint}</div>}
     </div>
   );
@@ -73,7 +67,7 @@ export function StatCard({ icon: Icon, label, value, hint, tone = 'default' }) {
 export function CenterMessage({ title, children }) {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-2 px-6 text-center">
-      {title && <h1 className="font-display text-xl font-semibold text-text">{title}</h1>}
+      {title && <h1 className="font-display text-2xl font-medium text-text">{title}</h1>}
       <div className="max-w-md text-sm text-muted">{children}</div>
     </div>
   );
@@ -94,7 +88,7 @@ export function ProjectProblem({ error, status, onRetry, subject = 'this project
           All projects
         </Link>
         {!missing && onRetry && (
-          <button type="button" onClick={onRetry} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-2">
+          <button type="button" onClick={onRetry} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary hover:bg-primary-2">
             Try again
           </button>
         )}

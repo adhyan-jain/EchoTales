@@ -40,7 +40,7 @@ export default function ScriptView({
     );
   }
   return (
-    <ManuscriptSurface chapterLabel={`Chapter ${String(chapter.number).padStart(2, '0')}${chapter.title ? ` · ${chapter.title}` : ''}`}>
+    <ManuscriptSurface chapterLabel={`Chapter ${Number(chapter.number)}${chapter.title ? ` · ${chapter.title}` : ''}`}>
     <div id="script">
       {chapter.spans.map((span, i) => {
         const prev = i > 0 ? chapter.spans[i - 1] : null;

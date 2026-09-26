@@ -9,7 +9,7 @@ export default function DossierHeader({ eyebrow, title, tone = 'neutral', badge,
     <div className="flex flex-wrap items-baseline gap-4 border-b border-border pb-6">
       <div className="w-full">
         {eyebrow && (
-          <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">{eyebrow}</div>
+          <div className="text-sm text-muted">{eyebrow}</div>
         )}
         <div className="mt-1 flex flex-wrap items-baseline gap-4">
           <h1 className="font-display text-5xl font-bold tracking-tight text-text">{title}</h1>

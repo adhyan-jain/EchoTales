@@ -18,38 +18,40 @@
 :root,
 [data-theme='dark'] {
   color-scheme: dark;
-  --c-bg: 7 7 10;
-  --c-surface: 15 15 19;
-  --c-surface-2: 24 24 30;
-  --c-border: 39 39 48;
-  --c-text: 244 244 246;
-  --c-muted: 155 155 168;
-  --c-accent: 146 120 255;
-  --c-accent-2: 170 150 255;
-  --c-primary: 112 80 245;
-  --c-primary-2: 118 86 250;
-  --c-cyan: 94 234 212;
-  --c-success: 74 222 158;
-  --c-warning: 250 190 70;
-  --c-danger: 255 120 120;
+  --c-bg: 14 13 12;
+  --c-surface: 22 20 19;
+  --c-surface-2: 32 30 28;
+  --c-border: 52 48 44;
+  --c-text: 241 237 229;
+  --c-muted: 168 161 150;
+  --c-accent: 232 170 80;
+  --c-accent-2: 242 194 118;
+  --c-primary: 232 170 80;
+  --c-primary-2: 242 188 108;
+  --c-on-primary: 26 19 8;
+  --c-cyan: 132 190 166;
+  --c-success: 122 202 152;
+  --c-warning: 238 198 98;
+  --c-danger: 246 124 114;
 }
 
 [data-theme='light'] {
   color-scheme: light;
-  --c-bg: 250 250 251;
-  --c-surface: 255 255 255;
-  --c-surface-2: 241 241 244;
-  --c-border: 226 226 232;
-  --c-text: 12 12 16;
-  --c-muted: 90 90 104;
-  --c-accent: 94 60 226;
-  --c-accent-2: 84 52 210;
-  --c-primary: 98 64 230;
-  --c-primary-2: 84 52 210;
-  --c-cyan: 13 148 136;
-  --c-success: 8 112 70;
-  --c-warning: 138 88 0;
-  --c-danger: 190 34 34;
+  --c-bg: 247 244 238;
+  --c-surface: 253 251 247;
+  --c-surface-2: 239 235 227;
+  --c-border: 222 216 205;
+  --c-text: 28 25 22;
+  --c-muted: 100 93 84;
+  --c-accent: 133 80 8;
+  --c-accent-2: 118 70 6;
+  --c-primary: 146 88 12;
+  --c-primary-2: 124 74 8;
+  --c-on-primary: 255 251 244;
+  --c-cyan: 24 122 104;
+  --c-success: 24 106 66;
+  --c-warning: 128 84 0;
+  --c-danger: 178 36 36;
 }
 
 /* Full-colour aliases for the hand-written component rules below. */
@@ -70,10 +72,9 @@
   html { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   body {
     margin: 0;
-    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
     font-size: 16px;
     line-height: 1.6;
-    font-feature-settings: 'cv11', 'ss01';
     background: var(--bg);
     color: var(--fg);
     -webkit-font-smoothing: antialiased;
@@ -86,23 +87,12 @@
 }
 
 @layer components {
-  /* Soft radial glow used behind hero sections. Pure CSS, no image. */
-  .hero-glow {
-    background:
-      radial-gradient(60% 50% at 20% 0%, rgb(var(--c-primary) / 0.28), transparent 70%),
-      radial-gradient(40% 40% at 90% 10%, rgb(var(--c-cyan) / 0.12), transparent 70%);
-  }
-  .text-gradient {
-    background: linear-gradient(120deg, rgb(var(--c-text)) 30%, rgb(var(--c-accent-2)) 70%, rgb(var(--c-cyan)) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .glass {
-    background: rgb(var(--c-surface) / 0.72);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    backdrop-filter: blur(14px) saturate(140%);
-  }
+  /* Formerly a radial glow, a gradient text fill and a blurred glass bar --
+     the three most recognisable template effects. Kept as inert names so
+     nothing that still references them breaks; they now do nothing loud. */
+  .hero-glow { background: transparent; }
+  .text-gradient { color: rgb(var(--c-accent)); }
+  .glass { background: rgb(var(--c-bg) / 0.94); }
   .no-scrollbar { scrollbar-width: none; }
   .no-scrollbar::-webkit-scrollbar { display: none; }
 }
@@ -121,36 +111,43 @@
   display: flex; align-items: center; gap: .5rem;
   padding: .75rem 1.25rem;
   border-bottom: 1px solid var(--border);
-  background: rgb(var(--c-bg) / .8);
-  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  background: rgb(var(--c-bg) / .96);
   position: sticky; top: 0; z-index: 5;
 }
 #chapter-nav button {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 2.25rem; height: 2.25rem; border-radius: .6rem;
+  width: 2.25rem; height: 2.25rem; border-radius: .4rem;
   border: 1px solid var(--border); background: var(--panel); color: var(--fg);
   cursor: pointer; transition: border-color .15s, color .15s;
 }
 #chapter-nav button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 #chapter-nav button:disabled { opacity: .35; cursor: default; }
 #chapter-nav select {
-  height: 2.25rem; padding: 0 .75rem; border-radius: .6rem;
+  height: 2.25rem; padding: 0 .75rem; border-radius: .4rem;
   border: 1px solid var(--border); background: var(--panel); color: var(--fg);
   font: inherit; font-size: .9rem; font-weight: 500;
 }
 #chapter-nav .cov { margin-left: auto; font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 
 /* The manuscript column */
-#script { max-width: 760px; margin: 0 auto; padding: 1.75rem 1.5rem 6rem; }
-.line { display: grid; grid-template-columns: 9rem 1fr; gap: 1rem; padding: .7rem 0; font-size: 1.02rem; line-height: 1.75; }
-.line + .line { border-top: 1px solid rgb(var(--c-border) / .6); }
-.line.dialogue {
-  background: linear-gradient(90deg, rgb(var(--c-primary) / .10), rgb(var(--c-primary) / .03));
-  border: 1px solid rgb(var(--c-accent) / .14);
-  border-radius: .9rem;
-  padding-inline: .9rem; margin-inline: -.9rem;
+#script { max-width: 800px; margin: 0 auto; padding: 1.5rem 1.5rem 6rem; }
+/* The book is set in a serif, at book size and measure; the speaker and
+   type labels stay in the UI sans so "what is being said" and "who says it"
+   read as annotation, not as part of the text. */
+.line { display: grid; grid-template-columns: 8.5rem 1fr; gap: 1.25rem; padding: .85rem 0; }
+.line .body { font-family: Newsreader, Georgia, serif; font-size: 1.2rem; line-height: 1.7; font-optical-sizing: auto; }
+/* On a phone the speaker gutter would leave the text ~150px wide (screenshot
+   QA, 2026-09-26); the speaker moves above its line instead. */
+@media (max-width: 640px) {
+  .line { grid-template-columns: 1fr; gap: .15rem; }
+  .speaker { text-align: left; padding-top: 0; }
+  .speaker:empty { display: none; }
+  .line .body { font-size: 1.125rem; }
+  .line.dialogue .body { margin-left: 0; }
+  #script { padding-inline: 1rem; }
 }
-.line.dialogue + .line, .line + .line.dialogue { border-top-color: transparent; }
+.line + .line { border-top: 1px solid rgb(var(--c-border) / .45); }
+.line.dialogue .body { border-left: 2px solid rgb(var(--c-accent) / .55); padding-left: .9rem; margin-left: -.9rem; }
 /* Lines and marks not about the highlighted character are de-emphasised,
    not hidden. Dimmed by text colour rather than opacity: opacity also faded
    the small muted labels (tag, speaker) below 4.5:1 -- .3 measured 2.5:1 and
@@ -163,16 +160,21 @@
 /* A distinct voice with no known identity: a design category, not a defect,
    so neither the "missing" red nor the bold of a named speaker. */
 .speaker.anonymous { font-weight: 500; font-style: italic; }
+/* The slot colour is a mid-tone picked for the dark theme; on paper it measured
+   2.77:1. Mixing it toward the text colour keeps the slots apart and clears AA in both themes. */
+.speaker.anonymous { color: color-mix(in srgb, var(--sp, var(--muted)) 55%, var(--fg)); }
 .speaker .method { display: block; font-weight: 400; font-size: .68rem; color: var(--muted); letter-spacing: .02em; }
 .speaker .thinking { font-weight: 500; font-style: italic; opacity: .85; }
 .tag, .tag-select {
-  display: inline-block; font-size: .62rem; font-weight: 600; text-transform: uppercase;
-  letter-spacing: .08em; color: var(--muted); margin-right: .6rem; vertical-align: 2px;
+  display: block; width: fit-content; font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+  font-size: .7rem; font-weight: 500; letter-spacing: .02em; color: var(--muted); margin: 0 0 .15rem;
+  text-transform: lowercase; line-height: 1.3;
 }
 .tag-select {
-  font-family: inherit; background: var(--panel); border: 1px solid var(--border);
-  border-radius: .4rem; padding: .05rem .3rem; cursor: pointer;
+  background: transparent; border: 1px solid transparent; border-radius: .3rem;
+  padding: .05rem .25rem .05rem 0; cursor: pointer; field-sizing: content;
 }
+.tag-select:hover, .tag-select:focus-visible { border-color: var(--border); padding-left: .25rem; }
 mark {
   background: transparent; color: inherit; font-weight: 600;
   border-bottom: 2px solid var(--mk, #8a8a8a); padding: 0 1px; cursor: help;
@@ -216,7 +218,7 @@ mark.editable:hover { background: color-mix(in srgb, var(--mk, #8a8a8a) 18%, tra
 .entity-sidebar { display: flex; flex-direction: column; min-height: 0; height: 100%; }
 .entity-sidebar .search { padding: .75rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--panel); z-index: 1; }
 .entity-sidebar .search input {
-  width: 100%; height: 2.25rem; padding: 0 .75rem; border-radius: .6rem;
+  width: 100%; height: 2.25rem; padding: 0 .75rem; border-radius: .4rem;
   border: 1px solid var(--border); background: var(--bg); color: var(--fg); font: inherit; font-size: .9rem;
 }
 #entity-list { list-style: none; margin: 0; padding: .4rem; overflow-y: auto; flex: 1; }

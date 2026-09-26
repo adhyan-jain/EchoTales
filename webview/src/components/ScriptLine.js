@@ -22,6 +22,10 @@ function keyActivate(handler) {
   };
 }
 
+// A book does not label every paragraph "narration"; only the lines that are
+// something else (thoughts, system text, non-diegetic) carry a tag when reading.
+const NARRATION_TYPES = new Set(['NARRATION_ACTION', 'NARRATION_DESCRIPTION']);
+
 export default function ScriptLine({
   span,
   focusId,
@@ -112,7 +116,7 @@ export default function ScriptLine({
           (span.anonymous_speaker ? ' anonymous' : '') +
           (speakerEditable ? ' editable' : '')
         }
-        style={span.anonymous_speaker && span.speaker_colour ? { color: span.speaker_colour } : undefined}
+        style={span.anonymous_speaker && span.speaker_colour ? { '--sp': span.speaker_colour } : undefined}
         onClick={speakerEditable ? (e) => onSpeakerClick(span, e) : undefined}
         {...(speakerEditable && {
           role: 'button',
@@ -161,7 +165,7 @@ export default function ScriptLine({
             ))}
           </select>
         ) : (
-          <span className="tag">{span.type.replace(/_/g, ' ')}</span>
+          !NARRATION_TYPES.has(span.type) && <span className="tag">{span.type.replace(/_/g, ' ')}</span>
         )}
         {parts}
         {hasFlags && (
