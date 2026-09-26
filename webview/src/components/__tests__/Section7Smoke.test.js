@@ -67,14 +67,16 @@ describe('Login', () => {
   });
 
   test('shows an inline error on failure, does not crash, does not call onLoggedIn', async () => {
-    api.login.mockRejectedValueOnce(new Error('wrong password'));
+    api.login.mockRejectedValueOnce(Object.assign(new Error('wrong password'), { status: 401, serverMessage: 'wrong password' }));
     const onLoggedIn = jest.fn();
     render(<Login onLoggedIn={onLoggedIn} />);
 
     fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'bad' } });
     fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-    expect(await screen.findByText(/wrong password/i)).toBeInTheDocument();
+    // A refused password is not an expired session (the generic 401 wording).
+    expect(await screen.findByText(/that password isn.t right/i)).toBeInTheDocument();
+    expect(screen.queryByText(/session has ended/i)).not.toBeInTheDocument();
     expect(onLoggedIn).not.toHaveBeenCalled();
   });
 });

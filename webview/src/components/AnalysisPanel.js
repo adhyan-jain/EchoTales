@@ -97,13 +97,12 @@ export default function AnalysisPanel({ summary, items = [], failedIds = new Set
             </>
           )}
           <button disabled={pending === 0 || applying} onClick={onApply}>
-            {applying ? 'Applying…' : `Apply ${pending} pending correction(s) to the graph`}
+            {applying ? 'Applying…' : `Apply ${pending} pending correction${pending === 1 ? '' : 's'}`}
           </button>
           <p className="muted small">
-            Rebinds mentions/speakers in the SQLite store and logs an event per
-            change. Does not change how the resolver decides anything on the
-            next run -- see HANDOFF Section 6 for why not. Flags are never applied;
-            remove one from the list once you've dealt with it.
+            Applying writes your corrections into this book’s stored results. It does not change how the pipeline
+            decides on its next run, so re-processing the book from scratch will not remember them. Flags are notes
+            only and are never applied; undo one once you have dealt with it.
           </p>
         </>
       )}

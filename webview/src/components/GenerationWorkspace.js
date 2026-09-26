@@ -21,15 +21,12 @@ import { describeError } from '../lib/errors';
    submit correctly, that panel is an honest "not yet available" state.
    Regeneration/QA have no backend route at all and are the same.
 
-   Chapters are fetched here directly (`api.novel`), not taken from
-   `App.js`'s `novels` cache -- that cache is only refetched on specific
-   correction actions or a novel switch (`refetchNovel`), so right after a
-   real ingest job finishes elsewhere (Project home) it stays stale at
-   "0 chapters," which left this screen's chapter picker permanently
-   empty and "Generate panels" permanently disabled. Every other new
-   screen this session added (CharacterDashboard, ProjectHome,
-   OutputLibrary) already fetches its own data independently for the same
-   reason; this was the one inconsistent one. */
+   Chapters are fetched here directly (`api.chapters`, the light
+   numbers-and-titles route), not read from a shared cache: right after a
+   real ingest job finishes elsewhere (Settings) a cached novel payload
+   stays stale at "0 chapters," which once left this screen's chapter
+   picker permanently empty and "Generate panels" permanently disabled.
+   The full ~9 MB novel payload is deliberately not used for this. */
 export default function GenerationWorkspace({ novelId, hideHeader = false }) {
   const [chapters, setChapters] = useState([]);
   const [selected, setSelected] = useState('');

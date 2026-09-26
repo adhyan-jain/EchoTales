@@ -141,7 +141,7 @@ export const api = {
 
   // Optimistic only -- a stale/expired token still reads true here and
   // simply 401s (clearing itself) on the first real request. Used by
-  // App.js to decide whether to skip the login screen on load.
+  // AuthGate to decide whether to skip the login screen on load.
   hasToken: () => !!getAuthToken(),
 
   createProject: (id, title, contentType) =>

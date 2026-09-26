@@ -28,7 +28,7 @@ export default function ScriptView({
   onCreateMention,
 }) {
   // `chapter` can be undefined for a beat after a manifest refresh --
-  // App.js derives it as `novel.chapters[chapterIdx]`, and a fresh/updated
+  // the Read and Review pages derive it from the URL's chapter, and a fresh/updated
   // manifest can report fewer chapters than the index still selected from
   // before the refresh, which threw "Cannot read properties of undefined
   // (reading 'spans')" here instead of rendering an honest empty state.

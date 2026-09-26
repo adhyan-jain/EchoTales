@@ -7,7 +7,7 @@ import { describeError } from '../lib/errors';
 // Section 7.2: gate the whole review UI behind a password when the server
 // reports auth_required: true (see api.js::authStatus). This component only
 // knows how to log in -- whether to show it at all, and what to render once
-// onLoggedIn fires, is the integrating App.js's call.
+// onLoggedIn fires, is AuthGate's call (components/app/AuthGate.js).
 //
 // Deliberately the one screen with no design investment beyond correct
 // tokens (per brief): this is a single shared server password, not a
@@ -31,7 +31,9 @@ export default function Login({
       await api.login(password);
       onLoggedIn();
     } catch (err) {
-      setError(describeError(err, 'Login failed'));
+      // A 401 here means the password was refused, not that a session lapsed
+      // (which is what describeError says for 401 elsewhere).
+      setError(err && err.status === 401 ? 'That password isn’t right. Try again.' : describeError(err, 'Login failed'));
     } finally {
       setBusy(false);
     }
