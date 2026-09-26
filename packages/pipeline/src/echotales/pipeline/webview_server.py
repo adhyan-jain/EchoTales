@@ -44,6 +44,7 @@ import hmac
 import json
 import logging
 import os
+import re
 import secrets
 import time
 from dataclasses import dataclass, field
@@ -633,32 +634,39 @@ def _thumbnail(src: Path, width: int, cache_dir: Path) -> Path:
     with Image.open(src) as img:
         frame = img if img.mode in ("RGB", "RGBA") else img.convert("RGB")
         if frame.width > width:
-            frame = frame.resize((width, round(frame.height * width / frame.width)), Image.LANCZOS)
+            frame = frame.resize((width, round(frame.height * width / frame.width)), Image.Resampling.LANCZOS)
         tmp = out.with_name(out.name + ".tmp")
         frame.save(tmp, "WEBP", quality=80, method=4)
     tmp.replace(out)  # atomic: a concurrent reader never sees half a file
     return out
 
 
-def _parse_byte_range(spec: str, size: int) -> tuple[int, int] | None:
-    """`start-end`, `start-` or `-suffix` -> inclusive (start, end), or None
-    when unsatisfiable. Only a single range is supported (all a media element
-    sends); a multi-range request is treated as unsatisfiable."""
-    if "," in spec or "-" not in spec:
+_RANGE_RE = re.compile(r"bytes=([0-9]*)-([0-9]*)")
+
+
+def _parse_byte_range(header: str, size: int) -> tuple[int, int] | str | None:
+    """A `Range` header -> inclusive (start, end); `None` when it is not a
+    single well-formed byte range (RFC 9110: an unsupported or malformed Range
+    is ignored and the full body is sent); `"unsatisfiable"` when it is well
+    formed but lies outside the file (416). Multi-range requests are ignored
+    rather than rejected -- a media element only ever sends one."""
+    m = _RANGE_RE.fullmatch(header.strip())
+    if m is None:
         return None
-    first, _, last = spec.partition("-")
-    try:
-        if first == "":  # suffix: the last N bytes
-            n = int(last)
-            if n <= 0:
-                return None
-            return max(size - n, 0), size - 1
-        start = int(first)
-        end = int(last) if last else size - 1
-    except ValueError:
+    first, last = m.groups()
+    if first == "" and last == "":
         return None
-    if start < 0 or start >= size or end < start:
-        return None
+    if first == "":  # suffix: the last N bytes
+        n = int(last)
+        if n <= 0:
+            return "unsatisfiable"
+        return max(size - n, 0), size - 1
+    start = int(first)
+    if last and int(last) < start:
+        return None  # inverted range is invalid syntax, not merely out of bounds
+    if start >= size:
+        return "unsatisfiable"
+    end = int(last) if last else size - 1
     return start, min(end, size - 1)
 
 
@@ -668,7 +676,10 @@ def _resolve_static_path(static_dir: Path, rel: str) -> Path | None:
     the build directory (the first version of this route joined the raw path
     unchecked)."""
     root = static_dir.resolve()
-    candidate = (root / rel).resolve()
+    try:
+        candidate = (root / rel).resolve()
+    except (ValueError, OSError):  # embedded NUL byte, over-long name
+        return None
     if candidate != root and root not in candidate.parents:
         return None
     return candidate if candidate.is_file() else None
@@ -685,6 +696,13 @@ def make_handler(
 
 
     class Handler(BaseHTTPRequestHandler):
+        # The server is single-threaded (see `serve`), so one client that
+        # stops reading -- a paused <video>, a dropped phone -- would otherwise
+        # block every other request until the OS gives up. Reproduced by the
+        # Python review of 2026-09-26: read 1 KB of a 50 MB file, stall, and a
+        # second request hangs. A socket timeout bounds that to 30 s.
+        timeout = 30
+
         def _cors(self) -> None:
             self.send_header("Access-Control-Allow-Origin", "*")
             self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
@@ -697,7 +715,8 @@ def make_handler(
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(data)))
             self.end_headers()
-            self.wfile.write(data)
+            if self.command != "HEAD":
+                self.wfile.write(data)
 
         def _read_body_bytes(self) -> bytes:
             length = int(self.headers.get("Content-Length", 0))
@@ -723,43 +742,60 @@ def make_handler(
             handle.invalidate()
             return {"job_id": job.job_id, "kind": kind, "status": job.status.value}
 
-        def _serve_file(self, path: Path, *, max_age: int | None = None) -> None:
+        def _serve_file(self, path: Path, *, max_age: int | None = None, private: bool = False) -> None:
             import mimetypes
+            from email.utils import formatdate
 
             content_type = mimetypes.guess_type(str(path))[0] or "application/octet-stream"
-            size = path.stat().st_size
-            # HTTP Range: a <video>/<audio> element cannot seek, and a browser
-            # cannot show a duration until it has the whole file, unless the
-            # server answers byte ranges. The first version read the entire
-            # file into memory per request -- 262 MB for one chapter video --
-            # on a single-threaded server (QA, 2026-09-26).
-            start, end, partial = 0, size - 1, False
-            rng = self.headers.get("Range", "")
-            if size and rng.startswith("bytes="):
-                parsed = _parse_byte_range(rng[len("bytes="):], size)
-                if parsed is None:
-                    self.send_response(416)
+            try:
+                fh = path.open("rb")
+                st = os.fstat(fh.fileno())
+            except OSError:
+                return self._json(404, {"error": "no such file"})
+            with fh:
+                size = st.st_size
+                etag = f'"{st.st_mtime_ns:x}-{size:x}"'
+                # HTTP Range: a <video>/<audio> element cannot seek, and a
+                # browser cannot show a duration until it has the whole file,
+                # unless the server answers byte ranges. The first version read
+                # the entire file into memory per request -- 262 MB for one
+                # chapter video -- on a single-threaded server (QA, 2026-09-26).
+                start, end, partial = 0, size - 1, False
+                rng = self.headers.get("Range", "")
+                if size and rng.startswith("bytes="):
+                    parsed = _parse_byte_range(rng, size)
+                    if parsed == "unsatisfiable":
+                        self.send_response(416)
+                        self._cors()
+                        self.send_header("Content-Range", f"bytes */{size}")
+                        self.send_header("Content-Length", "0")
+                        self.end_headers()
+                        return
+                    if isinstance(parsed, tuple):
+                        start, end = parsed
+                        partial = True
+                elif self.headers.get("If-None-Match") == etag:
+                    self.send_response(304)
                     self._cors()
-                    self.send_header("Content-Range", f"bytes */{size}")
-                    self.send_header("Content-Length", "0")
+                    self.send_header("ETag", etag)
                     self.end_headers()
                     return
-                start, end = parsed
-                partial = True
-            length = end - start + 1 if size else 0
-            self.send_response(206 if partial else 200)
-            self._cors()
-            self.send_header("Content-Type", content_type)
-            self.send_header("Accept-Ranges", "bytes")
-            self.send_header("Content-Length", str(length))
-            if partial:
-                self.send_header("Content-Range", f"bytes {start}-{end}/{size}")
-            if max_age is not None:
-                self.send_header("Cache-Control", f"public, max-age={max_age}")
-            self.end_headers()
-            if self.command == "HEAD" or not length:
-                return
-            with path.open("rb") as fh:
+                length = end - start + 1 if size else 0
+                self.send_response(206 if partial else 200)
+                self._cors()
+                self.send_header("Content-Type", content_type)
+                self.send_header("Accept-Ranges", "bytes")
+                self.send_header("Content-Length", str(length))
+                self.send_header("ETag", etag)
+                self.send_header("Last-Modified", formatdate(st.st_mtime, usegmt=True))
+                if partial:
+                    self.send_header("Content-Range", f"bytes {start}-{end}/{size}")
+                if max_age is not None:
+                    scope = "private" if private else "public"
+                    self.send_header("Cache-Control", f"{scope}, max-age={max_age}")
+                self.end_headers()
+                if self.command == "HEAD" or not length:
+                    return
                 fh.seek(start)
                 remaining = length
                 while remaining > 0:
@@ -768,9 +804,14 @@ def make_handler(
                         break
                     try:
                         self.wfile.write(chunk)
-                    except (BrokenPipeError, ConnectionResetError):
-                        return  # the player closed the connection (seek/pause)
+                    except (BrokenPipeError, ConnectionResetError, TimeoutError):
+                        self.close_connection = True  # the player left (seek/pause) or stalled
+                        return
                     remaining -= len(chunk)
+                if remaining:
+                    # The file shrank under us: the body is shorter than the
+                    # Content-Length already sent, so the connection cannot be reused.
+                    self.close_connection = True
 
         def _authorized(self) -> bool:
             """No password configured means auth is off (unchanged default
@@ -781,6 +822,9 @@ def make_handler(
             header = self.headers.get("Authorization", "")
             token = header[7:] if header.startswith("Bearer ") else ""
             return sessions.valid(token)
+
+        def do_HEAD(self) -> None:
+            self.do_GET()
 
         def do_OPTIONS(self) -> None:
             self.send_response(204)
@@ -977,7 +1021,7 @@ def make_handler(
                     width_raw = query.get("w", [None])[0]
                     if width_raw is None:
                         return self._serve_file(file_path)
-                    width = int(width_raw) if width_raw.isdigit() else -1
+                    width = int(width_raw) if width_raw.isascii() and width_raw.isdecimal() else -1
                     if width not in THUMB_WIDTHS:
                         return self._json(400, {"error": f"w must be one of {list(THUMB_WIDTHS)}"})
                     if file_path.suffix.lower() not in _IMAGE_SUFFIXES:
@@ -988,7 +1032,7 @@ def make_handler(
                     except Exception:  # a corrupt image still gets served, just unresized
                         log.warning("thumbnail failed for %s; serving original", file_path, exc_info=True)
                         return self._serve_file(file_path)
-                    return self._serve_file(thumb, max_age=86400)
+                    return self._serve_file(thumb, max_age=86400, private=True)
 
             except Exception as exc:
                 log.exception("GET %s failed", self.path)

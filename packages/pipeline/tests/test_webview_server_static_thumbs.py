@@ -81,6 +81,7 @@ def server(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         yield port, tmp_path
     finally:
         httpd.shutdown()
+        httpd.server_close()
         thread.join(timeout=5)
 
 
@@ -95,6 +96,11 @@ class TestStaticFrontend:
         status, headers, body = _get(port, "/static/app.js")
         assert status == 200 and b"console.info" in body
         assert "javascript" in headers["content-type"]
+
+    def test_null_byte_in_the_path_is_not_a_500(self, server) -> None:
+        port, _ = server
+        status, _, _ = _get(port, "/static/app%00.js")
+        assert status in (200, 404)  # falls to the SPA index or 404; never a server error
 
     @pytest.mark.parametrize("path", ["/../secret.txt", "/%2e%2e/secret.txt", "/static/../../secret.txt"])
     def test_traversal_never_escapes_the_build_dir(self, server, path: str) -> None:
@@ -146,10 +152,32 @@ class TestThumbnails:
         thumb = _get(port, "/api/novels/toy/output/file?path=panels/p001.png&w=320")[2]
         assert len(thumb) < len(full) / 3
 
-    @pytest.mark.parametrize("w", ["100", "abc", "-480", "4800"])
+    @pytest.mark.parametrize("w", ["100", "abc", "-480", "4800", "\u0664\u0668\u0660", "\u00b2"])
     def test_width_outside_the_allowed_set_is_rejected(self, server, w: str) -> None:
         port, _ = server
-        assert _get(port, f"/api/novels/toy/output/file?path=panels/p001.png&w={w}")[0] == 400
+        from urllib.parse import quote
+
+        assert _get(port, f"/api/novels/toy/output/file?path=panels/p001.png&w={quote(w)}")[0] == 400
+
+    def test_thumbnails_are_not_publicly_cacheable_and_revalidate(self, server) -> None:
+        """Media can be behind a password; a shared cache must not keep it."""
+        port, _ = server
+        url = "/api/novels/toy/output/file?path=panels/p001.png&w=480"
+        _, headers, _ = _get(port, url)
+        assert headers["cache-control"].startswith("private")
+        assert _get_h(port, url, {"If-None-Match": headers["etag"]})[0] == 304
+
+    def test_a_corrupt_image_is_served_unresized(self, server) -> None:
+        port, tmp = server
+        (tmp / "data" / "toy" / "panels" / "bad.png").write_bytes(b"\x89PNG not really")
+        status, _, body = _get(port, "/api/novels/toy/output/file?path=panels/bad.png&w=320")
+        assert status == 200 and body == b"\x89PNG not really"
+
+    def test_a_symlink_out_of_the_output_tree_is_rejected(self, server) -> None:
+        port, tmp = server
+        (tmp / "data" / "toy" / "panels" / "link.png").symlink_to(tmp / "secret.txt")
+        status, _, body = _get(port, "/api/novels/toy/output/file?path=panels/link.png")
+        assert status == 400 and b"TOP SECRET" not in body
 
     def test_non_image_is_served_unchanged(self, server) -> None:
         port, _ = server
@@ -234,11 +262,49 @@ class TestByteRanges:
         status, headers, body = _get_h(port, self.URL, {"Range": "bytes=10-999"})
         assert status == 206 and body == b"ge" and headers["content-range"] == "bytes 10-11/12"
 
-    @pytest.mark.parametrize("rng", ["bytes=99-", "bytes=5-2", "bytes=0-1,4-5", "bytes=abc-", "bytes=-0"])
+    @pytest.mark.parametrize("rng", ["bytes=99-", "bytes=-0"])
     def test_unsatisfiable_ranges_are_416(self, server, rng: str) -> None:
         port, _ = server
         status, headers, _ = _get_h(port, self.URL, {"Range": rng})
         assert status == 416 and headers["content-range"] == "bytes */12"
+
+    @pytest.mark.parametrize("rng", ["bytes=0-1,4-5", "bytes=abc-", "bytes=5-2", "bytes=-", "items=0-1"])
+    def test_malformed_or_multi_ranges_are_ignored(self, server, rng: str) -> None:
+        """RFC 9110: an unsupported Range is ignored -- the full body, not a 416."""
+        port, _ = server
+        status, _, body = _get_h(port, self.URL, {"Range": rng})
+        assert status == 200 and body == b"not an image"
+
+    def test_head_has_headers_and_no_body(self, server) -> None:
+        port, _ = server
+        conn = HTTPConnection("127.0.0.1", port, timeout=10)
+        conn.request("HEAD", self.URL)
+        resp = conn.getresponse()
+        assert resp.status == 200 and resp.read() == b""
+        assert resp.getheader("Content-Length") == "12"
+        conn.close()
+
+    def test_head_on_a_json_route_has_no_body(self, server) -> None:
+        port, _ = server
+        conn = HTTPConnection("127.0.0.1", port, timeout=10)
+        conn.request("HEAD", "/api/novels/toy/chapters")
+        resp = conn.getresponse()
+        assert resp.read() == b""
+        conn.close()
+
+    def test_conditional_get_is_304(self, server) -> None:
+        port, _ = server
+        etag = _get(port, self.URL)[1]["etag"]
+        status, _, body = _get_h(port, self.URL, {"If-None-Match": etag})
+        assert status == 304 and body == b""
+
+    def test_empty_file_with_a_range_is_an_empty_200(self, server) -> None:
+        port, tmp = server
+        (tmp / "data" / "toy" / "panels" / "empty.md").write_bytes(b"")
+        status, _, body = _get_h(
+            port, "/api/novels/toy/output/file?path=panels/empty.md", {"Range": "bytes=0-"}
+        )
+        assert status == 200 and body == b""
 
     def test_a_large_file_is_streamed_in_chunks(self, server) -> None:
         port, tmp = server
@@ -252,3 +318,51 @@ class TestByteRanges:
             port, "/api/novels/toy/output/file?path=video/v.mp4", {"Range": "bytes=100000-200000"}
         )
         assert status == 206 and body == payload[100000:200001]
+
+
+class TestSlowClient:
+    def test_a_stalled_download_does_not_block_other_requests(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The server is single-threaded. A client that reads 1 KB of a big
+        file and then stops used to hold every other request until the OS
+        gave up (Python review, 2026-09-26). The handler's socket timeout
+        releases it; the test shortens it to 1 s."""
+        import socket
+        import time
+
+        monkeypatch.chdir(tmp_path)
+        registry = Registry([], corrections_dir=tmp_path / "corrections", projects_dir=tmp_path / "projects")
+        queue = JobQueue()
+        queue.start()
+        handler = make_handler(registry, queue)
+        handler.timeout = 1
+        httpd = HTTPServer(("127.0.0.1", 0), handler)
+        thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+        thread.start()
+        port = httpd.server_address[1]
+        stalled = None
+        try:
+            conn = HTTPConnection("127.0.0.1", port, timeout=10)
+            conn.request("POST", "/api/projects", body=json.dumps({"id": "toy", "title": "T"}).encode(),
+                         headers={"Content-Type": "application/json"})
+            assert conn.getresponse().status == 201
+            conn.close()
+            big = tmp_path / "data" / "toy" / "video"
+            big.mkdir(parents=True)
+            (big / "big.mp4").write_bytes(b"\0" * (64 << 20))  # far beyond the socket buffers
+
+            stalled = socket.create_connection(("127.0.0.1", port), timeout=10)
+            stalled.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4096)
+            stalled.sendall(b"GET /api/novels/toy/output/file?path=video/big.mp4 HTTP/1.1\r\nHost: x\r\n\r\n")
+            stalled.recv(1024)  # then stop reading
+
+            t0 = time.monotonic()
+            assert _get(port, "/api/manifest")[0] == 200
+            assert time.monotonic() - t0 < 8
+        finally:
+            if stalled is not None:
+                stalled.close()
+            httpd.shutdown()
+            httpd.server_close()
+            thread.join(timeout=5)
