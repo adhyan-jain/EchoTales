@@ -3,8 +3,9 @@
     state_of(target, timeline, position, observer=READER)
       -> {aliases, attributes, relationships, persona, truth_status}
 
-Everything downstream consumes this: voice selection, prosody, reference
-images, panel casting. Four filters compose to produce the answer, and each one
+Panel casting and reference images consume this, through one compiled
+`GenerationState` per beat. Voice casting does not: it is per character for the
+whole volume and has no position- or observer-dependent input. Four filters compose to produce the answer, and each one
 exists because a specific failure mode would otherwise occur.
 
 **Story-time containment.** Does the fact's interval cover this position? Uses

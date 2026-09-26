@@ -66,4 +66,4 @@ Every accuracy figure in this project is scored against an **LLM-drafted silver 
 ## Repository state
 
 - Branch is ahead of `origin/master` (6aed9f9) and unpushed.
-- The working tree also contains another effort's uncommitted work in `packages/core` and `docs/results/` (a `GenerationState` feature and evaluation write-ups). It is not part of this readiness statement.
+- The `GenerationState` work that was uncommitted here is committed for the image path (2026-09-27). Evaluation write-ups from another tool whose numbers do not trace to result files are kept out of the repository (`docs/private/drafts-unverified/`).

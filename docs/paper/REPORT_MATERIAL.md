@@ -290,22 +290,23 @@ python3 -m pytest packages/core/tests packages/pipeline/tests    # 1,078 tests
 ## 15. References
 1. Zhu, L., Wang, J., He, Y. LlmLink: Dual LLMs for Dynamic Entity Linking on Long Narratives with Collaborative Memorisation and Prompt Optimisation. COLING 2025, 11334–11347.
 2. Meher, D., Domeniconi, C., Correa-Cabrera, G. LINK-KG: LLM-Driven Coreference-Resolved Knowledge Graphs for Human Smuggling Networks. arXiv:2510.26486, 2025.
-3. BOOKCOREF: Coreference Resolution at Book Scale. ACL 2025.
-4. [Lions: 1] and [Tigers: 2] and [Bears: 3], Oh My! Literary Coreference Annotation with LLMs. arXiv:2401.17922, 2024.
-5. The Elephant in the Coreference Room: Resolving Coreference in Full-Length French Fiction Works. arXiv:2510.15594, 2025.
-6. Large Language Models Fall Short: Understanding Complex Relationships in Detective Narratives. arXiv:2402.11051, 2024.
-7. Generating Visually Consistent Images for Storytelling via Narrative Graph Prompting. ICCV Workshops (AISTORY), 2025.
-8. StoryWeaver: A Unified World Model for Knowledge-Enhanced Story Character Customization. arXiv:2412.07375, 2024.
-9. TaleCrafter: Interactive Story Visualization with Multiple Characters. arXiv:2305.18247, 2023.
-10. ContextualStory: Consistent Visual Storytelling with Spatially-Enhanced and Storyline Context. arXiv:2407.09774, 2024.
-11. Narratology meets text-to-image: a survey of consistency in AI generated storybook illustrations. Artificial Intelligence Review, 2025.
-12. Structured Graph Representations for Visual Narrative Reasoning: A Hierarchical Framework for Comics. arXiv:2506.10008, 2025.
+3. Martinelli, G., Bonomo, T., Huguet Cabot, P.-L., Navigli, R. BOOKCOREF: Coreference Resolution at Book Scale. ACL 2025. arXiv:2507.12075.
+4. Hicke, R. M. M., Mimno, D. [Lions: 1] and [Tigers: 2] and [Bears: 3], Oh My! Literary Coreference Annotation with LLMs. arXiv:2401.17922, 2024.
+5. Bourgois, A., Poibeau, T. The Elephant in the Coreference Room: Resolving Coreference in Full-Length French Fiction Works. arXiv:2510.15594, 2025.
+6. Zhao, R., Zhu, Q., Xu, H., Li, J., Zhou, Y., He, Y., Gui, L. Large Language Models Fall Short: Understanding Complex Relationships in Detective Narratives. arXiv:2402.11051, 2024.
+7. Shin, A., Kaneko, K. Generating Visually Consistent Images for Storytelling via Narrative Graph Prompting. ICCV Workshops (AISTORY), 2025.
+8. Zhang, J., Tang, J., Zhang, R., Lv, T., Sun, X. StoryWeaver: A Unified World Model for Knowledge-Enhanced Story Character Customization. arXiv:2412.07375, 2024.
+9. Gong, Y., Pang, Y., Cun, X., Xia, M., He, Y., Chen, H., Wang, L., Zhang, Y., Wang, X., Shan, Y., Yang, Y. TaleCrafter: Interactive Story Visualization with Multiple Characters. arXiv:2305.18247, 2023.
+10. Zheng, S., Fu, Y. ContextualStory: Consistent Visual Storytelling with Spatially-Enhanced and Storyline Context. arXiv:2407.09774, 2024.
+11. Lin, Z., Wang, Z., Liu, Q., Zhang, X., Liu, J. Narratology meets text-to-image: a survey of consistency in AI generated storybook illustrations. Artificial Intelligence Review, 2025. doi:10.1007/s10462-025-11482-6.
+12. Chen, Y.-C. Hierarchical Knowledge Graphs for Story Understanding in Visual Narratives. arXiv:2506.10008, 2025 (v1 was titled "Structured Graph Representations for Visual Narrative Reasoning: A Hierarchical Framework for Comics").
 13. Bamman, D., Lewke, O., Mansoor, A. An Annotated Dataset of Coreference in English Literature (LitBank). LREC 2020.
 14. ISO/IEC 9075:2011 (SQL:2011) — temporal and bitemporal tables.
 15. Richter, J. et al. EARS: An Anechoic Fullband Speech Dataset Benchmarked for Speech Enhancement and Dereverberation. Interspeech 2024.
 
-*(Author lists for 3–12 to be completed from the papers before submission;
-titles and venues above are verified.)*
+*(Author lists for 3–12 were taken on 2026-09-27 from the arXiv API, the CVF
+open-access page (7) and Crossref (11). Only references 1, 2 and 13 have been
+read in full; the rest are cited from their abstracts.)*
 
 ## 16. Appendix
 - `docs/archive/VALIDATION_BASELINE.md` — starting state and environment

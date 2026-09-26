@@ -86,7 +86,7 @@ There is also no **visual ablation** (render with a flat, non-temporal state ver
 | Story-time axis (dream, flashback) | Defined; **no fact is ever written off `MAIN_TIMELINE`** | Segments are detected, but facts are never attached to them. |
 | Concurrent Self/Persona (disguise, possession, body-swap, clone, dream persona) | **Unit tests only** | The real corpus contains only sequential reincarnation (Fang Yuan, body1 → body2). |
 | Observer-scoped persona bindings | Column exists; **no writer** | A witness learns the alias but not the persona, so a witness-conditioned render drops the character (`SELF_PERSONA_VALIDATION.md` Section 3). |
-| Shared multimodal `GenerationState` | **Not built** | The visual path consumes `state_of` through `build_render_plan`; audio does not. `state.py:6` still implies otherwise. |
+| Shared multimodal `GenerationState` | **Built for the image path only** (2026-09-27) | The panel prompt and the render cache key read one compiled state per beat. Audio casting has no state-dependent input, so it does not consume it; reels have no production caller. |
 | Aliases in the render read set | **Missing** | The render digest hashes persona ids and attributes, not aliases, so a name-only reveal does not invalidate a panel. |
 | Transmigration merge (one Self, new Persona) | **Not built** | LOTM ch1–3: Zhou Mingrui and Klein resolved as two Selves (EVOLUTION 4.90). |
 | Detection of relational / deictic and title spans | **Weak** | 25 of 29 relational and 16 of 17 title mentions are never detected. This is the real bottleneck for the hard cases. |
@@ -96,11 +96,11 @@ There is also no **visual ablation** (render with a flat, non-temporal state ver
 
 ## 3. Open defects
 
-1. **Speaker attribution**: the real LLM tier (ch1-3) credits lines to vocative addressees and absent characters (EVOLUTION 4.87/4.88). The worse, pronoun-based pass is now opt-in. Voice casting ignores span confidence.
+1. **Speaker attribution**: the real LLM tier (ch1-3) credits lines to vocative addressees and absent characters (EVOLUTION 4.87/4.88). The worse, pronoun-based pass is now opt-in. Voice casting now voices attributions below confidence 0.7 as distinct "unconfirmed" speakers instead of as the named character (2026-09-27; RI ch1-3: 30 of 51 named lines).
 2. **Silver span drift**: 7 records past the end of ch1 on the rerun database. The new ingest correctly drops the author's note (`GOLD_DATASET_README.md` Section 5, item 7).
 3. **Two hardcases records need adjudication** (`GOLD_DATASET_README.md` Section 5, items 2–3): one `not_an_entity` record carrying an identity, and one within-chapter identity conflict. This is human-only.
 4. **Render pipeline items** from EVOLUTION 4.51/4.52 are still open (see `docs/HANDOFF.md`).
-5. `render/reels.py` is an unused planner (no ffmpeg call). Chapter videos are already vertical 1080×1920; only an automatic *short highlight cut* does not exist. No standalone per-chapter audio artifact exists.
+5. `render/reels.py` is an unused planner (no ffmpeg call). Chapter videos are already vertical 1080×1920; only an automatic *short highlight cut* does not exist. The voice stage now writes one `ch<N>/chapter.wav` per chapter (2026-09-27).
 6. ~~`render_novel` has zero direct test coverage~~ Covered end to end by `test_voice_render_novel.py` (2026-09-26); the real engine (Chatterbox) is still only checked by manual artifacts.
 
 ---
@@ -110,8 +110,7 @@ There is also no **visual ablation** (render with a flat, non-temporal state ver
 | Gap | Why it matters |
 |---|---|
 | **The repo has been public since 2026-08-07** | Prior public disclosure is counsel's first question. Grace-period rules are jurisdiction-specific. |
-| **Narrative Graph Prompting (ICCVW 2025) and StoryWeaver (2024) are unread** | Both are close prior art for graph-conditioned story visualisation. They must be read before filing. |
-| **CORE-KG unread** | It is LINK-KG's own baseline and may sit closer to this work. |
+| ~~NGP, StoryWeaver and CORE-KG unread~~ | Read since; analysed in the private prior-art bibliography (`docs/private/IP/`). Counsel still has to judge them. |
 | **Temporal KG literature not searched** | Bitemporal and knowledge-time modelling has a database and TKG literature, and it has not been surveyed. |
 | **Mechanisms M2–M4 are EXPERIMENTAL or DESIGNED** | Retraction, concurrency, and observer-scoped bindings are not demonstrated on real data (Section 2). A claim resting on them rests on tests. |
 | **Every "potentially differentiating" line says ASSERT — VERIFY WITH COUNSEL** | Nothing here is a legal opinion. |
@@ -125,8 +124,8 @@ The disclosure itself lives in `docs/private/IP/` (gitignored, never committed).
 - Complete author lists for references 3–12 (`REPORT_MATERIAL.md`). Only LLMLINK and LINK-KG have been read in full; the others are cited from abstracts.
 - The ≥5-papers-per-member related-work requirement needs each member to confirm their papers and write their own limitations paragraph (human-only).
 - Team confirmation of the Section 7 work split.
-- Draw the 7 hand-drawn diagram figures (`docs/paper/FIGURES.md` Figures 1–7).
-- Figures 6a, 8, 9 and 10 are rendered as SVG (`scripts/paper/plot_paper_figures.py`, `docs/paper/figures/`) from generated CSVs. Only Figure 11 (escalation, all zeros) and the seven diagrams remain.
+- ~~Draw the 7 diagram figures~~ Rendered from code and results by `scripts/paper/draw_diagrams.py` (2026-09-27); Figures 5–6 are kept private with the patent packet.
+- Figures 6a, 8, 9 and 10 are rendered as SVG (`scripts/paper/plot_paper_figures.py`, `docs/paper/figures/`) from generated CSVs. Only Figure 11 (escalation, all zeros) remains.
 - Figure 11 (escalation) stays a sentence rather than a chart: it would be a bar chart of zeros.
 
 ---
