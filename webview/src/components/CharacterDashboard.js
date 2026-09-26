@@ -304,7 +304,7 @@ function CharacterDetail({ character, busy, readOnly, onBack, onSetVoice, onSele
       <div className="grid gap-8 md:grid-cols-2">
         <div>
           <div className="mb-3 flex items-center justify-between gap-3">
-            <div className="font-mono text-xs uppercase tracking-wider text-muted">
+            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
               Reference images
             </div>
             {onSearchReferences && (
@@ -367,7 +367,7 @@ function CharacterDetail({ character, busy, readOnly, onBack, onSetVoice, onSele
         </div>
 
         <div>
-          <div className="font-mono text-xs uppercase tracking-wider text-muted mb-3">Voice</div>
+          <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted mb-3">Voice</div>
           <Card>
             <CardBody>
               {voice ? (

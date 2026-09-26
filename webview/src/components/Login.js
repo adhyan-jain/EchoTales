@@ -44,7 +44,7 @@ export default function Login({
     // top-left instead of centering it in the viewport.
     <main className="flex min-h-screen w-full items-center justify-center bg-bg font-sans [grid-column:1/-1] [grid-row:1/-1]">
       <form
-        className="w-full max-w-[320px] space-y-4 border border-border bg-surface p-8 rounded-sm"
+        className="w-full max-w-[320px] space-y-4 border border-border bg-surface p-8 rounded-2xl"
         onSubmit={handleSubmit}
       >
         <div>
@@ -67,7 +67,7 @@ export default function Login({
         </div>
 
         {error && (
-          <div className="rounded-sm border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
+          <div className="rounded-xl border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
             {error}
           </div>
         )}

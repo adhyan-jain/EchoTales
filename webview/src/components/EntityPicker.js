@@ -8,11 +8,15 @@ import React, { useState, useRef, useEffect } from 'react';
  * mention is wrong" and "this character doesn't exist yet" are the same
  * gesture, not two different UIs to learn.
  */
-// Matches `_MAX_ANON_SLOTS` in speakers/runner.py -- a chapter with more
-// simultaneous unnamed voices than this is one confused scene, not a dozen
-// distinct background speakers, so the picker doesn't offer more than the
-// pipeline itself would ever assign.
-const MAX_ANON_SLOTS = 4;
+// `_MAX_ANON_SLOTS` in speakers/runner.py is 4 -- what the pipeline itself
+// assigns per scene. A reviewer can need more (a crowd scene with many
+// unnamed voices), and the backend has no such limit: the slot id is
+// `<novel>:anon:<chapter>:<n>` for any n, so numbering already restarts at 1
+// in every chapter. The picker therefore offers the four defaults, every
+// number already used in this chapter, and a "New" button for the next one
+// (2026-09-26, reviewer request). Capped only to keep the row sane.
+const DEFAULT_ANON_SLOTS = 4;
+const ABSOLUTE_MAX_ANON_SLOT = 99;
 
 export default function EntityPicker({
   entities,
@@ -21,6 +25,7 @@ export default function EntityPicker({
   onCreateNew,
   onClear,
   onAnonSlot,
+  usedAnonSlots = 0,
   onCancel,
 }) {
   const [query, setQuery] = useState('');
@@ -38,6 +43,7 @@ export default function EntityPicker({
   }, []);
 
   const q = query.trim().toLowerCase();
+  const shownSlots = Math.min(Math.max(DEFAULT_ANON_SLOTS, usedAnonSlots), ABSOLUTE_MAX_ANON_SLOT);
   const filtered = q ? entities.filter((e) => e.label.toLowerCase().includes(q)) : entities;
   const exactMatch = entities.some((e) => e.label.toLowerCase() === q);
 
@@ -119,7 +125,7 @@ export default function EntityPicker({
           {onAnonSlot && !query.trim() && (
             <li className="anon-slot-row">
               <span className="anon-slot-label">Unknown speaker:</span>
-              {Array.from({ length: MAX_ANON_SLOTS }, (_, i) => i + 1).map((n) => (
+              {Array.from({ length: shownSlots }, (_, i) => i + 1).map((n) => (
                 <button
                   key={n}
                   type="button"
@@ -132,6 +138,18 @@ export default function EntityPicker({
                   {n}
                 </button>
               ))}
+              {shownSlots < ABSOLUTE_MAX_ANON_SLOT && (
+                <button
+                  type="button"
+                  data-row
+                  className="anon-slot-btn anon-slot-new"
+                  onClick={() => onAnonSlot(shownSlots + 1)}
+                  aria-label={`New unknown speaker ${shownSlots + 1}`}
+                  title={`Start a new unknown speaker for this chapter: Unknown Speaker ${shownSlots + 1}`}
+                >
+                  + {shownSlots + 1}
+                </button>
+              )}
             </li>
           )}
           {query.trim() && !exactMatch && (

@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { api } from '../api';
 import Divider from './ui/Divider';
-import MediaArtifact from './ui/MediaArtifact';
+import MediaArtifact, { AUDIO_RE, IMAGE_RE, VIDEO_RE } from './ui/MediaArtifact';
+import { thumbUrl, fileUrl } from '../lib/media';
 import { EmptyState, LoadingState } from './ui/EmptyState';
 import { describeError } from '../lib/errors';
 
@@ -19,11 +20,14 @@ const FORMATS = [
   { key: 'panels', label: 'Panels' },
 ];
 
+const PAGE = 24;
+
 export default function OutputLibrary({ novelId, hideHeader = false }) {
   const [status, setStatus] = useState('loading');
   const [output, setOutput] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [format, setFormat] = useState('video');
+  const [visible, setVisible] = useState(PAGE);
 
   const load = useCallback(() => {
     if (!novelId) return;
@@ -49,16 +53,24 @@ export default function OutputLibrary({ novelId, hideHeader = false }) {
     load();
   }, [load]);
 
-  const items = format === 'reels' ? [] : ((output && output.kinds && output.kinds[format]) || []);
-  const latest = ((output && output.kinds && output.kinds.video) || [])
-    .slice()
-    .sort((a, b) => (b.mtime || 0) - (a.mtime || 0))[0];
+  // Only files a person can watch, hear or look at, newest first. The raw
+  // listing is a filesystem walk: it includes manifests (.jsonl), notes (.md)
+  // and, for panels, over a thousand files across every version ever rendered
+  // -- all of which used to be rendered at once as bare filenames.
+  const MEDIA_RE = { video: VIDEO_RE, audio: AUDIO_RE, panels: IMAGE_RE };
+  const listOf = (kind) =>
+    ((output && output.kinds && output.kinds[kind]) || [])
+      .filter((i) => (MEDIA_RE[kind] ? MEDIA_RE[kind].test(i.path) : true))
+      .sort((a, b) => (b.mtime || 0) - (a.mtime || 0));
+  const items = format === 'reels' ? [] : listOf(format);
+  const latest = listOf('video')[0];
+  const shown = items.slice(0, visible);
 
   return (
     <div className={hideHeader ? '' : 'mx-auto max-w-4xl px-6 py-10'}>
       {!hideHeader && (
       <header className="border-b border-border pb-6">
-        <div className="font-mono text-xs uppercase tracking-widest text-muted">{novelId}</div>
+        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">{novelId}</div>
         <h1 className="mt-2 font-display text-4xl text-text">Output library</h1>
       </header>
       )}
@@ -76,7 +88,7 @@ export default function OutputLibrary({ novelId, hideHeader = false }) {
           {latest && (
             <div className="mt-8">
               <Divider label="Latest render" className="mb-4" />
-              <MediaArtifact item={latest} />
+              <MediaArtifact item={latest} novelId={novelId} />
             </div>
           )}
 
@@ -87,13 +99,16 @@ export default function OutputLibrary({ novelId, hideHeader = false }) {
                 <button
                   key={f.key}
                   type="button"
-                  onClick={() => setFormat(f.key)}
+                  onClick={() => {
+                    setFormat(f.key);
+                    setVisible(PAGE);
+                  }}
                   aria-pressed={format === f.key}
                   className={
-                    'rounded-sm px-3 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors ' +
+                    'rounded-xl border px-3.5 py-1.5 text-sm font-medium transition-colors ' +
                     (format === f.key
-                      ? 'border border-accent text-accent'
-                      : 'border border-transparent text-muted hover:text-text')
+                      ? 'border-accent/40 bg-primary/15 text-text'
+                      : 'border-transparent text-muted hover:bg-surface2 hover:text-text')
                   }
                 >
                   {f.label}
@@ -105,16 +120,55 @@ export default function OutputLibrary({ novelId, hideHeader = false }) {
               {format === 'reels' ? (
                 <EmptyState
                   title="Reels not produced yet"
-                  description="The reels engine (render/reels.py) is planning logic only -- it has no ffmpeg call yet, so no reel file can exist here."
+                  description="Short vertical reels aren’t available yet, so there is nothing to show here."
                 />
               ) : items.length === 0 ? (
                 <EmptyState title={`No ${format} yet`} description="Nothing has been rendered to this format for this project." />
               ) : (
-                <div className="space-y-3">
-                  {items.map((item) => (
-                    <MediaArtifact key={item.path} item={item} />
-                  ))}
-                </div>
+                <>
+                  {format === 'panels' ? (
+                    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                      {shown.map((item) => (
+                        <li key={item.path}>
+                          <a
+                            href={fileUrl(novelId, item.path)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group block overflow-hidden rounded-xl border border-border bg-surface2"
+                            aria-label={`Open ${item.path.split('/').pop()} full size`}
+                          >
+                            <img
+                              src={thumbUrl(novelId, item.path, 320)}
+                              alt={`Panel ${item.path.split('/').pop()}`}
+                              loading="lazy"
+                              className="aspect-[3/4] w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="space-y-3">
+                      {shown.map((item) => (
+                        <MediaArtifact key={item.path} item={item} novelId={novelId} compact />
+                      ))}
+                    </div>
+                  )}
+                  <div className="mt-4 flex items-center justify-between gap-3 text-sm text-muted">
+                    <span>
+                      Showing {shown.length} of {items.length}
+                    </span>
+                    {shown.length < items.length && (
+                      <button
+                        type="button"
+                        onClick={() => setVisible((v) => v + PAGE)}
+                        className="rounded-xl border border-border px-4 py-2 font-medium text-text hover:border-accent/60"
+                      >
+                        Show more
+                      </button>
+                    )}
+                  </div>
+                </>
               )}
             </div>
           </div>

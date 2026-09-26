@@ -37,7 +37,13 @@ _ANON_SPEAKER_RE = re.compile(r":anon:[\d.]+:(?:s\d+:)?(?P<slot>\d+)$")
 
 #: Deliberately not in `_PALETTE` -- an anonymous slot must never look like it
 #: could be a ranked, named entity at a glance.
-_ANON_COLOURS = ["#8895A7", "#A78895", "#95A788", "#A79A88"]
+#: Eight tones, not four: a reviewer can now assign Unknown Speaker 5+ in a
+#: crowd scene (2026-09-26), and slots 5-8 reusing slots 1-4's colours made
+#: two different voices look like the same one at a glance. Beyond 8 they cycle.
+_ANON_COLOURS = [
+    "#8895A7", "#A78895", "#95A788", "#A79A88",
+    "#7FA3A8", "#A88FB5", "#B5A57F", "#88A5C4",
+]
 
 
 def _anon_slot_label(self_id: str) -> str | None:

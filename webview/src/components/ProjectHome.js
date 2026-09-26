@@ -55,7 +55,7 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false 
       {!hideHeader && (
       <header className="flex items-start justify-between gap-4 border-b border-border pb-6">
         <div>
-          <div className="font-mono text-xs uppercase tracking-widest text-muted">Production desk</div>
+          <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Production desk</div>
           <h1 className="mt-2 font-display text-4xl text-text">Project</h1>
         </div>
         <Button variant="secondary" size="sm" onClick={onNewProject}>
@@ -81,7 +81,7 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false 
         <div className="mt-8">
           <EmptyState
             title="No lifecycle data for this project"
-            description="This project isn't tracked by the orchestration backend yet -- it may be a static export, or was registered outside this server."
+            description="This project isn’t set up for pipeline runs on this server, so there is no ingestion status to show."
           />
         </div>
       )}
@@ -143,7 +143,7 @@ function Stat({ label, value, tone = 'neutral' }) {
   const toneClass = { success: 'text-success', danger: 'text-danger', neutral: 'text-text' }[tone];
   return (
     <div>
-      <div className="font-mono text-xs uppercase tracking-wider text-muted">{label}</div>
+      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">{label}</div>
       <div className={`mt-1 font-display text-lg ${toneClass}`}>{value}</div>
     </div>
   );

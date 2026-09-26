@@ -197,3 +197,58 @@ class TestChapterList:
         assert status == 200
         assert json.loads(body) == [{"number": 1.0, "title": ""}, {"number": 12.5, "title": "Half"}]
         assert len(body) < 200
+
+
+def _get_h(port: int, path: str, headers: dict[str, str]) -> tuple[int, dict[str, str], bytes]:
+    conn = HTTPConnection("127.0.0.1", port, timeout=10)
+    conn.request("GET", path, headers=headers)
+    resp = conn.getresponse()
+    body = resp.read()
+    out = {k.lower(): v for k, v in resp.getheaders()}
+    conn.close()
+    return resp.status, out, body
+
+
+class TestByteRanges:
+    URL = "/api/novels/toy/output/file?path=panels/notes.md"  # 12 bytes: "not an image"
+
+    def test_full_response_advertises_ranges(self, server) -> None:
+        port, _ = server
+        status, headers, body = _get(port, self.URL)
+        assert status == 200 and body == b"not an image"
+        assert headers["accept-ranges"] == "bytes"
+
+    def test_partial_content(self, server) -> None:
+        port, _ = server
+        status, headers, body = _get_h(port, self.URL, {"Range": "bytes=4-5"})
+        assert status == 206 and body == b"an"
+        assert headers["content-range"] == "bytes 4-5/12" and headers["content-length"] == "2"
+
+    def test_open_ended_and_suffix_ranges(self, server) -> None:
+        port, _ = server
+        assert _get_h(port, self.URL, {"Range": "bytes=8-"})[2] == b"mage"
+        assert _get_h(port, self.URL, {"Range": "bytes=-5"})[2] == b"image"
+
+    def test_end_past_the_file_is_clamped(self, server) -> None:
+        port, _ = server
+        status, headers, body = _get_h(port, self.URL, {"Range": "bytes=10-999"})
+        assert status == 206 and body == b"ge" and headers["content-range"] == "bytes 10-11/12"
+
+    @pytest.mark.parametrize("rng", ["bytes=99-", "bytes=5-2", "bytes=0-1,4-5", "bytes=abc-", "bytes=-0"])
+    def test_unsatisfiable_ranges_are_416(self, server, rng: str) -> None:
+        port, _ = server
+        status, headers, _ = _get_h(port, self.URL, {"Range": rng})
+        assert status == 416 and headers["content-range"] == "bytes */12"
+
+    def test_a_large_file_is_streamed_in_chunks(self, server) -> None:
+        port, tmp = server
+        big = tmp / "data" / "toy" / "video"
+        big.mkdir(parents=True)
+        payload = bytes(range(256)) * 2048  # 512 KiB, several 64 KiB chunks
+        (big / "v.mp4").write_bytes(payload)
+        status, _, body = _get(port, "/api/novels/toy/output/file?path=video/v.mp4")
+        assert status == 200 and body == payload
+        status, _, body = _get_h(
+            port, "/api/novels/toy/output/file?path=video/v.mp4", {"Range": "bytes=100000-200000"}
+        )
+        assert status == 206 and body == payload[100000:200001]

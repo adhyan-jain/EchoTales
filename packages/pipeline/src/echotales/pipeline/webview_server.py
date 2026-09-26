@@ -640,6 +640,28 @@ def _thumbnail(src: Path, width: int, cache_dir: Path) -> Path:
     return out
 
 
+def _parse_byte_range(spec: str, size: int) -> tuple[int, int] | None:
+    """`start-end`, `start-` or `-suffix` -> inclusive (start, end), or None
+    when unsatisfiable. Only a single range is supported (all a media element
+    sends); a multi-range request is treated as unsatisfiable."""
+    if "," in spec or "-" not in spec:
+        return None
+    first, _, last = spec.partition("-")
+    try:
+        if first == "":  # suffix: the last N bytes
+            n = int(last)
+            if n <= 0:
+                return None
+            return max(size - n, 0), size - 1
+        start = int(first)
+        end = int(last) if last else size - 1
+    except ValueError:
+        return None
+    if start < 0 or start >= size or end < start:
+        return None
+    return start, min(end, size - 1)
+
+
 def _resolve_static_path(static_dir: Path, rel: str) -> Path | None:
     """A file inside the built frontend, or None. Same containment rule as
     `_resolve_output_path`: a request for `/../../etc/passwd` must not escape
@@ -705,15 +727,50 @@ def make_handler(
             import mimetypes
 
             content_type = mimetypes.guess_type(str(path))[0] or "application/octet-stream"
-            data = path.read_bytes()
-            self.send_response(200)
+            size = path.stat().st_size
+            # HTTP Range: a <video>/<audio> element cannot seek, and a browser
+            # cannot show a duration until it has the whole file, unless the
+            # server answers byte ranges. The first version read the entire
+            # file into memory per request -- 262 MB for one chapter video --
+            # on a single-threaded server (QA, 2026-09-26).
+            start, end, partial = 0, size - 1, False
+            rng = self.headers.get("Range", "")
+            if size and rng.startswith("bytes="):
+                parsed = _parse_byte_range(rng[len("bytes="):], size)
+                if parsed is None:
+                    self.send_response(416)
+                    self._cors()
+                    self.send_header("Content-Range", f"bytes */{size}")
+                    self.send_header("Content-Length", "0")
+                    self.end_headers()
+                    return
+                start, end = parsed
+                partial = True
+            length = end - start + 1 if size else 0
+            self.send_response(206 if partial else 200)
             self._cors()
             self.send_header("Content-Type", content_type)
-            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Accept-Ranges", "bytes")
+            self.send_header("Content-Length", str(length))
+            if partial:
+                self.send_header("Content-Range", f"bytes {start}-{end}/{size}")
             if max_age is not None:
                 self.send_header("Cache-Control", f"public, max-age={max_age}")
             self.end_headers()
-            self.wfile.write(data)
+            if self.command == "HEAD" or not length:
+                return
+            with path.open("rb") as fh:
+                fh.seek(start)
+                remaining = length
+                while remaining > 0:
+                    chunk = fh.read(min(1 << 16, remaining))
+                    if not chunk:
+                        break
+                    try:
+                        self.wfile.write(chunk)
+                    except (BrokenPipeError, ConnectionResetError):
+                        return  # the player closed the connection (seek/pause)
+                    remaining -= len(chunk)
 
         def _authorized(self) -> bool:
             """No password configured means auth is off (unchanged default

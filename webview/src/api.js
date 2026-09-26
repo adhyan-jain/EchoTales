@@ -107,7 +107,16 @@ export const api = {
   manifest: () => request('/api/manifest'),
   novel: (id) => request(`/api/novels/${enc(id)}`),
   // Chapter numbers/titles only -- the full novel payload is ~9.4 MB.
-  chapters: (id) => request(`/api/novels/${enc(id)}/chapters`),
+  chapters: (id) =>
+    request(`/api/novels/${enc(id)}/chapters`).catch((err) => {
+      // A backend started before /chapters existed answers 404. Fall back to
+      // the full payload (heavier, same numbers) so the Studio still works
+      // against an older running server instead of showing "not found".
+      if (err && err.status === 404) {
+        return request(`/api/novels/${enc(id)}`).then((n) => (n.chapters || []).map((c) => ({ number: c.number, title: c.title || '' })));
+      }
+      throw err;
+    }),
   corrections: (id) => request(`/api/novels/${enc(id)}/corrections`),
 
   authStatus: () => request('/api/auth/status'),

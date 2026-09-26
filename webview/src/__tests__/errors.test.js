@@ -73,3 +73,23 @@ describe('request timeout', () => {
     await expect(api.manifest()).resolves.toEqual([{ id: 'x' }]);
   });
 });
+
+describe('chapter list against an older backend', () => {
+  afterEach(() => {
+    delete global.fetch;
+  });
+
+  test('falls back to the full payload when /chapters does not exist yet', async () => {
+    global.fetch = jest.fn((url) =>
+      String(url).endsWith('/chapters')
+        ? Promise.resolve({ ok: false, status: 404, json: () => Promise.resolve({ error: 'not found' }) })
+        : Promise.resolve({ ok: true, json: () => Promise.resolve({ chapters: [{ number: 1, spans: [1, 2] }, { number: 2.5, title: 'Half', spans: [] }] }) })
+    );
+    await expect(api.chapters('toy')).resolves.toEqual([{ number: 1, title: '' }, { number: 2.5, title: 'Half' }]);
+  });
+
+  test('other failures are not swallowed by the fallback', async () => {
+    global.fetch = jest.fn(() => Promise.resolve({ ok: false, status: 500, json: () => Promise.resolve({ error: 'boom' }) }));
+    await expect(api.chapters('toy')).rejects.toMatchObject({ status: 500 });
+  });
+});

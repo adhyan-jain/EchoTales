@@ -109,3 +109,37 @@ describe('ScriptLine', () => {
     expect(screen.queryByRole('button', { name: /reassign mention/i })).not.toBeInTheDocument();
   });
 });
+
+describe('EntityPicker unknown-speaker slots', () => {
+  const props = { entities: ENTITIES, onSelect: jest.fn(), onCreateNew: jest.fn(), onCancel: jest.fn() };
+
+  it('offers slots 1-4 and a New button for 5 by default', () => {
+    render(<EntityPicker {...props} onAnonSlot={jest.fn()} />);
+    [1, 2, 3, 4].forEach((n) => expect(screen.getByRole('button', { name: `Unknown speaker ${n}` })).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'Unknown speaker 5' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'New unknown speaker 5' })).toBeInTheDocument();
+  });
+
+  it('assigns a brand-new slot number with one click', () => {
+    const onAnonSlot = jest.fn();
+    render(<EntityPicker {...props} onAnonSlot={onAnonSlot} />);
+    fireEvent.click(screen.getByRole('button', { name: 'New unknown speaker 5' }));
+    expect(onAnonSlot).toHaveBeenCalledWith(5);
+  });
+
+  it('shows every slot already used in the chapter, then offers the next number', () => {
+    const onAnonSlot = jest.fn();
+    render(<EntityPicker {...props} onAnonSlot={onAnonSlot} usedAnonSlots={7} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Unknown speaker 7' }));
+    expect(onAnonSlot).toHaveBeenCalledWith(7);
+    expect(screen.getByRole('button', { name: 'New unknown speaker 8' })).toBeInTheDocument();
+  });
+
+  it('hides the slot row and Unassign once a name is being typed, so Enter cannot pick them', () => {
+    render(<EntityPicker {...props} onAnonSlot={jest.fn()} onClear={jest.fn()} />);
+    fireEvent.change(screen.getByRole('textbox', { name: /search or type a new name/i }), { target: { value: 'Fang' } });
+    expect(screen.queryByRole('button', { name: /unknown speaker/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /unassign/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /fang yuan/i })).toBeInTheDocument();
+  });
+});

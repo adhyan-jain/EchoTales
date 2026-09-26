@@ -15,8 +15,39 @@ import React from 'react';
  * a note as dealt with the moment you fix something unrelated. They stay
  * open until removed (the same undo affordance that already exists).
  */
-export default function AnalysisPanel({ summary, onApply, applyResult, applying, onClose }) {
+// Plain-language line for a queued correction. Ids are shortened to the part
+// a reviewer recognises (line 3 of chapter 5), not the full `novel:5:3:0`.
+function shortId(id) {
+  const parts = String(id || '').split(':');
+  return parts.length >= 3 ? parts.slice(1).join(':') : String(id || '');
+}
+function describePending(c) {
+  const p = c.payload || {};
+  switch (c.type) {
+    case 'merge_lines':
+      return `Merge line ${shortId(p.absorbed_span_id)} into ${shortId(p.primary_span_id)}`;
+    case 'merge_entities':
+      return 'Merge one character into another';
+    case 'reassign_mention':
+      return p.target_id || p.new_label ? `Change who a mention refers to (${shortId(p.mention_id)})` : `Unlink a mention (${shortId(p.mention_id)})`;
+    case 'reassign_speaker':
+      return p.anon_slot ? `Set line ${shortId(p.span_id)} to Unknown Speaker ${p.anon_slot}` : `Change the speaker of line ${shortId(p.span_id)}`;
+    case 'reassign_span_type':
+      return `Change line ${shortId(p.span_id)} to ${String(p.new_type || '').replace(/_/g, ' ').toLowerCase()}`;
+    case 'create_mention':
+      return `Add a mention “${p.text || ''}” in line ${shortId(p.span_id)}`;
+    case 'flag':
+      return `Flag on line ${shortId(p.span_id || p.mention_id)}${p.note ? `: ${p.note}` : ''}`;
+    default:
+      return c.type;
+  }
+}
+
+export default function AnalysisPanel({ summary, items = [], failedIds = new Set(), onUndo, undoing, onApply, applyResult, applying, onClose }) {
   const pending = summary.pending_actionable ?? summary.pending;
+  const waiting = items.filter((c) => !c.applied);
+  // `failedIds`: corrections the last Apply attempted that are still unapplied,
+  // i.e. they errored and would fail again. Named so they can be undone.
   return (
     <div className="analysis-panel">
       <div className="analysis-header">
@@ -41,6 +72,30 @@ export default function AnalysisPanel({ summary, onApply, applyResult, applying,
               <li key={type}>{type}: {count}</li>
             ))}
           </ul>
+          {waiting.length > 0 && (
+            <>
+              <h3 className="waiting-title">Waiting to apply</h3>
+              <ul className="waiting-list">
+                {waiting.map((c) => (
+                  <li key={c.id} className={failedIds.has(c.id) ? 'failed' : ''}>
+                    <span>
+                      {describePending(c)}
+                      {failedIds.has(c.id) && <em> — did not apply last time</em>}
+                    </span>
+                    <button
+                      type="button"
+                      className="undo"
+                      disabled={undoing === c.id}
+                      onClick={() => onUndo(c.id)}
+                      aria-label={`Undo: ${describePending(c)}`}
+                    >
+                      Undo
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
           <button disabled={pending === 0 || applying} onClick={onApply}>
             {applying ? 'Applying…' : `Apply ${pending} pending correction(s) to the graph`}
           </button>
@@ -54,7 +109,10 @@ export default function AnalysisPanel({ summary, onApply, applyResult, applying,
       )}
       {applyResult && (
         <div className="apply-result">
-          <b>Applied {applyResult.count} correction(s):</b>
+          <b>
+            {applyResult.applied.filter((x) => !x.error).length} applied
+            {applyResult.applied.some((x) => x.error) && `, ${applyResult.applied.filter((x) => x.error).length} could not be applied`}:
+          </b>
           <ul>
             {applyResult.applied.map((r, i) => (
               <li key={i}>{describeResult(r)}</li>

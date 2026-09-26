@@ -15,6 +15,7 @@ jest.mock('../../api', () => ({
     renderGenerate: jest.fn(),
     novel: jest.fn(),
     chapters: jest.fn(),
+    outputFileUrl: jest.fn(),
   },
 }));
 
@@ -92,6 +93,54 @@ describe('ProjectHome', () => {
 });
 
 describe('OutputLibrary', () => {
+  beforeEach(() => {
+    api.outputFileUrl.mockImplementation((id, path) => `http://api/${id}/output/file?path=${encodeURIComponent(path)}`);
+  });
+
+  test('a video gets a player that does not download until played', async () => {
+    api.listOutput.mockResolvedValueOnce({ kinds: { video: [{ path: 'video/ch1/v1/out.mp4', size: 262 * 1048576, mtime: 1 }] } });
+    const { container } = render(<OutputLibrary novelId="toy" />);
+    await screen.findAllByText('out.mp4');
+    // <video> has no ARIA role to query by; the element itself is what is under test.
+    // eslint-disable-next-line testing-library/no-container, testing-library/no-node-access
+    const video = container.querySelector('video');
+    expect(video).toHaveAttribute('preload', 'none');
+    // eslint-disable-next-line testing-library/no-node-access
+    expect(video.querySelector('source')).toHaveAttribute('src', expect.stringContaining('out.mp4'));
+    expect(screen.getAllByRole('link', { name: /open out\.mp4/i })[0]).toHaveAttribute('target', '_blank');
+  });
+
+  test('manifests and notes are not listed as media, and panels are thumbnails from newest', async () => {
+    api.listOutput.mockResolvedValueOnce({
+      kinds: {
+        video: [],
+        panels: [
+          { path: 'panels/ch1/manifest_v35.jsonl', size: 1, mtime: 9 },
+          { path: 'panels/ch1/VERSIONS.md', size: 1, mtime: 9 },
+          { path: 'panels/ch1/old.png', size: 100000, mtime: 1 },
+          { path: 'panels/ch1/new.png', size: 100000, mtime: 5 },
+        ],
+      },
+    });
+    render(<OutputLibrary novelId="toy" />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Panels' }));
+    const imgs = await screen.findAllByRole('img');
+    expect(imgs.map((i) => i.getAttribute('alt'))).toEqual(['Panel new.png', 'Panel old.png']);
+    expect(imgs[0]).toHaveAttribute('src', expect.stringContaining('w=320'));
+    expect(screen.queryByText(/manifest_v35/)).not.toBeInTheDocument();
+    expect(screen.getByText('Showing 2 of 2')).toBeInTheDocument();
+  });
+
+  test('a long list is paged instead of rendered all at once', async () => {
+    const audio = Array.from({ length: 60 }, (_, i) => ({ path: `audio/ch1/v1/clip${i}.wav`, size: 10, mtime: i }));
+    api.listOutput.mockResolvedValueOnce({ kinds: { video: [], audio } });
+    render(<OutputLibrary novelId="toy" />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Audio' }));
+    expect(await screen.findByText('Showing 24 of 60')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Show more' }));
+    expect(screen.getByText('Showing 48 of 60')).toBeInTheDocument();
+  });
+
   test('lists real output files and shows the honest reels state', async () => {
     api.listOutput.mockResolvedValueOnce({
       novel_id: 'toy',

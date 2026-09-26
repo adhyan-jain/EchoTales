@@ -113,7 +113,7 @@ describe('NewProject', () => {
     expect(screen.getByRole('button', { name: /roleplay/i })).toBeDisabled();
 
     // The honesty note about ingest being a separate step must actually render.
-    expect(screen.getByText(/ingested separately, from Project home/i)).toBeInTheDocument();
+    expect(screen.getByText(/the book is read separately.*settings/i)).toBeInTheDocument();
 
     // No file was picked in this test -- uploadSource must not have been called.
     expect(api.uploadSource).not.toHaveBeenCalled();

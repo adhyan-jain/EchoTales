@@ -268,10 +268,11 @@ mark.editable:hover { background: color-mix(in srgb, var(--mk, #8a8a8a) 18%, tra
 .entity-picker .create-row { color: var(--accent); font-weight: 600; }
 .entity-picker .clear-row { color: var(--danger); }
 .entity-picker li.hint { color: var(--muted); padding: .6rem; }
-.entity-picker li.anon-slot-row { padding: .45rem .6rem; gap: .35rem; border-bottom: 1px solid var(--border); border-radius: 0; margin-bottom: .2rem; }
-.anon-slot-label { color: var(--muted); font-size: .78rem; margin-right: auto; }
+.entity-picker li.anon-slot-row { padding: .45rem .6rem; gap: .35rem; border-bottom: 1px solid var(--border); border-radius: 0; margin-bottom: .2rem; flex-wrap: wrap; }
+.anon-slot-label { color: var(--muted); font-size: .78rem; flex: 1 0 100%; }
+.anon-slot-btn.anon-slot-new { width: auto; padding: 0 .55rem; border-style: dashed; color: var(--accent); }
 .anon-slot-btn {
-  width: 1.75rem; height: 1.75rem; border-radius: .45rem; border: 1px solid var(--border);
+  width: 2.25rem; height: 2.25rem; border-radius: .45rem; border: 1px solid var(--border);
   background: var(--bg); color: var(--fg); cursor: pointer; font: inherit; font-size: .8rem;
 }
 .anon-slot-btn:hover { border-color: var(--accent); color: var(--accent); }
@@ -289,7 +290,14 @@ mark.editable:hover { background: color-mix(in srgb, var(--mk, #8a8a8a) 18%, tra
 .analysis-panel .muted.small { font-size: .76rem; margin-top: .6rem; }
 .analysis-panel .by-type { list-style: none; padding: 0; margin: .4rem 0; }
 .analysis-panel .by-type li { padding: .1rem 0; font-variant-numeric: tabular-nums; }
-.analysis-panel button:not(.close) {
+.analysis-panel .waiting-title { margin: .9rem 0 .3rem; font-size: .72rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.analysis-panel .waiting-list { list-style: none; margin: 0 0 .5rem; padding: 0; display: grid; gap: .35rem; }
+.analysis-panel .waiting-list li { display: flex; align-items: flex-start; justify-content: space-between; gap: .6rem; font-size: .82rem; padding: .45rem .55rem; border: 1px solid var(--border); border-radius: .6rem; }
+.analysis-panel .waiting-list li.failed { border-color: var(--danger); }
+.analysis-panel .waiting-list em { color: var(--danger); font-style: normal; }
+.analysis-panel button.undo { width: auto; margin: 0; padding: .3rem .7rem; min-height: 2rem; background: transparent; color: var(--fg); border: 1px solid var(--border); border-radius: .5rem; font-weight: 500; flex: none; }
+.analysis-panel button.undo:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.analysis-panel button:not(.close):not(.undo) {
   width: 100%; margin-top: .5rem; padding: .6rem .8rem; border-radius: .7rem; border: none;
   background: rgb(var(--c-primary)); color: #fff; font: inherit; font-weight: 600; cursor: pointer;
 }

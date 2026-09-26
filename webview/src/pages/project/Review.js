@@ -56,6 +56,9 @@ export default function Review() {
   const [summary, setSummary] = useState({ total: 0, applied: 0, pending: 0, pending_actionable: 0, flags_open: 0, by_type: {} });
   const [applyResult, setApplyResult] = useState(null);
   const [applying, setApplying] = useState(false);
+  const [items, setItems] = useState([]);
+  const [undoing, setUndoing] = useState(null);
+  const [failedIds, setFailedIds] = useState(() => new Set());
   const [showEntities, setShowEntities] = useState(false);
 
   const chapters = useMemo(() => (novel ? novel.chapters : []), [novel]);
@@ -65,11 +68,29 @@ export default function Review() {
     return i >= 0 ? i : 0;
   }, [chapters, params]);
   const chapter = chapters[idx];
+  // Highest "Unknown Speaker N" already used in this chapter. Slot numbers
+  // restart at 1 in every chapter (the slot id carries the chapter), so the
+  // picker offers 1..max(4, this) plus a New button for the next number.
+  const usedAnonSlots = useMemo(() => {
+    let max = 0;
+    ((chapter && chapter.spans) || []).forEach((sp) => {
+      const m = /^Unknown Speaker (\d+)$/.exec(sp.speaker || '');
+      if (m) max = Math.max(max, Number(m[1]));
+    });
+    return max;
+  }, [chapter]);
 
   const fail = useCallback((e) => push(describeError(e, 'That change could not be saved.'), 'danger'), [push]);
 
   const refreshSummary = useCallback(() => {
-    api.corrections(novelId).then((r) => setSummary(r.summary)).catch(() => {});
+    return api
+      .corrections(novelId)
+      .then((r) => {
+        setSummary(r.summary);
+        setItems(r.items || []);
+        return r;
+      })
+      .catch(() => null);
   }, [novelId]);
   useEffect(() => {
     refreshSummary();
@@ -223,16 +244,24 @@ export default function Review() {
   );
   const onApply = useCallback(() => {
     setApplying(true);
+    // A correction that errors on Apply is never written and stays unapplied,
+    // so it would fail again on every Apply. Remember which ones were
+    // attempted; those still unapplied afterwards are exactly the failures,
+    // and the panel names them so they can be undone.
+    const attempted = new Set(items.filter((c) => !c.applied && c.type !== 'flag').map((c) => c.id));
     api
       .applyCorrections(novelId)
       .then((result) => {
         setApplyResult(result);
         refetch();
-        refreshSummary();
+        return refreshSummary();
+      })
+      .then((fresh) => {
+        setFailedIds(new Set(((fresh && fresh.items) || []).filter((c) => attempted.has(c.id) && !c.applied).map((c) => c.id)));
       })
       .catch(fail)
       .finally(() => setApplying(false));
-  }, [novelId, refetch, refreshSummary, fail]);
+  }, [novelId, items, refetch, refreshSummary, fail]);
 
   const onMarkHover = useCallback((e, text) => setTip({ visible: true, x: e.clientX, y: e.clientY, text }), []);
   const onMarkMove = useCallback((e) => setTip((p) => (p.visible ? { ...p, x: e.clientX, y: e.clientY } : p)), []);
@@ -388,11 +417,32 @@ export default function Review() {
               ? (slot) => api.reassignSpeaker(novelId, picker.spanId, picker.chapter, { anon_slot: slot }).then(after).catch(fail)
               : undefined
           }
+          usedAnonSlots={usedAnonSlots}
           onCancel={() => setPicker(null)}
         />
       )}
       {showPanel && (
-        <AnalysisPanel summary={summary} onApply={onApply} applyResult={applyResult} applying={applying} onClose={() => setShowPanel(false)} />
+        <AnalysisPanel
+          summary={summary}
+          items={items}
+          failedIds={failedIds}
+          undoing={undoing}
+          onUndo={(id) => {
+            setUndoing(id);
+            api
+              .undoCorrection(novelId, id)
+              .then(() => {
+                refetch();
+                refreshSummary();
+              })
+              .catch(fail)
+              .finally(() => setUndoing(null));
+          }}
+          onApply={onApply}
+          applyResult={applyResult}
+          applying={applying}
+          onClose={() => setShowPanel(false)}
+        />
       )}
       {promptModal && (
         <PromptModal

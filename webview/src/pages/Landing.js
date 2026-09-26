@@ -129,13 +129,13 @@ export default function Landing() {
                 Novel in. Audiobook and manga out.
               </div>
               <h1 className="mt-6 font-display text-5xl font-extrabold tracking-tight sm:text-7xl lg:text-8xl">
-                <span className="block">Every character.</span>
-                <span className="block">Every voice.</span>
-                <span className="text-gradient block pb-2">Every page.</span>
+                <span className="block">A whole novel.</span>
+                <span className="block">A cast you can hear.</span>
+                <span className="text-gradient block pb-2">A world you can see.</span>
               </h1>
               <p className="mt-6 max-w-xl text-lg text-muted">
-                EchoTales reads a whole novel, keeps track of who is who across every chapter, and turns it into a
-                full-cast audiobook and illustrated panels.
+                EchoTales reads a whole novel, tracks its characters across the chapters, and generates a multi-voice
+                audiobook and illustrated panels from it.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Link
@@ -183,19 +183,19 @@ export default function Landing() {
                 icon: BookOpen,
                 step: '01',
                 title: 'Read the whole book',
-                body: 'Drop in an EPUB. Every chapter is split into narration, dialogue and inner monologue, so each line knows what it is.',
+                body: 'Drop in an EPUB. Every chapter is sorted into narration, dialogue and inner monologue, so each kind of line can be voiced and drawn its own way.',
               },
               {
                 icon: Network,
                 step: '02',
-                title: 'Know every character',
-                body: 'Names, titles and nicknames are tied to the right person across the whole volume, and a character stays one person through a change of body or name.',
+                title: 'Track the cast',
+                body: 'Names, titles and nicknames are linked to the characters they refer to across the whole volume, with a separate record for each body a character has.',
               },
               {
                 icon: AudioLines,
                 step: '03',
                 title: 'Hear it. See it.',
-                body: 'Each character gets a voice and a reference look, so the audiobook and the panels are cast from the same source.',
+                body: 'Each character gets a voice and a recorded look, so the audiobook and the panels are cast from the same character list.',
               },
             ].map(({ icon: Icon, step, title, body }) => (
               <div key={step} className="group relative overflow-hidden rounded-3xl border border-border bg-surface p-8 transition-colors hover:border-accent/50">
@@ -225,24 +225,24 @@ export default function Landing() {
               <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/70 to-transparent" aria-hidden="true" />
               <div className="absolute inset-x-0 bottom-0 p-8">
                 <Users className="h-6 w-6 text-accent" aria-hidden="true" />
-                <h3 className="mt-4 font-display text-3xl font-bold tracking-tight">A cast with a reference look</h3>
+                <h3 className="mt-4 font-display text-3xl font-bold tracking-tight">A cast with a recorded look</h3>
                 <p className="mt-2 max-w-lg text-muted">
-                  Each character body gets its own reference sheet, and panels across the book are drawn from it
-                  instead of being reinvented scene by scene.
+                  Each character body gets a reference sheet and a set of recorded appearance traits, and those traits
+                  are carried into the panel prompts instead of being reinvented scene by scene.
                 </p>
               </div>
             </div>
-            <Feature className="md:col-span-2" icon={AudioLines} title="A voice per character" body="Dialogue is attributed to its speaker and cast to a stable voice; unknown speakers get their own distinct slots." />
+            <Feature className="md:col-span-2" icon={AudioLines} title="A voice per character" body="Where the speaker can be identified, dialogue is cast to that character’s voice; unidentified speakers get their own distinct voice slots." />
             <Feature className="md:col-span-2" icon={Images} title="Panels per scene" body="Scene direction, cast and setting come from the story itself, not from a single-line prompt." />
-            <Feature className="md:col-span-2" icon={ShieldCheck} title="Review, don't redo" body="Fix a wrong name or speaker in place. Corrections queue up and apply to the whole book at once." />
-            <Feature className="md:col-span-2" icon={Cpu} title="Runs on your machine" body="Local models on a consumer GPU. Your manuscripts never leave your computer." />
-            <Feature className="md:col-span-2" icon={TrendingUp} title="Gets sharper as it reads" body="Every name it confirms is remembered, so later chapters resolve faster and more reliably than early ones." />
+            <Feature className="md:col-span-2" icon={ShieldCheck} title="Review, don't redo" body="Fix a wrong name or speaker in place. Corrections queue up, and you apply them to the book when you’re ready." />
+            <Feature className="md:col-span-2" icon={Cpu} title="Local by default" body="Built to run on a consumer GPU with local models, so a manuscript stays on your machine unless you choose to connect a cloud model." />
+            <Feature className="md:col-span-2" icon={TrendingUp} title="Remembers what it has confirmed" body="Names it has already resolved are reused across the book instead of being decided again chapter by chapter." />
           </div>
         </section>
 
         {panels.length > 6 && (
           <section id="showcase" className="mx-auto max-w-7xl scroll-mt-20 px-4 pb-24 sm:px-6">
-            <SectionIntro eyebrow="Showcase" title={`Straight from ${label}.`} description="Unedited panels from the most recent renders on this server." />
+            <SectionIntro eyebrow="Showcase" title={`Straight from ${label}.`} description="Panels from the most recent renders on this server." />
             <div className="mt-14 columns-2 gap-4 sm:columns-3 lg:columns-4">
               {panels.slice(6, 18).map((p) => (
                 <div key={p} className="mb-4 break-inside-avoid overflow-hidden rounded-2xl border border-border">
@@ -260,7 +260,7 @@ export default function Landing() {
               <h2 className="font-display text-4xl font-extrabold tracking-tight sm:text-6xl">Bring your book to life.</h2>
               <p className="mx-auto mt-4 max-w-xl text-muted">Start with one EPUB. Meet the cast, hear the voices, read the panels.</p>
               <ul className="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted">
-                {['No cloud upload', 'Whole-volume processing', 'Every fix is reviewable'].map((t) => (
+                {['Local by default', 'Whole-volume processing', 'Every fix is reviewable'].map((t) => (
                   <li key={t} className="inline-flex items-center gap-1.5">
                     <Check className="h-4 w-4 text-success" aria-hidden="true" /> {t}
                   </li>

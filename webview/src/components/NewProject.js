@@ -103,10 +103,10 @@ export default function NewProject({ onCreated }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 font-sans text-text">
       <div className="mb-8">
-        <div className="font-mono text-xs uppercase tracking-widest text-muted">
-          EchoTales &middot; New production
+        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
+          New project
         </div>
-        <h1 className="mt-2 font-display text-3xl text-text">Open a new project file</h1>
+        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-text">New project</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-10">
@@ -123,7 +123,7 @@ export default function NewProject({ onCreated }) {
                   onClick={() => setContentType(t.value)}
                   aria-pressed={selected}
                   className={
-                    'block w-full rounded-sm border px-5 py-4 text-left transition-colors ' +
+                    'block w-full rounded-xl border px-5 py-4 text-left transition-colors ' +
                     (t.comingSoon
                       ? 'cursor-not-allowed border-border/60 opacity-50'
                       : selected
@@ -177,17 +177,14 @@ export default function NewProject({ onCreated }) {
                 />
               </div>
               <p className="text-sm text-muted">
-                EPUB only (per this project's own "italics carry inner-monologue
-                signal" rule -- a PDF would lose that). Uploading here does not
-                ingest the text yet -- ingestion is a separate step, triggered from
-                Project home once the file is attached, so a reviewer can see the
-                upload and the ingest result as two distinct outcomes.
+                EPUB files only: a PDF loses the italics that mark a character’s inner thoughts. Uploading the file
+                does not read the book yet. After the project is created, start ingestion from its Settings page.
               </p>
               {file && (
                 <div className="font-mono text-xs text-text">Selected: {file.name}</div>
               )}
               <div>
-                <div className="mb-2 font-mono text-xs uppercase tracking-wider text-muted">
+                <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted">
                   Once ingestion runs (preview)
                 </div>
                 <ManuscriptProgress chapters={PREVIEW_CHAPTERS} />
@@ -197,13 +194,13 @@ export default function NewProject({ onCreated }) {
         </section>
 
         {error && (
-          <div className="rounded-sm border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
+          <div className="rounded-xl border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
             {error}
           </div>
         )}
         {uploadError && (
-          <div className="rounded-sm border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-warning">
-            Project created, but the upload failed: {uploadError}. You can retry it from Project home.
+          <div className="rounded-xl border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-warning">
+            Project created, but the upload failed: {uploadError}. You can retry it from the project’s Settings page.
           </div>
         )}
 
@@ -212,8 +209,8 @@ export default function NewProject({ onCreated }) {
             {busy ? 'Creating…' : 'Create project'}
           </Button>
           <p className="text-sm text-muted">
-            This only registers the project. Source text is ingested separately, from Project home
-            (or via the CLI).
+            This only registers the project. The book is read separately: start ingestion from Settings, or run
+            it from the command line.
           </p>
         </div>
       </form>

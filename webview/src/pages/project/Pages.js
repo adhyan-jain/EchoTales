@@ -43,7 +43,7 @@ export function Studio() {
         description={
           tab === 'library'
             ? 'Every video, audio clip and panel rendered for this book.'
-            : 'Queue a chapter render and follow its progress.'
+            : 'Queue a placeholder render for a chapter and follow its progress.'
         }
       />
       <div role="group" aria-label="Studio view" className="mb-8 inline-flex rounded-2xl border border-border bg-surface p-1">
