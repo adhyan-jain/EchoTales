@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { api } from '../api';
+import { describeError } from './errors';
 
 /**
  * One fetch of a project's novel payload, shared by every page under
@@ -15,6 +16,7 @@ const ProjectContext = createContext(null);
 export function ProjectProvider({ novelId, children }) {
   const [novel, setNovel] = useState(null);
   const [error, setError] = useState(null);
+  const [errorStatus, setErrorStatus] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // `current` guards against a slow response for the previous project (the
@@ -31,20 +33,26 @@ export function ProjectProvider({ novelId, children }) {
         if (current.current !== novelId) return;
         setNovel(payload);
         setError(null);
+        setErrorStatus(null);
       })
-      .catch((e) => current.current === novelId && setError(e.message || 'Could not load this project.'))
+      .catch((e) => {
+        if (current.current !== novelId) return;
+        setError(describeError(e, 'Could not load this project.'));
+        setErrorStatus(e && typeof e.status === 'number' ? e.status : null);
+      })
       .finally(() => current.current === novelId && setLoading(false));
   }, [novelId]);
 
   useEffect(() => {
     setNovel(null);
     setError(null);
+    setErrorStatus(null);
     setLoading(true);
     refetch();
   }, [refetch]);
 
   return (
-    <ProjectContext.Provider value={{ novelId, novel, error, loading, refetch }}>
+    <ProjectContext.Provider value={{ novelId, novel, error, errorStatus, loading, refetch }}>
       {children}
     </ProjectContext.Provider>
   );

@@ -4,6 +4,7 @@ import { BookOpen, CircleAlert, CircleCheck, Clock, Plus } from 'lucide-react';
 import { api } from '../api';
 import { Logo, PageHeader, ThemeToggle } from '../components/app/Chrome';
 import { pickPanels, thumbUrl } from '../lib/media';
+import { describeError } from '../lib/errors';
 
 /** Top bar shared by the account-level pages (library, new project). */
 export function AccountShell({ children }) {
@@ -87,7 +88,7 @@ export default function Projects() {
     api
       .listProjects()
       .then((list) => alive && setProjects(list || []))
-      .catch((e) => alive && setError(e.message || 'Could not load projects.'));
+      .catch((e) => alive && setError(describeError(e, 'Could not load projects.')));
     return () => {
       alive = false;
     };

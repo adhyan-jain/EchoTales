@@ -8,10 +8,11 @@ import EntityPicker from '../../components/EntityPicker';
 import EntitySidebar from '../../components/EntitySidebar';
 import ScriptView from '../../components/ScriptView';
 import Tooltip from '../../components/Tooltip';
-import { CenterMessage } from '../../components/app/Chrome';
+import { CenterMessage, ProjectProblem } from '../../components/app/Chrome';
 import { useToast } from '../../components/ui/Toast';
 import { useProject } from '../../lib/ProjectContext';
 import PromptModal from '../../components/ui/PromptModal';
+import { describeError } from '../../lib/errors';
 
 
 const pct = (x) => (typeof x === 'number' ? `${Math.round(x * 100)}%` : '—');
@@ -42,7 +43,7 @@ function mentionProblem(text, span) {
  * App.js carried is gone -- every page of the new app reads the live server.
  */
 export default function Review() {
-  const { novelId, novel, error, refetch } = useProject();
+  const { novelId, novel, error, errorStatus, refetch } = useProject();
   const push = useToast();
   const [params, setParams] = useSearchParams();
   const [editMode, setEditMode] = useState(true);
@@ -65,7 +66,7 @@ export default function Review() {
   }, [chapters, params]);
   const chapter = chapters[idx];
 
-  const fail = useCallback((e) => push((e && e.message) || 'That change could not be saved.', 'danger'), [push]);
+  const fail = useCallback((e) => push(describeError(e, 'That change could not be saved.'), 'danger'), [push]);
 
   const refreshSummary = useCallback(() => {
     api.corrections(novelId).then((r) => setSummary(r.summary)).catch(() => {});
@@ -250,7 +251,7 @@ export default function Review() {
     return total ? `${attributed}/${total} dialogue lines attributed` : 'no dialogue';
   }, [chapter]);
 
-  if (error) return <CenterMessage title="Couldn’t load this project">{error}</CenterMessage>;
+  if (error) return <ProjectProblem error={error} status={errorStatus} onRetry={refetch} />;
   if (!novel) return <CenterMessage>Loading the book…</CenterMessage>;
 
   const s = novel.stats || {};

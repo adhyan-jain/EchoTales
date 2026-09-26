@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../api';
 import Button from './ui/Button';
 import Input from './ui/Input';
+import { describeError } from '../lib/errors';
 
 // Section 7.2: gate the whole review UI behind a password when the server
 // reports auth_required: true (see api.js::authStatus). This component only
@@ -30,7 +31,7 @@ export default function Login({
       await api.login(password);
       onLoggedIn();
     } catch (err) {
-      setError(err.message || 'Login failed');
+      setError(describeError(err, 'Login failed'));
     } finally {
       setBusy(false);
     }

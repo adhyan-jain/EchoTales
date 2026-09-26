@@ -42,13 +42,46 @@ function clearAuthToken() {
   }
 }
 
+/**
+ * An API failure with enough structure for the UI to say something useful.
+ * `status` is the HTTP status (0 for a network failure); `serverMessage` is
+ * what the backend put in `{error}`. Before this, request() threw a bare
+ * Error carrying the server's raw text, so a 500 with a Python traceback was
+ * shown to users verbatim, and every failure was indistinguishable from
+ * "server down" (2026-09-26 failure-state QA). `describeError` in
+ * lib/errors.js turns this into user-facing copy.
+ */
+export class ApiError extends Error {
+  constructor(status, serverMessage) {
+    super(serverMessage || (status ? `HTTP ${status}` : 'Network error'));
+    this.name = 'ApiError';
+    this.status = status;
+    this.statusCode = status;
+    this.serverMessage = serverMessage || '';
+  }
+}
+
 async function request(path, options) {
   const token = getAuthToken();
   const opts = { ...options };
   if (token) {
     opts.headers = { ...(options && options.headers), Authorization: `Bearer ${token}` };
   }
-  const res = await fetch(`${API_BASE}${path}`, opts);
+  // A server that accepts the connection but never answers used to leave
+  // every page on "Loading..." indefinitely (failure-state QA, 2026-09-26).
+  // 30 s covers the largest payload (a 9.6 MB novel); a file upload gets 5 min.
+  const timeoutMs = options && options.body instanceof FormData ? 300000 : 30000;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  opts.signal = controller.signal;
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${path}`, opts);
+  } catch {
+    throw new ApiError(0, '');
+  } finally {
+    clearTimeout(timer);
+  }
   if (!res.ok) {
     if (res.status === 401) {
       // Token is gone/expired/wrong -- clear it so the app can detect "log
@@ -56,7 +89,7 @@ async function request(path, options) {
       clearAuthToken();
     }
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `HTTP ${res.status}`);
+    throw new ApiError(res.status, body.error);
   }
   return res.json();
 }

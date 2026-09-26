@@ -3,6 +3,7 @@ import { api } from '../api';
 import Divider from './ui/Divider';
 import MediaArtifact from './ui/MediaArtifact';
 import { EmptyState, LoadingState } from './ui/EmptyState';
+import { describeError } from '../lib/errors';
 
 // Real backend kinds only (`webview_server.py::_OUTPUT_KINDS`) -- "Reels"
 // is deliberately not one of them: `render/reels.py` is unwired planning
@@ -39,7 +40,7 @@ export default function OutputLibrary({ novelId, hideHeader = false }) {
           setStatus('ready');
           return;
         }
-        setErrorMessage((err && err.message) || 'Failed to load the output library.');
+        setErrorMessage(describeError(err, 'Failed to load the output library.'));
         setStatus('error');
       });
   }, [novelId]);

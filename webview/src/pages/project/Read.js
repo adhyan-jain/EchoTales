@@ -5,7 +5,7 @@ import ChapterNav from '../../components/ChapterNav';
 import EntitySidebar from '../../components/EntitySidebar';
 import ScriptView from '../../components/ScriptView';
 import Tooltip from '../../components/Tooltip';
-import { CenterMessage } from '../../components/app/Chrome';
+import { CenterMessage, ProjectProblem } from '../../components/app/Chrome';
 import { useProject } from '../../lib/ProjectContext';
 
 /**
@@ -16,7 +16,7 @@ import { useProject } from '../../lib/ProjectContext';
  * they live on the Review page.
  */
 export default function Read() {
-  const { novel, error } = useProject();
+  const { novel, error, errorStatus, refetch } = useProject();
   const { chapter: chapterParam } = useParams();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
@@ -73,7 +73,7 @@ export default function Read() {
   const onMarkMove = useCallback((e) => setTip((p) => (p.visible ? { ...p, x: e.clientX, y: e.clientY } : p)), []);
   const onMarkLeave = useCallback(() => setTip((p) => ({ ...p, visible: false })), []);
 
-  if (error) return <CenterMessage title="Couldn’t load this book">{error}</CenterMessage>;
+  if (error) return <ProjectProblem error={error} status={errorStatus} onRetry={refetch} />;
   if (!novel) return <CenterMessage>Loading the book…</CenterMessage>;
 
   if (idx < 0) {

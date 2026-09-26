@@ -15,7 +15,7 @@ import {
   Users,
 } from 'lucide-react';
 import { api } from '../../api';
-import { CenterMessage, StatCard } from '../../components/app/Chrome';
+import { ProjectProblem, StatCard } from '../../components/app/Chrome';
 import { useProject } from '../../lib/ProjectContext';
 import { countKind, pickPanels, thumbUrl } from '../../lib/media';
 
@@ -29,7 +29,7 @@ const num = (x) => (typeof x === 'number' ? new Intl.NumberFormat().format(x) : 
  * labelled that way.
  */
 export default function Overview() {
-  const { novelId, novel, error } = useProject();
+  const { novelId, novel, error, errorStatus, refetch } = useProject();
   const [output, setOutput] = useState(null);
   const [project, setProject] = useState(null);
 
@@ -61,7 +61,7 @@ export default function Overview() {
     [novel]
   );
 
-  if (error) return <CenterMessage title="Couldn’t load this project">{error}</CenterMessage>;
+  if (error) return <ProjectProblem error={error} status={errorStatus} onRetry={refetch} />;
 
   const s = (novel && novel.stats) || {};
   const title = (project && project.title) || (novel && novel.label) || novelId;

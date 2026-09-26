@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { api } from '../../api';
 import Login from '../Login';
+import { describeError } from '../../lib/errors';
 import { CenterMessage } from './Chrome';
 
 /**
@@ -24,7 +25,7 @@ export default function AuthGate() {
         setRequired(!!r.auth_required);
         setUnreachable(null);
       })
-      .catch((e) => setUnreachable(e.message || 'no response'))
+      .catch((e) => setUnreachable(describeError(e, 'The server did not respond as expected.')))
       .finally(() => setChecked(true));
   }, []);
 
@@ -33,7 +34,7 @@ export default function AuthGate() {
     return (
       <main>
       <CenterMessage title="Can’t reach the EchoTales server">
-        <p>({unreachable})</p>
+        <p>{unreachable}</p>
         <p className="mt-2">
           Start it with <code className="rounded bg-surface2 px-1.5 py-0.5 font-mono text-xs">uv run echotales webview-server --source …</code> and reload.
         </p>

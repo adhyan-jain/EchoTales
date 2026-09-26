@@ -6,6 +6,7 @@ import Label from './ui/Label';
 import Divider from './ui/Divider';
 import { Card, CardBody } from './ui/Card';
 import ManuscriptProgress from './ui/ManuscriptProgress';
+import { describeError } from '../lib/errors';
 
 // Each option states its processing model in one sentence rather than a
 // feature-comparison grid -- per brief, this is meant to read as a
@@ -88,12 +89,12 @@ export default function NewProject({ onCreated }) {
           // failure is reported alongside it, not swallowed into a
           // generic "could not create project" error that would be
           // misleading (the project *was* created).
-          setUploadError(err.message || 'Could not upload the source file.');
+          setUploadError(describeError(err, 'Could not upload the source file.'));
         }
       }
       onCreated(result);
     } catch (err) {
-      setError(err.message || 'Could not create project');
+      setError(describeError(err, 'Could not create project'));
     } finally {
       setBusy(false);
     }

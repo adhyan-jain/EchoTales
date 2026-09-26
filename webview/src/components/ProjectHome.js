@@ -6,6 +6,8 @@ import DepthCard from './ui/DepthCard';
 import { CardBody } from './ui/Card';
 import Label from './ui/Label';
 import { EmptyState, LoadingState } from './ui/EmptyState';
+import { describeError, isNetworkError } from '../lib/errors';
+import JobFailure from './ui/JobFailure';
 
 /* Production-desk overview, not a KPI dashboard (plan Section 9): what
    state this project is in and what to do next. Wires the real
@@ -15,6 +17,7 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false 
   const [status, setStatus] = useState('loading');
   const [projects, setProjects] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const [unreachable, setUnreachable] = useState(false);
   const [ingesting, setIngesting] = useState(false);
 
   const load = useCallback(() => {
@@ -26,7 +29,8 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false 
         setStatus('ready');
       })
       .catch((err) => {
-        setErrorMessage((err && err.message) || 'Failed to load projects.');
+        setUnreachable(isNetworkError(err));
+        setErrorMessage(describeError(err, 'Failed to load projects.'));
         setStatus('error');
       });
   }, []);
@@ -42,7 +46,7 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false 
     api
       .triggerStage(novelId, 'ingest')
       .then(load)
-      .catch((err) => setErrorMessage((err && err.message) || 'Could not start ingestion.'))
+      .catch((err) => setErrorMessage(describeError(err, 'Could not start ingestion.')))
       .finally(() => setIngesting(false));
   };
 
@@ -64,8 +68,12 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false 
 
       {status === 'error' && (
         <div className="mt-8 border-l-2 border-danger pl-4 font-sans text-sm text-danger">
-          Couldn&rsquo;t reach the orchestration backend: {errorMessage}. Start it with{' '}
-          <code className="font-mono">uv run echotales webview-server --source ...</code>.
+          {errorMessage}
+          {unreachable && (
+            <>
+              {' '}Start it with <code className="font-mono">uv run echotales webview-server --source …</code>.
+            </>
+          )}
         </div>
       )}
 
@@ -114,8 +122,8 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false 
                 <CardBody className="flex items-center justify-between gap-3">
                   <div>
                     <div className="font-mono text-sm text-text">{current.last_job.kind}</div>
-                    {current.last_job.error_summary && (
-                      <div className="mt-1 text-sm text-danger">{current.last_job.error_summary}</div>
+                    {current.last_job.status === 'FAILED' && (
+                      <JobFailure kind={current.last_job.kind} summary={current.last_job.error_summary} />
                     )}
                   </div>
                   <Label tone={current.last_job.status === 'FAILED' ? 'danger' : 'neutral'}>

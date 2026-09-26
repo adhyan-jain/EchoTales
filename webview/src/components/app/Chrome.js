@@ -78,3 +78,27 @@ export function CenterMessage({ title, children }) {
     </div>
   );
 }
+
+/**
+ * A project page that could not load. A project that does not exist (404) is
+ * a dead end the user can leave -- the raw server text used to be all they
+ * got -- so it links back to the library; other failures offer a retry.
+ */
+export function ProjectProblem({ error, status, onRetry, subject = 'this project' }) {
+  const missing = status === 404;
+  return (
+    <CenterMessage title={missing ? 'Project not found' : `Couldn’t load ${subject}`}>
+      <p>{missing ? 'This server has no project with that name. It may have been renamed or removed.' : error}</p>
+      <div className="mt-4 flex justify-center gap-3">
+        <Link to="/projects" className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-text hover:border-accent/60">
+          All projects
+        </Link>
+        {!missing && onRetry && (
+          <button type="button" onClick={onRetry} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-2">
+            Try again
+          </button>
+        )}
+      </div>
+    </CenterMessage>
+  );
+}

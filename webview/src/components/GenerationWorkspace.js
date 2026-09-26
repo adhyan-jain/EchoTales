@@ -6,8 +6,10 @@ import DepthCard from './ui/DepthCard';
 import { CardBody } from './ui/Card';
 import InspectorSection from './ui/InspectorSection';
 import JobStatusBadge from './ui/JobStatusBadge';
+import JobFailure from './ui/JobFailure';
 import { EmptyState } from './ui/EmptyState';
 import { useToast } from './ui/Toast';
+import { describeError } from '../lib/errors';
 
 /* The production workstation for panel generation (plan Section 7) --
    deliberately scoped to what the backend actually supports today:
@@ -33,6 +35,7 @@ export default function GenerationWorkspace({ novelId, hideHeader = false }) {
   const [selected, setSelected] = useState('');
   const [jobs, setJobs] = useState([]);
   const [jobsError, setJobsError] = useState(null);
+  const [chaptersError, setChaptersError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const push = useToast();
   const pollRef = useRef(null);
@@ -44,9 +47,15 @@ export default function GenerationWorkspace({ novelId, hideHeader = false }) {
       .then((payload) => {
         const ch = (payload && payload.chapters) || [];
         setChapters(ch);
+        setChaptersError(null);
         setSelected((prev) => (prev && ch.some((c) => c.number === Number(prev)) ? prev : ch[0] ? ch[0].number : ''));
       })
-      .catch(() => setChapters([]));
+      .catch((err) => {
+        // Not silent: an empty chapter list with a disabled Generate button
+        // and no explanation looked like a broken page.
+        setChapters([]);
+        setChaptersError(describeError(err, 'Could not load this book’s chapters.'));
+      });
   }, [novelId]);
 
   const loadJobs = useCallback(() => {
@@ -57,7 +66,7 @@ export default function GenerationWorkspace({ novelId, hideHeader = false }) {
         setJobs((list || []).filter((j) => j.kind === 'render'));
         setJobsError(null);
       })
-      .catch((err) => setJobsError((err && err.message) || 'Could not load jobs.'));
+      .catch((err) => setJobsError(describeError(err, 'Could not load jobs.')));
   }, [novelId]);
 
   useEffect(() => {
@@ -85,7 +94,7 @@ export default function GenerationWorkspace({ novelId, hideHeader = false }) {
         push('Render job queued (stub engine).', 'success');
         loadJobs();
       })
-      .catch((err) => push((err && err.message) || 'Could not queue render.', 'danger'))
+      .catch((err) => push(describeError(err, 'Could not queue render.'), 'danger'))
       .finally(() => setSubmitting(false));
   };
 
@@ -130,6 +139,11 @@ export default function GenerationWorkspace({ novelId, hideHeader = false }) {
             </Button>
           </CardBody>
         </DepthCard>
+        {chaptersError && (
+          <p role="alert" className="mt-3 text-sm text-danger">
+            {chaptersError}
+          </p>
+        )}
         <p className="mt-2 text-sm text-muted">
           Real image engines (SDXL/Illustrious/NoobAI/Refined) exist server-side but aren&rsquo;t
           exposed here yet -- this workspace only ever submits the deterministic stub engine, so
@@ -146,9 +160,12 @@ export default function GenerationWorkspace({ novelId, hideHeader = false }) {
         {jobs.length > 0 && (
           <div className="space-y-2">
             {jobs.map((j) => (
-              <div key={j.job_id} className="flex items-center justify-between border-b border-border py-2">
-                <div className="font-mono text-sm text-text">{j.job_id}</div>
-                <JobStatusBadge status={j.status} />
+              <div key={j.job_id} className="border-b border-border py-2">
+                <div className="flex items-center justify-between">
+                  <div className="font-mono text-sm text-text">{j.job_id}</div>
+                  <JobStatusBadge status={j.status} />
+                </div>
+                {j.status === 'FAILED' && <JobFailure kind="render" summary={j.error_summary} />}
               </div>
             ))}
           </div>

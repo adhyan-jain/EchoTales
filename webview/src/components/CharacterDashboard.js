@@ -12,6 +12,7 @@ import DossierHeader from './ui/DossierHeader';
 import TimelineRail from './ui/TimelineRail';
 import { EmptyState, LoadingState } from './ui/EmptyState';
 import { useToast } from './ui/Toast';
+import { describeError } from '../lib/errors';
 
 const PROMINENCE_LABEL = {
   PRINCIPAL: 'Principal Character',
@@ -61,7 +62,7 @@ export default function CharacterDashboard({ novelId, readOnly = false, selected
           setStatus('not_found');
           return;
         }
-        setErrorMessage((err && err.message) || 'Failed to load characters.');
+        setErrorMessage(describeError(err, 'Failed to load characters.'));
         setStatus('error');
       });
   }, [novelId]);
@@ -94,7 +95,7 @@ export default function CharacterDashboard({ novelId, readOnly = false, selected
           load();
         })
         .catch((err) => {
-          push((err && err.message) || 'Could not update voice.', 'danger');
+          push(describeError(err, 'Could not update voice.'), 'danger');
           throw err;
         })
     );
@@ -109,7 +110,7 @@ export default function CharacterDashboard({ novelId, readOnly = false, selected
           load();
         })
         .catch((err) => {
-          push((err && err.message) || 'Could not update reference image.', 'danger');
+          push(describeError(err, 'Could not update reference image.'), 'danger');
           throw err;
         })
     );
@@ -128,7 +129,7 @@ export default function CharacterDashboard({ novelId, readOnly = false, selected
           push('Reference search queued. Refresh this page in a moment to see new candidates.', 'success');
         })
         .catch((err) => {
-          push((err && err.message) || 'Could not queue reference search.', 'danger');
+          push(describeError(err, 'Could not queue reference search.'), 'danger');
           throw err;
         })
     );
