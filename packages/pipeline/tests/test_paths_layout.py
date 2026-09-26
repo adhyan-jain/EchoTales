@@ -62,3 +62,20 @@ def test_every_registered_canonical_database_is_under_data_db() -> None:
     registry = json.loads((REPO_ROOT / "data" / "canonical_dbs.json").read_text())
     assert registry["paths"]
     assert all(p.startswith("data/db/") and p.endswith(".db") for p in registry["paths"])
+
+
+def test_the_characters_page_finds_voices_where_the_voice_stage_writes_them(tmp_path: Path) -> None:
+    """It read `data/audio/<novel_id>/manifest.jsonl`, which nothing wrote, so every
+    character showed "no voice yet"; manifests written before the 2026-09-27 move
+    also carry old clip paths, which are re-anchored on the manifest's folder."""
+    from echotales.pipeline.webview import _voice_assignments_from_manifest
+
+    audio = paths.asset_dir("reverend-insanity", "audio", data_root=tmp_path)
+    (audio / "ch1").mkdir(parents=True)
+    (audio / "ch1" / "line.wav").write_bytes(b"RIFF")
+    row = {"speaker_id": "t:self1", "speaker_label": "Fang Yuan", "voice": "p251",
+           "audio_path": "data/RI/audio/ch1/line.wav"}
+    (audio / "manifest.jsonl").write_text(json.dumps(row) + "\n")
+    found = _voice_assignments_from_manifest("reverend-insanity", data_root=str(tmp_path))
+    assert found["t:self1"]["voice"] == "p251"
+    assert found["t:self1"]["sample_audio_path"] == str(audio / "ch1" / "line.wav")

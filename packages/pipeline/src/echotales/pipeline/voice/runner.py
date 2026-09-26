@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import json
 import random
+import wave
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
@@ -97,6 +98,8 @@ class VoiceReport:
     narrator_lines: int = 0
     unattributed_lines: int = 0
     voices_used: set[str] = field(default_factory=set)
+    #: One `ch<N>/chapter.wav` per synthesised chapter.
+    chapter_tracks: list[str] = field(default_factory=list)
     engine: str = "stub"
     #: Set once the first pitch-shift call finds no ffmpeg on PATH, so the
     #: note prints once per run, not once per affected line.
@@ -496,4 +499,47 @@ def render_novel(
         encoding="utf-8",
     )
     (out_dir / "casting.txt").write_text(casting.summary() + "\n", encoding="utf-8")
+    if synthesize:
+        by_chapter: dict[float, list[Path]] = {}
+        for line in manifest:
+            if line.audio_path:
+                by_chapter.setdefault(line.chapter, []).append(Path(line.audio_path))
+        for chapter, clips in by_chapter.items():
+            report.chapter_tracks.append(
+                str(chapter_track(clips, out_dir / f"ch{chapter:g}" / "chapter.wav"))
+            )
     return report
+
+
+#: Pause between consecutive lines in the chapter track. The per-line clips
+#: are trimmed tight, so butting them together ran one speaker straight into
+#: the next.
+LINE_GAP_S = 0.35
+
+
+def chapter_track(clips: list[Path], out_path: Path, *, gap_s: float = LINE_GAP_S) -> Path:
+    """One WAV for a whole chapter: every line in reading order, with a short gap.
+
+    There was no chapter-level audio artifact at all -- only one file per
+    line plus a manifest -- so listening to a chapter meant assembling it by
+    hand, and the audiobook could not be played or shipped as audio alone
+    (docs/status/REMAINING_WORK.md). A clip whose format differs from the
+    first is an error, not resampled: every line of one run comes from one
+    engine at one rate, so a mismatch means two runs were mixed.
+    """
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with wave.open(str(clips[0]), "rb") as first:
+        params = first.getparams()
+    silence = b"\x00" * int(params.framerate * gap_s) * params.sampwidth * params.nchannels
+    with wave.open(str(out_path), "wb") as out:
+        out.setparams(params)
+        for i, clip in enumerate(clips):
+            with wave.open(str(clip), "rb") as fh:
+                if (fh.getnchannels(), fh.getsampwidth(), fh.getframerate()) != (
+                    params.nchannels, params.sampwidth, params.framerate,
+                ):
+                    raise ValueError(f"{clip} has a different WAV format than {clips[0]}")
+                if i:
+                    out.writeframes(silence)
+                out.writeframes(fh.readframes(fh.getnframes()))
+    return out_path

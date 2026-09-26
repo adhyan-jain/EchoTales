@@ -386,8 +386,12 @@ def build_character_dashboard(store: Store, novel_id: str) -> dict:
 
 
 def _voice_assignments_from_manifest(novel_id: str, data_root: str = "data") -> dict[str, dict]:
-    """Read `data/audio/<novel_id>/manifest.jsonl` for the voice each
+    """Read `data/novels/<CODE>/audio/manifest.jsonl` for the voice each
     resolved target actually got, if audio has been rendered at all.
+
+    It used to read `data/audio/<novel_id>/manifest.jsonl`, a path the voice
+    stage never wrote (it wrote `data/<CODE>/audio/`), so the Characters page
+    showed "no voice yet" for every character of every novel.
 
     Voice casting (`voice/casting.py::cast_voices`) is a transient, whole-
     novel decision written only into this manifest, not into the graph as
@@ -396,7 +400,9 @@ def _voice_assignments_from_manifest(novel_id: str, data_root: str = "data") -> 
     when nothing has been rendered, which is the common case for a project
     a reviewer has just created.
     """
-    path = Path(data_root) / "audio" / novel_id / "manifest.jsonl"
+    from echotales.pipeline import paths
+
+    path = paths.asset_dir(novel_id, "audio", data_root=data_root) / "manifest.jsonl"
     if not path.exists():
         return {}
     by_target: dict[str, dict] = {}
@@ -415,9 +421,19 @@ def _voice_assignments_from_manifest(novel_id: str, data_root: str = "data") -> 
             "speaker_id": row.get("speaker_id"),
             "speaker_label": row.get("speaker_label", ""),
             "voice": row.get("voice", ""),
-            "sample_audio_path": row.get("audio_path", ""),
+            "sample_audio_path": _current_clip(row.get("audio_path", ""), path.parent),
         }
     return by_target
+
+
+def _current_clip(recorded: str, audio_dir: Path) -> str:
+    """A manifest records clip paths as they were when it was written; after
+    the audio folder moved (data/README.md), a stale path is re-anchored on
+    the manifest's own folder (`ch<N>/<file>.wav`) when that file exists."""
+    if not recorded or Path(recorded).exists():
+        return recorded
+    moved = audio_dir / Path(recorded).parent.name / Path(recorded).name
+    return str(moved) if moved.exists() else recorded
 
 
 def write_webview(sources: list[NovelSource], out_dir: Path | str) -> Path:

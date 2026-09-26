@@ -213,3 +213,22 @@ def test_a_confident_tag_and_a_zero_floor_keep_the_character_voice(tmp_path: Pat
                      out_dir=out, synthesize=False, min_character_confidence=floor)
         by_span = {line["span_id"]: line for line in _manifest(out)}
         assert by_span["g0"]["voice"] == by_span["sp0"]["voice"]
+
+
+def test_each_chapter_gets_one_playable_track_in_reading_order(tmp_path: Path) -> None:
+    from echotales.pipeline.voice.runner import LINE_GAP_S
+
+    out = tmp_path / "audio"
+    report = render_novel("t", _store(tmp_path), _bank(), out_dir=out, engine=get_engine("stub"))
+    track = out / "ch1" / "chapter.wav"
+    assert report.chapter_tracks == [str(track)]
+    lines = _manifest(out)
+    expected = sum(_duration(Path(x["audio_path"])) for x in lines) + LINE_GAP_S * (len(lines) - 1)
+    assert abs(_duration(track) - expected) < 0.01
+
+
+def test_a_dry_run_writes_no_chapter_track(tmp_path: Path) -> None:
+    out = tmp_path / "audio"
+    report = render_novel("t", _store(tmp_path), _bank(), out_dir=out, synthesize=False)
+    assert report.chapter_tracks == []
+    assert not (out / "ch1" / "chapter.wav").exists()
