@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="910" height="440" viewBox="0 0 910 440">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker></defs>
+<rect width="910" height="440" fill="#ffffff"/>
+<text x="20.0" y="28.0" font-family="Helvetica, Arial, sans-serif" font-size="15" text-anchor="start" fill="#1f2933" font-weight="bold">Figure 1. EchoTales architecture</text>
+<rect x="20" y="44" width="14" height="10" fill="#ecfdf5" stroke="#9ca3af"/>
+<text x="40.0" y="53.0" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="start" fill="#6b7280" font-weight="normal">demonstrated on real data</text>
+<rect x="190" y="44" width="14" height="10" fill="#fff7ed" stroke="#9ca3af" stroke-dasharray="4,3"/>
+<text x="210.0" y="53.0" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="start" fill="#6b7280" font-weight="normal">designed / unit tests only</text>
+<rect x="20" y="80" width="150" height="78" rx="6" fill="#ecfdf5" stroke="#9ca3af"/>
+<text x="95.0" y="98.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2933" font-weight="bold">Ingest</text>
+<text x="95.0" y="116.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">EPUB -&gt; chapters,</text>
+<text x="95.0" y="130.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">blocks</text>
+<rect x="198" y="80" width="150" height="78" rx="6" fill="#ecfdf5" stroke="#9ca3af"/>
+<text x="273.0" y="98.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2933" font-weight="bold">Spans</text>
+<text x="273.0" y="116.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">dialogue / narration /</text>
+<text x="273.0" y="130.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">thought / system</text>
+<line x1="170" y1="119.0" x2="198" y2="119.0" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<rect x="376" y="80" width="150" height="78" rx="6" fill="#ecfdf5" stroke="#9ca3af"/>
+<text x="451.0" y="98.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2933" font-weight="bold">Mentions</text>
+<text x="451.0" y="116.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">gazetteer + chapter NER,</text>
+<text x="451.0" y="130.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">typed aliases</text>
+<line x1="348" y1="119.0" x2="376" y2="119.0" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<rect x="554" y="80" width="150" height="78" rx="6" fill="#ecfdf5" stroke="#9ca3af"/>
+<text x="629.0" y="98.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2933" font-weight="bold">Resolve</text>
+<text x="629.0" y="116.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">incremental evidence,</text>
+<text x="629.0" y="130.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">hard pre-filter gates</text>
+<line x1="526" y1="119.0" x2="554" y2="119.0" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<rect x="732" y="80" width="150" height="78" rx="6" fill="#ecfdf5" stroke="#9ca3af"/>
+<text x="807.0" y="98.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2933" font-weight="bold">Personas</text>
+<text x="807.0" y="116.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">bodies, appearance,</text>
+<text x="807.0" y="130.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">canon</text>
+<line x1="704" y1="119.0" x2="732" y2="119.0" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<rect x="20" y="210" width="862" height="70" rx="6" fill="#eff6ff" stroke="#1d4ed8"/>
+<text x="451.0" y="228.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2933" font-weight="bold">Narrative graph (SQLite)</text>
+<text x="451.0" y="246.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">Self / Persona / aliases / attributes / relations / observations,</text>
+<text x="451.0" y="260.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">each fact with a story-time interval, a knowledge position and an observer</text>
+<line x1="95.0" y1="158" x2="95.0" y2="210" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<line x1="273.0" y1="158" x2="273.0" y2="210" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<line x1="451.0" y1="158" x2="451.0" y2="210" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<line x1="629.0" y1="158" x2="629.0" y2="210" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<line x1="807.0" y1="158" x2="807.0" y2="210" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<rect x="20" y="330" width="250" height="64" rx="6" fill="#ecfdf5" stroke="#9ca3af"/>
+<text x="145.0" y="348.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2933" font-weight="bold">Panels -&gt; chapter video</text>
+<text x="145.0" y="366.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">render plan per beat, image engine,</text>
+<text x="145.0" y="380.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">composited 1080x1920</text>
+<rect x="300" y="330" width="250" height="64" rx="6" fill="#ecfdf5" stroke="#9ca3af"/>
+<text x="425.0" y="348.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2933" font-weight="bold">Audio</text>
+<text x="425.0" y="366.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">voice casting per character,</text>
+<text x="425.0" y="380.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">TTS per line</text>
+<rect x="580" y="330" width="250" height="64" rx="6" fill="#ecfdf5" stroke="#9ca3af"/>
+<text x="705.0" y="348.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2933" font-weight="bold">Review desk (webview)</text>
+<text x="705.0" y="366.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">corrections logged, then</text>
+<text x="705.0" y="380.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">applied to the graph</text>
+<line x1="145" y1="280" x2="145" y2="330" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<text x="149.0" y="300.0" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="start" fill="#6b7280" font-weight="normal">state at the panel&#x27;s position</text>
+<line x1="425" y1="280" x2="425" y2="330" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<text x="429.0" y="300.0" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="start" fill="#6b7280" font-weight="normal">cast + speakers</text>
+<line x1="705" y1="330" x2="705" y2="280" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<text x="709.0" y="300.0" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="start" fill="#6b7280" font-weight="normal">apply</text>
+<text x="20.0" y="426.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">Stages run volume-first; every stage writes to the graph, and both output modalities read from it.</text>
+</svg>

@@ -64,12 +64,29 @@ class Table:
         return "\n".join(out) + "\n"
 
 
+#: Result records keep the database path that was true when they ran; the
+#: 2026-09-27 restructure moved the databases (data/README.md). Tables print
+#: where the file is now.
+_MOVED_DBS = {
+    "data/reverend-insanity.db": "data/db/reverend-insanity.db",
+    "data/reruns/": "data/scratch/reruns/",
+    "data/webview-working/": "data/db/",
+}
+
+
+def _db(path: str) -> str:
+    for old, new in _MOVED_DBS.items():
+        if path == old or (old.endswith("/") and path.startswith(old)):
+            return new + path[len(old):]
+    return path
+
+
 @dataclass
 class Figure:
     number: str
     title: str
     kind: str  # "diagram" | "plot"
-    status: str  # "DATA READY" | "RENDERED" | "TODO" | "HAND-DRAWN"
+    status: str  # "DATA READY" | "RENDERED" | "RENDERED (private)" | "TODO"
     source: str = ""
     columns: list[str] = field(default_factory=list)
     blocked_on: str = ""
@@ -178,7 +195,7 @@ def table_recall() -> Table | None:
         "detection. n is small for the hard types: one case moves TRANSFERABLE_TITLE "
         f"about 11 points and RELATIONAL_DEICTIC 25. With the CLI's snippet context "
         f"instead, overall @10 is {snip.get('@10', 0) * 100:.1f}%.",
-        source=f"{path} (scripts/eval/recall_by_category.py, db: {d.get('db', '?')})",
+        source=f"{path} (scripts/eval/recall_by_category.py, db: {_db(d.get('db', '?'))})",
     )
 
 
@@ -209,7 +226,7 @@ def table_coref(metrics: dict) -> Table | None:
         note=SILVER_NOTE + " B3/MUC are TAUTOLOGICAL on a surface-trivial reference set "
         "and must not be quoted as accuracy; CEAF-e is entity-based and is the "
         "discriminative one here.",
-        source=f"data/eval/results/{metrics.get('run_id', '?')}/metrics.json (reference: {metrics.get('gold_path', '?')}, db: {metrics.get('database', '?')})",
+        source=f"data/eval/results/{metrics.get('run_id', '?')}/metrics.json (reference: {metrics.get('gold_path', '?')}, db: {_db(metrics.get('database', '?'))})",
     )
 
 
@@ -291,33 +308,28 @@ def table_ablation() -> Table | None:
         "is 0 under every condition because the scorer's output is capped below its "
         "threshold (docs/results/SCORER_DIAGNOSIS.md), so this table measures the pre-filters. "
         "Not answerable from the cache: " + ", ".join(sorted(d.get("requires_reresolve", {}))) + ".",
-        source=f"{path} (echotales ablate --out, db: {d.get('db', '?')})",
+        source=f"{path} (echotales ablate --out, db: {_db(d.get('db', '?'))})",
     )
 
 
 def figures() -> list[Figure]:
     return [
-        Figure("1", "Overall EchoTales architecture", "diagram", "HAND-DRAWN",
-               source="docs/design/architecture.md sections 2, 4, 7, 8"),
-        Figure("2", "Three-axis temporal model", "diagram", "HAND-DRAWN",
-               source="docs/design/architecture.md section 2",
-               blocked_on="No fact is ever written to a non-MAIN timeline, so the "
-                          "story-time axis must be drawn as designed, not as measured."),
-        Figure("3", "Self/Persona temporal binding", "diagram", "HAND-DRAWN",
-               source="core/models.py SelfPersonaBinding; real case self1 -> body1/body2",
-               blocked_on="Concurrency is unit-tests-only; draw the sequential case as "
-                          "real and any concurrent case as designed."),
-        Figure("4", "Incremental entity-resolution pipeline", "diagram", "HAND-DRAWN",
-               source="resolve/runner.py, resolve/score.py PREFILTER_GATES"),
-        Figure("5", "state_of() query flow, observer and knowledge time", "diagram",
-               "HAND-DRAWN", source="docs/results/STATE_OF_VALIDATION.md sections 2 and 3"),
-        Figure("6", "Graph state to modality render plan", "diagram", "HAND-DRAWN",
-               source="render/plan_builder.py::build_render_plan",
-               blocked_on="The audio half does NOT consume state_of. Draw the visual path "
-                          "as real and the audio path as absent, or the figure asserts a "
-                          "compiler that does not exist."),
-        Figure("7", "Evaluation pipeline and provenance tiers", "diagram", "HAND-DRAWN",
-               source="eval/gold.py tiers; eval/validate_gold.py checks"),
+        Figure("1", "Overall EchoTales architecture", "diagram", "RENDERED",
+               source="docs/paper/figures/fig01_architecture.svg (scripts/paper/draw_diagrams.py)"),
+        Figure("2", "Three-axis temporal model", "diagram", "RENDERED",
+               source="docs/paper/figures/fig02_temporal_axes.svg (scripts/paper/draw_diagrams.py)",
+               blocked_on="No fact is written to a non-MAIN timeline; that axis is drawn dashed, as designed."),
+        Figure("3", "Self/Persona temporal binding", "diagram", "RENDERED",
+               source="docs/paper/figures/fig03_self_persona.svg (body intervals read from the canonical database)",
+               blocked_on="Concurrency is unit-tests-only and is drawn dashed."),
+        Figure("4", "Incremental entity-resolution pipeline", "diagram", "RENDERED",
+               source="docs/paper/figures/fig04_resolution.svg (gates read from resolve/score.py; counts from data/eval/ablation)"),
+        Figure("5", "state_of() query flow, observer and knowledge time", "diagram", "RENDERED (private)",
+               source="docs/private/paper/figures/fig05_state_of.svg -- embargoed with the patent packet until the IPR decision"),
+        Figure("6", "Graph state to modality render plan", "diagram", "RENDERED (private)",
+               source="docs/private/paper/figures/fig06_render_plan.svg -- embargoed; the audio path is drawn as not consuming state"),
+        Figure("7", "Evaluation pipeline and provenance tiers", "diagram", "RENDERED",
+               source="docs/paper/figures/fig07_evaluation.svg (tiers and checks read from eval/gold.py, eval/validate_gold.py)"),
         Figure("8", "Retriever Recall@K by alias type", "plot", "RENDERED",
                source="docs/paper/figures/fig08_recall_at_k.svg (scripts/paper/plot_paper_figures.py "
                       "from docs/paper/tables/table5_recall_at_k.csv)",
@@ -407,7 +419,7 @@ def main() -> int:
 
     print(f"wrote {len(built)} table(s) -> {out / 'TABLES.md'} (+ CSV)")
     print(f"wrote {len(figures())} figure spec(s) -> {out / 'FIGURES.md'}")
-    ready = sum(1 for f in figures() if f.status in ("DATA READY", "RENDERED"))
+    ready = sum(1 for f in figures() if f.status.startswith(("DATA READY", "RENDERED")))
     todo = sum(1 for f in figures() if f.status == "TODO")
     print(
         f"  figures: {ready} data-ready, {todo} TODO, "

@@ -47,20 +47,20 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 *LLM-DRAFTED SILVER REFERENCE SET (hardcases file), not human-annotated, no IAA. The reference span is handed to the retriever, so this measures retrieval, not detection. n is small for the hard types: one case moves TRANSFERABLE_TITLE about 11 points and RELATIONAL_DEICTIC 25. With the CLI's snippet context instead, overall @10 is 84.8%.*
 
 
-### Table 6 — Ablations over 15,796 cached evidence vectors
+### Table 6 — Ablations over 16,538 cached evidence vectors
 
 | Condition | Pairs | Force-link | Blocked | Reached scorer | Scorer would link |
 |---|---|---|---|---|---|
-| full | 15,796 | 1,318 | 2,888 | 11,590 | 0 |
-| no-gazetteer-compounding | 15,796 | 448 | 2,888 | 12,460 | 0 |
-| no-declaration | 15,796 | 1,273 | 2,888 | 11,635 | 0 |
-| no-name-containment | 15,796 | 1,285 | 2,888 | 11,623 | 0 |
-| no-relational-copresence | 15,796 | 1,314 | 2,888 | 11,594 | 0 |
-| no-temporal-scoping | 15,796 | 1,318 | 2,888 | 11,590 | 0 |
-| no-copresence-blocking | 15,796 | 1,329 | 0 | 14,467 | 0 |
-| no-prefilters-at-all | 15,796 | 0 | 0 | 15,796 | 0 |
+| full | 16,538 | 1,376 | 3,072 | 12,090 | 0 |
+| no-gazetteer-compounding | 16,538 | 704 | 3,072 | 12,762 | 0 |
+| no-declaration | 16,538 | 1,325 | 3,072 | 12,141 | 0 |
+| no-name-containment | 16,538 | 1,341 | 3,072 | 12,125 | 0 |
+| no-relational-copresence | 16,538 | 1,373 | 3,072 | 12,093 | 0 |
+| no-temporal-scoping | 16,538 | 1,376 | 3,072 | 12,090 | 0 |
+| no-copresence-blocking | 16,538 | 1,390 | 0 | 15,148 | 0 |
+| no-prefilters-at-all | 16,538 | 0 | 0 | 16,538 | 0 |
 
-*Source: data/eval/ablation/reverend-insanity.json (echotales ablate --out, db: data/scratch/reruns/ner-window-ri.db)*
+*Source: data/eval/ablation/reverend-insanity.json (echotales ablate --out, db: data/db/reverend-insanity.db)*
 
 *Re-scores cached evidence; it does not re-run resolution. 'Scorer would link' is 0 under every condition because the scorer's output is capped below its threshold (docs/results/SCORER_DIAGNOSIS.md), so this table measures the pre-filters. Not answerable from the cache: no-alias-typing, no-self-persona-split, no-truth-status.*
 

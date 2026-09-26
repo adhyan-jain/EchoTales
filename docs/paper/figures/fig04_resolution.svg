@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="366" viewBox="0 0 860 366">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker></defs>
+<rect width="860" height="366" fill="#ffffff"/>
+<text x="20.0" y="28.0" font-family="Helvetica, Arial, sans-serif" font-size="15" text-anchor="start" fill="#1f2933" font-weight="bold">Figure 4. Incremental entity resolution</text>
+<rect x="20" y="70" width="150" height="64" rx="6" fill="#ecfdf5" stroke="#9ca3af"/>
+<text x="95.0" y="88.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2933" font-weight="bold">New mention</text>
+<text x="95.0" y="106.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">typed alias (name,</text>
+<text x="95.0" y="120.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">title, deictic, ...)</text>
+<rect x="200" y="70" width="150" height="64" rx="6" fill="#ecfdf5" stroke="#9ca3af"/>
+<text x="275.0" y="88.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2933" font-weight="bold">Candidates</text>
+<text x="275.0" y="106.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">retrieval over the</text>
+<text x="275.0" y="120.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">entities seen so far</text>
+<rect x="380" y="60" width="230" height="146" rx="6" fill="#ecfdf5" stroke="#9ca3af"/>
+<text x="495.0" y="78.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2933" font-weight="bold">Hard pre-filter gates</text>
+<text x="495.0" y="96.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">BLOCK:</text>
+<text x="495.0" y="110.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">co_presence_violation</text>
+<text x="495.0" y="124.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">temporal_validity</text>
+<text x="495.0" y="138.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">FORCE_LINK:</text>
+<text x="495.0" y="152.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">declaration_match</text>
+<text x="495.0" y="166.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">gazetteer_exact_match</text>
+<text x="495.0" y="180.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">name_containment</text>
+<text x="495.0" y="194.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">relationship_deictic_resolution</text>
+<rect x="650" y="70" width="180" height="64" rx="6" fill="#fff7ed" stroke="#9ca3af" stroke-dasharray="5,4"/>
+<text x="740.0" y="88.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2933" font-weight="bold">Scorer (optional)</text>
+<text x="740.0" y="106.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">threshold 0.80</text>
+<text x="740.0" y="120.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">0 links above it</text>
+<rect x="650" y="190" width="180" height="64" rx="6" fill="#ecfdf5" stroke="#9ca3af"/>
+<text x="740.0" y="208.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2933" font-weight="bold">Decision</text>
+<text x="740.0" y="226.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">LINK / NEW / DEFER</text>
+<text x="740.0" y="240.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">precision over recall</text>
+<line x1="170" y1="102" x2="200" y2="102" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<line x1="350" y1="102" x2="380" y2="102" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<line x1="610" y1="102" x2="650" y2="102" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<text x="634.0" y="97.0" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="start" fill="#6b7280" font-weight="normal">SCORE</text>
+<line x1="610" y1="170" x2="650" y2="215" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<text x="634.0" y="187.5" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="start" fill="#6b7280" font-weight="normal">BLOCK / FORCE</text>
+<line x1="740" y1="134" x2="740" y2="190" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<rect x="200" y="236" width="410" height="50" rx="6" fill="#ecfdf5" stroke="#9ca3af"/>
+<text x="405.0" y="254.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2933" font-weight="bold">Gazetteer</text>
+<text x="405.0" y="272.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">every confirmed alias becomes an exact match for later chapters</text>
+<line x1="650" y1="245" x2="610" y2="256" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<text x="634.0" y="245.5" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="start" fill="#6b7280" font-weight="normal">confirmed</text>
+<line x1="275" y1="236" x2="275" y2="134" stroke="#1d4ed8" stroke-width="1.4" marker-end="url(#arrow)"/>
+<text x="279.0" y="180.0" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="start" fill="#6b7280" font-weight="normal">compounding</text>
+<text x="20.0" y="326.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">Canonical run, 16,538 cached candidate pairs: 1,376 force-links, 3,072 blocks, 12,090 reach the scorer, 0 linked by it.</text>
+<text x="20.0" y="352.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">Deterministic gates carry every link in the canonical run; the learned scorer is optional (dashed).</text>
+</svg>

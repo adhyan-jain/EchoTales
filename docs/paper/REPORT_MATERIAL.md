@@ -174,7 +174,7 @@ and platform. Calibration and fitting split **by chapter**, never randomly.
 **Baselines [I].** Same model, host and scorer: a long-context LLM given whole
 sections, and a reimplementation of LLMLINK's dual-LLM memorisation.
 **Ablations [I].** Eight conditions re-scored over a cached evidence set of
-15,796 pairs, with no re-inference.
+16,538 pairs (canonical run, Table 6), with no re-inference.
 
 ## 10. Dataset
 Three novels ingested in full: Reverend Insanity (199 chapters, primary), Lord

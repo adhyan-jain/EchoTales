@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="400" viewBox="0 0 960 400">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker></defs>
+<rect width="960" height="400" fill="#ffffff"/>
+<text x="20.0" y="28.0" font-family="Helvetica, Arial, sans-serif" font-size="15" text-anchor="start" fill="#1f2933" font-weight="bold">Figure 2. Three-axis temporal model</text>
+<rect x="20" y="44" width="14" height="10" fill="#ecfdf5" stroke="#9ca3af"/>
+<text x="40.0" y="53.0" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="start" fill="#6b7280" font-weight="normal">demonstrated on real data</text>
+<rect x="190" y="44" width="14" height="10" fill="#fff7ed" stroke="#9ca3af" stroke-dasharray="4,3"/>
+<text x="210.0" y="53.0" font-family="Helvetica, Arial, sans-serif" font-size="9" text-anchor="start" fill="#6b7280" font-weight="normal">designed / unit tests only</text>
+<line x1="90" y1="330" x2="700" y2="330" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<text x="706.0" y="334.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="start" fill="#1f2933" font-weight="normal">story position (chapter + offset)</text>
+<line x1="90" y1="330" x2="90" y2="90" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<text x="84.0" y="82.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="start" fill="#1f2933" font-weight="normal">knowledge position (when a fact is learned)</text>
+<line x1="90" y1="330" x2="260" y2="180" stroke="#1f2933" stroke-width="1.4" marker-end="url(#arrow)"/>
+<text x="266.0" y="176.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="start" fill="#1f2933" font-weight="normal">observer (READER, SYSTEM, or a character)</text>
+<rect x="350" y="270" width="240" height="14" fill="#ecfdf5" stroke="#1d4ed8"/>
+<text x="470.0" y="264.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">a fact holds over an interval of story time</text>
+<circle cx="390" cy="130" r="5" fill="#1d4ed8"/>
+<text x="400.0" y="134.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">and is known to an observer from a knowledge position on</text>
+<rect x="510" y="210" width="220" height="30" rx="4" fill="#fff7ed" stroke="#9ca3af" stroke-dasharray="5,4"/>
+<text x="620.0" y="229.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="middle" fill="#6b7280" font-weight="normal">non-main timelines (dream, flashback)</text>
+<text x="20.0" y="386.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">Chapter order is not time: a fact carries a story interval, a knowledge position and an observer. No fact is yet written off the main timeline.</text>
+</svg>

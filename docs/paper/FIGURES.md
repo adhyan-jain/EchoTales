@@ -9,47 +9,46 @@ ship as CSV so any plotting tool can consume them.
 ### Figure 1 — Overall EchoTales architecture
 
 - **Kind:** diagram
-- **Status:** HAND-DRAWN
-- **Data source:** `docs/design/architecture.md sections 2, 4, 7, 8`
+- **Status:** RENDERED
+- **Data source:** `docs/paper/figures/fig01_architecture.svg (scripts/paper/draw_diagrams.py)`
 
 ### Figure 2 — Three-axis temporal model
 
 - **Kind:** diagram
-- **Status:** HAND-DRAWN
-- **Data source:** `docs/design/architecture.md section 2`
-- **Blocked on:** No fact is ever written to a non-MAIN timeline, so the story-time axis must be drawn as designed, not as measured.
+- **Status:** RENDERED
+- **Data source:** `docs/paper/figures/fig02_temporal_axes.svg (scripts/paper/draw_diagrams.py)`
+- **Blocked on:** No fact is written to a non-MAIN timeline; that axis is drawn dashed, as designed.
 
 ### Figure 3 — Self/Persona temporal binding
 
 - **Kind:** diagram
-- **Status:** HAND-DRAWN
-- **Data source:** `core/models.py SelfPersonaBinding; real case self1 -> body1/body2`
-- **Blocked on:** Concurrency is unit-tests-only; draw the sequential case as real and any concurrent case as designed.
+- **Status:** RENDERED
+- **Data source:** `docs/paper/figures/fig03_self_persona.svg (body intervals read from the canonical database)`
+- **Blocked on:** Concurrency is unit-tests-only and is drawn dashed.
 
 ### Figure 4 — Incremental entity-resolution pipeline
 
 - **Kind:** diagram
-- **Status:** HAND-DRAWN
-- **Data source:** `resolve/runner.py, resolve/score.py PREFILTER_GATES`
+- **Status:** RENDERED
+- **Data source:** `docs/paper/figures/fig04_resolution.svg (gates read from resolve/score.py; counts from data/eval/ablation)`
 
 ### Figure 5 — state_of() query flow, observer and knowledge time
 
 - **Kind:** diagram
-- **Status:** HAND-DRAWN
-- **Data source:** `docs/results/STATE_OF_VALIDATION.md sections 2 and 3`
+- **Status:** RENDERED (private)
+- **Data source:** `docs/private/paper/figures/fig05_state_of.svg -- embargoed with the patent packet until the IPR decision`
 
 ### Figure 6 — Graph state to modality render plan
 
 - **Kind:** diagram
-- **Status:** HAND-DRAWN
-- **Data source:** `render/plan_builder.py::build_render_plan`
-- **Blocked on:** The audio half does NOT consume state_of. Draw the visual path as real and the audio path as absent, or the figure asserts a compiler that does not exist.
+- **Status:** RENDERED (private)
+- **Data source:** `docs/private/paper/figures/fig06_render_plan.svg -- embargoed; the audio path is drawn as not consuming state`
 
 ### Figure 7 — Evaluation pipeline and provenance tiers
 
 - **Kind:** diagram
-- **Status:** HAND-DRAWN
-- **Data source:** `eval/gold.py tiers; eval/validate_gold.py checks`
+- **Status:** RENDERED
+- **Data source:** `docs/paper/figures/fig07_evaluation.svg (tiers and checks read from eval/gold.py, eval/validate_gold.py)`
 
 ### Figure 8 — Retriever Recall@K by alias type
 

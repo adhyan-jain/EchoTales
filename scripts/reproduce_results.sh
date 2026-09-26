@@ -87,7 +87,8 @@ if [[ "$NOVEL" == "reverend-insanity" ]]; then
   #   python3 scripts/eval/a7_cache_ablation.py --db "$DB"
   #   python3 scripts/eval/litbank_eval.py
   python3 scripts/paper/make_paper_artifacts.py    # -> docs/paper/TABLES.md, FIGURES.md
-  python3 scripts/paper/plot_paper_figures.py      # -> docs/paper/figures/*.svg
+  python3 scripts/paper/plot_paper_figures.py      # -> docs/paper/figures/*.svg (plots)
+  python3 scripts/paper/draw_diagrams.py           # -> Figures 1-7 (diagrams; 5 and 6 to docs/private)
 fi
 
 echo

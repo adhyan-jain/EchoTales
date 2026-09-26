@@ -1,9 +1,9 @@
 Condition,Pairs,Force-link,Blocked,Reached scorer,Scorer would link
-full,"15,796","1,318","2,888","11,590",0
-no-gazetteer-compounding,"15,796",448,"2,888","12,460",0
-no-declaration,"15,796","1,273","2,888","11,635",0
-no-name-containment,"15,796","1,285","2,888","11,623",0
-no-relational-copresence,"15,796","1,314","2,888","11,594",0
-no-temporal-scoping,"15,796","1,318","2,888","11,590",0
-no-copresence-blocking,"15,796","1,329",0,"14,467",0
-no-prefilters-at-all,"15,796",0,0,"15,796",0
+full,"16,538","1,376","3,072","12,090",0
+no-gazetteer-compounding,"16,538",704,"3,072","12,762",0
+no-declaration,"16,538","1,325","3,072","12,141",0
+no-name-containment,"16,538","1,341","3,072","12,125",0
+no-relational-copresence,"16,538","1,373","3,072","12,093",0
+no-temporal-scoping,"16,538","1,376","3,072","12,090",0
+no-copresence-blocking,"16,538","1,390",0,"15,148",0
+no-prefilters-at-all,"16,538",0,0,"16,538",0
