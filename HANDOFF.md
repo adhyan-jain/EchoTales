@@ -347,7 +347,10 @@ no longer exist — they were deleted and replaced by `webview/src/router.js`
 `?gallery` query-param screens now redirect to `/review`/`/design`. Visual
 direction also moved from the Fraunces/brass "editorial archive" look
 described below to a dark, violet-accented ("cinematic dark") design system
-in `webview/src/index.css`/`tailwind.config.js`. The bullets below predate
+in `webview/src/index.css`/`tailwind.config.js`. **That violet direction was itself
+replaced the same day** (warm ink + amber, Newsreader/Instrument Sans; EVOLUTION 4.93),
+and 4.93 also lists the server and React fixes made after the QA doc was written --
+the design's correctness is the owner's open judgment, not human-reviewed. The bullets below predate
 that redesign and describe file paths that no longer exist; read them for
 history of what was fixed, not as a map of the current tree.
 

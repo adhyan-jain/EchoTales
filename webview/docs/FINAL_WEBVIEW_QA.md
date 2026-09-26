@@ -2,6 +2,14 @@
 
 **Run:** 2026-09-26 · **Build:** production, from a clean `npm ci` · **Backend:** an isolated scratch server on `:8788` serving the build via `--static-dir` · **Data:** a copy of the Reverend Insanity database plus 73 copied media files. The canonical database and the tracked corrections log were not modified (verified by hash and `git status`).
 
+> **Superseded in part (later on 2026-09-26).** Three commits followed this run: server hardening (`888a158`), React review fixes (`f9bbdba`) and a full visual redesign (`a1bf892`). Consequences for this document:
+> - Every visual description below ("cinematic", violet accent, and any screenshot-based observation) describes the **replaced** design. The current design is in `webview/README.md` ("Design") and `EVOLUTION.md` 4.93.
+> - The test counts in section H are stale: webview is now **89** (9 suites; was 82), backend **1,134** on the committed tree (was 1,120; `test_webview_server_static_thumbs` 29 to 43).
+> - The 128-run axe sweep and the 36-step journeys were run on the old design and were **not repeated in that form**. After the redesign, axe was re-run over 12 routes x 2 themes x 2 widths (1440, 390): 0 violations. Journeys, the per-route metric sweep at four widths and the error-state simulations were not re-run.
+> - Section G "Media": a malformed or multi-range `Range` is now ignored (200), not 416; only a well-formed out-of-bounds range is 416. Thumbnails are now `private`, and file routes revalidate by ETag.
+> - Section E: 401 now returns to the sign-in screen; a response body that stalls is covered by the 30 s timeout.
+> - No person has reviewed the redesign or the flows for usability; the screen-reader and touch-device gaps below remain.
+
 Everything below was measured or observed in that run unless marked *not tested*.
 
 ## A. Routes
