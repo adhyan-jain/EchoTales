@@ -48,7 +48,11 @@ export default function EntityPicker({
   const exactMatch = entities.some((e) => e.label.toLowerCase() === q);
 
   const style = anchor
-    ? { position: 'fixed', left: Math.min(anchor.x, window.innerWidth - 320), top: Math.min(anchor.y, window.innerHeight - 360) }
+    ? {
+        position: 'fixed',
+        left: Math.max(8, Math.min(anchor.x, window.innerWidth - 336)),
+        top: Math.max(8, Math.min(anchor.y, window.innerHeight - 390)),
+      }
     : {};
 
   // Rows are real <button>s so the picker works from the keyboard: the input

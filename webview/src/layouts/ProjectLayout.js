@@ -62,7 +62,7 @@ function Sidebar({ novelId, projects, onNavigate, idPrefix }) {
   const navigate = useNavigate();
   const current = projects.find((p) => p.id === novelId);
   return (
-    <div className="flex h-full flex-col gap-6 p-4">
+    <div className="flex min-h-full flex-col gap-6 p-4">
       <div className="px-1">
         <Logo to="/projects" />
       </div>
@@ -147,8 +147,8 @@ function LayoutBody({ novelId }) {
   }, [drawerOpen]);
 
   return (
-    <div className="flex min-h-screen bg-bg text-text">
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border bg-surface lg:block">
+    <div className="flex h-screen h-dvh w-full overflow-hidden bg-bg text-text">
+      <aside className="sticky top-0 hidden h-full w-64 shrink-0 overflow-y-auto overscroll-contain border-r border-border bg-surface lg:block">
         <Sidebar novelId={novelId} projects={projects} idPrefix="rail" />
       </aside>
 
@@ -159,7 +159,7 @@ function LayoutBody({ novelId }) {
             onClick={() => setDrawerOpen(false)}
             aria-hidden="true"
           />
-          <div ref={drawerRef} tabIndex={-1} className="absolute inset-y-0 left-0 w-72 overscroll-contain border-r border-border bg-surface focus:outline-none">
+          <div ref={drawerRef} tabIndex={-1} className="absolute inset-y-0 left-0 w-[min(18rem,90vw)] overflow-y-auto overscroll-contain border-r border-border bg-surface focus:outline-none">
             <button
               type="button"
               onClick={() => setDrawerOpen(false)}
@@ -173,8 +173,8 @@ function LayoutBody({ novelId }) {
         </div>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="glass sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border/60 px-4 lg:hidden">
+      <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="glass sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-border/60 px-4 lg:hidden">
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
@@ -185,7 +185,7 @@ function LayoutBody({ novelId }) {
           </button>
           <Logo to="/projects" />
         </header>
-        <main className="flex min-w-0 flex-1 flex-col">
+        <main className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain">
           <Outlet />
         </main>
       </div>

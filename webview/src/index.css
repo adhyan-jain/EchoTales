@@ -135,7 +135,7 @@
    type labels stay in the UI sans so "what is being said" and "who says it"
    read as annotation, not as part of the text. */
 .line { display: grid; grid-template-columns: 8.5rem 1fr; gap: 1.25rem; padding: .85rem 0; }
-.line .body { font-family: Newsreader, Georgia, serif; font-size: 1.2rem; line-height: 1.7; font-optical-sizing: auto; }
+.line .body { min-width: 0; overflow-wrap: anywhere; font-family: Newsreader, Georgia, serif; font-size: 1.2rem; line-height: 1.7; font-optical-sizing: auto; }
 /* On a phone the speaker gutter would leave the text ~150px wide (screenshot
    QA, 2026-09-26); the speaker moves above its line instead. */
 @media (max-width: 640px) {
@@ -258,7 +258,7 @@ mark.editable:hover { background: color-mix(in srgb, var(--mk, #8a8a8a) 18%, tra
 /* Entity picker (popover) */
 .picker-backdrop { position: fixed; inset: 0; z-index: 60; background: rgb(0 0 0 / .35); }
 .entity-picker {
-  width: 320px; max-height: 380px; display: flex; flex-direction: column;
+  width: 320px; max-width: calc(100vw - 1rem); max-height: 380px; display: flex; flex-direction: column;
   background: var(--panel); border: 1px solid var(--border); border-radius: 1rem;
   box-shadow: 0 24px 60px rgb(0 0 0 / .5); overflow: hidden;
 }
@@ -288,10 +288,10 @@ mark.editable:hover { background: color-mix(in srgb, var(--mk, #8a8a8a) 18%, tra
 
 /* Corrections panel (review) */
 .analysis-panel {
-  position: fixed; top: 5rem; right: 1.25rem; width: 340px; z-index: 40;
+  position: fixed; top: 5rem; right: 1.25rem; width: 340px; max-width: calc(100vw - 2.5rem); z-index: 40;
   background: var(--panel); border: 1px solid var(--border); border-radius: 1rem;
   padding: 1rem 1.1rem; font-size: .88rem; box-shadow: 0 24px 60px rgb(0 0 0 / .5);
-  max-height: calc(100vh - 7rem); overflow-y: auto; overscroll-behavior: contain;
+  max-height: calc(100vh - 7rem); max-height: calc(100dvh - 7rem); overflow-y: auto; overscroll-behavior: contain;
 }
 .analysis-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .6rem; }
 .analysis-header .close { border: none; background: none; font-size: 1.2rem; cursor: pointer; color: var(--muted); border-radius: .4rem; }

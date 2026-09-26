@@ -310,8 +310,8 @@ export default function Review() {
   const pending = summary.pending_actionable ?? summary.pending;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 sm:px-6">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-border px-4 py-3 sm:px-6">
         <div className="mr-auto flex items-center gap-2">
           <ClipboardCheck className="h-5 w-5 text-accent" aria-hidden="true" />
           <h1 className="font-display text-lg font-bold tracking-tight">Review desk</h1>
@@ -350,13 +350,13 @@ export default function Review() {
           className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-3.5 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-2"
         >
           Corrections
-          <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs tabular-nums">{pending}</span>
+          <span className="rounded-full bg-black/20 px-2 py-0.5 text-xs tabular-nums">{pending}</span>
           {summary.flags_open > 0 && <span className="text-xs">· {summary.flags_open} flags</span>}
         </button>
       </div>
 
-      <div className="flex min-h-0 flex-1">
-        <div className="min-w-0 flex-1">
+      <div className="flex h-full min-h-0 flex-1 overflow-hidden">
+        <div className="h-full min-w-0 flex-1 overflow-y-auto overscroll-contain">
           <ChapterNav chapters={chapters} chapterIdx={idx} onChange={goTo} coverage={coverage} />
           <ScriptView
             chapter={chapter}

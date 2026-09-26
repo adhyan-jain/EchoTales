@@ -104,8 +104,8 @@ export default function Read() {
   const focused = focusId ? novel.entities.find((e) => e.id === focusId) : null;
 
   return (
-    <div className="flex min-h-0 flex-1">
-      <div className="min-w-0 flex-1">
+    <div className="flex h-full min-h-0 flex-1 overflow-hidden">
+      <div className="h-full min-w-0 flex-1 overflow-y-auto overscroll-contain">
         {/* The visible chapter label lives in ManuscriptSurface; screen
             readers still need one page heading (route sweep, 2026-09-26). */}
         <h1 className="sr-only">
@@ -139,7 +139,7 @@ export default function Read() {
         />
       </div>
 
-      <aside className="sticky top-0 hidden h-screen w-72 shrink-0 border-l border-border bg-surface xl:block" aria-label="Cast in this book">
+      <aside className="sticky top-0 hidden h-full w-72 shrink-0 border-l border-border bg-surface xl:block" aria-label="Cast in this book">
         <EntitySidebar
           entities={novel.entities}
           search={search}
