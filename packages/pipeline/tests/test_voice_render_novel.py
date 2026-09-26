@@ -180,3 +180,36 @@ def test_a_chapter_filter_renders_only_those_chapters(tmp_path: Path) -> None:
     assert report.chapters == 1
     assert report.lines == 0
     assert not list(out.rglob("*.wav"))
+
+
+def _with_guessed_line(tmp_path: Path, confidence: float) -> Store:
+    """Chapter 2: one line the contextual-LLM tier credited to Fang Yuan."""
+    store = _store(tmp_path)
+    text = '"Leave now," he said.'
+    store.add_chapter(Chapter(novel_id="t", number=2.0, title="Two", source_href="b.html",
+                              blocks=[Block(index=0, block_type=BlockType.PROSE, text=text)]))
+    store.add_spans([Span(id="g0", novel_id="t", chapter=2.0, block_index=0, start=0, end=len(text),
+                          span_type=SpanType.DIALOGUE, text=text, speaker_self_id=NAMED_SURFACE,
+                          attribution_method=AttributionMethod.CONTEXTUAL_LLM, confidence=confidence)])
+    store.conn.commit()
+    return store
+
+
+def test_a_guessed_speaker_is_not_given_the_characters_own_voice(tmp_path: Path) -> None:
+    """The LLM tier (confidence 0.65) was right 12 times in 28; a wrong guess in
+    the character's own voice is indistinguishable from a correct line."""
+    out = tmp_path / "audio"
+    report = render_novel("t", _with_guessed_line(tmp_path, 0.65), _bank(), out_dir=out, synthesize=False)
+    by_span = {line["span_id"]: line for line in _manifest(out)}
+    assert by_span["g0"]["voice"] != by_span["sp0"]["voice"]  # sp0 is Fang Yuan, explicitly tagged
+    assert by_span["g0"]["speaker_label"] == "Fang Yuan (unconfirmed)"
+    assert report.unconfirmed_lines == 1
+
+
+def test_a_confident_tag_and_a_zero_floor_keep_the_character_voice(tmp_path: Path) -> None:
+    for confidence, floor in ((0.95, 0.7), (0.65, 0.0)):
+        out = tmp_path / f"audio-{confidence}-{floor}"
+        render_novel("t", _with_guessed_line(tmp_path / f"db-{confidence}-{floor}", confidence), _bank(),
+                     out_dir=out, synthesize=False, min_character_confidence=floor)
+        by_span = {line["span_id"]: line for line in _manifest(out)}
+        assert by_span["g0"]["voice"] == by_span["sp0"]["voice"]

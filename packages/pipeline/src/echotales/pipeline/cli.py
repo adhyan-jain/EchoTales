@@ -300,6 +300,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="write the manifest and casting decisions without synthesising",
     )
     p_voice.add_argument("--seed", type=int, default=20260812)
+    p_voice.add_argument(
+        "--min-character-confidence", type=float, default=0.7,
+        help="attribution confidence below which a line is not voiced as the named character "
+             "(0 restores the old behaviour)",
+    )
 
     p_render = sub.add_parser(
         "render",

@@ -962,6 +962,7 @@ def cmd_voice(args: argparse.Namespace) -> int:
         chapters=wanted,
         seed=args.seed,
         synthesize=not args.dry_run,
+        min_character_confidence=getattr(args, "min_character_confidence", 0.7),
     )
     print(report.summary())
     print(f"\nmanifest: {Path(args.out) / 'manifest.jsonl'}")

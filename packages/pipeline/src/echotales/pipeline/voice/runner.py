@@ -91,6 +91,9 @@ class VoiceReport:
     #: separately from a plain anonymous slot rather than folded into
     #: either `character_lines` or `anonymous_lines`.
     epithet_lines: int = 0
+    #: Lines attributed to a named character below `min_character_confidence`,
+    #: voiced as a distinct unconfirmed speaker rather than as that character.
+    unconfirmed_lines: int = 0
     narrator_lines: int = 0
     unattributed_lines: int = 0
     voices_used: set[str] = field(default_factory=set)
@@ -104,7 +107,8 @@ class VoiceReport:
             f"{self.novel_id}: {self.lines:,} lines over {self.chapters} chapters "
             f"({self.engine})\n"
             f"  character={self.character_lines:,}  epithet={self.epithet_lines:,}  "
-            f"anonymous={self.anonymous_lines:,}  narrator={self.narrator_lines:,}\n"
+            f"anonymous={self.anonymous_lines:,}  unconfirmed={self.unconfirmed_lines:,}  "
+            f"narrator={self.narrator_lines:,}\n"
             f"  dialogue with no identity (read as narrator): "
             f"{self.unattributed_lines:,}\n"
             f"  distinct reference voices used: {len(self.voices_used)}"
@@ -160,6 +164,15 @@ def _narrator_voice(bank: VoiceBank) -> str:
     return pool[0].speaker_id if pool else "narrator"
 
 
+#: Below this attribution confidence a line is not voiced as the named
+#: character. The contextual-LLM tier (confidence 0.65) was spot-checked at
+#: 12 right / 16 wrong on RI ch1-3 (docs/EVOLUTION.md 4.87/4.88): voicing its
+#: guesses in the character's own voice made roughly half of them audibly the
+#: wrong person, which a listener cannot tell apart from a correct line. EXPLICIT
+#: (0.95) and PROXIMAL (0.75) tags stay above it.
+MIN_CHARACTER_CONFIDENCE = 0.7
+
+
 def render_novel(
     novel_id: str,
     store: Store,
@@ -170,6 +183,7 @@ def render_novel(
     chapters: list[float] | None = None,
     seed: int = DEFAULT_SEED,
     synthesize: bool = True,
+    min_character_confidence: float = MIN_CHARACTER_CONFIDENCE,
 ) -> VoiceReport:
     """Cast the novel, build its script, and render it.
 
@@ -308,8 +322,30 @@ def render_novel(
 
             profile = profiles.get(speaker_id)
             label = "narrator"
+            unconfirmed = (
+                bool(speaker_id)
+                and speaker_id in assignments
+                and span.confidence < min_character_confidence
+            )
 
-            if speaker_id and speaker_id in assignments:
+            if unconfirmed:
+                # A guessed speaker keeps a voice of the character's gender,
+                # stable for that speaker within the chapter, but never the
+                # character's own voice.
+                slot = f"{novel_id}:unconfirmed:{chapter:g}:{speaker_id}"
+                if slot not in anon_voices:
+                    own = assignments[speaker_id].speaker_id
+                    gender = next((v.gender for v in bank.voices if v.speaker_id == own), "")
+                    pool = [
+                        v for v in bank.nearest_bucket(gender or "unknown", "adult")
+                        if v.speaker_id not in chapter_voices_used and v.speaker_id != own
+                    ] or [v for v in bank.voices if v.speaker_id not in (own, narrator)]
+                    anon_voices[slot] = rng.choice(pool).speaker_id if pool else narrator
+                    chapter_voices_used.add(anon_voices[slot])
+                voice = anon_voices[slot]
+                label = f"{assignments[speaker_id].label} (unconfirmed)"
+                report.unconfirmed_lines += 1
+            elif speaker_id and speaker_id in assignments:
                 voice = assignments[speaker_id].speaker_id
                 label = assignments[speaker_id].label
                 report.character_lines += 1
