@@ -53,12 +53,13 @@ Set `ECHOTALES_WEBVIEW_PASSWORD` in the server's environment to require a passwo
 
 ## Design
 
-The direction was changed twice on 2026-09-26, both times because the result was rejected on sight (details and reasons in `EVOLUTION.md` 4.92/4.93; token history in the comment at the top of `tailwind.config.js`):
+The direction was changed on 2026-09-26/27 (details in `EVOLUTION.md` 4.92/4.93; token history in the comment at the top of `tailwind.config.js`):
 
-1. an "editorial archive" (Fraunces, brass, 2 px corners) read as too quiet;
-2. "cinematic dark" (violet accent, glows, gradient logo, Inter ExtraBold, 24 px radii, stat cards) read as generated.
+1. an "editorial archive" (Fraunces, brass, 2 px corners) was rejected as too quiet;
+2. "cinematic dark" (violet accent, glow, Inter / Inter Tight) was rejected as generic;
+3. a "warm ink" redesign (Newsreader serif, amber accent, ledger row, landing specimen) was tried, and the owner then asked to go back to violet on 2026-09-27.
 
-Current: dark, art-led canvas with a light theme; warm ink neutrals and one amber accent; Newsreader (serif) for the book text and headings, Instrument Sans for UI; 6-12 px radii; hairline rules instead of nested boxes; a ledger row instead of stat cards; no glow, glass or gradient. The landing page is built around a specimen whose text is invented and labelled as an illustration, next to the project's own panels. The reader has a phone layout (speaker above the line). Colours are CSS variable triples in `src/index.css`. **Whether this direction is right is the owner's judgment and has not been reviewed by a person other than the author of the change**; the numbers below are machine checks only.
+Current (commit `ec6a1d2`): the violet cinematic-dark look, with a light theme; violet accent (`accent` for text/icons/focus, deeper `primary` for button fills), Inter / Inter Tight, glow shadow and accent gradient. Design tokens live in `tailwind.config.js` and `src/index.css` (CSS variable triples). Kept from the warm-ink work: the phone reader layout (speaker above the line under 640 px), `min-width`/`overflow-wrap` guards on `.line .body`, the unknown-speaker contrast fix (`--sp` colour-mix in `index.css` and `ScriptLine.js`), and the short-window sidebar and narrow-screen panel fixes. **No human usability review was done**; the numbers below are machine checks only.
 
 **State and requests:** `ProjectLayout` mounts one `ProjectProvider` per project, keyed by id, so pages do not leak state across a project switch and the whole-book payload is fetched once for Overview, Read and Review. The request timeout (30 s) covers reading the response body, not only the headers. A non-JSON 2xx, or an error that did not come from the API, shows generic copy rather than the response text. Modals and both drawers share `lib/useDialogFocus.js`.
 
@@ -86,11 +87,11 @@ cd /tmp/qa && uv run --project <repo> echotales webview-server \
 
 ```bash
 CI=true npx react-scripts test --watchAll=false     # 89 tests
-npx eslint src --ext .js                            # 2 known findings in Section7Smoke.test.js
+npx eslint src --ext .js                            # clean as of ec6a1d2
 npm run build                                       # production build (no source maps)
 ```
 
-Accessibility was audited with axe-core against a running build (16 routes × 4 widths × 2 themes for the earlier design; after the 2026-09-26 redesign, 12 routes × 2 themes × 2 widths, 0 violations; see `docs/FINAL_WEBVIEW_QA.md`). The public copy is pinned by `src/__tests__/CopyClaims.test.js`: it must not claim complete voice coverage, perfect identity tracking, or name internal mechanisms.
+Accessibility was audited with axe-core against a running build (16 routes × 4 widths × 2 themes for the earlier design; after the 2026-09-27 return to the violet look (`ec6a1d2`), 12 routes × 2 themes × 2 widths = 48 runs, 0 violations, plus a 220-check route × viewport × theme sweep with no overflow or scroll trap; see `docs/FINAL_WEBVIEW_QA.md`). The public copy is pinned by `src/__tests__/CopyClaims.test.js`: it must not claim complete voice coverage, perfect identity tracking, or name internal mechanisms.
 
 ## More
 

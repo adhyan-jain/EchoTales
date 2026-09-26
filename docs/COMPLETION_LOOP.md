@@ -22,7 +22,7 @@ Started 2026-09-26. Source of the gap list: `docs/REMAINING_WORK.md`, `docs/STAT
 | A12 | `webview/README.md`, `webview/docs/FINAL_WEBVIEW_QA.md`, STATUS correction | DONE |
 | A13 | Server hardening after a Python review: 30 s socket timeout, Range per RFC 9110, HEAD, ETag/304, private thumbnails | DONE (`888a158`; static/thumbs tests 29 to 43) |
 | A14 | React review findings: one provider per project, body-covering timeout, 401 to sign-in, media `?access_token=`, dialog focus, empty chapter states | DONE (`f9bbdba`) |
-| A15 | Visual redesign after the cinematic-dark direction was rejected as looking generated | DONE by machine checks only (`a1bf892`; axe 0 on 12 routes x 2 themes x 2 widths; webview tests 89). **Not reviewed by a person; the owner's taste is the open judgment** |
+| A15 | Visual redesign (warm ink, `a1bf892`) after the cinematic-dark direction was rejected; **reverted 2026-09-27 (`ec6a1d2`)** at the owner's request, violet look restored with the phone-layout, overflow, contrast and short-window fixes kept | DONE by machine checks only (220-check sweep, no overflow or scroll trap; axe 0 over 48 runs; webview tests 89; eslint clean). **No human usability review** |
 
 ## B. Backend / pipeline
 
