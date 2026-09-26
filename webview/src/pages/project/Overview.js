@@ -74,8 +74,8 @@ export default function Overview() {
           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Project overview</div>
           <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight sm:text-6xl">{title}</h1>
           <p className="mt-3 max-w-xl text-muted">
-            {s.chapters
-              ? `${num(s.chapters)} chapters, ${num(s.entities)} characters and places tracked across the book.`
+            {novel
+              ? `${num(s.chapters || 0)} chapters, ${num(s.entities || 0)} characters and places tracked across the book.`
               : 'Loading the book…'}
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
@@ -143,7 +143,7 @@ export default function Overview() {
                   </Link>
                 </li>
               ))}
-              {!cast.length && <li className="text-sm text-muted">Loading cast…</li>}
+              {!cast.length && <li className="text-sm text-muted">{novel ? 'No characters yet.' : 'Loading cast…'}</li>}
             </ul>
           </section>
 

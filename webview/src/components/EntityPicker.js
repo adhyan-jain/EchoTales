@@ -106,7 +106,7 @@ export default function EntityPicker({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && query.trim() && !exactMatch) onCreateNew(query.trim());
+            if (e.key === 'Enter' && !e.nativeEvent.isComposing && query.trim() && !exactMatch) onCreateNew(query.trim());
           }}
         />
         <ul ref={listRef}>

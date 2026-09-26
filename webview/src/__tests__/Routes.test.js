@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 
@@ -113,4 +113,39 @@ test('a link to a chapter the book does not have says so instead of showing chap
 test('an unknown route shows a not-found page', async () => {
   mount('/definitely/not/a/page');
   expect(await screen.findByText(/page not found/i)).toBeInTheDocument();
+});
+
+test('an un-ingested project shows a message instead of crashing the reader', async () => {
+  const router = mount('/p/toy/read');
+  api.novel.mockResolvedValue({ ...NOVEL, chapters: [], entities: [] });
+  await act(async () => {
+    await router.navigate('/p/toy/read');
+  });
+  expect(await screen.findByText(/no chapters yet/i)).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /go to settings to ingest/i })).toHaveAttribute('href', '/p/toy/settings');
+});
+
+test('the review desk names a missing chapter instead of showing chapter 1', async () => {
+  mount('/p/toy/review?ch=99');
+  expect(await screen.findByText(/chapter 99 isn.t in this book/i)).toBeInTheDocument();
+});
+
+test('the whole-book payload is fetched once across pages, not once per page', async () => {
+  mount('/p/toy');
+  await screen.findByText(/2 chapters, \d+ characters/i);
+  expect(api.novel).toHaveBeenCalledTimes(1);
+  fireEvent.click(screen.getAllByRole('link', { name: /^read$/i })[0]);
+  expect(await screen.findByText('Hero walked.')).toBeInTheDocument();
+  await waitFor(() => expect(api.novel).toHaveBeenCalledTimes(1));
+});
+
+test('switching projects starts from a clean slate', async () => {
+  const router = mount('/p/toy');
+  await screen.findByText(/2 chapters, \d+ characters/i);
+  api.novel.mockResolvedValue({ ...NOVEL, novel_id: 'other', label: 'Other Book', stats: { chapters: 7 } });
+  await act(async () => {
+    await router.navigate('/p/other');
+  });
+  expect(await screen.findByText(/7 chapters, \d+ characters/i)).toBeInTheDocument();
+  expect(api.novel).toHaveBeenLastCalledWith('other');
 });

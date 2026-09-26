@@ -20,57 +20,69 @@ export function ProjectProvider({ novelId, children }) {
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState(null);
 
-  // `current` guards against a slow response for the previous project (the
-  // payload is up to ~9.6 MB) landing after the new one and overwriting it
-  // when the user switches projects quickly.
-  const current = useRef(novelId);
-  current.current = novelId;
-  const wanted = useRef(false); // some mounted page needs the novel payload
+  // ProjectLayout keys this provider by project id, so every project gets
+  // fresh state and refs: nothing here has to be reset on a switch, and the
+  // pages below it remount too (React review, 2026-09-26: Review kept the
+  // previous project's pending corrections and could POST them to the new
+  // one; the old reset effect also ran *after* the child's request and
+  // silently cleared the "already requested" flag, so the 9.6 MB payload was
+  // fetched a second time on the next page).
+  const requested = useRef(false); // some page has asked for the payload
+  const seq = useRef(0); // the newest request wins; older responses are dropped
+  const held = useRef(false); // a payload is already on screen
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   const refetch = useCallback(() => {
     if (!novelId) return Promise.resolve();
+    const mine = ++seq.current;
     setLoading(true);
     return api
       .novel(novelId)
       .then((payload) => {
-        if (current.current !== novelId) return;
+        if (!mounted.current || mine !== seq.current) return;
+        held.current = true;
         setNovel(payload);
         setError(null);
         setErrorStatus(null);
       })
       .catch((e) => {
-        if (current.current !== novelId) return;
+        if (!mounted.current || mine !== seq.current) return;
+        requested.current = false; // the next page that asks tries again
+        // A refresh after a correction that fails must not replace a book the
+        // reviewer is in the middle of; the correction itself was saved.
+        if (held.current) return;
         setError(describeError(e, 'Could not load this project.'));
         setErrorStatus(e && typeof e.status === 'number' ? e.status : null);
       })
-      .finally(() => current.current === novelId && setLoading(false));
+      .finally(() => {
+        if (mounted.current && mine === seq.current) setLoading(false);
+      });
   }, [novelId]);
 
   // The novel payload is the whole book (9.4 MB for Reverend Insanity), and
   // Characters, Studio and Settings never read it -- fetching it for every
   // page cost ~9 MB per visit, ~19 MB in the Studio (perf sanity, 2026-09-26).
-  // It now loads when a page that reads it asks (`useNovelData`), and stays
-  // cached across those pages.
+  // It loads when a page that reads it asks (`useNovelData`), stays cached
+  // across those pages, and is retried by the next page after a failure (a
+  // project ingested in Settings after a 404 would otherwise stay stuck).
   const requestNovel = useCallback(() => {
-    if (wanted.current) return;
-    wanted.current = true;
+    if (requested.current) return;
+    requested.current = true;
     refetch();
   }, [refetch]);
-
-  useEffect(() => {
-    wanted.current = false;
-    setNovel(null);
-    setError(null);
-    setErrorStatus(null);
-    setLoading(false);
-  }, [novelId]);
 
   const refreshProjects = useCallback(() => {
     return api
       .listProjects()
-      .then((l) => current.current === novelId && setProjects(l || []))
-      .catch(() => current.current === novelId && setProjects([]));
-  }, [novelId]);
+      .then((l) => mounted.current && setProjects(l || []))
+      .catch(() => mounted.current && setProjects([]));
+  }, []);
 
   useEffect(() => {
     refreshProjects();

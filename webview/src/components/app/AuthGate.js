@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { api } from '../../api';
+import { api, UNAUTHORIZED_EVENT } from '../../api';
 import Login from '../Login';
 import { describeError } from '../../lib/errors';
 import { CenterMessage } from './Chrome';
@@ -27,6 +27,13 @@ export default function AuthGate() {
       })
       .catch((e) => setUnreachable(describeError(e, 'The server did not respond as expected.')))
       .finally(() => setChecked(true));
+  }, []);
+
+  // A 401 mid-session (expired token) returns to the sign-in screen.
+  useEffect(() => {
+    const onUnauthorized = () => setAuthed(false);
+    window.addEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
+    return () => window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
   }, []);
 
   if (!checked) return <main><CenterMessage>Connecting to the EchoTales server…</CenterMessage></main>;

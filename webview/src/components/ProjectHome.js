@@ -13,7 +13,7 @@ import JobFailure from './ui/JobFailure';
    state this project is in and what to do next. Wires the real
    `GET /api/projects` listing (Product Orchestration track) -- source
    uploaded / ingested / last job -- rather than fabricating progress. */
-export default function ProjectHome({ novelId, onNewProject, hideHeader = false }) {
+export default function ProjectHome({ novelId, onNewProject, hideHeader = false, onChanged }) {
   const [status, setStatus] = useState('loading');
   const [projects, setProjects] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
@@ -27,12 +27,14 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false 
       .then((list) => {
         setProjects(list || []);
         setStatus('ready');
+        if (onChanged) onChanged();
       })
       .catch((err) => {
         setUnreachable(isNetworkError(err));
         setErrorMessage(describeError(err, 'Failed to load projects.'));
         setStatus('error');
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

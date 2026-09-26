@@ -366,3 +366,37 @@ class TestSlowClient:
             httpd.shutdown()
             httpd.server_close()
             thread.join(timeout=5)
+
+
+class TestMediaAuth:
+    def test_media_route_accepts_a_session_token_in_the_query_and_nothing_else_does(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv(webview_server._AUTH_ENV_VAR, "hunter2")
+        monkeypatch.chdir(tmp_path)
+        httpd, thread = _start(tmp_path)
+        port = httpd.server_address[1]
+        try:
+            conn = HTTPConnection("127.0.0.1", port, timeout=10)
+            conn.request("POST", "/api/auth/login", body=json.dumps({"password": "hunter2"}).encode(),
+                         headers={"Content-Type": "application/json"})
+            token = json.loads(conn.getresponse().read())["token"]
+            conn.close()
+            hdr = {"Authorization": f"Bearer {token}"}
+            conn = HTTPConnection("127.0.0.1", port, timeout=10)
+            conn.request("POST", "/api/projects", body=json.dumps({"id": "toy", "title": "T"}).encode(),
+                         headers={"Content-Type": "application/json", **hdr})
+            assert conn.getresponse().status == 201
+            conn.close()
+            out = tmp_path / "data" / "toy" / "panels"
+            out.mkdir(parents=True)
+            (out / "a.md").write_text("hello")
+            media = "/api/novels/toy/output/file?path=panels/a.md"
+            assert _get(port, media)[0] == 401
+            assert _get(port, media + "&access_token=wrong")[0] == 401
+            assert _get(port, media + f"&access_token={token}")[2] == b"hello"
+            assert _get(port, f"/api/manifest?access_token={token}")[0] == 401  # JSON API: header only
+        finally:
+            httpd.shutdown()
+            httpd.server_close()
+            thread.join(timeout=5)

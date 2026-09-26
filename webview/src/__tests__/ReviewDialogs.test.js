@@ -74,7 +74,7 @@ async function openReview() {
 
 test('flag: labelled field takes focus, empty note is rejected in place, valid note is sent', async () => {
   await openReview();
-  const trigger = screen.getByRole('button', { name: 'Flag' });
+  const trigger = screen.getByRole('button', { name: /^flag this line:/i });
   trigger.focus();
   fireEvent.click(trigger);
 
@@ -96,7 +96,7 @@ test('flag: labelled field takes focus, empty note is rejected in place, valid n
 
 test('Escape cancels the dialog and returns focus to the button that opened it', async () => {
   await openReview();
-  const trigger = screen.getByRole('button', { name: 'Flag' });
+  const trigger = screen.getByRole('button', { name: /^flag this line:/i });
   trigger.focus();
   fireEvent.click(trigger);
   await screen.findByRole('textbox', { name: /what looks wrong/i });
@@ -108,7 +108,7 @@ test('Escape cancels the dialog and returns focus to the button that opened it',
 
 test('add mention: text not in the line is explained inline; valid text opens the character picker', async () => {
   await openReview();
-  fireEvent.click(screen.getByRole('button', { name: /\+ mention/i }));
+  fireEvent.click(screen.getByRole('button', { name: /add a mention in this line/i }));
   const field = await screen.findByRole('textbox', { name: /words in this line/i });
   expect(screen.getByText(LINE, { selector: 'p' })).toBeInTheDocument(); // the line is shown for context
 

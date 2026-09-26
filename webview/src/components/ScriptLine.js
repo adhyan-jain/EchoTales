@@ -100,6 +100,8 @@ export default function ScriptLine({
   if (pos < span.text.length) parts.push(span.text.slice(pos));
 
   const hasFlags = span.flags && span.flags.length > 0;
+  // Three identical "Flag" buttons per screen say nothing to a screen reader.
+  const lineHint = `${(span.text || '').slice(0, 40).trim()}${(span.text || '').length > 40 ? '…' : ''}`;
 
   return (
     <div className={rowClass}>
@@ -173,13 +175,16 @@ export default function ScriptLine({
               <button
                 type="button"
                 title="Create a mention for text in this line that detector missed"
+                aria-label={`Add a mention in this line: ${lineHint}`}
                 onClick={(e) => onCreateMention(span, e)}
               >
                 + Mention
               </button>
             )}
-            <button type="button" onClick={() => onFlagLine(span)}>Flag</button>
-            {canMergeUp && <button type="button" onClick={onMergeUp}>Merge&nbsp;&uarr;</button>}
+            <button type="button" aria-label={`Flag this line: ${lineHint}`} onClick={() => onFlagLine(span)}>Flag</button>
+            {canMergeUp && (
+              <button type="button" aria-label={`Merge this line into the one above: ${lineHint}`} onClick={onMergeUp}>Merge&nbsp;&uarr;</button>
+            )}
           </span>
         )}
       </div>

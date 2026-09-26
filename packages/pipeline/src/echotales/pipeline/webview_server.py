@@ -821,7 +821,17 @@ def make_handler(
                 return True
             header = self.headers.get("Authorization", "")
             token = header[7:] if header.startswith("Bearer ") else ""
-            return sessions.valid(token)
+            if sessions.valid(token):
+                return True
+            # <img>/<video>/<audio>/<a> cannot send an Authorization header, so
+            # without this every panel and player 401ed on a password-protected
+            # server (React review, 2026-09-26). The query token is accepted on
+            # the output-file route only -- never on the JSON API.
+            url = urlparse(self.path)
+            parts = url.path.strip("/").split("/")
+            if self.command in ("GET", "HEAD") and len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3:] == ["output", "file"]:
+                return sessions.valid(parse_qs(url.query).get("access_token", [""])[0])
+            return False
 
         def do_HEAD(self) -> None:
             self.do_GET()

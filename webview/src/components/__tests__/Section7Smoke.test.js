@@ -122,7 +122,7 @@ describe('NewProject', () => {
   });
 
   test('shows an inline error on failure', async () => {
-    api.createProject.mockRejectedValueOnce(new Error('project already exists'));
+    api.createProject.mockRejectedValueOnce(Object.assign(new Error('project already exists'), { status: 409, serverMessage: 'project already exists' }));
     render(<NewProject onCreated={jest.fn()} />);
 
     fireEvent.change(screen.getByPlaceholderText(/reverend insanity/i), {
@@ -146,6 +146,7 @@ describe('NewProject', () => {
       target: { value: 'My Cool Story!' },
     });
     const file = new File(['epub-bytes'], 'book.epub', { type: 'application/epub+zip' });
+    // eslint-disable-next-line testing-library/no-node-access -- a hidden file input has no accessible role
     const fileInput = document.querySelector('input[type="file"]');
     expect(fileInput).not.toBeDisabled();
     fireEvent.change(fileInput, { target: { files: [file] } });
@@ -257,8 +258,8 @@ describe('CharacterDashboard', () => {
   });
 
   test('a real backend error is shown, not swallowed', async () => {
-    api.characters.mockRejectedValueOnce(new Error('HTTP 500'));
+    api.characters.mockRejectedValueOnce(Object.assign(new Error('HTTP 500'), { status: 500 }));
     renderDashboard({ novelId: "reverend-insanity" });
-    expect(await screen.findByText(/HTTP 500/)).toBeInTheDocument();
+    expect(await screen.findByText(/server hit a problem/i)).toBeInTheDocument();
   });
 });

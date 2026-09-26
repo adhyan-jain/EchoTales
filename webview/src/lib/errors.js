@@ -30,7 +30,6 @@ export function describeError(err, fallback = 'Something went wrong.') {
   }
   if (status && status >= 400 && raw && !LOOKS_INTERNAL.test(raw)) return raw;
   if (!status && NETWORK_TEXT.test(raw)) return UNREACHABLE;
-  if (!status && raw && !LOOKS_INTERNAL.test(raw)) return raw;
   return fallback;
 }
 

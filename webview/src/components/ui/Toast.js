@@ -12,7 +12,7 @@ export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
   const idRef = useRef(0);
 
-  const push = useCallback((message, tone = 'info', duration = 4000) => {
+  const push = useCallback((message, tone = 'info', duration = 6000) => {
     const id = ++idRef.current;
     setToasts((prev) => [...prev, { id, message, tone }]);
     if (duration) {
@@ -27,6 +27,7 @@ export function ToastProvider({ children }) {
         {toasts.map((t) => (
           <div
             key={t.id}
+            role={t.tone === 'danger' ? 'alert' : undefined}
             className={`animate-toast-in max-w-sm break-words rounded-xl border px-4 py-3 font-sans text-sm text-text shadow-popover ${TONES[t.tone]}`}
           >
             {t.message}

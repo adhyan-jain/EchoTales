@@ -11,7 +11,7 @@ export default function JobFailure({ summary, kind = 'job' }) {
   return (
     <div className="mt-2 text-sm">
       <p className="text-danger">
-        This {kind} did not finish. Nothing was changed by the failed run; you can queue it again.
+        This {kind} did not finish. It may have left partial output; you can queue it again.
       </p>
       {summary && (
         <details className="mt-1 text-muted">

@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ClipboardCheck, PencilLine, Users, X } from 'lucide-react';
 import { api } from '../../api';
 import AnalysisPanel from '../../components/AnalysisPanel';
@@ -11,6 +11,7 @@ import Tooltip from '../../components/Tooltip';
 import { CenterMessage, ProjectProblem } from '../../components/app/Chrome';
 import { useToast } from '../../components/ui/Toast';
 import { useNovelData } from '../../lib/ProjectContext';
+import useDialogFocus from '../../lib/useDialogFocus';
 import PromptModal from '../../components/ui/PromptModal';
 import { describeError } from '../../lib/errors';
 
@@ -60,14 +61,17 @@ export default function Review() {
   const [undoing, setUndoing] = useState(null);
   const [failedIds, setFailedIds] = useState(() => new Set());
   const [showEntities, setShowEntities] = useState(false);
+  const entitiesRef = useRef(null);
+  useDialogFocus(showEntities, entitiesRef);
 
   const chapters = useMemo(() => (novel ? novel.chapters : []), [novel]);
   const idx = useMemo(() => {
     const ch = params.get('ch');
-    const i = ch ? chapters.findIndex((c) => String(Number(c.number)) === ch) : 0;
-    return i >= 0 ? i : 0;
+    // -1 = the URL names a chapter this book does not have (it used to fall
+    // back to chapter 1 silently, so corrections could land on the wrong text).
+    return ch ? chapters.findIndex((c) => String(Number(c.number)) === ch) : 0;
   }, [chapters, params]);
-  const chapter = chapters[idx];
+  const chapter = idx >= 0 ? chapters[idx] : null;
   // Highest "Unknown Speaker N" already used in this chapter. Slot numbers
   // restart at 1 in every chapter (the slot id carries the chapter), so the
   // picker offers 1..max(4, this) plus a New button for the next number.
@@ -282,6 +286,25 @@ export default function Review() {
 
   if (error) return <ProjectProblem error={error} status={errorStatus} onRetry={refetch} />;
   if (!novel) return <CenterMessage>Loading the book…</CenterMessage>;
+  if (!chapters.length) {
+    return (
+      <CenterMessage title="No chapters to review yet">
+        <p>This project has no ingested text.</p>
+        <Link to={`/p/${encodeURIComponent(novelId)}/settings`} className="mt-3 inline-block text-accent hover:underline">
+          Go to settings to ingest a source
+        </Link>
+      </CenterMessage>
+    );
+  }
+  if (!chapter) {
+    return (
+      <CenterMessage title={`Chapter ${params.get('ch')} isn’t in this book`}>
+        <Link to={`/p/${encodeURIComponent(novelId)}/review`} className="mt-3 inline-block text-accent hover:underline">
+          Review from chapter {Number(chapters[0].number)}
+        </Link>
+      </CenterMessage>
+    );
+  }
 
   const s = novel.stats || {};
   const pending = summary.pending_actionable ?? summary.pending;
@@ -371,7 +394,7 @@ export default function Review() {
       {showEntities && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Entities">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowEntities(false)} aria-hidden="true" />
-          <div className="absolute inset-y-0 right-0 flex w-[min(20rem,90vw)] flex-col overscroll-contain border-l border-border bg-surface">
+          <div ref={entitiesRef} tabIndex={-1} className="absolute inset-y-0 right-0 flex w-[min(20rem,90vw)] flex-col overscroll-contain border-l border-border bg-surface focus:outline-none">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <span className="font-display font-bold">Entities</span>
               <button

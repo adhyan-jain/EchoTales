@@ -68,6 +68,21 @@ function NotFound() {
   );
 }
 
+// A render error inside a project page used to blank the whole app (no
+// boundary existed anywhere; React review, 2026-09-26). The layout stays.
+function RouteError() {
+  return (
+    <main>
+      <CenterMessage title="This page hit a problem">
+        <p>Reloading usually fixes it. Your saved corrections are not affected.</p>
+        <Link to="/projects" className="mt-3 inline-block text-accent hover:underline">
+          Back to projects
+        </Link>
+      </CenterMessage>
+    </main>
+  );
+}
+
 export const routes = [
   { path: '/', element: <LegacyEntry /> },
   { path: '/design', element: <DesignGallery /> },
@@ -79,6 +94,7 @@ export const routes = [
       {
         path: '/p/:projectId',
         element: <ProjectLayout />,
+        errorElement: <RouteError />,
         children: [
           { index: true, element: <Overview /> },
           { path: 'read', element: <Read /> },

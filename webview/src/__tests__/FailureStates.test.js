@@ -11,7 +11,7 @@ import { ProjectProblem } from '../components/app/Chrome';
 test('a failed job explains itself in plain language and hides the exception behind a disclosure', () => {
   render(<JobFailure kind="render" summary={'ValueError: chapter 999 has no beats'} />);
   expect(screen.getByText(/this render did not finish/i)).toBeInTheDocument();
-  expect(screen.getByText(/nothing was changed/i)).toBeInTheDocument();
+  expect(screen.getByText(/partial output/i)).toBeInTheDocument();
   const detail = screen.getByText('Technical detail');
   fireEvent.click(detail);
   expect(screen.getByText(/chapter 999 has no beats/)).toBeInTheDocument();

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   BookOpen,
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Logo, ThemeToggle } from '../components/app/Chrome';
 import { ProjectProvider, useProject } from '../lib/ProjectContext';
+import useDialogFocus from '../lib/useDialogFocus';
 
 /**
  * Workspace shell for one project. Each job the old single screen crammed
@@ -120,7 +121,7 @@ export default function ProjectLayout() {
   // useParams() already decodes; decoding again would throw URIError on any
   // id containing a literal '%' and take down the whole workspace.
   return (
-    <ProjectProvider novelId={projectId}>
+    <ProjectProvider key={projectId} novelId={projectId}>
       <LayoutBody novelId={projectId} />
     </ProjectProvider>
   );
@@ -132,6 +133,8 @@ function LayoutBody({ novelId }) {
   const { projects: sharedProjects } = useProject();
   const projects = sharedProjects || [];
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const drawerRef = useRef(null);
+  useDialogFocus(drawerOpen, drawerRef);
   const location = useLocation();
 
   // The mobile drawer closes on navigation and on Escape.
@@ -156,7 +159,7 @@ function LayoutBody({ novelId }) {
             onClick={() => setDrawerOpen(false)}
             aria-hidden="true"
           />
-          <div className="absolute inset-y-0 left-0 w-72 overscroll-contain border-r border-border bg-surface">
+          <div ref={drawerRef} tabIndex={-1} className="absolute inset-y-0 left-0 w-72 overscroll-contain border-r border-border bg-surface focus:outline-none">
             <button
               type="button"
               onClick={() => setDrawerOpen(false)}

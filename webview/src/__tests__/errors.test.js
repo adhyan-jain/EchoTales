@@ -36,6 +36,10 @@ test('a 4xx that looks like an internal error falls back instead', () => {
   );
 });
 
+test('a plain (non-API) error never leaks its message', () => {
+  expect(describeError(new TypeError("Cannot read properties of undefined (reading 'number')"), 'Try again.')).toBe('Try again.');
+});
+
 test('a lapsed session asks the user to sign in again', () => {
   expect(describeError(new ApiError(401, 'unauthorized'))).toMatch(/sign in/i);
 });
@@ -66,6 +70,34 @@ describe('request timeout', () => {
     expect(err).toBeInstanceOf(ApiError);
     expect(err.status).toBe(0);
     expect(describeError(err)).toMatch(/can.t reach the echotales server/i);
+  });
+
+  test('a body that never arrives is also bounded, not just the headers', async () => {
+    jest.useFakeTimers();
+    global.fetch = jest.fn((_url, { signal }) =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () =>
+          new Promise((_resolve, reject) => {
+            signal.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
+          }),
+      })
+    );
+    const caught = api.manifest().catch((e) => e);
+    await Promise.resolve();
+    jest.advanceTimersByTime(30001);
+    const err = await caught;
+    expect(err).toBeInstanceOf(ApiError);
+  });
+
+  test('a 200 that is not JSON never shows the parser message', async () => {
+    global.fetch = jest.fn(() =>
+      Promise.resolve({ ok: true, status: 200, json: () => Promise.reject(new SyntaxError("Unexpected token '<'")) })
+    );
+    const err = await api.manifest().catch((e) => e);
+    expect(err).toBeInstanceOf(ApiError);
+    expect(describeError(err, 'fallback')).not.toMatch(/token|json/i);
   });
 
   test('a fast response is not aborted', async () => {

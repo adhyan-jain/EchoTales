@@ -70,7 +70,7 @@ export function Studio() {
 }
 
 export function Settings() {
-  const { novelId } = useProject();
+  const { novelId, refreshProjects } = useProject();
   const navigate = useNavigate();
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-8">
@@ -78,7 +78,7 @@ export function Settings() {
       <div className="space-y-8">
         <section className="rounded-3xl border border-border bg-surface p-6">
           <h2 className="font-display text-lg font-bold tracking-tight">Source &amp; pipeline</h2>
-          <ProjectHome novelId={novelId} hideHeader onNewProject={() => navigate('/projects/new')} />
+          <ProjectHome novelId={novelId} hideHeader onChanged={refreshProjects} onNewProject={() => navigate('/projects/new')} />
         </section>
         <section className="flex items-center justify-between gap-4 rounded-3xl border border-border bg-surface p-6">
           <div>

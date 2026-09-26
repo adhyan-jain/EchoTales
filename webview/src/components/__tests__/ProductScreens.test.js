@@ -86,9 +86,9 @@ describe('ProjectHome', () => {
   });
 
   test('a real backend error is shown, not swallowed', async () => {
-    api.listProjects.mockRejectedValueOnce(new Error('HTTP 500'));
+    api.listProjects.mockRejectedValueOnce(Object.assign(new Error('HTTP 500'), { status: 500 }));
     render(<ProjectHome novelId="toy" onNewProject={jest.fn()} />);
-    expect(await screen.findByText(/HTTP 500/)).toBeInTheDocument();
+    expect(await screen.findByText(/server hit a problem/i)).toBeInTheDocument();
   });
 });
 

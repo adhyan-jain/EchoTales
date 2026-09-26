@@ -16,7 +16,7 @@ import { useNovelData } from '../../lib/ProjectContext';
  * they live on the Review page.
  */
 export default function Read() {
-  const { novel, error, errorStatus, refetch } = useNovelData();
+  const { novel, novelId, error, errorStatus, refetch } = useNovelData();
   const { chapter: chapterParam } = useParams();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
@@ -75,6 +75,17 @@ export default function Read() {
 
   if (error) return <ProjectProblem error={error} status={errorStatus} onRetry={refetch} />;
   if (!novel) return <CenterMessage>Loading the book…</CenterMessage>;
+
+  if (!chapters.length) {
+    return (
+      <CenterMessage title="No chapters yet">
+        <p>This project has no ingested text.</p>
+        <Link to={`/p/${encodeURIComponent(novelId)}/settings`} className="mt-3 inline-block text-accent hover:underline">
+          Go to settings to ingest a source
+        </Link>
+      </CenterMessage>
+    );
+  }
 
   if (idx < 0) {
     const first = chapters[0];

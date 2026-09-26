@@ -12,6 +12,8 @@ const API_BASE =
 // encodes to %3A and is decoded by the server's router.
 const enc = encodeURIComponent;
 
+export const UNAUTHORIZED_EVENT = 'echotales:unauthorized';
+
 // sessionStorage (not localStorage) so the token clears when the tab closes --
 // every route but /api/auth/status and /api/auth/login requires it once the
 // server has auth_required: true.
@@ -72,26 +74,46 @@ async function request(path, options) {
   // 30 s covers the largest payload (a 9.6 MB novel); a file upload gets 5 min.
   const timeoutMs = options && options.body instanceof FormData ? 300000 : 30000;
   const controller = new AbortController();
+  // One timer covers headers *and* body: a server that sends headers and then
+  // stalls used to hang `res.json()` forever, because the timer was cleared as
+  // soon as fetch() resolved (React review, 2026-09-26).
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  if (options && options.signal) {
+    options.signal.addEventListener('abort', () => controller.abort(), { once: true });
+  }
   opts.signal = controller.signal;
-  let res;
   try {
-    res = await fetch(`${API_BASE}${path}`, opts);
-  } catch {
-    throw new ApiError(0, '');
+    let res;
+    try {
+      res = await fetch(`${API_BASE}${path}`, opts);
+    } catch {
+      throw new ApiError(0, '');
+    }
+    if (!res.ok) {
+      if (res.status === 401) {
+        // Token is gone/expired/wrong -- clear it and tell AuthGate, so the
+        // sign-in screen comes back instead of a "sign in again" message
+        // with nowhere to do it.
+        clearAuthToken();
+        try {
+          window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+        } catch {
+          // non-browser environment
+        }
+      }
+      const body = await res.json().catch(() => ({}));
+      throw new ApiError(res.status, body && body.error);
+    }
+    try {
+      return await res.json();
+    } catch {
+      // A 2xx that is not JSON (a proxy or the SPA fallback answering for the
+      // API) used to surface the raw parser message to the user.
+      throw new ApiError(res.status || 502, '');
+    }
   } finally {
     clearTimeout(timer);
   }
-  if (!res.ok) {
-    if (res.status === 401) {
-      // Token is gone/expired/wrong -- clear it so the app can detect "log
-      // in again" rather than keep retrying a dead token on every request.
-      clearAuthToken();
-    }
-    const body = await res.json().catch(() => ({}));
-    throw new ApiError(res.status, body.error);
-  }
-  return res.json();
 }
 
 function postCorrection(novelId, type, payload) {
@@ -293,8 +315,15 @@ export const api = {
     }),
 
   listOutput: (novelId) => request(`/api/novels/${enc(novelId)}/output`),
-  outputFileUrl: (novelId, path) =>
-    `${API_BASE}/api/novels/${enc(novelId)}/output/file?path=${encodeURIComponent(path)}`,
+  // <img>/<video>/<audio>/<a> cannot send an Authorization header, so when a
+  // session exists the token rides in the query string of this one route (the
+  // server accepts it nowhere else). Without it every panel and player 401ed
+  // on a password-protected server (React review, 2026-09-26).
+  outputFileUrl: (novelId, path) => {
+    const token = getAuthToken();
+    const auth = token ? `&access_token=${encodeURIComponent(token)}` : '';
+    return `${API_BASE}/api/novels/${enc(novelId)}/output/file?path=${encodeURIComponent(path)}${auth}`;
+  },
 };
 
 // Mirrors `SpanType` in packages/core/.../enums.py. NON_DIEGETIC and the
