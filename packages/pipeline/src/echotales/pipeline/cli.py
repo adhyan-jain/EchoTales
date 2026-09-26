@@ -7,6 +7,7 @@ optional dependencies installed so `--help` works on a bare checkout.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import os
 import sys
 from collections.abc import Sequence
@@ -582,10 +583,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     # priority), which needs no privileges and never fails for a positive
     # delta. GPU work itself is unaffected -- this only affects CPU
     # scheduling, and Ollama/diffusers already put what they can on the GPU.
-    try:
+    with contextlib.suppress(OSError):
         os.nice(10)
-    except OSError:
-        pass
 
     parser = build_parser()
     args = parser.parse_args(argv)

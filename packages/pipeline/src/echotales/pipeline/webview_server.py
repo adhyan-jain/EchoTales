@@ -51,11 +51,10 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
-from echotales.core.models import Job, StageStatus
+from echotales.core.models import Job
 from echotales.core.store import Store
 from echotales.pipeline import paths
 from echotales.pipeline._multipart import MultipartError, parse_single_file
-from echotales.pipeline.jobs import ALLOWED_HTTP_ENGINES, JOB_KINDS, JobQueue, new_job_id
 from echotales.pipeline.corrections import (
     Correction,
     CorrectionLog,
@@ -63,6 +62,7 @@ from echotales.pipeline.corrections import (
     apply_pending,
     new_manual_entity_id,
 )
+from echotales.pipeline.jobs import ALLOWED_HTTP_ENGINES, JOB_KINDS, JobQueue, new_job_id
 from echotales.pipeline.webview import (
     NovelSource,
     _anon_slot_colour,
@@ -1181,15 +1181,18 @@ def make_handler(
                     body = self._read_json()
                     kind = parts[3]
                     params = dict(body)
-                    if kind in ("render", "reference_gen") and "engine" in params:
-                        if params["engine"] not in ALLOWED_HTTP_ENGINES:
-                            return self._json(
-                                400,
-                                {
-                                    "error": f"engine {params['engine']!r} is not allowed over "
-                                    f"HTTP; allowed: {sorted(ALLOWED_HTTP_ENGINES)}"
-                                },
-                            )
+                    if (
+                        kind in ("render", "reference_gen")
+                        and "engine" in params
+                        and params["engine"] not in ALLOWED_HTTP_ENGINES
+                    ):
+                        return self._json(
+                            400,
+                            {
+                                "error": f"engine {params['engine']!r} is not allowed over "
+                                f"HTTP; allowed: {sorted(ALLOWED_HTTP_ENGINES)}"
+                            },
+                        )
                     if "sources_path" not in params:
                         default_sources = registry.project_asset_dir(parts[2]) / "sources.toml"
                         if default_sources.is_file():
