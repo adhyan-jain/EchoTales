@@ -6,13 +6,18 @@ new `vN_` directory instead of overwriting the last, so any two runs can be
 watched back to back — the rule adopted after a render silently destroyed the
 reference video an earlier review had been written against.
 
-    panels/ch1/vN_<date>_<what-changed>/    one render's panel PNGs + manifest
-    video/ch1/                              finished mp4s and segment sets
-    audio/ch1/vN_<engine>/                  synthesis output + casting manifest
-    motion/ch1/                             SVD motion clips
-    references/sheets-v2/                   current IP-Adapter character sheets
-    references/sheets-v1/                   superseded
-    scratch/ch1/                            one-off prompt/composite experiments
+    panels/ch<N>/vN_<what-changed>/        one render: panel PNGs, manifest.jsonl,
+                                            prompt_cache.json, cache_index.json
+    panels/manifest.jsonl                   the latest render (what `render` composes)
+    video/ch<N>/vN_<label>/                 finished mp4, segments, subtitles
+    audio/                                  the default voice run: manifest.jsonl, ch<N>/
+                                            (per-line clips + chapter.wav), casting.txt
+    audio-runs/<name>/                      other voice runs kept for comparison (EARS)
+    motion/                                 motion clips
+    references/                             character reference sheets
+    scene-references/                       hand-picked composition / character images
+    canon/wiki-appearance.json              wiki-sourced appearance canon (tracked)
+    experiments/observer-contrast/          the reader vs non-witness ch169 render
 
 Paths come from `pipeline/paths.py` (`novel_root`, `asset_dir`,
 `next_version`); the directory *is* the novel, so nothing below it repeats the
@@ -35,11 +40,16 @@ novel id.
 
 ## Not stored here, deliberately
 
-`data/gold`, `data/lexicons`, `data/corrections`, `data/raw`, `data/reruns`
-and `data/webview-working` hold one file *per novel*, keyed by novel id
-(`config.py`'s `gold_path` / `lexicon_path`). Moving RI's entries out of them
-breaks that lookup. `data/scene-references` is genre-wide composition
-reference, not RI's. `data/voice` is the shared VCTK corpus (~23 GB).
+Inputs keyed by novel id live in shared folders, so a lookup by id works for
+every novel: `data/gold/`, `data/lexicons/`, `data/corrections/`, `data/raw/`,
+and the database itself in `data/db/reverend-insanity.db`. Scratch runs go to
+`data/scratch/`, never here. `data/voice/` is the shared voice bank.
+
+Tidied 2026-09-27: 40 `prompt_cache_vN.json` files that sat at the `panels/`
+root moved into their version folders (or `data/archive/RI-panels-legacy/`
+where the version was ambiguous); loose ch1 PNGs went to
+`panels/ch1/v0_loose-unversioned/`. The move log is
+`data/scratch/RI/panels-tidy-2026-09-27.log`.
 
 ## Crowd rendering — a measured dead end on this checkpoint
 
@@ -80,7 +90,7 @@ Two ways forward, neither of them prompt tweaks:
 | v22 | illustrious | crowd composes, render flat, generic anime faces |
 | v24 | animagine | checkpoint swap only; richer shading, still Japanese drift |
 | v25 | refined | Animagine composes, GuoFeng3 repaints @ 0.35 — Chinese roof lines, guanmao caps |
-| v26 | animagine + IP-Adapter | first panels shaped by `data/scene-references/` |
+| v26 | animagine + IP-Adapter | first panels shaped by `scene-references/` |
 | v28–v31 | refined | pre-chunking: **22 panels for 92 blocks**, single panels held 12–16 blocks |
 | v32+ | refined | 4 blocks per panel (48 panels for ch1), scene-local crowds |
 
@@ -91,7 +101,7 @@ Two ways forward, neither of them prompt tweaks:
 
 - `canon/wiki-appearance.json` — imported by `echotales persona wiki-canon`.
   Precedence is hand-authored `persona/canon.py` > this file > extraction.
-- `../scene-references/` — hand-collected composition and character images,
+- `scene-references/` — hand-collected composition and character images,
   consumed by `render/scene_refs.py`.
 
 ## Videos

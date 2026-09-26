@@ -1061,7 +1061,12 @@ def cmd_render(args: argparse.Namespace) -> int:
 
             direction_scratch = tempfile.mkdtemp(prefix="echotales-direction-")
             # Shared between the two phases of *this* version only.
-            cache_path = Path(args.panel_dir) / f"prompt_cache_{_version or 'x'}.json"
+            # Inside the version it belongs to: at the panels/ root these piled
+            # up as prompt_cache_v10..v51.json beside the chapter folders.
+            cache_path = (
+                Path(args.panel_dir) / _tag / _version / "prompt_cache.json"
+                if _version else Path(args.panel_dir) / "prompt_cache.json"
+            )
             print(f"phase 1/2: directing panels via {director_client.backend.value} ...")
             direction_report = render_panels(
                 args.novel,
@@ -1157,7 +1162,7 @@ def cmd_render(args: argparse.Namespace) -> int:
             clips_per_chapter=args.clips_per_chapter,
         )
         print(report.summary())
-        print(f"\nvideos written under: {Path(args.out) / args.novel}")
+        print(f"\nvideos written under: {args.out}")
 
     store.close()
     return 0

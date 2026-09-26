@@ -590,3 +590,20 @@ class TestCharacterLooksBodySelection:
 
         assert at_boundary is not None
         assert at_boundary[2] == body2_sheet
+
+
+def test_a_versioned_render_keeps_its_own_manifest(tmp_path) -> None:
+    """The root manifest is overwritten by every run; each version folder
+    must describe itself, or an old render's prompts are lost the moment a
+    newer one runs (they survived only as hand-renamed manifest_vN.jsonl)."""
+    import json
+
+    store = _seeded_store(tmp_path)
+    out_dir = tmp_path / "panels"
+    render_panels("t", store, out_dir=out_dir, version="v1_first")
+    render_panels("t", store, out_dir=out_dir, version="v2_second", seed=7)
+    for version in ("v1_first", "v2_second"):
+        rows = [json.loads(x) for x in (out_dir / "ch1" / version / "manifest.jsonl").read_text().splitlines()]
+        assert rows and all(f"/{version}/" in r["image_path"] for r in rows)
+    root = [json.loads(x) for x in (out_dir / "manifest.jsonl").read_text().splitlines()]
+    assert all("/v2_second/" in r["image_path"] for r in root)  # the root is the latest run

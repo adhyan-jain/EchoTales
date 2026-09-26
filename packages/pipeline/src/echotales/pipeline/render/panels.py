@@ -2896,10 +2896,24 @@ def render_panels(
                 )
 
     out_dir.mkdir(parents=True, exist_ok=True)
+    # The root manifest is "the latest run" (what `render_videos` reads). Each
+    # version folder also gets its own, so a render stays self-describing after
+    # a later run replaces the root copy -- until now an old version's record
+    # survived only as a hand-renamed `manifest_vN.jsonl`, if at all.
     (out_dir / "manifest.jsonl").write_text(
         "\n".join(json.dumps(asdict(p)) for p in manifest) + "\n",
         encoding="utf-8",
     )
+    by_run_dir: dict[Path, list[PanelImage]] = {}
+    for p in manifest:
+        run_dir = Path(p.image_path).parent
+        if run_dir != out_dir:
+            by_run_dir.setdefault(run_dir, []).append(p)
+    for run_dir, items in by_run_dir.items():
+        run_dir.mkdir(parents=True, exist_ok=True)
+        (run_dir / "manifest.jsonl").write_text(
+            "\n".join(json.dumps(asdict(p)) for p in items) + "\n", encoding="utf-8"
+        )
     # `default=str` (not strict round-trip JSON): this is a provenance
     # sidecar for audit/query, the real `render/bench/manifest.py`
     # (contract.py's own "Phase 2") is explicitly out of scope this
