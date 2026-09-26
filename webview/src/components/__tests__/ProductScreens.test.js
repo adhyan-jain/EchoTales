@@ -141,7 +141,7 @@ describe('OutputLibrary', () => {
     expect(screen.getByText('Showing 48 of 60')).toBeInTheDocument();
   });
 
-  test('lists real output files and shows the honest reels state', async () => {
+  test('lists real output files and has no dead-end reels tab', async () => {
     api.listOutput.mockResolvedValueOnce({
       novel_id: 'toy',
       kinds: {
@@ -157,8 +157,8 @@ describe('OutputLibrary', () => {
     // list both surface the same real file.
     expect((await screen.findAllByText('out.mp4')).length).toBeGreaterThanOrEqual(1);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Reels' }));
-    expect(await screen.findByText(/Reels not produced yet/i)).toBeInTheDocument();
+    // No dead-end "Reels" tab: chapter videos are already vertical.
+    expect(screen.queryByRole('button', { name: 'Reels' })).not.toBeInTheDocument();
   });
 
   test('empty output degrades to an honest empty state, not a crash', async () => {

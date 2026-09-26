@@ -198,3 +198,7 @@ data/external/
 # Per-document compounding curves written as a side effect of the LitBank
 # run (each excerpt is its own one-chapter "novel"); meaningless individually.
 data/eval/compounding/litbank-*.json
+
+# Server-side WebP thumbnails of generated panels (webview_server.py ?w=); a
+# derived cache, regenerated on demand.
+data/cache/

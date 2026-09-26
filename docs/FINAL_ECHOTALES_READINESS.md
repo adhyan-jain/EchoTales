@@ -1,147 +1,69 @@
-# EchoTales v1 — final readiness
+# EchoTales v1 — readiness
 
-**2026-09-25; gate re-scored 2026-09-26 after the evidence-upgrade pass**, branch `validation/evidence-pass-2026-09-24` (not pushed).
-Canonical database `data/reverend-insanity.db`, sha256 `42107645…`
-(`docs/CANONICAL_RUN.md`). 1,085 tests pass (2026-09-26).
+**Updated:** 2026-09-26 · **Branch:** `validation/evidence-pass-2026-09-24` (local, **never pushed**) · **Canonical database:** `data/reverend-insanity.db`, unchanged (sha256 `86c4dbf4…`).
 
-Every accuracy figure is scored against the **LLM-DRAFTED SILVER REFERENCE
-SET**: drafted by Claude, not human-annotated, no IAA. Per-claim evidence
-files are in `docs/FINAL_EVIDENCE_TABLE.md`; what is still missing is in
-`docs/REMAINING_WORK.md`.
+Every accuracy figure in this project is scored against an **LLM-drafted silver reference set**, not human labels. Details and per-claim evidence: `docs/FINAL_EVIDENCE_TABLE.md`. What is still missing: `docs/REMAINING_WORK.md`. The webview's own QA record: `webview/docs/FINAL_WEBVIEW_QA.md`.
 
----
+> Patent and disclosure analysis is kept **privately** in `docs/IP/` (gitignored) and handed to the VIT IPR cell. It is deliberately not summarised in this tracked file, because the repository is public. What can be said publicly: the repository has been public since 2026-08-06, so **do not push this branch or post a preprint until the IPR cell has decided.**
 
-## Readiness gate (2026-09-26)
+## Test status (2026-09-26)
 
-**Definition of 100%:** every item the project set out to show is either measured on real data with a persisted artifact, or explicitly out of scope, with nothing waiting on work the team could do alone. "WAITING ON HUMAN/IPR" means the team's part is finished and the next step belongs to reviewers, the IPR cell or counsel.
+| Suite | Result |
+|---|---|
+| Backend (`packages/core` + `packages/pipeline`) | 1,120 passed |
+| Webview (Jest) | 82 passed |
+| Webview accessibility (axe-core) | 0 violations across 16 routes × 4 widths × 2 themes (128 runs) |
+| Webview production build from a clean `npm ci` | compiles; no source maps; no offline novel exports shipped |
+
+## Areas
 
 | # | Area | Status | Basis |
 |---|---|---|---|
-| 1 | ENGINEERING | **DONE** | Pipeline end to end over 199 chapters; 1,085 tests; the A7 stale-appearance cache defect was found and fixed, with regression tests |
-| 2 | REPRODUCIBILITY | **DONE** | `scripts/reproduce_results.sh` (now includes A1/A2; A7 and LitBank are documented as explicit slow/ollama steps); canonical DB hash pinned |
-| 3 | CORE RESOLUTION | **PARTIAL** | Silver CEAF-e 67.4, B³ P 100, hard cases 24/24 decidable; but 58/88 hard cases are undetected, LOTM is weaker, and transmigration is mis-modelled |
-| 4 | OBSERVER STATE | **DONE** (mechanism) / **PARTIAL** (coverage) | A1: 194 → 0 leaks, A2: 14 → 0; 9 mid-chapter under-exposures; witness derivation unvalidated; no witness-level embodiment |
-| 5 | MULTIMODAL GENERATION | **PARTIAL** | Observer-conditioned render 5/5 vs 0/5 on one chapter; cache key correct after the fix but over-invalidates (274); no image-quality metric; audio does not consume state |
-| 6 | ABLATIONS | **DONE** | A1, A2, A7 plus the existing resolution ablation; negative results reported (digest not observer-causal; over-invalidation) |
-| 7 | EXTERNAL VALIDATION | **DONE** (one benchmark), result weak | LitBank, 100 documents, human key: standard CoNLL F1 15.9 (full person key) / 42.4 (names only); not comparable to supervised systems |
-| 8 | HUMAN VALIDATION | **WAITING ON HUMAN** | 200 + 88 rows and a protocol prepared; **0 labels**; κ is not computed and is not reported with one reviewer |
-| 9 | PATENT / IP | **WAITING ON IPR** | Private packet complete (kept out of this public-tracked file; see Section H); the decision rests with the IPR cell and counsel |
-| 10 | PUBLICATION | **PARTIAL** | Experiment table, claim boundaries and venue decision done (workshop/demo first; main track only after human labels); no paper draft yet; sequenced after the IPR decision |
-| 11 | SECURITY | **PARTIAL** | `.env` untracked and never committed; no key patterns in tracked files or history; nothing pushed since `6aed9f9`. **The live keys in `.env` were exposed in session transcripts and must be rotated by the owner.** |
-| 12 | DOCUMENTATION | **DONE** | EVOLUTION 4.91, experiment docs under `docs/eval/`, evidence matrix (`FINAL_EVIDENCE_TABLE.md` section 6), CLAUDE.md test count fixed |
+| 1 | Engineering | **DONE for v1 scope** | Pipeline runs end to end on a 199-chapter volume; webview redesigned and QA'd; audio orchestrator now has an end-to-end test. Known open engineering items are under "Open" below. |
+| 2 | Reproducibility | **DONE** | `scripts/reproduce_results.sh`; canonical database hash pinned. It cannot rebuild the database from a clean checkout (the source EPUBs are copyrighted and not committed). |
+| 3 | Core resolution | **PARTIAL** | Silver CEAF-e F1 67.4; 58 of 88 hard cases are never detected; the LOTM transmigration comes out as two characters. |
+| 4 | Observer state | **PARTIAL** | Mechanism demonstrated and ablated; witness-level rendering and mid-chapter reveals are not supported (see the evidence table). |
+| 5 | Multimodal generation | **PARTIAL** | Images, audio and vertical (1080×1920) video all render on real data. Panel quality is below the product bar by the owner's own standard; the webview's Studio only submits the stub (placeholder) image engine. Audio does not consume narrative state. |
+| 6 | Ablations | **DONE** | A1, A2, A7 and the resolution ablation, with negative results reported. |
+| 7 | External validation | **DONE (one benchmark), weak result** | LitBank, 100 documents. Not comparable to supervised systems. |
+| 8 | Human validation | **WAITING ON HUMAN** | The review sheets and protocol are prepared; **0 labels**; no kappa. |
+| 9 | Patent / IP | **WAITING ON IPR CELL** | Packet prepared privately. |
+| 10 | Publication | **PARTIAL** | Experiment table, claim boundaries, venue decision and a draft skeleton exist. Gated on human labels and the IPR decision. |
+| 11 | Security | **PARTIAL** | `.env` is untracked and no keys are in the repo or its history. **The keys in `.env` were exposed in earlier session transcripts and must be rotated by their owner** (`docs/SECURITY_KEY_ROTATION.md`). |
+| 12 | Documentation | **DONE** | EVOLUTION, STATUS, HANDOFF and the webview docs are current. |
 
-**Overall:**
+## Done by an agent this session, verified
 
-| | % | What is missing |
-|---|---:|---|
-| Engineering | 90 | Observer-scoped persona bindings, a transmigration merge, and less over-invalidation in the digest |
-| Research evidence | 65 | Human labels (the single largest gap); witness-derivation precision; multi-chapter render evidence |
-| Patent package | 90 | Counsel's reading of the closest patent's full text, and the IPR cell's decision |
-| Publication package | 55 | Human labels, a paper draft, and the IPR go-ahead |
+| Item | Evidence |
+|---|---|
+| Nine Review correction flows exercised against an isolated scratch database, including Apply | `webview/docs/REVIEW_FLOW_QA.md`; the canonical database hash is unchanged and `data/corrections/` is clean |
+| A leaked test line in the tracked corrections log | Reverted; the server gained `--corrections-dir` so QA runs cannot write there again |
+| Native `prompt()`/`alert()` in Review | Replaced by an accessible in-app dialog with tests |
+| Production serving | The backend serves the built app (`--static-dir`) with SPA fallback, verified on every route |
+| Production data leak | `build/data` is stripped after every build; source maps are off; a clean-checkout build was inspected |
+| Image weight | Landing page images 23 MB to about 0.7 MB (server-side WebP thumbnails) |
+| Payload weight | Pages that never read the novel no longer download it (Characters 9.5 MB to 57 KB) |
+| Failure states | No server text or traceback reaches a user; every page has loading, empty and error states |
+| Audio orchestrator | `render_novel` was untested; now 6 end-to-end tests |
 
----
+## Open
 
-## A. Verified
+**Engineering, not blocked:**
+- Observer-scoped persona bindings have no writer, so witness-level rendering is not possible.
+- The audio path does not consume narrative state, so a character keeps one voice through a body change.
+- The 9:16 "reels" helper (`render/reels.py`) is an unused planner. Chapter videos are already vertical 1080×1920; there is no automatic short highlight cut, and nothing measured says one is needed.
+- The webview Studio only submits the stub image engine; real engines run from the command line.
+- Two pre-existing lint findings remain in files this session did not touch.
 
-Real data, with a persisted artifact:
-- End-to-end pipeline over 199 chapters on an 8 GB laptop GPU, with no paid API.
-- Entity-level coreference: CEAF-e F1 67.4; B³ precision 100%.
-- Hard cases the resolver detects are linked correctly: 24 of 24 decidable, 0 wrong.
-- Retrieval given the reference span: recall@10 89.1% (production context).
-- Deterministic evidence rules make every link; hard constraints block 3,072 of 16,538 pairs.
-- Gazetteer compounding: removing it halves forced links (1,376 → 704).
-- Observer-scoped knowledge state: reader 2 / witness 1 / non-witness 0 aliases, and the witness 0 / 1 / 1 asking from ch150 / 166 / 200. Same identity in every query; 6/6 checks pass.
-- Observer-conditioned visual generation on a real engine: reader 5/5 conditioned panels, non-reader 0/5.
-- Sequential Self/Persona: one Self, two disjoint bodies.
-- Read-set-derived cache invalidation: controlled tests, plus the A7 ablation (218 panels). The digest prevents 46 stale reuses; it also over-invalidates 274.
-- Observer ablations A1/A2: collapsing the observer yields 194 leaks; removing knowledge time yields 14 (full: 0).
-- External LitBank benchmark, human-annotated key: standard CoNLL F1 15.9 / 42.4 (full person key / names only).
-- Same-range baseline comparison, cost and coverage.
+**Human or external:**
+1. Label the 200-row and 88-row review sheets (two reviewers for kappa).
+2. Rotate the API keys.
+3. IPR cell decision and counsel's reading of the closest patent, before any push.
+4. Listening test and panel ratings; team sign-off on the course report.
 
-## B. Partially verified
+**v1.1 research backlog:** undetected hard cases; the transmigration merge; comprehensive human visual rating and audio MOS; GraphRAG / CORE-KG baselines.
 
-- **Speaker attribution:** 46.1% of speech spans. Precision only spot-checked. The LLM tier is 12 right / 16 wrong and changed 10 of 29 lines between runs.
-- **Generalisation, LOTM ch1–3:** B³ recall 62.3%, CEAF-e F1 41.4. Transmigration is split into two Selves.
-- **Typed alias and title bindings:** 11,092 bindings exist, but 16 of 17 annotated title-transfer mentions are never detected.
-- **Audio rendering:** 97 lines, 7 voices, no failures. No listening test; attribution errors are audible.
+## Repository state
 
-## C. Experimental
-
-- **Learned scorer:** OPTIONAL / EXPERIMENTAL; 0 links, maximum score 0.41 against a 0.80 threshold.
-- **LLM attribution tier (ch1–3):** on by default, low precision, unstable across runs.
-- **Pronoun speaker recovery:** opt-in (`--recover-pronoun-speakers`); measured 2 of 15 correct.
-
-## D. Not implemented / not evaluated
-
-- **Implemented and tested, never exercised on real data:** retraction (0 rows); facts on a non-main timeline (0); concurrent, possession, body-swap, clone, disguise and dream personas (0 instances).
-- **Not implemented:**
-  - observer-scoped persona bindings (no writer);
-  - aliases in the render read set;
-  - audio consuming `state_of` / Persona;
-  - a shared multimodal `GenerationState`;
-  - a transmigration merge;
-  - vocative, relation-graph and title-holder detection.
-- **Not evaluated:**
-  - human-anchored P/R/F1 and IAA;
-  - LINK / NEW / DEFER accuracy and calibration coverage;
-  - CLIPScore, identity consistency and image rating;
-  - audio MOS and speaker similarity;
-  - BOOKCOREF, GraphRAG and CORE-KG (not reproduced here); LitBank was run, see A;
-  - GPU time saved or spent by the render cache (A7 is stub-only);
-  - LOTM full volume and ORV.
-
-## E. Final benchmark numbers
-
-| Measure | Result | Source |
-|---|---|---|
-| Silver coreference, 1,816 mentions: MUC / B³ / CEAF-e F1; CoNLL | 97.9 / 97.0 / **67.4**; 87.4 | Table 4 |
-| Hard cases, 88: detected; correct / wrong among decidable | 30; **24 / 0** | `hardcase_resolution.json` |
-| Hard-case misses, 58: address / relational / title / pronoun / other | 16 / 15 / 11 / 10 / 6 | `hardcase_taxonomy.json` |
-| Retrieval Recall@1 / 5 / 10 / 20, n=46, production context | 67.4 / 87.0 / **89.1** / 95.7% | Table 5 |
-| Baselines ch1–10, B³ recall: A / B / EchoTales | 0.2% / 4.6% / **78.9%** (1 / 177 / 0 resolution calls) | Table 7 |
-| Ablation, 16,538 pairs: force-link / blocked / scorer links | 1,376 / 3,072 / 0 | Table 6 |
-| Observer query: reader / witness / non-witness; witness ch150 / 166 / 200 | 2 / 1 / 0; 0 / 1 / 1 | `observer_evidence.json` |
-| Observer render: reader / non-reader conditioned panels | 5/5 / 0/5 | `OBSERVER_CONTRAST_VALIDATION.md` |
-| Speaker attribution coverage | 46.1% (2,392 / 5,192) | `CANONICAL_RUN.md` |
-| LOTM ch1–3: B³ recall; CEAF-e F1 | 62.3%; 41.4 | LOTM results dir |
-| A1 / A2 observer ablations: state leaks (full → ablated) | 0 → 194 / 0 → 14 | `observer_ablation.json` |
-| A7 cache key: stale reuses without / with the digest; unnecessary regenerations | 46 / 0; 274 | `a7_cache_ablation.json` |
-| LitBank (human key, 100 docs): standard CoNLL F1, full / names only | 15.9 / 42.4 | `litbank_results.json` |
-
-## F. Remaining limitations
-
-1. Silver-only evaluation, and most of it is surface-trivial. CEAF-e and the hardcases file are the discriminative measures.
-2. Recall is lost at mention detection for vocatives, relational references and definite titles. These need new coreference work, not tuning.
-3. The learned component contributes nothing; resolution is rule-driven.
-4. One novel at volume scale. The second is weaker, and its central transmigration case is mis-modelled.
-5. Speaker attribution is incomplete and its LLM tier is unreliable.
-6. Visual evidence is a five-panel mechanism demonstration, not a quality benchmark. Audio does not consume graph state.
-
-## G. Reproducibility instructions
-
-```bash
-source .venv/bin/activate && ollama serve &
-bash scripts/reproduce_results.sh        # tests, eval, validation, diagnostics, tables, figures
-```
-
-It defaults to the canonical database and exited 0 on 2026-09-25. Rebuilding the database from source needs the EPUB, which is copyrighted and not committed; the build order is in `CANONICAL_RUN.md` Section 2.
-
-## H. Patent / invention disclosure status
-
-A prior-art and disclosure due-diligence pass was completed on 2026-09-25. Its results are kept **privately** in `docs/IP/` (gitignored) and handed to the VIT IPR cell. They are deliberately not summarised here, because this file is tracked in a public repository.
-
-What can be stated publicly:
-- The public repository (activity from 2026-08-06) already describes the system's core concepts.
-- Close third-party prior art exists for most of them.
-- Any filing decision rests with the IPR cell.
-- **Do not push this branch or post a preprint until that decision is made.** The branch contains implementation not yet public.
-
-## I. Course-report status
-
-`docs/REPORT_MATERIAL.md` covers all 16 sections with canonical-run numbers. `docs/paper/` has 6 generated tables and 4 rendered figures. A private webview screenshot is in `docs/IP/screenshots/`.
-
-**Still needed, all human:**
-- author lists for references 3–12;
-- each member's own papers and limitations paragraphs;
-- team sign-off on Section 7;
-- drawing the 7 diagram figures.
+- Branch is ahead of `origin/master` (6aed9f9) and unpushed.
+- The working tree also contains another effort's uncommitted work in `packages/core` and `docs/eval/` (a `GenerationState` feature and evaluation write-ups). It is not part of this readiness statement.

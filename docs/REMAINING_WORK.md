@@ -100,8 +100,8 @@ There is also no **visual ablation** (render with a flat, non-temporal state ver
 2. **Silver span drift**: 7 records past the end of ch1 on the rerun database. The new ingest correctly drops the author's note (`GOLD_DATASET_README.md` Section 5, item 7).
 3. **Two hardcases records need adjudication** (`GOLD_DATASET_README.md` Section 5, items 2–3): one `not_an_entity` record carrying an identity, and one within-chapter identity conflict. This is human-only.
 4. **Render pipeline items** from EVOLUTION 4.51/4.52 are still open (see `HANDOFF.md`).
-5. `render/reels.py` has no ffmpeg call, and no standalone per-chapter audio artifact exists.
-6. `render_novel` has zero direct test coverage (`STATUS.md` Audio/TTS row).
+5. `render/reels.py` is an unused planner (no ffmpeg call). Chapter videos are already vertical 1080×1920; only an automatic *short highlight cut* does not exist. No standalone per-chapter audio artifact exists.
+6. ~~`render_novel` has zero direct test coverage~~ Covered end to end by `test_voice_render_novel.py` (2026-09-26); the real engine (Chatterbox) is still only checked by manual artifacts.
 
 ---
 

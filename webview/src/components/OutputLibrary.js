@@ -6,17 +6,13 @@ import { thumbUrl, fileUrl } from '../lib/media';
 import { EmptyState, LoadingState } from './ui/EmptyState';
 import { describeError } from '../lib/errors';
 
-// Real backend kinds only (`webview_server.py::_OUTPUT_KINDS`) -- "Reels"
-// is deliberately not one of them: `render/reels.py` is unwired planning
-// logic with no ffmpeg call (docs/STATUS.md), so there is no reels kind to
-// list, ever, today. Shown as a fourth tab that always reads "not
-// produced yet" rather than silently omitted, so the format exists in the
-// product's shape per the plan's "look like the future production
-// workstation" instruction -- honestly, not as a fake populated tab.
+// Real backend kinds only (`webview_server.py::_OUTPUT_KINDS`). There used
+// to be a fourth "Reels" tab that could only ever say "not produced yet":
+// chapter videos are already vertical (1080x1920, verified with ffprobe on a
+// real render), so a separate empty tab was a dead end (removed 2026-09-26).
 const FORMATS = [
   { key: 'video', label: 'Video' },
   { key: 'audio', label: 'Audio' },
-  { key: 'reels', label: 'Reels' },
   { key: 'panels', label: 'Panels' },
 ];
 
@@ -62,7 +58,7 @@ export default function OutputLibrary({ novelId, hideHeader = false }) {
     ((output && output.kinds && output.kinds[kind]) || [])
       .filter((i) => (MEDIA_RE[kind] ? MEDIA_RE[kind].test(i.path) : true))
       .sort((a, b) => (b.mtime || 0) - (a.mtime || 0));
-  const items = format === 'reels' ? [] : listOf(format);
+  const items = listOf(format);
   const latest = listOf('video')[0];
   const shown = items.slice(0, visible);
 
@@ -117,12 +113,7 @@ export default function OutputLibrary({ novelId, hideHeader = false }) {
             </div>
 
             <div className="mt-4">
-              {format === 'reels' ? (
-                <EmptyState
-                  title="Reels not produced yet"
-                  description="Short vertical reels aren’t available yet, so there is nothing to show here."
-                />
-              ) : items.length === 0 ? (
+              {items.length === 0 ? (
                 <EmptyState title={`No ${format} yet`} description="Nothing has been rendered to this format for this project." />
               ) : (
                 <>

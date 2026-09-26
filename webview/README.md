@@ -1,83 +1,85 @@
-# Getting Started with Create React App
+# EchoTales webview
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The React front end for EchoTales: a public landing page, a project library, and a per-project workspace for reading a processed novel, browsing its cast, viewing generated output, and reviewing/correcting the pipeline's results.
 
-## Serving a production build
+It is a client for the backend in `packages/pipeline/src/echotales/pipeline/webview_server.py`. **There is no offline mode:** every page reads the live server. (Earlier builds could fall back to static JSON exports in `public/data/`; that mode was removed, and `postbuild` deletes `build/data/` so full-novel text can never ship in a build.)
 
-Since the 2026-09-26 redesign this app is routed client-side with
-`react-router-dom` (`src/router.js`: `/`, `/projects`, `/p/:projectId`,
-`/p/:projectId/read/:chapter?`, `/cast/:selfId?`, `/studio`, `/review`,
-`/settings`, `/design`). Any static server that serves `npm run build`'s
-output **must** fall back to `index.html` for unknown paths (an SPA history
-fallback) or deep links like `/p/<id>/read/3` will 404. `npm start` does
-this automatically in development; a plain static file server does not
-unless configured to. The app always talks to a live `webview_server.py`
-instance for data (see `src/lib/ProjectContext.js`) — there is no
-static-JSON fallback mode.
+## Routes
 
-## Available Scripts
+| Path | Page |
+|---|---|
+| `/` | Landing (public; imagery is the first project's own renders) |
+| `/projects` | Library dashboard |
+| `/projects/new` | New project |
+| `/p/:id` | Overview |
+| `/p/:id/read/:chapter?` (`?focus=<entity id>`) | Reader; chapter and highlighted character are in the URL |
+| `/p/:id/characters/:selfId?` | Characters and a character's dossier |
+| `/p/:id/studio` (`?tab=library`) | Generate and Output library |
+| `/p/:id/review` (`?ch=<chapter>`) | Correction tools |
+| `/p/:id/settings` | Source, ingestion status, appearance |
+| `/design` | Internal UI primitives gallery |
 
-In the project directory, you can run:
+Old links keep working: `/?review` goes to `/projects`, `/?gallery` to `/design`, and `/p/:id/cast[/:selfId]` to `/p/:id/characters[/:selfId]`. Unknown paths show a not-found page; a missing chapter, character or project shows a specific not-found state.
 
-### `npm start`
+## Run it
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Both need the backend running. `--source` names a database, a novel id and a label:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```bash
+uv run echotales webview-server --source data/reverend-insanity.db:reverend-insanity:"Reverend Insanity"
+```
 
-### `npm test`
+**Development** (hot reload; talks to the backend on `http://localhost:8787`):
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+cd webview && npm install && npm start        # http://localhost:3000
+```
 
-### `npm run build`
+**Production** (the backend serves the built app itself, same origin, no CORS):
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+cd webview && npm ci && npm run build
+cd .. && uv run echotales webview-server --source <db>:<id>:<label> --static-dir webview/build
+# open http://127.0.0.1:8787/
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+`--static-dir` serves real files from the build and answers every other non-`/api` path with `index.html`, so client routes such as `/p/<id>/read/3` survive a reload. A missing asset (`/static/js/x.js`) is a 404, not the HTML shell. The frontend is served before the login check (the login screen is part of it); the data is not.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+**If you host `build/` with another static server, it must send `index.html` for unknown paths** or deep links 404. To point a separately hosted build at a backend, build with `REACT_APP_API_BASE=https://host:port npm run build`.
 
-### `npm run eject`
+Set `ECHOTALES_WEBVIEW_PASSWORD` in the server's environment to require a password; the UI then shows a sign-in page first.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Reviewing safely (scratch database)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Corrections are a JSONL log per novel (`<corrections-dir>/<novel>.jsonl`), **not** rows in the database, until you press Apply. The default corrections directory is `data/corrections`, relative to the server's working directory, which is inside the tracked repo. To try the Review tools without touching real data, work on copies and start the server from a scratch directory:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+mkdir -p /tmp/qa/data/corrections && cp data/reverend-insanity.db /tmp/qa/ri.db
+cd /tmp/qa && uv run --project <repo> echotales webview-server \
+  --source /tmp/qa/ri.db:reverend-insanity:"Reverend Insanity" \
+  --corrections-dir /tmp/qa/data/corrections --static-dir <repo>/webview/build --port 8788
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+(The server also resolves `data/<novel code>/` for panels, audio and video relative to the working directory; copy or link the few files you want to see.) Apply writes into the database the server was started with.
 
-## Learn More
+## What the server provides beyond JSON
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- `GET /api/novels/<id>/output/file?path=...` serves generated files with HTTP **Range** support, so browsers can seek video and audio, and streams in chunks.
+- Add `&w=320|480|960` to an image request for a cached WebP thumbnail (`data/cache/thumbs/`). The landing page, library and cards use it: full panels are up to 1.4 MB each.
+- `GET /api/novels/<id>/chapters` returns chapter numbers and titles only. The full novel payload (`GET /api/novels/<id>`) is about 9.4 MB for a 199-chapter book and is loaded only by Overview, Read and Review.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Tests and checks
 
-### Code Splitting
+```bash
+CI=true npx react-scripts test --watchAll=false     # 82 tests
+npx eslint src --ext .js                            # 2 known findings in Section7Smoke.test.js
+npm run build                                       # production build (no source maps)
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Accessibility was audited with axe-core against a running build (16 routes × 4 widths × 2 themes; see `docs/FINAL_WEBVIEW_QA.md`). The public copy is pinned by `src/__tests__/CopyClaims.test.js`: it must not claim complete voice coverage, perfect identity tracking, or name internal mechanisms.
 
-### Analyzing the Bundle Size
+## More
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- `docs/REVIEW_FLOW_QA.md`: the nine correction flows, verified in the UI and the database.
+- `docs/FINAL_WEBVIEW_QA.md`: routes, accessibility, responsive, error states, performance, production-server and test results.
+- `docs/PRODUCTION_DATA_AUDIT.md`: what a production build may and may not contain.
