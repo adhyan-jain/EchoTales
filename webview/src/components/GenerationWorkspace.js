@@ -99,7 +99,7 @@ export default function GenerationWorkspace({ novelId, hideHeader = false }) {
     <div className={hideHeader ? '' : 'mx-auto max-w-4xl px-6 py-10'}>
       {!hideHeader && (
       <header className="border-b border-border pb-6">
-        <div className="text-sm text-muted">{novelId}</div>
+        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">{novelId}</div>
         <h1 className="mt-2 font-display text-4xl text-text">Generation</h1>
       </header>
       )}
@@ -109,7 +109,7 @@ export default function GenerationWorkspace({ novelId, hideHeader = false }) {
         <DepthCard interactive={false}>
           <CardBody className="flex flex-wrap items-end gap-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-muted" htmlFor="gen-chapter">
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.14em] text-muted" htmlFor="gen-chapter">
                 Chapter
               </label>
               <select
@@ -126,7 +126,7 @@ export default function GenerationWorkspace({ novelId, hideHeader = false }) {
               </select>
             </div>
             <div>
-              <div className="mb-1 text-sm font-medium text-muted">Engine</div>
+              <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">Engine</div>
               <div className="h-10 rounded-xl border border-border px-3 font-mono text-sm leading-10 text-muted">
                 stub (placeholder panels, no GPU)
               </div>

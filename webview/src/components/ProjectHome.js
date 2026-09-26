@@ -57,7 +57,7 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false,
       {!hideHeader && (
       <header className="flex items-start justify-between gap-4 border-b border-border pb-6">
         <div>
-          <div className="text-sm text-muted">Production desk</div>
+          <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Production desk</div>
           <h1 className="mt-2 font-display text-4xl text-text">Project</h1>
         </div>
         <Button variant="secondary" size="sm" onClick={onNewProject}>
@@ -145,7 +145,7 @@ function Stat({ label, value, tone = 'neutral' }) {
   const toneClass = { success: 'text-success', danger: 'text-danger', neutral: 'text-text' }[tone];
   return (
     <div>
-      <div className="text-sm font-medium text-muted">{label}</div>
+      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">{label}</div>
       <div className={`mt-1 font-display text-lg ${toneClass}`}>{value}</div>
     </div>
   );

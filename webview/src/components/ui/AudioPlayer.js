@@ -21,7 +21,7 @@ export default function AudioPlayer({ label, duration, src }) {
         onClick={toggle}
         aria-label={playing ? 'Pause' : 'Play'}
         type="button"
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary hover:bg-primary-2"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-glow hover:bg-primary-2"
       >
         {playing ? (
           <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor"><rect width="3" height="12" /><rect x="6" width="3" height="12" /></svg>

@@ -55,7 +55,7 @@ export function Studio() {
             onClick={() => setParams(key === 'generate' ? {} : { tab: key }, { replace: true })}
             className={
               'inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-colors ' +
-              (tab === key ? 'bg-primary text-on-primary' : 'text-muted hover:text-text')
+              (tab === key ? 'bg-primary text-white shadow-glow' : 'text-muted hover:text-text')
             }
           >
             <Icon className="h-4 w-4" aria-hidden="true" /> {label}

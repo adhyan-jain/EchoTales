@@ -6,7 +6,7 @@ import React from 'react';
 export default function InspectorSection({ title, defaultOpen = true, children }) {
   return (
     <details className="rounded-2xl border border-border bg-surface px-4 py-3" open={defaultOpen}>
-      <summary className="cursor-pointer select-none text-sm font-medium text-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent">
+      <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-[0.14em] text-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent">
         {title}
       </summary>
       <div className="mt-3">{children}</div>

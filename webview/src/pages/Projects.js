@@ -103,7 +103,7 @@ export default function Projects() {
         actions={
           <Link
             to="/projects/new"
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-2"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white shadow-glow transition-colors hover:bg-primary-2"
           >
             <Plus className="h-4 w-4" aria-hidden="true" /> New project
           </Link>
@@ -133,7 +133,7 @@ export default function Projects() {
             to="/projects/new"
             className="group flex aspect-[4/5] flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-border text-muted transition-colors hover:border-accent/60 hover:text-text"
           >
-            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface2 transition-colors group-hover:bg-primary group-hover:text-on-primary">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface2 transition-colors group-hover:bg-primary group-hover:text-white">
               <Plus className="h-5 w-5" aria-hidden="true" />
             </span>
             <span className="font-medium">New project</span>

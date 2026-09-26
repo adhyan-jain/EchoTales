@@ -22,10 +22,6 @@ function keyActivate(handler) {
   };
 }
 
-// A book does not label every paragraph "narration"; only the lines that are
-// something else (thoughts, system text, non-diegetic) carry a tag when reading.
-const NARRATION_TYPES = new Set(['NARRATION_ACTION', 'NARRATION_DESCRIPTION']);
-
 export default function ScriptLine({
   span,
   focusId,
@@ -165,7 +161,7 @@ export default function ScriptLine({
             ))}
           </select>
         ) : (
-          !NARRATION_TYPES.has(span.type) && <span className="tag">{span.type.replace(/_/g, ' ')}</span>
+          <span className="tag">{span.type.replace(/_/g, ' ')}</span>
         )}
         {parts}
         {hasFlags && (

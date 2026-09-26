@@ -347,11 +347,11 @@ export default function Review() {
           type="button"
           onClick={() => setShowPanel((v) => !v)}
           aria-expanded={showPanel}
-          className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-3.5 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-2"
+          className="inline-flex h-9 items-center gap-2 rounded-xl bg-primary px-3.5 text-sm font-semibold text-white shadow-glow transition-colors hover:bg-primary-2"
         >
           Corrections
           <span className="rounded-full bg-black/20 px-2 py-0.5 text-xs tabular-nums">{pending}</span>
-          {summary.flags_open > 0 && <span className="text-xs">· {summary.flags_open} flags</span>}
+          {summary.flags_open > 0 && <span className="text-xs text-white">· {summary.flags_open} flags</span>}
         </button>
       </div>
 

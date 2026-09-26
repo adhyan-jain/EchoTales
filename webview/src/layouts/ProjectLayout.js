@@ -70,7 +70,7 @@ function Sidebar({ novelId, projects, onNavigate, idPrefix }) {
       <div>
         <label
           htmlFor={`${idPrefix}-project-switch`}
-          className="px-1 text-sm font-medium text-muted"
+          className="px-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted"
         >
           Project
         </label>
@@ -97,7 +97,7 @@ function Sidebar({ novelId, projects, onNavigate, idPrefix }) {
           <NavItem key={item.label} item={item} onNavigate={onNavigate} />
         ))}
         <div className="mx-3 my-3 h-px bg-border" role="separator" />
-        <div className="px-3 pb-1 text-sm font-medium text-muted">Tools</div>
+        <div className="px-3 pb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">Tools</div>
         {NAV_TOOLS.map((item) => (
           <NavItem key={item.label} item={item} onNavigate={onNavigate} />
         ))}

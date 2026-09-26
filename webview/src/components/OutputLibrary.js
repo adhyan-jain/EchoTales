@@ -66,7 +66,7 @@ export default function OutputLibrary({ novelId, hideHeader = false }) {
     <div className={hideHeader ? '' : 'mx-auto max-w-4xl px-6 py-10'}>
       {!hideHeader && (
       <header className="border-b border-border pb-6">
-        <div className="text-sm text-muted">{novelId}</div>
+        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">{novelId}</div>
         <h1 className="mt-2 font-display text-4xl text-text">Output library</h1>
       </header>
       )}
