@@ -1,7 +1,12 @@
-const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:8787';
+// A production build is normally served by the backend itself
+// (`echotales webview-server --static-dir webview/build`), so it talks to its
+// own origin. `npm start` runs on :3000 and needs the backend's :8787.
+// REACT_APP_API_BASE overrides both (e.g. a build hosted elsewhere).
+const API_BASE =
+  process.env.REACT_APP_API_BASE ?? (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8787');
 
 // Every id segment is encoded. Ids now arrive from the browser URL
-// (/p/:projectId, /cast/:selfId) rather than only from a server-populated
+// (/p/:projectId, /characters/:selfId) rather than only from a server-populated
 // <select>, so a hand-edited URL must not be able to inject `/` or `?` into
 // a backend path. Entity ids contain ':' (e.g. "novel:self:4768..."), which
 // encodes to %3A and is decoded by the server's router.

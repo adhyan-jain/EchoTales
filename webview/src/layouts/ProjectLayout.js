@@ -26,7 +26,7 @@ import { ProjectProvider } from '../lib/ProjectContext';
 const NAV = [
   { to: '', label: 'Overview', icon: LayoutDashboard, end: true },
   { to: 'read', label: 'Read', icon: BookOpen },
-  { to: 'cast', label: 'Characters', icon: Users },
+  { to: 'characters', label: 'Characters', icon: Users },
   { to: 'studio', label: 'Studio', icon: Clapperboard },
 ];
 const NAV_TOOLS = [
@@ -178,7 +178,9 @@ export default function ProjectLayout() {
             </button>
             <Logo to="/projects" />
           </div>
-          <Outlet />
+          <main className="flex min-w-0 flex-1 flex-col">
+            <Outlet />
+          </main>
         </div>
       </div>
     </ProjectProvider>

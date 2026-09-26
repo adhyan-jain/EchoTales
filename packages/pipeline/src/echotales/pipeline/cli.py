@@ -559,6 +559,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_webserver.add_argument("--host", default="127.0.0.1")
     p_webserver.add_argument("--port", type=int, default=8787)
+    p_webserver.add_argument(
+        "--static-dir",
+        default=None,
+        help="also serve a built frontend (webview/build) from this server, with SPA fallback",
+    )
+    p_webserver.add_argument(
+        "--corrections-dir",
+        default="data/corrections",
+        help="where correction logs are written; point at a scratch dir for QA runs",
+    )
 
     return parser
 

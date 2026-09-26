@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { api } from '../api';
 import { Logo, ThemeToggle } from '../components/app/Chrome';
-import { fileUrl, pickPanels, pickReferenceSheets } from '../lib/media';
+import { pickPanels, pickReferenceSheets, thumbUrl } from '../lib/media';
 
 /**
  * Public landing page. Imagery is the first project's own rendered panels
@@ -57,14 +57,14 @@ function useShowcase() {
   return data;
 }
 
-function Img({ novelId, path, className = '', alt = '' }) {
+function Img({ novelId, path, className = '', alt = '', width = 480 }) {
   const [failed, setFailed] = useState(false);
   if (!novelId || !path || failed) {
     return <div className={`hero-glow bg-surface2 ${className}`} aria-hidden="true" />;
   }
   return (
     <img
-      src={fileUrl(novelId, path)}
+      src={thumbUrl(novelId, path, width)}
       alt={alt}
       loading="lazy"
       decoding="async"

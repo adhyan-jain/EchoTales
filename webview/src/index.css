@@ -146,7 +146,12 @@
   padding-inline: .9rem; margin-inline: -.9rem;
 }
 .line.dialogue + .line, .line + .line.dialogue { border-top-color: transparent; }
-.line.dim .body { opacity: .3; }
+/* Lines and marks not about the highlighted character are de-emphasised,
+   not hidden. Dimmed by text colour rather than opacity: opacity also faded
+   the small muted labels (tag, speaker) below 4.5:1 -- .3 measured 2.5:1 and
+   even .6 still failed on the labels in the axe pass (2026-09-26). Body text
+   at 62% of foreground is ~7:1 dark / ~6:1 light. */
+.line.dim .body { color: color-mix(in srgb, var(--fg) 62%, var(--bg)); }
 .body { position: relative; }
 .speaker { text-align: right; font-weight: 600; font-size: .85rem; padding-top: .2rem; }
 .speaker.missing { color: var(--danger); font-weight: 500; font-style: italic; }
@@ -168,7 +173,7 @@ mark {
   border-bottom: 2px solid var(--mk, #8a8a8a); padding: 0 1px; cursor: help;
 }
 mark.unresolved { border-bottom-style: dotted; font-weight: 400; }
-mark.dim { opacity: .3; }
+mark.dim { color: color-mix(in srgb, var(--fg) 62%, var(--bg)); border-bottom-color: color-mix(in srgb, var(--mk, #8a8a8a) 45%, transparent); }
 mark.focus { background: color-mix(in srgb, var(--mk, #8a8a8a) 28%, transparent); border-radius: 4px; }
 /* A non-person entity (place/org/item) must look different, not only
    behave differently in casting: dashed underline instead of solid. */
@@ -180,8 +185,20 @@ mark.editable:hover { background: color-mix(in srgb, var(--mk, #8a8a8a) 18%, tra
   display: inline-block; font-size: .72rem; margin-left: .4rem; cursor: help;
   border-bottom: 1px dashed var(--danger);
 }
-.line-actions { display: none; position: absolute; right: 0; top: -.35rem; gap: .3rem; }
-.line:hover .line-actions, .line:focus-within .line-actions { display: flex; }
+/* Per-line actions (+ Mention / Flag / Merge ↑). They were display:none
+   until hover, which made them unreachable by Tab, on touch screens (no
+   hover), and as a focus-restore target after a dialog closed (2026-09-26
+   QA). Opacity keeps them in the tab order; on touch and narrow screens they
+   are always shown, as a row under the line instead of floating over it. */
+.line-actions {
+  display: flex; position: absolute; right: 0; top: -.35rem; gap: .3rem;
+  opacity: 0; transition: opacity .12s;
+}
+.line:hover .line-actions, .line:focus-within .line-actions { opacity: 1; }
+@media (hover: none), (max-width: 1023px) {
+  .line-actions { position: static; opacity: 1; margin-top: .5rem; flex-wrap: wrap; }
+  .line-actions button { min-height: 2.75rem; padding: .25rem .9rem; font-size: .85rem; }
+}
 .line-actions button {
   font: inherit; font-size: .72rem; border: 1px solid var(--border); background: var(--panel-2);
   color: var(--muted); border-radius: .45rem; padding: .1rem .5rem; cursor: pointer;

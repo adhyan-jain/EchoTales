@@ -18,7 +18,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "postbuild": "node scripts/strip-static-data.js"
   },
   "eslintConfig": {
     "extends": [
@@ -42,5 +43,8 @@
     "moduleNameMapper": {
       "^react-router/dom$": "<rootDir>/node_modules/react-router/dist/development/dom-export.js"
     }
+  },
+  "devDependencies": {
+    "axe-core": "^4.13.0"
   }
 }

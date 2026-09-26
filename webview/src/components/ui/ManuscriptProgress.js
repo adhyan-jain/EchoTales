@@ -24,7 +24,7 @@ export default function ManuscriptProgress({ chapters, stats }) {
                   ? 'animate-pulse text-accent'
                   : c.status === 'found'
                   ? 'text-muted'
-                  : 'text-muted/50'
+                  : 'text-muted'
               }
             >
               {STATUS_LABEL[c.status] || STATUS_LABEL.pending}

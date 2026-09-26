@@ -18,6 +18,7 @@ jest.mock('../api', () => ({
     listOutput: jest.fn(),
     novel: jest.fn(),
     corrections: jest.fn(),
+    characters: jest.fn(),
     outputFileUrl: jest.fn(),
   },
   SPAN_TYPES: ['DIALOGUE', 'NARRATION_ACTION'],
@@ -47,6 +48,9 @@ function mount(path) {
   api.listProjects.mockResolvedValue([{ id: 'toy', title: 'Toy Novel', ingested: true, chapter_count: 2 }]);
   api.listOutput.mockResolvedValue({ kinds: {} });
   api.novel.mockResolvedValue(NOVEL);
+  api.characters.mockResolvedValue({
+    characters: [{ self_id: 'e1', label: 'Hero', prominence: 'PRINCIPAL', traits: [], reference_images: [] }],
+  });
   api.corrections.mockResolvedValue({ summary: { total: 0, applied: 0, pending: 0, pending_actionable: 0, flags_open: 0, by_type: {} } });
   const router = createMemoryRouter(routes, { initialEntries: [path] });
   render(
@@ -81,4 +85,32 @@ test('the project sidebar separates reading pages from tools', async () => {
   mount('/p/toy');
   const nav = await screen.findAllByRole('navigation', { name: 'Project' });
   expect(nav[0]).toHaveTextContent(/Overview.*Read.*Characters.*Studio.*Tools.*Review.*Settings/);
+});
+
+test('an old ?gallery bookmark opens the design gallery', async () => {
+  const router = mount('/?gallery');
+  await screen.findAllByRole('heading');
+  expect(router.state.location.pathname).toBe('/design');
+});
+
+test('old /cast links redirect to /characters, keeping the character', async () => {
+  const router = mount('/p/toy/cast/e1');
+  expect(await screen.findByRole('heading', { name: 'Hero' })).toBeInTheDocument();
+  expect(router.state.location.pathname).toBe('/p/toy/characters/e1');
+});
+
+test('a link to a character the book does not have says so', async () => {
+  mount('/p/toy/characters/nobody');
+  expect(await screen.findByText(/character not found/i)).toBeInTheDocument();
+});
+
+test('a link to a chapter the book does not have says so instead of showing chapter 1', async () => {
+  mount('/p/toy/read/99');
+  expect(await screen.findByText(/chapter 99 isn’t in this book/i)).toBeInTheDocument();
+  expect(screen.queryByText('Hero walked.')).not.toBeInTheDocument();
+});
+
+test('an unknown route shows a not-found page', async () => {
+  mount('/definitely/not/a/page');
+  expect(await screen.findByText(/page not found/i)).toBeInTheDocument();
 });

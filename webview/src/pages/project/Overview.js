@@ -17,7 +17,7 @@ import {
 import { api } from '../../api';
 import { CenterMessage, StatCard } from '../../components/app/Chrome';
 import { useProject } from '../../lib/ProjectContext';
-import { countKind, fileUrl, pickPanels } from '../../lib/media';
+import { countKind, pickPanels, thumbUrl } from '../../lib/media';
 
 const pct = (x) => (typeof x === 'number' ? `${Math.round(x * 100)}%` : '—');
 const num = (x) => (typeof x === 'number' ? new Intl.NumberFormat().format(x) : '—');
@@ -71,7 +71,7 @@ export default function Overview() {
     <div className="pb-16">
       <section className="relative isolate overflow-hidden border-b border-border">
         {panels[0] ? (
-          <img src={fileUrl(novelId, panels[0])} alt="" className="absolute inset-0 -z-10 h-full w-full object-cover opacity-40 blur-[2px]" />
+          <img src={thumbUrl(novelId, panels[0], 960)} alt="" className="absolute inset-0 -z-10 h-full w-full object-cover opacity-40 blur-[2px]" />
         ) : null}
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-bg via-bg/90 to-bg/40" aria-hidden="true" />
         <div className="hero-glow absolute inset-0 -z-10" aria-hidden="true" />
@@ -123,7 +123,7 @@ export default function Overview() {
           <section className="rounded-3xl border border-border bg-surface p-6 lg:col-span-2">
             <div className="flex items-center justify-between">
               <h2 className="font-display text-lg font-bold tracking-tight">Main cast</h2>
-              <Link to="cast" className="inline-flex items-center gap-1 text-sm text-accent hover:underline">
+              <Link to="characters" className="inline-flex items-center gap-1 text-sm text-accent hover:underline">
                 All characters <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
               </Link>
             </div>
@@ -163,7 +163,7 @@ export default function Overview() {
               <div className="mt-5 grid grid-cols-3 gap-2">
                 {panels.slice(1, 7).map((p) => (
                   <div key={p} className="aspect-[3/4] overflow-hidden rounded-xl border border-border bg-surface2">
-                    <img src={fileUrl(novelId, p)} alt="Generated panel" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 hover:scale-105" />
+                    <img src={thumbUrl(novelId, p, 320)} alt="Generated panel" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 hover:scale-105" />
                   </div>
                 ))}
               </div>

@@ -169,9 +169,10 @@ export default function NewProject({ onCreated }) {
               <div className="flex items-center gap-3">
                 <input
                   type="file"
+                  aria-label="EPUB source file"
                   accept=".epub"
                   onChange={(e) => setFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
-                  className="block flex-1 cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded-sm file:border file:border-border file:bg-transparent file:px-3 file:py-1.5 file:font-sans file:text-sm file:text-text"
+                  className="block flex-1 cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded-lg file:border file:border-border file:bg-transparent file:px-3 file:py-1.5 file:font-sans file:text-sm file:text-text"
                 />
               </div>
               <p className="text-sm text-muted">

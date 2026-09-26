@@ -104,14 +104,19 @@ export default function EntityPicker({
           }}
         />
         <ul ref={listRef}>
-          {onClear && (
+          {/* Unassign and the unknown-speaker slots show only before a search is
+              typed. They sat above the matches, so "type a name, ArrowDown,
+              Enter" unassigned the mention instead of picking the match --
+              the QA run of 2026-09-26 recorded target_id: null for exactly
+              that keystroke sequence. */}
+          {onClear && !query.trim() && (
             <li>
               <button type="button" data-row className="picker-row clear-row" onClick={onClear}>
                 <span aria-hidden="true">&empty;</span> Unassign / mark unresolved
               </button>
             </li>
           )}
-          {onAnonSlot && (
+          {onAnonSlot && !query.trim() && (
             <li className="anon-slot-row">
               <span className="anon-slot-label">Unknown speaker:</span>
               {Array.from({ length: MAX_ANON_SLOTS }, (_, i) => i + 1).map((n) => (

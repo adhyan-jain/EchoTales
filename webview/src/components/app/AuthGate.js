@@ -28,15 +28,17 @@ export default function AuthGate() {
       .finally(() => setChecked(true));
   }, []);
 
-  if (!checked) return <CenterMessage>Connecting to the EchoTales server…</CenterMessage>;
+  if (!checked) return <main><CenterMessage>Connecting to the EchoTales server…</CenterMessage></main>;
   if (unreachable) {
     return (
+      <main>
       <CenterMessage title="Can’t reach the EchoTales server">
         <p>({unreachable})</p>
         <p className="mt-2">
           Start it with <code className="rounded bg-surface2 px-1.5 py-0.5 font-mono text-xs">uv run echotales webview-server --source …</code> and reload.
         </p>
       </CenterMessage>
+      </main>
     );
   }
   if (required && !authed) {

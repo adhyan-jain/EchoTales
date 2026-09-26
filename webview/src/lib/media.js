@@ -40,6 +40,17 @@ export function fileUrl(novelId, path) {
   return api.outputFileUrl(novelId, path);
 }
 
+/**
+ * A server-resized WebP of a panel (`?w=` on the output-file route; widths
+ * 320/480/960 only). Cards and tiles use this: full-size panels are up to
+ * 1.4 MB each, and the landing page alone pulled ~23 MB of them to fill
+ * 480px tiles (measured 2026-09-26). The full file stays available via
+ * `fileUrl` for when one is actually opened.
+ */
+export function thumbUrl(novelId, path, width = 480) {
+  return `${fileUrl(novelId, path)}&w=${width}`;
+}
+
 export function countKind(output, kind, re = null) {
   const items = (output && output.kinds && output.kinds[kind]) || [];
   return re ? items.filter((i) => re.test(i.path)).length : items.length;

@@ -49,7 +49,7 @@ import time
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from echotales.core.models import Job, StageStatus
 from echotales.core.store import Store
@@ -606,9 +606,61 @@ def _resolve_output_path(novel_id: str, rel: str) -> Path:
     return candidate
 
 
-def make_handler(registry: Registry, job_queue: JobQueue) -> type[BaseHTTPRequestHandler]:
+#: Widths the thumbnail route produces. A closed set, so a caller cannot make
+#: the server resize to arbitrary sizes and grow the cache without bound.
+THUMB_WIDTHS = (320, 480, 960)
+_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
+
+
+def _thumbnail(src: Path, width: int, cache_dir: Path) -> Path:
+    """A WebP copy of `src` no wider than `width`, cached by content version.
+
+    The landing page and dashboard loaded ~23 MB of full-size panel PNGs (up
+    to 1.4 MB each, measured 2026-09-26) to fill 480px-wide tiles. The cache
+    key includes the source mtime, so a re-rendered panel gets a fresh
+    thumbnail; the cache lives outside the output tree so `_list_output`
+    never reports it as an artifact.
+    """
+    import hashlib
+
+    from PIL import Image
+
+    key = hashlib.sha1(f"{src.resolve()}|{src.stat().st_mtime_ns}|{width}".encode()).hexdigest()
+    out = cache_dir / f"{key}.webp"
+    if out.is_file():
+        return out
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    with Image.open(src) as img:
+        frame = img if img.mode in ("RGB", "RGBA") else img.convert("RGB")
+        if frame.width > width:
+            frame = frame.resize((width, round(frame.height * width / frame.width)), Image.LANCZOS)
+        tmp = out.with_name(out.name + ".tmp")
+        frame.save(tmp, "WEBP", quality=80, method=4)
+    tmp.replace(out)  # atomic: a concurrent reader never sees half a file
+    return out
+
+
+def _resolve_static_path(static_dir: Path, rel: str) -> Path | None:
+    """A file inside the built frontend, or None. Same containment rule as
+    `_resolve_output_path`: a request for `/../../etc/passwd` must not escape
+    the build directory (the first version of this route joined the raw path
+    unchecked)."""
+    root = static_dir.resolve()
+    candidate = (root / rel).resolve()
+    if candidate != root and root not in candidate.parents:
+        return None
+    return candidate if candidate.is_file() else None
+
+
+def make_handler(
+    registry: Registry,
+    job_queue: JobQueue,
+    static_dir: Path | None = None,
+    thumb_cache: Path | None = None,
+) -> type[BaseHTTPRequestHandler]:
     password = os.environ.get(_AUTH_ENV_VAR)
     sessions = SessionStore()
+
 
     class Handler(BaseHTTPRequestHandler):
         def _cors(self) -> None:
@@ -649,7 +701,7 @@ def make_handler(registry: Registry, job_queue: JobQueue) -> type[BaseHTTPReques
             handle.invalidate()
             return {"job_id": job.job_id, "kind": kind, "status": job.status.value}
 
-        def _serve_file(self, path: Path) -> None:
+        def _serve_file(self, path: Path, *, max_age: int | None = None) -> None:
             import mimetypes
 
             content_type = mimetypes.guess_type(str(path))[0] or "application/octet-stream"
@@ -658,6 +710,8 @@ def make_handler(registry: Registry, job_queue: JobQueue) -> type[BaseHTTPReques
             self._cors()
             self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(data)))
+            if max_age is not None:
+                self.send_header("Cache-Control", f"public, max-age={max_age}")
             self.end_headers()
             self.wfile.write(data)
 
@@ -679,6 +733,25 @@ def make_handler(registry: Registry, job_queue: JobQueue) -> type[BaseHTTPReques
         def do_GET(self) -> None:
             parts = urlparse(self.path).path.strip("/").split("/")
             try:
+                # The built frontend is served before the auth check: the
+                # login screen itself is part of it, so gating it behind a
+                # token would lock every user out. Any non-API path that is
+                # not a real file gets index.html, so client-side routes
+                # (/p/<id>/read/3) survive a reload.
+                if static_dir is not None and parts[0] != "api":
+                    rel = unquote(urlparse(self.path).path).lstrip("/")
+                    target = _resolve_static_path(static_dir, rel) if rel else None
+                    # Only extension-less paths are client routes. A missing
+                    # /static/js/x.js must 404, not come back as index.html
+                    # labelled text/html, which surfaces as a confusing
+                    # script parse error instead of a missing file.
+                    looks_like_asset = "." in rel.rsplit("/", 1)[-1]
+                    index_file = static_dir / "index.html"
+                    if target is None and not looks_like_asset and index_file.is_file():
+                        target = index_file
+                    if target is not None:
+                        return self._serve_file(target)
+                    return self._json(404, {"error": "not found"})
                 if parts == ["api", "auth", "status"]:
                     return self._json(200, {"auth_required": password is not None})
                 if not self._authorized():
@@ -830,11 +903,27 @@ def make_handler(registry: Registry, job_queue: JobQueue) -> type[BaseHTTPReques
                         return self._json(400, {"error": str(exc)})
                     if not file_path.is_file():
                         return self._json(404, {"error": "no such output file"})
-                    return self._serve_file(file_path)
+                    width_raw = query.get("w", [None])[0]
+                    if width_raw is None:
+                        return self._serve_file(file_path)
+                    width = int(width_raw) if width_raw.isdigit() else -1
+                    if width not in THUMB_WIDTHS:
+                        return self._json(400, {"error": f"w must be one of {list(THUMB_WIDTHS)}"})
+                    if file_path.suffix.lower() not in _IMAGE_SUFFIXES:
+                        return self._serve_file(file_path)
+                    cache = (thumb_cache or Path(paths.DATA_ROOT) / "cache" / "thumbs") / paths.novel_code(parts[2])
+                    try:
+                        thumb = _thumbnail(file_path, width, cache)
+                    except Exception:  # a corrupt image still gets served, just unresized
+                        log.warning("thumbnail failed for %s; serving original", file_path, exc_info=True)
+                        return self._serve_file(file_path)
+                    return self._serve_file(thumb, max_age=86400)
+
             except Exception as exc:
                 log.exception("GET %s failed", self.path)
                 return self._json(500, {"error": str(exc)})
             self._json(404, {"error": "not found"})
+
 
         def do_POST(self) -> None:
             parts = urlparse(self.path).path.strip("/").split("/")
@@ -1165,22 +1254,36 @@ def make_handler(registry: Registry, job_queue: JobQueue) -> type[BaseHTTPReques
     return Handler
 
 
-def serve(sources: list[NovelSource], *, host: str = "127.0.0.1", port: int = 8787) -> None:
+def serve(
+    sources: list[NovelSource],
+    *,
+    host: str = "127.0.0.1",
+    port: int = 8787,
+    static_dir: Path | None = None,
+    corrections_dir: Path = Path("data/corrections"),
+) -> None:
     # Single-threaded, deliberately: `Store` opens one sqlite3 connection per
     # `Registry` entry in the main thread, and sqlite3 forbids using a
     # connection from any other thread by default. A threaded server would
     # need a connection per request thread (or a lock) to fix that; neither is
     # worth it for a tool with exactly one user clicking around at a time.
-    registry = Registry(sources, corrections_dir=Path("data/corrections"))
+    # Corrections are a JSONL log per novel, not rows in the novel's .db. The
+    # default is relative to the working directory, so a QA server started
+    # from the repo root against a *scratch* .db still wrote its test edits
+    # into the tracked data/corrections/ log (2026-09-26). QA runs should
+    # pass --corrections-dir pointing at a scratch directory.
+    registry = Registry(sources, corrections_dir=corrections_dir)
     # One worker thread, strictly sequential job execution process-wide --
     # see jobs.py's module docstring for why (the same GPU-sharing
     # constraint `config.json::render.direction_first` already establishes
     # for local-model stages, generalized here).
     job_queue = JobQueue()
     job_queue.start()
-    handler = make_handler(registry, job_queue)
+    handler = make_handler(registry, job_queue, static_dir=static_dir)
     httpd = HTTPServer((host, port), handler)
+
     print(f"webview backend on http://{host}:{port}  (novels: {[s.novel_id for s in sources]})")
+    print(f"  corrections log: {corrections_dir.resolve()}" + (f"  |  frontend: {static_dir.resolve()}" if static_dir else ""))
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

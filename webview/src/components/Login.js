@@ -41,7 +41,7 @@ export default function Login({
     // (index.css); without spanning both tracks explicitly this div is
     // auto-placed into the 300px sidebar column and pins the card to the
     // top-left instead of centering it in the viewport.
-    <div className="flex min-h-screen w-full items-center justify-center bg-bg font-sans [grid-column:1/-1] [grid-row:1/-1]">
+    <main className="flex min-h-screen w-full items-center justify-center bg-bg font-sans [grid-column:1/-1] [grid-row:1/-1]">
       <form
         className="w-full max-w-[320px] space-y-4 border border-border bg-surface p-8 rounded-sm"
         onSubmit={handleSubmit}
@@ -75,6 +75,6 @@ export default function Login({
           {busy ? 'Signing in…' : 'Sign in'}
         </Button>
       </form>
-    </div>
+    </main>
   );
 }

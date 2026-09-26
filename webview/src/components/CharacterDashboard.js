@@ -29,7 +29,7 @@ const PROMINENCE_LABEL = {
  * correction.
  */
 // `selectedId`/`onSelect` are optional: the routed Characters page passes
-// them so the open dossier lives in the URL (/cast/:selfId) and the back
+// them so the open dossier lives in the URL (/characters/:selfId) and the back
 // button returns to the grid. Without them the component keeps its own
 // selection state, as it always has.
 export default function CharacterDashboard({ novelId, readOnly = false, selectedId: controlledId, onSelect }) {
@@ -142,6 +142,25 @@ export default function CharacterDashboard({ novelId, readOnly = false, selected
   // incidental) so a row's index is stable regardless of whether the
   // incidental group is expanded -- a real ordinal, not a per-group one.
   const indexOf = new Map(filtered.map((c, i) => [c.self_id, i + 1]));
+
+  // A shared or stale link to a character this project does not have (or no
+  // longer has, after a merge) gets a clear dead end rather than the grid
+  // silently replacing the page the user asked for.
+  if (controlledId && status === 'ready' && !selected) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-16 sm:px-8">
+        <EmptyState
+          title="Character not found"
+          description="This link points to a character this book doesn't have. It may have been merged into another character during review."
+          action={
+            <Button variant="secondary" onClick={() => setSelectedId(null)}>
+              Back to all characters
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
 
   if (selected) {
     return (

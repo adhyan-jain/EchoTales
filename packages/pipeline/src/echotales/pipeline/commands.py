@@ -896,7 +896,17 @@ def cmd_webview_server(args: argparse.Namespace) -> int:
             return 2
         sources.append(NovelSource(db_path=db_path, novel_id=novel_id, label=label))
 
-    serve(sources, host=args.host, port=args.port)
+    static_dir = Path(args.static_dir) if getattr(args, "static_dir", None) else None
+    if static_dir is not None and not (static_dir / "index.html").is_file():
+        print(f"error: no index.html in --static-dir {str(static_dir)!r} (run `npm run build` first)", file=sys.stderr)
+        return 2
+    serve(
+        sources,
+        host=args.host,
+        port=args.port,
+        static_dir=static_dir,
+        corrections_dir=Path(getattr(args, "corrections_dir", "data/corrections")),
+    )
     return 0
 
 

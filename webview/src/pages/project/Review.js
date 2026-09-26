@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ClipboardCheck, PencilLine } from 'lucide-react';
+import { ClipboardCheck, PencilLine, Users, X } from 'lucide-react';
 import { api } from '../../api';
 import AnalysisPanel from '../../components/AnalysisPanel';
 import ChapterNav from '../../components/ChapterNav';
@@ -11,8 +11,24 @@ import Tooltip from '../../components/Tooltip';
 import { CenterMessage } from '../../components/app/Chrome';
 import { useToast } from '../../components/ui/Toast';
 import { useProject } from '../../lib/ProjectContext';
+import PromptModal from '../../components/ui/PromptModal';
+
 
 const pct = (x) => (typeof x === 'number' ? `${Math.round(x * 100)}%` : '—');
+
+
+// A new mention needs exact offsets, so the text must occur in the line
+// exactly once. Returned as a message rather than toasted, so the dialog
+// can show it next to the field and stay open for a retry.
+function mentionProblem(text, span) {
+  if (!text) return 'Type the words from this line that name the character.';
+  const start = span.text.indexOf(text);
+  if (start === -1) return `“${text}” is not in this line. Copy it exactly, including capitals.`;
+  if (span.text.indexOf(text, start + 1) !== -1) {
+    return `“${text}” appears more than once in this line. Select the exact words in the text instead, then press + Mention.`;
+  }
+  return null;
+}
 
 /**
  * The reviewer desk: every correction action the old `?review` screen had
@@ -39,6 +55,7 @@ export default function Review() {
   const [summary, setSummary] = useState({ total: 0, applied: 0, pending: 0, pending_actionable: 0, flags_open: 0, by_type: {} });
   const [applyResult, setApplyResult] = useState(null);
   const [applying, setApplying] = useState(false);
+  const [showEntities, setShowEntities] = useState(false);
 
   const chapters = useMemo(() => (novel ? novel.chapters : []), [novel]);
   const idx = useMemo(() => {
@@ -82,20 +99,16 @@ export default function Review() {
   const onSpeakerClick = useCallback((span, e, chapterNumber) => {
     setPicker({ kind: 'speaker', spanId: span.span_id, chapter: chapterNumber, anchor: { x: e.clientX, y: e.clientY } });
   }, []);
-  const onCreateMention = useCallback(
-    (span, e, chapterNumber) => {
-      const selected = window.getSelection() ? window.getSelection().toString().trim() : '';
-      const text = selected || window.prompt('Enter mention text from this line:');
-      if (!text) return;
+  const [promptModal, setPromptModal] = useState(null);
+
+  const processCreateMentionText = useCallback(
+    (text, span, chapterNumber, anchor) => {
+      const problem = mentionProblem(text, span);
+      if (problem) {
+        push(problem, 'danger');
+        return;
+      }
       const start = span.text.indexOf(text);
-      if (start === -1) {
-        push(`“${text}” is not in this line.`, 'danger');
-        return;
-      }
-      if (span.text.indexOf(text, start + 1) !== -1) {
-        push(`“${text}” appears more than once in this line. Select the exact text instead of typing it.`, 'danger');
-        return;
-      }
       setPicker({
         kind: 'create_mention',
         spanId: span.span_id,
@@ -103,10 +116,34 @@ export default function Review() {
         localStart: start,
         localEnd: start + text.length,
         text,
-        anchor: { x: e.clientX, y: e.clientY },
+        anchor,
       });
     },
     [push]
+  );
+
+  const onCreateMention = useCallback(
+    (span, e, chapterNumber) => {
+      const selected = window.getSelection() ? window.getSelection().toString().trim() : '';
+      const anchor = { x: e.clientX, y: e.clientY };
+      if (selected) {
+        processCreateMentionText(selected, span, chapterNumber, anchor);
+      } else {
+        setPromptModal({
+          title: 'Add a missed mention',
+          label: 'Words in this line that refer to a character',
+          description: span.text,
+          placeholder: 'e.g. the old man…',
+          submitLabel: 'Choose character',
+          validate: (text) => mentionProblem(text, span),
+          onSubmit: (text) => {
+            setPromptModal(null);
+            processCreateMentionText(text, span, chapterNumber, anchor);
+          },
+        });
+      }
+    },
+    [processCreateMentionText]
   );
 
   const applyTarget = useCallback(
@@ -118,17 +155,37 @@ export default function Review() {
           : picker.kind === 'mention'
           ? api.reassignMention(novelId, picker.mentionId, target)
           : api.reassignSpeaker(novelId, picker.spanId, picker.chapter, target);
-      call.then(after).catch(fail);
+      // The server's preview overlay has no case for new mentions (nor for
+      // line merges): they appear only after Apply. Without saying so, the
+      // edit looked lost -- the QA run on 2026-09-26 saw the correction
+      // logged but no highlight in the line.
+      const queuedOnly = picker.kind === 'create_mention';
+      call
+        .then(() => {
+          if (queuedOnly) push('Mention queued. It shows in the text after you apply corrections.', 'success');
+          after();
+        })
+        .catch(fail);
     },
-    [picker, novelId, after, fail]
+    [picker, novelId, after, fail, push]
   );
 
   // -- line + entity actions ------------------------------------------------
   const onFlagLine = useCallback(
     (span, chapterNumber) => {
-      const note = window.prompt('Note for this flag (what looks wrong?)');
-      if (note === null) return;
-      api.flag(novelId, { spanId: span.span_id, chapter: chapterNumber, note, source: 'human' }).then(after).catch(fail);
+      setPromptModal({
+        title: 'Flag this line',
+        label: 'What looks wrong?',
+        description: span.text,
+        placeholder: 'e.g. the speaker should be Fang Zheng…',
+        submitLabel: 'Flag line',
+        multiline: true,
+        validate: (note) => (note ? null : 'Add a short note so whoever reviews the flag knows what to check.'),
+        onSubmit: (note) => {
+          setPromptModal(null);
+          api.flag(novelId, { spanId: span.span_id, chapter: chapterNumber, note, source: 'human' }).then(after).catch(fail);
+        },
+      });
     },
     [novelId, after, fail]
   );
@@ -228,13 +285,20 @@ export default function Review() {
         </label>
         <button
           type="button"
+          onClick={() => setShowEntities(true)}
+          className="inline-flex h-9 items-center gap-2 rounded-xl border border-border px-3 text-sm lg:hidden"
+        >
+          <Users className="h-4 w-4 text-muted" aria-hidden="true" /> Entities
+        </button>
+        <button
+          type="button"
           onClick={() => setShowPanel((v) => !v)}
           aria-expanded={showPanel}
           className="inline-flex h-9 items-center gap-2 rounded-xl bg-primary px-3.5 text-sm font-semibold text-white shadow-glow transition-colors hover:bg-primary-2"
         >
           Corrections
           <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs tabular-nums">{pending}</span>
-          {summary.flags_open > 0 && <span className="text-xs text-white/80">· {summary.flags_open} flags</span>}
+          {summary.flags_open > 0 && <span className="text-xs text-white">· {summary.flags_open} flags</span>}
         </button>
       </div>
 
@@ -272,6 +336,44 @@ export default function Review() {
         </aside>
       </div>
 
+      {/* Below lg the entity rail is hidden, and with it the only way to
+          merge two entities; the same sidebar opens in a drawer instead. */}
+      {showEntities && (
+        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Entities">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowEntities(false)} aria-hidden="true" />
+          <div className="absolute inset-y-0 right-0 flex w-[min(20rem,90vw)] flex-col overscroll-contain border-l border-border bg-surface">
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <span className="font-display font-bold">Entities</span>
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setShowEntities(false)}
+                aria-label="Close entities"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-muted hover:text-text"
+              >
+                <X className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1">
+              <EntitySidebar
+                entities={novel.entities}
+                search={search}
+                onSearchChange={setSearch}
+                focusId={focusId}
+                onToggleFocus={(id) => setFocusId((prev) => (prev === id ? null : id))}
+                editMode={editMode}
+                mergeSourceId={mergeSourceId}
+                onStartMerge={setMergeSourceId}
+                onConfirmMerge={(id) => {
+                  onConfirmMerge(id);
+                  setShowEntities(false);
+                }}
+                onCancelMerge={() => setMergeSourceId(null)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
       <Tooltip tip={tip} />
       {picker && (
         <EntityPicker
@@ -291,6 +393,21 @@ export default function Review() {
       {showPanel && (
         <AnalysisPanel summary={summary} onApply={onApply} applyResult={applyResult} applying={applying} onClose={() => setShowPanel(false)} />
       )}
+      {promptModal && (
+        <PromptModal
+          open={true}
+          title={promptModal.title}
+          label={promptModal.label}
+          description={promptModal.description}
+          placeholder={promptModal.placeholder}
+          submitLabel={promptModal.submitLabel}
+          multiline={promptModal.multiline}
+          validate={promptModal.validate}
+          onSubmit={promptModal.onSubmit}
+          onClose={() => setPromptModal(null)}
+        />
+      )}
     </div>
   );
 }
+

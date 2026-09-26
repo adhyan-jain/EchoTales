@@ -3,6 +3,16 @@ import ScriptLine from './ScriptLine';
 import { EmptyState } from './ui/EmptyState';
 import ManuscriptSurface from './ui/ManuscriptSurface';
 
+// Span ids are `<novel>:<chapter>:<block>:<index>`. The backend only merges
+// spans within one block ("spans are not in the same block"), but Merge ↑
+// used to be offered between any two adjacent lines, so the merge failed
+// only later, at Apply (QA run, 2026-09-26).
+function sameBlock(prev, span) {
+  if (!prev || !prev.span_id || !span.span_id) return false;
+  const block = (id) => id.split(':').slice(0, -1).join(':');
+  return block(prev.span_id) === block(span.span_id);
+}
+
 export default function ScriptView({
   chapter,
   focusId,
@@ -46,7 +56,7 @@ export default function ScriptView({
             onMentionClick={onMentionClick}
             onSpeakerClick={(s, e) => onSpeakerClick(s, e, chapter.number)}
             onFlagLine={(s) => onFlagLine(s, chapter.number)}
-            canMergeUp={editMode && !!prev && !!prev.span_id && !!span.span_id}
+            canMergeUp={editMode && sameBlock(prev, span)}
             onMergeUp={() => onMergeLines(prev.span_id, span.span_id, chapter.number)}
             onRetype={(s, newType) => onRetype(s, newType, chapter.number)}
             onCreateMention={onCreateMention ? (s, e) => onCreateMention(s, e, chapter.number) : undefined}

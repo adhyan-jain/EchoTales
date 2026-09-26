@@ -73,7 +73,7 @@ export function StatCard({ icon: Icon, label, value, hint, tone = 'default' }) {
 export function CenterMessage({ title, children }) {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-2 px-6 text-center">
-      {title && <p className="font-display text-xl font-semibold text-text">{title}</p>}
+      {title && <h1 className="font-display text-xl font-semibold text-text">{title}</h1>}
       <div className="max-w-md text-sm text-muted">{children}</div>
     </div>
   );

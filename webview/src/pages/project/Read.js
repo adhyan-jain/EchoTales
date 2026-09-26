@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { X } from 'lucide-react';
 import ChapterNav from '../../components/ChapterNav';
 import EntitySidebar from '../../components/EntitySidebar';
@@ -25,12 +25,14 @@ export default function Read() {
   const focusId = params.get('focus');
 
   const chapters = useMemo(() => (novel ? novel.chapters : []), [novel]);
+  // -1 = the URL names a chapter this book does not have. It used to fall
+  // back to chapter 1 silently, so a mistyped or stale shared link showed
+  // the wrong text with no hint anything was off.
   const idx = useMemo(() => {
-    if (!chapters.length || chapterParam == null) return 0;
-    const i = chapters.findIndex((c) => String(Number(c.number)) === chapterParam);
-    return i >= 0 ? i : 0;
+    if (chapterParam == null) return 0;
+    return chapters.findIndex((c) => String(Number(c.number)) === chapterParam);
   }, [chapters, chapterParam]);
-  const chapter = chapters[idx];
+  const chapter = idx >= 0 ? chapters[idx] : null;
 
   const goTo = useCallback(
     (i) => {
@@ -74,11 +76,30 @@ export default function Read() {
   if (error) return <CenterMessage title="Couldn’t load this book">{error}</CenterMessage>;
   if (!novel) return <CenterMessage>Loading the book…</CenterMessage>;
 
+  if (idx < 0) {
+    const first = chapters[0];
+    return (
+      <CenterMessage title={`Chapter ${chapterParam} isn’t in this book`}>
+        <p>This book has {chapters.length} chapters.</p>
+        {first && (
+          <Link to={`../${Number(first.number)}`} relative="path" className="mt-3 inline-block text-accent hover:underline">
+            Go to chapter {Number(first.number)}
+          </Link>
+        )}
+      </CenterMessage>
+    );
+  }
+
   const focused = focusId ? novel.entities.find((e) => e.id === focusId) : null;
 
   return (
     <div className="flex min-h-0 flex-1">
       <div className="min-w-0 flex-1">
+        {/* The visible chapter label lives in ManuscriptSurface; screen
+            readers still need one page heading (route sweep, 2026-09-26). */}
+        <h1 className="sr-only">
+          Chapter {Number(chapter.number)}{focusId ? ' (highlighting a character)' : ''}
+        </h1>
         <ChapterNav chapters={chapters} chapterIdx={idx} onChange={goTo} coverage={coverage} />
         {focused && (
           <div className="mx-auto mt-4 flex max-w-[760px] items-center gap-2 px-6 text-sm">

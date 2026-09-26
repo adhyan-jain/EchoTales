@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { BookOpen, CircleAlert, CircleCheck, Clock, Plus } from 'lucide-react';
 import { api } from '../api';
 import { Logo, PageHeader, ThemeToggle } from '../components/app/Chrome';
-import { fileUrl, pickPanels } from '../lib/media';
+import { pickPanels, thumbUrl } from '../lib/media';
 
 /** Top bar shared by the account-level pages (library, new project). */
 export function AccountShell({ children }) {
@@ -37,7 +37,7 @@ function ProjectCard({ project }) {
       .listOutput(project.id)
       .then((out) => {
         const [first] = pickPanels(out, 1);
-        if (alive && first) setCover(fileUrl(project.id, first));
+        if (alive && first) setCover(thumbUrl(project.id, first, 480));
       })
       .catch(() => {});
     return () => {
