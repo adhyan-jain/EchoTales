@@ -8029,3 +8029,24 @@ Three commits after 4.92 (`888a158`, `f9bbdba`, `a1bf892`). Amends 4.92, which d
 **Measured for the first time.** CLIPScore with a shuffled-prompt control (`docs/results/CLIPSCORE.md`): on the current RI ch1 render, 77/87 panels align better with their own prompt than with another panel's (the August render: 7/21).
 
 **Housekeeping found on the way.** Scratch re-resolves were overwriting the tracked compounding curves; now only a canonical database writes them. Renders wrote their prompt caches to the `panels/` root (40 files); these now live in the render's own version folder.
+
+### 4.96 Narration span types: tense, footnotes, and an opening-sentence gate *(2026-09-27)*
+
+**The report.** The owner found "several mistakes in the classifications" in both novels. Reading RI ch2 and random samples confirmed that the keyword rules had three blind spots:
+- Present-tense lore inside past-tense narration was labelled ACTION ("Few people actually dare to believe it", "Humans are the greatest among thousands of creatures").
+- Unquoted first-person thought was labelled ACTION ("You can think all you want, I live my own life").
+- Translator footnotes ("(1) Mu (亩): 1 Mu is 666 ⅔ meters²") were labelled ACTION. They would have been narrated in the audio and drawn as panels.
+
+**What changed (`spans/classify.py`).**
+- **Tense.** In a chapter whose narration is at least 60% past tense, a narration span of four or more words with no past-tense marker becomes EXPOSITION, or INNER_MONOLOGUE if it is first person or a question in a third-person chapter. A present-tense novel is left alone.
+- **Footnotes.** A paragraph that opens with a "(n)" marker is NON_DIEGETIC.
+- **Action vs description.** The label now goes by the weight of evidence rather than the first keyword hit. DESCRIPTION wins only when the first sentence narrates no event (a past-tense verb that is not a copula or a participle).
+
+A broader variant, which counted every past-tense verb as action evidence, was tried and rejected: only about 13 of 28 of its relabels were right ("Fang Yuan was not bloodthirsty, he just treated killing as a type of means" became ACTION).
+
+**Measured, against labels read by the model (not human-annotated; no span-type reference set exists).** The final rules change 3,160 of 20,479 RI spans and 567 of 4,802 LOTM spans, relative to the stored run.
+- Fixed-seed samples: EXPOSITION / INNER_MONOLOGUE / NON_DIEGETIC relabels were 18/20 right; ACTION→DESCRIPTION relabels 20/25 right.
+- The largest group, stored DESCRIPTION → ACTION (RI 2,707), is the weakest: about 12/25 better, 6/25 worse, and 7/25 narrator commentary that neither label fits. It is a net gain, not a fix.
+- The remaining error class is narrator commentary in past tense ("Once Fang Yuan was defeated, the image of invincibility ... would be destroyed"), which is exposition by function but not by tense.
+
+**Not yet applied to the databases of record.** Stored spans change only when the spans stage is re-run. That needs mentions and speakers to be re-run on a copy first, because a footnote paragraph collapses to one span and its span ids change.

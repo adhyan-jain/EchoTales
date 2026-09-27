@@ -300,10 +300,19 @@ def classify_span(
     # Unquoted narration.
     if _EXPOSITION_RE.search(stripped):
         return SpanType.NARRATION_EXPOSITION
-    if _ACTION_RE.search(stripped):
-        return SpanType.NARRATION_ACTION
-    if _DESCRIPTION_RE.search(stripped):
+    # By weight of evidence, not by which rule is checked first: "The youth
+    # was thin, slightly shorter than Fang Yuan. His face resembled..." (RI
+    # ch2) has three description cues and one action verb, and was ACTION
+    # because the action rule ran first.
+    actions = len(_ACTION_RE.findall(stripped))
+    descriptions = len(_DESCRIPTION_RE.findall(stripped))
+    # ...unless the line opens with an action ("Fang Yuan nodded. In his
+    # previous life he was..."): the first event is what a panel would draw.
+    opening = " ".join(stripped.split()[:6])
+    if descriptions > actions and not _ACTION_RE.search(opening) and not _opens_with_event(stripped):
         return SpanType.NARRATION_DESCRIPTION
+    if actions:
+        return SpanType.NARRATION_ACTION
     return SpanType.NARRATION_ACTION
 
 
@@ -329,7 +338,12 @@ def classify_block_spans(
                 text=block.text,
             )
         ]
-    if not block.block_type.is_story_content:
+    # A paragraph that opens with a footnote marker is the translator's note
+    # ("(1) Mu (亩): 1 Mu is 666 2/3 meters2", "(2) 铁血冷 - Tie Xue Leng ...").
+    # Ingest keeps these as prose blocks, so 27 of them in RI were ACTION and
+    # would have been narrated and drawn. Story prose never opens a paragraph
+    # with "(1)", so the marker alone is enough.
+    if not block.block_type.is_story_content or _FOOTNOTE_RE.match(block.text):
         return [
             Span(
                 id=f"{novel_id}:{chapter:g}:{block.index}:0",
@@ -408,6 +422,105 @@ def _promote_crowd_runs(spans: list[Span]) -> list[Span]:
     return spans
 
 
+#: Finite past-tense markers. `-ed` also catches adjectives ("muddled"),
+#: which only makes the exposition rule below more conservative.
+_PAST_RE = re.compile(
+    r"\b(?:was|were|had|did|could|would|went|came|saw|said|thought|felt|knew|took|made|got|"
+    r"gave|stood|sat|left|found|told|began|became|held|kept|ran|fell|rose|spoke|[a-z]{2,}ed|"
+    # Irregular past forms: "The point is, it struck." and "Fang Yuan caught
+    # up to him" read as present-tense lore without them (RI audit sample).
+    r"struck|caught|flew|threw|drew|grew|knew|blew|broke|chose|drove|froze|hid|rode|shook|"
+    r"sang|sank|swam|swung|stole|stuck|wore|wrote|bit|bent|bought|brought|built|burnt|dealt|"
+    r"dug|fought|fled|fed|forgot|hung|hurt|laid|led|lent|lit|lost|meant|met|paid|put|quit|"
+    r"read|rang|sent|set|shot|shut|slept|slid|spent|spun|split|spread|sprang|strode|swept|"
+    r"taught|tore|understood|woke|won|wound|awoke|arose|beat|became|bore|forgave|let|cut|"
+    r"felt|heard|leapt|dreamt|knelt|spat|sought|withdrew)\b",
+    re.IGNORECASE,
+)
+_PRESENT_RE = re.compile(
+    r"\b(?:is|are|am|has|have|does|do|can|cannot|must|isn[’']t|aren[’']t|don[’']t|doesn[’']t|"
+    r"can[’']t)\b",
+    re.IGNORECASE,
+)
+#: Generic subjects of a general truth: "Few people actually dare...",
+#: "Humans are...", "one must pay...".
+_GENERIC_SUBJECT_RE = re.compile(
+    r"^(?:few|many|most|some|all|no one|nobody|everyone|anyone|people|humans|one|those|such)\b",
+    re.IGNORECASE,
+)
+_FIRST_PERSON_RE = re.compile(r"\b(?:I|me|my|mine|myself|we|us|our)\b")  # not "you": narration uses an impersonal "you"
+#: Narration is third person when fewer than this share of its spans use a
+#: first/second-person pronoun.
+_THIRD_PERSON_CHAPTER = 0.15
+#: A chapter counts as past-tense narration when this share of its narration
+#: spans carries a past-tense marker.
+_PAST_TENSE_CHAPTER = 0.6
+_NARRATION = (SpanType.NARRATION_ACTION, SpanType.NARRATION_DESCRIPTION)
+#: "can only be used once", "is used": a participle after a present
+#: auxiliary is present-tense passive, not past narration (RI ch2 b9/b10).
+_PRESENT_PASSIVE_RE = re.compile(
+    r"\b(?:is|are|am|be|been|being)\s+(?:\w+ly\s+)?[a-z]{2,}ed\b", re.IGNORECASE
+)
+
+
+_FOOTNOTE_RE = re.compile(r"\s*\(\d{1,2}\)\.?\s*[^\s”\"’']")
+
+
+_STATIVE = frozenset({"was", "were", "had", "did", "could", "would", "seemed", "appeared", "remained",
+                      "stood", "lay", "hung", "became", "looked", "been"})
+_PARTICIPLE_RE = re.compile(r"\b(?:was|were|been|being|is|are|be)\s+(?:\w+ly\s+)?[a-z]{2,}ed\b", re.IGNORECASE)
+
+
+def _opens_with_event(text: str) -> bool:
+    """The first sentence narrates an event: a past-tense verb that is not a
+    copula or a participle after "was/were". Without this gate, a paragraph
+    that opens "Fang Zheng felt his heart tighten ... turned and left" and then
+    describes the room was DESCRIPTION (8 of 20 wrong in the 2026-09-27 audit
+    sample): the keyword list does not know "felt", "opened", "put away"."""
+    first = re.split(r"(?<=[.!?;])\s", text, maxsplit=1)[0]
+    first = _PARTICIPLE_RE.sub(" ", first)
+    return any(m.group(0).lower() not in _STATIVE for m in _PAST_RE.finditer(first))
+
+
+def _has_past(text: str) -> bool:
+    return bool(_PAST_RE.search(_PRESENT_PASSIVE_RE.sub(" ", text)))
+
+
+def _refine_exposition(spans: list[Span]) -> list[Span]:
+    """In past-tense narration, a present-tense narration span is exposition.
+
+    RI and LOTM narrate in the past tense; the lore passages the keyword rule
+    missed are the present-tense ones ("There is much conflicting opinion on
+    this mythical tale", "Humans are the greatest among thousands of
+    creatures", "Few people actually dare to believe it" -- RI ch2, all
+    ACTION before). Present tense in past-tense narration is the signal for a
+    general truth, which is what EXPOSITION means (kept in audio, never drawn
+    as a panel). Applied per chapter and only when the chapter's narration is
+    mostly past tense, so a present-tense novel is left alone.
+    """
+    narration = [s for s in spans if s.span_type in _NARRATION or s.span_type is SpanType.NARRATION_EXPOSITION]
+    if not narration:
+        return spans
+    past_share = sum(_has_past(s.text) for s in narration) / len(narration)
+    if past_share < _PAST_TENSE_CHAPTER:
+        return spans
+    first_person_share = sum(bool(_FIRST_PERSON_RE.search(s.text)) for s in narration) / len(narration)
+    for s in spans:
+        if s.span_type not in _NARRATION or _has_past(s.text) or len(s.text.split()) < 4:
+            continue
+        # Unquoted present-tense first/second person or a question, in a
+        # third-person chapter, is the character thinking ("You can think
+        # all you want, I live my own life", "how is it enough?" -- RI ch120,
+        # ch50), not a general truth.
+        if first_person_share < _THIRD_PERSON_CHAPTER and (
+            _FIRST_PERSON_RE.search(s.text) or s.text.rstrip().endswith("?")
+        ):
+            s.span_type = SpanType.INNER_MONOLOGUE
+        elif _PRESENT_RE.search(s.text) or _GENERIC_SUBJECT_RE.match(s.text.strip()):
+            s.span_type = SpanType.NARRATION_EXPOSITION
+    return spans
+
+
 def classify_chapter(chapter: Chapter) -> list[Span]:
     """Split every block of a chapter into typed spans."""
     out: list[Span] = []
@@ -415,4 +528,4 @@ def classify_chapter(chapter: Chapter) -> list[Span]:
         out.extend(
             classify_block_spans(block, novel_id=chapter.novel_id, chapter=chapter.number)
         )
-    return out
+    return _refine_exposition(out)

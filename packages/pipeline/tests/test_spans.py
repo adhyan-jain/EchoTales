@@ -251,3 +251,52 @@ class TestDeliveryMarkers:
         )
         narration = [s for s in spans if s.span_type is not SpanType.DIALOGUE]
         assert any("coldly" in m for s in narration for m in s.delivery_markers)
+
+
+# ---------------------------------------------------------------------------
+# Tense and evidence refinements (RI / LOTM audit, 2026-09-27)
+# ---------------------------------------------------------------------------
+
+_PAST_CONTEXT = [
+    "Fang Yuan walked to the hall and sat down.",
+    "The clan head looked at him coldly and turned away.",
+    "Snow fell on the mountain village that night.",
+    "He nodded and left the room without a word.",
+    "The elders gathered outside the pavilion.",
+    "A cold wind swept across the courtyard.",
+    "Spring Qiu Yue smiled and poured the wine.",
+    "The crowd fell silent when he stepped forward.",
+]
+
+
+def _chapter_types(lines: list[str]) -> list[SpanType]:
+    chapter = Chapter(novel_id="t", number=1.0, title="T", source_href="a.html",
+                      blocks=[block(t, index=i) for i, t in enumerate(_PAST_CONTEXT + lines)])
+    return [s.span_type for s in classify_chapter(chapter)][len(_PAST_CONTEXT):]
+
+
+class TestTenseRefinement:
+    def test_a_present_tense_general_truth_is_exposition(self) -> None:
+        assert _chapter_types(["Few people actually dare to believe it."]) == [SpanType.NARRATION_EXPOSITION]
+
+    def test_unquoted_first_person_present_is_inner_monologue(self) -> None:
+        assert _chapter_types(["You can think all you want, I live my own life."]) == [SpanType.INNER_MONOLOGUE]
+
+    def test_past_tense_event_stays_action(self) -> None:
+        assert _chapter_types(["The point is, it struck."]) == [SpanType.NARRATION_ACTION]
+
+    def test_a_present_tense_novel_is_left_alone(self) -> None:
+        chapter = Chapter(novel_id="t", number=1.0, title="T", source_href="a.html",
+                          blocks=[block(t, index=i) for i, t in enumerate(
+                              ["He walks into the hall.", "She runs to the door.",
+                               "They sit down together.", "Few people dare to believe it."])])
+        assert SpanType.NARRATION_EXPOSITION not in [s.span_type for s in classify_chapter(chapter)]
+
+
+class TestFootnotes:
+    @pytest.mark.parametrize("text", ["(1) Mu (亩): 1 Mu is 666 meters²", "(2). Wei Zheng was a Tang politician."])
+    def test_a_translator_footnote_is_non_diegetic(self, text: str) -> None:
+        assert types(text) == [SpanType.NON_DIEGETIC]
+
+    def test_a_marker_inside_prose_is_not_a_footnote(self) -> None:
+        assert SpanType.NON_DIEGETIC not in types("Mother Shen (1) stood beside his aunt and uncle.")
