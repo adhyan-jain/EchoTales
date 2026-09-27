@@ -1,7 +1,8 @@
 # EchoTales v1 — final evidence table
 
-**2026-09-25, v1.1 2026-09-27.** Canonical database `data/db/reverend-insanity.db` (v1.1, sha256
-`a2695660…`; v1 was `42107645…`; `docs/results/CANONICAL_RUN.md`). Every accuracy figure is scored against
+**2026-09-25, v1.1/v1.2 2026-09-27.** Canonical database `data/db/reverend-insanity.db` (v1.2,
+content digest `3495ee2901115c1e`; v1.2 changes only eight entity kinds, and its mentions, spans and aliases are
+identical to v1.1, so every figure below holds for both; `docs/results/CANONICAL_RUN.md`). Every accuracy figure is scored against
 the **LLM-DRAFTED SILVER REFERENCE SET**. It was drafted by Claude models, not
 annotated by humans, and has no inter-annotator agreement. No figure below is
 a human-gold result.

@@ -61,7 +61,7 @@
 
 ## Transmigration: v1.1, or needed for this paper?
 
-**v1.1, provided the paper does not claim transmigration handling.** The paper's Self/Persona evidence is the sequential reincarnation case and the representation. The LOTM two-Self split must appear as a measured limitation. If the paper's headline were "handles body change", this would be a must-fix; with the recommended framing (`PAPER_CLAIM_BOUNDARIES.md`), it is not.
+**Now handled, with a narrow claim (EVOLUTION 4.95).** `resolve/transmigration.py` merges Zhou Mingrui with "Klein" / "Klein Moretti" only on two independent kinds of textual evidence. On LOTM ch1–20 silver, B³ recall went from 62.3 to 74.6 with precision unchanged (99.4). The claim this supports is "a rule-based merge for the explicit-cue case, measured on one novel". It is not general body-change handling, and the paper should not word it that way.
 
 ## Single highest-value additional experiment
 

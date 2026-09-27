@@ -42,7 +42,7 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 | RIGID_NAME | 32 | 84.4% | 90.6% | 90.6% | 96.9% |
 | TRANSFERABLE_TITLE | 9 | 33.3% | 77.8% | 88.9% | 100.0% |
 
-*Source: data/eval/recall_by_category.json (scripts/eval/recall_by_category.py, db: data/scratch/db/ri-v1.1.db)*
+*Source: data/eval/recall_by_category.json (scripts/eval/recall_by_category.py, db: data/db/reverend-insanity.db at v1.1; v1.2 mentions are identical)*
 
 *LLM-DRAFTED SILVER REFERENCE SET (hardcases file), not human-annotated, no IAA. The reference span is handed to the retriever, so this measures retrieval, not detection. n is small for the hard types: one case moves TRANSFERABLE_TITLE about 11 points and RELATIONAL_DEICTIC 25. With the CLI's snippet context instead, overall @10 is 84.8%.*
 

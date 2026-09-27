@@ -61,7 +61,7 @@ Every accuracy figure in this project is scored against an **LLM-drafted silver 
 3. IPR cell decision and counsel's reading of the closest patent, before any push.
 4. Listening test and panel ratings; team sign-off on the course report.
 
-**v1.1 research backlog:** undetected hard cases; the transmigration merge; comprehensive human visual rating and audio MOS; GraphRAG / CORE-KG baselines.
+**Research backlog:** undetected hard cases; observer-conditioned personas such as LOTM's "The Fool" (EVOLUTION 4.98); comprehensive human visual rating and audio MOS; GraphRAG / CORE-KG baselines. The transmigration merge, formerly listed here, shipped in 4.95.
 
 ## Repository state
 
