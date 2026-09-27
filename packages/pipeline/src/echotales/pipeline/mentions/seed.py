@@ -64,6 +64,11 @@ _INTERJECTIONS = frozenset(
 )
 
 
+#: Repeated laugh syllables, any length: "Hehehe" (RI, 53 uses) was a person
+#: with 13 resolved mentions because only "Haha"/"Heh" were listed.
+_LAUGH = re.compile(r"[Hh]([aeiou])(?:h\1)+h?[!.]*")
+
+
 @dataclass(slots=True)
 class SeedCandidate:
     """A name harvested by Layer 0."""
@@ -134,7 +139,7 @@ def _is_interjection(name: str) -> bool:
     capitalised, so only a list separates them.
     """
     tokens = name.split()
-    return bool(tokens) and all(t in _INTERJECTIONS for t in tokens)
+    return bool(tokens) and all(t in _INTERJECTIONS or _LAUGH.fullmatch(t) for t in tokens)
 
 
 def harvest_from_text(text: str) -> dict[str, str]:

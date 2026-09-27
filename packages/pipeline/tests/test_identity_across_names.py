@@ -163,3 +163,40 @@ def name_tokens_equal(a: str, b: str) -> bool:
     from echotales.pipeline.ingest.normalize import name_tokens
 
     return name_tokens(a) == name_tokens(b)
+
+
+# ---- class nouns ---------------------------------------------------------------
+
+
+def test_a_capitalized_class_noun_is_a_category_not_a_character(tmp_path: Path) -> None:
+    """LOTM: "Seer" and friends are Sequence names; "Seers" and "a Seer" give
+    them away. Rare names coordinated with one share its type."""
+    from echotales.core.enums import TargetKind
+    from echotales.pipeline.resolve.class_nouns import type_class_nouns
+
+    chapters = [["What abilities do Seers have? A Seer can read fortunes.",
+                 "He regretted not choosing Apprentice, Marauder, or Seer.",
+                 "Dunn nodded. Dunn was tired, and Dunn said nothing."]]
+    store = _store(tmp_path, chapters, ["Seer", "Apprentice", "Marauder", "Dunn"])
+    assert type_class_nouns(store, N) == ["Apprentice", "Marauder", "Seer"]
+    assert store.get_self(f"{N}:Seer").kind is TargetKind.CATEGORY
+    assert store.get_self(f"{N}:Dunn").kind.is_person
+
+
+def test_a_name_ending_in_a_declared_item_head_is_an_item(tmp_path: Path) -> None:
+    """RI: "Flash Blink Gu" is a Gu worm; a bare "Gu" label is never retyped."""
+    from echotales.core.enums import TargetKind
+    from echotales.pipeline.resolve.class_nouns import type_class_nouns
+
+    store = _store(tmp_path, [["Flash Blink Gu, explode! Gu shouted."]], ["Flash Blink Gu", "Gu"])
+    assert type_class_nouns(store, N, item_heads=("Gu",)) == ["Flash Blink Gu"]
+    assert store.get_self(f"{N}:Flash Blink Gu").kind is TargetKind.ITEM
+    assert store.get_self(f"{N}:Gu").kind.is_person
+
+
+def test_a_laugh_is_not_a_name() -> None:
+    from echotales.pipeline.mentions.chapter_ner import plausible_name
+
+    assert not plausible_name("Hehehe")
+    assert not plausible_name("Hahaha!")
+    assert plausible_name("Kiki") and plausible_name("Heather")

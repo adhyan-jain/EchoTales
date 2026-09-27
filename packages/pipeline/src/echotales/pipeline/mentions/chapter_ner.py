@@ -130,7 +130,11 @@ def plausible_name(surface: str) -> bool:
     # needs to catch (EVOLUTION 4.62).
     if is_transferable_title_phrase(surface):
         return True
-    return surface[0].isupper()
+    # The model returns capitalised interjections as characters ("Hehehe",
+    # RI ch2 and ch90); the seed layer's list is the one place they live.
+    from echotales.pipeline.mentions.seed import _is_interjection
+
+    return surface[0].isupper() and not _is_interjection(surface)
 
 
 class NameCache:

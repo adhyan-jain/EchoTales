@@ -1000,6 +1000,10 @@ def resolve_novel(
             backfill_stats["left_default"],
         )
 
+    from echotales.pipeline.resolve.class_nouns import type_class_nouns
+
+    type_class_nouns(store, novel_id)
+
     # Section 2.2 startup assertion: raw-NULL kind, checked *after* backfill
     # so this counts only what evidence genuinely could not resolve, not what
     # the (cheap, always-run) backfill above would have fixed anyway.

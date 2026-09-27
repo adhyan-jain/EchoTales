@@ -42,6 +42,10 @@ class TargetKind(StrEnum):
     LOCATION = "LOCATION"
     ORGANIZATION = "ORGANIZATION"
     ITEM = "ITEM"
+    #: A kind of being written like a name: LOTM's "Seer", "Beyonder",
+    #: "Mystery Pryer" (Sequence names). "Seers" and "a Seer" show it is a
+    #: class, not an individual (`resolve/class_nouns.py`).
+    CATEGORY = "CATEGORY"
 
     @property
     def is_person(self) -> bool:

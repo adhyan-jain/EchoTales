@@ -712,6 +712,10 @@ def cmd_resolve(args: argparse.Namespace) -> int:
         cfg = get_settings()
         cache_path = Path(cfg.lexicon_path) / f"{args.novel}-ner-cache.json"
         stats = backfill_kinds(store, args.novel, cache_path)
+        from echotales.pipeline.resolve.class_nouns import type_class_nouns
+
+        categories = type_class_nouns(store, args.novel)
+        print(f"class nouns: {', '.join(categories) or 'none'}")
         print(
             f"kind backfill: checked={stats['checked']} "
             f"classified={stats['classified']} left_default={stats['left_default']}"

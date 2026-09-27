@@ -15,6 +15,8 @@ chapters = "1-199"
 #  - Chapter 1 lives in page-0.html, so chapter numbers come from the TOC.
 #  - Each chapter repeats its title as a bold first paragraph.
 lexicon = "data/lexicons/reverend-insanity.toml"
+# Gu worms are named like people ("Flash Blink Gu"); the last word says what they are.
+item_heads = ["Gu"]
 
 [[novel]]
 id = "lord-of-the-mysteries"

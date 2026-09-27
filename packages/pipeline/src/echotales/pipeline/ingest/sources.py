@@ -29,6 +29,11 @@ class SourceConfig:
     #: "Klein"). Decides which end of a full name a short form may be; see
     #: `normalize.name_containment`.
     name_order: str = "family_first"
+    #: The novel's own category words for things written like names: RI's
+    #: "Gu" ("Flash Blink Gu", "Rock Skin Gu" are Gu worms, not people). A
+    #: fact about the world, declared here rather than guessed from suffixes
+    #: (`resolve/class_nouns.py`).
+    item_heads: tuple[str, ...] = ()
 
     def open_adapter(self) -> tuple[Epub, SourceAdapter]:
         """Open the EPUB and build its adapter.
@@ -58,6 +63,7 @@ def load_sources(path: Path | str = "data/sources.toml") -> dict[str, SourceConf
             chapters=ChapterRange.parse(chapters) if chapters else None,
             lexicon=Path(lexicon) if lexicon else None,
             name_order=entry.get("name_order", "family_first"),
+            item_heads=tuple(entry.get("item_heads", ())),
         )
         out[cfg.id] = cfg
     return out
