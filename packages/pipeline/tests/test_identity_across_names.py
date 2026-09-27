@@ -148,3 +148,18 @@ def test_remembering_someone_is_not_transmigration(tmp_path: Path) -> None:
     klein = _mention(store, 1, 0, "Klein", target="Klein", alias_type=AliasType.RIGID_NAME)
     assert not merge_transmigrations(store, N).merges
     assert _target(store, klein) == f"{N}:Klein"
+
+
+def test_a_western_rank_or_nickname_prefix_is_not_part_of_the_name() -> None:
+    """LOTM: "Old Neil" (128 mentions) and "Neil" (15) were two people, as were
+    "Senior Associate Professor Quentin Cohen" and "Quentin Cohen"."""
+    kw = {"ambiguous_tokens": frozenset(), "given_name_first": True}
+    assert name_containment("Neil", "Old Neil", **kw) > 0.8 or name_tokens_equal("Neil", "Old Neil")
+    assert name_tokens_equal("Quentin Cohen", "Senior Associate Professor Quentin Cohen")
+    assert name_tokens_equal("George III", "King George III")
+
+
+def name_tokens_equal(a: str, b: str) -> bool:
+    from echotales.pipeline.ingest.normalize import name_tokens
+
+    return name_tokens(a) == name_tokens(b)

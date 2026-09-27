@@ -61,6 +61,22 @@ _HONORIFIC_PREFIXES = (
     "supreme elder",
     "first seat",
     "first elder",
+    # Western ranks and nicknames (LOTM, 2026-09-27): "Old Neil" (128
+    # mentions) and "Neil" (15), "Senior Associate Professor Quentin Cohen"
+    # and "Quentin Cohen", "King George III" and "George III" each resolved as
+    # two people because only Chinese-genre ranks were stripped.
+    "old",
+    "king",
+    "queen",
+    "prince",
+    "princess",
+    "professor",
+    "associate professor",
+    "assistant professor",
+    "doctor",
+    "dr",
+    "captain",
+    "madam",
 )
 
 _HONORIFIC_SUFFIXES = (
