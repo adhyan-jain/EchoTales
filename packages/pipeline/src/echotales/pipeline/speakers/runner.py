@@ -86,14 +86,81 @@ class AttributionReport:
         )
 
 
+#: Tiers a self-naming line never overrides. EXPLICIT because RI has disguises:
+#: ch145 "I am Gu Yue Ye" is tagged "Fang Yuan said", and the tag is right.
+_TRUSTED_TIERS = frozenset({AttributionMethod.EXPLICIT, AttributionMethod.JOINT,
+                            AttributionMethod.UNATTRIBUTED_CHORUS})
+_SELF_NAMING = r"(?:\bI am|\bI[’']m|\b[Mm]y name is|\bcall me)\s+(?:(?:Lord|Lady|Sir|Elder|Mr\.|Mrs\.|Miss)\s+)?"
+
+
+def _self_named(text: str, person_names: frozenset[str]) -> str | None:
+    """The person a line gives as its own speaker, if exactly one.
+
+    Found in both novels on anonymous-slot and proximity attributions: RI
+    "I am Gu Yue Sou" (ch76), "My name is Tie Xue Leng" (ch170), "Lord Fang
+    Yuan, I am Gu Yue Ding Zong" (ch160, given to Fang Yuan by proximity);
+    LOTM "You can call me Scarter" (ch29, given to Klein). "I am not Gu Yue
+    Fang Yuan, but I'm Gu Yue Fang Zheng" names Fang Zheng: the negated form
+    does not match. The captured name run may carry a house prefix the
+    resolved surface lacks ("Gu Yue Chi Zhong" / "Chi Zhong"), so the longest
+    known person name inside it wins. A possessive ("I am Fang Yuan's
+    brother") is not a self-name, and two different self-names decide nothing.
+    """
+    found = set()
+    for m in re.finditer(_SELF_NAMING + r"([A-Z][\w-]*(?:\s+[A-Z][\w-]*){0,4})(?![’']s|[\w-])", text):
+        words = m.group(1).split()
+        spans = sorted(((i, j) for i in range(len(words)) for j in range(i + 1, len(words) + 1)),
+                       key=lambda ij: ij[0] - ij[1])
+        hit = next((" ".join(words[i:j]) for i, j in spans if " ".join(words[i:j]) in person_names), None)
+        if hit:
+            found.add(hit)
+    return found.pop() if len(found) == 1 else None
+
+
+def apply_self_naming(store: Store, novel_id: str) -> int:
+    """Apply the self-naming tier to already-stored spans; returns lines changed.
+
+    The same rule as in `attribute_chapter`, for a database whose speakers
+    stage ran before the tier existed. A full re-run would also reclassify
+    spans and redo the non-deterministic LLM tier, which is more change than
+    the fix needs; this touches only the lines the rule decides.
+    """
+    person_ids = {e.id for e in store.all_selves(novel_id) if e.kind.is_person}
+    person_names = frozenset(
+        m.text for m in store.get_mentions(novel_id)
+        if m.target_id in person_ids and m.alias_type is AliasType.RIGID_NAME
+    )
+    changed = 0
+    for chapter in store.chapter_numbers(novel_id):
+        spans = store.get_spans(novel_id, chapter)
+        touched = []
+        for span in spans:
+            if (span.span_type is SpanType.DIALOGUE and span.attribution_method not in _TRUSTED_TIERS
+                    and (named := _self_named(span.text, person_names))
+                    and named != span.speaker_self_id):
+                span.speaker_self_id, span.attribution_method, span.confidence = (
+                    named, AttributionMethod.SELF_NAMING, 0.9)
+                touched.append(span)
+        if touched:
+            store.add_spans(touched)
+            changed += len(touched)
+    return changed
+
+
 def attribute_chapter(
     chapter: Chapter,
     *,
     spans: list[Span] | None = None,
     known_names: frozenset[str] = frozenset(),
     pov_holder: str | None = None,
+    person_names: frozenset[str] = frozenset(),
 ) -> list[Attribution]:
-    """Attribute every speech span in one chapter."""
+    """Attribute every speech span in one chapter.
+
+    `person_names` are surfaces resolved to a person entity; only those can
+    be a self-naming speaker. `known_names` is too loose for it: it holds
+    "Rank", and RI ch56's "after I am Rank two" became a speaker.
+    """
     spans = spans if spans is not None else classify_chapter(chapter)
     by_block: dict[int, list[Span]] = {}
     for span in spans:
@@ -182,6 +249,13 @@ def attribute_chapter(
                 pov_holder=pov_holder,
             )
 
+            if (attribution.method not in _TRUSTED_TIERS and span.span_type is SpanType.DIALOGUE
+                    and person_names and (named := _self_named(span.text, person_names))):
+                attribution = Attribution(
+                    span_id=span.id, speaker=named, method=AttributionMethod.SELF_NAMING,
+                    confidence=0.9, evidence=f"the line names its speaker: {named}",
+                )
+
             if attribution.method is AttributionMethod.UNRESOLVED:
                 pronoun_hit = attribute_pronoun_epithet(
                     span,
@@ -198,7 +272,7 @@ def attribute_chapter(
             # `current_epithet`'s own comment above the loop.
             if (
                 attribution.speaker
-                and attribution.method is AttributionMethod.EXPLICIT
+                and attribution.method in (AttributionMethod.EXPLICIT, AttributionMethod.SELF_NAMING)
                 and attribution.speaker not in _ROLE_EPITHETS
             ):
                 current_epithet = None
@@ -446,6 +520,15 @@ def attribute_novel(
     #: (those exist purely for `_known`'s membership check and would read as
     #: near-duplicate garbage names to the model).
     display_roster: dict[str, int] = {}
+    #: Surfaces resolved to a person entity anywhere in the volume, for the
+    #: self-naming tier. Volume-wide on purpose (non-negotiable 6): a
+    #: character is often named for the first time by their own introduction
+    #: (LOTM ch29 "You can call me Scarter"; her first mention is ch30).
+    person_ids = {e.id for e in store.all_selves(novel_id) if e.kind.is_person}
+    person_names = frozenset(
+        m.text for m in store.get_mentions(novel_id)
+        if m.target_id in person_ids and m.alias_type is AliasType.RIGID_NAME
+    )
 
     for i, chapter in enumerate(store.iter_chapters(novel_id), start=1):
         spans = classify_chapter(chapter)
@@ -488,7 +571,7 @@ def attribute_novel(
             report.pov_chapters += 1
 
         attributions = attribute_chapter(
-            chapter, spans=spans, known_names=known, pov_holder=pov
+            chapter, spans=spans, known_names=known, pov_holder=pov, person_names=person_names,
         )
         by_id = {a.span_id: a for a in attributions}
 

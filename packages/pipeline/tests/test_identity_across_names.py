@@ -200,3 +200,25 @@ def test_a_laugh_is_not_a_name() -> None:
     assert not plausible_name("Hehehe")
     assert not plausible_name("Hahaha!")
     assert plausible_name("Kiki") and plausible_name("Heather")
+
+
+# ---- self-naming speakers --------------------------------------------------------
+
+
+def test_a_line_that_names_its_speaker_is_theirs() -> None:
+    from echotales.pipeline.speakers.runner import _self_named
+
+    people = frozenset({"Fang Yuan", "Fang Zheng", "Chi Zhong", "Scarter", "Tie Xue Leng"})
+    assert _self_named("You can call me Scarter. Might I know what kind of house?", people) == "Scarter"
+    assert _self_named("I am Gu Yue Chi Zhong, the acting medicine hall elder.", people) == "Chi Zhong"
+    assert _self_named("I am not Gu Yue Fang Yuan, but I’m Gu Yue Fang Zheng.", people) == "Fang Zheng"
+    assert _self_named("My name is Tie Xue Leng.", people) == "Tie Xue Leng"
+
+
+def test_what_is_not_a_self_name() -> None:
+    from echotales.pipeline.speakers.runner import _self_named
+
+    people = frozenset({"Fang Yuan", "Fang Zheng"})
+    assert _self_named("I am Fang Yuan’s brother.", people) is None  # possessive
+    assert _self_named("Even then, only after I am Rank two.", people) is None  # not a person
+    assert _self_named("I am Fang Yuan. No, I am Fang Zheng.", people) is None  # two names

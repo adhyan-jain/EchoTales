@@ -66,6 +66,29 @@ def _item_heads(novel_id: str) -> tuple[str, ...]:
     return source.item_heads if source is not None else ()
 
 
+def _counts_all(labels: list[str], text: str) -> dict[str, tuple[int, int]]:
+    """`_counts` for every label in two passes over the text, not four per
+    label: per-label scans cost 24 s per RI resolve (90 people x 2.3M chars,
+    code review 2026-09-27). Longest label first, so a label inside a longer
+    one ("Pryer" in "Mystery Pryer") is not also counted there."""
+    if not labels:
+        return {}
+    alts = "|".join(re.escape(lab) for lab in sorted(set(labels), key=len, reverse=True))
+    use = re.compile(
+        rf"(?:\b(?P<q>(?i:{_QUANTIFIER[3:-1]}))\s+)?\b(?P<name>{alts})(?P<pl>s|es)?\b"
+        rf"(?:(?:[’']s)?\s+(?P<ctx>{_CLASS_CONTEXT})\b)?")
+    prefix = re.compile(rf"\b(?:formula|potion|pathway|Sequence\s+\d+)\s+(?:(?:of|for|the)\s+)*(?P<name>{alts})\b")
+    generic: Counter[str] = Counter()
+    total: Counter[str] = Counter()
+    for m in use.finditer(text):
+        name = m.group("name")
+        total[name] += 1
+        generic[name] += bool(m.group("pl")) + bool(m.group("q")) + bool(m.group("ctx"))
+    for m in prefix.finditer(text):
+        generic[m.group("name")] += 1
+    return {lab: (generic[lab], total[lab]) for lab in labels}
+
+
 def type_class_nouns(store: Store, novel_id: str, *, dry_run: bool = False,
                      item_heads: tuple[str, ...] | None = None) -> list[str]:
     """Re-type person entities used as class nouns (CATEGORY) or named with a
@@ -81,8 +104,9 @@ def type_class_nouns(store: Store, novel_id: str, *, dry_run: bool = False,
                      if (ch := store.get_chapter(novel_id, c)) for b in ch.blocks)
     mentions = Counter(m.target_id for m in store.get_mentions(novel_id) if m.target_id)
     found: dict[str, str] = {}
+    counts = _counts_all([e.canonical_label for e in people], text)
     for e in people:
-        generic, total = _counts(e.canonical_label, text)
+        generic, total = counts[e.canonical_label]
         if generic >= MIN_GENERIC and generic >= MIN_GENERIC_SHARE * total:
             found[e.id] = e.canonical_label
     if found:

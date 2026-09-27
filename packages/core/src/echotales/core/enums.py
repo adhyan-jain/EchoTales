@@ -296,6 +296,9 @@ class AttributionMethod(StrEnum):
     #: UNRESOLVED so a consumer can tell "genuinely nobody" from "some
     #: consistent nobody in particular."
     ANONYMOUS_SLOT = "ANONYMOUS_SLOT"
+    #: The line names its own speaker ("I am Gu Yue Sou", "You can call me
+    #: Scarter") -- `speakers/runner.py::_self_named`. Never overrides EXPLICIT.
+    SELF_NAMING = "SELF_NAMING"
     #: An epithet speaker ("the clan head said") mapped to the named holder of
     #: that title at this position (`resolve/title_holders.py`).
     TITLE_HOLDER = "TITLE_HOLDER"
