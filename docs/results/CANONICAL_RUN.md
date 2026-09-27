@@ -19,6 +19,27 @@ identity (8 mentions). Nothing else changed.
 | v1 | archived at `data/archive/db/reverend-insanity-v1-2026-09-25.db`; the untouched build original stays at `data/scratch/reruns/v1-final-ri.db` (`42107645…`) |
 | Re-checked on v1.1 | silver coreference (Table 4), hard-case resolution and taxonomy, observer ablation and evidence: **identical**. Retrieval (Table 5): Recall@1/10/20 identical; **Recall@5 87.0 → 84.8** (one title case moved from rank ≤5 to rank 6–10, because the holder's new title alias competes with the true candidate) |
 
+### LOTM product database (2026-09-27)
+
+`data/db/lord-of-the-mysteries.db` (the 40-chapter product/webview database,
+not an evaluation source) was re-resolved with the name-order and
+transmigration fixes (EVOLUTION 4.95) and its personas were rebuilt.
+
+| | before | after |
+|---|---:|---:|
+| person entities | 102 | 93 |
+| personas | **0** | 93 |
+| resolved mentions | 2,312 | 2,334 |
+| Zhou Mingrui / Klein | 177 / 954 (two people) | 1,162 (one) |
+
+The previous file is archived at
+`data/archive/db/lord-of-the-mysteries-v1-2026-09-27.db` (sha256 of the
+original before `.backup`: `bac041fe…`). The promoted file is `e1f3d63a…`, a
+`.backup` of `data/scratch/db/lotm-v1.1.db`. Its offsets predate the current
+ingest, so it is not scored against the LOTM silver set; the ch1-20 rerun
+below remains the evaluation source.
+Known open defect: "Tingen" and "Tingen University" are typed as people.
+
 ## 1. Database identity
 
 | | |
