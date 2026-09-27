@@ -71,6 +71,9 @@ _MOVED_DBS = {
     "data/reverend-insanity.db": "data/db/reverend-insanity.db",
     "data/reruns/": "data/scratch/reruns/",
     "data/webview-working/": "data/db/",
+    # The v1.1 build, promoted to the database of record on 2026-09-27 (the
+    # scratch file itself no longer exists; CANONICAL_RUN.md section 0).
+    "data/scratch/db/ri-v1.1.db": "data/db/reverend-insanity.db at v1.1; v1.2 mentions are identical",
 }
 
 

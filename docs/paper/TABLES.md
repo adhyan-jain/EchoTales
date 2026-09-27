@@ -27,7 +27,7 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 | CoNLL | 87.4 | 87.4 | 87.4 |
 | B3 (project variant) | 100.0 | 93.6 | 96.7 |
 
-*Source: data/eval/results/reverend-insanity-1790467742-9d0aed88/metrics.json (reference: data/gold/reverend-insanity.jsonl, db: data/scratch/db/ri-titleholders.db)*
+*Source: data/eval/results/reverend-insanity-1790471304-d082b214/metrics.json (reference: data/gold/reverend-insanity.jsonl, db: data/scratch/db/ri-head-fix.db)*
 
 *Scored against the LLM-DRAFTED SILVER REFERENCE SET -- not human-annotated, no inter-annotator agreement. See docs/results/GOLD_DATASET_README.md. B3/MUC are TAUTOLOGICAL on a surface-trivial reference set and must not be quoted as accuracy; CEAF-e is entity-based and is the discriminative one here.*
 
