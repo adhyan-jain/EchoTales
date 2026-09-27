@@ -15,7 +15,7 @@ Reference type:
 | Core resolution | Entity-level coreference quality | — | — | RI, 1,816 silver mentions | CEAF-e F1; B³ P | 67.4; 100.0 | S | Done |
 | Baseline comparison | Cost and coverage vs simple LLM designs | Long-context LLM; two-LLM memory | — | RI ch1–10, 356 mentions | B³ recall; LLM calls | 0.2% / 4.6% / **78.9%**; 1 / 177 / 0 | S | Done; measures extraction coverage |
 | Hard cases | Where identity resolution fails | — | — | 88 hard-case records | detected; correct/wrong among decidable | 30; **24 / 0**; 58 undetected (address 16, relational 15, title 11, pronoun 10) | S | Done |
-| Retrieval | Candidate generation given the span | — | — | 46 hard-case spans | Recall@1/5/10/20 | 67.4 / 87.0 / **89.1** / 95.7 | S | Done |
+| Retrieval | Candidate generation given the span | — | — | 46 hard-case spans | Recall@1/5/10/20 | 67.4 / 84.8 / **89.1** / 95.7 | S | Done |
 | A1 observer collapse | Causal effect of the observer axis | Full state | observer → READER | 3 reveals, 228 queries | leaks (state; render plan) | 0 → **194**; 0 → **194** | R | Done |
 | A2 knowledge time | Causal effect of knowledge time | Full state | knowledge_pos = +∞ | same | leaks (state; render plan) | 0 → **14**; 0 → 0 | R | Done |
 | A7 cache key | Does the state digest separate state-dependent artifacts? | Full key (A) | digest removed (B); all state-derived parts removed (C) | 218 panels, 8 events | stale reuse; unnecessary regeneration | Fixed A: 0 stale reuse; B/C: 46 stale reuse; A: 274 unnecessary regenerations | C | Done; the shipped key's appearance defect was found and fixed |

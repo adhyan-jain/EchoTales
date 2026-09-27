@@ -56,7 +56,7 @@ conflated.
 
 ## Pick up here — 2026-09-25 (finalization pass, EVOLUTION 4.90)
 
-- **Canonical database:** `data/db/reverend-insanity.db`, sha256 `42107645…`. Every script defaults to it (`docs/results/CANONICAL_RUN.md`). Per-claim status is in `docs/results/FINAL_EVIDENCE_TABLE.md`.
+- **Canonical database:** `data/db/reverend-insanity.db` (v1.1, sha256 `a2695660…`; v1 `42107645…`). Every script defaults to it (`docs/results/CANONICAL_RUN.md`). Per-claim status is in `docs/results/FINAL_EVIDENCE_TABLE.md`.
 - **Next research work, in order:**
   1. Transmigration: LOTM's Zhou Mingrui and Klein are resolved as two Selves.
   2. Hard-case detection: address terms 16, relational 15, definite titles 11 (`data/eval/hardcase_taxonomy.json`).

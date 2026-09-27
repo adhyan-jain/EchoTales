@@ -4,6 +4,21 @@
 `docs/paper/TABLES.md` and `docs/status/FINAL_ECHOTALES_READINESS.md` comes from the
 database below, unless a row says otherwise.
 
+## 0. v1.1 (2026-09-27)
+
+`data/db/reverend-insanity.db` is now **v1.1**: v1 plus the volume-level
+title-holder pass (`echotales resolve --title-holders-only`,
+`resolve/title_holders.py`, EVOLUTION 4.95). It links 22 "clan head / clan
+leader" mentions to Gu Yue Bo (including chapter 1, before he is named), maps
+3 epithet speaker lines to him, and gives the never-named Xiong clan head one
+identity (8 mentions). Nothing else changed.
+
+| | |
+|---|---|
+| sha256 | `a269566055ad60b87d2f6cca4d5d509199084420616102561f4863ca04d5475f` |
+| v1 | archived at `data/archive/db/reverend-insanity-v1-2026-09-25.db`; the untouched build original stays at `data/scratch/reruns/v1-final-ri.db` (`42107645…`) |
+| Re-checked on v1.1 | silver coreference (Table 4), hard-case resolution and taxonomy, observer ablation and evidence: **identical**. Retrieval (Table 5): Recall@1/10/20 identical; **Recall@5 87.0 → 84.8** (one title case moved from rank ≤5 to rank 6–10, because the holder's new title alias competes with the true candidate) |
+
 ## 1. Database identity
 
 | | |

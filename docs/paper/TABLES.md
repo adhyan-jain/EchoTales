@@ -27,7 +27,7 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 | CoNLL | 87.4 | 87.4 | 87.4 |
 | B3 (project variant) | 100.0 | 93.6 | 96.7 |
 
-*Source: data/eval/results/reverend-insanity-1790342230-8ff45048/metrics.json (reference: data/gold/reverend-insanity.jsonl, db: data/db/reverend-insanity.db)*
+*Source: data/eval/results/reverend-insanity-1790467742-9d0aed88/metrics.json (reference: data/gold/reverend-insanity.jsonl, db: data/scratch/db/ri-titleholders.db)*
 
 *Scored against the LLM-DRAFTED SILVER REFERENCE SET -- not human-annotated, no inter-annotator agreement. See docs/results/GOLD_DATASET_README.md. B3/MUC are TAUTOLOGICAL on a surface-trivial reference set and must not be quoted as accuracy; CEAF-e is entity-based and is the discriminative one here.*
 
@@ -36,13 +36,13 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 
 | Alias type | n | @1 | @5 | @10 | @20 |
 |---|---|---|---|---|---|
-| **Overall** | 46 | 67.4% | 87.0% | 89.1% | 95.7% |
+| **Overall** | 46 | 67.4% | 84.8% | 89.1% | 95.7% |
 | EPITHET | 1 | 100.0% | 100.0% | 100.0% | 100.0% |
 | RELATIONAL_DEICTIC | 4 | 0.0% | 50.0% | 75.0% | 75.0% |
 | RIGID_NAME | 32 | 84.4% | 90.6% | 90.6% | 96.9% |
-| TRANSFERABLE_TITLE | 9 | 33.3% | 88.9% | 88.9% | 100.0% |
+| TRANSFERABLE_TITLE | 9 | 33.3% | 77.8% | 88.9% | 100.0% |
 
-*Source: data/eval/recall_by_category.json (scripts/eval/recall_by_category.py, db: data/db/reverend-insanity.db)*
+*Source: data/eval/recall_by_category.json (scripts/eval/recall_by_category.py, db: data/scratch/db/ri-v1.1.db)*
 
 *LLM-DRAFTED SILVER REFERENCE SET (hardcases file), not human-annotated, no IAA. The reference span is handed to the retriever, so this measures retrieval, not detection. n is small for the hard types: one case moves TRANSFERABLE_TITLE about 11 points and RELATIONAL_DEICTIC 25. With the CLI's snippet context instead, overall @10 is 84.8%.*
 

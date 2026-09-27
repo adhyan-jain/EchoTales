@@ -1,7 +1,7 @@
 # EchoTales v1 — final evidence table
 
-**2026-09-25.** Canonical database `data/db/reverend-insanity.db` (sha256
-`42107645…`, `docs/results/CANONICAL_RUN.md`). Every accuracy figure is scored against
+**2026-09-25, v1.1 2026-09-27.** Canonical database `data/db/reverend-insanity.db` (v1.1, sha256
+`a2695660…`; v1 was `42107645…`; `docs/results/CANONICAL_RUN.md`). Every accuracy figure is scored against
 the **LLM-DRAFTED SILVER REFERENCE SET**. It was drafted by Claude models, not
 annotated by humans, and has no inter-annotator agreement. No figure below is
 a human-gold result.
@@ -43,7 +43,7 @@ Status key:
 | Precision is never traded away | same | same | B³ precision | 100.0% | silver; recall is where the misses are |
 | Resolver links detected hard cases correctly | `data/eval/hardcase_resolution.json` | 88 hardcases records | correct / wrong among detected, decidable | **24 / 0** (6 undecidable) | n=24; Wilson 95% lower bound ≈ 86% |
 | Hard cases are lost at detection | same; `hardcase_taxonomy.json` | same | undetected (overlap alignment) | **58 / 88** | see taxonomy (Section 3) |
-| Retrieval given the reference span | `data/eval/recall_by_category.json`; Table 5 | hardcases, 46 mapped cases, production context | Recall@1 / 5 / 10 / 20 | 67.4 / 87.0 / **89.1** / 95.7% | small-n per type; snippet context gives 84.4% @10 |
+| Retrieval given the reference span | `data/eval/recall_by_category.json`; Table 5 | hardcases, 46 mapped cases, production context | Recall@1 / 5 / 10 / 20 | 67.4 / 84.8 / **89.1** / 95.7% | small-n per type; snippet context gives 84.4% @10 |
 | Deterministic rules carry every link | `data/eval/ablation/reverend-insanity.json`; Table 6 | 16,538 cached candidate pairs | links by layer | 1,376 force-links (1,281 gazetteer), 3,072 blocked, scorer 0 | re-scores cached evidence, not a re-resolve |
 | Gazetteer compounding | same; Table 6a | same | force-links without compounding | 1,376 → 704 (−49%); gazetteer share 73.5% (w0) → 82.0% (w4) | — |
 | Observer-scoped knowledge | `data/eval/observer_evidence.json` | RI, Bai Ning Bing, reveal ch166 | aliases by observer | reader 2 / witness 1 / non-witness 0 | 12 observations total, 3 reveals |
@@ -58,7 +58,7 @@ Status key:
 
 | Claim | Evidence file | Dataset / split | Metric | Result | Limitation |
 |---|---|---|---|---|---|
-| Generalisation to a second novel | `data/eval/results/lord-of-the-mysteries-1790302402-816d231e/` | LOTM ch1–3, 155 independent silver | B³ R; CEAF-e F1 | 62.3%; 41.4 | 3 chapters; 44/155 undetected; **Zhou Mingrui / Klein split into two Selves**, contrary to the model's own Self/Persona semantics |
+| Generalisation to a second novel | `data/eval/results/lord-of-the-mysteries-1790302402-816d231e/` | LOTM ch1–3, 155 independent silver | B³ R; CEAF-e F1 | 62.3%; 41.4 | 3 chapters; 44/155 undetected. **Fixed 2026-09-27** (name order + transmigration merge, EVOLUTION 4.95): the same ch1–20 database re-resolved scores B³ R **74.6**, CEAF-e F1 **43.3**, precision unchanged (`data/eval/results/lord-of-the-mysteries-1790467690-5ed86f9a/`); Zhou Mingrui, Klein Moretti and Klein are one Self |
 | Speaker attribution | `CANONICAL_RUN.md`, EVOLUTION 4.88 | RI, 5,192 speech spans | share attributed | **46.1%** | precision only spot-checked; tier 4 (LLM, ch1–3) 12 right / 16 wrong and not stable across runs (10/29 lines changed) |
 | Typed alias bindings incl. title transfer | canonical database | RI | bindings; transfer events | 11,092 bindings; transfer detector fired | 16/17 title-transfer mentions undetected |
 | Audio rendering | `data/novels/RI/audio-runs/ears-native/manifest.jsonl` | RI ch1 | lines rendered | 97 lines, 892 s, 7 voices, 0 failures | no listening test; attribution errors audible |

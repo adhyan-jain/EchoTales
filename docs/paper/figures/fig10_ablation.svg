@@ -8,40 +8,40 @@
 <rect x="430" y="40" width="12" height="12" fill="#9ca3af"/>
 <text x="446.0" y="50.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#1f2933" font-weight="normal">Reached scorer</text>
 <text x="182.0" y="84.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="end" fill="#1f2933" font-weight="normal">full</text>
-<rect x="190.0" y="70" width="43.4" height="20" fill="#1d4ed8"/>
-<rect x="233.4" y="70" width="95.1" height="20" fill="#b45309"/>
-<rect x="328.5" y="70" width="381.5" height="20" fill="#9ca3af"/>
-<text x="718.0" y="84.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">links 1,318 · scorer 0</text>
+<rect x="190.0" y="70" width="43.3" height="20" fill="#1d4ed8"/>
+<rect x="233.3" y="70" width="96.6" height="20" fill="#b45309"/>
+<rect x="329.9" y="70" width="380.1" height="20" fill="#9ca3af"/>
+<text x="718.0" y="84.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">links 1,376 · scorer 0</text>
 <text x="182.0" y="114.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="end" fill="#1f2933" font-weight="normal">no-gazetteer-compounding</text>
-<rect x="190.0" y="100" width="14.7" height="20" fill="#1d4ed8"/>
-<rect x="204.7" y="100" width="95.1" height="20" fill="#b45309"/>
-<rect x="299.8" y="100" width="410.2" height="20" fill="#9ca3af"/>
-<text x="718.0" y="114.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">links 448 · scorer 0</text>
+<rect x="190.0" y="100" width="22.1" height="20" fill="#1d4ed8"/>
+<rect x="212.1" y="100" width="96.6" height="20" fill="#b45309"/>
+<rect x="308.7" y="100" width="401.3" height="20" fill="#9ca3af"/>
+<text x="718.0" y="114.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">links 704 · scorer 0</text>
 <text x="182.0" y="144.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="end" fill="#1f2933" font-weight="normal">no-declaration</text>
-<rect x="190.0" y="130" width="41.9" height="20" fill="#1d4ed8"/>
-<rect x="231.9" y="130" width="95.1" height="20" fill="#b45309"/>
-<rect x="327.0" y="130" width="383.0" height="20" fill="#9ca3af"/>
-<text x="718.0" y="144.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">links 1,273 · scorer 0</text>
+<rect x="190.0" y="130" width="41.7" height="20" fill="#1d4ed8"/>
+<rect x="231.7" y="130" width="96.6" height="20" fill="#b45309"/>
+<rect x="328.3" y="130" width="381.7" height="20" fill="#9ca3af"/>
+<text x="718.0" y="144.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">links 1,325 · scorer 0</text>
 <text x="182.0" y="174.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="end" fill="#1f2933" font-weight="normal">no-name-containment</text>
-<rect x="190.0" y="160" width="42.3" height="20" fill="#1d4ed8"/>
-<rect x="232.3" y="160" width="95.1" height="20" fill="#b45309"/>
-<rect x="327.4" y="160" width="382.6" height="20" fill="#9ca3af"/>
-<text x="718.0" y="174.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">links 1,285 · scorer 0</text>
+<rect x="190.0" y="160" width="42.2" height="20" fill="#1d4ed8"/>
+<rect x="232.2" y="160" width="96.6" height="20" fill="#b45309"/>
+<rect x="328.8" y="160" width="381.2" height="20" fill="#9ca3af"/>
+<text x="718.0" y="174.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">links 1,341 · scorer 0</text>
 <text x="182.0" y="204.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="end" fill="#1f2933" font-weight="normal">no-relational-copresence</text>
-<rect x="190.0" y="190" width="43.3" height="20" fill="#1d4ed8"/>
-<rect x="233.3" y="190" width="95.1" height="20" fill="#b45309"/>
-<rect x="328.3" y="190" width="381.7" height="20" fill="#9ca3af"/>
-<text x="718.0" y="204.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">links 1,314 · scorer 0</text>
+<rect x="190.0" y="190" width="43.2" height="20" fill="#1d4ed8"/>
+<rect x="233.2" y="190" width="96.6" height="20" fill="#b45309"/>
+<rect x="329.8" y="190" width="380.2" height="20" fill="#9ca3af"/>
+<text x="718.0" y="204.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">links 1,373 · scorer 0</text>
 <text x="182.0" y="234.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="end" fill="#1f2933" font-weight="normal">no-temporal-scoping</text>
-<rect x="190.0" y="220" width="43.4" height="20" fill="#1d4ed8"/>
-<rect x="233.4" y="220" width="95.1" height="20" fill="#b45309"/>
-<rect x="328.5" y="220" width="381.5" height="20" fill="#9ca3af"/>
-<text x="718.0" y="234.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">links 1,318 · scorer 0</text>
+<rect x="190.0" y="220" width="43.3" height="20" fill="#1d4ed8"/>
+<rect x="233.3" y="220" width="96.6" height="20" fill="#b45309"/>
+<rect x="329.9" y="220" width="380.1" height="20" fill="#9ca3af"/>
+<text x="718.0" y="234.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">links 1,376 · scorer 0</text>
 <text x="182.0" y="264.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="end" fill="#1f2933" font-weight="normal">no-copresence-blocking</text>
-<rect x="190.0" y="250" width="43.8" height="20" fill="#1d4ed8"/>
-<rect x="233.8" y="250" width="0.0" height="20" fill="#b45309"/>
-<rect x="233.8" y="250" width="476.2" height="20" fill="#9ca3af"/>
-<text x="718.0" y="264.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">links 1,329 · scorer 0</text>
+<rect x="190.0" y="250" width="43.7" height="20" fill="#1d4ed8"/>
+<rect x="233.7" y="250" width="0.0" height="20" fill="#b45309"/>
+<rect x="233.7" y="250" width="476.3" height="20" fill="#9ca3af"/>
+<text x="718.0" y="264.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#6b7280" font-weight="normal">links 1,390 · scorer 0</text>
 <text x="182.0" y="294.0" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="end" fill="#1f2933" font-weight="normal">no-prefilters-at-all</text>
 <rect x="190.0" y="280" width="0.0" height="20" fill="#1d4ed8"/>
 <rect x="190.0" y="280" width="0.0" height="20" fill="#b45309"/>

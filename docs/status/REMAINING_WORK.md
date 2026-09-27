@@ -135,7 +135,7 @@ The disclosure itself lives in `docs/private/IP/` (gitignored, never committed).
 | Item | State |
 |---|---|
 | Branch `validation/evidence-pass-2026-09-24` | **50+ commits, not pushed, not merged to `master`.** A disk failure loses the whole pass. Pushing is the owner's call, because the repo is public. |
-| Canonical database | **Promoted 2026-09-25**: `data/db/reverend-insanity.db` (sha256 `42107645…`), built from scratch by the current code (`docs/results/CANONICAL_RUN.md`). The webview still defaults to `data/db/`. |
+| Canonical database | **Promoted 2026-09-25**: `data/db/reverend-insanity.db` (v1.1 since 2026-09-27, sha256 `a2695660…`), built from scratch by the current code (`docs/results/CANONICAL_RUN.md`). The webview still defaults to `data/db/`. |
 | `.env` API keys | Never committed, but printed into an earlier session. **Rotate them.** |
 | Lint / types | Clean on touched files. Repo-wide, `mypy` reports `import-untyped` noise, and `cli.py:567` has one pre-existing ruff SIM105. |
 | Venv drift | `chatterbox-tts` 0.1.7 and `setuptools` 80.10.2 are installed directly in `.venv`. The documented route is the `uv run --with` overlay. |

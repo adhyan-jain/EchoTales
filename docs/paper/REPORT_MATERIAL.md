@@ -222,7 +222,7 @@ LLM-drafted silver reference set, unless stated otherwise.
 - **Hard cases (88):** 30 detected, and of the decidable ones **24/24 linked correctly, 0 wrong**; 58 undetected.
   - Failure taxonomy: address terms 16, relational 15, definite titles 11, pronouns 10 (by design), other 6.
   - Detection, not linking, is the bottleneck.
-- **Retrieval (Table 5, Figure 8):** given the reference span, production context, recall@1/5/10/20 = 67.4 / 87.0 / **89.1** / 95.7% (n=46; titles 88.9% @10, n=9).
+- **Retrieval (Table 5, Figure 8):** given the reference span, production context, recall@1/5/10/20 = 67.4 / 84.8 / **89.1** / 95.7% (n=46; titles 88.9% @10, n=9).
 - **Resolution layers:** deterministic rules make every link; the learned scorer makes none (maximum score 0.41 against a 0.80 threshold) and is reported as optional/experimental.
 - **Observer-conditioned state** (`data/eval/observer_evidence.json`): the same fact about the same character is visible to the reader (2 aliases), a witness (1) and a non-witness (0). The witness sees 0 / 1 / 1 aliases asking from ch150 / 166 / 200.
 - **Observer-conditioned generation:** reader 5/5 reference-conditioned panels naming the character; non-reader 0/5, "a figure", one person.
