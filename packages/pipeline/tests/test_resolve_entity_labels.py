@@ -292,6 +292,9 @@ class TestKindBackfill:
                 kind=TargetKind.SELF,
             )
         )
+        labelled = _mention("m1", "Fang Yuan", offset=0, group="g1", label="character")
+        labelled.target_kind, labelled.target_id = TargetKind.SELF, "t:self1"
+        store.add_mentions([labelled])
         store.conn.commit()
 
         cache_path = tmp_path / "t-ner-cache.json"
@@ -300,6 +303,31 @@ class TestKindBackfill:
         stats = backfill_kinds(store, "t", cache_path)
         assert stats == {"checked": 0, "classified": 0, "left_default": 0}
         assert store.get_self("t:self1").kind is TargetKind.SELF
+
+    def test_backfill_retypes_a_self_written_only_by_default(self, tmp_path) -> None:
+        """LOTM product database: mentions predated the NER labelling pass, so
+        `_entity_kind` wrote an explicit SELF for all 93 entities, "Tingen"
+        and "Pelican Street" included, and the NULL-only backfill never looked
+        at them. A SELF with no labelled mention is a default, not evidence."""
+        import json
+
+        from echotales.core.models import DiscoursePosition, Self
+        from echotales.pipeline.resolve.kind_backfill import backfill_kinds
+
+        store = Store(":memory:")
+        store.add_novel("t", "T", "x.epub", "generic")
+        store.add_self(Self(id="t:self1", novel_id="t", canonical_label="Tingen",
+                            first_attested_pos=DiscoursePosition(chapter=1, offset=0),
+                            kind=TargetKind.SELF))
+        unlabelled = _mention("m1", "Tingen", offset=0, group="g1", label=None)
+        unlabelled.target_kind, unlabelled.target_id = TargetKind.SELF, "t:self1"
+        store.add_mentions([unlabelled])
+        store.conn.commit()
+        cache_path = tmp_path / "t-ner-cache.json"
+        cache_path.write_text(json.dumps({"c1": {"Tingen": "location"}, "c2": {"Tingen": "location"}}))
+
+        assert backfill_kinds(store, "t", cache_path)["classified"] == 1
+        assert store.get_self("t:self1").kind is TargetKind.LOCATION
 
     def test_resolve_novel_backfill_is_a_harmless_noop_on_a_fresh_run(self) -> None:
         """`resolve_novel` also calls `backfill_kinds` at the end of every run

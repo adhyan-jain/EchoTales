@@ -38,7 +38,9 @@ original before `.backup`: `bac041fe…`). The promoted file is `e1f3d63a…`, a
 `.backup` of `data/scratch/db/lotm-v1.1.db`. Its offsets predate the current
 ingest, so it is not scored against the LOTM silver set; the ch1-20 rerun
 below remains the evaluation source.
-Known open defect: "Tingen" and "Tingen University" are typed as people.
+Places were then typed (`resolve --kinds-only`, EVOLUTION 4.97): 36 entities
+became LOCATION and 8 ORGANIZATION ("Tingen", every street, the Church, the
+Nighthawks), leaving 49 people.
 
 ## 1. Database identity
 

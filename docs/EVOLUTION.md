@@ -8050,3 +8050,13 @@ A broader variant, which counted every past-tense verb as action evidence, was t
 - The remaining error class is narrator commentary in past tense ("Once Fang Yuan was defeated, the image of invincibility ... would be destroyed"), which is exposition by function but not by tense.
 
 **Not yet applied to the databases of record.** Stored spans change only when the spans stage is re-run. That needs mentions and speakers to be re-run on a copy first, because a footnote paragraph collapses to one span and its span ids change.
+
+### 4.97 Places typed as people: an explicit SELF the kind backfill could not see *(2026-09-27)*
+
+**Symptom.** In the LOTM product database, all 93 entities were people: "Tingen", "Pelican Street", "Khoy University", the Church. They would be offered to voice casting and drawn as characters.
+
+**Root cause.** This database's mentions predate the NER labelling pass, so every `entity_label` is NULL. With no labels, `_entity_kind` writes an explicit `SELF`. The kind backfill (4.54) only fills NULL kinds, so it never consulted the NER cache, which labels "Tingen" a location in 18 of 18 chapters.
+
+**Fix.** `Store.default_kind_self_ids` returns SELF rows that no labelled mention supports, and the backfill now considers them too, with its existing vote rule unchanged (the plurality must outright beat "character"). An entity typed from real label evidence is still never reconsidered, and that test now gives the entity a labelled mention.
+
+**Measured.** LOTM: 36 LOCATION and 8 ORGANIZATION out of 93; 49 people remain. A few rest on a single cache vote ("The Prideful One", "Constant", "Star Crystal", the epochs). That is the backfill's existing standard, not a new one, and it is the obvious place to tighten if a wrong one turns up. RI (2 candidates) and ORV (0): no change.

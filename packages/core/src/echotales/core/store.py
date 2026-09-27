@@ -1010,6 +1010,24 @@ class Store:
         ).fetchall()
         return [r["id"] for r in rows]
 
+    def default_kind_self_ids(self, novel_id: str) -> list[str]:
+        """Ids typed SELF with no NER evidence behind it: none of their
+        mentions carries an `entity_label`.
+
+        `_entity_kind` writes SELF when its founding mentions have no label,
+        which is every entity of a database whose mentions predate the NER
+        labelling pass. That SELF is a default, not a judgement, but because
+        it is not NULL the kind backfill skipped it: the LOTM product database
+        had all 93 entities as SELF, including "Tingen" and "Pelican Street",
+        while the NER cache labelled "Tingen" a location 18 times out of 18.
+        """
+        rows = self.conn.execute(
+            "SELECT id FROM self_entity s WHERE novel_id=? AND kind='SELF' AND NOT EXISTS ("
+            "SELECT 1 FROM mention m WHERE m.target_id=s.id AND m.entity_label IS NOT NULL)",
+            (novel_id,),
+        ).fetchall()
+        return [r["id"] for r in rows]
+
     def set_kind(self, self_id: str, kind: TargetKind) -> None:
         self.conn.execute(
             "UPDATE self_entity SET kind=? WHERE id=?", (kind.value, self_id)

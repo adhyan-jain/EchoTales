@@ -125,7 +125,10 @@ def backfill_kinds(store: Store, novel_id: str, cache_path: Path) -> dict[str, i
     durable rather than a one-off -- see EVOLUTION 4.54.
     """
     stats = {"checked": 0, "classified": 0, "left_default": 0}
-    unset_ids = store.unset_kind_self_ids(novel_id)
+    # Also SELF-by-default rows (no mention carries an NER label), which
+    # `_entity_kind` writes explicitly; see `Store.default_kind_self_ids`.
+    unset_ids = list(dict.fromkeys(store.unset_kind_self_ids(novel_id)
+                                   + store.default_kind_self_ids(novel_id)))
     if not unset_ids:
         return stats
     votes = _load_cache_votes(cache_path)
