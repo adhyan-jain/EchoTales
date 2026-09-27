@@ -100,6 +100,15 @@ def build_parser() -> argparse.ArgumentParser:
     p_resolve.add_argument("--novel", required=True)
     p_resolve.add_argument("--chapters", default=None)
     p_resolve.add_argument(
+        "--title-holders-only",
+        action="store_true",
+        help=(
+            "Skip full re-resolution; only link title mentions (\"the clan head\") "
+            "to the holder the volume names, including in chapters before the "
+            "name is given. Safe to run on an existing database."
+        ),
+    )
+    p_resolve.add_argument(
         "--kinds-only",
         action="store_true",
         help=(

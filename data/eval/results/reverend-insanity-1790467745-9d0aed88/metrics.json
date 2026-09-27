@@ -1,0 +1,140 @@
+{
+  "database": "data/scratch/db/ri-titleholders.db",
+  "git_commit": "22c678f-dirty",
+  "gold_path": "data/gold/reverend-insanity-hardcases.jsonl",
+  "metrics": {
+    "escalation": {
+      "avg_latency_ms": 3549.9,
+      "by_stage": [
+        {
+          "avg_ms": 7564.685714285714,
+          "calls": 35,
+          "escalations": 0,
+          "stage": "appearance_extraction",
+          "tier": "local",
+          "tokens": 68057
+        },
+        {
+          "avg_ms": 3065.8382352941176,
+          "calls": 68,
+          "escalations": 0,
+          "stage": "character_profile",
+          "tier": "local",
+          "tokens": 65932
+        },
+        {
+          "avg_ms": 1931.8181818181818,
+          "calls": 22,
+          "escalations": 0,
+          "stage": "persona_split",
+          "tier": "local",
+          "tokens": 14292
+        },
+        {
+          "avg_ms": 1654.9736842105262,
+          "calls": 38,
+          "escalations": 0,
+          "stage": "speaker_attribution",
+          "tier": "local",
+          "tokens": 18116
+        }
+      ],
+      "calls": 163,
+      "escalation_rate": 0.0,
+      "escalations": 0,
+      "tokens": 166397
+    },
+    "held_out_coverage": {
+      "calibration_size": 0,
+      "empirical": 0.0,
+      "false_links": 0,
+      "split_chapter": 0.0,
+      "target": 0.95,
+      "test_size": 0
+    },
+    "linked_share": {
+      "ci_high": 0.32954545454545453,
+      "ci_low": 0.14772727272727273,
+      "n": 88,
+      "point": 0.23863636363636365,
+      "resamples": 2000
+    },
+    "silver": {
+      "b3": {
+        "f1": 0.5060341071901765,
+        "precision": 0.9303030303030302,
+        "recall": 0.3475378787878788
+      },
+      "b3_project_variant": {
+        "f1": 0.23595754130238994,
+        "precision": 0.707936507936508,
+        "recall": 0.1415719696969697
+      },
+      "banner": "SILVER -- LLM-derived reference set (Claude), not human gold; no IAA",
+      "ceafe": {
+        "f1": 0.27042748917748916,
+        "precision": 0.7211399711399711,
+        "recall": 0.16641691641691642
+      },
+      "conll": {
+        "f1": 0.35405862736065047,
+        "precision": 0.35405862736065047,
+        "recall": 0.35405862736065047
+      },
+      "muc": {
+        "f1": 0.2857142857142857,
+        "precision": 0.7333333333333333,
+        "recall": 0.1774193548387097
+      },
+      "recall_at_k": {
+        "by_alias_type": {
+          "EPITHET": {
+            "1": 1.0,
+            "10": 1.0,
+            "20": 1.0,
+            "5": 1.0
+          },
+          "RELATIONAL_DEICTIC": {
+            "1": 0.0,
+            "10": 0.25,
+            "20": 0.5,
+            "5": 0.25
+          },
+          "RIGID_NAME": {
+            "1": 0.78125,
+            "10": 0.90625,
+            "20": 1.0,
+            "5": 0.84375
+          },
+          "TRANSFERABLE_TITLE": {
+            "1": 0.3333333333333333,
+            "10": 0.8888888888888888,
+            "20": 1.0,
+            "5": 0.6666666666666666
+          }
+        },
+        "by_alias_type_n": {
+          "EPITHET": 1,
+          "RELATIONAL_DEICTIC": 4,
+          "RIGID_NAME": 32,
+          "TRANSFERABLE_TITLE": 9
+        },
+        "cases": 46,
+        "overall": {
+          "1": 0.6304347826086957,
+          "10": 0.8478260869565217,
+          "20": 0.9565217391304348,
+          "5": 0.7608695652173914
+        },
+        "unmapped": 16
+      },
+      "records": 88
+    }
+  },
+  "novel_id": "reverend-insanity",
+  "platform": "Linux-7.2.4-arch1-2-x86_64-with-glibc2.44",
+  "python": "3.12.13",
+  "run_id": "reverend-insanity-1790467745-9d0aed88",
+  "seed": 20260923,
+  "written_at": 1790467745.1415715
+}

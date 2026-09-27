@@ -152,8 +152,31 @@ def test_an_attribute_revealed_after_the_panel_does_not_invalidate(store: Store)
     )
 
 
-def test_a_persona_key_the_image_path_does_not_read_does_not_invalidate(store: Store) -> None:
-    _unchanged_after(store, lambda: _persona_attr(store, "cast:body1", "favourite_food", "noodles"))
+def test_a_standing_fact_revealed_after_the_panel_does_not_invalidate(store: Store) -> None:
+    _unchanged_after(store, lambda: _persona_attr(store, "cast:body1", "gender", "female", from_chapter=100))
+
+
+def test_a_drawn_fact_outside_the_appearance_keys_still_invalidates(store: Store) -> None:
+    """The prompt reads more than appearance (gender for the count tags, attire
+    under an older key). Hashing only appearance keys let A7's attire change
+    through with an unchanged key: 23 stale reuses in the 2026-09-27 re-run."""
+    before = _key(store)
+    _persona_attr(store, "cast:body1", "attire", "silver armour")
+    assert _key(store) != before
+    _persona_attr(store, "cast:body1", "gender", "female")
+    assert _key(store) != before
+
+
+def test_changing_only_the_observer_does_not_change_the_digest(store: Store) -> None:
+    """Two observers who see the same drawn state must share a key; the
+    observer id itself must not bust the cache (A7 E4: 30 extra renders)."""
+    from echotales.core.enums import OBSERVER_SYSTEM
+
+    reader = compile_render_state(store, NOVEL, ["cast"], position=5.0)
+    system = compile_render_state(store, NOVEL, ["cast"], position=5.0, observer_id=OBSERVER_SYSTEM)
+    assert reader.observer_id != system.observer_id
+    assert reader.target("cast") == system.target("cast")
+    assert reader.digest() == system.digest()
 
 
 def test_an_appearance_change_on_an_undrawn_character_does_not_invalidate(store: Store) -> None:

@@ -459,10 +459,14 @@ def detect_mentions(
     from echotales.pipeline.eval.compounding import record_detection_half
 
     try:
+        from echotales.pipeline import paths
+
+        # Scratch runs must not overwrite the tracked run-of-record curve.
         record_detection_half(
             novel_id,
             window_size=cfg.window_size,
             points=list(report.gazetteer_hit_rate_by_window),
+            root=None if store.is_canonical else paths.SCRATCH_DIR / "eval" / "compounding",
         )
     except OSError as exc:
         log.warning("could not persist the compounding curve for %s: %s", novel_id, exc)

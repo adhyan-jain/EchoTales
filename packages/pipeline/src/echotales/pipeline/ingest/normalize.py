@@ -208,7 +208,9 @@ def comparison_key(name: str) -> str:
     )
 
 
-def name_containment(a: str, b: str, *, ambiguous_tokens: frozenset[str] | None = None) -> float:
+def name_containment(
+    a: str, b: str, *, ambiguous_tokens: frozenset[str] | None = None, given_name_first: bool = False
+) -> float:
     """Evidence that one name is the other with a leading name component dropped.
 
     In this corpus a character is written "Gu Yue Mo Bei" on introduction and
@@ -243,6 +245,15 @@ def name_containment(a: str, b: str, *, ambiguous_tokens: frozenset[str] | None 
     frozenset is a real answer ("this corpus has no ambiguous components")
     and is not the same thing as `None` ("this caller has no opinion").
 
+    **Name order.** Everything above assumes the family name comes first, so
+    the surviving short form is the *tail*. A Western-order novel (LOTM:
+    "Klein Moretti", then "Klein" for the next 400 mentions) shortens to the
+    *head*, and the suffix rule split every such character in two -- Klein,
+    Dunn, Audrey and Alger on LOTM ch1-20 (2026-09-27). `given_name_first`
+    (from `sources.toml`'s `name_order`) flips which end must match; the
+    one-token ambiguity guard is unchanged, so a bare surname shared by a
+    family ("Moretti") still merges no one.
+
     Returns 0.0 when the containment does not hold, so callers can `max()` it
     against a character-level score without diluting either.
     """
@@ -254,7 +265,8 @@ def name_containment(a: str, b: str, *, ambiguous_tokens: frozenset[str] | None 
     # last, so the form that survives abbreviation is the tail. Requiring a
     # suffix is what stops the clan name itself — "Gu Yue", also two tokens —
     # from matching every one of its members and merging the whole family.
-    if long_[-len(short) :] != short:
+    kept = long_[: len(short)] if given_name_first else long_[-len(short) :]
+    if kept != short:
         return 0.0
     if len(short) == 1:
         if ambiguous_tokens is None or short[0] in ambiguous_tokens:

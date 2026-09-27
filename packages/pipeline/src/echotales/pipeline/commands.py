@@ -695,6 +695,14 @@ def cmd_resolve(args: argparse.Namespace) -> int:
     from echotales.pipeline.resolve import resolve_novel
 
     store = _open_store(args)
+    if getattr(args, "title_holders_only", False):
+        from echotales.pipeline.resolve.title_holders import link_title_holders
+
+        report = link_title_holders(store, args.novel)
+        print(report.summary())
+        store.conn.commit()
+        store.close()
+        return 0
     if getattr(args, "kinds_only", False):
         from pathlib import Path
 

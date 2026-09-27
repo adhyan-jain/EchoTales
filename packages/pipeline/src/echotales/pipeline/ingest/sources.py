@@ -24,6 +24,11 @@ class SourceConfig:
     adapter: str
     chapters: ChapterRange | None = None
     lexicon: Path | None = None
+    #: "family_first" (Chinese/Korean: "Gu Yue Mo Bei" is shortened to "Mo
+    #: Bei") or "given_first" (Western: "Klein Moretti" is shortened to
+    #: "Klein"). Decides which end of a full name a short form may be; see
+    #: `normalize.name_containment`.
+    name_order: str = "family_first"
 
     def open_adapter(self) -> tuple[Epub, SourceAdapter]:
         """Open the EPUB and build its adapter.
@@ -52,6 +57,7 @@ def load_sources(path: Path | str = "data/sources.toml") -> dict[str, SourceConf
             adapter=entry.get("adapter", "generic"),
             chapters=ChapterRange.parse(chapters) if chapters else None,
             lexicon=Path(lexicon) if lexicon else None,
+            name_order=entry.get("name_order", "family_first"),
         )
         out[cfg.id] = cfg
     return out

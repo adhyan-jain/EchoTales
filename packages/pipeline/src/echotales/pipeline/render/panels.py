@@ -1404,7 +1404,7 @@ def character_looks(
             appearance, beat_text, floor_severity=floor_severity
         )
     gender, _age = _demographics(
-        store, persona_id, novel_id=novel_id, entity_id=entity_id
+        store, persona_id, novel_id=novel_id, entity_id=entity_id, position=chapter
     )
     clause = ""
     condition = ""

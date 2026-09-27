@@ -28,6 +28,9 @@ chapters = "1-213"
 # NON_DIEGETIC and excluded from identity processing, since they describe
 # end-of-volume state and would leak knowledge the reader does not yet have.
 lexicon = "data/lexicons/lord-of-the-mysteries.toml"
+# Western name order: "Klein Moretti" is later just "Klein" (a given name),
+# not "Moretti". See ingest/normalize.py::name_containment.
+name_order = "given_first"
 
 [[novel]]
 id = "omniscient-readers-viewpoint"

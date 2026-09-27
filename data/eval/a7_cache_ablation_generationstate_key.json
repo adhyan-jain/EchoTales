@@ -1,0 +1,946 @@
+{
+  "db": "data/db/reverend-insanity.db",
+  "chapters": [
+    1.0,
+    2.0,
+    166.0,
+    178.0,
+    197.0
+  ],
+  "gpu_s_per_panel_estimate": 22.0,
+  "baseline_panels": 218,
+  "baseline_wall_s": 191.05,
+  "shipped_key_reproduced": true,
+  "targets": {
+    "cast_self": "reverend-insanity:self:476821534c",
+    "cast_persona": "reverend-insanity:self:476821534c:body1",
+    "offcast_persona": "reverend-insanity:self:b1ef741901:body1",
+    "witness_observer": "reverend-insanity:self:0035e71331"
+  },
+  "events": {
+    "E0_replay": {
+      "realistic": {
+        "panels": 218,
+        "only_in_one_run": 0,
+        "stale": 0,
+        "drawn_stale": 0,
+        "name_changed": 0,
+        "prompt_changed": 0,
+        "conditions": {
+          "A": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "B": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "C": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          }
+        },
+        "conditions_drawn_truth": {
+          "A": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "B": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "C": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          }
+        }
+      },
+      "wall_s": 190.5
+    },
+    "E1_cast_appearance": {
+      "realistic": {
+        "panels": 218,
+        "only_in_one_run": 0,
+        "stale": 23,
+        "drawn_stale": 21,
+        "name_changed": 0,
+        "prompt_changed": 0,
+        "conditions": {
+          "A": {
+            "correct_reuse": 195,
+            "incorrect_reuse": 2,
+            "necessary_regen": 21,
+            "unnecessary_regen": 0,
+            "hits": 197,
+            "misses": 21,
+            "unique_keys": 239,
+            "est_gpu_s": 462.0
+          },
+          "B": {
+            "correct_reuse": 195,
+            "incorrect_reuse": 23,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "C": {
+            "correct_reuse": 195,
+            "incorrect_reuse": 23,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          }
+        },
+        "conditions_drawn_truth": {
+          "A": {
+            "correct_reuse": 197,
+            "incorrect_reuse": 0,
+            "necessary_regen": 21,
+            "unnecessary_regen": 0
+          },
+          "B": {
+            "correct_reuse": 197,
+            "incorrect_reuse": 21,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "C": {
+            "correct_reuse": 197,
+            "incorrect_reuse": 21,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          }
+        }
+      },
+      "frozen_prompt": {
+        "panels": 218,
+        "only_in_one_run": 0,
+        "stale": 23,
+        "drawn_stale": 21,
+        "name_changed": 0,
+        "prompt_changed": 0,
+        "conditions": {
+          "A": {
+            "correct_reuse": 195,
+            "incorrect_reuse": 2,
+            "necessary_regen": 21,
+            "unnecessary_regen": 0,
+            "hits": 197,
+            "misses": 21,
+            "unique_keys": 239,
+            "est_gpu_s": 462.0
+          },
+          "B": {
+            "correct_reuse": 195,
+            "incorrect_reuse": 23,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "C": {
+            "correct_reuse": 195,
+            "incorrect_reuse": 23,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          }
+        },
+        "conditions_drawn_truth": {
+          "A": {
+            "correct_reuse": 197,
+            "incorrect_reuse": 0,
+            "necessary_regen": 21,
+            "unnecessary_regen": 0
+          },
+          "B": {
+            "correct_reuse": 197,
+            "incorrect_reuse": 21,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "C": {
+            "correct_reuse": 197,
+            "incorrect_reuse": 21,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          }
+        }
+      },
+      "wall_s": 195.79
+    },
+    "E1b_cast_attire": {
+      "realistic": {
+        "panels": 218,
+        "only_in_one_run": 0,
+        "stale": 23,
+        "drawn_stale": 21,
+        "name_changed": 0,
+        "prompt_changed": 0,
+        "conditions": {
+          "A": {
+            "correct_reuse": 195,
+            "incorrect_reuse": 2,
+            "necessary_regen": 21,
+            "unnecessary_regen": 0,
+            "hits": 197,
+            "misses": 21,
+            "unique_keys": 239,
+            "est_gpu_s": 462.0
+          },
+          "B": {
+            "correct_reuse": 195,
+            "incorrect_reuse": 23,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "C": {
+            "correct_reuse": 195,
+            "incorrect_reuse": 23,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          }
+        },
+        "conditions_drawn_truth": {
+          "A": {
+            "correct_reuse": 197,
+            "incorrect_reuse": 0,
+            "necessary_regen": 21,
+            "unnecessary_regen": 0
+          },
+          "B": {
+            "correct_reuse": 197,
+            "incorrect_reuse": 21,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "C": {
+            "correct_reuse": 197,
+            "incorrect_reuse": 21,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          }
+        }
+      },
+      "frozen_prompt": {
+        "panels": 218,
+        "only_in_one_run": 0,
+        "stale": 23,
+        "drawn_stale": 21,
+        "name_changed": 0,
+        "prompt_changed": 0,
+        "conditions": {
+          "A": {
+            "correct_reuse": 195,
+            "incorrect_reuse": 2,
+            "necessary_regen": 21,
+            "unnecessary_regen": 0,
+            "hits": 197,
+            "misses": 21,
+            "unique_keys": 239,
+            "est_gpu_s": 462.0
+          },
+          "B": {
+            "correct_reuse": 195,
+            "incorrect_reuse": 23,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "C": {
+            "correct_reuse": 195,
+            "incorrect_reuse": 23,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          }
+        },
+        "conditions_drawn_truth": {
+          "A": {
+            "correct_reuse": 197,
+            "incorrect_reuse": 0,
+            "necessary_regen": 21,
+            "unnecessary_regen": 0
+          },
+          "B": {
+            "correct_reuse": 197,
+            "incorrect_reuse": 21,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "C": {
+            "correct_reuse": 197,
+            "incorrect_reuse": 21,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          }
+        }
+      },
+      "wall_s": 194.18
+    },
+    "E2_offcast_appearance": {
+      "realistic": {
+        "panels": 218,
+        "only_in_one_run": 0,
+        "stale": 0,
+        "drawn_stale": 0,
+        "name_changed": 0,
+        "prompt_changed": 0,
+        "conditions": {
+          "A": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "B": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "C": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          }
+        },
+        "conditions_drawn_truth": {
+          "A": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "B": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "C": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          }
+        }
+      },
+      "frozen_prompt": {
+        "panels": 218,
+        "only_in_one_run": 0,
+        "stale": 0,
+        "drawn_stale": 0,
+        "name_changed": 0,
+        "prompt_changed": 0,
+        "conditions": {
+          "A": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "B": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "C": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          }
+        },
+        "conditions_drawn_truth": {
+          "A": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "B": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "C": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          }
+        }
+      },
+      "wall_s": 193.28
+    },
+    "E3_cast_new_body": {
+      "realistic": {
+        "panels": 218,
+        "only_in_one_run": 0,
+        "stale": 137,
+        "drawn_stale": 0,
+        "name_changed": 0,
+        "prompt_changed": 0,
+        "conditions": {
+          "A": {
+            "correct_reuse": 81,
+            "incorrect_reuse": 0,
+            "necessary_regen": 137,
+            "unnecessary_regen": 0,
+            "hits": 81,
+            "misses": 137,
+            "unique_keys": 355,
+            "est_gpu_s": 3014.0
+          },
+          "B": {
+            "correct_reuse": 81,
+            "incorrect_reuse": 137,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "C": {
+            "correct_reuse": 81,
+            "incorrect_reuse": 137,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          }
+        },
+        "conditions_drawn_truth": {
+          "A": {
+            "correct_reuse": 81,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 137
+          },
+          "B": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "C": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          }
+        }
+      },
+      "frozen_prompt": {
+        "panels": 218,
+        "only_in_one_run": 0,
+        "stale": 137,
+        "drawn_stale": 0,
+        "name_changed": 0,
+        "prompt_changed": 0,
+        "conditions": {
+          "A": {
+            "correct_reuse": 81,
+            "incorrect_reuse": 0,
+            "necessary_regen": 137,
+            "unnecessary_regen": 0,
+            "hits": 81,
+            "misses": 137,
+            "unique_keys": 355,
+            "est_gpu_s": 3014.0
+          },
+          "B": {
+            "correct_reuse": 81,
+            "incorrect_reuse": 137,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "C": {
+            "correct_reuse": 81,
+            "incorrect_reuse": 137,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          }
+        },
+        "conditions_drawn_truth": {
+          "A": {
+            "correct_reuse": 81,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 137
+          },
+          "B": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "C": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          }
+        }
+      },
+      "wall_s": 197.82
+    },
+    "E5_cast_alias_only": {
+      "realistic": {
+        "panels": 218,
+        "only_in_one_run": 0,
+        "stale": 0,
+        "drawn_stale": 0,
+        "name_changed": 137,
+        "prompt_changed": 0,
+        "conditions": {
+          "A": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "B": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "C": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          }
+        },
+        "conditions_drawn_truth": {
+          "A": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "B": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "C": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          }
+        }
+      },
+      "frozen_prompt": {
+        "panels": 218,
+        "only_in_one_run": 0,
+        "stale": 0,
+        "drawn_stale": 0,
+        "name_changed": 137,
+        "prompt_changed": 0,
+        "conditions": {
+          "A": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "B": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "C": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          }
+        },
+        "conditions_drawn_truth": {
+          "A": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "B": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "C": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          }
+        }
+      },
+      "wall_s": 193.36
+    },
+    "E6_cast_self_attribute": {
+      "realistic": {
+        "panels": 218,
+        "only_in_one_run": 0,
+        "stale": 137,
+        "drawn_stale": 0,
+        "name_changed": 0,
+        "prompt_changed": 0,
+        "conditions": {
+          "A": {
+            "correct_reuse": 81,
+            "incorrect_reuse": 0,
+            "necessary_regen": 137,
+            "unnecessary_regen": 0,
+            "hits": 81,
+            "misses": 137,
+            "unique_keys": 355,
+            "est_gpu_s": 3014.0
+          },
+          "B": {
+            "correct_reuse": 81,
+            "incorrect_reuse": 137,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "C": {
+            "correct_reuse": 81,
+            "incorrect_reuse": 137,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          }
+        },
+        "conditions_drawn_truth": {
+          "A": {
+            "correct_reuse": 81,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 137
+          },
+          "B": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "C": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          }
+        }
+      },
+      "frozen_prompt": {
+        "panels": 218,
+        "only_in_one_run": 0,
+        "stale": 137,
+        "drawn_stale": 0,
+        "name_changed": 0,
+        "prompt_changed": 0,
+        "conditions": {
+          "A": {
+            "correct_reuse": 81,
+            "incorrect_reuse": 0,
+            "necessary_regen": 137,
+            "unnecessary_regen": 0,
+            "hits": 81,
+            "misses": 137,
+            "unique_keys": 355,
+            "est_gpu_s": 3014.0
+          },
+          "B": {
+            "correct_reuse": 81,
+            "incorrect_reuse": 137,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          },
+          "C": {
+            "correct_reuse": 81,
+            "incorrect_reuse": 137,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0,
+            "hits": 218,
+            "misses": 0,
+            "unique_keys": 218,
+            "est_gpu_s": 0.0
+          }
+        },
+        "conditions_drawn_truth": {
+          "A": {
+            "correct_reuse": 81,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 137
+          },
+          "B": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          },
+          "C": {
+            "correct_reuse": 218,
+            "incorrect_reuse": 0,
+            "necessary_regen": 0,
+            "unnecessary_regen": 0
+          }
+        }
+      },
+      "wall_s": 205.87
+    },
+    "E4_observer_witness": {
+      "realistic": {
+        "panels": 218,
+        "only_in_one_run": 0,
+        "stale": 188,
+        "drawn_stale": 188,
+        "name_changed": 188,
+        "prompt_changed": 182,
+        "conditions": {
+          "A": {
+            "correct_reuse": 30,
+            "incorrect_reuse": 0,
+            "necessary_regen": 188,
+            "unnecessary_regen": 0,
+            "hits": 30,
+            "misses": 188,
+            "unique_keys": 406,
+            "est_gpu_s": 4136.0
+          },
+          "B": {
+            "correct_reuse": 30,
+            "incorrect_reuse": 0,
+            "necessary_regen": 188,
+            "unnecessary_regen": 0,
+            "hits": 30,
+            "misses": 188,
+            "unique_keys": 406,
+            "est_gpu_s": 4136.0
+          },
+          "C": {
+            "correct_reuse": 30,
+            "incorrect_reuse": 0,
+            "necessary_regen": 188,
+            "unnecessary_regen": 0,
+            "hits": 30,
+            "misses": 188,
+            "unique_keys": 406,
+            "est_gpu_s": 4136.0
+          }
+        },
+        "conditions_drawn_truth": {
+          "A": {
+            "correct_reuse": 30,
+            "incorrect_reuse": 0,
+            "necessary_regen": 188,
+            "unnecessary_regen": 0
+          },
+          "B": {
+            "correct_reuse": 30,
+            "incorrect_reuse": 0,
+            "necessary_regen": 188,
+            "unnecessary_regen": 0
+          },
+          "C": {
+            "correct_reuse": 30,
+            "incorrect_reuse": 0,
+            "necessary_regen": 188,
+            "unnecessary_regen": 0
+          }
+        }
+      },
+      "frozen_prompt": {
+        "panels": 218,
+        "only_in_one_run": 0,
+        "stale": 188,
+        "drawn_stale": 188,
+        "name_changed": 188,
+        "prompt_changed": 182,
+        "conditions": {
+          "A": {
+            "correct_reuse": 30,
+            "incorrect_reuse": 0,
+            "necessary_regen": 188,
+            "unnecessary_regen": 0,
+            "hits": 30,
+            "misses": 188,
+            "unique_keys": 406,
+            "est_gpu_s": 4136.0
+          },
+          "B": {
+            "correct_reuse": 30,
+            "incorrect_reuse": 0,
+            "necessary_regen": 188,
+            "unnecessary_regen": 0,
+            "hits": 30,
+            "misses": 188,
+            "unique_keys": 406,
+            "est_gpu_s": 4136.0
+          },
+          "C": {
+            "correct_reuse": 30,
+            "incorrect_reuse": 0,
+            "necessary_regen": 188,
+            "unnecessary_regen": 0,
+            "hits": 30,
+            "misses": 188,
+            "unique_keys": 406,
+            "est_gpu_s": 4136.0
+          }
+        },
+        "conditions_drawn_truth": {
+          "A": {
+            "correct_reuse": 30,
+            "incorrect_reuse": 0,
+            "necessary_regen": 188,
+            "unnecessary_regen": 0
+          },
+          "B": {
+            "correct_reuse": 30,
+            "incorrect_reuse": 0,
+            "necessary_regen": 188,
+            "unnecessary_regen": 0
+          },
+          "C": {
+            "correct_reuse": 30,
+            "incorrect_reuse": 0,
+            "necessary_regen": 188,
+            "unnecessary_regen": 0
+          }
+        }
+      },
+      "wall_s": 45.34
+    }
+  }
+}

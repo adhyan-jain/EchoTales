@@ -36,6 +36,9 @@ python3 -c "from echotales.core.store import Store; \
   s=Store('$DB'); build_personas('reverend-insanity', s, client=_build_client(s)); s.conn.commit()"
 echotales --db $DB observations --novel reverend-insanity
 sqlite3 $DB "PRAGMA wal_checkpoint(TRUNCATE);" && cp $DB data/db/reverend-insanity.db
+# since 2026-09-27 a non-canonical build writes its compounding curve under
+# data/scratch/eval/compounding/; promote it with the database:
+cp data/scratch/eval/compounding/reverend-insanity.json data/eval/compounding/
 ```
 
 The full run took 12 minutes on the local RTX 4060. That is not 47: NER responses were served from `data/lexicons/reverend-insanity-ner-cache.json`, which is keyed by chapter-text hash. A cold-cache run is the 47-minute figure in `NER_WINDOWING_RESULT.md`.

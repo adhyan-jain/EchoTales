@@ -434,6 +434,13 @@ class TargetState:
     #: `(persona_id, ((key, value), ...))` for the persona that is drawn --
     #: the first bound one, matching the render path's "take the first" rule.
     persona_attributes: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = ()
+    #: Every standing fact of the drawn persona valid at the position -- a
+    #: superset of `persona_attributes`, hashed but never handed to a prompt.
+    #: The prompt reads more than appearance (gender and age for the count
+    #: tags, the reference path), so hashing only what `persona_reader`
+    #: returns let a real prompt change through with an unchanged key (A7
+    #: re-run, 2026-09-27: 23 stale reuses on an attire change).
+    persona_facts: tuple[tuple[str, str], ...] = ()
 
 
 @dataclass(slots=True, frozen=True)
@@ -507,6 +514,7 @@ class GenerationState:
                     "persona_ids": list(t.persona_ids),
                     "self_attributes": [list(kv) for kv in t.self_attributes],
                     "persona_attributes": [[pid, [list(kv) for kv in attrs]] for pid, attrs in t.persona_attributes],
+                    "persona_facts": [list(kv) for kv in t.persona_facts],
                 }
                 for t in self.targets
             ],
@@ -536,22 +544,24 @@ class GenerationState:
                     persona_attributes=tuple(
                         (pid, tuple((k, v) for k, v in attrs)) for pid, attrs in t["persona_attributes"]
                     ),
+                    persona_facts=tuple((k, v) for k, v in t.get("persona_facts", [])),
                 )
                 for t in d["targets"]  # type: ignore[attr-defined]
             ),
         )
 
     def digest(self) -> str:
-        """Hash of exactly what a modality consumes: observer, per-target
-        resolved state, and the render-relevant read set.
+        """Hash of what a modality consumes: per-target resolved state and the
+        render-relevant read set.
 
-        Deliberately excludes the story position (the resolved content already
-        reflects it, and the plan carries the chapter), the allowed/forbidden
-        fact lists and provenance (audit data, not inputs), and any fact the
-        compile did not consume.
+        Deliberately excludes the observer (the per-target state already
+        reflects what the observer can see; hashing the id itself re-rendered
+        30 panels whose drawn state was identical when only the observer
+        changed, A7 re-run), the story position (the resolved content reflects
+        it, and the plan carries the chapter), and the allowed/forbidden and
+        provenance lists (audit data, not inputs).
         """
         payload = {
-            "observer": self.observer_id,
             "targets": self.to_dict()["targets"],
             "read_set": hash_read_set(self.read_set),
         }
@@ -572,6 +582,8 @@ def compile_generation_state(
     resolver: StateResolver | None = None,
     persona_reader: PersonaReader | None = None,
 ) -> GenerationState:
+    # (`persona_facts` below: every standing fact of the drawn persona whose
+    # interval has begun by `position`; hashed, never passed to a prompt.)
     """Compile an explicit GenerationState for a set of target entities.
 
     `resolver`, when given, is reused (its voided-timeline pre-pass is the
@@ -618,11 +630,17 @@ def compile_generation_state(
             allowed.add(f"rel:{rel_type}:{dst}")
 
         persona_attrs: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = ()
+        persona_facts: tuple[tuple[str, str], ...] = ()
         if persona_reader is not None and obs_res.persona_ids:
             drawn = obs_res.persona_ids[0]
             attrs = tuple(sorted(persona_reader(drawn).items()))
             persona_attrs = ((drawn, attrs),)
-            for k, v in attrs:
+            persona_facts = tuple(sorted({
+                (a.key, a.value)
+                for a in store.get_attributes(TargetKind.PERSONA, drawn)
+                if a.is_standing and a.interval.from_lb <= position
+            } | set(attrs)))
+            for k, v in persona_facts:
                 deps.add(fact_ref("attr", drawn, k, v))
 
         compiled.append(
@@ -631,6 +649,7 @@ def compile_generation_state(
                 persona_ids=tuple(obs_res.persona_ids),
                 self_attributes=tuple(sorted(obs_res.attributes.items())),
                 persona_attributes=persona_attrs,
+                persona_facts=persona_facts,
             )
         )
 

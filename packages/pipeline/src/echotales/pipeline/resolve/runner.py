@@ -207,6 +207,18 @@ def _context_for(mention: Mention, chapter_text: str) -> str:
     return chapter_text[lo : lo + _CONTEXT_WINDOW]
 
 
+def _given_name_first(novel_id: str) -> bool:
+    """`name_order = "given_first"` in sources.toml; family-first otherwise,
+    including when the config or the novel's entry is absent (tests)."""
+    from echotales.pipeline.ingest.sources import load_sources
+
+    try:
+        source = load_sources().get(novel_id)
+    except (FileNotFoundError, OSError, ValueError):
+        return False
+    return source is not None and source.name_order == "given_first"
+
+
 class GlobalResolver:
     """Incremental entity resolution with evidence accumulation.
 
@@ -237,6 +249,7 @@ class GlobalResolver:
         self.retriever = CandidateRetriever()
         self.queue = DeferredQueue()
         self.report = ResolveReport(novel_id=novel_id)
+        self.given_name_first = _given_name_first(novel_id)
         #: Guards against the one collision case stable ids can't rule out
         #: on their own -- two distinct founding mentions sharing an
         #: identical (normalized label, discourse position) key. Resolved
@@ -482,6 +495,7 @@ class GlobalResolver:
             sole_copresent_target_id=sole_copresent_target_id,
             lexicon=self.lexicon,
             ambiguous_tokens=self._ambiguous_tokens(),
+                given_name_first=self.given_name_first,
         )
         for candidate in candidates:
             candidate.evidence = score_evidence(
@@ -639,6 +653,7 @@ class GlobalResolver:
                 context=case.context,
                 lexicon=self.lexicon,
                 ambiguous_tokens=self._ambiguous_tokens(),
+                given_name_first=self.given_name_first,
             )
             for candidate in candidates:
                 candidate.evidence = score_evidence(
@@ -939,13 +954,32 @@ def resolve_novel(
     from echotales.pipeline.eval.compounding import record_resolution_half
 
     try:
+        # Only the run of record writes the tracked curve: re-resolving a
+        # scratch copy of LOTM overwrote data/eval/compounding/ (2026-09-27).
+        from echotales.pipeline import paths
+
         record_resolution_half(
             novel_id,
             window_size=cfg.window_size,
             by_window=resolver.report.link_method_by_window,
+            root=None if store.is_canonical else paths.SCRATCH_DIR / "eval" / "compounding",
         )
     except OSError as exc:
         log.warning("could not persist the compounding curve for %s: %s", novel_id, exc)
+
+    # Titles named later in the volume ("the clan head" in ch1, "clan leader
+    # Gu Yue Bo" from ch25) -- a volume-level pass, so it runs once the whole
+    # volume is resolved (docs/EVOLUTION.md 4.95).
+    from echotales.pipeline.resolve.title_holders import link_title_holders
+
+    title_report = link_title_holders(store, novel_id)
+    log.info(title_report.summary())
+
+    # A transmigrated protagonist and the name of the body he took ("Zhou
+    # Mingrui" / "Klein Moretti" / "Klein" on LOTM) are one Self.
+    from echotales.pipeline.resolve.transmigration import merge_transmigrations
+
+    log.info(merge_transmigrations(store, novel_id).summary())
 
     # Legacy-kind backfill, always run (EVOLUTION 4.54): `_entity_kind`
     # above only types entities minted *this* run. A novel resolved before

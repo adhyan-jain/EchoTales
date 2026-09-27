@@ -212,7 +212,8 @@ def appearance_of(
 
 
 def _demographics(
-    store: Store, persona_id: str, *, novel_id: str = "", entity_id: str = ""
+    store: Store, persona_id: str, *, novel_id: str = "", entity_id: str = "",
+    position: float | None = None,
 ) -> tuple[str, str]:
     """`(gender, age_band)` from the trait profile `persona/build.py` wrote.
 
@@ -229,11 +230,17 @@ def _demographics(
     when the name and honorifics state nothing), so it is consulted rather
     than reimplemented -- and it returns `None` on thin or mixed evidence,
     which is preserved as `unknown` rather than forced.
+
+    `position` (a panel's story position) drops facts whose interval starts
+    later, the same rule `appearance_of` applies: without it a gender first
+    stated at chapter 100 already changed a chapter-5 panel's count tags
+    (2026-09-27, found by `test_generation_state_wiring.py`). Reference sheets
+    pass none -- a sheet is the whole-novel canonical look.
     """
     attrs = {
         a.key: a.value
         for a in store.get_attributes(TargetKind.PERSONA, persona_id)
-        if a.is_standing
+        if a.is_standing and (position is None or a.interval.from_lb <= position)
     }
     gender = attrs.get("gender", "unknown")
     age_band = attrs.get("age_band", "adult")

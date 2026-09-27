@@ -292,6 +292,9 @@ class AttributionMethod(StrEnum):
     #: UNRESOLVED so a consumer can tell "genuinely nobody" from "some
     #: consistent nobody in particular."
     ANONYMOUS_SLOT = "ANONYMOUS_SLOT"
+    #: An epithet speaker ("the clan head said") mapped to the named holder of
+    #: that title at this position (`resolve/title_holders.py`).
+    TITLE_HOLDER = "TITLE_HOLDER"
     #: A role-title speaker tag with no proper name attached ("the clan head
     #: instructed") -- see `speakers/attribution.py::attribute_epithet`.
     #: Distinct from ANONYMOUS_SLOT: the text itself names *who*, just by
@@ -316,6 +319,10 @@ class ResolutionMethod(StrEnum):
     NAME_CONTAINMENT = "NAME_CONTAINMENT"
     RELATIONAL_COPRESENCE = "RELATIONAL_COPRESENCE"
     SCORED = "SCORED"
+    #: A title mention linked to the holder the text declares for that title
+    #: elsewhere in the volume ("the clan head" in ch1, "clan leader Gu Yue Bo"
+    #: from ch25 on) -- `resolve/title_holders.py`.
+    TITLE_HOLDER = "TITLE_HOLDER"
     LLM_ADJUDICATED = "LLM_ADJUDICATED"
     DEFERRED_RERESOLVED = "DEFERRED_RERESOLVED"
     MANUAL = "MANUAL"

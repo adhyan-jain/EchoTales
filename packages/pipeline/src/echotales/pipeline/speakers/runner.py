@@ -53,6 +53,11 @@ _ATTRIBUTION_CANDIDATE_DETECTOR = HeuristicDetector()
 #: not a dozen distinct background speakers.
 _MAX_ANON_SLOTS = 4
 
+_HISTORICAL_QUALIFIER = re.compile(
+    r"\b(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|generation|"
+    r"previous|former|late|old|next|future|deputy|vice|acting)\b"
+)
+
 
 @dataclass(slots=True)
 class AttributionReport:
@@ -502,6 +507,13 @@ def attribute_novel(
                 role = next(
                     (r for r in _ROLE_EPITHETS if r in speaker.casefold()), speaker.casefold()
                 )
+                # ...but an ordinal or historical qualifier names a different
+                # person: "the fourth generation clan head" in RI ch15 is a
+                # long-dead ancestor in a vision, and collapsing him to
+                # "clan-head" gave his lines the living clan head's slot.
+                qualifier = _HISTORICAL_QUALIFIER.findall(speaker.casefold().split(role)[0])
+                if qualifier:
+                    role = " ".join(qualifier) + " " + role
                 speaker = f"{novel_id}:epithet:{chapter.number:g}:{role.replace(' ', '-')}"
             span.speaker_self_id = speaker
             span.attribution_method = attribution.method

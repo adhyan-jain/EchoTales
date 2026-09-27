@@ -1,0 +1,127 @@
+{
+  "database": "data/scratch/db/lotm-namefix.db",
+  "git_commit": "22c678f-dirty",
+  "gold_path": "data/gold/lord-of-the-mysteries-c1-c3.jsonl",
+  "metrics": {
+    "escalation": {
+      "avg_latency_ms": 4002.6,
+      "by_stage": [
+        {
+          "avg_ms": 7119.0,
+          "calls": 7,
+          "escalations": 0,
+          "stage": "appearance_extraction",
+          "tier": "local",
+          "tokens": 13133
+        },
+        {
+          "avg_ms": 3290.625,
+          "calls": 8,
+          "escalations": 0,
+          "stage": "character_profile",
+          "tier": "local",
+          "tokens": 7673
+        },
+        {
+          "avg_ms": 5212.205882352941,
+          "calls": 68,
+          "escalations": 0,
+          "stage": "ner",
+          "tier": "local",
+          "tokens": 129968
+        },
+        {
+          "avg_ms": 2044.4,
+          "calls": 5,
+          "escalations": 0,
+          "stage": "persona_split",
+          "tier": "local",
+          "tokens": 3201
+        },
+        {
+          "avg_ms": 947.8965517241379,
+          "calls": 29,
+          "escalations": 0,
+          "stage": "speaker_attribution",
+          "tier": "local",
+          "tokens": 13450
+        }
+      ],
+      "calls": 117,
+      "escalation_rate": 0.0,
+      "escalations": 0,
+      "tokens": 167425
+    },
+    "held_out_coverage": {
+      "calibration_size": 0,
+      "empirical": 0.0,
+      "false_links": 0,
+      "split_chapter": 0.0,
+      "target": 0.95,
+      "test_size": 0
+    },
+    "linked_share": {
+      "ci_high": 0.7870967741935484,
+      "ci_low": 0.6451612903225806,
+      "n": 155,
+      "point": 0.7161290322580646,
+      "resamples": 2000
+    },
+    "silver": {
+      "b3": {
+        "f1": 0.8523751434614079,
+        "precision": 0.9935483870967742,
+        "recall": 0.7463292547274749
+      },
+      "b3_project_variant": {
+        "f1": 0.7752597001045918,
+        "precision": 0.990990990990991,
+        "recall": 0.636662958843159
+      },
+      "banner": "SILVER -- LLM-derived reference set (Claude), not human gold; no IAA",
+      "ceafe": {
+        "f1": 0.4330937862950058,
+        "precision": 0.8661875725900116,
+        "recall": 0.2887291908633372
+      },
+      "conll": {
+        "f1": 0.7190879338504284,
+        "precision": 0.7190879338504285,
+        "recall": 0.7190879338504285
+      },
+      "muc": {
+        "f1": 0.8717948717948718,
+        "precision": 0.9902912621359223,
+        "recall": 0.7786259541984732
+      },
+      "recall_at_k": {
+        "by_alias_type": {
+          "RIGID_NAME": {
+            "1": 1.0,
+            "10": 1.0,
+            "20": 1.0,
+            "5": 1.0
+          }
+        },
+        "by_alias_type_n": {
+          "RIGID_NAME": 129
+        },
+        "cases": 129,
+        "overall": {
+          "1": 1.0,
+          "10": 1.0,
+          "20": 1.0,
+          "5": 1.0
+        },
+        "unmapped": 15
+      },
+      "records": 155
+    }
+  },
+  "novel_id": "lord-of-the-mysteries",
+  "platform": "Linux-7.2.4-arch1-2-x86_64-with-glibc2.44",
+  "python": "3.12.13",
+  "run_id": "lord-of-the-mysteries-1790467690-5ed86f9a",
+  "seed": 20260923,
+  "written_at": 1790467690.9874246
+}
