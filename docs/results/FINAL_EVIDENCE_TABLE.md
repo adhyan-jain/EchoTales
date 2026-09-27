@@ -76,7 +76,7 @@ Status key:
 - Human-anchored P/R/F1 and IAA (owner decision: no human annotation).
 - Learned-scorer benefit: nothing is left for it to decide (0 labelled pairs reach it).
 - LINK / NEW / DEFER decision accuracy and held-out calibration coverage.
-- Image quality (CLIPScore, identity consistency, human rating); audio MOS and speaker similarity.
+- Image quality (identity consistency, human rating); audio MOS and speaker similarity. Prompt-image alignment is now measured: CLIPScore, current RI render 77/87 panels match their own prompt better than another panel's (`CLIPSCORE.md`).
 - BOOKCOREF / LitBank, GraphRAG / CORE-KG: **not directly comparable / not reproduced in this evaluation**.
 - LOTM full volume, ORV.
 

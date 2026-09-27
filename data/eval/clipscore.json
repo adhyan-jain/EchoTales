@@ -1,0 +1,43 @@
+{
+  "model": "openai/clip-vit-large-patch14",
+  "seed": 20260927,
+  "metric": "CLIPScore = 2.5 * max(cos, 0) * 100 (Hessel et al., 2021); prompt truncated to 77 tokens",
+  "control": "the same images scored against a prompt from another panel of the same render",
+  "runs": {
+    "data/novels/RI/panels/ch1/v54_crowd-solo-scenestate-fix/manifest.jsonl": {
+      "panels": 87,
+      "clipscore_mean": 66.67,
+      "clipscore_sd": 7.61,
+      "shuffled_prompt_mean": 54.32,
+      "matched_beats_shuffled": "77/87"
+    },
+    "data/novels/RI/panels/ch1/v9_2026-08-17_short-clause-scene-restored/manifest.jsonl": {
+      "panels": 21,
+      "clipscore_mean": 64.89,
+      "clipscore_sd": 4.18,
+      "shuffled_prompt_mean": 62.94,
+      "matched_beats_shuffled": "7/21"
+    },
+    "data/novels/RI/experiments/observer-contrast/reader/manifest.jsonl": {
+      "panels": 10,
+      "clipscore_mean": 69.41,
+      "clipscore_sd": 5.96,
+      "shuffled_prompt_mean": 64.39,
+      "matched_beats_shuffled": "6/10"
+    },
+    "data/novels/RI/experiments/observer-contrast/nonwitness/manifest.jsonl": {
+      "panels": 10,
+      "clipscore_mean": 71.68,
+      "clipscore_sd": 3.01,
+      "shuffled_prompt_mean": 69.78,
+      "matched_beats_shuffled": "6/10"
+    },
+    "data/novels/LOTM/panels/manifest.jsonl": {
+      "panels": 73,
+      "clipscore_mean": 53.98,
+      "clipscore_sd": 6.55,
+      "shuffled_prompt_mean": 48.44,
+      "matched_beats_shuffled": "62/73"
+    }
+  }
+}

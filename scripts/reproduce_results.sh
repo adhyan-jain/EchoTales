@@ -89,6 +89,7 @@ if [[ "$NOVEL" == "reverend-insanity" ]]; then
   python3 scripts/paper/make_paper_artifacts.py    # -> docs/paper/TABLES.md, FIGURES.md
   python3 scripts/paper/plot_paper_figures.py      # -> docs/paper/figures/*.svg (plots)
   python3 scripts/paper/draw_diagrams.py           # -> Figures 1-7 (diagrams; 5 and 6 to docs/private)
+  #   python3 scripts/eval/clip_score.py <panel manifest.jsonl ...>   # prompt-image alignment (GPU)
 fi
 
 echo

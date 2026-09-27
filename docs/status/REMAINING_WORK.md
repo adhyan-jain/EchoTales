@@ -60,7 +60,7 @@ There is also no **visual ablation** (render with a flat, non-temporal state ver
 
 | Metric | State | Why |
 |---|---|---|
-| **CLIPScore** / prompt–image alignment | Not run | The 1.7 GB CLIP ViT-L/14 download was never made. `RUNPOD_MIGRATION.md` Section 5 lists it as the cheapest high-value paid item, though it runs locally too. |
+| **CLIPScore** / prompt–image alignment | **Measured 2026-09-27** (`docs/results/CLIPSCORE.md`): current RI ch1 render, 77/87 panels align with their own prompt over a shuffled one (v9: 7/21) | The 1.7 GB CLIP ViT-L/14 download was never made. `RUNPOD_MIGRATION.md` Section 5 lists it as the cheapest high-value paid item, though it runs locally too. |
 | **Character identity consistency** (face or embedding similarity across panels) | Not built | No metric exists. Consistency is judged by eye in `VERSIONS.md`. |
 | **Human preference / quality rating** | Human-only | None. |
 | Observer contrast **at scale** | 5 panels, 1 chapter | It demonstrates the mechanism (reader 5/5 conditioned, non-reader 0/5), but it is not a benchmark. |
