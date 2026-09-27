@@ -19,6 +19,30 @@ identity (8 mentions). Nothing else changed.
 | v1 | archived at `data/archive/db/reverend-insanity-v1-2026-09-25.db`; the untouched build original stays at `data/scratch/reruns/v1-final-ri.db` (`42107645…`) |
 | Re-checked on v1.1 | silver coreference (Table 4), hard-case resolution and taxonomy, observer ablation and evidence: **identical**. Retrieval (Table 5): Recall@1/10/20 identical; **Recall@5 87.0 → 84.8** (one title case moved from rank ≤5 to rank 6–10, because the holder's new title alias competes with the true candidate) |
 
+### v1.2 (2026-09-27): entity kinds only
+
+`data/db/reverend-insanity.db` is **v1.2**: v1.1 with eight Gu worms retyped
+from person to ITEM ("Flash Blink Gu", "Heaven Earth Magnificent Sound Gu",
+...; `resolve --kinds-only`, `resolve/class_nouns.py`, EVOLUTION 4.98).
+Mention targets, span types and speakers, and alias bindings are identical to
+v1.1 (content digest below), and no evaluation reads predicted entity kinds,
+so every result recorded for v1.1 holds for v1.2 unchanged. v1.1 is archived at
+`data/archive/db/reverend-insanity-v1.1-2026-09-27.db`.
+
+**Identity is now a content digest** (`scripts/maintenance/db_content_digest.py`),
+not a file hash. The databases run in WAL mode, and merely opening one through
+`Store` rewrites its header: the v1.1 file hash above changed from a read-only
+dry run, while its content matched v1.1 rebuilt from v1 exactly.
+
+| content digest | mentions | spans | entities | aliases |
+|---|---|---|---|---|
+| v1.1 | `857017e251d2df21` | `3277ae440b7ca2a8` | `b4a098127861e753` | `5c94814524dd6edb` |
+| v1.2 | `857017e251d2df21` | `3277ae440b7ca2a8` | `fbc2d9f701c1f628` | `5c94814524dd6edb` |
+
+Known and deliberately left for the next full resolve: "Hehehe" (a laugh,
+13 mentions) is still a person here. The NER filter now rejects it, but
+removing it means rebinding mentions, which a kinds-only update does not do.
+
 ### LOTM product database (2026-09-27)
 
 `data/db/lord-of-the-mysteries.db` (the 40-chapter product/webview database,
@@ -40,7 +64,8 @@ ingest, so it is not scored against the LOTM silver set; the ch1-20 rerun
 below remains the evaluation source.
 Places were then typed (`resolve --kinds-only`, EVOLUTION 4.97): 36 entities
 became LOCATION and 8 ORGANIZATION ("Tingen", every street, the Church, the
-Nighthawks), leaving 49 people.
+Nighthawks), and 6 Sequence names became CATEGORY ("Seer", "Beyonder", ...),
+leaving 43 people. Content digest `d128913bec48715e`.
 
 ## 1. Database identity
 

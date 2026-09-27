@@ -64,3 +64,29 @@ class TestClanPrefixDrop:
         m2 = next(m for m in store.get_mentions("t", 2.0) if m.text == "Dong Tu")
         assert m1.target_id is not None
         assert m2.target_id == m1.target_id
+
+
+class TestGroupQueriedByItsStrongestMention:
+    def test_a_group_led_by_a_kinship_word_still_links_by_its_full_name(self) -> None:
+        """RI ch93: the group ["grandfather", "Gu Yue Chi Lian"] was queried
+        as "grandfather" and minted a second Gu Yue Chi Lian (p=0.074)."""
+        store = Store(":memory:")
+        store.add_novel("t", "T", "x.epub", "generic")
+        store.add_chapter(_chapter(1.0, "Gu Yue Chi Lian walked into the hall. Chi Cheng followed."))
+        store.add_chapter(_chapter(2.0, "His grandfather, Gu Yue Chi Lian, frowned. Chi Cheng bowed."))
+        kin = _mention("m2", "grandfather", chapter=2.0, group="g2")
+        kin.alias_type, kin.offset = AliasType.RELATIONAL_DEICTIC, 4
+        name = _mention("m3", "Gu Yue Chi Lian", chapter=2.0, group="g2")
+        name.offset = 17
+        # Chi Cheng is present too, so "grandfather" has no sole co-present
+        # candidate and only the full name can settle the group.
+        others = [_mention("c1", "Chi Cheng", chapter=1.0, group="g3"), _mention("c2", "Chi Cheng", chapter=2.0, group="g4")]
+        others[0].offset, others[1].offset = 38, 44
+        store.add_mentions([_mention("m1", "Gu Yue Chi Lian", chapter=1.0, group="g1"), kin, name, *others])
+        store.conn.commit()
+
+        resolve_novel("t", store)
+
+        targets = {m.id: m.target_id for m in store.get_mentions("t")}
+        assert targets["m1"] is not None and targets["m3"] == targets["m1"]
+        assert len({e.canonical_label for e in store.all_selves("t")}) == len(store.all_selves("t"))

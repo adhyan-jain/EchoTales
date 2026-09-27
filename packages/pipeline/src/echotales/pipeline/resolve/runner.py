@@ -449,7 +449,11 @@ class GlobalResolver:
         speaker: str | None = None,
     ) -> ResolutionOutcome:
         """Resolve one local mention group."""
-        head = mentions[0]
+        # Query with the group's strongest mention, not its first. RI ch93's
+        # group ["grandfather", "Gu Yue Chi Lian"] was retrieved and scored as
+        # "grandfather" (p=0.074), so the rigid full name of an existing
+        # entity minted a second Gu Yue Chi Lian instead of an exact link.
+        head = max(mentions, key=lambda m: (m.alias_type is AliasType.RIGID_NAME, len(m.text.split())))
         label = display_label(m.text for m in mentions)
         context = _context_for(head, chapter_text)
 
@@ -565,7 +569,9 @@ class GlobalResolver:
                 rationale="deictic/title-only group: no naming mention to found an entity on",
             )
 
-        target_id = self._create_entity(head, label, self._entity_kind(mentions))
+        # Minted from the group's *first* mention, as before: the id is
+        # position-derived, and speaker spans and personas refer to it.
+        target_id = self._create_entity(mentions[0], label, self._entity_kind(mentions))
         self._maybe_flag_non_character(target_id, label, mentions)
         self._apply_link(
             mentions, target_id, context, gated.method, new=True, rationale=rationale

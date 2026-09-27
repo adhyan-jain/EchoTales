@@ -8060,3 +8060,30 @@ A broader variant, which counted every past-tense verb as action evidence, was t
 **Fix.** `Store.default_kind_self_ids` returns SELF rows that no labelled mention supports, and the backfill now considers them too, with its existing vote rule unchanged (the plurality must outright beat "character"). An entity typed from real label evidence is still never reconsidered, and that test now gives the entity a labelled mention.
 
 **Measured.** LOTM: 36 LOCATION and 8 ORGANIZATION out of 93; 49 people remain. A few rest on a single cache vote ("The Prideful One", "Constant", "Star Crystal", the epochs). That is the backfill's existing standard, not a new one, and it is the obvious place to tighten if a wrong one turns up. RI (2 candidates) and ORV (0): no change.
+
+### 4.98 What is not a character: class nouns, Gu worms, laughs; a group queried by its weakest mention *(2026-09-27)*
+
+This came from reading both novels' person lists with knowledge of the stories. The owner had asked to "use human-level intelligence to analyze and improve the pipeline".
+
+**LOTM Sequence names were people.** "Seer", "Beyonder", "Mystery Pryer", "Sleepless", "Apprentice" and "Marauder" are Beyonder potions and classes, which the translation capitalizes like names. `resolve/class_nouns.py` types an entity as the new `TargetKind.CATEGORY` (not a person) when the text itself treats the name as a class noun:
+- it is pluralized, takes an article or quantifier, or appears as "the Seer potion" / "Sequence 9 Beyonder";
+- in at least 2 places and at least 25% of its uses.
+
+Rare names coordinated with a class noun share its type ("choosing Apprentice, Marauder, or Seer"). By usage: Beyonder 104/118 generic, Seer 21/36. RI's nearest case is Bai Ning Bing at 2/669, and no RI or ORV entity qualifies. Missed: "Corpse Collector" has one generic use, below the floor.
+
+**RI Gu worms were people.** "Flash Blink Gu", "Heaven Earth Magnificent Sound Gu" and six others. The text never pluralizes them, so usage cannot show it. `sources.toml` now declares RI's `item_heads = ["Gu"]`, a fact about the world like `name_order`, and a multi-word label ending in a declared head is an ITEM. A single-word "Gu" is never retyped.
+
+**"Hehehe" was a person** (RI, 13 mentions). NER returned it as a character. Only "Haha" and "Heh" were on the interjection list, which now also matches any repeated H-syllable laugh ("Kiki" and "Heather" still pass), and the NER name filter now applies it.
+
+**A group queried by its weakest mention.** RI ch93 minted a second "Gu Yue Chi Lian": the group ["grandfather", "Gu Yue Chi Lian"] was retrieved and scored as "grandfather" (p = 0.074). `resolve_group` now queries with the strongest mention (rigid name first, then length) and still mints ids from the first mention, because a first attempt that minted from the head changed Gu Yue Dong Tu's id and would have orphaned his speaker spans. The regression test fails without the fix; its first two versions passed without it, because a toy chapter with one character lets the co-presence rule rescue the link.
+- RI re-resolve A/B: exactly 2 mentions move, and silver metrics are identical.
+- LOTM ch1–20 A/B: identical (B³ 99.4 / 74.6 / 85.2).
+
+**Applied.**
+- RI v1.2 carries the Gu kinds only; mentions, spans and aliases are byte-identical to v1.1, so no result moves.
+- LOTM's product database carries the Sequence names.
+- The head fix and the "Hehehe" removal wait for the next full build. A re-resolve drops persona bindings, and re-running personas for two mentions was not worth it.
+
+**Database identity.** The v1.1 file hash changed when a read-only dry run opened the file (WAL header rewrite). Rebuilding v1.1 from v1 showed identical content. `scripts/maintenance/db_content_digest.py` now records identity as a content digest (`CANONICAL_RUN.md`).
+
+**Open, deliberately.** "The Fool" is Klein's Tarot Club identity. Audrey and Alger do not know it is him; the reader does. That is an observer-conditioned persona, not a merge, and its lines are attributed only to anonymous slots, so it stays a separate entity until the persona stage can bind it per observer.
