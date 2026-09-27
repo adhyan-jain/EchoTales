@@ -77,6 +77,14 @@ _MOVED_DBS = {
 }
 
 
+def _is_canonical(path: str) -> bool:
+    try:
+        registry = json.loads(Path("data/canonical_dbs.json").read_text())["paths"]
+    except (OSError, ValueError, KeyError):
+        return False
+    return _db(path) in registry
+
+
 def _db(path: str) -> str:
     for old, new in _MOVED_DBS.items():
         if path == old or (old.endswith("/") and path.startswith(old)):
@@ -126,7 +134,10 @@ def _latest_metrics(gold_path: str) -> dict:
             data = json.loads(path.read_text())
         except (OSError, json.JSONDecodeError):
             continue
-        if "silver" in data.get("metrics", {}) and data.get("gold_path") == gold_path:
+        # Only a run on a database of record: a scratch experiment with the
+        # same numbers once became Table 4's cited source (2026-09-27).
+        if ("silver" in data.get("metrics", {}) and data.get("gold_path") == gold_path
+                and _is_canonical(data.get("database", ""))):
             best = data
     return best
 

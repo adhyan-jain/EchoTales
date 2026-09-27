@@ -100,6 +100,12 @@ def persist_eval(
     digest = digest_text(f"{db_path.resolve()}|{db_path.stat().st_size if db_path.exists() else 0}")
     run = ensure_pipeline_run(store, novel_id=novel_id, source_digest=digest)
 
+    if root is None and not os.environ.get("ECHOTALES_EVAL_ROOT") and not getattr(store, "is_canonical", True):
+        # A scratch database's scores are experiments, not results: they went
+        # to data/eval/results/ beside the canonical runs, and the paper
+        # generator's "newest run" then cited a scratch database as Table 4's
+        # source (2026-09-27). Same rule as the compounding curves.
+        root = Path("data/scratch/eval/results")
     out_dir = (root or results_root()) / run.run_id
     out_dir.mkdir(parents=True, exist_ok=True)
 
