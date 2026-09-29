@@ -201,6 +201,70 @@ class DynamicCausalACLReplica:
 
 
 @dataclass
+class StandardDerivedDataAuthReplica(ACLReplica):
+    """"Standard derived-data authorization" -- the US7734649 shape, not a
+    strawman: a fixed composition rule assigns a derived data element's
+    access classification from its inputs' classifications at derivation
+    time, stored as a mutable per-fact attribute (`scope`, inherited from
+    ACLReplica), with no causal event log and no per-derivation identity at
+    all. This is deliberately the *simplest* fair reconstruction of that
+    patent's disclosed mechanism, scaled down to this experiment's
+    3-operation scenario (OBSERVE/INFER/REVOKE/DELEGATE) -- see
+    `scenario_revoke_delegate.py` for the side-by-side comparison this
+    class exists to support.
+
+    Composition rule: derived scope = intersection of premise scopes (the
+    conventional "least privilege" composition -- a derived fact should not
+    be visible to someone who could not see every input it came from). An
+    empty scope on any premise (the shared/public convention used
+    throughout this baseline suite) is treated as "no restriction" for the
+    intersection, i.e. it does not narrow the result -- matching
+    ACLReplica's own `scope[f] == frozenset()` == shared convention.
+    """
+
+    def infer(self, derived_fact: str, premises: list[str]) -> None:
+        """Precondition: this replica must itself know every premise --
+        the same fairness constraint every other system's INFER-equivalent
+        in this suite uses. No dot, no deps, no provenance: the derived
+        fact's scope is computed once, now, and overwrites whatever was
+        there before if this fact name was already derived differently."""
+        for p in premises:
+            if not self.knows(p):
+                raise ValueError(f"cannot INFER {derived_fact!r}: {self.replica_id} does not know {p!r}")
+        restrictive = [self.scope.get(p, frozenset()) for p in premises if self.scope.get(p, frozenset())]
+        derived_scope: FrozenSet[str] = frozenset.intersection(*restrictive) if restrictive else frozenset()
+        self.assert_world(derived_fact, visible_to=derived_scope)
+        # assert_world already adds `self` to W with a fresh dot for
+        # replication purposes (W must still converge across replicas so
+        # this is a fair comparison), but that dot is never consulted by
+        # knows()/materialized_facts() -- only `scope` is. This is the
+        # concrete manifestation of "no per-derivation identity": the dot
+        # exists only to make the fact replicate, not to name this
+        # derivation instance.
+
+    def revoke(self, fact: str) -> None:
+        """The only lever this system has: narrow `scope[fact]` to exclude
+        this replica. This is NOT scoped to one derivation instance -- it
+        is a mutation of the fact-name-keyed attribute, so it revokes
+        every replica's view of every derivation that currently shares
+        this fact name, and (being ordinary CRDT-metadata merge, inherited
+        from ACLReplica.merge) a concurrent widen_scope() from elsewhere
+        can re-open it regardless of intent, exactly like the confidentiality
+        leak ACLReplica.widen_scope() already demonstrates for asserted
+        (non-derived) facts."""
+        current = self.scope.get(fact, frozenset())
+        self.scope[fact] = current - frozenset({self.replica_id})
+
+    def delegate(self, fact: str, target: str) -> None:
+        """The only lever this system has: widen `scope[fact]` to include
+        `target` -- a single mutable-attribute write, immediately visible
+        to `target` (no event to deliver), and, per ACLReplica's own
+        documented gap, retroactively visible to every replica that already
+        synced this fact via W, not merely the one being delegated to."""
+        self.widen_scope(fact, frozenset({target}))
+
+
+@dataclass
 class AutoDerivingACLReplica(DynamicCausalACLReplica):
     """Round 4: the fairest, hardest attempt at horn (B) of the derivation
     trilemma (IPR_REVIEW_V4.md) -- a standing, CRDT-replicated *rule* (not
