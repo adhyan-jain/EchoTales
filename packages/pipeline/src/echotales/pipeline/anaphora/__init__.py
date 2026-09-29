@@ -19,8 +19,8 @@ from echotales.pipeline.anaphora.local import (
 )
 from echotales.pipeline.anaphora.runner import (
     AnaphoraReport,
+    resolve_anaphora_for_novel,
     resolve_chapter,
-    resolve_novel,
 )
 from echotales.pipeline.anaphora.validate import (
     ValidationResult,
@@ -47,9 +47,9 @@ __all__ = [
     "most_informative_label",
     "present_cast",
     "present_cast_ids",
+    "resolve_anaphora_for_novel",
     "resolve_chapter",
     "resolve_kinship_group",
-    "resolve_novel",
     "resolve_pronoun",
     "validate_groups",
 ]

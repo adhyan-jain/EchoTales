@@ -99,7 +99,7 @@ def _chapter_range(spec: str | None):  # type: ignore[no-untyped-def]
 
 def cmd_run(args: argparse.Namespace) -> int:
     """Execute every phase in dependency order."""
-    from echotales.pipeline.anaphora import resolve_novel as anaphora_resolve
+    from echotales.pipeline.anaphora import resolve_anaphora_for_novel as anaphora_resolve
     from echotales.pipeline.ingest import get_source, ingest_novel
     from echotales.pipeline.mentions import detect_mentions, load_or_seed
     from echotales.pipeline.persona import build_personas
