@@ -159,3 +159,59 @@ narrative/KG terminology, standing as a general-purpose computing/AI
 systems invention) is satisfied by that same candidate — its formal model
 is stated entirely in replica/causal-event-log/CRDT-merge terms, with no
 narrative vocabulary anywhere in `packages/ecrdt/`.
+
+## Addendum, same day — the killer-question scenario
+
+Per direct instruction, before attempting the `O(Δ)` merge optimization: a
+tiny formal model of the exact scenario that decides whether candidate B
+dies or produces a precise technical gap. OBSERVE(P1), OBSERVE(P2),
+INFER(P1,P2→F), REVOKE(F), DELEGATE(F→B), plus partition/concurrent-
+update/rejoin and an airtight same-replica double-derivation variant, run
+identically against (1) a new "standard derived-data authorization"
+baseline built for this comparison (the US7734649 shape — mutable,
+rule-based classification inheritance, no causal event log), (2) the
+existing ECAC-style `AutoDerivingACLReplica`, and (3) E-CRDT's `Replica`
+itself. Full model, results, and 7 new regression tests (55/55 passing):
+`packages/ecrdt/scenario_revoke_delegate.py`,
+`packages/ecrdt/tests/test_revoke_delegate_scenario.py`.
+
+**The killer question's answer: NO for both baselines**, each for a
+distinct, precisely characterized structural reason, not merely "harder"
+or "not yet implemented":
+
+- **Standard derived-data authorization**: revoking a derived fact's sole
+  authorization narrows the only attribute slot for that fact's name to
+  empty — which this baseline's own visibility convention treats as
+  *shared with everyone*, actively widening access rather than narrowing
+  it. Delegating grants access to "whatever the name currently means,"
+  which the same-replica double-derivation case makes airtight: a second
+  derivation of the same name silently overwrites the first's
+  classification with no trace, so a later revoke or delegate call has no
+  way to address either derivation specifically.
+- **ECAC-style causal authorization**: a rule-derived fact has no causal
+  dot to cite at all — revocation cannot even be posed as a question, and
+  delegation is rejected outright by the existing `grant()` precondition;
+  the only fix is minting a fresh authorization record first, which is
+  exactly one new external event, precisely the clause under test.
+- **E-CRDT**: both operations are precise (cite the exact `infer` dot) and
+  free (no event beyond the operation itself invoked anyway), including
+  when the same replica derives the same fact name twice from disjoint
+  premises — two distinct, individually addressable dots, not one.
+
+**Per the instruction's own decision rule, this is a "no" outcome — the
+extremely precise technical gap for the IPR cell**, not a "yes" that would
+kill the candidate: neither baseline can represent, let alone safely
+revoke or delegate, one specific local derivation instance among possibly
+several sharing a fact name, without minting a new record for it. This
+does not move `IPR_REVIEW_FINAL.md`'s B classification (per this session's
+own rule against inflating a verdict) — it sharpens the evidence base
+supporting the surviving claim's essential elements (§8, points i–iii)
+with a concrete, reproducible, three-way comparison that did not exist as
+one artifact before.
+
+**The `O(sender's log)` → `O(Δ)` merge optimization was deliberately not
+attempted this pass**, per direct instruction — it is orthogonal
+engineering work on a different axis (communication/computation cost, not
+the identity/revocability/delegability property this scenario tested) and
+should not be spent on an already-borderline candidate before this more
+decisive question was answered.
