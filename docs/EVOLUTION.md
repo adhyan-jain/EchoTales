@@ -8087,3 +8087,83 @@ Rare names coordinated with a class noun share its type ("choosing Apprentice, M
 **Database identity.** The v1.1 file hash changed when a read-only dry run opened the file (WAL header rewrite). Rebuilding v1.1 from v1 showed identical content. `scripts/maintenance/db_content_digest.py` now records identity as a content digest (`CANONICAL_RUN.md`).
 
 **Open, deliberately.** "The Fool" is Klein's Tarot Club identity. Audrey and Alger do not know it is him; the reader does. That is an observer-conditioned persona, not a merge, and its lines are attributed only to anonymous slots, so it stays a separate entity until the persona stage can bind it per observer.
+
+### 4.99 Minimal Disclosure Compiler — priority 1 of 3 IPR-review candidates *(2026-09-27)*
+
+New module `packages/core/src/echotales/core/disclosure.py`
+(`TaskSpec`, `DisclosureResult`, `compile_minimal_disclosure()`): a
+task-conditioned evidence-minimization compiler layered on top of
+`state_of()`/`compile_generation_state()`. It never re-derives observer,
+temporal, or truth-status filtering — it narrows an already
+observer/temporally-valid candidate set to the minimum sufficient subset a
+declared `TaskSpec` needs, via greedy coverage over required attribute
+keys, cross-referenced-cast relationship filtering (drop a relationship
+whose other end isn't part of the current generation batch), batch-scoped
+alias disambiguation, and dependency closure. `core/state.py` gained one
+behavior-preserving refactor to support this: `_fold_target()` (plus a
+`_TargetFold` dataclass) extracted from `compile_generation_state()`'s
+per-target loop body; `compile_generation_state()` calls it unfiltered
+(unchanged output, existing suite passes unmodified), `disclosure.py`
+calls it with attribute-key/alias-value/relation-destination filters.
+Exported from `core/__init__.py`. 13 new tests
+(`packages/core/tests/test_disclosure.py`), full suite still green after
+the refactor.
+
+**Render integration, opt-in only.** `pipeline/render/plan_builder.py`
+gained `RENDER_TASK_SPEC` — render's actual sufficiency requirements,
+determined by reading `panels.py::character_looks` directly, which only
+calls `gen_state.persona_for(...)`/`gen_state.appearance_for(...)` and
+never touches self-attributes, relationships, or aliases — and
+`compile_render_state_minimal()`. `build_render_plan()` gained an additive
+`use_mdc: bool = False` parameter; default False leaves today's behavior
+unchanged. This is experiment scaffolding, not switched on anywhere in the
+default pipeline.
+
+**Measured (real data + one synthetic fixture, `scripts/eval/
+mdc_disclosure_ablation.py` -> `data/eval/mdc_disclosure_ablation.json`,
+full write-up `docs/results/MDC_DISCLOSURE_ABLATION.md`):**
+
+- **Render (real `data/db/reverend-insanity.db`, 45 queries over the 15
+  most-mentioned Selves):** MDC selects 0.00 avg. evidence/target against
+  OBSERVER's 1.56 (100% reduction), 0/45 leakage-gate failures. This
+  result is **structurally hollow, not a genuine demonstration** — see the
+  data-gap finding below. It only reflects that `RENDER_TASK_SPEC` needs
+  nothing SELF-level to draw a panel, confirmed by an end-to-end
+  `CharacterRenderSpec` smoke test showing the dropped evidence was never
+  read by the render prompt in the first place.
+- **dialogue_brief (synthetic in-memory fixture, three Selves — used
+  because real corpus coverage for this property doesn't exist, labeled
+  explicitly as synthetic in the results doc, not blended with the real-data
+  numbers):** MDC evidence count 7 vs. OBSERVER's 11 (36.4% reduction).
+  MDC correctly dropped a true offstage relationship
+  (`rel:RIVAL_OF:s_rival`, not part of the batch) while keeping a true
+  onstage one (`rel:DISCIPLE_OF:s_elder`). **This is the one result that
+  actually demonstrates the coverage-plus-dependency-closure mechanism is
+  more than a renamed top-k/RAG filter** — `_ranked`-style truncation by
+  key priority has no concept of "is the other end of this relationship in
+  the room," so it can't reproduce this selection.
+- **cast_naming (real data, 5 top-mentioned Selves, one batch call, alias
+  disambiguation only):** alias count 5 vs. OBSERVER's 14. Read-set subset
+  invariant held in both this and the dialogue_brief experiment.
+
+**A real, previously undocumented gap found while building the harness:**
+`data/db/reverend-insanity.db` has **zero** SELF-kind attribute rows and
+**zero** relation rows at all (checked directly: `SELECT count(*) FROM
+attribute WHERE target_kind='SELF'` -> 0; `SELECT count(*) FROM relation`
+-> 0). PERSONA-kind attributes are populated fine (617 rows across 98
+personas). `world/schema.py`'s own docstring already flags an analogous gap
+for LOCATION/ORGANIZATION/ITEM entities ("10 locations and 35 organisations
+with zero facts attached to any of them") — it turns out SELF-kind
+extraction against `PERSON_KEYS` (role/faction/status/etc.) was never run
+against this database either. This blocks meaningful real-data evaluation
+of anything that depends on SELF attributes or relationships — this
+experiment's render leg, and presumably `world/context.py::story_context`'s
+brief too, since it reads the same starved vocabulary. Filed as an open
+defect in `docs/HANDOFF.md`, not just left in the results doc.
+
+**Scope note:** this is priority 1 of 3 candidates being evaluated for
+whether they constitute a genuine algorithmic contribution worth an IPR
+review (Temporal-Epistemic Delta Compiler and Counterexample-Guided
+Generation are next, not started). `docs/results/MDC_DISCLOSURE_ABLATION.md`
+explicitly does not claim patentability — that determination is a separate,
+later prior-art/IPR review.

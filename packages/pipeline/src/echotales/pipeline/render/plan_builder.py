@@ -26,6 +26,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from echotales.core.disclosure import TaskSpec, compile_minimal_disclosure
 from echotales.core.enums import OBSERVER_READER
 from echotales.core.state import GenerationState, StateResolver, compile_generation_state
 from echotales.core.store import Store
@@ -36,6 +37,24 @@ from echotales.pipeline.render.contract import (
     CompositionSpec,
     EnvironmentRenderSpec,
     VisualRenderPlan,
+)
+
+#: What the render task actually needs, confirmed by reading its one
+#: consumer directly: `panels.py::character_looks` reads only
+#: `gen_state.persona_for(...)` and `gen_state.appearance_for(...)`
+#: (`panels.py:1369-1373`) -- it never reads `TargetState.self_attributes`,
+#: relationships, or aliases from the compiled state at all (names in the
+#: rendered prompt come from elsewhere, not from `GenerationState`). This is
+#: the render task's honest sufficiency declaration for the Minimal
+#: Disclosure Compiler experiment (`scripts/eval/mdc_disclosure_ablation.py`)
+#: -- not a guess, and not the same as "render doesn't need much," which is
+#: a separate, measured claim the experiment either confirms or refutes.
+RENDER_TASK_SPEC = TaskSpec(
+    task_id="render_panel",
+    required_keys={},
+    require_persona=True,
+    require_relationships=False,
+    require_name=False,
 )
 
 
@@ -67,6 +86,36 @@ def compile_render_state(
         resolver=resolver,
         persona_reader=lambda pid: appearance_of(store, pid, position=position, standing_only=False),
     )
+
+
+def compile_render_state_minimal(
+    store: Store,
+    novel_id: str,
+    self_ids: Sequence[str],
+    *,
+    position: float,
+    observer_id: str = OBSERVER_READER,
+    resolver: StateResolver | None = None,
+) -> GenerationState:
+    """The Minimal Disclosure Compiler's compile for the render task.
+
+    Experiment-only alternative to `compile_render_state`, gated behind
+    `build_render_plan(..., use_mdc=True)`. Same `persona_reader` (so the
+    drawn appearance a real panel would use is unchanged either way) but
+    routed through `compile_minimal_disclosure` with `RENDER_TASK_SPEC`
+    instead of `compile_generation_state`'s unconditional inclusion of every
+    observer-valid self attribute and relationship.
+    """
+    return compile_minimal_disclosure(
+        store,
+        novel_id,
+        self_ids,
+        RENDER_TASK_SPEC,
+        position=position,
+        observer_id=observer_id,
+        resolver=resolver,
+        persona_reader=lambda pid: appearance_of(store, pid, position=position, standing_only=False),
+    ).state
 
 
 def build_render_plan(
@@ -102,6 +151,12 @@ def build_render_plan(
     #: (the same one the prompt was built from). Recompiled when it does not
     #: cover `cast_self_ids`.
     gen_state: GenerationState | None = None,
+    #: Experiment flag for `scripts/eval/mdc_disclosure_ablation.py`: routes
+    #: the (re)compile through `compile_render_state_minimal` instead of
+    #: `compile_render_state` when no `gen_state` is supplied. False by
+    #: default, so every existing caller's behavior is unchanged byte for
+    #: byte; not intended for use outside the ablation harness.
+    use_mdc: bool = False,
 ) -> VisualRenderPlan:
     """Build one panel's `VisualRenderPlan` from a compiled `GenerationState`.
 
@@ -115,7 +170,8 @@ def build_render_plan(
     resolver = resolver or StateResolver(store, novel_id, default_observer=observer_id)
     at = chapter if position is None else position
     if gen_state is None or not gen_state.covers(cast_self_ids):
-        gen_state = compile_render_state(
+        compile_fn = compile_render_state_minimal if use_mdc else compile_render_state
+        gen_state = compile_fn(
             store, novel_id, cast_self_ids, position=at,
             observer_id=resolver.default_observer, resolver=resolver,
         )

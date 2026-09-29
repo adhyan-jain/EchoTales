@@ -20,7 +20,32 @@ conflated.
 | `docs/design/plans.md` | The original spec. Amended three times; the amendments win and are marked *(revised)* |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-09-26.
+**Last updated:** 2026-09-27.
+
+## Pick up here — 2026-09-27 (Minimal Disclosure Compiler, EVOLUTION 4.99)
+
+- **Priority 1 of 3 IPR-review candidates (Minimal Disclosure Compiler)
+  is done, with measured results.** New `core/disclosure.py`
+  (`compile_minimal_disclosure`) narrows an already observer/temporally-
+  valid `state_of()` candidate set to the minimum sufficient subset a
+  declared `TaskSpec` needs — greedy attribute-key coverage +
+  cross-referenced-cast relationship filtering + alias disambiguation +
+  dependency closure. Opt-in render integration only
+  (`plan_builder.build_render_plan(..., use_mdc=False)` default unchanged).
+  13 new tests, full suite still green. Full detail and numbers:
+  EVOLUTION 4.99, `docs/results/MDC_DISCLOSURE_ABLATION.md`.
+- **The render-task result (100% evidence reduction) is real but
+  structurally hollow** — render's own `RENDER_TASK_SPEC` needs nothing
+  SELF-level, and the real database has zero SELF attributes to filter
+  from anyway (see open defect below). **The dialogue_brief result (36.4%
+  reduction on a synthetic fixture, correctly dropping an offstage
+  relationship while keeping an onstage one) is the one that actually
+  demonstrates the mechanism is more than a renamed top-k/RAG filter** —
+  no existing mechanism in this codebase does that.
+- **Next up: Temporal-Epistemic Delta Compiler (priority 2 of 3).** Not
+  started. Counterexample-Guided Generation (priority 3) after that.
+  Neither of these results, nor MDC's, is a patentability determination —
+  that's a separate, later prior-art/IPR review.
 
 ## Pick up here — 2026-09-26 (evidence-upgrade pass, EVOLUTION 4.91)
 
@@ -626,7 +651,22 @@ default without a completed comparison.
 change — lives in `docs/EVOLUTION.md`, not here.** This section is only what's
 genuinely unresolved *today*.
 
-1. **The scorer's features are too weak to link anything** (root cause,
+1. **`data/db/reverend-insanity.db` has zero SELF-kind attribute rows and
+   zero relation rows at all** (found 2026-09-27 building the MDC
+   ablation harness; checked directly: `SELECT count(*) FROM attribute
+   WHERE target_kind='SELF'` -> 0, `SELECT count(*) FROM relation` -> 0).
+   PERSONA-kind attributes are fine (617 rows / 98 personas). SELF-kind
+   extraction against `PERSON_KEYS` (role/faction/status/etc.) was
+   apparently never run against this database — `world/schema.py`'s
+   docstring already documents the analogous LOCATION/ORGANIZATION/ITEM
+   gap, but not this one. This blocks meaningful real-data evaluation of
+   anything that reads SELF attributes or relationships, including the
+   MDC render experiment (EVOLUTION 4.99) and presumably
+   `world/context.py::story_context`'s brief, which reads the same
+   vocabulary. Needs a SELF-attribute/relation extraction pass on the
+   canonical database before this class of experiment can produce a
+   real number instead of a synthetic one.
+2. **The scorer's features are too weak to link anything** (root cause,
    not a tuning gap). Calibrating against confirmed gold disproved the
    obvious fix: precision plateaus at 0.66–0.77 across the entire usable
    threshold range, and a calibrated gate merges six members of one clan
