@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="380" font-family="monospace" font-size="11">
+<rect width="640" height="380" fill="white"/>
+<text x="320.0" y="20" text-anchor="middle" font-size="13">Experiment C: gossip time vs agent count</text>
+<line x1="56" y1="324" x2="584" y2="324" stroke="black"/>
+<line x1="56" y1="56" x2="56" y2="324" stroke="black"/>
+<text x="320.0" y="365" text-anchor="middle">agents</text>
+<text x="14" y="190.0" text-anchor="middle" transform="rotate(-90 14 190.0)">seconds (log10)</text>
+<path d="M 56.0 324.0 L 99.1 197.4 L 314.6 96.0 L 584.0 56.0" fill="none" stroke="#2563eb" stroke-width="2"/>
+<circle cx="56.0" cy="324.0" r="2.5" fill="#2563eb"/>
+<circle cx="99.1" cy="197.4" r="2.5" fill="#2563eb"/>
+<circle cx="314.6" cy="96.0" r="2.5" fill="#2563eb"/>
+<circle cx="584.0" cy="56.0" r="2.5" fill="#2563eb"/>
+<rect x="66" y="58" width="10" height="10" fill="#2563eb"/>
+<text x="80" y="67">gossip (5 rounds)</text>
+</svg>
