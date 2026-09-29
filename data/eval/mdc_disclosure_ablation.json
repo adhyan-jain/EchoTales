@@ -1,0 +1,473 @@
+{
+  "db": "data/db/reverend-insanity.db",
+  "rules": "(fixed here, in code, before any number was computed):\n\n  Targets (render)   the 15 most-mentioned Selves in `reverend-insanity.db`\n                      that have a `self_persona_binding` row (all of the top\n                      20 do, checked directly against the real database\n                      before writing this harness).\n  Positions (render)  chapters 20, 100, 190 -- early/mid/late in a 199-chapter\n                      volume, story position = knowledge position (READER).\n  Conditions          FULL     -- every distinct fact in the store for the\n                                  target, ignoring observer/temporal/task\n                                  filtering entirely (the true upper bound).\n                      TOPK     -- `world/context.py::_ranked` applied to the\n                                  observer-valid candidate's attributes (the\n                                  one capped-truncation mechanism already\n                                  shipped in this codebase); aliases and\n                                  relationships are untouched by that\n                                  mechanism, so it caps attributes only.\n                      OBSERVER -- `compile_generation_state` unmodified,\n                                  today's production behavior for render.\n                      MDC      -- `compile_minimal_disclosure` with\n                                  `plan_builder.RENDER_TASK_SPEC`.\n  Metric              evidence_count = |aliases| + |attributes| + |relations|\n                      selected under each condition; evidence_reduction_pct\n                      = 1 - MDC/OBSERVER (the correct baseline per the\n                      approved plan: FULL vs OBSERVER is the already-measured\n                      observer-filter effect from `observer_ablation.py`, not\n                      this module's contribution).\n\n  A confound found while building this harness, reported rather than\n  papered over: `reverend-insanity.db` has **zero** SELF-kind attribute rows\n  and **zero** relation rows (checked directly: `SELECT count(*) FROM\n  attribute WHERE target_kind='SELF'` -> 0; `SELECT count(*) FROM relation`\n  -> 0). `world/schema.py`'s own docstring already documents this gap for\n  LOCATION/ORGANIZATION/ITEM; it turns out SELF-kind extraction against\n  `PERSON_KEYS` (role/faction/status/...) was never run against this\n  database either. The render experiment below is real and honestly\n  measured, but on this corpus its entire \"evidence\" surface for a SELF\n  target is aliases -- attributes/relationships are 0 in every condition\n  because there is nothing in the graph to select from, not because MDC\n  did anything. That is itself a reportable finding (see the write-up), not\n  a limitation of this script.\n\n  Because the real corpus cannot exercise the attribute/relationship\n  coverage-plus-dependency-closure machinery at all, a second experiment\n  (`dialogue_brief`) runs against a small, explicitly synthetic in-memory\n  fixture built in this file -- populated with the role/faction/status/\n  relationship facts the real database lacks -- to test the mechanism this\n  script exists to evaluate. Per the user's own instruction (\"use synthetic\n  adversarial cases where real corpus coverage is missing\"), this is stated\n  plainly rather than silently substituted.\n\n  A third experiment (`cast_naming`) runs multiple simultaneous top-mentioned\n  Selves through one MDC batch call on the real corpus, to exercise the one\n  mechanism real data *can* test: cross-cast alias disambiguation\n  (`disclosure.py::_disambiguating_aliases`).",
+  "render": {
+    "targets": [
+      "reverend-insanity:self:476821534c",
+      "reverend-insanity:self:a785fbd308",
+      "reverend-insanity:self:0035e71331",
+      "reverend-insanity:self:7fc3b9af53",
+      "reverend-insanity:self:0fab26886a",
+      "reverend-insanity:self:a8bdaf3bfb",
+      "reverend-insanity:self:b7c5630249",
+      "reverend-insanity:self:6d62f8b46c",
+      "reverend-insanity:self:e901d48678",
+      "reverend-insanity:self:852e6a60a5",
+      "reverend-insanity:self:a347c062c9",
+      "reverend-insanity:self:37462939d9",
+      "reverend-insanity:self:f143c49c6a",
+      "reverend-insanity:self:c7f56999d0",
+      "reverend-insanity:self:d090530fc6"
+    ],
+    "positions": [
+      20.0,
+      100.0,
+      190.0
+    ],
+    "queries": 45,
+    "avg_evidence": {
+      "full": 2.2,
+      "topk": 1.5555555555555556,
+      "observer": 1.5555555555555556,
+      "mdc": 0.0
+    },
+    "evidence_reduction_pct_vs_observer": 1.0,
+    "leakage_checks": 45,
+    "leakage_failures": 0,
+    "compile_wall_clock_s": 1.8957890520105138,
+    "rows": [
+      {
+        "target": "reverend-insanity:self:476821534c",
+        "position": 20.0,
+        "full": 6,
+        "topk": 5,
+        "observer": 5,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:476821534c",
+        "position": 100.0,
+        "full": 6,
+        "topk": 6,
+        "observer": 6,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:476821534c",
+        "position": 190.0,
+        "full": 6,
+        "topk": 6,
+        "observer": 6,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:a785fbd308",
+        "position": 20.0,
+        "full": 1,
+        "topk": 1,
+        "observer": 1,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:a785fbd308",
+        "position": 100.0,
+        "full": 1,
+        "topk": 1,
+        "observer": 1,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:a785fbd308",
+        "position": 190.0,
+        "full": 1,
+        "topk": 1,
+        "observer": 1,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:0035e71331",
+        "position": 20.0,
+        "full": 2,
+        "topk": 0,
+        "observer": 0,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:0035e71331",
+        "position": 100.0,
+        "full": 2,
+        "topk": 1,
+        "observer": 1,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:0035e71331",
+        "position": 190.0,
+        "full": 2,
+        "topk": 2,
+        "observer": 2,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:7fc3b9af53",
+        "position": 20.0,
+        "full": 3,
+        "topk": 3,
+        "observer": 3,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:7fc3b9af53",
+        "position": 100.0,
+        "full": 3,
+        "topk": 3,
+        "observer": 3,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:7fc3b9af53",
+        "position": 190.0,
+        "full": 3,
+        "topk": 3,
+        "observer": 3,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:0fab26886a",
+        "position": 20.0,
+        "full": 2,
+        "topk": 0,
+        "observer": 0,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:0fab26886a",
+        "position": 100.0,
+        "full": 2,
+        "topk": 2,
+        "observer": 2,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:0fab26886a",
+        "position": 190.0,
+        "full": 2,
+        "topk": 2,
+        "observer": 2,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:a8bdaf3bfb",
+        "position": 20.0,
+        "full": 3,
+        "topk": 0,
+        "observer": 0,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:a8bdaf3bfb",
+        "position": 100.0,
+        "full": 3,
+        "topk": 1,
+        "observer": 1,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:a8bdaf3bfb",
+        "position": 190.0,
+        "full": 3,
+        "topk": 3,
+        "observer": 3,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:b7c5630249",
+        "position": 20.0,
+        "full": 1,
+        "topk": 0,
+        "observer": 0,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:b7c5630249",
+        "position": 100.0,
+        "full": 1,
+        "topk": 1,
+        "observer": 1,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:b7c5630249",
+        "position": 190.0,
+        "full": 1,
+        "topk": 1,
+        "observer": 1,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:6d62f8b46c",
+        "position": 20.0,
+        "full": 2,
+        "topk": 1,
+        "observer": 1,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:6d62f8b46c",
+        "position": 100.0,
+        "full": 2,
+        "topk": 2,
+        "observer": 2,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:6d62f8b46c",
+        "position": 190.0,
+        "full": 2,
+        "topk": 2,
+        "observer": 2,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:e901d48678",
+        "position": 20.0,
+        "full": 1,
+        "topk": 0,
+        "observer": 0,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:e901d48678",
+        "position": 100.0,
+        "full": 1,
+        "topk": 1,
+        "observer": 1,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:e901d48678",
+        "position": 190.0,
+        "full": 1,
+        "topk": 1,
+        "observer": 1,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:852e6a60a5",
+        "position": 20.0,
+        "full": 1,
+        "topk": 0,
+        "observer": 0,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:852e6a60a5",
+        "position": 100.0,
+        "full": 1,
+        "topk": 1,
+        "observer": 1,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:852e6a60a5",
+        "position": 190.0,
+        "full": 1,
+        "topk": 1,
+        "observer": 1,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:a347c062c9",
+        "position": 20.0,
+        "full": 1,
+        "topk": 0,
+        "observer": 0,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:a347c062c9",
+        "position": 100.0,
+        "full": 1,
+        "topk": 1,
+        "observer": 1,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:a347c062c9",
+        "position": 190.0,
+        "full": 1,
+        "topk": 1,
+        "observer": 1,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:37462939d9",
+        "position": 20.0,
+        "full": 2,
+        "topk": 0,
+        "observer": 0,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:37462939d9",
+        "position": 100.0,
+        "full": 2,
+        "topk": 0,
+        "observer": 0,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:37462939d9",
+        "position": 190.0,
+        "full": 2,
+        "topk": 2,
+        "observer": 2,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:f143c49c6a",
+        "position": 20.0,
+        "full": 2,
+        "topk": 0,
+        "observer": 0,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:f143c49c6a",
+        "position": 100.0,
+        "full": 2,
+        "topk": 2,
+        "observer": 2,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:f143c49c6a",
+        "position": 190.0,
+        "full": 2,
+        "topk": 2,
+        "observer": 2,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:c7f56999d0",
+        "position": 20.0,
+        "full": 2,
+        "topk": 0,
+        "observer": 0,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:c7f56999d0",
+        "position": 100.0,
+        "full": 2,
+        "topk": 2,
+        "observer": 2,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:c7f56999d0",
+        "position": 190.0,
+        "full": 2,
+        "topk": 2,
+        "observer": 2,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:d090530fc6",
+        "position": 20.0,
+        "full": 4,
+        "topk": 1,
+        "observer": 1,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:d090530fc6",
+        "position": 100.0,
+        "full": 4,
+        "topk": 2,
+        "observer": 2,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      },
+      {
+        "target": "reverend-insanity:self:d090530fc6",
+        "position": 190.0,
+        "full": 4,
+        "topk": 4,
+        "observer": 4,
+        "mdc": 0,
+        "unsatisfied_keys": []
+      }
+    ]
+  },
+  "dialogue_brief": {
+    "note": "synthetic fixture -- see module docstring for why",
+    "targets": [
+      "s_hunter",
+      "s_elder"
+    ],
+    "observer_evidence": 11,
+    "mdc_evidence": 7,
+    "evidence_reduction_pct_vs_observer": 0.36363636363636365,
+    "unsatisfied_keys": [],
+    "mdc_read_set_subset_of_observer": true,
+    "leakage_valid": true,
+    "observer_kept_offstage_rivalry": true,
+    "mdc_kept_onstage_relationship_only": true
+  },
+  "cast_naming": {
+    "targets": [
+      "reverend-insanity:self:476821534c",
+      "reverend-insanity:self:a785fbd308",
+      "reverend-insanity:self:0035e71331",
+      "reverend-insanity:self:7fc3b9af53",
+      "reverend-insanity:self:0fab26886a"
+    ],
+    "observer_alias_count": 14,
+    "mdc_alias_count": 5,
+    "read_set_subset": true
+  }
+}

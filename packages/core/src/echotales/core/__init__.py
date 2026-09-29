@@ -53,6 +53,7 @@ from echotales.core.readset import (
     ReadSetRecorder,
     hash_read_set,
 )
+from echotales.core.disclosure import DisclosureResult, TaskSpec, compile_minimal_disclosure
 from echotales.core.state import (
     GenerationState,
     StateResolver,
@@ -80,6 +81,7 @@ __all__ = [
     "Chapter",
     "Decision",
     "DiscoursePosition",
+    "DisclosureResult",
     "EpistemicLeakageResult",
     "EpistemicLeakageValidator",
     "EventType",
@@ -109,8 +111,10 @@ __all__ = [
     "StoryPos",
     "TargetKind",
     "TargetState",
+    "TaskSpec",
     "TruthStatus",
     "compile_generation_state",
+    "compile_minimal_disclosure",
     "hash_read_set",
     "normalize_alias",
     "state_of",

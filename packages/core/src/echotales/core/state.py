@@ -571,6 +571,120 @@ class GenerationState:
         ).hexdigest()
 
 
+@dataclass(slots=True, frozen=True)
+class _TargetFold:
+    """One target's `state_of` result folded into a `GenerationState` shape."""
+
+    target: TargetState
+    persona_ids: tuple[str, ...]
+    allowed: frozenset[str]
+    forbidden: frozenset[str]
+    deps: frozenset[str]
+
+
+def _fold_target(
+    tid: str,
+    obs_res: StateOfResult,
+    store: Store,
+    position: StoryPos,
+    persona_reader: PersonaReader | None,
+    *,
+    attribute_keys: frozenset[str] | None = None,
+    alias_values: frozenset[str] | None = None,
+    relation_dsts: frozenset[str] | None = None,
+) -> _TargetFold:
+    """Fold one target's already-filtered `state_of` result into allowed/
+    forbidden/deps and a `TargetState`.
+
+    `attribute_keys`/`alias_values`/`relation_dsts`, when given, restrict
+    which of `obs_res`'s observer-valid facts are folded in -- this is the
+    seam `disclosure.py::compile_minimal_disclosure` uses to select a task-
+    sufficient subset without re-deriving observer/temporal filtering, which
+    `state_of` already did correctly. `compile_generation_state` passes
+    `None` for all three, folding in everything `state_of` returned (the
+    original, unchanged behavior). A fact excluded by one of these filters
+    lands in `forbidden` via the same "not in allowed" check used for facts
+    the observer cannot see -- MDC's task-irrelevant exclusions and
+    `state_of`'s epistemic exclusions are indistinguishable to
+    `EpistemicLeakageValidator`, which is the point: both are things the
+    generated text must not contain.
+    """
+    allowed: set[str] = set()
+    forbidden: set[str] = set()
+    deps: set[str] = set()
+    persona_ids: list[str] = []
+
+    # The omniscient view, to find what exists in the store but is hidden
+    # from this observer at this position (or excluded by the task).
+    all_aliases = store.get_aliases_for(TargetKind.SELF, tid)
+    all_attrs = store.get_attributes(TargetKind.SELF, tid)
+
+    deps.add(entity_ref(TargetKind.SELF, tid))
+
+    if obs_res.persona_ids:
+        persona_ids.extend(obs_res.persona_ids)
+    for pid in obs_res.persona_ids:
+        deps.add(entity_ref(TargetKind.PERSONA, pid))
+
+    for a in obs_res.aliases:
+        if alias_values is not None and a not in alias_values:
+            continue
+        allowed.add(f"alias:{a}")
+
+    kept_attrs: dict[str, str] = {}
+    for k, v in obs_res.attributes.items():
+        if attribute_keys is not None and k not in attribute_keys:
+            continue
+        kept_attrs[k] = v
+        allowed.add(f"attr:{k}={v}")
+        deps.add(fact_ref("attr", tid, k, v))
+
+    for rel_type, dst in obs_res.relationships:
+        if relation_dsts is not None and dst not in relation_dsts:
+            continue
+        allowed.add(f"rel:{rel_type}:{dst}")
+
+    persona_attrs: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = ()
+    persona_facts: tuple[tuple[str, str], ...] = ()
+    if persona_reader is not None and obs_res.persona_ids:
+        drawn = obs_res.persona_ids[0]
+        attrs = tuple(sorted(persona_reader(drawn).items()))
+        persona_attrs = ((drawn, attrs),)
+        persona_facts = tuple(sorted({
+            (a.key, a.value)
+            for a in store.get_attributes(TargetKind.PERSONA, drawn)
+            if a.is_standing and a.interval.from_lb <= position
+        } | set(attrs)))
+        for k, v in persona_facts:
+            deps.add(fact_ref("attr", drawn, k, v))
+
+    target = TargetState(
+        self_id=tid,
+        persona_ids=tuple(obs_res.persona_ids),
+        self_attributes=tuple(sorted(kept_attrs.items())),
+        persona_attributes=persona_attrs,
+        persona_facts=persona_facts,
+    )
+
+    # Facts in the store that the observer cannot see at this position, or
+    # that were excluded by a task filter above -- either way, not allowed.
+    for binding in all_aliases:
+        if f"alias:{binding.alias}" not in allowed:
+            forbidden.add(binding.alias)
+    for attr in all_attrs:
+        if f"attr:{attr.key}={attr.value}" not in allowed:
+            forbidden.add(attr.value)
+            forbidden.add(f"{attr.key}: {attr.value}")
+
+    return _TargetFold(
+        target=target,
+        persona_ids=tuple(persona_ids),
+        allowed=frozenset(allowed),
+        forbidden=frozenset(forbidden),
+        deps=frozenset(deps),
+    )
+
+
 def compile_generation_state(
     store: Store,
     novel_id: str,
@@ -582,8 +696,6 @@ def compile_generation_state(
     resolver: StateResolver | None = None,
     persona_reader: PersonaReader | None = None,
 ) -> GenerationState:
-    # (`persona_facts` below: every standing fact of the drawn persona whose
-    # interval has begun by `position`; hashed, never passed to a prompt.)
     """Compile an explicit GenerationState for a set of target entities.
 
     `resolver`, when given, is reused (its voided-timeline pre-pass is the
@@ -607,60 +719,16 @@ def compile_generation_state(
         obs_res = resolver.state_of(
             tid, position=position, observer_id=observer_id, knowledge_pos=knowledge_pos
         )
-        # The omniscient view, to find what exists in the store but is hidden
-        # from this observer at this position.
-        all_aliases = store.get_aliases_for(TargetKind.SELF, tid)
-        all_attrs = store.get_attributes(TargetKind.SELF, tid)
-
         provenance.update(obs_res.read_set)
-        deps.add(entity_ref(TargetKind.SELF, tid))
 
+        fold = _fold_target(tid, obs_res, store, position, persona_reader)
         if obs_res.persona_ids:
             visible_ids.append(tid)
-            persona_ids.extend(obs_res.persona_ids)
-        for pid in obs_res.persona_ids:
-            deps.add(entity_ref(TargetKind.PERSONA, pid))
-
-        for a in obs_res.aliases:
-            allowed.add(f"alias:{a}")
-        for k, v in obs_res.attributes.items():
-            allowed.add(f"attr:{k}={v}")
-            deps.add(fact_ref("attr", tid, k, v))
-        for rel_type, dst in obs_res.relationships:
-            allowed.add(f"rel:{rel_type}:{dst}")
-
-        persona_attrs: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = ()
-        persona_facts: tuple[tuple[str, str], ...] = ()
-        if persona_reader is not None and obs_res.persona_ids:
-            drawn = obs_res.persona_ids[0]
-            attrs = tuple(sorted(persona_reader(drawn).items()))
-            persona_attrs = ((drawn, attrs),)
-            persona_facts = tuple(sorted({
-                (a.key, a.value)
-                for a in store.get_attributes(TargetKind.PERSONA, drawn)
-                if a.is_standing and a.interval.from_lb <= position
-            } | set(attrs)))
-            for k, v in persona_facts:
-                deps.add(fact_ref("attr", drawn, k, v))
-
-        compiled.append(
-            TargetState(
-                self_id=tid,
-                persona_ids=tuple(obs_res.persona_ids),
-                self_attributes=tuple(sorted(obs_res.attributes.items())),
-                persona_attributes=persona_attrs,
-                persona_facts=persona_facts,
-            )
-        )
-
-        # Facts in the store that the observer cannot see at this position.
-        for binding in all_aliases:
-            if f"alias:{binding.alias}" not in allowed:
-                forbidden.add(binding.alias)
-        for attr in all_attrs:
-            if f"attr:{attr.key}={attr.value}" not in allowed:
-                forbidden.add(attr.value)
-                forbidden.add(f"{attr.key}: {attr.value}")
+        persona_ids.extend(fold.persona_ids)
+        allowed.update(fold.allowed)
+        forbidden.update(fold.forbidden)
+        deps.update(fold.deps)
+        compiled.append(fold.target)
 
     k_pos = (
         knowledge_pos

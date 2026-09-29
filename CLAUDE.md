@@ -21,7 +21,7 @@ alone — read the source doc for the thing you're touching:
   current-state-of-the-world doc — read those before starting render or
   persona work. The permanent, append-only numbered session log (every
   real bug found, every fix shipped, in chronological sections, currently
-  past 4.93) now lives in [`docs/EVOLUTION.md`](docs/EVOLUTION.md), not here — a
+  past 4.99) now lives in [`docs/EVOLUTION.md`](docs/EVOLUTION.md), not here — a
   resolved/superseded HANDOFF item moves there instead of being deleted.
 - [`docs/EVOLUTION.md`](docs/EVOLUTION.md) — architecture decisions and reversals over
   time, with the measured reason each one happened.
@@ -152,7 +152,7 @@ real data without touching the canonical `data/db/<novel-id>.db`.
 
 See docs/HANDOFF.md's "Pick up here" section for the actual current state — it
 changes every session (the numbered session log itself moved to
-docs/EVOLUTION.md, latest section 4.93). The NER-windowing re-run (EVOLUTION
+docs/EVOLUTION.md, latest section 4.99). The NER-windowing re-run (EVOLUTION
 4.76) that an earlier session left unmeasured did run (4.84): the
 "`ollama` unreachable" blocker was a misdiagnosis — the daemon was simply
 not started — and the fix is now measured on real data (CEAF-e recall
