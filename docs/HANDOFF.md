@@ -72,11 +72,11 @@ conflated.
   (different task scope: no pronoun/nominal resolution by design).
 - **Human-review package prepared, not run**: 200 stratified mentions + 88
   hard cases as gitignored CSVs. 0 labels, κ not computed — still the
-  single largest gap per `docs/status/FINAL_ECHOTALES_READINESS.md`'s readiness
+  single largest gap per `docs/status/STATUS.md`'s readiness
   gate (Area 8, WAITING ON HUMAN).
 - Full detail: EVOLUTION 4.91, `docs/results/A7_CACHE_ABLATION.md`,
   `docs/results/EXTERNAL_BENCHMARK.md`, `docs/results/HUMAN_REVIEW_PROTOCOL.md`,
-  `docs/status/FINAL_ECHOTALES_READINESS.md` (readiness gate, updated 2026-09-26).
+  `docs/status/STATUS.md` (readiness gate, updated 2026-09-26).
 - Suite: **1,085 passed** (was 1,078).
 
 ## Pick up here — 2026-09-25 (finalization pass, EVOLUTION 4.90)
@@ -88,7 +88,7 @@ conflated.
   3. Attribution tier 4: 12 right / 16 wrong, and unstable across runs.
 - **Do not re-run** anything that the canonical database already measured; `scripts/reproduce_results.sh` regenerates every artifact in about 10 minutes.
 
-## Earlier — 2026-09-25: completion pass landed; read `docs/status/FINAL_ECHOTALES_READINESS.md` first
+## Earlier — 2026-09-25: completion pass landed; read `docs/status/STATUS.md` first
 
 That file is the single status record. The short version:
 

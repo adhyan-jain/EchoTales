@@ -1,7 +1,7 @@
 # Canonical run — EchoTales v1
 
 **Promoted 2026-09-25.** Every number in `docs/results/FINAL_EVIDENCE_TABLE.md`,
-`docs/paper/TABLES.md` and `docs/status/FINAL_ECHOTALES_READINESS.md` comes from the
+`docs/paper/TABLES.md` and `docs/status/STATUS.md` comes from the
 database below, unless a row says otherwise.
 
 ## 0. v1.1 (2026-09-27)
