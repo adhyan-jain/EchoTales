@@ -69,7 +69,7 @@ def resolve_chapter(
     return result, len(links)
 
 
-def resolve_novel(
+def resolve_anaphora_for_novel(
     novel_id: str,
     store: Store,
     *,

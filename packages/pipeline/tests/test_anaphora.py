@@ -31,7 +31,7 @@ from echotales.pipeline.anaphora import (
     most_informative_label,
     present_cast,
     resolve_kinship_group,
-    resolve_novel,
+    resolve_anaphora_for_novel,
     resolve_pronoun,
     validate_groups,
 )
@@ -338,11 +338,11 @@ class TestRunner:
         return s
 
     def test_group_ids_are_written_back(self, store: Store) -> None:
-        resolve_novel("t", store)
+        resolve_anaphora_for_novel("t", store)
         assert any(m.local_group_id for m in store.get_mentions("t"))
 
     def test_report_counts(self, store: Store) -> None:
-        report = resolve_novel("t", store)
+        report = resolve_anaphora_for_novel("t", store)
         assert report.chapters == 1
         assert report.groups >= 1
 
@@ -360,10 +360,10 @@ class TestRunner:
             return 1
 
         monkeypatch.setattr(runner, "_recover_attributions", fake)
-        assert resolve_novel("t", store).recovered_attributions == 0
+        assert resolve_anaphora_for_novel("t", store).recovered_attributions == 0
         assert calls == []
 
-        report = resolve_novel("t", store, recover_pronoun_speakers=True)
+        report = resolve_anaphora_for_novel("t", store, recover_pronoun_speakers=True)
         assert calls == [1.0]
         assert report.recovered_attributions == 1
 
@@ -502,7 +502,7 @@ class TestKinshipEndToEnd:
         return s
 
     def test_bare_uncle_binds_to_the_established_group_across_blocks(self, store: Store) -> None:
-        resolve_novel("t", store)
+        resolve_anaphora_for_novel("t", store)
         mentions = store.get_mentions("t", 1.0)
         uncle_group = next(
             m.local_group_id for m in mentions if m.text == "Uncle Gu Yue Dong Tu"
@@ -527,7 +527,7 @@ class TestKinshipEndToEnd:
         store.add_chapter(chapter)
         store.conn.commit()
 
-        resolve_novel("t", store)
+        resolve_anaphora_for_novel("t", store)
         mentions = store.get_mentions("t", 1.0)
         # The post-break "Uncle" occurrences must not have been minted at all
         # (no fused/apposed name, and the sticky binding was cleared).
