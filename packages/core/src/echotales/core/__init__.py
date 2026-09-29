@@ -5,6 +5,7 @@ pipelines do not need to understand the novel" is a claim the paper makes, and
 `tools/check_deps.py` enforces it in CI so the claim stays true in code.
 """
 
+from echotales.core.disclosure import DisclosureResult, TaskSpec, compile_minimal_disclosure
 from echotales.core.enums import (
     OBSERVER_READER,
     OBSERVER_SYSTEM,
@@ -53,7 +54,6 @@ from echotales.core.readset import (
     ReadSetRecorder,
     hash_read_set,
 )
-from echotales.core.disclosure import DisclosureResult, TaskSpec, compile_minimal_disclosure
 from echotales.core.state import (
     GenerationState,
     StateResolver,
@@ -80,8 +80,8 @@ __all__ = [
     "Certainty",
     "Chapter",
     "Decision",
-    "DiscoursePosition",
     "DisclosureResult",
+    "DiscoursePosition",
     "EpistemicLeakageResult",
     "EpistemicLeakageValidator",
     "EventType",

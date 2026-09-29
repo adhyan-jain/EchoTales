@@ -2,6 +2,16 @@
 
 **Paste this entire document as context for Claude Code. It contains every finalized decision from the design process.**
 
+> **2026-09-29: this is the founding prompt, not the current architecture
+> description.** For what the system actually is today, read
+> `docs/design/architecture.md` and `docs/design/details.md` — both are kept
+> current as modules land, this file is not. It stays in place (rather than
+> moving to `docs/archive/`) because 50+ source files cite its Phase/Section
+> numbering directly in code comments (e.g. "Phase 6 pre-filters," "Section
+> 4.3 FABRICATED"); that numbering is still the one in use, even though the
+> narrative framing below ("delete any existing code, start from scratch")
+> describes a one-time bootstrap prompt, not an ongoing plan.
+
 ---
 
 ## FIRST: Clean Slate

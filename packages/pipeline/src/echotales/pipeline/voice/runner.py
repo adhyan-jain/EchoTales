@@ -523,7 +523,7 @@ def chapter_track(clips: list[Path], out_path: Path, *, gap_s: float = LINE_GAP_
     There was no chapter-level audio artifact at all -- only one file per
     line plus a manifest -- so listening to a chapter meant assembling it by
     hand, and the audiobook could not be played or shipped as audio alone
-    (docs/status/REMAINING_WORK.md). A clip whose format differs from the
+    (docs/status/STATUS.md). A clip whose format differs from the
     first is an error, not resampled: every line of one run comes from one
     engine at one rate, so a mismatch means two runs were mixed.
     """

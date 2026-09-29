@@ -489,6 +489,16 @@ the canonical run, `docs/results/CANONICAL_RUN.md`) is unaffected and stays conf
 Speaker attribution is not improved. See `docs/results/NER_WINDOWING_RESULT.md`
 Section 8 and `docs/status/STATUS.md`.
 
+**A bounded, evidence-grounded LLM investigator for uncertain resolver pairs
+(`max_calls`-capped, verdict quotes its evidence spans) was considered,
+patterned after a design in a sibling project, and not built**: there are no
+labelled SCORE-region pairs on which to show it would help (every labelled
+gold candidate is decided by a pre-filter before the scorer sees it — see
+`docs/status/STATUS.md`'s Scorer row) — building it "to make a document true"
+would be adding architecture without a measurement that justifies it. Full
+review of what was and wasn't adopted from that sibling project's patterns is
+archived at `docs/archive/STORYTRACE_TRANSFER.md`.
+
 ---
 
 ## 8. Caching and invalidation
