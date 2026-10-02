@@ -22,6 +22,21 @@ conflated.
 
 **Last updated:** 2026-09-27.
 
+## Pick up here — 2026-10-02 (research arena, EVOLUTION 4.100)
+
+- **Research track lives in `packages/research/` and `docs/research/`;
+  `docs/research/DECISION_LOG.md` is the state of record.** Five
+  experiments run on real data: H-CAL killed, H-HEDGE killed, H-GATE
+  surviving weakly, H-COST open, H-SELECT open. Numbers: EVOLUTION 4.100.
+- **Decisive next step: the H-COST listening pilot** (study built, needs
+  listeners; about 50 listeners or more probes per passage for a decisive
+  run). Fix two design issues first: same-gender errors realise at about
+  half the requested rate (select passages with 2+ speakers per gender or
+  report realised rates), and narrator-only renders run about 30% longer
+  (60 s vs 46 s), a duration confound to normalise or covary.
+- Run the research suite explicitly: root testpaths omits it
+  (`python3 -m pytest packages/research/tests -o addopts=""`).
+
 ## Pick up here — 2026-09-27 (Minimal Disclosure Compiler, EVOLUTION 4.99)
 
 - **Priority 1 of 3 IPR-review candidates (Minimal Disclosure Compiler)

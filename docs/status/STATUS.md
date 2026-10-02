@@ -29,12 +29,13 @@ merged to `master`. **Canonical database:** `data/db/reverend-insanity.db`
 
 ---
 
-## Test status (2026-09-26)
+## Test status (2026-10-02)
 
 | Suite | Result |
 |---|---|
-| Backend (`packages/core` + `packages/pipeline`) | 1,206 passed (2026-09-29, includes MDC + rename work) |
-| `packages/ecrdt` (standalone research package) | 48 passed |
+| Backend (`packages/core` + `packages/pipeline`) | 1,206 passed (130 + 1,076, 2026-10-02) |
+| `packages/research` (research arena) | 16 passed |
+| `packages/ecrdt` (standalone research package) | 55 passed |
 | Webview (Jest) | 82 passed |
 | Webview accessibility (axe-core) | 0 violations across 16 routes × 4 widths × 2 themes (128 runs) |
 | Webview production build from a clean `npm ci` | compiles; no source maps; no offline novel exports shipped |
@@ -52,7 +53,7 @@ merged to `master`. **Canonical database:** `data/db/reverend-insanity.db`
 | 7 | External validation | **DONE (one benchmark), weak result** | LitBank, 100 documents. Not comparable to supervised systems. |
 | 8 | Human validation | **WAITING ON HUMAN** | Review sheets and protocol prepared; 0 labels; no kappa. |
 | 9 | Patent / IP | **WAITING ON IPR CELL** | Packet prepared privately (`docs/private/IP/`, gitignored). |
-| 10 | Publication | **PARTIAL** | Experiment table, claim boundaries, venue decision, and a draft skeleton exist. Gated on human labels and the IPR decision. |
+| 10 | Publication | **PARTIAL** | Experiment table, claim boundaries, venue decision, and a draft skeleton exist. Gated on human labels and the IPR decision. Research-arena verdicts (2 killed, 1 weakly surviving, 2 open) are in `docs/research/DECISION_LOG.md`. |
 | 11 | Security | **PARTIAL** | `.env` untracked, no keys in repo/history. Keys exposed in an earlier session transcript must be rotated by their owner (`docs/ops/SECURITY_KEY_ROTATION.md`). |
 | 12 | Documentation | **DONE** | EVOLUTION/STATUS/HANDOFF and the webview docs are current. |
 
