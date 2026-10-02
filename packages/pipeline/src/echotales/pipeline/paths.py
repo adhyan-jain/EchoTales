@@ -48,6 +48,18 @@ VOICE_BANK_DIR = DATA_ROOT / "voice"
 SOURCES_PATH = DATA_ROOT / "sources.toml"
 #: The database used when neither `--db` nor a novel is given.
 DEFAULT_DB = DB_DIR / "reverend-insanity.db"
+#: Research arena (`packages/research`). Results are measured artifacts, so
+#: they live under `eval/`; downloaded public corpora (PDNC, LitBank) are
+#: re-fetchable and licence-restricted, so they live in the gitignored cache;
+#: experiment intermediates (synthesised audio, renders) are disposable.
+RESEARCH_DIR = EVAL_DIR / "research"
+RESEARCH_CACHE_DIR = CACHE_DIR / "research"
+RESEARCH_SCRATCH_DIR = SCRATCH_DIR / "research"
+
+
+def research_run_dir(hypothesis_id: str, run_id: str, *, data_root: Path | str = DATA_ROOT) -> Path:
+    """`data/eval/research/<hypothesis>/<run-id>/` -- one experiment run's artifacts."""
+    return Path(data_root) / "eval" / "research" / hypothesis_id / run_id
 
 
 def novel_code(novel_id: str) -> str:
