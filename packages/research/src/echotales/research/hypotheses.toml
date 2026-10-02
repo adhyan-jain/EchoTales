@@ -1,0 +1,94 @@
+# Hypothesis registry (registry.py). Status changes are one-line diffs; every
+# non-OPEN status must cite an existing artifact (tests/test_registry.py).
+# Narrative reasoning for each decision: docs/research/DECISION_LOG.md.
+
+[H-CAL]
+title = "Pipeline attribution confidence is a usable posterior"
+theme = "T1 perceptual cost of upstream errors (policy precondition)"
+statement = "On independent human gold (PDNC), the speaker ladder's tier confidences rank its errors: tier accuracy is monotone in confidence and AUROC(confidence, correct) >= 0.6."
+kill_criterion = "AUROC < 0.6 or non-monotone tier accuracy."
+status = "KILLED"
+experiments = ["attribution_calibration"]
+evidence = ["data/eval/research/H-CAL/real-a5524f970cf9ab0f/results.json"]
+firewall = "Measures the reliability of an upstream signal a renderer consumes; attribution itself is not the contribution."
+
+[H-GATE]
+title = "Confidence-gated commitment beats random gating; distinctiveness unmasks errors"
+theme = "T1 perceptual cost of upstream errors (objective precondition)"
+statement = "(a) A diverse cast leaves far fewer attribution errors acoustically masked than a homogeneous one; (b) gating character voices on pipeline confidence reduces salient-error mass (speaker-embedding distance) significantly more than random gating."
+kill_criterion = "(a) masked share equal across casts, or (b) paired-bootstrap CI of AURC(random) - AURC(tier) includes 0."
+status = "SURVIVING"
+experiments = ["commitment_gating"]
+evidence = ["data/eval/research/H-GATE/real-9f0a4af1ffd3116a/results.json"]
+firewall = "Rendering decision under upstream uncertainty; no narrative modelling."
+
+[H-COST]
+title = "The perceptual cost of an upstream error depends on the rendering (crossover)"
+theme = "T1 perceptual cost of upstream errors (core)"
+statement = "Listener comprehension and preference show a rendering x accuracy interaction: the full-cast advantage over a single narrator shrinks or reverses as injected attribution errors rise, more strongly with a distinctive cast, with cost varying by error type."
+kill_criterion = "Cluster-bootstrap CI of the probe-accuracy difference-in-differences includes 0 at the powered sample size AND no interaction in enjoyment; or the crossover lies only at accuracies no deployed system operates at."
+status = "OPEN"
+experiments = ["error_cost_stimuli"]
+evidence = ["data/eval/research/H-COST/real-14034e3f106cb8ff/results.json"]
+firewall = "Attribution accuracy is a manipulated input; the measured quantity is listener perception of renderings."
+patent_candidate = false
+
+[H-HEDGE]
+title = "Posterior-weighted voice interpolation is a graded hedge"
+theme = "T1 perceptual cost of upstream errors (method arm)"
+statement = "Interpolating the generator's speaker conditioning between the top-2 candidates moves perceived identity smoothly with the posterior weight."
+kill_criterion = "Machine-perceived identity changes mostly (>60%) at the discrete prompt switch for every tested pair."
+status = "KILLED"
+experiments = ["hedged_voice_feasibility"]
+evidence = ["data/eval/research/H-HEDGE/real-4796b27b4fa9dfbb/results.json"]
+firewall = "Generator conditioning; no narrative modelling."
+
+[H-SELECT]
+title = "Which moments to illustrate is learnable from reader preference and not settled by cheap notions"
+theme = "T2 content selection under a depiction budget"
+statement = "Cheap importance notions (drama heuristic, visualness proxy, dialogue density, zero-shot LLM) disagree on the top-k beats of a chapter, and pairwise reader preferences agree well enough (overlap agreement) to be a learnable target that none of them matches."
+kill_criterion = "Cheap scorers already agree (max pair Jaccard >= random floor + 0.15) or human overlap agreement too low (Cohen-kappa-equivalent < 0.3) or a zero-shot LLM matches the human ranking at ceiling."
+status = "OPEN"
+experiments = ["moment_selection_baselines"]
+evidence = ["data/eval/research/H-SELECT/real-0b1915448bceb49f/results.json"]
+firewall = "Salience/illustrability of passages; no identity, temporal or epistemic state."
+
+[H-XMOD]
+title = "Image-vs-voice disagreement localises upstream errors"
+theme = "T4 label-free error detection"
+statement = "Lines where the voiced speaker is absent from the independently derived panel cast are enriched for upstream errors relative to agreeing lines."
+kill_criterion = "P(error|disagree) - P(error|agree) < 0.15 or its Wilson CI includes 0."
+status = "PARKED"
+experiments = []
+evidence = []
+firewall = "Renderer-level consistency signal; must not become narrative consistency."
+
+[H-CRN]
+title = "Counterfactual value of a human correction under common random numbers"
+theme = "T3 correction allocation in multi-stage generation"
+statement = "Seeded re-rendering with one logged correction applied shows stage-dependent masking/propagation, making correction placement a real allocation problem."
+kill_criterion = ">=90% of corrections masked (reduces to the killed truncation/interface finding) or effects equal across stages."
+status = "PARKED"
+experiments = []
+evidence = []
+firewall = "Corrections are mostly speaker reassignments -- adjacent to identity; frame only as rendering propagation."
+
+[H-JUDGE-A]
+title = "Audio-LLM judges miss purely vocal misattributions that humans catch"
+theme = "T5 judge validity for generated media"
+statement = "On H-COST stimuli, an audio-LLM judge detects semantically contradicted misattributions but not vocal-only ones, unlike listeners."
+kill_criterion = "Judge detects vocal-only swaps at human-level rates."
+status = "OPEN"
+experiments = []
+evidence = []
+firewall = "Evaluation validity; no narrative modelling."
+
+[H-VABST]
+title = "Rendering-level visual abstention (silhouette vs committed figure) under attribute uncertainty"
+theme = "T1 perceptual cost of upstream errors (visual arm)"
+statement = "Readers rate a deliberately obscured figure as costing less than a committed figure that later proves wrong, while an obscured correct figure costs little relative to a committed correct one."
+kill_criterion = "Obscured figures rated worse than wrong commitments even when the commitment is contradicted by the text."
+status = "OPEN"
+experiments = []
+evidence = []
+firewall = "Uncertainty source must be framed as generic attribute specificity, not identity resolution."

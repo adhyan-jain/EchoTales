@@ -1,0 +1,15 @@
+{
+  "base_seed": 20261002,
+  "config_hash": "9f0a4af1ffd3116a",
+  "experiment": "commitment_gating",
+  "hypothesis_id": "H-GATE",
+  "params": {
+    "modes": [
+      "homogeneous",
+      "diverse"
+    ],
+    "resamples": 1000,
+    "vocative_penalty": 0.5
+  },
+  "stub": false
+}

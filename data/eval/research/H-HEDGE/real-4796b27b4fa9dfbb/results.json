@@ -1,0 +1,46 @@
+{
+  "config_hash": "4796b27b4fa9dfbb",
+  "experiment": "hedged_voice_feasibility",
+  "hypothesis_id": "H-HEDGE",
+  "mode": "real",
+  "n_trials": 20,
+  "n_units": 2,
+  "notes": [
+    "identity measured by Chatterbox's own voice encoder, not by listeners"
+  ],
+  "summary": {
+    "alphas": [
+      0.0,
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ],
+    "curves": {
+      "earsp004~earsp024": [
+        0.2937,
+        0.2992,
+        0.6196,
+        0.6688,
+        0.683
+      ],
+      "earsp010~earsp012": [
+        0.355,
+        0.3764,
+        0.5704,
+        0.5742,
+        0.5895
+      ]
+    },
+    "endpoint_separation": {
+      "earsp004~earsp024": 0.3893,
+      "earsp010~earsp012": 0.2345
+    },
+    "step_share": {
+      "earsp004~earsp024": 0.823,
+      "earsp010~earsp012": 0.8273
+    },
+    "third_identity_share": 0.45
+  },
+  "verdict_hint": "KILL-SIGNAL: identity changes mostly at the discrete prompt switch (categorical); this generator cannot express a graded hedge"
+}

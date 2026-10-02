@@ -1,0 +1,13 @@
+{
+  "base_seed": 20261002,
+  "config_hash": "0b1915448bceb49f",
+  "experiment": "moment_selection_baselines",
+  "hypothesis_id": "H-SELECT",
+  "params": {
+    "budget": 0.2,
+    "chapters_per_novel": 2,
+    "llm": false,
+    "n_novels": 8
+  },
+  "stub": false
+}

@@ -1,0 +1,99 @@
+{
+  "config_hash": "0b1915448bceb49f",
+  "experiment": "moment_selection_baselines",
+  "hypothesis_id": "H-SELECT",
+  "mode": "real",
+  "n_trials": 671,
+  "n_units": 671,
+  "notes": [],
+  "summary": {
+    "beats": 671,
+    "budget": 0.2,
+    "chapters": 13,
+    "max_non_random_jaccard": 0.2205,
+    "pairs": {
+      "dialogue_density~random_a": {
+        "ci": [
+          0.0842,
+          0.1535
+        ],
+        "jaccard_topk": 0.1205,
+        "kendall_tau": 0.0073
+      },
+      "dialogue_density~random_b": {
+        "ci": [
+          0.0929,
+          0.1777
+        ],
+        "jaccard_topk": 0.132,
+        "kendall_tau": 0.0295
+      },
+      "dialogue_density~visual_lexicon": {
+        "ci": [
+          0.0148,
+          0.081
+        ],
+        "jaccard_topk": 0.0455,
+        "kendall_tau": -0.1715
+      },
+      "product_drama~dialogue_density": {
+        "ci": [
+          0.0462,
+          0.1087
+        ],
+        "jaccard_topk": 0.0769,
+        "kendall_tau": -0.076
+      },
+      "product_drama~random_a": {
+        "ci": [
+          0.0773,
+          0.1916
+        ],
+        "jaccard_topk": 0.1331,
+        "kendall_tau": 0.0525
+      },
+      "product_drama~random_b": {
+        "ci": [
+          0.0407,
+          0.1351
+        ],
+        "jaccard_topk": 0.0867,
+        "kendall_tau": 0.0272
+      },
+      "product_drama~visual_lexicon": {
+        "ci": [
+          0.1658,
+          0.2778
+        ],
+        "jaccard_topk": 0.2205,
+        "kendall_tau": 0.1093
+      },
+      "random_a~random_b": {
+        "ci": [
+          0.0605,
+          0.318
+        ],
+        "jaccard_topk": 0.1644,
+        "kendall_tau": 0.0089
+      },
+      "visual_lexicon~random_a": {
+        "ci": [
+          0.0495,
+          0.1335
+        ],
+        "jaccard_topk": 0.0907,
+        "kendall_tau": 0.0056
+      },
+      "visual_lexicon~random_b": {
+        "ci": [
+          0.0419,
+          0.1514
+        ],
+        "jaccard_topk": 0.0935,
+        "kendall_tau": -0.0585
+      }
+    },
+    "random_floor_jaccard": 0.1644
+  },
+  "verdict_hint": "PRECONDITION: scorers DISAGREE (all non-random pairs within 0.15 of the random floor): selection is not settled by cheap notions -- the preference study is warranted"
+}

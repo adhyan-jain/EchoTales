@@ -1,0 +1,11 @@
+{
+  "base_seed": 20261002,
+  "config_hash": "a5524f970cf9ab0f",
+  "experiment": "attribution_calibration",
+  "hypothesis_id": "H-CAL",
+  "params": {
+    "max_quotes_per_novel": 0,
+    "novels": "all"
+  },
+  "stub": false
+}
