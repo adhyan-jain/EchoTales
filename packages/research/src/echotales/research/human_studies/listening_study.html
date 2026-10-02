@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Listening Study</title>
+<style>
+  :root { --bg:#fbfaf7; --fg:#1f1d1a; --muted:#6b665e; --accent:#5b4bd6; --card:#fff; --line:#e4e0d8; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#16151a; --fg:#ece9e4; --muted:#a39d94; --accent:#9c8cff; --card:#201f26; --line:#34323b; } }
+  body { background:var(--bg); color:var(--fg); font:16px/1.5 system-ui, sans-serif; margin:0; padding:16px; }
+  main { max-width:720px; margin:0 auto; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; margin:12px 0; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:8px; padding:8px 14px; font-size:15px; cursor:pointer; }
+  button:disabled { opacity:.4; cursor:default; }
+  label { display:block; margin:6px 0; }
+  .muted { color:var(--muted); font-size:14px; }
+  audio { width:100%; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Listening study</h1>
+  <p class="muted">You will hear short passages from classic novels read by synthetic voices.
+  After each one, answer a few questions. There are no right answers about taste;
+  for "who said" questions, answer from what you heard. About 20 minutes.</p>
+  <div class="card" id="setup">
+    <label>Participant code <input id="pid" placeholder="e.g. L07"></label>
+    <label>Stimulus manifest <input type="file" id="manifest" accept=".json"></label>
+    <p class="muted">Audio files are read from the folder next to the manifest
+    (<code>audio/&lt;stimulus-id&gt;.wav</code>); serve this directory with any static server.</p>
+    <button id="start">Start</button>
+  </div>
+  <div id="trial"></div>
+  <div class="card" id="done" hidden>
+    <h2>Thank you</h2>
+    <p>Your responses are saved in this browser. Download them and send the file to the study lead.</p>
+    <button id="dl">Download responses</button>
+  </div>
+</main>
+<script>
+// Assignment is a Latin square over passages x conditions keyed by participant
+// number, so each listener hears every passage exactly once (no passage
+// memory across conditions) and conditions are balanced across listeners.
+// Counterbalancing is the design's control for passage difficulty.
+const KEY = "echotales-listening-v1";
+let data, plan = [], idx = 0, responses = [];
+const $ = id => document.getElementById(id);
+function save() { try { localStorage.setItem(KEY + ":" + $("pid").value, JSON.stringify(responses)); } catch (e) {} }
+function hashNum(s) { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; }
+function buildPlan(pid) {
+  const byP = {};
+  for (const s of data.stimuli) (byP[s.passage] ??= []).push(s);
+  const passages = Object.keys(byP).map(Number).sort((a, b) => a - b);
+  const conds = [...new Set(data.stimuli.map(s => `${s.cast}|${s.rate_requested}|${s.error_type}|${s.policy}`))].sort();
+  const offset = hashNum(pid) % conds.length;
+  return passages.map((p, i) => {
+    const want = conds[(i + offset) % conds.length];
+    return byP[p].find(s => `${s.cast}|${s.rate_requested}|${s.error_type}|${s.policy}` === want) || byP[p][0];
+  });
+}
+function render() {
+  if (idx >= plan.length) { $("trial").innerHTML = ""; $("done").hidden = false; return; }
+  const s = plan[idx];
+  const probes = data.probes.filter(q => q.passage === s.passage);
+  $("trial").innerHTML = `<div class="card">
+    <p class="muted">Passage ${idx + 1} of ${plan.length}</p>
+    <audio controls preload="auto" src="audio/${s.id}.wav" id="aud"></audio>
+    ${probes.map((q, k) => `<p><b>Who said:</b> “${q.excerpt}…”</p>` +
+      q.options.map(o => `<label><input type="radio" name="q${k}" value="${o}"> ${o}</label>`).join("") +
+      `<label><input type="radio" name="q${k}" value="__unsure"> Not sure</label>`).join("")}
+    <p><b>Did any line sound like it was spoken by the wrong character?</b></p>
+    ${["no", "maybe", "yes"].map(v => `<label><input type="radio" name="wrong" value="${v}"> ${v}</label>`).join("")}
+    <p><b>How much did you enjoy listening to this passage?</b> (1 = not at all, 7 = very much)</p>
+    <input type="range" min="1" max="7" value="4" id="enjoy"> <span class="muted">drag</span>
+    <p><button id="next" disabled>Next</button></p></div>`;
+  const aud = $("aud");
+  aud.addEventListener("ended", () => { $("next").disabled = false; });
+  $("next").onclick = () => {
+    const pick = name => (document.querySelector(`input[name="${name}"]:checked`) || {}).value || null;
+    responses.push({ participant: $("pid").value, stimulus: s.id, passage: s.passage, cast: s.cast,
+      rate: s.rate_requested, rate_realised: s.rate_realised, error_type: s.error_type, policy: s.policy,
+      probes: probes.map((q, k) => ({ quote_index: q.quote_index, answer: q.answer, chosen: pick("q" + k) })),
+      noticed_wrong: pick("wrong"), enjoyment: Number($("enjoy").value), order: idx, t: Date.now() });
+    save(); idx++; render();
+  };
+}
+$("start").onclick = async () => {
+  const f = $("manifest").files[0];
+  if (!f || !$("pid").value) { alert("Enter a participant code and choose the manifest."); return; }
+  data = JSON.parse(await f.text()); plan = buildPlan($("pid").value);
+  $("setup").hidden = true; render();
+};
+$("dl").onclick = () => {
+  const blob = new Blob([JSON.stringify(responses, null, 1)], { type: "application/json" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = `responses-${$("pid").value}.json`; a.click();
+};
+</script>
+</body>
+</html>

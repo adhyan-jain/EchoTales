@@ -26,6 +26,11 @@ data/*
 data/eval/human_review_*.csv
 data/eval/hardcase_review_*.csv
 data/eval/compounding/litbank-*.json
+# Research arena: aggregate results.json/provenance are tracked; per-unit
+# trials are not -- several carry PDNC annotation content (licence unclear,
+# see packages/research/.../datasets/pdnc.py) and every one is regenerable
+# bit-for-bit from `python -m echotales.research run <experiment>`.
+data/eval/research/*/*/trials.jsonl
 
 # Correction logs (the review desk's JSONL; replayable onto a database).
 !data/corrections/

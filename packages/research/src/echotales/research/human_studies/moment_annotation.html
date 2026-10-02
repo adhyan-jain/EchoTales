@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moment Annotation</title>
+<style>
+  :root { --bg:#fbfaf7; --fg:#1f1d1a; --muted:#6b665e; --accent:#5b4bd6; --card:#fff; --line:#e4e0d8; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#16151a; --fg:#ece9e4; --muted:#a39d94; --accent:#9c8cff; --card:#201f26; --line:#34323b; } }
+  body { background:var(--bg); color:var(--fg); font:16px/1.55 Georgia, serif; margin:0; padding:16px; }
+  main { max-width:980px; margin:0 auto; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:700px) { .pair { grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; white-space:pre-wrap; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:8px; padding:8px 14px; font:15px system-ui; cursor:pointer; margin-top:8px; }
+  .muted { color:var(--muted); font:14px system-ui; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Which moment would you illustrate?</h1>
+  <p class="muted">An illustrated edition can only afford a few pictures per chapter. For each pair of passages
+  from the same chapter, pick the one you would rather see as a picture. Go with your first instinct.</p>
+  <div id="setup" class="card">
+    <label>Annotator code <input id="aid"></label>
+    <label>Pairs file <input type="file" id="pairs" accept=".json"></label>
+    <button id="start">Start</button>
+  </div>
+  <p class="muted" id="prog"></p>
+  <div id="pair" class="pair"></div>
+  <div id="done" hidden><button id="dl">Download responses</button></div>
+</main>
+<script>
+// Every annotator sees the shared overlap pairs first (for agreement), then a
+// participant-seeded slice of the pool, so coverage grows with annotators.
+const $ = id => document.getElementById(id);
+let data, queue = [], i = 0, out = [];
+function seeded(s) { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return () => ((h = Math.imul(h ^ (h >>> 15), 2246822507)) >>> 0) / 4294967296; }
+function show() {
+  if (i >= queue.length) { $("pair").innerHTML = ""; $("done").hidden = false; $("prog").textContent = "Done."; return; }
+  const [a, b] = queue[i];
+  $("prog").textContent = `Pair ${i + 1} of ${queue.length}`;
+  $("pair").innerHTML = [a, b].map(id => `<div class="card">${data.items[id].replace(/</g, "&lt;")}<br><button data-id="${id}">This one</button></div>`).join("");
+  document.querySelectorAll("#pair button").forEach(btn => btn.onclick = () => {
+    out.push({ annotator: $("aid").value, a, b, winner: btn.dataset.id, t: Date.now() });
+    try { localStorage.setItem("echotales-moments:" + $("aid").value, JSON.stringify(out)); } catch (e) {}
+    i++; show();
+  });
+}
+$("start").onclick = async () => {
+  const f = $("pairs").files[0];
+  if (!f || !$("aid").value) { alert("Enter a code and choose the pairs file."); return; }
+  data = JSON.parse(await f.text());
+  const rnd = seeded($("aid").value);
+  const pool = [...data.pool].sort(() => rnd() - 0.5).slice(0, 60);
+  queue = [...data.overlap, ...pool].map(p => rnd() < 0.5 ? p : [p[1], p[0]]);
+  $("setup").hidden = true; show();
+};
+$("dl").onclick = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 1)], { type: "application/json" })); a.download = `moments-${$("aid").value}.json`; a.click(); };
+</script>
+</body>
+</html>

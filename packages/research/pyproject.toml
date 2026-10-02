@@ -1,0 +1,26 @@
+[project]
+name = "echotales-research"
+version = "0.1.0"
+description = "EchoTales research arena: hypotheses, experiments, evaluators, human studies. Imports core and pipeline; neither ever imports it."
+requires-python = ">=3.12,<3.15"
+dependencies = [
+    "echotales-core",
+    "echotales-pipeline",
+    "pydantic>=2.8",
+    "numpy>=1.26",
+    "scipy>=1.11",
+]
+
+[tool.uv.sources]
+echotales-core = { workspace = true }
+echotales-pipeline = { workspace = true }
+
+[project.scripts]
+echotales-research = "echotales.research.runner:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/echotales"]
