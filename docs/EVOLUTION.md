@@ -8167,3 +8167,55 @@ review (Temporal-Epistemic Delta Compiler and Counterexample-Guided
 Generation are next, not started). `docs/results/MDC_DISCLOSURE_ABLATION.md`
 explicitly does not claim patentability — that determination is a separate,
 later prior-art/IPR review.
+
+### 4.100 Research arena: five pre-registered experiments, two kills *(2026-10-02)*
+
+New workspace package `packages/research/` (`python -m echotales.research
+{list|run <experiment> [--stub]}`) imports core and pipeline and is never
+imported by them (`packages/research/tests/test_import_direction.py`).
+`paths.py` gained `RESEARCH_DIR`, `RESEARCH_CACHE_DIR`,
+`RESEARCH_SCRATCH_DIR`, `research_run_dir()`. Each run writes
+`data/eval/research/<HID>/<run-id>/` (`results.json`, `provenance.json`,
+`run_config.json` tracked; `trials.jsonl` gitignored). Full entries with
+kill criteria: `docs/research/DECISION_LOG.md`. Suite is 1,277 tests across
+the package suites.
+
+- **H-CAL, killed.** The product's speaker ladder (tiers 1-3, LLM tier
+  excluded) over 36,991 gold quotes in 28 PDNC novels: coverage 9.9%,
+  accuracy 74.8% strict / 84.0% lenient. EXPLICIT states 0.95 and measures
+  86.7% lenient (n = 3,214); PROXIMAL states 0.75, measures 63.8%
+  (n = 431). ECE 0.179, AUROC 0.573 strict / 0.590 lenient (kill below
+  0.6). Errors: 52.3% addressee capture, 41.5% cross-gender; accuracy
+  18.2% (n = 44) when the predicted name is a vocative inside the quote.
+  Confidences are not a usable posterior. Artifact
+  `data/eval/research/H-CAL/real-a5524f970cf9ab0f/`. An alias index that
+  mapped the pronoun "She" to a character name was fixed before the
+  reported numbers.
+- **H-GATE, surviving weakly.** 3,424 resolved lines, 362 errors, cast
+  onto 22 EARS voices: 22.4% of errors land on the same voice in a
+  homogeneous cast vs 2.2% in a diverse one (mean embedding distance
+  0.095 vs 0.186). Tier confidence beats random gating (diverse delta AURC
+  0.0015 [0.0008, 0.0027]) but closes only 17.8% / 15.5% of the
+  random-to-oracle gap. Embedding distance is not perception. Artifact
+  `data/eval/research/H-GATE/real-9f0a4af1ffd3116a/`.
+- **H-COST, open.** 12 passages, 336 condition scripts, 24 probes, a
+  Latin-square page and power simulation are built; pilot 26 Chatterbox
+  calls in 98 s, 10/10 quote lines nearest their intended voice (cosine
+  0.79-0.92). Two design issues: same-gender errors realise at about half
+  the requested rate; narrator-only renders run about 30% longer (60 s vs
+  46 s). Power at a -0.15 interaction: 38% / 57% / 75% for 12 / 24 / 40
+  listeners. Artifact `data/eval/research/H-COST/real-14034e3f106cb8ff/`.
+- **H-HEDGE, killed (machine level).** Interpolating Chatterbox's
+  continuous conditioning between two voices: 0.823 / 0.827 of the
+  identity change occurs at the discrete prompt switch (kill above 0.60);
+  alpha 0 to 0.25 moves identity by 0.005 / 0.021. Artifact
+  `data/eval/research/H-HEDGE/real-4796b27b4fa9dfbb/`.
+- **H-SELECT, open (precondition met).** 13 chapters, 671 beats, 20%
+  budget: best pair Jaccard 0.22 vs random floor 0.16. Local LLM on 3
+  chapters / 217 beats agrees with the visual-lexicon proxy (0.33, floor
+  0.11) but not drama (0.15) or dialogue density (0.03). Artifacts
+  `data/eval/research/H-SELECT/real-0b1915448bceb49f/`,
+  `.../real-llm-4x1/`.
+
+H-XMOD and H-CRN were parked for lack of labels. Prior-art screen: 9
+candidates rejected, 6 parked; none qualifies as a patent candidate.

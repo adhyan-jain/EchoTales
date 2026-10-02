@@ -21,6 +21,7 @@ the ten non-negotiables) — this page is the map, not the territory.
 |---|---|---|
 | `packages/core` | **CORE PRODUCTION** | Models, `Store`, `state_of()`/`StateResolver`, `disclosure.py`. Imports nothing from `packages/pipeline` — verified by grep (`from echotales.pipeline` returns empty in `packages/core/src/`), matching the paper's structural claim. |
 | `packages/pipeline` | **CORE + SUPPORTING PRODUCTION** | All 13 subpackages (`ingest`, `spans`, `mentions`, `segment`, `speakers`, `anaphora`, `resolve`, `persona`, `voice`, `render`, `eval`, `world`, `llm`) are reachable from `cli.py`/`commands.py`, directly or transitively. `webview_server.py` is both the job/correction HTTP API and how `webview-server` is served. |
+| `packages/research` | **RESEARCH — arena, one-way dependency** | Pre-registered experiments (`python -m echotales.research list\|run <experiment> [--stub]`) that import core+pipeline; nothing imports it back (`packages/research/tests/test_import_direction.py`). Results under `data/eval/research/<HID>/<run-id>/`; verdicts in `docs/research/DECISION_LOG.md`. |
 | `packages/ecrdt` | **RESEARCH — standalone, isolated** | Zero dependencies, zero imports in either direction with core/pipeline, its own `pyproject.toml`. Investigates a separate, independent research question (provable epistemic non-interference under CRDT merge) — not part of the EchoTales pipeline and not a dependency of it. Can be understood, tested, and benchmarked entirely on its own. |
 | `webview/` | **SUPPORTING PRODUCTION** | React review/production UI, consumes `webview-server`'s HTTP API. |
 | `scripts/` | mixed — see below | `eval/`, `paper/`, `review/`, `maintenance/` are all load-bearing: every one is invoked by `scripts/reproduce_results.sh` or is a direct CLI-consistency dependency (verified). |
@@ -52,6 +53,7 @@ none is stubbed, orphaned, or dead.
 packages/core/       models, store, state_of(), disclosure.py  (imports nothing from pipeline)
 packages/pipeline/   ingest -> spans -> mentions -> resolve -> persona -> render -> voice -> eval;
                      webview_server.py is also the job / correction HTTP API
+packages/research/   research arena; imports core+pipeline, never imported by them
 packages/ecrdt/      standalone research prototype — see packages/ecrdt/README.md
 webview/             React review and production UI
 scripts/             eval/, paper/, review/, maintenance/, reproduce_results.sh
@@ -72,7 +74,7 @@ appearance/canon) → `render` (panel direction + image generation) → `voice`
 
 ```bash
 source .venv/bin/activate
-python3 -m pytest packages/core/tests packages/pipeline/tests   # 1,206 tests, no GPU needed
+python3 -m pytest packages/core/tests packages/pipeline/tests   # 1,206 tests, no GPU needed (research: add packages/research/tests; 1,277 total across all suites, 2026-10-02)
 python3 -m pytest packages/ecrdt/tests                          # 48 tests, separate suite
 scripts/reproduce_results.sh                                    # regenerates every paper table/figure from committed artifacts
 ```
