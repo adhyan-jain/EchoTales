@@ -1,0 +1,248 @@
+{
+  "config_hash": "a5524f970cf9ab0f",
+  "experiment": "attribution_calibration",
+  "hypothesis_id": "H-CAL",
+  "mode": "real",
+  "n_trials": 36991,
+  "n_units": 36991,
+  "notes": [
+    "tier 4 (LLM) excluded by design; see module docstring"
+  ],
+  "summary": {
+    "accuracy_resolved": 0.7477,
+    "accuracy_resolved_lenient": 0.8396,
+    "addressee_capture_share_of_errors": 0.5231,
+    "auroc_confidence_vs_correct": 0.5732,
+    "auroc_lenient": 0.59,
+    "by_quote_type": {
+      "": {
+        "accuracy_resolved": 1.0,
+        "coverage": 0.4286,
+        "n": 14
+      },
+      "Anaphoric": {
+        "accuracy_resolved": 0.48,
+        "coverage": 0.0519,
+        "n": 9147
+      },
+      "Explicit": {
+        "accuracy_resolved": 0.8098,
+        "coverage": 0.2605,
+        "n": 11181
+      },
+      "Implicit": {
+        "accuracy_resolved": 0.5299,
+        "coverage": 0.0151,
+        "n": 16635
+      },
+      "nan": {
+        "accuracy_resolved": 0.5,
+        "coverage": 0.1429,
+        "n": 14
+      }
+    },
+    "coverage": 0.0986,
+    "ece": 0.1786,
+    "errors_lenient": 585,
+    "gender_mismatch_share_of_errors": 0.4149,
+    "novels": 28,
+    "per_novel": {
+      "AHandfulOfDust": {
+        "correct": 213,
+        "quotes": 2292,
+        "resolved": 252
+      },
+      "APassageToIndia": {
+        "correct": 103,
+        "quotes": 2092,
+        "resolved": 158
+      },
+      "ARoomWithAView": {
+        "correct": 62,
+        "quotes": 1634,
+        "resolved": 143
+      },
+      "AlicesAdventuresInWonderland": {
+        "correct": 137,
+        "quotes": 697,
+        "resolved": 163
+      },
+      "AnneOfGreenGables": {
+        "correct": 134,
+        "quotes": 1196,
+        "resolved": 148
+      },
+      "DaisyMiller": {
+        "correct": 126,
+        "quotes": 550,
+        "resolved": 139
+      },
+      "Emma": {
+        "correct": 27,
+        "quotes": 1593,
+        "resolved": 48
+      },
+      "HardTimes": {
+        "correct": 67,
+        "quotes": 1600,
+        "resolved": 112
+      },
+      "HowardsEnd": {
+        "correct": 191,
+        "quotes": 2606,
+        "resolved": 257
+      },
+      "MansfieldPark": {
+        "correct": 49,
+        "quotes": 1139,
+        "resolved": 69
+      },
+      "NightAndDay": {
+        "correct": 298,
+        "quotes": 2091,
+        "resolved": 375
+      },
+      "NorthangerAbbey": {
+        "correct": 29,
+        "quotes": 842,
+        "resolved": 60
+      },
+      "OliverTwist": {
+        "correct": 247,
+        "quotes": 2570,
+        "resolved": 276
+      },
+      "Persuasion": {
+        "correct": 28,
+        "quotes": 488,
+        "resolved": 41
+      },
+      "PrideAndPrejudice": {
+        "correct": 32,
+        "quotes": 1270,
+        "resolved": 48
+      },
+      "SenseAndSensibility": {
+        "correct": 39,
+        "quotes": 1085,
+        "resolved": 47
+      },
+      "TheAgeOfInnocence": {
+        "correct": 36,
+        "quotes": 1393,
+        "resolved": 159
+      },
+      "TheAwakening": {
+        "correct": 46,
+        "quotes": 584,
+        "resolved": 53
+      },
+      "TheGambler": {
+        "correct": 15,
+        "quotes": 767,
+        "resolved": 24
+      },
+      "TheInvisibleMan": {
+        "correct": 52,
+        "quotes": 904,
+        "resolved": 121
+      },
+      "TheManWhoWasThursday": {
+        "correct": 76,
+        "quotes": 799,
+        "resolved": 81
+      },
+      "TheMysteriousAffairAtStyles": {
+        "correct": 56,
+        "quotes": 1861,
+        "resolved": 64
+      },
+      "ThePictureOfDorianGray": {
+        "correct": 89,
+        "quotes": 1171,
+        "resolved": 149
+      },
+      "TheSignOfTheFour": {
+        "correct": 23,
+        "quotes": 640,
+        "resolved": 24
+      },
+      "TheSportOfTheGods": {
+        "correct": 28,
+        "quotes": 640,
+        "resolved": 36
+      },
+      "TheSunAlsoRises": {
+        "correct": 253,
+        "quotes": 2610,
+        "resolved": 288
+      },
+      "WhereAngelsFearToTread": {
+        "correct": 75,
+        "quotes": 999,
+        "resolved": 87
+      },
+      "WinnieThePooh": {
+        "correct": 196,
+        "quotes": 878,
+        "resolved": 225
+      }
+    },
+    "quotes": 36991,
+    "reliability": [
+      {
+        "accuracy": 0.5174013921113689,
+        "hi": 0.8,
+        "lo": 0.7000000000000001,
+        "mean_confidence": 0.75,
+        "n": 431
+      },
+      {
+        "accuracy": 0.7786069651741293,
+        "hi": 1.0,
+        "lo": 0.9,
+        "mean_confidence": 0.9499689054726367,
+        "n": 3216
+      }
+    ],
+    "tier_accuracy_monotone_in_confidence": true,
+    "tiers": {
+      "EXPLICIT": {
+        "accuracy": 0.7791,
+        "accuracy_lenient": 0.8671,
+        "confidence": 0.95,
+        "n": 3214,
+        "wilson_hi": 0.7931,
+        "wilson_lo": 0.7644
+      },
+      "JOINT": {
+        "accuracy": 0.0,
+        "accuracy_lenient": 0.0,
+        "confidence": 0.9,
+        "n": 2,
+        "wilson_hi": 0.6576,
+        "wilson_lo": 0.0
+      },
+      "PROXIMAL": {
+        "accuracy": 0.5174,
+        "accuracy_lenient": 0.6381,
+        "confidence": 0.75,
+        "n": 431,
+        "wilson_hi": 0.5642,
+        "wilson_lo": 0.4703
+      }
+    },
+    "unmapped_surface_share": 0.0,
+    "vocative": {
+      "not_in_quote": {
+        "accuracy_lenient": 0.8476,
+        "n": 3603
+      },
+      "predicted_in_quote": {
+        "accuracy_lenient": 0.1818,
+        "n": 44
+      }
+    }
+  },
+  "verdict_hint": "KILL-SIGNAL: confidence does not rank errors -- a policy needs a new posterior"
+}

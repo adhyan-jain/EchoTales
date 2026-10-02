@@ -1,0 +1,31 @@
+{
+  "base_seed": 20261002,
+  "config_hash": "4796b27b4fa9dfbb",
+  "experiment": "hedged_voice_feasibility",
+  "hypothesis_id": "H-HEDGE",
+  "params": {
+    "alphas": [
+      0.0,
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ],
+    "device": "cuda",
+    "pairs": [
+      [
+        "earsp004",
+        "earsp024"
+      ],
+      [
+        "earsp010",
+        "earsp012"
+      ]
+    ],
+    "texts": [
+      "I told you already, I will not go back to that house tonight.",
+      "Then tell me plainly what you want, and be done with it."
+    ]
+  },
+  "stub": false
+}

@@ -1,0 +1,61 @@
+{
+  "config_hash": "9f0a4af1ffd3116a",
+  "experiment": "commitment_gating",
+  "hypothesis_id": "H-GATE",
+  "mode": "real",
+  "n_trials": 6848,
+  "n_units": 3424,
+  "notes": [
+    "salience proxy = speaker-embedding cosine distance (Chatterbox VE); not a perceptual measure -- see voice_geometry.py"
+  ],
+  "summary": {
+    "bank_voices": 22,
+    "diverse": {
+      "aurc_salient_error": {
+        "oracle": 0.00103,
+        "random": 0.00951,
+        "tier_confidence": 0.008,
+        "tier_plus_vocative": 0.0074
+      },
+      "error_rate": 0.1057,
+      "errors": 362,
+      "gap_closed_vs_oracle": 0.1781,
+      "gender_flip_errors": 0.4309,
+      "lines": 3424,
+      "masked_errors_same_voice": 0.0221,
+      "mean_error_distance": 0.1858,
+      "tier_vs_random": {
+        "ci": [
+          0.00082,
+          0.00267
+        ],
+        "delta_random_minus_tier": 0.00151,
+        "p_random_not_worse": 0.0
+      }
+    },
+    "homogeneous": {
+      "aurc_salient_error": {
+        "oracle": 0.00054,
+        "random": 0.00479,
+        "tier_confidence": 0.00413,
+        "tier_plus_vocative": 0.00383
+      },
+      "error_rate": 0.1057,
+      "errors": 362,
+      "gap_closed_vs_oracle": 0.1553,
+      "gender_flip_errors": 0.4282,
+      "lines": 3424,
+      "masked_errors_same_voice": 0.2238,
+      "mean_error_distance": 0.0947,
+      "tier_vs_random": {
+        "ci": [
+          0.00032,
+          0.00143
+        ],
+        "delta_random_minus_tier": 0.00066,
+        "p_random_not_worse": 0.002
+      }
+    }
+  },
+  "verdict_hint": "homogeneous: tier beats random (closes 0.1553 of the random-oracle gap); diverse: tier beats random (closes 0.1781 of the random-oracle gap)"
+}

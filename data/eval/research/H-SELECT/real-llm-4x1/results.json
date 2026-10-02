@@ -1,0 +1,139 @@
+{
+  "config_hash": "df207fa46643d17c",
+  "experiment": "moment_selection_baselines",
+  "hypothesis_id": "H-SELECT",
+  "mode": "real",
+  "n_trials": 217,
+  "n_units": 217,
+  "notes": [],
+  "summary": {
+    "beats": 217,
+    "budget": 0.2,
+    "chapters": 3,
+    "max_non_random_jaccard": 0.3318,
+    "pairs": {
+      "dialogue_density~llm_zero_shot": {
+        "ci": [
+          0.0,
+          0.0847
+        ],
+        "jaccard_topk": 0.0282,
+        "kendall_tau": -0.1813
+      },
+      "dialogue_density~random_a": {
+        "ci": [
+          0.1228,
+          0.1429
+        ],
+        "jaccard_topk": 0.1362,
+        "kendall_tau": -0.0367
+      },
+      "dialogue_density~random_b": {
+        "ci": [
+          0.0,
+          0.0847
+        ],
+        "jaccard_topk": 0.0505,
+        "kendall_tau": -0.0314
+      },
+      "dialogue_density~visual_lexicon": {
+        "ci": [
+          0.0,
+          0.0667
+        ],
+        "jaccard_topk": 0.0444,
+        "kendall_tau": -0.1985
+      },
+      "llm_zero_shot~random_a": {
+        "ci": [
+          0.0,
+          0.1228
+        ],
+        "jaccard_topk": 0.0632,
+        "kendall_tau": -0.0012
+      },
+      "llm_zero_shot~random_b": {
+        "ci": [
+          0.1429,
+          0.2308
+        ],
+        "jaccard_topk": 0.1791,
+        "kendall_tau": 0.0185
+      },
+      "product_drama~dialogue_density": {
+        "ci": [
+          0.0,
+          0.1429
+        ],
+        "jaccard_topk": 0.0584,
+        "kendall_tau": -0.0733
+      },
+      "product_drama~llm_zero_shot": {
+        "ci": [
+          0.0667,
+          0.2308
+        ],
+        "jaccard_topk": 0.1468,
+        "kendall_tau": 0.1866
+      },
+      "product_drama~random_a": {
+        "ci": [
+          0.1228,
+          0.3333
+        ],
+        "jaccard_topk": 0.1997,
+        "kendall_tau": 0.0865
+      },
+      "product_drama~random_b": {
+        "ci": [
+          0.0,
+          0.1429
+        ],
+        "jaccard_topk": 0.0952,
+        "kendall_tau": -0.0521
+      },
+      "product_drama~visual_lexicon": {
+        "ci": [
+          0.1429,
+          0.2308
+        ],
+        "jaccard_topk": 0.1937,
+        "kendall_tau": 0.1278
+      },
+      "random_a~random_b": {
+        "ci": [
+          0.0,
+          0.2308
+        ],
+        "jaccard_topk": 0.1114,
+        "kendall_tau": -0.1015
+      },
+      "visual_lexicon~llm_zero_shot": {
+        "ci": [
+          0.2075,
+          0.4545
+        ],
+        "jaccard_topk": 0.3318,
+        "kendall_tau": 0.2333
+      },
+      "visual_lexicon~random_a": {
+        "ci": [
+          0.0,
+          0.0667
+        ],
+        "jaccard_topk": 0.0222,
+        "kendall_tau": -0.0221
+      },
+      "visual_lexicon~random_b": {
+        "ci": [
+          0.1034,
+          0.1429
+        ],
+        "jaccard_topk": 0.1297,
+        "kendall_tau": 0.0539
+      }
+    },
+    "random_floor_jaccard": 0.1114
+  },
+  "verdict_hint": "PRECONDITION: some scorers AGREE substantially: check whether a human ceiling is already reached"
+}
