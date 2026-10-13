@@ -30,6 +30,15 @@ class Hypothesis:
     evidence: list[str] = field(default_factory=list)  # artifact paths backing the status
     firewall: str = ""  # why this is not StoryTrace territory
     patent_candidate: bool = False
+    #: Mutation-lab provenance (docs/research/DECISION_LOG.md): which
+    #: earlier candidates this one transforms, the prior art it was checked
+    #: against, the highest experiment level reached (0 none, 1 existing-code
+    #: run, 2 research module, 3 controlled benchmark, 4 human study), and
+    #: which research-depth layers (L1-L6) it can plausibly reach.
+    mutation_of: list[str] = field(default_factory=list)
+    prior_art: list[str] = field(default_factory=list)
+    level: int = 0
+    depth: list[str] = field(default_factory=list)
 
 
 def load(path: Path = REGISTRY_PATH) -> dict[str, Hypothesis]:
@@ -47,5 +56,9 @@ def load(path: Path = REGISTRY_PATH) -> dict[str, Hypothesis]:
             evidence=list(h.get("evidence", [])),
             firewall=h.get("firewall", ""),
             patent_candidate=bool(h.get("patent_candidate", False)),
+            mutation_of=list(h.get("mutation_of", [])),
+            prior_art=list(h.get("prior_art", [])),
+            level=int(h.get("level", 0)),
+            depth=list(h.get("depth", [])),
         )
     return out

@@ -100,10 +100,16 @@ def _clip(text: str, start: int, end: int) -> tuple[str, str]:
     return pre, post
 
 
-def probe(novel: Novel, quotes: list[Quote] | None = None) -> list[ProbeResult]:
+def probe(novel: Novel, quotes: list[Quote] | None = None,
+          known_names: frozenset[str] | None = None) -> list[ProbeResult]:
+    """`known_names` overrides the ladder's name inventory. The default is
+    built from PDNC's character list -- gold the product would not have;
+    the convergence pass's S1 sensitivity passes a product-built one instead
+    (CONVERGENCE.md). Scoring always uses PDNC's alias index."""
     idx = alias_index(novel)
     names = {n for owners in idx.values() for n in owners}
-    known = frozenset(set(idx) | {k.title() for k in idx} | names)
+    known = (known_names if known_names is not None
+             else frozenset(set(idx) | {k.title() for k in idx} | names))
     out: list[ProbeResult] = []
     for q in quotes if quotes is not None else novel.quotes:
         if q.start < 0 or q.end <= q.start or q.speaker.strip().lower() in _NO_GOLD:

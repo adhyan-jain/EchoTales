@@ -12,6 +12,7 @@ experiments = ["attribution_calibration"]
 evidence = ["data/eval/research/H-CAL/real-a5524f970cf9ab0f/results.json"]
 firewall = "Measures the reliability of an upstream signal a renderer consumes; attribution itself is not the contribution."
 
+level = 1
 [H-GATE]
 title = "Confidence-gated commitment beats random gating; distinctiveness unmasks errors"
 theme = "T1 perceptual cost of upstream errors (objective precondition)"
@@ -22,6 +23,7 @@ experiments = ["commitment_gating"]
 evidence = ["data/eval/research/H-GATE/real-9f0a4af1ffd3116a/results.json"]
 firewall = "Rendering decision under upstream uncertainty; no narrative modelling."
 
+level = 1
 [H-COST]
 title = "The perceptual cost of an upstream error depends on the rendering (crossover)"
 theme = "T1 perceptual cost of upstream errors (core)"
@@ -29,10 +31,12 @@ statement = "Listener comprehension and preference show a rendering x accuracy i
 kill_criterion = "Cluster-bootstrap CI of the probe-accuracy difference-in-differences includes 0 at the powered sample size AND no interaction in enjoyment; or the crossover lies only at accuracies no deployed system operates at."
 status = "OPEN"
 experiments = ["error_cost_stimuli"]
-evidence = ["data/eval/research/H-COST/real-14034e3f106cb8ff/results.json"]
+evidence = ["data/eval/research/H-COST/real-14034e3f106cb8ff/results.json", "data/eval/research/H-COST/real-v2-iol/results.json"]
 firewall = "Attribution accuracy is a manipulated input; the measured quantity is listener perception of renderings."
 patent_candidate = false
 
+level = 3
+note = "v2 stimulus set built 2026-10-02 (>=2 speakers per gender, tagged/implicit placement factor, duration covariate) with the H-IOL listener predictions computed on the exact scripts -- pre-registered predictions for the listening study. Audio not yet synthesised; no listeners yet."
 [H-HEDGE]
 title = "Posterior-weighted voice interpolation is a graded hedge"
 theme = "T1 perceptual cost of upstream errors (method arm)"
@@ -43,6 +47,7 @@ experiments = ["hedged_voice_feasibility"]
 evidence = ["data/eval/research/H-HEDGE/real-4796b27b4fa9dfbb/results.json"]
 firewall = "Generator conditioning; no narrative modelling."
 
+level = 2
 [H-SELECT]
 title = "Which moments to illustrate is learnable from reader preference and not settled by cheap notions"
 theme = "T2 content selection under a depiction budget"
@@ -53,6 +58,7 @@ experiments = ["moment_selection_baselines"]
 evidence = ["data/eval/research/H-SELECT/real-0b1915448bceb49f/results.json"]
 firewall = "Salience/illustrability of passages; no identity, temporal or epistemic state."
 
+level = 1
 [H-XMOD]
 title = "Image-vs-voice disagreement localises upstream errors"
 theme = "T4 label-free error detection"
@@ -74,15 +80,18 @@ evidence = []
 firewall = "Corrections are mostly speaker reassignments -- adjacent to identity; frame only as rendering propagation."
 
 [H-JUDGE-A]
+mutation_of = ["C05"]
 title = "Audio-LLM judges miss purely vocal misattributions that humans catch"
 theme = "T5 judge validity for generated media"
 statement = "On H-COST stimuli, an audio-LLM judge detects semantically contradicted misattributions but not vocal-only ones, unlike listeners."
 kill_criterion = "Judge detects vocal-only swaps at human-level rates."
-status = "OPEN"
+status = "KILLED"
 experiments = []
-evidence = []
+evidence = ["docs/research/DECISION_LOG.md"]
 firewall = "Evaluation validity; no narrative modelling."
 
+level = 0
+note = "Killed by prior art before any run: SpeakerSleuth (arXiv 2601.04029) shows 12 audio LMs prioritise text over acoustics and miss gender switches; HEAR (2608.29120) shows the same for speaker attribution."
 [H-VABST]
 title = "Rendering-level visual abstention (silhouette vs committed figure) under attribute uncertainty"
 theme = "T1 perceptual cost of upstream errors (visual arm)"
@@ -92,3 +101,189 @@ status = "OPEN"
 experiments = []
 evidence = []
 firewall = "Uncertainty source must be framed as generic attribute specificity, not identity resolution."
+
+# ---------------------------------------------------------------------------
+# Mutation lab, 2026-10-02 (the mutation lab's verdicts are in docs/research/DECISION_LOG.md). Kill criteria
+# below were written before any of these experiments existed.
+# ---------------------------------------------------------------------------
+
+[H-IOL]
+title = "An ideal-observer listener that learns the voice->character map predicts non-uniform, spillover error costs"
+theme = "T1 perceptual cost of upstream errors (mechanism layer); convergence theme beta (learned-mapping leverage)"
+statement = "A Bayesian listener that learns which voice belongs to which character from textually tagged lines predicts, on PDNC passages with injected errors: (P1) spillover -- errors lower comprehension of *correctly rendered* implicit lines; (P2) tag poisoning -- an error on a tagged line has a lower direct cost but a higher spillover cost than one on an implicit line; (P3) the error rate at which full cast stops beating a single narrator (a*) differs between diverse and homogeneous casts; (P4) late casting (narrator until a character's 2nd tagged line) reduces spillover."
+kill_criterion = "Under the median listener parameters, spillover per error < 0.25 x direct cost per error (the model collapses to a per-line uniform-cost model); OR the sign of P1, P2 or P3 flips anywhere in the 24-setting listener-parameter grid (the prediction is an artefact of parameter choice). P4 is reported, not a kill condition."
+status = "SURVIVING"
+experiments = ["ideal_listener"]
+evidence = ["data/eval/research/H-IOL/real-d531b1c1f6b0b632/results.json"]
+firewall = "Attribution is a manipulated input; the model is of a listener's voice-to-label learning, not of narrative identity."
+mutation_of = ["C01", "C02", "C11", "C17", "C03"]
+prior_art = ["Kleinschmidt & Jaeger 2015 (ideal adapter, phonetic talker adaptation)", "Fenn et al. 2025 PMC12181647 (voice-identity learning)", "Lavan et al. 2019 Nat Commun (average-based voice identity)", "SpeakerSleuth arXiv 2601.04029"]
+level = 2
+depth = ["L1", "L2", "L3", "L4"]
+
+note = "Model level only: P1 and P2 hold in 24/24 listener settings; P3 (crossover) not supported -- an ideal listener does not fall below the narrator within 60% errors in 22/24 settings. Becomes a result about people only through H-COST v2."
+[H-CCAST]
+title = "Confusion-aware casting beats globally reduced distinctiveness"
+theme = "T1 perceptual cost of upstream errors (method); mutation of the killed hedge"
+statement = "Assigning voices with knowledge of *which* character pairs the upstream attributor confuses (predicted from structural pair features fitted on other novels) gives a better held-out frontier of correct-line identifiability vs salient-error mass than the same trade-off with confusion-blind (uniform) pair weights."
+kill_criterion = "On held-out PDNC novels, the paired bootstrap (over novels) of the area between the confusion-aware and uniform-weight frontiers has a CI that includes 0. Predicted risk recorded in advance: confused pairs are interlocutors, the same pairs identifiability needs apart."
+status = "KILLED"
+experiments = ["confusion_casting"]
+evidence = ["data/eval/research/H-CCAST/real-92d76d7efdf5c4d2/results.json"]
+firewall = "Voice assignment under a measured error structure; no narrative modelling."
+mutation_of = ["C13", "C02", "C04"]
+prior_art = ["S-VoCAL arXiv 2603.00958", "Deep Dubbing arXiv 2509.15845", "no confusion-aware casting found (searches 2026-10-02)"]
+level = 1
+depth = ["L1", "L3", "L6"]
+
+[H-VRUNG]
+title = "An SDXL-family engine can render visual commitment rungs that withhold an attribute"
+theme = "T1 visual arm (precondition for H-VABST)"
+statement = "At fixed seeds, rungs {back view, silhouette, setting-only, distant crop} hide a character's gender and hair colour from automatic attribute probes while the committed rung shows them."
+kill_criterion = "Any withholding rung leaks the attribute (probe recovery of the intended value > 70% where chance is 50%) on both gender and hair; OR the committed rung fails to commit (recovery < 80%)."
+status = "SURVIVING"
+experiments = ["visual_rungs"]
+evidence = ["data/eval/research/H-VRUNG/real-bd79f777dc64f3a9/results.json", "data/eval/research/H-VRUNG/real-a89a29764cb7eea2/results.json"]
+firewall = "Generic attribute specificity of a rendered figure; the uncertainty source is abstract."
+mutation_of = ["C22", "C14", "C13"]
+prior_art = ["IMPLICIT-Bench arXiv 2609.24228", "default images arXiv 2505.09166", "constrained neutrality of SDXL under gender-underspecified prompts (Wiley Expert Systems 2025, 10.1111/exsy.70232)"]
+level = 2
+depth = ["L1", "L3", "L6"]
+
+note = "Run 1 (bd79...) used an invalid llava probe (unknown on 85% of committed panels) and read KILL; run 2 (a89a..., probe_version 2, probes validated 15/16 on committed panels) passes weakly: committed 0.93/0.88; back_view leaks both; silhouette and crop leak gender (~0.87) but hide hair (~0.65); distant hides gender (0.575) mostly by barely drawing a person. No rung hides both attributes. Attribute-free prompts mostly draw no person; when they do, CLIP reads male."
+[H-JUDGE-V]
+title = "Upstream errors are lost at different pipeline stages, and judges see only some of the survivors"
+theme = "T5 evaluation validity; T3 revival test (convergence theme gamma)"
+statement = "Injecting exactly one attribute error upstream of the real prompt assembly at fixed seeds, the end-to-end visibility of the error decomposes into P(clause survives the CLIP budget) x P(generator renders it) x P(judge detects it); conditional on survival and rendering, automatic judges still miss a material share."
+kill_criterion = "Conditional on the error clause surviving fit_to_budget AND the generator rendering it (attribute probe), every judge reaches detection AUROC > 0.9 (no validity gap); OR P(generator renders | survives) > 0.9 for every error type (all loss is truncation, which re-kills T3)."
+status = "SURVIVING"
+experiments = ["judge_intervention"]
+evidence = ["data/eval/research/H-JUDGE-V/real-7d9f5d39a811c34b/results.json"]
+firewall = "Error transmission through rendering stages; no narrative modelling."
+mutation_of = ["C05", "C25", "C27", "C26", "C29"]
+prior_art = ["FineGRAIN arXiv 2512.02161", "Fooling the LVLM judges arXiv 2505.15249", "CheckList-style metric perturbation EMNLP 2021", "Urman et al. arXiv 2609.11532"]
+level = 2
+depth = ["L1", "L3", "L4"]
+
+note = "P(rendered|survives): gender 0.80, hair 0.80, setting 0.125 (setting survives the budget 80% but the generator drops it). CLIPScore detection on 29 pairs with a compliant base and a verified rendered error: AUROC 0.52 [0.35, 0.69] -- chance. llava-7b holistic judge invalid (answers 1 on any 1-10 prompt; no to every yes/no description), reported as an instrument failure, not a judge result. n is small (20 beats, one engine and style)."
+[H-LEVER]
+title = "Correction budget is best spent by downstream listener leverage, not upstream uncertainty"
+theme = "T3 correction allocation (convergence theme beta)"
+statement = "With a fixed human-correction budget and an imperfect error score, choosing lines by expected listener-model leverage (P(error) x mapping influence) raises listener comprehension more than lowest-confidence-first, evaluated under a *mismatched* listener model so the policy is not scored by its own objective."
+kill_criterion = "Under the mismatched evaluation listener, the paired bootstrap (over windows) of comprehension gain (leverage minus lowest-confidence) has a CI including 0 at the 10% budget; OR leverage's selected set overlaps first-appearance's by > 80% (then it is the first-appearance heuristic: product-only)."
+status = "SURVIVING"
+experiments = ["correction_leverage"]
+evidence = ["data/eval/research/H-LEVER/real-1fe08f4d8dce5a86/results.json", "data/eval/research/H-LEVER/real-8640c77f8f03e9ed/results.json"]
+firewall = "Allocation of review effort by rendering consequence; attribution is an oracle input."
+mutation_of = ["C26", "C04", "C31"]
+prior_art = ["Takano arXiv 2608.26171", "FOLIO/MALLS relabeling prioritisation arXiv 2606.02837", "OCR correction provenance arXiv 2603.00884", "CAR arXiv 2606.08275"]
+level = 2
+depth = ["L1", "L3", "L4", "L6"]
+
+note = "v1 (signed leverage, as pre-registered) failed from a sign defect; v2 (|leverage|, disclosed post-hoc deviation, same kill criterion) passes narrowly at the primary cell but is dominated by the first-appearance heuristic there and by lowest-confidence at AUROC 0.8. Survives by the letter; the method is not the contribution (see H-FIRST)."
+[H-XDIS]
+title = "Ladder-vs-LLM disagreement is a usable error score (product infrastructure, not a research claim)"
+theme = "Product track: posterior for the unconfirmed-voice gate (uncaps H-GATE)"
+statement = "On sampled PDNC quotes the ladder resolves, disagreement between the product ladder and a local LLM attributor ranks ladder errors with AUROC >= 0.7, against 0.59 for the tier constants (H-CAL)."
+kill_criterion = "AUROC(disagreement, ladder error) < 0.7. Pre-declared: ensemble/committee disagreement is known (QBC, deep ensembles), so even a pass is product-only."
+status = "SURVIVING"
+experiments = ["disagreement_posterior"]
+evidence = ["data/eval/research/H-XDIS/real-6f97e4d14f536dfe/results.json"]
+firewall = "Error score for a renderer's gate; attribution quality is not claimed as a contribution."
+mutation_of = ["C28", "C32", "C04"]
+prior_art = ["Michel et al. NAACL 2025 short 62 (Llama-3 on PDNC)", "query-by-committee / deep ensembles"]
+level = 1
+depth = ["L1", "L6"]
+
+note = "Passes as product infrastructure: AUROC 0.889 vs 0.612 for tier confidence on 1,000 ladder-resolved PDNC quotes; P(error | disagree) 0.517 vs P(error | agree) 0.033; qwen2.5:7b alone 76.3% accurate. Not a research claim (committee disagreement is known)."
+[H-COMPL]
+title = "Audio-ambiguity complementarity is a distinct notion of which moment to illustrate"
+theme = "T2 content selection under a depiction budget (cross-modal objective)"
+statement = "Scoring beats by how ambiguous they are to a *listener* (implicit speech turns, many active speakers, untagged entrances) selects a top-k set that is distinct from drama, visualness, dialogue density and random."
+kill_criterion = "Top-k Jaccard of the complementarity scorer with any existing non-random scorer >= random floor + 0.15 (not a distinct notion)."
+status = "SURVIVING"
+experiments = ["complementarity_selection"]
+evidence = ["data/eval/research/H-COMPL/real-1d333db3be4c0145/results.json"]
+firewall = "Listener ambiguity of passages from surface cues; no identity resolution."
+mutation_of = ["C20", "C23", "C15"]
+prior_art = ["MULSUM / DPP image selection (arXiv 2605.11753, NAACL 2025 NIMMS)", "KathaTrace arXiv 2607.01312", "ComicScene154 arXiv 2508.16190"]
+level = 1
+depth = ["L1", "L4"]
+
+[H-FIRST]
+title = "With a weak error score, review each voice's first appearances before the least-confident lines"
+theme = "Convergence theme beta (learned-mapping leverage); product review-queue ordering"
+statement = "When the attribution error score is weak (AUROC <= 0.6, the product ladder's measured value), correcting each rendered voice's earliest lines raises listener comprehension more than correcting the lowest-confidence lines, at a 10% budget; the advantage disappears with an LLM-grade score (AUROC 0.8)."
+kill_criterion = "With the product ladder's *real* confidences and errors on PDNC (not a synthetic score), the paired bootstrap over windows of comprehension gain (first-appearance minus lowest-confidence) under the mismatched listener has a CI including 0; OR the human study (H-COST v2) finds no spillover, which removes the mechanism."
+status = "OPEN"
+experiments = []
+evidence = []
+firewall = "Review-effort allocation by rendering consequence; attribution is an oracle input."
+mutation_of = ["H-LEVER", "C26", "C04"]
+prior_art = ["FOLIO/MALLS prioritised relabelling arXiv 2606.02837 (orders by error likelihood)", "Takano arXiv 2608.26171"]
+level = 0
+depth = ["L1", "L4", "L6"]
+note = "Exploratory observation from H-LEVER v2 (synthetic score, AUROC 0.6, budget 10%): first-appearance 0.0117 vs lowest-confidence 0.0056 listener-comprehension gain. Not pre-registered there; registered here before its own test."
+
+[H-GATE-XDIS]
+title = "Ladder-vs-LLM disagreement gives a better selective-intervention frontier than ladder confidence"
+theme = "Product posterior -> research-enabling signal test (follow-up to H-XDIS); registered 2026-10-03 before analysis code"
+statement = "On the 1,000 saved H-XDIS quotes, reviewing quotes ranked by disagreement (P2) or disagreement-then-confidence (P3) catches materially more ladder errors per review than ranking by ladder confidence (P1), at low intervention rates, and the gain is not reproduced by a random pick from the same gold-derived candidate shortlist."
+kill_criterion = "PRIMARY: errors-caught gain (P2 or P3 minus P1) < 0.15 at 10% OR at 20% intervention, or its novel-cluster bootstrap 95% CI includes 0. LEAKAGE: the shortlist-random control reaches >= 80% of P2's gain over P1 at both 10% and 20% (artifact). STATUS MAP: GREENLIGHT = primary + best XDIS policy catches >= 40% of errors at 10% + control passes + advantage in >= 2 error categories with >= 20 errors; PRODUCT-INFRA = primary passes but control or stratification fails; CONDITIONAL = primary passes at one rate only; KILL = primary fails."
+status = "SURVIVING"
+experiments = ["gate_xdis"]
+# Order matters: aggregate.py summarises the LAST entry, and the canonical
+# pre-registered run (CONDITIONAL) must be it, not the post-hoc robustness run.
+evidence = ["data/eval/research/H-GATE-XDIS/real-28ceee8f12417e15/results.json", "data/eval/research/H-GATE-XDIS/real-c25db0ede3291c7b/results.json", "data/eval/research/H-GATE-XDIS/real-7d44fa32eac9c062/results.json"]
+firewall = "Review-queue gating for a renderer's upstream input; attribution quality is not the contribution."
+mutation_of = ["H-XDIS", "H-GATE", "C04", "C28"]
+prior_art = ["selective prediction / risk-coverage (Geifman & El-Yaniv)", "query-by-committee", "FOLIO/MALLS prioritised relabelling arXiv 2606.02837"]
+level = 1
+depth = ["L1", "L6"]
+
+note = "Pre-registered verdict CONDITIONAL: P3 beats confidence by +0.299 [0.143, 0.462] errors-caught at 20% review but +0.139 [0.074, 0.217] at 10% (bar 0.15). Shortlist-random control is worse than confidence (no artifact). Disclosed robustness run excluding 58 unscorable gold labels: +0.169 at 10%, meets all criteria (post hoc, does not overturn). Main open question: qwen was given a gold-derived shortlist."
+
+[H-XDIS-ALIAS]
+title = "XDIS's selective-intervention advantage survives principled PDNC gold-alias correction"
+theme = "Convergence pass C1 (docs/research/CONVERGENCE.md part 3); registered 2026-10-03 before the corrected numbers were computed"
+statement = "Re-scoring the saved 1,000 H-XDIS trials with gold speakers canonicalised through PDNC's own alias lists (tiered rule: exact lowercase match on main name or alias, else comparison_key match; unique match only, else UNSCORABLE and excluded) leaves disagreement-then-confidence (P3) catching materially more ladder errors than ladder confidence (P1) at 10% and 20% review."
+kill_criterion = "Same map as H-GATE-XDIS, applied to the corrected labels: KILL if the best XDIS policy's errors-caught gain over P1 is < 0.15 at both 10% and 20%, or its novel-cluster bootstrap 95% CI includes 0 at both; CONDITIONAL if it passes at exactly one rate; PRODUCT-INFRA if both pass but the shortlist-random control reaches >= 80% of P2a's gain or < 2 strata support it or capture at 10% < 40%; GREENLIGHT otherwise."
+status = "SURVIVING"
+experiments = ["xdis_alias_rescore"]
+evidence = ["data/eval/research/H-XDIS-ALIAS/real-4fe36b54f7f8328b/results.json"]
+firewall = "Scoring correction of an existing measurement; no new claim."
+mutation_of = ["H-XDIS", "H-GATE-XDIS"]
+prior_art = []
+level = 1
+depth = ["L1"]
+note = "CONDITIONAL (same map as H-GATE-XDIS). Tiered alias rule resolves all 58 name-variant golds; 54 flip ladder error->correct, 0 the other way; 106 errors remain. P3 vs P1 errors caught: 0.424 vs 0.284 at 10% (+0.140 [0.079, 0.213], misses the 0.15 bar), 0.691 vs 0.414 at 20% (+0.277 [0.132, 0.431]). AUROC P2a 0.833, P3 0.877, P1 0.631. The advantage survives the correction; the verdict is unchanged."
+
+[H-XDIS-PS]
+title = "XDIS keeps its advantage when the LLM's candidate shortlist is built by the product, not from gold"
+theme = "Convergence pass C2, the one GPU gate; registered 2026-10-03 before the rerun"
+statement = "With a candidate list built only from inference-time product information (HeuristicDetector names within +-2,000 chars, filtered by plausible_name, the corpus commonness test and capitalisation consistency, plus the ladder's own surface; capped at 12), qwen2.5:7b's disagreement with the ladder, computed product-side by surface comparison, still catches materially more ladder errors (scored on alias-corrected gold) than ladder confidence."
+kill_criterion = "Primary: the H-GATE-XDIS status map on the product-shortlist run (gain >= 0.15 with novel-cluster CI excluding 0, at 10% and 20%). COLLAPSE (= KILL of XDIS as a control signal) if the primary fails at both rates, or if AUROC(P2a) - AUROC(P1) < 0.05. Leakage control: a uniform random pick from the same product list must not reach >= 80% of P2a's gain."
+status = "SURVIVING"
+experiments = ["xdis_product_shortlist"]
+evidence = ["data/eval/research/H-XDIS-PS/real-255962a04945d31a/results.json", "data/eval/research/H-XDIS-PS/real-2745361d4136dce5/results.json"]
+firewall = "Review/rendering gate for a renderer's upstream input; attribution quality is not the contribution."
+mutation_of = ["H-XDIS", "H-GATE-XDIS", "H-XDIS-ALIAS"]
+prior_art = ["selective prediction / risk-coverage (Geifman & El-Yaniv)", "query-by-committee"]
+level = 1
+depth = ["L1", "L6"]
+note = "GREENLIGHT by the frozen H-GATE-XDIS map; no collapse. Product list (gold recall 0.972, 10.5 names): qwen accuracy 0.919 (0.763 with the gold list), unparsed 9 (149). P3 vs P1 errors caught 0.620 vs 0.284 at 10% (+0.336 [0.233, 0.486]), 0.928 vs 0.414 at 20%; AUROC P3 0.943, P2a 0.913, P1 0.631; P(err|agree) 0.014. Diagnosed after the run: 137/149 of H-XDIS's unparsed answers were qwen naming the surface form the text uses (Syme, Pooh) where the gold list held PDNC main names (Gabriel Syme, Winnie-the-pooh) -- a parser artifact in the original, removed by building the list from text. S1 (ladder known_names from the product detector instead of PDNC): P3 0.929 vs P1 0.424 caught at 20%, AUROC 0.943 vs 0.637; all answers real. Open: qwen pretraining contamination untested; PDNC only."
+
+[H-ACT]
+title = "The same injected upstream speaker error manifests differently under narrator, generic and character-specific rendering, beyond what the cast table predicts"
+theme = "Convergence pass C3 (causal layer); registered 2026-10-03 before any render"
+statement = "Holding source text and an injected speaker error fixed, varying only the rendering action (narrator / generic voice of the predicted gender / predicted character's cast voice) changes a machine-verifiable manifestation of the error (independent WavLM speaker-verification identity margin toward the gold voice; gender cue; transcript fidelity), and the realised effect is not merely a restatement of the voice-choice geometry."
+kill_criterion = "Q1 KILL if specific-minus-narrator manifestation under error has a paired bootstrap 95% CI including 0 in every error type. DEFINITIONAL (the causal effect is real but is the cast table restated, not a phenomenon) if realised-audio margins are predicted from reference-clip geometry with R^2 >= 0.9 and the same action ordering in every error type. PHENOMENON only if Q1 holds AND a systematic residual exists (R^2 < 0.9 or an ordering reversal or generic-voice gender leakage on cross-gender errors that the geometry does not predict). Manipulation check precondition: correct-specific renders identified as the intended bank voice >= 90% by voice_geometry.identify, else the run is INVALID."
+status = "KILLED"
+experiments = ["action_counterfactual", "vrung_manifestation", "action_policy"]
+evidence = ["data/eval/research/H-ACT/real-7ec275bc84d41144/results.json", "data/eval/research/H-ACT/real-226129dbf767bac9/results.json", "data/eval/research/H-ACT/real-b01eac13f33ad227/results.json"]
+firewall = "Rendering-action counterfactual; machine measures are 'downstream error manifestation', never 'perceptual cost'."
+mutation_of = ["H-COST", "H-GATE", "H-HEDGE", "H-VRUNG"]
+prior_art = ["The Hallucination Snowball arXiv 2608.14588 (representation-dependent detectability under injection)", "Hedging Your Bets (Deng et al. 2012)", "Hierarchical Selective Classification (NeurIPS 2024)"]
+level = 2
+depth = ["L2", "L3"]
+note = "DEFINITIONAL by the frozen map -> the phenomenon claim is KILLED; the causal effect itself is real. 60 PDNC units, 415 Chatterbox renders, WavLM-SV. Manipulation check 0.90 (at threshold). Error manifestation Delta (margin toward gold voice): specific 0.87/0.35/0.74 (cross/same/addressee), generic 0.42/0.01/0.18, narrator 0 by construction; all specific CIs > 0. But reference-clip geometry predicts realised margins with R^2 0.95 (slope 0.90), same action order in every type; generic voice keeps the wrong gender on cross-gender errors (Gamma 0.53) exactly as predicted (0.55). Price of masking on correct lines: generic 0.21-0.25, narrator 0.22-0.51. Narrator WER 0.145 vs 0.086 (one runaway render >30 s). Policy layer: narrator gating at 20% budget leaves 0.08 of manifested mass under P3 vs 0.58 under P1 at lower identity price; the product generic voice floors at 0.24 (oracle). Image arm (H-VRUNG reread): rungs mask the attributes their framing removes (distant: gender, silhouette: hair) -- also by design."
