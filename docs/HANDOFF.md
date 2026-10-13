@@ -22,6 +22,60 @@ conflated.
 
 **Last updated:** 2026-09-27.
 
+## Pick up here — 2026-10-02 (mutation lab, EVOLUTION 4.101)
+
+- **Research state of record is still `docs/research/DECISION_LOG.md`.**
+  Mutation pass:
+  - 33 candidates re-examined and 46 mutations generated
+    (catalog removed 2026-10-03; verdicts in `DECISION_LOG.md`).
+  - 8 new hypotheses registered with their kill criteria before any code
+    existed.
+  - Leading thread: **label poisoning** (H-IOL). **Superseded 2026-10-03** by the convergence
+    pass (`docs/research/CONVERGENCE.md`): the converged thesis is KILLED;
+    XDIS is kept as product infrastructure.
+- **Visual batch done (2026-10-03).** Results are in `docs/research/DECISION_LOG.md`.
+  - **H-VRUNG** survives weakly: no rung hides both gender and hair.
+  - **H-JUDGE-V** survives. Setting errors are lost in the generator
+    (rendered 12.5%). CLIPScore is at chance (0.52) on verified-rendered
+    gender and hair errors. The llava-7b judge was an invalid instrument.
+- **H-XDIS done (2026-10-03).** Ladder-vs-qwen2.5 disagreement ranks the
+  ladder's errors at AUROC 0.889, against 0.612 for the tier confidences.
+  - Where they agree, the ladder is wrong 3.3% of the time; where they
+    disagree, 51.7%.
+  - This is the posterior the unconfirmed-voice gate lacks (H-GATE's
+    16-18% cap). It is a product hook, not yet wired.
+- **H-GATE-XDIS (CPU follow-up, 2026-10-03): CONDITIONAL.**
+  Verdict in `docs/research/DECISION_LOG.md`; numbers in
+  `docs/research/experiments/H-GATE-XDIS/RESULTS.json`.
+  - Disagreement-then-confidence catches 67% of ladder errors at 20%
+    review, against 37% for confidence. At 10% it is 39% vs 25%.
+  - **Open:**
+    - qwen was given a PDNC-gold-derived shortlist; rerun with a
+      product-built list (GPU);
+    - 58 PDNC gold labels are name variants not in the character keys;
+      a CPU alias fix is needed.
+- **Product findings from the panels (not fixed):** under the ink style,
+  "1boy" drew no person in 4/10 male panels, back views drift to bare backs,
+  and silhouettes leak hair colour. See `ENGINEERING_NOTES.md` 17.
+- **Decisive human step:** the H-COST v2 listening study.
+  - Stimuli built with the H-IOL predictions on the exact scripts:
+    `data/eval/research/H-COST/real-v2-iol/`.
+  - Synthesise with `--param synthesize=true` (about 1 GPU-h), then pilot
+    about 24 listeners.
+- **Resource rule (owner, 2026-10-02):**
+  - Heavy models go on the GPU, loaded directly, after checking it is free.
+  - Never CPU-offload weights into RAM.
+  - Ask before any RAM-heavy job.
+  - The research renderer is `datasets/visual_beats.py::render_gpu`
+    (anonymous RAM 1.3 GB, against about 4.2 GB for the product engine's
+    CPU offload).
+- **Open product item (not changed):** `render/panels.py`
+  Illustrious/NoobAI engines still use `enable_model_cpu_offload`. See
+  `docs/research/ENGINEERING_NOTES.md` items 1-4 for the GPU-direct
+  recipe, including the VAE tile-threshold fix.
+- **Every problem hit this session, with its lesson:**
+  `docs/research/ENGINEERING_NOTES.md`.
+
 ## Pick up here — 2026-10-02 (research arena, EVOLUTION 4.100)
 
 - **Research track lives in `packages/research/` and `docs/research/`;

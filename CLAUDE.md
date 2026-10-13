@@ -40,7 +40,9 @@ packages/pipeline/   ingest -> spans -> mentions -> resolve -> persona -> render
                      webview_server.py is also the job / correction HTTP API
 packages/research/   research arena (echotales-research): imports core+pipeline, never imported by
                      them (test_import_direction.py). `python -m echotales.research list|run <exp> [--stub]`;
-                     results in data/eval/research/<HID>/<run-id>/. State of record: docs/research/DECISION_LOG.md
+                     results in data/eval/research/<HID>/<run-id>/. State of record: docs/research/DECISION_LOG.md;
+                     `python -m echotales.research.aggregate` regenerates docs/research/EXPERIMENT_STATUS.md;
+                     docs/research/ENGINEERING_NOTES.md is the running problem/lesson log
 webview/             React review and production UI
 scripts/             eval/, paper/, review/, maintenance/, reproduce_results.sh
 docs/                README.md is the index: HANDOFF (current state), EVOLUTION (history),
@@ -156,11 +158,11 @@ real data without touching the canonical `data/db/<novel-id>.db`.
 
 ## Current known issues
 
-Research track: `docs/research/DECISION_LOG.md` is the state of record (EVOLUTION 4.100).
+Research track: `docs/research/DECISION_LOG.md` is the state of record (EVOLUTION 4.101).
 
 See docs/HANDOFF.md's "Pick up here" section for the actual current state — it
 changes every session (the numbered session log itself moved to
-docs/EVOLUTION.md, latest section 4.100). The NER-windowing re-run (EVOLUTION
+docs/EVOLUTION.md, latest section 4.101). The NER-windowing re-run (EVOLUTION
 4.76) that an earlier session left unmeasured did run (4.84): the
 "`ollama` unreachable" blocker was a misdiagnosis — the daemon was simply
 not started — and the fix is now measured on real data (CEAF-e recall

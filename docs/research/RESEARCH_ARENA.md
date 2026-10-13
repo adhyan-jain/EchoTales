@@ -16,18 +16,26 @@ packages/research/src/echotales/research/
   hypotheses.toml   the machine-checked registry; DECISION_LOG.md is the narrative
   runner.py         python -m echotales.research {list | run <experiment> [--stub] [--param k=json]}
   compare.py        cross-run tables for a hypothesis
+  aggregate.py      python -m echotales.research.aggregate regenerates docs/research/EXPERIMENT_STATUS.md
   stats.py          re-exports pipeline/eval/stats.py + Wilson, permutation, ECE, Bradley-Terry
-  datasets/         pdnc.py (human gold), public_chapters.py, echotales_artifacts.py (read-only DB/manifests/corrections)
+  datasets/         pdnc.py (human gold), public_chapters.py, echotales_artifacts.py (read-only DB/manifests/corrections),
+                    visual_beats.py (fixed-seed visual stimuli via product persona/prompt.py::build_image_prompt; render_gpu)
+  models/           listener.py (ideal-observer listener)
   transforms/       attribution_probe.py (product ladder on PDNC), error_injection.py
   controllers/      casting.py (distinctiveness-controlled casting)
-  evaluators/       voice_geometry.py (Chatterbox speaker-embedding space; manipulation check)
+  evaluators/       voice_geometry.py (Chatterbox speaker-embedding space; manipulation check),
+                    attribute_probe.py (CLIP zero-shot + llava via ollama)
   baselines/        moment_scorers.py (product drama port, visualness, dialogue, LLM, random)
   human_studies/    listening_study.html, analyze_listening.py (cluster bootstrap, power sim),
                     synthesize.py (product TTS, cached by voice+text),
                     moment_annotation.html, moment_pairs.py
   experiments/      attribution_calibration, commitment_gating, error_cost_stimuli,
-                    hedged_voice_feasibility, moment_selection_baselines
+                    hedged_voice_feasibility, moment_selection_baselines, ideal_listener, confusion_casting,
+                    correction_leverage, complementarity_selection, visual_rungs,
+                    judge_intervention, disagreement_posterior
 ```
+
+**GPU rule.** `datasets/visual_beats.py::render_gpu` loads NoobAI-XL directly to the GPU and refuses if the GPU is busy. Check the GPU is free first, never use CPU offload, and ask the owner before any RAM-heavy job.
 
 ## Output
 
