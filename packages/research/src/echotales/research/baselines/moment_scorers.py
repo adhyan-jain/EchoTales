@@ -76,3 +76,29 @@ def llm_zero_shot(texts: list[str], *, model: str = "qwen2.5:7b") -> list[float]
         m = re.search(r"\d+", r.json().get("response", ""))
         out.append(float(m.group()) if m else 5.0)
     return out
+
+
+#: Speech verbs that tag a quote with its speaker for a listener.
+_SAID = re.compile(r"\b(said|says|asked|replied|cried|answered|exclaimed|whispered|shouted|"
+                   r"returned|added|continued|observed|remarked|muttered|called)\b", re.I)
+_CAPWORD = re.compile(r"(?<![.!?]\s)(?<!^)\b([A-Z][a-z]{2,})\b")
+_NOT_NAMES = frozenset("The This That There Then When What Where Which While However But And "
+                       "She Her His Him They Their You Your Yes Not Now Mrs Miss Sir Lady Lord".split())
+
+
+def listener_ambiguity(text: str, seen_names: set[str]) -> float:
+    """How hard a beat is to follow *by ear* (H-COMPL): quotes with no speech
+    tag nearby (the listener must infer the speaker from voice alone), plus
+    names entering for the first time (a new voice with no learned map).
+    The cross-modal mutation of moment selection: a picture is worth most
+    where the audio stream is least self-sufficient. Updates `seen_names`."""
+    untagged = 0
+    for m in re.finditer(r"[“\"]([^”\"]{2,})[”\"]", text):
+        tail = text[m.end():m.end() + 40]
+        head = text[max(0, m.start() - 40):m.start()]
+        if not (_SAID.search(tail) or _SAID.search(head)):
+            untagged += 1
+    names = {w for w in _CAPWORD.findall(text) if w not in _NOT_NAMES}
+    new = names - seen_names
+    seen_names |= names
+    return untagged + 0.5 * len(new)
