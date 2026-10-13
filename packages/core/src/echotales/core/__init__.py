@@ -62,6 +62,20 @@ from echotales.core.state import (
     state_of,
 )
 from echotales.core.store import Store, normalize_alias
+from echotales.core.visual_memory import (
+    CandidateEvaluation,
+    DisclosurePolicy,
+    FactProvenance,
+    RejectionReason,
+    SelectionResult,
+    SelectionStatus,
+    VisualAssetKind,
+    VisualAssetRecord,
+    VisualAssetRegistry,
+    VisualMemorySelector,
+    VisualRequest,
+    compute_asset_input_digest,
+)
 
 __all__ = [
     "MAIN_TIMELINE",
@@ -113,6 +127,18 @@ __all__ = [
     "TargetState",
     "TaskSpec",
     "TruthStatus",
+    "VisualAssetKind",
+    "VisualAssetRecord",
+    "VisualAssetRegistry",
+    "VisualMemorySelector",
+    "VisualRequest",
+    "CandidateEvaluation",
+    "DisclosurePolicy",
+    "FactProvenance",
+    "RejectionReason",
+    "SelectionResult",
+    "SelectionStatus",
+    "compute_asset_input_digest",
     "compile_generation_state",
     "compile_minimal_disclosure",
     "hash_read_set",

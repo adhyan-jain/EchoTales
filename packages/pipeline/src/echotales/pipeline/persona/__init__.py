@@ -27,15 +27,23 @@ from echotales.pipeline.persona.build import (
     load_trait_profiles,
 )
 from echotales.pipeline.persona.runner import CharacterCast, MobCast, PanelCast, get_panel_cast
+from echotales.pipeline.persona.scoped_reference import (
+    EmissionStatus,
+    ScopedEmissionResult,
+    emit_scoped_reference,
+)
 from echotales.pipeline.persona.traits import TraitProfile, infer_traits_deterministic
 
 __all__ = [
     "CharacterCast",
+    "EmissionStatus",
     "MobCast",
     "PanelCast",
     "PersonaReport",
+    "ScopedEmissionResult",
     "TraitProfile",
     "build_personas",
+    "emit_scoped_reference",
     "get_panel_cast",
     "infer_traits_deterministic",
     "load_trait_profiles",

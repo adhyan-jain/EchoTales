@@ -352,6 +352,69 @@ class StateResolver:
             read_set=rec.refs,
         )
 
+    def resolve_admissible_attributes(
+        self,
+        target_id: str,
+        *,
+        target_kind: TargetKind = TargetKind.PERSONA,
+        timeline_id: str = MAIN_TIMELINE,
+        position: StoryPos | None = None,
+        observer_id: str | None = None,
+        knowledge_pos: DiscoursePosition | None = None,
+        include_plausible: bool = False,
+        recorder: ReadSetRecorder | None = None,
+    ) -> list[Attribute]:
+        """Resolve admissible attributes with full provenance metadata.
+
+        Unlike `state_of` which collapses winning attributes into a {key: value} dict,
+        this method preserves the underlying `Attribute` models (including interval,
+        learned_at_pos, retracted_at, certainty, and source_row_id) for provenance tracking.
+        Only the winning attribute for each key is returned, sorted deterministically by key.
+        """
+        observer_id = observer_id or self.default_observer
+        if position is None:
+            position = float("inf")
+        if knowledge_pos is None:
+            if timeline_id == MAIN_TIMELINE and position != float("inf"):
+                knowledge_pos = DiscoursePosition(chapter=int(position))
+            else:
+                knowledge_pos = DiscoursePosition(chapter=10**6)
+
+        rec = recorder or ReadSetRecorder()
+        rec.record(entity_ref(target_kind, target_id))
+
+        observations = (
+            self._observations_for(observer_id)
+            if observer_id not in (OBSERVER_READER, OBSERVER_SYSTEM)
+            else None
+        )
+
+        def keep(fact: TemporalFact) -> Certainty | None:
+            if fact.timeline_id in self._voided_timelines:
+                return None
+            if not _visible_to_observer(fact, observer_id, knowledge_pos, observations):
+                return None
+            cert = _temporal_certainty(fact, timeline_id, position)
+            if cert is Certainty.EXCLUDED:
+                return None
+            if cert is Certainty.PLAUSIBLE and not include_plausible:
+                return None
+            return cert
+
+        winning: dict[str, Attribute] = {}
+        attr_learned: dict[str, DiscoursePosition] = {}
+        for attr in self._attribute_candidates(target_kind, target_id):
+            cert = keep(attr)
+            if cert is None:
+                continue
+            rec.record(observable_ref(attr))
+            prev = attr_learned.get(attr.key)
+            if prev is None or attr.learned_at_pos >= prev:
+                winning[attr.key] = attr
+                attr_learned[attr.key] = attr.learned_at_pos
+
+        return sorted(winning.values(), key=lambda a: a.key)
+
     # ---- candidate fetch ------------------------------------------------
 
     def _alias_candidates(self, kind: TargetKind, target_id: str) -> Iterable[AliasBinding]:

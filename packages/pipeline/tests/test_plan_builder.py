@@ -201,3 +201,81 @@ def test_self_with_no_bound_persona_yet_produces_no_character_spec(
 
     assert plan.characters == ()
     assert plan.state_digest
+
+
+def test_build_render_plan_with_visual_registry_integration(store: Store, tmp_path) -> None:
+    """Integration test: build_render_plan with visual_registry uses VisualMemorySelector."""
+    from echotales.core.visual_memory import (
+        FactProvenance,
+        VisualAssetKind,
+        VisualAssetRecord,
+        VisualAssetRegistry,
+    )
+    from echotales.core.readset import fact_ref
+
+    store.add_self(
+        Self(id="s1", novel_id=NOVEL, canonical_label="Hero", first_attested_pos=DiscoursePosition(chapter=1))
+    )
+    store.add_persona(
+        Persona(id="p1", novel_id=NOVEL, body_label="Hero Body", first_attested_pos=DiscoursePosition(chapter=1))
+    )
+    store.add_self_persona_binding(
+        SelfPersonaBinding(
+            self_id="s1",
+            persona_id="p1",
+            interval=FuzzyInterval(from_lb=1.0, from_ub=1.0, to_lb=100.0, to_ub=100.0),
+            learned_at_pos=DiscoursePosition(chapter=1),
+            observer_id=OBSERVER_READER,
+        )
+    )
+    store.conn.commit()
+
+    # Asset with fact revealed at chapter 50
+    asset_file = tmp_path / "hero_sheet.png"
+    asset_file.write_bytes(b"\x89PNG\r\n\x1a\n")
+
+    registry = VisualAssetRegistry()
+    asset = VisualAssetRecord(
+        asset_id="hero_sheet",
+        asset_kind=VisualAssetKind.CHARACTER_PORTRAIT,
+        self_id="s1",
+        persona_id="p1",
+        story_interval=FuzzyInterval(from_lb=1.0, from_ub=1.0, to_lb=100.0, to_ub=100.0),
+        source_facts=(
+            FactProvenance(
+                fact_ref=fact_ref("attr", "p1", "sword", "dragon"),
+                learned_at_pos=DiscoursePosition(chapter=50),
+                valid_interval=FuzzyInterval(from_lb=1.0, from_ub=1.0, to_lb=100.0, to_ub=100.0),
+            ),
+        ),
+        image_path=str(asset_file),
+    )
+    registry.register(asset)
+
+    # Cutoff 10: detail not revealed yet -> reference is suppressed, prompt-only fallback
+    plan_early = build_render_plan(
+        store,
+        NOVEL,
+        chapter=5.0,
+        beat_id="t:5:1",
+        panel_seq=0,
+        cast_self_ids=["s1"],
+        visual_registry=registry,
+        discourse_cutoff=DiscoursePosition(chapter=10),
+    )
+    assert len(plan_early.characters) == 1
+    assert plan_early.characters[0].reference_paths == ()
+
+    # Cutoff 60: detail revealed -> reference is safely admitted
+    plan_late = build_render_plan(
+        store,
+        NOVEL,
+        chapter=5.0,
+        beat_id="t:5:1",
+        panel_seq=0,
+        cast_self_ids=["s1"],
+        visual_registry=registry,
+        discourse_cutoff=DiscoursePosition(chapter=60),
+    )
+    assert len(plan_late.characters) == 1
+    assert plan_late.characters[0].reference_paths == (asset_file,)

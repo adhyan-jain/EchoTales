@@ -799,3 +799,12 @@ def reference_path_for(store: Store, persona_id: str) -> Path | None:
             if path.exists():
                 return path
     return None
+
+
+# Reveal-Aware Visual Memory (Phase 2): Scoped reference emission (PEP 562 lazy re-export)
+def __getattr__(name: str) -> object:
+    if name in ("emit_scoped_reference", "EmissionStatus", "ScopedEmissionResult"):
+        import echotales.pipeline.persona.scoped_reference as _sr
+
+        return getattr(_sr, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
