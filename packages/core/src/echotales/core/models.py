@@ -300,6 +300,7 @@ class TemporalFact(BaseModel):
     retracted_at: DiscoursePosition | None = None
     evidence: str = ""
     confidence: Confidence = 1.0
+    source_row_id: int | None = None
 
     @property
     def is_standing(self) -> bool:

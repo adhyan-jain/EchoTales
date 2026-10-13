@@ -28,8 +28,15 @@ from collections.abc import Sequence
 
 from echotales.core.disclosure import TaskSpec, compile_minimal_disclosure
 from echotales.core.enums import OBSERVER_READER
+from echotales.core.models import DiscoursePosition
 from echotales.core.state import GenerationState, StateResolver, compile_generation_state
 from echotales.core.store import Store
+from echotales.core.visual_memory import (
+    DisclosurePolicy,
+    VisualAssetRegistry,
+    VisualMemorySelector,
+    VisualRequest,
+)
 from echotales.pipeline.persona.reference_gen import appearance_of, reference_path_for
 from echotales.pipeline.render.contract import (
     CharacterRenderSpec,
@@ -157,6 +164,13 @@ def build_render_plan(
     #: default, so every existing caller's behavior is unchanged byte for
     #: byte; not intended for use outside the ablation harness.
     use_mdc: bool = False,
+    #: Optional Reveal-Aware Visual Memory registry. When supplied, character
+    #: reference paths are selected via `VisualMemorySelector` under explicit
+    #: provenance and disclosure cutoff gates rather than legacy flat reads.
+    #: Default None preserves exact existing behavior byte for byte.
+    visual_registry: VisualAssetRegistry | None = None,
+    discourse_cutoff: DiscoursePosition | None = None,
+    disclosure_policy: DisclosurePolicy = DisclosurePolicy.IN_SEQUENCE,
 ) -> VisualRenderPlan:
     """Build one panel's `VisualRenderPlan` from a compiled `GenerationState`.
 
@@ -167,6 +181,8 @@ def build_render_plan(
     `character_looks` uses; concurrent bindings stay in the state so a
     multi-binding case is auditable rather than silent.
     """
+    from pathlib import Path
+
     resolver = resolver or StateResolver(store, novel_id, default_observer=observer_id)
     at = chapter if position is None else position
     if gen_state is None or not gen_state.covers(cast_self_ids):
@@ -186,7 +202,25 @@ def build_render_plan(
             if self_id == lead_self_id
             else CharacterRole.SUPPORT
         )
-        ref_path = reference_path_for(store, persona_id)
+        if visual_registry is not None:
+            cutoff = discourse_cutoff or DiscoursePosition(chapter=int(at), offset=0)
+            v_req = VisualRequest(
+                self_id=self_id,
+                story_pos=at,
+                discourse_cutoff=cutoff,
+                observer_id=resolver.default_observer,
+                policy=disclosure_policy,
+                target_persona_id=persona_id,
+            )
+            v_selector = VisualMemorySelector(store, novel_id=novel_id, resolver=resolver)
+            v_res = v_selector.select(v_req, visual_registry)
+            ref_path = (
+                Path(v_res.selected_asset.image_path)
+                if v_res.selected_asset and v_res.selected_asset.image_path
+                else None
+            )
+        else:
+            ref_path = reference_path_for(store, persona_id)
         characters.append(
             CharacterRenderSpec(
                 persona_id=persona_id,

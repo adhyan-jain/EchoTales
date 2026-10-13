@@ -6,7 +6,9 @@ requires-python = ">=3.12, <3.15"
 members = [
     "echotales-core",
     "echotales-pipeline",
+    "echotales-research",
     "echotales-workspace",
+    "ecrdt",
 ]
 
 [[package]]
@@ -468,6 +470,7 @@ dependencies = [
     { name = "httpx" },
     { name = "lxml" },
     { name = "numpy" },
+    { name = "pillow" },
     { name = "pyahocorasick" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
@@ -499,6 +502,7 @@ requires-dist = [
     { name = "httpx", specifier = ">=0.27" },
     { name = "lxml", specifier = ">=5.2" },
     { name = "numpy", specifier = ">=1.26" },
+    { name = "pillow", specifier = ">=10.1" },
     { name = "pyahocorasick", specifier = ">=2.1" },
     { name = "pydantic", specifier = ">=2.8" },
     { name = "pydantic-settings", specifier = ">=2.4" },
@@ -509,6 +513,27 @@ requires-dist = [
     { name = "torch", marker = "extra == 'render'", specifier = ">=2.2" },
 ]
 provides-extras = ["ml", "api", "render"]
+
+[[package]]
+name = "echotales-research"
+version = "0.1.0"
+source = { editable = "packages/research" }
+dependencies = [
+    { name = "echotales-core" },
+    { name = "echotales-pipeline" },
+    { name = "numpy" },
+    { name = "pydantic" },
+    { name = "scipy" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "echotales-core", editable = "packages/core" },
+    { name = "echotales-pipeline", editable = "packages/pipeline" },
+    { name = "numpy", specifier = ">=1.26" },
+    { name = "pydantic", specifier = ">=2.8" },
+    { name = "scipy", specifier = ">=1.11" },
+]
 
 [[package]]
 name = "echotales-workspace"
@@ -542,6 +567,11 @@ dev = [
     { name = "pytest-cov", specifier = ">=5.0" },
     { name = "ruff", specifier = ">=0.6" },
 ]
+
+[[package]]
+name = "ecrdt"
+version = "0.1.0"
+source = { editable = "packages/ecrdt" }
 
 [[package]]
 name = "filelock"

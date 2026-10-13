@@ -1469,6 +1469,7 @@ class Store:
                 retracted_at=_opt_pos_from_row(r, "retracted"),
                 evidence=r["evidence"],
                 confidence=r["confidence"],
+                source_row_id=r["id"] if "id" in r.keys() else None,
             )
             for r in cur
         ]
