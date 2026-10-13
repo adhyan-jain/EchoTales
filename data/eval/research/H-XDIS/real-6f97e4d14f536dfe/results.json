@@ -1,0 +1,24 @@
+{
+  "config_hash": "6f97e4d14f536dfe",
+  "experiment": "disagreement_posterior",
+  "hypothesis_id": "H-XDIS",
+  "mode": "real",
+  "n_trials": 1000,
+  "n_units": 1000,
+  "notes": [
+    "only quotes the ladder resolves (it resolves 9.9% of PDNC)",
+    "candidates = speakers/addressees within 20 quotes plus the ladder's owners"
+  ],
+  "summary": {
+    "auroc_disagreement": 0.8888,
+    "auroc_tier_confidence": 0.6119,
+    "disagreement_rate": 0.263,
+    "ladder_error_rate": 0.16,
+    "llm_accuracy": 0.763,
+    "model": "qwen2.5:7b",
+    "p_error_given_agree": 0.0326,
+    "p_error_given_disagree": 0.5171,
+    "quotes": 1000
+  },
+  "verdict_hint": "PASSES (product-only): AUROC disagreement 0.8888 vs tier confidence 0.6119; LLM accuracy 0.763"
+}

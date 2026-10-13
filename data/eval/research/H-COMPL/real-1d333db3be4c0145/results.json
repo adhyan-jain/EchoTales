@@ -1,0 +1,54 @@
+{
+  "config_hash": "1d333db3be4c0145",
+  "experiment": "complementarity_selection",
+  "hypothesis_id": "H-COMPL",
+  "mode": "real",
+  "n_trials": 671,
+  "n_units": 671,
+  "notes": [
+    "distinctness only; whether people value it needs the human study"
+  ],
+  "summary": {
+    "beats": 671,
+    "budget": 0.2,
+    "chapters": 13,
+    "jaccard": {
+      "dialogue_density": {
+        "ci": [
+          0.1324,
+          0.2008
+        ],
+        "mean": 0.1692
+      },
+      "product_drama": {
+        "ci": [
+          0.0851,
+          0.2198
+        ],
+        "mean": 0.1474
+      },
+      "random_a": {
+        "ci": [
+          0.0336,
+          0.1087
+        ],
+        "mean": 0.0695
+      },
+      "random_floor": {
+        "ci": [
+          0.0605,
+          0.318
+        ],
+        "mean": 0.1644
+      },
+      "visual_lexicon": {
+        "ci": [
+          0.0693,
+          0.2159
+        ],
+        "mean": 0.1374
+      }
+    }
+  },
+  "verdict_hint": "SURVIVES: max Jaccard with an existing scorer 0.1692 (dialogue_density) vs random floor 0.1644 (+0.15 threshold)"
+}

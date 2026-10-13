@@ -1,0 +1,23 @@
+{
+  "base_seed": 20261002,
+  "config_hash": "92d76d7efdf5c4d2",
+  "experiment": "confusion_casting",
+  "hypothesis_id": "H-CCAST",
+  "params": {
+    "lams": [
+      0.0,
+      0.25,
+      0.5,
+      1,
+      2,
+      4,
+      8,
+      16,
+      32
+    ],
+    "min_lines": 10,
+    "near": 3,
+    "resamples": 1000
+  },
+  "stub": false
+}

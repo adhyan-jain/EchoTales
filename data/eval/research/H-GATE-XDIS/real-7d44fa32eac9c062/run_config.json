@@ -1,0 +1,26 @@
+{
+  "base_seed": 20261002,
+  "config_hash": "7d44fa32eac9c062",
+  "experiment": "gate_xdis",
+  "hypothesis_id": "H-GATE-XDIS",
+  "params": {
+    "candidates_window": 20,
+    "docs_dir": "docs/research/experiments/H-GATE-XDIS",
+    "exclude_unscorable_gold": false,
+    "primary_rates": [
+      0.1,
+      0.2
+    ],
+    "rates": [
+      0.05,
+      0.1,
+      0.15,
+      0.2,
+      0.25,
+      0.3
+    ],
+    "resamples": 2000,
+    "source_run": "data/eval/research/H-XDIS/real-6f97e4d14f536dfe"
+  },
+  "stub": false
+}

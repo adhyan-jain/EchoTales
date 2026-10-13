@@ -1,0 +1,1143 @@
+{
+  "config_hash": "7d44fa32eac9c062",
+  "experiment": "gate_xdis",
+  "hypothesis_id": "H-GATE-XDIS",
+  "mode": "real",
+  "n_trials": 1000,
+  "n_units": 1000,
+  "notes": [
+    "expected-value tie handling (exact, no RNG)",
+    "the LLM's shortlist is gold-derived; see C_shortlist_random",
+    "re-derived fields gated by exact match against the saved trials"
+  ],
+  "summary": {
+    "best_xdis_policy": "P3_disagree_then_conf",
+    "bootstrap_novel_cluster": {
+      "C_shortlist_random-P1_conf@0.1": {
+        "ci": [
+          -0.2495,
+          -0.0814
+        ],
+        "p_le_0": 1.0
+      },
+      "C_shortlist_random-P1_conf@0.2": {
+        "ci": [
+          -0.2906,
+          -0.0894
+        ],
+        "p_le_0": 1.0
+      },
+      "P2a_disagree-C_shortlist_random@0.1": {
+        "ci": [
+          0.159,
+          0.3229
+        ],
+        "p_le_0": 0.0
+      },
+      "P2a_disagree-C_shortlist_random@0.2": {
+        "ci": [
+          0.3167,
+          0.6326
+        ],
+        "p_le_0": 0.0
+      },
+      "P2a_disagree-P1_conf@0.1": {
+        "ci": [
+          -0.007,
+          0.1678
+        ],
+        "p_le_0": 0.038
+      },
+      "P2a_disagree-P1_conf@0.2": {
+        "ci": [
+          0.1059,
+          0.454
+        ],
+        "p_le_0": 0.0005
+      },
+      "P3_disagree_then_conf-P1_conf@0.1": {
+        "ci": [
+          0.0736,
+          0.2175
+        ],
+        "p_le_0": 0.0
+      },
+      "P3_disagree_then_conf-P1_conf@0.2": {
+        "ci": [
+          0.1426,
+          0.4622
+        ],
+        "p_le_0": 0.0
+      }
+    },
+    "bootstrap_quote_paired": {
+      "C_shortlist_random-P1_conf@0.1": {
+        "ci": [
+          -0.2205,
+          -0.1016
+        ],
+        "p_le_0": 1.0
+      },
+      "C_shortlist_random-P1_conf@0.2": {
+        "ci": [
+          -0.2639,
+          -0.1058
+        ],
+        "p_le_0": 1.0
+      },
+      "P2a_disagree-C_shortlist_random@0.1": {
+        "ci": [
+          0.1817,
+          0.2875
+        ],
+        "p_le_0": 0.0
+      },
+      "P2a_disagree-C_shortlist_random@0.2": {
+        "ci": [
+          0.3769,
+          0.5499
+        ],
+        "p_le_0": 0.0
+      },
+      "P2a_disagree-P1_conf@0.1": {
+        "ci": [
+          0.0198,
+          0.1349
+        ],
+        "p_le_0": 0.002
+      },
+      "P2a_disagree-P1_conf@0.2": {
+        "ci": [
+          0.1886,
+          0.3672
+        ],
+        "p_le_0": 0.0
+      },
+      "P3_disagree_then_conf-P1_conf@0.1": {
+        "ci": [
+          0.095,
+          0.1862
+        ],
+        "p_le_0": 0.0
+      },
+      "P3_disagree_then_conf-P1_conf@0.2": {
+        "ci": [
+          0.2248,
+          0.3834
+        ],
+        "p_le_0": 0.0
+      }
+    },
+    "control_artifact": false,
+    "control_ratio_of_P2a_gain": {
+      "0.1": -2.1579,
+      "0.2": -0.6831
+    },
+    "exact_match_gate": {
+      "checked": 1000,
+      "mismatches": 0
+    },
+    "gains_vs_P1": {
+      "C_shortlist_random": {
+        "0.1": -0.1601,
+        "0.2": -0.1873
+      },
+      "P2a_disagree": {
+        "0.1": 0.0742,
+        "0.2": 0.2742
+      },
+      "P3_disagree_then_conf": {
+        "0.1": 0.1388,
+        "0.2": 0.2992
+      }
+    },
+    "ladder_error_rate": 0.16,
+    "llm_accuracy_parsed": 0.8966,
+    "llm_unparsed": 149,
+    "low_rate_capture_best": 0.3878,
+    "n_errors": 160,
+    "n_excluded_unscorable_gold": 0,
+    "n_quotes": 1000,
+    "narrator_fallback_aurc": {
+      "diverse": {
+        "C_shortlist_random": 0.0105,
+        "P1_conf": 0.0074,
+        "P2a_disagree": 0.0037,
+        "P3_disagree_then_conf": 0.0029,
+        "gap_closed": {
+          "C_shortlist_random": -0.0891,
+          "P1_conf": 0.2893,
+          "P2a_disagree": 0.7419,
+          "P3_disagree_then_conf": 0.8363
+        },
+        "oracle": 0.0016,
+        "random": 0.0098
+      },
+      "homogeneous": {
+        "C_shortlist_random": 0.0047,
+        "P1_conf": 0.0036,
+        "P2a_disagree": 0.0018,
+        "P3_disagree_then_conf": 0.0014,
+        "gap_closed": {
+          "C_shortlist_random": -0.0356,
+          "P1_conf": 0.2528,
+          "P2a_disagree": 0.7308,
+          "P3_disagree_then_conf": 0.8159
+        },
+        "oracle": 0.0007,
+        "random": 0.0046
+      }
+    },
+    "not_evaluable": [
+      "P4/P5: qwen confidence was not saved (no logprobs)",
+      "nearby-name substitution: no PDNC field; method= strata are the closest proxy"
+    ],
+    "operating_points": {
+      "C_shortlist_random": {
+        "0.05": {
+          "accepted": 950,
+          "capture_efficiency": 0.1686,
+          "coverage": 0.95,
+          "errors_caught": 8.4286,
+          "errors_remaining": 151.5714,
+          "frac_errors_caught": 0.0527,
+          "gated": 50,
+          "intervention_precision": 0.1686,
+          "intervention_rate": 0.05,
+          "k": 50,
+          "residual_error_rate": 0.1516,
+          "risk_reduction_vs_p0": 0.0527,
+          "selective_risk": 0.1595,
+          "unnecessary_interventions": 41.5714
+        },
+        "0.10": {
+          "accepted": 900,
+          "capture_efficiency": 0.1422,
+          "coverage": 0.9,
+          "errors_caught": 14.2154,
+          "errors_remaining": 145.7846,
+          "frac_errors_caught": 0.0888,
+          "gated": 100,
+          "intervention_precision": 0.1422,
+          "intervention_rate": 0.1,
+          "k": 100,
+          "residual_error_rate": 0.1458,
+          "risk_reduction_vs_p0": 0.0888,
+          "selective_risk": 0.162,
+          "unnecessary_interventions": 85.7846
+        },
+        "0.15": {
+          "accepted": 850,
+          "capture_efficiency": 0.1369,
+          "coverage": 0.85,
+          "errors_caught": 20.5417,
+          "errors_remaining": 139.4583,
+          "frac_errors_caught": 0.1284,
+          "gated": 150,
+          "intervention_precision": 0.1369,
+          "intervention_rate": 0.15,
+          "k": 150,
+          "residual_error_rate": 0.1395,
+          "risk_reduction_vs_p0": 0.1284,
+          "selective_risk": 0.1641,
+          "unnecessary_interventions": 129.4583
+        },
+        "0.20": {
+          "accepted": 800,
+          "capture_efficiency": 0.1848,
+          "coverage": 0.8,
+          "errors_caught": 29.5694,
+          "errors_remaining": 130.4306,
+          "frac_errors_caught": 0.1848,
+          "gated": 200,
+          "intervention_precision": 0.1478,
+          "intervention_rate": 0.2,
+          "k": 200,
+          "residual_error_rate": 0.1304,
+          "risk_reduction_vs_p0": 0.1848,
+          "selective_risk": 0.163,
+          "unnecessary_interventions": 170.4306
+        },
+        "0.25": {
+          "accepted": 750,
+          "capture_efficiency": 0.2387,
+          "coverage": 0.75,
+          "errors_caught": 38.1852,
+          "errors_remaining": 121.8148,
+          "frac_errors_caught": 0.2387,
+          "gated": 250,
+          "intervention_precision": 0.1527,
+          "intervention_rate": 0.25,
+          "k": 250,
+          "residual_error_rate": 0.1218,
+          "risk_reduction_vs_p0": 0.2387,
+          "selective_risk": 0.1624,
+          "unnecessary_interventions": 211.8148
+        },
+        "0.30": {
+          "accepted": 700,
+          "capture_efficiency": 0.2927,
+          "coverage": 0.7,
+          "errors_caught": 46.8272,
+          "errors_remaining": 113.1728,
+          "frac_errors_caught": 0.2927,
+          "gated": 300,
+          "intervention_precision": 0.1561,
+          "intervention_rate": 0.3,
+          "k": 300,
+          "residual_error_rate": 0.1132,
+          "risk_reduction_vs_p0": 0.2927,
+          "selective_risk": 0.1617,
+          "unnecessary_interventions": 253.1728
+        },
+        "auc_capture": 0.4696,
+        "auroc": 0.4633,
+        "distinct_score_levels": 38
+      },
+      "P0_none": {
+        "0.05": {
+          "accepted": 950,
+          "capture_efficiency": 0.0,
+          "coverage": 0.95,
+          "errors_caught": 0.0,
+          "errors_remaining": 160.0,
+          "frac_errors_caught": 0.0,
+          "gated": 50,
+          "intervention_precision": 0.0,
+          "intervention_rate": 0.05,
+          "k": 50,
+          "residual_error_rate": 0.16,
+          "risk_reduction_vs_p0": 0.0,
+          "selective_risk": 0.1684,
+          "unnecessary_interventions": 50.0
+        },
+        "0.10": {
+          "accepted": 900,
+          "capture_efficiency": 0.0,
+          "coverage": 0.9,
+          "errors_caught": 0.0,
+          "errors_remaining": 160.0,
+          "frac_errors_caught": 0.0,
+          "gated": 100,
+          "intervention_precision": 0.0,
+          "intervention_rate": 0.1,
+          "k": 100,
+          "residual_error_rate": 0.16,
+          "risk_reduction_vs_p0": 0.0,
+          "selective_risk": 0.1778,
+          "unnecessary_interventions": 100.0
+        },
+        "0.15": {
+          "accepted": 850,
+          "capture_efficiency": 0.0,
+          "coverage": 0.85,
+          "errors_caught": 0.0,
+          "errors_remaining": 160.0,
+          "frac_errors_caught": 0.0,
+          "gated": 150,
+          "intervention_precision": 0.0,
+          "intervention_rate": 0.15,
+          "k": 150,
+          "residual_error_rate": 0.16,
+          "risk_reduction_vs_p0": 0.0,
+          "selective_risk": 0.1882,
+          "unnecessary_interventions": 150.0
+        },
+        "0.20": {
+          "accepted": 800,
+          "capture_efficiency": 0.0,
+          "coverage": 0.8,
+          "errors_caught": 0.0,
+          "errors_remaining": 160.0,
+          "frac_errors_caught": 0.0,
+          "gated": 200,
+          "intervention_precision": 0.0,
+          "intervention_rate": 0.2,
+          "k": 200,
+          "residual_error_rate": 0.16,
+          "risk_reduction_vs_p0": 0.0,
+          "selective_risk": 0.2,
+          "unnecessary_interventions": 200.0
+        },
+        "0.25": {
+          "accepted": 750,
+          "capture_efficiency": 0.0,
+          "coverage": 0.75,
+          "errors_caught": 0.0,
+          "errors_remaining": 160.0,
+          "frac_errors_caught": 0.0,
+          "gated": 250,
+          "intervention_precision": 0.0,
+          "intervention_rate": 0.25,
+          "k": 250,
+          "residual_error_rate": 0.16,
+          "risk_reduction_vs_p0": 0.0,
+          "selective_risk": 0.2133,
+          "unnecessary_interventions": 250.0
+        },
+        "0.30": {
+          "accepted": 700,
+          "capture_efficiency": 0.0,
+          "coverage": 0.7,
+          "errors_caught": 0.0,
+          "errors_remaining": 160.0,
+          "frac_errors_caught": 0.0,
+          "gated": 300,
+          "intervention_precision": 0.0,
+          "intervention_rate": 0.3,
+          "k": 300,
+          "residual_error_rate": 0.16,
+          "risk_reduction_vs_p0": 0.0,
+          "selective_risk": 0.2286,
+          "unnecessary_interventions": 300.0
+        },
+        "auc_capture": 0.0,
+        "auroc": null,
+        "distinct_score_levels": 1
+      },
+      "P1_conf": {
+        "0.05": {
+          "accepted": 950,
+          "capture_efficiency": 0.3984,
+          "coverage": 0.95,
+          "errors_caught": 19.9187,
+          "errors_remaining": 140.0813,
+          "frac_errors_caught": 0.1245,
+          "gated": 50,
+          "intervention_precision": 0.3984,
+          "intervention_rate": 0.05,
+          "k": 50,
+          "residual_error_rate": 0.1401,
+          "risk_reduction_vs_p0": 0.1245,
+          "selective_risk": 0.1475,
+          "unnecessary_interventions": 30.0813
+        },
+        "0.10": {
+          "accepted": 900,
+          "capture_efficiency": 0.3984,
+          "coverage": 0.9,
+          "errors_caught": 39.8374,
+          "errors_remaining": 120.1626,
+          "frac_errors_caught": 0.249,
+          "gated": 100,
+          "intervention_precision": 0.3984,
+          "intervention_rate": 0.1,
+          "k": 100,
+          "residual_error_rate": 0.1202,
+          "risk_reduction_vs_p0": 0.249,
+          "selective_risk": 0.1335,
+          "unnecessary_interventions": 60.1626
+        },
+        "0.15": {
+          "accepted": 850,
+          "capture_efficiency": 0.3551,
+          "coverage": 0.85,
+          "errors_caught": 53.2648,
+          "errors_remaining": 106.7352,
+          "frac_errors_caught": 0.3329,
+          "gated": 150,
+          "intervention_precision": 0.3551,
+          "intervention_rate": 0.15,
+          "k": 150,
+          "residual_error_rate": 0.1067,
+          "risk_reduction_vs_p0": 0.3329,
+          "selective_risk": 0.1256,
+          "unnecessary_interventions": 96.7352
+        },
+        "0.20": {
+          "accepted": 800,
+          "capture_efficiency": 0.3721,
+          "coverage": 0.8,
+          "errors_caught": 59.5434,
+          "errors_remaining": 100.4566,
+          "frac_errors_caught": 0.3721,
+          "gated": 200,
+          "intervention_precision": 0.2977,
+          "intervention_rate": 0.2,
+          "k": 200,
+          "residual_error_rate": 0.1005,
+          "risk_reduction_vs_p0": 0.3721,
+          "selective_risk": 0.1256,
+          "unnecessary_interventions": 140.4566
+        },
+        "0.25": {
+          "accepted": 750,
+          "capture_efficiency": 0.4114,
+          "coverage": 0.75,
+          "errors_caught": 65.8219,
+          "errors_remaining": 94.1781,
+          "frac_errors_caught": 0.4114,
+          "gated": 250,
+          "intervention_precision": 0.2633,
+          "intervention_rate": 0.25,
+          "k": 250,
+          "residual_error_rate": 0.0942,
+          "risk_reduction_vs_p0": 0.4114,
+          "selective_risk": 0.1256,
+          "unnecessary_interventions": 184.1781
+        },
+        "0.30": {
+          "accepted": 700,
+          "capture_efficiency": 0.4506,
+          "coverage": 0.7,
+          "errors_caught": 72.1005,
+          "errors_remaining": 87.8995,
+          "frac_errors_caught": 0.4506,
+          "gated": 300,
+          "intervention_precision": 0.2403,
+          "intervention_rate": 0.3,
+          "k": 300,
+          "residual_error_rate": 0.0879,
+          "risk_reduction_vs_p0": 0.4506,
+          "selective_risk": 0.1256,
+          "unnecessary_interventions": 227.8995
+        },
+        "auc_capture": 0.5945,
+        "auroc": 0.6119,
+        "distinct_score_levels": 3
+      },
+      "P2a_disagree": {
+        "0.05": {
+          "accepted": 950,
+          "capture_efficiency": 0.5171,
+          "coverage": 0.95,
+          "errors_caught": 25.8555,
+          "errors_remaining": 134.1445,
+          "frac_errors_caught": 0.1616,
+          "gated": 50,
+          "intervention_precision": 0.5171,
+          "intervention_rate": 0.05,
+          "k": 50,
+          "residual_error_rate": 0.1341,
+          "risk_reduction_vs_p0": 0.1616,
+          "selective_risk": 0.1412,
+          "unnecessary_interventions": 24.1445
+        },
+        "0.10": {
+          "accepted": 900,
+          "capture_efficiency": 0.5171,
+          "coverage": 0.9,
+          "errors_caught": 51.711,
+          "errors_remaining": 108.289,
+          "frac_errors_caught": 0.3232,
+          "gated": 100,
+          "intervention_precision": 0.5171,
+          "intervention_rate": 0.1,
+          "k": 100,
+          "residual_error_rate": 0.1083,
+          "risk_reduction_vs_p0": 0.3232,
+          "selective_risk": 0.1203,
+          "unnecessary_interventions": 48.289
+        },
+        "0.15": {
+          "accepted": 850,
+          "capture_efficiency": 0.5171,
+          "coverage": 0.85,
+          "errors_caught": 77.5665,
+          "errors_remaining": 82.4335,
+          "frac_errors_caught": 0.4848,
+          "gated": 150,
+          "intervention_precision": 0.5171,
+          "intervention_rate": 0.15,
+          "k": 150,
+          "residual_error_rate": 0.0824,
+          "risk_reduction_vs_p0": 0.4848,
+          "selective_risk": 0.097,
+          "unnecessary_interventions": 72.4335
+        },
+        "0.20": {
+          "accepted": 800,
+          "capture_efficiency": 0.6464,
+          "coverage": 0.8,
+          "errors_caught": 103.4221,
+          "errors_remaining": 56.5779,
+          "frac_errors_caught": 0.6464,
+          "gated": 200,
+          "intervention_precision": 0.5171,
+          "intervention_rate": 0.2,
+          "k": 200,
+          "residual_error_rate": 0.0566,
+          "risk_reduction_vs_p0": 0.6464,
+          "selective_risk": 0.0707,
+          "unnecessary_interventions": 96.5779
+        },
+        "0.25": {
+          "accepted": 750,
+          "capture_efficiency": 0.808,
+          "coverage": 0.75,
+          "errors_caught": 129.2776,
+          "errors_remaining": 30.7224,
+          "frac_errors_caught": 0.808,
+          "gated": 250,
+          "intervention_precision": 0.5171,
+          "intervention_rate": 0.25,
+          "k": 250,
+          "residual_error_rate": 0.0307,
+          "risk_reduction_vs_p0": 0.808,
+          "selective_risk": 0.041,
+          "unnecessary_interventions": 120.7224
+        },
+        "0.30": {
+          "accepted": 700,
+          "capture_efficiency": 0.8575,
+          "coverage": 0.7,
+          "errors_caught": 137.2049,
+          "errors_remaining": 22.7951,
+          "frac_errors_caught": 0.8575,
+          "gated": 300,
+          "intervention_precision": 0.4573,
+          "intervention_rate": 0.3,
+          "k": 300,
+          "residual_error_rate": 0.0228,
+          "risk_reduction_vs_p0": 0.8575,
+          "selective_risk": 0.0326,
+          "unnecessary_interventions": 162.7951
+        },
+        "auc_capture": 0.794,
+        "auroc": 0.8494,
+        "distinct_score_levels": 2
+      },
+      "P2b_disagree_none_as_agree": {
+        "0.05": {
+          "accepted": 950,
+          "capture_efficiency": 0.7281,
+          "coverage": 0.95,
+          "errors_caught": 36.4035,
+          "errors_remaining": 123.5965,
+          "frac_errors_caught": 0.2275,
+          "gated": 50,
+          "intervention_precision": 0.7281,
+          "intervention_rate": 0.05,
+          "k": 50,
+          "residual_error_rate": 0.1236,
+          "risk_reduction_vs_p0": 0.2275,
+          "selective_risk": 0.1301,
+          "unnecessary_interventions": 13.5965
+        },
+        "0.10": {
+          "accepted": 900,
+          "capture_efficiency": 0.7281,
+          "coverage": 0.9,
+          "errors_caught": 72.807,
+          "errors_remaining": 87.193,
+          "frac_errors_caught": 0.455,
+          "gated": 100,
+          "intervention_precision": 0.7281,
+          "intervention_rate": 0.1,
+          "k": 100,
+          "residual_error_rate": 0.0872,
+          "risk_reduction_vs_p0": 0.455,
+          "selective_risk": 0.0969,
+          "unnecessary_interventions": 27.193
+        },
+        "0.15": {
+          "accepted": 850,
+          "capture_efficiency": 0.5742,
+          "coverage": 0.85,
+          "errors_caught": 86.1287,
+          "errors_remaining": 73.8713,
+          "frac_errors_caught": 0.5383,
+          "gated": 150,
+          "intervention_precision": 0.5742,
+          "intervention_rate": 0.15,
+          "k": 150,
+          "residual_error_rate": 0.0739,
+          "risk_reduction_vs_p0": 0.5383,
+          "selective_risk": 0.0869,
+          "unnecessary_interventions": 63.8713
+        },
+        "0.20": {
+          "accepted": 800,
+          "capture_efficiency": 0.5655,
+          "coverage": 0.8,
+          "errors_caught": 90.474,
+          "errors_remaining": 69.526,
+          "frac_errors_caught": 0.5655,
+          "gated": 200,
+          "intervention_precision": 0.4524,
+          "intervention_rate": 0.2,
+          "k": 200,
+          "residual_error_rate": 0.0695,
+          "risk_reduction_vs_p0": 0.5655,
+          "selective_risk": 0.0869,
+          "unnecessary_interventions": 109.526
+        },
+        "0.25": {
+          "accepted": 750,
+          "capture_efficiency": 0.5926,
+          "coverage": 0.75,
+          "errors_caught": 94.8194,
+          "errors_remaining": 65.1806,
+          "frac_errors_caught": 0.5926,
+          "gated": 250,
+          "intervention_precision": 0.3793,
+          "intervention_rate": 0.25,
+          "k": 250,
+          "residual_error_rate": 0.0652,
+          "risk_reduction_vs_p0": 0.5926,
+          "selective_risk": 0.0869,
+          "unnecessary_interventions": 155.1806
+        },
+        "0.30": {
+          "accepted": 700,
+          "capture_efficiency": 0.6198,
+          "coverage": 0.7,
+          "errors_caught": 99.1648,
+          "errors_remaining": 60.8352,
+          "frac_errors_caught": 0.6198,
+          "gated": 300,
+          "intervention_precision": 0.3305,
+          "intervention_rate": 0.3,
+          "k": 300,
+          "residual_error_rate": 0.0608,
+          "risk_reduction_vs_p0": 0.6198,
+          "selective_risk": 0.0869,
+          "unnecessary_interventions": 200.8352
+        },
+        "auc_capture": 0.7029,
+        "auroc": 0.7409,
+        "distinct_score_levels": 2
+      },
+      "P2c_disagree_none_mid": {
+        "0.05": {
+          "accepted": 950,
+          "capture_efficiency": 0.7281,
+          "coverage": 0.95,
+          "errors_caught": 36.4035,
+          "errors_remaining": 123.5965,
+          "frac_errors_caught": 0.2275,
+          "gated": 50,
+          "intervention_precision": 0.7281,
+          "intervention_rate": 0.05,
+          "k": 50,
+          "residual_error_rate": 0.1236,
+          "risk_reduction_vs_p0": 0.2275,
+          "selective_risk": 0.1301,
+          "unnecessary_interventions": 13.5965
+        },
+        "0.10": {
+          "accepted": 900,
+          "capture_efficiency": 0.7281,
+          "coverage": 0.9,
+          "errors_caught": 72.807,
+          "errors_remaining": 87.193,
+          "frac_errors_caught": 0.455,
+          "gated": 100,
+          "intervention_precision": 0.7281,
+          "intervention_rate": 0.1,
+          "k": 100,
+          "residual_error_rate": 0.0872,
+          "risk_reduction_vs_p0": 0.455,
+          "selective_risk": 0.0969,
+          "unnecessary_interventions": 27.193
+        },
+        "0.15": {
+          "accepted": 850,
+          "capture_efficiency": 0.6387,
+          "coverage": 0.85,
+          "errors_caught": 95.8054,
+          "errors_remaining": 64.1946,
+          "frac_errors_caught": 0.5988,
+          "gated": 150,
+          "intervention_precision": 0.6387,
+          "intervention_rate": 0.15,
+          "k": 150,
+          "residual_error_rate": 0.0642,
+          "risk_reduction_vs_p0": 0.5988,
+          "selective_risk": 0.0755,
+          "unnecessary_interventions": 54.1946
+        },
+        "0.20": {
+          "accepted": 800,
+          "capture_efficiency": 0.7099,
+          "coverage": 0.8,
+          "errors_caught": 113.5906,
+          "errors_remaining": 46.4094,
+          "frac_errors_caught": 0.7099,
+          "gated": 200,
+          "intervention_precision": 0.568,
+          "intervention_rate": 0.2,
+          "k": 200,
+          "residual_error_rate": 0.0464,
+          "risk_reduction_vs_p0": 0.7099,
+          "selective_risk": 0.058,
+          "unnecessary_interventions": 86.4094
+        },
+        "0.25": {
+          "accepted": 750,
+          "capture_efficiency": 0.8211,
+          "coverage": 0.75,
+          "errors_caught": 131.3758,
+          "errors_remaining": 28.6242,
+          "frac_errors_caught": 0.8211,
+          "gated": 250,
+          "intervention_precision": 0.5255,
+          "intervention_rate": 0.25,
+          "k": 250,
+          "residual_error_rate": 0.0286,
+          "risk_reduction_vs_p0": 0.8211,
+          "selective_risk": 0.0382,
+          "unnecessary_interventions": 118.6242
+        },
+        "0.30": {
+          "accepted": 700,
+          "capture_efficiency": 0.8575,
+          "coverage": 0.7,
+          "errors_caught": 137.2049,
+          "errors_remaining": 22.7951,
+          "frac_errors_caught": 0.8575,
+          "gated": 300,
+          "intervention_precision": 0.4573,
+          "intervention_rate": 0.3,
+          "k": 300,
+          "residual_error_rate": 0.0228,
+          "risk_reduction_vs_p0": 0.8575,
+          "selective_risk": 0.0326,
+          "unnecessary_interventions": 162.7951
+        },
+        "auc_capture": 0.8138,
+        "auroc": 0.8729,
+        "distinct_score_levels": 3
+      },
+      "P3_disagree_then_conf": {
+        "0.05": {
+          "accepted": 950,
+          "capture_efficiency": 0.7872,
+          "coverage": 0.95,
+          "errors_caught": 39.3611,
+          "errors_remaining": 120.6389,
+          "frac_errors_caught": 0.246,
+          "gated": 50,
+          "intervention_precision": 0.7872,
+          "intervention_rate": 0.05,
+          "k": 50,
+          "residual_error_rate": 0.1206,
+          "risk_reduction_vs_p0": 0.246,
+          "selective_risk": 0.127,
+          "unnecessary_interventions": 10.6389
+        },
+        "0.10": {
+          "accepted": 900,
+          "capture_efficiency": 0.6205,
+          "coverage": 0.9,
+          "errors_caught": 62.0463,
+          "errors_remaining": 97.9537,
+          "frac_errors_caught": 0.3878,
+          "gated": 100,
+          "intervention_precision": 0.6205,
+          "intervention_rate": 0.1,
+          "k": 100,
+          "residual_error_rate": 0.098,
+          "risk_reduction_vs_p0": 0.3878,
+          "selective_risk": 0.1088,
+          "unnecessary_interventions": 37.9537
+        },
+        "0.15": {
+          "accepted": 850,
+          "capture_efficiency": 0.5649,
+          "coverage": 0.85,
+          "errors_caught": 84.7315,
+          "errors_remaining": 75.2685,
+          "frac_errors_caught": 0.5296,
+          "gated": 150,
+          "intervention_precision": 0.5649,
+          "intervention_rate": 0.15,
+          "k": 150,
+          "residual_error_rate": 0.0753,
+          "risk_reduction_vs_p0": 0.5296,
+          "selective_risk": 0.0886,
+          "unnecessary_interventions": 65.2685
+        },
+        "0.20": {
+          "accepted": 800,
+          "capture_efficiency": 0.6714,
+          "coverage": 0.8,
+          "errors_caught": 107.4167,
+          "errors_remaining": 52.5833,
+          "frac_errors_caught": 0.6714,
+          "gated": 200,
+          "intervention_precision": 0.5371,
+          "intervention_rate": 0.2,
+          "k": 200,
+          "residual_error_rate": 0.0526,
+          "risk_reduction_vs_p0": 0.6714,
+          "selective_risk": 0.0657,
+          "unnecessary_interventions": 92.5833
+        },
+        "0.25": {
+          "accepted": 750,
+          "capture_efficiency": 0.8131,
+          "coverage": 0.75,
+          "errors_caught": 130.1019,
+          "errors_remaining": 29.8981,
+          "frac_errors_caught": 0.8131,
+          "gated": 250,
+          "intervention_precision": 0.5204,
+          "intervention_rate": 0.25,
+          "k": 250,
+          "residual_error_rate": 0.0299,
+          "risk_reduction_vs_p0": 0.8131,
+          "selective_risk": 0.0399,
+          "unnecessary_interventions": 119.8981
+        },
+        "0.30": {
+          "accepted": 700,
+          "capture_efficiency": 0.886,
+          "coverage": 0.7,
+          "errors_caught": 141.7662,
+          "errors_remaining": 18.2338,
+          "frac_errors_caught": 0.886,
+          "gated": 300,
+          "intervention_precision": 0.4726,
+          "intervention_rate": 0.3,
+          "k": 300,
+          "residual_error_rate": 0.0182,
+          "risk_reduction_vs_p0": 0.886,
+          "selective_risk": 0.026,
+          "unnecessary_interventions": 158.2338
+        },
+        "auc_capture": 0.8271,
+        "auroc": 0.8888,
+        "distinct_score_levels": 5
+      },
+      "oracle": {
+        "0.05": {
+          "accepted": 950,
+          "capture_efficiency": 1.0,
+          "coverage": 0.95,
+          "errors_caught": 50.0,
+          "errors_remaining": 110.0,
+          "frac_errors_caught": 0.3125,
+          "gated": 50,
+          "intervention_precision": 1.0,
+          "intervention_rate": 0.05,
+          "k": 50,
+          "residual_error_rate": 0.11,
+          "risk_reduction_vs_p0": 0.3125,
+          "selective_risk": 0.1158,
+          "unnecessary_interventions": 0.0
+        },
+        "0.10": {
+          "accepted": 900,
+          "capture_efficiency": 1.0,
+          "coverage": 0.9,
+          "errors_caught": 100.0,
+          "errors_remaining": 60.0,
+          "frac_errors_caught": 0.625,
+          "gated": 100,
+          "intervention_precision": 1.0,
+          "intervention_rate": 0.1,
+          "k": 100,
+          "residual_error_rate": 0.06,
+          "risk_reduction_vs_p0": 0.625,
+          "selective_risk": 0.0667,
+          "unnecessary_interventions": 0.0
+        },
+        "0.15": {
+          "accepted": 850,
+          "capture_efficiency": 1.0,
+          "coverage": 0.85,
+          "errors_caught": 150.0,
+          "errors_remaining": 10.0,
+          "frac_errors_caught": 0.9375,
+          "gated": 150,
+          "intervention_precision": 1.0,
+          "intervention_rate": 0.15,
+          "k": 150,
+          "residual_error_rate": 0.01,
+          "risk_reduction_vs_p0": 0.9375,
+          "selective_risk": 0.0118,
+          "unnecessary_interventions": 0.0
+        },
+        "0.20": {
+          "accepted": 800,
+          "capture_efficiency": 1.0,
+          "coverage": 0.8,
+          "errors_caught": 160.0,
+          "errors_remaining": 0.0,
+          "frac_errors_caught": 1.0,
+          "gated": 200,
+          "intervention_precision": 0.8,
+          "intervention_rate": 0.2,
+          "k": 200,
+          "residual_error_rate": 0.0,
+          "risk_reduction_vs_p0": 1.0,
+          "selective_risk": 0.0,
+          "unnecessary_interventions": 40.0
+        },
+        "0.25": {
+          "accepted": 750,
+          "capture_efficiency": 1.0,
+          "coverage": 0.75,
+          "errors_caught": 160.0,
+          "errors_remaining": 0.0,
+          "frac_errors_caught": 1.0,
+          "gated": 250,
+          "intervention_precision": 0.64,
+          "intervention_rate": 0.25,
+          "k": 250,
+          "residual_error_rate": 0.0,
+          "risk_reduction_vs_p0": 1.0,
+          "selective_risk": 0.0,
+          "unnecessary_interventions": 90.0
+        },
+        "0.30": {
+          "accepted": 700,
+          "capture_efficiency": 1.0,
+          "coverage": 0.7,
+          "errors_caught": 160.0,
+          "errors_remaining": 0.0,
+          "frac_errors_caught": 1.0,
+          "gated": 300,
+          "intervention_precision": 0.5333,
+          "intervention_rate": 0.3,
+          "k": 300,
+          "residual_error_rate": 0.0,
+          "risk_reduction_vs_p0": 1.0,
+          "selective_risk": 0.0,
+          "unnecessary_interventions": 140.0
+        },
+        "auc_capture": 0.9205,
+        "auroc": 1.0,
+        "distinct_score_levels": 2
+      }
+    },
+    "primary_rates_passed": [
+      0.2
+    ],
+    "shortlist": {
+      "gold_always_in_shortlist": false,
+      "mean_size": 6.118
+    },
+    "status": "CONDITIONAL",
+    "strata": {
+      "addressee_capture": {
+        "C_shortlist_random@0.1": 0.1136,
+        "C_shortlist_random@0.2": 0.204,
+        "P1_conf@0.1": 0.2923,
+        "P1_conf@0.2": 0.4254,
+        "P2a_disagree@0.1": 0.3247,
+        "P2a_disagree@0.2": 0.6494,
+        "P3_disagree_then_conf@0.1": 0.4385,
+        "P3_disagree_then_conf@0.2": 0.6934,
+        "n_errors": 89
+      },
+      "cross_gender": {
+        "C_shortlist_random@0.1": 0.0491,
+        "C_shortlist_random@0.2": 0.1052,
+        "P1_conf@0.1": 0.3127,
+        "P1_conf@0.2": 0.438,
+        "P2a_disagree@0.1": 0.3364,
+        "P2a_disagree@0.2": 0.6727,
+        "P3_disagree_then_conf@0.1": 0.4783,
+        "P3_disagree_then_conf@0.2": 0.7276,
+        "n_errors": 26
+      },
+      "method=EXPLICIT": {
+        "C_shortlist_random@0.1": 0.0722,
+        "C_shortlist_random@0.2": 0.1918,
+        "P1_conf@0.1": 0.0,
+        "P1_conf@0.2": 0.0868,
+        "P2a_disagree@0.1": 0.3387,
+        "P2a_disagree@0.2": 0.6775,
+        "P3_disagree_then_conf@0.1": 0.2186,
+        "P3_disagree_then_conf@0.2": 0.6311,
+        "n_errors": 110
+      },
+      "method=JOINT": {
+        "C_shortlist_random@0.1": 0.0,
+        "C_shortlist_random@0.2": 0.0,
+        "P1_conf@0.1": 0.0,
+        "P1_conf@0.2": 1.0,
+        "P2a_disagree@0.1": 0.3802,
+        "P2a_disagree@0.2": 0.7605,
+        "P3_disagree_then_conf@0.1": 1.0,
+        "P3_disagree_then_conf@0.2": 1.0,
+        "n_errors": 1
+      },
+      "method=PROXIMAL": {
+        "C_shortlist_random@0.1": 0.1281,
+        "C_shortlist_random@0.2": 0.1729,
+        "P1_conf@0.1": 0.813,
+        "P1_conf@0.2": 1.0,
+        "P2a_disagree@0.1": 0.2871,
+        "P2a_disagree@0.2": 0.5742,
+        "P3_disagree_then_conf@0.1": 0.7551,
+        "P3_disagree_then_conf@0.2": 0.7551,
+        "n_errors": 49
+      },
+      "not_addressee_capture": {
+        "C_shortlist_random@0.1": 0.0579,
+        "C_shortlist_random@0.2": 0.1608,
+        "P1_conf@0.1": 0.1947,
+        "P1_conf@0.2": 0.3054,
+        "P2a_disagree@0.1": 0.3213,
+        "P2a_disagree@0.2": 0.6426,
+        "P3_disagree_then_conf@0.1": 0.3243,
+        "P3_disagree_then_conf@0.2": 0.6438,
+        "n_errors": 71
+      },
+      "quote_type=anaphoric": {
+        "C_shortlist_random@0.1": 0.1006,
+        "C_shortlist_random@0.2": 0.2072,
+        "P1_conf@0.1": 0.3896,
+        "P1_conf@0.2": 0.5434,
+        "P2a_disagree@0.1": 0.3327,
+        "P2a_disagree@0.2": 0.6654,
+        "P3_disagree_then_conf@0.1": 0.5134,
+        "P3_disagree_then_conf@0.2": 0.7352,
+        "n_errors": 48
+      },
+      "quote_type=explicit": {
+        "C_shortlist_random@0.1": 0.0819,
+        "C_shortlist_random@0.2": 0.1736,
+        "P1_conf@0.1": 0.122,
+        "P1_conf@0.2": 0.2237,
+        "P2a_disagree@0.1": 0.347,
+        "P2a_disagree@0.2": 0.6939,
+        "P3_disagree_then_conf@0.1": 0.3182,
+        "P3_disagree_then_conf@0.2": 0.6828,
+        "n_errors": 80
+      },
+      "quote_type=implicit": {
+        "C_shortlist_random@0.1": 0.0885,
+        "C_shortlist_random@0.2": 0.1793,
+        "P1_conf@0.1": 0.3557,
+        "P1_conf@0.2": 0.4863,
+        "P2a_disagree@0.1": 0.2495,
+        "P2a_disagree@0.2": 0.499,
+        "P3_disagree_then_conf@0.1": 0.3733,
+        "P3_disagree_then_conf@0.2": 0.5469,
+        "n_errors": 32
+      },
+      "same_or_unknown_gender": {
+        "C_shortlist_random@0.1": 0.0966,
+        "C_shortlist_random@0.2": 0.2002,
+        "P1_conf@0.1": 0.2366,
+        "P1_conf@0.2": 0.3594,
+        "P2a_disagree@0.1": 0.3206,
+        "P2a_disagree@0.2": 0.6413,
+        "P3_disagree_then_conf@0.1": 0.3702,
+        "P3_disagree_then_conf@0.2": 0.6604,
+        "n_errors": 134
+      },
+      "vocative_in_quote": {
+        "C_shortlist_random@0.1": 0.0396,
+        "C_shortlist_random@0.2": 0.248,
+        "P1_conf@0.1": 0.1161,
+        "P1_conf@0.2": 0.2172,
+        "P2a_disagree@0.1": 0.3802,
+        "P2a_disagree@0.2": 0.7605,
+        "P3_disagree_then_conf@0.1": 0.3532,
+        "P3_disagree_then_conf@0.2": 0.75,
+        "n_errors": 7
+      }
+    },
+    "strata_supporting": [
+      "addressee_capture",
+      "cross_gender",
+      "same_or_unknown_gender"
+    ]
+  },
+  "verdict_hint": "CONDITIONAL: best=P3_disagree_then_conf; errors caught @10%/20%: P1 0.249/0.372, P3_disagree_then_conf 0.388/0.671, shortlist control 0.089/0.185"
+}

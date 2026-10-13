@@ -1,0 +1,24 @@
+{
+  "base_seed": 20261002,
+  "config_hash": "4fe36b54f7f8328b",
+  "experiment": "xdis_alias_rescore",
+  "hypothesis_id": "H-XDIS-ALIAS",
+  "params": {
+    "candidates_window": 20,
+    "primary_rates": [
+      0.1,
+      0.2
+    ],
+    "rates": [
+      0.05,
+      0.1,
+      0.15,
+      0.2,
+      0.25,
+      0.3
+    ],
+    "resamples": 2000,
+    "source_run": "data/eval/research/H-XDIS/real-6f97e4d14f536dfe"
+  },
+  "stub": false
+}

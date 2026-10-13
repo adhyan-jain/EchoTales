@@ -1,0 +1,75 @@
+{
+  "config_hash": "7d9f5d39a811c34b",
+  "experiment": "judge_intervention",
+  "hypothesis_id": "H-JUDGE-V",
+  "mode": "real",
+  "n_trials": 60,
+  "n_units": 20,
+  "notes": [
+    "'rendered' needs both probes to agree; 'rendered_any_probe' is the lenient alternative",
+    "judges score against the intended description"
+  ],
+  "summary": {
+    "all_loss_is_truncation": false,
+    "by_type": {
+      "gender": {
+        "base_compliance": 0.85,
+        "judge_auc_all": {
+          "clipscore": 0.45,
+          "llava_match": 0.575
+        },
+        "judge_auc_given_rendered": {
+          "clipscore": 0.4375,
+          "llava_match": 0.5938
+        },
+        "n": 20,
+        "n_rendered": 16,
+        "p_rendered_any_probe_given_survives": 0.85,
+        "p_rendered_given_survives": 0.8,
+        "p_survives": 1.0
+      },
+      "hair": {
+        "base_compliance": 0.8,
+        "judge_auc_all": {
+          "clipscore": 0.5,
+          "llava_match": 0.5
+        },
+        "judge_auc_given_rendered": {
+          "clipscore": 0.5,
+          "llava_match": 0.5
+        },
+        "n": 20,
+        "n_rendered": 16,
+        "p_rendered_any_probe_given_survives": 0.95,
+        "p_rendered_given_survives": 0.8,
+        "p_survives": 1.0
+      },
+      "setting": {
+        "base_compliance": 0.2,
+        "judge_auc_all": {
+          "clipscore": 0.35,
+          "llava_match": 0.55
+        },
+        "judge_auc_given_rendered": {
+          "clipscore": 1.0,
+          "llava_match": 0.5
+        },
+        "n": 20,
+        "n_rendered": 2,
+        "p_rendered_any_probe_given_survives": 0.5,
+        "p_rendered_given_survives": 0.125,
+        "p_survives": 0.8
+      }
+    },
+    "images": 58,
+    "n_rendered_errors": 34,
+    "newly_rendered": 0,
+    "no_validity_gap": false,
+    "pooled_judge_auc_given_rendered": {
+      "clipscore": 0.5,
+      "llava_match": 0.5441
+    },
+    "specs": 20
+  },
+  "verdict_hint": "SURVIVES: pooled judge AUROC given rendered {'clipscore': 0.5, 'llava_match': 0.5441}; P(rendered|survives) {'gender': 0.8, 'hair': 0.8, 'setting': 0.125}"
+}

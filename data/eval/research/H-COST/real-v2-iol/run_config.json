@@ -1,0 +1,41 @@
+{
+  "base_seed": 20261002,
+  "config_hash": "a6c6e619b1e44888",
+  "experiment": "error_cost_stimuli",
+  "hypothesis_id": "H-COST",
+  "params": {
+    "casts": [
+      "homogeneous",
+      "diverse"
+    ],
+    "error_types": [
+      "addressee",
+      "same_gender",
+      "cross_gender"
+    ],
+    "iol_predict": true,
+    "max_chars": 2200,
+    "min_per_gender": 2,
+    "n_passages": 12,
+    "narrator_voice": "auto",
+    "out_dir": "",
+    "placements": [
+      "tagged",
+      "implicit"
+    ],
+    "policies": [
+      "full_cast",
+      "narrator_only"
+    ],
+    "quotes_per_passage": [
+      6,
+      10
+    ],
+    "rates": [
+      0.0,
+      0.3
+    ],
+    "synthesize": false
+  },
+  "stub": false
+}

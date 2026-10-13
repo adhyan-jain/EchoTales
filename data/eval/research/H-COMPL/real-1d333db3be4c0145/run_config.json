@@ -1,0 +1,12 @@
+{
+  "base_seed": 20261002,
+  "config_hash": "1d333db3be4c0145",
+  "experiment": "complementarity_selection",
+  "hypothesis_id": "H-COMPL",
+  "params": {
+    "budget": 0.2,
+    "chapters_per_novel": 2,
+    "n_novels": 8
+  },
+  "stub": false
+}

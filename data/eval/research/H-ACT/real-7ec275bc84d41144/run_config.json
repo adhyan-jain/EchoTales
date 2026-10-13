@@ -1,0 +1,10 @@
+{
+  "base_seed": 20261002,
+  "config_hash": "7ec275bc84d41144",
+  "experiment": "vrung_manifestation",
+  "hypothesis_id": "H-ACT",
+  "params": {
+    "source_run": "data/eval/research/H-VRUNG/real-a89a29764cb7eea2"
+  },
+  "stub": false
+}

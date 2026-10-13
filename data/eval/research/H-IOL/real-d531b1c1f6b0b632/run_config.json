@@ -1,0 +1,29 @@
+{
+  "base_seed": 20261002,
+  "config_hash": "d531b1c1f6b0b632",
+  "experiment": "ideal_listener",
+  "hypothesis_id": "H-IOL",
+  "params": {
+    "casts": [
+      "diverse",
+      "homogeneous"
+    ],
+    "fixed_errors": 4,
+    "grid": true,
+    "late_k": 2,
+    "rates": [
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6
+    ],
+    "reps": 2,
+    "resamples": 1000,
+    "window": 60,
+    "windows_per_novel": 4,
+    "workers": 8
+  },
+  "stub": false
+}

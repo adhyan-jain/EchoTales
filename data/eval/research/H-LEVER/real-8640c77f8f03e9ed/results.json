@@ -1,0 +1,211 @@
+{
+  "config_hash": "8640c77f8f03e9ed",
+  "experiment": "correction_leverage",
+  "hypothesis_id": "H-LEVER",
+  "mode": "real",
+  "n_trials": 8100,
+  "n_units": 90,
+  "notes": [
+    "outcome is a listener *model's* comprehension: conditional on H-IOL being right about people",
+    "error score is synthetic with a set AUROC"
+  ],
+  "summary": {
+    "cells": {
+      "auc0.6|budget0.05": {
+        "first_appearance": {
+          "errors_fixed": 0.944,
+          "gain_eval": 0.00447
+        },
+        "leverage": {
+          "errors_fixed": 0.7,
+          "gain_eval": 0.00542
+        },
+        "leverage_jaccard_with_first_appearance": 0.0741,
+        "leverage_minus_lowest_conf": {
+          "ci": [
+            0.00046,
+            0.00354
+          ],
+          "mean": 0.00191
+        },
+        "lowest_conf": {
+          "errors_fixed": 1.259,
+          "gain_eval": 0.00351
+        },
+        "oracle": {
+          "errors_fixed": 3.0,
+          "gain_eval": 0.02807
+        },
+        "random": {
+          "errors_fixed": 0.748,
+          "gain_eval": 0.00225
+        }
+      },
+      "auc0.6|budget0.1": {
+        "first_appearance": {
+          "errors_fixed": 2.344,
+          "gain_eval": 0.0117
+        },
+        "leverage": {
+          "errors_fixed": 1.37,
+          "gain_eval": 0.00821
+        },
+        "leverage_jaccard_with_first_appearance": 0.1045,
+        "leverage_minus_lowest_conf": {
+          "ci": [
+            0.00077,
+            0.00458
+          ],
+          "mean": 0.00263
+        },
+        "lowest_conf": {
+          "errors_fixed": 2.274,
+          "gain_eval": 0.00558
+        },
+        "oracle": {
+          "errors_fixed": 6.0,
+          "gain_eval": 0.04307
+        },
+        "random": {
+          "errors_fixed": 1.463,
+          "gain_eval": 0.00389
+        }
+      },
+      "auc0.6|budget0.2": {
+        "first_appearance": {
+          "errors_fixed": 4.319,
+          "gain_eval": 0.01921
+        },
+        "leverage": {
+          "errors_fixed": 2.467,
+          "gain_eval": 0.01411
+        },
+        "leverage_jaccard_with_first_appearance": 0.1385,
+        "leverage_minus_lowest_conf": {
+          "ci": [
+            -0.00024,
+            0.00584
+          ],
+          "mean": 0.00246
+        },
+        "lowest_conf": {
+          "errors_fixed": 4.163,
+          "gain_eval": 0.01164
+        },
+        "oracle": {
+          "errors_fixed": 11.944,
+          "gain_eval": 0.05962
+        },
+        "random": {
+          "errors_fixed": 3.178,
+          "gain_eval": 0.00977
+        }
+      },
+      "auc0.8|budget0.05": {
+        "first_appearance": {
+          "errors_fixed": 0.944,
+          "gain_eval": 0.00447
+        },
+        "leverage": {
+          "errors_fixed": 1.307,
+          "gain_eval": 0.00773
+        },
+        "leverage_jaccard_with_first_appearance": 0.0637,
+        "leverage_minus_lowest_conf": {
+          "ci": [
+            -0.00166,
+            0.00121
+          ],
+          "mean": -0.00027
+        },
+        "lowest_conf": {
+          "errors_fixed": 2.285,
+          "gain_eval": 0.008
+        },
+        "oracle": {
+          "errors_fixed": 3.0,
+          "gain_eval": 0.02807
+        },
+        "random": {
+          "errors_fixed": 0.77,
+          "gain_eval": 0.00192
+        }
+      },
+      "auc0.8|budget0.1": {
+        "first_appearance": {
+          "errors_fixed": 2.344,
+          "gain_eval": 0.0117
+        },
+        "leverage": {
+          "errors_fixed": 2.378,
+          "gain_eval": 0.01269
+        },
+        "leverage_jaccard_with_first_appearance": 0.0924,
+        "leverage_minus_lowest_conf": {
+          "ci": [
+            -0.00249,
+            0.00142
+          ],
+          "mean": -0.00063
+        },
+        "lowest_conf": {
+          "errors_fixed": 4.204,
+          "gain_eval": 0.01332
+        },
+        "oracle": {
+          "errors_fixed": 6.0,
+          "gain_eval": 0.04307
+        },
+        "random": {
+          "errors_fixed": 1.348,
+          "gain_eval": 0.00399
+        }
+      },
+      "auc0.8|budget0.2": {
+        "first_appearance": {
+          "errors_fixed": 4.319,
+          "gain_eval": 0.01921
+        },
+        "leverage": {
+          "errors_fixed": 4.196,
+          "gain_eval": 0.02031
+        },
+        "leverage_jaccard_with_first_appearance": 0.1411,
+        "leverage_minus_lowest_conf": {
+          "ci": [
+            -0.00586,
+            -0.00172
+          ],
+          "mean": -0.00383
+        },
+        "lowest_conf": {
+          "errors_fixed": 7.074,
+          "gain_eval": 0.02413
+        },
+        "oracle": {
+          "errors_fixed": 11.944,
+          "gain_eval": 0.05962
+        },
+        "random": {
+          "errors_fixed": 3.041,
+          "gain_eval": 0.00979
+        }
+      }
+    },
+    "eval_listener": {
+      "lam_alt": 0.4,
+      "rho": 0.7,
+      "tau": 0.12,
+      "w_self": 0.5
+    },
+    "plan_listener": {
+      "lam_alt": 0.3,
+      "rho": 0.9,
+      "tau": 0.06,
+      "w_self": 0.0
+    },
+    "primary_cell": "auc0.6|budget0.1",
+    "windows": 90
+  },
+  "verdict_hint": "SURVIVES (auc0.6|budget0.1): leverage minus lowest_conf {'mean': 0.00263, 'ci': [0.00077, 0.00458]}, Jaccard with first-appearance 0.1045"
+}
