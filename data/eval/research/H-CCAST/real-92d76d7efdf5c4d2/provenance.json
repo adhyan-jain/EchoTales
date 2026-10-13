@@ -1,0 +1,11 @@
+{
+  "config_hash": "92d76d7efdf5c4d2",
+  "created_at": 1790959880.5493133,
+  "git_dirty": true,
+  "git_sha": "e34a628fff9a45fa755cd9ff4b37382ea78c31f7",
+  "inputs": {
+    "pdnc_root": "dir"
+  },
+  "platform": "Linux-7.2.4-arch1-2-x86_64-with-glibc2.44",
+  "python": "3.12.13"
+}

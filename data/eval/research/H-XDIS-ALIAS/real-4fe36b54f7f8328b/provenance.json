@@ -1,0 +1,11 @@
+{
+  "config_hash": "4fe36b54f7f8328b",
+  "created_at": 1791028742.8327951,
+  "git_dirty": true,
+  "git_sha": "e34a628fff9a45fa755cd9ff4b37382ea78c31f7",
+  "inputs": {
+    "source_trials": "6af18f68f987ee85"
+  },
+  "platform": "Linux-7.2.4-arch1-2-x86_64-with-glibc2.44",
+  "python": "3.12.13"
+}

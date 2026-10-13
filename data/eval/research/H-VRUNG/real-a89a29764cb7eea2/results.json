@@ -1,0 +1,260 @@
+{
+  "config_hash": "a89a29764cb7eea2",
+  "experiment": "visual_rungs",
+  "hypothesis_id": "H-VRUNG",
+  "mode": "real",
+  "n_trials": 200,
+  "n_units": 20,
+  "notes": [
+    "recovery = automatic probes (CLIP-L zero-shot, llava:7b), not readers",
+    "as registered, a rung leaks only if BOTH gender and hair leak"
+  ],
+  "summary": {
+    "committed_fails": false,
+    "engine": "noobai-gpu",
+    "hiding_rungs": [
+      "silhouette",
+      "distant",
+      "crop"
+    ],
+    "images": 150,
+    "leaking_rungs": [
+      "back_view"
+    ],
+    "newly_rendered": 0,
+    "specs": 20,
+    "table": {
+      "free|back_view": {
+        "gender": {
+          "clip_decisiveness": 0.8651,
+          "clip_majority_share": 0.6,
+          "clip_majority_value": "M",
+          "clip_recovery": 0.5,
+          "llava_recovery": 0.5,
+          "llava_unknown_rate": 0.0,
+          "mean_recovery": 0.5
+        },
+        "hair": {
+          "clip_decisiveness": 0.9411,
+          "clip_majority_share": 1.0,
+          "clip_majority_value": "black",
+          "clip_recovery": 0.5,
+          "llava_recovery": 0.5,
+          "llava_unknown_rate": 0.0,
+          "mean_recovery": 0.5
+        },
+        "n": 20,
+        "person_visible_llava": 0.2,
+        "setting_kept_in_prompt": 0.5
+      },
+      "free|committed": {
+        "gender": {
+          "clip_decisiveness": 0.7379,
+          "clip_majority_share": 0.9,
+          "clip_majority_value": "M",
+          "clip_recovery": 0.6,
+          "llava_recovery": 0.6,
+          "llava_unknown_rate": 0.0,
+          "mean_recovery": 0.6
+        },
+        "hair": {
+          "clip_decisiveness": 0.8779,
+          "clip_majority_share": 0.9,
+          "clip_majority_value": "black",
+          "clip_recovery": 0.5,
+          "llava_recovery": 0.4,
+          "llava_unknown_rate": 0.2,
+          "mean_recovery": 0.45
+        },
+        "n": 20,
+        "person_visible_llava": 0.0,
+        "setting_kept_in_prompt": 0.9
+      },
+      "free|crop": {
+        "gender": {
+          "clip_decisiveness": 0.6686,
+          "clip_majority_share": 0.6,
+          "clip_majority_value": "M",
+          "clip_recovery": 0.9,
+          "llava_recovery": 0.6,
+          "llava_unknown_rate": 0.0,
+          "mean_recovery": 0.75
+        },
+        "hair": {
+          "clip_decisiveness": 0.7274,
+          "clip_majority_share": 0.9,
+          "clip_majority_value": "black",
+          "clip_recovery": 0.5,
+          "llava_recovery": 0.5,
+          "llava_unknown_rate": 0.0,
+          "mean_recovery": 0.5
+        },
+        "n": 20,
+        "person_visible_llava": 0.1,
+        "setting_kept_in_prompt": 0.7
+      },
+      "free|distant": {
+        "gender": {
+          "clip_decisiveness": 0.8339,
+          "clip_majority_share": 1.0,
+          "clip_majority_value": "M",
+          "clip_recovery": 0.5,
+          "llava_recovery": 0.4,
+          "llava_unknown_rate": 0.0,
+          "mean_recovery": 0.45
+        },
+        "hair": {
+          "clip_decisiveness": 0.7801,
+          "clip_majority_share": 0.8,
+          "clip_majority_value": "black",
+          "clip_recovery": 0.5,
+          "llava_recovery": 0.35,
+          "llava_unknown_rate": 0.3,
+          "mean_recovery": 0.425
+        },
+        "n": 20,
+        "person_visible_llava": 0.0,
+        "setting_kept_in_prompt": 0.8
+      },
+      "free|silhouette": {
+        "gender": {
+          "clip_decisiveness": 0.7706,
+          "clip_majority_share": 0.6,
+          "clip_majority_value": "F",
+          "clip_recovery": 0.7,
+          "llava_recovery": 0.4,
+          "llava_unknown_rate": 0.0,
+          "mean_recovery": 0.55
+        },
+        "hair": {
+          "clip_decisiveness": 0.9079,
+          "clip_majority_share": 1.0,
+          "clip_majority_value": "black",
+          "clip_recovery": 0.5,
+          "llava_recovery": 0.5,
+          "llava_unknown_rate": 0.0,
+          "mean_recovery": 0.5
+        },
+        "n": 20,
+        "person_visible_llava": 0.3,
+        "setting_kept_in_prompt": 0.3
+      },
+      "in|back_view": {
+        "gender": {
+          "clip_decisiveness": 0.9211,
+          "clip_majority_share": 0.55,
+          "clip_majority_value": "M",
+          "clip_recovery": 0.95,
+          "llava_recovery": 0.9,
+          "llava_unknown_rate": 0.0,
+          "mean_recovery": 0.925
+        },
+        "hair": {
+          "clip_decisiveness": 0.9935,
+          "clip_majority_share": 0.5,
+          "clip_majority_value": "black",
+          "clip_recovery": 1.0,
+          "llava_recovery": 1.0,
+          "llava_unknown_rate": 0.0,
+          "mean_recovery": 1.0
+        },
+        "n": 20,
+        "person_visible_llava": 0.7,
+        "setting_kept_in_prompt": 0.4
+      },
+      "in|committed": {
+        "gender": {
+          "clip_decisiveness": 0.894,
+          "clip_majority_share": 0.55,
+          "clip_majority_value": "F",
+          "clip_recovery": 0.95,
+          "llava_recovery": 0.9,
+          "llava_unknown_rate": 0.0,
+          "mean_recovery": 0.925
+        },
+        "hair": {
+          "clip_decisiveness": 0.9657,
+          "clip_majority_share": 0.65,
+          "clip_majority_value": "black",
+          "clip_recovery": 0.85,
+          "llava_recovery": 0.9,
+          "llava_unknown_rate": 0.1,
+          "mean_recovery": 0.875
+        },
+        "n": 20,
+        "person_visible_llava": 0.85,
+        "setting_kept_in_prompt": 0.9
+      },
+      "in|crop": {
+        "gender": {
+          "clip_decisiveness": 0.8651,
+          "clip_majority_share": 0.65,
+          "clip_majority_value": "M",
+          "clip_recovery": 0.85,
+          "llava_recovery": 0.9,
+          "llava_unknown_rate": 0.0,
+          "mean_recovery": 0.875
+        },
+        "hair": {
+          "clip_decisiveness": 0.886,
+          "clip_majority_share": 0.8,
+          "clip_majority_value": "black",
+          "clip_recovery": 0.7,
+          "llava_recovery": 0.6,
+          "llava_unknown_rate": 0.1,
+          "mean_recovery": 0.65
+        },
+        "n": 20,
+        "person_visible_llava": 0.3,
+        "setting_kept_in_prompt": 0.3
+      },
+      "in|distant": {
+        "gender": {
+          "clip_decisiveness": 0.8799,
+          "clip_majority_share": 0.85,
+          "clip_majority_value": "M",
+          "clip_recovery": 0.55,
+          "llava_recovery": 0.6,
+          "llava_unknown_rate": 0.0,
+          "mean_recovery": 0.575
+        },
+        "hair": {
+          "clip_decisiveness": 0.8516,
+          "clip_majority_share": 0.85,
+          "clip_majority_value": "black",
+          "clip_recovery": 0.65,
+          "llava_recovery": 0.8,
+          "llava_unknown_rate": 0.15,
+          "mean_recovery": 0.725
+        },
+        "n": 20,
+        "person_visible_llava": 0.35,
+        "setting_kept_in_prompt": 0.2
+      },
+      "in|silhouette": {
+        "gender": {
+          "clip_decisiveness": 0.8825,
+          "clip_majority_share": 0.6,
+          "clip_majority_value": "M",
+          "clip_recovery": 0.9,
+          "llava_recovery": 0.85,
+          "llava_unknown_rate": 0.0,
+          "mean_recovery": 0.875
+        },
+        "hair": {
+          "clip_decisiveness": 0.884,
+          "clip_majority_share": 0.9,
+          "clip_majority_value": "black",
+          "clip_recovery": 0.6,
+          "llava_recovery": 0.7,
+          "llava_unknown_rate": 0.0,
+          "mean_recovery": 0.65
+        },
+        "n": 20,
+        "person_visible_llava": 0.1,
+        "setting_kept_in_prompt": 0.5
+      }
+    }
+  },
+  "verdict_hint": "SURVIVES: committed recovery gender 0.93 hair 0.88; leaking rungs ['back_view']; hiding rungs ['silhouette', 'distant', 'crop']"
+}

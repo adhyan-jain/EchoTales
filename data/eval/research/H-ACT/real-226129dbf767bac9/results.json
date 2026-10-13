@@ -1,0 +1,219 @@
+{
+  "config_hash": "226129dbf767bac9",
+  "experiment": "action_policy",
+  "hypothesis_id": "H-ACT",
+  "mode": "real",
+  "n_trials": 0,
+  "n_units": 1000,
+  "notes": [
+    "costs are C3 machine manifestation means, not perceptual cost",
+    "identity price = C3 Q3 margin loss on correct lines"
+  ],
+  "summary": {
+    "cost_table": {
+      "cross": {
+        "gen": 0.4163,
+        "narr": 0.0,
+        "spec": 0.8728
+      },
+      "price": {
+        "gen": 0.2353333333333333,
+        "narr": 0.34970000000000007
+      },
+      "same": {
+        "gen": 0.0128,
+        "narr": 0.0,
+        "spec": 0.3503
+      }
+    },
+    "frontiers": {
+      "gen": {
+        "P1_conf": {
+          "0.05": {
+            "identity_price_per_line": 0.00823,
+            "manifested_mass_left": 0.8915
+          },
+          "0.10": {
+            "identity_price_per_line": 0.01645,
+            "manifested_mass_left": 0.783
+          },
+          "0.20": {
+            "identity_price_per_line": 0.03674,
+            "manifested_mass_left": 0.6842
+          },
+          "0.30": {
+            "identity_price_per_line": 0.05844,
+            "manifested_mass_left": 0.6286
+          }
+        },
+        "P2a_disagree": {
+          "0.05": {
+            "identity_price_per_line": 0.00429,
+            "manifested_mass_left": 0.7728
+          },
+          "0.10": {
+            "identity_price_per_line": 0.00859,
+            "manifested_mass_left": 0.5456
+          },
+          "0.20": {
+            "identity_price_per_line": 0.02477,
+            "manifested_mass_left": 0.322
+          },
+          "0.30": {
+            "identity_price_per_line": 0.04797,
+            "manifested_mass_left": 0.3117
+          }
+        },
+        "P3_disagree_then_conf": {
+          "0.05": {
+            "identity_price_per_line": 0.00322,
+            "manifested_mass_left": 0.7394
+          },
+          "0.10": {
+            "identity_price_per_line": 0.00806,
+            "manifested_mass_left": 0.5292
+          },
+          "0.20": {
+            "identity_price_per_line": 0.02391,
+            "manifested_mass_left": 0.2956
+          },
+          "0.30": {
+            "identity_price_per_line": 0.04673,
+            "manifested_mass_left": 0.2733
+          }
+        },
+        "oracle": {
+          "0.05": {
+            "identity_price_per_line": 0.0,
+            "manifested_mass_left": 0.6411
+          },
+          "0.10": {
+            "identity_price_per_line": 0.0,
+            "manifested_mass_left": 0.2822
+          },
+          "0.20": {
+            "identity_price_per_line": 0.02212,
+            "manifested_mass_left": 0.2391
+          },
+          "0.30": {
+            "identity_price_per_line": 0.04565,
+            "manifested_mass_left": 0.2391
+          }
+        },
+        "random": {
+          "0.05": {
+            "identity_price_per_line": 0.01052,
+            "manifested_mass_left": 0.962
+          },
+          "0.10": {
+            "identity_price_per_line": 0.02104,
+            "manifested_mass_left": 0.9239
+          },
+          "0.20": {
+            "identity_price_per_line": 0.04208,
+            "manifested_mass_left": 0.8478
+          },
+          "0.30": {
+            "identity_price_per_line": 0.06312,
+            "manifested_mass_left": 0.7717
+          }
+        }
+      },
+      "narr": {
+        "P1_conf": {
+          "0.05": {
+            "identity_price_per_line": 0.01223,
+            "manifested_mass_left": 0.8557
+          },
+          "0.10": {
+            "identity_price_per_line": 0.02445,
+            "manifested_mass_left": 0.7114
+          },
+          "0.20": {
+            "identity_price_per_line": 0.05459,
+            "manifested_mass_left": 0.5829
+          },
+          "0.30": {
+            "identity_price_per_line": 0.08684,
+            "manifested_mass_left": 0.51
+          }
+        },
+        "P2a_disagree": {
+          "0.05": {
+            "identity_price_per_line": 0.00638,
+            "manifested_mass_left": 0.7037
+          },
+          "0.10": {
+            "identity_price_per_line": 0.01276,
+            "manifested_mass_left": 0.4073
+          },
+          "0.20": {
+            "identity_price_per_line": 0.03681,
+            "manifested_mass_left": 0.1153
+          },
+          "0.30": {
+            "identity_price_per_line": 0.07129,
+            "manifested_mass_left": 0.1009
+          }
+        },
+        "P3_disagree_then_conf": {
+          "0.05": {
+            "identity_price_per_line": 0.00479,
+            "manifested_mass_left": 0.6574
+          },
+          "0.10": {
+            "identity_price_per_line": 0.01198,
+            "manifested_mass_left": 0.3847
+          },
+          "0.20": {
+            "identity_price_per_line": 0.03553,
+            "manifested_mass_left": 0.0801
+          },
+          "0.30": {
+            "identity_price_per_line": 0.06943,
+            "manifested_mass_left": 0.0497
+          }
+        },
+        "oracle": {
+          "0.05": {
+            "identity_price_per_line": 0.0,
+            "manifested_mass_left": 0.5283
+          },
+          "0.10": {
+            "identity_price_per_line": 0.0,
+            "manifested_mass_left": 0.0566
+          },
+          "0.20": {
+            "identity_price_per_line": 0.03287,
+            "manifested_mass_left": 0.0
+          },
+          "0.30": {
+            "identity_price_per_line": 0.06784,
+            "manifested_mass_left": 0.0
+          }
+        },
+        "random": {
+          "0.05": {
+            "identity_price_per_line": 0.01563,
+            "manifested_mass_left": 0.95
+          },
+          "0.10": {
+            "identity_price_per_line": 0.03126,
+            "manifested_mass_left": 0.9
+          },
+          "0.20": {
+            "identity_price_per_line": 0.06253,
+            "manifested_mass_left": 0.8
+          },
+          "0.30": {
+            "identity_price_per_line": 0.09379,
+            "manifested_mass_left": 0.7
+          }
+        }
+      }
+    },
+    "n_errors": 106,
+    "n_lines": 1000
+  },
+  "verdict_hint": "manifested error mass left (fraction of all-specific): gen@20%: P1 0.6842 vs P3 0.2956; narr@20%: P1 0.5829 vs P3 0.0801"
+}

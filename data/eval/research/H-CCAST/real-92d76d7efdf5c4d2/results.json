@@ -1,0 +1,298 @@
+{
+  "config_hash": "92d76d7efdf5c4d2",
+  "experiment": "confusion_casting",
+  "hypothesis_id": "H-CCAST",
+  "mode": "real",
+  "n_trials": 486,
+  "n_units": 27,
+  "notes": [
+    "need and addressee features use PDNC gold speakers; a product version would estimate them from predicted speakers",
+    "salience proxy = speaker-embedding cosine distance (not perception)"
+  ],
+  "summary": {
+    "ci_novel_bootstrap": [
+      -0.11982,
+      0.15398
+    ],
+    "errors_in_cast": 280,
+    "mean_corr_predicted_confusion_vs_need": 0.9614,
+    "mean_corr_predicted_vs_real_confusion": 0.5826,
+    "mean_rel_hypervolume_gain_aware_vs_blind": -0.0022,
+    "novels": 27,
+    "novels_aware_better": 9,
+    "novels_blind_better": 18,
+    "per_novel": [
+      {
+        "chars": 25,
+        "corr_pred_conf_vs_need": 0.96596,
+        "corr_pred_vs_real_conf": 0.62125,
+        "errors": 12,
+        "hv_aware": 1512.74132,
+        "hv_blind": 1377.13191,
+        "novel": "AHandfulOfDust",
+        "rel_gain": 0.09847
+      },
+      {
+        "chars": 11,
+        "corr_pred_conf_vs_need": 0.92683,
+        "corr_pred_vs_real_conf": 0.11358,
+        "errors": 6,
+        "hv_aware": 144.08196,
+        "hv_blind": 190.86367,
+        "novel": "ARoomWithAView",
+        "rel_gain": -0.24511
+      },
+      {
+        "chars": 8,
+        "corr_pred_conf_vs_need": 0.9973,
+        "corr_pred_vs_real_conf": 0.91192,
+        "errors": 6,
+        "hv_aware": 188.31055,
+        "hv_blind": 224.08057,
+        "novel": "AnneOfGreenGables",
+        "rel_gain": -0.15963
+      },
+      {
+        "chars": 13,
+        "corr_pred_conf_vs_need": 0.97155,
+        "corr_pred_vs_real_conf": 0.43542,
+        "errors": 14,
+        "hv_aware": 956.58788,
+        "hv_blind": 1532.813,
+        "novel": "Emma",
+        "rel_gain": -0.37593
+      },
+      {
+        "chars": 14,
+        "corr_pred_conf_vs_need": 0.99031,
+        "corr_pred_vs_real_conf": 0.90734,
+        "errors": 17,
+        "hv_aware": 1206.23739,
+        "hv_blind": 1412.27978,
+        "novel": "HowardsEnd",
+        "rel_gain": -0.14589
+      },
+      {
+        "chars": 15,
+        "corr_pred_conf_vs_need": 0.98841,
+        "corr_pred_vs_real_conf": 0.77175,
+        "errors": 18,
+        "hv_aware": 1867.13548,
+        "hv_blind": 1928.07177,
+        "novel": "NightAndDay",
+        "rel_gain": -0.0316
+      },
+      {
+        "chars": 32,
+        "corr_pred_conf_vs_need": 0.95178,
+        "corr_pred_vs_real_conf": 0.55933,
+        "errors": 11,
+        "hv_aware": 1118.63334,
+        "hv_blind": 1200.58795,
+        "novel": "OliverTwist",
+        "rel_gain": -0.06826
+      },
+      {
+        "chars": 17,
+        "corr_pred_conf_vs_need": 0.94251,
+        "corr_pred_vs_real_conf": 0.30376,
+        "errors": 6,
+        "hv_aware": 378.20349,
+        "hv_blind": 424.51355,
+        "novel": "PrideAndPrejudice",
+        "rel_gain": -0.10909
+      },
+      {
+        "chars": 16,
+        "corr_pred_conf_vs_need": 0.96982,
+        "corr_pred_vs_real_conf": 0.12944,
+        "errors": 17,
+        "hv_aware": 616.29516,
+        "hv_blind": 1192.7814,
+        "novel": "TheAgeOfInnocence",
+        "rel_gain": -0.48331
+      },
+      {
+        "chars": 7,
+        "corr_pred_conf_vs_need": 0.93821,
+        "corr_pred_vs_real_conf": 0.10212,
+        "errors": 4,
+        "hv_aware": 205.09736,
+        "hv_blind": 205.9632,
+        "novel": "TheGambler",
+        "rel_gain": -0.0042
+      },
+      {
+        "chars": 10,
+        "corr_pred_conf_vs_need": 0.93405,
+        "corr_pred_vs_real_conf": 0.73721,
+        "errors": 3,
+        "hv_aware": 43.11057,
+        "hv_blind": 38.66752,
+        "novel": "TheManWhoWasThursday",
+        "rel_gain": 0.1149
+      },
+      {
+        "chars": 12,
+        "corr_pred_conf_vs_need": 0.98344,
+        "corr_pred_vs_real_conf": 0.5508,
+        "errors": 3,
+        "hv_aware": 71.0674,
+        "hv_blind": 96.18432,
+        "novel": "ThePictureOfDorianGray",
+        "rel_gain": -0.26113
+      },
+      {
+        "chars": 16,
+        "corr_pred_conf_vs_need": 0.97186,
+        "corr_pred_vs_real_conf": 0.83254,
+        "errors": 14,
+        "hv_aware": 1488.41724,
+        "hv_blind": 1074.08972,
+        "novel": "TheSunAlsoRises",
+        "rel_gain": 0.38575
+      },
+      {
+        "chars": 9,
+        "corr_pred_conf_vs_need": 0.96633,
+        "corr_pred_vs_real_conf": 0.61729,
+        "errors": 25,
+        "hv_aware": 435.25276,
+        "hv_blind": 494.04688,
+        "novel": "WinnieThePooh",
+        "rel_gain": -0.11901
+      },
+      {
+        "chars": 19,
+        "corr_pred_conf_vs_need": 0.96307,
+        "corr_pred_vs_real_conf": 0.61113,
+        "errors": 23,
+        "hv_aware": 2108.12105,
+        "hv_blind": 2564.48186,
+        "novel": "APassageToIndia",
+        "rel_gain": -0.17795
+      },
+      {
+        "chars": 13,
+        "corr_pred_conf_vs_need": 0.88145,
+        "corr_pred_vs_real_conf": 0.7265,
+        "errors": 18,
+        "hv_aware": 439.33369,
+        "hv_blind": 493.84109,
+        "novel": "AlicesAdventuresInWonderland",
+        "rel_gain": -0.11037
+      },
+      {
+        "chars": 7,
+        "corr_pred_conf_vs_need": 0.97209,
+        "corr_pred_vs_real_conf": 0.81851,
+        "errors": 11,
+        "hv_aware": 350.9738,
+        "hv_blind": 426.00129,
+        "novel": "DaisyMiller",
+        "rel_gain": -0.17612
+      },
+      {
+        "chars": 14,
+        "corr_pred_conf_vs_need": 0.92688,
+        "corr_pred_vs_real_conf": 0.43411,
+        "errors": 6,
+        "hv_aware": 429.8714,
+        "hv_blind": 407.17041,
+        "novel": "HardTimes",
+        "rel_gain": 0.05575
+      },
+      {
+        "chars": 13,
+        "corr_pred_conf_vs_need": 0.95612,
+        "corr_pred_vs_real_conf": 0.53754,
+        "errors": 11,
+        "hv_aware": 758.66836,
+        "hv_blind": 811.62463,
+        "novel": "MansfieldPark",
+        "rel_gain": -0.06525
+      },
+      {
+        "chars": 10,
+        "corr_pred_conf_vs_need": 0.96967,
+        "corr_pred_vs_real_conf": 0.79957,
+        "errors": 20,
+        "hv_aware": 1072.95351,
+        "hv_blind": 1049.873,
+        "novel": "NorthangerAbbey",
+        "rel_gain": 0.02198
+      },
+      {
+        "chars": 13,
+        "corr_pred_conf_vs_need": 0.92855,
+        "corr_pred_vs_real_conf": 0.63756,
+        "errors": 7,
+        "hv_aware": 171.00286,
+        "hv_blind": 196.55779,
+        "novel": "Persuasion",
+        "rel_gain": -0.13001
+      },
+      {
+        "chars": 16,
+        "corr_pred_conf_vs_need": 0.97032,
+        "corr_pred_vs_real_conf": 0.72423,
+        "errors": 6,
+        "hv_aware": 265.71083,
+        "hv_blind": 335.70391,
+        "novel": "SenseAndSensibility",
+        "rel_gain": -0.2085
+      },
+      {
+        "chars": 8,
+        "corr_pred_conf_vs_need": 0.99363,
+        "corr_pred_vs_real_conf": 0.51709,
+        "errors": 6,
+        "hv_aware": 219.39376,
+        "hv_blind": 189.01055,
+        "novel": "TheAwakening",
+        "rel_gain": 0.16075
+      },
+      {
+        "chars": 10,
+        "corr_pred_conf_vs_need": 0.9808,
+        "corr_pred_vs_real_conf": 0.40151,
+        "errors": 4,
+        "hv_aware": 113.77536,
+        "hv_blind": 96.50464,
+        "novel": "TheInvisibleMan",
+        "rel_gain": 0.17896
+      },
+      {
+        "chars": 17,
+        "corr_pred_conf_vs_need": 0.96601,
+        "corr_pred_vs_real_conf": 0.89427,
+        "errors": 1,
+        "hv_aware": 65.18346,
+        "hv_blind": 53.89467,
+        "novel": "TheMysteriousAffairAtStyles",
+        "rel_gain": 0.20946
+      },
+      {
+        "chars": 16,
+        "corr_pred_conf_vs_need": 0.96165,
+        "corr_pred_vs_real_conf": 0.27959,
+        "errors": 4,
+        "hv_aware": 196.39515,
+        "hv_blind": 74.90458,
+        "novel": "TheSportOfTheGods",
+        "rel_gain": 1.62194
+      },
+      {
+        "chars": 7,
+        "corr_pred_conf_vs_need": 0.98921,
+        "corr_pred_vs_real_conf": 0.75377,
+        "errors": 7,
+        "hv_aware": 431.83608,
+        "hv_blind": 448.01208,
+        "novel": "WhereAngelsFearToTread",
+        "rel_gain": -0.03611
+      }
+    ]
+  },
+  "verdict_hint": "KILL: aware-vs-blind hypervolume gain -0.0022 CI [-0.11982, 0.15398]; corr(predicted confusion, need) 0.9614"
+}

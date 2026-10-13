@@ -1,0 +1,23 @@
+{
+  "base_seed": 20261002,
+  "config_hash": "b01eac13f33ad227",
+  "experiment": "action_counterfactual",
+  "hypothesis_id": "H-ACT",
+  "params": {
+    "asr_model": "openai/whisper-small",
+    "engine": "chatterbox",
+    "error_types": [
+      "cross_gender",
+      "same_gender",
+      "addressee"
+    ],
+    "local_window": 20,
+    "max_chars": 220,
+    "min_chars": 40,
+    "per_type": 20,
+    "resamples": 2000,
+    "stage": "all",
+    "sv_model": "microsoft/wavlm-base-plus-sv"
+  },
+  "stub": false
+}

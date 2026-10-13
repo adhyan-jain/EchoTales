@@ -1,0 +1,31 @@
+{
+  "base_seed": 20261002,
+  "config_hash": "2745361d4136dce5",
+  "experiment": "xdis_product_shortlist",
+  "hypothesis_id": "H-XDIS-PS",
+  "params": {
+    "cap_consistency": 0.5,
+    "context_chars": 600,
+    "llm": true,
+    "max_cands": 12,
+    "model": "qwen2.5:7b",
+    "n_quotes": 1000,
+    "primary_rates": [
+      0.1,
+      0.2
+    ],
+    "rates": [
+      0.05,
+      0.1,
+      0.15,
+      0.2,
+      0.25,
+      0.3
+    ],
+    "resamples": 2000,
+    "source_run": "data/eval/research/H-XDIS/real-6f97e4d14f536dfe",
+    "source_seed": 20261002,
+    "window_chars": 2000
+  },
+  "stub": false
+}

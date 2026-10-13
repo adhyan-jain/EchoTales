@@ -1,0 +1,13 @@
+{
+  "base_seed": 20261002,
+  "config_hash": "6f97e4d14f536dfe",
+  "experiment": "disagreement_posterior",
+  "hypothesis_id": "H-XDIS",
+  "params": {
+    "candidates_window": 20,
+    "context_chars": 600,
+    "model": "qwen2.5:7b",
+    "n_quotes": 1000
+  },
+  "stub": false
+}

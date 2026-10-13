@@ -1,0 +1,2238 @@
+{
+  "config_hash": "4fe36b54f7f8328b",
+  "experiment": "xdis_alias_rescore",
+  "hypothesis_id": "H-XDIS-ALIAS",
+  "mode": "real",
+  "n_trials": 1000,
+  "n_units": 1000,
+  "notes": [
+    "tiered alias rule frozen in CONVERGENCE_EXPERIMENT.md C1",
+    "LLM outputs fixed from H-XDIS; only labels change",
+    "addressee_capture recomputed under canonical gold",
+    "changed_rows lists every row whose ladder or LLM correctness changed"
+  ],
+  "summary": {
+    "best_xdis_policy": "P3_disagree_then_conf",
+    "bootstrap_novel_cluster": {
+      "C_shortlist_random-P1_conf@0.1": {
+        "ci": [
+          -0.2927,
+          -0.0642
+        ],
+        "p_le_0": 0.9985
+      },
+      "C_shortlist_random-P1_conf@0.2": {
+        "ci": [
+          -0.3504,
+          -0.0855
+        ],
+        "p_le_0": 0.999
+      },
+      "P2a_disagree-C_shortlist_random@0.1": {
+        "ci": [
+          0.1379,
+          0.3166
+        ],
+        "p_le_0": 0.0
+      },
+      "P2a_disagree-C_shortlist_random@0.2": {
+        "ci": [
+          0.321,
+          0.6318
+        ],
+        "p_le_0": 0.0
+      },
+      "P2a_disagree-P1_conf@0.1": {
+        "ci": [
+          -0.053,
+          0.1448
+        ],
+        "p_le_0": 0.1785
+      },
+      "P2a_disagree-P1_conf@0.2": {
+        "ci": [
+          0.071,
+          0.4141
+        ],
+        "p_le_0": 0.002
+      },
+      "P3_disagree_then_conf-P1_conf@0.1": {
+        "ci": [
+          0.0793,
+          0.2131
+        ],
+        "p_le_0": 0.0
+      },
+      "P3_disagree_then_conf-P1_conf@0.2": {
+        "ci": [
+          0.1318,
+          0.4307
+        ],
+        "p_le_0": 0.0
+      }
+    },
+    "bootstrap_quote_paired": {
+      "C_shortlist_random-P1_conf@0.1": {
+        "ci": [
+          -0.2596,
+          -0.0991
+        ],
+        "p_le_0": 1.0
+      },
+      "C_shortlist_random-P1_conf@0.2": {
+        "ci": [
+          -0.3204,
+          -0.1061
+        ],
+        "p_le_0": 1.0
+      },
+      "P2a_disagree-C_shortlist_random@0.1": {
+        "ci": [
+          0.1558,
+          0.2865
+        ],
+        "p_le_0": 0.0
+      },
+      "P2a_disagree-C_shortlist_random@0.2": {
+        "ci": [
+          0.3614,
+          0.5575
+        ],
+        "p_le_0": 0.0
+      },
+      "P2a_disagree-P1_conf@0.1": {
+        "ci": [
+          -0.0321,
+          0.12
+        ],
+        "p_le_0": 0.1325
+      },
+      "P2a_disagree-P1_conf@0.2": {
+        "ci": [
+          0.1369,
+          0.3545
+        ],
+        "p_le_0": 0.0
+      },
+      "P3_disagree_then_conf-P1_conf@0.1": {
+        "ci": [
+          0.0817,
+          0.1975
+        ],
+        "p_le_0": 0.0
+      },
+      "P3_disagree_then_conf-P1_conf@0.2": {
+        "ci": [
+          0.1873,
+          0.3772
+        ],
+        "p_le_0": 0.0
+      }
+    },
+    "canon_gold_in_llm_shortlist": 0.996,
+    "changed_rows": [
+      {
+        "canon": "The Doctor",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Kemp",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "The Doctor"
+        ],
+        "reason": "gold 'Kemp' is a PDNC alias of 'The Doctor'",
+        "unit": "TheInvisibleMan:Q623"
+      },
+      {
+        "canon": "The Doctor",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Kemp",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": "The Invisible Man",
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "The Doctor"
+        ],
+        "reason": "gold 'Kemp' is a PDNC alias of 'The Doctor'",
+        "unit": "TheInvisibleMan:Q651"
+      },
+      {
+        "canon": "Madame Olenska",
+        "canon_in_llm_shortlist": true,
+        "disagree": false,
+        "gold_raw": "Ellen Olenska",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": "Madame Olenska",
+        "llm_correct": [
+          false,
+          true
+        ],
+        "owners": [
+          "Madame Olenska"
+        ],
+        "reason": "gold 'Ellen Olenska' is a PDNC alias of 'Madame Olenska'",
+        "unit": "TheAgeOfInnocence:Q517"
+      },
+      {
+        "canon": "Miss Honeychurch",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Lucy",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Miss Honeychurch"
+        ],
+        "reason": "gold 'Lucy' is a PDNC alias of 'Miss Honeychurch'",
+        "unit": "ARoomWithAView:Q474"
+      },
+      {
+        "canon": "Prince Charming",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Dorian Gray",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Prince Charming"
+        ],
+        "reason": "gold 'Dorian Gray' is a PDNC alias of 'Prince Charming'",
+        "unit": "ThePictureOfDorianGray:Q322"
+      },
+      {
+        "canon": "Miss Honeychurch",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Lucy",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Miss Honeychurch"
+        ],
+        "reason": "gold 'Lucy' is a PDNC alias of 'Miss Honeychurch'",
+        "unit": "ARoomWithAView:Q1417"
+      },
+      {
+        "canon": "Prince Charming",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Dorian Gray",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Prince Charming"
+        ],
+        "reason": "gold 'Dorian Gray' is a PDNC alias of 'Prince Charming'",
+        "unit": "ThePictureOfDorianGray:Q1002"
+      },
+      {
+        "canon": "Mr. Vyse",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Cecil",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Mr. Vyse"
+        ],
+        "reason": "gold 'Cecil' is a PDNC alias of 'Mr. Vyse'",
+        "unit": "ARoomWithAView:Q572"
+      },
+      {
+        "canon": "The Doctor",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Kemp",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "The Doctor"
+        ],
+        "reason": "gold 'Kemp' is a PDNC alias of 'The Doctor'",
+        "unit": "TheInvisibleMan:Q793"
+      },
+      {
+        "canon": "Miss Honeychurch",
+        "canon_in_llm_shortlist": true,
+        "disagree": false,
+        "gold_raw": "Lucy",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": "Miss Honeychurch",
+        "llm_correct": [
+          false,
+          true
+        ],
+        "owners": [
+          "Miss Honeychurch"
+        ],
+        "reason": "gold 'Lucy' is a PDNC alias of 'Miss Honeychurch'",
+        "unit": "ARoomWithAView:Q1531"
+      },
+      {
+        "canon": "Miss Honeychurch",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Lucy",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Miss Honeychurch"
+        ],
+        "reason": "gold 'Lucy' is a PDNC alias of 'Miss Honeychurch'",
+        "unit": "ARoomWithAView:Q511"
+      },
+      {
+        "canon": "The Vicar'S Sister",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Miss Tendril",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": "John Andrew",
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "The Vicar'S Sister"
+        ],
+        "reason": "gold 'Miss Tendril' is a PDNC alias of \"The Vicar'S Sister\"",
+        "unit": "AHandfulOfDust:Q1139"
+      },
+      {
+        "canon": "Miss Honeychurch",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Lucy",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Miss Honeychurch"
+        ],
+        "reason": "gold 'Lucy' is a PDNC alias of 'Miss Honeychurch'",
+        "unit": "ARoomWithAView:Q95"
+      },
+      {
+        "canon": "Prince Charming",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Dorian Gray",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": "Lord Henry",
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Prince Charming"
+        ],
+        "reason": "gold 'Dorian Gray' is a PDNC alias of 'Prince Charming'",
+        "unit": "ThePictureOfDorianGray:Q1131"
+      },
+      {
+        "canon": "Mr. Vyse",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Cecil",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Mr. Vyse"
+        ],
+        "reason": "gold 'Cecil' is a PDNC alias of 'Mr. Vyse'",
+        "unit": "ARoomWithAView:Q915"
+      },
+      {
+        "canon": "The Doctor",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Kemp",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "The Doctor"
+        ],
+        "reason": "gold 'Kemp' is a PDNC alias of 'The Doctor'",
+        "unit": "TheInvisibleMan:Q541"
+      },
+      {
+        "canon": "Prince Charming",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Dorian Gray",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Prince Charming"
+        ],
+        "reason": "gold 'Dorian Gray' is a PDNC alias of 'Prince Charming'",
+        "unit": "ThePictureOfDorianGray:Q740"
+      },
+      {
+        "canon": "The Doctor",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Kemp",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "The Doctor"
+        ],
+        "reason": "gold 'Kemp' is a PDNC alias of 'The Doctor'",
+        "unit": "TheInvisibleMan:Q746"
+      },
+      {
+        "canon": "Prince Charming",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Dorian Gray",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Prince Charming"
+        ],
+        "reason": "gold 'Dorian Gray' is a PDNC alias of 'Prince Charming'",
+        "unit": "ThePictureOfDorianGray:Q491"
+      },
+      {
+        "canon": "Sophia Croft",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Mrs Croft",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Sophia Croft"
+        ],
+        "reason": "gold 'Mrs Croft' is a PDNC alias of 'Sophia Croft'",
+        "unit": "Persuasion:Q67"
+      },
+      {
+        "canon": "Madame Olenska",
+        "canon_in_llm_shortlist": true,
+        "disagree": false,
+        "gold_raw": "Ellen Olenska",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": "Madame Olenska",
+        "llm_correct": [
+          false,
+          true
+        ],
+        "owners": [
+          "Madame Olenska"
+        ],
+        "reason": "gold 'Ellen Olenska' is a PDNC alias of 'Madame Olenska'",
+        "unit": "TheAgeOfInnocence:Q599"
+      },
+      {
+        "canon": "The Doctor",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Kemp",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "The Doctor"
+        ],
+        "reason": "gold 'Kemp' is a PDNC alias of 'The Doctor'",
+        "unit": "TheInvisibleMan:Q572"
+      },
+      {
+        "canon": "Miss Honeychurch",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Lucy",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Miss Honeychurch"
+        ],
+        "reason": "gold 'Lucy' is a PDNC alias of 'Miss Honeychurch'",
+        "unit": "ARoomWithAView:Q1083"
+      },
+      {
+        "canon": "Madame Olenska",
+        "canon_in_llm_shortlist": true,
+        "disagree": false,
+        "gold_raw": "Ellen Olenska",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": "Madame Olenska",
+        "llm_correct": [
+          false,
+          true
+        ],
+        "owners": [
+          "Madame Olenska"
+        ],
+        "reason": "gold 'Ellen Olenska' is a PDNC alias of 'Madame Olenska'",
+        "unit": "TheAgeOfInnocence:Q430"
+      },
+      {
+        "canon": "Kitty Hamilton",
+        "canon_in_llm_shortlist": true,
+        "disagree": false,
+        "gold_raw": "Kit Hamilton",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": "Kitty Hamilton",
+        "llm_correct": [
+          false,
+          true
+        ],
+        "owners": [
+          "Kitty Hamilton"
+        ],
+        "reason": "gold 'Kit Hamilton' is a PDNC alias of 'Kitty Hamilton'",
+        "unit": "TheSportOfTheGods:Q447"
+      },
+      {
+        "canon": "Prince Charming",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Dorian Gray",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Prince Charming"
+        ],
+        "reason": "gold 'Dorian Gray' is a PDNC alias of 'Prince Charming'",
+        "unit": "ThePictureOfDorianGray:Q690"
+      },
+      {
+        "canon": "Prince Charming",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Dorian Gray",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Prince Charming"
+        ],
+        "reason": "gold 'Dorian Gray' is a PDNC alias of 'Prince Charming'",
+        "unit": "ThePictureOfDorianGray:Q702"
+      },
+      {
+        "canon": "Miss Honeychurch",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Lucy",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Miss Honeychurch"
+        ],
+        "reason": "gold 'Lucy' is a PDNC alias of 'Miss Honeychurch'",
+        "unit": "ARoomWithAView:Q1438"
+      },
+      {
+        "canon": "Prince Charming",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Dorian Gray",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Prince Charming"
+        ],
+        "reason": "gold 'Dorian Gray' is a PDNC alias of 'Prince Charming'",
+        "unit": "ThePictureOfDorianGray:Q712"
+      },
+      {
+        "canon": "Miss Honeychurch",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Lucy",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Miss Honeychurch"
+        ],
+        "reason": "gold 'Lucy' is a PDNC alias of 'Miss Honeychurch'",
+        "unit": "ARoomWithAView:Q331"
+      },
+      {
+        "canon": "Mr. Wilcox",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Henry",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Mr. Wilcox"
+        ],
+        "reason": "gold 'Henry' is a PDNC alias of 'Mr. Wilcox'",
+        "unit": "HowardsEnd:Q1818"
+      },
+      {
+        "canon": "Miss Honeychurch",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Lucy",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": "Mr. Beebe",
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Miss Honeychurch"
+        ],
+        "reason": "gold 'Lucy' is a PDNC alias of 'Miss Honeychurch'",
+        "unit": "ARoomWithAView:Q1015"
+      },
+      {
+        "canon": "Miss Honeychurch",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Lucy",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": "The Driver",
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Miss Honeychurch"
+        ],
+        "reason": "gold 'Lucy' is a PDNC alias of 'Miss Honeychurch'",
+        "unit": "ARoomWithAView:Q415"
+      },
+      {
+        "canon": "Alfred Inglethorp",
+        "canon_in_llm_shortlist": true,
+        "disagree": false,
+        "gold_raw": "Mr. Inglethorp",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": "Alfred Inglethorp",
+        "llm_correct": [
+          false,
+          true
+        ],
+        "owners": [
+          "Alfred Inglethorp"
+        ],
+        "reason": "gold 'Mr. Inglethorp' is a PDNC alias of 'Alfred Inglethorp'",
+        "unit": "TheMysteriousAffairAtStyles:Q991"
+      },
+      {
+        "canon": "Prince Charming",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Dorian Gray",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Prince Charming"
+        ],
+        "reason": "gold 'Dorian Gray' is a PDNC alias of 'Prince Charming'",
+        "unit": "ThePictureOfDorianGray:Q893"
+      },
+      {
+        "canon": "Aunt Josephine",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Josie Pye",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Aunt Josephine"
+        ],
+        "reason": "gold 'Josie Pye' is a PDNC alias of 'Aunt Josephine'",
+        "unit": "AnneOfGreenGables:Q992"
+      },
+      {
+        "canon": "The Invisible Chief",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "The President",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "The Invisible Chief"
+        ],
+        "reason": "gold 'The President' is a PDNC alias of 'The Invisible Chief'",
+        "unit": "TheManWhoWasThursday:Q226"
+      },
+      {
+        "canon": "Prince Charming",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Dorian Gray",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Prince Charming"
+        ],
+        "reason": "gold 'Dorian Gray' is a PDNC alias of 'Prince Charming'",
+        "unit": "ThePictureOfDorianGray:Q187"
+      },
+      {
+        "canon": "Alfred Inglethorp",
+        "canon_in_llm_shortlist": true,
+        "disagree": false,
+        "gold_raw": "Mr. Inglethorp",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": "Alfred Inglethorp",
+        "llm_correct": [
+          false,
+          true
+        ],
+        "owners": [
+          "Alfred Inglethorp",
+          "Mrs. Inglethorp"
+        ],
+        "reason": "gold 'Mr. Inglethorp' is a PDNC alias of 'Alfred Inglethorp'",
+        "unit": "TheMysteriousAffairAtStyles:Q994"
+      },
+      {
+        "canon": "Mr. Vyse",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Cecil",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Mr. Vyse"
+        ],
+        "reason": "gold 'Cecil' is a PDNC alias of 'Mr. Vyse'",
+        "unit": "ARoomWithAView:Q1004"
+      },
+      {
+        "canon": "Madame Olenska",
+        "canon_in_llm_shortlist": true,
+        "disagree": false,
+        "gold_raw": "Ellen Olenska",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": "Madame Olenska",
+        "llm_correct": [
+          false,
+          true
+        ],
+        "owners": [
+          "Madame Olenska"
+        ],
+        "reason": "gold 'Ellen Olenska' is a PDNC alias of 'Madame Olenska'",
+        "unit": "TheAgeOfInnocence:Q151"
+      },
+      {
+        "canon": "The Doctor",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Kemp",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "The Doctor"
+        ],
+        "reason": "gold 'Kemp' is a PDNC alias of 'The Doctor'",
+        "unit": "TheInvisibleMan:Q796"
+      },
+      {
+        "canon": "Prince Charming",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Dorian Gray",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Prince Charming"
+        ],
+        "reason": "gold 'Dorian Gray' is a PDNC alias of 'Prince Charming'",
+        "unit": "ThePictureOfDorianGray:Q694"
+      },
+      {
+        "canon": "Aunt Josephine",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Miss Barry",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Aunt Josephine"
+        ],
+        "reason": "gold 'Miss Barry' is a PDNC alias of 'Aunt Josephine'",
+        "unit": "AnneOfGreenGables:Q960"
+      },
+      {
+        "canon": "The Doctor",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Kemp",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "The Doctor"
+        ],
+        "reason": "gold 'Kemp' is a PDNC alias of 'The Doctor'",
+        "unit": "TheInvisibleMan:Q865"
+      },
+      {
+        "canon": "Miss Honeychurch",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Lucy",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Miss Honeychurch"
+        ],
+        "reason": "gold 'Lucy' is a PDNC alias of 'Miss Honeychurch'",
+        "unit": "ARoomWithAView:Q1127"
+      },
+      {
+        "canon": "The Doctor",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Kemp",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "The Doctor"
+        ],
+        "reason": "gold 'Kemp' is a PDNC alias of 'The Doctor'",
+        "unit": "TheInvisibleMan:Q869"
+      },
+      {
+        "canon": "The Doctor",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Kemp",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": "The First Policeman",
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "The Doctor"
+        ],
+        "reason": "gold 'Kemp' is a PDNC alias of 'The Doctor'",
+        "unit": "TheInvisibleMan:Q872"
+      },
+      {
+        "canon": "Miss Honeychurch",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Lucy",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Miss Honeychurch"
+        ],
+        "reason": "gold 'Lucy' is a PDNC alias of 'Miss Honeychurch'",
+        "unit": "ARoomWithAView:Q472"
+      },
+      {
+        "canon": "Prince Charming",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Dorian Gray",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Prince Charming"
+        ],
+        "reason": "gold 'Dorian Gray' is a PDNC alias of 'Prince Charming'",
+        "unit": "ThePictureOfDorianGray:Q98"
+      },
+      {
+        "canon": "Mr. Wilcox",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Henry",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "Mr. Wilcox"
+        ],
+        "reason": "gold 'Henry' is a PDNC alias of 'Mr. Wilcox'",
+        "unit": "HowardsEnd:Q2604"
+      },
+      {
+        "canon": "The Doctor",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Kemp",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": null,
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "The Doctor"
+        ],
+        "reason": "gold 'Kemp' is a PDNC alias of 'The Doctor'",
+        "unit": "TheInvisibleMan:Q536"
+      },
+      {
+        "canon": "The Doctor",
+        "canon_in_llm_shortlist": true,
+        "disagree": true,
+        "gold_raw": "Kemp",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": "The Invisible Man",
+        "llm_correct": [
+          false,
+          false
+        ],
+        "owners": [
+          "The Doctor"
+        ],
+        "reason": "gold 'Kemp' is a PDNC alias of 'The Doctor'",
+        "unit": "TheInvisibleMan:Q482"
+      },
+      {
+        "canon": "Madame Olenska",
+        "canon_in_llm_shortlist": true,
+        "disagree": false,
+        "gold_raw": "Ellen Olenska",
+        "ladder_err": [
+          true,
+          false
+        ],
+        "llm": "Madame Olenska",
+        "llm_correct": [
+          false,
+          true
+        ],
+        "owners": [
+          "Madame Olenska"
+        ],
+        "reason": "gold 'Ellen Olenska' is a PDNC alias of 'Madame Olenska'",
+        "unit": "TheAgeOfInnocence:Q567"
+      }
+    ],
+    "control_artifact": false,
+    "control_ratio_of_P2a_gain": {
+      "0.1": -4.1369,
+      "0.2": -0.9094
+    },
+    "exact_match_gate": {
+      "checked": 1000,
+      "mismatches": 0
+    },
+    "flips": {
+      "ladder_correct_to_err": 0,
+      "ladder_err_to_correct": 54,
+      "llm_right_to_wrong": 0,
+      "llm_wrong_to_right": 9
+    },
+    "gains_vs_P1": {
+      "C_shortlist_random": {
+        "0.1": -0.1764,
+        "0.2": -0.2171
+      },
+      "P2a_disagree": {
+        "0.1": 0.0426,
+        "0.2": 0.2387
+      },
+      "P3_disagree_then_conf": {
+        "0.1": 0.1404,
+        "0.2": 0.2765
+      }
+    },
+    "ladder_error_rate": 0.106,
+    "llm_accuracy_parsed": 0.9072,
+    "llm_unparsed": 149,
+    "low_rate_capture_best": 0.4242,
+    "n_errors": 106,
+    "n_excluded_unscorable_gold": 0,
+    "n_quotes": 1000,
+    "narrator_fallback_aurc": {
+      "diverse": {
+        "C_shortlist_random": 0.0109,
+        "P1_conf": 0.0077,
+        "P2a_disagree": 0.004,
+        "P3_disagree_then_conf": 0.0032,
+        "gap_closed": {
+          "C_shortlist_random": -0.0899,
+          "P1_conf": 0.2592,
+          "P2a_disagree": 0.6761,
+          "P3_disagree_then_conf": 0.7597
+        },
+        "oracle": 0.0011,
+        "random": 0.0101
+      },
+      "homogeneous": {
+        "C_shortlist_random": 0.0049,
+        "P1_conf": 0.0038,
+        "P2a_disagree": 0.0019,
+        "P3_disagree_then_conf": 0.0015,
+        "gap_closed": {
+          "C_shortlist_random": -0.0419,
+          "P1_conf": 0.2266,
+          "P2a_disagree": 0.6772,
+          "P3_disagree_then_conf": 0.7529
+        },
+        "oracle": 0.0005,
+        "random": 0.0047
+      }
+    },
+    "not_evaluable": [
+      "P4/P5: qwen confidence was not saved (no logprobs)",
+      "nearby-name substitution: no PDNC field; method= strata are the closest proxy"
+    ],
+    "operating_points": {
+      "C_shortlist_random": {
+        "0.05": {
+          "accepted": 950,
+          "capture_efficiency": 0.1686,
+          "coverage": 0.95,
+          "errors_caught": 8.4286,
+          "errors_remaining": 97.5714,
+          "frac_errors_caught": 0.0795,
+          "gated": 50,
+          "intervention_precision": 0.1686,
+          "intervention_rate": 0.05,
+          "k": 50,
+          "residual_error_rate": 0.0976,
+          "risk_reduction_vs_p0": 0.0795,
+          "selective_risk": 0.1027,
+          "unnecessary_interventions": 41.5714
+        },
+        "0.10": {
+          "accepted": 900,
+          "capture_efficiency": 0.1138,
+          "coverage": 0.9,
+          "errors_caught": 11.3846,
+          "errors_remaining": 94.6154,
+          "frac_errors_caught": 0.1074,
+          "gated": 100,
+          "intervention_precision": 0.1138,
+          "intervention_rate": 0.1,
+          "k": 100,
+          "residual_error_rate": 0.0946,
+          "risk_reduction_vs_p0": 0.1074,
+          "selective_risk": 0.1051,
+          "unnecessary_interventions": 88.6154
+        },
+        "0.15": {
+          "accepted": 850,
+          "capture_efficiency": 0.1447,
+          "coverage": 0.85,
+          "errors_caught": 15.3333,
+          "errors_remaining": 90.6667,
+          "frac_errors_caught": 0.1447,
+          "gated": 150,
+          "intervention_precision": 0.1022,
+          "intervention_rate": 0.15,
+          "k": 150,
+          "residual_error_rate": 0.0907,
+          "risk_reduction_vs_p0": 0.1447,
+          "selective_risk": 0.1067,
+          "unnecessary_interventions": 134.6667
+        },
+        "0.20": {
+          "accepted": 800,
+          "capture_efficiency": 0.1971,
+          "coverage": 0.8,
+          "errors_caught": 20.8889,
+          "errors_remaining": 85.1111,
+          "frac_errors_caught": 0.1971,
+          "gated": 200,
+          "intervention_precision": 0.1044,
+          "intervention_rate": 0.2,
+          "k": 200,
+          "residual_error_rate": 0.0851,
+          "risk_reduction_vs_p0": 0.1971,
+          "selective_risk": 0.1064,
+          "unnecessary_interventions": 179.1111
+        },
+        "0.25": {
+          "accepted": 750,
+          "capture_efficiency": 0.2414,
+          "coverage": 0.75,
+          "errors_caught": 25.5926,
+          "errors_remaining": 80.4074,
+          "frac_errors_caught": 0.2414,
+          "gated": 250,
+          "intervention_precision": 0.1024,
+          "intervention_rate": 0.25,
+          "k": 250,
+          "residual_error_rate": 0.0804,
+          "risk_reduction_vs_p0": 0.2414,
+          "selective_risk": 0.1072,
+          "unnecessary_interventions": 224.4074
+        },
+        "0.30": {
+          "accepted": 700,
+          "capture_efficiency": 0.2822,
+          "coverage": 0.7,
+          "errors_caught": 29.9136,
+          "errors_remaining": 76.0864,
+          "frac_errors_caught": 0.2822,
+          "gated": 300,
+          "intervention_precision": 0.0997,
+          "intervention_rate": 0.3,
+          "k": 300,
+          "residual_error_rate": 0.0761,
+          "risk_reduction_vs_p0": 0.2822,
+          "selective_risk": 0.1087,
+          "unnecessary_interventions": 270.0864
+        },
+        "auc_capture": 0.4766,
+        "auroc": 0.4732,
+        "distinct_score_levels": 38
+      },
+      "P0_none": {
+        "0.05": {
+          "accepted": 950,
+          "capture_efficiency": 0.0,
+          "coverage": 0.95,
+          "errors_caught": 0.0,
+          "errors_remaining": 106.0,
+          "frac_errors_caught": 0.0,
+          "gated": 50,
+          "intervention_precision": 0.0,
+          "intervention_rate": 0.05,
+          "k": 50,
+          "residual_error_rate": 0.106,
+          "risk_reduction_vs_p0": 0.0,
+          "selective_risk": 0.1116,
+          "unnecessary_interventions": 50.0
+        },
+        "0.10": {
+          "accepted": 900,
+          "capture_efficiency": 0.0,
+          "coverage": 0.9,
+          "errors_caught": 0.0,
+          "errors_remaining": 106.0,
+          "frac_errors_caught": 0.0,
+          "gated": 100,
+          "intervention_precision": 0.0,
+          "intervention_rate": 0.1,
+          "k": 100,
+          "residual_error_rate": 0.106,
+          "risk_reduction_vs_p0": 0.0,
+          "selective_risk": 0.1178,
+          "unnecessary_interventions": 100.0
+        },
+        "0.15": {
+          "accepted": 850,
+          "capture_efficiency": 0.0,
+          "coverage": 0.85,
+          "errors_caught": 0.0,
+          "errors_remaining": 106.0,
+          "frac_errors_caught": 0.0,
+          "gated": 150,
+          "intervention_precision": 0.0,
+          "intervention_rate": 0.15,
+          "k": 150,
+          "residual_error_rate": 0.106,
+          "risk_reduction_vs_p0": 0.0,
+          "selective_risk": 0.1247,
+          "unnecessary_interventions": 150.0
+        },
+        "0.20": {
+          "accepted": 800,
+          "capture_efficiency": 0.0,
+          "coverage": 0.8,
+          "errors_caught": 0.0,
+          "errors_remaining": 106.0,
+          "frac_errors_caught": 0.0,
+          "gated": 200,
+          "intervention_precision": 0.0,
+          "intervention_rate": 0.2,
+          "k": 200,
+          "residual_error_rate": 0.106,
+          "risk_reduction_vs_p0": 0.0,
+          "selective_risk": 0.1325,
+          "unnecessary_interventions": 200.0
+        },
+        "0.25": {
+          "accepted": 750,
+          "capture_efficiency": 0.0,
+          "coverage": 0.75,
+          "errors_caught": 0.0,
+          "errors_remaining": 106.0,
+          "frac_errors_caught": 0.0,
+          "gated": 250,
+          "intervention_precision": 0.0,
+          "intervention_rate": 0.25,
+          "k": 250,
+          "residual_error_rate": 0.106,
+          "risk_reduction_vs_p0": 0.0,
+          "selective_risk": 0.1413,
+          "unnecessary_interventions": 250.0
+        },
+        "0.30": {
+          "accepted": 700,
+          "capture_efficiency": 0.0,
+          "coverage": 0.7,
+          "errors_caught": 0.0,
+          "errors_remaining": 106.0,
+          "frac_errors_caught": 0.0,
+          "gated": 300,
+          "intervention_precision": 0.0,
+          "intervention_rate": 0.3,
+          "k": 300,
+          "residual_error_rate": 0.106,
+          "risk_reduction_vs_p0": 0.0,
+          "selective_risk": 0.1514,
+          "unnecessary_interventions": 300.0
+        },
+        "auc_capture": 0.0,
+        "auroc": null,
+        "distinct_score_levels": 1
+      },
+      "P1_conf": {
+        "0.05": {
+          "accepted": 950,
+          "capture_efficiency": 0.3008,
+          "coverage": 0.95,
+          "errors_caught": 15.0407,
+          "errors_remaining": 90.9593,
+          "frac_errors_caught": 0.1419,
+          "gated": 50,
+          "intervention_precision": 0.3008,
+          "intervention_rate": 0.05,
+          "k": 50,
+          "residual_error_rate": 0.091,
+          "risk_reduction_vs_p0": 0.1419,
+          "selective_risk": 0.0957,
+          "unnecessary_interventions": 34.9593
+        },
+        "0.10": {
+          "accepted": 900,
+          "capture_efficiency": 0.3008,
+          "coverage": 0.9,
+          "errors_caught": 30.0813,
+          "errors_remaining": 75.9187,
+          "frac_errors_caught": 0.2838,
+          "gated": 100,
+          "intervention_precision": 0.3008,
+          "intervention_rate": 0.1,
+          "k": 100,
+          "residual_error_rate": 0.0759,
+          "risk_reduction_vs_p0": 0.2838,
+          "selective_risk": 0.0844,
+          "unnecessary_interventions": 69.9187
+        },
+        "0.15": {
+          "accepted": 850,
+          "capture_efficiency": 0.3775,
+          "coverage": 0.85,
+          "errors_caught": 40.0183,
+          "errors_remaining": 65.9817,
+          "frac_errors_caught": 0.3775,
+          "gated": 150,
+          "intervention_precision": 0.2668,
+          "intervention_rate": 0.15,
+          "k": 150,
+          "residual_error_rate": 0.066,
+          "risk_reduction_vs_p0": 0.3775,
+          "selective_risk": 0.0776,
+          "unnecessary_interventions": 109.9817
+        },
+        "0.20": {
+          "accepted": 800,
+          "capture_efficiency": 0.4141,
+          "coverage": 0.8,
+          "errors_caught": 43.8995,
+          "errors_remaining": 62.1005,
+          "frac_errors_caught": 0.4141,
+          "gated": 200,
+          "intervention_precision": 0.2195,
+          "intervention_rate": 0.2,
+          "k": 200,
+          "residual_error_rate": 0.0621,
+          "risk_reduction_vs_p0": 0.4141,
+          "selective_risk": 0.0776,
+          "unnecessary_interventions": 156.1005
+        },
+        "0.25": {
+          "accepted": 750,
+          "capture_efficiency": 0.4508,
+          "coverage": 0.75,
+          "errors_caught": 47.7808,
+          "errors_remaining": 58.2192,
+          "frac_errors_caught": 0.4508,
+          "gated": 250,
+          "intervention_precision": 0.1911,
+          "intervention_rate": 0.25,
+          "k": 250,
+          "residual_error_rate": 0.0582,
+          "risk_reduction_vs_p0": 0.4508,
+          "selective_risk": 0.0776,
+          "unnecessary_interventions": 202.2192
+        },
+        "0.30": {
+          "accepted": 700,
+          "capture_efficiency": 0.4874,
+          "coverage": 0.7,
+          "errors_caught": 51.6621,
+          "errors_remaining": 54.3379,
+          "frac_errors_caught": 0.4874,
+          "gated": 300,
+          "intervention_precision": 0.1722,
+          "intervention_rate": 0.3,
+          "k": 300,
+          "residual_error_rate": 0.0543,
+          "risk_reduction_vs_p0": 0.4874,
+          "selective_risk": 0.0776,
+          "unnecessary_interventions": 248.3379
+        },
+        "auc_capture": 0.6173,
+        "auroc": 0.6307,
+        "distinct_score_levels": 3
+      },
+      "P2a_disagree": {
+        "0.05": {
+          "accepted": 950,
+          "capture_efficiency": 0.346,
+          "coverage": 0.95,
+          "errors_caught": 17.3004,
+          "errors_remaining": 88.6996,
+          "frac_errors_caught": 0.1632,
+          "gated": 50,
+          "intervention_precision": 0.346,
+          "intervention_rate": 0.05,
+          "k": 50,
+          "residual_error_rate": 0.0887,
+          "risk_reduction_vs_p0": 0.1632,
+          "selective_risk": 0.0934,
+          "unnecessary_interventions": 32.6996
+        },
+        "0.10": {
+          "accepted": 900,
+          "capture_efficiency": 0.346,
+          "coverage": 0.9,
+          "errors_caught": 34.6008,
+          "errors_remaining": 71.3992,
+          "frac_errors_caught": 0.3264,
+          "gated": 100,
+          "intervention_precision": 0.346,
+          "intervention_rate": 0.1,
+          "k": 100,
+          "residual_error_rate": 0.0714,
+          "risk_reduction_vs_p0": 0.3264,
+          "selective_risk": 0.0793,
+          "unnecessary_interventions": 65.3992
+        },
+        "0.15": {
+          "accepted": 850,
+          "capture_efficiency": 0.4896,
+          "coverage": 0.85,
+          "errors_caught": 51.9011,
+          "errors_remaining": 54.0989,
+          "frac_errors_caught": 0.4896,
+          "gated": 150,
+          "intervention_precision": 0.346,
+          "intervention_rate": 0.15,
+          "k": 150,
+          "residual_error_rate": 0.0541,
+          "risk_reduction_vs_p0": 0.4896,
+          "selective_risk": 0.0636,
+          "unnecessary_interventions": 98.0989
+        },
+        "0.20": {
+          "accepted": 800,
+          "capture_efficiency": 0.6528,
+          "coverage": 0.8,
+          "errors_caught": 69.2015,
+          "errors_remaining": 36.7985,
+          "frac_errors_caught": 0.6528,
+          "gated": 200,
+          "intervention_precision": 0.346,
+          "intervention_rate": 0.2,
+          "k": 200,
+          "residual_error_rate": 0.0368,
+          "risk_reduction_vs_p0": 0.6528,
+          "selective_risk": 0.046,
+          "unnecessary_interventions": 130.7985
+        },
+        "0.25": {
+          "accepted": 750,
+          "capture_efficiency": 0.8161,
+          "coverage": 0.75,
+          "errors_caught": 86.5019,
+          "errors_remaining": 19.4981,
+          "frac_errors_caught": 0.8161,
+          "gated": 250,
+          "intervention_precision": 0.346,
+          "intervention_rate": 0.25,
+          "k": 250,
+          "residual_error_rate": 0.0195,
+          "risk_reduction_vs_p0": 0.8161,
+          "selective_risk": 0.026,
+          "unnecessary_interventions": 163.4981
+        },
+        "0.30": {
+          "accepted": 700,
+          "capture_efficiency": 0.8656,
+          "coverage": 0.7,
+          "errors_caught": 91.7531,
+          "errors_remaining": 14.2469,
+          "frac_errors_caught": 0.8656,
+          "gated": 300,
+          "intervention_precision": 0.3058,
+          "intervention_rate": 0.3,
+          "k": 300,
+          "residual_error_rate": 0.0142,
+          "risk_reduction_vs_p0": 0.8656,
+          "selective_risk": 0.0204,
+          "unnecessary_interventions": 208.2469
+        },
+        "auc_capture": 0.7982,
+        "auroc": 0.833,
+        "distinct_score_levels": 2
+      },
+      "P2b_disagree_none_as_agree": {
+        "0.05": {
+          "accepted": 950,
+          "capture_efficiency": 0.6667,
+          "coverage": 0.95,
+          "errors_caught": 33.3333,
+          "errors_remaining": 72.6667,
+          "frac_errors_caught": 0.3145,
+          "gated": 50,
+          "intervention_precision": 0.6667,
+          "intervention_rate": 0.05,
+          "k": 50,
+          "residual_error_rate": 0.0727,
+          "risk_reduction_vs_p0": 0.3145,
+          "selective_risk": 0.0765,
+          "unnecessary_interventions": 16.6667
+        },
+        "0.10": {
+          "accepted": 900,
+          "capture_efficiency": 0.6667,
+          "coverage": 0.9,
+          "errors_caught": 66.6667,
+          "errors_remaining": 39.3333,
+          "frac_errors_caught": 0.6289,
+          "gated": 100,
+          "intervention_precision": 0.6667,
+          "intervention_rate": 0.1,
+          "k": 100,
+          "residual_error_rate": 0.0393,
+          "risk_reduction_vs_p0": 0.6289,
+          "selective_risk": 0.0437,
+          "unnecessary_interventions": 33.3333
+        },
+        "0.15": {
+          "accepted": 850,
+          "capture_efficiency": 0.7285,
+          "coverage": 0.85,
+          "errors_caught": 77.219,
+          "errors_remaining": 28.781,
+          "frac_errors_caught": 0.7285,
+          "gated": 150,
+          "intervention_precision": 0.5148,
+          "intervention_rate": 0.15,
+          "k": 150,
+          "residual_error_rate": 0.0288,
+          "risk_reduction_vs_p0": 0.7285,
+          "selective_risk": 0.0339,
+          "unnecessary_interventions": 72.781
+        },
+        "0.20": {
+          "accepted": 800,
+          "capture_efficiency": 0.7445,
+          "coverage": 0.8,
+          "errors_caught": 78.912,
+          "errors_remaining": 27.088,
+          "frac_errors_caught": 0.7445,
+          "gated": 200,
+          "intervention_precision": 0.3946,
+          "intervention_rate": 0.2,
+          "k": 200,
+          "residual_error_rate": 0.0271,
+          "risk_reduction_vs_p0": 0.7445,
+          "selective_risk": 0.0339,
+          "unnecessary_interventions": 121.088
+        },
+        "0.25": {
+          "accepted": 750,
+          "capture_efficiency": 0.7604,
+          "coverage": 0.75,
+          "errors_caught": 80.605,
+          "errors_remaining": 25.395,
+          "frac_errors_caught": 0.7604,
+          "gated": 250,
+          "intervention_precision": 0.3224,
+          "intervention_rate": 0.25,
+          "k": 250,
+          "residual_error_rate": 0.0254,
+          "risk_reduction_vs_p0": 0.7604,
+          "selective_risk": 0.0339,
+          "unnecessary_interventions": 169.395
+        },
+        "0.30": {
+          "accepted": 700,
+          "capture_efficiency": 0.7764,
+          "coverage": 0.7,
+          "errors_caught": 82.298,
+          "errors_remaining": 23.702,
+          "frac_errors_caught": 0.7764,
+          "gated": 300,
+          "intervention_precision": 0.2743,
+          "intervention_rate": 0.3,
+          "k": 300,
+          "residual_error_rate": 0.0237,
+          "risk_reduction_vs_p0": 0.7764,
+          "selective_risk": 0.0339,
+          "unnecessary_interventions": 217.702
+        },
+        "auc_capture": 0.802,
+        "auroc": 0.8372,
+        "distinct_score_levels": 2
+      },
+      "P2c_disagree_none_mid": {
+        "0.05": {
+          "accepted": 950,
+          "capture_efficiency": 0.6667,
+          "coverage": 0.95,
+          "errors_caught": 33.3333,
+          "errors_remaining": 72.6667,
+          "frac_errors_caught": 0.3145,
+          "gated": 50,
+          "intervention_precision": 0.6667,
+          "intervention_rate": 0.05,
+          "k": 50,
+          "residual_error_rate": 0.0727,
+          "risk_reduction_vs_p0": 0.3145,
+          "selective_risk": 0.0765,
+          "unnecessary_interventions": 16.6667
+        },
+        "0.10": {
+          "accepted": 900,
+          "capture_efficiency": 0.6667,
+          "coverage": 0.9,
+          "errors_caught": 66.6667,
+          "errors_remaining": 39.3333,
+          "frac_errors_caught": 0.6289,
+          "gated": 100,
+          "intervention_precision": 0.6667,
+          "intervention_rate": 0.1,
+          "k": 100,
+          "residual_error_rate": 0.0393,
+          "risk_reduction_vs_p0": 0.6289,
+          "selective_risk": 0.0437,
+          "unnecessary_interventions": 33.3333
+        },
+        "0.15": {
+          "accepted": 850,
+          "capture_efficiency": 0.7512,
+          "coverage": 0.85,
+          "errors_caught": 79.6242,
+          "errors_remaining": 26.3758,
+          "frac_errors_caught": 0.7512,
+          "gated": 150,
+          "intervention_precision": 0.5308,
+          "intervention_rate": 0.15,
+          "k": 150,
+          "residual_error_rate": 0.0264,
+          "risk_reduction_vs_p0": 0.7512,
+          "selective_risk": 0.031,
+          "unnecessary_interventions": 70.3758
+        },
+        "0.20": {
+          "accepted": 800,
+          "capture_efficiency": 0.7987,
+          "coverage": 0.8,
+          "errors_caught": 84.6577,
+          "errors_remaining": 21.3423,
+          "frac_errors_caught": 0.7987,
+          "gated": 200,
+          "intervention_precision": 0.4233,
+          "intervention_rate": 0.2,
+          "k": 200,
+          "residual_error_rate": 0.0213,
+          "risk_reduction_vs_p0": 0.7987,
+          "selective_risk": 0.0267,
+          "unnecessary_interventions": 115.3423
+        },
+        "0.25": {
+          "accepted": 750,
+          "capture_efficiency": 0.8461,
+          "coverage": 0.75,
+          "errors_caught": 89.6913,
+          "errors_remaining": 16.3087,
+          "frac_errors_caught": 0.8461,
+          "gated": 250,
+          "intervention_precision": 0.3588,
+          "intervention_rate": 0.25,
+          "k": 250,
+          "residual_error_rate": 0.0163,
+          "risk_reduction_vs_p0": 0.8461,
+          "selective_risk": 0.0217,
+          "unnecessary_interventions": 160.3087
+        },
+        "0.30": {
+          "accepted": 700,
+          "capture_efficiency": 0.8656,
+          "coverage": 0.7,
+          "errors_caught": 91.7531,
+          "errors_remaining": 14.2469,
+          "frac_errors_caught": 0.8656,
+          "gated": 300,
+          "intervention_precision": 0.3058,
+          "intervention_rate": 0.3,
+          "k": 300,
+          "residual_error_rate": 0.0142,
+          "risk_reduction_vs_p0": 0.8656,
+          "selective_risk": 0.0204,
+          "unnecessary_interventions": 208.2469
+        },
+        "auc_capture": 0.8436,
+        "auroc": 0.8838,
+        "distinct_score_levels": 3
+      },
+      "P3_disagree_then_conf": {
+        "0.05": {
+          "accepted": 950,
+          "capture_efficiency": 0.6169,
+          "coverage": 0.95,
+          "errors_caught": 30.8472,
+          "errors_remaining": 75.1528,
+          "frac_errors_caught": 0.291,
+          "gated": 50,
+          "intervention_precision": 0.6169,
+          "intervention_rate": 0.05,
+          "k": 50,
+          "residual_error_rate": 0.0752,
+          "risk_reduction_vs_p0": 0.291,
+          "selective_risk": 0.0791,
+          "unnecessary_interventions": 19.1528
+        },
+        "0.10": {
+          "accepted": 900,
+          "capture_efficiency": 0.4497,
+          "coverage": 0.9,
+          "errors_caught": 44.9676,
+          "errors_remaining": 61.0324,
+          "frac_errors_caught": 0.4242,
+          "gated": 100,
+          "intervention_precision": 0.4497,
+          "intervention_rate": 0.1,
+          "k": 100,
+          "residual_error_rate": 0.061,
+          "risk_reduction_vs_p0": 0.4242,
+          "selective_risk": 0.0678,
+          "unnecessary_interventions": 55.0324
+        },
+        "0.15": {
+          "accepted": 850,
+          "capture_efficiency": 0.5574,
+          "coverage": 0.85,
+          "errors_caught": 59.088,
+          "errors_remaining": 46.912,
+          "frac_errors_caught": 0.5574,
+          "gated": 150,
+          "intervention_precision": 0.3939,
+          "intervention_rate": 0.15,
+          "k": 150,
+          "residual_error_rate": 0.0469,
+          "risk_reduction_vs_p0": 0.5574,
+          "selective_risk": 0.0552,
+          "unnecessary_interventions": 90.912
+        },
+        "0.20": {
+          "accepted": 800,
+          "capture_efficiency": 0.6906,
+          "coverage": 0.8,
+          "errors_caught": 73.2083,
+          "errors_remaining": 32.7917,
+          "frac_errors_caught": 0.6906,
+          "gated": 200,
+          "intervention_precision": 0.366,
+          "intervention_rate": 0.2,
+          "k": 200,
+          "residual_error_rate": 0.0328,
+          "risk_reduction_vs_p0": 0.6906,
+          "selective_risk": 0.041,
+          "unnecessary_interventions": 126.7917
+        },
+        "0.25": {
+          "accepted": 750,
+          "capture_efficiency": 0.8239,
+          "coverage": 0.75,
+          "errors_caught": 87.3287,
+          "errors_remaining": 18.6713,
+          "frac_errors_caught": 0.8239,
+          "gated": 250,
+          "intervention_precision": 0.3493,
+          "intervention_rate": 0.25,
+          "k": 250,
+          "residual_error_rate": 0.0187,
+          "risk_reduction_vs_p0": 0.8239,
+          "selective_risk": 0.0249,
+          "unnecessary_interventions": 162.6713
+        },
+        "0.30": {
+          "accepted": 700,
+          "capture_efficiency": 0.8948,
+          "coverage": 0.7,
+          "errors_caught": 94.8442,
+          "errors_remaining": 11.1558,
+          "frac_errors_caught": 0.8948,
+          "gated": 300,
+          "intervention_precision": 0.3161,
+          "intervention_rate": 0.3,
+          "k": 300,
+          "residual_error_rate": 0.0112,
+          "risk_reduction_vs_p0": 0.8948,
+          "selective_risk": 0.0159,
+          "unnecessary_interventions": 205.1558
+        },
+        "auc_capture": 0.8376,
+        "auroc": 0.877,
+        "distinct_score_levels": 5
+      },
+      "oracle": {
+        "0.05": {
+          "accepted": 950,
+          "capture_efficiency": 1.0,
+          "coverage": 0.95,
+          "errors_caught": 50.0,
+          "errors_remaining": 56.0,
+          "frac_errors_caught": 0.4717,
+          "gated": 50,
+          "intervention_precision": 1.0,
+          "intervention_rate": 0.05,
+          "k": 50,
+          "residual_error_rate": 0.056,
+          "risk_reduction_vs_p0": 0.4717,
+          "selective_risk": 0.0589,
+          "unnecessary_interventions": 0.0
+        },
+        "0.10": {
+          "accepted": 900,
+          "capture_efficiency": 1.0,
+          "coverage": 0.9,
+          "errors_caught": 100.0,
+          "errors_remaining": 6.0,
+          "frac_errors_caught": 0.9434,
+          "gated": 100,
+          "intervention_precision": 1.0,
+          "intervention_rate": 0.1,
+          "k": 100,
+          "residual_error_rate": 0.006,
+          "risk_reduction_vs_p0": 0.9434,
+          "selective_risk": 0.0067,
+          "unnecessary_interventions": 0.0
+        },
+        "0.15": {
+          "accepted": 850,
+          "capture_efficiency": 1.0,
+          "coverage": 0.85,
+          "errors_caught": 106.0,
+          "errors_remaining": 0.0,
+          "frac_errors_caught": 1.0,
+          "gated": 150,
+          "intervention_precision": 0.7067,
+          "intervention_rate": 0.15,
+          "k": 150,
+          "residual_error_rate": 0.0,
+          "risk_reduction_vs_p0": 1.0,
+          "selective_risk": 0.0,
+          "unnecessary_interventions": 44.0
+        },
+        "0.20": {
+          "accepted": 800,
+          "capture_efficiency": 1.0,
+          "coverage": 0.8,
+          "errors_caught": 106.0,
+          "errors_remaining": 0.0,
+          "frac_errors_caught": 1.0,
+          "gated": 200,
+          "intervention_precision": 0.53,
+          "intervention_rate": 0.2,
+          "k": 200,
+          "residual_error_rate": 0.0,
+          "risk_reduction_vs_p0": 1.0,
+          "selective_risk": 0.0,
+          "unnecessary_interventions": 94.0
+        },
+        "0.25": {
+          "accepted": 750,
+          "capture_efficiency": 1.0,
+          "coverage": 0.75,
+          "errors_caught": 106.0,
+          "errors_remaining": 0.0,
+          "frac_errors_caught": 1.0,
+          "gated": 250,
+          "intervention_precision": 0.424,
+          "intervention_rate": 0.25,
+          "k": 250,
+          "residual_error_rate": 0.0,
+          "risk_reduction_vs_p0": 1.0,
+          "selective_risk": 0.0,
+          "unnecessary_interventions": 144.0
+        },
+        "0.30": {
+          "accepted": 700,
+          "capture_efficiency": 1.0,
+          "coverage": 0.7,
+          "errors_caught": 106.0,
+          "errors_remaining": 0.0,
+          "frac_errors_caught": 1.0,
+          "gated": 300,
+          "intervention_precision": 0.3533,
+          "intervention_rate": 0.3,
+          "k": 300,
+          "residual_error_rate": 0.0,
+          "risk_reduction_vs_p0": 1.0,
+          "selective_risk": 0.0,
+          "unnecessary_interventions": 194.0
+        },
+        "auc_capture": 0.9475,
+        "auroc": 1.0,
+        "distinct_score_levels": 2
+      }
+    },
+    "original_errors": 160,
+    "original_n": 1000,
+    "primary_rates_passed": [
+      0.2
+    ],
+    "rows_changed": 54,
+    "shortlist": {
+      "gold_always_in_shortlist": false,
+      "mean_size": 6.118
+    },
+    "status": "CONDITIONAL",
+    "strata": {
+      "addressee_capture": {
+        "C_shortlist_random@0.1": 0.1136,
+        "C_shortlist_random@0.2": 0.204,
+        "P1_conf@0.1": 0.2923,
+        "P1_conf@0.2": 0.4254,
+        "P2a_disagree@0.1": 0.3247,
+        "P2a_disagree@0.2": 0.6494,
+        "P3_disagree_then_conf@0.1": 0.4385,
+        "P3_disagree_then_conf@0.2": 0.6934,
+        "n_errors": 89
+      },
+      "cross_gender": {
+        "C_shortlist_random@0.1": 0.0473,
+        "C_shortlist_random@0.2": 0.1013,
+        "P1_conf@0.1": 0.3011,
+        "P1_conf@0.2": 0.425,
+        "P2a_disagree@0.1": 0.338,
+        "P2a_disagree@0.2": 0.676,
+        "P3_disagree_then_conf@0.1": 0.4697,
+        "P3_disagree_then_conf@0.2": 0.7269,
+        "n_errors": 27
+      },
+      "method=EXPLICIT": {
+        "C_shortlist_random@0.1": 0.0792,
+        "C_shortlist_random@0.2": 0.2081,
+        "P1_conf@0.1": 0.0,
+        "P1_conf@0.2": 0.0868,
+        "P2a_disagree@0.1": 0.3411,
+        "P2a_disagree@0.2": 0.6822,
+        "P3_disagree_then_conf@0.1": 0.2201,
+        "P3_disagree_then_conf@0.2": 0.6354,
+        "n_errors": 68
+      },
+      "method=JOINT": {
+        "C_shortlist_random@0.1": 0.0,
+        "C_shortlist_random@0.2": 0.0,
+        "P1_conf@0.1": 0.0,
+        "P1_conf@0.2": 1.0,
+        "P2a_disagree@0.1": 0.3802,
+        "P2a_disagree@0.2": 0.7605,
+        "P3_disagree_then_conf@0.1": 1.0,
+        "P3_disagree_then_conf@0.2": 1.0,
+        "n_errors": 1
+      },
+      "method=PROXIMAL": {
+        "C_shortlist_random@0.1": 0.1622,
+        "C_shortlist_random@0.2": 0.1821,
+        "P1_conf@0.1": 0.813,
+        "P1_conf@0.2": 1.0,
+        "P2a_disagree@0.1": 0.298,
+        "P2a_disagree@0.2": 0.596,
+        "P3_disagree_then_conf@0.1": 0.7838,
+        "P3_disagree_then_conf@0.2": 0.7838,
+        "n_errors": 37
+      },
+      "not_addressee_capture": {
+        "C_shortlist_random@0.1": 0.0751,
+        "C_shortlist_random@0.2": 0.1609,
+        "P1_conf@0.1": 0.2391,
+        "P1_conf@0.2": 0.3554,
+        "P2a_disagree@0.1": 0.3355,
+        "P2a_disagree@0.2": 0.671,
+        "P3_disagree_then_conf@0.1": 0.3497,
+        "P3_disagree_then_conf@0.2": 0.6765,
+        "n_errors": 17
+      },
+      "quote_type=anaphoric": {
+        "C_shortlist_random@0.1": 0.115,
+        "C_shortlist_random@0.2": 0.2192,
+        "P1_conf@0.1": 0.3484,
+        "P1_conf@0.2": 0.4999,
+        "P2a_disagree@0.1": 0.335,
+        "P2a_disagree@0.2": 0.6699,
+        "P3_disagree_then_conf@0.1": 0.4857,
+        "P3_disagree_then_conf@0.2": 0.7282,
+        "n_errors": 42
+      },
+      "quote_type=explicit": {
+        "C_shortlist_random@0.1": 0.1026,
+        "C_shortlist_random@0.2": 0.1781,
+        "P1_conf@0.1": 0.2502,
+        "P1_conf@0.2": 0.3678,
+        "P2a_disagree@0.1": 0.3607,
+        "P2a_disagree@0.2": 0.7215,
+        "P3_disagree_then_conf@0.1": 0.4263,
+        "P3_disagree_then_conf@0.2": 0.7468,
+        "n_errors": 39
+      },
+      "quote_type=implicit": {
+        "C_shortlist_random@0.1": 0.1022,
+        "C_shortlist_random@0.2": 0.1894,
+        "P1_conf@0.1": 0.2276,
+        "P1_conf@0.2": 0.3425,
+        "P2a_disagree@0.1": 0.2586,
+        "P2a_disagree@0.2": 0.5171,
+        "P3_disagree_then_conf@0.1": 0.3178,
+        "P3_disagree_then_conf@0.2": 0.54,
+        "n_errors": 25
+      },
+      "same_or_unknown_gender": {
+        "C_shortlist_random@0.1": 0.1279,
+        "C_shortlist_random@0.2": 0.2298,
+        "P1_conf@0.1": 0.2779,
+        "P1_conf@0.2": 0.4104,
+        "P2a_disagree@0.1": 0.3225,
+        "P2a_disagree@0.2": 0.6449,
+        "P3_disagree_then_conf@0.1": 0.4087,
+        "P3_disagree_then_conf@0.2": 0.6783,
+        "n_errors": 79
+      },
+      "vocative_in_quote": {
+        "C_shortlist_random@0.1": 0.0396,
+        "C_shortlist_random@0.2": 0.248,
+        "P1_conf@0.1": 0.1161,
+        "P1_conf@0.2": 0.2172,
+        "P2a_disagree@0.1": 0.3802,
+        "P2a_disagree@0.2": 0.7605,
+        "P3_disagree_then_conf@0.1": 0.3532,
+        "P3_disagree_then_conf@0.2": 0.75,
+        "n_errors": 7
+      }
+    },
+    "strata_supporting": [
+      "addressee_capture",
+      "cross_gender",
+      "same_or_unknown_gender"
+    ],
+    "unscorable_dropped": 0
+  },
+  "verdict_hint": "alias-corrected CONDITIONAL: best=P3_disagree_then_conf; errors caught @10%/20%: P1 0.284/0.414, P3_disagree_then_conf 0.424/0.691, shortlist control 0.107/0.197"
+}

@@ -1,0 +1,15 @@
+{
+  "base_seed": 20261002,
+  "config_hash": "a89a29764cb7eea2",
+  "experiment": "visual_rungs",
+  "hypothesis_id": "H-VRUNG",
+  "params": {
+    "engine": "noobai-gpu",
+    "llava": true,
+    "n_specs": 20,
+    "probe_version": 2,
+    "seed": 1234,
+    "steps": 35
+  },
+  "stub": false
+}

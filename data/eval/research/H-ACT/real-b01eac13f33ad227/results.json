@@ -1,0 +1,426 @@
+{
+  "config_hash": "b01eac13f33ad227",
+  "experiment": "action_counterfactual",
+  "hypothesis_id": "H-ACT",
+  "mode": "real",
+  "n_trials": 60,
+  "n_units": 60,
+  "notes": [
+    "machine manifestation only -- not perceptual cost",
+    "narrator Delta = 0 by construction (Z-invariant render)",
+    "speaker identity by WavLM-SV, independent of the generator",
+    "audio in data/scratch/research/action_counterfactual (not committed)"
+  ],
+  "summary": {
+    "action_order_matches_geometry": true,
+    "by_error_type": {
+      "addressee": {
+        "D_gen": {
+          "ci": [
+            0.0416,
+            0.324
+          ],
+          "mean": 0.1849,
+          "n": 20
+        },
+        "D_spec": {
+          "ci": [
+            0.6172,
+            0.8601
+          ],
+          "mean": 0.7375,
+          "n": 20
+        },
+        "D_spec_minus_D_gen": {
+          "ci": [
+            0.4477,
+            0.6612
+          ],
+          "mean": 0.5526,
+          "n": 20
+        },
+        "Dhat_gen": {
+          "ci": [
+            0.0482,
+            0.3578
+          ],
+          "mean": 0.2026,
+          "n": 20
+        },
+        "Dhat_spec": {
+          "ci": [
+            0.7085,
+            0.9367
+          ],
+          "mean": 0.8232,
+          "n": 20
+        },
+        "G_gen": {
+          "ci": [
+            0.1993,
+            0.3938
+          ],
+          "mean": 0.2954,
+          "n": 20
+        },
+        "G_gen_minus_Ghat_gen": {
+          "ci": [
+            -0.0443,
+            0.0146
+          ],
+          "mean": -0.0164,
+          "n": 20
+        },
+        "G_spec": {
+          "ci": [
+            0.3047,
+            0.5044
+          ],
+          "mean": 0.4067,
+          "n": 20
+        },
+        "Ghat_gen": {
+          "ci": [
+            0.2142,
+            0.4175
+          ],
+          "mean": 0.3117,
+          "n": 20
+        },
+        "Ghat_spec": {
+          "ci": [
+            0.3354,
+            0.5233
+          ],
+          "mean": 0.4305,
+          "n": 20
+        },
+        "n": 20,
+        "order_pred": [
+          "spec",
+          "gen",
+          "narr"
+        ],
+        "order_real": [
+          "spec",
+          "gen",
+          "narr"
+        ],
+        "price_gen": {
+          "ci": [
+            0.1499,
+            0.3559
+          ],
+          "mean": 0.2479,
+          "n": 20
+        },
+        "price_narr": {
+          "ci": [
+            0.1949,
+            0.4588
+          ],
+          "mean": 0.3237,
+          "n": 20
+        }
+      },
+      "cross_gender": {
+        "D_gen": {
+          "ci": [
+            0.3173,
+            0.5191
+          ],
+          "mean": 0.4163,
+          "n": 20
+        },
+        "D_spec": {
+          "ci": [
+            0.7541,
+            0.9774
+          ],
+          "mean": 0.8728,
+          "n": 20
+        },
+        "D_spec_minus_D_gen": {
+          "ci": [
+            0.3402,
+            0.5785
+          ],
+          "mean": 0.4564,
+          "n": 20
+        },
+        "Dhat_gen": {
+          "ci": [
+            0.3627,
+            0.5728
+          ],
+          "mean": 0.4647,
+          "n": 20
+        },
+        "Dhat_spec": {
+          "ci": [
+            0.8676,
+            1.1128
+          ],
+          "mean": 0.9973,
+          "n": 20
+        },
+        "G_gen": {
+          "ci": [
+            0.46,
+            0.5976
+          ],
+          "mean": 0.5313,
+          "n": 20
+        },
+        "G_gen_minus_Ghat_gen": {
+          "ci": [
+            -0.0494,
+            0.0159
+          ],
+          "mean": -0.0155,
+          "n": 20
+        },
+        "G_spec": {
+          "ci": [
+            0.5429,
+            0.6463
+          ],
+          "mean": 0.5953,
+          "n": 20
+        },
+        "Ghat_gen": {
+          "ci": [
+            0.4825,
+            0.6169
+          ],
+          "mean": 0.5468,
+          "n": 20
+        },
+        "Ghat_spec": {
+          "ci": [
+            0.5157,
+            0.6439
+          ],
+          "mean": 0.5803,
+          "n": 20
+        },
+        "n": 20,
+        "order_pred": [
+          "spec",
+          "gen",
+          "narr"
+        ],
+        "order_real": [
+          "spec",
+          "gen",
+          "narr"
+        ],
+        "price_gen": {
+          "ci": [
+            0.1523,
+            0.3397
+          ],
+          "mean": 0.2452,
+          "n": 20
+        },
+        "price_narr": {
+          "ci": [
+            0.3908,
+            0.6202
+          ],
+          "mean": 0.5066,
+          "n": 20
+        }
+      },
+      "same_gender": {
+        "D_gen": {
+          "ci": [
+            -0.0217,
+            0.0567
+          ],
+          "mean": 0.0128,
+          "n": 20
+        },
+        "D_spec": {
+          "ci": [
+            0.2791,
+            0.4227
+          ],
+          "mean": 0.3503,
+          "n": 20
+        },
+        "D_spec_minus_D_gen": {
+          "ci": [
+            0.2735,
+            0.4028
+          ],
+          "mean": 0.3376,
+          "n": 20
+        },
+        "Dhat_gen": {
+          "ci": [
+            -0.0393,
+            0.0835
+          ],
+          "mean": 0.021,
+          "n": 20
+        },
+        "Dhat_spec": {
+          "ci": [
+            0.3517,
+            0.5389
+          ],
+          "mean": 0.4424,
+          "n": 20
+        },
+        "G_gen": {
+          "ci": [
+            0.0571,
+            0.1473
+          ],
+          "mean": 0.0984,
+          "n": 20
+        },
+        "G_gen_minus_Ghat_gen": {
+          "ci": [
+            -0.0148,
+            0.0442
+          ],
+          "mean": 0.0121,
+          "n": 20
+        },
+        "G_spec": {
+          "ci": [
+            0.1062,
+            0.1806
+          ],
+          "mean": 0.1432,
+          "n": 20
+        },
+        "Ghat_gen": {
+          "ci": [
+            0.0513,
+            0.1278
+          ],
+          "mean": 0.0862,
+          "n": 20
+        },
+        "Ghat_spec": {
+          "ci": [
+            0.0975,
+            0.1958
+          ],
+          "mean": 0.1458,
+          "n": 20
+        },
+        "n": 20,
+        "order_pred": [
+          "spec",
+          "gen",
+          "narr"
+        ],
+        "order_real": [
+          "spec",
+          "gen",
+          "narr"
+        ],
+        "price_gen": {
+          "ci": [
+            0.1569,
+            0.2706
+          ],
+          "mean": 0.2129,
+          "n": 20
+        },
+        "price_narr": {
+          "ci": [
+            0.1217,
+            0.322
+          ],
+          "mean": 0.2188,
+          "n": 20
+        }
+      }
+    },
+    "fidelity_and_cost_on_correct_lines": {
+      "gen_gold": {
+        "dur": {
+          "ci": [
+            5.9732,
+            7.6778
+          ],
+          "mean": 6.7943,
+          "n": 60
+        },
+        "wer": {
+          "ci": [
+            0.0562,
+            0.1189
+          ],
+          "mean": 0.0862,
+          "n": 60
+        }
+      },
+      "narr": {
+        "dur": {
+          "ci": [
+            6.2039,
+            8.7688
+          ],
+          "mean": 7.2893,
+          "n": 60
+        },
+        "wer": {
+          "ci": [
+            0.0533,
+            0.3137
+          ],
+          "mean": 0.1452,
+          "n": 60
+        }
+      },
+      "spec_gold": {
+        "dur": {
+          "ci": [
+            5.9662,
+            7.5574
+          ],
+          "mean": 6.7407,
+          "n": 60
+        },
+        "wer": {
+          "ci": [
+            0.0551,
+            0.1194
+          ],
+          "mean": 0.0861,
+          "n": 60
+        }
+      }
+    },
+    "geometry_fit": {
+      "intercept": -0.0012,
+      "slope": 0.8972
+    },
+    "manipulation_check": 0.9,
+    "narrator_voice": "earsp033",
+    "q1_specific_manifests": {
+      "addressee": true,
+      "cross_gender": true,
+      "same_gender": true
+    },
+    "q2_unpredicted_gender_leak_cross_gender": false,
+    "r2_margin_vs_geometry": 0.95,
+    "seed_noise_spec_margin": {
+      "ci": [
+        0.0266,
+        0.0446
+      ],
+      "mean": 0.0351,
+      "n": 60
+    },
+    "status": "DEFINITIONAL",
+    "units": 60
+  },
+  "verdict_hint": "DEFINITIONAL: manip 0.9, R^2(margin~geometry) 0.95, Q1 {'cross_gender': True, 'same_gender': True, 'addressee': True}, gender leak beyond geometry False"
+}

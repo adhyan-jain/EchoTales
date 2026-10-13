@@ -1,0 +1,513 @@
+{
+  "config_hash": "d531b1c1f6b0b632",
+  "experiment": "ideal_listener",
+  "hypothesis_id": "H-IOL",
+  "mode": "real",
+  "n_trials": 17820,
+  "n_units": 90,
+  "notes": [
+    "model-level predictions only; they become a result about people only when the H-COST v2 listening study tests them",
+    "voice distance = Chatterbox speaker-embedding cosine; tau maps it to confusability and is swept, not fitted"
+  ],
+  "summary": {
+    "default": {
+      "P1_spillover": true,
+      "P2_tag_poisoning": true,
+      "P3_crossover_differs": false,
+      "P3_sign": 0,
+      "P4_late_reduces_spill": true,
+      "a_star_diverse_minus_homogeneous": 0.0,
+      "clean_comprehension": {
+        "diverse|full": 0.81454,
+        "diverse|late": 0.74291,
+        "diverse|narrator": 0.65534,
+        "homogeneous|full": 0.75201,
+        "homogeneous|late": 0.71079,
+        "homogeneous|narrator": 0.65534
+      },
+      "crossover_a_star": {
+        "diverse": null,
+        "homogeneous": null
+      },
+      "direct_per_error": 0.14213,
+      "early_over_late": 1.41257,
+      "late_cast_spill_per_error": 0.06847,
+      "placement": {
+        "implicit": {
+          "direct": 0.36867,
+          "spill": 0.08893
+        },
+        "tagged": {
+          "direct": 0.0138,
+          "spill": 0.41317
+        }
+      },
+      "position_total_per_error": {
+        "early": 0.43261,
+        "late": 0.30626
+      },
+      "spill_over_direct": 0.74446,
+      "spill_per_error": 0.10581,
+      "total_cost_per_error_by_type": {
+        "addressee": 0.28111,
+        "cross_gender": 0.26045,
+        "same_gender": 0.20323
+      }
+    },
+    "default_ci_cluster_bootstrap": {
+      "spill_over_direct": [
+        0.7093516690545828,
+        0.7825429522680826
+      ],
+      "tag_minus_implicit_direct": [
+        -0.3848705456910787,
+        -0.3276191681941081
+      ],
+      "tag_minus_implicit_spill": [
+        0.2377499099906476,
+        0.4213565313527001
+      ]
+    },
+    "default_params": {
+      "alpha": 0.2,
+      "lam_alt": 0.3,
+      "rho": 0.9,
+      "tau": 0.06,
+      "w_self": 0.0
+    },
+    "grid": {
+      "1": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.07419,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.0,
+          "rho": 0.7,
+          "tau": 0.03,
+          "w_self": 0.0
+        },
+        "spill_over_direct": 0.6943,
+        "spill_per_error": 0.11924
+      },
+      "10": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.04879,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.0,
+          "rho": 0.7,
+          "tau": 0.06,
+          "w_self": 0.5
+        },
+        "spill_over_direct": 0.73155,
+        "spill_per_error": 0.08086
+      },
+      "11": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.06557,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.4,
+          "rho": 0.7,
+          "tau": 0.06,
+          "w_self": 0.0
+        },
+        "spill_over_direct": 0.74743,
+        "spill_per_error": 0.10098
+      },
+      "12": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.06617,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.4,
+          "rho": 0.7,
+          "tau": 0.06,
+          "w_self": 0.5
+        },
+        "spill_over_direct": 0.74406,
+        "spill_per_error": 0.09081
+      },
+      "13": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.06077,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.0,
+          "rho": 0.95,
+          "tau": 0.06,
+          "w_self": 0.0
+        },
+        "spill_over_direct": 0.71982,
+        "spill_per_error": 0.09535
+      },
+      "14": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.04816,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.0,
+          "rho": 0.95,
+          "tau": 0.06,
+          "w_self": 0.5
+        },
+        "spill_over_direct": 0.72752,
+        "spill_per_error": 0.08069
+      },
+      "15": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.06355,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.4,
+          "rho": 0.95,
+          "tau": 0.06,
+          "w_self": 0.0
+        },
+        "spill_over_direct": 0.7404,
+        "spill_per_error": 0.09789
+      },
+      "16": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.06317,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.4,
+          "rho": 0.95,
+          "tau": 0.06,
+          "w_self": 0.5
+        },
+        "spill_over_direct": 0.74188,
+        "spill_per_error": 0.0885
+      },
+      "17": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": 0.51788,
+          "homogeneous": 0.47956
+        },
+        "late_cast_spill_per_error": 0.04054,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.0,
+          "rho": 0.7,
+          "tau": 0.12,
+          "w_self": 0.0
+        },
+        "spill_over_direct": 0.7701,
+        "spill_per_error": 0.05776
+      },
+      "18": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": 0.55966,
+          "homogeneous": 0.49163
+        },
+        "late_cast_spill_per_error": 0.02952,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.0,
+          "rho": 0.7,
+          "tau": 0.12,
+          "w_self": 0.5
+        },
+        "spill_over_direct": 0.76462,
+        "spill_per_error": 0.0438
+      },
+      "19": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.04644,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.4,
+          "rho": 0.7,
+          "tau": 0.12,
+          "w_self": 0.0
+        },
+        "spill_over_direct": 0.81243,
+        "spill_per_error": 0.06605
+      },
+      "2": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.0608,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.0,
+          "rho": 0.7,
+          "tau": 0.03,
+          "w_self": 0.5
+        },
+        "spill_over_direct": 0.70448,
+        "spill_per_error": 0.10571
+      },
+      "20": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.045,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.4,
+          "rho": 0.7,
+          "tau": 0.12,
+          "w_self": 0.5
+        },
+        "spill_over_direct": 0.79106,
+        "spill_per_error": 0.05446
+      },
+      "21": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": 0.53748,
+          "homogeneous": 0.49589
+        },
+        "late_cast_spill_per_error": 0.04045,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.0,
+          "rho": 0.95,
+          "tau": 0.12,
+          "w_self": 0.0
+        },
+        "spill_over_direct": 0.7663,
+        "spill_per_error": 0.0584
+      },
+      "22": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": 0.57072,
+          "homogeneous": 0.52878
+        },
+        "late_cast_spill_per_error": 0.0294,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.0,
+          "rho": 0.95,
+          "tau": 0.12,
+          "w_self": 0.5
+        },
+        "spill_over_direct": 0.75896,
+        "spill_per_error": 0.04415
+      },
+      "23": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.04551,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.4,
+          "rho": 0.95,
+          "tau": 0.12,
+          "w_self": 0.0
+        },
+        "spill_over_direct": 0.79566,
+        "spill_per_error": 0.06378
+      },
+      "24": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.04373,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.4,
+          "rho": 0.95,
+          "tau": 0.12,
+          "w_self": 0.5
+        },
+        "spill_over_direct": 0.79988,
+        "spill_per_error": 0.05503
+      },
+      "3": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.07611,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.4,
+          "rho": 0.7,
+          "tau": 0.03,
+          "w_self": 0.0
+        },
+        "spill_over_direct": 0.70626,
+        "spill_per_error": 0.12002
+      },
+      "4": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.07686,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.4,
+          "rho": 0.7,
+          "tau": 0.03,
+          "w_self": 0.5
+        },
+        "spill_over_direct": 0.71621,
+        "spill_per_error": 0.11476
+      },
+      "5": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.07226,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.0,
+          "rho": 0.95,
+          "tau": 0.03,
+          "w_self": 0.0
+        },
+        "spill_over_direct": 0.69206,
+        "spill_per_error": 0.11747
+      },
+      "6": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.05971,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.0,
+          "rho": 0.95,
+          "tau": 0.03,
+          "w_self": 0.5
+        },
+        "spill_over_direct": 0.70181,
+        "spill_per_error": 0.10489
+      },
+      "7": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.07284,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.4,
+          "rho": 0.95,
+          "tau": 0.03,
+          "w_self": 0.0
+        },
+        "spill_over_direct": 0.70087,
+        "spill_per_error": 0.11591
+      },
+      "8": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.07276,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.4,
+          "rho": 0.95,
+          "tau": 0.03,
+          "w_self": 0.5
+        },
+        "spill_over_direct": 0.70803,
+        "spill_per_error": 0.11005
+      },
+      "9": {
+        "P2_tag_poisoning": true,
+        "crossover_a_star": {
+          "diverse": null,
+          "homogeneous": null
+        },
+        "late_cast_spill_per_error": 0.06188,
+        "params": {
+          "alpha": 0.2,
+          "lam_alt": 0.0,
+          "rho": 0.7,
+          "tau": 0.06,
+          "w_self": 0.0
+        },
+        "spill_over_direct": 0.723,
+        "spill_per_error": 0.09591
+      }
+    },
+    "grid_stability": {
+      "P1_spillover": {
+        "of": 24,
+        "true_in": 24
+      },
+      "P2_tag_poisoning": {
+        "of": 24,
+        "true_in": 24
+      },
+      "P3_sign": {
+        "negative": 0,
+        "no_difference": 23,
+        "positive": 1
+      },
+      "P4_late_reduces_spill": {
+        "of": 24,
+        "true_in": 24
+      }
+    },
+    "listener_settings": 25,
+    "novels": 24,
+    "sign_flips": [],
+    "windows": 90
+  },
+  "verdict_hint": "SURVIVES at model level: spill/direct=0.744, P2=True, a*={'diverse': None, 'homogeneous': None}, sign flips across grid: none"
+}

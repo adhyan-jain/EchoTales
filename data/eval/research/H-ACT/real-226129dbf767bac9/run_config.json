@@ -1,0 +1,23 @@
+{
+  "base_seed": 20261002,
+  "config_hash": "226129dbf767bac9",
+  "experiment": "action_policy",
+  "hypothesis_id": "H-ACT",
+  "params": {
+    "c2_run": "data/eval/research/H-XDIS-PS/real-2745361d4136dce5",
+    "c3_run": "data/eval/research/H-ACT/real-b01eac13f33ad227",
+    "rates": [
+      0.05,
+      0.1,
+      0.2,
+      0.3
+    ],
+    "signals": [
+      "P1_conf",
+      "P2a_disagree",
+      "P3_disagree_then_conf",
+      "oracle"
+    ]
+  },
+  "stub": false
+}

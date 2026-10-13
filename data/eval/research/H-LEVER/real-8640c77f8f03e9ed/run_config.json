@@ -1,0 +1,42 @@
+{
+  "base_seed": 20261002,
+  "config_hash": "8640c77f8f03e9ed",
+  "experiment": "correction_leverage",
+  "hypothesis_id": "H-LEVER",
+  "params": {
+    "aurocs": [
+      0.6,
+      0.8
+    ],
+    "budgets": [
+      0.05,
+      0.1,
+      0.2
+    ],
+    "error_rate": 0.25,
+    "eval_listener": {
+      "lam_alt": 0.4,
+      "rho": 0.7,
+      "tau": 0.12,
+      "w_self": 0.5
+    },
+    "leverage_mode": "abs",
+    "plan_listener": {
+      "lam_alt": 0.3,
+      "rho": 0.9,
+      "tau": 0.06,
+      "w_self": 0.0
+    },
+    "reps": 3,
+    "resamples": 1000,
+    "type_mix": {
+      "addressee": 0.52,
+      "cross_gender": 0.28,
+      "same_gender": 0.2
+    },
+    "window": 60,
+    "windows_per_novel": 4,
+    "workers": 8
+  },
+  "stub": false
+}
