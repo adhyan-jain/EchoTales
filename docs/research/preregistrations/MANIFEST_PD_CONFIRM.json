@@ -2,8 +2,8 @@
  "status": "FROZEN at owner approval (CP-K). Written 2026-10-16 before any mining or model call for this study.",
  "frozen_for": "PREREG_PD_CONFIRM.md",
  "files_sha256": {
-  "PREREG_PD_CONFIRM.md": "db648cc1c90977dd010efb085f9d9f8eb57df09b7b513a50a625cfdc4806127d",
-  "PD_CONFIRM_event_mining_rules_v1.md": "cc4f50ccfc70a64f10e5d99465152c05a7dd859a586718bfd8d8e128beffe6a1",
+  "PREREG_PD_CONFIRM.md": "086a51f6c28b33792ff63ca29e8e7ce6af5b7fc3831ffc9276baab2a5064e05c",
+  "PD_CONFIRM_event_mining_rules_v1.md": "be032203ad62780758bbd3081cae6bbbba75d22b437ac528bcc2c95b2980551a",
   "PD_CONFIRM_excluded_books.json": "8cefa0fa5dcaeac29b325062962a96d14082e6e0e5659726c2f1210b5673ab83",
   "PD_confirm_prompts_v1.json": "3c7976a5d55487d79f5a1034545fc4c5e614b17dfff3235e611766601247c3ce",
   "PD_prompts_v1.json": "b7cd09994a52aa4ef001bfad7cda0309ebc282658f36c4ac79c8a24f2f44a3fc",
@@ -11,8 +11,9 @@
   "PD_prompts_v4.json": "b343cf360c183043d0c39011789c62d528b91dd7cf530f7095eee99bf4bc0d1a"
  },
  "supporting_not_frozen_inputs": {
-  "confirm_design_numbers.json (power and cost model)": "189b0e07319a5440ca6509c2c41c459d5fcccba71255dc0a455fcbde2b216740",
-  "scripts/chimera/confirm_design_numbers.py": "fb127877999afbedc3773ba618bc5aa5a8789dca1f77567a2d82f0ecfcd61f70",
+  "confirm_design_numbers.json (first-draft OpenAI-based power and cost model; superseded for cost)": "189b0e07319a5440ca6509c2c41c459d5fcccba71255dc0a455fcbde2b216740",
+  "confirm_runpod_plan.json (GPU-hour plan, current)": "a5a2efd422e415f58d01d7cb26d3fd539a7bbea18cda3764978367e998646d62",
+  "scripts/chimera/confirm_runpod_plan.py": "23bb8e8d88a36fa386c2718373bb336d221792a4b7dbcd32cd1c7121a46ba65d",
   "PRIOR_ART_E0.md": "009d22f34344fbed699319e9e34944f2ffbfbd0d1858efa44e4ebddf2f8164b0"
  },
  "to_freeze_at_CP_L": [
@@ -20,5 +21,6 @@
   "scripts/chimera/pd_confirm.py",
   "E2 unseen-text set"
  ],
- "note": "A change after freezing is a new version, never an edit."
+ "note": "A change after freezing is a new version, never an edit.",
+ "revision": "CP-K revision 2026-10-16 (owner feedback: no OpenAI, RunPod open models, Claude Sonnet 5.5 via subscription, design delegated, E2 = LLM-authored 2026 fiction); still DRAFT until the owner says continue"
 }
