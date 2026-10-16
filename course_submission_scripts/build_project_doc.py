@@ -517,8 +517,8 @@ P("*Items [1] to [16] are the reviewed articles (2020 onward); [17] to [23] supp
 # ---------------------------------------------------------------- [16] appendix
 H(16, "Appendix")
 P("**a) Link to the presentation (PPT):** https://docs.google.com/presentation/d/1VUZjLmUKpjqdqs_lNCZzUkAgfXx_MQ68/edit?usp=sharing&ouid=114180309837634233617&rtpof=true&sd=true", size=9.5)
-P("**b) Demonstration video:** the narration script is in Demo_Video_Script.docx.", size=9.5)
-P("**c) Source files and steps to execute:** the project repository, branch chimera/system-adapters. Steps are in docs/paper/project_doc/RUN_STEPS.md and summarised here:", size=9.5)
+P("**b) Link to the pre-recorded demonstration video:** https://drive.google.com/file/d/1GgZj58td5UjoiB-gqE5oECHq3qWrB2aJ/view?usp=sharing", size=9.5)
+P("**c) Link to the source files and the steps to execute:** https://github.com/adhyan-jain/EchoTales/tree/chimera/system-adapters (branch chimera/system-adapters). Steps are in docs/paper/project_doc/RUN_STEPS.md and summarised here:", size=9.5)
 BUL([
     "Clone, then `uv sync` (Python 3.12); `source .venv/bin/activate`.",
     "Re-download the public-domain texts into data/raw/pd_gutenberg/ (Project Gutenberg ids listed in docs/research/preregistrations/*events*.json).",
