@@ -223,12 +223,34 @@ def cmd_judge(a):
     import httpx
 
     evs = {e["id"]: e for e in json.loads(EVENTS.read_text())["events"]}
+    judge = a.judge or JUDGE
     kind = "cards" if a.cells == "main" else "mitig"
     src = json.loads((OUT / f"{kind}_{a.of.replace(':', '_')}.json").read_text())
-    path = OUT / f"judge_{JUDGE.replace(':', '_')}_of_{a.of.replace(':', '_')}{'' if a.cells == 'main' else '_mitig'}.json"
-    done = json.loads(path.read_text()) if path.exists() else dict(judge=JUDGE, of=a.of, prompt=JUDGE_PROMPT, labels={})
+    path = OUT / f"judge_{judge.replace(':', '_')}_of_{a.of.replace(':', '_')}{'' if a.cells == 'main' else '_mitig'}.json"
+    done = json.loads(path.read_text()) if path.exists() else dict(judge=judge, of=a.of, prompt=JUDGE_PROMPT, labels={})
     schema = {"type": "object", "properties": {"identifies": {"type": "boolean"}}, "required": ["identifies"]}
     t0 = time.time()
+    if judge in LARGE:  # addendum 9: second judge on the pod, same prompt and JSON answer, events in parallel
+        from concurrent.futures import ThreadPoolExecutor
+
+        pod = client_for(judge)
+
+        def lab_one(item):
+            eid, rec = item
+            ev, lab = evs[eid], {}
+            for k, cell in rec["cells"].items():
+                ren = k.endswith("_ren")
+                prompt = JUDGE_PROMPT.format(CARD=cell["card"], ALIAS=rec.get("alias_ren") if ren else ev["alias"][0], IDENTITY=rec.get("identity_ren") if ren else ev["identity"])
+                try:
+                    lab[k] = bool(json.loads(pod.chat(judge, prompt, 20, schema))["identifies"])
+                except (ValueError, KeyError, TypeError):
+                    lab[k] = None
+            return eid, lab
+
+        with ThreadPoolExecutor(8) as ex:
+            for eid, lab in ex.map(lab_one, [it for it in src["cards"].items() if it[0] not in done["labels"]]):
+                done["labels"][eid] = lab
+        path.write_text(json.dumps(done, indent=1))
     with httpx.Client(timeout=300.0) as c:
         for eid, rec in src["cards"].items():
             if eid in done["labels"]:
@@ -411,6 +433,7 @@ def main():
     j = sp.add_parser("judge")
     j.add_argument("--of", required=True)
     j.add_argument("--cells", choices=("main", "mitig"), default="main")
+    j.add_argument("--judge", default=None, help="addendum 9: olmo32b as a second judge (pod)")
     mg = sp.add_parser("mitigate")
     mg.add_argument("--model", required=True)
     a = ap.parse_args()
