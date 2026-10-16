@@ -26,6 +26,9 @@ plan = J("confirm_runpod_plan.json")
 conf = J("confirm/main/analysis.json")
 conf_e2 = J("confirm/e2/analysis.json")
 occ = J("confirm/main/olmo_corpus_check.json")
+rf = J("rf_e2e/analysis.json")
+rfA, rfB, rfx = rf["A_primary_EXPLICIT_IMPLIED"], rf.get("B_EXPLICIT_IMPLIED", {}), rf.get("fixes", {})
+NM = {"qwen2.5:7b": "Qwen2.5-7B", "llama3.1:8b": "Llama-3.1-8B", "mistral:7b-instruct": "Mistral-7B"}
 l2u = J("l2u_analysis.json")["difference_in_differences"]
 pts = lambda x, d=1: f"{100 * x:+.{d}f}"  # noqa: E731
 pc = lambda x, d=1: f"{100 * x:.{d}f}"  # noqa: E731
@@ -209,12 +212,13 @@ lu_all, vl_all = pooled["luna_only"]["all_v2_v3_v6"], pooled["valid_pool"]["all_
 rec = v5["pools"]["G2_valid"]
 d_lu = dose["luna_gap_vs_local_recognition"]
 abstract = (
-    "**Background:** Language models recap serialised fiction for readers who have read only part of a book; a model that remembers the book may name a disguised character early. "
+    "**Background:** Language models recap fiction for readers who have read only part of a book, and may name a disguised character too early. "
     "**Objective:** Measure that leakage, test whether name memory rather than lost name cues causes it, and audit a narrative knowledge graph for the same property. "
     "**Methods:** From public-domain novels we built events in which a character known by an alias is later named; the book's own reveal sentence is the oracle. Mentions were shown with original names, a letter cipher and cue-preserving pseudonyms. Exploratory: 38 events, five local 7-9B models and one commercial model. Pre-registered confirmatory run: 68 events from 65 books, three open 24-32B models. "
     f"**Results:** Exploratory: the reference model named the identity early more often with original names (gap {pts(lu_all['gap_A_minus_B'])} points, 95% CI {ci(*lu_all['ci'])}); pseudonyms did not restore premature naming (recovered fraction {rec['recovered_fraction']:+.2f}); the gap rose with book familiarity. "
     f"Confirmatory, on mostly obscure books: pooled gap {pts(conf['H1']['pooled'])} {ci(*conf['H1']['ci'])}; fame contrast {pts(conf['P1']['difference'])} {ci(*conf['P1']['ci'])}, p = {conf['P1']['p_one_sided']:.4f}, not significant. The graph resolver was prefix-causal; its persona stage looked ahead for 8.0% of characters. "
-    "**Conclusions:** The effect is shown for a strong model on famous books and not detected on obscure ones. Events are model-selected and no human labels are used."
+    f"A whole-book character card, the common assistant design, leaked the hidden identity before the reveal in {pc(rfB['pooled']['rates']['W_ren'])}% of events even under renamed names; a versioned card removed it ({pc(rfB['pooled']['rates']['P_ren'])}%). "
+    "**Conclusions:** The effect is shown for a strong model on famous books and not detected on obscure ones; the pipeline leak is a design property with a measured fix. Events are model-selected and no human labels are used."
 )
 nwords = len(re.sub(r"\*\*", "", abstract).split())
 assert nwords <= 250, nwords
@@ -289,6 +293,7 @@ BUL([
     "**C5. A prefix-causality audit of a narrative graph pipeline (gap G3).** Truncate-and-rebuild testing found the resolver exactly causal (0 of 28,165 mention comparisons) and the persona stage looking ahead for 8.0% of character checks (23 of 288), and framed both leakage channels as violations of reader-faithfulness.",
     f"**C6. A pre-registered confirmatory run with a mitigation and a harm task (gaps G3, G6).** 68 events from 65 books, three open models, pseudonymise-and-map-back as the mitigation with a 5-point utility margin, a recap-spoiler task and a training-data check. Result: no premature-naming gap on obscure books (pooled {pts(conf['H1']['pooled'])} {ci(*conf['H1']['ci'])}), the fame contrast was not significant, pseudonyms lowered premature naming at a cost in accuracy, and no recap spoiler or training-data link was found.",
     "**C7. The substrate: EchoTales, a bitemporal observer-scoped narrative graph** with the query state_of(target, timeline, position, observer), a resolver and generation consumers, whose defects the audit located and fixed (Track S, engineering).",
+    f"**C8. Found and fixed in a second, generic system (pre-registered RF-E2E).** A whole-volume LLM character card stamped at first mention leaked the hidden identity before the reveal ({pc(rfB['pooled']['rates']['W_ren'])}% of events on renamed text, judge rule; {pc(rfA['pooled']['rates']['W_ren'])}% by the strict text rule) while a versioned, prefix-built card leaked in {pc(rfB['pooled']['rates']['P_ren'])}%; the renaming control shows the leak comes from the build, not from memory.",
 ])
 
 # ---------------------------------------------------------------- [7] individual
@@ -420,6 +425,21 @@ TABLE(["Pre-registered test", "Estimate", "One-sided p", "Verdict"], [
 P(f"**Reading Tables 10a and 10b.** On a sample where {pc(25 / 32, 0)}% of events come from low-fame books the three open models show no gap that original names add, and the closed-book control recovers the hidden identity in only 2 of 68 events, so these books hold little memory to detect. That fits the familiarity dose-response above and does not contradict it. The fame contrast points the expected way but could only detect a difference of about {pc(p1['minimum_detectable_difference_80pct_power'], 0)} points, so it is inconclusive. The recap-spoiler check found no spoiler in 144 outputs per condition (a floor under a narrow detector, not evidence of safety). The unseen-story control (17 model-written stories) gave gaps near zero for all three models. A check of the OLMo-2 training-data index for 62 books found no link between a book being present and its gap (Spearman {occ['spearman']:+.2f}, p = {occ['perm_p_two_sided']:.2f}).", align="j", size=9.5)
 SH("Confirmatory run: cost and time")
 P("The three-model run used one rented L40S GPU (USD 1.13 per hour all-in). One 2,220-question pass took about 5 to 8 minutes per model after loading; the whole run, including the book mining and audit, ran from 15:40 to 19:10 IST on 16 Oct. 2026 for an estimated USD 3.9 (an estimate from uptime, not the billing page).", align="j", size=9.5)
+SH("Second system: whole-volume character cards, found and fixed (pre-registered RF-E2E)")
+P("The common design for a position-aware reading assistant asks a language model to write a character card from passages that mention the character, builds it once over the whole book and shows it from the character's first appearance. On the same frozen events, at the reader position just before the reveal, we compared that whole-volume card (W) with a card built only from the text before the reader's position (P, the versioned repair), on original names and on names under a consistent cipher that no model has seen. Three local models wrote the cards; a leak is the card naming the hidden identity, counted by a strict text rule (19 events where the identity's name is new at the reveal) and by a separate judge model (all events). Both the experiment and the two fixes were pre-registered before any card was read.", align="j", size=9.5)
+rrows = []
+NM.update({"qwen32b": "Qwen2.5-32B", "mistral24": "Mistral-Small-24B", "olmo32b": "OLMo-2-32B"})
+for (stratum, slabel), (key, rule) in [(st, kr) for st in ((rf, "7-8B"), (rf.get("larger") or {}, "24-32B")) for kr in (("A_primary_EXPLICIT_IMPLIED", "text rule"), ("B_EXPLICIT_IMPLIED", "judge rule"))]:
+    o = stratum.get(key, {})
+    for m, r in o.get("per_model", {}).items():
+        rrows.append([f"{NM.get(m, m)} ({rule}, {o['events']} events)", pc(r["W_orig"]), pc(r["W_ren"]), pc(r["P_orig"]), pc(r["P_ren"]), f"{pts(r['input_channel'])} {ci(*r['input_ci'])}"])
+    if o.get("pooled"):
+        q = o["pooled"]
+        rrows.append([f"Pooled {slabel} ({rule})", pc(q["rates"]["W_orig"]), pc(q["rates"]["W_ren"]), pc(q["rates"]["P_orig"]), pc(q["rates"]["P_ren"]), f"{pts(q['RF1_input_channel']['estimate'])} {ci(*q['RF1_input_channel']['ci'])}"])
+TABLE(["Model (rule, events)", "W orig %", "W renamed %", "P orig %", "P renamed %", "Input leak W-P renamed [95%]"], rrows, widths=[5.0, 1.9, 2.2, 1.9, 2.2, 3.6], size=8, caption="**Table 10c.** Leak of the hidden identity before the reveal: whole-volume card (W) against the versioned, prefix-built card (P).")
+qa, qb = rfA["pooled"], rfB.get("pooled", {})
+fx2 = rfx.get("fix2_pseudonymise_ruleB")
+P(f"**Reading Table 10c.** The whole-volume card names the hidden identity early in {pc(qb['rates']['W_ren'])}% of events by the judge rule and {pc(qa['rates']['W_ren'])}% by the strict text rule, on names no model has seen, so the leak comes from the build and not from memory; the pre-registered input-channel test is {'supported' if qa['RF1_input_channel']['passes'] else 'not supported'} on the strict rule and {'supported' if qb['RF1_input_channel']['passes'] else 'not supported'} on the judge rule. The versioned card leaks in {pc(qb['rates']['P_ren'])}% (renamed) and {pc(qb['rates']['P_orig'])}% (original names), and it costs one extra card build per reader position with cards of similar length. The memory-only leak (prefix card, original minus renamed names) is {pts(qb['RF3_memory_channel']['estimate'])} points for these 7-8B models." + (f" Pseudonymising the passages and mapping names back changed the prefix card's leak from {pc(fx2['P_orig'])}% to {pc(fx2['P_pseudo'])}%." if fx2 else "") + ((lambda L: f" On the larger 24-32B models the whole-volume card leaked in {pc(L['rates']['W_ren'])}% of events on cipher names against {pc(L['rates']['P_ren'])}% for the versioned card, with a memory-only leak of {pts(L['RF3_memory_channel']['estimate'])} points.")(rf['larger']['B_EXPLICIT_IMPLIED']['pooled']) if (rf.get('larger') or {}).get('B_EXPLICIT_IMPLIED', {}).get('pooled') else ""), align="j", size=9.5)
 SH("Discussion")
 P("The evidence supports a measured, qualified claim: name-keyed memory leakage is clear for the strongest model tested, is not explained by lost name cues, rises with book familiarity, and is weak or absent for small models on books they do not know. It does not show that EchoTales or any web-serial resolver leaks, and it does not use human labels. The main weaknesses are stated openly: events are model-selected, the memory probes give the book title, the pseudonyms are heuristic, the pooled interval for local models sits at the edge of significance, and the replication failed for small models.", align="j")
 
