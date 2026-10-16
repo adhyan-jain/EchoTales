@@ -1,0 +1,24 @@
+{
+ "status": "FROZEN at owner approval (CP-K). Written 2026-10-16 before any mining or model call for this study.",
+ "frozen_for": "PREREG_PD_CONFIRM.md",
+ "files_sha256": {
+  "PREREG_PD_CONFIRM.md": "db648cc1c90977dd010efb085f9d9f8eb57df09b7b513a50a625cfdc4806127d",
+  "PD_CONFIRM_event_mining_rules_v1.md": "cc4f50ccfc70a64f10e5d99465152c05a7dd859a586718bfd8d8e128beffe6a1",
+  "PD_CONFIRM_excluded_books.json": "8cefa0fa5dcaeac29b325062962a96d14082e6e0e5659726c2f1210b5673ab83",
+  "PD_confirm_prompts_v1.json": "3c7976a5d55487d79f5a1034545fc4c5e614b17dfff3235e611766601247c3ce",
+  "PD_prompts_v1.json": "b7cd09994a52aa4ef001bfad7cda0309ebc282658f36c4ac79c8a24f2f44a3fc",
+  "PD_prompts_v2.json": "0ff1e2327488ecde318841abcceef9b6bd13bfcd1ed6da2a14cc417ccd3ce0c8",
+  "PD_prompts_v4.json": "b343cf360c183043d0c39011789c62d528b91dd7cf530f7095eee99bf4bc0d1a"
+ },
+ "supporting_not_frozen_inputs": {
+  "confirm_design_numbers.json (power and cost model)": "189b0e07319a5440ca6509c2c41c459d5fcccba71255dc0a455fcbde2b216740",
+  "scripts/chimera/confirm_design_numbers.py": "fb127877999afbedc3773ba618bc5aa5a8789dca1f77567a2d82f0ecfcd61f70",
+  "PRIOR_ART_E0.md": "009d22f34344fbed699319e9e34944f2ffbfbd0d1858efa44e4ebddf2f8164b0"
+ },
+ "to_freeze_at_CP_L": [
+  "PD_confirm_events_v1.json",
+  "scripts/chimera/pd_confirm.py",
+  "E2 unseen-text set"
+ ],
+ "note": "A change after freezing is a new version, never an edit."
+}
