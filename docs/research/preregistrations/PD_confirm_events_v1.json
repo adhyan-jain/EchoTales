@@ -1,0 +1,2387 @@
+{
+ "provenance": "TEXT-DERIVED oracle; events mined by qwen32b and audited by mistral24; no human verification",
+ "events": [
+  {
+   "id": "C965_1",
+   "book": "The black tulip",
+   "gutenberg": 965,
+   "alias": [
+    "Jacob"
+   ],
+   "identity": "Isaac Boxtel",
+   "cast": [
+    "Cornelius",
+    "Rosa",
+    "Baerle",
+    "Witt",
+    "John",
+    "William",
+    "Craeke",
+    "Isaac Boxtel"
+   ],
+   "reveal_sentence": "We have seen him, more successful under the name of Jacob than under that of Isaac, gain the friendship of Gryphus, which for several months he cultivated by means of the best Geni\u00e8vre ever distilled from the Texel to Antwerp, and he lulled the suspicion of the jealous turnkey by holding out to him the flattering prospect of his designing to marry Rosa.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "Chapter 23\\. The Rival",
+    "back": 0
+   },
+   "W": 25,
+   "band": "high",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 29,
+   "n_post_alias": 16
+  },
+  {
+   "id": "C1377_1",
+   "book": "The Talisman",
+   "gutenberg": 1377,
+   "alias": [
+    "the Knight of the Leopard"
+   ],
+   "identity": "the Earl of Huntingdon",
+   "cast": [
+    "Richard",
+    "Kenneth",
+    "Vaux",
+    "Edith",
+    "Hakim",
+    "Conrade",
+    "Thomas",
+    "the Earl of Huntingdon"
+   ],
+   "reveal_sentence": "This gave me the first light on the real rank of the Knight of the Leopard; and my suspicions were confirmed by De Vaux, who, on his return from Ascalon, brought back with him the Earl of Huntingdon's sole attendant, a thick-skulled slave, who had gone thirty miles to unfold to De Vaux a secret he should have told to me.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XXVIII\\.",
+    "back": 0
+   },
+   "W": 15,
+   "band": "mid",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 10,
+   "n_post_alias": 0
+  },
+  {
+   "id": "C1848_1",
+   "book": "Montezuma's Daughter",
+   "gutenberg": 1848,
+   "alias": [
+    "She",
+    "this girl"
+   ],
+   "identity": "Marina",
+   "cast": [
+    "Garcia",
+    "Lily",
+    "Thomas",
+    "Fonseca",
+    "Bozard",
+    "Mary",
+    "Geoffrey",
+    "Juan",
+    "Marina"
+   ],
+   "reveal_sentence": "I mention this girl here for two reasons, first because she saved me once from sacrifice and once from torture, and secondly because she was none other than that woman who afterwards became known as Marina, the mistress of Cortes, without whose aid he had never conquered Mexico.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XIII",
+    "back": 0
+   },
+   "W": 11,
+   "band": "mid",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 26,
+   "n_post_alias": 35
+  },
+  {
+   "id": "C1928_1",
+   "book": "Elinor Wyllys; Or, The Young Folk of Longbridge: A Tale. Volume 2",
+   "gutenberg": 1928,
+   "alias": [
+    "my dear sir"
+   ],
+   "identity": "de Vaux",
+   "cast": [
+    "Wyllys",
+    "Stanley",
+    "Elinor",
+    "Harry",
+    "Ellsworth",
+    "William",
+    "Clapp",
+    "Creighton",
+    "Charlie",
+    "de Vaux"
+   ],
+   "reveal_sentence": "It was in fact de Vaux, come to accompany Harry to Longbridge, to meet the body of our poor Charlie: so closely, on that eventful day, were joy and sadness mingled to the friends at Wyllys-Roof.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XXII\\. \\{XLV\\}",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 3,
+   "n_post_alias": 0
+  },
+  {
+   "id": "C1942_1",
+   "book": "Rise and Fall of Cesar Birotteau",
+   "gutenberg": 1942,
+   "alias": [
+    "Roguin"
+   ],
+   "identity": "Monsieur Charles Claparon",
+   "cast": [
+    "Birotteau",
+    "Cesarine",
+    "Cesar",
+    "Honore",
+    "Billardiere",
+    "Crottat",
+    "Ragon",
+    "Xandrot",
+    "Alexandre",
+    "Monsieur Charles Claparon"
+   ],
+   "reveal_sentence": "Roguin will be, under the name of Monsieur Charles Claparon, co-proprietor with me, and will give a reversionary deed to his associates, as I shall to mine.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "\u201cYes, I have, my lamb\\. Yes,\u201d",
+    "back": 0
+   },
+   "W": 15,
+   "band": "mid",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "phrase",
+   "identity_in_prefix": true,
+   "n_pre_alias": 4,
+   "n_post_alias": 161
+  },
+  {
+   "id": "C2078_1",
+   "book": "Thais",
+   "gutenberg": 2078,
+   "alias": [
+    "Thais"
+   ],
+   "identity": "Helen",
+   "cast": [
+    "Paphnutius",
+    "Nicias",
+    "Ahmes",
+    "Dorion",
+    "Eucrites",
+    "Zenothemis",
+    "Anthony",
+    "Marcus",
+    "Lollius",
+    "Helen"
+   ],
+   "reveal_sentence": "You have heard that Thais lived formerly in Argos, under the name of Helen.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "PART THE THIRD \\-\\- THE EUPHORBIA",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 169,
+   "n_post_alias": 33
+  },
+  {
+   "id": "C2153_1",
+   "book": "Mary Barton",
+   "gutenberg": 2153,
+   "alias": [
+    "Esther"
+   ],
+   "identity": "the 'Butterfly'",
+   "cast": [
+    "Mary",
+    "Jem",
+    "Wilson",
+    "Margaret",
+    "Barton",
+    "Carson",
+    "Alice",
+    "John",
+    "Sally",
+    "the 'Butterfly'"
+   ],
+   "reveal_sentence": "The next day he applied to the police; and at last they recognised under his description of her, a woman known to them under the name of the \"Butterfly,\" from the gaiety of her dress a year or two ago.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XXXVIII\\.",
+    "back": 0
+   },
+   "W": 10,
+   "band": "mid",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": false,
+   "n_pre_alias": 68,
+   "n_post_alias": 3
+  },
+  {
+   "id": "C2160_1",
+   "book": "The Expedition of Humphry Clinker",
+   "gutenberg": 2160,
+   "alias": [
+    "Grieve"
+   ],
+   "identity": "Fathom",
+   "cast": [
+    "Barton",
+    "Liddy",
+    "Tabitha",
+    "Humphry",
+    "Quin",
+    "Wilson",
+    "Jery",
+    "Fathom"
+   ],
+   "reveal_sentence": "In short, the adventurer Fathom was, under the name of Grieve, universally respected among the commonalty of this district, as a prodigy of learning and virtue.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "In a word, Grieve was no",
+    "back": 0
+   },
+   "W": 6,
+   "band": "mid",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "phrase",
+   "identity_in_prefix": false,
+   "n_pre_alias": 10,
+   "n_post_alias": 2
+  },
+  {
+   "id": "C2516_1",
+   "book": "Redgauntlet: A Tale of the Eighteenth Century",
+   "gutenberg": 2516,
+   "alias": [
+    "Nanty Ewart"
+   ],
+   "identity": "Jack",
+   "cast": [
+    "Alan",
+    "Darsie",
+    "Peter",
+    "Joshua",
+    "Willie",
+    "John",
+    "James",
+    "Crosbie",
+    "Jack"
+   ],
+   "reveal_sentence": "I think you are the second person these ten years, that has cared a tobacco-stopper for Nanty Ewart.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XIV",
+    "back": 0
+   },
+   "W": 7,
+   "band": "mid",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 9,
+   "n_post_alias": 18
+  },
+  {
+   "id": "C3815_1",
+   "book": "Rolling Stones",
+   "gutenberg": 3815,
+   "alias": [
+    "Paley"
+   ],
+   "identity": "Mr. Tucker",
+   "cast": [
+    "Connor",
+    "John",
+    "Tom",
+    "Sweller",
+    "George",
+    "James",
+    "Sally",
+    "Wainwright",
+    "Murray",
+    "Mr. Tucker"
+   ],
+   "reveal_sentence": "But no; I held firmly to Paley.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "Paley\\? Was I sure that was",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "phrase",
+   "identity_in_prefix": false,
+   "n_pre_alias": 3,
+   "n_post_alias": 2
+  },
+  {
+   "id": "C4276_1",
+   "book": "North and South",
+   "gutenberg": 4276,
+   "alias": [
+    "Frederick"
+   ],
+   "identity": "Mr. Dickinson",
+   "cast": [
+    "Margaret",
+    "Hale",
+    "Thornton",
+    "Dixon",
+    "Bessy",
+    "Edith",
+    "Fanny",
+    "Lennox",
+    "Higgins",
+    "Mr. Dickinson"
+   ],
+   "reveal_sentence": "and he was, if necessary, to be spoken of to her under the name of Mr. Dickinson.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XXX\\.",
+    "back": 0
+   },
+   "W": 21,
+   "band": "high",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 52,
+   "n_post_alias": 134
+  },
+  {
+   "id": "C4537_1",
+   "book": "Sylvia's Lovers \u2014 Complete",
+   "gutenberg": 4537,
+   "alias": [
+    "Philip"
+   ],
+   "identity": "Stephen Freeman",
+   "cast": [
+    "Sylvia",
+    "Hester",
+    "Kinraid",
+    "Kester",
+    "Daniel",
+    "Robson",
+    "Coulson",
+    "Molly",
+    "Hepburn",
+    "Stephen Freeman"
+   ],
+   "reveal_sentence": "But Philip walked with him the two or three miles in the most submissive silence, never uttering a syllable of regret or repentance; and before Justice Cholmley, of Holm-Fell Hall, he was sworn into his Majesty's service, under the name of Stephen Freeman.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XXXIV",
+    "back": 0
+   },
+   "W": 4,
+   "band": "mid",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": false,
+   "n_pre_alias": 807,
+   "n_post_alias": 206
+  },
+  {
+   "id": "C5122_1",
+   "book": "The Trail of the Lonesome Pine",
+   "gutenberg": 5122,
+   "alias": [
+    "she",
+    "the sweetheart"
+   ],
+   "identity": "young Buck Falin",
+   "cast": [
+    "Hale",
+    "Dave",
+    "Judd",
+    "Tolliver",
+    "Gee",
+    "Hon",
+    "Rufe",
+    "Virginia",
+    "Bub",
+    "young Buck Falin"
+   ],
+   "reveal_sentence": "Who it was, she would not tell, and Hale would have been amazed had he known the sweetheart was none other than young Buck Falin and that the quarrel between the lovers had sprung from the opening quarrel that day between the clans.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "IX",
+    "back": 0
+   },
+   "W": 4,
+   "band": "mid",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 80,
+   "n_post_alias": 1360
+  },
+  {
+   "id": "C5155_1",
+   "book": "C\u00e6sar's Column: A Story of the Twentieth Century",
+   "gutenberg": 5155,
+   "alias": [
+    "this",
+    "the third member of the Executive Committee of the Brotherhood"
+   ],
+   "identity": "Arthur Phillips",
+   "cast": [
+    "Estella",
+    "Rudolph",
+    "Maximilian",
+    "Frederika",
+    "Cabano",
+    "Andrews",
+    "Mary",
+    "Gabriel",
+    "Max",
+    "Arthur Phillips"
+   ],
+   "reveal_sentence": "and Jenkins told me that he had learned, in some mysterious way, that this was really the man who, out of revenge for the wrongs inflicted on his father, was now the third member of the Executive Committee of the Brotherhood, and had furnished them with large sums of money.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "\"There seems to be more obscurity",
+    "back": 0
+   },
+   "W": 3,
+   "band": "mid",
+   "split": "dev",
+   "audit": "IMPLIED",
+   "cut_kind": "phrase",
+   "identity_in_prefix": false,
+   "n_pre_alias": 142,
+   "n_post_alias": 188
+  },
+  {
+   "id": "C5174_1",
+   "book": "Allan and the Holy Flower",
+   "gutenberg": 5174,
+   "alias": [
+    "my Snake",
+    "that mystic reptile"
+   ],
+   "identity": "Dogeetah, alias Brother John",
+   "cast": [
+    "Stephen",
+    "Hans",
+    "Hassan",
+    "Mavovo",
+    "Somers",
+    "Sammy",
+    "Quatermain",
+    "Baas",
+    "Scroope",
+    "Dogeetah, alias Brother John"
+   ],
+   "reveal_sentence": "Well, he did call upon his Snake with due and portentous ceremony and, according to Stephen, who was present, which I declined to be, that mystic reptile declared that Dogeetah, alias Brother John, would arrive in Beza Town precisely at sunset on the third day from that night.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER IX",
+    "back": 0
+   },
+   "W": 6,
+   "band": "mid",
+   "split": "dev",
+   "audit": "NOT_SUPPORTED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 5,
+   "n_post_alias": 3
+  },
+  {
+   "id": "C5660_1",
+   "book": "Mary Louise",
+   "gutenberg": 5660,
+   "alias": [
+    "Colonel Weatherby"
+   ],
+   "identity": "James J. Hathaway",
+   "cast": [
+    "Louise",
+    "Mary",
+    "Stearne",
+    "Jim",
+    "Beverly",
+    "Burrows",
+    "Mable",
+    "Eben",
+    "Conant",
+    "James J. Hathaway"
+   ],
+   "reveal_sentence": "Then followed a mangled report of the officer's visit to Beverly on government business, his recognition of Colonel Weatherby--who was none other than the noted criminal, James J. Hathaway--on the street in front of Cooper's Hotel, how the officer wired Washington for instructions and how Hathaway, alias Weatherby, escaped in the dead of night and had so far successfully eluded all pursuit.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER VI",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 5,
+   "n_post_alias": 28
+  },
+  {
+   "id": "C6086_1",
+   "book": "The Scottish Chiefs",
+   "gutenberg": 6086,
+   "alias": [
+    "his guest"
+   ],
+   "identity": "Sir Thomas de Longueville",
+   "cast": [
+    "Wallace",
+    "Helen",
+    "Bruce",
+    "Murray",
+    "Edwin",
+    "Edward",
+    "William",
+    "Ruthven",
+    "Halbert",
+    "Sir Thomas de Longueville"
+   ],
+   "reveal_sentence": "Wallace then asked to be conducted to his wounded friend, Sir Thomas de Longueville, for Sinclair was ignorant of the real rank of his guest.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "Chapter LXIX\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 5,
+   "n_post_alias": 1
+  },
+  {
+   "id": "C6941_1",
+   "book": "Old Mortality, Complete",
+   "gutenberg": 6941,
+   "alias": [
+    "Goose-Gibbie",
+    "Calf-Gibbie"
+   ],
+   "identity": "Gilbert Dudden",
+   "cast": [
+    "Morton",
+    "Claverhouse",
+    "Edith",
+    "Burley",
+    "Bellenden",
+    "Bothwell",
+    "Jenny",
+    "Margaret",
+    "Henry",
+    "Gilbert Dudden"
+   ],
+   "reveal_sentence": "I am not quite positive as to the fate of Goose-Gibbie, but am inclined to think him the same with one Gilbert Dudden, alias Calf-Gibbie, who was whipped through Hamilton for stealing poultry.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "\u201cConsider, my dear Miss Buskbody, \\(I",
+    "back": 0
+   },
+   "W": 9,
+   "band": "mid",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "phrase",
+   "identity_in_prefix": false,
+   "n_pre_alias": 6,
+   "n_post_alias": 0
+  },
+  {
+   "id": "C7079_1",
+   "book": "The Companions of Jehu",
+   "gutenberg": 7079,
+   "alias": [
+    "Roland"
+   ],
+   "identity": "Louis",
+   "cast": [
+    "Philippe",
+    "Bonaparte",
+    "Lescuyer",
+    "Amiet",
+    "Hyvert",
+    "Guyon",
+    "Leduc",
+    "Alfred",
+    "Louis"
+   ],
+   "reveal_sentence": "Three children were born of this marriage, two boys and a girl: Louis, whose acquaintance we have made under the name of Roland, Am\u00e9lie, whose beauty he had praised to Sir John, and Edouard.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER V\\. ROLAND",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 105,
+   "n_post_alias": 885
+  },
+  {
+   "id": "C7265_1",
+   "book": "The History of Pendennis",
+   "gutenberg": 7265,
+   "alias": [
+    "Miss Amory",
+    "Missy",
+    "Betsi"
+   ],
+   "identity": "Betsy",
+   "cast": [
+    "Pendennis",
+    "Foker",
+    "Arthur",
+    "Costigan",
+    "Clavering",
+    "Smirke",
+    "Laura",
+    "Fotheringay",
+    "Helen",
+    "Betsy"
+   ],
+   "reveal_sentence": "The fact is, that Miss Amory, called Missy at home, had really at the first been christened Betsy\u2014but assumed the name of Blanche of her own will and fantasy, and crowned herself with it;",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XXIV\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 19,
+   "n_post_alias": 140
+  },
+  {
+   "id": "C7497_1",
+   "book": "Further Adventures of Quincy Adams Sawyer and Mason Corner Folks",
+   "gutenberg": 7497,
+   "alias": [
+    "I"
+   ],
+   "identity": "Alessandro Nondra",
+   "cast": [
+    "Quincy",
+    "Alice",
+    "Maude",
+    "Sawyer",
+    "Ella",
+    "Florence",
+    "Tom",
+    "Harry",
+    "Hiram",
+    "Alessandro Nondra"
+   ],
+   "reveal_sentence": "After the Captain's death, Father Paolo went to Signor Matrosa, who, when confronted with the facts, admitted I had been sold to him, and that I was known under the name of Alessandro Nondra, but he told him that I had been mixed up in a fight, and had received such a bad wound that I had been sent to the hospital.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XXV",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": false,
+   "n_pre_alias": 1359,
+   "n_post_alias": 497
+  },
+  {
+   "id": "C7510_1",
+   "book": "Keith of the Border: A Tale of the Plains",
+   "gutenberg": 7510,
+   "alias": [
+    "he"
+   ],
+   "identity": "Fred Willoughby",
+   "cast": [
+    "Keith",
+    "Neb",
+    "Jack",
+    "Massa",
+    "Carson",
+    "Bart",
+    "Hicks",
+    "Waite",
+    "Christie",
+    "Fred Willoughby"
+   ],
+   "reveal_sentence": "He enlisted under the name of Fred Willoughby.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "Chapter IX\\. The Girl of the Cabin",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "dev",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 211,
+   "n_post_alias": 899
+  },
+  {
+   "id": "C7661_1",
+   "book": "What Will He Do with It? \u2014 Volume 03",
+   "gutenberg": 7661,
+   "alias": [
+    "Mop"
+   ],
+   "identity": "Sir Isaac",
+   "cast": [
+    "Sophy",
+    "Rugge",
+    "Traill",
+    "Crane",
+    "Merle",
+    "Christian",
+    "David",
+    "Lizzy",
+    "Sir Isaac"
+   ],
+   "reveal_sentence": "The only strange thing is, that he should do it also under the name of Sir Isaac, and much more cheerfully too.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER V\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": false,
+   "n_pre_alias": 3,
+   "n_post_alias": 5
+  },
+  {
+   "id": "C7671_1",
+   "book": "What Will He Do with It? \u2014 Complete",
+   "gutenberg": 7671,
+   "alias": [
+    "Mop"
+   ],
+   "identity": "Sir Isaac",
+   "cast": [
+    "Lionel",
+    "Darrell",
+    "Vance",
+    "Sophy",
+    "Waife",
+    "Rugge",
+    "Haughton",
+    "Merle",
+    "Guy",
+    "Sir Isaac"
+   ],
+   "reveal_sentence": "The only strange thing is, that he should do it also under the name of Sir Isaac, and much more cheerfully too.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER V\\.",
+    "back": 0
+   },
+   "W": 1,
+   "band": "low",
+   "split": "dev",
+   "audit": "IMPLIED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": false,
+   "n_pre_alias": 3,
+   "n_post_alias": 5
+  },
+  {
+   "id": "C7671_2",
+   "book": "What Will He Do with It? \u2014 Complete",
+   "gutenberg": 7671,
+   "alias": [
+    "Willaim Waife",
+    "Sophy"
+   ],
+   "identity": "Simpson",
+   "cast": [
+    "Darrell",
+    "Lionel",
+    "Jasper",
+    "Vance",
+    "Crane",
+    "Haughton",
+    "Rugge",
+    "Montfort",
+    "Morley",
+    "Simpson"
+   ],
+   "reveal_sentence": "I asked him to inquire about this Willaim Waife and his granddaughter Sophy, who were said to have sailed for New York nearly five years ago, and he saw the very persons--settled in New York--no longer under the name of Waife, but their true name of Simpson, and got out from the man that they had been induced to take their passage from England in the name of Waife, at the request of a person whom the mail would not-give up, but to whom he said he was under obligations.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER V\\.",
+    "back": 0
+   },
+   "W": 1,
+   "band": "low",
+   "split": "dev",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 300,
+   "n_post_alias": 308
+  },
+  {
+   "id": "C7671_3",
+   "book": "What Will He Do with It? \u2014 Complete",
+   "gutenberg": 7671,
+   "alias": [
+    "Merle",
+    "the cobbler"
+   ],
+   "identity": "the Wise Man",
+   "cast": [
+    "Darrell",
+    "Lionel",
+    "Sophy",
+    "Jasper",
+    "Vance",
+    "Montfort",
+    "Haughton",
+    "Vipont",
+    "Crane",
+    "the Wise Man"
+   ],
+   "reveal_sentence": "Well, the ex-agent, who had also been directed to this Merle by his employer, had, through his correspondent, ascertained that the cobbler was living at Norwich, where he passed under the name of the Wise Man, and where he was in perpetual danger of being sent to the house of correction as an impostor, dealing in astrology, crystal-seeing, and such silly or nefarious practices.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER IV\\.",
+    "back": 0
+   },
+   "W": 1,
+   "band": "low",
+   "split": "dev",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 46,
+   "n_post_alias": 33
+  },
+  {
+   "id": "C7713_1",
+   "book": "\"My Novel\" \u2014 Volume 12",
+   "gutenberg": 7713,
+   "alias": [
+    "/parvenu/",
+    "Levy"
+   ],
+   "identity": "the son of a long-descended English peer",
+   "cast": [
+    "Randal",
+    "Violante",
+    "Harley",
+    "Leonard",
+    "Beatrice",
+    "Egerton",
+    "Leslie",
+    "Helen",
+    "Avenel",
+    "the son of a long-descended English peer"
+   ],
+   "reveal_sentence": "Though you are contented to honour the name of Levy, we, in society, all know that you are the son of a long-descended English peer.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XVII\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 41,
+   "n_post_alias": 107
+  },
+  {
+   "id": "C7974_1",
+   "book": "The Pilot: A Tale of the Sea",
+   "gutenberg": 7974,
+   "alias": [
+    "Boltrope"
+   ],
+   "identity": "Griff",
+   "cast": [
+    "Griffith",
+    "Howard",
+    "Katherine",
+    "Dillon",
+    "Alice",
+    "Tom",
+    "Cecilia",
+    "John",
+    "Ruth",
+    "Griff"
+   ],
+   "reveal_sentence": "\u201cAh! you are there, Griff, and with a whole skin, I see,\u201d cried Barnstable, smiling with pleasure; \u201cthey have passed poor Boltrope down into one of his own storerooms!",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XXXIII\\.",
+    "back": 0
+   },
+   "W": 5,
+   "band": "mid",
+   "split": "test",
+   "audit": "NOT_SUPPORTED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 16,
+   "n_post_alias": 10
+  },
+  {
+   "id": "C9589_1",
+   "book": "Tales and Sketches Part 3 from Volume V of The Works of John Greenleaf Whittier",
+   "gutenberg": 9589,
+   "alias": [
+    "a handsome middle-aged gentleman",
+    "one of his own countrymen",
+    "the stranger"
+   ],
+   "identity": "Joel Barlow",
+   "cast": [
+    "Mary",
+    "Aminadab",
+    "Martin",
+    "Richard",
+    "David",
+    "John",
+    "Alice",
+    "Anna",
+    "Joel Barlow"
+   ],
+   "reveal_sentence": "The stranger was none other than Joel Barlow, Commissioner of the United States to procure the liberation of slaves belonging to that government.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "But one day a handsome middle\\-aged",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "phrase",
+   "identity_in_prefix": false,
+   "n_pre_alias": 4,
+   "n_post_alias": 4
+  },
+  {
+   "id": "C9752_1",
+   "book": "Night and Morning, Volume 3",
+   "gutenberg": 9752,
+   "alias": [
+    "Mr. Love",
+    "Bacchus himself had not so many!"
+   ],
+   "identity": "William Gawtrey",
+   "cast": [
+    "Philip",
+    "Goupille",
+    "Morton",
+    "Rosalie",
+    "Adele",
+    "Birnie",
+    "Courval",
+    "Giraud",
+    "William Gawtrey"
+   ],
+   "reveal_sentence": "One day, a lady, richly dressed, was ushered by Mr. Birnie into the bureau of Mr. Love, alias Gawtrey.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER IV\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 28,
+   "n_post_alias": 23
+  },
+  {
+   "id": "C9847_1",
+   "book": "Bacon is Shake-Speare Together with a Reprint of Bacon's Promus of Formularies and Elegancies",
+   "gutenberg": 9847,
+   "alias": [
+    "William Shakespeare"
+   ],
+   "identity": "him who was himself the 'Greatest Birth of Time'; the man pre-eminently distinguished amongst the sons of earth",
+   "cast": [
+    "Shakspeare",
+    "John",
+    "Jonson",
+    "Francis",
+    "Hamlet",
+    "Shackspere",
+    "Thomas",
+    "him who was himself the 'Greatest Birth of Time'; the man pre-eminently distinguished amongst the sons of earth"
+   ],
+   "reveal_sentence": "or were written by him who was himself the \"Greatest Birth of Time\"; the man pre-eminently distinguished amongst the sons of earth; the man who in order to \"do good to all mankind,\" disguised his personality \"in a despised weed,\" and wrote under the name of William Shakespeare.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER IX\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 3,
+   "n_post_alias": 17
+  },
+  {
+   "id": "C10150_1",
+   "book": "Dracula's Guest",
+   "gutenberg": 10150,
+   "alias": [
+    "a fisherman",
+    "the salmon-fisher"
+   ],
+   "identity": "Saft Tammie",
+   "cast": [
+    "Sarah",
+    "Eric",
+    "Malcolmson",
+    "Abel",
+    "Geoffrey",
+    "Joshua",
+    "Brent",
+    "Gerald",
+    "Markam",
+    "Saft Tammie"
+   ],
+   "reveal_sentence": "He was surprised and not altogether pleased to find that his visitor was none other than Saft Tammie, who at once opened fire on him: \u201cI maun gang awa\u2019 t\u2019 the post; but I thocht that I would waste an hour on ye, and ca\u2019 roond just to see if ye waur still that fou wi\u2019 vanity as on the nicht gane by.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "He was awakened early by a",
+    "back": 0
+   },
+   "W": 10,
+   "band": "mid",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "phrase",
+   "identity_in_prefix": true,
+   "n_pre_alias": 4,
+   "n_post_alias": 0
+  },
+  {
+   "id": "C11111_1",
+   "book": "Only an Irish Boy; Or, Andy Burke's Fortunes",
+   "gutenberg": 11111,
+   "alias": [
+    "Mr. Fairfax"
+   ],
+   "identity": "Marvin",
+   "cast": [
+    "Andy",
+    "Godfrey",
+    "Burke",
+    "Sophia",
+    "Priscilla",
+    "Andrew",
+    "John",
+    "Charlie",
+    "Alfred",
+    "Marvin"
+   ],
+   "reveal_sentence": "We will so far anticipate events as to say that the testimony of Andy and the colonel was considered conclusive by the court, and, on the strength of it, Mr. Fairfax, alias Marvin, was sentenced to several years' imprisonment at hard labor.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XXIX",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "dev",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 12,
+   "n_post_alias": 0
+  },
+  {
+   "id": "C11431_1",
+   "book": "Character Sketches of Romance, Fiction and the Drama, Vol. 1 A Revised American Edition of the Reader's Handbook",
+   "gutenberg": 11431,
+   "alias": [
+    "Anselme"
+   ],
+   "identity": "don Thomas d'Alburci, of Naples",
+   "cast": [
+    "Scott",
+    "Fletcher",
+    "Arthur",
+    "George",
+    "John",
+    "Alexander",
+    "Byron",
+    "Charles",
+    "Richard",
+    "don Thomas d'Alburci, of Naples"
+   ],
+   "reveal_sentence": "Harpagon the miser and his son Cl\u00e9ante (2 _syl._) both want to marry Mariane (3 _syl._), daughter of Anselme, _alias_ don Thomas d'Alburci, of Naples.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "AUTOL\u00b4YCOS, the craftiest of thieves\\. He",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "phrase",
+   "identity_in_prefix": true,
+   "n_pre_alias": 3,
+   "n_post_alias": 3
+  },
+  {
+   "id": "C11643_1",
+   "book": "John Caldigate",
+   "gutenberg": 11643,
+   "alias": [
+    "Euphemia Caldigate"
+   ],
+   "identity": "Smith",
+   "cast": [
+    "Hester",
+    "John",
+    "Robert",
+    "Dick",
+    "Julia",
+    "Mick",
+    "Polly",
+    "Smith"
+   ],
+   "reveal_sentence": "The first witness called was the woman herself, who was summoned in the names of Euphemia Caldigate _alias_ Smith.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "Chapter XLI",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 3,
+   "n_post_alias": 1
+  },
+  {
+   "id": "C11720_1",
+   "book": "Fenton's Quest",
+   "gutenberg": 11720,
+   "alias": [
+    "Mr. Nowell"
+   ],
+   "identity": "Percival",
+   "cast": [
+    "Gilbert",
+    "Marian",
+    "Fenton",
+    "John",
+    "David",
+    "Adela",
+    "Jack",
+    "Percival"
+   ],
+   "reveal_sentence": "\"My wife was a poor helpless creature, who contrived to make my life wretched,\" Mr. Nowell, alias Percival, answered coolly.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XIV\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 12,
+   "n_post_alias": 69
+  },
+  {
+   "id": "C13673_1",
+   "book": "The Pacha of Many Tales",
+   "gutenberg": 13673,
+   "alias": [
+    "the old fool",
+    "Ali"
+   ],
+   "identity": "Huckaback",
+   "cast": [
+    "Mustapha",
+    "Yussuf",
+    "Donna",
+    "Giaffar",
+    "Emilia",
+    "Pedro",
+    "Teresa",
+    "Perez",
+    "Florez",
+    "Huckaback"
+   ],
+   "reveal_sentence": "Thus perished the two barbers, and thus did Huckaback, under the name of Ali, reign in their stead.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "Chapter XXII",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "dev",
+   "audit": "NOT_SUPPORTED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 30,
+   "n_post_alias": 0
+  },
+  {
+   "id": "C14498_1",
+   "book": "A Handbook to the Works of Browning (6th ed.)",
+   "gutenberg": 14498,
+   "alias": [
+    "Mr. Browning"
+   ],
+   "identity": "Furini",
+   "cast": [
+    "Sordello",
+    "Pompilia",
+    "Balaustion",
+    "Guido",
+    "Franceschini",
+    "Fifine",
+    "Caponsacchi",
+    "John",
+    "Palma",
+    "Furini"
+   ],
+   "reveal_sentence": "But the anomaly disappears in the more floating outlines of a poetic personal experience; and Mr. Browning (alias Furini) once more assures us that what he \"knows\" of the nature and mode of action of the First Cause he knows for himself only.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "IX\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "dev",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 166,
+   "n_post_alias": 19
+  },
+  {
+   "id": "C17434_1",
+   "book": "The Thin Red Line; and Blue Blood",
+   "gutenberg": 17434,
+   "alias": [
+    "Mr. Hobson"
+   ],
+   "identity": "Ledantec",
+   "cast": [
+    "Wilders",
+    "Hyde",
+    "Mariquita",
+    "Raglan",
+    "Benito",
+    "Lydstone",
+    "Stanislas",
+    "Essendine",
+    "Faulks",
+    "Ledantec"
+   ],
+   "reveal_sentence": "Mr. Hobson, _alias_ Ledantec, had listened attentively to this friendly message as it was interpreted to him bit by bit, but without betraying the slightest concern.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER IX\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 30,
+   "n_post_alias": 1
+  },
+  {
+   "id": "C21557_1",
+   "book": "Newton Forster; Or, The Merchant Service",
+   "gutenberg": 21557,
+   "alias": [
+    "Mrs Forster"
+   ],
+   "identity": "Smith",
+   "cast": [
+    "Newton",
+    "Nicholas",
+    "Drawlock",
+    "Fontanges",
+    "Jackson",
+    "John",
+    "Isabel",
+    "Revel",
+    "Amber",
+    "Smith"
+   ],
+   "reveal_sentence": "Mrs Forster (who had assumed the name of Smith) was obliged to have recourse to that patience and resignation which had been so severely inculcated.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "Her heart leapt when she discovered",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "phrase",
+   "identity_in_prefix": true,
+   "n_pre_alias": 97,
+   "n_post_alias": 8
+  },
+  {
+   "id": "C21571_1",
+   "book": "The Pacha of Many Tales",
+   "gutenberg": 21571,
+   "alias": [
+    "the old fool",
+    "Ali"
+   ],
+   "identity": "Huckaback",
+   "cast": [
+    "Mustapha",
+    "Yussuf",
+    "Donna",
+    "Giaffar",
+    "Emilia",
+    "Pedro",
+    "Teresa",
+    "Perez",
+    "Florez",
+    "Huckaback"
+   ],
+   "reveal_sentence": "Thus perished the two barbers, and thus did Huckaback, under the name of Ali, reign in their stead.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "\"It is my destiny,\" replied Mustapha,",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "NOT_SUPPORTED",
+   "cut_kind": "phrase",
+   "identity_in_prefix": true,
+   "n_pre_alias": 30,
+   "n_post_alias": 0
+  },
+  {
+   "id": "C21729_1",
+   "book": "Dusty Diamonds Cut and Polished: A Tale of City Arab Life and Adventure",
+   "gutenberg": 21729,
+   "alias": [
+    "little Mouse"
+   ],
+   "identity": "Robbie Dell",
+   "cast": [
+    "Richard",
+    "Hetty",
+    "Giles",
+    "Sam",
+    "Ned",
+    "Molly",
+    "Sammy",
+    "Samuel",
+    "Brandon",
+    "Robbie Dell"
+   ],
+   "reveal_sentence": "\"It's the sea!\" exclaimed the boy who had been named little Mouse, _alias_ Robbie Dell.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "And now the remnant of the",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "phrase",
+   "identity_in_prefix": false,
+   "n_pre_alias": 3,
+   "n_post_alias": 2
+  },
+  {
+   "id": "C24804_1",
+   "book": "The Rider in Khaki: A Novel",
+   "gutenberg": 24804,
+   "alias": [
+    "Alan"
+   ],
+   "identity": "Armand Roche",
+   "cast": [
+    "Eve",
+    "Jane",
+    "Carl",
+    "Tom",
+    "Chesney",
+    "Abel",
+    "Meason",
+    "Ella",
+    "Trent",
+    "Armand Roche"
+   ],
+   "reveal_sentence": "After some difficulty she procured Alan a permit to leave the city under the name of Armand Roche.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XXIII",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": false,
+   "n_pre_alias": 284,
+   "n_post_alias": 155
+  },
+  {
+   "id": "C28337_1",
+   "book": "Hushed Up! A Mystery of London",
+   "gutenberg": 28337,
+   "alias": [
+    "Phil Poland",
+    "Louis Lessar"
+   ],
+   "identity": "the man who was falsely denounced by Pennington as an accomplice in the assassination of the young Under-Secretary, Mr. Burke, on the Riviera",
+   "cast": [
+    "Sylvia",
+    "Shuttleworth",
+    "Biddulph",
+    "Reckitt",
+    "Jack",
+    "Owen",
+    "Forbes",
+    "Delanne",
+    "Marlowe",
+    "the man who was falsely denounced by Pennington as an accomplice in the assassination of the young Under-Secretary, Mr. Burke, on the Riviera"
+   ],
+   "reveal_sentence": "Yes. Sonia is the daughter of Phil Poland, alias Louis Lessar, the man who was falsely denounced by Pennington as an accomplice in the assassination of the young Under-Secretary, Mr. Burke, on the Riviera.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER TWENTY\\-EIGHT",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 11,
+   "n_post_alias": 4
+  },
+  {
+   "id": "C28337_2",
+   "book": "Hushed Up! A Mystery of London",
+   "gutenberg": 28337,
+   "alias": [
+    "the man Pennington"
+   ],
+   "identity": "Du Cane",
+   "cast": [
+    "Sylvia",
+    "Shuttleworth",
+    "Biddulph",
+    "Reckitt",
+    "Jack",
+    "Owen",
+    "Forbes",
+    "Delanne",
+    "Sonia",
+    "Du Cane"
+   ],
+   "reveal_sentence": "No; on the contrary, while the man Pennington, alias Du Cane, is hated--and it will be believed by those arrested that he has betrayed them in order to save himself--yet Poland is beloved.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "\"Where is he now\\? Have you",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "phrase",
+   "identity_in_prefix": true,
+   "n_pre_alias": 3,
+   "n_post_alias": 0
+  },
+  {
+   "id": "C33081_1",
+   "book": "Sir Jasper Carew: His Life and Experience",
+   "gutenberg": 33081,
+   "alias": [
+    "your",
+    "you"
+   ],
+   "identity": "Bernard",
+   "cast": [
+    "Fagan",
+    "Curtis",
+    "Polly",
+    "Dan",
+    "Carew",
+    "Raper",
+    "Rutledge",
+    "Crowther",
+    "Gabriac",
+    "Bernard"
+   ],
+   "reveal_sentence": "The source from which I obtained this information leaves no doubt of its correctness, as you will acknowledge when I add that it enables me to forward to you, by this enclosure, a passport for England, under the name of Bernard.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XXX\\. LINANGE",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "dev",
+   "audit": "IMPLIED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": false,
+   "n_pre_alias": 1211,
+   "n_post_alias": 724
+  },
+  {
+   "id": "C33294_1",
+   "book": "On the Heights: A Novel",
+   "gutenberg": 33294,
+   "alias": [
+    "Fitz"
+   ],
+   "identity": "Fritz",
+   "cast": [
+    "Walpurga",
+    "Irma",
+    "Hansei",
+    "Gunther",
+    "Bruno",
+    "Eberhard",
+    "Zenza",
+    "Thomas",
+    "Emma",
+    "Fritz"
+   ],
+   "reveal_sentence": "The name was really Fritz, but Fitz sounded better.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "Bruno had entered two of his",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "phrase",
+   "identity_in_prefix": true,
+   "n_pre_alias": 3,
+   "n_post_alias": 11
+  },
+  {
+   "id": "C33538_1",
+   "book": "A Bed of Roses",
+   "gutenberg": 33538,
+   "alias": [
+    "Lissa",
+    "dark and Italian looking"
+   ],
+   "identity": "a Greek",
+   "cast": [
+    "Betty",
+    "Edward",
+    "Jack",
+    "Mary",
+    "Lottie",
+    "Gertie",
+    "Neville",
+    "Cora",
+    "Bella",
+    "a Greek"
+   ],
+   "reveal_sentence": "She was really a Greek, and all the grace of the East was in every movement of her slim figure.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "'No thanks\\.' Zoe was a good\\-looking",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "phrase",
+   "identity_in_prefix": true,
+   "n_pre_alias": 3,
+   "n_post_alias": 28
+  },
+  {
+   "id": "C33802_1",
+   "book": "The Mysteries of Paris, illustrated with etchings, Vol. 3",
+   "gutenberg": 33802,
+   "alias": [
+    "Doctor Vincent"
+   ],
+   "identity": "Polidori",
+   "cast": [
+    "Ferrand",
+    "Louise",
+    "Rodolph",
+    "Morel",
+    "Germain",
+    "Rigolette",
+    "Jacques",
+    "Remy",
+    "Pipelet",
+    "Polidori"
+   ],
+   "reveal_sentence": "The notary had seen Polidori (one of his two accomplices) recently, and had proposed to him to go to Asnieres, to the Martials, the fresh-water pirates, of whom we shall presently speak,--had proposed to him, we say, to poison Louise Morel, under the name of Doctor Vincent.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER V\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": false,
+   "n_pre_alias": 4,
+   "n_post_alias": 0
+  },
+  {
+   "id": "C35443_1",
+   "book": "Lost Lenore: The Adventures of a Rolling Stone",
+   "gutenberg": 35443,
+   "alias": [
+    "Mr Leary"
+   ],
+   "identity": "Mathews",
+   "cast": [
+    "Lenore",
+    "Hyland",
+    "Adkins",
+    "Dick",
+    "Guinane",
+    "Jack",
+    "Ann",
+    "Foster",
+    "Rowley",
+    "Mathews"
+   ],
+   "reveal_sentence": "On reaching Sydney, they had found Mr Leary passing under the name of Mathews.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "From Martha I learnt what was",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "phrase",
+   "identity_in_prefix": true,
+   "n_pre_alias": 63,
+   "n_post_alias": 10
+  },
+  {
+   "id": "C36027_1",
+   "book": "Silent Struggles",
+   "gutenberg": 36027,
+   "alias": [
+    "Goody Brown"
+   ],
+   "identity": "Lady Phipps",
+   "cast": [
+    "Parris",
+    "Elizabeth",
+    "Barbara",
+    "Samuel",
+    "Stafford",
+    "William",
+    "Lovel",
+    "Norman",
+    "Jason",
+    "Lady Phipps"
+   ],
+   "reveal_sentence": "I know at a glance that you are the lady I am in search of; and I--really it is awkward--but I am Lady Phipps.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER VII\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "NOT_SUPPORTED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 15,
+   "n_post_alias": 19
+  },
+  {
+   "id": "C36592_1",
+   "book": "The Fire Trumpet: A Romance of the Cape Frontier",
+   "gutenberg": 36592,
+   "alias": [
+    "Sharkey",
+    "the Cuban gentleman"
+   ],
+   "identity": "Mr Vargas Smith",
+   "cast": [
+    "Claverton",
+    "Hicks",
+    "Lilian",
+    "Ethel",
+    "Brathwaite",
+    "Jim",
+    "Armitage",
+    "Allen",
+    "Arthur",
+    "Mr Vargas Smith"
+   ],
+   "reveal_sentence": "\"Now, Mr Vargas Smith, alias Sharkey, alias the Cuban gentleman--now, may I ask, what the devil are you doing here?\"",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "Part II\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 6,
+   "n_post_alias": 14
+  },
+  {
+   "id": "C37005_1",
+   "book": "The Devil's Elixir, Vol. 2 (of 2)",
+   "gutenberg": 37005,
+   "alias": [
+    "Cyrillus"
+   ],
+   "identity": "Count Victorin",
+   "cast": [
+    "Aurelia",
+    "Medardus",
+    "Francesco",
+    "Hermogen",
+    "Leonard",
+    "Rosalia",
+    "Koenigswald",
+    "Euphemia",
+    "Schoenfeld",
+    "Count Victorin"
+   ],
+   "reveal_sentence": "Soon after your flight from the _residenz_ of the Prince von Rosenthurm, and after the monk, with whom Cyrillus had confounded you, had, as if by miracle, escaped, it was proved by the discovery of letters, and other concomitant testimony, that the Count Victorin, disguised as a monk, had been at the Baron's castle, and must have been the perpetrator of the crimes charged against you.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XIX\\.",
+    "back": 0
+   },
+   "W": 15,
+   "band": "mid",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 26,
+   "n_post_alias": 0
+  },
+  {
+   "id": "C37336_1",
+   "book": "Wilson's Tales of the Borders and of Scotland, Volume 21",
+   "gutenberg": 37336,
+   "alias": [
+    "Christian"
+   ],
+   "identity": "Douglas",
+   "cast": [
+    "Geordie",
+    "Gourlay",
+    "George",
+    "Ann",
+    "Dempster",
+    "Baudron",
+    "Dallas",
+    "Guthrie",
+    "Mackay",
+    "Douglas"
+   ],
+   "reveal_sentence": "\"No--at the White Horse in the Canongate, under the name of Douglas.\"",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "\"And now want rest and peace!",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "phrase",
+   "identity_in_prefix": false,
+   "n_pre_alias": 36,
+   "n_post_alias": 20
+  },
+  {
+   "id": "C38323_1",
+   "book": "The Chevalier d'Auriac",
+   "gutenberg": 38323,
+   "alias": [
+    "Madame"
+   ],
+   "identity": "Princess of Charity",
+   "cast": [
+    "Rone",
+    "Nicholas",
+    "Belin",
+    "Auriac",
+    "Leyva",
+    "Fere",
+    "Babette",
+    "Henry",
+    "Arbois",
+    "Princess of Charity"
+   ],
+   "reveal_sentence": "-- '_Morbleu!_ Madame! But you are the Princess of Charity.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "I shall not forget what happened",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "phrase",
+   "identity_in_prefix": false,
+   "n_pre_alias": 26,
+   "n_post_alias": 154
+  },
+  {
+   "id": "C39858_1",
+   "book": "Trilby",
+   "gutenberg": 39858,
+   "alias": [
+    "Little Billee"
+   ],
+   "identity": "William Bagot",
+   "cast": [
+    "Trilby",
+    "Taffy",
+    "Svengali",
+    "Laird",
+    "Carrel",
+    "Durien",
+    "Zouzou",
+    "Anatole",
+    "William Bagot"
+   ],
+   "reveal_sentence": "Then one day in the late autumn he spread his wings and flew away to London, which was very ready with open arms to welcome William Bagot, the already famous painter, _alias_ Little Billee!",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "Part Fourth",
+    "back": 0
+   },
+   "W": 7,
+   "band": "mid",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": false,
+   "n_pre_alias": 136,
+   "n_post_alias": 148
+  },
+  {
+   "id": "C40829_1",
+   "book": "Devil's Dice",
+   "gutenberg": 40829,
+   "alias": [
+    "my friend",
+    "he"
+   ],
+   "identity": "Roland",
+   "cast": [
+    "Jack",
+    "Dora",
+    "Sybil",
+    "Mabel",
+    "Bethune",
+    "Gilbert",
+    "Stretton",
+    "Stuart",
+    "Grindlay",
+    "Roland"
+   ],
+   "reveal_sentence": "Alone in the little dining-room he whispered briefly that he was going under the name of Roland, representing himself to be a land-owner from Chaudfontaine, near Liege.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER TWENTY SIX\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "dev",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": false,
+   "n_pre_alias": 619,
+   "n_post_alias": 186
+  },
+  {
+   "id": "C40833_1",
+   "book": "The Temptress",
+   "gutenberg": 40833,
+   "alias": [
+    "Duvauchel"
+   ],
+   "identity": "Dedieu",
+   "cast": [
+    "Hugh",
+    "Valerie",
+    "Egerton",
+    "Dolly",
+    "Pierre",
+    "Jack",
+    "Berard",
+    "Graham",
+    "Jacob",
+    "Dedieu"
+   ],
+   "reveal_sentence": "Then I found that she had assumed the name of Dedieu instead of Duvauchel, and that she had managed to acquire sufficient money to live in affluence.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER THIRTY TWO\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "dev",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 5,
+   "n_post_alias": 4
+  },
+  {
+   "id": "C41185_1",
+   "book": "The Voice from the Void: The Great Wireless Mystery",
+   "gutenberg": 41185,
+   "alias": [
+    "Arthur Porter"
+   ],
+   "identity": "Bertram Harrison",
+   "cast": [
+    "Roddy",
+    "Homfray",
+    "Elma",
+    "Freda",
+    "Gordon",
+    "Barclay",
+    "Farncombe",
+    "Edna",
+    "Jimmie",
+    "Bertram Harrison"
+   ],
+   "reveal_sentence": "Freda had followed the old Minister from London and had managed to become acquainted with him with the sole object of introducing Arthur Porter, alias Bertram Harrison.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER TWENTY TWO\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 7,
+   "n_post_alias": 2
+  },
+  {
+   "id": "C41453_1",
+   "book": "The Mysterious Mr. Miller",
+   "gutenberg": 41453,
+   "alias": [
+    "Miller",
+    "Shacklock"
+   ],
+   "identity": "Gordon-Wright",
+   "cast": [
+    "Ella",
+    "Lucie",
+    "Sammy",
+    "Massari",
+    "Godfrey",
+    "Gilbert",
+    "Nardini",
+    "Gordon-Wright"
+   ],
+   "reveal_sentence": "It seemed to me that Gordon-Wright, alias Shacklock, was one of his ingenious lieutenants whom he was entertaining in his cosy retreat--planning some new scheme perhaps--and who was, at the same time, an ardent admirer of the beautiful girl whose unhappiness and deadly peril was so great a mystery.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER SEVENTEEN\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 71,
+   "n_post_alias": 146
+  },
+  {
+   "id": "C41456_1",
+   "book": "Guilty Bonds",
+   "gutenberg": 41456,
+   "alias": [
+    "my uncle"
+   ],
+   "identity": "Hertzen",
+   "cast": [
+    "Vera",
+    "Bob",
+    "Frank",
+    "Nugent",
+    "Roland",
+    "Burgoyne",
+    "Demetrius",
+    "Seroff",
+    "Hertzen"
+   ],
+   "reveal_sentence": "My uncle--who had assumed the name of Hertzen--and I, travelled first to Paris, and for a couple of years led a wandering life, visiting nearly all the European capitals.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER THIRTY THREE\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 6,
+   "n_post_alias": 1
+  },
+  {
+   "id": "C42529_1",
+   "book": "Dariel: A Romance of Surrey",
+   "gutenberg": 42529,
+   "alias": [
+    "that scamp",
+    "Hafer"
+   ],
+   "identity": "Hisar",
+   "cast": [
+    "Imar",
+    "George",
+    "Dariel",
+    "Tom",
+    "Stoneman",
+    "Stepan",
+    "Harold",
+    "Jackson",
+    "Marva",
+    "Hisar"
+   ],
+   "reveal_sentence": "why the dickens did she send us that scamp, whose real name is Hisar, under the name of Hafer?",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER LII",
+    "back": 0
+   },
+   "W": 2,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 57,
+   "n_post_alias": 17
+  },
+  {
+   "id": "C42532_1",
+   "book": "The Gold-Seekers: A Tale of California",
+   "gutenberg": 42532,
+   "alias": [
+    "Se\u00f1or Garrucholo",
+    "El Garrucholo"
+   ],
+   "identity": "Colonel Francisco Flor\u00e9s",
+   "cast": [
+    "Louis",
+    "Valentine",
+    "Cornelio",
+    "Curumilla",
+    "Sebastian",
+    "Angela",
+    "Guerrero",
+    "Colonel Francisco Flor\u00e9s"
+   ],
+   "reveal_sentence": "El Garrucholo, for the ex-bandit was really hidden under Colonel Francisco Flor\u00e9s, shuddered involuntarily at finding himself thus detected.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XVI\\.",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "dev",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 8,
+   "n_post_alias": 0
+  },
+  {
+   "id": "C44924_1",
+   "book": "Uncle Joe's Stories",
+   "gutenberg": 44924,
+   "alias": [
+    "the figure",
+    "one who knew the road well"
+   ],
+   "identity": "Ophelia",
+   "cast": [
+    "Belinda",
+    "Zac",
+    "Evelyn",
+    "Philip",
+    "Fridolin",
+    "Effie",
+    "Joe",
+    "Concaterina",
+    "Amabilia",
+    "Ophelia"
+   ],
+   "reveal_sentence": "A listener, however attentive, could scarcely have made out the meaning of that which Ophelia (for it was none other than the daughter of the house of Pigspud) was reciting, for the language in which she spoke was strange, and her tone somewhat indistinct;",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "Leaving these worthies to their expectations,",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "dev",
+   "audit": "EXPLICIT",
+   "cut_kind": "phrase",
+   "identity_in_prefix": true,
+   "n_pre_alias": 3,
+   "n_post_alias": 1
+  },
+  {
+   "id": "C46367_1",
+   "book": "Talbot's Angles",
+   "gutenberg": 46367,
+   "alias": [
+    "Talbot's Angles"
+   ],
+   "identity": "Jeffreys",
+   "cast": [
+    "Linda",
+    "Berk",
+    "Phebe",
+    "Verlinda",
+    "Bertie",
+    "Parthy",
+    "Martin",
+    "Lauretta",
+    "Maria",
+    "Jeffreys"
+   ],
+   "reveal_sentence": "He shrank from making the revelation which should first suggest to Linda that it was really Talbot's Angles to which the papers referred.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "CHAPTER XV",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "IMPLIED",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 17,
+   "n_post_alias": 23
+  },
+  {
+   "id": "C47996_1",
+   "book": "Eighteenth Century Vignettes",
+   "gutenberg": 47996,
+   "alias": [
+    "the author",
+    "his"
+   ],
+   "identity": "Samuel Pepys",
+   "cast": [
+    "Spence",
+    "Swift",
+    "Steele",
+    "Walpole",
+    "Wycherley",
+    "James",
+    "Warburton",
+    "Dodsley",
+    "George",
+    "Samuel Pepys"
+   ],
+   "reveal_sentence": "The name of the author does not appear, but his portrait by Kneller does; and he was none other than the diarist Samuel Pepys, sometime Secretary to the Admiralty under the second Charles and his successor.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "\\|AMONG a ragged regiment of books,",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "dev",
+   "audit": "EXPLICIT",
+   "cut_kind": "phrase",
+   "identity_in_prefix": false,
+   "n_pre_alias": 111,
+   "n_post_alias": 738
+  },
+  {
+   "id": "C49468_1",
+   "book": "Arabella Stuart: A Romance from English History",
+   "gutenberg": 49468,
+   "alias": [
+    "the Baron de Mardyke"
+   ],
+   "identity": "Markham",
+   "cast": [
+    "Arabella",
+    "Seymour",
+    "Harry",
+    "George",
+    "William",
+    "James",
+    "Cecil",
+    "Robert",
+    "Markham"
+   ],
+   "reveal_sentence": "She then turned towards Markham, and her heart beat quick when she recognised the person who had assumed the name of the Baron de Mardyke.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "Arabella raised her eyes timidly, and",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "phrase",
+   "identity_in_prefix": true,
+   "n_pre_alias": 4,
+   "n_post_alias": 2
+  },
+  {
+   "id": "C49850_1",
+   "book": "The Tower of London: A Historical Romance, Illustrated",
+   "gutenberg": 49850,
+   "alias": [
+    "Cicely",
+    "your rightful name"
+   ],
+   "identity": "Angela",
+   "cast": [
+    "Jane",
+    "Renard",
+    "Cholmondeley",
+    "Dudley",
+    "Mary",
+    "Guilford",
+    "Gunnora",
+    "Gilbert",
+    "Simon",
+    "Angela"
+   ],
+   "reveal_sentence": "you are the daughter of Sir Alberic Mountjoy, and were born while your parents were imprisoned in the Tower.",
+   "caveat": "model-mined; text-derived oracle; no human check",
+   "cut": {
+    "regex": "BOOK THE SECOND",
+    "back": 0
+   },
+   "W": 0,
+   "band": "low",
+   "split": "test",
+   "audit": "EXPLICIT",
+   "cut_kind": "chapter heading",
+   "identity_in_prefix": true,
+   "n_pre_alias": 73,
+   "n_post_alias": 5
+  }
+ ]
+}

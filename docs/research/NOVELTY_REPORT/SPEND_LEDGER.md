@@ -39,3 +39,13 @@ Owner granted an extra $0.20 (beyond the $0.2824 spent) for unattended work on 2
 After the unattended window runs: running total **0.3992** USD against a ceiling of $0.4824 (original caps plus the owner's extra $0.20); remaining headroom 0.0832. Any further paid run needs a new exact estimate and approval unless the owner grants more.
 
 Owner instruction 2026-10-16 (late): no further OpenAI use; the confirmatory study runs on open-weight models on RunPod plus Claude Sonnet 5.5 through the owner's Claude subscription. The PD v7 Luna run was interrupted as described above and its results do not exist; PD v7 is reported with the five local models only (exploratory).
+
+## RunPod (owner-created pod, one L40S 48 GB, USD 1.13 per hour all-in: GPU 1.09 + disks 0.04) and Claude subscription
+
+Owner instruction 2026-10-16 (goal text): "hard ceiling of 10 USD total GPU (RunPod) plus the Claude subscription. No OpenAI calls. Log every spend". Earlier the owner set USD 15 in total for RunPod; the tighter 10 USD ceiling governs from the goal text. Stop rule: no new run starts if the projected total exceeds 9.50.
+
+| When (IST) | What | Basis | Estimated USD | Running total |
+|---|---|---|---|---|
+| 2026-10-16 to 17:45 | pod up 7,349 s (read from `ps -o etimes -p 1` on the pod at about 17:38 IST): exploratory vLLM runs of qwen32b, olmo32b, mistral24 on PD v2/v3/v6/v7, model downloads and swaps | 7,349 s x 1.13 / 3600 | 2.31 | 2.31 |
+
+The figure is an **estimate from pod uptime**, not the RunPod billing page; the owner should compare it with the console balance. Claude subscription calls (E2 stories, Claude E1 arm) use quota, not dollars; they are not priced here.
