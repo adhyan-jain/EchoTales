@@ -72,7 +72,9 @@ async function request(path, options) {
   // A server that accepts the connection but never answers used to leave
   // every page on "Loading..." indefinitely (failure-state QA, 2026-09-26).
   // 30 s covers the largest payload (a 9.6 MB novel); a file upload gets 5 min.
-  const timeoutMs = options && options.body instanceof FormData ? 300000 : 30000;
+  // `timeoutMs` lets one slow call (the Research page's live local-model probe, which can include a cold
+  // model load) ask for longer without raising the limit for every other request.
+  const timeoutMs = (options && options.timeoutMs) || (options && options.body instanceof FormData ? 300000 : 30000);
   const controller = new AbortController();
   // One timer covers headers *and* body: a server that sends headers and then
   // stalls used to hang `res.json()` forever, because the timer was cleared as
@@ -315,6 +317,17 @@ export const api = {
     }),
 
   listOutput: (novelId) => request(`/api/novels/${enc(novelId)}/output`),
+
+  // -- Research page (research_demo.py): stored study results, the six demo items, and a live local-model probe.
+  researchSummary: () => request('/api/research/summary'),
+  researchItems: () => request('/api/research/items'),
+  researchProbe: (itemId, model, arms) =>
+    request('/api/research/probe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item_id: itemId, model, ...(arms ? { arms } : {}) }),
+      timeoutMs: 300000,
+    }),
   // <img>/<video>/<audio>/<a> cannot send an Authorization header, so when a
   // session exists the token rides in the query string of this one route (the
   // server accepts it nowhere else). Without it every panel and player 401ed

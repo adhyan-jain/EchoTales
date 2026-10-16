@@ -7,6 +7,7 @@ import NewProject from './components/NewProject';
 import ProjectLayout from './layouts/ProjectLayout';
 import Landing from './pages/Landing';
 import Projects, { AccountShell } from './pages/Projects';
+import ResearchPage from './pages/ResearchPage';
 import Overview from './pages/project/Overview';
 import { Cast, Settings, Studio } from './pages/project/Pages';
 import Read from './pages/project/Read';
@@ -27,6 +28,7 @@ import Review from './pages/project/Review';
  *   /p/:projectId/studio       generate + library (?tab=library)
  *   /p/:projectId/review       reviewer desk (?ch=)
  *   /p/:projectId/settings     project settings
+ *   /research                  research view: stored name-leakage results + live local-model probe
  *   /design                    internal primitives gallery
  */
 function LegacyEntry() {
@@ -91,6 +93,7 @@ export const routes = [
     children: [
       { path: '/projects', element: <Projects /> },
       { path: '/projects/new', element: <NewProjectPage /> },
+      { path: '/research', element: <ResearchPage /> },
       {
         path: '/p/:projectId',
         element: <ProjectLayout />,

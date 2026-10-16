@@ -8275,3 +8275,35 @@ mutations), `MUTATION_PRIOR_ART.md`, `MUTATION_KILL_MATRIX.md`,
 - **Patent screen:** no candidate. Three ideas on watch.
 - **Not changed:** product code. The product NoobAI/Illustrious engines'
   CPU offload is recorded as an open product item.
+
+### 4.102 Research view in the webview: stored-results dashboard and a local live probe *(2026-10-16)*
+
+A new surface, not a pipeline change. The webview gained a `/research` page
+that shows the name-keyed memory-leakage study (CHIMERA) for a demo: stored
+results plus a live probe that runs one local model on three arms (original
+names, letter cipher, cue-preserving pseudonyms) of one real passage.
+Everything on the page is labelled exploratory; the labels are text-derived
+and event selection is by the model-drafter, so no human annotation is
+claimed and the owner spot-check is still pending.
+
+- **Backend:** `pipeline/research_demo.py` (`summary`, `items`, `probe`).
+  Routes in `webview_server.py`: `GET /api/research/summary`,
+  `GET /api/research/items` (404 until `scripts/chimera/build_demo_items.py`
+  has written the git-ignored `data/scratch/demo/probe_items.json`),
+  `POST /api/research/probe`. `summary` and `items` only read files under
+  `data/eval/chimera/`; the page does not use the server's `--source`
+  database, though the server still requires one to start.
+- **Probe limits:** local ollama only, 5-model allow-list (no paid API is
+  reachable from the route), temperature 0, one probe at a time, refused
+  under 1 GiB free RAM or if ollama spilled the model into system RAM, and
+  the model is unloaded after the last arm.
+- **Frontend:** `webview/src/pages/ResearchPage.js`, route `/research` in
+  `router.js`, entries in `ProjectLayout.js` and `Projects.js`, and
+  `api.js` methods `researchSummary`/`researchItems`/`researchProbe` (the
+  last with a per-call `timeoutMs`).
+- **Tests (run by the change author, not re-run by the docs pass):**
+  `packages/pipeline/tests/test_research_demo.py` (18); 1,338 core+pipeline
+  tests pass; webview 94 pass (`__tests__/ResearchPage.test.js` included).
+- **Not changed:** the pipeline stages, the store, or any results file.
+- Operating notes, measured probe timings and screenshots:
+  `docs/paper/project_doc/FRONTEND_RESEARCH_VIEW.md`.
