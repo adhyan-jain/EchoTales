@@ -107,11 +107,12 @@ bullets(s, ["Serials run to hundreds of chapters; identity is hidden, then revea
 pic(s, "fig_channels.png", 3.0, 4.2, 7.4)
 
 # 3 questions
-s = slide("Research questions", "Read the three questions. Stress that each is answered with a measured number or an explicit null. Mention that hypotheses and thresholds were written and hashed before the data.")
+s = slide("Research questions", "Read the four questions. Stress that each is answered with a measured number or an explicit null. Mention that hypotheses and thresholds were written and hashed before the data.")
 bullets(s, ["RQ1  Do LLMs name a disguised character's true identity before the book reveals it, more often with original names than with replaced names?  (leakage gap)",
             "RQ2  Is the gap caused by memory keyed on names, or just by losing name cues like gender and nationality?  (cue-preserving pseudonyms)",
-            "RQ3  Does the gap grow with how well-known the book is, and does our own graph pipeline look ahead?  (dose-response, truncate-and-rebuild)",
-            "Rule: pre-register, hash, report nulls and failed replications as such."], size=20)
+            "RQ3  Does the gap grow with how well-known the book is?  (dose-response; pre-registered confirmatory run)",
+            "RQ4  Does the pipeline itself leak: our own graph, and a common whole-book character card? Does versioning fix it?  (truncate-and-rebuild, cipher names)",
+            "Rule: pre-register, hash, report nulls and failed replications as such."], size=18)
 
 # 4 method
 s = slide("Method: a text-derived oracle and four arms", "Explain the oracle: the book itself says in one sentence that the alias is the identity; we find that sentence by exact search, so nobody has to judge the truth. Then four arms with identical windows. Say plainly: events were selected by a model and not verified by a person.")
@@ -138,12 +139,12 @@ bullets(s, [f"Gap with cipher {pts(rec['gap_A_minus_B'])}", f"Gap with pseudonym
 # 8 result 3
 s = slide("Result 3: the gap rises with book familiarity", f"Post hoc over 38 events. For the valid local models the gap is about zero when at most two of five local models recognise the book and large when all five do (Spearman {dv['spearman']:+.2f}, p = {dv['perm_p']:.5f}). Cross-family check with the reference model: Spearman {dl['spearman']:+.2f}, p = {dl['perm_p']:.3f}. This explains why the seven obscure books did not replicate for small models. Caveats: post hoc, shared models, small cells.")
 pic(s, "fig_dose.png", 0.4, 1.4, 7.6)
-bullets(s, [f"Local pool: Spearman {dv['spearman']:+.2f}, p = {dv['perm_p']:.5f}", f"Reference model: Spearman {dl['spearman']:+.2f}, p = {dl['perm_p']:.3f}", "Post hoc here; tested again in the confirmatory run (slide 12)"], x=8.2, y=1.8, w=4.8, size=16)
+bullets(s, [f"Local pool: Spearman {dv['spearman']:+.2f}, p = {dv['perm_p']:.5f}", f"Reference model: Spearman {dl['spearman']:+.2f}, p = {dl['perm_p']:.3f}", "Post hoc here; tested again in the confirmatory run (next slide)"], x=8.2, y=1.8, w=4.8, size=16)
 
 # 9 graph audit
 s = slide("Auditing our own graph: causal resolver, leaky persona stage", "Truncate-and-rebuild: build the graph from chapters 1..k only and from the whole volume, and compare what the reader sees at chapter k. The resolver is causal at 14 cuts over three serials: 0 of 28,165 mention-cut pairs differ. By-design whole-volume passes do break it. The persona stage looks ahead for 23 of 288 character-cuts, 8.0 percent. System-internal checks, no labels; counts only because the serials are copyrighted and stay local.")
 bullets(s, ["Resolver: 0 of 28,165 mention-cut pairs differ (14 cuts, 3 serials); ids stable.", "Persona stage: 23 of 288 character-cuts differ (8.0%): gender from later pronouns, body splits from a whole-volume rule.",
-            "Resolver is close to a normalised-string lookup (adjusted Rand index 0.971 to 0.985).", "A statistical error we found and fixed: items inside one event are not independent, so intervals now resample events."], size=19)
+            "Resolver is close to a normalised-string lookup (adjusted Rand index 0.971 to 0.985).", "Repair: version each fact by the chapter its evidence came from: 0 divergences. Hiding every exposed fact is worse than doing nothing (82 vs 23 of 289)."], size=18)
 
 # 10 demo
 s = slide("Live demonstration: the Research view", "Switch to the browser (script in Demo_Video_Script). Show overview cards, gap by model, cue-preserving panel and dose-response, then run the live probe on a public-domain item with a local model and point at the per-arm timings. If it is slow, quote stored timings: 4 to 16 minutes per model for a full 500 to 1,100 call run.")
@@ -153,11 +154,12 @@ text(s, 0.6, 6.5, 12, 0.5, "Left: stored study results. Right: a live probe, one
 
 # 11 limits
 s = slide("What this does and does not show", "Read these limits without being asked; the audience should hear them from us. No human annotation is used or claimed.")
-bullets(s, ["Events are model-drafted and verified by exact text search; no event has been checked by a person. No human annotation is used or claimed.",
-            "The strongest model leaks clearly; small models leak where they know the book; their replication on seven obscure books failed.",
-            "Dose-response is post hoc. The memory probes give the book title. Pseudonyms are heuristic.",
-            "No claim that EchoTales or any web-serial system leaks; only that two of its stages were audited.",
-            "Reference model via API: about USD 0.43 in total (ledgered)."], size=19)
+pvx = J("rf_e2e/posthoc_judge_validity_and_exposure.json")["judge_vs_text_rule"]
+bullets(s, ["Events were selected by a model and checked against the book's text, not by people. No human annotation is used or claimed.",
+            f"One leak rule uses a judge model; checked against the strict text rule it finds {100 * pvx['sensitivity']:.0f}% of leaks with {100 * (1 - pvx['specificity']):.1f}% false alarms (kappa {pvx['kappa']:.2f}).",
+            "One card prompt and one reader position per event in the main test; extra positions, a second prompt and a second cipher were run on one model.",
+            "Memory leakage is clear only on famous books (exploratory); on obscure books it stays under about 5 points.",
+            "All tests were pre-registered before their results existed; nulls are reported as nulls."], size=18)
 
 # 12 confirmatory run
 s = slide("Confirmatory run: no gap on obscure books", f"68 events from 65 public-domain books, primary set 32 events, 78 percent low-fame; three open models on one rented GPU; pre-registered before any model saw an event. Pooled gap {pts(c1['pooled'])} points {ci(*c1['ci'])}. The fame contrast was {pts(cp1['difference'])} {ci(*cp1['ci'])}, p = {cp1['p_one_sided']:.4f}, not significant and underpowered. The closed-book control recovered the identity in only 2 of 68 events, so these books hold little memory to detect. Pseudonyms halved premature naming at a cost in accuracy. Recap spoilers: none detected. Training-data link: none. A Claude arm was stopped by the usage limit and excluded.")
@@ -195,5 +197,13 @@ bullets(s, ["Chang et al. 2023, Speak, Memory (EMNLP): books known to ChatGPT/GP
             "Efron and Tibshirani 1993; Holm 1979; DerSimonian and Laird 1986; Nosek et al. 2018."], size=17)
 
 out = Path("docs/paper/project_doc/EchoTales_Research_Presentation.pptx")
+order = [0, 1, 2, 3, 4, 5, 6, 7, 11, 8, 12, 9, 10, 14, 13, 15]  # creation order -> presentation order (matches Demo_Video_Script)
+ids = prs.slides._sldIdLst
+items = list(ids)
+assert len(items) == len(order), len(items)
+for el in items:
+    ids.remove(el)
+for k in order:
+    ids.append(items[k])
 prs.save(out)
 print("saved", out, "slides", n[0])
