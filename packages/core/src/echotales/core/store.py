@@ -970,6 +970,19 @@ class Store:
         ).fetchone()
         return int(row["n"] or 0)
 
+    def mention_counts_by_chapter(self, novel_id: str, target_id: str) -> dict[float, int]:
+        """Mentions resolved to this entity, per chapter.
+
+        `mention_count_for` is a whole-volume number: a trait computed from it at chapter 5 silently uses chapters
+        the reader has not reached (prefix audit, docs/research/PREFIX_FAITHFULNESS). A cumulative sum over this
+        dict up to chapter c is the count a build from chapters <= c alone would have seen.
+        """
+        rows = self.conn.execute(
+            "SELECT chapter, COUNT(*) AS n FROM mention WHERE novel_id=? AND target_id=? GROUP BY chapter",
+            (novel_id, target_id),
+        )
+        return {float(r["chapter"]): int(r["n"]) for r in rows}
+
     def chapters_for_target(
         self, novel_id: str, target_id: str, *, limit: int | None = None
     ) -> list[float]:
