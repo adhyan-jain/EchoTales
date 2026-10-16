@@ -770,8 +770,8 @@ export default function ResearchPage() {
     <AccountShell>
       <PageHeader
         eyebrow="Research"
-        title="Name-keyed memory in LLM reading of fiction"
-        description="Does a language model answer from the text in front of it, or from memory of the book? Compare the same question with the original names and with consistently renamed text."
+        title="Reader-faithfulness: what an assistant may know at chapter c"
+        description="A reading assistant's answer at chapter c should depend only on chapters up to c. It can break through the pipeline (facts built from later chapters) or through the model's memory of the book. Both are measured here, with the fix for each."
         actions={<Badge tone="warning">Text-derived oracle; pre-registered where marked</Badge>}
       />
 
