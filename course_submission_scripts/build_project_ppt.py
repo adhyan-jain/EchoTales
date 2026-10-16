@@ -61,7 +61,7 @@ def slide(title, notes):
     bar.fill.fore_color.rgb = BLUE
     bar.line.fill.background()
     text(s, 0.6, 0.3, 12.1, 0.9, title, size=28, bold=True)
-    text(s, 0.6, 7.0, 9, 0.35, "BCSE306L Artificial Intelligence | Adhyan Jain, Atharva Sheerh Pandey, Aryan Gahlot", size=10, color=GREY)
+    text(s, 0.6, 7.0, 9, 0.35, "BCSE306L Artificial Intelligence | Adhyan Jain, Atharva Sheersh Pandey, Aryan Gahlot", size=10, color=GREY)
     text(s, 12.0, 7.0, 0.8, 0.35, str(n[0]), size=10, color=GREY, align=PP_ALIGN.RIGHT)
     s.notes_slide.notes_text_frame.text = notes
     return s
@@ -96,7 +96,7 @@ bg.fill.fore_color.rgb = PALE
 bg.line.fill.background()
 text(s, 0.8, 1.2, 11.7, 1.2, "Do Reading Assistants Peek Ahead?", size=44, bold=True)
 text(s, 0.8, 2.6, 11.7, 1.6, "Reader-faithfulness: detecting and fixing look-ahead leaks from the pipeline and from model memory (EchoTales)", size=24, color=BLUE)
-text(s, 0.8, 4.7, 11.7, 1.6, ["Adhyan Jain (24BCI0111)   Atharva Sheerh Pandey (24BCI0069)   Aryan Gahlot (24BCI0033)", "BCSE306L Artificial Intelligence | Slot C1 + TC1 | VIT | 16 October 2026"], size=16, color=GREY)
+text(s, 0.8, 4.7, 11.7, 1.6, ["Adhyan Jain (24BCI0111)   Atharva Sheersh Pandey (24BCI0069)   Aryan Gahlot (24BCI0033)", "BCSE306L Artificial Intelligence | Slot C1 + TC1 | VIT | 16 October 2026"], size=16, color=GREY)
 s.notes_slide.notes_text_frame.text = ("Say: our project asks one question. When a language model helps a reader who is only partway through a book, does it quietly use what it remembers about the rest of the book? "
                                        "We measure it, test why it happens, and audit our own knowledge-graph system for the same fault. About ten minutes: problem, method, three results, demo, honest limits, plan.")
 
@@ -177,7 +177,7 @@ pic(s, "fig_rf.png", 6.4, 1.8, 6.7)
 s = slide("Team and contributions", "The project work was divided equally among all three team members (33.3% each). Adhyan led narrative graph architecture and the prefix causality audit; Atharva led experimental methodology, event mining, and local model leakage probing; Aryan led confirmatory cloud benchmarking, statistical meta-analysis, and negative controls.")
 bullets(s, [
     "Adhyan Jain (24BCI0111): Narrative graph architecture (bitemporal state_of query), truncate-and-rebuild causality audit, Channel 2 horizon repairs, and pipeline integration.",
-    "Atharva Sheerh Pandey (24BCI0069): Alias-reveal task formulation, Gutenberg event mining, multi-arm renaming controls (cipher & pseudonyms), local model test harness, and live probe UI.",
+    "Atharva Sheersh Pandey (24BCI0069): Alias-reveal task formulation, Gutenberg event mining, multi-arm renaming controls (cipher & pseudonyms), local model test harness, and live probe UI.",
     "Aryan Gahlot (24BCI0033): Confirmatory study deployment on RunPod (24-32B models), event-cluster bootstrap statistics, memory-free validity gates, and E2 unseen-text negative controls."
 ], size=18)
 
