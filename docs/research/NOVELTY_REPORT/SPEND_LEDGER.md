@@ -48,7 +48,10 @@ Owner instruction 2026-10-16 (goal text): "hard ceiling of 10 USD total GPU (Run
 |---|---|---|---|---|
 | 2026-10-16 to 17:45 | pod up 7,349 s (read from `ps -o etimes -p 1` on the pod at about 17:38 IST): exploratory vLLM runs of qwen32b, olmo32b, mistral24 on PD v2/v3/v6/v7, model downloads and swaps | 7,349 s x 1.13 / 3600 | 2.31 | 2.31 |
 | 2026-10-16 17:45 to 19:11 | confirmatory run: E1 (3 models x 2,220 calls), E4, E5, E5 judges, E2 stories E1, OLMo corpus check, model swaps; Claude arm on subscription quota (stopped at 211 of 1,218 answers) | 86 min x 1.13 / 3600 per second of uptime = 5,160 s x 1.13 / 3600 | 1.62 | 3.93 |
+| 2026-10-16 19:11 to 22:00 (estimate) | pod idle until the owner stopped it (about 19:30), stopped-disk billing, restart at about 20:55 for RF-E2E addendum 8 (qwen32b and mistral24 cards and fix, olmo32b second judge), idle to about 22:00 | about 0.3 h + 1.1 h running x 1.13, plus about 1.4 h stopped x 0.069 | about 1.7 | about 5.6 |
 
 The figure is an **estimate from pod uptime**, not the RunPod billing page; the owner should compare it with the console balance. Claude subscription calls (E2 stories, Claude E1 arm) use quota, not dollars; they are not priced here.
 
 No new run starts after the 20:45 freeze. If the pod stays up until 21:25 the running total reaches about 6.3 USD; the pod bills until the owner terminates it (about 0.069 USD per hour if only stopped), so the owner should terminate it after reading this and compare the total with the RunPod console. Under the 10 USD ceiling and the 9.50 stop rule at every point.
+
+RF-E2E small-model runs and the qwen3:8b judge ran on the local GPU at no cost. The owner should stop or terminate the pod now and compare the running total (about 5.6 USD, an estimate from uptime) with the RunPod console.
