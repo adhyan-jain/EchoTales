@@ -1,0 +1,172 @@
+{
+ "labels": "MODEL-GENERATED, one annotator (gpt-5.6-luna, strict prompt); no human labels",
+ "per_book": {
+  "oliver-twist": {
+   "character_cuts": 89,
+   "characters": 25,
+   "truth_distribution": {
+    "male": 19,
+    "female": 6
+   },
+   "stamp_divergence_gender_pairs": {
+    "status_quo": 6,
+    "plain": 0,
+    "anch_1_80": 0,
+    "anch_2_80": 0
+   },
+   "diverging_pairs_labelled": 6,
+   "diverging_classes": {
+    "text_says_otherwise": 1,
+    "premature": 3,
+    "justified": 2
+   },
+   "pairs_with_known_reference": 89,
+   "builds": {
+    "status_quo": {
+     "cuts": 89,
+     "correct": 72,
+     "withheld": 7,
+     "wrong": 10,
+     "correct_share": 0.809
+    },
+    "plain": {
+     "cuts": 89,
+     "correct": 67,
+     "withheld": 13,
+     "wrong": 9,
+     "correct_share": 0.7528
+    },
+    "anch_1_80": {
+     "cuts": 89,
+     "correct": 71,
+     "withheld": 9,
+     "wrong": 9,
+     "correct_share": 0.7978
+    },
+    "anch_2_80": {
+     "cuts": 89,
+     "correct": 70,
+     "withheld": 10,
+     "wrong": 9,
+     "correct_share": 0.7865
+    }
+   }
+  },
+  "three-musketeers": {
+   "character_cuts": 90,
+   "characters": 20,
+   "truth_distribution": {
+    "male": 16,
+    "female": 4
+   },
+   "stamp_divergence_gender_pairs": {
+    "status_quo": 2,
+    "plain": 0,
+    "anch_1_80": 0,
+    "anch_2_80": 0
+   },
+   "diverging_pairs_labelled": 2,
+   "diverging_classes": {
+    "justified": 2
+   },
+   "pairs_with_known_reference": 90,
+   "builds": {
+    "status_quo": {
+     "cuts": 90,
+     "correct": 62,
+     "withheld": 26,
+     "wrong": 2,
+     "correct_share": 0.6889
+    },
+    "plain": {
+     "cuts": 90,
+     "correct": 60,
+     "withheld": 28,
+     "wrong": 2,
+     "correct_share": 0.6667
+    },
+    "anch_1_80": {
+     "cuts": 90,
+     "correct": 64,
+     "withheld": 21,
+     "wrong": 5,
+     "correct_share": 0.7111
+    },
+    "anch_2_80": {
+     "cuts": 90,
+     "correct": 64,
+     "withheld": 23,
+     "wrong": 3,
+     "correct_share": 0.7111
+    }
+   }
+  }
+ },
+ "pooled": {
+  "status_quo": {
+   "cuts": 179,
+   "correct": 134,
+   "withheld": 33,
+   "wrong": 12,
+   "correct_share": 0.7486,
+   "wrong_share": 0.067,
+   "correct_wilson95": [
+    0.6803,
+    0.8065
+   ]
+  },
+  "plain": {
+   "cuts": 179,
+   "correct": 127,
+   "withheld": 41,
+   "wrong": 11,
+   "correct_share": 0.7095,
+   "wrong_share": 0.0615,
+   "correct_wilson95": [
+    0.6391,
+    0.771
+   ]
+  },
+  "anch_1_80": {
+   "cuts": 179,
+   "correct": 135,
+   "withheld": 30,
+   "wrong": 14,
+   "correct_share": 0.7542,
+   "wrong_share": 0.0782,
+   "correct_wilson95": [
+    0.6862,
+    0.8115
+   ]
+  },
+  "anch_2_80": {
+   "cuts": 179,
+   "correct": 134,
+   "withheld": 33,
+   "wrong": 12,
+   "correct_share": 0.7486,
+   "wrong_share": 0.067,
+   "correct_wilson95": [
+    0.6803,
+    0.8065
+   ]
+  },
+  "recovered_fraction_anch_1_80": 1.1429
+ },
+ "pooled_diverging_classes": {
+  "text_says_otherwise": 1,
+  "premature": 3,
+  "justified": 4
+ },
+ "H": {
+  "PD1_status_quo_diverges": true,
+  "PD2_repairs_zero": true,
+  "PD3_within_5_points_and_wrong_le_3pct": false,
+  "divergence_by_build": {
+   "status_quo": 8,
+   "plain": 0,
+   "anch_1_80": 0,
+   "anch_2_80": 0
+  }
+ }
+}

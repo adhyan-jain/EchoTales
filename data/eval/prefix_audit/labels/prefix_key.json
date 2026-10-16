@@ -1,0 +1,324 @@
+[
+ {
+  "item": 0,
+  "novel": "omniscient-readers-viewpoint",
+  "entity": "omniscient-readers-viewpoint:self11",
+  "k": 10,
+  "diverge": false
+ },
+ {
+  "item": 1,
+  "novel": "omniscient-readers-viewpoint",
+  "entity": "omniscient-readers-viewpoint:self30",
+  "k": 30,
+  "diverge": false
+ },
+ {
+  "item": 2,
+  "novel": "lord-of-the-mysteries",
+  "entity": "lord-of-the-mysteries:self:19c2dcb5af",
+  "k": 10,
+  "diverge": true
+ },
+ {
+  "item": 3,
+  "novel": "omniscient-readers-viewpoint",
+  "entity": "omniscient-readers-viewpoint:self4",
+  "k": 5,
+  "diverge": true
+ },
+ {
+  "item": 4,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:0035e71331",
+  "k": 80,
+  "diverge": true
+ },
+ {
+  "item": 5,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:9e9beb2b10",
+  "k": 40,
+  "diverge": false
+ },
+ {
+  "item": 6,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:e901d48678",
+  "k": 120,
+  "diverge": false
+ },
+ {
+  "item": 7,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:6a2bfe3f7f",
+  "k": 80,
+  "diverge": false
+ },
+ {
+  "item": 8,
+  "novel": "lord-of-the-mysteries",
+  "entity": "lord-of-the-mysteries:self:7485f659b6",
+  "k": 10,
+  "diverge": true
+ },
+ {
+  "item": 9,
+  "novel": "lord-of-the-mysteries",
+  "entity": "lord-of-the-mysteries:self:35674b07ca",
+  "k": 20,
+  "diverge": false
+ },
+ {
+  "item": 10,
+  "novel": "lord-of-the-mysteries",
+  "entity": "lord-of-the-mysteries:self:478688907a",
+  "k": 5,
+  "diverge": true
+ },
+ {
+  "item": 11,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:7fc3b9af53",
+  "k": 10,
+  "diverge": true
+ },
+ {
+  "item": 12,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:a39e272c42",
+  "k": 80,
+  "diverge": false
+ },
+ {
+  "item": 13,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:2152ed22e4",
+  "k": 10,
+  "diverge": true
+ },
+ {
+  "item": 14,
+  "novel": "omniscient-readers-viewpoint",
+  "entity": "omniscient-readers-viewpoint:self4",
+  "k": 10,
+  "diverge": true
+ },
+ {
+  "item": 15,
+  "novel": "omniscient-readers-viewpoint",
+  "entity": "omniscient-readers-viewpoint:self12",
+  "k": 5,
+  "diverge": true
+ },
+ {
+  "item": 16,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:e901d48678",
+  "k": 80,
+  "diverge": true
+ },
+ {
+  "item": 17,
+  "novel": "lord-of-the-mysteries",
+  "entity": "lord-of-the-mysteries:self:7485f659b6",
+  "k": 5,
+  "diverge": true
+ },
+ {
+  "item": 18,
+  "novel": "omniscient-readers-viewpoint",
+  "entity": "omniscient-readers-viewpoint:self7",
+  "k": 5,
+  "diverge": true
+ },
+ {
+  "item": 19,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:0926fccc88",
+  "k": 80,
+  "diverge": false
+ },
+ {
+  "item": 20,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:b7c5630249",
+  "k": 40,
+  "diverge": true
+ },
+ {
+  "item": 21,
+  "novel": "omniscient-readers-viewpoint",
+  "entity": "omniscient-readers-viewpoint:self2",
+  "k": 10,
+  "diverge": false
+ },
+ {
+  "item": 22,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:2152ed22e4",
+  "k": 20,
+  "diverge": true
+ },
+ {
+  "item": 23,
+  "novel": "lord-of-the-mysteries",
+  "entity": "lord-of-the-mysteries:self:110bc1f3e3",
+  "k": 30,
+  "diverge": false
+ },
+ {
+  "item": 24,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:3c5c5a7992",
+  "k": 120,
+  "diverge": false
+ },
+ {
+  "item": 25,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:01786f7a55",
+  "k": 120,
+  "diverge": true
+ },
+ {
+  "item": 26,
+  "novel": "lord-of-the-mysteries",
+  "entity": "lord-of-the-mysteries:self:13b38645a0",
+  "k": 30,
+  "diverge": false
+ },
+ {
+  "item": 27,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:a8bdaf3bfb",
+  "k": 80,
+  "diverge": true
+ },
+ {
+  "item": 28,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:7fc3b9af53",
+  "k": 20,
+  "diverge": true
+ },
+ {
+  "item": 29,
+  "novel": "lord-of-the-mysteries",
+  "entity": "lord-of-the-mysteries:self:19c2dcb5af",
+  "k": 5,
+  "diverge": true
+ },
+ {
+  "item": 30,
+  "novel": "omniscient-readers-viewpoint",
+  "entity": "omniscient-readers-viewpoint:self16",
+  "k": 10,
+  "diverge": true
+ },
+ {
+  "item": 31,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:a39e272c42",
+  "k": 10,
+  "diverge": false
+ },
+ {
+  "item": 32,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:daa12f936e",
+  "k": 40,
+  "diverge": false
+ },
+ {
+  "item": 33,
+  "novel": "lord-of-the-mysteries",
+  "entity": "lord-of-the-mysteries:self:19c2dcb5af",
+  "k": 20,
+  "diverge": true
+ },
+ {
+  "item": 34,
+  "novel": "omniscient-readers-viewpoint",
+  "entity": "omniscient-readers-viewpoint:self4",
+  "k": 20,
+  "diverge": false
+ },
+ {
+  "item": 35,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:6d62f8b46c",
+  "k": 20,
+  "diverge": false
+ },
+ {
+  "item": 36,
+  "novel": "lord-of-the-mysteries",
+  "entity": "lord-of-the-mysteries:self:7485f659b6",
+  "k": 20,
+  "diverge": false
+ },
+ {
+  "item": 37,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:476821534c",
+  "k": 10,
+  "diverge": false
+ },
+ {
+  "item": 38,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:fc520c0f69",
+  "k": 20,
+  "diverge": false
+ },
+ {
+  "item": 39,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:f818878641",
+  "k": 120,
+  "diverge": true
+ },
+ {
+  "item": 40,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:0926fccc88",
+  "k": 20,
+  "diverge": false
+ },
+ {
+  "item": 41,
+  "novel": "omniscient-readers-viewpoint",
+  "entity": "omniscient-readers-viewpoint:self1",
+  "k": 5,
+  "diverge": false
+ },
+ {
+  "item": 42,
+  "novel": "lord-of-the-mysteries",
+  "entity": "lord-of-the-mysteries:self:110bc1f3e3",
+  "k": 5,
+  "diverge": true
+ },
+ {
+  "item": 43,
+  "novel": "lord-of-the-mysteries",
+  "entity": "lord-of-the-mysteries:self:4afd3a0760",
+  "k": 5,
+  "diverge": true
+ },
+ {
+  "item": 44,
+  "novel": "reverend-insanity",
+  "entity": "reverend-insanity:self:b1ef741901",
+  "k": 40,
+  "diverge": false
+ },
+ {
+  "item": 45,
+  "novel": "lord-of-the-mysteries",
+  "entity": "lord-of-the-mysteries:self:478688907a",
+  "k": 10,
+  "diverge": false
+ }
+]

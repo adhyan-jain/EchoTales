@@ -1,0 +1,428 @@
+{
+ "labels": "MODEL-GENERATED, one annotator, frozen by sha256",
+ "truth_distribution": {
+  "male": 62,
+  "female": 15,
+  "unknown": 35,
+  "non-person": 5
+ },
+ "D_truth_unknown_share": 0.3419,
+ "D_prefix_vs_truth_clash": [],
+ "A_diverging_cuts": {
+  "n": 23,
+  "classes": {
+   "justified_by_text": 16,
+   "premature_disclosure": 5,
+   "served_unknown_or_none": 2
+  },
+  "characters": 17,
+  "detail": [
+   {
+    "item": 2,
+    "entity": "lord-of-the-mysteries:self:19c2dcb5af",
+    "k": 10,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "male",
+    "truth": "male",
+    "cls": "justified_by_text"
+   },
+   {
+    "item": 3,
+    "entity": "omniscient-readers-viewpoint:self4",
+    "k": 5,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "undetermined",
+    "truth": "male",
+    "cls": "premature_disclosure"
+   },
+   {
+    "item": 4,
+    "entity": "reverend-insanity:self:0035e71331",
+    "k": 80,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "male",
+    "truth": "male",
+    "cls": "justified_by_text"
+   },
+   {
+    "item": 8,
+    "entity": "lord-of-the-mysteries:self:7485f659b6",
+    "k": 10,
+    "served": "unknown",
+    "prefix_build": "female",
+    "text_label": "female",
+    "truth": "female",
+    "cls": "served_unknown_or_none"
+   },
+   {
+    "item": 10,
+    "entity": "lord-of-the-mysteries:self:478688907a",
+    "k": 5,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "male",
+    "truth": "male",
+    "cls": "justified_by_text"
+   },
+   {
+    "item": 11,
+    "entity": "reverend-insanity:self:7fc3b9af53",
+    "k": 10,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "male",
+    "truth": "male",
+    "cls": "justified_by_text"
+   },
+   {
+    "item": 13,
+    "entity": "reverend-insanity:self:2152ed22e4",
+    "k": 10,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "male",
+    "truth": "male",
+    "cls": "justified_by_text"
+   },
+   {
+    "item": 14,
+    "entity": "omniscient-readers-viewpoint:self4",
+    "k": 10,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "undetermined",
+    "truth": "male",
+    "cls": "premature_disclosure"
+   },
+   {
+    "item": 15,
+    "entity": "omniscient-readers-viewpoint:self12",
+    "k": 5,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "undetermined",
+    "truth": "male",
+    "cls": "premature_disclosure"
+   },
+   {
+    "item": 16,
+    "entity": "reverend-insanity:self:e901d48678",
+    "k": 80,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "undetermined",
+    "truth": "male",
+    "cls": "premature_disclosure"
+   },
+   {
+    "item": 17,
+    "entity": "lord-of-the-mysteries:self:7485f659b6",
+    "k": 5,
+    "served": "unknown",
+    "prefix_build": "female",
+    "text_label": "female",
+    "truth": "female",
+    "cls": "served_unknown_or_none"
+   },
+   {
+    "item": 18,
+    "entity": "omniscient-readers-viewpoint:self7",
+    "k": 5,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "male",
+    "truth": "male",
+    "cls": "justified_by_text"
+   },
+   {
+    "item": 20,
+    "entity": "reverend-insanity:self:b7c5630249",
+    "k": 40,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "male",
+    "truth": "male",
+    "cls": "justified_by_text"
+   },
+   {
+    "item": 22,
+    "entity": "reverend-insanity:self:2152ed22e4",
+    "k": 20,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "male",
+    "truth": "male",
+    "cls": "justified_by_text"
+   },
+   {
+    "item": 25,
+    "entity": "reverend-insanity:self:01786f7a55",
+    "k": 120,
+    "served": "female",
+    "prefix_build": "unknown",
+    "text_label": "female",
+    "truth": "female",
+    "cls": "justified_by_text"
+   },
+   {
+    "item": 27,
+    "entity": "reverend-insanity:self:a8bdaf3bfb",
+    "k": 80,
+    "served": "female",
+    "prefix_build": "unknown",
+    "text_label": "female",
+    "truth": "female",
+    "cls": "justified_by_text"
+   },
+   {
+    "item": 28,
+    "entity": "reverend-insanity:self:7fc3b9af53",
+    "k": 20,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "male",
+    "truth": "male",
+    "cls": "justified_by_text"
+   },
+   {
+    "item": 29,
+    "entity": "lord-of-the-mysteries:self:19c2dcb5af",
+    "k": 5,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "male",
+    "truth": "male",
+    "cls": "justified_by_text"
+   },
+   {
+    "item": 30,
+    "entity": "omniscient-readers-viewpoint:self16",
+    "k": 10,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "male",
+    "truth": "male",
+    "cls": "justified_by_text"
+   },
+   {
+    "item": 33,
+    "entity": "lord-of-the-mysteries:self:19c2dcb5af",
+    "k": 20,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "male",
+    "truth": "male",
+    "cls": "justified_by_text"
+   },
+   {
+    "item": 39,
+    "entity": "reverend-insanity:self:f818878641",
+    "k": 120,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "undetermined",
+    "truth": "unknown",
+    "cls": "premature_disclosure"
+   },
+   {
+    "item": 42,
+    "entity": "lord-of-the-mysteries:self:110bc1f3e3",
+    "k": 5,
+    "served": "male",
+    "prefix_build": "unknown",
+    "text_label": "male",
+    "truth": "male",
+    "cls": "justified_by_text"
+   },
+   {
+    "item": 43,
+    "entity": "lord-of-the-mysteries:self:4afd3a0760",
+    "k": 5,
+    "served": "female",
+    "prefix_build": "unknown",
+    "text_label": "female",
+    "truth": "female",
+    "cls": "justified_by_text"
+   }
+  ]
+ },
+ "B_exposed_cuts": {
+  "characters": 53,
+  "status_quo": {
+   "correct": {
+    "n": 92,
+    "share": 0.7797,
+    "wilson95": [
+     0.6967,
+     0.845
+    ]
+   },
+   "withheld": {
+    "n": 24,
+    "share": 0.2034,
+    "wilson95": [
+     0.1407,
+     0.2848
+    ]
+   },
+   "wrong": {
+    "n": 2,
+    "share": 0.0169,
+    "wilson95": [
+     0.0047,
+     0.0597
+    ]
+   },
+   "cuts": 118
+  },
+  "prefix_only_build": {
+   "correct": {
+    "n": 74,
+    "share": 0.6271,
+    "wilson95": [
+     0.5372,
+     0.7091
+    ]
+   },
+   "withheld": {
+    "n": 42,
+    "share": 0.3559,
+    "wilson95": [
+     0.2753,
+     0.4456
+    ]
+   },
+   "wrong": {
+    "n": 2,
+    "share": 0.0169,
+    "wilson95": [
+     0.0047,
+     0.0597
+    ]
+   },
+   "cuts": 118
+  },
+  "repaired": {
+   "correct": {
+    "n": 74,
+    "share": 0.6271,
+    "wilson95": [
+     0.5372,
+     0.7091
+    ]
+   },
+   "withheld": {
+    "n": 42,
+    "share": 0.3559,
+    "wilson95": [
+     0.2753,
+     0.4456
+    ]
+   },
+   "wrong": {
+    "n": 2,
+    "share": 0.0169,
+    "wilson95": [
+     0.0047,
+     0.0597
+    ]
+   },
+   "cuts": 118
+  }
+ },
+ "B_all_cuts": {
+  "characters": 77,
+  "status_quo": {
+   "correct": {
+    "n": 153,
+    "share": 0.7727,
+    "wilson95": [
+     0.7095,
+     0.8256
+    ]
+   },
+   "withheld": {
+    "n": 43,
+    "share": 0.2172,
+    "wilson95": [
+     0.1654,
+     0.2797
+    ]
+   },
+   "wrong": {
+    "n": 2,
+    "share": 0.0101,
+    "wilson95": [
+     0.0028,
+     0.0361
+    ]
+   },
+   "cuts": 198
+  },
+  "prefix_only_build": {
+   "correct": {
+    "n": 135,
+    "share": 0.6818,
+    "wilson95": [
+     0.614,
+     0.7427
+    ]
+   },
+   "withheld": {
+    "n": 61,
+    "share": 0.3081,
+    "wilson95": [
+     0.2479,
+     0.3755
+    ]
+   },
+   "wrong": {
+    "n": 2,
+    "share": 0.0101,
+    "wilson95": [
+     0.0028,
+     0.0361
+    ]
+   },
+   "cuts": 198
+  },
+  "repaired": {
+   "correct": {
+    "n": 135,
+    "share": 0.6818,
+    "wilson95": [
+     0.614,
+     0.7427
+    ]
+   },
+   "withheld": {
+    "n": 61,
+    "share": 0.3081,
+    "wilson95": [
+     0.2479,
+     0.3755
+    ]
+   },
+   "wrong": {
+    "n": 2,
+    "share": 0.0101,
+    "wilson95": [
+     0.0028,
+     0.0361
+    ]
+   },
+   "cuts": 198
+  }
+ },
+ "B_exposed_cuts_excluded_for_unknown_truth": {
+  "unknown": 20,
+  "non-person": 1
+ },
+ "C_diverging_cuts_by_correctness": {
+  "correct|prefix_withheld": 20,
+  "withheld|prefix_correct": 2
+ }
+}

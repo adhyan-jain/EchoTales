@@ -1,0 +1,2195 @@
+{
+ "audit": "prefix-faithfulness, LLM trait path",
+ "novel": "reverend-insanity",
+ "backend": "fake",
+ "backend_name": "fake",
+ "PLUMBING_ONLY": true,
+ "label_provenance": "SYSTEM-INTERNAL, no labels",
+ "calls": {
+  "full": 46,
+  "10": [
+   5,
+   5
+  ],
+  "20": [
+   6,
+   6
+  ],
+  "40": [
+   14,
+   14
+  ],
+  "80": [
+   22,
+   22
+  ],
+  "120": [
+   35,
+   35
+  ]
+ },
+ "by_k": {
+  "10": {
+   "entities_in_both": 13,
+   "classes": {
+    "both_deterministic": 5,
+    "gate": 6,
+    "both_llm": 2
+   }
+  },
+  "20": {
+   "entities_in_both": 15,
+   "classes": {
+    "both_deterministic": 6,
+    "gate": 6,
+    "both_llm": 3
+   }
+  },
+  "40": {
+   "entities_in_both": 21,
+   "classes": {
+    "both_deterministic": 7,
+    "both_llm": 9,
+    "gate": 5
+   }
+  },
+  "80": {
+   "entities_in_both": 37,
+   "classes": {
+    "gate": 6,
+    "both_deterministic": 16,
+    "both_llm": 15
+   }
+  },
+  "120": {
+   "entities_in_both": 59,
+   "classes": {
+    "gate": 3,
+    "both_llm": 25,
+    "both_deterministic": 31
+   }
+  }
+ },
+ "summary": {
+  "classes": {
+   "both_deterministic": 65,
+   "gate": 26,
+   "both_llm": 54
+  },
+  "both_llm_pairs": 54,
+  "discrete_full_vs_prefix": 0,
+  "discrete_noise_floor": 0,
+  "big_five_full_vs_prefix_gt_0.05": 0,
+  "big_five_noise_floor_gt_0.05": 0,
+  "big_five_full_vs_prefix_gt_0.1": 0,
+  "big_five_noise_floor_gt_0.1": 0,
+  "big_five_full_vs_prefix_gt_0.2": 0,
+  "big_five_noise_floor_gt_0.2": 0,
+  "excess_over_noise_mean": 0.0,
+  "excess_over_noise_bootstrap95": [
+   0.0,
+   0.0
+  ],
+  "L1_verdict_rule": "supported only if the bootstrap interval excludes 0 (lower bound > 0)"
+ },
+ "pairs": [
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:0926fccc88",
+   "k": 10,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:2152ed22e4",
+   "k": 10,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender"
+    ],
+    "big_five_delta": 0.5
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:476821534c",
+   "k": 10,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:60117b7f5a",
+   "k": 10,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:6d62f8b46c",
+   "k": 10,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "age_band",
+     "register"
+    ],
+    "big_five_delta": 0.13
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:7fc3b9af53",
+   "k": 10,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "register"
+    ],
+    "big_five_delta": 0.4
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:a39e272c42",
+   "k": 10,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "register"
+    ],
+    "big_five_delta": 0.06
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:a785fbd308",
+   "k": 10,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:b1ef741901",
+   "k": 10,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "register"
+    ],
+    "big_five_delta": 0.32
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:be86673b83",
+   "k": 10,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:c428cac488",
+   "k": 10,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:d090530fc6",
+   "k": 10,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.46
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:fae3791b88",
+   "k": 10,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:0926fccc88",
+   "k": 20,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:2152ed22e4",
+   "k": 20,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender"
+    ],
+    "big_five_delta": 0.5
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:476821534c",
+   "k": 20,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:60117b7f5a",
+   "k": 20,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:6d62f8b46c",
+   "k": 20,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "age_band",
+     "register"
+    ],
+    "big_five_delta": 0.13
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:7fc3b9af53",
+   "k": 20,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "register"
+    ],
+    "big_five_delta": 0.4
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:a39e272c42",
+   "k": 20,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "register"
+    ],
+    "big_five_delta": 0.06
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:a785fbd308",
+   "k": 20,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:b1ef741901",
+   "k": 20,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:b3144cd1b0",
+   "k": 20,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:be86673b83",
+   "k": 20,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:c428cac488",
+   "k": 20,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:d090530fc6",
+   "k": 20,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.46
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:fae3791b88",
+   "k": 20,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:fc520c0f69",
+   "k": 20,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "age_band"
+    ],
+    "big_five_delta": 0.09
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:0926fccc88",
+   "k": 40,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:2152ed22e4",
+   "k": 40,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:476821534c",
+   "k": 40,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:60117b7f5a",
+   "k": 40,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:6d62f8b46c",
+   "k": 40,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:6e93f80b2b",
+   "k": 40,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:7fc3b9af53",
+   "k": 40,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "register"
+    ],
+    "big_five_delta": 0.4
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:852e6a60a5",
+   "k": 40,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:9e9beb2b10",
+   "k": 40,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "register"
+    ],
+    "big_five_delta": 0.46
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:a39e272c42",
+   "k": 40,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:a785fbd308",
+   "k": 40,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:b1ef741901",
+   "k": 40,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:b3144cd1b0",
+   "k": 40,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:b7c5630249",
+   "k": 40,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender"
+    ],
+    "big_five_delta": 0.42
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:be86673b83",
+   "k": 40,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:c428cac488",
+   "k": 40,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:d090530fc6",
+   "k": 40,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.46
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:daa12f936e",
+   "k": 40,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:f143c49c6a",
+   "k": 40,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:fae3791b88",
+   "k": 40,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:fc520c0f69",
+   "k": 40,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "age_band"
+    ],
+    "big_five_delta": 0.09
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:0035e71331",
+   "k": 80,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "age_band"
+    ],
+    "big_five_delta": 0.1
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:0926fccc88",
+   "k": 80,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:0fc69aa705",
+   "k": 80,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:2152ed22e4",
+   "k": 80,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:286039151c",
+   "k": 80,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:3c5c5a7992",
+   "k": 80,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:3fe4c95eff",
+   "k": 80,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:476821534c",
+   "k": 80,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:60117b7f5a",
+   "k": 80,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:6a2bfe3f7f",
+   "k": 80,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:6d62f8b46c",
+   "k": 80,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:6e93f80b2b",
+   "k": 80,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:7c5f247672",
+   "k": 80,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:7fb2ed2310",
+   "k": 80,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:7fc3b9af53",
+   "k": 80,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:85121651e1",
+   "k": 80,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "register"
+    ],
+    "big_five_delta": 0.29
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:852e6a60a5",
+   "k": 80,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:8e53ff2823",
+   "k": 80,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:9e9beb2b10",
+   "k": 80,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "register"
+    ],
+    "big_five_delta": 0.46
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:a347c062c9",
+   "k": 80,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:a39e272c42",
+   "k": 80,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:a785fbd308",
+   "k": 80,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:a8bdaf3bfb",
+   "k": 80,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "age_band",
+     "register"
+    ],
+    "big_five_delta": 0.19
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:b1ef741901",
+   "k": 80,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:b3144cd1b0",
+   "k": 80,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:b7c5630249",
+   "k": 80,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:be86673b83",
+   "k": 80,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:c33bd48e97",
+   "k": 80,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:c428cac488",
+   "k": 80,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:d090530fc6",
+   "k": 80,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:daa12f936e",
+   "k": 80,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:dddfb7fa2b",
+   "k": 80,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:e901d48678",
+   "k": 80,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "register"
+    ],
+    "big_five_delta": 0.33
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:eee495a3f3",
+   "k": 80,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:f143c49c6a",
+   "k": 80,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:fae3791b88",
+   "k": 80,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:fc520c0f69",
+   "k": 80,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "age_band"
+    ],
+    "big_five_delta": 0.09
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:0035e71331",
+   "k": 120,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "age_band"
+    ],
+    "big_five_delta": 0.1
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:01786f7a55",
+   "k": 120,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "age_band",
+     "register"
+    ],
+    "big_five_delta": 0.15
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:03d66f674a",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:0926fccc88",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:0fab26886a",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:0fc69aa705",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:2152ed22e4",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:286039151c",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:2c4588875c",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:2d8e4ce9a0",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:3c5c5a7992",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:3fe4c95eff",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:476821534c",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:55bf886fb6",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:58d14ce6c9",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:60117b7f5a",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:612f652f3a",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:6a2bfe3f7f",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:6c154c3d80",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:6d62f8b46c",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:6e93f80b2b",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:71e070e58a",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:7c5f247672",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:7f39658492",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:7fb2ed2310",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:7fc3b9af53",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:85121651e1",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:852e6a60a5",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:8e53ff2823",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:8fbb782193",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:9e9beb2b10",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:a1624c955a",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:a22beb5d74",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:a347c062c9",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:a39e272c42",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:a785fbd308",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:a8bdaf3bfb",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:b1ef741901",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:b3144cd1b0",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:b7c5630249",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:be86673b83",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:c33bd48e97",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:c428cac488",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:c4a6442df5",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:c7f56999d0",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:d090530fc6",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:d181430335",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:daa12f936e",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:dddfb7fa2b",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:de25cc603a",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:e38b756887",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:e901d48678",
+   "k": 120,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "register"
+    ],
+    "big_five_delta": 0.33
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:eee495a3f3",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:f143c49c6a",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:f76aaff699",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:f818878641",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender"
+    ],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:fa27a86467",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:fae3791b88",
+   "k": 120,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "reverend-insanity",
+   "entity": "reverend-insanity:self:fc520c0f69",
+   "k": 120,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  }
+ ]
+}

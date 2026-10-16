@@ -1,0 +1,971 @@
+{
+ "audit": "prefix-faithfulness, LLM trait path",
+ "novel": "omniscient-readers-viewpoint",
+ "backend": "fake",
+ "backend_name": "fake",
+ "PLUMBING_ONLY": true,
+ "label_provenance": "SYSTEM-INTERNAL, no labels",
+ "calls": {
+  "full": 14,
+  "5": [
+   1,
+   1
+  ],
+  "10": [
+   5,
+   5
+  ],
+  "20": [
+   11,
+   11
+  ],
+  "30": [
+   13,
+   13
+  ]
+ },
+ "by_k": {
+  "5": {
+   "entities_in_both": 8,
+   "classes": {
+    "gate": 5,
+    "both_llm": 1,
+    "both_deterministic": 2
+   }
+  },
+  "10": {
+   "entities_in_both": 11,
+   "classes": {
+    "gate": 3,
+    "both_llm": 5,
+    "both_deterministic": 3
+   }
+  },
+  "20": {
+   "entities_in_both": 18,
+   "classes": {
+    "both_llm": 11,
+    "gate": 1,
+    "both_deterministic": 6
+   }
+  },
+  "30": {
+   "entities_in_both": 24,
+   "classes": {
+    "both_llm": 13,
+    "gate": 1,
+    "both_deterministic": 10
+   }
+  }
+ },
+ "summary": {
+  "classes": {
+   "gate": 10,
+   "both_llm": 30,
+   "both_deterministic": 21
+  },
+  "both_llm_pairs": 30,
+  "discrete_full_vs_prefix": 0,
+  "discrete_noise_floor": 0,
+  "big_five_full_vs_prefix_gt_0.05": 0,
+  "big_five_noise_floor_gt_0.05": 0,
+  "big_five_full_vs_prefix_gt_0.1": 0,
+  "big_five_noise_floor_gt_0.1": 0,
+  "big_five_full_vs_prefix_gt_0.2": 0,
+  "big_five_noise_floor_gt_0.2": 0,
+  "excess_over_noise_mean": 0.0,
+  "excess_over_noise_bootstrap95": [
+   0.0,
+   0.0
+  ],
+  "L1_verdict_rule": "supported only if the bootstrap interval excludes 0 (lower bound > 0)"
+ },
+ "pairs": [
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self1",
+   "k": 5,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "age_band"
+    ],
+    "big_five_delta": 0.36
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self11",
+   "k": 5,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "age_band"
+    ],
+    "big_five_delta": 0.39
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self12",
+   "k": 5,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "age_band",
+     "register"
+    ],
+    "big_five_delta": 0.45
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self2",
+   "k": 5,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self4",
+   "k": 5,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "register"
+    ],
+    "big_five_delta": 0.05
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self5",
+   "k": 5,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self6",
+   "k": 5,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self7",
+   "k": 5,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "age_band",
+     "register"
+    ],
+    "big_five_delta": 0.09
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self1",
+   "k": 10,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "age_band"
+    ],
+    "big_five_delta": 0.36
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self11",
+   "k": 10,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self12",
+   "k": 10,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self16",
+   "k": 10,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "age_band"
+    ],
+    "big_five_delta": 0.25
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self17",
+   "k": 10,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "age_band",
+     "register"
+    ],
+    "big_five_delta": 0.14
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self2",
+   "k": 10,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self21",
+   "k": 10,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self4",
+   "k": 10,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self5",
+   "k": 10,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self6",
+   "k": 10,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self7",
+   "k": 10,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self1",
+   "k": 20,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self11",
+   "k": 20,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self12",
+   "k": 20,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self16",
+   "k": 20,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self17",
+   "k": 20,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "age_band",
+     "register"
+    ],
+    "big_five_delta": 0.14
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self2",
+   "k": 20,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self21",
+   "k": 20,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self24",
+   "k": 20,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self25",
+   "k": 20,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self26",
+   "k": 20,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self30",
+   "k": 20,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self31",
+   "k": 20,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self34",
+   "k": 20,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self35",
+   "k": 20,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self4",
+   "k": 20,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self5",
+   "k": 20,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self6",
+   "k": 20,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self7",
+   "k": 20,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self1",
+   "k": 30,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self11",
+   "k": 30,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self12",
+   "k": 30,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self16",
+   "k": 30,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self17",
+   "k": 30,
+   "cls": "gate",
+   "full_vs_prefix": {
+    "discrete": [
+     "gender",
+     "age_band",
+     "register"
+    ],
+    "big_five_delta": 0.14
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self2",
+   "k": 30,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self21",
+   "k": 30,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self24",
+   "k": 30,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self25",
+   "k": 30,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self26",
+   "k": 30,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self30",
+   "k": 30,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self31",
+   "k": 30,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self34",
+   "k": 30,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self35",
+   "k": 30,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self4",
+   "k": 30,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self41",
+   "k": 30,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self42",
+   "k": 30,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self44",
+   "k": 30,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self45",
+   "k": 30,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self46",
+   "k": 30,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self5",
+   "k": 30,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self50",
+   "k": 30,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self6",
+   "k": 30,
+   "cls": "both_deterministic",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "entity": "omniscient-readers-viewpoint:self7",
+   "k": 30,
+   "cls": "both_llm",
+   "full_vs_prefix": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   },
+   "prefix_vs_repeat": {
+    "discrete": [],
+    "big_five_delta": 0.0
+   }
+  }
+ ]
+}
