@@ -1,0 +1,256 @@
+{
+  "version": 7,
+  "extends": "PD_events_v6_additions.json",
+  "note": "Fifth set of events for the public-domain reveal benchmark (draft, NOT part of the frozen v1 set or the v2, v3 and v6 additions, and NOT in any MANIFEST until the owner approves and freezes). Same schema as v1, v2, v3 and v6 PLUS two fields: fame (famous or obscure) and fame_evidence. Purpose: PROSPECTIVELY test one hypothesis, that the leakage gap is larger for FAMOUS books than OBSCURE books. The fame class was fixed BEFORE any event drafting by an objective rule: fetched https://www.gutenberg.org/browse/scores/top on 2026-10-16 04:54 UTC and saved the three Top 100 EBooks lists (yesterday, last 7 days, last 30 days) to docs/research/preregistrations/PD_v7_fame_snapshot.txt (sha256 6c9c429763ad786c70659125fa95d1471a82ca920aa2d12ddb5572c8022e73db); a book is famous iff its title or Gutenberg id appears in any of the three lists, otherwise obscure; scripts/chimera/pd_verify_v7.py recomputes the class from the snapshot and fails on a mismatch. Caution: the lists are one-month popularity snapshots, so 'famous' means 'in the Gutenberg Top-100 now', not literary canon (e.g. The Green Mummy and The Secret of Chimneys are famous by this rule). 9 events: 5 famous, 4 obscure; none among the 38 Gutenberg ids already used. Authors repeated from earlier sets are allowed in this set (books are not). Public-domain texts (local copies in the git-ignored data/raw/pd_gutenberg_v7/, never written to the repository). Each event has a verbatim anchor located by exact whitespace-insensitive search (exactly once in the book body) and a cutoff regex before it; cutoffs are chapter starts where the alias occurs often enough before the chapter, otherwise a short in-chapter phrase (BS, LF, LP, MS). Checked by scripts/chimera/pd_verify_v7.py. Oracle strength differs and is flagged per event in the caveat. See docs/research/PD_EVENTS_V7_NOTES.md. A change after freezing is a new version file.",
+  "provenance": "selected by model-drafter, exact-search verified, fame class fixed by Gutenberg top-100 rule before any model run, owner spot-check pending",
+  "events": [
+    {
+      "id": "GM",
+      "book": "The Green Mummy (Hume)",
+      "gutenberg": 2868,
+      "alias": [
+        "Captain Hervey",
+        "Hervey"
+      ],
+      "identity": "Vasa",
+      "cast": [
+        "Vasa",
+        "Braddock",
+        "Archie Hope",
+        "Lucy",
+        "De Gayangos",
+        "Jasher",
+        "Bolton"
+      ],
+      "reveal_sentence": "Thank you, Vasa,” said De Gayangos, and Hervey, changing color",
+      "cut": {
+        "regex": "CHAPTER XVIII\\.",
+        "back": 0
+      },
+      "caveat": "Famous by the list rule (Gutenberg Top-100: yesterday #10, last 7 days #11, last 30 days #11); a book of modest literary standing that is listed because of a download spike, so 'famous' here means 'currently in the Gutenberg Top-100', not canon. Narrator-plus-dialogue oracle: the anchor is the first sentence in the book that holds an alias and the identity ('Thank you, Vasa,' said De Gayangos, and Hervey, changing color ...), and the narrator spells it out three sentences later ('Don Pedro's recognition of Captain Hervey as the Swedish sailor Vasa'). Vasa is named 27 times in the prefix as the sailor who stole the mummy, and Don Pedro's description of him (scar on the right temple, serpent tattoo on the left wrist) is in the prefix; no prefix sentence links Hervey with Vasa (0 alias+identity-token sentences, 0 occurrences within 200 characters). Cutoff is the start of the chapter before the confrontation, 18,710 characters before the anchor; the gap holds Hervey's whole entrance scene. 51 pre-cutoff alias occurrences.",
+      "fame": "famous",
+      "fame_evidence": "yesterday #10; last 7 days #11; last 30 days #11"
+    },
+    {
+      "id": "CH",
+      "book": "The Secret of Chimneys (Christie)",
+      "gutenberg": 65238,
+      "alias": [
+        "Mademoiselle Brun",
+        "Brun"
+      ],
+      "identity": "Queen Varaga",
+      "cast": [
+        "Queen Varaga",
+        "Anthony Cade",
+        "Virginia Revel",
+        "Battle",
+        "Lemoine",
+        "George Lomax",
+        "Lord Caterham",
+        "Bundle"
+      ],
+      "reveal_sentence": "the lady who is dead was the late Queen Varaga",
+      "cut": {
+        "regex": "28 King Victor",
+        "back": 0
+      },
+      "caveat": "Famous by the list rule (yesterday #6, last 7 days #6, last 30 days #7). Dialogue oracle: Superintendent Battle asks 'I take it that the lady who is dead was the late Queen Varaga?' and is told 'Quite right, Battle'. The anchor does not contain the alias: 'the lady who is dead' is Mademoiselle Brun, shot at the end of the previous chapter; the alias form is in the surrounding scene. Queen Varaga is a named person in the prefix (the Herzoslovakian queen presumed murdered in the revolution, told as backstory) and no prefix sentence joins her with Mademoiselle Brun. HINT-RICH GAP: the cutoff is the start of chapter 28, 15,349 characters before the anchor; in that chapter Cade says the governess was an impostor with a familiar face and the Baron mutters 'She was killed ... On the steps of the Palace', which narrows the identity strongly. Only 8 pre-cutoff alias occurrences and no post-reveal alias occurrence (post items will be empty).",
+      "fame": "famous",
+      "fame_evidence": "yesterday #6; last 7 days #6; last 30 days #7"
+    },
+    {
+      "id": "LP",
+      "book": "The Extraordinary Adventures of Arsène Lupin, Gentleman-Burglar (Leblanc)",
+      "gutenberg": 6133,
+      "alias": [
+        "Jean Daspry",
+        "Daspry"
+      ],
+      "identity": "Arsène Lupin",
+      "cast": [
+        "Arsène Lupin",
+        "Ganimard",
+        "Cahorn",
+        "Rozaine",
+        "Andermatt",
+        "Varin",
+        "Massol",
+        "Nelly"
+      ],
+      "reveal_sentence": "My club companion was none other than Arsène Lupin",
+      "cut": {
+        "regex": "I believe, monsieur,” said Daspry to the banker",
+        "back": 0
+      },
+      "caveat": "Famous by the list rule (yesterday #24, last 7 days #17, last 30 days #23). WEAK ORACLE, structural cue. Story 'The Seven of Hearts' in a story collection whose hero is Arsene Lupin: the identity name occurs about 216 times in the prefix, and the story's frame question ('How did you make the acquaintance of Arsene Lupin?') is in the prefix, so a reader can guess. The anchor is the narrator's sentence 'Lupin! My club companion was none other than Arsène Lupin'; the alias is in the adjacent dialogue ('You can say farewell to Jean Daspry'), and the dialogue 'Your name?' 'Arsene Lupin.' (the first spoken equation) is inside the 4,296-character gap, so the cutoff is mid-scene, not a chapter start (the story's first Daspry mention comes 1,600 characters after the frame question; chapter-start cutoffs would leave 0 alias mentions). 41 pre-cutoff alias occurrences. English translation (Teixeira de Mattos), flag for any translation-memorisation analysis.",
+      "fame": "famous",
+      "fame_evidence": "yesterday #24; last 7 days #17; last 30 days #23"
+    },
+    {
+      "id": "BS",
+      "book": "The Memoirs of Sherlock Holmes (Doyle)",
+      "gutenberg": 834,
+      "alias": [
+        "Mr. Blessington",
+        "Blessington"
+      ],
+      "identity": "Sutton",
+      "cast": [
+        "Sutton",
+        "Holmes",
+        "Watson",
+        "Trevelyan",
+        "Musgrave",
+        "Hayter",
+        "Cunningham",
+        "Brunton"
+      ],
+      "reveal_sentence": "Then Blessington must have been Sutton",
+      "cut": {
+        "regex": "Oh, there can be no doubt as to the sequence of events",
+        "back": 0
+      },
+      "caveat": "Famous by the list rule (yesterday #77 only). Single-sentence dialogue equation by Holmes's interlocutor in 'The Resident Patient': 'Then Blessington must have been Sutton.' The name Sutton occurs nowhere in the prefix (0 mentions); Blessington occurs 20 times before the cutoff. The cutoff is mid-story (collection: the story-title cutoff would leave 0 alias mentions), 4,196 characters before the anchor; the gap holds Holmes's return, 'This so-called Blessington is, as I expected, well known at headquarters' and the names Biddle, Hayward and Moffat (the Worthingdon bank gang), so the alias status of Blessington is already flagged in the gap. Cast names are drawn from the stories earlier in the collection. Doyle and Holmes are both used in earlier sets (authors are allowed here, books are not).",
+      "fame": "famous",
+      "fame_evidence": "yesterday #77"
+    },
+    {
+      "id": "LF",
+      "book": "The Return of Sherlock Holmes (Doyle)",
+      "gutenberg": 108,
+      "alias": [
+        "Eduardo Lucas",
+        "Lucas"
+      ],
+      "identity": "Henri Fournaye",
+      "cast": [
+        "Henri Fournaye",
+        "Holmes",
+        "Watson",
+        "Lestrade",
+        "Hudson",
+        "Moran",
+        "Milverton",
+        "Hopkins"
+      ],
+      "reveal_sentence": "Henri Fournaye and Eduardo Lucas were really one and the same person",
+      "cut": {
+        "regex": "So for three mornings the mystery remained",
+        "back": 0
+      },
+      "caveat": "Famous by the list rule (yesterday #75). Newspaper-statement oracle in 'The Second Stain': a Paris telegram quoted by Watson says 'M. Henri Fournaye and Eduardo Lucas were really one and the same person', and Holmes then speaks of Lucas's 'mad wife' and calls the report final as regards the man's death, so the text itself accepts the equation. The name Fournaye occurs for the first time at the telegram (0 prefix mentions); Lucas occurs 11 times before the cutoff. Mid-story cutoff (a story-title cutoff would leave 0 alias mentions, since Lucas first occurs 16,000 characters into the story), 1,439 characters before the anchor; the gap is a short paragraph about the valet Mitton and the three days of silence and ends 'there appeared a long telegram from Paris which seemed to solve the whole question'. The prefix includes the whole earlier volume.",
+      "fame": "famous",
+      "fame_evidence": "yesterday #75"
+    },
+    {
+      "id": "MS",
+      "book": "Mr. Standfast (Buchan)",
+      "gutenberg": 560,
+      "alias": [
+        "Moxon Ivery",
+        "Ivery"
+      ],
+      "identity": "Graf von Schwabing",
+      "cast": [
+        "Graf von Schwabing",
+        "Hannay",
+        "Blenkiron",
+        "Mary Lamington",
+        "Peter Pienaar",
+        "Bullivant",
+        "Wake",
+        "Amos"
+      ],
+      "reveal_sentence": "is Moxon Ivery, who in happier times was the Graf von Schwabing",
+      "cut": {
+        "regex": "Who is Ivery anyhow",
+        "back": 0
+      },
+      "caveat": "Obscure by the list rule (absent from all three Top-100 lists; adaptation status not checked, none recalled). Dialogue oracle: Blenkiron's summary 'the biggest, of course, is Moxon Ivery, who in happier times was the Graf von Schwabing'. The name Schwabing occurs nowhere before the cutoff (0 mentions); Ivery occurs 92 times. WEAK GAP: the cutoff is the question 'Who is Ivery anyhow?' and the 19,445-character gap is Blenkiron's whole exposition of the Graf von Schwabing's disgrace and exile, so the equation is made implicitly (Ivery is the Graf) well before the anchor sentence. The anchor is the first sentence in the book with an alias and the identity name together. Alias Bommaerts is a second alias of the same man and is not listed.",
+      "fame": "obscure",
+      "fame_evidence": "absent from all Top-100 lists"
+    },
+    {
+      "id": "CS",
+      "book": "The Circular Staircase (Rinehart)",
+      "gutenberg": 434,
+      "alias": [
+        "Alex"
+      ],
+      "identity": "Jack Bailey",
+      "cast": [
+        "Jack Bailey",
+        "Halsey",
+        "Gertrude",
+        "Liddy",
+        "Jamieson",
+        "Paul Armstrong",
+        "Thomas",
+        "Dr. Walker"
+      ],
+      "reveal_sentence": "So it was Alex, Jack Bailey, who had been our ghost",
+      "cut": {
+        "regex": "CHAPTER XXXIV",
+        "back": 0
+      },
+      "caveat": "Obscure by the list rule (absent from all three Top-100 lists; adaptation status not checked). Narrator oracle: 'So it was Alex, Jack Bailey, who had been our ghost' (the first sentence in the book holding the alias and the identity; the later 'Mr. Jamieson had known for some time that Alex was Jack Bailey' is not used). Jack Bailey occurs 85 times in the prefix as the missing cashier and no prefix sentence or 200-character window joins him with Alex (0 alias+identity-token sentences, 0 near co-occurrences). The cutoff is the start of a late chapter, 8,099 characters before the anchor; the gap contains the explanation that the detective's 'pseudo-gardener' investigated the house. 62 pre-cutoff alias occurrences ('Alex' is a first-name surface and could clash with other Alexes; none were observed). Post-reveal alias count is 1.",
+      "fame": "obscure",
+      "fame_evidence": "absent from all Top-100 lists"
+    },
+    {
+      "id": "RR",
+      "book": "The Red Redmaynes (Phillpotts)",
+      "gutenberg": 14167,
+      "alias": [
+        "Giuseppe Doria",
+        "Doria"
+      ],
+      "identity": "Michael Pendean",
+      "cast": [
+        "Michael Pendean",
+        "Brendon",
+        "Jenny",
+        "Bendigo",
+        "Robert Redmayne",
+        "Peter Ganns",
+        "Dartmouth"
+      ],
+      "reveal_sentence": "Doria and Michael Pendean were one and the same person",
+      "cut": {
+        "regex": "CHAPTER XVII",
+        "back": 0
+      },
+      "caveat": "Obscure by the list rule (absent from all three Top-100 lists; adaptation status not checked, none recalled). Detective's explanation oracle: 'I had not imagined Doria and Michael Pendean were one and the same person' (single sentence, alias and identity, but phrased as what the speaker had NOT yet imagined, with the equation affirmed by 'double impersonation' a few sentences later). Michael Pendean is the dead husband of Jenny Pendean and is named in the prefix, so the surname is a cast cue (Jenny is a separate cast name; the label is the full name Michael Pendean). 10 prefix sentences hold an alias and a name token (Pendean) and were read: they are about Doria and Mrs. Pendean (his wife), not an equation. The cutoff is the start of chapter 17, 10,312 characters before the anchor; the gap holds an earlier, softer hint (451,847: Doria's face reflected in a photograph of Michael Pendean's mother). 250 pre-cutoff alias occurrences.",
+      "fame": "obscure",
+      "fame_evidence": "absent from all Top-100 lists"
+    },
+    {
+      "id": "VF",
+      "book": "The Valley of Fear (Doyle)",
+      "gutenberg": 3289,
+      "alias": [
+        "McMurdo"
+      ],
+      "identity": "Birdy Edwards",
+      "cast": [
+        "Birdy Edwards",
+        "Holmes",
+        "McGinty",
+        "Scanlan",
+        "Morris",
+        "Shafter",
+        "Ettie",
+        "Baldwin"
+      ],
+      "reveal_sentence": "McMurdo answered slowly. “Birdy Edwards is here. I am Birdy Edwards!",
+      "cut": {
+        "regex": "Chapter VI Danger",
+        "back": 0
+      },
+      "caveat": "Obscure by the rule (absent from all three Top-100 lists), but WARNING: it is a Sherlock Holmes novel by an author with other books in the set, so an analysis may want a sensitivity run without it. Dialogue oracle: 'McMurdo answered slowly. Birdy Edwards is here. I am Birdy Edwards!' (the alias is in the anchor, the first-person equation is spoken by the aliased person). WEAK GAP: the cutoff is the start of the chapter 'Danger', 29,648 characters before the anchor, and in it McMurdo says he knows Birdy Edwards ('I need not tell you that he is not here under that name', 14,998 characters before the anchor) and tells the lodge Edwards must be trapped; the prefix names Birdy Edwards as the Pinkerton detective once (a letter). 161 pre-cutoff alias occurrences.",
+      "fame": "obscure",
+      "fame_evidence": "absent from all Top-100 lists"
+    }
+  ]
+}

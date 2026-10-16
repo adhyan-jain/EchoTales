@@ -1,0 +1,25 @@
+{
+ "frozen_for": "PREREG_PD_v4.md",
+ "event_files_sha256": {
+  "PD_events_v1.json": "4cf9b5e8223ab772f30259936d544a74f0678381d1c44abedfc321f9e36575d2",
+  "PD_events_v2_additions.json": "d58b32a4d7e0fde90f3f235331477f93122dea968139dc292d8f97e2e1909afa",
+  "PD_events_v3_additions.json": "ad950b01f6193e77d4db4a517bdf99a7fd14d662c37a9baaf5c410db43093b89"
+ },
+ "prompts_v4_sha256": "b343cf360c183043d0c39011789c62d528b91dd7cf530f7095eee99bf4bc0d1a",
+ "prereg_sha256": "ecd28654d21914786748e5d9c7402206668d5bed1e5d6af2bf18844fee86ee3a",
+ "script_sha256_at_freeze": "a9ca5ae50ec1890a83f5736301d055a32e7a3e2537272c0753105c251148853b",
+ "results_2026-10-16": {
+  "runs": {
+   "run_gemma2_9b.json": "8138b903ee17df8c13a92830203138f009ca3e1e70a90b2ef491d0ec64064586",
+   "run_gpt-5.6-luna.json": "0f65f682ee3b1ee28bf7c9dcb08d3709718139ec685f4adb6d5ddcb5e33fa561",
+   "run_llama3.1_8b.json": "b445f9545009a909c9fb0e468e6216e7ee46b8f8839d6378310d51a70a5ba63b",
+   "run_mistral_7b-instruct.json": "4f596524c3f0b5833a0270c5d329ccff6202b3ada4214546c4ffecbc1a124f42",
+   "run_phi4-mini_latest.json": "e49d1ccfc35146eefa927fcfc79229804102228249da48c057257986b591c334",
+   "run_qwen2.5_7b.json": "5f1b7382baaf37aae5c2f1a162b7e1003066f082ca19f97170101189d6dcb327"
+  },
+  "analysis_sha256": "5b24d33e8f82a75027dd7e3c5af0089af97bb8c218f33f57d105bb06eae00ecd",
+  "validity_table_sha256": "2d25ec0f36b0cae1364a30f6c16a424e6ecf96b00f0464cf6da9afcd67d3e2b5",
+  "verdict": "re-evaluation SUPPORTED on pd_v2 and pd_v3",
+  "note": "Luna probe spend 0.0041 USD under owner-approved estimate. Frozen keys unchanged."
+ }
+}

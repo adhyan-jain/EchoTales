@@ -1,0 +1,28 @@
+{
+ "prereg": "PREREG_PD_reveal_benchmark.md v1",
+ "prereg_sha256": "dc92a90e23463f9301ba975a3cb4812ff505bce793b8a20242dc9282cbac4ff2",
+ "events_file": "PD_events_v1.json",
+ "events_sha256": "4cf9b5e8223ab772f30259936d544a74f0678381d1c44abedfc321f9e36575d2",
+ "prompts_file": "PD_prompts_v1.json",
+ "prompts_sha256": "b7cd09994a52aa4ef001bfad7cda0309ebc282658f36c4ac79c8a24f2f44a3fc",
+ "frozen": "2026-10-16, before the PD builder existed and before any model call on a PD item",
+ "rule": "A change after freezing is a new file with a higher version number, never an edit.",
+ "script": "scripts/chimera/pd_reveal_benchmark.py",
+ "script_sha256_at_first_model_call": "479c07a0867a841f693f0bd25af312843e7bf9e6009e9feb87d421f388c6395c",
+ "items_manifest_sha256": "ecd3a74f4a6ea7e30b51c4f510c2c098156c4c56a90378765132ea5867ce395b",
+ "note_script": "Two builder bugs (table-of-contents heading match, line breaks inside anchors) were fixed in the script before the first model call; events and prompts files were not changed.",
+ "results_2026-10-16": {
+  "script_sha256": "479c07a0867a841f693f0bd25af312843e7bf9e6009e9feb87d421f388c6395c",
+  "runs": {
+   "run_gpt-5.6-luna.json": "98f73776486e0597ec11d9439ca788c6658e59e68968c3050fc155fb565a1e5e",
+   "run_llama3.1_8b.json": "63575a979539d2caab7114829d2e5e4d09e73473a4b9f785e7aba9efb537ee1e",
+   "run_mistral_7b-instruct.json": "4f998025360c8691e3085cafdb1247c9f3f106278482f5994ac5fe7d091c1adf",
+   "run_phi4-mini_latest.json": "17c1f44b77ceef3cfbc5007d84f22fa15fd2b25ba76f75a21ec39a790b503bb3",
+   "run_qwen2.5_7b.json": "0c710196985cef314bae872e580a57d246b7e23dd9e85c4ad540bb1714931d92"
+  },
+  "analysis_sha256": "4a5f870bb8c210b25d5682da37c5a3a41d7e0b1b612dc7eb6d024c190a3d8a7d",
+  "verdict": "NOT SUPPORTED (only gpt-5.6-luna passed R0)",
+  "not_run": "gemma2:9b (not fully in VRAM; CPU offload forbidden)",
+  "note": "r0_diagnosis_exploratory.json is post hoc and does not change the verdict. Luna spend 0.0254 USD, running total 0.0725 USD."
+ }
+}

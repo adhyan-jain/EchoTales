@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "note": "Frozen event list for PREREG_PD_reveal_benchmark.md v1. Public-domain texts (Project Gutenberg). Each event has an explicit verbatim reveal sentence located by exact search, and a conservative cutoff before the revealing passage. Reveal sentences and cast names are the model-drafter's selection, verifiable by exact string search; owner spot-check pending. A change is a new version file.",
+  "events": [
+    {
+      "id": "PH", "book": "The Phantom of the Opera", "gutenberg": 175,
+      "alias": ["the Opera ghost", "the ghost"], "identity": "Erik",
+      "cast": ["Erik", "Raoul de Chagny", "Christine Daaé", "the Persian", "Count Philippe de Chagny", "Firmin Richard", "Armand Moncharmin", "Carlotta", "Madame Giry"],
+      "reveal_sentence": "Well, I am in a position to state that the Opera ghost and the Angel of Music are one and the same person; and his real name is Erik.",
+      "cut": {"regex": "Chapter XVIII\\s+The Commissary", "back": 0},
+      "caveat": "The name Erik already occurs in the prefix (Christine: Poor Erik!) but not as the ghost."
+    },
+    {
+      "id": "PI", "book": "The Scarlet Pimpernel", "gutenberg": 60,
+      "alias": ["the Scarlet Pimpernel", "Scarlet Pimpernel"], "identity": "Sir Percy Blakeney",
+      "cast": ["Sir Percy Blakeney", "Marguerite Blakeney", "Chauvelin", "Sir Andrew Ffoulkes", "Lord Antony Dewhurst", "Armand St. Just", "Lord Grenville", "Suzanne de Tournay"],
+      "reveal_sentence": "The Scarlet Pimpernel—Percy, my husband—has gone on this errand himself to-day.",
+      "cut": {"regex": "CHAPTER XIX\\.", "back": 0},
+      "caveat": "The author seeds strong hints before the explicit sentence; the cutoff is the start of the chapter that contains the explicit equation, not the first hint."
+    },
+    {
+      "id": "GE", "book": "Great Expectations", "gutenberg": 1400,
+      "alias": ["my benefactor", "the benefactor", "my patron"], "identity": "Abel Magwitch",
+      "cast": ["Abel Magwitch", "Pip", "Estella", "Miss Havisham", "Joe Gargery", "Herbert Pocket", "Mr. Jaggers", "Bentley Drummle", "Orlick"],
+      "reveal_sentence": "Yes, Pip, dear boy, I’ve made a gentleman on you!",
+      "cut": {"regex": "Chapter XXXIX\\.", "back": 0},
+      "caveat": "The name Magwitch does not occur in the prefix at all."
+    },
+    {
+      "id": "CI", "book": "A Case of Identity (The Adventures of Sherlock Holmes)", "gutenberg": 1661,
+      "alias": ["Hosmer Angel"], "identity": "James Windibank",
+      "cast": ["James Windibank", "Mary Sutherland", "Sherlock Holmes", "Dr. Watson", "Mrs. Windibank", "Mr. Hardy", "Mrs. Hudson"],
+      "reveal_sentence": "James Windibank wished Miss Sutherland to be so bound to Hosmer Angel, and so uncertain as to his fate, that for ten years to come, at any rate, she would not listen to another man.",
+      "cut": {"regex": "Now, let me just run over the course of events", "back": 0},
+      "caveat": "Windibank is already present as a character before the cutoff; only his identity as Angel is withheld."
+    },
+    {
+      "id": "SS", "book": "A Study in Scarlet", "gutenberg": 244,
+      "alias": ["the cabman", "cabman"], "identity": "Jefferson Hope",
+      "cast": ["Jefferson Hope", "Sherlock Holmes", "Dr. Watson", "Gregson", "Lestrade", "Enoch Drebber", "Joseph Stangerson", "Mrs. Charpentier"],
+      "reveal_sentence": "“Gentlemen,” he cried, with flashing eyes, “let me introduce you to Mr. Jefferson Hope, the murderer of Enoch Drebber and of Joseph Stangerson.”",
+      "cut": {"regex": "The cabman may as well help me with my boxes", "back": 0},
+      "caveat": "The name Jefferson Hope does not occur in the prefix at all."
+    },
+    {
+      "id": "JE", "book": "Jane Eyre", "gutenberg": 1260,
+      "alias": ["the old woman", "the gipsy", "the Sibyl"], "identity": "Mr. Rochester",
+      "cast": ["Mr. Rochester", "Jane Eyre", "Mr. Brocklehurst", "Mrs. Fairfax", "Blanche Ingram", "Mr. Mason", "Grace Poole", "St. John Rivers", "Adèle"],
+      "reveal_sentence": "Rochester stepped out of his disguise.",
+      "cut": {"regex": "Rochester stepped out of his disguise\\.", "back": 2000},
+      "caveat": "Short distances (inside one scene); the cutoff is 2,000 characters before the reveal sentence."
+    },
+    {
+      "id": "RH", "book": "The Red-Headed League (The Adventures of Sherlock Holmes)", "gutenberg": 1661,
+      "alias": ["Vincent Spaulding", "Spaulding"], "identity": "John Clay",
+      "cast": ["John Clay", "Sherlock Holmes", "Dr. Watson", "Jabez Wilson", "Duncan Ross", "Mr. Jones", "Mr. Merryweather"],
+      "reveal_sentence": "“It’s no use, John Clay,” said Holmes blandly.",
+      "cut": {"regex": "It’s no use, John Clay,” said Holmes blandly", "back": 1500},
+      "caveat": "The name John Clay occurs in the prefix as a wanted criminal, not yet equated with Spaulding."
+    }
+  ]
+}

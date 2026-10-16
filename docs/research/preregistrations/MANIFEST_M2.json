@@ -1,0 +1,8 @@
+{
+  "prereg": "PREREG_M2_haiku_subagent.md v1",
+  "prereg_sha256": "d575c6452eac0606d2274f77ef4cc5cc399e85c9521d6263a7f5c4f5bf44b768",
+  "script": "scripts/chimera/m2_haiku_prepare.py",
+  "script_sha256": "c4fbf1ed837ed3f2006bc446dcc8d8f570b0f6a706267da00aea0b2b9c4f2362",
+  "frozen": "2026-10-15, before any M2 spawn",
+  "rule": "A change after freezing is a new file with a higher version number, never an edit."
+}

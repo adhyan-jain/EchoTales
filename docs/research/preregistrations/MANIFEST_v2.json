@@ -1,0 +1,18 @@
+{
+  "repo_head": "6c7e2c2",
+  "branch": "validation/evidence-pass-2026-09-24",
+  "tracked_changes_at_freeze": [".gitignore"],
+  "frozen_at": "2026-10-15T08:36:20Z",
+  "supersedes": "MANIFEST.json entry PREREG_T4_renaming_validity.md (v1, sha256 34e35ebced6d270db1e525a23d78e243ede7ac6cc1f1fb4119e0e46d732aede2, verified unchanged at this time)",
+  "rule": "A change after freezing is a new file with a higher version number, never an edit. Hash computed with sha256sum immediately before this file was written. At this time scripts/chimera/renaming.py and t4_renaming.py were still the v1-era versions (modified 14:03 and 14:04 local) and no full-novel T4 run had been executed; only a chapters 1-3 smoke run (data/eval/chimera/t4_smoke_ch1-3.json) existed.",
+  "deviation": "v1 -> v2 because a smoke run exposed a construction defect in pi (renamed tokens interacting with strip_morphology / display_label). See section 0 of the v2 file. No full-run outcome influenced the fix.",
+  "preregistrations": [
+    {
+      "file": "PREREG_T4_renaming_validity_v2.md",
+      "version": 2,
+      "status": "frozen",
+      "sha256": "2cec3c56e7aff87b93329cceea96ee831615778a762839d4ff06716e235f1784",
+      "notes": "Adds exact-length and morphology-class-preserving pi, honorific protection, and a pre-run commutation gate (G1-G3)."
+    }
+  ]
+}

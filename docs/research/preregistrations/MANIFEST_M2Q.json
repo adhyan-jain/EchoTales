@@ -1,0 +1,10 @@
+{
+  "prereg": "PREREG_M2Q_qwen_local.md v1",
+  "prereg_sha256": "719ac6cecc8ea9c3f6288ca2112902b88065a3a892b6414f0f08754a15ad5ac5",
+  "runner": "scripts/chimera/m2q_qwen_local.py",
+  "runner_sha256": "b8766a2f12f59d09f6ba05562e10d918d80b9499ad06aff34f5dabae3f8fede6",
+  "frozen": "2026-10-15, before any Qwen call on study items",
+  "rule": "A change after freezing is a new file with a higher version number, never an edit.",
+  "results_sha256": "a97994125c4ac485e3eafa5fde36d3c9ae9ddadb0493e0956b327790c0588671",
+  "analysis_sha256": "5581f6eef6f7f4661be1d5e85e0c3388c193aa31b8a6921a33960ac20a495aa2"
+}

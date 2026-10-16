@@ -1,0 +1,11 @@
+{
+  "prereg": "PREREG_M3_reveal_aware_synthetic.md v1",
+  "prereg_sha256": "b773c3f0e821d10e8a53c9f6cf602b3c79192770601951d64ba195608ca3c446",
+  "frozen": "2026-10-15, before any M3 code existed or ran",
+  "rule": "A change after freezing is a new file with a higher version, never an edit.",
+  "prereg_M3b": {
+    "file": "PREREG_M3b_title_tenure.md",
+    "sha256": "ce6aeb51518932e4d4f15e64430812978fd2b4b41990bb8a9e295f2ff5cbad94",
+    "frozen": "2026-10-15, before any M3b code existed or ran; M3a code and results already existed and are not used by M3b"
+  }
+}

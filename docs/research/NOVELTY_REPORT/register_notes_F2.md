@@ -1,0 +1,127 @@
+# Integration Register, family F2: time, knowledge and state (2026-10-15)
+
+Scope: seven donors, each judged adopt / adapt / baseline-only / reject for EchoTales. Merging a technique is engineering and never counts as paper novelty. Paper value is one of: novelty, ablation baseline, none.
+Tags: [PUB] method and experiment sections read in the paper's own text (pdftotext, no code executed); [LEAD] abstract or snippet only (cannot be "adopt"); UNVERIFIED; INACCESSIBLE. [INSPECT] = I read the repo file; nothing was run. Downloads are in the scratchpad (`regF2`, `paA`, `paB`, `pa`).
+Boundary: this file reports what I read. Nothing here is a measurement on EchoTales data. Every "Cost" figure is [INFER].
+
+## Repo facts the decisions depend on [INSPECT]
+- `interval.py::FuzzyInterval` has `from_lb/from_ub/to_lb/to_ub`; `contains()` returns CERTAIN/PLAUSIBLE/EXCLUDED. This is the TAC-KBP 4-tuple [T1 T2 T3 T4] with T1=from_lb, T2=from_ub, T3=to_lb, T4=to_ub. `open_ended()` is the "Chairman Smith" pattern [- t t -]. `since_before()` is the shape a late reveal takes.
+- `state.py::StateResolver.state_of` composes story-time containment, `_visible_to_observer` (knowledge time, truth status, positional retraction) and timeline scoping, and returns Certainty. It does not return provenance.
+- `title_holders.py::tenures` forces the first holder's start to 1.0 ("retroactive"). A closed holder's interval is stored crisp (`to_lb == to_ub == last_declared`) and the same call passes `last_evidence=` to `FuzzyInterval`, which has no such field (pydantic default ignores extras, so it is dropped silently; not run). Mentions in a handover gap are skipped by the linker, but the stored interval says EXCLUDED immediately after `last_declared`, so state_of and the linker disagree about the gap.
+- Defect backlog items touched here: B4 wiki canon undated and applied after `state_of`; B5 `retract_alias_bindings` has no callers; B2 `resolve --chapters` ignored; A1/A2/A4 attribute, context and voice paths bypass `state_of`.
+
+---
+## 1. TAC-KBP temporal slot filling
+- **Source:** (a) "Proposed Task Description for Knowledge-Base Population at TAC 2011", version 05/15/2011, TAC/NIST, no author line in the extracted text (the final pilot overview, Ji, Grishman, Dang 2011, was NOT read; cited only through the 2013 paper). (b) Mihai Surdeanu, "Overview of the TAC2013 Knowledge Base Population Evaluation: English Slot Filling and Temporal Slot Filling", TAC 2013; PDFs from `tsf11`/`tsf13` in `paB`. [PUB] for both documents as far as they go.
+- **Contributes:** Sec. 3.4 (2011) and Sec. 2.2 (2013): a slot value gets a 4-tuple [T1 T2 T3 T4] = starts between T1 and T2, ends between T3 and T4; a hyphen is -inf/+inf. Examples from Table 2 (2011): "Chairman Smith" is [- d d -]; "named chairman two years ago" is [d-2y d-2y d-2y -]. Scoring: 2011 draft S = 1/4 sum c/(c+d_i) with separate constants for over-constraining and for vagueness (both tentatively 1 year); 2013 Q = 1/4 sum 1/(1+|t_i-g_i|), years. Slots include per:title and org:top_employees/members. Aggregation of per-sentence tuples: max of T1,T3 and min of T2,T4 (2011, Sec. 3.4.4). Stated non-representable: durations with no endpoint, disjoint multiple intervals.
+- **Artifact and licence:** No code needed (metric is two formulas). Source collection and annotations are LDC (2013 text names LDC2013E45); LDC licence terms UNVERIFIED. Not usable as training data for fiction anyway.
+- **Touches:** `core/interval.py` (mapping only); `resolve/title_holders.py::tenures` and the AliasBinding intervals it writes; a new scorer under `eval/` (pipeline), no core change.
+- **Product value:** Medium for one concrete fix: store closed tenures as T1=previous holder's last declaration, T2=this holder's first declaration, T3=this holder's last declaration, T4=next holder's first declaration, so the handover gap is PLAUSIBLE rather than EXCLUDED. Also drop the dead `last_evidence=` argument.
+- **Paper value:** Ablation baseline only. The metric is prior art. The 2013 baseline DCT-WITHIN ("valid at the document date", <-inf, d, d, +inf>) is the natural trivial baseline for tenure inference ("valid at each declaration chapter").
+- **Integration form:** Isolated adapter (a scorer plus a tuple import/export), not a core change.
+- **Cost:** [INFER] 2-3 engineering days for scorer and gap fix; annotation is the real cost: no human tenure gold exists, and the tenure count per novel is small (tens), so one annotator pass is hours.
+- **Evidence needed/available:** Needed: human tenure tuples for title holders on RI (and ideally one more novel), then Q for current `tenures` vs the gap-aware version vs DCT-WITHIN. Authors' numbers (2013, news text, 201 scored queries): best system MS MLI 33.15, DCT-WITHIN baseline 19.10, LDC annotators 68.84 (Table 7); only 2 of 5 systems beat the baseline (3 of 4 in 2011); residence slots harder than employment slots.
+- **Limits:** Authors: several relations are not expressible (see above); 2011 draft says durations are read "literally exact". Mine: scoring in years is meaningless without a unit change (chapters are not uniform time); both infinities have undefined distance, so Q needs a rule for -inf vs -inf; news-wire domain, no disclosure axis, no identity merge. EchoTales' "since chapter 1" choice is a stronger commitment than the tuple evidence ([- first_decl ... -]) supports and would be penalised as over-constraining.
+- **Decision: ADAPT** (representation and metric only).
+- **Test:** On a human-labelled tenure set, gap-aware tuples score higher Q than the current crisp intervals and than DCT-WITHIN, with the retroactive-start rule evaluated separately as its own ablation. Failing that, keep the current form.
+
+## 2. TimeChara
+- **Source:** Jaewoo Ahn, Taehyun Lee, Junyoung Lim, Jin-Hwa Kim, Sangdoo Yun, Hwaran Lee, Gunhee Kim, "TimeChara: Evaluating Point-in-Time Character Hallucination of Role-Playing Large Language Models", arXiv 2405.18027v1, 28 May 2024; Findings of ACL 2024 (venue confirmed by the repo README, which says "ACL 2024 Findings"). [PUB] Secs. 3, 4, 5, App. H.
+- **Contributes:** Sec. 3: 14 characters from 4 English series, 219 time points, 10,895 interview-style instances in four types (future, past-absence, past-presence, past-only) plus fake-based questions; GPT-4 Turbo judge given spatiotemporal labels. Sec. 4 Narrative-Experts: a Temporal Expert (LLM names the scene's book and chapter, labels the question past or future) and a Spatial Expert (was the character present), each injecting a hint into the role-play prompt. Sec. 5: baselines include RAG and RAG-cutoff (retrieval limited to events before the character's time point). Table 5 (600 sampled instances), GPT-4 Turbo, future-type column as I read it from the text "all baselines at 51% or below": zero-shot 46.5, RAG-cutoff 50.0, Narrative-Experts 92.5, Narrative-Experts+RAG-cutoff 93.0.
+- **Artifact and licence:** Code https://github.com/ahnjaewoo/timechara, GitHub API licence MIT. Data https://huggingface.co/datasets/ahnpersie/timechara, licence tag cc-by-nc-4.0; README: "TimeChara should only be used for non-commercial research". Only the Harry Potter creation path is released; needs OpenAI API (paid).
+- **Touches:** Nothing in product. At most a leakage probe in `scripts/eval/` (premature-resolution experiment from C1).
+- **Product value:** None. Role-play hallucination, not alias linking; no state to compile.
+- **Paper value:** Ablation baseline / motivating premise only. Direct evidence (Sec. 3, 5.4) that LLMs hold famous books parametrically and that cutting off retrieval does not stop leakage (RAG-cutoff 50.0 on future type). Also App. H.5: the Temporal Expert's past/future call itself "rely[s] on parametric memories", which is useless on a novel the model does not know and redundant when the chapter position is an input.
+- **Integration form:** Baseline-only (a prompt-level temporal-expert condition in a future leakage probe).
+- **Cost:** [INFER] 0.5-1 day prompt port; paid judge calls are excluded by the no-paid-service rule; a local judge is unvalidated.
+- **Evidence needed/available:** Authors' numbers are on 4 famous English series with GPT-4-class models and a GPT-4 judge. None on translated serials or on identity.
+- **Limits:** Authors: English only; judge cost; Narrative-Experts latency/cost (Limitations). Mine: judge is an LLM (no human agreement quoted in the sections I read); leakage is exploited, never isolated by renaming; characters are famous.
+- **Decision: BASELINE-ONLY.**
+- **Test:** In the C1 leakage probe, a Temporal-Expert-style "is this alias linkable at chapter c" prompt as one arm; it justifies nothing unless it reduces premature links versus plain chapter filtering on renamed text.
+
+## 3. Narrative World Model (NWM)
+- **Source:** Mohammad Saifullah, Thomas Kornmaier, Taaha Kazi, Vasu Sharma, Aditya Sanjiv Kanade, Aanand Kumar Yadav (PocketFM), "Narrative World Model: Narratology-Grounded Writer Memory for Long-Form Fiction", arXiv 2607.05577v1, 6 Jul 2026, "Preprint. Under review". [PUB] Secs. 3, 4.1, 5, 8, App.
+- **Contributes:** Sec. 3.1 causal publish flow: M_n = Publish(C_n, M_{n-1}), retrieval only uses updates through chapter n; republishing an edited chapter invalidates downstream edges. Sec. 3.2 typed records stamped with source chapter and evidence span; scene records hold event order and reveal order as separate fields; "focalized observer" and "reader knowledge" slots. Sec. 3.3 edges carry validity interval; "as of chapter n" selects the latest valid edge. Sec. 3.5 retrieval restricted to source chapter <= n, BM25+dense RRF, one-hop expansion. Sec. 5: private multi-hop (176 items) NWM Graph Retrieval 0.898 vs Graphiti 0.574 (McNemar 64 to 7); public 576 items 0.625 vs 0.516, public multi-hop 0.709 vs 0.582 with p = 0.054 (underpowered).
+- **Artifact and licence:** No repo. "Code and Data Availability": public harness reproducible on Gutenberg; the private corpus, benchmark and "production Narrative World Model backend are proprietary and are withheld". Licence: none (nothing released).
+- **Touches:** Concepts map to `Store` (event/reveal order = story/discourse axes), `state_of`, `world/context.py::story_context`. The chapter-edit invalidation idea would map to the missing retraction writer (B5).
+- **Product value:** Low. EchoTales already has separate story/discourse axes. The only transferable idea is dependency-based invalidation on a corrected chapter, which the repo lacks; I read one paragraph on it, not an algorithm.
+- **Paper value:** Ablation baseline (reported gain of a reveal-aware typed memory over Graphiti on QA). Not a novelty source, and it overlaps the claimed disclosure-aware state.
+- **Integration form:** Baseline-only (design reference). Reimplementing needs unreleased components.
+- **Cost:** [INFER] reimplementation of the baseline arm: multi-day plus paid extraction (they used Sonnet 4.5 and an Opus 4.8 answerer).
+- **Evidence needed/available:** Authors' numbers are QA accuracy of writer memory on Gutenberg and private books, token-coverage scorer. Nothing on identity.
+- **Limits:** Authors (Sec. 8): within-NWM controls show stripping the type labels, and re-embedding the graph untyped, leave accuracy unchanged (App. H), so "narratological typing" is not shown to be the lever; the lever is decomposition plus query-conditioned retrieval; the benchmark is "narratology-tilted by design"; automatic token-coverage scoring. Mine: no leakage or memorisation control (checked in prior notes and my greps); no alias task; closed-source.
+- **Decision: BASELINE-ONLY.**
+- **Test:** None for adoption. If cited as a baseline, state that the comparison is QA, not identity.
+
+## 4. NarraWorld ("Shared Worlds, Private Minds")
+- **Source:** Qiuyu Tian, Haojie Yin et al. (Southeast Univ., Beijing Zhongguancun Academy, ZhuiWen Technology and others), arXiv 2609.32401v1, 26 Sep 2026; no venue in the text. [PUB] Secs. 2.1-2.4, 3, App. A.1-A.2; the Appendix G limitations body did not survive text extraction and is not quoted.
+- **Contributes:** Sec. 2.1 four views projected from one evidence-grounded graph: W (world), B[c] (per-character belief), D (developments: open/advanced/blocked/resolved), H (hypothetical branches). Sec. 2.2 update: link entities, add events and state changes with validity periods preserved, record each character's access (observation, communication, inference), update developments. App. A.1: an alias stage "links aliases to existing entities when the evidence supports the match", append-only store, "a state change closes the previous validity interval". Sec. 2.4 admissible view first (time, disclosure, branch), then retrieval. Results (Table 1) ConStory-Bench CED 0.185 vs Graphiti 0.385; LoCoMo: exposing H lowers Overall Main 0.614 to 0.570 (task-conditioned view).
+- **Artifact and licence:** Code "will be released in anonymized form for review and made publicly available upon publication" (Ethics/reproducibility paragraph). No repo, no licence: UNVERIFIED/not released.
+- **Touches:** `world/context.py::story_context` (filter by `state_of` first, retrieve second; matrix row 7), `core/readset.py` provenance, observer observations (EVOLUTION 4.80).
+- **Product value:** Low-medium as a design confirmation: "admissible view, then retrieve" is already what A2 asks for; EchoTales needs wiring, not this paper. The belief view B[c] is the same idea as EchoTales' observer observations.
+- **Paper value:** None for a novelty claim (it states the premature-disclosure aim and has an alias stage). Not a useful baseline either: its tasks are writing quality and role-play.
+- **Integration form:** Baseline-only / design reference.
+- **Cost:** [INFER] nothing to integrate; reimplementation not justified.
+- **Evidence needed/available:** Authors' numbers are writing-consistency measures on English benchmarks; no identity or disclosure metric.
+- **Limits:** Premature disclosure is a design aim, never measured (Sec. 2.4 example only); alias linking unevaluated and not conditioned on reveal time; no leakage or renaming control; code unreleased; LLM-generated stories and LLM judges in parts of the evaluation (details not fully read).
+- **Decision: BASELINE-ONLY** (cite as related work).
+- **Test:** The `story_context`-through-`state_of` fix is justified by a fixture where an observer must not see a fact (matrix row 7), not by this paper.
+
+## 5. E2RAG / ChronoQA
+- **Source:** Ze Yu Zhang, Zitao Li, Yaliang Li, Bolin Ding, Bryan Kian Hsiang Low (NUS, Alibaba), "Respecting Temporal-Causal Consistency: Entity-Event Knowledge Graphs for Retrieval-Augmented Generation", arXiv 2506.05939v1, 6 Jun 2025; EACL 2026 per a search snippet [LEAD for venue]. [PUB] method, Sec. 5, limitations.
+- **Contributes:** Method: keep every entity mention as its own node ("Hermione in Chapter 9 versus Miss Granger in Chapter 16" are distinct), separate entity and event vertex sets joined by a bipartite edge when the entity name occurs in the event description; query-time cue extraction, seed retrieval, one-hop expansion, re-rank. Evaluation: ChronoQA 497 QA over 9 stories (paper), three LLM judges, 1-10 rubric. Table 3: E2RAG (comb. extraction) 7.126, LightRAG hybrid 6.880, GraphRAG local 6.800, vanilla RAG 6.602, RQ-RAG 3.514.
+- **Artifact and licence:** Dataset https://huggingface.co/datasets/zy113/ChronoQA, README licence cc-by-nc-sa-4.0; the card now says 1,028 QA over 18 public-domain stories, which differs from the 497/9 in the paper I read (version drift; I used the paper's numbers). I found no code link in the paper text (grep for release/GitHub): UNVERIFIED.
+- **Touches:** Conceptually the no-merge arm of identity resolution (`resolve/`); `world/context.py` retrieval.
+- **Product value:** None as an adoption. Never merging gives zero premature merges by construction and no coreference.
+- **Paper value:** Ablation baseline: a "mention-level graph, no resolution" arm brackets the premature-resolution/recall trade-off from the safe end.
+- **Integration form:** Baseline-only.
+- **Cost:** [INFER] 1 day to emit a mention-level arm; no LLM needed for the arm itself.
+- **Evidence needed/available:** Needed: the same reader-view items scored for recall under no-merge. Available: authors' score differences between the top E2RAG variant and LightRAG hybrid are 0.25 on a 10-point LLM-judge scale; I found no significance test, interval or seed variance in the text.
+- **Limits:** Authors: gains limited to documents with temporal/causal structure. Mine: LLM-generated questions and LLM judges; Gutenberg books heavily memorised, no closed-book or renamed control; retrieval QA, not identity; the chronological facet is passage order, not reader disclosure.
+- **Decision: BASELINE-ONLY.**
+- **Test:** In the human-labelled item set, report premature-resolution rate and recall for (no-merge, current resolver, evidence-gated); no-merge is the floor on one and the ceiling on the other.
+
+## 6. EvolvTrip (verified: NOT a trip or retrieval work)
+- **Lead correction:** "EvolvTrip" is a character theory-of-mind paper. It is in the character-knowledge field, not out of field. The repo's own `docs/paper/RELATED_WORK_FINAL.md` already cites it as "EvolvTrip / LitCharToM (Yang et al.; arXiv 2506.13641)".
+- **Source:** Bohao Yang, Hainiu Xu, Jinhua Du, Ze Li, Yulan He, Chenghua Lin, "EvolvTrip: Enhancing Literary Character Understanding with Temporal Theory-of-Mind Graphs", arXiv 2506.13641v1 [cs.CL], 16 Jun 2025; no venue in the text. [PUB] Secs. 3.3, 3.4, 4, 5.1-5.3, Limitations.
+- **Contributes:** LitCharToM: 2,539 multiple-choice questions on belief, emotion, intention, desire from 20 Gutenberg books (CoSER). GPT-4o extracts perspective-aware triples (BelievesAbout, DesiresFor, FeelsTowards, IntendsTo) per plot segment, restricted to what the character could observe; each triple is tagged with the plot number, carrying earlier mental states forward and updating on contradiction; 40% of triples human-verified. Adding triples to the prompt improves accuracy, e.g. extended context DS-R1-Distill-Qwen-14B 56.25 to 61.08 and InternLM3-8B 53.21 to 57.38; fine-tuning on 5 held-out books gives Qwen3-8B 54.25 to 58.12.
+- **Artifact and licence:** https://github.com/Bernard-Yang/EvolvTrip (GitHub API: no licence file, contents are README and assets only); data on HF `yangbh217/EvolvTrip`, no licence tag returned. Licence UNVERIFIED (treat as unlicensed).
+- **Touches:** Observer facts: `state.py::_visible_to_observer` and the observations table (EVOLUTION 4.80). It models mental states, not identity.
+- **Product value:** None (GPT-4o extraction, mental-state triples, no identity facts).
+- **Paper value:** None to ablation baseline. It is already in the repo's related-work table; EchoTales' difference stands as identity facts per observer.
+- **Integration form:** Baseline-only.
+- **Cost:** [INFER] none worth spending.
+- **Evidence needed/available:** Authors' gains are modest (2-5 points) on multiple choice built from LLM-written questions.
+- **Limits:** Authors (Limitations): GPT-4o extraction bias; four dimensions only, no recursive beliefs; the triple format simplifies ambiguity. Mine: time is a plot index, no intervals, no discourse-vs-story separation; no leakage or memorisation control found (keyword grep on leak/memoriz/contamin/pretrain returned nothing relevant); no identity or alias.
+- **Decision: BASELINE-ONLY** (cite only).
+- **Test:** None.
+
+## 7. Zep / Graphiti
+- **Source:** Preston Rasmussen, Pavlo Paliychuk, Travis Beauvais, Jack Ryan, Daniel Chalef (Zep AI), "Zep: A Temporal Knowledge Graph Architecture for Agent Memory", arXiv 2501.13956v1 [cs.CL], 20 Jan 2025; no venue. Title confirmed against the PDF. [PUB] Secs. 2.1-2.2.3, 4.2-4.3, 5.
+- **Contributes:** Sec. 2.1 "bi-temporal": T (event chronology) and T' (transactional order of ingestion). Sec. 2.2.1 entity resolution: embed name, cosine plus full-text search for candidates, then an LLM duplicate decision. Sec. 2.2.3: four timestamps per edge (t'_created, t'_expired, t_valid, t_invalid); an LLM compares a new edge against related edges and sets the old edge's t_invalid to the new edge's t_valid; "Graphiti consistently prioritizes new information". Results: DMR 94.8% vs MemGPT 93.4% (gpt-4-turbo; the paper's own full-conversation baseline gets 94.4%); LongMemEval gpt-4o 71.2% vs 60.2% full context, temporal-reasoning 62.4% vs 45.1%, single-session-assistant 17.7% worse.
+- **Artifact and licence:** https://github.com/getzep/graphiti, GitHub API licence Apache-2.0 (LICENSE file, "Apache License"); README lists Neo4j 5.26, FalkorDB, Neptune backends and Kuzu "deprecated". Repo active (last push 2026-10-15).
+- **Touches:** Would replace nothing. As a baseline: a scratch DB copy fed chapter episodes (cf. NWM Sec. 3.6, which did exactly this) compared on prefix-of-book queries.
+- **Product value:** Reject as a store. It would swap the SQLite bitemporal store and the deterministic resolver for LLM merges, contradicting non-negotiables 1 and 9 and the "preserve existing architecture" charter. Two ideas are already in the repo.
+- **Paper value:** Ablation baseline. Also a correction to wording: Zep's second axis (T') is database ingestion time, not reader-disclosure time. If chapters are ingested in order the two coincide, which is a degenerate disclosure axis, not an observer-indexed one. EchoTales' "bitemporal" claim must say what its second axis means (reader or observer knowledge position) and not rely on the shared word.
+- **Integration form:** Baseline-only.
+- **Cost:** [INFER] LLM extraction over the chapters plus a graph database; local-model extraction quality unknown (NWM reports a cheaper extractor gave a sparser graph, 3,600 to 2,226 edges, with unchanged accuracy).
+- **Evidence needed/available:** Authors' numbers are conversation memory, not novels; the DMR baseline already scores 94.4%.
+- **Limits:** Authors: DMR is small and weak; assistant-side questions got worse; they say future work. Mine: invalidation is interval-end (set t_invalid), not retraction, so a later correction cannot keep the earlier belief visible, the exact distinction non-negotiable 5 protects; "prioritize new information" is a recency rule with no reader-view notion.
+- **Decision: BASELINE-ONLY.**
+- **Test:** On the same prefix queries, Graphiti arm vs `state_of`; Graphiti loses on any item where an earlier belief must stay visible after a later retraction.
+
+---
+## Product angle: shared narrative-state policy and dated wiki canon
+No donor supplies this. It is engineering (B4, A1, A2, A4), and the existing primitives suffice: a wiki trait grounded at chapter g becomes a fact with `learned_at_pos = g` and `FuzzyInterval.since_before(g)`; `canon_for` should then go through `state_of`, and the wiki file hash should enter the state digest. Nearest conceptual support: NarraWorld Sec. 2.4 and NWM Sec. 3.5, both "restrict to the admissible view, then retrieve". No paper value.
+
+## Summary (10 lines)
+1. Best adoption 1: TAC-KBP 4-tuple and gap-aware tenure intervals for `title_holders.tenures` (adapt, cheap, closes a handover-gap inconsistency and a dead `last_evidence=` argument).
+2. Best adoption 2: the "admissible view first, then retrieve" principle (NarraWorld Sec. 2.4, NWM Sec. 3.5) as an integration rule for `story_context` and all render paths; engineering, not a paper claim.
+3. Best adoption 3: the DCT-WITHIN trivial baseline plus Q-style scoring for any tenure or state evaluation (ablation baseline, no code to import).
+4. Everything else is baseline-only: TimeChara (MIT code, CC-BY-NC data, paid judge), NWM (proprietary, nothing released), NarraWorld (code unreleased), E2RAG/ChronoQA (cc-by-nc-sa, no-merge floor), EvolvTrip (no licence), Zep/Graphiti (Apache-2.0, but LLM merges contradict precision-first resolution).
+5. Overlaps with the planned title-holder temporal model: TAC-KBP covers it directly (per:title and org:top_employees are its slots; the repo's first-tenure-from-chapter-1 rule is stronger than the tuple evidence allows). Graphiti covers edge-validity invalidation.
+6. Overlaps with claimed novelty: NWM (reveal vs event order, chapter-safe cutoff), NarraWorld (premature-disclosure aim, alias stage, validity intervals), EvolvTrip (per-character temporal mental states). None measures premature alias resolution.
+7. Correction to the brief: EvolvTrip is a literary-character theory-of-mind graph (arXiv 2506.13641), in field and already cited in `RELATED_WORK_FINAL.md`; it is not a trip or retrieval work.
+8. Correction to earlier prior-art wording: "bitemporal" in Zep is ingestion time (T') versus event time (T); EchoTales' disclosure axis is reader knowledge position, so shared vocabulary must not be read as shared design. Also ChronoQA on the Hugging Face card now has 1,028 QA/18 stories, not the 497/9 in the paper, and TimeChara's venue is now confirmed by the repo README.
+9. No earlier prior-art claim is retracted. One softening: "NarraWorld alias linking is unevaluated" rests on App. A.1 and the results I read; its Appendix G limitations text was not extractable. NWM's own controls (Sec. 8) say its type labels are not the lever, which weakens it as a "typing helps" precedent.
+10. Nothing here is a measurement on EchoTales data; every adoption waits on human tenure labels (none exist) and the reader-view item set.

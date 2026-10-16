@@ -1,0 +1,190 @@
+{
+  "version": 6,
+  "extends": "PD_events_v3_additions.json",
+  "note": "Fourth set of events for the public-domain reveal benchmark (draft, NOT part of the frozen v1 set or the v2 and v3 additions, and NOT in any MANIFEST until the owner approves and freezes). Same schema as v1, v2 and v3. Fully fresh: 7 books (shortfall against the 14 to 18 requested, see the notes file), none among the 30 used in v1, v2 and v3, 7 authors none of whom has a book in the earlier sets. Public-domain texts (Project Gutenberg, local copies in the git-ignored data/raw/pd_gutenberg_v6/, never written to the repository). Each event has a short verbatim anchor located by exact whitespace-insensitive search (exactly once in the book body) and a cutoff at a chapter start before the revealing passage. Anchors, alias surfaces, identities and cast lists are the model-drafter's selection; checked by scripts/chimera/pd_verify_v6.py (v3's checks plus author and v3-overlap checks). Oracle strength differs and is flagged per event in the caveat: PN and AL have an alias form and the identity in the anchor sentence itself, UD has the bare first name and the identity, GP and TH are explicit statements whose subject is the aliased person (alias in the adjacent sentences), GR and CM are weaker (CM's prefix is hint-rich). See docs/research/PD_EVENTS_V6_NOTES.md. A change after freezing is a new version file.",
+  "provenance": "selected by model-drafter, exact-search verified, owner spot-check pending",
+  "events": [
+    {
+      "id": "GP",
+      "book": "The Great God Pan (Machen)",
+      "gutenberg": 389,
+      "alias": [
+        "Mrs. Beaumont",
+        "Beaumont"
+      ],
+      "identity": "Helen Vaughan",
+      "cast": [
+        "Helen Vaughan",
+        "Clarke",
+        "Villiers",
+        "Austin",
+        "Raymond",
+        "Meyrick",
+        "Crashaw",
+        "Mary"
+      ],
+      "reveal_sentence": "Mrs. Herbert of Paul Street, Helen Vaughan of earlier adventures unknown to me",
+      "cut": {
+        "regex": "THE ENCOUNTER IN SOHO",
+        "back": 0
+      },
+      "caveat": "Villiers tells Austin that he has found out who Mrs. Beaumont, the society hostess of Ashley Street, is: Mrs. Herbert of Paul Street, Helen Vaughan. The anchor is the answer in that short exchange and does not itself contain the alias; the first single sentence holding both Mrs. Beaumont and Helen Vaughan comes about 1,050 characters after the anchor. Spoken by a character and borne out by the rest of the story. The prefix already equates Helen Vaughan with a different alias, Mrs. Herbert (22 'Helen' mentions; that earlier equation is why Mrs. Herbert is not a cast name), so the identity name is in the prefix; what the prefix withholds is that Mrs. Beaumont is the same woman (0 alias+identity-token sentences, 0 alias occurrences within 200 characters of the full name). Only 8 pre-cutoff alias occurrences. Cutoff is the heading of the chapter containing the reveal, 1,276 characters before the anchor (the gap is the opening of that chapter, before Villiers states his discovery). Novella; the central deduction of a widely read story."
+    },
+    {
+      "id": "TH",
+      "book": "The Man Who Was Thursday (Chesterton)",
+      "gutenberg": 1695,
+      "alias": [
+        "Professor de Worms",
+        "de Worms"
+      ],
+      "identity": "Wilks",
+      "cast": [
+        "Wilks",
+        "Syme",
+        "Gregory",
+        "Gogol",
+        "Witherspoon",
+        "Bull",
+        "Marquis",
+        "Rosamond"
+      ],
+      "reveal_sentence": "I am by profession an actor, and my name is Wilks",
+      "cut": {
+        "regex": "CHAPTER VIII\\.",
+        "back": 0
+      },
+      "caveat": "The man presented as Professor de Worms tells Syme that he is an actor named Wilks who impersonates the real professor. Spoken by the impersonator in answer to Syme's question; the alias is the speaker, named in the preceding sentences, not in the anchor sentence. The name Wilks occurs once in the prefix, in a policeman's remark about a young colleague, not joined to de Worms (0 alias+identity-token sentences). Only 6 pre-cutoff alias occurrences ('Professor de Worms', 'de Worms'; the bare descriptor 'the Professor' is deliberately not an alias surface, so 6 undercounts how often the character appears). The cutoff is the start of the chapter after the one that ends with the Professor's unaccountably vigorous pursuit of Syme (a hint that he is not the old paralytic), 17,528 characters before the anchor; narration shortly before the anchor (inside the gap) states that the man impersonated the professor, without the name. Calendar words (Sunday, Thursday) are not cast names."
+    },
+    {
+      "id": "CM",
+      "book": "Carmilla (Le Fanu)",
+      "gutenberg": 10007,
+      "alias": [
+        "Carmilla"
+      ],
+      "identity": "Mircalla",
+      "cast": [
+        "Mircalla",
+        "Laura",
+        "Perrodon",
+        "Lafontaine",
+        "Spielsdorf",
+        "Bertha Rheinfeldt",
+        "Hesselius"
+      ],
+      "reveal_sentence": "That is the same person who long ago was called Mircalla, Countess Karnstein",
+      "cut": {
+        "regex": "XIV\\. The Meeting",
+        "back": 0
+      },
+      "caveat": "WEAK ORACLE, hint-rich prefix. The General, told that the visitor called herself Carmilla, says she is the same person who long ago was called Mircalla, Countess Karnstein (the anchor sentence is a pronoun equation, preceded in the same speech by 'that is Millarca'). Millarca is not an alias or cast name here although it is the same person, because it is a second alias that appears (11 times) only in the General's narrated story inside the prefix. The identity name Mircalla occurs 5 times in the prefix, including the portrait scene in which the guest reads the name Mircalla, Countess Karnstein off a portrait and says she descends from the Karnsteins, and the General's allusion to a countess 'not so dead' as supposed; no prefix sentence has both Carmilla and Mircalla and none is within 200 characters, but a careful reader can infer the link. Carmilla and Mircalla are anagrams (lexical cue). Cutoff is the start of the chapter containing the reveal, 8,452 characters before the anchor. Cast has only 7 names with 36 non-identity mentions in the prefix."
+    },
+    {
+      "id": "PN",
+      "book": "The Pioneers (Cooper)",
+      "gutenberg": 2275,
+      "alias": [
+        "Oliver Edwards",
+        "Edwards"
+      ],
+      "identity": "Effingham",
+      "cast": [
+        "Effingham",
+        "Natty",
+        "Marmaduke",
+        "Elizabeth",
+        "Louisa",
+        "Richard",
+        "Hiram",
+        "Benjamin",
+        "Mohegan"
+      ],
+      "reveal_sentence": "said Edwards, or rather Effingham as we must now call him",
+      "cut": {
+        "regex": "CHAPTER XL\\.",
+        "back": 0
+      },
+      "caveat": "Edwards, the young hunter living with the Temples, is named by the narrator as Effingham ('Edwards, or rather Effingham as we must now call him'), the grandson of the lost Major Effingham, in the chapter in which the Major is brought out of the cave. Narrator statement. The anchor is the first sentence in the book with an alias and the identity name (the verifier's first alias+identity sentence in the book starts 22 characters before the anchor fragment, i.e. it is the anchor's own sentence). The name Effingham occurs 15 times in the prefix, but only for the old Major and his land grant, never in a sentence with Edwards (0 alias+identity-token sentences, 0 occurrences within 200 characters); the identity label is the surname alone because the first name Oliver is shared by the alias Oliver Edwards and would be a lexical cue. The shared surname with the old Major is a label caveat. In the chapter after the cutoff the youth himself says the old man is lost Major Effingham before the narrator's equation, so the gap carries hints; cutoff is the chapter start, 7,407 characters before the anchor. 174 pre-cutoff alias occurrences."
+    },
+    {
+      "id": "GR",
+      "book": "Graustark (McCutcheon)",
+      "gutenberg": 5142,
+      "alias": [
+        "Miss Guggenslocker"
+      ],
+      "identity": "Yetive",
+      "cast": [
+        "Yetive",
+        "Lorry",
+        "Anguish",
+        "Dangloss",
+        "Ostrom",
+        "Hedrick",
+        "Sitzky",
+        "Geddos"
+      ],
+      "reveal_sentence": "Yes, I am the Princess,” she whispered",
+      "cut": {
+        "regex": "X\\. YETIVE",
+        "back": 0
+      },
+      "caveat": "MEDIUM-WEAK ORACLE. Lorry, who has known the young woman only as Miss Guggenslocker, sees her face and exclaims, and she answers that she is the Princess. The anchor is her spoken answer; it does not contain the identity name, which first appears in the heading of the chapter that starts at the cutoff and in narration about 17,700 characters after the anchor (the name Yetive does not occur in the prefix, 0 mentions). A later narrator sentence equating the princess with the 'erstwhile' Miss Guggenslocker lies about 56,000 characters after the cutoff, so the anchor is the earlier, spoken, first equation. Caspar and Yvonne (the supposed uncle and aunt) are left out of the cast because they belong to the same disguise party. Cutoff is the start of the chapter containing the reveal, 4,730 characters before the anchor. 13 pre-cutoff alias occurrences, all 'Miss Guggenslocker'."
+    },
+    {
+      "id": "AL",
+      "book": "813 (Leblanc, English translation)",
+      "gutenberg": 34758,
+      "alias": [
+        "Prince Sernine",
+        "Sernine",
+        "Paul Sernine"
+      ],
+      "identity": "Arsène Lupin",
+      "cast": [
+        "Arsène Lupin",
+        "Lenormand",
+        "Kesselbach",
+        "Valenglay",
+        "Gourel",
+        "Weber",
+        "Dudouis",
+        "Chapman"
+      ],
+      "reveal_sentence": "Prince Paul Sernine, who calls himself Mrs. Kesselbach's friend, is really Arsène Lupin",
+      "cut": {
+        "regex": "CHAPTER VII PARBURY",
+        "back": 0
+      },
+      "caveat": "English translation (Teixeira de Mattos) of a French novel. An anonymous letter received by the deputy chief of the detective service says that Prince Paul Sernine, who calls himself Mrs. Kesselbach's friend, is really Arsène Lupin (the letter adds that the names are anagrams). Accusation by a letter writer, confirmed in later chapters, so the label is the story's truth. Lupin occurs 91 times in the prefix as a separate wanted criminal; no prefix sentence has Sernine and Lupin together (0 in the prefix; the anchor's own sentence is the first alias+identity sentence in the book). Cutoff is the start of chapter VII, 41,077 characters before the anchor; the gap is the rest of that chapter up to the letter. 51 pre-cutoff alias occurrences."
+    },
+    {
+      "id": "UD",
+      "book": "The Mysteries of Udolpho (Radcliffe)",
+      "gutenberg": 3268,
+      "alias": [
+        "sister Agnes",
+        "Sister Agnes"
+      ],
+      "identity": "Laurentini",
+      "cast": [
+        "Laurentini",
+        "Emily",
+        "Montoni",
+        "Valancourt",
+        "Annette",
+        "Dorothée",
+        "Blanche",
+        "Ludovico",
+        "Morano"
+      ],
+      "reveal_sentence": "said Agnes, who may now be called the Lady Laurentini",
+      "cut": {
+        "regex": "CHAPTER XVI(?!I)",
+        "back": 0
+      },
+      "caveat": "The nun Sister Agnes is named by the narrator as the Lady Laurentini ('who may now be called the Lady Laurentini'), the Signora Laurentini of the Udolpho legend, in the scene where the dying nun shows Emily two miniatures. Narrator statement. The alias surfaces are 'sister Agnes' and 'Sister Agnes' only: the bare name Agnes also names an unrelated woman (a woman in an early chapter, 4 mentions near the start of the book), so it is not an alias surface. Only 8 pre-cutoff alias occurrences. Laurentini occurs 7 times in the prefix (the castle's legend as told by Annette and others), never with the nun (0 alias+identity-token sentences). Cutoff is the start of the chapter containing the reveal, 14,630 characters before the anchor; the gap holds the nun's delirium and the miniature scene, which are hints. Very long novel (about 1.65M characters); builder windows are local so length does not matter."
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "note": "Frozen prompt templates for PREREG_PD_reveal_benchmark.md v1. Same wording as L1_prompts_v1.json A_B_prefix and C_closed_book except 'web novel' becomes 'novel' and the closed-book prompt carries no chapter number. A change is a new file PD_prompts_v2.json. No novel text in this file.",
+  "A_B_prefix": "You are reading a novel in order. Below is the text so far, ending at the sentence that contains the expression of interest, which is marked with [[ ]]. Nothing after this point has been read.\n\nTEXT SO FAR:\n<<<\n{WINDOW}\n>>>\n\nExpression of interest: \"{SURFACE}\"\n\nQuestion: based only on what the text so far entitles a careful first-time reader to believe, who does the expression of interest refer to?\n\nCandidates:\n{CANDIDATES}\n\nAnswer with exactly one letter from the candidate list, or the single word UNDETERMINED if a first-time reader is not yet entitled to know. Output only that one token.",
+  "C_closed_book": "The expression \"{SURFACE}\" is used for a character in a novel. No passage is provided.\n\nCandidates:\n{CANDIDATES}\n\nAnswer with exactly one letter from the candidate list, or the single word UNDETERMINED if you cannot tell. Output only that one token."
+}

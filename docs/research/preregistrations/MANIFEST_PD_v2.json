@@ -1,0 +1,27 @@
+{
+ "frozen_for": "PREREG_PD_v2.md",
+ "event_files_sha256": {
+  "PD_events_v1.json": "4cf9b5e8223ab772f30259936d544a74f0678381d1c44abedfc321f9e36575d2",
+  "PD_events_v2_additions.json": "d58b32a4d7e0fde90f3f235331477f93122dea968139dc292d8f97e2e1909afa"
+ },
+ "prompts_v2_sha256": "0ff1e2327488ecde318841abcceef9b6bd13bfcd1ed6da2a14cc417ccd3ce0c8",
+ "prompts_v1_sha256": "b7cd09994a52aa4ef001bfad7cda0309ebc282658f36c4ac79c8a24f2f44a3fc",
+ "prereg_sha256": "f99dbbe58f67c32715eeec769be09844b6b9b324ec435e20326fe1da5173e394",
+ "script_sha256_at_freeze": "2639bae86621f88ecf658c4c8eb6b92be737c246d0b5dec54c78eab51e23888a",
+ "results_2026-10-16": {
+  "runs": {
+   "run_gemma2_9b.json": "f0ab78fd73ab76f36850701a3fbf3d983d35275a738ee516b063e8daee7da04e",
+   "run_gpt-5.6-luna.json": "5c0b05b6dba62da7e649bd946801dde45fddaba60dea2176ec4f57d03f85cb4a",
+   "run_llama3.1_8b.json": "af05c263b4d1add223b394869c6ffe5ece6dbace31f5ee8dbcdeccfbeb2dcdd4",
+   "run_mistral_7b-instruct.json": "0005f73dacb0052f2e689495814bc2193853c0830907a99e2da67d7a3c98f17d",
+   "run_phi4-mini_latest.json": "7af16d4933f2368d2694aae446752c4986f07dc98d1eb8991a695e5fac83d96d",
+   "run_qwen2.5_7b.json": "633a4ec78cda63a1cd6ecee55c8c40097189508bee2d61c5b16f5c445a7daf92"
+  },
+  "analysis_sha256": "0cd90f009b16df9aa521df5cf5db2361019c61f756768de25e5e384815f0b5dc",
+  "script_sha256_at_analysis": "2639bae86621f88ecf658c4c8eb6b92be737c246d0b5dec54c78eab51e23888a",
+  "verdict": "INCONCLUSIVE (0 of 5 models passed R0; best 88.2%)",
+  "note": "r0_asymmetry_exploratory.json is post hoc. Frozen keys above are unchanged.",
+  "luna_script_sha256": "ee1bd955dd7fc966221bf6ab61fd05fb843d38c663b53a3c476a6599dc837028",
+  "deviation": "Luna run added after freeze by owner approval (same frozen items and prompts; plain chat, JSON parsed; spend 0.1212 USD). Verdict INCONCLUSIVE unchanged: 0 of 6 models reach 95%."
+ }
+}

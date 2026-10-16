@@ -1,0 +1,9 @@
+{
+  "prereg": "PREREG_T4_renaming_validity_v4.md",
+  "prereg_sha256": "c424baef99321e132e52647d4db8c419de2aaaac5956a9daf52ec377182dadfe",
+  "frozen": "2026-10-15, before the v4 renamer or any v4 run existed",
+  "rule": "A change after freezing is a new file with a higher version number, never an edit. This is a single attempt; no v5.",
+  "script_sha256_at_run": "e79009fbce228c7e63442d7fdb0bf22da88aae9dc061252aa93ec9c0a6858dee",
+  "result_sha256": "2021e88ab2b6bbe57d75f5fd09540e12b4f9757877a6b805315097d71b4538a6",
+  "outcome": "GATE_FAILED_NO_RUN (G1=2, G2=4, G3=0, G4=1, G5=7); T4 closed, no v5 without owner lift"
+}

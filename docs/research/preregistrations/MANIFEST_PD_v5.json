@@ -1,0 +1,26 @@
+{
+ "frozen_for": "PREREG_PD_v5.md",
+ "prereg_sha256": "ea209af2f8db89a27dbc4b67eb6f022677885e8fed821de629f3159db3db0c76",
+ "script_sha256_at_freeze": "80f93ebe5332bedad695d71c9897f75c24f6e250c92b768950d3df5ebcc647d0",
+ "inputs_sha256": {
+  "PD_events_v1.json": "4cf9b5e8223ab772f30259936d544a74f0678381d1c44abedfc321f9e36575d2",
+  "PD_events_v2_additions.json": "d58b32a4d7e0fde90f3f235331477f93122dea968139dc292d8f97e2e1909afa",
+  "PD_events_v3_additions.json": "ad950b01f6193e77d4db4a517bdf99a7fd14d662c37a9baaf5c410db43093b89",
+  "PD_prompts_v1.json": "b7cd09994a52aa4ef001bfad7cda0309ebc282658f36c4ac79c8a24f2f44a3fc",
+  "PD_prompts_v2.json": "0ff1e2327488ecde318841abcceef9b6bd13bfcd1ed6da2a14cc417ccd3ce0c8"
+ },
+ "results_2026-10-16": {
+  "runs": {
+   "run_gemma2_9b.json": "e760df1688aa0366f5bc2be0f4a301011b7c25d4a3be72725ee107563bd18a5a",
+   "run_gpt-5.6-luna.json": "5b14099fb073ac2fbac5e950eae41d092b179dbe249380b6356c6456bc8bfe96",
+   "run_llama3.1_8b.json": "a62a6761385c9af75a68923e24f77f768ca9f138ea0da5d4d76d7f0ad5cd01ba",
+   "run_mistral_7b-instruct.json": "19586b4a7a7feb61292e1977ac8d4022ed6c81f3f1338edd67678ef2b620fb65",
+   "run_phi4-mini_latest.json": "ebf8b8071504841ab3e739581e6579db4aa152c75c2c7b05da8a6a7fe676e2c4",
+   "run_qwen2.5_7b.json": "33da438c196349b1d8a59f2ade668a65d16039f48560644989b3c67c52b837df"
+  },
+  "analysis_sha256": "888b654d4970acded64c4c889a915549f4fe98fc2b5861a21d51d6382e0bfa5a",
+  "verdict": "MEMORY SURVIVES (strong) incl. Luna B3",
+  "note": "Luna B3 pending in unattended chain; frozen keys unchanged.",
+  "pooled_sha256": "c0abb7fce31c308d9c64a9ec6c177e0c774225f28d0390dafc19bbd1f53f460e"
+ }
+}
