@@ -513,6 +513,105 @@
   "rate_judge1": 0.10087719298245613,
   "rate_judge2": 0.10526315789473684
  },
+ "robust": {
+  "models": [
+   "qwen2.5:7b"
+  ],
+  "ruleA": {
+   "events": 19,
+   "models": [
+    "qwen2.5:7b"
+   ],
+   "rates": {
+    "W_ren": 0.21052631578947367,
+    "P_ren": 0.0,
+    "W_orig": 0.2631578947368421,
+    "W_ren_nospoil": 0.15789473684210525,
+    "W_orig_nospoil": 0.21052631578947367,
+    "W_ren2": 0.3157894736842105,
+    "P_ren2": 0.0
+   },
+   "contrasts": {
+    "nospoil_vs_versioned_ren": {
+     "estimate": 0.15789473684210525,
+     "ci": [
+      0.0,
+      0.3157894736842105
+     ]
+    },
+    "instruction_effect_ren": {
+     "estimate": 0.05263157894736842,
+     "ci": [
+      0.0,
+      0.15789473684210525
+     ]
+    },
+    "instruction_effect_orig": {
+     "estimate": 0.05263157894736842,
+     "ci": [
+      0.0,
+      0.15789473684210525
+     ]
+    },
+    "input_channel_cipher2": {
+     "estimate": 0.3157894736842105,
+     "ci": [
+      0.10526315789473684,
+      0.5263157894736842
+     ]
+    }
+   },
+   "prompting_does_not_remove_leak": false,
+   "robust_to_cipher": true
+  },
+  "ruleB": {
+   "events": 54,
+   "models": [
+    "qwen2.5:7b"
+   ],
+   "rates": {
+    "W_ren": 0.16666666666666666,
+    "P_ren": 0.0,
+    "W_orig": 0.16666666666666666,
+    "W_ren_nospoil": 0.14814814814814814,
+    "W_orig_nospoil": 0.18518518518518517,
+    "W_ren2": 0.12962962962962962,
+    "P_ren2": 0.07407407407407407
+   },
+   "contrasts": {
+    "nospoil_vs_versioned_ren": {
+     "estimate": 0.14814814814814814,
+     "ci": [
+      0.05555555555555555,
+      0.24074074074074073
+     ]
+    },
+    "instruction_effect_ren": {
+     "estimate": 0.018518518518518517,
+     "ci": [
+      -0.05555555555555555,
+      0.1111111111111111
+     ]
+    },
+    "instruction_effect_orig": {
+     "estimate": -0.018518518518518517,
+     "ci": [
+      -0.09259259259259259,
+      0.05555555555555555
+     ]
+    },
+    "input_channel_cipher2": {
+     "estimate": 0.05555555555555555,
+     "ci": [
+      -0.05555555555555555,
+      0.18518518518518517
+     ]
+    }
+   },
+   "prompting_does_not_remove_leak": true,
+   "robust_to_cipher": false
+  }
+ },
  "utility": {
   "llama3.1:8b": {
    "alias_in_card_share": {
@@ -1109,6 +1208,7 @@
    "rate_judge1": 0.11403508771929824,
    "rate_judge2": 0.11403508771929824
   },
+  "robust": null,
   "utility": {
    "mistral24": {
     "alias_in_card_share": {
