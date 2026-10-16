@@ -45,6 +45,7 @@ def author_ok(authors: str) -> bool:
 
 def main():
     rnd = int(sys.argv[sys.argv.index("--round") + 1]) if "--round" in sys.argv else 1  # PREREG_PD_CONFIRM_v2_addendum_1.md
+    per_band = int(sys.argv[sys.argv.index("--per-band") + 1]) if "--per-band" in sys.argv else 40  # addendum 4 for rounds 4+
     ex = json.loads((P / "PD_CONFIRM_excluded_books.json").read_text())
     excluded = {int(x) for x in ex["used"]} | {int(k) for k in ex["examined_and_dropped"]}
     W = {int(r["pg"]): int(r["n"]) for r in csv.DictReader(open(RAW / "wikidata_pg_sitelinks.csv"))}
@@ -68,7 +69,7 @@ def main():
     for band in ("high", "mid", "low"):
         pool = sorted((e for e in elig if e["band"] == band and e["id"] not in already), key=lambda e: e["id"])
         counts[band] = len(pool)
-        drawn += rng.sample(pool, min(40, len(pool)))
+        drawn += rng.sample(pool, min(per_band, len(pool)))
     rng.shuffle(drawn)  # bands interleaved, so a time-limited mining pass keeps the fame spread
     base = max((b["order"] for b in prev["books"]), default=-1) + 1 if prev else 0
     for i, e in enumerate(drawn):
@@ -91,12 +92,12 @@ def main():
     tdir = RAW / "texts"
     tdir.mkdir(exist_ok=True)
     ok = bad = 0
-    with httpx.Client(follow_redirects=True, timeout=60.0, headers={"User-Agent": UA}) as c:
-        for e in drawn:
-            f = tdir / f"pg{e['id']}.txt"
-            if f.exists() and f.stat().st_size > 1000:
-                ok += 1
-                continue
+
+    def fetch(e):
+        f = tdir / f"pg{e['id']}.txt"
+        if f.exists() and f.stat().st_size > 1000:
+            return True
+        with httpx.Client(follow_redirects=True, timeout=60.0, headers={"User-Agent": UA}) as c:
             for url in (f"https://www.gutenberg.org/cache/epub/{e['id']}/pg{e['id']}.txt", f"https://www.gutenberg.org/files/{e['id']}/{e['id']}-0.txt"):
                 try:
                     r = c.get(url)
@@ -104,11 +105,14 @@ def main():
                     continue
                 if r.status_code == 200 and "*** START" in r.text and "*** END" in r.text:
                     f.write_text(r.text, encoding="utf-8")
-                    ok += 1
-                    break
-            else:
-                bad += 1
-            time.sleep(1.5)
+                    time.sleep(0.8)
+                    return True
+        return False
+
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(4) as ex:  # 4 polite workers (rounds 4+ are large)
+        flags = list(ex.map(fetch, drawn))
+    ok, bad = sum(flags), len(flags) - sum(flags)
     print("downloaded ok", ok, "failed", bad)
 
 
