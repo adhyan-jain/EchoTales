@@ -1,0 +1,3173 @@
+{
+ "eligible_by_band": {
+  "high": 86,
+  "mid": 317,
+  "low": 6392
+ },
+ "eligible_total": 6795,
+ "excluded_used_books": 48,
+ "seed": 20261101,
+ "books": [
+  {
+   "id": 2560,
+   "title": "The Three Partners",
+   "authors": "Harte, Bret, 1836-1902",
+   "W": 0,
+   "band": "low",
+   "order": 0,
+   "split": "test"
+  },
+  {
+   "id": 3177,
+   "title": "Roughing It",
+   "authors": "Twain, Mark, 1835-1910",
+   "W": 10,
+   "band": "mid",
+   "order": 1,
+   "split": "test"
+  },
+  {
+   "id": 767,
+   "title": "Agnes Grey",
+   "authors": "Bront\u00eb, Anne, 1820-1849",
+   "W": 29,
+   "band": "high",
+   "order": 2,
+   "split": "test"
+  },
+  {
+   "id": 7433,
+   "title": "The Awkward Age",
+   "authors": "James, Henry, 1843-1916",
+   "W": 6,
+   "band": "mid",
+   "order": 3,
+   "split": "test"
+  },
+  {
+   "id": 584,
+   "title": "Our Nig; Or, Sketches from the Life of a Free Black, in a Two-story White House, North Showing That Slavery's Shadows Fall Even There",
+   "authors": "Wilson, Harriet E., 1825-1900",
+   "W": 0,
+   "band": "low",
+   "order": 4,
+   "split": "test"
+  },
+  {
+   "id": 5778,
+   "title": "Try and Trust; Or, Abner Holden's Bound Boy",
+   "authors": "Alger, Horatio, Jr., 1832-1899",
+   "W": 0,
+   "band": "low",
+   "order": 5,
+   "split": "dev"
+  },
+  {
+   "id": 6943,
+   "title": "The Heart of Mid-Lothian, Volume 2",
+   "authors": "Scott, Walter, 1771-1832",
+   "W": 0,
+   "band": "low",
+   "order": 6,
+   "split": "dev"
+  },
+  {
+   "id": 10365,
+   "title": "Precaution: A Novel",
+   "authors": "Cooper, James Fenimore, 1789-1851; Bryant, William Cullen, 1794-1878 [Author of introduction, etc.]",
+   "W": 4,
+   "band": "mid",
+   "order": 7,
+   "split": "test"
+  },
+  {
+   "id": 23386,
+   "title": "In the King's Name: The Cruise of the \"Kestrel\"",
+   "authors": "Fenn, George Manville, 1831-1909",
+   "W": 0,
+   "band": "low",
+   "order": 8,
+   "split": "test"
+  },
+  {
+   "id": 8647,
+   "title": "Afloat and Ashore: A Sea Tale",
+   "authors": "Cooper, James Fenimore, 1789-1851",
+   "W": 3,
+   "band": "mid",
+   "order": 9,
+   "split": "test"
+  },
+  {
+   "id": 479,
+   "title": "Little Lord Fauntleroy",
+   "authors": "Burnett, Frances Hodgson, 1849-1924",
+   "W": 30,
+   "band": "high",
+   "order": 10,
+   "split": "test"
+  },
+  {
+   "id": 495,
+   "title": "Amy Foster",
+   "authors": "Conrad, Joseph, 1857-1924",
+   "W": 8,
+   "band": "mid",
+   "order": 11,
+   "split": "test"
+  },
+  {
+   "id": 30486,
+   "title": "Shirley",
+   "authors": "Bront\u00eb, Charlotte, 1816-1855",
+   "W": 20,
+   "band": "high",
+   "order": 12,
+   "split": "test"
+  },
+  {
+   "id": 102,
+   "title": "The Tragedy of Pudd'nhead Wilson",
+   "authors": "Twain, Mark, 1835-1910",
+   "W": 11,
+   "band": "mid",
+   "order": 13,
+   "split": "dev"
+  },
+  {
+   "id": 467,
+   "title": "The Princess of Cleves",
+   "authors": "La Fayette, Madame de (Marie-Madeleine Pioche de La Vergne), 1634-1693",
+   "W": 23,
+   "band": "high",
+   "order": 14,
+   "split": "dev"
+  },
+  {
+   "id": 1450,
+   "title": "Pollyanna",
+   "authors": "Porter, Eleanor H. (Eleanor Hodgman), 1868-1920",
+   "W": 33,
+   "band": "high",
+   "order": 15,
+   "split": "test"
+  },
+  {
+   "id": 26925,
+   "title": "The Bradys Beyond Their Depth; Or, The Great Swamp Mystery",
+   "authors": "Doughty, Francis Worcester, 1850-1917",
+   "W": 0,
+   "band": "low",
+   "order": 16,
+   "split": "test"
+  },
+  {
+   "id": 383,
+   "title": "She Stoops to Conquer; Or, The Mistakes of a Night: A Comedy",
+   "authors": "Goldsmith, Oliver, 1730?-1774",
+   "W": 13,
+   "band": "mid",
+   "order": 17,
+   "split": "test"
+  },
+  {
+   "id": 22195,
+   "title": "Little Tora, The Swedish Schoolmistress and Other Stories",
+   "authors": "Baker, Sarah S. (Sarah Schoonmaker), 1824-1906",
+   "W": 0,
+   "band": "low",
+   "order": 18,
+   "split": "test"
+  },
+  {
+   "id": 29892,
+   "title": "Up the Forked River; Or, Adventures in South America",
+   "authors": "Ellis, Edward Sylvester, 1840-1916",
+   "W": 0,
+   "band": "low",
+   "order": 19,
+   "split": "test"
+  },
+  {
+   "id": 1837,
+   "title": "The Prince and the Pauper",
+   "authors": "Twain, Mark, 1835-1910",
+   "W": 43,
+   "band": "high",
+   "order": 20,
+   "split": "test"
+  },
+  {
+   "id": 12,
+   "title": "Through the Looking-Glass",
+   "authors": "Carroll, Lewis, 1832-1898",
+   "W": 61,
+   "band": "high",
+   "order": 21,
+   "split": "test"
+  },
+  {
+   "id": 974,
+   "title": "The Secret Agent: A Simple Tale",
+   "authors": "Conrad, Joseph, 1857-1924",
+   "W": 22,
+   "band": "high",
+   "order": 22,
+   "split": "test"
+  },
+  {
+   "id": 1407,
+   "title": "A Message from the Sea",
+   "authors": "Dickens, Charles, 1812-1870",
+   "W": 3,
+   "band": "mid",
+   "order": 23,
+   "split": "dev"
+  },
+  {
+   "id": 468,
+   "title": "Manon Lescaut",
+   "authors": "Pr\u00e9vost, abb\u00e9, 1697-1763",
+   "W": 33,
+   "band": "high",
+   "order": 24,
+   "split": "test"
+  },
+  {
+   "id": 8578,
+   "title": "The Grand Inquisitor",
+   "authors": "Dostoyevsky, Fyodor, 1821-1881; Blavatsky, H. P. (Helena Petrovna), 1831-1891 [Translator]",
+   "W": 26,
+   "band": "high",
+   "order": 25,
+   "split": "test"
+  },
+  {
+   "id": 1210,
+   "title": "Kwaidan: Stories and Studies of Strange Things",
+   "authors": "Hearn, Lafcadio, 1850-1904",
+   "W": 11,
+   "band": "mid",
+   "order": 26,
+   "split": "test"
+  },
+  {
+   "id": 21730,
+   "title": "Erling the Bold",
+   "authors": "Ballantyne, R. M. (Robert Michael), 1825-1894",
+   "W": 0,
+   "band": "low",
+   "order": 27,
+   "split": "test"
+  },
+  {
+   "id": 209,
+   "title": "The Turn of the Screw",
+   "authors": "James, Henry, 1843-1916",
+   "W": 28,
+   "band": "high",
+   "order": 28,
+   "split": "dev"
+  },
+  {
+   "id": 4481,
+   "title": "Lord Ormont and His Aminta \u2014 Volume 5",
+   "authors": "Meredith, George, 1828-1909",
+   "W": 0,
+   "band": "low",
+   "order": 29,
+   "split": "test"
+  },
+  {
+   "id": 18770,
+   "title": "A Christmas Story Man in His Element: or, A New Way to Keep House",
+   "authors": "Francis, Samuel W. (Samuel Ward), 1835-1886",
+   "W": 0,
+   "band": "low",
+   "order": 30,
+   "split": "dev"
+  },
+  {
+   "id": 15275,
+   "title": "Bessie's Fortune: A Novel",
+   "authors": "Holmes, Mary Jane, 1825-1907",
+   "W": 0,
+   "band": "low",
+   "order": 31,
+   "split": "test"
+  },
+  {
+   "id": 1290,
+   "title": "Salammbo",
+   "authors": "Flaubert, Gustave, 1821-1880",
+   "W": 34,
+   "band": "high",
+   "order": 32,
+   "split": "test"
+  },
+  {
+   "id": 37327,
+   "title": "O'er Many Lands, on Many Seas",
+   "authors": "Stables, Gordon, 1840-1910",
+   "W": 0,
+   "band": "low",
+   "order": 33,
+   "split": "test"
+  },
+  {
+   "id": 41636,
+   "title": "Ravenshoe",
+   "authors": "Kingsley, Henry, 1830-1876; Woodville, Richard Caton, 1856-1927 [Illustrator]",
+   "W": 0,
+   "band": "low",
+   "order": 34,
+   "split": "test"
+  },
+  {
+   "id": 1200,
+   "title": "Gargantua and Pantagruel",
+   "authors": "Rabelais, Fran\u00e7ois, 1490?-1553?; Dor\u00e9, Gustave, 1832-1883 [Illustrator]; Motteux, Peter Anthony, 1660-1718 [Translator]; Urquhart, Thomas, Sir, 1611-1660 [Translator]",
+   "W": 45,
+   "band": "high",
+   "order": 35,
+   "split": "dev"
+  },
+  {
+   "id": 2834,
+   "title": "The Portrait of a Lady \u2014 Volume 2",
+   "authors": "James, Henry, 1843-1916",
+   "W": 27,
+   "band": "high",
+   "order": 36,
+   "split": "test"
+  },
+  {
+   "id": 2147,
+   "title": "The Works of Edgar Allan Poe \u2014 Volume 1",
+   "authors": "Poe, Edgar Allan, 1809-1849; Lowell, James Russell, 1819-1891 [Contributor]; Willis, Nathaniel Parker, 1806-1867 [Contributor]",
+   "W": 29,
+   "band": "high",
+   "order": 37,
+   "split": "test"
+  },
+  {
+   "id": 329,
+   "title": "Island Nights' Entertainments",
+   "authors": "Stevenson, Robert Louis, 1850-1894",
+   "W": 4,
+   "band": "mid",
+   "order": 38,
+   "split": "test"
+  },
+  {
+   "id": 968,
+   "title": "Martin Chuzzlewit",
+   "authors": "Dickens, Charles, 1812-1870",
+   "W": 22,
+   "band": "high",
+   "order": 39,
+   "split": "test"
+  },
+  {
+   "id": 141,
+   "title": "Mansfield Park",
+   "authors": "Austen, Jane, 1775-1817",
+   "W": 44,
+   "band": "high",
+   "order": 40,
+   "split": "dev"
+  },
+  {
+   "id": 31655,
+   "title": "A Daughter of the Forest",
+   "authors": "Raymond, Evelyn, 1843-1910; Waugh, Ida, 1846-1919 [Illustrator]",
+   "W": 0,
+   "band": "low",
+   "order": 41,
+   "split": "test"
+  },
+  {
+   "id": 7118,
+   "title": "What Maisie Knew",
+   "authors": "James, Henry, 1843-1916",
+   "W": 11,
+   "band": "mid",
+   "order": 42,
+   "split": "dev"
+  },
+  {
+   "id": 25836,
+   "title": "Young Hilda at the Wars",
+   "authors": "Gleason, Arthur, 1878-1923",
+   "W": 0,
+   "band": "low",
+   "order": 43,
+   "split": "test"
+  },
+  {
+   "id": 43936,
+   "title": "The Wonderful Wizard of Oz",
+   "authors": "Baum, L. Frank (Lyman Frank), 1856-1919; Denslow, W. W. (William Wallace), 1856-1915 [Illustrator]",
+   "W": 67,
+   "band": "high",
+   "order": 44,
+   "split": "test"
+  },
+  {
+   "id": 2527,
+   "title": "The Sorrows of Young Werther",
+   "authors": "Goethe, Johann Wolfgang von, 1749-1832; Boylan, R. Dillon (Richard Dillon), 1805?-1888 [Translator]",
+   "W": 64,
+   "band": "high",
+   "order": 45,
+   "split": "dev"
+  },
+  {
+   "id": 1476,
+   "title": "Chance: A Tale in Two Parts",
+   "authors": "Conrad, Joseph, 1857-1924",
+   "W": 8,
+   "band": "mid",
+   "order": 46,
+   "split": "test"
+  },
+  {
+   "id": 7085,
+   "title": "Fanshawe",
+   "authors": "Hawthorne, Nathaniel, 1804-1864",
+   "W": 3,
+   "band": "mid",
+   "order": 47,
+   "split": "dev"
+  },
+  {
+   "id": 940,
+   "title": "The Last of the Mohicans; A narrative of 1757",
+   "authors": "Cooper, James Fenimore, 1789-1851",
+   "W": 52,
+   "band": "high",
+   "order": 48,
+   "split": "test"
+  },
+  {
+   "id": 1074,
+   "title": "The Sea-Wolf",
+   "authors": "London, Jack, 1876-1916",
+   "W": 27,
+   "band": "high",
+   "order": 49,
+   "split": "test"
+  },
+  {
+   "id": 5231,
+   "title": "The Way We Live Now",
+   "authors": "Trollope, Anthony, 1815-1882",
+   "W": 3,
+   "band": "mid",
+   "order": 50,
+   "split": "dev"
+  },
+  {
+   "id": 12259,
+   "title": "Memoirs of a Cavalier A Military Journal of the Wars in Germany, and the Wars in England. From the Year 1632 to the Year 1648.",
+   "authors": "Defoe, Daniel, 1661?-1731",
+   "W": 3,
+   "band": "mid",
+   "order": 51,
+   "split": "test"
+  },
+  {
+   "id": 21757,
+   "title": "The Hot Swamp",
+   "authors": "Ballantyne, R. M. (Robert Michael), 1825-1894",
+   "W": 0,
+   "band": "low",
+   "order": 52,
+   "split": "dev"
+  },
+  {
+   "id": 13583,
+   "title": "The Correspondence of Thomas Carlyle and Ralph Waldo Emerson, 1834-1872, Vol. I",
+   "authors": "Carlyle, Thomas, 1795-1881; Emerson, Ralph Waldo, 1803-1882; Norton, Charles Eliot, 1827-1908 [Editor]",
+   "W": 0,
+   "band": "low",
+   "order": 53,
+   "split": "test"
+  },
+  {
+   "id": 29786,
+   "title": "Raiding with Morgan",
+   "authors": "Dunn, Byron A. (Byron Archibald), 1842-1926",
+   "W": 0,
+   "band": "low",
+   "order": 54,
+   "split": "test"
+  },
+  {
+   "id": 8869,
+   "title": "Tales from Bohemia",
+   "authors": "Stephens, Robert Neilson, 1867-1906",
+   "W": 0,
+   "band": "low",
+   "order": 55,
+   "split": "dev"
+  },
+  {
+   "id": 2853,
+   "title": "Quo Vadis: A Narrative of the Time of Nero",
+   "authors": "Sienkiewicz, Henryk, 1846-1916; Curtin, Jeremiah, 1835-1906 [Translator]",
+   "W": 45,
+   "band": "high",
+   "order": 56,
+   "split": "test"
+  },
+  {
+   "id": 3011,
+   "title": "The Lady of the Lake",
+   "authors": "Scott, Walter, 1771-1832",
+   "W": 11,
+   "band": "mid",
+   "order": 57,
+   "split": "test"
+  },
+  {
+   "id": 1631,
+   "title": "A Monk of Fife Being the Chronicle Written by Norman Leslie of Pitcullo, Concerning Marvellous Deeds That Befell in the Realm of France, in the Years of Our Redemption, MCCCCXXIX-XXXI",
+   "authors": "Lang, Andrew, 1844-1912",
+   "W": 0,
+   "band": "low",
+   "order": 58,
+   "split": "test"
+  },
+  {
+   "id": 18972,
+   "title": "Zadig; Or, The Book of Fate",
+   "authors": "Voltaire, 1694-1778",
+   "W": 23,
+   "band": "high",
+   "order": 59,
+   "split": "dev"
+  },
+  {
+   "id": 1093,
+   "title": "The Beast in the Jungle",
+   "authors": "James, Henry, 1843-1916",
+   "W": 6,
+   "band": "mid",
+   "order": 60,
+   "split": "test"
+  },
+  {
+   "id": 2415,
+   "title": "The Mutiny of the Elsinore",
+   "authors": "London, Jack, 1876-1916",
+   "W": 5,
+   "band": "mid",
+   "order": 61,
+   "split": "test"
+  },
+  {
+   "id": 24020,
+   "title": "Romola",
+   "authors": "Eliot, George, 1819-1880",
+   "W": 11,
+   "band": "mid",
+   "order": 62,
+   "split": "test"
+  },
+  {
+   "id": 308,
+   "title": "Three men in a boat (to say nothing of the dog)",
+   "authors": "Jerome, Jerome K. (Jerome Klapka), 1859-1927",
+   "W": 29,
+   "band": "high",
+   "order": 63,
+   "split": "test"
+  },
+  {
+   "id": 5083,
+   "title": "The Man of Feeling",
+   "authors": "Mackenzie, Henry, 1745-1831",
+   "W": 3,
+   "band": "mid",
+   "order": 64,
+   "split": "test"
+  },
+  {
+   "id": 42077,
+   "title": "The Boy Scouts at the Panama Canal",
+   "authors": "Goldfrap, John Henry, 1879-1917",
+   "W": 0,
+   "band": "low",
+   "order": 65,
+   "split": "test"
+  },
+  {
+   "id": 25584,
+   "title": "The Purcell Papers: Index and Contents of the Three Volumes",
+   "authors": "Le Fanu, Joseph Sheridan, 1814-1873",
+   "W": 3,
+   "band": "mid",
+   "order": 66,
+   "split": "test"
+  },
+  {
+   "id": 6769,
+   "title": "The People of the Mist",
+   "authors": "Haggard, H. Rider (Henry Rider), 1856-1925",
+   "W": 4,
+   "band": "mid",
+   "order": 67,
+   "split": "test"
+  },
+  {
+   "id": 15349,
+   "title": "The works of John Dryden, now first collected in eighteen volumes. Volume 04",
+   "authors": "Dryden, John, 1631-1700; Scott, Walter, 1771-1832 [Commentator]",
+   "W": 0,
+   "band": "low",
+   "order": 68,
+   "split": "dev"
+  },
+  {
+   "id": 10800,
+   "title": "The Anatomy of Melancholy",
+   "authors": "Burton, Robert, 1577-1640",
+   "W": 21,
+   "band": "high",
+   "order": 69,
+   "split": "test"
+  },
+  {
+   "id": 31873,
+   "title": "Henry of Ofterdingen: A Romance.",
+   "authors": "Novalis, 1772-1801; Schlegel, Friedrich von, 1772-1829 [Translator]; Tieck, Ludwig, 1773-1853 [Translator]",
+   "W": 13,
+   "band": "mid",
+   "order": 70,
+   "split": "dev"
+  },
+  {
+   "id": 120,
+   "title": "Treasure Island",
+   "authors": "Stevenson, Robert Louis, 1850-1894; Rhead, Louis, 1857-1926 [Illustrator]",
+   "W": 85,
+   "band": "high",
+   "order": 71,
+   "split": "test"
+  },
+  {
+   "id": 26050,
+   "title": "A Description of Millenium Hall And the Country Adjacent Together with the Characters of the Inhabitants and Such Historical Anecdotes and Reflections As May Excite in the Reader Proper Sentiments of Humanity, and Lead the Mind to the Love of Virtue",
+   "authors": "Scott, Sarah, 1723-1795",
+   "W": 0,
+   "band": "low",
+   "order": 72,
+   "split": "test"
+  },
+  {
+   "id": 16288,
+   "title": "Oddsfish!",
+   "authors": "Benson, Robert Hugh, 1871-1914",
+   "W": 0,
+   "band": "low",
+   "order": 73,
+   "split": "test"
+  },
+  {
+   "id": 74,
+   "title": "The Adventures of Tom Sawyer, Complete",
+   "authors": "Twain, Mark, 1835-1910",
+   "W": 77,
+   "band": "high",
+   "order": 74,
+   "split": "test"
+  },
+  {
+   "id": 10339,
+   "title": "An Antarctic Mystery",
+   "authors": "Verne, Jules, 1828-1905; Hoey, Frances Cashel, 1830-1908 [Translator]",
+   "W": 31,
+   "band": "high",
+   "order": 75,
+   "split": "test"
+  },
+  {
+   "id": 37814,
+   "title": "The Story of Magellan and The Discovery of the Philippines",
+   "authors": "Butterworth, Hezekiah, 1839-1905; Merrill, Frank T., 1848-1923 [Illustrator]",
+   "W": 0,
+   "band": "low",
+   "order": 76,
+   "split": "test"
+  },
+  {
+   "id": 21326,
+   "title": "The Black Bar",
+   "authors": "Fenn, George Manville, 1831-1909",
+   "W": 0,
+   "band": "low",
+   "order": 77,
+   "split": "test"
+  },
+  {
+   "id": 49734,
+   "title": "The Boy Aviators in Nicaragua; or, In League with the Insurgents",
+   "authors": "Goldfrap, John Henry, 1879-1917",
+   "W": 0,
+   "band": "low",
+   "order": 78,
+   "split": "dev"
+  },
+  {
+   "id": 4085,
+   "title": "The Adventures of Roderick Random",
+   "authors": "Smollett, T. (Tobias), 1721-1771",
+   "W": 7,
+   "band": "mid",
+   "order": 79,
+   "split": "test"
+  },
+  {
+   "id": 8118,
+   "title": "Redburn. His First Voyage Being the Sailor Boy Confessions and Reminiscences of the Son-Of-A-Gentleman in the Merchant Navy",
+   "authors": "Melville, Herman, 1819-1891",
+   "W": 7,
+   "band": "mid",
+   "order": 80,
+   "split": "test"
+  },
+  {
+   "id": 215,
+   "title": "The call of the wild",
+   "authors": "London, Jack, 1876-1916",
+   "W": 54,
+   "band": "high",
+   "order": 81,
+   "split": "test"
+  },
+  {
+   "id": 8449,
+   "title": "A Traveler from Altruria: Romance",
+   "authors": "Howells, William Dean, 1837-1920",
+   "W": 3,
+   "band": "mid",
+   "order": 82,
+   "split": "test"
+  },
+  {
+   "id": 1161,
+   "title": "Jerry of the Islands",
+   "authors": "London, Jack, 1876-1916",
+   "W": 12,
+   "band": "mid",
+   "order": 83,
+   "split": "test"
+  },
+  {
+   "id": 836,
+   "title": "The Phoenix and the Carpet",
+   "authors": "Nesbit, E. (Edith), 1858-1924",
+   "W": 5,
+   "band": "mid",
+   "order": 84,
+   "split": "test"
+  },
+  {
+   "id": 7895,
+   "title": "A Terrible Temptation: A Story of To-Day",
+   "authors": "Reade, Charles, 1814-1884",
+   "W": 3,
+   "band": "mid",
+   "order": 85,
+   "split": "test"
+  },
+  {
+   "id": 47531,
+   "title": "Oliver Twist, Vol. 3 (of 3)",
+   "authors": "Dickens, Charles, 1812-1870; Cruikshank, George, 1792-1878 [Illustrator]",
+   "W": 0,
+   "band": "low",
+   "order": 86,
+   "split": "dev"
+  },
+  {
+   "id": 1555,
+   "title": "A Passion in the Desert",
+   "authors": "Balzac, Honor\u00e9 de, 1799-1850; Dowson, Ernest Christopher, 1867-1900 [Translator]",
+   "W": 7,
+   "band": "mid",
+   "order": 87,
+   "split": "test"
+  },
+  {
+   "id": 105,
+   "title": "Persuasion",
+   "authors": "Austen, Jane, 1775-1817",
+   "W": 46,
+   "band": "high",
+   "order": 88,
+   "split": "test"
+  },
+  {
+   "id": 47524,
+   "title": "Elsket and Other Stories",
+   "authors": "Page, Thomas Nelson, 1853-1922",
+   "W": 0,
+   "band": "low",
+   "order": 89,
+   "split": "test"
+  },
+  {
+   "id": 5526,
+   "title": "The Bride of the Nile \u2014 Volume 10",
+   "authors": "Ebers, Georg, 1837-1898; Bell, Clara, 1834-1927 [Translator]",
+   "W": 4,
+   "band": "mid",
+   "order": 90,
+   "split": "test"
+  },
+  {
+   "id": 6761,
+   "title": "The Adventures of Ferdinand Count Fathom \u2014 Complete",
+   "authors": "Smollett, T. (Tobias), 1721-1771",
+   "W": 4,
+   "band": "mid",
+   "order": 91,
+   "split": "test"
+  },
+  {
+   "id": 155,
+   "title": "The Moonstone",
+   "authors": "Collins, Wilkie, 1824-1889",
+   "W": 30,
+   "band": "high",
+   "order": 92,
+   "split": "test"
+  },
+  {
+   "id": 4433,
+   "title": "Evan Harrington \u2014 Volume 7",
+   "authors": "Meredith, George, 1828-1909",
+   "W": 0,
+   "band": "low",
+   "order": 93,
+   "split": "test"
+  },
+  {
+   "id": 11626,
+   "title": "The Dawn of All",
+   "authors": "Benson, Robert Hugh, 1871-1914",
+   "W": 1,
+   "band": "low",
+   "order": 94,
+   "split": "test"
+  },
+  {
+   "id": 10736,
+   "title": "Children of the Frost",
+   "authors": "London, Jack, 1876-1916",
+   "W": 5,
+   "band": "mid",
+   "order": 95,
+   "split": "test"
+  },
+  {
+   "id": 5998,
+   "title": "Waverley; or, 'Tis sixty years since",
+   "authors": "Scott, Walter, 1771-1832; Lang, Andrew, 1844-1912 [Editor]",
+   "W": 23,
+   "band": "high",
+   "order": 96,
+   "split": "test"
+  },
+  {
+   "id": 12024,
+   "title": "Bred in the Bone; Or, Like Father, Like Son: A Novel",
+   "authors": "Payn, James, 1830-1898",
+   "W": 0,
+   "band": "low",
+   "order": 97,
+   "split": "test"
+  },
+  {
+   "id": 7371,
+   "title": "A Sicilian Romance",
+   "authors": "Radcliffe, Ann Ward, 1764-1823",
+   "W": 8,
+   "band": "mid",
+   "order": 98,
+   "split": "test"
+  },
+  {
+   "id": 1028,
+   "title": "The Professor",
+   "authors": "Bront\u00eb, Charlotte, 1816-1855",
+   "W": 14,
+   "band": "mid",
+   "order": 99,
+   "split": "dev"
+  },
+  {
+   "id": 370,
+   "title": "The Fortunes and Misfortunes of the Famous Moll Flanders",
+   "authors": "Defoe, Daniel, 1661?-1731",
+   "W": 29,
+   "band": "high",
+   "order": 100,
+   "split": "dev"
+  },
+  {
+   "id": 1860,
+   "title": "Westward Ho! Or, The Voyages and Adventures of Sir Amyas Leigh, Knight, of Burrough, in the County of Devon, in the Reign of Her Most Glorious Majesty Queen Elizabeth",
+   "authors": "Kingsley, Charles, 1819-1875",
+   "W": 5,
+   "band": "mid",
+   "order": 101,
+   "split": "dev"
+  },
+  {
+   "id": 2609,
+   "title": "The Vicomte de Bragelonne",
+   "authors": "Dumas, Alexandre, 1802-1870; Maquet, Auguste, 1813-1888",
+   "W": 32,
+   "band": "high",
+   "order": 102,
+   "split": "test"
+  },
+  {
+   "id": 33,
+   "title": "The Scarlet Letter",
+   "authors": "Hawthorne, Nathaniel, 1804-1864",
+   "W": 45,
+   "band": "high",
+   "order": 103,
+   "split": "test"
+  },
+  {
+   "id": 2160,
+   "title": "The Expedition of Humphry Clinker",
+   "authors": "Smollett, T. (Tobias), 1721-1771",
+   "W": 6,
+   "band": "mid",
+   "order": 104,
+   "split": "test"
+  },
+  {
+   "id": 972,
+   "title": "The Devil's Dictionary",
+   "authors": "Bierce, Ambrose, 1842-1914?",
+   "W": 26,
+   "band": "high",
+   "order": 105,
+   "split": "test"
+  },
+  {
+   "id": 43053,
+   "title": "Donald Ross of Heimra (Volume 2 of 3)",
+   "authors": "Black, William, 1841-1898",
+   "W": 0,
+   "band": "low",
+   "order": 106,
+   "split": "test"
+  },
+  {
+   "id": 208,
+   "title": "Daisy Miller: A Study",
+   "authors": "James, Henry, 1843-1916",
+   "W": 20,
+   "band": "high",
+   "order": 107,
+   "split": "dev"
+  },
+  {
+   "id": 850,
+   "title": "Tom Grogan",
+   "authors": "Smith, Francis Hopkinson, 1838-1915",
+   "W": 3,
+   "band": "mid",
+   "order": 108,
+   "split": "test"
+  },
+  {
+   "id": 6086,
+   "title": "The Scottish Chiefs",
+   "authors": "Porter, Jane, 1776-1850",
+   "W": 0,
+   "band": "low",
+   "order": 109,
+   "split": "test"
+  },
+  {
+   "id": 14851,
+   "title": "Uncle Silas: A Tale of Bartram-Haugh",
+   "authors": "Le Fanu, Joseph Sheridan, 1814-1873",
+   "W": 6,
+   "band": "mid",
+   "order": 110,
+   "split": "test"
+  },
+  {
+   "id": 4535,
+   "title": "Sylvia's Lovers \u2014 Volume 2",
+   "authors": "Gaskell, Elizabeth Cleghorn, 1810-1865",
+   "W": 0,
+   "band": "low",
+   "order": 111,
+   "split": "test"
+  },
+  {
+   "id": 27784,
+   "title": "Tales of the Malayan Coast From Penang to the Philippines",
+   "authors": "Wildman, Rounsevelle, 1864-1901",
+   "W": 0,
+   "band": "low",
+   "order": 112,
+   "split": "test"
+  },
+  {
+   "id": 421,
+   "title": "Kidnapped",
+   "authors": "Stevenson, Robert Louis, 1850-1894",
+   "W": 22,
+   "band": "high",
+   "order": 113,
+   "split": "test"
+  },
+  {
+   "id": 14909,
+   "title": "Elsie's New Relations What They Did and How They Fared at Ion; A Sequel to Grandmother Elsie",
+   "authors": "Finley, Martha, 1828-1909",
+   "W": 0,
+   "band": "low",
+   "order": 114,
+   "split": "test"
+  },
+  {
+   "id": 40690,
+   "title": "Roger Kyffin's Ward",
+   "authors": "Kingston, William Henry Giles, 1814-1880",
+   "W": 0,
+   "band": "low",
+   "order": 115,
+   "split": "test"
+  },
+  {
+   "id": 45507,
+   "title": "The Pony Rider Boys in Louisiana; or, Following the Game Trails in the Canebrake",
+   "authors": "Patchin, Frank Gee, 1861-1925",
+   "W": 0,
+   "band": "low",
+   "order": 116,
+   "split": "test"
+  },
+  {
+   "id": 1164,
+   "title": "The iron heel",
+   "authors": "London, Jack, 1876-1916",
+   "W": 25,
+   "band": "high",
+   "order": 117,
+   "split": "test"
+  },
+  {
+   "id": 98,
+   "title": "A Tale of Two Cities",
+   "authors": "Dickens, Charles, 1812-1870",
+   "W": 65,
+   "band": "high",
+   "order": 118,
+   "split": "dev"
+  },
+  {
+   "id": 1051,
+   "title": "Sartor Resartus: The Life and Opinions of Herr Teufelsdr\u00f6ckh",
+   "authors": "Carlyle, Thomas, 1795-1881",
+   "W": 9,
+   "band": "mid",
+   "order": 119,
+   "split": "dev"
+  },
+  {
+   "id": 961,
+   "title": "Glinda of Oz In Which Are Related the Exciting Experiences of Princess Ozma of Oz, and Dorothy, in Their Hazardous Journey to the Home of the Flatheads, and to the Magic Isle of the Skeezers, and How They Were Rescued from Dire Peril by the Sorcery of Glinda the Good",
+   "authors": "Baum, L. Frank (Lyman Frank), 1856-1919",
+   "W": 5,
+   "band": "mid",
+   "order": 120,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 965,
+   "title": "The black tulip",
+   "authors": "Dumas, Alexandre, 1802-1870; Maquet, Auguste, 1813-1888",
+   "W": 25,
+   "band": "high",
+   "order": 121,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 158,
+   "title": "Emma",
+   "authors": "Austen, Jane, 1775-1817",
+   "W": 49,
+   "band": "high",
+   "order": 122,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 36483,
+   "title": "Wilhelm Meister's apprenticeship and travels, vol. 1 (of 2)",
+   "authors": "Goethe, Johann Wolfgang von, 1749-1832; Carlyle, Thomas, 1795-1881 [Translator]",
+   "W": 27,
+   "band": "high",
+   "order": 123,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 3608,
+   "title": "The Ragged Trousered Philanthropists",
+   "authors": "Tressell, Robert, 1870-1911",
+   "W": 4,
+   "band": "mid",
+   "order": 124,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 46,
+   "title": "A Christmas Carol in Prose; Being a Ghost Story of Christmas",
+   "authors": "Dickens, Charles, 1812-1870; Leech, John, 1817-1864 [Illustrator]",
+   "W": 75,
+   "band": "high",
+   "order": 125,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 12623,
+   "title": "The Life and Adventures of Robinson Crusoe (1808)",
+   "authors": "Defoe, Daniel, 1661?-1731",
+   "W": 99,
+   "band": "high",
+   "order": 126,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 10462,
+   "title": "Clarissa Harlowe; or the history of a young lady \u2014 Volume 4",
+   "authors": "Richardson, Samuel, 1689-1761",
+   "W": 0,
+   "band": "low",
+   "order": 127,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 6308,
+   "title": "Hypatia \u2014 or New Foes with an Old Face",
+   "authors": "Kingsley, Charles, 1819-1875",
+   "W": 5,
+   "band": "mid",
+   "order": 128,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 3091,
+   "title": "The Giant Raft",
+   "authors": "Verne, Jules, 1828-1905",
+   "W": 26,
+   "band": "high",
+   "order": 129,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 708,
+   "title": "The Princess and the Goblin",
+   "authors": "MacDonald, George, 1824-1905",
+   "W": 18,
+   "band": "mid",
+   "order": 130,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 21552,
+   "title": "Masterman Ready; Or, The Wreck of the \"Pacific\"",
+   "authors": "Marryat, Frederick, 1792-1848",
+   "W": 7,
+   "band": "mid",
+   "order": 131,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 91,
+   "title": "Tom Sawyer Abroad",
+   "authors": "Twain, Mark, 1835-1910",
+   "W": 10,
+   "band": "mid",
+   "order": 132,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 1259,
+   "title": "Twenty years after",
+   "authors": "Dumas, Alexandre, 1802-1870; Maquet, Auguste, 1813-1888",
+   "W": 35,
+   "band": "high",
+   "order": 133,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 25727,
+   "title": "Vagabondia 1884",
+   "authors": "Burnett, Frances Hodgson, 1849-1924",
+   "W": 0,
+   "band": "low",
+   "order": 134,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 6364,
+   "title": "Warlock o' Glenwarlock: A Homely Romance",
+   "authors": "MacDonald, George, 1824-1905",
+   "W": 0,
+   "band": "low",
+   "order": 135,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 14462,
+   "title": "The Third and Last Part of Conny-Catching. (1592) With the new deuised knauish arte of Foole-taking",
+   "authors": "Greene, Robert, 1558?-1592",
+   "W": 0,
+   "band": "low",
+   "order": 136,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 2833,
+   "title": "The Portrait of a Lady \u2014 Volume 1",
+   "authors": "James, Henry, 1843-1916",
+   "W": 27,
+   "band": "high",
+   "order": 137,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 17731,
+   "title": "The nigger of the \"Narcissus\"",
+   "authors": "Conrad, Joseph, 1857-1924",
+   "W": 15,
+   "band": "mid",
+   "order": 138,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 18000,
+   "title": "Phineas Finn The Irish Member",
+   "authors": "Trollope, Anthony, 1815-1882",
+   "W": 3,
+   "band": "mid",
+   "order": 139,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 30598,
+   "title": "The Works of Robert Louis Stevenson - Swanston Edition, Vol. 09",
+   "authors": "Stevenson, Robert Louis, 1850-1894",
+   "W": 0,
+   "band": "low",
+   "order": 140,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 5941,
+   "title": "The History of Don Quixote, Volume 2, Part 38",
+   "authors": "Cervantes Saavedra, Miguel de, 1547-1616; Dor\u00e9, Gustave, 1832-1883 [Illustrator]; Ormsby, John, 1829-1895 [Translator]",
+   "W": 0,
+   "band": "low",
+   "order": 141,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 914,
+   "title": "The Uncommercial Traveller",
+   "authors": "Dickens, Charles, 1812-1870",
+   "W": 4,
+   "band": "mid",
+   "order": 142,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 883,
+   "title": "Our Mutual Friend",
+   "authors": "Dickens, Charles, 1812-1870",
+   "W": 23,
+   "band": "high",
+   "order": 143,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 21743,
+   "title": "Jeff Benson, or the Young Coastguardsman",
+   "authors": "Ballantyne, R. M. (Robert Michael), 1825-1894",
+   "W": 0,
+   "band": "low",
+   "order": 144,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 1163,
+   "title": "Adventure",
+   "authors": "London, Jack, 1876-1916",
+   "W": 8,
+   "band": "mid",
+   "order": 145,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 946,
+   "title": "Lady Susan",
+   "authors": "Austen, Jane, 1775-1817",
+   "W": 28,
+   "band": "high",
+   "order": 146,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 766,
+   "title": "David Copperfield",
+   "authors": "Dickens, Charles, 1812-1870",
+   "W": 68,
+   "band": "high",
+   "order": 147,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 1032,
+   "title": "The Pupil",
+   "authors": "James, Henry, 1843-1916",
+   "W": 3,
+   "band": "mid",
+   "order": 148,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 4276,
+   "title": "North and South",
+   "authors": "Gaskell, Elizabeth Cleghorn, 1810-1865",
+   "W": 21,
+   "band": "high",
+   "order": 149,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 25466,
+   "title": "Little Bobtail; or, The Wreck of the Penobscot.",
+   "authors": "Optic, Oliver, 1822-1897",
+   "W": 0,
+   "band": "low",
+   "order": 150,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 1083,
+   "title": "The Arrow of Gold: A Story Between Two Notes",
+   "authors": "Conrad, Joseph, 1857-1924",
+   "W": 6,
+   "band": "mid",
+   "order": 151,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 4037,
+   "title": "Appreciations, with an Essay on Style",
+   "authors": "Pater, Walter, 1839-1894",
+   "W": 0,
+   "band": "low",
+   "order": 152,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 42332,
+   "title": "The Sorrows of Satan or, The Strange Experience of One Geoffrey Tempest, Millionaire: A Romance",
+   "authors": "Corelli, Marie, 1855-1924",
+   "W": 0,
+   "band": "low",
+   "order": 153,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 44721,
+   "title": "The Pillars of the House; Or, Under Wode, Under Rode, Vol. 2 (of 2)",
+   "authors": "Yonge, Charlotte M. (Charlotte Mary), 1823-1901",
+   "W": 0,
+   "band": "low",
+   "order": 154,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 11231,
+   "title": "Bartleby, the Scrivener: A Story of Wall-Street",
+   "authors": "Melville, Herman, 1819-1891",
+   "W": 23,
+   "band": "high",
+   "order": 155,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 917,
+   "title": "Barnaby Rudge: A Tale of the Riots of 'Eighty",
+   "authors": "Dickens, Charles, 1812-1870",
+   "W": 24,
+   "band": "high",
+   "order": 156,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 910,
+   "title": "White Fang",
+   "authors": "London, Jack, 1876-1916",
+   "W": 48,
+   "band": "high",
+   "order": 157,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 419,
+   "title": "The Magic of Oz",
+   "authors": "Baum, L. Frank (Lyman Frank), 1856-1919",
+   "W": 5,
+   "band": "mid",
+   "order": 158,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 21750,
+   "title": "Martin Rattler",
+   "authors": "Ballantyne, R. M. (Robert Michael), 1825-1894",
+   "W": 0,
+   "band": "low",
+   "order": 159,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 580,
+   "title": "The Pickwick Papers",
+   "authors": "Dickens, Charles, 1812-1870",
+   "W": 40,
+   "band": "high",
+   "order": 160,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 2718,
+   "title": "The Chaperon",
+   "authors": "James, Henry, 1843-1916",
+   "W": 0,
+   "band": "low",
+   "order": 161,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 35213,
+   "title": "Afloat in the Forest; Or, A Voyage among the Tree-Tops",
+   "authors": "Reid, Mayne, 1818-1883",
+   "W": 0,
+   "band": "low",
+   "order": 162,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 24554,
+   "title": "Down South; or, Yacht Adventure in Florida",
+   "authors": "Optic, Oliver, 1822-1897",
+   "W": 0,
+   "band": "low",
+   "order": 163,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 6090,
+   "title": "What Can She Do?",
+   "authors": "Roe, Edward Payson, 1838-1888",
+   "W": 0,
+   "band": "low",
+   "order": 164,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 7687,
+   "title": "Lucretia \u2014 Volume 03",
+   "authors": "Lytton, Edward Bulwer Lytton, Baron, 1803-1873",
+   "W": 0,
+   "band": "low",
+   "order": 165,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 4078,
+   "title": "The Picture of Dorian Gray",
+   "authors": "Wilde, Oscar, 1854-1900",
+   "W": 82,
+   "band": "high",
+   "order": 166,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 19942,
+   "title": "Candide",
+   "authors": "Voltaire, 1694-1778",
+   "W": 65,
+   "band": "high",
+   "order": 167,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 40922,
+   "title": "Pietro Ghisleri",
+   "authors": "Crawford, F. Marion (Francis Marion), 1854-1909",
+   "W": 0,
+   "band": "low",
+   "order": 168,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 3791,
+   "title": "The Reign of Law; a tale of the Kentucky hemp fields",
+   "authors": "Allen, James Lane, 1849-1925",
+   "W": 0,
+   "band": "low",
+   "order": 169,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 1055,
+   "title": "'Twixt Land & Sea: Tales",
+   "authors": "Conrad, Joseph, 1857-1924",
+   "W": 6,
+   "band": "mid",
+   "order": 170,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 821,
+   "title": "Dombey and Son",
+   "authors": "Dickens, Charles, 1812-1870",
+   "W": 19,
+   "band": "mid",
+   "order": 171,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 958,
+   "title": "Rinkitink in Oz Wherein Is Recorded the Perilous Quest of Prince Inga of Pingaree and King Rinkitink in the Magical Isles That Lie Beyond the Borderland of Oz",
+   "authors": "Baum, L. Frank (Lyman Frank), 1856-1919",
+   "W": 6,
+   "band": "mid",
+   "order": 172,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 786,
+   "title": "Hard Times",
+   "authors": "Dickens, Charles, 1812-1870",
+   "W": 28,
+   "band": "high",
+   "order": 173,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 179,
+   "title": "The Europeans",
+   "authors": "James, Henry, 1843-1916",
+   "W": 11,
+   "band": "mid",
+   "order": 174,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 1342,
+   "title": "Pride and Prejudice",
+   "authors": "Austen, Jane, 1775-1817",
+   "W": 100,
+   "band": "high",
+   "order": 175,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 43835,
+   "title": "Lumen",
+   "authors": "Flammarion, Camille, 1842-1925",
+   "W": 0,
+   "band": "low",
+   "order": 176,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 28502,
+   "title": "The Busted Ex-Texan, and Other Stories",
+   "authors": "Murray, W. H. H. (William Henry Harrison), 1840-1904",
+   "W": 0,
+   "band": "low",
+   "order": 177,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 14654,
+   "title": "A Daughter of the Snows",
+   "authors": "London, Jack, 1876-1916",
+   "W": 12,
+   "band": "mid",
+   "order": 178,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 963,
+   "title": "Little Dorrit",
+   "authors": "Dickens, Charles, 1812-1870",
+   "W": 28,
+   "band": "high",
+   "order": 179,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 38875,
+   "title": "The Maid of Honour: A Tale of the Dark Days of France. Vol. 2 (of 3)",
+   "authors": "Wingfield, Lewis, 1842-1891",
+   "W": 0,
+   "band": "low",
+   "order": 180,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 15799,
+   "title": "Walter Harland",
+   "authors": "Caswell, Harriet S. (Harriet Sophia), 1834-1910",
+   "W": 0,
+   "band": "low",
+   "order": 181,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 5658,
+   "title": "Lord Jim",
+   "authors": "Conrad, Joseph, 1857-1924",
+   "W": 39,
+   "band": "high",
+   "order": 182,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 1044,
+   "title": "Extract from Captain Stormfield's Visit to Heaven",
+   "authors": "Twain, Mark, 1835-1910",
+   "W": 6,
+   "band": "mid",
+   "order": 183,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 2769,
+   "title": "Cleopatra",
+   "authors": "Haggard, H. Rider (Henry Rider), 1856-1925",
+   "W": 11,
+   "band": "mid",
+   "order": 184,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 624,
+   "title": "Looking Backward, 2000 to 1887",
+   "authors": "Bellamy, Edward, 1850-1898",
+   "W": 20,
+   "band": "high",
+   "order": 185,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 23521,
+   "title": "The Sleeping Beauty Picture Book",
+   "authors": "Crane, Walter, 1845-1915 [Illustrator]",
+   "W": 0,
+   "band": "low",
+   "order": 186,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 17922,
+   "title": "Visionaries",
+   "authors": "Huneker, James, 1857-1921",
+   "W": 0,
+   "band": "low",
+   "order": 187,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 30022,
+   "title": "Graham of Claverhouse",
+   "authors": "Maclaren, Ian, 1850-1907; Merrill, Frank T., 1848-1923 [Illustrator]",
+   "W": 0,
+   "band": "low",
+   "order": 188,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 2154,
+   "title": "Around the World in Eighty Days. Junior Deluxe Edition",
+   "authors": "Verne, Jules, 1828-1905",
+   "W": 0,
+   "band": "low",
+   "order": 189,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 644,
+   "title": "The Haunted Man and the Ghost's Bargain",
+   "authors": "Dickens, Charles, 1812-1870",
+   "W": 9,
+   "band": "mid",
+   "order": 190,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 1419,
+   "title": "Mugby Junction",
+   "authors": "Dickens, Charles, 1812-1870",
+   "W": 4,
+   "band": "mid",
+   "order": 191,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 2149,
+   "title": "The Works of Edgar Allan Poe \u2014 Volume 3",
+   "authors": "Poe, Edgar Allan, 1809-1849",
+   "W": 29,
+   "band": "high",
+   "order": 192,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 1862,
+   "title": "Tartarin of Tarascon",
+   "authors": "Daudet, Alphonse, 1840-1897",
+   "W": 15,
+   "band": "mid",
+   "order": 193,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 18688,
+   "title": "Daisy in the Field",
+   "authors": "Warner, Susan, 1819-1885",
+   "W": 0,
+   "band": "low",
+   "order": 194,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 86,
+   "title": "A Connecticut Yankee in King Arthur's Court",
+   "authors": "Twain, Mark, 1835-1910",
+   "W": 31,
+   "band": "high",
+   "order": 195,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 10540,
+   "title": "Mother Carey's Chickens",
+   "authors": "Wiggin, Kate Douglas Smith, 1856-1923",
+   "W": 4,
+   "band": "mid",
+   "order": 196,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 2516,
+   "title": "Redgauntlet: A Tale of the Eighteenth Century",
+   "authors": "Scott, Walter, 1771-1832",
+   "W": 7,
+   "band": "mid",
+   "order": 197,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 700,
+   "title": "The Old Curiosity Shop",
+   "authors": "Dickens, Charles, 1812-1870",
+   "W": 25,
+   "band": "high",
+   "order": 198,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 8726,
+   "title": "The Three Cities Trilogy: Rome, Complete",
+   "authors": "Zola, \u00c9mile, 1840-1902; Vizetelly, Ernest Alfred, 1853-1922 [Translator]",
+   "W": 3,
+   "band": "mid",
+   "order": 199,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 4274,
+   "title": "Wives and Daughters",
+   "authors": "Gaskell, Elizabeth Cleghorn, 1810-1865",
+   "W": 11,
+   "band": "mid",
+   "order": 200,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 5155,
+   "title": "C\u00e6sar's Column: A Story of the Twentieth Century",
+   "authors": "Donnelly, Ignatius, 1831-1901",
+   "W": 3,
+   "band": "mid",
+   "order": 201,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 31324,
+   "title": "The Angel of the Revolution: A Tale of the Coming Terror",
+   "authors": "Griffith, George Chetwynd, 1857-1906; Jane, Fred T. (Frederick Thomas), 1865-1916 [Illustrator]",
+   "W": 3,
+   "band": "mid",
+   "order": 202,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 1900,
+   "title": "Typee: A Romance of the South Seas",
+   "authors": "Melville, Herman, 1819-1891; Stedman, Arthur Griffin, 1859-1908 [Editor]",
+   "W": 17,
+   "band": "mid",
+   "order": 203,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 1874,
+   "title": "The Railway Children",
+   "authors": "Nesbit, E. (Edith), 1858-1924",
+   "W": 13,
+   "band": "mid",
+   "order": 204,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 21306,
+   "title": "Dick o' the Fens: A Tale of the Great East Swamp",
+   "authors": "Fenn, George Manville, 1831-1909",
+   "W": 0,
+   "band": "low",
+   "order": 205,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 8558,
+   "title": "L'Assommoir",
+   "authors": "Zola, \u00c9mile, 1840-1902",
+   "W": 29,
+   "band": "high",
+   "order": 206,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 18857,
+   "title": "A Journey to the Centre of the Earth",
+   "authors": "Verne, Jules, 1828-1905",
+   "W": 64,
+   "band": "high",
+   "order": 207,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 1162,
+   "title": "The Jacket (The Star-Rover)",
+   "authors": "London, Jack, 1876-1916",
+   "W": 22,
+   "band": "high",
+   "order": 208,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 12901,
+   "title": "The Moon-Voyage",
+   "authors": "Verne, Jules, 1828-1905",
+   "W": 44,
+   "band": "high",
+   "order": 209,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 131,
+   "title": "The Pilgrim's Progress from this world to that which is to come Delivered under the similitude of a dream, by John Bunyan",
+   "authors": "Bunyan, John, 1628-1688",
+   "W": 46,
+   "band": "high",
+   "order": 210,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 5127,
+   "title": "Shakespeare, Bacon, and the Great Unknown",
+   "authors": "Lang, Andrew, 1844-1912",
+   "W": 0,
+   "band": "low",
+   "order": 211,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 42905,
+   "title": "Great Porter Square: A Mystery. v. 1",
+   "authors": "Farjeon, B. L. (Benjamin Leopold), 1833-1903",
+   "W": 0,
+   "band": "low",
+   "order": 212,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 25481,
+   "title": "Little Grandfather",
+   "authors": "May, Sophie, 1833-1906",
+   "W": 0,
+   "band": "low",
+   "order": 213,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 5574,
+   "title": "A Word, Only a Word \u2014 Volume 03",
+   "authors": "Ebers, Georg, 1837-1898; Safford, Mary J. (Mary Joanna), 1842-1916 [Translator]",
+   "W": 0,
+   "band": "low",
+   "order": 214,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 1023,
+   "title": "Bleak House",
+   "authors": "Dickens, Charles, 1812-1870",
+   "W": 38,
+   "band": "high",
+   "order": 215,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 1235,
+   "title": "Captain Fracasse",
+   "authors": "Gautier, Th\u00e9ophile, 1811-1872",
+   "W": 12,
+   "band": "mid",
+   "order": 216,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 49030,
+   "title": "The Motor Boat Club at the Golden Gate; or, A Thrilling Capture in the Great Fog",
+   "authors": "Hancock, H. Irving (Harrie Irving), 1868-1922",
+   "W": 0,
+   "band": "low",
+   "order": 217,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 7303,
+   "title": "Equality",
+   "authors": "Bellamy, Edward, 1850-1898",
+   "W": 3,
+   "band": "mid",
+   "order": 218,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 2841,
+   "title": "The Ivory Child",
+   "authors": "Haggard, H. Rider (Henry Rider), 1856-1925",
+   "W": 6,
+   "band": "mid",
+   "order": 219,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 3155,
+   "title": "She",
+   "authors": "Haggard, H. Rider (Henry Rider), 1856-1925",
+   "W": 28,
+   "band": "high",
+   "order": 220,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 921,
+   "title": "De Profundis",
+   "authors": "Wilde, Oscar, 1854-1900",
+   "W": 20,
+   "band": "high",
+   "order": 221,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 49634,
+   "title": "Attila: A Romance. Vol. I.",
+   "authors": "James, G. P. R. (George Payne Rainsford), 1801?-1860",
+   "W": 0,
+   "band": "low",
+   "order": 222,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 7025,
+   "title": "Rob Roy \u2014 Complete",
+   "authors": "Scott, Walter, 1771-1832",
+   "W": 13,
+   "band": "mid",
+   "order": 223,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 4653,
+   "title": "God's Good Man: A Simple Love Story",
+   "authors": "Corelli, Marie, 1855-1924",
+   "W": 0,
+   "band": "low",
+   "order": 224,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 22230,
+   "title": "Hortus Inclusus Messages from the Wood to the Garden, Sent in Happy Days to the Sister Ladies of the Thwaite, Coniston",
+   "authors": "Ruskin, John, 1819-1900",
+   "W": 0,
+   "band": "low",
+   "order": 225,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 11243,
+   "title": "Miles Wallingford Sequel to \"Afloat and Ashore\"",
+   "authors": "Cooper, James Fenimore, 1789-1851",
+   "W": 0,
+   "band": "low",
+   "order": 226,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 1080,
+   "title": "A Modest Proposal For preventing the children of poor people in Ireland, from being a burden on their parents or country, and for making them beneficial to the publick",
+   "authors": "Swift, Jonathan, 1667-1745",
+   "W": 26,
+   "band": "high",
+   "order": 227,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 678,
+   "title": "The Cricket on the Hearth: A Fairy Tale of Home",
+   "authors": "Dickens, Charles, 1812-1870",
+   "W": 16,
+   "band": "mid",
+   "order": 228,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 804,
+   "title": "A Sentimental Journey Through France and Italy",
+   "authors": "Sterne, Laurence, 1713-1768",
+   "W": 21,
+   "band": "high",
+   "order": 229,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 121,
+   "title": "Northanger Abbey",
+   "authors": "Austen, Jane, 1775-1817",
+   "W": 36,
+   "band": "high",
+   "order": 230,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 956,
+   "title": "Tik-Tok of Oz",
+   "authors": "Baum, L. Frank (Lyman Frank), 1856-1919",
+   "W": 10,
+   "band": "mid",
+   "order": 231,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 514,
+   "title": "Little Women",
+   "authors": "Alcott, Louisa May, 1832-1888",
+   "W": 52,
+   "band": "high",
+   "order": 232,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 599,
+   "title": "Vanity Fair",
+   "authors": "Thackeray, William Makepeace, 1811-1863",
+   "W": 43,
+   "band": "high",
+   "order": 233,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 1690,
+   "title": "Marie: An Episode in the Life of the Late Allan Quatermain",
+   "authors": "Haggard, H. Rider (Henry Rider), 1856-1925",
+   "W": 4,
+   "band": "mid",
+   "order": 234,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 14656,
+   "title": "The Sword Maker",
+   "authors": "Barr, Robert, 1850-1912",
+   "W": 0,
+   "band": "low",
+   "order": 235,
+   "round": 2,
+   "split": "dev"
+  },
+  {
+   "id": 16457,
+   "title": "All Around the Moon",
+   "authors": "Verne, Jules, 1828-1905; Roth, Edward, 1826-1911 [Translator]",
+   "W": 37,
+   "band": "high",
+   "order": 236,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 35467,
+   "title": "The Tenants of Malory, Volume 1",
+   "authors": "Le Fanu, Joseph Sheridan, 1814-1873",
+   "W": 0,
+   "band": "low",
+   "order": 237,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 8677,
+   "title": "Behind a Mask; or, a Woman's Power",
+   "authors": "Alcott, Louisa May, 1832-1888",
+   "W": 4,
+   "band": "mid",
+   "order": 238,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 4558,
+   "title": "Barry Lyndon",
+   "authors": "Thackeray, William Makepeace, 1811-1863",
+   "W": 13,
+   "band": "mid",
+   "order": 239,
+   "round": 2,
+   "split": "test"
+  },
+  {
+   "id": 35195,
+   "title": "The Fatal Cord, and The Falcon Rover",
+   "authors": "Reid, Mayne, 1818-1883",
+   "W": 0,
+   "band": "low",
+   "order": 240,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 20849,
+   "title": "The Big Brother: A Story of Indian War",
+   "authors": "Eggleston, George Cary, 1839-1911",
+   "W": 0,
+   "band": "low",
+   "order": 241,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 11556,
+   "title": "Facing the Flag",
+   "authors": "Verne, Jules, 1828-1905",
+   "W": 25,
+   "band": "high",
+   "order": 242,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 9295,
+   "title": "A Night Out",
+   "authors": "Peple, Edward, 1869-1924",
+   "W": 0,
+   "band": "low",
+   "order": 243,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 738,
+   "title": "The Puzzle of Dickens's Last Plot",
+   "authors": "Lang, Andrew, 1844-1912",
+   "W": 0,
+   "band": "low",
+   "order": 244,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 955,
+   "title": "The Patchwork Girl of Oz",
+   "authors": "Baum, L. Frank (Lyman Frank), 1856-1919",
+   "W": 11,
+   "band": "mid",
+   "order": 245,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 1079,
+   "title": "The life and opinions of Tristram Shandy, gentleman",
+   "authors": "Sterne, Laurence, 1713-1768",
+   "W": 34,
+   "band": "high",
+   "order": 246,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 34458,
+   "title": "The Twilight of the Souls",
+   "authors": "Couperus, Louis, 1863-1923; Teixeira de Mattos, Alexander, 1865-1921 [Translator]",
+   "W": 0,
+   "band": "low",
+   "order": 247,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 5754,
+   "title": "Lysbeth, a Tale of the Dutch",
+   "authors": "Haggard, H. Rider (Henry Rider), 1856-1925",
+   "W": 0,
+   "band": "low",
+   "order": 248,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 7760,
+   "title": "Falkland, Book 4.",
+   "authors": "Lytton, Edward Bulwer Lytton, Baron, 1803-1873",
+   "W": 0,
+   "band": "low",
+   "order": 249,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 1850,
+   "title": "Old Christmas",
+   "authors": "Irving, Washington, 1783-1859",
+   "W": 0,
+   "band": "low",
+   "order": 250,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 1596,
+   "title": "Smoke Bellew",
+   "authors": "London, Jack, 1876-1916",
+   "W": 5,
+   "band": "mid",
+   "order": 251,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 42768,
+   "title": "Much Ado About Peter",
+   "authors": "Webster, Jean, 1876-1916",
+   "W": 3,
+   "band": "mid",
+   "order": 252,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 15176,
+   "title": "English Literature, Considered as an Interpreter of English History Designed as a Manual of Instruction",
+   "authors": "Copp\u00e9e, Henry, 1821-1895",
+   "W": 0,
+   "band": "low",
+   "order": 253,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 4589,
+   "title": "All's for the Best",
+   "authors": "Arthur, T. S. (Timothy Shay), 1809-1885",
+   "W": 0,
+   "band": "low",
+   "order": 254,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 2565,
+   "title": "The Story of the Glittering Plain Which Has Been Also Called the Land of Living Men or the Acre of the Undying",
+   "authors": "Morris, William, 1834-1896",
+   "W": 4,
+   "band": "mid",
+   "order": 255,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 4632,
+   "title": "The Good Time Coming",
+   "authors": "Arthur, T. S. (Timothy Shay), 1809-1885",
+   "W": 0,
+   "band": "low",
+   "order": 256,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 1018,
+   "title": "The Water-Babies",
+   "authors": "Kingsley, Charles, 1819-1875",
+   "W": 16,
+   "band": "mid",
+   "order": 257,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 20749,
+   "title": "St. Ronan's Well",
+   "authors": "Scott, Walter, 1771-1832",
+   "W": 6,
+   "band": "mid",
+   "order": 258,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 1606,
+   "title": "Kenilworth",
+   "authors": "Scott, Walter, 1771-1832",
+   "W": 9,
+   "band": "mid",
+   "order": 259,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 26175,
+   "title": "A Successful Shadow; Or, A Detective's Successful Quest",
+   "authors": "Old Sleuth, 1839?-1898",
+   "W": 0,
+   "band": "low",
+   "order": 260,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 1355,
+   "title": "The Underground City; Or, The Black Indies (Sometimes Called The Child of the Cavern)",
+   "authors": "Verne, Jules, 1828-1905",
+   "W": 27,
+   "band": "high",
+   "order": 261,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 525,
+   "title": "Youth, a Narrative",
+   "authors": "Conrad, Joseph, 1857-1924",
+   "W": 13,
+   "band": "mid",
+   "order": 262,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 2511,
+   "title": "The History of Henry Esmond, Esq., a Colonel in the Service of Her Majesty Queen Anne",
+   "authors": "Thackeray, William Makepeace, 1811-1863",
+   "W": 4,
+   "band": "mid",
+   "order": 263,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 14432,
+   "title": "A Dream of the North Sea",
+   "authors": "Runciman, James, 1852-1891",
+   "W": 0,
+   "band": "low",
+   "order": 264,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 3175,
+   "title": "Mark Twain's Burlesque Autobiography",
+   "authors": "Twain, Mark, 1835-1910",
+   "W": 3,
+   "band": "mid",
+   "order": 265,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 1957,
+   "title": "Beatrix",
+   "authors": "Balzac, Honor\u00e9 de, 1799-1850; Wormeley, Katharine Prescott, 1830-1908 [Translator]",
+   "W": 13,
+   "band": "mid",
+   "order": 266,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 38237,
+   "title": "Paddy-The-Next-Best-Thing",
+   "authors": "Page, Gertrude, 1872-1922",
+   "W": 0,
+   "band": "low",
+   "order": 267,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 4297,
+   "title": "Eve's Ransom",
+   "authors": "Gissing, George, 1857-1903",
+   "W": 0,
+   "band": "low",
+   "order": 268,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 969,
+   "title": "The Tenant of Wildfell Hall",
+   "authors": "Bront\u00eb, Anne, 1820-1849; Ward, Humphry, Mrs., 1851-1920 [Author of introduction, etc.]",
+   "W": 47,
+   "band": "high",
+   "order": 269,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 4308,
+   "title": "The Town Traveller",
+   "authors": "Gissing, George, 1857-1903",
+   "W": 0,
+   "band": "low",
+   "order": 270,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 28376,
+   "title": "The Wide, Wide World",
+   "authors": "Warner, Susan, 1819-1885",
+   "W": 0,
+   "band": "low",
+   "order": 271,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 41646,
+   "title": "Emmeline, the Orphan of the Castle",
+   "authors": "Smith, Charlotte, 1749-1806",
+   "W": 3,
+   "band": "mid",
+   "order": 272,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 34088,
+   "title": "A Poached Peerage",
+   "authors": "Magnay, William, Sir, 1855-1917",
+   "W": 0,
+   "band": "low",
+   "order": 273,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 6781,
+   "title": "The Ghost-Seer; or the Apparitionist; and Sport of Destiny",
+   "authors": "Schiller, Friedrich, 1759-1805",
+   "W": 9,
+   "band": "mid",
+   "order": 274,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 211,
+   "title": "The Aspern Papers",
+   "authors": "James, Henry, 1843-1916",
+   "W": 15,
+   "band": "mid",
+   "order": 275,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 8644,
+   "title": "The Story of Ab: A Tale of the Time of the Cave Man",
+   "authors": "Waterloo, Stanley, 1846-1913",
+   "W": 3,
+   "band": "mid",
+   "order": 276,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 5967,
+   "title": "What's Mine's Mine \u2014 Volume 2",
+   "authors": "MacDonald, George, 1824-1905",
+   "W": 0,
+   "band": "low",
+   "order": 277,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 1142,
+   "title": "Typhoon",
+   "authors": "Conrad, Joseph, 1857-1924",
+   "W": 10,
+   "band": "mid",
+   "order": 278,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 7588,
+   "title": "The Caxtons: A Family Picture \u2014 Volume 03",
+   "authors": "Lytton, Edward Bulwer Lytton, Baron, 1803-1873",
+   "W": 0,
+   "band": "low",
+   "order": 279,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 4053,
+   "title": "Nuttie's Father",
+   "authors": "Yonge, Charlotte M. (Charlotte Mary), 1823-1901",
+   "W": 0,
+   "band": "low",
+   "order": 280,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 38978,
+   "title": "Mildred's New Daughter",
+   "authors": "Finley, Martha, 1828-1909",
+   "W": 0,
+   "band": "low",
+   "order": 281,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 967,
+   "title": "Nicholas Nickleby",
+   "authors": "Dickens, Charles, 1812-1870",
+   "W": 31,
+   "band": "high",
+   "order": 282,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 45451,
+   "title": "The Man Who Did the Right Thing: A Romance",
+   "authors": "Johnston, Harry, 1858-1927",
+   "W": 0,
+   "band": "low",
+   "order": 283,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 24775,
+   "title": "Up the River; or, Yachting on the Mississippi",
+   "authors": "Optic, Oliver, 1822-1897",
+   "W": 0,
+   "band": "low",
+   "order": 284,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 561,
+   "title": "The Further Adventures of Robinson Crusoe",
+   "authors": "Defoe, Daniel, 1661?-1731",
+   "W": 12,
+   "band": "mid",
+   "order": 285,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 10002,
+   "title": "The House on the Borderland",
+   "authors": "Hodgson, William Hope, 1877-1918",
+   "W": 9,
+   "band": "mid",
+   "order": 286,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 2547,
+   "title": "Half a Life-Time Ago",
+   "authors": "Gaskell, Elizabeth Cleghorn, 1810-1865",
+   "W": 0,
+   "band": "low",
+   "order": 287,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 4929,
+   "title": "The Fashionable Adventures of Joshua Craig: A Novel",
+   "authors": "Phillips, David Graham, 1867-1911",
+   "W": 0,
+   "band": "low",
+   "order": 288,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 3007,
+   "title": "The Smoky God; Or, A Voyage to the Inner World",
+   "authors": "Emerson, Willis George, 1856-1918",
+   "W": 6,
+   "band": "mid",
+   "order": 289,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 6987,
+   "title": "Five Little Peppers Abroad",
+   "authors": "Sidney, Margaret, 1844-1924",
+   "W": 0,
+   "band": "low",
+   "order": 290,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 375,
+   "title": "An Occurrence at Owl Creek Bridge",
+   "authors": "Bierce, Ambrose, 1842-1914?",
+   "W": 14,
+   "band": "mid",
+   "order": 291,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 2165,
+   "title": "The Lifted Veil",
+   "authors": "Eliot, George, 1819-1880",
+   "W": 0,
+   "band": "low",
+   "order": 292,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 2786,
+   "title": "Jack and Jill",
+   "authors": "Alcott, Louisa May, 1832-1888",
+   "W": 5,
+   "band": "mid",
+   "order": 293,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 897,
+   "title": "The Rose and the Ring",
+   "authors": "Thackeray, William Makepeace, 1811-1863",
+   "W": 4,
+   "band": "mid",
+   "order": 294,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 1556,
+   "title": "The Marriage Contract",
+   "authors": "Balzac, Honor\u00e9 de, 1799-1850; Wormeley, Katharine Prescott, 1830-1908 [Translator]",
+   "W": 7,
+   "band": "mid",
+   "order": 295,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 176,
+   "title": "Roderick Hudson",
+   "authors": "James, Henry, 1843-1916",
+   "W": 8,
+   "band": "mid",
+   "order": 296,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 48296,
+   "title": "Linnet: A Romance",
+   "authors": "Allen, Grant, 1848-1899",
+   "W": 0,
+   "band": "low",
+   "order": 297,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 1565,
+   "title": "The Last Days of Pompeii",
+   "authors": "Lytton, Edward Bulwer Lytton, Baron, 1803-1873",
+   "W": 18,
+   "band": "mid",
+   "order": 298,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 5999,
+   "title": "Guy Mannering; or, The Astrologer \u2014 Complete",
+   "authors": "Scott, Walter, 1771-1832",
+   "W": 11,
+   "band": "mid",
+   "order": 299,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 47772,
+   "title": "Mirk Abbey, Volume 2 (of 3)",
+   "authors": "Payn, James, 1830-1898",
+   "W": 0,
+   "band": "low",
+   "order": 300,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 23700,
+   "title": "The Decameron of Giovanni Boccaccio",
+   "authors": "Boccaccio, Giovanni, 1313-1375; Payne, John, 1842-1916 [Translator]",
+   "W": 76,
+   "band": "high",
+   "order": 301,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 1848,
+   "title": "Montezuma's Daughter",
+   "authors": "Haggard, H. Rider (Henry Rider), 1856-1925",
+   "W": 11,
+   "band": "mid",
+   "order": 302,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 10402,
+   "title": "A Man and His Money",
+   "authors": "Isham, Frederic Stewart, 1866-1922",
+   "W": 0,
+   "band": "low",
+   "order": 303,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 3189,
+   "title": "Sketches New and Old",
+   "authors": "Twain, Mark, 1835-1910",
+   "W": 3,
+   "band": "mid",
+   "order": 304,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 839,
+   "title": "New Arabian Nights",
+   "authors": "Stevenson, Robert Louis, 1850-1894",
+   "W": 11,
+   "band": "mid",
+   "order": 305,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 7412,
+   "title": "Coningsby; Or, The New Generation",
+   "authors": "Disraeli, Benjamin, Earl of Beaconsfield, 1804-1881",
+   "W": 3,
+   "band": "mid",
+   "order": 306,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 1377,
+   "title": "The Talisman",
+   "authors": "Scott, Walter, 1771-1832",
+   "W": 15,
+   "band": "mid",
+   "order": 307,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 24210,
+   "title": "Deerbrook",
+   "authors": "Martineau, Harriet, 1802-1876",
+   "W": 0,
+   "band": "low",
+   "order": 308,
+   "round": 3,
+   "split": "dev"
+  },
+  {
+   "id": 1190,
+   "title": "The Jolly Corner",
+   "authors": "James, Henry, 1843-1916",
+   "W": 4,
+   "band": "mid",
+   "order": 309,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 33312,
+   "title": "Faith and Unfaith: A Novel",
+   "authors": "Duchess, 1855?-1897",
+   "W": 0,
+   "band": "low",
+   "order": 310,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 15991,
+   "title": "Japhet, in Search of a Father",
+   "authors": "Marryat, Frederick, 1792-1848",
+   "W": 0,
+   "band": "low",
+   "order": 311,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 38279,
+   "title": "How John Norton the Trapper Kept His Christmas",
+   "authors": "Murray, W. H. H. (William Henry Harrison), 1840-1904",
+   "W": 0,
+   "band": "low",
+   "order": 312,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 21949,
+   "title": "Hubert's Wife A Story for You",
+   "authors": "Lee, Minnie Mary, 1826-1903",
+   "W": 0,
+   "band": "low",
+   "order": 313,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 43043,
+   "title": "George Eliot's Life, as Related in Her Letters and Journals. Vol. 1 (of 3)",
+   "authors": "Eliot, George, 1819-1880; Cross, J. W. (John Walter), 1840-1924 [Editor]",
+   "W": 0,
+   "band": "low",
+   "order": 314,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 32939,
+   "title": "The Sacred Fount",
+   "authors": "James, Henry, 1843-1916",
+   "W": 5,
+   "band": "mid",
+   "order": 315,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 1649,
+   "title": "Ferragus, Chief of the D\u00e9vorants",
+   "authors": "Balzac, Honor\u00e9 de, 1799-1850; Wormeley, Katharine Prescott, 1830-1908 [Translator]",
+   "W": 10,
+   "band": "mid",
+   "order": 316,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 41698,
+   "title": "A Prince of Anahuac: A Histori-traditional Story Antedating the Aztec Empire",
+   "authors": "Porter, James A., 1836-1897",
+   "W": 0,
+   "band": "low",
+   "order": 317,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 42389,
+   "title": "The Pirate Andrew Lang Edition",
+   "authors": "Scott, Walter, 1771-1832; Lang, Andrew, 1844-1912 [Editor]",
+   "W": 10,
+   "band": "mid",
+   "order": 318,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 420,
+   "title": "Dorothy and the Wizard in Oz",
+   "authors": "Baum, L. Frank (Lyman Frank), 1856-1919",
+   "W": 13,
+   "band": "mid",
+   "order": 319,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 310,
+   "title": "Before Adam",
+   "authors": "London, Jack, 1876-1916",
+   "W": 11,
+   "band": "mid",
+   "order": 320,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 4305,
+   "title": "The Unclassed",
+   "authors": "Gissing, George, 1857-1903",
+   "W": 0,
+   "band": "low",
+   "order": 321,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 25461,
+   "title": "Bo-Peep Story Books",
+   "authors": "Chatelain, Clara de, 1807-1876 [Editor]",
+   "W": 0,
+   "band": "low",
+   "order": 322,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 30344,
+   "title": "The Fortunate Mistress (Parts 1 and 2) or a History of the Life of Mademoiselle de Beleau Known by the Name of the Lady Roxana",
+   "authors": "Defoe, Daniel, 1661?-1731",
+   "W": 6,
+   "band": "mid",
+   "order": 323,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 18640,
+   "title": "Phineas Redux",
+   "authors": "Trollope, Anthony, 1815-1882",
+   "W": 3,
+   "band": "mid",
+   "order": 324,
+   "round": 3,
+   "split": "test"
+  },
+  {
+   "id": 3409,
+   "title": "Barchester Towers",
+   "authors": "Trollope, Anthony, 1815-1882",
+   "W": 3,
+   "band": "mid",
+   "order": 325,
+   "round": 3,
+   "split": "test"
+  }
+ ],
+ "note": "eligibility from catalogue metadata only; texts fetched after this file was written",
+ "rounds": {
+  "2": {
+   "seed": 20261102,
+   "eligible_remaining_by_band": {
+    "high": 46,
+    "mid": 277,
+    "low": 6352
+   },
+   "drawn": 120
+  },
+  "3": {
+   "seed": 20261103,
+   "eligible_remaining_by_band": {
+    "high": 6,
+    "mid": 237,
+    "low": 6312
+   },
+   "drawn": 86
+  }
+ }
+}

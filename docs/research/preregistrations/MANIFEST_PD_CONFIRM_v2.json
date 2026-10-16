@@ -1,0 +1,19 @@
+{
+ "status": "FROZEN at 2026-10-16 before any event mining",
+ "frozen_for": "PREREG_PD_CONFIRM_v2_L40S.md",
+ "files_sha256": {
+  "PREREG_PD_CONFIRM.md": "086a51f6c28b33792ff63ca29e8e7ce6af5b7fc3831ffc9276baab2a5064e05c",
+  "PD_CONFIRM_event_mining_rules_v1.md": "be032203ad62780758bbd3081cae6bbbba75d22b437ac528bcc2c95b2980551a",
+  "PD_CONFIRM_excluded_books.json": "8cefa0fa5dcaeac29b325062962a96d14082e6e0e5659726c2f1210b5673ab83",
+  "PD_confirm_prompts_v1.json": "3c7976a5d55487d79f5a1034545fc4c5e614b17dfff3235e611766601247c3ce",
+  "PD_prompts_v1.json": "b7cd09994a52aa4ef001bfad7cda0309ebc282658f36c4ac79c8a24f2f44a3fc",
+  "PD_prompts_v2.json": "0ff1e2327488ecde318841abcceef9b6bd13bfcd1ed6da2a14cc417ccd3ce0c8",
+  "PD_prompts_v4.json": "b343cf360c183043d0c39011789c62d528b91dd7cf530f7095eee99bf4bc0d1a",
+  "PREREG_PD_CONFIRM_v2_L40S.md": "1907b39af76445bc22ba4391f718ce444854d86f6599901905dff6e82489ec8a"
+ },
+ "wikidata_query": "SELECT ?pg ?n WHERE { ?item wdt:P2034 ?pg . ?item wikibase:sitelinks ?n . }",
+ "to_freeze_at_CP_L": [
+  "PD_confirm_events_v1.json",
+  "pd_confirm.py"
+ ]
+}
