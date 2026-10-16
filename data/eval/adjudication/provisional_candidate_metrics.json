@@ -1,0 +1,168 @@
+{
+  "metadata": {
+    "status": "PROVISIONAL_MODEL_ASSISTED_BASELINE",
+    "evaluator_model": "gpt-5.6-luna",
+    "human_adjudicated": false,
+    "description": "Adversarially audited baseline metrics derived from candidate pre-annotations on 2026-09-25 frozen review sheet."
+  },
+  "corpus_estimates": {
+    "total_mentions_population": 11174,
+    "estimated_linked_mentions_X_hat": 11082.57,
+    "estimated_correct_links_Y_hat": 11046.86,
+    "ratio_precision_R_hat": 0.996777,
+    "taylor_se_fpc": 0.00074,
+    "wald_95_ci": [
+      0.995327,
+      0.998228
+    ],
+    "conservative_95_lower_bound_rule_of_three": 0.90451,
+    "known_exact_linked_denominator_2026_09_25": 11092,
+    "precision_with_known_denominator": 0.99593,
+    "conflated_narrative_denominator_X": 11103.03,
+    "conflated_narrative_precision": 0.994941,
+    "raw_sample_precision": 0.933775,
+    "raw_sample_conflated_precision": 0.892405
+  },
+  "strata": {
+    "easy_name": {
+      "population_N_h": 8933,
+      "sample_n_h": 30,
+      "system_linked_m_h": 30,
+      "system_abstained_a_h": 0,
+      "candidate_correct_links_c_h": 30,
+      "candidate_incorrect_links_w_h": 0,
+      "candidate_uncertain_links_u_h": 0,
+      "candidate_appropriate_abstentions": 0,
+      "candidate_inappropriate_abstentions_fn": 0,
+      "all_candidate_labels": {
+        "correct": 30,
+        "incorrect": 0,
+        "unresolved": 0
+      },
+      "sampling_fraction_f_h": 0.0033583342662039627,
+      "fpc": 0.9966416657337961,
+      "stratum_precision": 1.0,
+      "stratum_abstention_rate": 0.0
+    },
+    "background": {
+      "population_N_h": 981,
+      "sample_n_h": 34,
+      "system_linked_m_h": 34,
+      "system_abstained_a_h": 0,
+      "candidate_correct_links_c_h": 34,
+      "candidate_incorrect_links_w_h": 0,
+      "candidate_uncertain_links_u_h": 0,
+      "candidate_appropriate_abstentions": 0,
+      "candidate_inappropriate_abstentions_fn": 0,
+      "all_candidate_labels": {
+        "correct": 34,
+        "incorrect": 0,
+        "unresolved": 0
+      },
+      "sampling_fraction_f_h": 0.034658511722731905,
+      "fpc": 0.9653414882772681,
+      "stratum_precision": 1.0,
+      "stratum_abstention_rate": 0.0
+    },
+    "alias": {
+      "population_N_h": 977,
+      "sample_n_h": 35,
+      "system_linked_m_h": 35,
+      "system_abstained_a_h": 0,
+      "candidate_correct_links_c_h": 35,
+      "candidate_incorrect_links_w_h": 0,
+      "candidate_uncertain_links_u_h": 0,
+      "candidate_appropriate_abstentions": 0,
+      "candidate_inappropriate_abstentions_fn": 0,
+      "all_candidate_labels": {
+        "correct": 35,
+        "incorrect": 0,
+        "unresolved": 0
+      },
+      "sampling_fraction_f_h": 0.03582395087001024,
+      "fpc": 0.9641760491299898,
+      "stratum_precision": 1.0,
+      "stratum_abstention_rate": 0.0
+    },
+    "relational": {
+      "population_N_h": 125,
+      "sample_n_h": 35,
+      "system_linked_m_h": 22,
+      "system_abstained_a_h": 13,
+      "candidate_correct_links_c_h": 12,
+      "candidate_incorrect_links_w_h": 10,
+      "candidate_uncertain_links_u_h": 0,
+      "candidate_appropriate_abstentions": 8,
+      "candidate_inappropriate_abstentions_fn": 5,
+      "all_candidate_labels": {
+        "correct": 12,
+        "incorrect": 15,
+        "unresolved": 8
+      },
+      "sampling_fraction_f_h": 0.28,
+      "fpc": 0.72,
+      "stratum_precision": 0.5454545454545454,
+      "stratum_abstention_rate": 0.37142857142857144
+    },
+    "observer_sensitive": {
+      "population_N_h": 113,
+      "sample_n_h": 30,
+      "system_linked_m_h": 30,
+      "system_abstained_a_h": 0,
+      "candidate_correct_links_c_h": 30,
+      "candidate_incorrect_links_w_h": 0,
+      "candidate_uncertain_links_u_h": 0,
+      "candidate_appropriate_abstentions": 0,
+      "candidate_inappropriate_abstentions_fn": 0,
+      "all_candidate_labels": {
+        "correct": 30,
+        "incorrect": 0,
+        "unresolved": 0
+      },
+      "sampling_fraction_f_h": 0.26548672566371684,
+      "fpc": 0.7345132743362832,
+      "stratum_precision": 1.0,
+      "stratum_abstention_rate": 0.0
+    },
+    "title": {
+      "population_N_h": 39,
+      "sample_n_h": 30,
+      "system_linked_m_h": 0,
+      "system_abstained_a_h": 30,
+      "candidate_correct_links_c_h": 0,
+      "candidate_incorrect_links_w_h": 0,
+      "candidate_uncertain_links_u_h": 0,
+      "candidate_appropriate_abstentions": 28,
+      "candidate_inappropriate_abstentions_fn": 2,
+      "all_candidate_labels": {
+        "correct": 0,
+        "incorrect": 2,
+        "unresolved": 28
+      },
+      "sampling_fraction_f_h": 0.7692307692307693,
+      "fpc": 0.23076923076923073,
+      "stratum_precision": null,
+      "stratum_abstention_rate": 1.0
+    },
+    "unresolved_name": {
+      "population_N_h": 6,
+      "sample_n_h": 6,
+      "system_linked_m_h": 0,
+      "system_abstained_a_h": 6,
+      "candidate_correct_links_c_h": 0,
+      "candidate_incorrect_links_w_h": 0,
+      "candidate_uncertain_links_u_h": 0,
+      "candidate_appropriate_abstentions": 6,
+      "candidate_inappropriate_abstentions_fn": 0,
+      "all_candidate_labels": {
+        "correct": 0,
+        "incorrect": 0,
+        "unresolved": 6
+      },
+      "sampling_fraction_f_h": 1.0,
+      "fpc": 0.0,
+      "stratum_precision": null,
+      "stratum_abstention_rate": 1.0
+    }
+  }
+}

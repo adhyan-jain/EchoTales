@@ -1,0 +1,289 @@
+sheet_type,sample_id,original_order,presentation_order,category,reference_set_decision,predicted_entity
+standard_200,R056,56,1,background,not in silver set,Fang Yuan
+standard_200,R172,172,2,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R155,155,3,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R004,4,4,title,not in silver set,UNRESOLVED
+standard_200,R182,182,5,alias,not in silver set,Ruo Nan
+standard_200,R055,55,6,relational,not in silver set,Fang Yuan
+standard_200,R133,133,7,alias,not in silver set,Gu Yue Yao Ji
+standard_200,R048,48,8,easy_name,not in silver set,Jia Fu
+standard_200,R068,68,9,relational,not in silver set,Gu Yue Dong Tu
+standard_200,R109,109,10,alias,not in silver set,Qing Shu
+standard_200,R078,78,11,relational,not in silver set,UNRESOLVED
+standard_200,R101,101,12,title,not in silver set,UNRESOLVED
+standard_200,R049,49,13,title,not in silver set,UNRESOLVED
+standard_200,R171,171,14,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R031,31,15,alias,not in silver set,Gu Yue Mo Yan
+standard_200,R041,41,16,easy_name,Fang Yuan,Fang Yuan
+standard_200,R099,99,17,alias,not in silver set,Gu Yue Chi Shan
+standard_200,R113,113,18,title,not in silver set,UNRESOLVED
+standard_200,R177,177,19,background,not in silver set,Gu Yue Bo
+standard_200,R030,30,20,relational,not in silver set,UNRESOLVED
+standard_200,R077,77,21,relational,not in silver set,Gu Yue Dong Tu
+standard_200,R073,73,22,easy_name,not in silver set,Fang Yuan
+standard_200,R033,33,23,alias,not in silver set,Gu Yue Mo Yan
+standard_200,R032,32,24,relational,not in silver set,UNRESOLVED
+standard_200,R105,105,25,background,not in silver set,Fang Yuan
+standard_200,R017,17,26,relational,not in silver set,Fang Yuan
+standard_200,R086,86,27,alias,not in silver set,Gu Yue Man Shi
+standard_200,R166,166,28,observer_sensitive,not in silver set,Gu Yue Yao Ji
+standard_200,R135,135,29,relational,not in silver set,UNRESOLVED
+standard_200,R044,44,30,alias,not in silver set,Gu Yue Mo Bei
+standard_200,R120,120,31,alias,not in silver set,Qing Shu
+standard_200,R043,43,32,relational,not in silver set,Fang Yuan
+standard_200,R001,1,33,unresolved_name,Bai Ning Bing,UNRESOLVED
+standard_200,R146,146,34,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R067,67,35,relational,not in silver set,Gu Yue Chi Lian
+standard_200,R164,164,36,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R091,91,37,alias,not in silver set,Gu Yue Mo Yan
+standard_200,R180,180,38,background,not in silver set,Fang Yuan
+standard_200,R023,23,39,alias,not in silver set,Gu Yue Mo Bei
+standard_200,R161,161,40,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R011,11,41,background,Fang Yuan,Fang Yuan
+standard_200,R066,66,42,easy_name,not in silver set,Fang Yuan
+standard_200,R081,81,43,alias,not in silver set,Qing Shu
+standard_200,R024,24,44,relational,not in silver set,Fang Yuan
+standard_200,R141,141,45,title,not in silver set,UNRESOLVED
+standard_200,R072,72,46,easy_name,not in silver set,Fang Yuan
+standard_200,R179,179,47,background,not in silver set,Ruo Nan
+standard_200,R075,75,48,easy_name,not in silver set,Gu Yue Dong Tu
+standard_200,R090,90,49,relational,not in silver set,Gu Yue Dong Tu
+standard_200,R132,132,50,easy_name,not in silver set,Fang Yuan
+standard_200,R008,8,51,easy_name,Fang Yuan,Fang Yuan
+standard_200,R134,134,52,easy_name,not in silver set,Fang Yuan
+standard_200,R098,98,53,title,not in silver set,UNRESOLVED
+standard_200,R184,184,54,observer_sensitive,not in silver set,Gu Yue Yao Ji
+standard_200,R054,54,55,relational,not in silver set,Fang Yuan
+standard_200,R190,190,56,easy_name,not in silver set,Fang Yuan
+standard_200,R187,187,57,alias,not in silver set,Ruo Nan
+standard_200,R013,13,58,relational,not in silver set,Fang Yuan
+standard_200,R021,21,59,relational,not in silver set,Fang Yuan
+standard_200,R142,142,60,title,not in silver set,UNRESOLVED
+standard_200,R039,39,61,background,Fang Yuan,Fang Yuan
+standard_200,R196,196,62,easy_name,not in silver set,Fang Yuan
+standard_200,R015,15,63,relational,not in silver set,Fang Yuan
+standard_200,R026,26,64,relational,not in silver set,Gu Yue Dong Tu
+standard_200,R035,35,65,background,not in silver set,Fang Yuan
+standard_200,R046,46,66,title,not in silver set,UNRESOLVED
+standard_200,R022,22,67,background,not in silver set,Chi Cheng
+standard_200,R175,175,68,alias,not in silver set,Ruo Nan
+standard_200,R100,100,69,title,not in silver set,UNRESOLVED
+standard_200,R085,85,70,alias,not in silver set,Gu Yue Man Shi
+standard_200,R112,112,71,background,not in silver set,Fang Yuan
+standard_200,R029,29,72,relational,not in silver set,UNRESOLVED
+standard_200,R165,165,73,easy_name,not in silver set,Fang Yuan
+standard_200,R169,169,74,title,not in silver set,UNRESOLVED
+standard_200,R128,128,75,unresolved_name,not in silver set,UNRESOLVED
+standard_200,R198,198,76,title,not in silver set,UNRESOLVED
+standard_200,R062,62,77,alias,not in silver set,Gu Yue Jiao San
+standard_200,R130,130,78,background,not in silver set,Gu Yue Mo Chen
+standard_200,R045,45,79,easy_name,Fang Yuan,Fang Yuan
+standard_200,R074,74,80,background,not in silver set,Gu Yue Dong Tu
+standard_200,R119,119,81,background,not in silver set,Fang Yuan
+standard_200,R139,139,82,background,not in silver set,Fang Yuan
+standard_200,R042,42,83,relational,not in silver set,Fang Yuan
+standard_200,R104,104,84,alias,not in silver set,Gu Yue Chi Shan
+standard_200,R082,82,85,easy_name,not in silver set,Fang Yuan
+standard_200,R095,95,86,alias,not in silver set,Gu Yue Chi Shan
+standard_200,R016,16,87,relational,not in silver set,Fang Yuan
+standard_200,R131,131,88,easy_name,not in silver set,Gu Yue Chi Lian
+standard_200,R124,124,89,relational,not in silver set,UNRESOLVED
+standard_200,R069,69,90,alias,not in silver set,Gu Yue Jiao San
+standard_200,R009,9,91,easy_name,Fang Yuan,Fang Yuan
+standard_200,R117,117,92,background,not in silver set,Xiong Jiang
+standard_200,R076,76,93,alias,not in silver set,Gu Yue Jiao San
+standard_200,R193,193,94,title,not in silver set,UNRESOLVED
+standard_200,R168,168,95,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R092,92,96,background,not in silver set,Jia Fu
+standard_200,R002,2,97,unresolved_name,Bai Ning Bing,UNRESOLVED
+standard_200,R188,188,98,alias,not in silver set,Ruo Nan
+standard_200,R106,106,99,background,not in silver set,Fang Yuan
+standard_200,R080,80,100,background,not in silver set,Fang Zheng
+standard_200,R138,138,101,background,not in silver set,Fang Yuan
+standard_200,R088,88,102,relational,not in silver set,Gu Yue Chi Lian
+standard_200,R070,70,103,alias,not in silver set,Gu Yue Jiao San
+standard_200,R089,89,104,relational,not in silver set,Gu Yue Dong Tu
+standard_200,R145,145,105,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R083,83,106,background,not in silver set,Jiang Ya
+standard_200,R158,158,107,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R097,97,108,title,not in silver set,UNRESOLVED
+standard_200,R176,176,109,observer_sensitive,not in silver set,Gu Yue Yao Ji
+standard_200,R114,114,110,easy_name,not in silver set,Xiong Zhan
+standard_200,R174,174,111,alias,not in silver set,Ruo Nan
+standard_200,R167,167,112,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R071,71,113,easy_name,not in silver set,Kong Jing
+standard_200,R103,103,114,alias,not in silver set,Gu Yue Chi Shan
+standard_200,R189,189,115,title,not in silver set,UNRESOLVED
+standard_200,R094,94,116,easy_name,not in silver set,Fang Yuan
+standard_200,R059,59,117,easy_name,not in silver set,Gu Yue Bo
+standard_200,R162,162,118,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R065,65,119,background,not in silver set,Fang Yuan
+standard_200,R020,20,120,relational,not in silver set,UNRESOLVED
+standard_200,R125,125,121,alias,not in silver set,Qing Shu
+standard_200,R028,28,122,relational,not in silver set,UNRESOLVED
+standard_200,R006,6,123,background,Fang Yuan,Fang Yuan
+standard_200,R093,93,124,background,not in silver set,Fang Yuan
+standard_200,R149,149,125,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R129,129,126,unresolved_name,not in silver set,UNRESOLVED
+standard_200,R127,127,127,unresolved_name,not in silver set,UNRESOLVED
+standard_200,R123,123,128,relational,not in silver set,UNRESOLVED
+standard_200,R010,10,129,relational,not in silver set,Fang Yuan
+standard_200,R060,60,130,easy_name,not in silver set,Gu Yue Bo
+standard_200,R051,51,131,title,not in silver set,UNRESOLVED
+standard_200,R096,96,132,title,not in silver set,UNRESOLVED
+standard_200,R053,53,133,background,not in silver set,Gu Yue Bo
+standard_200,R197,197,134,title,not in silver set,UNRESOLVED
+standard_200,R137,137,135,alias,not in silver set,Qing Shu
+standard_200,R110,110,136,background,not in silver set,Fang Yuan
+standard_200,R007,7,137,easy_name,not in silver set,Fang Zheng
+standard_200,R136,136,138,background,not in silver set,Fang Yuan
+standard_200,R037,37,139,background,Fang Yuan,Fang Yuan
+standard_200,R173,173,140,alias,not in silver set,Ruo Nan
+standard_200,R140,140,141,title,not in silver set,UNRESOLVED
+standard_200,R191,191,142,easy_name,not in silver set,Fang Yuan
+standard_200,R018,18,143,relational,not in silver set,Fang Yuan
+standard_200,R115,115,144,background,not in silver set,Bai Ning Bing
+standard_200,R170,170,145,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R178,178,146,observer_sensitive,not in silver set,Gu Yue Yao Ji
+standard_200,R186,186,147,alias,not in silver set,Ruo Nan
+standard_200,R108,108,148,title,not in silver set,UNRESOLVED
+standard_200,R038,38,149,alias,not in silver set,Gu Yue Mo Yan
+standard_200,R003,3,150,unresolved_name,Bai Ning Bing,UNRESOLVED
+standard_200,R079,79,151,easy_name,not in silver set,Fang Zheng
+standard_200,R063,63,152,alias,not in silver set,Gu Yue Jiao San
+standard_200,R163,163,153,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R199,199,154,title,not in silver set,UNRESOLVED
+standard_200,R111,111,155,easy_name,not in silver set,Fang Yuan
+standard_200,R200,200,156,background,not in silver set,Fang Yuan
+standard_200,R194,194,157,title,not in silver set,UNRESOLVED
+standard_200,R144,144,158,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R152,152,159,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R121,121,160,background,not in silver set,Fang Yuan
+standard_200,R087,87,161,relational,not in silver set,UNRESOLVED
+standard_200,R192,192,162,title,not in silver set,UNRESOLVED
+standard_200,R102,102,163,title,not in silver set,UNRESOLVED
+standard_200,R195,195,164,easy_name,not in silver set,Tie Xue Leng
+standard_200,R156,156,165,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R150,150,166,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R047,47,167,title,not in silver set,UNRESOLVED
+standard_200,R058,58,168,title,not in silver set,UNRESOLVED
+standard_200,R036,36,169,relational,not in silver set,UNRESOLVED
+standard_200,R012,12,170,relational,not in silver set,Fang Yuan
+standard_200,R040,40,171,background,not in silver set,Fang Yuan
+standard_200,R126,126,172,relational,not in silver set,UNRESOLVED
+standard_200,R116,116,173,relational,not in silver set,UNRESOLVED
+standard_200,R052,52,174,easy_name,not in silver set,Ren Zu
+standard_200,R034,34,175,alias,not in silver set,Gu Yue Mo Yan
+standard_200,R154,154,176,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R064,64,177,background,not in silver set,Fang Yuan
+standard_200,R027,27,178,alias,not in silver set,Gu Yue Mo Bei
+standard_200,R143,143,179,title,not in silver set,UNRESOLVED
+standard_200,R147,147,180,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R057,57,181,alias,not in silver set,Gu Yue Mo Bei
+standard_200,R005,5,182,title,not in silver set,UNRESOLVED
+standard_200,R019,19,183,background,not in silver set,Gu Yue Chi Chen
+standard_200,R151,151,184,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R061,61,185,title,not in silver set,UNRESOLVED
+standard_200,R185,185,186,background,not in silver set,Fang Yuan
+standard_200,R014,14,187,relational,not in silver set,Fang Yuan
+standard_200,R153,153,188,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R183,183,189,easy_name,not in silver set,Chi Cheng
+standard_200,R159,159,190,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R160,160,191,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R107,107,192,title,not in silver set,UNRESOLVED
+standard_200,R025,25,193,relational,not in silver set,Gu Yue Dong Tu
+standard_200,R122,122,194,easy_name,not in silver set,Gu Yue Ye
+standard_200,R084,84,195,alias,not in silver set,Gu Yue Man Shi
+standard_200,R181,181,196,alias,not in silver set,Ruo Nan
+standard_200,R148,148,197,observer_sensitive,not in silver set,Bai Ning Bing
+standard_200,R050,50,198,title,not in silver set,UNRESOLVED
+standard_200,R118,118,199,easy_name,not in silver set,Bai Ning Bing
+standard_200,R157,157,200,observer_sensitive,not in silver set,Bai Ning Bing
+hardcases_88,H034,34,1,relational_deictic,Gu Yue Dong Tu,see data/eval/hardcase_resolution.json
+hardcases_88,H084,84,2,reveal,Bai Ning Bing,see data/eval/hardcase_resolution.json
+hardcases_88,H011,11,3,disguise,Gu Yue Chi Cheng,see data/eval/hardcase_resolution.json
+hardcases_88,H066,66,4,relational_deictic,Gu Yue Dong Tu,see data/eval/hardcase_resolution.json
+hardcases_88,H035,35,5,relational_deictic,Gu Yue Dong Tu and his wife,see data/eval/hardcase_resolution.json
+hardcases_88,H082,82,6,relational_deictic,Lord Sky Crane,see data/eval/hardcase_resolution.json
+hardcases_88,H024,24,7,disguise,Wang Da,see data/eval/hardcase_resolution.json
+hardcases_88,H041,41,8,title_transfer,Fang Yuan (newly installed as the wine tavern's landlord),see data/eval/hardcase_resolution.json
+hardcases_88,H008,8,9,relational_deictic,Gu Yue Dong Tu,see data/eval/hardcase_resolution.json
+hardcases_88,H023,23,10,disguise,Wang Da,see data/eval/hardcase_resolution.json
+hardcases_88,H087,87,11,body_change,Bai Ning Bing,see data/eval/hardcase_resolution.json
+hardcases_88,H019,19,12,relational_deictic,the Mo family (Gao Wan's employer),see data/eval/hardcase_resolution.json
+hardcases_88,H064,64,13,disguise,Gu Yue Chi Cheng,see data/eval/hardcase_resolution.json
+hardcases_88,H004,4,14,body_change,"Fang Yuan (same consciousness, previous-life body)",see data/eval/hardcase_resolution.json
+hardcases_88,H070,70,15,reveal,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H073,73,16,relational_deictic,First gen Gu Yue,see data/eval/hardcase_resolution.json
+hardcases_88,H071,71,17,reveal,Gu Yue Yao Ji,see data/eval/hardcase_resolution.json
+hardcases_88,H050,50,18,relational_deictic,Gu Yue Dong Tu,see data/eval/hardcase_resolution.json
+hardcases_88,H069,69,19,disguise,Fang Zheng,see data/eval/hardcase_resolution.json
+hardcases_88,H005,5,20,body_change,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H056,56,21,title_transfer,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H018,18,22,relational_deictic,the Mo family (Gao Wan's employer),see data/eval/hardcase_resolution.json
+hardcases_88,H033,33,23,reveal,Gu Yue Jiao San,see data/eval/hardcase_resolution.json
+hardcases_88,H085,85,24,body_change,Bai Ning Bing,see data/eval/hardcase_resolution.json
+hardcases_88,H051,51,25,reveal,Bai Ning Bing,see data/eval/hardcase_resolution.json
+hardcases_88,H060,60,26,title_transfer,Gu Yue Bo,see data/eval/hardcase_resolution.json
+hardcases_88,H040,40,27,title_transfer,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H002,2,28,body_change,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H086,86,29,body_change,Bai Ning Bing,see data/eval/hardcase_resolution.json
+hardcases_88,H081,81,30,relational_deictic,First gen Gu Yue,see data/eval/hardcase_resolution.json
+hardcases_88,H037,37,31,relational_deictic,Gu Yue Dong Tu,see data/eval/hardcase_resolution.json
+hardcases_88,H078,78,32,body_change,First gen Gu Yue (same individual as the fugitive Immortal Crane Sect disciple),see data/eval/hardcase_resolution.json
+hardcases_88,H045,45,33,relational_deictic,Gu Yue Dong Tu,see data/eval/hardcase_resolution.json
+hardcases_88,H052,52,34,reveal,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H075,75,35,relational_deictic,First gen Gu Yue,see data/eval/hardcase_resolution.json
+hardcases_88,H001,1,36,body_change,Fang Yuan (500-year-old consciousness now occupying his 5-year-old body),see data/eval/hardcase_resolution.json
+hardcases_88,H065,65,37,reveal,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H016,16,38,reveal,Fang Yuan (hypothetical misidentification),see data/eval/hardcase_resolution.json
+hardcases_88,H053,53,39,title_transfer,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H030,30,40,disguise,Wang Da,see data/eval/hardcase_resolution.json
+hardcases_88,H028,28,41,title_transfer,Fang Zheng,see data/eval/hardcase_resolution.json
+hardcases_88,H043,43,42,title_transfer,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H055,55,43,title_transfer,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H036,36,44,disguise,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H067,67,45,relational_deictic,Gu Yue Dong Tu,see data/eval/hardcase_resolution.json
+hardcases_88,H088,88,46,reveal,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H046,46,47,not_entity_control,Spring Autumn Cicada,see data/eval/hardcase_resolution.json
+hardcases_88,H047,47,48,title_transfer,Fang Zheng,see data/eval/hardcase_resolution.json
+hardcases_88,H022,22,49,relational_deictic,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H083,83,50,relational_deictic,Lord Sky Crane,see data/eval/hardcase_resolution.json
+hardcases_88,H049,49,51,relational_deictic,Gu Yue Dong Tu,see data/eval/hardcase_resolution.json
+hardcases_88,H027,27,52,title_transfer,Gu Yue Bo,see data/eval/hardcase_resolution.json
+hardcases_88,H068,68,53,disguise,Wang Er (called 'Wang Da' in the earlier ch069-078 telling of this same backstory -- the fan translation is inconsistent about which brother's name attaches to the hunter-turned-demonic-cultivator),see data/eval/hardcase_resolution.json
+hardcases_88,H021,21,54,reveal,"Fang Yuan (a 500-year-old reborn Gu Master posing, to every official record, as an ordinary clan-born child)",see data/eval/hardcase_resolution.json
+hardcases_88,H048,48,55,title_transfer,Fang Zheng,see data/eval/hardcase_resolution.json
+hardcases_88,H039,39,56,relational_deictic,Gu Yue Dong Tu,see data/eval/hardcase_resolution.json
+hardcases_88,H057,57,57,title_transfer,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H038,38,58,relational_deictic,Gu Yue Dong Tu,see data/eval/hardcase_resolution.json
+hardcases_88,H012,12,59,relational_deictic,the Mo family (Gao Wan's employer),see data/eval/hardcase_resolution.json
+hardcases_88,H015,15,60,reveal,Fang Yuan (the servants' guess is wrong),see data/eval/hardcase_resolution.json
+hardcases_88,H062,62,61,reveal,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H044,44,62,title_transfer,Gu Yue Dong Tu,see data/eval/hardcase_resolution.json
+hardcases_88,H009,9,63,relational_deictic,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H006,6,64,disguise,Gu Yue Chi Cheng,see data/eval/hardcase_resolution.json
+hardcases_88,H020,20,65,relational_deictic,Gu Yue Dong Tu (and his wife),see data/eval/hardcase_resolution.json
+hardcases_88,H063,63,66,reveal,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H058,58,67,relational_deictic,Jiang Fan's master (never named in the surrounding narration),see data/eval/hardcase_resolution.json
+hardcases_88,H026,26,68,disguise,Fang Zheng,see data/eval/hardcase_resolution.json
+hardcases_88,H017,17,69,reveal,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H032,32,70,reveal,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H014,14,71,reveal,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H072,72,72,disguise,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H029,29,73,title_transfer,Gu Yue Bo,see data/eval/hardcase_resolution.json
+hardcases_88,H003,3,74,body_change,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H010,10,75,relational_deictic,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H076,76,76,relational_deictic,First gen Gu Yue,see data/eval/hardcase_resolution.json
+hardcases_88,H031,31,77,disguise,Wang Da,see data/eval/hardcase_resolution.json
+hardcases_88,H007,7,78,reveal,Fang Yuan,see data/eval/hardcase_resolution.json
+hardcases_88,H077,77,79,body_change,First gen Gu Yue (formerly of the Middle Continent's Immortal Crane Sect; changed his appearance and took the name 'Gu Yue' to hide from his former sect),see data/eval/hardcase_resolution.json
+hardcases_88,H080,80,80,body_change,First gen Gu Yue,see data/eval/hardcase_resolution.json
+hardcases_88,H054,54,81,title_transfer,Gu Yue Dong Tu,see data/eval/hardcase_resolution.json
+hardcases_88,H013,13,82,relational_deictic,Gu Yue Dong Tu,see data/eval/hardcase_resolution.json
+hardcases_88,H061,61,83,relational_deictic,Bai Ning Bing,see data/eval/hardcase_resolution.json
+hardcases_88,H042,42,84,title_transfer,Gu Yue Dong Tu,see data/eval/hardcase_resolution.json
+hardcases_88,H074,74,85,relational_deictic,Lord Sky Crane,see data/eval/hardcase_resolution.json
+hardcases_88,H025,25,86,disguise,Fang Zheng,see data/eval/hardcase_resolution.json
+hardcases_88,H059,59,87,title_transfer,Gu Yue Bo's unnamed predecessor as Gu Yue clan leader (never given a proper name in the surrounding text),see data/eval/hardcase_resolution.json
+hardcases_88,H079,79,88,relational_deictic,First gen Gu Yue,see data/eval/hardcase_resolution.json
