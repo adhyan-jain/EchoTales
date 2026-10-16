@@ -39,6 +39,9 @@ CUES = ["was none other than", "was in reality", "was in fact", "was really", "i
         "under the name", "under the assumed name", "assumed the name", "alias", "otherwise known as", "known to the world as",
         "threw off his disguise", "threw off her disguise", "unmasked", "revealed himself", "revealed herself", "you are the",
         "it was he who", "it was she who"]
+# efficiency prefilter for the large rounds (addendum 4): only the cues that name a person right after them
+PREFILTER = re.compile(r"(none other than|was really|was in reality|was in fact|alias|otherwise known as|known to the world as|under the (?:assumed )?name|"
+                       r"assumed the name|disguised as|you are the)[^.]{0,80}\b[A-Z][a-z]{2,}", re.S)
 ABBR = r"(?<!\bMr)(?<!\bMrs)(?<!\bDr)(?<!\bSt)(?<!\bMme)(?<!\bCol)(?<!\bCapt)(?<!\bMlle)(?<![A-Z])"
 SENT = re.compile(r".*?" + ABBR + r"[.!?]+[”\"’')]*(?=\s|$)", re.S)
 CHAPTER = re.compile(r"^[ \t]*((?:CHAPTER|Chapter|BOOK|Book|PART|Part)\b[^\n]{0,50}|[IVXL]{1,6}\.?)[ \t]*$", re.M)
@@ -196,11 +199,18 @@ def cast_candidates(text: str, core: dict):
 
 def cmd_mine(a):
     books = json.loads((P / "PD_confirm_books_v1.json").read_text())["books"]
+    if a.rounds:
+        keep = {int(x) for x in a.rounds.split(",")}
+        books = [b for b in books if b.get("round", 1) in keep]  # rounds 4+ are mined separately (addendum 4)
     SCR.mkdir(parents=True, exist_ok=True)
+    done_ids = set()  # books already processed by an earlier run of this stage (resumable)
+    for f in SCR.glob("verified_events*.json"):
+        done_ids |= set(json.loads(f.read_text()).get("processed", []))
+    books = [b for b in books if b["id"] not in done_ids]
     pod = Pod()
     pod.ensure("qwen32b")
     t_start = time.time()
-    jobs = []
+    jobs, processed = [], []
     stats = dict(books_seen=0, books_skipped=0, candidates=0)
     texts = {}
     for b in books:
@@ -214,8 +224,11 @@ def cmd_mine(a):
             stats["books_skipped"] += 1
             continue
         texts[b["id"]] = t
+        processed.append(b["id"])
         stats["books_seen"] += 1
         for c in candidates(t, b["id"], a.max_per_book):
+            if a.prefilter and not PREFILTER.search(c["cue_sentence"]):
+                continue
             jobs.append((b, c))
     stats["candidates"] = len(jobs)
     print(stats, flush=True)
@@ -270,13 +283,15 @@ def cmd_mine(a):
             core["ev"]["cast"] = cast + [core["ev"]["identity"]]
             final.append(dict(book=b, gid=b["id"], passage=c["passage"], ev=core["ev"], cutpos=core["cutpos"], cut_kind=core["cut_kind"],
                               n_pre=core["n_pre"], n_post=core["n_post"], identity_in_prefix=core["identity_in_prefix"]))
-    (SCR / "verified_events.json").write_text(json.dumps(dict(stats=stats, reasons=reasons, events=final), indent=1))
+    (SCR / a.out_name).write_text(json.dumps(dict(stats=stats, reasons=reasons, events=final, processed=processed), indent=1))
     print("events after cast filter:", len(final), "books with events:", len({e["gid"] for e in final}), "reasons", dict(reasons),
           f"wall {time.time() - t_start:.0f}s", flush=True)
 
 
 def cmd_audit(a):
-    d = json.loads((SCR / "verified_events.json").read_text())
+    d = dict(events=[])
+    for f in sorted(SCR.glob("verified_events*.json")):
+        d["events"] += json.loads(f.read_text())["events"]
     pod = Pod()
     pod.ensure("mistral24")
     schema = {"type": "object", "properties": {"answer": {"type": "string", "enum": ["EXPLICIT", "IMPLIED", "NOT_SUPPORTED"]}}, "required": ["answer"]}
@@ -336,6 +351,9 @@ def main():
     sp = ap.add_subparsers(dest="cmd", required=True)
     m = sp.add_parser("mine")
     m.add_argument("--max-per-book", type=int, default=60)
+    m.add_argument("--rounds", default="")
+    m.add_argument("--out-name", default="verified_events.json")
+    m.add_argument("--prefilter", action="store_true")
     sp.add_parser("audit")
     sp.add_parser("freeze")
     a = ap.parse_args()
