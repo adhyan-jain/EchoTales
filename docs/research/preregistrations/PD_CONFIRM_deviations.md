@@ -10,3 +10,9 @@
 - **Claude arm excluded from every pooled test.** The partial file (211 of 1,218 answers, 8 events, no M2) was moved to `data/eval/chimera/confirm/partial/` before the analysis run. H1's criterion "at least 3 of 4 core models" cannot be met with 3 models (`criterion_needs_4_models`), so H1 is reported as not passed by construction as well as by its estimate.
 - **Bootstrap guard.** `boot_events` crashed when the recovered fraction was undefined in every resample (OLMo A-B3 baseline near zero). It now returns NaN limits in that case. No other statistic is affected; the analysis script was otherwise unchanged after the results were seen.
 - **H3 reading.** The pre-registered pass rule in code is rho >= 0.20 and raw p < 0.05, which is met (rho +0.30, p 0.041). The Holm-adjusted p (family H1, H2, H3, H5) is 0.145 and addendum 2 sets the Holm level at 0.0125, so H3 is **not** reported as confirmed; the raw criterion is reported beside the adjusted p.
+
+## RF-E2E run notes (addenda 6 to 9, 2026-10-16 20:20 to 21:55 IST)
+- Order of the local GPU queue was changed during the run so that the larger models' judging came before the small-model fix 2; in the end every pre-registered cell ran (no cell was skipped).
+- The pod router came back after the owner restarted the pod without the inner-port setting, so the first qwen32b card run exited before writing anything; the router was restarted with the inner port 18001 and the run was started again from nothing. No card was written twice.
+- Zero empty cards for every model; RF1 decisions as pre-registered; fix 2 (RF5) not evaluated in either stratum because the memory channel had no lower limit above 0, as addendum 7 specifies.
+- Addendum 9 (second judge olmo32b) ran because the time condition was met (finished 21:43).
