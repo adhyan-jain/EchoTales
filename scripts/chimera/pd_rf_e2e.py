@@ -93,7 +93,12 @@ def prepare(evs):
     return books, rows
 
 
+LARGE = {"qwen32b", "mistral24", "olmo32b"}  # pod models (addendum 8), analysed as a separate stratum
+
+
 def ask(client, model, prompt):
+    if model in LARGE:  # pod router via pd_confirm_mine.Pod; empty string on endpoint error (counted, addendum 8)
+        return client.chat(model, prompt, OPTS["num_predict"]).strip()
     for ln in open("/proc/meminfo"):
         if ln.startswith("MemAvailable:") and int(ln.split()[1]) / 1048576 < 0.8:
             sys.exit("stopping: available RAM below 0.8 GiB")
@@ -102,9 +107,31 @@ def ask(client, model, prompt):
     return r.json()["message"]["content"].strip()
 
 
-def cmd_run(a):
+def client_for(model):
     import httpx
 
+    if model in LARGE:
+        import pd_confirm_mine as M
+
+        pod = M.Pod()
+        pod.ensure(model)
+        return pod
+    return httpx.Client(timeout=300.0)
+
+
+def run_events(model, fn, todo):
+    """Local ollama: one event at a time (one 8 GB GPU). Pod: 8 events in parallel so vLLM batches them."""
+    if model not in LARGE:
+        for r in todo:
+            yield fn(r)
+        return
+    from concurrent.futures import ThreadPoolExecutor
+
+    with ThreadPoolExecutor(8) as ex:
+        yield from ex.map(fn, todo)
+
+
+def cmd_run(a):
     check_frozen()
     evs = json.loads(EVENTS.read_text())["events"]
     books, rows = prepare(evs)
@@ -114,8 +141,10 @@ def cmd_run(a):
     done = json.loads(path.read_text()) if path.exists() else dict(model=a.model, options=OPTS, prompt=PROMPT, cards={}, status="PARTIAL")
     todo = [r for r in rows if r["measurable"] and r["ev"]["id"] not in done["cards"]][: a.limit]
     t0 = time.time()
-    with httpx.Client(timeout=300.0) as c:
-        for n, r in enumerate(todo, 1):
+    c = client_for(a.model)
+
+    def one(r):
+        if True:
             ev, text, cut = r["ev"], r["text"], r["cut"]
             r1 = rn[ev["gutenberg"]][0]
             w_ms, p_ms = pick(r["all_m"]), pick(r["pre_m"])
@@ -130,10 +159,13 @@ def cmd_run(a):
                     T = r["T"] if arm == "orig" else toks(r1.rename(" ".join(sorted(r["T"]))))
                     cell[f"{build}_{arm}"] = dict(card=card, leak=has_word(card, T), has_alias=al.lower() in card.lower(), words=len(card.split()),
                                                   n_evidence=len(w_ms) if build == "W" else len(p_ms))
-            done["cards"][ev["id"]] = dict(T=sorted(r["T"]), n_post=r["n_post"], measurable_A=r["measurable_A"], alias_ren=r1.rename(alias),
-                                           identity_ren=r1.rename(ev["identity"]), cells=cell)
-            path.write_text(json.dumps(done, indent=1))
-            print(f"{a.model} {n}/{len(todo)} {ev['id']} {time.time() - t0:.0f}s", flush=True)
+            return ev["id"], dict(T=sorted(r["T"]), n_post=r["n_post"], measurable_A=r["measurable_A"], alias_ren=r1.rename(alias),
+                                  identity_ren=r1.rename(ev["identity"]), cells=cell)
+
+    for n, (eid, rec) in enumerate(run_events(a.model, one, todo), 1):
+        done["cards"][eid] = rec
+        path.write_text(json.dumps(done, indent=1))
+        print(f"{a.model} {n}/{len(todo)} {eid} {time.time() - t0:.0f}s", flush=True)
     if len([r for r in rows if r["measurable"]]) == len(done["cards"]):
         done["status"] = "COMPLETE"
     done["wall_seconds"] = round(time.time() - t0, 1)
@@ -143,8 +175,6 @@ def cmd_run(a):
 
 def cmd_mitigate(a):
     """Addendum 7, fix 2: prefix card from cue-preserving pseudonyms (E4 arm P2 maps), mapped back to original names, scored as P-orig."""
-    import httpx
-
     import pd_v5_cuepres as V5C
 
     check_frozen()
@@ -156,8 +186,10 @@ def cmd_mitigate(a):
     done = json.loads(path.read_text()) if path.exists() else dict(model=a.model, options=OPTS, prompt=PROMPT, cards={}, status="PARTIAL")
     todo = [r for r in rows if r["measurable"] and r["ev"]["id"] not in done["cards"]]
     t0 = time.time()
-    with httpx.Client(timeout=300.0) as c:
-        for n, r in enumerate(todo, 1):
+    c = client_for(a.model)
+
+    def one(r):
+        if True:
             ev, text, cut = r["ev"], r["text"], r["cut"]
             b3 = V5C.make_b3(rn[ev["gutenberg"]][0], maps[ev["gutenberg"]])
             ps = passages(text, pick(r["pre_m"]), cut)
@@ -169,11 +201,14 @@ def cmd_mitigate(a):
                     inv.setdefault(rt, t)
             card = ask(c, a.model, PROMPT.format(ALIAS=b3(alias), PASSAGES=b3(ps)))
             back = re.sub(r"\b[A-Z][A-Za-z]+\b", lambda m: inv.get(m.group(0), m.group(0)), card)
-            done["cards"][ev["id"]] = dict(T=sorted(r["T"]), measurable_A=r["measurable_A"], cells={"P_pseudo": dict(
+            return ev["id"], dict(T=sorted(r["T"]), measurable_A=r["measurable_A"], cells={"P_pseudo": dict(
                 card=back, card_raw=card, leak=has_word(back, r["T"]), has_alias=alias.lower() in back.lower(), words=len(back.split()))})
-            path.write_text(json.dumps(done, indent=1))
-            if n % 10 == 0:
-                print(f"{a.model} mitig {n}/{len(todo)} {time.time() - t0:.0f}s", flush=True)
+
+    for n, (eid, rec) in enumerate(run_events(a.model, one, todo), 1):
+        done["cards"][eid] = rec
+        path.write_text(json.dumps(done, indent=1))
+        if n % 10 == 0:
+            print(f"{a.model} mitig {n}/{len(todo)} {time.time() - t0:.0f}s", flush=True)
     done["status"] = "COMPLETE" if len(done["cards"]) == len([r for r in rows if r["measurable"]]) else "PARTIAL"
     path.write_text(json.dumps(done, indent=1))
     print("wrote", path, done["status"], flush=True)
@@ -317,17 +352,27 @@ def fixes(cards, judged, A_ids, common, evs, models, res):
 
 
 def cmd_analyze(_a):
+    small = analyse(lambda m: m not in LARGE)
+    large = analyse(lambda m: m in LARGE, quiet=False)
+    if large:
+        small["larger"] = large
+    (OUT / "analysis.json").write_text(json.dumps(small, indent=1, default=float))
+
+
+def analyse(keep, quiet=False):
     evs = {e["id"]: e for e in json.loads(EVENTS.read_text())["events"]}
     cards, judged, not_run = {}, {}, []
     for f in sorted(OUT.glob("cards_*.json")):
         d = json.loads(f.read_text())
+        if not keep(d["model"]):
+            continue
         (cards.__setitem__(d["model"], d["cards"]) if d.get("status") == "COMPLETE" else not_run.append(d["model"]))
     for m in cards:
         jf = OUT / f"judge_{JUDGE.replace(':', '_')}_of_{m.replace(':', '_')}.json"
         if jf.exists() and json.loads(jf.read_text()).get("status") == "COMPLETE":
             judged[m] = json.loads(jf.read_text())["labels"]
     if not cards:
-        sys.exit("no complete model file")
+        return None
     models = sorted(cards)
     common = sorted(set.intersection(*[set(c) for c in cards.values()]))
     rule_a = {m: {i: {k: cards[m][i]["cells"][k]["leak"] for k in KEYS} for i in common} for m in models}
@@ -344,13 +389,15 @@ def cmd_analyze(_a):
     res["utility"] = {m: dict(alias_in_card_share={k: sum(cards[m][i]["cells"][k]["has_alias"] for i in common) / len(common) for k in KEYS},
                               mean_words={k: sum(cards[m][i]["cells"][k]["words"] for i in common) / len(common) for k in KEYS}) for m in models}
     res["fixes"] = fixes(cards, judged, A_ids, common, evs, models, res)
-    (OUT / "analysis.json").write_text(json.dumps(res, indent=1, default=float))
+    res["empty_cards"] = {m: sum(1 for i in common for k in KEYS if not cards[m][i]["cells"][k]["card"]) for m in models}
     print("fixes", json.dumps(res["fixes"], default=float)[:1500])
+    print("== stratum", models)
     for sn in [k for k in res if k[:2] in ("A_", "B_")]:
         o = res[sn]
         print(sn, "events", o["events"], json.dumps(o.get("pooled"), default=float)[:700])
         for m, r in o["per_model"].items():
             print("  ", m, {k: (round(v, 3) if isinstance(v, float) else v) for k, v in r.items() if k in KEYS or k in ("input_channel", "memory_channel", "events_pos", "events_neg", "sign_p_one_sided")})
+    return res
 
 
 def main():
