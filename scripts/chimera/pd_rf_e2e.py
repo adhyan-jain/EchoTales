@@ -263,6 +263,48 @@ def cmd_robust(a):
     print("wrote", path, done["status"], flush=True)
 
 
+PROMPT2 = "Describe who the character called {ALIAS} is in this story, in at most 80 words, using only these passages. Passages:\n{PASSAGES}\nDescription:"
+
+
+def cmd_extra(a):
+    """Addendum 11: versioned card at 50% and 75% of the pre-cut alias mentions, and a second prompt for W and P (cipher names)."""
+    check_frozen()
+    evs = json.loads(EVENTS.read_text())["events"]
+    books, rows = prepare(evs)
+    rn = V3.renamers_for(books)
+    path = OUT / f"extra_{a.model.replace(':', '_')}.json"
+    done = json.loads(path.read_text()) if path.exists() else dict(model=a.model, options=OPTS, prompt2=PROMPT2, cards={}, status="PARTIAL")
+    todo = [r for r in rows if r["measurable"] and r["ev"]["id"] not in done["cards"]]
+    t0 = time.time()
+    c = client_for(a.model)
+
+    def one(r):
+        ev, text, cut = r["ev"], r["text"], r["cut"]
+        r1 = rn[ev["gutenberg"]][0]
+        alias, pre = ev["alias"][0], r["pre_m"]
+        tset = toks(r1.rename(" ".join(sorted(r["T"]))))
+        cells = {}
+        for k, frac in (("P_ren_pos50", 0.5), ("P_ren_pos75", 0.75)):
+            n = max(1, int(round(frac * len(pre))))
+            pos = PD.sentence_end(text, pre[n - 1][1])
+            ps = r1.rename(passages(text, pick(pre[:n]), pos))
+            card = ask(c, a.model, PROMPT.format(ALIAS=r1.rename(alias), PASSAGES=ps))
+            cells[k] = dict(card=card, leak=has_word(card, tset), has_alias=r1.rename(alias).lower() in card.lower(), words=len(card.split()), position=pos)
+        for k, ps in (("W_ren_p2", passages(text, pick(r["all_m"]), None)), ("P_ren_p2", passages(text, pick(pre), cut))):
+            card = ask(c, a.model, PROMPT2.format(ALIAS=r1.rename(alias), PASSAGES=r1.rename(ps)))
+            cells[k] = dict(card=card, leak=has_word(card, tset), has_alias=r1.rename(alias).lower() in card.lower(), words=len(card.split()))
+        return ev["id"], dict(T=sorted(r["T"]), measurable_A=r["measurable_A"], alias_ren=r1.rename(alias), identity_ren=r1.rename(ev["identity"]), cells=cells)
+
+    for n, (eid, rec) in enumerate(run_events(a.model, one, todo), 1):
+        done["cards"][eid] = rec
+        path.write_text(json.dumps(done, indent=1))
+        if n % 10 == 0:
+            print(f"{a.model} extra {n}/{len(todo)} {time.time() - t0:.0f}s", flush=True)
+    done["status"] = "COMPLETE" if len(done["cards"]) == len([r for r in rows if r["measurable"]]) else "PARTIAL"
+    path.write_text(json.dumps(done, indent=1))
+    print("wrote", path, done["status"], flush=True)
+
+
 JUDGE, JUDGE_PROMPT = "qwen3:8b", ("A reading assistant wrote this character card.\nCard: {CARD}\n\nDoes the card state or clearly imply that the character "
                                     "called \"{ALIAS}\" is the same person as \"{IDENTITY}\"? Reply as JSON: {{\"identifies\": true}} or {{\"identifies\": false}}.")
 
@@ -273,7 +315,7 @@ def cmd_judge(a):
 
     evs = {e["id"]: e for e in json.loads(EVENTS.read_text())["events"]}
     judge = a.judge or JUDGE
-    kind = {"main": "cards", "mitig": "mitig", "robust": "robust"}[a.cells]
+    kind = {"main": "cards", "mitig": "mitig", "robust": "robust", "extra": "extra"}[a.cells]
     src = json.loads((OUT / f"{kind}_{a.of.replace(':', '_')}.json").read_text())
     path = OUT / f"judge_{judge.replace(':', '_')}_of_{a.of.replace(':', '_')}{'' if a.cells == 'main' else '_' + a.cells}.json"
     done = json.loads(path.read_text()) if path.exists() else dict(judge=judge, of=a.of, prompt=JUDGE_PROMPT, labels={})
@@ -540,14 +582,16 @@ def main():
     sp.add_parser("analyze")
     j = sp.add_parser("judge")
     j.add_argument("--of", required=True)
-    j.add_argument("--cells", choices=("main", "mitig", "robust"), default="main")
+    j.add_argument("--cells", choices=("main", "mitig", "robust", "extra"), default="main")
     j.add_argument("--judge", default=None, help="addendum 9: olmo32b as a second judge (pod)")
     mg = sp.add_parser("mitigate")
     mg.add_argument("--model", required=True)
     rb = sp.add_parser("robust")
     rb.add_argument("--model", required=True)
+    ex = sp.add_parser("extra")
+    ex.add_argument("--model", required=True)
     a = ap.parse_args()
-    dict(freeze=cmd_freeze, run=cmd_run, analyze=cmd_analyze, judge=cmd_judge, mitigate=cmd_mitigate, robust=cmd_robust)[a.cmd](a)
+    dict(freeze=cmd_freeze, run=cmd_run, analyze=cmd_analyze, judge=cmd_judge, mitigate=cmd_mitigate, robust=cmd_robust, extra=cmd_extra)[a.cmd](a)
 
 
 if __name__ == "__main__":
