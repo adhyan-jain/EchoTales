@@ -1,0 +1,279 @@
+"""RF-E2E (PREREG_RF_E2E_addendum_6.md): does a whole-volume, first-mention-stamped LLM character card leak the reveal, and how much of
+the leak needs the input versus the model's memory?
+
+Callers: run by hand and by scripts/chimera/run_rf_e2e.sh.
+  freeze                 write MANIFEST_RF_E2E.json (sha256 of the pre-registration, the frozen events file and this script)
+  run --model M [--limit N]   build cards (W, P) x (orig, ren) per measurable event with a local ollama model; resumable per event
+  analyze                pre-registered statistics from data/eval/chimera/rf_e2e/cards_*.json -> analysis.json
+Reads the frozen events (docs/research/preregistrations/PD_confirm_events_v1.json; fields id, gutenberg, alias (list), identity, reveal_sentence,
+cut{regex, back}, audit, split) and the local Gutenberg texts (data/raw/pd_confirm/texts, git-ignored). Writes only under data/eval/chimera/rf_e2e/.
+Cards are model-generated text from public-domain books. Label provenance: TEXT-DERIVED oracle, model-selected events, no human labels.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import math
+import random
+import re
+import sys
+import time
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import pd_reveal_benchmark as PD  # noqa: E402
+import pd_v3 as V3  # noqa: E402
+
+P = Path("docs/research/preregistrations")
+EVENTS, PREREG, MAN = P / "PD_confirm_events_v1.json", P / "PREREG_RF_E2E_addendum_6.md", P / "MANIFEST_RF_E2E.json"
+TEXTS, OUT = Path("data/raw/pd_confirm/texts"), Path("data/eval/chimera/rf_e2e")
+K, BEFORE, AFTER = 12, 500, 700
+HOST = "http://127.0.0.1:11434"
+OPTS = {"temperature": 0, "seed": 20261016, "num_predict": 160, "num_ctx": 8192}
+PROMPT = "Write a character card of at most 80 words for the character referred to as {ALIAS}, using these passages from the book. Passages:\n{PASSAGES}\nCard:"
+SEED_BOOT, NB = 20261101, 10000
+
+
+def sha(p: Path) -> str:
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+
+
+def toks(s: str) -> set[str]:
+    return set(re.findall(r"\b[A-Z][a-z]{2,}\b", s))
+
+
+def pick(ms):
+    return list(ms) if len(ms) <= K else [ms[i] for i in PD.spaced(len(ms), K)]
+
+
+def passages(text, ms, clip):
+    out = []
+    for s, e, _ in ms:
+        a, b = max(0, s - BEFORE), min(len(text), e + AFTER)
+        if clip is not None:
+            b = min(b, clip)
+        out.append(text[a:b].strip())
+    return "\n---\n".join(f"[{i + 1}] {p}" for i, p in enumerate(out))
+
+
+def has_word(card: str, word_set: set[str]) -> bool:
+    return bool(word_set & toks(card))
+
+
+def cmd_freeze(_a):
+    if MAN.exists():
+        sys.exit(f"REFUSING: {MAN} exists")
+    MAN.write_text(json.dumps(dict(written="2026-10-16", files_sha256={PREREG.name: sha(PREREG), EVENTS.name: sha(EVENTS)},
+                                   script_sha256_at_freeze=sha(Path(__file__)), note="prereg and events are enforced by run; the script hash is provenance"), indent=1))
+    print("wrote", MAN)
+
+
+def check_frozen():
+    m = json.loads(MAN.read_text())["files_sha256"]
+    if sha(PREREG) != m[PREREG.name] or sha(EVENTS) != m[EVENTS.name]:
+        sys.exit("REFUSING: pre-registration or events changed since the freeze")
+
+
+def prepare(evs):
+    """Per event: measurability, evidence for W and P, and the renamed variants. No model calls."""
+    books, rows = {}, []
+    for ev in evs:
+        text = books.setdefault(ev["gutenberg"], PD.load_text(TEXTS, ev["gutenberg"]))
+        loc = PD.locate(ev, text)
+        cut = loc["cut"]
+        pre_text = text[:cut]
+        T = {t for t in toks(ev["identity"]) if t.lower() not in PD.HONORIFICS and not re.search(r"\b" + re.escape(t) + r"\b", pre_text)}
+        all_m = [(m.start(), m.end(), m.group(0)) for m in loc["alias_re"].finditer(text)]
+        # rule B needs only alias mentions on both sides of the reveal; rule A also needs an identity token the prefix never shows
+        # (in 38 of 68 events the identity is already a named character, so a name match cannot tell disclosure from mention)
+        meas = len(loc["post"]) >= 1 and len(loc["pre"]) >= 1
+        rows.append(dict(ev=ev, text=text, cut=cut, T=T, all_m=all_m, pre_m=loc["pre"], n_post=len(loc["post"]), measurable=meas,
+                         measurable_A=meas and bool(T)))
+    return books, rows
+
+
+def ask(client, model, prompt):
+    for ln in open("/proc/meminfo"):
+        if ln.startswith("MemAvailable:") and int(ln.split()[1]) / 1048576 < 0.8:
+            sys.exit("stopping: available RAM below 0.8 GiB")
+    r = client.post(f"{HOST}/api/chat", json=dict(model=model, stream=False, options=OPTS, messages=[dict(role="user", content=prompt)]))
+    r.raise_for_status()
+    return r.json()["message"]["content"].strip()
+
+
+def cmd_run(a):
+    import httpx
+
+    check_frozen()
+    evs = json.loads(EVENTS.read_text())["events"]
+    books, rows = prepare(evs)
+    rn = V3.renamers_for(books)
+    path = OUT / f"cards_{a.model.replace(':', '_')}.json"
+    OUT.mkdir(parents=True, exist_ok=True)
+    done = json.loads(path.read_text()) if path.exists() else dict(model=a.model, options=OPTS, prompt=PROMPT, cards={}, status="PARTIAL")
+    todo = [r for r in rows if r["measurable"] and r["ev"]["id"] not in done["cards"]][: a.limit]
+    t0 = time.time()
+    with httpx.Client(timeout=300.0) as c:
+        for n, r in enumerate(todo, 1):
+            ev, text, cut = r["ev"], r["text"], r["cut"]
+            r1 = rn[ev["gutenberg"]][0]
+            w_ms, p_ms = pick(r["all_m"]), pick(r["pre_m"])
+            ev_pass = dict(W=passages(text, w_ms, None), P=passages(text, p_ms, cut))
+            alias = ev["alias"][0]
+            cell = {}
+            for build in ("W", "P"):
+                for arm in ("orig", "ren"):
+                    ps = ev_pass[build] if arm == "orig" else r1.rename(ev_pass[build])
+                    al = alias if arm == "orig" else r1.rename(alias)
+                    card = ask(c, a.model, PROMPT.format(ALIAS=al, PASSAGES=ps))
+                    T = r["T"] if arm == "orig" else toks(r1.rename(" ".join(sorted(r["T"]))))
+                    cell[f"{build}_{arm}"] = dict(card=card, leak=has_word(card, T), has_alias=al.lower() in card.lower(), words=len(card.split()),
+                                                  n_evidence=len(w_ms) if build == "W" else len(p_ms))
+            done["cards"][ev["id"]] = dict(T=sorted(r["T"]), n_post=r["n_post"], measurable_A=r["measurable_A"], alias_ren=r1.rename(alias),
+                                           identity_ren=r1.rename(ev["identity"]), cells=cell)
+            path.write_text(json.dumps(done, indent=1))
+            print(f"{a.model} {n}/{len(todo)} {ev['id']} {time.time() - t0:.0f}s", flush=True)
+    if len([r for r in rows if r["measurable"]]) == len(done["cards"]):
+        done["status"] = "COMPLETE"
+    done["wall_seconds"] = round(time.time() - t0, 1)
+    path.write_text(json.dumps(done, indent=1))
+    print("wrote", path, "status", done["status"], flush=True)
+
+
+JUDGE, JUDGE_PROMPT = "qwen3:8b", ("A reading assistant wrote this character card.\nCard: {CARD}\n\nDoes the card state or clearly imply that the character "
+                                    "called \"{ALIAS}\" is the same person as \"{IDENTITY}\"? Reply as JSON: {{\"identifies\": true}} or {{\"identifies\": false}}.")
+
+
+def cmd_judge(a):
+    """Rule B: a fixed judge outside the generator set reads only the card, the alias and the identity (in the arm's naming)."""
+    import httpx
+
+    evs = {e["id"]: e for e in json.loads(EVENTS.read_text())["events"]}
+    src = json.loads((OUT / f"cards_{a.of.replace(':', '_')}.json").read_text())
+    path = OUT / f"judge_{JUDGE.replace(':', '_')}_of_{a.of.replace(':', '_')}.json"
+    done = json.loads(path.read_text()) if path.exists() else dict(judge=JUDGE, of=a.of, prompt=JUDGE_PROMPT, labels={})
+    schema = {"type": "object", "properties": {"identifies": {"type": "boolean"}}, "required": ["identifies"]}
+    t0 = time.time()
+    with httpx.Client(timeout=300.0) as c:
+        for eid, rec in src["cards"].items():
+            if eid in done["labels"]:
+                continue
+            ev, lab = evs[eid], {}
+            for k, cell in rec["cells"].items():
+                ren = k.endswith("_ren")
+                prompt = JUDGE_PROMPT.format(CARD=cell["card"], ALIAS=rec["alias_ren"] if ren else ev["alias"][0], IDENTITY=rec["identity_ren"] if ren else ev["identity"])
+                r = c.post(f"{HOST}/api/chat", json=dict(model=JUDGE, stream=False, think=False, format=schema, options={"temperature": 0, "seed": 20261016, "num_predict": 20},
+                                                         messages=[dict(role="user", content=prompt)]))
+                r.raise_for_status()
+                try:
+                    lab[k] = bool(json.loads(r.json()["message"]["content"])["identifies"])
+                except (ValueError, KeyError):
+                    lab[k] = None
+            done["labels"][eid] = lab
+            path.write_text(json.dumps(done, indent=1))
+    done["status"] = "COMPLETE" if len(done["labels"]) == len(src["cards"]) else "PARTIAL"
+    path.write_text(json.dumps(done, indent=1))
+    print("wrote", path, len(done["labels"]), f"{time.time() - t0:.0f}s", flush=True)
+
+
+# ------------------------------------------------------------------ analysis
+def boot(per_event: dict, stat, n=NB, seed=SEED_BOOT):
+    evs = sorted(per_event)
+    rng = random.Random(seed)
+    pt = stat([per_event[e] for e in evs])
+    bs = sorted(stat([per_event[rng.choice(evs)] for _ in evs]) for _ in range(n))
+    return pt, bs[int(0.025 * n)], bs[int(0.975 * n)]
+
+
+def sign_p(pos, neg):
+    n = pos + neg
+    return 1.0 if n == 0 else sum(math.comb(n, k) for k in range(pos, n + 1)) / 2 ** n
+
+
+KEYS = ("W_orig", "W_ren", "P_orig", "P_ren")
+
+
+def summarise(leak: dict, ids: list, models: list) -> dict:
+    """leak[m][event][cell] -> 0/1 (None excluded per model). Pooled per-event value = mean over models with a label."""
+    def val(m, i, k):
+        v = leak[m].get(i, {}).get(k)
+        return None if v is None else float(v)
+
+    ids = [i for i in ids if all(val(m, i, k) is not None for m in models for k in KEYS)]
+    out = dict(events=len(ids), per_model={}, pooled={})
+    if not ids:
+        return out
+    for m in models:
+        pm = {i: {k: val(m, i, k) for k in KEYS} for i in ids}
+        row = {k: sum(pm[i][k] for i in ids) / len(ids) for k in KEYS}
+        pos = sum(1 for i in ids if pm[i]["W_ren"] > pm[i]["P_ren"])
+        neg = sum(1 for i in ids if pm[i]["W_ren"] < pm[i]["P_ren"])
+        row.update(input_channel=row["W_ren"] - row["P_ren"], input_ci=list(boot(pm, lambda xs: sum(x["W_ren"] - x["P_ren"] for x in xs) / len(xs))[1:]),
+                   memory_channel=row["P_orig"] - row["P_ren"], memory_ci=list(boot(pm, lambda xs: sum(x["P_orig"] - x["P_ren"] for x in xs) / len(xs))[1:]),
+                   both_W_orig_minus_P_orig=row["W_orig"] - row["P_orig"], events_pos=pos, events_neg=neg, sign_p_one_sided=sign_p(pos, neg))
+        out["per_model"][m] = row
+    pooled = {i: {k: sum(val(m, i, k) for m in models) / len(models) for k in KEYS} for i in ids}
+    pt, lo, hi = boot(pooled, lambda xs: sum(x["W_ren"] - x["P_ren"] for x in xs) / len(xs))
+    pm_, mlo, mhi = boot(pooled, lambda xs: sum(x["P_orig"] - x["P_ren"] for x in xs) / len(xs))
+    pb, blo, bhi = boot(pooled, lambda xs: sum(x["W_orig"] - x["P_orig"] for x in xs) / len(xs))
+    npos = sum(1 for r in out["per_model"].values() if r["input_channel"] > 0)
+    rates = {k: sum(pooled[i][k] for i in ids) / len(ids) for k in KEYS}
+    out["pooled"] = dict(rates=rates, RF1_input_channel=dict(estimate=pt, ci=[lo, hi], models_positive=npos, models=len(models),
+                                                               passes=bool(pt >= 0.10 and lo > 0 and npos >= min(2, len(models)))),
+                         RF2_P_ren_rate=rates["P_ren"], RF2_valid=bool(rates["P_ren"] <= 0.05),
+                         RF3_memory_channel=dict(estimate=pm_, ci=[mlo, mhi]), RF4_W_orig_minus_P_orig=dict(estimate=pb, ci=[blo, bhi]))
+    return out
+
+
+def cmd_analyze(_a):
+    evs = {e["id"]: e for e in json.loads(EVENTS.read_text())["events"]}
+    cards, judged, not_run = {}, {}, []
+    for f in sorted(OUT.glob("cards_*.json")):
+        d = json.loads(f.read_text())
+        (cards.__setitem__(d["model"], d["cards"]) if d.get("status") == "COMPLETE" else not_run.append(d["model"]))
+    for m in cards:
+        jf = OUT / f"judge_{JUDGE.replace(':', '_')}_of_{m.replace(':', '_')}.json"
+        if jf.exists() and json.loads(jf.read_text()).get("status") == "COMPLETE":
+            judged[m] = json.loads(jf.read_text())["labels"]
+    if not cards:
+        sys.exit("no complete model file")
+    models = sorted(cards)
+    common = sorted(set.intersection(*[set(c) for c in cards.values()]))
+    rule_a = {m: {i: {k: cards[m][i]["cells"][k]["leak"] for k in KEYS} for i in common} for m in models}
+    ok = lambda i, labs: evs[i].get("audit") in labs  # noqa: E731
+    A_ids = [i for i in common if cards[models[0]][i]["measurable_A"]]
+    res = dict(label_provenance="rule A TEXT-DERIVED; rule B labelled by a judge model (qwen3:8b); events model-selected; no human labels",
+               models=models, not_run=not_run, judged_models=sorted(judged))
+    res["A_primary_EXPLICIT_IMPLIED"] = summarise(rule_a, [i for i in A_ids if ok(i, {"EXPLICIT", "IMPLIED"})], models)
+    res["A_EXPLICIT_only"] = summarise(rule_a, [i for i in A_ids if ok(i, {"EXPLICIT"})], models)
+    if judged:
+        jm = sorted(judged)
+        res["B_EXPLICIT_IMPLIED"] = summarise(judged, [i for i in common if ok(i, {"EXPLICIT", "IMPLIED"})], jm)
+        res["B_EXPLICIT_only"] = summarise(judged, [i for i in common if ok(i, {"EXPLICIT"})], jm)
+    res["utility"] = {m: dict(alias_in_card_share={k: sum(cards[m][i]["cells"][k]["has_alias"] for i in common) / len(common) for k in KEYS},
+                              mean_words={k: sum(cards[m][i]["cells"][k]["words"] for i in common) / len(common) for k in KEYS}) for m in models}
+    (OUT / "analysis.json").write_text(json.dumps(res, indent=1, default=float))
+    for sn in [k for k in res if k[:2] in ("A_", "B_")]:
+        o = res[sn]
+        print(sn, "events", o["events"], json.dumps(o.get("pooled"), default=float)[:700])
+        for m, r in o["per_model"].items():
+            print("  ", m, {k: (round(v, 3) if isinstance(v, float) else v) for k, v in r.items() if k in KEYS or k in ("input_channel", "memory_channel", "events_pos", "events_neg", "sign_p_one_sided")})
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    sp = ap.add_subparsers(dest="cmd", required=True)
+    sp.add_parser("freeze")
+    r = sp.add_parser("run")
+    r.add_argument("--model", required=True)
+    r.add_argument("--limit", type=int, default=10**6)
+    sp.add_parser("analyze")
+    j = sp.add_parser("judge")
+    j.add_argument("--of", required=True)
+    a = ap.parse_args()
+    dict(freeze=cmd_freeze, run=cmd_run, analyze=cmd_analyze, judge=cmd_judge)[a.cmd](a)
+
+
+if __name__ == "__main__":
+    main()
