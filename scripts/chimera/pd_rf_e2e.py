@@ -507,6 +507,46 @@ def robust(cards, judged, A_ids, common, evs, models):
     return out
 
 
+def extra(cards, judged, A_ids, common, evs, models):
+    """Addendum 11: versioned card at earlier positions and a second prompt, against the main W_ren."""
+    ex, exj = {}, {}
+    for m in models:
+        f = OUT / f"extra_{m.replace(':', '_')}.json"
+        if f.exists() and json.loads(f.read_text()).get("status") == "COMPLETE":
+            ex[m] = json.loads(f.read_text())["cards"]
+        jf = OUT / f"judge_{JUDGE.replace(':', '_')}_of_{m.replace(':', '_')}_extra.json"
+        if jf.exists() and json.loads(jf.read_text()).get("status") == "COMPLETE":
+            exj[m] = json.loads(jf.read_text())["labels"]
+    if not ex:
+        return None
+    labs = {"EXPLICIT", "IMPLIED"}
+    out = dict(models=sorted(ex))
+    ks = ("W_ren", "P_ren", "P_ren_pos50", "P_ren_pos75", "W_ren_p2", "P_ren_p2")
+    for rule in ("A", "B"):
+        ms = sorted(ex) if rule == "A" else sorted(set(exj) & set(judged))
+        if not ms:
+            continue
+        ids = [i for i in (A_ids if rule == "A" else common) if evs[i]["audit"] in labs and all(i in ex[m] for m in ms)]
+
+        def g(m, i, k):
+            if rule == "A":
+                return float((cards[m][i]["cells"].get(k) or ex[m][i]["cells"][k])["leak"])
+            v = judged[m][i].get(k) if k in KEYS else exj[m].get(i, {}).get(k)
+            return None if v is None else float(v)
+
+        ids = [i for i in ids if all(g(m, i, k) is not None for m in ms for k in ks)]
+        if not ids:
+            continue
+        pe = {i: {k: sum(g(m, i, k) for m in ms) / len(ms) for k in ks} for i in ids}
+        rates = {k: sum(pe[i][k] for i in ids) / len(ids) for k in ks}
+        con = {}
+        for name, x, y in (("W_minus_P_pos50", "W_ren", "P_ren_pos50"), ("W_minus_P_pos75", "W_ren", "P_ren_pos75"), ("prompt2_input_channel", "W_ren_p2", "P_ren_p2")):
+            pt, lo, hi = boot(pe, lambda xs, x=x, y=y: sum(v[x] - v[y] for v in xs) / len(xs))
+            con[name] = dict(estimate=pt, ci=[lo, hi])
+        out[f"rule{rule}"] = dict(events=len(ids), models=ms, rates=rates, contrasts=con, robust_to_prompt=bool(con["prompt2_input_channel"]["ci"][0] > 0))
+    return out
+
+
 def cmd_analyze(_a):
     small = analyse(lambda m: m not in LARGE)
     large = analyse(lambda m: m in LARGE, quiet=False)
@@ -558,6 +598,7 @@ def analyse(keep, quiet=False):
             pe = p1 * p2 + (1 - p1) * (1 - p2)
             res["judge_agreement"] = dict(labels=n, identical=po, kappa=(po - pe) / (1 - pe) if pe < 1 else None, rate_judge1=p1, rate_judge2=p2)
     res["robust"] = robust(cards, judged, A_ids, common, evs, models)
+    res["extra"] = extra(cards, judged, A_ids, common, evs, models)
     res["utility"] = {m: dict(alias_in_card_share={k: sum(cards[m][i]["cells"][k]["has_alias"] for i in common) / len(common) for k in KEYS},
                               mean_words={k: sum(cards[m][i]["cells"][k]["words"] for i in common) / len(common) for k in KEYS}) for m in models}
     res["fixes"] = fixes(cards, judged, A_ids, common, evs, models, res)
