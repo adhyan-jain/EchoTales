@@ -94,8 +94,8 @@ bg = s.shapes.add_shape(1, 0, 0, prs.slide_width, prs.slide_height)
 bg.fill.solid()
 bg.fill.fore_color.rgb = PALE
 bg.line.fill.background()
-text(s, 0.8, 1.2, 11.7, 1.2, "Do Language Models Peek Ahead?", size=44, bold=True)
-text(s, 0.8, 2.6, 11.7, 1.6, "Measuring name-keyed memory leakage when LLMs read serialised fiction, on a reader-scoped narrative knowledge graph (EchoTales)", size=24, color=BLUE)
+text(s, 0.8, 1.2, 11.7, 1.2, "Do Reading Assistants Peek Ahead?", size=44, bold=True)
+text(s, 0.8, 2.6, 11.7, 1.6, "Reader-faithfulness: detecting and fixing look-ahead leaks from the pipeline and from model memory (EchoTales)", size=24, color=BLUE)
 text(s, 0.8, 4.7, 11.7, 1.6, ["Adhyan Jain (24BCI0111)   Atharva Sheerh Pandey (24BCI0069)   Aryan Gahlot (24BCI0033)", "BCSE306L Artificial Intelligence | Slot C1 + TC1 | VIT | 16 October 2026"], size=16, color=GREY)
 s.notes_slide.notes_text_frame.text = ("Say: our project asks one question. When a language model helps a reader who is only partway through a book, does it quietly use what it remembers about the rest of the book? "
                                        "We measure it, test why it happens, and audit our own knowledge-graph system for the same fault. About ten minutes: problem, method, three results, demo, honest limits, plan.")

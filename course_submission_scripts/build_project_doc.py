@@ -191,6 +191,9 @@ ftr.add_run("AI Assignment\t\tC1 + TC1\t\tPage ").font.size = Pt(9)
 add_field(ftr, "PAGE").font.size = Pt(9)
 
 # ---------------------------------------------------------------- [1] title page
+lp = doc.add_paragraph()
+lp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+lp.add_run().add_picture(str(FIG / "vit_logo.png"), width=Cm(7.5))  # official logo (Wikimedia render of the VIT logo SVG)
 for _ in range(2):
     doc.add_paragraph()
 P("**Vellore Institute of Technology**", align="c", size=16)
@@ -199,7 +202,7 @@ P("Course Code and Name: **BCSE306L  Artificial Intelligence**     Slot: **C1 + 
 for _ in range(2):
     doc.add_paragraph()
 P("**Project Title**", align="c", size=11, after=2)
-P("**Do Language Models Peek Ahead? Measuring Name-Keyed Memory Leakage When LLMs Read Serialised Fiction, on a Reader-Scoped Narrative Knowledge Graph (EchoTales)**", align="c", size=17)
+P("**Do Reading Assistants Peek Ahead? Reader-Faithfulness: Detecting and Fixing Look-Ahead Leaks from the Pipeline and from Model Memory (EchoTales)**", align="c", size=17)
 for _ in range(2):
     doc.add_paragraph()
 TABLE(["Member", "Registration Number"], [["Adhyan Jain", "24BCI0111"], ["Atharva Sheerh Pandey", "24BCI0069"], ["Aryan Gahlot", "24BCI0033"]], widths=[8, 6], size=11)
