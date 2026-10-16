@@ -339,7 +339,7 @@ We stated one contract for position-aware reading assistants, reader-faithfulnes
 | Channel 1 confirmatory numbers | `data/eval/chimera/confirm/{main,e2}/analysis.json`, `olmo_corpus_check.json`; pre-registrations `docs/research/preregistrations/PREREG_PD_CONFIRM_v2_L40S.md`, addenda 1 to 5 and `PD_CONFIRM_deviations.md`; tables by `scripts/chimera/gen_ch1_tables.py` |
 | Channel 1 summary table | `docs/research/NOVELTY_REPORT/NOVELTY_ONE_PAGER.md` |
 | Paid spend (Channel 2) | `gpt-5.6-luna`, $0.1140 in total ($0.0524 strict labelling, $0.0006 smoke test, $0.0325 permissive re-read, $0.0285 English-original labels); everything else CPU or local GPU at $0 |
-| Channel 1 spend | `docs/research/NOVELTY_REPORT/SPEND_LEDGER.md` RunPod L40S pod estimated at {{SPEND}} USD by uptime at 1.13 USD per hour (an estimate, not the billing page), plus 0.43 USD of earlier OpenAI use; Claude subscription calls are quota, not dollars |
+| Channel 1 spend | `docs/research/NOVELTY_REPORT/SPEND_LEDGER.md` RunPod L40S pod estimated at 3.9 (as of 19:11 IST; the pod was still billing) USD by uptime at 1.13 USD per hour (an estimate, not the billing page), plus 0.43 USD of earlier OpenAI use; Claude subscription calls are quota, not dollars |
 
 ## Appendix B. Status of placeholders
 
