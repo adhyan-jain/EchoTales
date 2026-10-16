@@ -18,7 +18,7 @@ jest.mock('../api', () => ({
 // eslint-disable-next-line import/first
 import { api } from '../api';
 // eslint-disable-next-line import/first
-import ResearchPage, { excerptAroundMarker } from '../pages/ResearchPage';
+import ResearchPage, { excerptAroundMarker, Channel2Card } from '../pages/ResearchPage';
 
 const cell = (gap, lo, hi, events = 10) => ({ gap, lo, hi, events, items: null });
 const SUMMARY = {
@@ -186,3 +186,32 @@ test('excerptAroundMarker keeps the marked sentence area and trims the rest', ()
   expect(e.post.length).toBeLessThan(120);
   expect(excerptAroundMarker('no marker here').mark).toBe('');
 });
+
+test('Channel 2 card displays prefix-faithfulness headline numbers from REPORT.md', async () => {
+  mount();
+  const card = await screen.findByTestId('channel-2-card');
+  expect(card).toBeInTheDocument();
+  expect(within(card).getByText(/Channel 2: Derivation Look-Ahead/i)).toBeInTheDocument();
+  expect(within(card).getByText('6.0%')).toBeInTheDocument();
+  expect(within(card).getByText('2.6%')).toBeInTheDocument();
+  expect(within(card).getByText('0')).toBeInTheDocument();
+  expect(within(card).getByText('97%')).toBeInTheDocument();
+  expect(within(card).getByText(/41 of 685 cuts/i)).toBeInTheDocument();
+  expect(within(card).getByText(/18 of 685 cuts/i)).toBeInTheDocument();
+  expect(within(card).getByText(/Horizon-Versioned Repair/i)).toBeInTheDocument();
+  expect(within(card).getByText(/claude\/prefix-faithfulness · REPORT\.md/i)).toBeInTheDocument();
+});
+
+test('Channel2Card renders standalone with read-only badge and headline metrics', () => {
+  render(<Channel2Card />);
+  expect(screen.getByTestId('channel-2-card')).toBeInTheDocument();
+  expect(screen.getByText('Status Quo Divergence')).toBeInTheDocument();
+  expect(screen.getByText('6.0%')).toBeInTheDocument();
+  expect(screen.getByText('Premature Disclosures')).toBeInTheDocument();
+  expect(screen.getByText('2.6%')).toBeInTheDocument();
+  expect(screen.getByText('Horizon-Versioned Repair')).toBeInTheDocument();
+  expect(screen.getByText('0')).toBeInTheDocument();
+  expect(screen.getByText('Anchored Cue Recovery')).toBeInTheDocument();
+  expect(screen.getByText('97%')).toBeInTheDocument();
+});
+

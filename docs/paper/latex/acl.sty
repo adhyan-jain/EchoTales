@@ -1,0 +1,90 @@
+% acl.sty - ACL template style file
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{acl}[2023/01/01 ACL style package]
+
+\RequirePackage{times}
+\RequirePackage{latexsym}
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{graphicx}
+\RequirePackage{booktabs}
+\RequirePackage{url}
+\RequirePackage{microtype}
+\RequirePackage{xcolor}
+\RequirePackage{natbib}
+
+% Physical page layout
+\setlength\paperheight{11in}
+\setlength\paperwidth{8.5in}
+
+\setlength\topmargin{-0.25in}
+\setlength\headheight{0in}
+\setlength\headsep{0in}
+\setlength\textheight{9.0in}
+\setlength\textwidth{6.5in}
+\setlength\oddsidemargin{0in}
+\setlength\evensidemargin{0in}
+\setlength\columnsep{0.25in}
+\newlength\titlebox
+\setlength\titlebox{2.0in}
+
+\flushbottom
+\twocolumn
+\sloppy
+
+% Fonts and spacing
+\newcommand{\fontsizefont}[2]{\fontsize{#1}{#2}\selectfont}
+
+\def\maketitle{\par
+ \begingroup
+   \def\thefootnote{\fnsymbol{footnote}}
+   \def\@makefnmark{\hbox to 0pt{$^{\@thefnmark}$\hss}}
+   \twocolumn[\@maketitle] \@thanks
+ \endgroup
+ \setcounter{footnote}{0}
+ \let\maketitle\relax \let\@maketitle\relax
+ \gdef\@thanks{}\gdef\@author{}\gdef\@title{}\let\thanks\relax}
+
+\def\@maketitle{\vbox to \titlebox{\hsize\textwidth
+ \linewidth\hsize \vskip 0.125in \centering
+ {\Large\bf \@title \par} \vskip 0.2in
+ {\def\and{\unskip\enspace{\rm and}\enspace}%
+  \def\And{\end{tabular}\hss \egroup \hskip 1in plus 2fil 
+           \hbox to 0pt\bgroup\hss \begin{tabular}[t]{c}\bf}%
+  \def\AND{\end{tabular}\hss\egroup \hfil\hfil\egroup
+          \vskip 0.25in plus 1fil
+           \hbox to \linewidth\bgroup\large \hfil\hfil
+             \hbox to 0pt\bgroup\hss \begin{tabular}[t]{c}\bf}
+  \hbox to \linewidth\bgroup\large \hfil\hfil
+    \hbox to 0pt\bgroup\hss \begin{tabular}[t]{c}\bf\@author
+                            \end{tabular}\hss\egroup
+    \hfil\hfil\egroup}
+  \vfil}}
+
+\renewenvironment{abstract}%
+  {\centerline{\large\bf Abstract}%
+   \begin{list}{}%
+     {\setlength{\rightmargin}{0.25in}%
+      \setlength{\leftmargin}{0.25in}}%
+     \item[]\ignorespaces\small}%
+  {\unskip\end{list}}
+
+% Section format
+\def\section{\@startsection {section}{1}{\z@}%
+  {-2.0ex plus -0.5ex minus -0.2ex}{1.5ex plus 0.3ex minus 0.2ex}%
+  {\large\bf\raggedright}}
+\def\subsection{\@startsection{subsection}{2}{\z@}%
+  {-1.5ex plus -0.4ex minus -0.2ex}{1.0ex plus 0.2ex minus 0.1ex}%
+  {\normalsize\bf\raggedright}}
+\def\subsubsection{\@startsection{subsubsection}{3}{\z@}%
+  {-1.2ex plus -0.3ex minus -0.1ex}{0.8ex plus 0.2ex minus 0.1ex}%
+  {\normalsize\bf\raggedright}}
+
+% References
+\bibpunct{(}{)}{;}{a}{,}{,}
+
+% Hyperref setup
+\definecolor{darkblue}{rgb}{0,0.08,0.45}
+\RequirePackage[colorlinks=true,linkcolor=darkblue,citecolor=darkblue,filecolor=darkblue,urlcolor=darkblue]{hyperref}
+
+\endinput
