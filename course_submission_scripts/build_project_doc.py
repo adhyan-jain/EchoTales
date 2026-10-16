@@ -113,7 +113,7 @@ def H(num, text):
     p = doc.add_paragraph()
     p.paragraph_format.space_before, p.paragraph_format.space_after = Pt(10), Pt(4)
     p.paragraph_format.keep_with_next = True
-    r = p.add_run(f"[{num}]  {text}")
+    r = p.add_run(text)  # template numbering is not shown in the submitted document
     r.bold, r.font.size, r.font.color.rgb = True, Pt(12.5), BLUE
     return p
 
@@ -205,8 +205,8 @@ P("**Project Title**", align="c", size=11, after=2)
 P("**Do Reading Assistants Peek Ahead? Reader-Faithfulness: Detecting and Fixing Look-Ahead Leaks from the Pipeline and from Model Memory (EchoTales)**", align="c", size=17)
 for _ in range(2):
     doc.add_paragraph()
-TABLE(["Member", "Registration Number"], [["Adhyan Jain", "24BCI0111"], ["Atharva Sheerh Pandey", "24BCI0069"], ["Aryan Gahlot", "24BCI0033"]], widths=[8, 6], size=11)
-P("Submission: 16 October 2026   |   Repository: EchoTales (branch chimera/system-adapters)", align="c", size=9)
+TABLE(["Member", "Registration Number"], [["Adhyan Jain", "24BCI0111"], ["Atharva Sheersh Pandey", "24BCI0069"], ["Aryan Gahlot", "24BCI0033"]], widths=[8, 6], size=11)
+P("Submission: 16 October 2026", align="c", size=9)
 doc.add_page_break()
 
 # ---------------------------------------------------------------- [2] abstract
@@ -225,15 +225,16 @@ abstract = (
 )
 nwords = len(re.sub(r"\*\*", "", abstract).split())
 assert nwords <= 250, nwords
-P(abstract, align="j")
-P(f"*({nwords} words)*", size=8, after=2)
+for part in re.split(r"(?=\*\*(?:Background|Objective|Methods|Results|Conclusions):\*\*)", abstract):
+    if part.strip():
+        P(part.strip(), align="j", after=3)
 
 # ---------------------------------------------------------------- [3] introduction
 H(3, "Introduction")
 P("**Background and problem.** Web novels run to hundreds of chapters and are now read, summarised and adapted with the help of language models. Every such task has an implicit reader position: at chapter c the system may use only what the first c chapters say. Long serials make this hard because identity is concealed and revealed: \"the masked guest\" or \"the clan head\" appears long before the text says who that is. Standard tooling gives one omniscient answer per character [11, 10]. We call a system *reader-faithful* if its output at chapter c depends only on chapters up to c. Two things can break that. A model may *remember the book*, so truncating its input does not stop it naming the hidden person (parametric memory) [1, 3]. A pipeline stage may *derive* a property at chapter c from evidence in later chapters (derivation look-ahead). Figure 6 shows both.", align="j")
 P("**Objective and methodology.** The project measures the first violation and audits the second. For memory, we use a renaming intervention in the tradition of [2]: the same passage is shown with original names and with consistently replaced names, and the drop in *premature naming* (answering the true identity before the book reveals it) is the leakage gap. Events come from public-domain novels (Project Gutenberg), and the oracle is the book's own explicit reveal sentence, located by exact text search, so no model or person has to judge the truth. EchoTales, our bitemporal narrative knowledge graph, provides the observer-scoped query state_of(target, timeline, position, observer) and is the system whose reader-faithfulness we audit by truncate-and-rebuild testing.", align="j")
-P("**Method discipline.** The study was run as a sequence of pre-registered versions with hashed manifests. Along the way we found and corrected a statistical error (items inside one event are not independent, so intervals now resample events), added a cue-preserving control because renaming to gibberish also removes name cues, and recorded a failed replication. A final pre-registered confirmatory run with open-weight models on a rented GPU (section 12) tested the effect on mostly obscure books and did not detect it; that null is reported with its limits.", align="j")
-P(f"**Results and analysis.** For the reference model the leakage gap is {pts(lu_all['gap_A_minus_B'])} points over 38 events, and it appears in all three datasets. Four local 7-9B models show {pts(vl_all['gap_A_minus_B'])} pooled but zero on the seven least-known books. Restoring name cues repairs plain-control accuracy but does not restore premature naming, which points to name-keyed memory rather than lost cues. The gap rises with how well the book is recognised. The graph audit finds the resolver exactly prefix-causal and one derived stage, personas, looking ahead. Section 12 gives the evidence, and section 7 states what was and was not done by whom.", align="j")
+P("**Method discipline.** The study was run as a sequence of pre-registered versions with hashed manifests. Along the way we found and corrected a statistical error (items inside one event are not independent, so intervals now resample events), added a cue-preserving control because renaming to gibberish also removes name cues, and recorded a failed replication. A final pre-registered confirmatory run with open-weight models on a rented GPU (see Result Analysis and Discussion) tested the effect on mostly obscure books and did not detect it; that null is reported with its limits.", align="j")
+P(f"**Results and analysis.** For the reference model the leakage gap is {pts(lu_all['gap_A_minus_B'])} points over 38 events, and it appears in all three datasets. Four local 7-9B models show {pts(vl_all['gap_A_minus_B'])} pooled but zero on the seven least-known books. Restoring name cues repairs plain-control accuracy but does not restore premature naming, which points to name-keyed memory rather than lost cues. The gap rises with how well the book is recognised. The graph audit finds the resolver exactly prefix-causal and one derived stage, personas, looking ahead. The Result Analysis and Discussion section gives the evidence, and the Individual Contributions section states what was and was not done by whom.", align="j")
 
 # ---------------------------------------------------------------- [4] related work
 H(4, "Background / Related Work")
@@ -309,7 +310,7 @@ ind = [
                                "• Designed and executed the truncate-and-rebuild prefix-causality audit framework across 14 cuts and 28,165 mention pairs.\n"
                                "• Audited the persona derivation stage, discovered evidence horizon look-ahead leakage (8.0% divergence), and implemented the horizon-versioned revision repair.\n"
                                "• Led end-to-end pipeline integration, database schema design, and regression test suite execution (1,377 tests passing)."],
-    ["Atharva Sheerh Pandey\n24BCI0069", "**Experimental Methodology, Event Mining & Parametric Memory Probing (Channel 1)**\n"
+    ["Atharva Sheersh Pandey\n24BCI0069", "**Experimental Methodology, Event Mining & Parametric Memory Probing (Channel 1)**\n"
                                        "• Formulated the alias-reveal task, reveal-cue extraction patterns, and candidate set construction from Project Gutenberg texts.\n"
                                        "• Built the text-derived oracle mining pipeline and cutoff sentence verifier across 38 public-domain novels.\n"
                                        "• Implemented the multi-arm renaming controls: original names (Arm A), letter ciphers (Arms B & B2), and cue-preserving gender-matched pseudonyms (Arm B3).\n"
@@ -328,13 +329,13 @@ TABLE(["Member", "Contribution (implementation and documentation)"], ind, widths
 H(8, "Tools and Technologies Used")
 TABLE(["Category", "Item", "Use"], [
     ["Hardware", "Laptop, NVIDIA RTX 4060 8 GB GPU; about 15 GiB RAM", "All local model runs, analysis and the demo"],
-    ["Hardware (rented)", "One RunPod L40S 48 GB pod, about USD 1.13 per hour", "Confirmatory run on 24-32B open models (cost in section 12)"],
+    ["Hardware (rented)", "One RunPod L40S 48 GB pod, about USD 1.13 per hour", "Confirmatory run on 24-32B open models (cost in the Result Analysis and Discussion section)"],
     ["Language and data", "Python 3.12 (uv), SQLite with an explicit bitemporal schema", "EchoTales graph, resolver, evaluation harness"],
     ["Models run so far", "qwen2.5:7b, llama3.1:8b, mistral:7b-instruct, gemma2:9b, phi4-mini (ollama); gpt-5.6-luna (API reference model)", "Exploratory and pre-registered experiments (PD v2 to v7)"],
     ["Models in the confirmatory run", "Qwen2.5-32B (AWQ), OLMo-2-32B (fp8, public training data), Mistral-Small-3.2-24B (fp8); Claude Sonnet 5.5 (CLI, partial arm)", "Confirmatory run; vLLM on RunPod"],
     ["Analysis", "NumPy-free standard-library statistics (bootstrap, permutation, sign test), matplotlib, python-docx, python-pptx", "Results, figures, documents"],
     ["Quality", "pytest (1,377 tests), ruff, pre-registrations hashed with SHA-256", "Reproducibility"],
-    ["Interface", "React review interface and a stdlib HTTP API", "Research view for the demonstration (section 14)"],
+    ["Interface", "React review interface and a stdlib HTTP API", "Research view for the demonstration (see User Manual)"],
 ], widths=[3.2, 8.0, 5.6], size=8.5, caption="**Table 5.** Hardware and software.")
 
 # ---------------------------------------------------------------- [9] methodology
@@ -383,7 +384,7 @@ for m in ("gpt-5.6-luna", "gemma2:9b", "llama3.1:8b", "mistral:7b-instruct", "ph
     c2, c3, c6 = adv["pd_v2"]["per_model_cluster"][m], adv["pd_v3"]["per_model_cluster"][m], pooled["v6_per_model"][m]["cluster"]
     mrows.append([short[m], f"{pts(c2['pooled_gap'])} {ci(*c2['event_cluster_ci95'])}", f"{pts(c3['pooled_gap'])} {ci(*c3['event_cluster_ci95'])}", f"{pts(c6['gap_A_minus_B'])} {ci(*c6['ci'])}"])
 TABLE(["Model", "v2: 19 events", "v3: 12 fresh events", "v6: 7 fresh events"], mrows, widths=[3.8, 4.4, 4.4, 4.2], size=8.5, caption="**Table 7.** Leakage gap per model and dataset (points, 95% event-cluster interval).")
-P(f"**Reading Figure 1 and Table 7.** The reference model's gap is positive in all three datasets ({pts(lu_all['gap_A_minus_B'])} points over all 38 events, {lu_all['events_positive']} events positive against {lu_all['events_negative']} negative, sign test p = {lu_all['sign_p']:.0e}). The four valid local models together give {pts(vl_all['gap_A_minus_B'])} {ci(*vl_all['ci'])} over 38 events (sign test p = {vl_all['sign_p']:.2f}), but on the seven least-known books (v6) their pooled gap is {pts(pooled['valid_pool']['v6']['gap_A_minus_B'])} {ci(*pooled['valid_pool']['v6']['ci'])}: the pre-registered replication **failed** for the small models and held for the reference model. Section 12 therefore supports a narrower claim than 'models leak': the strongest model leaks clearly, and small models leak where they know the book.", align="j")
+P(f"**Reading Figure 1 and Table 7.** The reference model's gap is positive in all three datasets ({pts(lu_all['gap_A_minus_B'])} points over all 38 events, {lu_all['events_positive']} events positive against {lu_all['events_negative']} negative, sign test p = {lu_all['sign_p']:.0e}). The four valid local models together give {pts(vl_all['gap_A_minus_B'])} {ci(*vl_all['ci'])} over 38 events (sign test p = {vl_all['sign_p']:.2f}), but on the seven least-known books (v6) their pooled gap is {pts(pooled['valid_pool']['v6']['gap_A_minus_B'])} {ci(*pooled['valid_pool']['v6']['ci'])}: the pre-registered replication **failed** for the small models and held for the reference model. The Result Analysis and Discussion section therefore supports a narrower claim than 'models leak': the strongest model leaks clearly, and small models leak where they know the book.", align="j")
 FIGURE("fig_pooled.png", "**Figure 4.** Pooled over all 38 events with event-level inference.", width=11.5)
 FIGURE("fig_cue.png", "**Figure 2.** (a) Plain-control accuracy under original names (A), the letter cipher (B) and cue-preserving pseudonyms (B3); (b) leakage gap against the cipher and against pseudonyms.", width=16.0)
 crow = []
@@ -408,7 +409,7 @@ TABLE(["Run", "Calls", "Local 7-9B models (minutes per model)", "Reference API m
     ["PD v5, cue-preserving arm", "533", "4 to 9 (mistral 4.3, phi4 4.9, qwen 6.5, llama 6.6, gemma2 9.0)", "9.3 min; USD 0.059"],
     ["PD v6", "538", "4 to 9 (qwen 6.0, llama 6.0, mistral 4.2, phi4 5.6, gemma2 8.7)", "9.4 min; USD 0.057"],
     ["PD v7 (local only)", "525", "4 to 7 (qwen 4.9, llama 5.0, mistral 4.1, phi4 4.6, gemma2 7.0)", "cancelled"],
-    ["Live probe in the demo (three arms, one item)", "3", "a few seconds on an 8 GB GPU (measured in the demo, section 14)", "-"],
+    ["Live probe in the demo (three arms, one item)", "3", "a few seconds on an 8 GB GPU (measured in the demo; see the User Manual)", "-"],
 ], widths=[4.2, 1.5, 7.6, 3.5], size=8, caption="**Table 10.** Wall-clock times from the run logs.")
 SH("Confirmatory run (pre-registered, 68 events from 65 books)")
 P("Events were mined by one open model with frozen cue rules, verified by exact text search and audited by a second open model; 53 events are in the test split and the primary set is the 32 test events the audit marked explicit (25 low-fame, 6 mid-fame, 1 high-fame books). Three open models were served on one rented L40S GPU at temperature 0; each answered 2,220 questions. A Claude Sonnet 5.5 arm was started and stopped by the subscription limit after 211 of 1,218 answers; it is excluded from every pooled result. Fame is the Wikidata sitelink count of the book. Provenance: text-derived oracle, model-selected and model-audited events, no human labels.", align="j", size=9.5)
@@ -517,8 +518,8 @@ P("*Items [1] to [16] are the reviewed articles (2020 onward); [17] to [23] supp
 # ---------------------------------------------------------------- [16] appendix
 H(16, "Appendix")
 P("**a) Link to the presentation (PPT):** https://docs.google.com/presentation/d/1VUZjLmUKpjqdqs_lNCZzUkAgfXx_MQ68/edit?usp=sharing&ouid=114180309837634233617&rtpof=true&sd=true", size=9.5)
-P("**b) Link to the pre-recorded demonstration video:** https://drive.google.com/file/d/1GgZj58td5UjoiB-gqE5oECHq3qWrB2aJ/view?usp=sharing", size=9.5)
-P("**c) Link to the source files and the steps to execute:** https://github.com/adhyan-jain/EchoTales/tree/chimera/system-adapters (branch chimera/system-adapters). Steps are in docs/paper/project_doc/RUN_STEPS.md and summarised here:", size=9.5)
+P("**b) Link to the pre-recorded demonstration video:** https://drive.google.com/file/d/1GgZj58td5UjoiB-gqE5oECHq3qWrB2aJ/view?usp=drive_link", size=9.5)
+P("**c) Link to the source files and the steps to execute:** https://github.com/adhyan-jain/EchoTales. Steps are in docs/paper/project_doc/RUN_STEPS.md and summarised here:", size=9.5)
 BUL([
     "Clone, then `uv sync` (Python 3.12); `source .venv/bin/activate`.",
     "Re-download the public-domain texts into data/raw/pd_gutenberg/ (Project Gutenberg ids listed in docs/research/preregistrations/*events*.json).",
@@ -526,7 +527,6 @@ BUL([
     "Re-run a model: `python scripts/chimera/pd_v6.py run --texts data/raw/pd_gutenberg_v6 --model qwen2.5:7b` (about 6 minutes on an 8 GB GPU with ollama running; this overwrites that model's stored result file, so copy data/eval/chimera/pd_v6 first).",
     "Start the interface and open the Research page (FRONTEND_RESEARCH_VIEW.md).",
 ], size=9)
-P("**Provenance statement.** All numbers are text-derived, synthetic or system-internal. No human-annotated result is reported. Events were selected by a language model and checked by exact text search and a second language model, not by a person.", size=9, italic=True)
 
 OUTDIR.mkdir(parents=True, exist_ok=True)
 doc.save(OUTDIR / "Project_Document.docx")
