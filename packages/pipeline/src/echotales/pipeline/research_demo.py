@@ -47,7 +47,7 @@ ARM_LABELS = {"A": "original names", "B": "letter cipher", "B3": "cue-preserving
 #: Same decoding as the study (pd_v2.OPTS) so a live answer is comparable to a stored one.
 OLLAMA_OPTIONS = {"temperature": 0, "seed": 20261016, "num_predict": 24, "num_ctx": 2048}
 MIN_AVAILABLE_GIB = 1.0
-PROVENANCE = "Exploratory results; human labelling pending."
+PROVENANCE = "Text-derived oracle; model-selected events; no human labels."
 
 EVAL_DIR = Path("data") / "eval" / "chimera"
 FILES = {
@@ -59,6 +59,8 @@ FILES = {
     "validity": "pd_memory_free_validity.json",
     "adversarial": "pd_adversarial_checks.json",
     "plan": "confirm_runpod_plan.json",
+    "confirm": "confirm/main/analysis.json",
+    "rf_e2e": "rf_e2e/analysis.json",
 }
 ITEMS_REL = Path("data") / "scratch" / "demo" / "probe_items.json"
 TIMINGS_REL = Path("docs") / "paper" / "project_doc" / "figures" / "demo_timings.json"
@@ -302,6 +304,38 @@ def _timings(root: Path) -> dict | None:
         return None
 
 
+def _rf_stratum(a: dict | None, label: str) -> dict | None:
+    """One model stratum of RF-E2E (whole-volume vs versioned character card): pooled leak rates per rule and the input/memory channels."""
+    if not a:
+        return None
+    out = dict(label=label, models=a.get("models"), rules=[])
+    for key, rule in (("A_primary_EXPLICIT_IMPLIED", "Strict text rule"), ("B_EXPLICIT_IMPLIED", "Judge rule")):
+        q = (a.get(key) or {}).get("pooled") or {}
+        if not q:
+            continue
+        rt, rf1, mem = q.get("rates") or {}, q.get("RF1_input_channel") or {}, q.get("RF3_memory_channel") or {}
+        out["rules"].append(dict(rule=rule, events=(a.get(key) or {}).get("events"), whole_renamed=_r(rt.get("W_ren")), versioned_renamed=_r(rt.get("P_ren")),
+                                 whole_original=_r(rt.get("W_orig")), versioned_original=_r(rt.get("P_orig")), input_channel=_interval(rf1.get("estimate"), rf1.get("ci")),
+                                 memory_channel=_interval(mem.get("estimate"), mem.get("ci")), supported=rf1.get("passes")))
+    return out if out["rules"] else None
+
+
+def _rf(rf: dict | None) -> dict | None:
+    # RF-E2E (PREREG_RF_E2E_addendum_6 to 8): the Channel 2 look-ahead on a generic LLM character-card design, split from memory by renaming
+    if not rf:
+        return None
+    strata = [x for x in (_rf_stratum(rf, "7-8B local models"), _rf_stratum(rf.get("larger"), "24-32B open models")) if x]
+    return dict(strata=strata, not_run=rf.get("not_run"), source="data/eval/chimera/rf_e2e/analysis.json") if strata else None
+
+
+def _confirm(c: dict | None) -> dict | None:
+    if not c or "H1" not in c:
+        return None
+    h1, p1 = c["H1"], c.get("P1") or {}
+    return dict(events=c.get("n_events"), primary=c.get("n_primary_test"), models=c.get("models"), pooled_gap=_interval(h1.get("pooled"), h1.get("ci")),
+                fame_contrast=_interval(p1.get("difference"), p1.get("ci")), fame_p=_r(p1.get("p_one_sided")))
+
+
 def summary(root: Path | str | None = None) -> dict:
     """Everything the Research dashboard shows, from the stored result files only. A missing file leaves its section
     null and is listed under `missing`; it never fails the whole page."""
@@ -332,6 +366,8 @@ def summary(root: Path | str | None = None) -> dict:
         validity=_validity(data["validity"], pooled),
         design=_design(data["plan"]),
         verdicts=_verdicts(data["v3"], v5, data["v6"]),
+        rf_e2e=_rf(data["rf_e2e"]),
+        confirmatory=_confirm(data["confirm"]),
         timings=_timings(base),
         sources={k: str(EVAL_DIR / v) for k, v in FILES.items()},
         missing=missing,

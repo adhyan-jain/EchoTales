@@ -104,7 +104,7 @@ def test_items_keep_windows_and_candidates_but_not_prompts(root):
     assert "prompts" not in out["items"][0]
     assert out["items"][0]["candidates"]["B3"][0] == {"letter": "A", "name": "Dora"}
     assert out["models"] == list(R.ALLOWED_MODELS)
-    assert "human labelling pending" in out["provenance"]
+    assert "no human labels" in out["provenance"]
 
 
 def test_probe_rejects_unknown_item_and_bad_arms(root, monkeypatch):
@@ -227,7 +227,7 @@ def test_summary_survives_missing_files_and_lists_them(tmp_path):
     s = R.summary(tmp_path)
     assert s["gap_by_model"] is None and s["cue_preserving"] is None and s["dose_response"] is None
     assert len(s["missing"]) == len(R.FILES)
-    assert "human labelling pending" in s["provenance"]
+    assert "no human labels" in s["provenance"]
 
 
 @pytest.mark.skipif(not (REPO / R.EVAL_DIR / R.FILES["pooled"]).exists(), reason="stored study results not present")
