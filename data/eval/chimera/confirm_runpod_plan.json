@@ -1,0 +1,272 @@
+{
+ "core_150_events_7_items": {
+  "design": {
+   "events": 150,
+   "dev": 30,
+   "test": 120,
+   "items_per_event": 7,
+   "short_calls_by_block": {
+    "E1_dev_A_B_B3": 630,
+    "E1_test_A_B_B3": 2520,
+    "E1_B2_on_controls": 240,
+    "M2_probe_3_arms": 450,
+    "G2b_synthetic": 124,
+    "E4_open_name_O_P1_P2": 2520,
+    "E2_llm_authored_A_B_B3": 840
+   },
+   "short_calls": 7324,
+   "long_calls_E5": 360
+  },
+  "per_open_model_input_tokens": 5149703,
+  "per_open_model_output_tokens": 256347,
+  "3_open_models": {
+   "A100_80GB_community": {
+    "gpu": "A100 PCIe 80GB community",
+    "price_per_hour": 1.19,
+    "hours_per_model": {
+     "Llama-3.3-70B-AWQ": 2.01,
+     "Qwen2.5-72B-AWQ": 2.1,
+     "OLMo-2-32B-BF16": 1.24
+    },
+    "mining_audit_judge_hours": 1.19,
+    "calibration_hours": 0.4,
+    "total_hours": 6.93,
+    "expected_usd": 8.25,
+    "worst_2x_usd": 16.5
+   },
+   "H100_80GB_community_assuming_2.5x": {
+    "gpu": "H100 PCIe 80GB community",
+    "price_per_hour": 1.99,
+    "hours_per_model": {
+     "Llama-3.3-70B-AWQ": 0.88,
+     "Qwen2.5-72B-AWQ": 0.92,
+     "OLMo-2-32B-BF16": 0.62
+    },
+    "mining_audit_judge_hours": 0.48,
+    "calibration_hours": 0.4,
+    "total_hours": 3.29,
+    "expected_usd": 6.55,
+    "worst_2x_usd": 13.11
+   }
+  },
+  "4_open_models": {
+   "A100_80GB_community": {
+    "gpu": "A100 PCIe 80GB community",
+    "price_per_hour": 1.19,
+    "hours_per_model": {
+     "Llama-3.3-70B-AWQ": 2.01,
+     "Qwen2.5-72B-AWQ": 2.1,
+     "OLMo-2-32B-BF16": 1.24,
+     "Mistral-Small-3.2-24B-BF16": 0.99
+    },
+    "mining_audit_judge_hours": 1.19,
+    "calibration_hours": 0.4,
+    "total_hours": 7.92,
+    "expected_usd": 9.42,
+    "worst_2x_usd": 18.85
+   },
+   "H100_80GB_community_assuming_2.5x": {
+    "gpu": "H100 PCIe 80GB community",
+    "price_per_hour": 1.99,
+    "hours_per_model": {
+     "Llama-3.3-70B-AWQ": 0.88,
+     "Qwen2.5-72B-AWQ": 0.92,
+     "OLMo-2-32B-BF16": 0.62,
+     "Mistral-Small-3.2-24B-BF16": 0.48
+    },
+    "mining_audit_judge_hours": 0.48,
+    "calibration_hours": 0.4,
+    "total_hours": 3.78,
+    "expected_usd": 7.52,
+    "worst_2x_usd": 15.04
+   }
+  },
+  "claude_sonnet_5_5_subscription": {
+   "calls": 2970,
+   "tokens_incl_overhead": 3834270,
+   "list_price_equivalent_usd": 14.55,
+   "seconds_sequential": 5940,
+   "note": "quota not dollars; no temperature or seed control; throttling expected"
+  }
+ },
+ "lean_120_events_7_items": {
+  "design": {
+   "events": 120,
+   "dev": 24,
+   "test": 96,
+   "items_per_event": 7,
+   "short_calls_by_block": {
+    "E1_dev_A_B_B3": 504,
+    "E1_test_A_B_B3": 2016,
+    "E1_B2_on_controls": 192,
+    "M2_probe_3_arms": 360,
+    "G2b_synthetic": 124,
+    "E4_open_name_O_P1_P2": 2016,
+    "E2_llm_authored_A_B_B3": 840
+   },
+   "short_calls": 6052,
+   "long_calls_E5": 288
+  },
+  "per_open_model_input_tokens": 4220924,
+  "per_open_model_output_tokens": 207135,
+  "3_open_models": {
+   "A100_80GB_community": {
+    "gpu": "A100 PCIe 80GB community",
+    "price_per_hour": 1.19,
+    "hours_per_model": {
+     "Llama-3.3-70B-AWQ": 1.67,
+     "Qwen2.5-72B-AWQ": 1.74,
+     "OLMo-2-32B-BF16": 1.05
+    },
+    "mining_audit_judge_hours": 1.19,
+    "calibration_hours": 0.4,
+    "total_hours": 6.04,
+    "expected_usd": 7.19,
+    "worst_2x_usd": 14.39
+   },
+   "H100_80GB_community_assuming_2.5x": {
+    "gpu": "H100 PCIe 80GB community",
+    "price_per_hour": 1.99,
+    "hours_per_model": {
+     "Llama-3.3-70B-AWQ": 0.75,
+     "Qwen2.5-72B-AWQ": 0.78,
+     "OLMo-2-32B-BF16": 0.54
+    },
+    "mining_audit_judge_hours": 0.48,
+    "calibration_hours": 0.4,
+    "total_hours": 2.94,
+    "expected_usd": 5.85,
+    "worst_2x_usd": 11.69
+   }
+  },
+  "4_open_models": {
+   "A100_80GB_community": {
+    "gpu": "A100 PCIe 80GB community",
+    "price_per_hour": 1.19,
+    "hours_per_model": {
+     "Llama-3.3-70B-AWQ": 1.67,
+     "Qwen2.5-72B-AWQ": 1.74,
+     "OLMo-2-32B-BF16": 1.05,
+     "Mistral-Small-3.2-24B-BF16": 0.83
+    },
+    "mining_audit_judge_hours": 1.19,
+    "calibration_hours": 0.4,
+    "total_hours": 6.88,
+    "expected_usd": 8.18,
+    "worst_2x_usd": 16.36
+   },
+   "H100_80GB_community_assuming_2.5x": {
+    "gpu": "H100 PCIe 80GB community",
+    "price_per_hour": 1.99,
+    "hours_per_model": {
+     "Llama-3.3-70B-AWQ": 0.75,
+     "Qwen2.5-72B-AWQ": 0.78,
+     "OLMo-2-32B-BF16": 0.54,
+     "Mistral-Small-3.2-24B-BF16": 0.42
+    },
+    "mining_audit_judge_hours": 0.48,
+    "calibration_hours": 0.4,
+    "total_hours": 3.36,
+    "expected_usd": 6.69,
+    "worst_2x_usd": 13.37
+   }
+  },
+  "claude_sonnet_5_5_subscription": {
+   "calls": 2376,
+   "tokens_incl_overhead": 3067416,
+   "list_price_equivalent_usd": 11.64,
+   "seconds_sequential": 4752,
+   "note": "quota not dollars; no temperature or seed control; throttling expected"
+  }
+ },
+ "wide_200_events_8_items": {
+  "design": {
+   "events": 200,
+   "dev": 40,
+   "test": 160,
+   "items_per_event": 8,
+   "short_calls_by_block": {
+    "E1_dev_A_B_B3": 960,
+    "E1_test_A_B_B3": 3840,
+    "E1_B2_on_controls": 320,
+    "M2_probe_3_arms": 600,
+    "G2b_synthetic": 124,
+    "E4_open_name_O_P1_P2": 3840,
+    "E2_llm_authored_A_B_B3": 1440
+   },
+   "short_calls": 11124,
+   "long_calls_E5": 480
+  },
+  "per_open_model_input_tokens": 7579163,
+  "per_open_model_output_tokens": 356293,
+  "3_open_models": {
+   "A100_80GB_community": {
+    "gpu": "A100 PCIe 80GB community",
+    "price_per_hour": 1.19,
+    "hours_per_model": {
+     "Llama-3.3-70B-AWQ": 2.87,
+     "Qwen2.5-72B-AWQ": 3.01,
+     "OLMo-2-32B-BF16": 1.7
+    },
+    "mining_audit_judge_hours": 1.19,
+    "calibration_hours": 0.4,
+    "total_hours": 9.17,
+    "expected_usd": 10.91,
+    "worst_2x_usd": 21.82
+   },
+   "H100_80GB_community_assuming_2.5x": {
+    "gpu": "H100 PCIe 80GB community",
+    "price_per_hour": 1.99,
+    "hours_per_model": {
+     "Llama-3.3-70B-AWQ": 1.23,
+     "Qwen2.5-72B-AWQ": 1.28,
+     "OLMo-2-32B-BF16": 0.8
+    },
+    "mining_audit_judge_hours": 0.48,
+    "calibration_hours": 0.4,
+    "total_hours": 4.19,
+    "expected_usd": 8.33,
+    "worst_2x_usd": 16.66
+   }
+  },
+  "4_open_models": {
+   "A100_80GB_community": {
+    "gpu": "A100 PCIe 80GB community",
+    "price_per_hour": 1.19,
+    "hours_per_model": {
+     "Llama-3.3-70B-AWQ": 2.87,
+     "Qwen2.5-72B-AWQ": 3.01,
+     "OLMo-2-32B-BF16": 1.7,
+     "Mistral-Small-3.2-24B-BF16": 1.36
+    },
+    "mining_audit_judge_hours": 1.19,
+    "calibration_hours": 0.4,
+    "total_hours": 10.52,
+    "expected_usd": 12.52,
+    "worst_2x_usd": 25.04
+   },
+   "H100_80GB_community_assuming_2.5x": {
+    "gpu": "H100 PCIe 80GB community",
+    "price_per_hour": 1.99,
+    "hours_per_model": {
+     "Llama-3.3-70B-AWQ": 1.23,
+     "Qwen2.5-72B-AWQ": 1.28,
+     "OLMo-2-32B-BF16": 0.8,
+     "Mistral-Small-3.2-24B-BF16": 0.63
+    },
+    "mining_audit_judge_hours": 0.48,
+    "calibration_hours": 0.4,
+    "total_hours": 4.82,
+    "expected_usd": 9.59,
+    "worst_2x_usd": 19.18
+   }
+  },
+  "claude_sonnet_5_5_subscription": {
+   "calls": 4440,
+   "tokens_incl_overhead": 5732040,
+   "list_price_equivalent_usd": 21.76,
+   "seconds_sequential": 8880,
+   "note": "quota not dollars; no temperature or seed control; throttling expected"
+  }
+ }
+}
