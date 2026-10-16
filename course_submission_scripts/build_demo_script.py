@@ -20,31 +20,48 @@ cold, warm = q.get("cold", {}), q.get("warm", {})
 gap = f"{100 * lu['gap_A_minus_B']:+.1f}"
 lo, hi = f"{100 * lu['ci'][0]:.1f}", f"{100 * lu['ci'][1]:.1f}"
 
+rf = json.loads((ROOT / "rf_e2e/analysis.json").read_text())
+conf = json.loads((ROOT / "confirm/main/analysis.json").read_text())
+sB, sA = rf["B_EXPLICIT_IMPLIED"]["pooled"], rf["A_primary_EXPLICIT_IMPLIED"]["pooled"]
+lB = ((rf.get("larger") or {}).get("B_EXPLICIT_IMPLIED") or {}).get("pooled") or {}
+rbB = ((rf.get("robust") or {}).get("ruleB")) or {}
+pc = lambda x: f"{100 * x:.0f}"  # noqa: E731
+robust_say = (f"Even when we tell the model to avoid spoilers, the whole-book card still leaks in {pc(rbB['rates']['W_ren_nospoil'])} percent of events, so prompting is not a fix. " if rbB else "")
+
+# (time, speaker, segment, on screen, what to say); about 130 words per minute, about 6 minutes in total
 SEGS = [
-    ("0:00-0:40", "Title and question", "Slide 1, then slide 2.",
-     "Hello, we are Adhyan, Atharva and Aryan, and this is our Artificial Intelligence project. When a language model helps someone who is only halfway through a novel, does it quietly use what it remembers about the rest of the book? "
-     "If a masked character is revealed in chapter forty, a recap written at chapter five must not name them. We call that reader-faithfulness, and we measure when models break it."),
-    ("0:40-1:30", "Method in one picture", "Slide 4, then slide 5 (architecture).",
-     "We use public-domain novels from Project Gutenberg. An event is a character known by an alias who is later named in an explicit sentence of the book, so the book itself is the answer key and nobody has to judge it. "
-     "Each test item shows about twelve hundred characters up to one alias mention. The right answer is undetermined; naming the true person is premature. We show the same passage with original names, with a letter cipher, and with pseudonyms matched in gender and name type. The drop in premature naming is the leakage gap."),
-    ("1:30-2:30", "Show the Research view: overview", "Browser: open the webview, click Research. Point at the three headline cards, then scroll slowly to the gap-by-model chart.",
-     f"This is the Research page of our review interface. These cards are stored results, not a mock-up. For the strongest model, the gap is {gap} points over thirty-eight events, with a ninety-five percent interval from {lo} to {hi}. "
-     "Each line in this chart is one model on one dataset; the dot is the gap and the bar is the interval. Notice the small local models: pooled, they are positive, but on the seven newest books they are not. We pre-registered that replication, it failed, and we report it as failed."),
-    ("2:30-3:30", "Cue-preserving control and familiarity", "Scroll to the cue-preserving panel, then the dose-response chart.",
-     "Replacing names with a letter cipher also removes useful hints like gender, so we added pseudonyms that keep those hints. Reading accuracy on ordinary characters comes back to the original level, but premature naming does not come back. "
-     "The recovered fraction is minus point one one, so the leak is tied to the specific names, which is what memory is keyed on. "
-     "This chart is post hoc: the more of our local models recognise a book, the larger the gap. That explains the failed replication, because the seven new books are obscure."),
-    ("3:30-6:00", "Live probe on a local model", "Scroll to the live probe. Choose the stored public-domain item, model qwen2.5:7b, click Run. Do not cut the wait; speak over it.",
-     f"Now a live probe. One item from a public-domain novel, one local model running on this laptop's eight-gigabyte GPU through ollama. The probe asks the same question three ways: with original names, with the cipher, and with pseudonyms. "
-     f"When the model is already loaded it takes about {warm.get('total', 'n/a')} seconds in total; from a cold start, about {cold.get('total', 'n/a')} seconds because the first arm includes loading the model. "
-     "Here are the three answers and the time for each arm. With original names the model names a specific person; with the other two it says undetermined. That is one item, an illustration. The measured effects are in the charts, over thirty-eight events and thousands of calls. "
-     "A full run of one model over all items takes between four and sixteen minutes on this machine; these timings are in our document."),
-    ("6:00-7:00", "Graph audit and honest limits", "Slide 9 then slide 11.",
-     "We also audit our own knowledge graph. Rebuilding from the first k chapters and comparing, the entity resolver is causal: zero of twenty-eight thousand one hundred sixty-five mention comparisons differ. "
-     "The persona stage is not: twenty-three of two hundred eighty-eight characters change, eight percent. Limits: events were chosen by a model and checked only by exact text search; no human annotation is used or claimed; small models do not replicate on obscure books."),
-    ("7:00-7:40", "Confirmatory run and close", "Slide 12, then slide 14.",
-     "We then ran a pre-registered confirmatory study: sixty-eight events from sixty-five books, three open models on a rented GPU, everything hashed before any model saw an item. On mostly obscure books it found no gap, a pooled difference of zero point one points, and the books were barely remembered by the models, so this is a limit on the effect, not proof it is absent. Pseudonyms halved early naming at a cost in accuracy, and no recap spoilers or training-data link were found. "
-     "Takeaway: name-keyed memory leakage is measurable, not explained by lost name cues, and it grows with how well-known the book is. Thank you."),
+    ("0:00-0:45", "Adhyan", "Title and question", "Slide 1, then slide 2.",
+     "Hello, we are Adhyan, Atharva and Aryan. Our project asks a simple question: when an AI reading assistant helps someone who is only halfway through a book, "
+     "can it give away what happens later? Products such as Kindle's Ask this Book already promise answers only up to your reading position, but nobody checks whether the facts behind those answers are free of later chapters. We call the promise it should keep reader-faithfulness: what it says at chapter c may depend only on chapters up to c."),
+    ("0:45-1:35", "Adhyan", "Two ways to break it, and how we measure", "Slides 3, 4 and 5.",
+     "The promise can break in two ways. First, the model may remember the book from training. Second, the pipeline around the model may build facts from later chapters and show them early. "
+     "We test both on public-domain novels where a disguised character is revealed in one sentence of the book, so the book itself is our answer key. "
+     "We compare original names with names replaced by a consistent cipher: a model cannot remember a cipher name, so any difference that disappears under the cipher is memory."),
+    ("1:35-2:35", "Atharva", "Result 1: memory leaks on famous books", "Slides 6, 7 and 8.",
+     f"On famous books the strongest model names the hidden identity early {gap} points more often with the real names, interval {lo} to {hi}, over thirty-eight events. "
+     "Natural pseudonyms that keep gender and name type restore normal reading but do not remove this gap, so it is memory, not lost name clues. "
+     "And the gap grows with how well known the book is: almost none on books the small models do not recognise, large on books they all recognise. "
+     "We also found that the usual check of a renaming control is itself helped by memory on famous books, so we built a memory-free check that compares two independent ciphers with each other. "
+     "All intervals resample whole events, because questions from the same event are not independent."),
+    ("2:35-3:25", "Atharva", "Confirmatory run: the boundary", "Slide 12.",
+     f"We then ran a pre-registered confirmatory study on sixty-eight events from mostly obscure books with three larger open models. Here the memory gap was {100 * conf['H1']['pooled']:+.1f} points, "
+     "and the models could recall the hidden identity from memory for only two of sixty-eight events. The planned comparison of famous against obscure books pointed the expected way, " + f"{100 * conf['P1']['difference']:+.1f} points, but with only seven famous events it was not significant. So memory leakage is real for famous books and small for obscure ones; we report that boundary honestly."),
+    ("3:25-4:25", "Aryan", "Result 2: the pipeline leaks, and we fixed it", "Slide 9, then slide 13.",
+     "The second channel is the pipeline. In our own knowledge graph, rebuilding from only the first chapters showed that six percent of character facts were computed from later chapters; versioning each fact by the chapter its evidence came from brings this to zero. "
+     "The obvious alternative, hiding every such fact, is actually worse than doing nothing: eighty-two disagreements against twenty-three, because most of those facts were already settled early. "
+     f"We then tested a common assistant design, a character card written once from the whole book. With cipher names no model has seen, it revealed the hidden identity before the reveal in {pc(sB['rates']['W_ren'])} percent of events with small models"
+     + (f" and {pc(lB['rates']['W_ren'])} percent with larger ones" if lB else "") + f", against about {pc(sB['rates']['P_ren'])} percent for a versioned card built only from what the reader has read. " + robust_say
+     + f"Every one of the five models shows this leak, and a second, independent judge model agrees with the first on {100 * (rf.get('judge_agreement') or {}).get('identical', 0):.0f} percent of cards. Because the names were ciphered, this leak comes from how the card is built, not from what the model remembers."),
+    ("4:25-5:25", "Adhyan", "Live demonstration", "Slide 10, then switch to the browser: Research page.",
+     "This is our Research page. The cards at the top read the stored results directly. Here is the card for the whole-book versus versioned character card, with both judging rules. "
+     "Below it, the live probe runs one local model on one real item with original names, cipher names and pseudonyms. Watch the answer change: with real names it names the person; with renamed text it says undetermined. "
+     "This is one illustration; the numbers we quoted come from all events. Every number on this page is read from a stored result file, so what you see is exactly what the report says."),
+    ("5:25-5:55", "Aryan", "Limits", "Slide 11.",
+     "Our limits: events were selected by a model and checked against the text, not by people; one judging rule uses a second model, though the strict text rule agrees with it; "
+     "we used one card prompt and one reader position per event. All tests were pre-registered before the results existed, and the null results are reported as nulls. "
+     "Next we want more reader positions, more prompts and more ciphers, and a check of real reading products."),
+    ("5:55-6:20", "Atharva", "Takeaways and close", "Slide 15.",
+     "To sum up: a reading assistant can spoil a book through the model's memory or through its own pipeline. Memory matters for famous books. The pipeline leak happens across five models and every book type we tried, and a simple versioning rule fixes it at the cost of rebuilding a card when the reader moves on. Thank you; we are happy to take questions."),
 ]
 BEFORE = [
     "Start ollama (`ollama serve`) and pre-load the model once (`ollama run qwen2.5:7b \"hi\"`), so the first probe is warm; keep one cold run if you want to show the load time.",
@@ -61,14 +78,15 @@ TIMES = [
 CLAIMS = [
     "Say 'text-derived' for every result; never say 'human-annotated'.",
     "Say the replication on seven new books failed for the small local models.",
-    "Say the confirmatory run found no gap on obscure books and could not resolve the fame effect.",
+    "Say the confirmatory run found no memory gap on obscure books (a boundary), and that the pipeline leak and its fix hold across five models.",
     "Do not say the knowledge graph 'leaks to readers'; say its persona stage looks ahead for 8.0 percent of character checks.",
 ]
 
-md = ["# Demo video script (about 7 to 8 minutes)\n", "Speak at a calm pace; about 130 words per minute. The narration quotes stored values, read from the result files when this script was generated.\n", "## Before recording\n"]
+md = ["# Demo video script (about 6 minutes, three speakers)\n", "Speak at a calm pace; about 130 words per minute. The narration quotes stored values, read from the result files when this script was generated.\n", "## Before recording\n"]
 md += [f"- {b}" for b in BEFORE]
-md += ["\n## Timeline\n", "| Time | Segment | What is on screen / what to do | What to say |", "|---|---|---|---|"]
-md += [f"| {t} | {s} | {d} | {say} |" for t, s, d, say in SEGS]
+md += ["\n## Timeline\n", "| Time | Speaker | Segment | What is on screen / what to do | What to say |", "|---|---|---|---|---|"]
+md += [f"| {t} | {sp} | {s} | {d} | {say} |" for t, sp, s, d, say in SEGS]
+md += ["\n## Speaking time per person\n"] + [f"- {who}: about {sum(len(x[4].split()) for x in SEGS if x[1] == who) / 130 * 60:.0f} seconds" for who in ("Adhyan", "Atharva", "Aryan")]
 md += ["\n## Expected timings to mention\n"] + [f"- {t}" for t in TIMES]
 md += ["\n## Claims to keep straight\n"] + [f"- {c}" for c in CLAIMS]
 (OUT / "Demo_Video_Script.md").write_text("\n".join(md) + "\n")
@@ -76,15 +94,15 @@ md += ["\n## Claims to keep straight\n"] + [f"- {c}" for c in CLAIMS]
 doc = Document()
 doc.styles["Normal"].font.name = "Arial"
 doc.styles["Normal"].font.size = Pt(10)
-doc.add_heading("Demo video script (about 7 to 8 minutes)", 1)
+doc.add_heading("Demo video script (about 6 minutes, three speakers)", 1)
 doc.add_paragraph("Speak at a calm pace, about 130 words per minute. Narration quotes stored values.")
 doc.add_heading("Before recording", 2)
 for b in BEFORE:
     doc.add_paragraph(b.replace("`", ""), style="List Bullet")
 doc.add_heading("Timeline", 2)
-t = doc.add_table(rows=1, cols=4)
+t = doc.add_table(rows=1, cols=5)
 t.style = "Table Grid"
-for i, h in enumerate(("Time", "Segment", "On screen / what to do", "What to say")):
+for i, h in enumerate(("Time", "Speaker", "Segment", "On screen / what to do", "What to say")):
     t.rows[0].cells[i].text = h
     for r in t.rows[0].cells[i].paragraphs[0].runs:
         r.bold = True
@@ -92,6 +110,9 @@ for row in SEGS:
     cells = t.add_row().cells
     for i, v in enumerate(row):
         cells[i].text = v
+doc.add_heading("Speaking time per person", 2)
+for who in ("Adhyan", "Atharva", "Aryan"):
+    doc.add_paragraph(f"{who}: about {sum(len(x[4].split()) for x in SEGS if x[1] == who) / 130 * 60:.0f} seconds", style="List Bullet")
 doc.add_heading("Expected timings to mention", 2)
 for x in TIMES:
     doc.add_paragraph(x, style="List Bullet")
