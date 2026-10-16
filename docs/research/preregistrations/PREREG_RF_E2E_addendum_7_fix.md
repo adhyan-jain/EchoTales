@@ -1,0 +1,15 @@
+# RF-E2E addendum 7: the two fixes and how they are judged (written before any card result was read)
+
+Written 2026-10-16 at 20:35 IST. At this time one model's card file exists on disk (`cards_qwen2.5_7b.json`, being written by the running job) and **no card, leak flag or judge label has been read or summarised** by the author of this addendum, apart from the single smoke-test event C965_1 that was printed while the script was being tested (its four cards were seen; rule A was not applicable to it). Owner instruction of the same day: find the leak, fix it, and show the fix working.
+
+## Fix 1, the input channel: versioned card
+The fix for the whole-volume card is to build the card from the prefix and rebuild it when the reader's position passes new evidence (the versioned policy of FORMAL P4 to P6). At the reader position of this study the versioned card **is** the P build, so its effect is the RF1 contrast read the other way: leak(W) minus leak(P), in both naming arms. **Reported as:** the leak removed (W minus P, pooled, with interval), the residual leak of P, and the cost in card builds (one build per distinct evidence horizon; here one extra build per event and reader position) and in content (mean words, share of cards that name the alias). No new threshold: RF1 already decides whether there was an input leak to fix.
+
+## Fix 2, the memory channel: pseudonymise, generate, map back
+For the prefix build P, the passages and the alias are rewritten with the frozen cue-preserving pseudonym maps of the confirmatory E4 arm P2 (`V5.build_maps` over the book's confirmatory events, `V5.make_b3` with the arm-B cipher for other proper nouns), the card is generated from the rewritten passages, and every pseudonym and cipher token in the card is mapped back to the original token (inverse map built over the capitalised tokens of the passages, the cast, the alias and the identity). The mapped-back card is scored with rules A and B exactly as the P-orig card. New cell: **P-pseudo**, same models, prompt, options and judge.
+
+- **RF5 (memory fix).** Evaluated only if the memory channel (P-orig minus P-ren, rule B, pooled) has a 95% lower limit above 0; otherwise reported "no memory leak to fix at these models" and RF5 is not evaluated. If evaluated: supported if leak(P-orig) minus leak(P-pseudo), rule B, pooled, is positive with a 95% lower limit above 0 **and** the share of cards that name the alias (original form, after map-back) drops by at most 10 points. Rule A is reported beside it.
+- **Declared limit:** pseudonyms keep places, plot and phrasing, so memory keyed to those survives (the gap between P-pseudo and P-ren is reported as the residual memory leak). This replicates the mitigation idea of Jiang and Ferraro (arXiv 2412.14368) on a reading-assistant task; it is not claimed as a new method.
+
+## Run
+After the three-model card and judge chain finishes: `pd_rf_e2e.py mitigate --model M` then `pd_rf_e2e.py judge --of M --cells mitig` per model in the same order; a model not finished by 22:50 IST is reported "not run". Each cell is generated once.
