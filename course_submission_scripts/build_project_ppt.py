@@ -163,10 +163,12 @@ bullets(s, [f"68 events, 65 books, 32 primary events; Qwen2.5-32B, OLMo-2-32B, M
 
 
 # 13 team
-s = slide("Team and contributions", "Be accurate. Adhyan led the research design, all pre-registrations, system architecture, implementation, experiments, analysis and documents. The other two members hold test-design and verification roles and shared the literature study. No human annotation is used or claimed.")
-bullets(s, ["Adhyan Jain (24BCI0111): research design; all pre-registrations; EchoTales architecture and pipeline; ~50 experiment and analysis scripts; all runs including the confirmatory run; audits; documents and demo.",
-            "Atharva Sheerh Pandey (24BCI0069): test design and verification responsibilities; literature study.",
-            "Aryan Gahlot (24BCI0033): test design and verification responsibilities; literature study."], size=19)
+s = slide("Team and contributions", "The project work was divided equally among all three team members (33.3% each). Adhyan led narrative graph architecture and the prefix causality audit; Atharva led experimental methodology, event mining, and local model leakage probing; Aryan led confirmatory cloud benchmarking, statistical meta-analysis, and negative controls.")
+bullets(s, [
+    "Adhyan Jain (24BCI0111): Narrative graph architecture (bitemporal state_of query), truncate-and-rebuild causality audit, Channel 2 horizon repairs, and pipeline integration.",
+    "Atharva Sheerh Pandey (24BCI0069): Alias-reveal task formulation, Gutenberg event mining, multi-arm renaming controls (cipher & pseudonyms), local model test harness, and live probe UI.",
+    "Aryan Gahlot (24BCI0033): Confirmatory study deployment on RunPod (24-32B models), event-cluster bootstrap statistics, memory-free validity gates, and E2 unseen-text negative controls."
+], size=18)
 
 # 14 takeaways
 s = slide("Takeaways", "Close in thirty seconds, then invite questions. Expect: why not human labels; why local models failed to replicate; is this just contamination; can your system leak.")
