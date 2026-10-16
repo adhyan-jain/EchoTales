@@ -1,0 +1,21 @@
+{
+ "judge_vs_text_rule": {
+  "labels": 380,
+  "tp": 44,
+  "fp": 3,
+  "fn": 4,
+  "tn": 329,
+  "sensitivity": 0.9166666666666666,
+  "specificity": 0.9909638554216867,
+  "agreement": 0.9815789473684211,
+  "kappa": 0.9157908066354314
+ },
+ "exposure": {
+  "events": 54,
+  "median_share_of_book_before_reveal": 0.37384828923403035,
+  "leaking_cards": 55,
+  "leaking_median_share": 0.11351483179298974,
+  "leaking_mean_share": 0.17826645534248967
+ },
+ "note": "POST HOC (no new model calls): judge (qwen3:8b) labels compared with the text-derived rule A on rule-A-measurable events, all five models and four cells; exposure = share of the book text between the alias's first mention and the reveal sentence, i.e. how long a first-mention-stamped card is visible before the book reveals the identity"
+}

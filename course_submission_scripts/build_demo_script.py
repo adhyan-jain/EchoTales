@@ -25,6 +25,7 @@ conf = json.loads((ROOT / "confirm/main/analysis.json").read_text())
 sB, sA = rf["B_EXPLICIT_IMPLIED"]["pooled"], rf["A_primary_EXPLICIT_IMPLIED"]["pooled"]
 lB = ((rf.get("larger") or {}).get("B_EXPLICIT_IMPLIED") or {}).get("pooled") or {}
 rbB = ((rf.get("robust") or {}).get("ruleB")) or {}
+pv = json.loads((ROOT / "rf_e2e/posthoc_judge_validity_and_exposure.json").read_text())
 pc = lambda x: f"{100 * x:.0f}"  # noqa: E731
 robust_say = (f"Even when we tell the model to avoid spoilers, the whole-book card still leaks in {pc(rbB['rates']['W_ren_nospoil'])} percent of events, so prompting is not a fix. " if rbB else "")
 
@@ -51,13 +52,13 @@ SEGS = [
      "The obvious alternative, hiding every such fact, is actually worse than doing nothing: eighty-two disagreements against twenty-three, because most of those facts were already settled early. "
      f"We then tested a common assistant design, a character card written once from the whole book. With cipher names no model has seen, it revealed the hidden identity before the reveal in {pc(sB['rates']['W_ren'])} percent of events with small models"
      + (f" and {pc(lB['rates']['W_ren'])} percent with larger ones" if lB else "") + f", against about {pc(sB['rates']['P_ren'])} percent for a versioned card built only from what the reader has read. " + robust_say
-     + f"Every one of the five models shows this leak, and a second, independent judge model agrees with the first on {100 * (rf.get('judge_agreement') or {}).get('identical', 0):.0f} percent of cards. Because the names were ciphered, this leak comes from how the card is built, not from what the model remembers."),
+     + f"Every one of the five models shows this leak, and a leaking card stays visible for a median of {100 * pv['exposure']['leaking_median_share']:.0f} percent of the book before the reveal. Because the names were ciphered, this leak comes from how the card is built, not from what the model remembers."),
     ("4:25-5:25", "Adhyan", "Live demonstration", "Slide 10, then switch to the browser: Research page.",
      "This is our Research page. The cards at the top read the stored results directly. Here is the card for the whole-book versus versioned character card, with both judging rules. "
      "Below it, the live probe runs one local model on one real item with original names, cipher names and pseudonyms. Watch the answer change: with real names it names the person; with renamed text it says undetermined. "
      "This is one illustration; the numbers we quoted come from all events. Every number on this page is read from a stored result file, so what you see is exactly what the report says."),
     ("5:25-5:55", "Aryan", "Limits", "Slide 11.",
-     "Our limits: events were selected by a model and checked against the text, not by people; one judging rule uses a second model, though the strict text rule agrees with it; "
+     f"Our limits: events were selected by a model and checked against the text, not by people; one judging rule uses a second model, but checked against the strict text rule it catches {100 * pv['judge_vs_text_rule']['sensitivity']:.0f} percent of leaks with almost no false alarms; "
      "we used one card prompt and one reader position per event. All tests were pre-registered before the results existed, and the null results are reported as nulls. "
      "Next we want more reader positions, more prompts and more ciphers, and a check of real reading products."),
     ("5:55-6:20", "Atharva", "Takeaways and close", "Slide 15.",
