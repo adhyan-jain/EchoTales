@@ -82,7 +82,7 @@ source .venv/bin/activate      # uv-managed venv already present at repo root
 python3 -m pytest packages/core/tests packages/pipeline/tests   # no GPU needed
 ```
 
-1,338 core+pipeline tests pass (2026-10-16; webview jest: 94). Root `pyproject` testpaths lists only
+1,377 core+pipeline tests pass (2026-10-16, after merging claude/prefix-faithfulness; webview jest: 94). Root `pyproject` testpaths lists only
 core and pipeline; pass `packages/research/tests` explicitly (and `-o addopts=""`) to include research.
 
 Everything is stub-first: `ECHOTALES_LLM_MODE=stub` and `--image-engine
