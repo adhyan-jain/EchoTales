@@ -325,7 +325,15 @@ def _rf(rf: dict | None) -> dict | None:
     if not rf:
         return None
     strata = [x for x in (_rf_stratum(rf, "7-8B local models"), _rf_stratum(rf.get("larger"), "24-32B open models")) if x]
-    return dict(strata=strata, not_run=rf.get("not_run"), source="data/eval/chimera/rf_e2e/analysis.json") if strata else None
+    rb = ((rf.get("robust") or {}).get("ruleB")) or {}
+    robust = None
+    if rb:
+        c = rb.get("contrasts") or {}
+        robust = dict(models=(rf.get("robust") or {}).get("models"), whole_nospoil_renamed=_r((rb.get("rates") or {}).get("W_ren_nospoil")),
+                      versioned_renamed=_r((rb.get("rates") or {}).get("P_ren")), cipher2_input=_interval((c.get("input_channel_cipher2") or {}).get("estimate"),
+                                                                                                          (c.get("input_channel_cipher2") or {}).get("ci")),
+                      prompting_does_not_remove_leak=rb.get("prompting_does_not_remove_leak"))
+    return dict(strata=strata, robust=robust, not_run=rf.get("not_run"), source="data/eval/chimera/rf_e2e/analysis.json") if strata else None
 
 
 def _confirm(c: dict | None) -> dict | None:
