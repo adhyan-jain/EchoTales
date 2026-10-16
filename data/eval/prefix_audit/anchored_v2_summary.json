@@ -1,0 +1,163 @@
+{
+ "labels": "MODEL-GENERATED; web novels: two annotators (combined T*), English originals: Luna only",
+ "confirmatory_web_novels": {
+  "pairs": 512,
+  "characters": 98,
+  "status_quo": {
+   "cuts": 512,
+   "correct": 361,
+   "withheld": 146,
+   "wrong": 5,
+   "correct_share": 0.7051
+  },
+  "plain": {
+   "cuts": 512,
+   "correct": 326,
+   "withheld": 181,
+   "wrong": 5,
+   "correct_share": 0.6367
+  },
+  "setting_1_0.8": {
+   "v1": {
+    "cuts": 512,
+    "correct": 360,
+    "withheld": 146,
+    "wrong": 6,
+    "correct_share": 0.7031
+   },
+   "v2": {
+    "cuts": 512,
+    "correct": 357,
+    "withheld": 146,
+    "wrong": 9,
+    "correct_share": 0.6973
+   },
+   "divergence_v2": 0,
+   "decisions_v1": {
+    "n": 35,
+    "correct": 34
+   },
+   "decisions_v2": {
+    "n": 35,
+    "correct": 34
+   },
+   "H6": {
+    "a_zero_divergence": true,
+    "b_correct_within_2_points": true,
+    "c_no_more_wrong_than_v1": false
+   }
+  },
+  "setting_2_0.8": {
+   "v1": {
+    "cuts": 512,
+    "correct": 340,
+    "withheld": 167,
+    "wrong": 5,
+    "correct_share": 0.6641
+   },
+   "v2": {
+    "cuts": 512,
+    "correct": 340,
+    "withheld": 167,
+    "wrong": 5,
+    "correct_share": 0.6641
+   },
+   "divergence_v2": 0,
+   "decisions_v1": {
+    "n": 14,
+    "correct": 14
+   },
+   "decisions_v2": {
+    "n": 14,
+    "correct": 14
+   },
+   "H6": {
+    "a_zero_divergence": true,
+    "b_correct_within_2_points": true,
+    "c_no_more_wrong_than_v1": true
+   }
+  }
+ },
+ "development_english_originals": {
+  "pairs": 179,
+  "characters": 45,
+  "status_quo": {
+   "cuts": 179,
+   "correct": 134,
+   "withheld": 33,
+   "wrong": 12,
+   "correct_share": 0.7486
+  },
+  "plain": {
+   "cuts": 179,
+   "correct": 127,
+   "withheld": 41,
+   "wrong": 11,
+   "correct_share": 0.7095
+  },
+  "setting_1_0.8": {
+   "v1": {
+    "cuts": 179,
+    "correct": 135,
+    "withheld": 30,
+    "wrong": 14,
+    "correct_share": 0.7542
+   },
+   "v2": {
+    "cuts": 179,
+    "correct": 135,
+    "withheld": 33,
+    "wrong": 11,
+    "correct_share": 0.7542
+   },
+   "divergence_v2": 0,
+   "decisions_v1": {
+    "n": 11,
+    "correct": 8
+   },
+   "decisions_v2": {
+    "n": 8,
+    "correct": 8
+   },
+   "H6": {
+    "a_zero_divergence": true,
+    "b_correct_within_2_points": true,
+    "c_no_more_wrong_than_v1": true
+   }
+  },
+  "setting_2_0.8": {
+   "v1": {
+    "cuts": 179,
+    "correct": 134,
+    "withheld": 33,
+    "wrong": 12,
+    "correct_share": 0.7486
+   },
+   "v2": {
+    "cuts": 179,
+    "correct": 134,
+    "withheld": 34,
+    "wrong": 11,
+    "correct_share": 0.7486
+   },
+   "divergence_v2": 0,
+   "decisions_v1": {
+    "n": 8,
+    "correct": 7
+   },
+   "decisions_v2": {
+    "n": 7,
+    "correct": 7
+   },
+   "H6": {
+    "a_zero_divergence": true,
+    "b_correct_within_2_points": true,
+    "c_no_more_wrong_than_v1": true
+   }
+  }
+ },
+ "H6_verdict_web_novels": {
+  "1,0.8": "NOT SUPPORTED (c_no_more_wrong_than_v1)",
+  "2,0.8": "SUPPORTED"
+ }
+}

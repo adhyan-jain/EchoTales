@@ -33,7 +33,7 @@ from echotales.core.enums import (
     TargetKind,
 )
 from echotales.core.interval import FuzzyInterval
-from echotales.core.models import Attribute
+from echotales.core.models import Attribute, DiscoursePosition
 from echotales.core.pipeline_run import PartialStageFailure
 from echotales.core.store import Store
 from echotales.pipeline.persona.split import (
@@ -44,7 +44,7 @@ from echotales.pipeline.persona.split import (
     persona_at,
     write_epochs,
 )
-from echotales.pipeline.persona.traits import TraitProfile, infer_traits_deterministic
+from echotales.pipeline.persona.traits import TraitProfile, anchored_window, infer_traits_deterministic
 
 #: Below this many mentions an entity gets a deterministic profile only. A
 #: model call per walk-on is exactly the per-entity equivalent of the
@@ -57,6 +57,15 @@ LLM_MENTION_FLOOR = 25
 #: rather than a bank voice (`4b` step 4).
 PRINCIPAL_FLOOR = 300
 RECURRING_FLOOR = 30
+
+#: Chapters (where the entity is attested) that feed a trait read. A trait therefore has an *evidence horizon*, the
+#: last of those chapters, which is later than the chapter of first sighting that was used as its stamp until the
+#: prefix audit (docs/research/PREFIX_FAITHFULNESS/PREREG.md): 23 of 289 character-cuts served a gender that the
+#: truncated graph could not yet know.
+EVIDENCE_CHAPTERS = 12
+
+#: A trait computed from whole chapters is known once the chapter is over, not from its first mention.
+_END_OF_CHAPTER = 10**6
 
 
 @dataclass(slots=True)
@@ -96,13 +105,22 @@ def _prominence_for(mention_count: int) -> Prominence:
 
 
 def _gather_evidence(
-    store: Store, novel_id: str, target_id: str, *, max_chapters: int = 12
+    store: Store,
+    novel_id: str,
+    target_id: str,
+    *,
+    max_chapters: int = EVIDENCE_CHAPTERS,
+    upto: float | None = None,
 ) -> tuple[list[str], list[str], list[str], int]:
     """Spoken lines, narration samples, surface forms and dialogue count.
 
     Sampled across at most `max_chapters` chapters *where this entity actually
     appears* rather than the first N of the novel -- a character introduced at
     chapter 90 would otherwise be profiled from no evidence at all.
+
+    `upto` restricts the sample to chapters <= upto, which is exactly what a
+    build from a truncated volume would have sampled: the earliest chapters
+    are taken first, so cutting the list at `upto` equals sampling the prefix.
     """
     dialogue: list[str] = []
     narration: list[str] = []
@@ -110,6 +128,8 @@ def _gather_evidence(
     dialogue_total = 0
 
     chapters = store.chapters_for_target(novel_id, target_id, limit=max_chapters)
+    if upto is not None:
+        chapters = [c for c in chapters if c <= upto]
     for chapter in chapters:
         mentions = [
             m for m in store.get_mentions(novel_id, chapter) if m.target_id == target_id
@@ -142,6 +162,128 @@ def _gather_evidence(
     return dialogue, narration, sorted(surfaces), dialogue_total
 
 
+def _gather_anchors(
+    store: Store,
+    novel_id: str,
+    target_id: str,
+    *,
+    max_chapters: int = EVIDENCE_CHAPTERS,
+    upto: float | None = None,
+    variant: str = "v1",
+) -> list[str]:
+    """Text right after each mention, inside its own narration span (PREREG_ANCHORED.md).
+
+    The same chapter window as `_gather_evidence`, so `upto` again equals sampling the prefix. Dialogue spans are skipped:
+    a pronoun inside a quoted line is the speaker's, not the narrator's, and usually about someone else.
+    """
+    windows: list[str] = []
+    chapters = store.chapters_for_target(novel_id, target_id, limit=max_chapters)
+    if upto is not None:
+        chapters = [c for c in chapters if c <= upto]
+    narrative = (SpanType.NARRATION_ACTION, SpanType.NARRATION_DESCRIPTION, SpanType.INNER_MONOLOGUE)
+    for chapter in chapters:
+        mentions = [m for m in store.get_mentions(novel_id, chapter) if m.target_id == target_id]
+        if not mentions:
+            continue
+        spans = [s for s in store.get_spans(novel_id, chapter) if s.span_type in narrative]
+        for m in mentions:
+            for s in spans:
+                if s.block_index == m.block_index and s.start <= m.offset < s.end:
+                    windows.append(anchored_window(s.text[m.offset - s.start + len(m.text):], variant))
+                    break
+    return windows
+
+
+def _trait_values(profile: TraitProfile) -> dict[str, str]:
+    """The persisted trait keys, in the order they have always been written."""
+    return {
+        "age_band": profile.age_band,
+        "gender": profile.gender,
+        "register": profile.register,
+        "archetype": profile.archetype,
+        "big_five": _big_five_str(profile),
+        "trait_provenance": profile.provenance,
+    }
+
+
+class _MemoClient:
+    """Answers a repeated prompt from memory (PREREG_LLM.md Addendum 3).
+
+    The model prompt holds the label, the first 12 spoken lines and the first 6 narration samples, so once those windows
+    fill, every later chapter re-asks the identical question. At temperature 0 the answer is the same (noise floor 0
+    measured in REPORT 4.8a); asking again would only multiply the call count by the number of attested chapters.
+    """
+
+    def __init__(self, inner: object) -> None:
+        self.inner, self.cache = inner, {}
+
+    def complete(self, task, prompt, schema, *, system="", novel_id="", **kwargs):  # noqa: ANN001, ANN003, ANN201
+        key = (task, prompt, system)
+        if key not in self.cache:
+            self.cache[key] = self.inner.complete(task, prompt, schema, system=system, novel_id=novel_id, **kwargs)  # type: ignore[attr-defined]
+        return self.cache[key]
+
+
+def _prefix_trait_revisions(
+    store: Store,
+    novel_id: str,
+    entity: object,
+    anchored: tuple[int, float] | None = None,
+    client: object | None = None,
+    llm_mention_floor: int = LLM_MENTION_FLOOR,
+) -> list[tuple[DiscoursePosition, dict[str, str], TraitProfile]]:
+    """Trait values as a reader would have held them after each chapter the entity appears in.
+
+    One revision per attested chapter c at which any trait value changes, computed from the evidence and the mention
+    count of chapters <= c only, and stamped at the end of c. `state_of` keeps the latest-stamped value per key, so
+    the value served at a reading position equals the value a build from that prefix would have produced -- the
+    property the single first-sighting stamp lacked (measured on 3 serials, PREFIX_FAITHFULNESS). Only the
+    deterministic path can be replayed per chapter; a model read per prefix would multiply the call count.
+    """
+    attested = store.chapters_for_target(novel_id, entity.id)  # type: ignore[attr-defined]
+    per_chapter = store.mention_counts_by_chapter(novel_id, entity.id)  # type: ignore[attr-defined]
+    revisions: list[tuple[DiscoursePosition, dict[str, str], TraitProfile]] = []
+    previous: dict[str, str] | None = None
+    seen = 0
+    evidence = None
+    memo = _MemoClient(client) if client is not None else None
+    for idx, chapter in enumerate(attested):
+        seen += per_chapter.get(chapter, 0)
+        # The sample is the first EVIDENCE_CHAPTERS attested chapters, so it stops growing after that many; from then
+        # on only the cumulative mention count (extraversion's denominator) can still move a trait.
+        if evidence is None or idx < EVIDENCE_CHAPTERS:
+            evidence = _gather_evidence(store, novel_id, entity.id, upto=chapter)  # type: ignore[attr-defined]
+            anchors = (
+                _gather_anchors(store, novel_id, entity.id, upto=chapter, variant=anchored[2] if len(anchored) > 2 else "v1")  # type: ignore[attr-defined,misc]
+                if anchored else None
+            )
+        dialogue, narration, surfaces, dialogue_total = evidence
+        profile = infer_traits_deterministic(
+            entity.id,  # type: ignore[attr-defined]
+            entity.canonical_label,  # type: ignore[attr-defined]
+            surfaces=surfaces or [entity.canonical_label],  # type: ignore[attr-defined]
+            dialogue_lines=dialogue_total,
+            mention_count=seen,
+            prominence=_prominence_for(seen),
+            pronoun_passages=narration,
+            anchor_windows=anchors,
+            anchor_min_obs=anchored[0] if anchored else 2,
+            anchor_majority=anchored[1] if anchored else 0.85,
+        )
+        # The gate is decided on the mentions read so far, not on the whole volume's count: a build over the prefix would
+        # have used the model for this character exactly when its prefix reaches the floor.
+        if memo is not None and seen >= llm_mention_floor:
+            from echotales.pipeline.persona.extract import extract_traits
+
+            profile = extract_traits(profile, dialogue=dialogue, narration=narration, client=memo, novel_id=novel_id)
+        values = _trait_values(profile)
+        changed = values if previous is None else {k: v for k, v in values.items() if previous.get(k) != v}
+        if changed:
+            revisions.append((DiscoursePosition(chapter=chapter, offset=_END_OF_CHAPTER), changed, profile))
+        previous = values
+    return revisions
+
+
 def build_personas(
     novel_id: str,
     store: Store,
@@ -149,11 +291,25 @@ def build_personas(
     client: object | None = None,
     llm_mention_floor: int = LLM_MENTION_FLOOR,
     commit_every: int = 20,
+    prefix_causal: bool = False,
+    anchored_gender: tuple[int, float] | None = None,
 ) -> PersonaReport:
     """Mint a persona per character entity, bind it, and profile it.
 
     `client=None` runs the deterministic path throughout -- see
     `persona/traits.py` on why that is a supported mode and not a degradation.
+
+    `prefix_causal=True` writes each trait as a series of revisions stamped by their evidence horizon instead of one
+    row stamped at first sighting (`_prefix_trait_revisions`). Off by default: it multiplies attribute rows, and the
+    readers of persona attributes outside `state_of` (webview, reference_gen, appearance_extract) have not been
+    audited against more than one row per key. Body-split bindings are not repaired (`SelfPersonaBinding` has no
+    supersession in `state_of`). With a `client`, the model read is gated on the mentions read *so far* at each
+    chapter instead of the whole volume's count, and repeated prompts are answered from memory
+    (PREREG_LLM.md Addendum 3).
+
+    `anchored_gender=(min_obs, majority)` adds the anchored pronoun cue (`traits.gender_from_anchors`) as a fallback
+    when the paragraph rule cannot call a gender (PREREG_ANCHORED.md). Off by default. It uses the same
+    first-`EVIDENCE_CHAPTERS` window as every other trait, so it is prefix-causal under `prefix_causal=True`.
     """
     report = PersonaReport(novel_id=novel_id)
     report.split = SplitReport(novel_id=novel_id)
@@ -194,8 +350,16 @@ def build_personas(
                 mention_count=mention_count,
                 prominence=prominence,
                 pronoun_passages=narration,
+                anchor_windows=(
+                    _gather_anchors(store, novel_id, entity.id, variant=anchored_gender[2] if len(anchored_gender) > 2 else "v1")  # type: ignore[misc]
+                    if anchored_gender else None
+                ),
+                anchor_min_obs=anchored_gender[0] if anchored_gender else 2,
+                anchor_majority=anchored_gender[1] if anchored_gender else 0.85,
             )
-            if client is not None and mention_count >= llm_mention_floor:
+            # `prefix_causal` decides the gate chapter by chapter in `_prefix_trait_revisions`; the whole-volume count used
+            # here is exactly the decision that made a full build disagree with a prefix build (REPORT 4.8a).
+            if client is not None and mention_count >= llm_mention_floor and not prefix_causal:
                 from echotales.pipeline.persona.extract import extract_traits
 
                 profile = extract_traits(
@@ -263,31 +427,37 @@ def build_personas(
             # the opposite and is dated per attestation by
             # `appearance_extract`, which is why that stage picks its persona by
             # position and this one does not.
+            # Default: one row per key, stamped at first sighting (unchanged). prefix_causal: one revision per
+            # evidence-horizon change, each stamped at the end of the chapter it was computed from.
+            if prefix_causal:
+                trait_rows = _prefix_trait_revisions(store, novel_id, entity, anchored_gender, client, llm_mention_floor)
+                if trait_rows:
+                    final = trait_rows[-1][2]
+                    if final.provenance != profile.provenance:  # the counts above used the unrefined profile
+                        report.profiled_deterministic -= final.provenance == "llm"
+                        report.profiled_llm += final.provenance == "llm"
+                    profile = final
+            else:
+                trait_rows = [(entity.first_attested_pos, _trait_values(profile), profile)]
             for epoch in epochs:
-                for key, value in (
-                    ("age_band", profile.age_band),
-                    ("gender", profile.gender),
-                    ("register", profile.register),
-                    ("archetype", profile.archetype),
-                    ("big_five", _big_five_str(profile)),
-                    ("trait_provenance", profile.provenance),
-                ):
-                    store.add_attribute(
-                        novel_id,
-                        Attribute(
-                            target_kind=TargetKind.PERSONA,
-                            target_id=epoch.persona_id,
-                            key=key,
-                            value=value,
-                            interval=FuzzyInterval.open_ended(
-                                epoch.from_pos,
-                                last_evidence=epoch.last_evidence or epoch.from_pos,
+                for stamp, values, row_profile in trait_rows:
+                    for key, value in values.items():
+                        store.add_attribute(
+                            novel_id,
+                            Attribute(
+                                target_kind=TargetKind.PERSONA,
+                                target_id=epoch.persona_id,
+                                key=key,
+                                value=value,
+                                interval=FuzzyInterval.open_ended(
+                                    epoch.from_pos,
+                                    last_evidence=epoch.last_evidence or epoch.from_pos,
+                                ),
+                                learned_at_pos=stamp,
+                                observer_id=OBSERVER_READER,
+                                evidence=row_profile.evidence[:200],
                             ),
-                            learned_at_pos=entity.first_attested_pos,
-                            observer_id=OBSERVER_READER,
-                            evidence=profile.evidence[:200],
-                        ),
-                    )
+                        )
 
             report.by_archetype[profile.archetype] = (
                 report.by_archetype.get(profile.archetype, 0) + 1
