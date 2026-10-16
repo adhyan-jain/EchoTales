@@ -330,8 +330,9 @@ def _rf(rf: dict | None) -> dict | None:
     if rb:
         c = rb.get("contrasts") or {}
         robust = dict(models=(rf.get("robust") or {}).get("models"), whole_nospoil_renamed=_r((rb.get("rates") or {}).get("W_ren_nospoil")),
-                      versioned_renamed=_r((rb.get("rates") or {}).get("P_ren")), cipher2_input=_interval((c.get("input_channel_cipher2") or {}).get("estimate"),
-                                                                                                          (c.get("input_channel_cipher2") or {}).get("ci")),
+                      versioned_renamed=_r((rb.get("rates") or {}).get("P_ren")),
+                      # second cipher read by the text rule: the judge over-flags second-cipher prefix cards (7.4% > the 5% validity bound)
+                      cipher2_input=_interval(*(lambda c2: (c2.get("estimate"), c2.get("ci")))((((rf.get("robust") or {}).get("ruleA") or {}).get("contrasts") or {}).get("input_channel_cipher2") or {})),
                       prompting_does_not_remove_leak=rb.get("prompting_does_not_remove_leak"))
     return dict(strata=strata, robust=robust, not_run=rf.get("not_run"), source="data/eval/chimera/rf_e2e/analysis.json") if strata else None
 
