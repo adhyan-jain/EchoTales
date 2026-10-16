@@ -163,7 +163,7 @@ def _body_index(persona_id: str | None) -> int | None:
 
 
 def canon_for(
-    novel_id: str, label: str, persona_id: str | None = None
+    novel_id: str, label: str, persona_id: str | None = None, *, wiki: bool = True
 ) -> dict[str, str]:
     """Canonical appearance for this character, or an empty dict.
 
@@ -180,7 +180,7 @@ def canon_for(
     """
     from echotales.pipeline.persona.wiki_canon import load_wiki_canon
 
-    base = dict(load_wiki_canon(novel_id).get(label, {}))
+    base = dict(load_wiki_canon(novel_id).get(label, {})) if wiki else {}
     base.update(CANON_APPEARANCE.get(novel_id, {}).get(label, {}))
     index = _body_index(persona_id)
     if index is None:
@@ -194,14 +194,27 @@ def apply_canon(
     label: str,
     extracted: dict[str, str],
     persona_id: str | None = None,
+    *,
+    position: float | None = None,
+    first_appearance: float | None = None,
 ) -> dict[str, str]:
     """Overlay canon onto extracted attributes.
 
     Canon wins key by key rather than wholesale, so a character with a
     canon entry still keeps any extracted attribute the entry does not
     mention -- the table is allowed to be partial.
+
+    B4 (CHIMERA backlog): `wiki_canon.py`'s docstring promises that every
+    imported trait is dated to the character's first appearance, but the
+    import carries no date. When BOTH `position` and `first_appearance` are
+    given, the wiki tier is dropped before the character first appears (the
+    hand-authored table is body-aware and unaffected). Omitting either keeps
+    the shipped, undated behaviour. This is only the dating rule: the wiki
+    describes the character as a whole-novel reader remembers them and is
+    still body-blind (no per-body wiki traits exist), which stays open.
     """
-    canon = canon_for(novel_id, label, persona_id)
+    wiki = not (position is not None and first_appearance is not None and position < first_appearance)
+    canon = canon_for(novel_id, label, persona_id, wiki=wiki)
     if not canon:
         return extracted
     merged = dict(extracted)

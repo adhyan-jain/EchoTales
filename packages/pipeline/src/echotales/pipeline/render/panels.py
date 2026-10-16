@@ -2740,6 +2740,14 @@ def render_panels(
                     reference_images=[],
                     reference_weight=0.0,
                 )
+                # B3 (CHIMERA backlog): `conditioned` lists labels that HAVE a
+                # reference sheet, but the request above carries no reference
+                # images, so nothing conditioned this panel. The manifest and
+                # the conditioned/prompt-only counters are derived from what
+                # the request actually contains, never from what could have
+                # been attached; if reference conditioning is ever re-wired
+                # (reference_images non-empty) this becomes `conditioned`.
+                _honest_conditioned = list(conditioned) if _panel_request.reference_images else []
                 _gen_request = GenerationRequest(
                     base=_panel_request,
                     backend_name=engine.name,
@@ -2851,7 +2859,7 @@ def render_panels(
                     engine.generate(_panel_request)
                     generated_by_digest[digest] = image_path
                     cache_index[render_cache_key] = str(image_path)
-                    if conditioned:
+                    if _honest_conditioned:
                         report.conditioned_panels += 1
                     else:
                         report.prompt_only_panels += 1
@@ -2861,7 +2869,7 @@ def render_panels(
                     block_index=lead,
                     prompt=prompt,
                     image_path=str(image_path),
-                    conditioned_on=conditioned,
+                    conditioned_on=_honest_conditioned,
                     negative_prompt=neg_prompt,
                     cache_key=render_cache_key,
                 )

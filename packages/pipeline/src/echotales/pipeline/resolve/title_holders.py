@@ -252,7 +252,9 @@ def harvest(store: Store, novel_id: str, names: dict[str, str]) -> list[Declarat
     return out
 
 
-def tenures(decls: list[Declaration], labels: dict[str, str]) -> dict[str | None, list[Tenure]]:
+def tenures(
+    decls: list[Declaration], labels: dict[str, str], *, causal: bool = False
+) -> dict[str | None, list[Tenure]]:
     """Holder intervals per organisation (None = the title used unqualified).
 
     A declaration without an organisation also counts for the organisation
@@ -283,8 +285,12 @@ def tenures(decls: list[Declaration], labels: dict[str, str]) -> dict[str | None
             else:
                 runs.append(Tenure(d.self_id, d.chapter, d.chapter, 1, d.chapter))
         for i, run in enumerate(runs):
-            if i == 0:
-                run.start = 1.0  # retroactive: held from the start of the volume
+            if i == 0 and not causal:
+                # Retroactive: held from the start of the volume. In `causal`
+                # mode (A7, CHIMERA backlog) the tenure starts at the first
+                # declaration instead, so no title mention is linked before
+                # the reader has been told who the holder is.
+                run.start = 1.0
             run.end = float("inf") if i == len(runs) - 1 else run.last_declared
         if runs:
             out[org] = runs
@@ -298,13 +304,24 @@ def _holder_at(runs: list[Tenure], chapter: float) -> Tenure | None:
     return None
 
 
-def link_title_holders(store: Store, novel_id: str, *, dry_run: bool = False) -> TitleHolderReport:
+def link_title_holders(
+    store: Store,
+    novel_id: str,
+    *,
+    dry_run: bool = False,
+    causal: bool = False,
+    fuzzy_handover: bool = False,
+) -> TitleHolderReport:
+    """`causal` (A7): start the first holder's tenure at their first declaration instead of chapter 1.
+    `fuzzy_handover` (B13): a closed tenure ends somewhere between its last declaration and the next
+    holder's first one (TAC-KBP's [T3, T4] bounds), instead of at a crisp point that makes the handover gap
+    read EXCLUDED. Both default to the shipped behaviour."""
     report = TitleHolderReport()
     names = _name_index(store, novel_id)
     labels = {e.id: e.canonical_label for e in store.all_selves(novel_id)}
     decls = harvest(store, novel_id, names)
     report.declarations = len(decls)
-    held = tenures(decls, labels)
+    held = tenures(decls, labels, causal=causal)
     report.holders = {org or "": runs for org, runs in held.items()}
     if not held:
         return report
@@ -501,8 +518,9 @@ def link_title_holders(store: Store, novel_id: str, *, dry_run: bool = False) ->
                 if b.alias_type is AliasType.TRANSFERABLE_TITLE}
     ordered = sorted(decls, key=lambda x: (x.chapter, x.block_index))
     for org, runs in held.items():
-        for run in runs:
+        for run_index, run in enumerate(runs):
             first = next(d for d in ordered if d.self_id == run.self_id)
+            next_start = runs[run_index + 1].start if run_index + 1 < len(runs) else None
             alias = f"the {org.title()} clan head" if org else "the clan head"
             if (run.self_id, comparison_key(alias)) in existing:
                 continue
@@ -511,8 +529,14 @@ def link_title_holders(store: Store, novel_id: str, *, dry_run: bool = False) ->
                 target_id=run.self_id,
                 interval=FuzzyInterval.open_ended(run.start, last_evidence=run.last_declared)
                 if run.end == float("inf")
-                else FuzzyInterval(from_lb=run.start, from_ub=run.start, to_lb=run.end, to_ub=run.end,
-                                   last_evidence=run.last_declared),
+                else FuzzyInterval(
+                    from_lb=run.start, from_ub=run.start, to_lb=run.end,
+                    # B13: this call used to pass `last_evidence=`, which FuzzyInterval has no field for and
+                    # pydantic silently dropped. The holder is certain through `to_lb` (the last declaration);
+                    # the handover itself is only bounded by the next holder's first declaration.
+                    to_ub=(next_start if fuzzy_handover and next_start is not None and next_start > run.end
+                           else run.end),
+                ),
                 learned_at_pos=DiscoursePosition(chapter=int(first.chapter)), observer_id=OBSERVER_READER,
                 evidence=first.evidence[:200], confidence=0.85,
             ))

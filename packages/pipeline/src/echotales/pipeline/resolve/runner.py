@@ -108,6 +108,12 @@ class ResolveReport:
     deferred: int = 0
     adjudicated: int = 0
     recovered_from_deferral: int = 0
+    #: Deferred cases whose re-gating said LINK but whose link was NOT written
+    #: (`apply_deferred_links=False`, the default). Before B1 (CHIMERA defect
+    #: backlog) such cases were removed from the queue and counted as
+    #: "recovered" while no mention was linked, which overstated resolution
+    #: and understated `unresolved` (= queue length).
+    regated_link_not_applied: int = 0
     unresolved: int = 0
     #: Groups that never used a naming mention, so could not found an entity.
     deictic_only: int = 0
@@ -186,7 +192,8 @@ class ResolveReport:
             f"{self.novel_id}: {self.groups:,} groups -> {self.entities:,} entities\n"
             f"  linked={self.linked:,}  created={self.created:,}  "
             f"deferred={self.deferred:,} ({self.defer_rate:.1%})  "
-            f"recovered={self.recovered_from_deferral:,}  unresolved={self.unresolved:,}\n"
+            f"recovered={self.recovered_from_deferral:,}  "
+            f"regated-link-not-applied={self.regated_link_not_applied:,}  unresolved={self.unresolved:,}\n"
             f"  deictic-only groups (no entity created): {self.deictic_only:,}\n"
             f"  non-person entities (not voice-cast): {non_person}\n"
             f"{kind_line}"
@@ -238,8 +245,13 @@ class GlobalResolver:
         router: LLMRouter | None = None,
         settings: Settings | None = None,
         corrections_log: CorrectionLog | None = None,
+        apply_deferred_links: bool = False,
     ) -> None:
         self.novel_id = novel_id
+        #: B1: when False (default) a re-gated LINK on a deferred case is only
+        #: tallied (`regated_link_not_applied`) and the case stays queued;
+        #: when True the link is written to the group's mentions.
+        self.apply_deferred_links = apply_deferred_links
         self.store = store
         self.lexicon = lexicon or Lexicon()
         self.model = model or ScoringModel()
@@ -670,15 +682,26 @@ class GlobalResolver:
             regated = self.gate.decide(candidates)
             decision, best = regated.decision, regated.candidate
             if decision is Decision.LINK and best is not None:
+                if not self.apply_deferred_links:
+                    # B1: never claim a recovery that wrote nothing. The case
+                    # stays queued (so `unresolved` is honest) and the
+                    # would-be link is only counted.
+                    self.report.regated_link_not_applied += 1
+                    continue
+                group = [
+                    m for m in self.store.get_mentions(self.novel_id, case.chapter)
+                    if (m.local_group_id or m.id) == case.group_id and m.target_id is None
+                ]
+                if not group:
+                    self.report.regated_link_not_applied += 1
+                    continue
+                self._apply_link(
+                    group, best.target_id, case.context, ResolutionMethod.DEFERRED_RERESOLVED,
+                    rationale=regated.rationale,
+                )
                 self.queue.remove(case.group_id)
                 recovered += 1
                 self.report.recovered_from_deferral += 1
-                self.report.by_method[ResolutionMethod.DEFERRED_RERESOLVED.value] = (
-                    self.report.by_method.get(
-                        ResolutionMethod.DEFERRED_RERESOLVED.value, 0
-                    )
-                    + 1
-                )
         return recovered
 
     def adjudicate_remaining(self) -> int:
@@ -824,6 +847,10 @@ def resolve_novel(
     force_rewipe: bool = False,
     capture_evidence: bool = False,
     evidence_run_tag: str = "",
+    apply_deferred_links: bool = False,
+    chapters: object | None = None,
+    prefix_volume_passes: bool = False,
+    causal_titles: bool = False,
 ) -> ResolveReport:
     """Run global resolution over a whole novel, in discourse order.
 
@@ -864,6 +891,7 @@ def resolve_novel(
         router=router if use_llm else None,
         settings=cfg,
         corrections_log=corrections_log,
+        apply_deferred_links=apply_deferred_links,
     )
 
     # Core Pipeline Hardening #9.7: the per-chapter loop body previously had
@@ -887,7 +915,13 @@ def resolve_novel(
     if capture_evidence:
         capture_stats = stack.enter_context(_capture(store, novel_id, run_tag=evidence_run_tag))
     try:
-        for i, chapter in enumerate(store.iter_chapters(novel_id), start=1):
+        # B2 (CHIMERA backlog): `resolve --chapters` used to be accepted and
+        # ignored, so a "prefix" run silently resolved the whole volume. A
+        # `chapters` range (anything supporting `number in chapters`) now
+        # selects which chapters are processed, numbered from 1 within the
+        # selection so the window boundaries stay coherent.
+        selected = [c for c in store.iter_chapters(novel_id) if chapters is None or c.number in chapters]
+        for i, chapter in enumerate(selected, start=1):
             mentions = store.get_mentions(novel_id, chapter.number)
             if not mentions:
                 continue
@@ -976,16 +1010,24 @@ def resolve_novel(
     # Titles named later in the volume ("the clan head" in ch1, "clan leader
     # Gu Yue Bo" from ch25) -- a volume-level pass, so it runs once the whole
     # volume is resolved (docs/EVOLUTION.md 4.95).
-    from echotales.pipeline.resolve.title_holders import link_title_holders
+    # In a prefix run (`chapters` given) both volume-level passes are skipped
+    # unless `prefix_volume_passes=True`: the title-holder harvest reads every
+    # chapter's text and the transmigration merge rewrites targets across all
+    # chapters, so either would let chapters after the prefix leak into it
+    # (A7, CHIMERA backlog).
+    if chapters is None or prefix_volume_passes:
+        from echotales.pipeline.resolve.title_holders import link_title_holders
 
-    title_report = link_title_holders(store, novel_id)
-    log.info(title_report.summary())
+        title_report = link_title_holders(store, novel_id, causal=causal_titles)
+        log.info(title_report.summary())
 
-    # A transmigrated protagonist and the name of the body he took ("Zhou
-    # Mingrui" / "Klein Moretti" / "Klein" on LOTM) are one Self.
-    from echotales.pipeline.resolve.transmigration import merge_transmigrations
+        # A transmigrated protagonist and the name of the body he took ("Zhou
+        # Mingrui" / "Klein Moretti" / "Klein" on LOTM) are one Self.
+        from echotales.pipeline.resolve.transmigration import merge_transmigrations
 
-    log.info(merge_transmigrations(store, novel_id).summary())
+        log.info(merge_transmigrations(store, novel_id).summary())
+    else:
+        log.info("prefix run (chapters=%r): title-holder and transmigration passes skipped", chapters)
 
     # Legacy-kind backfill, always run (EVOLUTION 4.54): `_entity_kind`
     # above only types entities minted *this* run. A novel resolved before
