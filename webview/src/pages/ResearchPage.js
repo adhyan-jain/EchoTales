@@ -215,6 +215,13 @@ export function RfE2ECard({ rf, confirm }) {
             {rf.robust.prompting_does_not_remove_leak ? ' (prompting does not replace versioning)' : ''}; second cipher input leak {ci(rf.robust.cipher2_input)} points (strict text rule).
           </p>
         )}
+        {rf.extra && (
+          <p className="text-xs text-muted" data-testid="rf-extra">
+            Earlier reader positions ({(rf.extra.models || []).join(', ')}): the versioned card leaks in {pct0(rf.extra.versioned_half)} half-way and{' '}
+            {pct0(rf.extra.versioned_three_quarters)} at three quarters, while the whole-book card, shown from the first mention, leaks in{' '}
+            {pct0(rf.extra.whole_any_position)} at every position; second card prompt input leak {ci(rf.extra.prompt2_input)} points.
+          </p>
+        )}
         {confirm && confirm.pooled_gap && (
           <p className="border-t border-border/50 pt-3 text-xs text-muted">
             Channel 1 confirmatory run ({confirm.events} events, {(confirm.models || []).join(', ')}): pooled memory gap {ci(confirm.pooled_gap)} points on
