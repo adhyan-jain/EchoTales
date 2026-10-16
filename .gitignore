@@ -99,3 +99,6 @@ graphify-out/
 .idea/
 .vscode/
 *.swp
+
+# prefix-faithfulness label sheets carry novel text excerpts; keep local only
+data/eval/prefix_audit/labels/sheet_*.txt

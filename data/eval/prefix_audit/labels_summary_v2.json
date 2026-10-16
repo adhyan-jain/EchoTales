@@ -1,0 +1,440 @@
+{
+ "labels": "MODEL-GENERATED: annotator 1 Claude (frozen), annotator 2 gpt-5.6-luna; no human review",
+ "luna_file_sha256": "36fc32cb7bb27d6aa44d90fc510d8f3c2ffd5bf9594abef6ecbe445a6ea28842",
+ "luna_records": 419,
+ "luna_invalid": 0,
+ "luna_unverified_known": 16,
+ "Dprime_truth": {
+  "characters_labelled_by_both": 117,
+  "kappa_4class": 0.6091,
+  "raw_agreement_4class": 0.7607,
+  "both_known": 61,
+  "contradictions_male_vs_female": 0,
+  "mine_known_luna_not": 16,
+  "luna_known_mine_not": 11,
+  "strict_verification_luna_known": 82,
+  "luna_known_total": 82
+ },
+ "Dprime_prefix_vs_my_46": {
+  "items": 46,
+  "kappa": 0.6331,
+  "raw": 0.7609,
+  "contradictions": 0,
+  "mine_known_luna_undetermined": 11,
+  "luna_known_mine_undetermined": 0
+ },
+ "Tstar_resolution": {
+  "agree": 61,
+  "mine_only": 16,
+  "neither": 44,
+  "luna_resolved": 21
+ },
+ "Tstar_distribution": {
+  "male": 79,
+  "female": 19,
+  "unknown": 39,
+  "non-person": 5
+ },
+ "Tstar_not_male_female_share": 0.3099,
+ "Aprime": {
+  "original": {
+   "character_cuts": 289,
+   "exposed_labelled": 139,
+   "diverging": 23,
+   "classes": {
+    "justified_by_text": 11,
+    "premature_disclosure": 10,
+    "reverse": 2,
+    "no_divergence_unsupported_in_both": 24,
+    "no_divergence": 92
+   },
+   "characters_per_class": {
+    "justified_by_text": 9,
+    "premature_disclosure": 9,
+    "reverse": 1,
+    "no_divergence_unsupported_in_both": 17,
+    "no_divergence": 48
+   },
+   "premature_rate": {
+    "n": 10,
+    "of": 289,
+    "share": 0.0346,
+    "wilson95": [
+     0.0189,
+     0.0625
+    ]
+   },
+   "justified_rate": {
+    "n": 11,
+    "of": 289,
+    "share": 0.0381,
+    "wilson95": [
+     0.0214,
+     0.0669
+    ]
+   }
+  },
+  "added": {
+   "character_cuts": 396,
+   "exposed_labelled": 138,
+   "diverging": 18,
+   "classes": {
+    "no_divergence": 101,
+    "no_divergence_unsupported_in_both": 19,
+    "justified_by_text": 10,
+    "premature_disclosure": 8
+   },
+   "characters_per_class": {
+    "no_divergence": 58,
+    "no_divergence_unsupported_in_both": 13,
+    "justified_by_text": 8,
+    "premature_disclosure": 6
+   },
+   "premature_rate": {
+    "n": 8,
+    "of": 396,
+    "share": 0.0202,
+    "wilson95": [
+     0.0103,
+     0.0394
+    ]
+   },
+   "justified_rate": {
+    "n": 10,
+    "of": 396,
+    "share": 0.0253,
+    "wilson95": [
+     0.0138,
+     0.0459
+    ]
+   }
+  },
+  "all": {
+   "character_cuts": 685,
+   "exposed_labelled": 277,
+   "diverging": 41,
+   "classes": {
+    "justified_by_text": 21,
+    "premature_disclosure": 18,
+    "reverse": 2,
+    "no_divergence_unsupported_in_both": 43,
+    "no_divergence": 193
+   },
+   "characters_per_class": {
+    "justified_by_text": 12,
+    "premature_disclosure": 11,
+    "reverse": 1,
+    "no_divergence_unsupported_in_both": 22,
+    "no_divergence": 61
+   },
+   "premature_rate": {
+    "n": 18,
+    "of": 685,
+    "share": 0.0263,
+    "wilson95": [
+     0.0167,
+     0.0412
+    ]
+   },
+   "justified_rate": {
+    "n": 21,
+    "of": 685,
+    "share": 0.0307,
+    "wilson95": [
+     0.0201,
+     0.0464
+    ]
+   }
+  }
+ },
+ "Bprime": {
+  "original": {
+   "characters": 58,
+   "status_quo": {
+    "correct": {
+     "n": 96,
+     "of": 126,
+     "share": 0.7619,
+     "wilson95": [
+      0.6805,
+      0.8278
+     ]
+    },
+    "withheld": {
+     "n": 28,
+     "of": 126,
+     "share": 0.2222,
+     "wilson95": [
+      0.1585,
+      0.3024
+     ]
+    },
+    "wrong": {
+     "n": 2,
+     "of": 126,
+     "share": 0.0159,
+     "wilson95": [
+      0.0044,
+      0.056
+     ]
+    },
+    "cuts": 126
+   },
+   "prefix_only_build": {
+    "correct": {
+     "n": 77,
+     "of": 126,
+     "share": 0.6111,
+     "wilson95": [
+      0.5239,
+      0.6917
+     ]
+    },
+    "withheld": {
+     "n": 47,
+     "of": 126,
+     "share": 0.373,
+     "wilson95": [
+      0.2935,
+      0.46
+     ]
+    },
+    "wrong": {
+     "n": 2,
+     "of": 126,
+     "share": 0.0159,
+     "wilson95": [
+      0.0044,
+      0.056
+     ]
+    },
+    "cuts": 126
+   },
+   "repaired": {
+    "correct": {
+     "n": 77,
+     "of": 126,
+     "share": 0.6111,
+     "wilson95": [
+      0.5239,
+      0.6917
+     ]
+    },
+    "withheld": {
+     "n": 47,
+     "of": 126,
+     "share": 0.373,
+     "wilson95": [
+      0.2935,
+      0.46
+     ]
+    },
+    "wrong": {
+     "n": 2,
+     "of": 126,
+     "share": 0.0159,
+     "wilson95": [
+      0.0044,
+      0.056
+     ]
+    },
+    "cuts": 126
+   }
+  },
+  "added": {
+   "characters": 63,
+   "status_quo": {
+    "correct": {
+     "n": 88,
+     "of": 119,
+     "share": 0.7395,
+     "wilson95": [
+      0.654,
+      0.81
+     ]
+    },
+    "withheld": {
+     "n": 28,
+     "of": 119,
+     "share": 0.2353,
+     "wilson95": [
+      0.1681,
+      0.319
+     ]
+    },
+    "wrong": {
+     "n": 3,
+     "of": 119,
+     "share": 0.0252,
+     "wilson95": [
+      0.0086,
+      0.0715
+     ]
+    },
+    "cuts": 119
+   },
+   "prefix_only_build": {
+    "correct": {
+     "n": 72,
+     "of": 119,
+     "share": 0.605,
+     "wilson95": [
+      0.5152,
+      0.6883
+     ]
+    },
+    "withheld": {
+     "n": 44,
+     "of": 119,
+     "share": 0.3697,
+     "wilson95": [
+      0.2884,
+      0.4593
+     ]
+    },
+    "wrong": {
+     "n": 3,
+     "of": 119,
+     "share": 0.0252,
+     "wilson95": [
+      0.0086,
+      0.0715
+     ]
+    },
+    "cuts": 119
+   },
+   "repaired": {
+    "correct": {
+     "n": 72,
+     "of": 119,
+     "share": 0.605,
+     "wilson95": [
+      0.5152,
+      0.6883
+     ]
+    },
+    "withheld": {
+     "n": 44,
+     "of": 119,
+     "share": 0.3697,
+     "wilson95": [
+      0.2884,
+      0.4593
+     ]
+    },
+    "wrong": {
+     "n": 3,
+     "of": 119,
+     "share": 0.0252,
+     "wilson95": [
+      0.0086,
+      0.0715
+     ]
+    },
+    "cuts": 119
+   }
+  },
+  "all": {
+   "characters": 67,
+   "status_quo": {
+    "correct": {
+     "n": 184,
+     "of": 245,
+     "share": 0.751,
+     "wilson95": [
+      0.6933,
+      0.801
+     ]
+    },
+    "withheld": {
+     "n": 56,
+     "of": 245,
+     "share": 0.2286,
+     "wilson95": [
+      0.1804,
+      0.2851
+     ]
+    },
+    "wrong": {
+     "n": 5,
+     "of": 245,
+     "share": 0.0204,
+     "wilson95": [
+      0.0087,
+      0.0469
+     ]
+    },
+    "cuts": 245
+   },
+   "prefix_only_build": {
+    "correct": {
+     "n": 149,
+     "of": 245,
+     "share": 0.6082,
+     "wilson95": [
+      0.5458,
+      0.6672
+     ]
+    },
+    "withheld": {
+     "n": 91,
+     "of": 245,
+     "share": 0.3714,
+     "wilson95": [
+      0.3133,
+      0.4335
+     ]
+    },
+    "wrong": {
+     "n": 5,
+     "of": 245,
+     "share": 0.0204,
+     "wilson95": [
+      0.0087,
+      0.0469
+     ]
+    },
+    "cuts": 245
+   },
+   "repaired": {
+    "correct": {
+     "n": 149,
+     "of": 245,
+     "share": 0.6082,
+     "wilson95": [
+      0.5458,
+      0.6672
+     ]
+    },
+    "withheld": {
+     "n": 91,
+     "of": 245,
+     "share": 0.3714,
+     "wilson95": [
+      0.3133,
+      0.4335
+     ]
+    },
+    "wrong": {
+     "n": 5,
+     "of": 245,
+     "share": 0.0204,
+     "wilson95": [
+      0.0087,
+      0.0469
+     ]
+    },
+    "cuts": 245
+   }
+  }
+ },
+ "wrong_values_by_character": {
+  "lord-of-the-mysteries:self:13b38645a0|status_quo": 5,
+  "lord-of-the-mysteries:self:13b38645a0|prefix_only": 5
+ },
+ "Aprime_sensitivity_strict_verification_diverging": {
+  "justified_by_text": 21,
+  "premature_disclosure": 18,
+  "reverse": 2
+ }
+}

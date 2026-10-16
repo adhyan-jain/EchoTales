@@ -1,0 +1,144 @@
+{
+ "labels": "MODEL-GENERATED, two annotators (T* rule of PREREG_LABELS Addendum 2); no human labels",
+ "pairs": 512,
+ "characters": 98,
+ "divergence_stamp_vs_prefix_build": {
+  "1,0.8": 0,
+  "1,1.0": 0,
+  "2,0.8": 0,
+  "2,1.0": 0,
+  "3,0.8": 0,
+  "3,1.0": 0
+ },
+ "all_pairs": {
+  "status_quo": {
+   "cuts": 512,
+   "correct": 361,
+   "withheld": 146,
+   "wrong": 5,
+   "correct_share": 0.7051,
+   "wrong_share": 0.0098
+  },
+  "plain_repair": {
+   "cuts": 512,
+   "correct": 326,
+   "withheld": 181,
+   "wrong": 5,
+   "correct_share": 0.6367,
+   "wrong_share": 0.0098
+  },
+  "anchored_1_0.8": {
+   "cuts": 512,
+   "correct": 360,
+   "withheld": 146,
+   "wrong": 6,
+   "correct_share": 0.7031,
+   "wrong_share": 0.0117,
+   "recovered_fraction": 0.9714
+  },
+  "anchored_1_1.0": {
+   "cuts": 512,
+   "correct": 348,
+   "withheld": 158,
+   "wrong": 6,
+   "correct_share": 0.6797,
+   "wrong_share": 0.0117,
+   "recovered_fraction": 0.6286
+  },
+  "anchored_2_0.8": {
+   "cuts": 512,
+   "correct": 340,
+   "withheld": 167,
+   "wrong": 5,
+   "correct_share": 0.6641,
+   "wrong_share": 0.0098,
+   "recovered_fraction": 0.4
+  },
+  "anchored_2_1.0": {
+   "cuts": 512,
+   "correct": 328,
+   "withheld": 179,
+   "wrong": 5,
+   "correct_share": 0.6406,
+   "wrong_share": 0.0098,
+   "recovered_fraction": 0.0571
+  },
+  "anchored_3_0.8": {
+   "cuts": 512,
+   "correct": 340,
+   "withheld": 167,
+   "wrong": 5,
+   "correct_share": 0.6641,
+   "wrong_share": 0.0098,
+   "recovered_fraction": 0.4
+  },
+  "anchored_3_1.0": {
+   "cuts": 512,
+   "correct": 328,
+   "withheld": 179,
+   "wrong": 5,
+   "correct_share": 0.6406,
+   "wrong_share": 0.0098,
+   "recovered_fraction": 0.0571
+  }
+ },
+ "selected_setting_by_heldout_serial": {
+  "lord-of-the-mysteries": [
+   1,
+   0.8
+  ],
+  "omniscient-readers-viewpoint": [
+   1,
+   0.8
+  ],
+  "reverend-insanity": [
+   1,
+   0.8
+  ]
+ },
+ "heldout_pooled": {
+  "status_quo": {
+   "cuts": 512,
+   "correct": 361,
+   "withheld": 146,
+   "wrong": 5,
+   "correct_share": 0.7051,
+   "wrong_share": 0.0098
+  },
+  "plain": {
+   "cuts": 512,
+   "correct": 326,
+   "withheld": 181,
+   "wrong": 5,
+   "correct_share": 0.6367,
+   "wrong_share": 0.0098
+  },
+  "chosen": {
+   "cuts": 512,
+   "correct": 360,
+   "withheld": 146,
+   "wrong": 6,
+   "correct_share": 0.7031,
+   "wrong_share": 0.0117
+  },
+  "recovered_fraction": 0.9714
+ },
+ "H5": {
+  "a_zero_stamp_divergence": true,
+  "b_recovered_ge_50pct": true,
+  "c_wrong_le_3pct": true,
+  "verdict": "SUPPORTED"
+ },
+ "over_reading_on_exposed_pairs_with_luna_prefix_label": {
+  "pairs": 277,
+  "status_quo": 61,
+  "plain_repair": 43,
+  "anchored_1_0.8": 51,
+  "anchored_1_1.0": 51,
+  "anchored_2_0.8": 47,
+  "anchored_2_1.0": 47,
+  "anchored_3_0.8": 45,
+  "anchored_3_1.0": 45
+ },
+ "reference": "combined"
+}
