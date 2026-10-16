@@ -1,0 +1,11 @@
+{
+  "prereg": "PREREG_L2U_unseen_text_control.md v1",
+  "prereg_sha256": "ea2fb99b24bf63829184415360814f5b840a1cd506166d4dc4034dd65b0c2ee5",
+  "frozen": "2026-10-15, before the L2U runner existed and before any L2U model call",
+  "rule": "A change after freezing is a new file with a higher version number, never an edit.",
+  "runner_sha256": "c08224edda2dad8ed69b3130780860754ea0e3379afd95423c25d8171a178e88",
+  "dryrun_sha256": "ec47405fd9c99f63058ace1a34e940b38654ef47672b1a7a6f83f1b44dcf8c8d",
+  "budget_approved": "owner: cumulative cap $0.10; this run guarded at $0.04; running total before run $0.0376",
+  "results_sha256": "0f862a8dcdc8eccc16f5ecaffe4d6d6c14b2629886939ed701ad350f5f3b43bc",
+  "analysis_sha256": "5e3378bd17bbfefc30fdf19b917977b9fc60da82b3600a1b5e5dee2984ba1361"
+}

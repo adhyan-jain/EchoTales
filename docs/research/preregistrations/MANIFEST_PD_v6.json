@@ -1,0 +1,27 @@
+{
+ "frozen_for": "PREREG_PD_v6.md",
+ "prereg_sha256": "247cc46c1f1afbe7d0b2a53318f6bf49a59ef3aeb1fd463263e063fa9c249e6f",
+ "event_files_sha256": {
+  "PD_events_v6_additions.json": "39f80993c01f36fc17609e79f738c6d72a7b833b8e9271801ff9fa608edb073a"
+ },
+ "inputs_sha256": {
+  "PD_events_v6_additions.json": "39f80993c01f36fc17609e79f738c6d72a7b833b8e9271801ff9fa608edb073a",
+  "PD_prompts_v1.json": "b7cd09994a52aa4ef001bfad7cda0309ebc282658f36c4ac79c8a24f2f44a3fc",
+  "PD_prompts_v2.json": "0ff1e2327488ecde318841abcceef9b6bd13bfcd1ed6da2a14cc417ccd3ce0c8",
+  "PD_prompts_v4.json": "b343cf360c183043d0c39011789c62d528b91dd7cf530f7095eee99bf4bc0d1a"
+ },
+ "script_sha256_at_freeze": "1b7f6c8aa9f061e371f3b840d6c2bb378e25bbe9be44198c64d17040a11ddc0e",
+ "results_2026-10-16": {
+  "runs": {
+   "run_gemma2_9b.json": "e660b5a8f5ea433390b58a78f217f0b41c8746cf69ad835ba153288de6379093",
+   "run_gpt-5.6-luna.json": "bf59b8b920bd4a93c5b4d25426ddf48b3d3e2a3ce20973af093e60ef8e4caa22",
+   "run_llama3.1_8b.json": "bc817aea3b3125a30bee93441378f55b2b290704ee588248ca85b6f5b5509cb1",
+   "run_mistral_7b-instruct.json": "3415a75bdbf607ab2c4501b49d621dc7c6a229e4ee762c96fa1a74c42bc0bbda",
+   "run_phi4-mini_latest.json": "0fc51c0a1e628cfa09ed1b387402f76345ba3b33aa773702285c0bfc5c0f0f75",
+   "run_qwen2.5_7b.json": "c56fd7503fccef81c9ae042d55f389e61b55a0e9ad5fa682027054d04bf3efa3"
+  },
+  "analysis_sha256": "d53c8f6099f1c1f41fbc7e5d2dce0fa3939ab88b6e697152ae07204fb9ecc532",
+  "pooled_sha256": "c0abb7fce31c308d9c64a9ec6c177e0c774225f28d0390dafc19bbd1f53f460e",
+  "verdict": "NOT SUPPORTED (valid local pool); Luna replicates"
+ }
+}

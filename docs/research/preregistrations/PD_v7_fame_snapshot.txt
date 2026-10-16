@@ -1,0 +1,301 @@
+# https://www.gutenberg.org/browse/scores/top fetched 2026-10-16 04:54 UTC; list, rank, gutenberg id, title as listed (download counts removed)
+yesterday	1	2701	Moby Dick; Or, The Whale by Herman Melville
+yesterday	2	1342	Pride and Prejudice by Jane Austen
+yesterday	3	1727	The Odyssey by Homer
+yesterday	4	2641	A Room with a View by E. M. Forster
+yesterday	5	2554	Crime and Punishment by Fyodor Dostoyevsky
+yesterday	6	65238	The Secret of Chimneys by Agatha Christie
+yesterday	7	3268	The Mysteries of Udolpho by Ann Ward Radcliffe
+yesterday	8	1513	Romeo and Juliet by William Shakespeare
+yesterday	9	2465	Carmen by Prosper Mérimée
+yesterday	10	2868	The Green Mummy by Fergus Hume
+yesterday	11	1661	The Adventures of Sherlock Holmes by Arthur Conan Doyle
+yesterday	12	67979	The Blue Castle: a novel by L. M. Montgomery
+yesterday	13	1260	Jane Eyre: An Autobiography by Charlotte Brontë
+yesterday	14	34413	The Love Letters of Mary Wollstonecraft to Gilbert Imlay by Mary Wollstonecraft
+yesterday	15	59828	The String of Pearls; Or, The Barber of Fleet Street. A Domestic Romance. by Prest and Rymer
+yesterday	16	62215	Le Fantôme de l'Opéra by Gaston Leroux
+yesterday	17	1695	The Man Who Was Thursday: A Nightmare by G. K. Chesterton
+yesterday	18	345	Dracula by Bram Stoker
+yesterday	19	11	Alice's Adventures in Wonderland by Lewis Carroll
+yesterday	20	5197	My Life — Volume 1 by Richard Wagner
+yesterday	21	21839	Sense and Sensibility by Jane Austen
+yesterday	22	601	The Monk: A Romance by M. G. Lewis
+yesterday	23	43	The strange case of Dr. Jekyll and Mr. Hyde by Robert Louis Stevenson
+yesterday	24	6133	The Extraordinary Adventures of Arsène Lupin, Gentleman-Burglar by Maurice Leblanc
+yesterday	25	831	Four Arthurian Romances by active 12th century de Troyes Chrétien
+yesterday	26	42	The strange case of Dr. Jekyll and Mr. Hyde by Robert Louis Stevenson
+yesterday	27	2680	Meditations by Emperor of Rome Marcus Aurelius
+yesterday	28	3011	The Lady of the Lake by Walter Scott
+yesterday	29	468	Manon Lescaut by abbé Prévost
+yesterday	30	51252	The Book of the Thousand Nights and a Night — Volume 01 (of 10)
+yesterday	31	76639	Eloisa : by Jean-Jacques Rousseau
+yesterday	32	564	The Mystery of Edwin Drood by Charles Dickens
+yesterday	33	47530	Oliver Twist, Vol. 2 (of 3) by Charles Dickens
+yesterday	34	72	Thuvia, maid of Mars by Edgar Rice Burroughs
+yesterday	35	22541	The Misplaced Battleship by Harry Harrison
+yesterday	36	75201	A farewell to arms by Ernest Hemingway
+yesterday	37	45839	Dracula by Bram Stoker
+yesterday	38	3296	The Confessions of St. Augustine by Saint of Hippo Augustine
+yesterday	39	7326	The Yeoman Adventurer by George W. Gough
+yesterday	40	42671	Pride and Prejudice by Jane Austen
+yesterday	41	145	Middlemarch by George Eliot
+yesterday	42	19476	A Honeymoon in Space by George Chetwynd Griffith
+yesterday	43	71046	Modern English biography, volume 2 (of 4), I-Q by Frederic Boase
+yesterday	44	24739	Bidwell's Travels, from Wall Street to London Prison: Fifteen Years in Solitude by Austin Bidwell
+yesterday	45	8492	The King in Yellow by Robert W. Chambers
+yesterday	46	100	The Complete Works of William Shakespeare by William Shakespeare
+yesterday	47	393	The Blue Lagoon: A Romance by H. De Vere Stacpoole
+yesterday	48	589	Catriona by Robert Louis Stevenson
+yesterday	49	31100	The Complete Project Gutenberg Works of Jane Austen by Jane Austen
+yesterday	50	36462	King Arthur and the Knights of the Round Table by Sir Thomas Malory
+yesterday	51	244	A Study in Scarlet by Arthur Conan Doyle
+yesterday	52	53874	Under the Red Dragon: A Novel by James Grant
+yesterday	53	103	Around the World in Eighty Days by Jules Verne
+yesterday	54	37106	Little Women; Or, Meg, Jo, Beth, and Amy by Louisa May Alcott
+yesterday	55	70854	The Countess of Pembroke's Arcadia by Philip Sidney
+yesterday	56	1184	The Count of Monte Cristo by Alexandre Dumas and Auguste Maquet
+yesterday	57	40284	The Sex Life of the Gods by M. E. Knerr
+yesterday	58	24793	Blow The Man Down: A Romance Of The Coast by Holman Day
+yesterday	59	2852	The Hound of the Baskervilles by Arthur Conan Doyle
+yesterday	60	18143	Roméo et Juliette by William Shakespeare
+yesterday	61	1259	Twenty years after by Alexandre Dumas and Auguste Maquet
+yesterday	62	1212	Love and Freindship [sic] by Jane Austen
+yesterday	63	1608	Camille (La Dame aux Camilias) by Alexandre Dumas
+yesterday	64	245	Life on the Mississippi by Mark Twain
+yesterday	65	2148	The Works of Edgar Allan Poe — Volume 2 by Edgar Allan Poe
+yesterday	66	1523	As You Like It by William Shakespeare
+yesterday	67	76178	I am a woman by Ann Bannon
+yesterday	68	204	The innocence of Father Brown by G. K. Chesterton
+yesterday	69	161	Sense and Sensibility by Jane Austen
+yesterday	70	2002	Sonnets from the Portuguese by Elizabeth Barrett Browning
+yesterday	71	2147	The Works of Edgar Allan Poe — Volume 1 by Edgar Allan Poe
+yesterday	72	223	The wisdom of Father Brown by G. K. Chesterton
+yesterday	73	209	The Turn of the Screw by Henry James
+yesterday	74	224	A pair of blue eyes by Thomas Hardy
+yesterday	75	108	The Return of Sherlock Holmes by Arthur Conan Doyle
+yesterday	76	27827	The Kama Sutra of Vatsyayana by Vatsyayana
+yesterday	77	834	The Memoirs of Sherlock Holmes by Arthur Conan Doyle
+yesterday	78	2825	Undine by Freiherr de Friedrich Heinrich Karl La Motte-Fouqué
+yesterday	79	48296	Linnet: A Romance by Grant Allen
+yesterday	80	23	Narrative of the Life of Frederick Douglass, an American Slave by Frederick Douglass
+yesterday	81	4499	Complete Short Works of George Meredith by George Meredith
+yesterday	82	2620	The Home Book of Verse — Volume 2 by Burton Egbert Stevenson
+yesterday	83	31472	Cynthia's Chauffeur by Louis Tracy
+yesterday	84	3922	The Red Lily — Complete by Anatole France
+yesterday	85	1063	The Cask of Amontillado by Edgar Allan Poe
+yesterday	86	69087	The murder of Roger Ackroyd by Agatha Christie
+yesterday	87	55179	One of the Six Hundred: A Novel
+yesterday	88	863	The Mysterious Affair at Styles by Agatha Christie
+yesterday	89	61851	El crimen y el castigo by Fyodor Dostoyevsky
+yesterday	90	175	The Phantom of the Opera by Gaston Leroux
+yesterday	91	68283	The call of Cthulhu by H. P. Lovecraft
+yesterday	92	38311	What Will People Say? A Novel by Rupert Hughes
+yesterday	93	38177	The Passionate Elopement by Compton MacKenzie
+yesterday	94	2097	The Sign of the Four by Arthur Conan Doyle
+yesterday	95	921	De Profundis by Oscar Wilde
+yesterday	96	76668	Trial by water by Sewell Peaslee Wright
+yesterday	97	20203	Autobiography of Benjamin Franklin by Benjamin Franklin
+yesterday	98	221	The Return of Sherlock Holmes by Arthur Conan Doyle
+yesterday	99	51428	That Which Hath Wings: A Novel of the Day
+yesterday	100	7889	Erotica Romana by Johann Wolfgang von Goethe
+last 7 days	1	1342	Pride and Prejudice by Jane Austen
+last 7 days	2	2701	Moby Dick; Or, The Whale by Herman Melville
+last 7 days	3	1727	The Odyssey by Homer
+last 7 days	4	2641	A Room with a View by E. M. Forster
+last 7 days	5	1513	Romeo and Juliet by William Shakespeare
+last 7 days	6	65238	The Secret of Chimneys by Agatha Christie
+last 7 days	7	3268	The Mysteries of Udolpho by Ann Ward Radcliffe
+last 7 days	8	2554	Crime and Punishment by Fyodor Dostoyevsky
+last 7 days	9	2465	Carmen by Prosper Mérimée
+last 7 days	10	34413	The Love Letters of Mary Wollstonecraft to Gilbert Imlay by Mary Wollstonecraft
+last 7 days	11	2868	The Green Mummy by Fergus Hume
+last 7 days	12	67979	The Blue Castle: a novel by L. M. Montgomery
+last 7 days	13	1260	Jane Eyre: An Autobiography by Charlotte Brontë
+last 7 days	14	59828	The String of Pearls; Or, The Barber of Fleet Street. A Domestic Romance. by Prest and Rymer
+last 7 days	15	1661	The Adventures of Sherlock Holmes by Arthur Conan Doyle
+last 7 days	16	62215	Le Fantôme de l'Opéra by Gaston Leroux
+last 7 days	17	6133	The Extraordinary Adventures of Arsène Lupin, Gentleman-Burglar by Maurice Leblanc
+last 7 days	18	1695	The Man Who Was Thursday: A Nightmare by G. K. Chesterton
+last 7 days	19	21839	Sense and Sensibility by Jane Austen
+last 7 days	20	3011	The Lady of the Lake by Walter Scott
+last 7 days	21	5197	My Life — Volume 1 by Richard Wagner
+last 7 days	22	51252	The Book of the Thousand Nights and a Night — Volume 01 (of 10)
+last 7 days	23	601	The Monk: A Romance by M. G. Lewis
+last 7 days	24	831	Four Arthurian Romances by active 12th century de Troyes Chrétien
+last 7 days	25	76639	Eloisa : by Jean-Jacques Rousseau
+last 7 days	26	72	Thuvia, maid of Mars by Edgar Rice Burroughs
+last 7 days	27	75201	A farewell to arms by Ernest Hemingway
+last 7 days	28	19476	A Honeymoon in Space by George Chetwynd Griffith
+last 7 days	29	7326	The Yeoman Adventurer by George W. Gough
+last 7 days	30	345	Dracula by Bram Stoker
+last 7 days	31	2680	Meditations by Emperor of Rome Marcus Aurelius
+last 7 days	32	468	Manon Lescaut by abbé Prévost
+last 7 days	33	11	Alice's Adventures in Wonderland by Lewis Carroll
+last 7 days	34	71046	Modern English biography, volume 2 (of 4), I-Q by Frederic Boase
+last 7 days	35	22541	The Misplaced Battleship by Harry Harrison
+last 7 days	36	42671	Pride and Prejudice by Jane Austen
+last 7 days	37	45839	Dracula by Bram Stoker
+last 7 days	38	43	The strange case of Dr. Jekyll and Mr. Hyde by Robert Louis Stevenson
+last 7 days	39	42	The strange case of Dr. Jekyll and Mr. Hyde by Robert Louis Stevenson
+last 7 days	40	564	The Mystery of Edwin Drood by Charles Dickens
+last 7 days	41	3296	The Confessions of St. Augustine by Saint of Hippo Augustine
+last 7 days	42	24739	Bidwell's Travels, from Wall Street to London Prison: Fifteen Years in Solitude by Austin Bidwell
+last 7 days	43	47530	Oliver Twist, Vol. 2 (of 3) by Charles Dickens
+last 7 days	44	100	The Complete Works of William Shakespeare by William Shakespeare
+last 7 days	45	31100	The Complete Project Gutenberg Works of Jane Austen by Jane Austen
+last 7 days	46	145	Middlemarch by George Eliot
+last 7 days	47	8492	The King in Yellow by Robert W. Chambers
+last 7 days	48	36462	King Arthur and the Knights of the Round Table by Sir Thomas Malory
+last 7 days	49	53874	Under the Red Dragon: A Novel by James Grant
+last 7 days	50	70854	The Countess of Pembroke's Arcadia by Philip Sidney
+last 7 days	51	40284	The Sex Life of the Gods by M. E. Knerr
+last 7 days	52	24793	Blow The Man Down: A Romance Of The Coast by Holman Day
+last 7 days	53	393	The Blue Lagoon: A Romance by H. De Vere Stacpoole
+last 7 days	54	589	Catriona by Robert Louis Stevenson
+last 7 days	55	18143	Roméo et Juliette by William Shakespeare
+last 7 days	56	103	Around the World in Eighty Days by Jules Verne
+last 7 days	57	1184	The Count of Monte Cristo by Alexandre Dumas and Auguste Maquet
+last 7 days	58	1259	Twenty years after by Alexandre Dumas and Auguste Maquet
+last 7 days	59	37106	Little Women; Or, Meg, Jo, Beth, and Amy by Louisa May Alcott
+last 7 days	60	161	Sense and Sensibility by Jane Austen
+last 7 days	61	76178	I am a woman by Ann Bannon
+last 7 days	62	245	Life on the Mississippi by Mark Twain
+last 7 days	63	51428	That Which Hath Wings: A Novel of the Day
+last 7 days	64	55179	One of the Six Hundred: A Novel
+last 7 days	65	53416	Only a girl's love by Charles Garvice
+last 7 days	66	244	A Study in Scarlet by Arthur Conan Doyle
+last 7 days	67	42389	The Pirate by Walter Scott
+last 7 days	68	224	A pair of blue eyes by Thomas Hardy
+last 7 days	69	57641	One Woman: Being the Second Part of a Romance of Sussex by Alfred Ollivant
+last 7 days	70	38311	What Will People Say? A Novel by Rupert Hughes
+last 7 days	71	1608	Camille (La Dame aux Camilias) by Alexandre Dumas
+last 7 days	72	38177	The Passionate Elopement by Compton MacKenzie
+last 7 days	73	17460	Lorna Doone: A Romance of Exmoor by R. D. Blackmore
+last 7 days	74	2620	The Home Book of Verse — Volume 2 by Burton Egbert Stevenson
+last 7 days	75	18459	Hypnerotomachia: The Strife of Loue in a Dreame by Francesco Colonna
+last 7 days	76	2002	Sonnets from the Portuguese by Elizabeth Barrett Browning
+last 7 days	77	7889	Erotica Romana by Johann Wolfgang von Goethe
+last 7 days	78	46276	The Treasure of Pearls: A Romance of Adventures in California by Gustave Aimard
+last 7 days	79	4499	Complete Short Works of George Meredith by George Meredith
+last 7 days	80	1212	Love and Freindship [sic] by Jane Austen
+last 7 days	81	53154	Cameron of Lochiel by Philippe Aubert de Gaspé
+last 7 days	82	48296	Linnet: A Romance by Grant Allen
+last 7 days	83	49987	Forest Days: A Romance of Old Times by G. P. R. James
+last 7 days	84	204	The innocence of Father Brown by G. K. Chesterton
+last 7 days	85	23	Narrative of the Life of Frederick Douglass, an American Slave by Frederick Douglass
+last 7 days	86	2852	The Hound of the Baskervilles by Arthur Conan Doyle
+last 7 days	87	3922	The Red Lily — Complete by Anatole France
+last 7 days	88	36223	The Boy with Wings by Berta Ruck
+last 7 days	89	35548	Doctor Cupid: A Novel by Rhoda Broughton
+last 7 days	90	20203	Autobiography of Benjamin Franklin by Benjamin Franklin
+last 7 days	91	31472	Cynthia's Chauffeur by Louis Tracy
+last 7 days	92	14244	The Romance of Tristan and Iseult by Joseph Bédier
+last 7 days	93	2825	Undine by Freiherr de Friedrich Heinrich Karl La Motte-Fouqué
+last 7 days	94	1523	As You Like It by William Shakespeare
+last 7 days	95	28203	Moods by Louisa May Alcott
+last 7 days	96	36725	On the Cross: A Romance of the Passion Play at Oberammergau by Wilhelmine von Hillern
+last 7 days	97	31635	The Silent Barrier by Louis Tracy
+last 7 days	98	32155	The Love Letters of Henry VIII to Anne Boleyn; With Notes by King of England Henry VIII
+last 7 days	99	42681	The Hero of the People: A Historical Romance of Love, Liberty and Loyalty by Alexandre Dumas
+last 7 days	100	223	The wisdom of Father Brown by G. K. Chesterton
+last 30 days	1	2701	Moby Dick; Or, The Whale by Herman Melville
+last 30 days	2	1342	Pride and Prejudice by Jane Austen
+last 30 days	3	1727	The Odyssey by Homer
+last 30 days	4	2641	A Room with a View by E. M. Forster
+last 30 days	5	1513	Romeo and Juliet by William Shakespeare
+last 30 days	6	2554	Crime and Punishment by Fyodor Dostoyevsky
+last 30 days	7	65238	The Secret of Chimneys by Agatha Christie
+last 30 days	8	3268	The Mysteries of Udolpho by Ann Ward Radcliffe
+last 30 days	9	2465	Carmen by Prosper Mérimée
+last 30 days	10	67979	The Blue Castle: a novel by L. M. Montgomery
+last 30 days	11	2868	The Green Mummy by Fergus Hume
+last 30 days	12	1661	The Adventures of Sherlock Holmes by Arthur Conan Doyle
+last 30 days	13	34413	The Love Letters of Mary Wollstonecraft to Gilbert Imlay by Mary Wollstonecraft
+last 30 days	14	1260	Jane Eyre: An Autobiography by Charlotte Brontë
+last 30 days	15	5197	My Life — Volume 1 by Richard Wagner
+last 30 days	16	11	Alice's Adventures in Wonderland by Lewis Carroll
+last 30 days	17	100	The Complete Works of William Shakespeare by William Shakespeare
+last 30 days	18	59828	The String of Pearls; Or, The Barber of Fleet Street. A Domestic Romance. by Prest and Rymer
+last 30 days	19	62215	Le Fantôme de l'Opéra by Gaston Leroux
+last 30 days	20	345	Dracula by Bram Stoker
+last 30 days	21	3011	The Lady of the Lake by Walter Scott
+last 30 days	22	1695	The Man Who Was Thursday: A Nightmare by G. K. Chesterton
+last 30 days	23	6133	The Extraordinary Adventures of Arsène Lupin, Gentleman-Burglar by Maurice Leblanc
+last 30 days	24	21839	Sense and Sensibility by Jane Austen
+last 30 days	25	2680	Meditations by Emperor of Rome Marcus Aurelius
+last 30 days	26	24739	Bidwell's Travels, from Wall Street to London Prison: Fifteen Years in Solitude by Austin Bidwell
+last 30 days	27	51252	The Book of the Thousand Nights and a Night — Volume 01 (of 10)
+last 30 days	28	601	The Monk: A Romance by M. G. Lewis
+last 30 days	29	831	Four Arthurian Romances by active 12th century de Troyes Chrétien
+last 30 days	30	145	Middlemarch by George Eliot
+last 30 days	31	76639	Eloisa : by Jean-Jacques Rousseau
+last 30 days	32	72	Thuvia, maid of Mars by Edgar Rice Burroughs
+last 30 days	33	19476	A Honeymoon in Space by George Chetwynd Griffith
+last 30 days	34	7326	The Yeoman Adventurer by George W. Gough
+last 30 days	35	468	Manon Lescaut by abbé Prévost
+last 30 days	36	75201	A farewell to arms by Ernest Hemingway
+last 30 days	37	22541	The Misplaced Battleship by Harry Harrison
+last 30 days	38	43	The strange case of Dr. Jekyll and Mr. Hyde by Robert Louis Stevenson
+last 30 days	39	42671	Pride and Prejudice by Jane Austen
+last 30 days	40	71046	Modern English biography, volume 2 (of 4), I-Q by Frederic Boase
+last 30 days	41	45839	Dracula by Bram Stoker
+last 30 days	42	8492	The King in Yellow by Robert W. Chambers
+last 30 days	43	42	The strange case of Dr. Jekyll and Mr. Hyde by Robert Louis Stevenson
+last 30 days	44	37106	Little Women; Or, Meg, Jo, Beth, and Amy by Louisa May Alcott
+last 30 days	45	564	The Mystery of Edwin Drood by Charles Dickens
+last 30 days	46	1184	The Count of Monte Cristo by Alexandre Dumas and Auguste Maquet
+last 30 days	47	31100	The Complete Project Gutenberg Works of Jane Austen by Jane Austen
+last 30 days	48	47530	Oliver Twist, Vol. 2 (of 3) by Charles Dickens
+last 30 days	49	3296	The Confessions of St. Augustine by Saint of Hippo Augustine
+last 30 days	50	1259	Twenty years after by Alexandre Dumas and Auguste Maquet
+last 30 days	51	245	Life on the Mississippi by Mark Twain
+last 30 days	52	36462	King Arthur and the Knights of the Round Table by Sir Thomas Malory
+last 30 days	53	40284	The Sex Life of the Gods by M. E. Knerr
+last 30 days	54	70854	The Countess of Pembroke's Arcadia by Philip Sidney
+last 30 days	55	393	The Blue Lagoon: A Romance by H. De Vere Stacpoole
+last 30 days	56	53874	Under the Red Dragon: A Novel by James Grant
+last 30 days	57	24793	Blow The Man Down: A Romance Of The Coast by Holman Day
+last 30 days	58	589	Catriona by Robert Louis Stevenson
+last 30 days	59	18143	Roméo et Juliette by William Shakespeare
+last 30 days	60	76178	I am a woman by Ann Bannon
+last 30 days	61	161	Sense and Sensibility by Jane Austen
+last 30 days	62	244	A Study in Scarlet by Arthur Conan Doyle
+last 30 days	63	1112	Romeo and Juliet by William Shakespeare
+last 30 days	64	23784	The History of Sir Richard Calmady: A Romance by Lucas Malet
+last 30 days	65	2852	The Hound of the Baskervilles by Arthur Conan Doyle
+last 30 days	66	23	Narrative of the Life of Frederick Douglass, an American Slave by Frederick Douglass
+last 30 days	67	7889	Erotica Romana by Johann Wolfgang von Goethe
+last 30 days	68	103	Around the World in Eighty Days by Jules Verne
+last 30 days	69	20203	Autobiography of Benjamin Franklin by Benjamin Franklin
+last 30 days	70	42389	The Pirate by Walter Scott
+last 30 days	71	224	A pair of blue eyes by Thomas Hardy
+last 30 days	72	51428	That Which Hath Wings: A Novel of the Day
+last 30 days	73	2148	The Works of Edgar Allan Poe — Volume 2 by Edgar Allan Poe
+last 30 days	74	53416	Only a girl's love by Charles Garvice
+last 30 days	75	17460	Lorna Doone: A Romance of Exmoor by R. D. Blackmore
+last 30 days	76	2620	The Home Book of Verse — Volume 2 by Burton Egbert Stevenson
+last 30 days	77	1212	Love and Freindship [sic] by Jane Austen
+last 30 days	78	55179	One of the Six Hundred: A Novel
+last 30 days	79	4499	Complete Short Works of George Meredith by George Meredith
+last 30 days	80	48296	Linnet: A Romance by Grant Allen
+last 30 days	81	38311	What Will People Say? A Novel by Rupert Hughes
+last 30 days	82	18459	Hypnerotomachia: The Strife of Loue in a Dreame by Francesco Colonna
+last 30 days	83	2002	Sonnets from the Portuguese by Elizabeth Barrett Browning
+last 30 days	84	3922	The Red Lily — Complete by Anatole France
+last 30 days	85	32155	The Love Letters of Henry VIII to Anne Boleyn; With Notes by King of England Henry VIII
+last 30 days	86	38177	The Passionate Elopement by Compton MacKenzie
+last 30 days	87	35548	Doctor Cupid: A Novel by Rhoda Broughton
+last 30 days	88	14244	The Romance of Tristan and Iseult by Joseph Bédier
+last 30 days	89	28203	Moods by Louisa May Alcott
+last 30 days	90	35312	Aus dem Leben eines Taugenichts: Novelle by Freiherr von Joseph Eichendorff
+last 30 days	91	1523	As You Like It by William Shakespeare
+last 30 days	92	1608	Camille (La Dame aux Camilias) by Alexandre Dumas
+last 30 days	93	49987	Forest Days: A Romance of Old Times by G. P. R. James
+last 30 days	94	2825	Undine by Freiherr de Friedrich Heinrich Karl La Motte-Fouqué
+last 30 days	95	46276	The Treasure of Pearls: A Romance of Adventures in California by Gustave Aimard
+last 30 days	96	31472	Cynthia's Chauffeur by Louis Tracy
+last 30 days	97	53154	Cameron of Lochiel by Philippe Aubert de Gaspé
+last 30 days	98	42681	The Hero of the People: A Historical Romance of Love, Liberty and Loyalty by Alexandre Dumas
+last 30 days	99	31635	The Silent Barrier by Louis Tracy
+last 30 days	100	36725	On the Cross: A Romance of the Passion Play at Oberammergau by Wilhelmine von Hillern

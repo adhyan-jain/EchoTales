@@ -1,0 +1,8 @@
+{
+  "prereg": "PREREG_L1_llm_leakage.md v1",
+  "analysis_file": "scripts/chimera/l1_analyze.py",
+  "analysis_sha256": "1f065d946aac6f87c71f4e0eb9ab40fef37f5017bb9eb9a510f928d2657903a1",
+  "runner_sha256_at_this_time": "df9ec9e15ff510519e6f751d4f5a3fd635a552450a20ee2f2eebf9b0c0a46f13",
+  "written": "2026-10-15, before any L1 model call; no L1 result exists",
+  "note": "Analysis fixed in advance (implements R1-R5). Tested only on a fake fixture kept in the scratchpad, not a result."
+}

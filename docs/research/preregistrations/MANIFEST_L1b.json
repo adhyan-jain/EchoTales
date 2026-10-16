@@ -1,0 +1,14 @@
+{
+  "prereg": "PREREG_L1b_gate_v2.md v1",
+  "prompts_file": "L1_prompts_v2.json",
+  "prompts_file_sha256": "0e769c73185e91185bd6fb0869c30b7244ebfbf239366cf339a7d176553a43c2",
+  "template_sha256": {
+    "D1_gated_call1": "8f3241f773e3d2a87de4e4a8cc03f5a6456421d57eb1a4f8a922cffb0105d810",
+    "D2_entailment_call2": "fbf78f6f66a77ec19a1510d955907cc61756d16131deb446f81ac3151068760d"
+  },
+  "prereg_sha256": "6d10ef4689b0f3a6e151e451749cf74616c0dcbeb89ff8bb27157349ac36a4d8",
+  "runner_file": "scripts/chimera/l1b_gate_v2.py",
+  "runner_sha256": "f644ff281646804561539c91c55b42d2319cf876fd51313c5f79c77c38dd1fb3",
+  "frozen": "2026-10-15, before any L1b model call; no L1b run exists",
+  "rule": "A change after freezing is a new file with a higher version number, never an edit."
+}

@@ -1,0 +1,19 @@
+{
+  "prereg": "PREREG_T4_renaming_validity_v5.md",
+  "prereg_sha256": "e2988add52c1b3d20a6828b747997a7a9772f6b53400cffa64ec6c1e370d9f11",
+  "frozen": "2026-10-15, before the v5 renamer or any v5 run existed",
+  "rule": "Single attempt; no v6; a change after freezing is a new file.",
+  "script_sha256_at_run": "778bc8b881e9ba732b9fc26f7ff4d0c4810c43a807abaa8936054bc97d238146",
+  "gate_outcome": "PASSED (G1..G5 = 0; 135 of 378 tokens renamed)",
+  "result_sha256": "6d5e5da3730ff7a6d36534adf42a99b803368329c6e145942e597ce3d88b5144",
+  "negative_control_script_sha256": "1640ff9f280f041208fee2891928af3ba79af029ca58a9ee0a2f97bb0d9da73b",
+  "addendum_sha256": "0b82a68e48ad59d0bfe279d3f44553bf4bae4d12667b62ae3da144c59e3c8d9b",
+  "outcome": "gate PASSED; resolver conditions run once; verdict PASS by the v2 rule (R 99.96%, N 99.955%; weak sensitivity caveat)",
+  "addendum_2_sha256": "bea54eb07693bdb8562ae69eb69038e3664b5a09a88ef00b8b681c0de11e40d2",
+  "addendum_2_frozen": "2026-10-16, before the cross-novel script existed",
+  "crossnovel_script_sha256": "c62d1865ec5a814d02348f9e32adec37803422abf40dd45757b7d57210b4660c",
+  "crossnovel_results": {
+    "lord-of-the-mysteries": "fb5a6ba526735b56856fbfe3e3252008dd26bc17a2fe4420cc6445ef3a3a46c6",
+    "omniscient-readers-viewpoint": "24f799f6ede7681b0ff1e5e290c8d3b583975da18daa219ed903c4d4407e15ba"
+  }
+}

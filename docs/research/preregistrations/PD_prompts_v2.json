@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "note": "Frozen for PREREG_PD_v2.md. The ONLY change from the v1 / L2U prompts is the final instruction: 'Output only that one token.' becomes a JSON answer request, and the runner passes an ollama JSON-schema `format` whose enum is the candidate letters plus UNDETERMINED, so a reply cannot be malformed. No novel text in this file.",
+  "tail_old": "Output only that one token.",
+  "tail_new": "Reply with a JSON object of the form {\"answer\": X} where X is that one token."
+}

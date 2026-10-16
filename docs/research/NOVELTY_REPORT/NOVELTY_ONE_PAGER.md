@@ -1,0 +1,30 @@
+# EchoTales / CHIMERA: novelty summary for the professor (2026-10-16)
+
+Full evidence, provenance tags and limits: `NOVELTY_REPORT.md` (v1.4+). Every number below is text-derived (the book's own reveal sentence located by exact search), synthetic, or label-free. **No number is human-labelled.** The 31 test events were selected by a language model and are not owner-verified. This page is a summary, not a substitute for the report's limits section.
+
+## The claim, stated narrowly
+When a language model is shown a passage of a famous public-domain novel and asked who a disguised character really is, it names the true identity **before the book reveals it** far more often with the original names than with consistently replaced names. The effect is absent on unseen synthetic text, tracks how well-known the book is, and is **not explained by loss of name-borne cues**. It is **clear for the strongest model tested (Luna) and across the full 38-event set, and weaker and not reliably replicated for small local models on less-famous books** (a final pre-registered test on 7 fresh books came out NOT SUPPORTED for the small models). We call this name-keyed memory leakage; we do not claim it is the only mechanism.
+
+## Evidence, in the order a sceptic would ask for it
+| Question | Result | Where |
+|---|---|---|
+| Is there an effect? | **Luna (the reference model): +26.0 points [16.8, 36.0] over all 38 events, 22 events positive against 1 (p = 1e-5); on the 19 books never used in tuning +17.7 [8.0, 28.3].** Four 7B to 9B local models pooled: +11.5 [4.5, 19.0] over 38 events (22 positive, 10 negative, p = 0.050), but **not replicated on the final 7 fresh books (-5.9 [-14.8, 1.0], pre-registered NOT SUPPORTED)**, where they barely recognise the books | report 5.19, 5.21 |
+| Does it depend on how well the book is known? | **Yes (post hoc, 38 events):** the small models' gap is about zero when at most two of them recognise the book and **+40.9 points** when all five do (Spearman +0.59, p = 0.00015); Luna's gap against the local models' recognition is +0.37 (p = 0.024, cross-family). This also explains why the small models show no effect on the 7 poorly recognised v6 books | 5.22 |
+| Is it just inference from context? | Window text and candidate list are identical across arms; the renamed-arm rate (0.5% to 10%) is the inference floor; the gap is zero on unseen synthetic text | 5.15, 5.19 |
+| Is it just lost name cues? | **No (pre-registered PD v5).** Natural gender-matched pseudonyms restore plain-control accuracy to the original level (qwen 80.3 to 96.7, gemma2 83.6 to 96.1) but do not restore premature naming: gap with pseudonyms **+16.1 [8.2, 25.0]**, recovered fraction **-0.11 [-0.36, 0.06]** | 5.20 |
+| Is it memory at all? | Closed-book probes: models map aliases to the cast with the book title for 10 to 25 of 31 events, falling to 0 to 6 when renamed; per-event premature rate correlates with how many models recognise the book (Spearman 0.66 to 0.73) | 5.14, 5.18 |
+| Is the validity check itself sound? | A memory-free gate (two renamed arms against each other, plus unseen text) is satisfied by four of six models; the usual original-versus-renamed gate on plain controls is partly memory | 5.15, 5.18 |
+| Does it survive weak labels? | On the 20 events an independent model judged explicit from the reveal passage: valid-model pool **+15.7 [4.7, 26.8]**, Luna **+29.9 [15.0, 45.8]** | 5.19 |
+
+## What is new (and what is not)
+- **Not new:** renaming characters as a memorisation probe (prior work exists); chapter-prefix evaluation.
+- **Plausibly new in combination (prior-art search was not exhaustive):** (1) a renaming-controlled test of premature identity naming in an alias-reveal setting, with a memory-free validity gate, a closed-book positive control and an unseen-text control; (2) the finding that plain-control validity checks on famous books are themselves memory-assisted; (3) a pre-registered cue-preserving test separating memory from name-borne cue loss; (4) a prefix-causality audit of a narrative graph pipeline (resolver exactly causal; persona stage looks ahead on 8.0% of character checks, 23 of 288), with the resolver shown to behave as a normalised-string lookup.
+
+## What is not claimed
+No evidence that the EchoTales pipeline itself leaks memorised identities. No human-labelled result. Not a general claim about all models or genres (public-domain Western fiction; five small local models plus one API model). Several earlier verdicts were INCONCLUSIVE or PARTIALLY SUPPORTED by the pre-registered rules and are reported as such; the strongest numbers come from a re-evaluation of already-seen data, and item-level intervals in earlier sections were too narrow (corrected to event-level in 5.19).
+
+## Weak points to say out loud
+Model-selected events; heuristic pseudonyms (gender from pronouns); a memory probe that gives the title; a small seven-event final test that did not replicate for the small models; the strongest evidence rests on one API model; six analysis versions (each pre-registered, none discarded); no independent human check.
+
+## Reproduce
+Venv: `source .venv/bin/activate`; no network needed for analysis. `python scripts/chimera/pd_v4_memory.py analyze`, `pd_v5_cuepres.py analyze`, `pd_v6.py analyze`, `pd_adversarial_checks.py`, `pd_memory_free_validity.py`. Pre-registrations and SHA-256 manifests: `docs/research/preregistrations/`. Spend ledger: `NOVELTY_REPORT/SPEND_LEDGER.md`. Texts (git-ignored, public domain) were re-downloaded from Project Gutenberg into `data/raw/`.

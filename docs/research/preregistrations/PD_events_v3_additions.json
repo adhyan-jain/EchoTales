@@ -1,0 +1,329 @@
+{
+  "version": 3,
+  "extends": "PD_events_v2_additions.json",
+  "note": "Third set of events for the public-domain reveal benchmark (draft, NOT part of the frozen v1 set or the v2 additions, and NOT in any MANIFEST until the owner approves and freezes). Same schema as v1 and v2. Fully fresh: 12 further books, none among the 19 used in v1 and v2, 12 different authors none of whom has two books in the earlier sets (Leroux has one earlier book, the Phantom of the Opera). Public-domain texts (Project Gutenberg, local copies in the scratchpad, never written to the repository). Each event has a short verbatim anchor sentence located by exact whitespace-insensitive search (exactly once in the book body) and a cutoff placed before the revealing passage. Anchors, alias surfaces, identities and cast lists are the model-drafter's selection; checked by scripts/chimera/pd_verify_v3.py (stricter than pd_verify_additions.py: eight control mentions per event, at least eight non-identity cast mentions before the cutoff, alias plus full identity name never in one prefix sentence unless read and cleared by hand). See docs/research/PD_EVENTS_V3_NOTES.md for per-event caveats. A change after freezing is a new version file.",
+  "provenance": "selected by model-drafter, exact-search verified, owner spot-check pending",
+  "events": [
+    {
+      "id": "KM",
+      "book": "King Solomon's Mines (Haggard)",
+      "gutenberg": 2166,
+      "alias": [
+        "Umbopa"
+      ],
+      "identity": "Ignosi",
+      "cast": [
+        "Ignosi",
+        "Sir Henry Curtis",
+        "Allan Quatermain",
+        "Infadoos",
+        "Twala",
+        "Ventvögel",
+        "Scragga",
+        "Gagool",
+        "Khiva"
+      ],
+      "reveal_sentence": "I am Ignosi, rightful king of the Kukuanas!",
+      "cut": {
+        "regex": "CHAPTER X\\.",
+        "back": 0
+      },
+      "caveat": "Umbopa, the Zulu hunter who joins the party, declares himself to be Ignosi, rightful king of the Kukuanas (spoken to Infadoos, then confirmed by the narrator). The name Ignosi occurs 5 times in the prefix as the dispossessed child of the murdered king, told to the party earlier, and is never joined to Umbopa before the cutoff (0 alias+identity sentences). Cutoff is the start of the chapter containing the reveal, 3,464 characters before it, so the prefix has none of the story Umbopa tells. Captain Good is left out of the cast because the surface 'Good' is an ordinary word."
+    },
+    {
+      "id": "VW",
+      "book": "The Vicar of Wakefield (Goldsmith)",
+      "gutenberg": 2667,
+      "alias": [
+        "Mr Burchell",
+        "Burchell"
+      ],
+      "identity": "Sir William Thornhill",
+      "cast": [
+        "Sir William Thornhill",
+        "Olivia",
+        "Sophia",
+        "Moses",
+        "Wilmot",
+        "Jenkinson",
+        "Flamborough",
+        "Dick"
+      ],
+      "reveal_sentence": "was no other than the celebrated Sir William Thornhill",
+      "cut": {
+        "regex": "CHAPTER XXX\\.",
+        "back": 0
+      },
+      "caveat": "Mr Burchell, the poor wandering gentleman who befriends the Primrose family, is announced by the narrator (the vicar) to be Sir William Thornhill, the squire's uncle. One prefix sentence contains both 'Mr Burchell' and the full name 'Sir William Thornhill': Burchell, in conversation, comments on that gentleman's character. It was read by hand and is not an equation (cleared), but Burchell's remarks about Sir William are hints; three further sentences have an alias and the token 'Thornhill' (the squire, Thornhill-castle), also read, not equations. The name Sir William Thornhill occurs 4 times in the prefix as the squire's uncle. The squire (Mr Thornhill) is left out of the cast because of the shared surname token. Cutoff is the start of the chapter containing the reveal, 10,889 characters before it."
+    },
+    {
+      "id": "LA",
+      "book": "Lady Audley's Secret (Braddon)",
+      "gutenberg": 8954,
+      "alias": [
+        "Lucy Graham",
+        "Lady Audley"
+      ],
+      "identity": "Helen Talboys",
+      "cast": [
+        "Helen Talboys",
+        "Robert",
+        "Alicia",
+        "Sir Michael",
+        "Phoebe",
+        "Luke",
+        "Maldon",
+        "George",
+        "Dawson"
+      ],
+      "reveal_sentence": "She disappeared as Helen Talboys upon the 16th of August, 1854, and upon the 17th of that month she reappeared as Lucy Graham",
+      "cut": {
+        "regex": "CHAPTER XXVII\\.",
+        "back": 0
+      },
+      "caveat": "Aliases are Lucy Graham (the governess) and Lady Audley (her later title); identity Helen Talboys, George Talboys's wife believed dead, occurs 6 times in the prefix. The anchor is Robert Audley's accusation to Lady Audley (a character's inference, later confirmed by her confession and the narrator), so it is a weaker oracle than a narrator statement. A narrator-level deduction that links Helen Talboys's departure to Lucy Graham's arrival lies 40,415 characters before the anchor and after the cutoff; the cutoff is the start of the chapter before it, 62,353 characters before the anchor, the longest distance in the file (mostly the over-20,000 bin). One prefix sentence has an alias plus the tokens Helen/Talboys: Robert's thought listing Helen Maldon, Lady Audley and Clara Talboys as separate women he has dealt with, not an equation (it names Helen by her maiden name and, if anything, treats the two as different people). Cast uses first names for Robert, George, Alicia, etc. to avoid the shared Talboys and Audley tokens."
+    },
+    {
+      "id": "CO",
+      "book": "The Castle of Otranto (Walpole)",
+      "gutenberg": 696,
+      "alias": [
+        "Friar Jerome",
+        "Father Jerome",
+        "Jerome"
+      ],
+      "identity": "Count of Falconara",
+      "cast": [
+        "Count of Falconara",
+        "Manfred",
+        "Isabella",
+        "Hippolita",
+        "Matilda",
+        "Bianca",
+        "Conrad",
+        "Diego",
+        "Jaquez"
+      ],
+      "reveal_sentence": "you forget you are no longer Friar Jerome, but the Count of Falconara",
+      "cut": {
+        "regex": "The youth, who felt his indignation rise",
+        "back": 0
+      },
+      "caveat": "Friar (Father) Jerome is addressed by Manfred as the Count of Falconara, moments after the Friar claims a noble house; the name Falconara is absent from the prefix (0 of 6 occurrences in the book are before the cutoff). Cutoff is just before the unveiling of the youth Theodore as Jerome's son (a parentage reveal, deliberately left after the cutoff), 2,502 characters before the anchor. Short prefix: 14 pre-cutoff alias occurrences, all in the second chapter. Spoken by a character, not the narrator; the identity label is a title, not a personal name."
+    },
+    {
+      "id": "GG",
+      "book": "The Great Gatsby (Fitzgerald)",
+      "gutenberg": 64317,
+      "alias": [
+        "Jay Gatsby",
+        "Gatsby"
+      ],
+      "identity": "James Gatz",
+      "cast": [
+        "James Gatz",
+        "Daisy",
+        "Tom",
+        "Jordan Baker",
+        "Wolfshiem",
+        "McKee",
+        "Myrtle",
+        "Catherine"
+      ],
+      "reveal_sentence": "James Gatz—that was really, or at least legally, his name.",
+      "cut": {
+        "regex": "\\n\\s+VI\\n",
+        "back": 0
+      },
+      "caveat": "Narrator Nick states that the man known as Gatsby was legally James Gatz. The identity name is absent from the prefix (the only 'James' hit in the prefix is a different man, James B. Ferret), cutoff is the start of the chapter containing the reveal, 1,149 characters before it. Very heavily memorised; expect a strong closed-book hit. The Gutenberg text is the US public-domain edition of a 1925 novel (public domain in the US since 2021)."
+    },
+    {
+      "id": "PG",
+      "book": "Father Goriot (Balzac, English translation)",
+      "gutenberg": 1237,
+      "alias": [
+        "M. Vautrin",
+        "Vautrin"
+      ],
+      "identity": "Jacques Collin",
+      "cast": [
+        "Jacques Collin",
+        "Rastignac",
+        "Goriot",
+        "Vauquer",
+        "Victorine",
+        "Poiret",
+        "Bianchon",
+        "Delphine",
+        "Nucingen"
+      ],
+      "reveal_sentence": "Vautrin, or, to give him his real name, Jacques Collin, was in fact the notorious escaped convict",
+      "cut": {
+        "regex": "Two days later, Poiret and Mlle\\. Michonneau were sitting together",
+        "back": 0
+      },
+      "caveat": "English translation (Marriage) of a French novel. The narrator states that Vautrin, whose real name is Jacques Collin, is the escaped convict. The cutoff is deliberately placed before the scene in which a police agent first accuses 'the so-called Vautrin' of being a convict with the nickname Trompe-la-Mort and names Jacques Collin (an in-story, 'only suspects' version of the same equation, about 4,000 characters after the cutoff), so the chosen anchor is the earliest NARRATOR equation, not the earliest equation by any speaker; the cut-to-anchor gap is 45,706 characters and holds the agent's accusation. The identity (Collin) is absent from the prefix; the bare token 'Jacques' occurs 3 times there, for a servant and a street name, not the convict."
+    },
+    {
+      "id": "MK",
+      "book": "The Monk (Lewis)",
+      "gutenberg": 601,
+      "alias": [
+        "Rosario"
+      ],
+      "identity": "Matilda",
+      "cast": [
+        "Matilda",
+        "Ambrosio",
+        "Lorenzo",
+        "Antonia",
+        "Christoval",
+        "Leonella",
+        "Agnes",
+        "Marquis",
+        "Elvira"
+      ],
+      "reveal_sentence": "I am Matilda; You are her Beloved.",
+      "cut": {
+        "regex": "After a few minutes Rosario returned",
+        "back": 0
+      },
+      "caveat": "The novice Rosario, Ambrosio's favoured companion, confesses to being a woman and says 'I am Matilda'. The cutoff is placed before Rosario's story of a dead sister named Matilda, so the prefix contains no 'Matilda' at all (0 occurrences) and the false-sister decoy is not in the prefix; the story and the confession of being a woman fall in the 6,707 characters between the cutoff and the anchor. Spoken by the character herself, immediately confirmed by the narrator; only 19 pre-cutoff alias occurrences. Written 1796."
+    },
+    {
+      "id": "YR",
+      "book": "The Mystery of the Yellow Room (Leroux, English translation)",
+      "gutenberg": 1685,
+      "alias": [
+        "Frédéric Larsan",
+        "Larsan"
+      ],
+      "identity": "Ballmeyer",
+      "cast": [
+        "Ballmeyer",
+        "Rouletabille",
+        "Darzac",
+        "Jacques",
+        "Bernier",
+        "Arthur Rance",
+        "Marquet",
+        "Mathieu",
+        "Sainclair"
+      ],
+      "reveal_sentence": "Frédéric Larsan, Monsieur President, is Ballmeyer!",
+      "cut": {
+        "regex": "Chapter XXVII In Which",
+        "back": 0
+      },
+      "caveat": "English translation (Teixeira de Mattos) of a French novel. Same author as the v1 Phantom of the Opera event (different book; Leroux then has two books across v1 and v3). Rouletabille tells the court that the investigator Frederic Larsan is the master criminal Ballmeyer. The name Ballmeyer is absent from the prefix (0 of 28 book occurrences). Cutoff is the start of the chapter that also holds the earlier accusation that Larsan is the murderer (not an alias-identity equation), 16,988 characters before the anchor. A courtroom accusation, confirmed in the later narrative."
+    },
+    {
+      "id": "IM",
+      "book": "The Invisible Man (Wells)",
+      "gutenberg": 5230,
+      "alias": [
+        "the Invisible Man",
+        "The Invisible Man",
+        "the stranger",
+        "The stranger"
+      ],
+      "identity": "Griffin",
+      "cast": [
+        "Griffin",
+        "Marvel",
+        "Cuss",
+        "Henfrey",
+        "Jaffers",
+        "Huxter",
+        "Wadgers",
+        "Fearenside",
+        "Kemp"
+      ],
+      "reveal_sentence": "I am Griffin, of University College, and I have made myself invisible",
+      "cut": {
+        "regex": "CHAPTER XVII\\.",
+        "back": 0
+      },
+      "caveat": "The Stranger / the Invisible Man, the bandaged lodger and later the invisible fugitive, names himself to Kemp as Griffin of University College. The prefix refers to him only by these descriptors (they are how the narration names him, but they are generic phrases, which is a caveat on the alias); the name Griffin is absent from the prefix (0 of 27 book occurrences). Kemp, the person addressed in the reveal, is in the cast as a decoy (9 prefix mentions). The first mention of the name is in the sentence just before the anchor. Cutoff is the start of the chapter containing the reveal, 6,833 characters before the anchor. Bunting is left out of the cast because it names two people (the Reverend and his wife)."
+    },
+    {
+      "id": "RP",
+      "book": "Riders of the Purple Sage (Grey)",
+      "gutenberg": 1300,
+      "alias": [
+        "Bess"
+      ],
+      "identity": "Elizabeth Erne",
+      "cast": [
+        "Elizabeth Erne",
+        "Venters",
+        "Lassiter",
+        "Jane",
+        "Oldring",
+        "Judkins",
+        "Tull",
+        "Dyer",
+        "Fay"
+      ],
+      "reveal_sentence": "Elizabeth Erne!” cried Jane Withersteen.",
+      "cut": {
+        "regex": "CHAPTER XXI\\.",
+        "back": 0
+      },
+      "caveat": "Bess, the girl who rode as the Masked Rider, is addressed by Jane Withersteen as Elizabeth Erne, the daughter of Milly Erne, after Lassiter has explained her parentage (that explanation lies after the cutoff). The token Erne occurs 40 times in the prefix for Milly Erne, with 0 alias+token sentences. Cutoff is the start of the chapter containing the reveal, 20,558 characters before the anchor. The Gutenberg front matter lists the alias in an illustration caption (harmless). Jane is entered as a first name because 'Withersteen' is also a house and a herd name. Published 1912 (US public domain)."
+    },
+    {
+      "id": "EL",
+      "book": "East Lynne (Wood)",
+      "gutenberg": 3322,
+      "alias": [
+        "Captain Thorn",
+        "Mr. Thorn",
+        "Thorn"
+      ],
+      "identity": "Francis Levison",
+      "cast": [
+        "Francis Levison",
+        "Barbara",
+        "Afy",
+        "Richard",
+        "Archibald",
+        "Joyce",
+        "Cornelia",
+        "Dill",
+        "Bethel"
+      ],
+      "reveal_sentence": "Ho ho, said I, so Thorn’s defunct, and Levison has risen.",
+      "cut": {
+        "regex": "CHAPTER XXXVI\\.",
+        "back": 0
+      },
+      "caveat": "Sir Francis Levison is the man who, under the name Thorn, was believed to be the murderer of Hallijohn. The alias 'Thorn' occurs 215 times in the prefix, and Levison 207 times, as two separate people. One prefix sentence (cleared) has both, in a character's journal that says Richard knows Levison and that he and Thorn are intimate, i.e. it treats them as two people; a second has Thorn and the title Captain Levison. The anchor is a character (Ebenezer James) saying that Thorn became Levison; a suspicion by Barbara that the man is Thorn (an unproved inference, no names joined) comes after the cutoff, as does the recognition scene. Cutoff is the start of the chapter, 11,856 characters before the anchor. Written 1861; the narrator's earlier statement that Madame Vine is Lady Isabel is unrelated to this event."
+    },
+    {
+      "id": "BR",
+      "book": "The Blithedale Romance (Hawthorne)",
+      "gutenberg": 2081,
+      "alias": [
+        "Old Moodie",
+        "Moodie"
+      ],
+      "identity": "Fauntleroy",
+      "cast": [
+        "Fauntleroy",
+        "Zenobia",
+        "Hollingsworth",
+        "Priscilla",
+        "Coverdale",
+        "Westervelt",
+        "Silas Foster"
+      ],
+      "reveal_sentence": "when Moodie (or shall we call him Fauntleroy?",
+      "cut": {
+        "regex": "XXII\\. FAUNTLEROY",
+        "back": 0
+      },
+      "caveat": "WEAKEST ORACLE in the set. The only sentence that joins Moodie and Fauntleroy is a parenthetical narrator question ('or shall we call him Fauntleroy?'); the chapter that starts at the cutoff is titled with the name and tells the story of a man 'whom we shall call Fauntleroy', so the equation is strongly implied before the anchor but stated only there. The identity name is absent from the prefix (0 of 20 book occurrences). Cutoff is the heading of that chapter, 16,571 characters before the anchor. Cast has only 7 names. Only 3 post-reveal alias occurrences."
+    }
+  ]
+}

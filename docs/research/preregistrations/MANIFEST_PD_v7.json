@@ -1,0 +1,15 @@
+{
+ "frozen_for": "PREREG_PD_v7.md",
+ "prereg_sha256": "e4868ea2e383ee35dc77004eb612ec2402d14a3592d656d93bce4bf6b40dedb6",
+ "event_files_sha256": {
+  "PD_events_v7_additions.json": "65ace0a205f9fb37293848695f792727a717689da97880d68d84691788535dcb"
+ },
+ "inputs_sha256": {
+  "PD_events_v7_additions.json": "65ace0a205f9fb37293848695f792727a717689da97880d68d84691788535dcb",
+  "PD_v7_fame_snapshot.txt": "6c9c429763ad786c70659125fa95d1471a82ca920aa2d12ddb5572c8022e73db",
+  "PD_prompts_v1.json": "b7cd09994a52aa4ef001bfad7cda0309ebc282658f36c4ac79c8a24f2f44a3fc",
+  "PD_prompts_v2.json": "0ff1e2327488ecde318841abcceef9b6bd13bfcd1ed6da2a14cc417ccd3ce0c8",
+  "PD_prompts_v4.json": "b343cf360c183043d0c39011789c62d528b91dd7cf530f7095eee99bf4bc0d1a"
+ },
+ "script_sha256_at_freeze": "7c489aa4a5220539e895937a3a248276d71de2a03f1a8da6d106d2e6ffdff062"
+}

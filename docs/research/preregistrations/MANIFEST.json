@@ -1,0 +1,30 @@
+{
+  "repo_head": "6c7e2c2",
+  "branch": "validation/evidence-pass-2026-09-24",
+  "tracked_changes_at_freeze": [".gitignore"],
+  "frozen_at": "2026-10-15T08:31:05Z",
+  "rule": "A change after freezing is a new file with a higher version number, never an edit. Hashes were computed with sha256sum immediately before this file was written and before any T4 or SIO implementation file existed.",
+  "preregistrations": [
+    {
+      "file": "PREREG_T4_renaming_validity.md",
+      "version": 1,
+      "status": "frozen",
+      "sha256": "34e35ebced6d270db1e525a23d78e243ede7ac6cc1f1fb4119e0e46d732aede2",
+      "notes": "CPU only, deterministic resolver on fixed detected mentions, scratch copies of the RI database."
+    },
+    {
+      "file": "PREREG_SIO_synthetic_identity_oracle.md",
+      "version": 1,
+      "status": "frozen",
+      "sha256": "df93ef3a4f219c9225641632558dc622606b0acd5d6d4b20801dfa7ad0a5a121",
+      "notes": "Design is the assistant's interpretation: ECHOTALES_NOVELTY_REPORT_PROMPT.md was not found on this machine. Becomes v2 if the owner's definition differs."
+    },
+    {
+      "file": "PREREG_T3_memorisation_probe_DRAFT.md",
+      "version": 0,
+      "status": "draft_not_frozen",
+      "sha256": "394131f55f10a14d91573f4abf93cd33c4c87b2db8759703ed604b857d281e4c",
+      "notes": "Waiting for the owner to confirm the local model and tag (authorisation A4) and the max wall-clock per run. Nothing runs until it is frozen as v1."
+    }
+  ]
+}

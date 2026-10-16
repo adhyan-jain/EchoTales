@@ -1,0 +1,104 @@
+{
+  "version": 2,
+  "extends": "PD_events_v1.json",
+  "note": "Additional events for the public-domain reveal benchmark (draft, NOT part of the frozen v1 set and NOT in MANIFEST_PD.json until the owner approves and freezes). Same schema as v1. Public-domain texts (Project Gutenberg). Each event has an explicit verbatim reveal sentence located by exact search (whitespace-insensitive), and a conservative cutoff before the revealing passage. Every book here differs from every v1 book. Reveal sentences, alias surfaces and cast names are the model-drafter's selection, verifiable by exact string search; checked by scripts/chimera/pd_verify_additions.py. See docs/research/PD_EVENTS_V2_NOTES.md for per-event caveats. A change after freezing is a new version file.",
+  "provenance": "selected by model-drafter, exact-search verified, owner spot-check pending",
+  "events": [
+    {
+      "id": "MC", "book": "The Count of Monte Cristo (Dumas, English translation)", "gutenberg": 1184,
+      "alias": ["Sinbad the Sailor", "Sinbad"], "identity": "Edmond Dantès",
+      "cast": ["Edmond Dantès", "Danglars", "Villefort", "Caderousse", "Bertuccio", "Mercédès", "Franz d’Épinay", "Haydée", "Albert"],
+      "reveal_sentence": "Maximilian, it was Edmond Dantès!",
+      "cut": {"regex": "Monte Cristo opened the letter, and read it with an indescribable feeling of delight", "back": 0},
+      "caveat": "Gradual and indirect: the dying Morrel says the mysterious benefactor (who signed Sinbad the Sailor to the Morrel family) was Edmond Dantès. The identity Count of Monte Cristo = Sinbad is already given in the prefix, and the name Dantès occurs in the prefix as the imprisoned sailor, never equated with Sinbad. The Count is deliberately NOT in the cast (he is the same person as the answer)."
+    },
+    {
+      "id": "LM", "book": "Les Misérables (Hugo, English translation)", "gutenberg": 135,
+      "alias": ["M. Madeleine", "Monsieur Madeleine", "Mayor Madeleine", "Father Madeleine"], "identity": "Jean Valjean",
+      "cast": ["Jean Valjean", "Javert", "Fantine", "Myriel", "Bamatabois", "Thénardier", "Sister Simplice", "Petit Gervais", "Scaufflaire"],
+      "reveal_sentence": "The reader has, no doubt, already divined that M. Madeleine is no other than Jean Valjean.",
+      "cut": {"regex": "CHAPTER III—A TEMPEST IN A SKULL", "back": 0},
+      "caveat": "Translation from French. Narrator-level explicit statement, but the reader is invited to have inferred it earlier (the name Jean Valjean is in the prefix as the convict of the Bishop episode); cutoff is the start of the chapter containing the explicit sentence."
+    },
+    {
+      "id": "JH", "book": "Strange Case of Dr Jekyll and Mr Hyde", "gutenberg": 43,
+      "alias": ["Mr. Hyde", "Hyde"], "identity": "Henry Jekyll",
+      "cast": ["Henry Jekyll", "Utterson", "Lanyon", "Poole", "Sir Danvers Carew", "Enfield", "Inspector Newcomen", "Guest"],
+      "reveal_sentence": "like a man restored from death—there stood Henry Jekyll!",
+      "cut": {"regex": "DR. LANYON’S NARRATIVE", "back": 0},
+      "caveat": "Henry Jekyll is a principal character in the prefix and the will names Hyde as heir, so strong hints exist; the explicit equation (Hyde transforms into Jekyll) is first made in Lanyon's narrative. Very famous twist, so closed-book memory is likely."
+    },
+    {
+      "id": "IV", "book": "Ivanhoe", "gutenberg": 82,
+      "alias": ["the Black Knight", "Black Knight"], "identity": "Richard Plantagenet",
+      "cast": ["Richard Plantagenet", "Cedric", "Rowena", "Rebecca", "Isaac", "Brian de Bois-Guilbert", "Prince John", "Front-de-Bœuf", "Wamba"],
+      "reveal_sentence": "I am Richard of England!",
+      "cut": {"regex": "CHAPTER XL Shadows avaunt", "back": 0},
+      "caveat": "The identity name Richard occurs in the prefix as the absent king (the prefix mentions King Richard in his absence but never equates him with the Black Knight). Sentence says Richard of England; the label is Richard Plantagenet (named explicitly later in the book). Scott is a Scottish author writing about England."
+    },
+    {
+      "id": "MI", "book": "The Mysterious Island (Verne, English translation)", "gutenberg": 1268,
+      "alias": ["genius of the island", "mysterious being"], "identity": "Captain Nemo",
+      "cast": ["Captain Nemo", "Cyrus Harding", "Gideon Spilett", "Pencroft", "Herbert", "Neb", "Ayrton", "Top", "Jup"],
+      "reveal_sentence": "Before them they beheld that being whom they had styled the “genius of the island,”",
+      "cut": {"regex": "Captain Nemo, you asked for us", "back": 0},
+      "caveat": "Translation from French. The name Nemo does not occur in the prefix at all. The cutoff is 1,100 characters before the reveal (Harding names Captain Nemo one line before the narrator equates him with the genius of the island), so the distance is short. The sentence is long: the first clause of the narrator's equation."
+    },
+    {
+      "id": "VI", "book": "Villette", "gutenberg": 9182,
+      "alias": ["Dr. John"], "identity": "Graham Bretton",
+      "cast": ["Graham Bretton", "Lucy Snowe", "Paulina", "Madame Beck", "Paul Emanuel", "Ginevra Fanshawe", "Miss Marchmont", "Rosine"],
+      "reveal_sentence": "this Graham Bretton, _was_ Dr. John: he, and no other",
+      "cut": {"regex": "CHAPTER XVI\\.", "back": 0},
+      "caveat": "Same author as Jane Eyre (v1 JE) but a different book. The boy Graham Bretton is in the prefix (early chapters) and the narrator withholds, from the reader and from Lucy's stated viewpoint, that she had already recognised Dr. John; the cutoff is the start of the chapter containing the explicit sentence. The _ marks are Gutenberg italics."
+    },
+    {
+      "id": "SA", "book": "The Secret Adversary", "gutenberg": 1155,
+      "alias": ["Mr. Brown"], "identity": "Sir James Peel Edgerton",
+      "cast": ["Sir James Peel Edgerton", "Tommy Beresford", "Tuppence", "Julius Hersheimmer", "Jane Finn", "Mr. Carter", "Albert", "Whittington", "Mrs. Vandemeyer"],
+      "reveal_sentence": "So no one will think of searching the pockets of Sir James Peel Edgerton!",
+      "cut": {"regex": "CHAPTER XXVI. MR. BROWN", "back": 0},
+      "caveat": "The equation is made by the villain himself in speech (the treaty is in the hands of Mr. Brown, so no one will search the pockets of Sir James), a one-sentence implication rather than the words he is Mr. Brown; the diary later states it at length. The chapter title MR. BROWN is the cutoff anchor, and a decoy accusation (Julius Hersheimmer is Mr. Brown) is in the same chapter before the reveal."
+    },
+    {
+      "id": "DL", "book": "Daddy-Long-Legs", "gutenberg": 157,
+      "alias": ["Daddy-Long-Legs", "Daddy"], "identity": "Jervis Pendleton",
+      "cast": ["Jervis Pendleton", "Judy Abbott", "Sallie McBride", "Mrs. Lippett", "Miss Pritchard", "Mrs. Semple", "Julia"],
+      "reveal_sentence": "My Very Dearest Master-Jervie-Daddy-Long-Legs Pendleton-Smith",
+      "cut": {"regex": "Thursday Morning My Very Dearest Master-Jervie", "back": 0},
+      "caveat": "Epistolary; the reveal is only a compound salutation (Master-Jervie-Daddy-Long-Legs Pendleton-Smith), never a narrator sentence. The previous letters already contain Master Jervie and Daddy-Long-Legs separately, and the prefix names Jervis and Pendleton as separate people (Julia Pendleton, Uncle Jervis, Master Jervie), so inference is easy for a careful reader. Cast excludes Julia Pendleton as a surname-shared name and uses Julia alone."
+    },
+    {
+      "id": "DQ", "book": "Don Quixote (Cervantes, Ormsby English translation)", "gutenberg": 996,
+      "alias": ["Knight of the Grove", "Knight of the Mirrors"], "identity": "Samson Carrasco",
+      "cast": ["Samson Carrasco", "Quixote", "Sancho", "Dulcinea", "Rocinante", "Nicholas", "Cide Hamete", "Diego de Miranda", "Teresa"],
+      "reveal_sentence": "it is the rash and ill-advised bachelor Samson Carrasco, our fellow townsman.",
+      "cut": {"regex": "CHAPTER XIV\\.", "back": 0},
+      "caveat": "Translation from Spanish (1612, Part II). Only 4 pre-cutoff alias occurrences (the Knight of the Grove in the previous chapters); the book also uses Knight of the Mirrors from the reveal chapter. Samson Carrasco is already an established character (the bachelor) in the prefix. Single-name cast entries are used for Quixote, Sancho and others to avoid shared-token label noise."
+    },
+    {
+      "id": "WW", "book": "The Woman in White", "gutenberg": 583,
+      "alias": ["woman in white"], "identity": "Anne Catherick",
+      "cast": ["Anne Catherick", "Walter Hartright", "Marian Halcombe", "Laura", "Mrs. Vesey", "Pesca", "Sarah"],
+      "reveal_sentence": "We had identified the unhappy woman whom I had met in the night-time with Anne Catherick",
+      "cut": {"regex": "So ended my eventful first day at Limmeridge House", "back": 0},
+      "caveat": "Hint-rich: the prefix already contains Mrs. Fairlie's letter about the child Anne Catherick and the discovery of the likeness to Laura, so a careful reader can infer the identification; the explicit sentence follows in the next chapter. The Fairlie family (Mr., Mrs., Miss Fairlie) is left out of the cast because a shared surname would add control-label noise; Laura and Sarah are single-name entries. The case-sensitive alias excludes the title-case book title."
+    },
+    {
+      "id": "OT", "book": "Oliver Twist", "gutenberg": 730,
+      "alias": ["Monks"], "identity": "Edward Leeford",
+      "cast": ["Edward Leeford", "Oliver Twist", "Mr. Brownlow", "Fagin", "Bill Sikes", "Nancy", "Mr. Bumble", "Mr. Grimwig", "Rose Maylie"],
+      "reveal_sentence": "yes, Edward Leeford, even now",
+      "cut": {"regex": "CHAPTER XLIX\\.", "back": 0},
+      "caveat": "Same author as Great Expectations (v1 GE) but a different book. The name Leeford does not occur in the prefix. The reveal is Brownlow addressing Monks by his real name in speech, not a narrator sentence; the cutoff is the start of the chapter containing the confrontation."
+    },
+    {
+      "id": "TM", "book": "The Three Musketeers (Dumas, English translation)", "gutenberg": 1257,
+      "alias": ["Milady"], "identity": "Anne de Breuil",
+      "cast": ["Anne de Breuil", "D’Artagnan", "Athos", "Porthos", "Aramis", "Tréville", "Planchet", "Buckingham", "Kitty"],
+      "reveal_sentence": "the name Milady Clarik concealed Anne de Breuil",
+      "cut": {"regex": "Chapter XLV\\.", "back": 0},
+      "caveat": "Translation from French. The reveal is spoken by Athos in the confrontation scene (the same speech also equates Athos with the Comte de la Fère); the name Anne de Breuil does not occur in the prefix, but Milady is also known as Lady de Winter in the prefix (a second alias, not in the cast on purpose). The Comte de la Fère appears in the book's own preface as the putative memoir author, so that name is not a clean decoy and is left out of the cast."
+    }
+  ]
+}
