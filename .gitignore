@@ -108,3 +108,6 @@ graphify-out/
 
 # prefix-faithfulness label sheets carry novel text excerpts; keep local only
 data/eval/prefix_audit/labels/sheet_*.txt
+
+# label files quoting copyrighted novels: kept locally, never published
+data/eval/prefix_audit/labels/luna_labels*.jsonl
