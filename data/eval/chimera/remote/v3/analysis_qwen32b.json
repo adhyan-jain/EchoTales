@@ -1,0 +1,50 @@
+{
+ "exploratory": true,
+ "set": "v3",
+ "model": "qwen32b",
+ "label_provenance": "TEXT-DERIVED oracle; model-selected; no human labels",
+ "G2a_B_eq_B2_plain_controls": 0.9167,
+ "G2b": "not run for this model (needs the PD v3 synthetic items)",
+ "events": 12,
+ "M2": {
+  "M2_orig": 0
+ },
+ "M2_k_needed": 5,
+ "M2_memory_present": false,
+ "alias_only_closed_book": {
+  "C_orig": 2,
+  "C_ren": 0,
+  "C_ren2": 0
+ },
+ "ctrl_acc": {
+  "A": 0.9688,
+  "B": 0.9271,
+  "B2": 0.875
+ },
+ "cluster": {
+  "events": 12,
+  "pairs": 96,
+  "gap_A_minus_B": 0.0469,
+  "gap_A_minus_B_ci": [
+   -0.0052,
+   0.1042
+  ],
+  "gap_A_minus_B3": 0.0469,
+  "gap_A_minus_B3_ci": [
+   -0.0052,
+   0.1042
+  ],
+  "recovered_fraction": 0.0,
+  "recovered_fraction_ci": [
+   0.0,
+   0.0
+  ],
+  "events_positive": 3,
+  "events_negative": 1,
+  "event_sign_test_p": 0.625
+ },
+ "invalid": 0,
+ "wall_seconds": 137.1,
+ "calls": 684,
+ "est_pod_cost_usd": 0.043
+}
