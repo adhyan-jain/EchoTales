@@ -1,0 +1,179 @@
+{
+ "judge": "qwen3:8b",
+ "of": "mistral:7b-instruct",
+ "prompt": "A reading assistant wrote this character card.\nCard: {CARD}\n\nDoes the card state or clearly imply that the character called \"{ALIAS}\" is the same person as \"{IDENTITY}\"? Reply as JSON: {{\"identifies\": true}} or {{\"identifies\": false}}.",
+ "labels": {
+  "C965_1": {
+   "P_pseudo": false
+  },
+  "C1848_1": {
+   "P_pseudo": false
+  },
+  "C1942_1": {
+   "P_pseudo": false
+  },
+  "C2078_1": {
+   "P_pseudo": false
+  },
+  "C2153_1": {
+   "P_pseudo": false
+  },
+  "C2160_1": {
+   "P_pseudo": false
+  },
+  "C2516_1": {
+   "P_pseudo": false
+  },
+  "C3815_1": {
+   "P_pseudo": false
+  },
+  "C4276_1": {
+   "P_pseudo": false
+  },
+  "C4537_1": {
+   "P_pseudo": false
+  },
+  "C5122_1": {
+   "P_pseudo": false
+  },
+  "C5155_1": {
+   "P_pseudo": false
+  },
+  "C5174_1": {
+   "P_pseudo": false
+  },
+  "C5660_1": {
+   "P_pseudo": false
+  },
+  "C6086_1": {
+   "P_pseudo": false
+  },
+  "C7079_1": {
+   "P_pseudo": true
+  },
+  "C7265_1": {
+   "P_pseudo": false
+  },
+  "C7497_1": {
+   "P_pseudo": false
+  },
+  "C7510_1": {
+   "P_pseudo": false
+  },
+  "C7661_1": {
+   "P_pseudo": false
+  },
+  "C7671_1": {
+   "P_pseudo": false
+  },
+  "C7671_2": {
+   "P_pseudo": false
+  },
+  "C7671_3": {
+   "P_pseudo": false
+  },
+  "C7713_1": {
+   "P_pseudo": false
+  },
+  "C7974_1": {
+   "P_pseudo": false
+  },
+  "C9589_1": {
+   "P_pseudo": false
+  },
+  "C9752_1": {
+   "P_pseudo": false
+  },
+  "C9847_1": {
+   "P_pseudo": true
+  },
+  "C11431_1": {
+   "P_pseudo": true
+  },
+  "C11643_1": {
+   "P_pseudo": false
+  },
+  "C11720_1": {
+   "P_pseudo": false
+  },
+  "C14498_1": {
+   "P_pseudo": false
+  },
+  "C17434_1": {
+   "P_pseudo": false
+  },
+  "C21557_1": {
+   "P_pseudo": false
+  },
+  "C21729_1": {
+   "P_pseudo": false
+  },
+  "C24804_1": {
+   "P_pseudo": false
+  },
+  "C28337_1": {
+   "P_pseudo": false
+  },
+  "C33081_1": {
+   "P_pseudo": false
+  },
+  "C33294_1": {
+   "P_pseudo": false
+  },
+  "C33538_1": {
+   "P_pseudo": false
+  },
+  "C35443_1": {
+   "P_pseudo": false
+  },
+  "C36027_1": {
+   "P_pseudo": false
+  },
+  "C36592_1": {
+   "P_pseudo": false
+  },
+  "C37336_1": {
+   "P_pseudo": false
+  },
+  "C38323_1": {
+   "P_pseudo": false
+  },
+  "C39858_1": {
+   "P_pseudo": false
+  },
+  "C40829_1": {
+   "P_pseudo": false
+  },
+  "C40833_1": {
+   "P_pseudo": false
+  },
+  "C41185_1": {
+   "P_pseudo": false
+  },
+  "C41453_1": {
+   "P_pseudo": false
+  },
+  "C41456_1": {
+   "P_pseudo": false
+  },
+  "C42529_1": {
+   "P_pseudo": false
+  },
+  "C44924_1": {
+   "P_pseudo": false
+  },
+  "C46367_1": {
+   "P_pseudo": false
+  },
+  "C47996_1": {
+   "P_pseudo": false
+  },
+  "C49468_1": {
+   "P_pseudo": false
+  },
+  "C49850_1": {
+   "P_pseudo": false
+  }
+ },
+ "status": "COMPLETE"
+}

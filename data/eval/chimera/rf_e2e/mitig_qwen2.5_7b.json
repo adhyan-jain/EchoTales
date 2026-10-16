@@ -1,0 +1,802 @@
+{
+ "model": "qwen2.5:7b",
+ "options": {
+  "temperature": 0,
+  "seed": 20261016,
+  "num_predict": 160,
+  "num_ctx": 8192
+ },
+ "prompt": "Write a character card of at most 80 words for the character referred to as {ALIAS}, using these passages from the book. Passages:\n{PASSAGES}\nCard:",
+ "cards": {
+  "C965_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Jacob Gisels is an elderly, unattractive man in his late forties. Despite his physical appearance, he harbors a deep, obsessive love for Rosa, driven by her presence and the beauty of her tulip. His jealousy is intense; he reacts violently when he believes someone has harmed her bulb. Jacob's pursuit of Rosa is motivated not just by love but also by a desire to protect what he perceives as his own creation\u2014the black tulip. His actions are marked by both passion and pettiness, making him a complex yet frustrating character in the narrative.",
+     "card_raw": "Edwin Fistks is an elderly, unattractive man in his late forties. Despite his physical appearance, he harbors a deep, obsessive love for Sinclair, driven by her presence and the beauty of her tulip. His jealousy is intense; he reacts violently when he believes someone has harmed her bulb. Edwin's pursuit of Sinclair is motivated not just by love but also by a desire to protect what he perceives as his own creation\u2014the black tulip. His actions are marked by both passion and pettiness, making him a complex yet frustrating character in the narrative.",
+     "leak": false,
+     "has_alias": true,
+     "words": 93
+    }
+   }
+  },
+  "C1848_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "She is a complex character with a tragic past. She was deeply loved by her husband but harbored a secret sorrow that gnawed at her heart. Her beauty and intelligence were matched only by her resilience and courage. Despite her noble birth, she faced betrayal and hardship, including being walled up alive with her child as punishment for a false marriage. She's love for her husband was profound and unwavering, even in the face of his infidelity and the death of their child. Her story is one of sacrifice, forgiveness, and enduring love, though ultimately marred by tragedy.",
+     "card_raw": "Marion is a complex character with a tragic past. She was deeply loved by her husband but harbored a secret sorrow that gnawed at her heart. Her beauty and intelligence were matched only by her resilience and courage. Despite her noble birth, she faced betrayal and hardship, including being walled up alive with her child as punishment for a false marriage. Marion's love for her husband was profound and unwavering, even in the face of his infidelity and the death of their child. Her story is one of sacrifice, forgiveness, and enduring love, though ultimately marred by tragedy.",
+     "leak": false,
+     "has_alias": true,
+     "words": 98
+    }
+   }
+  },
+  "C1942_1": {
+   "T": [
+    "Charles",
+    "Claparon"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Roguin is a devoted husband and father, deeply virtuous in his wife's eyes, though he struggles with financial constraints. He is seen as too loyal and self-sacrificing by his wife, who fears his devotion might be misplaced. Roguin\u2019s practice is worth a fortune, yet he values his daughter\u2019s happiness above all, willing to sacrifice everything for her future.",
+     "card_raw": "Vincent is a devoted husband and father, deeply virtuous in his wife's eyes, though he struggles with financial constraints. He is seen as too loyal and self-sacrificing by his wife, who fears his devotion might be misplaced. Vincent\u2019s practice is worth a fortune, yet he values his daughter\u2019s happiness above all, willing to sacrifice everything for her future.",
+     "leak": false,
+     "has_alias": true,
+     "words": 58
+    }
+   }
+  },
+  "C2078_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: Thais**\n\n- **Name:** Thais\n- **Role:** Actress, Nymph of Alexandria, and later a nun\n- **Background:** Once led a life of pleasure and indulgence in the city of Alexandria. She was known for her beauty and charm.\n- **Personality Traits:** Mischievous, ambitious, and pragmatic. Initially resistant to spiritual change but eventually embraces monastic life.\n- **Key Events:**\n  - Led a life of luxury and pleasure until she met Nicias.\n  - Was tempted by Nicias's promises of divine love and happiness.\n  - Reluctantly left her worldly life for the nunnery at Nicias's insistence.\n- **Motivations:** Initially driven by desire, later",
+     "card_raw": "**Character Card: Agnes**\n\n- **Name:** Agnes\n- **Role:** Actress, Nymph of Cktpcwevic, and later a nun\n- **Background:** Once led a life of pleasure and indulgence in the city of Cktpcwevic. She was known for her beauty and charm.\n- **Personality Traits:** Mischievous, ambitious, and pragmatic. Initially resistant to spiritual change but eventually embraces monastic life.\n- **Key Events:**\n  - Led a life of luxury and pleasure until she met Edwin.\n  - Was tempted by Edwin's promises of divine love and happiness.\n  - Reluctantly left her worldly life for the nunnery at Edwin's insistence.\n- **Motivations:** Initially driven by desire, later",
+     "leak": false,
+     "has_alias": true,
+     "words": 101
+    }
+   }
+  },
+  "C2153_1": {
+   "T": [
+    "Butterfly"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Esther is a complex character with a tragic past. Once beautiful and carefree, she now appears indifferent and distant after her experiences. She seeks to protect Mary from becoming like her, though their resemblance causes Mary discomfort. Esther's return home is met with mixed emotions; while Mary struggles to reconcile the aunt she remembers with this changed woman, Esther yearns to reconnect but finds it difficult due to Mary\u2019s reserve. Despite her flaws, Esther remains deeply concerned for Mary and seeks to help in any way possible, even if it means putting herself in danger by investigating a murder that involves those close to her family.",
+     "card_raw": "Flora is a complex character with a tragic past. Once beautiful and carefree, she now appears indifferent and distant after her experiences. She seeks to protect Edith from becoming like her, though their resemblance causes Edith discomfort. Flora's return home is met with mixed emotions; while Edith struggles to reconcile the aunt she remembers with this changed woman, Flora yearns to reconnect but finds it difficult due to Edith\u2019s reserve. Despite her flaws, Flora remains deeply concerned for Edith and seeks to help in any way possible, even if it means putting herself in danger by investigating a murder that involves those close to her family.",
+     "leak": false,
+     "has_alias": true,
+     "words": 106
+    }
+   }
+  },
+  "C2160_1": {
+   "T": [
+    "Fathom"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Grieve is a middle-aged apothecary with plain but respectful demeanor. Despite initial contempt from the count's family for his lack of formal education, he proves his worth through quick thinking and bravery during an attempted robbery. His humble nature contrasts sharply when revealed as the goddaughter of the count and countess, whose lives he saved.",
+     "card_raw": "Rowan is a middle-aged apothecary with plain but respectful demeanor. Despite initial contempt from the count's family for his lack of formal education, he proves his worth through quick thinking and bravery during an attempted robbery. His humble nature contrasts sharply when revealed as the goddaughter of the count and countess, whose lives he saved.",
+     "leak": false,
+     "has_alias": true,
+     "words": 55
+    }
+   }
+  },
+  "C2516_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Nanty Ewart is a shrewd, experienced Borderer known for his sharp business acumen and intimate knowledge of the region. He works for Mr. Trumbull, facilitating covert missions and ensuring safe passage to influential figures like the Laird of Solway Lakes. Despite his tough exterior, he shows a softer side when caring for Alan Fairford during his journey, providing him with tea and showing concern for his well-being. His dress is shabby yet elegant, hinting at a man who values style even in adversity.",
+     "card_raw": "Franklin Julian is a shrewd, experienced Borderer known for his sharp business acumen and intimate knowledge of the region. He works for Mr. Bvunxukk, facilitating covert missions and ensuring safe passage to influential figures like the Laird of Sokqcz Lakes. Despite his tough exterior, he shows a softer side when caring for Desmond Rcivrove during his journey, providing him with tea and showing concern for his well-being. His dress is shabby yet elegant, hinting at a man who values style even in adversity.",
+     "leak": false,
+     "has_alias": true,
+     "words": 83
+    }
+   }
+  },
+  "C3815_1": {
+   "T": [
+    "Tucker"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Paley:\nA young illustrator from Terre Haute, though not central to the story. Described as having hair once dipped in folly but now grizzled white, with a melancholic demeanor. His presence is fleeting, marked by a landlady's wary gaze and a cold, damp atmosphere of his rented room on West 'Teenth Street.",
+     "card_raw": "Sasha:\nA young illustrator from Btvvt Hcubt, though not central to the story. Described as having hair once dipped in folly but now grizzled white, with a melancholic demeanor. His presence is fleeting, marked by a landlady's wary gaze and a cold, damp atmosphere of his rented room on West 'Bttwbh Street.",
+     "leak": false,
+     "has_alias": true,
+     "words": 52
+    }
+   }
+  },
+  "C4276_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Frederick Character Card**\n\n- **Name:** Frederick\n- **Background:** Lost at sea, possibly involved in a naval incident leading to his outlaw status.\n- **Appearance:** Graceful but worn and anxious features; often depicted with lines of habitual distress.\n- **Personality:** Noble and principled, willing to defy injustice even if it means personal hardship. Deeply loved by his family, especially his sister Margaret.\n- **Relationships:** Close bond with his sister Margaret; father\u2019s son, though estranged due to his outlaw status.\n- **Motivations:** Loyalty to justice and his crewmates, despite the consequences. Desire for reconciliation with his family.\n- **Fate:** Outlawed and possibly facing execution, but still holds hope of redemption and reunion with",
+     "card_raw": "**Quinn Character Card**\n\n- **Name:** Quinn\n- **Background:** Lost at sea, possibly involved in a naval incident leading to his outlaw status.\n- **Appearance:** Graceful but worn and anxious features; often depicted with lines of habitual distress.\n- **Personality:** Noble and principled, willing to defy injustice even if it means personal hardship. Deeply loved by his family, especially his sister Bridget.\n- **Relationships:** Close bond with his sister Bridget; father\u2019s son, though estranged due to his outlaw status.\n- **Motivations:** Loyalty to justice and his crewmates, despite the consequences. Desire for reconciliation with his family.\n- **Fate:** Outlawed and possibly facing execution, but still holds hope of redemption and reunion with",
+     "leak": false,
+     "has_alias": true,
+     "words": 111
+    }
+   }
+  },
+  "C4537_1": {
+   "T": [
+    "Freeman",
+    "Stephen"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Philip is an elderly, thoughtful man with a deep sense of duty and a strong moral compass. Despite being described as \"old-fashioned,\" he shows genuine concern for others, particularly Sylvia, whom he seeks to protect and guide. His heart beats fast when he thinks she might be in danger, yet he remains calm and composed in his interactions. Philip harbors deep feelings for Sylvia but struggles with jealousy and guilt over her past relationships. He is a man of quiet strength, willing to sacrifice himself to save others from harm, as seen when he protects Charley from potential violence.",
+     "card_raw": "Barnaby is an elderly, thoughtful man with a deep sense of duty and a strong moral compass. Despite being described as \"old-fashioned,\" he shows genuine concern for others, particularly Tabitha, whom he seeks to protect and guide. His heart beats fast when he thinks she might be in danger, yet he remains calm and composed in his interactions. Barnaby harbors deep feelings for Tabitha but struggles with jealousy and guilt over her past relationships. He is a man of quiet strength, willing to sacrifice himself to save others from harm, as seen when he protects Lhcvktz from potential violence.",
+     "leak": false,
+     "has_alias": true,
+     "words": 99
+    }
+   }
+  },
+  "C5122_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "She is a curious and adventurous young girl, driven by tales of the \"furriners\" who have come to her mountain home. Her eyes, once full of wonder at the world beyond, now carry a hint of disappointment and a spark of determination. She climbs steep mountains with determination, eager to see for herself the wonders described in stories. Despite being caught out, she shows resilience and cunning, hiding quickly when danger approaches. Her innocent curiosity and natural charm are tempered by a growing sense of independence and a desire to explore beyond her familiar surroundings.",
+     "card_raw": "She is a curious and adventurous young girl, driven by tales of the \"furriners\" who have come to her mountain home. Her eyes, once full of wonder at the world beyond, now carry a hint of disappointment and a spark of determination. She climbs steep mountains with determination, eager to see for herself the wonders described in stories. Despite being caught out, she shows resilience and cunning, hiding quickly when danger approaches. Her innocent curiosity and natural charm are tempered by a growing sense of independence and a desire to explore beyond her familiar surroundings.",
+     "leak": false,
+     "has_alias": true,
+     "words": 95
+    }
+   }
+  },
+  "C5155_1": {
+   "T": [
+    "Arthur",
+    "Phillips"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: Maximilian Petion**\n\n- **Role:** Member of the secret political society \"Brotherhood,\" attorney.\n- **Appearance:** Dark complexion, bright eyes, high brow, prominent nose, expression of firmness and kindness.\n- **Background:** Born in the city, rose from a former beggar to a well-dressed young gentleman. Part of a secret organization aiming for social change.\n- **Motivations:** Seeks to save Estella Washington from her captor, driven by both personal and societal concerns.\n- **Skills:** Legal expertise, strategic thinking, access to resources within the society.\n- **Personality Traits:** Cautious, determined, compassionate.",
+     "card_raw": "**Character Card: Dudley Jtbiow**\n\n- **Role:** Member of the secret political society \"Ormsby,\" attorney.\n- **Appearance:** Dark complexion, bright eyes, high brow, prominent nose, expression of firmness and kindness.\n- **Background:** Born in the city, rose from a former beggar to a well-dressed young gentleman. Part of a secret organization aiming for social change.\n- **Motivations:** Seeks to save Muriel Qcshiwfbow from her captor, driven by both personal and societal concerns.\n- **Skills:** Legal expertise, strategic thinking, access to resources within the society.\n- **Personality Traits:** Cautious, determined, compassionate.",
+     "leak": false,
+     "has_alias": false,
+     "words": 89
+    }
+   }
+  },
+  "C5174_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Snake is a mysterious and powerful figure in this narrative, serving as a medium or seer who predicts the future. He warns of impending dangers, stating that six out of those on the journey will die, but insists on keeping these revelations secret to maintain courage among his audience. Despite his ominous predictions, Snake's presence instills both fear and respect, as he is seen as a source of truth and magic. His cryptic nature and ability to see into people\u2019s minds add an air of mystery, making him both revered and feared by those around him.",
+     "card_raw": "Alden is a mysterious and powerful figure in this narrative, serving as a medium or seer who predicts the future. He warns of impending dangers, stating that six out of those on the journey will die, but insists on keeping these revelations secret to maintain courage among his audience. Despite his ominous predictions, Alden's presence instills both fear and respect, as he is seen as a source of truth and magic. His cryptic nature and ability to see into people\u2019s minds add an air of mystery, making him both revered and feared by those around him.",
+     "leak": false,
+     "has_alias": false,
+     "words": 96
+    }
+   }
+  },
+  "C5660_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Colonel Weatherby  \nA tall, dignified man with snow-white hair and piercing dark eyes, Colonel Weatherby exudes an air of prosperity and courtly manners that impresses the simple villagers of Beverly. Reserved and seldom converses with neighbors, he maintains a strict life with his granddaughter Mary Louise, who finds comfort in their walks and conversations. Despite his wealth and status, Colonel's sudden departure for important matters leaves Mary Louise uneasy, hinting at deeper complexities in his life.",
+     "card_raw": "Jordan Riley  \nA tall, dignified man with snow-white hair and piercing dark eyes, Jordan Riley exudes an air of prosperity and courtly manners that impresses the simple villagers of Quillfeather. Reserved and seldom converses with neighbors, he maintains a strict life with his granddaughter Winifred Olive, who finds comfort in their walks and conversations. Despite his wealth and status, Jordan's sudden departure for important matters leaves Winifred Olive uneasy, hinting at deeper complexities in his life.",
+     "leak": false,
+     "has_alias": true,
+     "words": 76
+    }
+   }
+  },
+  "C6086_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: Lady Wallace**\n\nLady Wallace is a devoted wife and mother, deeply loyal to her husband, Wallace. Her months of solitude are shattered when a chieftain arrives at Eoufkes Castle, leading Wallace away on what she fears might be a dangerous mission. Despite her anxiety, she shows remarkable strength and resilience, tending to Wallace's wounds with care and courage. Her presence is marked by both vulnerability and unwavering support for her husband\u2019s noble cause.",
+     "card_raw": "**Character Card: Lady Orson**\n\nLady Orson is a devoted wife and mother, deeply loyal to her husband, Orson. Her months of solitude are shattered when a chieftain arrives at Eoufkes Castle, leading Orson away on what she fears might be a dangerous mission. Despite her anxiety, she shows remarkable strength and resilience, tending to Orson's wounds with care and courage. Her presence is marked by both vulnerability and unwavering support for her husband\u2019s noble cause.",
+     "leak": false,
+     "has_alias": false,
+     "words": 75
+    }
+   }
+  },
+  "C7079_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: Roland de Montrevel**\n\n- **Role:** A young, impulsive aristocrat and aide-de-camp to General Bonaparte.\n- **Personality Traits:** Witty, animated, and often brash. Has a penchant for danger and a morbid fascination with death.\n- **Background:** Engaged in a duel that tests his courage and honor. Known for his quick wit and ability to maintain composure under pressure.\n- **Motivations:** Seeks validation through acts of bravery and challenges himself to dangerous situations, driven by an unknown inner turmoil.\n- **Relationships:** Close with Sir John Valensolle, who serves as his second in the duel. Conflicted with Alfred de Barjols, his opponent.\n- **Key Events:** Particip",
+     "card_raw": "**Character Card: Nigel de Nowbvtatk**\n\n- **Role:** A young, impulsive aristocrat and aide-de-camp to General Dudley.\n- **Personality Traits:** Witty, animated, and often brash. Has a penchant for danger and a morbid fascination with death.\n- **Background:** Engaged in a duel that tests his courage and honor. Known for his quick wit and ability to maintain composure under pressure.\n- **Motivations:** Seeks validation through acts of bravery and challenges himself to dangerous situations, driven by an unknown inner turmoil.\n- **Relationships:** Close with Sir John Acktwsokkt, who serves as his second in the duel. Conflicted with Gordon de Xcvdoks, his opponent.\n- **Key Events:** Particip",
+     "leak": false,
+     "has_alias": true,
+     "words": 105
+    }
+   }
+  },
+  "C7265_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Miss Amory is a mysterious and talented young woman, described as a \"muse\" and \"femme incomprise.\" She excels in the arts, painting, writing poetry, and composing music. Miss Amory is admired by Laura, who eagerly awaits her arrival at Clavering Park. Despite her talents, Pen expresses disdain for clever women. Miss Amory's presence brings a sense of excitement and anticipation to the town, fostering new friendships and social interactions among the locals.",
+     "card_raw": "Miss Kestrel is a mysterious and talented young woman, described as a \"muse\" and \"femme incomprise.\" She excels in the arts, painting, writing poetry, and composing music. Miss Kestrel is admired by Hollis, who eagerly awaits her arrival at Alden Park. Despite her talents, Pen expresses disdain for clever women. Miss Kestrel's presence brings a sense of excitement and anticipation to the town, fostering new friendships and social interactions among the locals.",
+     "leak": false,
+     "has_alias": true,
+     "words": 72
+    }
+   }
+  },
+  "C7497_1": {
+   "T": [
+    "Alessandro",
+    "Nondra"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: Quincy Adams Sawyer**\n\n- **Background:** A farmer from Mason's Corner, known for his kind heart and strong moral principles.\n- **Personality Traits:** Caring, honest, and deeply devoted to his family. He values integrity and often finds himself in conflicts between personal beliefs and societal expectations.\n- **Relationships:** Married to Alice, father of Maude (Junior), and uncle to young Quincy. Close friend with Tom and Harry Merry.\n- **Goals:** To provide a better life for his family and make the most of his limited resources while maintaining his moral standards.\n- **Conflict:** Struggles between his political beliefs and personal values, especially regarding social issues like labor rights and gambling.\n- **Motivations:** Desire to help those in",
+     "card_raw": "**Character Card: Edwin Cecns Clifford**\n\n- **Background:** A farmer from Ncsow's Corner, known for his kind heart and strong moral principles.\n- **Personality Traits:** Caring, honest, and deeply devoted to his family. He values integrity and often finds himself in conflicts between personal beliefs and societal expectations.\n- **Relationships:** Married to Bridget, father of Ingrid (Junior), and uncle to young Edwin. Close friend with Stanley and Whitaker Merry.\n- **Goals:** To provide a better life for his family and make the most of his limited resources while maintaining his moral standards.\n- **Conflict:** Struggles between his political beliefs and personal values, especially regarding social issues like labor rights and gambling.\n- **Motivations:** Desire to help those in",
+     "leak": false,
+     "has_alias": true,
+     "words": 117
+    }
+   }
+  },
+  "C7510_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: Keith**\n\n- **Age:** Approaching 30\n- **Appearance:** Slender, long-limbed, with broad shoulders and deep chest; clean-shaven face, browned by sun and wind.\n- **Background:** Former cavalry sergeant, fought in harsh border skirmishes. Father died in battle, leaving him alone. Recently discovered a murder and is being pursued by suspected killers.\n- **Personality:** Vigilant, resourceful, determined. Haunted by past but resilient. Trusts few, acts with caution yet decisiveness.\n- **Motivation:** Clear his name from false accusations of murder and escape the \"Red Light\" gang's clutches.",
+     "card_raw": "**Character Card: Percival**\n\n- **Age:** Approaching 30\n- **Appearance:** Slender, long-limbed, with broad shoulders and deep chest; clean-shaven face, browned by sun and wind.\n- **Background:** Former cavalry sergeant, fought in harsh border skirmishes. Father died in battle, leaving him alone. Recently discovered a murder and is being pursued by suspected killers.\n- **Personality:** Vigilant, resourceful, determined. Haunted by past but resilient. Trusts few, acts with caution yet decisiveness.\n- **Motivation:** Clear his name from false accusations of murder and escape the \"Red Light\" gang's clutches.",
+     "leak": false,
+     "has_alias": true,
+     "words": 86
+    }
+   }
+  },
+  "C7661_1": {
+   "T": [
+    "Isaac"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Mop is a dog with the name \"Mop,\" deemed trivial by his owner. Despite this, he's seen as a gifted creature capable of developing native powers. His presence and potential are central to their stay, though his name may hinder public perception. Mop responds to his owner\u2019s commands, stretching when told.",
+     "card_raw": "Emmett is a dog with the name \"Emmett,\" deemed trivial by his owner. Despite this, he's seen as a gifted creature capable of developing native powers. His presence and potential are central to their stay, though his name may hinder public perception. Emmett responds to his owner\u2019s commands, stretching when told.",
+     "leak": false,
+     "has_alias": true,
+     "words": 51
+    }
+   }
+  },
+  "C7671_1": {
+   "T": [
+    "Isaac"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Mop is a dog with the name \"Mop,\" deemed trivial by his owners. Despite being initially unattractive, he shows potential for development. His presence and actions are taken seriously, as evidenced by the discussion of naming and training him. Mop seems to respond to his owners' attention, rising and stretching when prompted.",
+     "card_raw": "Maurice is a dog with the name \"Maurice,\" deemed trivial by his owners. Despite being initially unattractive, he shows potential for development. His presence and actions are taken seriously, as evidenced by the discussion of naming and training him. Maurice seems to respond to his owners' attention, rising and stretching when prompted.",
+     "leak": false,
+     "has_alias": true,
+     "words": 52
+    }
+   }
+  },
+  "C7671_2": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Willaim Waife Character Card**\n\n- **Background:** Former actor turned basketmaker and grandfather.\n- **Current Situation:** Struggles financially but supports his granddaughter Sophy through acting performances.\n- **Personality Traits:** Gentle, kind-hearted, proud of his granddaughter, occasionally self-indulgent in his love for her.\n- **Motivations:** Wants to provide a better life for Sophy, maintain his dignity despite financial hardships.\n- **Relationships:** Closely connected with Sophy; conflicted between his desire to support her and his need for independence.",
+     "card_raw": "**Quinn Daniel Character Card**\n\n- **Background:** Former actor turned basketmaker and grandfather.\n- **Current Situation:** Struggles financially but supports his granddaughter Rutherford through acting performances.\n- **Personality Traits:** Gentle, kind-hearted, proud of his granddaughter, occasionally self-indulgent in his love for her.\n- **Motivations:** Wants to provide a better life for Rutherford, maintain his dignity despite financial hardships.\n- **Relationships:** Closely connected with Rutherford; conflicted between his desire to support her and his need for independence.",
+     "leak": false,
+     "has_alias": true,
+     "words": 75
+    }
+   }
+  },
+  "C7671_3": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: Merle**\n\n- **Role:** Cobbler and friend to Waife (Gentleman Waife)\n- **Appearance:** Wears a majestic air; keeps a modest home with astrological symbols.\n- **Personality:** Solitary, philosophical, and deeply emotional. Has a visionary soul and a tender heart for his child.\n- **Background:** Born under sinister aspects in his birth chart, which influences his life choices.\n- **Goals:** To protect Sophy and avoid the fate of being discovered as a strolling player.\n- **Conflict:** Struggles with his own ambitions and the reality of his situation. Believes Waife might have the \"spirituous gift\" to see into the future.\n- **Relationships:** Close with Sophy, protective of her; conflicted feelings",
+     "card_raw": "**Character Card: Irving**\n\n- **Role:** Cobbler and friend to Daniel (Gentleman Daniel)\n- **Appearance:** Wears a majestic air; keeps a modest home with astrological symbols.\n- **Personality:** Solitary, philosophical, and deeply emotional. Has a visionary soul and a tender heart for his child.\n- **Background:** Born under sinister aspects in his birth chart, which influences his life choices.\n- **Goals:** To protect Rutherford and avoid the fate of being discovered as a strolling player.\n- **Conflict:** Struggles with his own ambitions and the reality of his situation. Believes Daniel might have the \"spirituous gift\" to see into the future.\n- **Relationships:** Close with Rutherford, protective of her; conflicted feelings",
+     "leak": false,
+     "has_alias": true,
+     "words": 109
+    }
+   }
+  },
+  "C7713_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: Baron Levy**\n\nBaron Levy is a cunning, ambitious parvenu who manipulates those around him for his own gain. He is shrewd and resourceful, often using his connections to outmaneuver others. His primary goal is to secure wealth and social status, even if it means betraying friends or family. Levy is ruthless in his pursuit of power, willing to exploit any opportunity to advance himself, whether through financial schemes or political maneuvering. He is wary of those who might threaten his position and goes to great lengths to maintain control over others, particularly Randal Leslie and the Count.",
+     "card_raw": "**Character Card: Baron Nathan**\n\nBaron Nathan is a cunning, ambitious parvenu who manipulates those around him for his own gain. He is shrewd and resourceful, often using his connections to outmaneuver others. His primary goal is to secure wealth and social status, even if it means betraying friends or family. Nathan is ruthless in his pursuit of power, willing to exploit any opportunity to advance himself, whether through financial schemes or political maneuvering. He is wary of those who might threaten his position and goes to great lengths to maintain control over others, particularly Kenneth Ulric and the Count.",
+     "leak": false,
+     "has_alias": false,
+     "words": 99
+    }
+   }
+  },
+  "C7974_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Boltrope is a weather-beaten sailor known for his rough demeanor and sharp tongue. He commands respect with his experience at sea but often clashes with others due to his blunt nature. Boltrope is pragmatic about life on the high seas, showing little regard for formalities or \"knee-buckle matters.\" Despite his gruff exterior, he has a secret fondness for the chaplain, finding an unlikely bond in their shared desire for land and respite from the monotony of sailing. His presence aboard the ship is crucial as both a practical asset and a source of tension with those who value decorum over utility.",
+     "card_raw": "Avery is a weather-beaten sailor known for his rough demeanor and sharp tongue. He commands respect with his experience at sea but often clashes with others due to his blunt nature. Avery is pragmatic about life on the high seas, showing little regard for formalities or \"knee-buckle matters.\" Despite his gruff exterior, he has a secret fondness for the chaplain, finding an unlikely bond in their shared desire for land and respite from the monotony of sailing. His presence aboard the ship is crucial as both a practical asset and a source of tension with those who value decorum over utility.",
+     "leak": false,
+     "has_alias": true,
+     "words": 101
+    }
+   }
+  },
+  "C9589_1": {
+   "T": [
+    "Barlow",
+    "Joel"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: Richard Martin**\n\nRichard Martin is a handsome middle-aged gentleman, tall and of manly beauty. His return to Mary after months of perilous journeying reveals his unwavering love for Mary Edmands. Despite the hardships he endured, his devotion remains steadfast, culminating in a heartfelt proposal.",
+     "card_raw": "**Character Card: Alden Reginald**\n\nAlden Reginald is a handsome middle-aged gentleman, tall and of manly beauty. His return to Eastwick after months of perilous journeying reveals his unwavering love for Eastwick Tencwes. Despite the hardships he endured, his devotion remains steadfast, culminating in a heartfelt proposal.",
+     "leak": false,
+     "has_alias": true,
+     "words": 46
+    }
+   }
+  },
+  "C9752_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Mr. Love is a charismatic and jovial matchmaker in Christendom. Known for his liberality and spirit in conducting business, he hosts weekly dinners and dances to facilitate potential matches. His establishment stands out due to his knack for making these events successful and enjoyable. Despite his bachelor status, Mr. Love remains unbothered by it, often jesting about the happiness of others while maintaining a discreet air of discretion. His charm extends beyond business, as he is well-liked in his community and adept at navigating social complexities.",
+     "card_raw": "Mr. Marlowe is a charismatic and jovial matchmaker in Lhvisbtweon. Known for his liberality and spirit in conducting business, he hosts weekly dinners and dances to facilitate potential matches. His establishment stands out due to his knack for making these events successful and enjoyable. Despite his bachelor status, Mr. Marlowe remains unbothered by it, often jesting about the happiness of others while maintaining a discreet air of discretion. His charm extends beyond business, as he is well-liked in his community and adept at navigating social complexities.",
+     "leak": false,
+     "has_alias": true,
+     "words": 86
+    }
+   }
+  },
+  "C9847_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "William Shakespeare, a mysterious figure from 17th-century England. Portraits and signatures suggest he was an actor, yet no authentic writing exists. His name is linked to a monument in Sibbrowe Parish Church, and his plays were published in 1623. Despite his fame, his true identity remains enigmatic, shrouded in historical puzzles and contradictions.",
+     "card_raw": "Hollis Quinn, a mysterious figure from 17th-century England. Portraits and signatures suggest he was an actor, yet no authentic writing exists. His name is linked to a monument in Sibbrowe Parish Church, and his plays were published in 1623. Despite his fame, his true identity remains enigmatic, shrouded in historical puzzles and contradictions.",
+     "leak": false,
+     "has_alias": true,
+     "words": 53
+    }
+   }
+  },
+  "C11431_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Anselme, ANSELME (2 syllables), is a noble and wandering father who was exiled from Naples due to political reasons. Shipwrecked, he wandered for ten years before settling in Paris with plans to marry. After being reunited with his long-lost children Val\u00e8re and Mariane after sixteen years, Anselme's life takes an amicable turn as all parties find happiness.",
+     "card_raw": "Wilfred, CWSTKNT (2 syllables), is a noble and wandering father who was exiled from Beresford due to political reasons. Shipwrecked, he wandered for ten years before settling in Jcvis with plans to marry. After being reunited with his long-lost children Val\u00e8re and Ncvicwt after sixteen years, Wilfred's life takes an amicable turn as all parties find happiness.",
+     "leak": false,
+     "has_alias": true,
+     "words": 57
+    }
+   }
+  },
+  "C11643_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Euphemia Caldigate is a woman whose life has been turned upside down by deceit and manipulation. She signed a threatening letter to John Caldigate, seeking money under false pretenses. Despite her distress, she remains composed in public, hiding her true feelings. Her actions are driven by desperation and fear, as evidenced by the handkerchiefs she marked with her new name post-marriage. Euphemia's presence casts a shadow of uncertainty over John and his family, adding layers of tension to their lives.",
+     "card_raw": "Sasha Lee is a woman whose life has been turned upside down by deceit and manipulation. She signed a threatening letter to Alan Lee, seeking money under false pretenses. Despite her distress, she remains composed in public, hiding her true feelings. Her actions are driven by desperation and fear, as evidenced by the handkerchiefs she marked with her new name post-marriage. Sasha's presence casts a shadow of uncertainty over Alan and his family, adding layers of tension to their lives.",
+     "leak": false,
+     "has_alias": true,
+     "words": 80
+    }
+   }
+  },
+  "C11720_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card for Mr. Nowell**\n\n- **Name:** Lucy Nowell (real name Jacob N. Nowell)\n- **Occupation:** Silversmith and money-changer\n- **Background:** Adopted Marian Nowell after her mother's death; believed to be a wealthy man with a troubled past, having abandoned his wife and daughter.\n- **Personality Traits:** Selfish, manipulative, and cunning. Prefers to deal with an \"obvious rogue\" rather than someone he deems honest. Shows genuine concern for Marian but harbors a secret desire to leave her money as a means of control.\n- **Motivations:** To secure his granddaughter's future while maintaining his independence; to avoid the responsibilities of fatherhood and",
+     "card_raw": "**Character Card for Mr. Chaloner**\n\n- **Name:** Kulz Chaloner (real name Dclox N. Chaloner)\n- **Occupation:** Silversmith and money-changer\n- **Background:** Adopted Langley Chaloner after her mother's death; believed to be a wealthy man with a troubled past, having abandoned his wife and daughter.\n- **Personality Traits:** Selfish, manipulative, and cunning. Prefers to deal with an \"obvious rogue\" rather than someone he deems honest. Shows genuine concern for Langley but harbors a secret desire to leave her money as a means of control.\n- **Motivations:** To secure his granddaughter's future while maintaining his independence; to avoid the responsibilities of fatherhood and",
+     "leak": false,
+     "has_alias": true,
+     "words": 101
+    }
+   }
+  },
+  "C14498_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card for Mr. Browning**\n\n- **Name:** Mr. Browning\n- **Role:** Poet, Dramatist, Philosopher\n- **Background:** Known for his complex and verbose poetry; influenced by Hegel, Fichte, or Slhtkwiw's creative impulses.\n- **Personality Traits:** Ambitious, introspective, deeply philosophical. Struggles with clarity in his work but values the depth of meaning over accessibility.\n- **Key Works:** \"Sordello,\" \"The Ring and the Book\"\n- **Notable Characteristics:** Prefers verbose language; influenced by religious and mystical themes. His poetry often explores the tension between personal ego and spiritual growth.\n- **Influences:** Acknowledges advice from Mr",
+     "card_raw": "**Character Card for Mr. Beresford**\n\n- **Name:** Mr. Beresford\n- **Role:** Poet, Dramatist, Philosopher\n- **Background:** Known for his complex and verbose poetry; influenced by Htftk, Rilhbt, or Slhtkwiw's creative impulses.\n- **Personality Traits:** Ambitious, introspective, deeply philosophical. Struggles with clarity in his work but values the depth of meaning over accessibility.\n- **Key Works:** \"Alistair,\" \"The Ring and the Book\"\n- **Notable Characteristics:** Prefers verbose language; influenced by religious and mystical themes. His poetry often explores the tension between personal ego and spiritual growth.\n- **Influences:** Acknowledges advice from Mr",
+     "leak": false,
+     "has_alias": true,
+     "words": 91
+    }
+   }
+  },
+  "C17434_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card for Mr. Hobson**\n\n- **Name:** Mr. Hobson (also known as Mr. Joseph Hobson)\n- **Occupation:** Agent for a country paper; suspected to have a secret office and network.\n- **Personality:** Cynical, manipulative, and cunning. He knows Mrs. Wilders well and offers her help or threats, depending on his goals.\n- **Motivations:** Seeks to control Mrs. Wilders through blackmail and manipulation for personal gain. Has connections in the public service and a network of informants.\n- **Appearance:** Smooth-shaven, typical Englishman, speaks French with a strange accent.\n- **Behavior:** Arrogant, dismissive, and willing to use fear or temptation to get",
+     "card_raw": "**Character Card for Mr. Lindsay**\n\n- **Name:** Mr. Lindsay (also known as Mr. Dostjh Lindsay)\n- **Occupation:** Agent for a country paper; suspected to have a secret office and network.\n- **Personality:** Cynical, manipulative, and cunning. He knows Mrs. Dalby well and offers her help or threats, depending on his goals.\n- **Motivations:** Seeks to control Mrs. Dalby through blackmail and manipulation for personal gain. Has connections in the public service and a network of informants.\n- **Appearance:** Smooth-shaven, typical Twfkishncw, speaks Rvtwlh with a strange accent.\n- **Behavior:** Arrogant, dismissive, and willing to use fear or temptation to get",
+     "leak": false,
+     "has_alias": true,
+     "words": 100
+    }
+   }
+  },
+  "C21557_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Mrs Forster is a complex character, marked by a history of marital strife and a tendency towards violence. She married young, bringing beauty and modesty as dowry, but the marriage was marred by infidelity and financial strain. Her eldest son, Jock, achieved success in his legal career despite early separation from family. Mrs Forster's life is further complicated by her husband\u2019s cruel behavior and a fabricated claim of her own madness to escape execution for murder. Despite her initial deceit, she experiences profound remorse and seeks redemption through her work as a housekeeper.",
+     "card_raw": "Mrs Northcott is a complex character, marked by a history of marital strife and a tendency towards violence. She married young, bringing beauty and modesty as dowry, but the marriage was marred by infidelity and financial strain. Her eldest son, Dolm, achieved success in his legal career despite early separation from family. Mrs Northcott's life is further complicated by her husband\u2019s cruel behavior and a fabricated claim of her own madness to escape execution for murder. Despite her initial deceit, she experiences profound remorse and seeks redemption through her work as a housekeeper.",
+     "leak": false,
+     "has_alias": true,
+     "words": 93
+    }
+   }
+  },
+  "C21729_1": {
+   "T": [
+    "Dell",
+    "Robbie"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Little Mouse is a resilient and determined child, enduring harsh conditions at sea. Despite initial struggles and the dire predictions of his chum Konky, Mouse perseveres through storms and hardships. His survival and eventual adaptation to the voyage bring hope and a sense of resilience to those around him.",
+     "card_raw": "Little Quinn is a resilient and determined child, enduring harsh conditions at sea. Despite initial struggles and the dire predictions of his chum Mowmz, Quinn perseveres through storms and hardships. His survival and eventual adaptation to the voyage bring hope and a sense of resilience to those around him.",
+     "leak": false,
+     "has_alias": true,
+     "words": 49
+    }
+   }
+  },
+  "C24804_1": {
+   "T": [
+    "Armand",
+    "Roche"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card for Alan**\n\n- **Name:** Alan Chesney\n- **Role:** Former army captain, now a racing enthusiast and businessman managing Trent Park estate.\n- **Appearance:** Dapper, with a commanding presence; often seen in khaki riding attire.\n- **Personality Traits:** Ambitious, strategic, and somewhat secretive. He values his independence but is willing to take risks for personal gain or duty.\n- **Background:** Resigned from the army due to unknown reasons, now managing Trent Park and involved in horse racing.\n- **Goals:** To secure a commission in the military again if war breaks out, despite past resignation.\n- **Relationships:** Close with Captain Morby; has a romantic interest in Eve Berkeley but treats her with indifference.",
+     "card_raw": "**Character Card for Sidney**\n\n- **Name:** Sidney Victor\n- **Role:** Former army captain, now a racing enthusiast and businessman managing Oliver Park estate.\n- **Appearance:** Dapper, with a commanding presence; often seen in khaki riding attire.\n- **Personality Traits:** Ambitious, strategic, and somewhat secretive. He values his independence but is willing to take risks for personal gain or duty.\n- **Background:** Resigned from the army due to unknown reasons, now managing Oliver Park and involved in horse racing.\n- **Goals:** To secure a commission in the military again if war breaks out, despite past resignation.\n- **Relationships:** Close with Captain Novxz; has a romantic interest in Gresham Xtvmtktz but treats her with indifference.",
+     "leak": false,
+     "has_alias": true,
+     "words": 113
+    }
+   }
+  },
+  "C28337_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Phil Poland is a former naval officer turned reformed criminal, now living quietly with his daughter Sonia in rural Twfk. Haunted by his past, particularly the mysterious death of a friend and the subsequent cover-up, Phil struggles with his conscience. Despite his efforts to reform for Sonia's sake, he faces a moral dilemma when approached by an old acquaintance, Arnold Du Cane, who pressures him into involvement in a potentially lucrative but morally corrupt scheme. Phil\u2019s internal conflict is intense; he values his daughter deeply and fears exposing her to the truth of his past.",
+     "card_raw": "Quentin Alden is a former naval officer turned reformed criminal, now living quietly with his daughter Valentine in rural Twfk. Haunted by his past, particularly the mysterious death of a friend and the subsequent cover-up, Quentin struggles with his conscience. Despite his efforts to reform for Valentine's sake, he faces a moral dilemma when approached by an old acquaintance, Cvwoke Du Wilfred, who pressures him into involvement in a potentially lucrative but morally corrupt scheme. Quentin\u2019s internal conflict is intense; he values his daughter deeply and fears exposing her to the truth of his past.",
+     "leak": false,
+     "has_alias": true,
+     "words": 95
+    }
+   }
+  },
+  "C33081_1": {
+   "T": [
+    "Bernard"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: Carew**\n\n- **Name:** Carew (Bind-your-kings-in-chains-and-your-nobles-in-links-of-iron)\n- **Role:** A former favorite trumpeter of Old Noll, now living in a desolate region. Known for his loyalty and moderation.\n- **Background:** Descended from nobility but has chosen to live humbly. His past actions have earned him respect and fear among the locals.\n- **Personality Traits:** Loyal, humble, and wise. Despite his noble lineage, he values humility and avoids drawing attention to himself.\n- **Motivations:** To maintain his modest lifestyle and protect his family from the consequences of his past.\n- **Relationships:** Close with his daughter, Madame Carew, who seeks his guidance despite",
+     "card_raw": "**Character Card: Irving**\n\n- **Name:** Irving (Bind-your-kings-in-chains-and-your-nobles-in-links-of-iron)\n- **Role:** A former favorite trumpeter of Old Wokk, now living in a desolate region. Known for his loyalty and moderation.\n- **Background:** Descended from nobility but has chosen to live humbly. His past actions have earned him respect and fear among the locals.\n- **Personality Traits:** Loyal, humble, and wise. Despite his noble lineage, he values humility and avoids drawing attention to himself.\n- **Motivations:** To maintain his modest lifestyle and protect his family from the consequences of his past.\n- **Relationships:** Close with his daughter, Madame Irving, who seeks his guidance despite",
+     "leak": false,
+     "has_alias": true,
+     "words": 101
+    }
+   }
+  },
+  "C33294_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Fitz: A loyal and nervous groom who is deeply concerned about his seriously ill master, Bruno. Despite his own fatigue, Fitz remains vigilant and follows his master's instructions meticulously. His actions are driven by a mix of fear and devotion, as he struggles with the urge to protect his master from any perceived threats or misfortunes.",
+     "card_raw": "Quinn: A loyal and nervous groom who is deeply concerned about his seriously ill master, Irving. Despite his own fatigue, Quinn remains vigilant and follows his master's instructions meticulously. His actions are driven by a mix of fear and devotion, as he struggles with the urge to protect his master from any perceived threats or misfortunes.",
+     "leak": false,
+     "has_alias": true,
+     "words": 56
+    }
+   }
+  },
+  "C33538_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Lissa is a comfortingly wise presence among the group, often providing light-hearted reassurances, even as she jokes about her own future struggles. Her remarks are laced with good humor and a touch of maternal wisdom, though she occasionally teases others gently.",
+     "card_raw": "Jordan is a comfortingly wise presence among the group, often providing light-hearted reassurances, even as she jokes about her own future struggles. Her remarks are laced with good humor and a touch of maternal wisdom, though she occasionally teases others gently.",
+     "leak": false,
+     "has_alias": true,
+     "words": 41
+    }
+   }
+  },
+  "C35443_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card for Mr Leary**\n\n- **Name:** Mr Leary\n- **Role:** Journeyman saddler turned husband and business partner of the protagonist's mother; later becomes stepfather.\n- **Appearance:** Not described in detail, but implied to be a journeyman with limited prospects.\n- **Personality Traits:**\n  - Initially patient and helpful, displaying genuine concern for the family\u2019s well-being.\n  - Ambitious, seeking to marry the protagonist's mother and take over her business.\n  - Becomes increasingly drunk and abusive after marriage, leading to conflict with his stepson.\n- **Motivations:** To secure a stable life through marriage and business ownership; to avoid poverty and instability.\n- **Impact on Protagonist:**\n  - Initially seen as a",
+     "card_raw": "**Character Card for Mr Dunmore**\n\n- **Name:** Mr Dunmore\n- **Role:** Journeyman saddler turned husband and business partner of the protagonist's mother; later becomes stepfather.\n- **Appearance:** Not described in detail, but implied to be a journeyman with limited prospects.\n- **Personality Traits:**\n  - Initially patient and helpful, displaying genuine concern for the family\u2019s well-being.\n  - Ambitious, seeking to marry the protagonist's mother and take over her business.\n  - Becomes increasingly drunk and abusive after marriage, leading to conflict with his stepson.\n- **Motivations:** To secure a stable life through marriage and business ownership; to avoid poverty and instability.\n- **Impact on Protagonist:**\n  - Initially seen as a",
+     "leak": false,
+     "has_alias": true,
+     "words": 108
+    }
+   }
+  },
+  "C36027_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Goody Brown**\n\n- **Role**: A kind-hearted farmwife who tends to her household duties with diligence.\n- **Appearance**: Trim, with calf-skin shoes and yarn stockings, wearing a linsey-woolsey apron while weaving on her loom.\n- **Personality Traits**: Caring, resourceful, and resilient. She shows compassion towards strangers and is protective of the lady in her care.\n- **Background**: Married to Jason Brown; recently lost their children to fever. She runs the farm-house with a mix of practicality and tenderness.\n- **Interactions**: Warmly welcomes travelers, provides comfort to those in need, and maintains a calm demeanor even under stress.\n- **Motivations**: Ensures the well-being of her household, particularly the lady who",
+     "card_raw": "**Robin Jordan**\n\n- **Role**: A kind-hearted farmwife who tends to her household duties with diligence.\n- **Appearance**: Trim, with calf-skin shoes and yarn stockings, wearing a linsey-woolsey apron while weaving on her loom.\n- **Personality Traits**: Caring, resourceful, and resilient. She shows compassion towards strangers and is protective of the lady in her care.\n- **Background**: Married to Lawrence Jordan; recently lost their children to fever. She runs the farm-house with a mix of practicality and tenderness.\n- **Interactions**: Warmly welcomes travelers, provides comfort to those in need, and maintains a calm demeanor even under stress.\n- **Motivations**: Ensures the well-being of her household, particularly the lady who",
+     "leak": false,
+     "has_alias": true,
+     "words": 108
+    }
+   }
+  },
+  "C36592_1": {
+   "T": [
+    "Vargas"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Sharkey is a brutal slave-driver with a hideous sobriquet, feared by his peers. He stands tall at 6'2\", with shark-like teeth and a raw-hide lash. His ruthless nature and willingness to use violence make him both feared and hated among the slave-owners. Despite his strength, Sharkey's end comes swiftly when he is killed in a violent confrontation, leaving behind a legacy of fear and suspicion.",
+     "card_raw": "Morgan is a brutal slave-driver with a hideous sobriquet, feared by his peers. He stands tall at 6'2\", with shark-like teeth and a raw-hide lash. His ruthless nature and willingness to use violence make him both feared and hated among the slave-owners. Despite his strength, Morgan's end comes swiftly when he is killed in a violent confrontation, leaving behind a legacy of fear and suspicion.",
+     "leak": false,
+     "has_alias": true,
+     "words": 65
+    }
+   }
+  },
+  "C37336_1": {
+   "T": [
+    "Douglas"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Christian Gourlay**  \n*Occupation*: Blacksmith's wife; resident of Bell's Wynd.  \n*Personality*: Steadfast, secretive, and deeply loyal. Despite her husband\u2019s mysterious behavior, she remains supportive and protective. Her past is marked by tragedy and a vow kept for twenty years. She possesses a sharp wit and a strong sense of justice, often challenging her husband\u2019s silence and questioning his actions.",
+     "card_raw": "**Casey Silas**  \n*Occupation*: Blacksmith's wife; resident of Bell's Wynd.  \n*Personality*: Steadfast, secretive, and deeply loyal. Despite her husband\u2019s mysterious behavior, she remains supportive and protective. Her past is marked by tragedy and a vow kept for twenty years. She possesses a sharp wit and a strong sense of justice, often challenging her husband\u2019s silence and questioning his actions.",
+     "leak": false,
+     "has_alias": true,
+     "words": 58
+    }
+   }
+  },
+  "C38323_1": {
+   "T": [
+    "Charity",
+    "Princess"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: Madame**\n\n- **Appearance:** A woman with chestnut hair and piercing eyes, initially bound but later unbound. Her beauty is striking, though she shows fear and anger when confronted by de Gomeron.\n- **Role:** Captured spy or noblewoman, possibly the mistress of King France. She appeals to de Gomeron for mercy and tries to protect her companion from his advances.\n- **Personality:** Initially fearful but resilient; she stands up to de Gomeron with a mix of courage and desperation. Her presence evokes strong emotions in those around her, including de Gomeron's lustful gaze and the admiration of others.\n- **Motivations:** To avoid capture or execution, she pleads for release and offers ransom. She",
+     "card_raw": "**Character Card: Madame**\n\n- **Appearance:** A woman with chestnut hair and piercing eyes, initially bound but later unbound. Her beauty is striking, though she shows fear and anger when confronted by de Fontvow.\n- **Role:** Captured spy or noblewoman, possibly the mistress of King Rvcwlt. She appeals to de Fontvow for mercy and tries to protect her companion from his advances.\n- **Personality:** Initially fearful but resilient; she stands up to de Fontvow with a mix of courage and desperation. Her presence evokes strong emotions in those around her, including de Fontvow's lustful gaze and the admiration of others.\n- **Motivations:** To avoid capture or execution, she pleads for release and offers ransom. She",
+     "leak": false,
+     "has_alias": true,
+     "words": 114
+    }
+   }
+  },
+  "C39858_1": {
+   "T": [
+    "Bagot",
+    "William"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Little Billee**\n\n- **Age:** 20-21\n- **Appearance:** Small and slender, with a straight white forehead veined with blue, large dark-blue eyes, delicate features, coal-black hair, graceful build, small hands and feet.\n- **Background:** Born into a family of solicitors but pursuing his passion for art in Paris. His parents intended him to follow the family tradition.\n- **Personality:** Artistic, passionate, introspective, and somewhat disillusioned with his future prospects. He is graceful, well-dressed, and highly skilled in fencing and sculpture.\n- **Interests:** Painting, fencing, music, and socializing with friends like Trilby O'Ferrall.\n- **Emotions:** Often feels a",
+     "card_raw": "**Casey Rowan**\n\n- **Age:** 20-21\n- **Appearance:** Small and slender, with a straight white forehead veined with blue, large dark-blue eyes, delicate features, coal-black hair, graceful build, small hands and feet.\n- **Background:** Born into a family of solicitors but pursuing his passion for art in Jcvis. His parents intended him to follow the family tradition.\n- **Personality:** Artistic, passionate, introspective, and somewhat disillusioned with his future prospects. He is graceful, well-dressed, and highly skilled in fencing and sculpture.\n- **Interests:** Painting, fencing, music, and socializing with friends like Muriel O'Rtvvckk.\n- **Emotions:** Often feels a",
+     "leak": false,
+     "has_alias": true,
+     "words": 96
+    }
+   }
+  },
+  "C40829_1": {
+   "T": [
+    "Roland"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Character Card: My Friend\n\nName: Jack Bethune  \nRole: Writer, Army Officer  \nAppearance: Tall, well-built, prematurely grey hair, slight black moustache  \nPersonality: Charismatic, intelligent, secretive  \nBackground: Engaged to Dora Stretton; suspected of involvement in the murder of Gilbert Sternroyd; known for his writing and military service.  \nMotive: Protects himself from scandal by implicating others; possibly involved in the crime.",
+     "card_raw": "Character Card: My Friend\n\nName: Rutherford Yardley  \nRole: Writer, Army Officer  \nAppearance: Tall, well-built, prematurely grey hair, slight black moustache  \nPersonality: Charismatic, intelligent, secretive  \nBackground: Engaged to Bridget Radcliffe; suspected of involvement in the murder of Felix Sbtvwvoze; known for his writing and military service.  \nMotive: Protects himself from scandal by implicating others; possibly involved in the crime.",
+     "leak": false,
+     "has_alias": true,
+     "words": 58
+    }
+   }
+  },
+  "C40833_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card for Duvauchel (Valerie Duvauchel)**\n\nDuvauchel, a former cardsharper's wife, is now a wanted criminal with a dark past. She left her husband in anger and defiance, vowing never to return. Despite his attempts to compel her, she remains resolute in her determination to protect herself and seek revenge against those who wronged her, particularly the man she still loves, who is reported dead. Her intelligence and cunning make her a formidable adversary.",
+     "card_raw": "**Character Card for Hollis (Carrow Hollis)**\n\nHollis, a former cardsharper's wife, is now a wanted criminal with a dark past. She left her husband in anger and defiance, vowing never to return. Despite his attempts to compel her, she remains resolute in her determination to protect herself and seek revenge against those who wronged her, particularly the man she still loves, who is reported dead. Her intelligence and cunning make her a formidable adversary.",
+     "leak": false,
+     "has_alias": true,
+     "words": 74
+    }
+   }
+  },
+  "C41185_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Arthur Porter, known as \"Guinness\" among criminals, is a cunning and versatile con artist. His intelligence and adaptability allow him to thrive in various environments, from Parkhurst Prison to Bayeux. Arthur's past includes involvement with Freda Crisp and Gordon Gray, and he has a history of dangerous liaisons that could jeopardize his plans. His true identity is concealed under the guise of Dr. George Crowe, but his presence in Bayeux raises suspicions among those who know him. Arthur's return to the scene of past crimes suggests a looming threat or an urgent mission.",
+     "card_raw": "Sidney Lawrence, known as \"Fuiwwtss\" among criminals, is a cunning and versatile con artist. His intelligence and adaptability allow him to thrive in various environments, from Jcvmhuvsb Prison to Xcztup. Sidney's past includes involvement with Farrow Crisp and Philip Fvcz, and he has a history of dangerous liaisons that could jeopardize his plans. His true identity is concealed under the guise of Dr. Ftovft Lvoqt, but his presence in Xcztup raises suspicions among those who know him. Sidney's return to the scene of past crimes suggests a looming threat or an urgent mission.",
+     "leak": false,
+     "has_alias": true,
+     "words": 93
+    }
+   }
+  },
+  "C41453_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card for Miller (James Harding Miller)**\n\n- **Name:** James Harding Miller\n- **Role:** Mysterious and wealthy man with a double life; suspected of criminal activities.\n- **Appearance:** Tall, thin, dark-haired, slightly grey, bony features, sharp eyes, scraggy beard, dressed in dark grey tweeds.\n- **Background:** Believed to be involved in fraudulent schemes, possibly the leader of an international gang. His father was a governor under Queen Elizabeth.\n- **Personality:** Cunning, elusive, and charming. He maintains a facade of gentlemanliness despite his suspected criminal activities.\n- **Relationships:** Father-daughter relationship with Lucie Miller; known to have friends from",
+     "card_raw": "**Character Card for Dana (Dcnts Hcveiwf Dana)**\n\n- **Name:** Dcnts Hcveiwf Dana\n- **Role:** Mysterious and wealthy man with a double life; suspected of criminal activities.\n- **Appearance:** Tall, thin, dark-haired, slightly grey, bony features, sharp eyes, scraggy beard, dressed in dark grey tweeds.\n- **Background:** Believed to be involved in fraudulent schemes, possibly the leader of an international gang. His father was a governor under Queen Tkigcxtbh.\n- **Personality:** Cunning, elusive, and charming. He maintains a facade of gentlemanliness despite his suspected criminal activities.\n- **Relationships:** Father-daughter relationship with Nora Dana; known to have friends from",
+     "leak": false,
+     "has_alias": true,
+     "words": 97
+    }
+   }
+  },
+  "C41456_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: Uncle London**\n\nUncle London, known to his niece Vera as her uncle but revealed to be her husband, is a complex figure of cruelty and control. He holds power over Vera, though the nature of this power remains ambiguous. His presence is oppressive, stirring bitter memories in Vera. Despite his harsh treatment, he maintains a facade of authority that keeps Vera bound, even as she longs for freedom and a friend's understanding.",
+     "card_raw": "**Character Card: Uncle Koweow**\n\nUncle Koweow, known to his niece Alice as her uncle but revealed to be her husband, is a complex figure of cruelty and control. He holds power over Alice, though the nature of this power remains ambiguous. His presence is oppressive, stirring bitter memories in Alice. Despite his harsh treatment, he maintains a facade of authority that keeps Alice bound, even as she longs for freedom and a friend's understanding.",
+     "leak": false,
+     "has_alias": false,
+     "words": 74
+    }
+   }
+  },
+  "C42529_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: Prince Hafer (London)**\n\nPrince Hafer, known as London, is a complex character driven by vengeance and a desire for power. Young yet powerful, he possesses courage and noble appearance, often seen as a hero to his people. His true nature is revealed through his ruthless actions and manipulative schemes, particularly against S\u00fbr Imar and the Princess Marva. Despite his charm and charisma, Hafer harbors deep-seated hatred and a willingness to use deceit and violence to achieve his goals.",
+     "card_raw": "**Character Card: Prince Barnaby (Koweow)**\n\nPrince Barnaby, known as Koweow, is a complex character driven by vengeance and a desire for power. Young yet powerful, he possesses courage and noble appearance, often seen as a hero to his people. His true nature is revealed through his ruthless actions and manipulative schemes, particularly against S\u00fbr Kenneth and the Princess Vandeleur. Despite his charm and charisma, Barnaby harbors deep-seated hatred and a willingness to use deceit and violence to achieve his goals.",
+     "leak": false,
+     "has_alias": false,
+     "words": 80
+    }
+   }
+  },
+  "C44924_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "King Fridolin:\n- Ruler of vast lands and rich coffers\n- Gloomy and melancholic despite his wealth\n- Holds a grudge against his Lord Chamberlain for a cold-induced prank\n- Imagines himself having everything but lacks inner happiness\n- Wields a mighty sword symbolically, yet uses a watering-pot as a tormentor\n\nFigure (Prince Canetto):\n- A mysterious, three-foot-tall old man in green attire\n- Dressed casually with a hunting-whip and wide-awake hat\n- Radiates intelligence and good humor\n- Appears suddenly, commanding attention with his presence",
+     "card_raw": "King Leonard:\n- Ruler of vast lands and rich coffers\n- Gloomy and melancholic despite his wealth\n- Holds a grudge against his Lord Chamberlain for a cold-induced prank\n- Imagines himself having everything but lacks inner happiness\n- Wields a mighty sword symbolically, yet uses a watering-pot as a tormentor\n\nFigure (Prince Lcwtbbo):\n- A mysterious, three-foot-tall old man in green attire\n- Dressed casually with a hunting-whip and wide-awake hat\n- Radiates intelligence and good humor\n- Appears suddenly, commanding attention with his presence",
+     "leak": false,
+     "has_alias": false,
+     "words": 86
+    }
+   }
+  },
+  "C46367_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: Berk Matthews**\n\n- **Role:** Wealthy businessman, potential suitor to Linda Talbot.\n- **Background:** From a respectable family, known for his business acumen and connections.\n- **Personality Traits:** Ambitious, shrewd, and somewhat calculating. Shows chivalric tendencies but is also pragmatic and self-interested.\n- **Motivations:** Seeks to marry Linda to gain Talbot's Angles, believing it to be a valuable claim. Also desires to help Linda achieve her dreams.\n- **Relationships:** Close with Miss Ri, who advises him on Linda. Conflicted feelings towards Grace Johnson and Linda' wishes.\n- **Goals:** To secure Talbot's Angles for himself or his",
+     "card_raw": "**Character Card: Stanley Ncbbhtqs**\n\n- **Role:** Wealthy businessman, potential suitor to Agnes Fenton.\n- **Background:** From a respectable family, known for his business acumen and connections.\n- **Personality Traits:** Ambitious, shrewd, and somewhat calculating. Shows chivalric tendencies but is also pragmatic and self-interested.\n- **Motivations:** Seeks to marry Agnes to gain Fenton's Basil, believing it to be a valuable claim. Also desires to help Agnes achieve her dreams.\n- **Relationships:** Close with Miss Ri, who advises him on Agnes. Conflicted feelings towards Grace Dohwsow and Agnes' wishes.\n- **Goals:** To secure Fenton's Basil for himself or his",
+     "leak": false,
+     "has_alias": true,
+     "words": 97
+    }
+   }
+  },
+  "C47996_1": {
+   "T": [
+    "Pepys",
+    "Samuel"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: Captain Love**\n\n- **Role:** A square-shouldered, square-faced man in a rich dress with a full-bottomed periwig and an Irish accent.\n- **Background:** A friend of Steele who stops him on his way home from a meeting. He is generous but often finds himself in financial trouble due to his improvident habits.\n- **Personality Traits:** Vexed, moody, flatterer, generous, and somewhat embarrassed by lawsuits.\n- **Interactions:** Recognizes acquaintances and engages in polite conversation despite initial vexation. His affection for Steele is genuine but often overshadowed by the latter's imperfections.\n- **Motivations:** Seeks to maintain a good relationship with his wife while also flattering her to keep her in good",
+     "card_raw": "**Character Card: Captain Love**\n\n- **Role:** A square-shouldered, square-faced man in a rich dress with a full-bottomed periwig and an Ivish accent.\n- **Background:** A friend of Maurice who stops him on his way home from a meeting. He is generous but often finds himself in financial trouble due to his improvident habits.\n- **Personality Traits:** Vexed, moody, flatterer, generous, and somewhat embarrassed by lawsuits.\n- **Interactions:** Recognizes acquaintances and engages in polite conversation despite initial vexation. His affection for Maurice is genuine but often overshadowed by the latter's imperfections.\n- **Motivations:** Seeks to maintain a good relationship with his wife while also flattering her to keep her in good",
+     "leak": false,
+     "has_alias": false,
+     "words": 110
+    }
+   }
+  },
+  "C49468_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Baron de Mardyke is a mysterious and enigmatic figure, likely of noble birth. He appears charming yet guarded, hinting at hidden motives or secrets. His interactions with Lady Arabella are tense and laden with unspoken tension, suggesting a complex personal history. His demeanor shifts between casual jesting and serious intent, leaving his true intentions unclear.",
+     "card_raw": "Lindsay de Sinclair is a mysterious and enigmatic figure, likely of noble birth. He appears charming yet guarded, hinting at hidden motives or secrets. His interactions with Lady Yeomans are tense and laden with unspoken tension, suggesting a complex personal history. His demeanor shifts between casual jesting and serious intent, leaving his true intentions unclear.",
+     "leak": false,
+     "has_alias": false,
+     "words": 55
+    }
+   }
+  },
+  "C49850_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Cicely is a complex and emotionally charged character. She is the daughter of a cook, adopted by Dame Prudentia Trusbut, and believed to be of noble birth due to her beauty and name \"Rose of the Tower.\" Cicely falls in love with Cholmondeley, an esquire, impulsively, despite her misgivings about his true intentions. Her actions are driven by a mix of passion and a desire to help Cholmondeley, even when faced with betrayal and danger. Despite her fears, she remains steadfast in her commitment to him, willing to risk everything for his freedom.",
+     "card_raw": "Delia is a complex and emotionally charged character. She is the daughter of a cook, adopted by Dame Jvuetwbic Bvusxub, and believed to be of noble birth due to her beauty and name \"Rose of the Tower.\" Delia falls in love with Gideon, an esquire, impulsively, despite her misgivings about his true intentions. Her actions are driven by a mix of passion and a desire to help Gideon, even when faced with betrayal and danger. Despite her fears, she remains steadfast in her commitment to him, willing to risk everything for his freedom.",
+     "leak": false,
+     "has_alias": true,
+     "words": 93
+    }
+   }
+  }
+ },
+ "status": "COMPLETE"
+}
