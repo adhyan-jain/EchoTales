@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, CircleAlert, CircleCheck, Clock, Plus } from 'lucide-react';
+import { BookOpen, CircleAlert, CircleCheck, Clock, FlaskConical, Plus } from 'lucide-react';
 import { api } from '../api';
 import { Logo, PageHeader, ThemeToggle } from '../components/app/Chrome';
 import { pickPanels, thumbUrl } from '../lib/media';
@@ -14,6 +14,12 @@ export function AccountShell({ children }) {
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
           <Logo to="/projects" />
           <div className="ml-auto flex items-center gap-2">
+            <Link
+              to="/research"
+              className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border px-3 text-sm text-muted transition-colors hover:border-accent/60 hover:text-text"
+            >
+              <FlaskConical className="h-4 w-4" aria-hidden="true" /> Research
+            </Link>
             <ThemeToggle />
           </div>
         </div>

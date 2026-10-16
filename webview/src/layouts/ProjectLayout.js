@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   ClipboardCheck,
   Clapperboard,
+  FlaskConical,
   LayoutDashboard,
   Menu,
   Settings,
@@ -32,6 +33,8 @@ const NAV = [
 const NAV_TOOLS = [
   { to: 'review', label: 'Review', icon: ClipboardCheck },
   { to: 'settings', label: 'Settings', icon: Settings },
+  // Absolute: the Research view is not per-project.
+  { to: '/research', label: 'Research', icon: FlaskConical },
 ];
 
 function NavItem({ item, onNavigate }) {

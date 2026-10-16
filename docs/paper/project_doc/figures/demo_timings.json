@@ -1,0 +1,91 @@
+{
+ "measured": "2026-10-16",
+ "machine": "RTX 4060 Laptop GPU 8 GiB, 15 GiB RAM; ollama on 127.0.0.1:11434, models fully in VRAM",
+ "item": "GG-pre073 (The Great Gatsby)",
+ "method": "Each probe asks three arms (A, B, B3) sequentially at temperature 0, num_ctx 2048, and unloads the model afterwards. cold = model not resident in VRAM, so arm A includes the model load (weights were in the OS file cache from earlier runs). warm = the model was preloaded into VRAM with identical options immediately before the probe, so load is about 0.1 s. Seconds are server-side per arm; total is the sum of the three arms.",
+ "probe": {
+  "qwen2.5:7b": {
+   "cold": {
+    "A": 4.083,
+    "B": 0.664,
+    "B3": 0.595,
+    "total": 5.342,
+    "load_seconds": 3.584,
+    "answers": {
+     "A": "F",
+     "B": "UNDETERMINED",
+     "B3": "UNDETERMINED"
+    }
+   },
+   "warm": {
+    "A": 0.63,
+    "B": 0.672,
+    "B3": 0.549,
+    "total": 1.853,
+    "load_seconds": 0.108,
+    "answers": {
+     "A": "F",
+     "B": "UNDETERMINED",
+     "B3": "UNDETERMINED"
+    }
+   }
+  },
+  "llama3.1:8b": {
+   "cold": {
+    "A": 3.756,
+    "B": 0.479,
+    "B3": 0.402,
+    "total": 4.639,
+    "load_seconds": 3.282,
+    "answers": {
+     "A": "F",
+     "B": "F",
+     "B3": "E"
+    }
+   },
+   "warm": {
+    "A": 0.566,
+    "B": 0.47,
+    "B3": 0.44,
+    "total": 1.477,
+    "load_seconds": 0.103,
+    "answers": {
+     "A": "F",
+     "B": "F",
+     "B3": "E"
+    }
+   }
+  }
+ },
+ "probe_client_wall_seconds": {
+  "qwen2.5:7b": {
+   "cold": 5.344,
+   "warm": 1.855
+  },
+  "llama3.1:8b": {
+   "cold": 4.641,
+   "warm": 1.479
+  }
+ },
+ "extra": {
+  "note": "First probe ever on qwen2.5:7b after boot (weights read from disk, not the OS cache): A 7.773 s of which 7.22 s model load, B 0.709, B3 0.589, total 9.071 s. Its paired 'warm' measurement was invalid (preload used default num_ctx, so ollama reloaded the model) and was re-measured with matching options.",
+  "qwen2_5_7b_first_ever_cold": {
+   "A": 7.773,
+   "B": 0.709,
+   "B3": 0.589,
+   "total": 9.071,
+   "load_seconds": 7.22
+  },
+  "load_variance": "Model load time varies with the OS file cache on this 15 GiB machine: arm-A load was 3.3-3.6 s with the weights cached, 7.2 s on the first read after boot, and 10.1-22.3 s in three screenshot runs taken while npm/jest/ollama were competing for RAM (total probe 11.9 s, 25.5 s, 12.7 s). The cold/warm table above is the quiet-machine measurement."
+ },
+ "summary_endpoint": {
+  "server_roundtrip_ms_median": 0.95,
+  "min_ms": 0.88,
+  "max_ms": 12.44,
+  "runs": 30,
+  "payload_bytes": 9486,
+  "browser_fetch_ms": 2.1,
+  "browser_dom_content_loaded_ms": 51,
+  "note": "Research page in headless Chromium against the built app served by the same server (localhost); summary fetch 2.1 ms, items fetch 1.9 ms."
+ }
+}

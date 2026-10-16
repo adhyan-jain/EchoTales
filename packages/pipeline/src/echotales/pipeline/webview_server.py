@@ -11,6 +11,9 @@ Routes:
     GET  /api/auth/status              {"auth_required": bool} -- never gated itself
     POST /api/auth/login               body: {"password"} -> {"token"}
     GET  /api/manifest
+    GET  /api/research/summary         stored name-leakage study results (research_demo.summary)
+    GET  /api/research/items           the six demo probe items (404 until build_demo_items.py has run)
+    POST /api/research/probe           body: {"item_id", "model", "arms"?} -> one local ollama model on 1-3 arms
     POST /api/projects                 body: {"id", "title", "content_type"}
                                         (Section 7.2 -- registers a project;
                                         does not run ingest, see Registry.create_project)
@@ -54,7 +57,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 from echotales.core.models import Job
 from echotales.core.store import Store
-from echotales.pipeline import paths
+from echotales.pipeline import paths, research_demo
 from echotales.pipeline._multipart import MultipartError, parse_single_file
 from echotales.pipeline.corrections import (
     Correction,
@@ -869,6 +872,14 @@ def make_handler(
                     return self._json(401, {"error": "unauthorized"})
                 if parts == ["api", "manifest"]:
                     return self._json(200, registry.manifest())
+                # Research page (research_demo.py): stored study results and the six demo probe items.
+                if parts == ["api", "research", "summary"]:
+                    return self._json(200, research_demo.summary())
+                if parts == ["api", "research", "items"]:
+                    try:
+                        return self._json(200, research_demo.items())
+                    except research_demo.ResearchDemoError as exc:
+                        return self._json(exc.status, {"error": str(exc)})
                 if len(parts) == 3 and parts[:2] == ["api", "novels"]:
                     handle = registry.handles.get(parts[2])
                     if handle is None:
@@ -1067,6 +1078,16 @@ def make_handler(
 
                 if not self._authorized():
                     return self._json(401, {"error": "unauthorized"})
+
+                if parts == ["api", "research", "probe"]:
+                    body = self._read_json()
+                    try:
+                        return self._json(
+                            200,
+                            research_demo.probe(str(body.get("item_id", "")), str(body.get("model", "")), body.get("arms")),
+                        )
+                    except research_demo.ResearchDemoError as exc:
+                        return self._json(exc.status, {"error": str(exc)})
 
                 if parts == ["api", "projects"]:
                     body = self._read_json()
