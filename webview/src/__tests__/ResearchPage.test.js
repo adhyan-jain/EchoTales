@@ -21,7 +21,10 @@ import { api } from '../api';
 import ResearchPage, { excerptAroundMarker, Channel2Card, RfE2ECard } from '../pages/ResearchPage';
 
 const cell = (gap, lo, hi, events = 10) => ({ gap, lo, hi, events, items: null });
+const RFRULE = (w, v) => ({ rule: 'Judge rule', events: 54, whole_renamed: w, versioned_renamed: v, input_channel: { gap: w - v, lo: 0.1, hi: 0.3 }, memory_channel: { gap: 0, lo: 0, hi: 0.03 }, supported: true });
 const SUMMARY = {
+  rf_e2e: { strata: [{ label: '7-8B local models', models: ['qwen2.5:7b'], rules: [RFRULE(0.222, 0.019)] }, { label: '24-32B open models', models: ['qwen32b'], rules: [RFRULE(0.231, 0.019)] }] },
+  confirmatory: { events: 68, primary: 32, models: ['qwen32b'], pooled_gap: { gap: 0.0011, lo: -0.0497, hi: 0.0518 }, fame_contrast: { gap: 0.0759, lo: -0.014, hi: 0.1833 }, fame_p: 0.0595 },
   provenance: 'Text-derived oracle; model-selected events; no human labels.',
   headline: {
     reference_gap: cell(0.2596, 0.1678, 0.3604, 38),
@@ -127,11 +130,11 @@ function mount() {
   );
 }
 
-test('headline cards show the stored gaps and the recovered fraction, with the provenance note', async () => {
+test('headline cards show the pipeline leak, the versioned card and the confirmatory memory gap, with the provenance note', async () => {
   mount();
-  expect(await screen.findByText('+26.0 pts')).toBeInTheDocument();
-  expect(screen.getByText('+11.5 pts')).toBeInTheDocument();
-  expect(screen.getByText('−11%')).toBeInTheDocument();
+  expect(await screen.findByText('22% / 23%')).toBeInTheDocument();
+  expect(screen.getByText('2% / 2%')).toBeInTheDocument();
+  expect(screen.getByText('+0.1 pts')).toBeInTheDocument();
   expect(screen.getAllByText(/events were selected by a model/i).length).toBeGreaterThan(0);
   expect(screen.getByRole('img', { name: /gap between original-name and renamed accuracy/i })).toBeInTheDocument();
   expect(screen.getByRole('img', { name: /mean gap by how many of five local models/i })).toBeInTheDocument();

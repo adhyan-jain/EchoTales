@@ -612,6 +612,87 @@
    "robust_to_cipher": false
   }
  },
+ "extra": {
+  "models": [
+   "qwen2.5:7b"
+  ],
+  "ruleA": {
+   "events": 19,
+   "models": [
+    "qwen2.5:7b"
+   ],
+   "rates": {
+    "W_ren": 0.21052631578947367,
+    "P_ren": 0.0,
+    "P_ren_pos50": 0.0,
+    "P_ren_pos75": 0.0,
+    "W_ren_p2": 0.2631578947368421,
+    "P_ren_p2": 0.0
+   },
+   "contrasts": {
+    "W_minus_P_pos50": {
+     "estimate": 0.21052631578947367,
+     "ci": [
+      0.05263157894736842,
+      0.42105263157894735
+     ]
+    },
+    "W_minus_P_pos75": {
+     "estimate": 0.21052631578947367,
+     "ci": [
+      0.05263157894736842,
+      0.42105263157894735
+     ]
+    },
+    "prompt2_input_channel": {
+     "estimate": 0.2631578947368421,
+     "ci": [
+      0.10526315789473684,
+      0.47368421052631576
+     ]
+    }
+   },
+   "robust_to_prompt": true
+  },
+  "ruleB": {
+   "events": 54,
+   "models": [
+    "qwen2.5:7b"
+   ],
+   "rates": {
+    "W_ren": 0.16666666666666666,
+    "P_ren": 0.0,
+    "P_ren_pos50": 0.018518518518518517,
+    "P_ren_pos75": 0.018518518518518517,
+    "W_ren_p2": 0.18518518518518517,
+    "P_ren_p2": 0.0
+   },
+   "contrasts": {
+    "W_minus_P_pos50": {
+     "estimate": 0.14814814814814814,
+     "ci": [
+      0.037037037037037035,
+      0.25925925925925924
+     ]
+    },
+    "W_minus_P_pos75": {
+     "estimate": 0.14814814814814814,
+     "ci": [
+      0.037037037037037035,
+      0.25925925925925924
+     ]
+    },
+    "prompt2_input_channel": {
+     "estimate": 0.18518518518518517,
+     "ci": [
+      0.09259259259259259,
+      0.2962962962962963
+     ]
+    }
+   },
+   "robust_to_prompt": true
+  }
+ },
  "utility": {
   "llama3.1:8b": {
    "alias_in_card_share": {
@@ -1209,6 +1290,7 @@
    "rate_judge2": 0.11403508771929824
   },
   "robust": null,
+  "extra": null,
   "utility": {
    "mistral24": {
     "alias_in_card_share": {
