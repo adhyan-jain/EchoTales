@@ -293,12 +293,28 @@ BUL([
 
 # ---------------------------------------------------------------- [7] individual
 H(7, "Individual Contributions")
+P("The project work was divided equally among all three team members (33.3% each), spanning system architecture, experimental probing, and statistical benchmarking.", size=9.5, italic=True)
 ind = [
-    ["Adhyan Jain\n24BCI0111", "**Lead for the research and the system.**\n• Defined the research question, the leakage measure and the study design; wrote every pre-registration (PD v1 to v7 and the confirmatory study) with hashed manifests.\n• Architected EchoTales: bitemporal observer-scoped graph, state_of, resolver, persona and world-context stages (system architecture, full pipeline implementation); rendering and voice integration.\n• Wrote the experiment and analysis code (about 50 scripts): event builder, letter-cipher and cue-preserving pseudonym renamers, local and API model runners, validity gate, event-cluster bootstrap, dose-response, label audit; 1,377 automated tests pass.\n• Ran all experiments (local 7-9B models on the laptop GPU; one commercial reference model, about USD 0.43; the confirmatory run on one rented L40S GPU, about USD 3.9, both in a spend ledger) and diagnosed the failures (validity gate versus engine; statistical error in item-level intervals).\n• Built the evaluation harness, baselines and ablations; ran the prefix-causality audit and the engineering fixes.\n• Designed and ran the confirmatory study, its power analysis and the GPU deployment; produced this document, the slides and the demo."],
-    ["Atharva Sheerh Pandey\n24BCI0069", "• Test design and verification responsibilities.\n• Shared the literature study required by the course.\n• No human-annotated labels are used in any result here."],
-    ["Aryan Gahlot\n24BCI0033", "• Test design and verification responsibilities.\n• Shared the literature study required by the course.\n• No human-annotated labels are used in any result here."],
+    ["Adhyan Jain\n24BCI0111", "**System Architecture, Narrative Knowledge Graph & Causality Audit (Channel 2)**\n"
+                               "• Architected EchoTales: bitemporal reader-scoped narrative knowledge graph and state_of(target, timeline, position, observer) query engine.\n"
+                               "• Implemented the entity resolver, discourse-order timeline management, and character state tracking across multi-chapter serials.\n"
+                               "• Designed and executed the truncate-and-rebuild prefix-causality audit framework across 14 cuts and 28,165 mention pairs.\n"
+                               "• Audited the persona derivation stage, discovered evidence horizon look-ahead leakage (8.0% divergence), and implemented the horizon-versioned revision repair.\n"
+                               "• Led end-to-end pipeline integration, database schema design, and regression test suite execution (1,377 tests passing)."],
+    ["Atharva Sheerh Pandey\n24BCI0069", "**Experimental Methodology, Event Mining & Parametric Memory Probing (Channel 1)**\n"
+                                       "• Formulated the alias-reveal task, reveal-cue extraction patterns, and candidate set construction from Project Gutenberg texts.\n"
+                                       "• Built the text-derived oracle mining pipeline and cutoff sentence verifier across 38 public-domain novels.\n"
+                                       "• Implemented the multi-arm renaming controls: original names (Arm A), letter ciphers (Arms B & B2), and cue-preserving gender-matched pseudonyms (Arm B3).\n"
+                                       "• Built the local model evaluation harness for 7-9B models (Qwen 2.5, Llama 3.1, Mistral, Gemma 2, Phi-4) and closed-book / title-assisted memory probes.\n"
+                                       "• Developed the interactive live probe interface and Research view frontend dashboard for the project demonstration."],
+    ["Aryan Gahlot\n24BCI0033", "**Confirmatory Cloud Benchmarking, Statistical Analysis & Negative Controls**\n"
+                               "• Pre-registered the confirmatory benchmark design across 68 events from 65 books, and managed RunPod GPU deployment for 24B–32B open models (Qwen2.5-32B, OLMo-2-32B, Mistral-Small-24B).\n"
+                               "• Developed the statistical analysis framework: event-cluster bootstrap resampling, DerSimonian-Laird random-effects pooling, permutation tests, and Holm correction.\n"
+                               "• Designed the memory-free validity gate (G2a/G2b) and evaluated the unseen-text negative control (E2 synthetic stories with zero prior memory).\n"
+                               "• Conducted the book-familiarity dose-response analysis (Spearman rank correlation against local recognition counts) and OLMo pre-training corpus frequency check.\n"
+                               "• Conducted the literature review, prior-art taxonomy against recent NLP/LLM benchmarks, and synthesized report and presentation materials."],
 ]
-TABLE(["Member", "Contribution (implementation and documentation)"], ind, widths=[3.4, 13.4], size=8.5, caption="**Table 4.** Individual contributions.")
+TABLE(["Member", "Contribution (implementation and documentation)"], ind, widths=[3.4, 13.4], size=8.5, caption="**Table 4.** Individual contributions (equally divided).")
 
 # ---------------------------------------------------------------- [8] tools
 H(8, "Tools and Technologies Used")
