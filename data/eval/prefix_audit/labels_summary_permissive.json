@@ -1,0 +1,72 @@
+{
+ "labels": "MODEL-GENERATED; strict and permissive prompts are the same model (gpt-5.6-luna)",
+ "permissive_records": 277,
+ "character_cuts": 685,
+ "diverging_pairs": 41,
+ "luna_strict": {
+  "classes": {
+   "justified": 21,
+   "premature": 18,
+   "reverse": 2
+  },
+  "premature_rate": {
+   "n": 18,
+   "of": 685,
+   "share": 0.0263,
+   "wilson95": [
+    0.0167,
+    0.0412
+   ]
+  },
+  "share_of_diverging_premature": 0.439,
+  "characters_premature": 11
+ },
+ "luna_permissive": {
+  "classes": {
+   "justified": 25,
+   "premature": 14,
+   "reverse": 2
+  },
+  "premature_rate": {
+   "n": 14,
+   "of": 685,
+   "share": 0.0204,
+   "wilson95": [
+    0.0122,
+    0.034
+   ]
+  },
+  "share_of_diverging_premature": 0.3415,
+  "characters_premature": 8
+ },
+ "agreement_strict_vs_permissive_all_pairs": {
+  "pairs": 277,
+  "kappa": 0.7954,
+  "permissive_known_strict_undetermined": 33,
+  "strict_known_permissive_undetermined": 3,
+  "contradictions": 0
+ },
+ "same_diverging_pairs_all_three_readers": {
+  "pairs": 23,
+  "mine": {
+   "justified": 16,
+   "reverse": 2,
+   "premature": 5
+  },
+  "luna_strict": {
+   "justified": 11,
+   "premature": 10,
+   "reverse": 2
+  },
+  "luna_permissive": {
+   "justified": 13,
+   "premature": 8,
+   "reverse": 2
+  }
+ },
+ "nesting": {
+  "permissive_premature_subset_of_strict": true,
+  "only_strict": 4,
+  "only_permissive": 0
+ }
+}

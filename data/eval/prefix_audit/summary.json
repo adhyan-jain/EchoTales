@@ -1,0 +1,728 @@
+{
+ "by_novel": {
+  "lord-of-the-mysteries": {
+   "off": {
+    "attribute_rows_full": 294,
+    "persona_stage_seconds_full": 0.79,
+    "pooled": {
+     "age_band": {
+      "compared": 88,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.04183
+      ],
+      "static_scored": 88,
+      "exposed": 37,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 37,
+      "screen_precision": 0.0
+     },
+     "gender": {
+      "compared": 88,
+      "diverge": 8,
+      "diverge_wilson": [
+       0.04679,
+       0.16926
+      ],
+      "static_scored": 88,
+      "exposed": 37,
+      "diverge_and_exposed": 8,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 29,
+      "screen_precision": 0.2162
+     },
+     "register": {
+      "compared": 88,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.04183
+      ],
+      "static_scored": 88,
+      "exposed": 37,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 37,
+      "screen_precision": 0.0
+     },
+     "archetype": {
+      "compared": 88,
+      "diverge": 8,
+      "diverge_wilson": [
+       0.04679,
+       0.16926
+      ],
+      "static_scored": 88,
+      "exposed": 37,
+      "diverge_and_exposed": 8,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 29,
+      "screen_precision": 0.2162
+     },
+     "big_five": {
+      "compared": 88,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.04183
+      ],
+      "static_scored": 88,
+      "exposed": 37,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 37,
+      "screen_precision": 0.0
+     },
+     "persona_set": {
+      "compared": 90,
+      "diverge": 2,
+      "diverge_wilson": [
+       0.00612,
+       0.07745
+      ],
+      "static_scored": 90,
+      "exposed": 35,
+      "diverge_and_exposed": 2,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 33,
+      "screen_precision": 0.0571
+     },
+     "ALL_TRAITS": {
+      "compared": 440,
+      "diverge": 16,
+      "diverge_wilson": [
+       0.0225,
+       0.05825
+      ],
+      "static_scored": 440,
+      "exposed": 185,
+      "diverge_and_exposed": 16,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 169,
+      "screen_precision": 0.0865
+     }
+    }
+   },
+   "on": {
+    "attribute_rows_full": 312,
+    "persona_stage_seconds_full": 1.89,
+    "pooled": {
+     "age_band": {
+      "compared": 88,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.04183
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "gender": {
+      "compared": 88,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.04183
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "register": {
+      "compared": 88,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.04183
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "archetype": {
+      "compared": 88,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.04183
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "big_five": {
+      "compared": 88,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.04183
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "persona_set": {
+      "compared": 90,
+      "diverge": 2,
+      "diverge_wilson": [
+       0.00612,
+       0.07745
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "ALL_TRAITS": {
+      "compared": 440,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.00866
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     }
+    }
+   }
+  },
+  "omniscient-readers-viewpoint": {
+   "off": {
+    "attribute_rows_full": 174,
+    "persona_stage_seconds_full": 1.31,
+    "pooled": {
+     "age_band": {
+      "compared": 61,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.05925
+      ],
+      "static_scored": 61,
+      "exposed": 40,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 40,
+      "screen_precision": 0.0
+     },
+     "gender": {
+      "compared": 61,
+      "diverge": 5,
+      "diverge_wilson": [
+       0.03552,
+       0.17795
+      ],
+      "static_scored": 61,
+      "exposed": 40,
+      "diverge_and_exposed": 5,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 35,
+      "screen_precision": 0.125
+     },
+     "register": {
+      "compared": 61,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.05925
+      ],
+      "static_scored": 61,
+      "exposed": 40,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 40,
+      "screen_precision": 0.0
+     },
+     "archetype": {
+      "compared": 61,
+      "diverge": 5,
+      "diverge_wilson": [
+       0.03552,
+       0.17795
+      ],
+      "static_scored": 61,
+      "exposed": 40,
+      "diverge_and_exposed": 5,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 35,
+      "screen_precision": 0.125
+     },
+     "big_five": {
+      "compared": 61,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.05925
+      ],
+      "static_scored": 61,
+      "exposed": 40,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 40,
+      "screen_precision": 0.0
+     },
+     "persona_set": {
+      "compared": 61,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.05925
+      ],
+      "static_scored": 61,
+      "exposed": 49,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 49,
+      "screen_precision": 0.0
+     },
+     "ALL_TRAITS": {
+      "compared": 305,
+      "diverge": 10,
+      "diverge_wilson": [
+       0.0179,
+       0.05929
+      ],
+      "static_scored": 305,
+      "exposed": 200,
+      "diverge_and_exposed": 10,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 190,
+      "screen_precision": 0.05
+     }
+    }
+   },
+   "on": {
+    "attribute_rows_full": 194,
+    "persona_stage_seconds_full": 3.29,
+    "pooled": {
+     "age_band": {
+      "compared": 61,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.05925
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "gender": {
+      "compared": 61,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.05925
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "register": {
+      "compared": 61,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.05925
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "archetype": {
+      "compared": 61,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.05925
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "big_five": {
+      "compared": 61,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.05925
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "persona_set": {
+      "compared": 61,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.05925
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "ALL_TRAITS": {
+      "compared": 305,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.01244
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     }
+    }
+   }
+  },
+  "reverend-insanity": {
+   "off": {
+    "attribute_rows_full": 606,
+    "persona_stage_seconds_full": 4.39,
+    "pooled": {
+     "age_band": {
+      "compared": 140,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.02671
+      ],
+      "static_scored": 140,
+      "exposed": 62,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 62,
+      "screen_precision": 0.0
+     },
+     "gender": {
+      "compared": 140,
+      "diverge": 10,
+      "diverge_wilson": [
+       0.03926,
+       0.12649
+      ],
+      "static_scored": 140,
+      "exposed": 62,
+      "diverge_and_exposed": 10,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 52,
+      "screen_precision": 0.1613
+     },
+     "register": {
+      "compared": 140,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.02671
+      ],
+      "static_scored": 140,
+      "exposed": 62,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 62,
+      "screen_precision": 0.0
+     },
+     "archetype": {
+      "compared": 140,
+      "diverge": 10,
+      "diverge_wilson": [
+       0.03926,
+       0.12649
+      ],
+      "static_scored": 140,
+      "exposed": 62,
+      "diverge_and_exposed": 10,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 52,
+      "screen_precision": 0.1613
+     },
+     "big_five": {
+      "compared": 140,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.02671
+      ],
+      "static_scored": 140,
+      "exposed": 62,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 62,
+      "screen_precision": 0.0
+     },
+     "persona_set": {
+      "compared": 145,
+      "diverge": 5,
+      "diverge_wilson": [
+       0.01482,
+       0.07818
+      ],
+      "static_scored": 145,
+      "exposed": 78,
+      "diverge_and_exposed": 5,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 73,
+      "screen_precision": 0.0641
+     },
+     "ALL_TRAITS": {
+      "compared": 700,
+      "diverge": 20,
+      "diverge_wilson": [
+       0.01857,
+       0.04372
+      ],
+      "static_scored": 700,
+      "exposed": 310,
+      "diverge_and_exposed": 20,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 290,
+      "screen_precision": 0.0645
+     }
+    }
+   },
+   "on": {
+    "attribute_rows_full": 666,
+    "persona_stage_seconds_full": 8.65,
+    "pooled": {
+     "age_band": {
+      "compared": 140,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.02671
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "gender": {
+      "compared": 140,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.02671
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "register": {
+      "compared": 140,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.02671
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "archetype": {
+      "compared": 140,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.02671
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "big_five": {
+      "compared": 140,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.02671
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "persona_set": {
+      "compared": 145,
+      "diverge": 5,
+      "diverge_wilson": [
+       0.01482,
+       0.07818
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     },
+     "ALL_TRAITS": {
+      "compared": 700,
+      "diverge": 0,
+      "diverge_wilson": [
+       0.0,
+       0.00546
+      ],
+      "static_scored": 0,
+      "exposed": 0,
+      "diverge_and_exposed": 0,
+      "diverge_not_exposed": 0,
+      "exposed_not_diverge": 0,
+      "screen_precision": null
+     }
+    }
+   }
+  }
+ },
+ "pooled": {
+  "off": {
+   "character_cuts": 289,
+   "with_divergence": 23,
+   "wilson": [
+    0.05361,
+    0.11659
+   ],
+   "exposed": 139,
+   "gender_diverge": 23,
+   "persona_set_diverge": 7
+  },
+  "on": {
+   "character_cuts": 289,
+   "with_divergence": 0,
+   "wilson": [
+    0.0,
+    0.01312
+   ],
+   "exposed": null,
+   "gender_diverge": 0,
+   "persona_set_diverge": 7
+  },
+  "screen": {
+   "gender": {
+    "scored": 289,
+    "exposed": 139,
+    "diverged_in_window": 23,
+    "h1_violations": 0
+   },
+   "archetype": {
+    "scored": 289,
+    "exposed": 139,
+    "diverged_in_window": 23,
+    "h1_violations": 0
+   },
+   "age_band": {
+    "scored": 289,
+    "exposed": 139,
+    "diverged_in_window": 0,
+    "h1_violations": 0
+   },
+   "register": {
+    "scored": 289,
+    "exposed": 139,
+    "diverged_in_window": 0,
+    "h1_violations": 0
+   },
+   "big_five": {
+    "scored": 289,
+    "exposed": 139,
+    "diverged_in_window": 0,
+    "h1_violations": 0
+   },
+   "persona_set": {
+    "scored": 296,
+    "exposed": 162,
+    "diverged_in_window": 7,
+    "h1_violations": 0
+   }
+  },
+  "screen_yardsticks": {
+   "n": 289,
+   "base_rate": 0.07958477508650519,
+   "precision": 0.16546762589928057,
+   "recall": 1.0,
+   "certified_safe": 150,
+   "divergent_among_safe": 0
+  },
+  "hide_only": {
+   "n": 289,
+   "diverge": 82,
+   "hides_correct_known": 80,
+   "hides_changed_value": 2,
+   "unrepaired": 23,
+   "versioned": 0
+  },
+  "cost": {
+   "off": {
+    "n": 289,
+    "unknown_served": 115,
+    "unknown_prefix": 134,
+    "attribute_rows": 1074,
+    "persona_stage_seconds": 6.49
+   },
+   "on": {
+    "n": 289,
+    "unknown_served": 134,
+    "unknown_prefix": 134,
+    "attribute_rows": 1172,
+    "persona_stage_seconds": 13.83
+   }
+  }
+ }
+}

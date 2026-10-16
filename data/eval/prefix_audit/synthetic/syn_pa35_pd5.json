@@ -1,0 +1,376 @@
+{
+ "p_anchor": 0.35,
+ "p_adv": 0.05,
+ "seeds": 5,
+ "totals": {
+  "status_quo": {
+   "pairs": 1240,
+   "diverge": 149,
+   "correct": 526,
+   "wrong": 0,
+   "withheld": 714,
+   "served_known_not_determinable": 11,
+   "diverge_premature": 11,
+   "diverge_justified": 68
+  },
+  "plain": {
+   "pairs": 1240,
+   "diverge": 0,
+   "correct": 513,
+   "wrong": 4,
+   "withheld": 723,
+   "served_known_not_determinable": 1,
+   "diverge_premature": 0,
+   "diverge_justified": 0
+  },
+  "anch_1_80": {
+   "pairs": 1240,
+   "diverge": 0,
+   "correct": 1136,
+   "wrong": 12,
+   "withheld": 92,
+   "served_known_not_determinable": 14,
+   "diverge_premature": 0,
+   "diverge_justified": 0
+  },
+  "anch_2_80": {
+   "pairs": 1240,
+   "diverge": 0,
+   "correct": 1076,
+   "wrong": 4,
+   "withheld": 160,
+   "served_known_not_determinable": 1,
+   "diverge_premature": 0,
+   "diverge_justified": 0
+  },
+  "anch_1_100": {
+   "pairs": 1240,
+   "diverge": 0,
+   "correct": 894,
+   "wrong": 12,
+   "withheld": 334,
+   "served_known_not_determinable": 14,
+   "diverge_premature": 0,
+   "diverge_justified": 0
+  }
+ },
+ "per_seed": [
+  {
+   "status_quo": {
+    "pairs": 231,
+    "diverge": 31,
+    "correct": 122,
+    "wrong": 0,
+    "withheld": 109,
+    "served_known_not_determinable": 5,
+    "diverge_premature": 5,
+    "diverge_justified": 13
+   },
+   "plain": {
+    "pairs": 231,
+    "diverge": 0,
+    "correct": 115,
+    "wrong": 2,
+    "withheld": 114,
+    "served_known_not_determinable": 0,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   },
+   "anch_1_80": {
+    "pairs": 231,
+    "diverge": 0,
+    "correct": 206,
+    "wrong": 3,
+    "withheld": 22,
+    "served_known_not_determinable": 2,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   },
+   "anch_2_80": {
+    "pairs": 231,
+    "diverge": 0,
+    "correct": 194,
+    "wrong": 2,
+    "withheld": 35,
+    "served_known_not_determinable": 0,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   },
+   "anch_1_100": {
+    "pairs": 231,
+    "diverge": 0,
+    "correct": 166,
+    "wrong": 3,
+    "withheld": 62,
+    "served_known_not_determinable": 2,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   }
+  },
+  {
+   "status_quo": {
+    "pairs": 232,
+    "diverge": 31,
+    "correct": 94,
+    "wrong": 0,
+    "withheld": 138,
+    "served_known_not_determinable": 0,
+    "diverge_premature": 0,
+    "diverge_justified": 15
+   },
+   "plain": {
+    "pairs": 232,
+    "diverge": 0,
+    "correct": 95,
+    "wrong": 0,
+    "withheld": 137,
+    "served_known_not_determinable": 0,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   },
+   "anch_1_80": {
+    "pairs": 232,
+    "diverge": 0,
+    "correct": 214,
+    "wrong": 2,
+    "withheld": 16,
+    "served_known_not_determinable": 4,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   },
+   "anch_2_80": {
+    "pairs": 232,
+    "diverge": 0,
+    "correct": 203,
+    "wrong": 0,
+    "withheld": 29,
+    "served_known_not_determinable": 0,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   },
+   "anch_1_100": {
+    "pairs": 232,
+    "diverge": 0,
+    "correct": 176,
+    "wrong": 2,
+    "withheld": 54,
+    "served_known_not_determinable": 4,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   }
+  },
+  {
+   "status_quo": {
+    "pairs": 254,
+    "diverge": 28,
+    "correct": 105,
+    "wrong": 0,
+    "withheld": 149,
+    "served_known_not_determinable": 0,
+    "diverge_premature": 0,
+    "diverge_justified": 10
+   },
+   "plain": {
+    "pairs": 254,
+    "diverge": 0,
+    "correct": 113,
+    "wrong": 0,
+    "withheld": 141,
+    "served_known_not_determinable": 0,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   },
+   "anch_1_80": {
+    "pairs": 254,
+    "diverge": 0,
+    "correct": 237,
+    "wrong": 2,
+    "withheld": 15,
+    "served_known_not_determinable": 3,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   },
+   "anch_2_80": {
+    "pairs": 254,
+    "diverge": 0,
+    "correct": 222,
+    "wrong": 0,
+    "withheld": 32,
+    "served_known_not_determinable": 0,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   },
+   "anch_1_100": {
+    "pairs": 254,
+    "diverge": 0,
+    "correct": 187,
+    "wrong": 2,
+    "withheld": 65,
+    "served_known_not_determinable": 3,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   }
+  },
+  {
+   "status_quo": {
+    "pairs": 273,
+    "diverge": 31,
+    "correct": 89,
+    "wrong": 0,
+    "withheld": 184,
+    "served_known_not_determinable": 2,
+    "diverge_premature": 2,
+    "diverge_justified": 16
+   },
+   "plain": {
+    "pairs": 273,
+    "diverge": 0,
+    "correct": 82,
+    "wrong": 2,
+    "withheld": 189,
+    "served_known_not_determinable": 1,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   },
+   "anch_1_80": {
+    "pairs": 273,
+    "diverge": 0,
+    "correct": 248,
+    "wrong": 2,
+    "withheld": 23,
+    "served_known_not_determinable": 2,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   },
+   "anch_2_80": {
+    "pairs": 273,
+    "diverge": 0,
+    "correct": 238,
+    "wrong": 2,
+    "withheld": 33,
+    "served_known_not_determinable": 1,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   },
+   "anch_1_100": {
+    "pairs": 273,
+    "diverge": 0,
+    "correct": 181,
+    "wrong": 2,
+    "withheld": 90,
+    "served_known_not_determinable": 2,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   }
+  },
+  {
+   "status_quo": {
+    "pairs": 250,
+    "diverge": 28,
+    "correct": 116,
+    "wrong": 0,
+    "withheld": 134,
+    "served_known_not_determinable": 4,
+    "diverge_premature": 4,
+    "diverge_justified": 14
+   },
+   "plain": {
+    "pairs": 250,
+    "diverge": 0,
+    "correct": 108,
+    "wrong": 0,
+    "withheld": 142,
+    "served_known_not_determinable": 0,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   },
+   "anch_1_80": {
+    "pairs": 250,
+    "diverge": 0,
+    "correct": 231,
+    "wrong": 3,
+    "withheld": 16,
+    "served_known_not_determinable": 3,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   },
+   "anch_2_80": {
+    "pairs": 250,
+    "diverge": 0,
+    "correct": 219,
+    "wrong": 0,
+    "withheld": 31,
+    "served_known_not_determinable": 0,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   },
+   "anch_1_100": {
+    "pairs": 250,
+    "diverge": 0,
+    "correct": 184,
+    "wrong": 3,
+    "withheld": 63,
+    "served_known_not_determinable": 3,
+    "diverge_premature": 0,
+    "diverge_justified": 0
+   }
+  }
+ ],
+ "summary": {
+  "status_quo": {
+   "pairs": 1240,
+   "diverge": 149,
+   "correct_share": 0.4242,
+   "withheld_share": 0.5758,
+   "wrong_share": 0.0,
+   "served_known_not_determinable": 11,
+   "diverge_premature": 11,
+   "diverge_justified": 68,
+   "recovered_fraction": null
+  },
+  "plain": {
+   "pairs": 1240,
+   "diverge": 0,
+   "correct_share": 0.4137,
+   "withheld_share": 0.5831,
+   "wrong_share": 0.0032,
+   "served_known_not_determinable": 1,
+   "diverge_premature": 0,
+   "diverge_justified": 0,
+   "recovered_fraction": null
+  },
+  "anch_1_80": {
+   "pairs": 1240,
+   "diverge": 0,
+   "correct_share": 0.9161,
+   "withheld_share": 0.0742,
+   "wrong_share": 0.0097,
+   "served_known_not_determinable": 14,
+   "diverge_premature": 0,
+   "diverge_justified": 0,
+   "recovered_fraction": 47.9231
+  },
+  "anch_2_80": {
+   "pairs": 1240,
+   "diverge": 0,
+   "correct_share": 0.8677,
+   "withheld_share": 0.129,
+   "wrong_share": 0.0032,
+   "served_known_not_determinable": 1,
+   "diverge_premature": 0,
+   "diverge_justified": 0,
+   "recovered_fraction": 43.3077
+  },
+  "anch_1_100": {
+   "pairs": 1240,
+   "diverge": 0,
+   "correct_share": 0.721,
+   "withheld_share": 0.2694,
+   "wrong_share": 0.0097,
+   "served_known_not_determinable": 14,
+   "diverge_premature": 0,
+   "diverge_justified": 0,
+   "recovered_fraction": 29.3077
+  }
+ }
+}
