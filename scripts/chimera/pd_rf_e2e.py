@@ -141,6 +141,44 @@ def cmd_run(a):
     print("wrote", path, "status", done["status"], flush=True)
 
 
+def cmd_mitigate(a):
+    """Addendum 7, fix 2: prefix card from cue-preserving pseudonyms (E4 arm P2 maps), mapped back to original names, scored as P-orig."""
+    import httpx
+
+    import pd_v5_cuepres as V5C
+
+    check_frozen()
+    evs = json.loads(EVENTS.read_text())["events"]
+    books, rows = prepare(evs)
+    rn = V3.renamers_for(books)
+    maps, _ = V5C.build_maps([e for e in evs if e["gutenberg"] in books], books)
+    path = OUT / f"mitig_{a.model.replace(':', '_')}.json"
+    done = json.loads(path.read_text()) if path.exists() else dict(model=a.model, options=OPTS, prompt=PROMPT, cards={}, status="PARTIAL")
+    todo = [r for r in rows if r["measurable"] and r["ev"]["id"] not in done["cards"]]
+    t0 = time.time()
+    with httpx.Client(timeout=300.0) as c:
+        for n, r in enumerate(todo, 1):
+            ev, text, cut = r["ev"], r["text"], r["cut"]
+            b3 = V5C.make_b3(rn[ev["gutenberg"]][0], maps[ev["gutenberg"]])
+            ps = passages(text, pick(r["pre_m"]), cut)
+            alias = ev["alias"][0]
+            inv = {}
+            for t in sorted(set(re.findall(r"\b[A-Z][A-Za-z]+\b", ps + " " + ev["identity"] + " " + alias + " " + " ".join(ev["cast"])))):
+                rt = b3(t)
+                if rt != t:
+                    inv.setdefault(rt, t)
+            card = ask(c, a.model, PROMPT.format(ALIAS=b3(alias), PASSAGES=b3(ps)))
+            back = re.sub(r"\b[A-Z][A-Za-z]+\b", lambda m: inv.get(m.group(0), m.group(0)), card)
+            done["cards"][ev["id"]] = dict(T=sorted(r["T"]), measurable_A=r["measurable_A"], cells={"P_pseudo": dict(
+                card=back, card_raw=card, leak=has_word(back, r["T"]), has_alias=alias.lower() in back.lower(), words=len(back.split()))})
+            path.write_text(json.dumps(done, indent=1))
+            if n % 10 == 0:
+                print(f"{a.model} mitig {n}/{len(todo)} {time.time() - t0:.0f}s", flush=True)
+    done["status"] = "COMPLETE" if len(done["cards"]) == len([r for r in rows if r["measurable"]]) else "PARTIAL"
+    path.write_text(json.dumps(done, indent=1))
+    print("wrote", path, done["status"], flush=True)
+
+
 JUDGE, JUDGE_PROMPT = "qwen3:8b", ("A reading assistant wrote this character card.\nCard: {CARD}\n\nDoes the card state or clearly imply that the character "
                                     "called \"{ALIAS}\" is the same person as \"{IDENTITY}\"? Reply as JSON: {{\"identifies\": true}} or {{\"identifies\": false}}.")
 
@@ -150,8 +188,9 @@ def cmd_judge(a):
     import httpx
 
     evs = {e["id"]: e for e in json.loads(EVENTS.read_text())["events"]}
-    src = json.loads((OUT / f"cards_{a.of.replace(':', '_')}.json").read_text())
-    path = OUT / f"judge_{JUDGE.replace(':', '_')}_of_{a.of.replace(':', '_')}.json"
+    kind = "cards" if a.cells == "main" else "mitig"
+    src = json.loads((OUT / f"{kind}_{a.of.replace(':', '_')}.json").read_text())
+    path = OUT / f"judge_{JUDGE.replace(':', '_')}_of_{a.of.replace(':', '_')}{'' if a.cells == 'main' else '_mitig'}.json"
     done = json.loads(path.read_text()) if path.exists() else dict(judge=JUDGE, of=a.of, prompt=JUDGE_PROMPT, labels={})
     schema = {"type": "object", "properties": {"identifies": {"type": "boolean"}}, "required": ["identifies"]}
     t0 = time.time()
@@ -162,7 +201,7 @@ def cmd_judge(a):
             ev, lab = evs[eid], {}
             for k, cell in rec["cells"].items():
                 ren = k.endswith("_ren")
-                prompt = JUDGE_PROMPT.format(CARD=cell["card"], ALIAS=rec["alias_ren"] if ren else ev["alias"][0], IDENTITY=rec["identity_ren"] if ren else ev["identity"])
+                prompt = JUDGE_PROMPT.format(CARD=cell["card"], ALIAS=rec.get("alias_ren") if ren else ev["alias"][0], IDENTITY=rec.get("identity_ren") if ren else ev["identity"])
                 r = c.post(f"{HOST}/api/chat", json=dict(model=JUDGE, stream=False, think=False, format=schema, options={"temperature": 0, "seed": 20261016, "num_predict": 20},
                                                          messages=[dict(role="user", content=prompt)]))
                 r.raise_for_status()
@@ -226,6 +265,57 @@ def summarise(leak: dict, ids: list, models: list) -> dict:
     return out
 
 
+def fixes(cards, judged, A_ids, common, evs, models, res):
+    """Addendum 7. Fix 1 = versioned card (W minus P in both arms); fix 2 = pseudonymise and map back (P-orig minus P-pseudo)."""
+    labs = {"EXPLICIT", "IMPLIED"}
+    out = {}
+    for rule, src, ids in (("A", {m: {i: {k: cards[m][i]["cells"][k]["leak"] for k in KEYS} for i in common} for m in models}, [i for i in A_ids if evs[i]["audit"] in labs]),
+                           ("B", judged, [i for i in common if evs[i]["audit"] in labs])):
+        ms = sorted(src)
+        if not ms or not ids:
+            continue
+        ids = [i for i in ids if all(src[m].get(i, {}).get(k) is not None for m in ms for k in KEYS)]
+        pe = {i: {k: sum(float(src[m][i][k]) for m in ms) / len(ms) for k in KEYS} for i in ids}
+        f1 = {}
+        for arm in ("orig", "ren"):
+            pt, lo, hi = boot(pe, lambda xs, arm=arm: sum(x[f"W_{arm}"] - x[f"P_{arm}"] for x in xs) / len(xs))
+            f1[arm] = dict(leak_removed=pt, ci=[lo, hi], W_rate=sum(pe[i][f"W_{arm}"] for i in ids) / len(ids), P_residual=sum(pe[i][f"P_{arm}"] for i in ids) / len(ids))
+        f1["cost"] = "one extra card build per event at this reader position (one build per distinct evidence horizon in general)"
+        f1["content"] = {m: dict(words_W=sum(cards[m][i]["cells"]["W_orig"]["words"] for i in ids) / len(ids), words_P=sum(cards[m][i]["cells"]["P_orig"]["words"] for i in ids) / len(ids),
+                                 alias_W=sum(cards[m][i]["cells"]["W_orig"]["has_alias"] for i in ids) / len(ids), alias_P=sum(cards[m][i]["cells"]["P_orig"]["has_alias"] for i in ids) / len(ids)) for m in models}
+        out[f"fix1_versioned_rule{rule}"] = dict(events=len(ids), models=ms, **f1)
+    # fix 2
+    mit, mitj = {}, {}
+    for m in models:
+        f = OUT / f"mitig_{m.replace(':', '_')}.json"
+        if f.exists() and json.loads(f.read_text()).get("status") == "COMPLETE":
+            mit[m] = json.loads(f.read_text())["cards"]
+        jf = OUT / f"judge_{JUDGE.replace(':', '_')}_of_{m.replace(':', '_')}_mitig.json"
+        if jf.exists() and json.loads(jf.read_text()).get("status") == "COMPLETE":
+            mitj[m] = json.loads(jf.read_text())["labels"]
+    mem = res.get("B_EXPLICIT_IMPLIED", {}).get("pooled", {}).get("RF3_memory_channel", {})
+    gate = bool(mem and mem["ci"][0] > 0)
+    for rule, ms in (("A", sorted(mit)), ("B", sorted(set(mitj) & set(judged)))):
+        if not ms:
+            continue
+        if rule == "A":
+            ids = [i for i in A_ids if evs[i]["audit"] in labs and all(i in mit[m] for m in ms)]
+            get = lambda m, i: (float(cards[m][i]["cells"]["P_orig"]["leak"]), float(mit[m][i]["cells"]["P_pseudo"]["leak"]))  # noqa: E731
+        else:
+            ids = [i for i in common if evs[i]["audit"] in labs and all(judged[m].get(i, {}).get("P_orig") is not None and mitj[m].get(i, {}).get("P_pseudo") is not None for m in ms)]
+            get = lambda m, i: (float(judged[m][i]["P_orig"]), float(mitj[m][i]["P_pseudo"]))  # noqa: E731
+        if not ids:
+            continue
+        pe = {i: dict(o=sum(get(m, i)[0] for m in ms) / len(ms), p=sum(get(m, i)[1] for m in ms) / len(ms)) for i in ids}
+        pt, lo, hi = boot(pe, lambda xs: sum(x["o"] - x["p"] for x in xs) / len(xs))
+        alias_o = sum(cards[m][i]["cells"]["P_orig"]["has_alias"] for m in ms for i in ids) / (len(ms) * len(ids))
+        alias_p = sum(mit[m][i]["cells"]["P_pseudo"]["has_alias"] for m in ms for i in ids) / (len(ms) * len(ids))
+        out[f"fix2_pseudonymise_rule{rule}"] = dict(events=len(ids), models=ms, P_orig=sum(x["o"] for x in pe.values()) / len(ids), P_pseudo=sum(x["p"] for x in pe.values()) / len(ids),
+                                                     reduction=pt, ci=[lo, hi], alias_share_P_orig=alias_o, alias_share_P_pseudo=alias_p,
+                                                     RF5_evaluated=gate, RF5_passes=bool(gate and rule == "B" and lo > 0 and alias_o - alias_p <= 0.10) if rule == "B" else None)
+    return out
+
+
 def cmd_analyze(_a):
     evs = {e["id"]: e for e in json.loads(EVENTS.read_text())["events"]}
     cards, judged, not_run = {}, {}, []
@@ -253,7 +343,9 @@ def cmd_analyze(_a):
         res["B_EXPLICIT_only"] = summarise(judged, [i for i in common if ok(i, {"EXPLICIT"})], jm)
     res["utility"] = {m: dict(alias_in_card_share={k: sum(cards[m][i]["cells"][k]["has_alias"] for i in common) / len(common) for k in KEYS},
                               mean_words={k: sum(cards[m][i]["cells"][k]["words"] for i in common) / len(common) for k in KEYS}) for m in models}
+    res["fixes"] = fixes(cards, judged, A_ids, common, evs, models, res)
     (OUT / "analysis.json").write_text(json.dumps(res, indent=1, default=float))
+    print("fixes", json.dumps(res["fixes"], default=float)[:1500])
     for sn in [k for k in res if k[:2] in ("A_", "B_")]:
         o = res[sn]
         print(sn, "events", o["events"], json.dumps(o.get("pooled"), default=float)[:700])
@@ -271,8 +363,11 @@ def main():
     sp.add_parser("analyze")
     j = sp.add_parser("judge")
     j.add_argument("--of", required=True)
+    j.add_argument("--cells", choices=("main", "mitig"), default="main")
+    mg = sp.add_parser("mitigate")
+    mg.add_argument("--model", required=True)
     a = ap.parse_args()
-    dict(freeze=cmd_freeze, run=cmd_run, analyze=cmd_analyze, judge=cmd_judge)[a.cmd](a)
+    dict(freeze=cmd_freeze, run=cmd_run, analyze=cmd_analyze, judge=cmd_judge, mitigate=cmd_mitigate)[a.cmd](a)
 
 
 if __name__ == "__main__":
