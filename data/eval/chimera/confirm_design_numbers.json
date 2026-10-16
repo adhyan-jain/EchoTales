@@ -1,0 +1,179 @@
+{
+ "power": {
+  "per_model_existing": {
+   "gpt-5.6-luna": {
+    "events": 38,
+    "mean_gap": 0.25,
+    "event_sd": 0.2953
+   },
+   "llama3.1:8b": {
+    "events": 38,
+    "mean_gap": 0.0779,
+    "event_sd": 0.2835
+   },
+   "gemma2:9b": {
+    "events": 38,
+    "mean_gap": 0.1151,
+    "event_sd": 0.3192
+   },
+   "mistral:7b-instruct": {
+    "events": 38,
+    "mean_gap": 0.1436,
+    "event_sd": 0.2651
+   },
+   "qwen2.5:7b": {
+    "events": 38,
+    "mean_gap": 0.1305,
+    "event_sd": 0.2724
+   },
+   "phi4-mini:latest": {
+    "events": 38,
+    "mean_gap": 0.0477,
+    "event_sd": 0.2153
+   }
+  },
+  "assumed_event_sd": 0.2953,
+  "MDE_80pct_power_alpha_0.0500_n_events_100": 0.0827,
+  "MDE_80pct_power_alpha_0.0500_n_events_120": 0.0755,
+  "MDE_80pct_power_alpha_0.0500_n_events_160": 0.0654,
+  "MDE_80pct_power_alpha_0.0500_n_events_200": 0.0585,
+  "MDE_80pct_power_alpha_0.0125_n_events_100": 0.0986,
+  "MDE_80pct_power_alpha_0.0125_n_events_120": 0.09,
+  "MDE_80pct_power_alpha_0.0125_n_events_160": 0.078,
+  "MDE_80pct_power_alpha_0.0125_n_events_200": 0.0697,
+  "E2_halfwidth_95CI_n_30": 0.1057,
+  "E2_halfwidth_95CI_n_60": 0.0747,
+  "E2_halfwidth_95CI_n_100": 0.0579,
+  "E2_halfwidth_95CI_n_150": 0.0473,
+  "E2_halfwidth_95CI_n_200": 0.0409,
+  "E2_halfwidth_95CI_n_300": 0.0334,
+  "E2_events_needed_equivalence_pm5pts_80pct": 299,
+  "E2_events_needed_equivalence_pm8pts_80pct": 117,
+  "events_to_detect_spearman_0.2": 194,
+  "events_to_detect_spearman_0.25": 124,
+  "events_to_detect_spearman_0.3": 85,
+  "events_to_detect_spearman_0.4": 47,
+  "E4_noninferiority_5pt_power_n_100": 0.9543,
+  "E4_noninferiority_5pt_power_n_160": 0.9949
+ },
+ "cost": {
+  "full_200_events": {
+   "design": {
+    "events_total": 200,
+    "dev_events": 40,
+    "test_events": 160,
+    "items_per_event": 12,
+    "short_calls_by_block": {
+     "E1_dev_A_B_B3": 1440,
+     "E1_test_A_B_B3": 5760,
+     "E1_B2_on_controls": 640,
+     "M2_probe_3_arms": 600,
+     "G2b_synthetic_62x2": 124,
+     "E2_post_cutoff_A_B_B3": 2160,
+     "E4_open_name_4_arms": 7680
+    },
+    "short_calls": 18404,
+    "long_calls_E5": 960
+   },
+   "per_model": {
+    "gpt-5.6-luna": {
+     "input_tokens": 14826708,
+     "output_tokens": 610519,
+     "expected_usd": 3.698
+    },
+    "gpt-4o-mini": {
+     "input_tokens": 14826708,
+     "output_tokens": 610519,
+     "expected_usd": 2.59
+    },
+    "meta-llama/Llama-3.3-70B-Instruct-Turbo (DeepInfra)": {
+     "input_tokens": 16309379,
+     "output_tokens": 671571,
+     "expected_usd": 1.846
+    },
+    "Qwen/Qwen3-235B-A22B-Instruct-2507 (DeepInfra)": {
+     "input_tokens": 16309379,
+     "output_tokens": 671571,
+     "expected_usd": 1.837
+    },
+    "Qwen/Qwen2.5-72B-Instruct (DeepInfra, optional)": {
+     "input_tokens": 16309379,
+     "output_tokens": 671571,
+     "expected_usd": 6.14
+    }
+   },
+   "mining_gpt4omini": 0.63,
+   "audit_luna": 0.128,
+   "faithfulness_judge_gpt4omini": 0.972,
+   "OPENAI_expected": 8.02,
+   "OPENAI_worst_2x": 16.04,
+   "DEEPINFRA_core2_expected": 3.68,
+   "DEEPINFRA_core2_worst_2x": 7.37,
+   "TOTAL_expected": 11.7,
+   "TOTAL_worst_2x": 23.4
+  },
+  "lean_150_events": {
+   "design": {
+    "events_total": 150,
+    "dev_events": 30,
+    "test_events": 120,
+    "items_per_event": 10,
+    "short_calls_by_block": {
+     "E1_dev_A_B_B3": 900,
+     "E1_test_A_B_B3": 3600,
+     "E1_B2_on_controls": 480,
+     "M2_probe_3_arms": 450,
+     "G2b_synthetic_62x2": 124,
+     "E2_post_cutoff_A_B_B3": 1200,
+     "E4_open_name_4_arms": 4800
+    },
+    "short_calls": 11554,
+    "long_calls_E5": 360
+   },
+   "per_model": {
+    "gpt-5.6-luna": {
+     "input_tokens": 7779258,
+     "output_tokens": 274074,
+     "expected_usd": 1.885
+    },
+    "gpt-4o-mini": {
+     "input_tokens": 7779258,
+     "output_tokens": 274074,
+     "expected_usd": 1.331
+    },
+    "meta-llama/Llama-3.3-70B-Instruct-Turbo (DeepInfra)": {
+     "input_tokens": 8557184,
+     "output_tokens": 301481,
+     "expected_usd": 0.952
+    },
+    "Qwen/Qwen3-235B-A22B-Instruct-2507 (DeepInfra)": {
+     "input_tokens": 8557184,
+     "output_tokens": 301481,
+     "expected_usd": 0.936
+    },
+    "Qwen/Qwen2.5-72B-Instruct (DeepInfra, optional)": {
+     "input_tokens": 8557184,
+     "output_tokens": 301481,
+     "expected_usd": 3.201
+    }
+   },
+   "mining_gpt4omini": 0.63,
+   "audit_luna": 0.128,
+   "faithfulness_judge_gpt4omini": 0.364,
+   "OPENAI_expected": 4.34,
+   "OPENAI_worst_2x": 8.68,
+   "DEEPINFRA_core2_expected": 1.89,
+   "DEEPINFRA_core2_worst_2x": 3.78,
+   "TOTAL_expected": 6.23,
+   "TOTAL_worst_2x": 12.45
+  },
+  "runpod_alternative": {
+   "assumption": "prefill about 900 tokens/s for a 70B 4-bit model on one A100 80GB (UNVERIFIED; measure on a short pod first)",
+   "total_input_tokens_per_open_model": 16309379,
+   "hours_one_70B_model": 5.5,
+   "cost_one_70B_model_A100_community_usd": 6.59,
+   "cost_one_70B_model_A100_secure_usd": 9.91,
+   "note": "Qwen3-235B-A22B at FP8 needs roughly 2 x H100 80GB (about $5.38/h community, $7.98/h secure at the listed H100 SXM prices); one 70B model alone uses more than half of a $10 budget"
+  }
+ }
+}
