@@ -1,0 +1,205 @@
+{
+  "probe": "E5 gazetteer compounding vs repetition null",
+  "label_provenance": "SYSTEM-INTERNAL, no labels",
+  "novel": "reverend-insanity",
+  "chapters": 199,
+  "groups": 1603,
+  "groups_linked": 1525,
+  "method_counts": {
+    "SCORED": 266,
+    "null": 78,
+    "NAME_CONTAINMENT": 17,
+    "GAZETTEER_EXACT": 1232,
+    "DECLARATION": 7,
+    "RELATIONAL_COPRESENCE": 3
+  },
+  "by_fifth_of_groups_in_reading_order": [
+    {
+      "chapters": [
+        1.0,
+        50.0
+      ],
+      "groups": 320,
+      "exact_match": 219,
+      "exact_share": 0.6844,
+      "exact_wilson": [
+        0.63152,
+        0.73286
+      ],
+      "scorer_reached_share": 0.2125,
+      "seen_before_share": 0.6875,
+      "exact_given_seen_before": 0.9955,
+      "ambiguous_surface_exact_links": 0,
+      "ambiguous_share_of_exact": 0.0,
+      "ambiguous_wilson": [
+        0.0,
+        0.01724
+      ]
+    },
+    {
+      "chapters": [
+        50.0,
+        87.0
+      ],
+      "groups": 321,
+      "exact_match": 253,
+      "exact_share": 0.7882,
+      "exact_wilson": [
+        0.74019,
+        0.82932
+      ],
+      "scorer_reached_share": 0.1433,
+      "seen_before_share": 0.7944,
+      "exact_given_seen_before": 0.9922,
+      "ambiguous_surface_exact_links": 0,
+      "ambiguous_share_of_exact": 0.0,
+      "ambiguous_wilson": [
+        0.0,
+        0.01496
+      ]
+    },
+    {
+      "chapters": [
+        87.0,
+        132.0
+      ],
+      "groups": 320,
+      "exact_match": 256,
+      "exact_share": 0.8,
+      "exact_wilson": [
+        0.75273,
+        0.84015
+      ],
+      "scorer_reached_share": 0.15,
+      "seen_before_share": 0.8031,
+      "exact_given_seen_before": 0.9961,
+      "ambiguous_surface_exact_links": 0,
+      "ambiguous_share_of_exact": 0.0,
+      "ambiguous_wilson": [
+        0.0,
+        0.01478
+      ]
+    },
+    {
+      "chapters": [
+        132.0,
+        165.0
+      ],
+      "groups": 321,
+      "exact_match": 245,
+      "exact_share": 0.7632,
+      "exact_wilson": [
+        0.71379,
+        0.80646
+      ],
+      "scorer_reached_share": 0.1869,
+      "seen_before_share": 0.7632,
+      "exact_given_seen_before": 1.0,
+      "ambiguous_surface_exact_links": 0,
+      "ambiguous_share_of_exact": 0.0,
+      "ambiguous_wilson": [
+        0.0,
+        0.01544
+      ]
+    },
+    {
+      "chapters": [
+        165.0,
+        199.0
+      ],
+      "groups": 321,
+      "exact_match": 259,
+      "exact_share": 0.8069,
+      "exact_wilson": [
+        0.76014,
+        0.84631
+      ],
+      "scorer_reached_share": 0.1371,
+      "seen_before_share": 0.8131,
+      "exact_given_seen_before": 0.9923,
+      "ambiguous_surface_exact_links": 0,
+      "ambiguous_share_of_exact": 0.0,
+      "ambiguous_wilson": [
+        0.0,
+        0.01462
+      ]
+    }
+  ],
+  "exact_match_trend_spearman_over_groups": {
+    "rho": 0.0728,
+    "boot95": [
+      0.0226,
+      0.1223
+    ]
+  },
+  "seen_before_share_null": {
+    "real": [
+      0.6875,
+      0.7944,
+      0.8031,
+      0.7632,
+      0.8131
+    ],
+    "permuted_mean": [
+      0.6136,
+      0.7781,
+      0.813,
+      0.8274,
+      0.8433
+    ],
+    "permuted_lo95": [
+      0.5562,
+      0.7195,
+      0.7562,
+      0.7757,
+      0.7912
+    ],
+    "permuted_hi95": [
+      0.6656,
+      0.8319,
+      0.8657,
+      0.8817,
+      0.891
+    ],
+    "real_outside_band_fifths": [
+      0,
+      3
+    ],
+    "permutations": 200
+  },
+  "repetition_account": {
+    "groups_whose_surface_was_seen_before": 1238,
+    "of_which_exact_match": 1232,
+    "exact_groups_total": 1232,
+    "exact_groups_whose_surface_was_not_seen_before": 0
+  },
+  "resolve_report_by_window_gazetteer_share": {
+    "0": 0.735,
+    "1": 0.793,
+    "2": 0.8538,
+    "3": 0.8174,
+    "4": 0.8195
+  },
+  "string_identity_baseline": {
+    "linked_mentions": 11092,
+    "distinct_surface_keys": 289,
+    "entities": 266,
+    "surface_keys_held_by_more_than_one_entity": 0,
+    "mentions_whose_entity_is_the_majority_entity_of_their_surface": 11092,
+    "string_determined_share": 1.0,
+    "string_determined_wilson": [
+      0.99965,
+      1.0
+    ],
+    "mentions_in_a_non_dominant_surface_of_their_entity": 522,
+    "non_dominant_surface_share": 0.04706,
+    "non_dominant_surface_methods": {
+      "NAME_CONTAINMENT": 16,
+      "SCORED": 33,
+      "GAZETTEER_EXACT": 453,
+      "DECLARATION": 17,
+      "RELATIONAL_COPRESENCE": 3
+    },
+    "ari_resolver_vs_surface_key_partition": 0.97132
+  }
+}

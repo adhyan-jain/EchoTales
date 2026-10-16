@@ -1,0 +1,97 @@
+{
+ "note": "POST HOC sensitivity; the frozen v2 verdict (95%) is INCONCLUSIVE and is unchanged.",
+ "r0": {
+  "gemma2:9b": 0.8421,
+  "gpt-5.6-luna": 0.8553,
+  "llama3.1:8b": 0.8092,
+  "mistral:7b-instruct": 0.8816,
+  "phi4-mini:latest": 0.875,
+  "qwen2.5:7b": 0.8026
+ },
+ "thresholds": {
+  "0.95": {
+   "models": [],
+   "verdict": "no model passes"
+  },
+  "0.9": {
+   "models": [],
+   "verdict": "no model passes"
+  },
+  "0.88": {
+   "models": [
+    "mistral:7b-instruct"
+   ],
+   "pooled_gap": 0.24074074074074073,
+   "gap_ci95": [
+    0.16296296296296298,
+    0.32222222222222224
+   ],
+   "synthetic_gap": 0.0,
+   "did": 0.24074074074074073,
+   "did_ci95": [
+    0.16296296296296298,
+    0.32222222222222224
+   ],
+   "memory_models": 1,
+   "conditions": {
+    "i": true,
+    "ii": true,
+    "iii": false
+   },
+   "rule_reading": "INCONCLUSIVE (fewer than 3 models)"
+  },
+  "0.85": {
+   "models": [
+    "gpt-5.6-luna",
+    "mistral:7b-instruct",
+    "phi4-mini:latest"
+   ],
+   "pooled_gap": 0.23209876543209876,
+   "gap_ci95": [
+    0.18888888888888888,
+    0.2777777777777778
+   ],
+   "synthetic_gap": 0.0,
+   "did": 0.23209876543209876,
+   "did_ci95": [
+    0.18888888888888888,
+    0.2777777777777778
+   ],
+   "memory_models": 2,
+   "conditions": {
+    "i": true,
+    "ii": true,
+    "iii": false
+   },
+   "rule_reading": "PARTIALLY SUPPORTED"
+  },
+  "0.8": {
+   "models": [
+    "gemma2:9b",
+    "gpt-5.6-luna",
+    "llama3.1:8b",
+    "mistral:7b-instruct",
+    "phi4-mini:latest",
+    "qwen2.5:7b"
+   ],
+   "pooled_gap": 0.19814814814814816,
+   "gap_ci95": [
+    0.15679012345679014,
+    0.24074074074074073
+   ],
+   "synthetic_gap": 0.0,
+   "did": 0.19814814814814816,
+   "did_ci95": [
+    0.15679012345679014,
+    0.24074074074074073
+   ],
+   "memory_models": 5,
+   "conditions": {
+    "i": true,
+    "ii": true,
+    "iii": true
+   },
+   "rule_reading": "SUPPORTED"
+  }
+ }
+}

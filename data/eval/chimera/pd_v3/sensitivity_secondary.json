@@ -1,0 +1,53 @@
+{
+ "note": "Secondary sensitivity per PREREG_PD_v3 section 2 (descriptive). Pooled over models with R0>=0.80.",
+ "all_12": {
+  "excluded": [],
+  "items": 96,
+  "pooled_gap": 0.1271,
+  "ci95": [
+   0.0677,
+   0.1885
+  ]
+ },
+ "drop_BR": {
+  "excluded": [
+   "BR"
+  ],
+  "items": 88,
+  "pooled_gap": 0.1352,
+  "ci95": [
+   0.0705,
+   0.2
+  ]
+ },
+ "drop_all_flagged_weak(BR,LA,YR,EL,CO,IM,PG)": {
+  "excluded": [
+   "BR",
+   "CO",
+   "EL",
+   "IM",
+   "LA",
+   "PG",
+   "YR"
+  ],
+  "items": 40,
+  "pooled_gap": 0.12,
+  "ci95": [
+   0.01,
+   0.2325
+  ]
+ },
+ "drop_VW_EL_LA_(prefix_sentence_with_alias_and_identity_token)": {
+  "excluded": [
+   "EL",
+   "LA",
+   "VW"
+  ],
+  "items": 72,
+  "pooled_gap": 0.1903,
+  "ci95": [
+   0.1236,
+   0.2583
+  ]
+ }
+}

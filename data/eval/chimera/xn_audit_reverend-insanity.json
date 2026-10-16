@@ -1,0 +1,35 @@
+{
+  "label_provenance": "NO LABELS: system-internal counts on a scratch copy re-resolved with the current code",
+  "novel": "reverend-insanity",
+  "chapters_in_database": 199,
+  "mentions": 11174,
+  "linked": 11122,
+  "link_methods": {
+    "SCORED": 975,
+    "NAME_CONTAINMENT": 98,
+    "TITLE_HOLDER": 30,
+    "GAZETTEER_EXACT": 9977,
+    "DECLARATION": 39,
+    "RELATIONAL_COPRESENCE": 3
+  },
+  "scored_tag_note": "the SCORED tag is the gate's default for every path that reaches the scorer, including minting a NEW entity; use scored_groups_* below for scorer decisions",
+  "scored_groups": {
+    "groups": 120,
+    "tagged_SCORED": 10,
+    "found_a_new_entity": 10,
+    "link_to_an_existing_entity": 0,
+    "non_SCORED_groups": 110
+  },
+  "resolve_report": {
+    "deferred": 2,
+    "recovered": 0,
+    "regated_link_not_applied": 107,
+    "unresolved": 50
+  },
+  "links_before_reader_binding": 5,
+  "reveal_patterns": {
+    "raw_matches_in_narration": 4,
+    "matches_resolving_to_a_known_character": 3,
+    "note": "REVEAL_PATTERNS = six stock phrases; counted over NARRATION spans only"
+  }
+}

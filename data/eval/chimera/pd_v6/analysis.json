@@ -1,0 +1,324 @@
+{
+ "preregistration": "PREREG_PD_v6.md",
+ "per_model": {
+  "gemma2:9b": {
+   "G2a": 0.8571,
+   "G2b_from_v3": 0.9268,
+   "G2_valid": false,
+   "events": 7,
+   "k_needed": 3,
+   "M2": {
+    "M2_orig": 3,
+    "M2_ren": 0,
+    "M2_ren2": 0
+   },
+   "M2_memory_present": true,
+   "alias_only_closed_book": {
+    "C_orig": 1,
+    "C_ren": 0,
+    "C_ren2": 0
+   },
+   "ctrl_acc": {
+    "A": 0.9821,
+    "B": 0.8214,
+    "B2": 0.8929,
+    "B3": 0.9821
+   },
+   "cluster": {
+    "events": 7,
+    "pairs": 54,
+    "gap_A_minus_B": -0.1204,
+    "gap_A_minus_B_ci": [
+     -0.2963,
+     -0.0179
+    ],
+    "gap_A_minus_B3": 0.0556,
+    "gap_A_minus_B3_ci": [
+     0.0,
+     0.1296
+    ],
+    "recovered_fraction": NaN,
+    "recovered_fraction_ci": [
+     null,
+     null
+    ],
+    "events_positive": 0,
+    "events_negative": 4,
+    "event_sign_test_p": 0.125
+   },
+   "invalid": 0
+  },
+  "gpt-5.6-luna": {
+   "G2a": 0.8393,
+   "G2b_from_v3": 1.0,
+   "G2_valid": false,
+   "events": 7,
+   "k_needed": 3,
+   "M2": {
+    "M2_orig": 6,
+    "M2_ren": 0,
+    "M2_ren2": 1
+   },
+   "M2_memory_present": true,
+   "alias_only_closed_book": {
+    "C_orig": 2,
+    "C_ren": 0,
+    "C_ren2": 0
+   },
+   "ctrl_acc": {
+    "A": 1.0,
+    "B": 0.8929,
+    "B2": 0.8571,
+    "B3": 1.0
+   },
+   "cluster": {
+    "events": 7,
+    "pairs": 54,
+    "gap_A_minus_B": 0.1667,
+    "gap_A_minus_B_ci": [
+     0.0536,
+     0.2857
+    ],
+    "gap_A_minus_B3": 0.2407,
+    "gap_A_minus_B3_ci": [
+     0.0577,
+     0.4464
+    ],
+    "recovered_fraction": -0.4444,
+    "recovered_fraction_ci": [
+     -1.6,
+     0.0
+    ],
+    "events_positive": 4,
+    "events_negative": 0,
+    "event_sign_test_p": 0.125
+   },
+   "invalid": 2
+  },
+  "llama3.1:8b": {
+   "G2a": 0.9643,
+   "G2b_from_v3": 0.8537,
+   "G2_valid": true,
+   "events": 7,
+   "k_needed": 3,
+   "M2": {
+    "M2_orig": 3,
+    "M2_ren": 1,
+    "M2_ren2": 2
+   },
+   "M2_memory_present": true,
+   "alias_only_closed_book": {
+    "C_orig": 2,
+    "C_ren": 2,
+    "C_ren2": 1
+   },
+   "ctrl_acc": {
+    "A": 0.9643,
+    "B": 0.9821,
+    "B2": 0.9464,
+    "B3": 0.9643
+   },
+   "cluster": {
+    "events": 7,
+    "pairs": 54,
+    "gap_A_minus_B": -0.1574,
+    "gap_A_minus_B_ci": [
+     -0.4074,
+     0.0446
+    ],
+    "gap_A_minus_B3": 0.0556,
+    "gap_A_minus_B3_ci": [
+     0.0179,
+     0.1071
+    ],
+    "recovered_fraction": NaN,
+    "recovered_fraction_ci": [
+     -9.0,
+     0.0
+    ],
+    "events_positive": 2,
+    "events_negative": 3,
+    "event_sign_test_p": 1.0
+   },
+   "invalid": 0
+  },
+  "mistral:7b-instruct": {
+   "G2a": 0.9464,
+   "G2b_from_v3": 0.8293,
+   "G2_valid": true,
+   "events": 7,
+   "k_needed": 3,
+   "M2": {
+    "M2_orig": 1,
+    "M2_ren": 0,
+    "M2_ren2": 1
+   },
+   "M2_memory_present": false,
+   "alias_only_closed_book": {
+    "C_orig": 2,
+    "C_ren": 1,
+    "C_ren2": 1
+   },
+   "ctrl_acc": {
+    "A": 0.9643,
+    "B": 0.8929,
+    "B2": 0.9464,
+    "B3": 0.9286
+   },
+   "cluster": {
+    "events": 7,
+    "pairs": 54,
+    "gap_A_minus_B": 0.0185,
+    "gap_A_minus_B_ci": [
+     -0.0804,
+     0.1296
+    ],
+    "gap_A_minus_B3": 0.0185,
+    "gap_A_minus_B3_ci": [
+     -0.125,
+     0.2037
+    ],
+    "recovered_fraction": 0.0,
+    "recovered_fraction_ci": [
+     -6.0,
+     9.0
+    ],
+    "events_positive": 2,
+    "events_negative": 3,
+    "event_sign_test_p": 1.0
+   },
+   "invalid": 0
+  },
+  "phi4-mini:latest": {
+   "G2a": 0.9107,
+   "G2b_from_v3": 1.0,
+   "G2_valid": true,
+   "events": 7,
+   "k_needed": 3,
+   "M2": {
+    "M2_orig": 1,
+    "M2_ren": 0,
+    "M2_ren2": 0
+   },
+   "M2_memory_present": false,
+   "alias_only_closed_book": {
+    "C_orig": 0,
+    "C_ren": 0,
+    "C_ren2": 0
+   },
+   "ctrl_acc": {
+    "A": 1.0,
+    "B": 0.9286,
+    "B2": 0.9286,
+    "B3": 0.9643
+   },
+   "cluster": {
+    "events": 7,
+    "pairs": 54,
+    "gap_A_minus_B": -0.037,
+    "gap_A_minus_B_ci": [
+     -0.1442,
+     0.0463
+    ],
+    "gap_A_minus_B3": 0.0741,
+    "gap_A_minus_B3_ci": [
+     0.0,
+     0.1852
+    ],
+    "recovered_fraction": NaN,
+    "recovered_fraction_ci": [
+     -11.0,
+     0.0
+    ],
+    "events_positive": 1,
+    "events_negative": 2,
+    "event_sign_test_p": 1.0
+   },
+   "invalid": 0
+  },
+  "qwen2.5:7b": {
+   "G2a": 0.875,
+   "G2b_from_v3": 0.9756,
+   "G2_valid": false,
+   "events": 7,
+   "k_needed": 3,
+   "M2": {
+    "M2_orig": 1,
+    "M2_ren": 1,
+    "M2_ren2": 1
+   },
+   "M2_memory_present": false,
+   "alias_only_closed_book": {
+    "C_orig": 2,
+    "C_ren": 0,
+    "C_ren2": 0
+   },
+   "ctrl_acc": {
+    "A": 0.9107,
+    "B": 0.7857,
+    "B2": 0.8214,
+    "B3": 0.9643
+   },
+   "cluster": {
+    "events": 7,
+    "pairs": 54,
+    "gap_A_minus_B": 0.0,
+    "gap_A_minus_B_ci": [
+     -0.1607,
+     0.1429
+    ],
+    "gap_A_minus_B3": 0.1852,
+    "gap_A_minus_B3_ci": [
+     0.037,
+     0.3393
+    ],
+    "recovered_fraction": NaN,
+    "recovered_fraction_ci": [
+     -21.0,
+     0.0
+    ],
+    "events_positive": 3,
+    "events_negative": 3,
+    "event_sign_test_p": 1.0
+   },
+   "invalid": 0
+  }
+ },
+ "label_provenance": "TEXT-DERIVED oracle; model-selected; no human labels",
+ "pool": {
+  "valid_models": [
+   "llama3.1:8b",
+   "mistral:7b-instruct",
+   "phi4-mini:latest"
+  ],
+  "events": 7,
+  "pairs": 162,
+  "gap_A_minus_B": -0.0586,
+  "gap_A_minus_B_ci": [
+   -0.1481,
+   0.0096
+  ],
+  "gap_A_minus_B3": 0.0494,
+  "gap_A_minus_B3_ci": [
+   -0.0192,
+   0.1429
+  ],
+  "recovered_fraction": NaN,
+  "recovered_fraction_ci": [
+   -3.0,
+   9.0
+  ],
+  "events_positive": 1,
+  "events_negative": 4,
+  "event_sign_test_p": 0.375,
+  "memory_models": [
+   "llama3.1:8b"
+  ],
+  "conditions": {
+   "i_gap_AB": false,
+   "ii_gap_AB3_cue_preserving": false,
+   "iii_M2_memory_in_3": false
+  },
+  "verdict": "NOT SUPPORTED"
+ }
+}

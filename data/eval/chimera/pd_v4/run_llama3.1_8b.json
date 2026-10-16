@@ -1,0 +1,194 @@
+{
+ "model": "llama3.1:8b",
+ "probe": {
+  "PH": {
+   "M2_orig": "E",
+   "M2_ren": "A",
+   "M2_ren2": "E"
+  },
+  "PI": {
+   "M2_orig": "F",
+   "M2_ren": "G",
+   "M2_ren2": "G"
+  },
+  "GE": {
+   "M2_orig": "H",
+   "M2_ren": "F",
+   "M2_ren2": "I"
+  },
+  "CI": {
+   "M2_orig": "B",
+   "M2_ren": "C",
+   "M2_ren2": "C"
+  },
+  "SS": {
+   "M2_orig": "H",
+   "M2_ren": "E",
+   "M2_ren2": "F"
+  },
+  "JE": {
+   "M2_orig": "B",
+   "M2_ren": "H",
+   "M2_ren2": "I"
+  },
+  "RH": {
+   "M2_orig": "E",
+   "M2_ren": "G",
+   "M2_ren2": "G"
+  },
+  "MC": {
+   "M2_orig": "I",
+   "M2_ren": "A",
+   "M2_ren2": "H"
+  },
+  "LM": {
+   "M2_orig": "C",
+   "M2_ren": "G",
+   "M2_ren2": "G"
+  },
+  "JH": {
+   "M2_orig": "E",
+   "M2_ren": "E",
+   "M2_ren2": "F"
+  },
+  "IV": {
+   "M2_orig": "D",
+   "M2_ren": "H",
+   "M2_ren2": "H"
+  },
+  "MI": {
+   "M2_orig": "B",
+   "M2_ren": "I",
+   "M2_ren2": "C"
+  },
+  "VI": {
+   "M2_orig": "G",
+   "M2_ren": "B",
+   "M2_ren2": "B"
+  },
+  "SA": {
+   "M2_orig": "G",
+   "M2_ren": "D",
+   "M2_ren2": "D"
+  },
+  "DL": {
+   "M2_orig": "G",
+   "M2_ren": "E",
+   "M2_ren2": "E"
+  },
+  "DQ": {
+   "M2_orig": "B",
+   "M2_ren": "F",
+   "M2_ren2": "D"
+  },
+  "WW": {
+   "M2_orig": "E",
+   "M2_ren": "G",
+   "M2_ren2": "E"
+  },
+  "OT": {
+   "M2_orig": "I",
+   "M2_ren": "H",
+   "M2_ren2": "H"
+  },
+  "TM": {
+   "M2_orig": "C",
+   "M2_ren": "C",
+   "M2_ren2": "C"
+  },
+  "KM": {
+   "M2_orig": "D",
+   "M2_ren": "H",
+   "M2_ren2": "H"
+  },
+  "VW": {
+   "M2_orig": "A",
+   "M2_ren": "B",
+   "M2_ren2": "C"
+  },
+  "LA": {
+   "M2_orig": "D",
+   "M2_ren": "I",
+   "M2_ren2": "D"
+  },
+  "CO": {
+   "M2_orig": "F",
+   "M2_ren": "A",
+   "M2_ren2": "H"
+  },
+  "GG": {
+   "M2_orig": "A",
+   "M2_ren": "E",
+   "M2_ren2": "E"
+  },
+  "PG": {
+   "M2_orig": "D",
+   "M2_ren": "A",
+   "M2_ren2": "F"
+  },
+  "MK": {
+   "M2_orig": "C",
+   "M2_ren": "I",
+   "M2_ren2": "C"
+  },
+  "YR": {
+   "M2_orig": "B",
+   "M2_ren": "C",
+   "M2_ren2": "I"
+  },
+  "IM": {
+   "M2_orig": "A",
+   "M2_ren": "H",
+   "M2_ren2": "C"
+  },
+  "RP": {
+   "M2_orig": "I",
+   "M2_ren": "B",
+   "M2_ren2": "D"
+  },
+  "EL": {
+   "M2_orig": "E",
+   "M2_ren": "D",
+   "M2_ren2": "F"
+  },
+  "BR": {
+   "M2_orig": "D",
+   "M2_ren": "D",
+   "M2_ren2": "D"
+  }
+ },
+ "status": "COMPLETE",
+ "truth": {
+  "PH": "E",
+  "PI": "F",
+  "GE": "H",
+  "CI": "A",
+  "SS": "A",
+  "JE": "D",
+  "RH": "E",
+  "MC": "I",
+  "LM": "C",
+  "JH": "E",
+  "IV": "G",
+  "MI": "C",
+  "VI": "G",
+  "SA": "E",
+  "DL": "G",
+  "DQ": "B",
+  "WW": "E",
+  "OT": "B",
+  "TM": "C",
+  "KM": "A",
+  "VW": "B",
+  "LA": "D",
+  "CO": "H",
+  "GG": "A",
+  "PG": "D",
+  "MK": "A",
+  "YR": "G",
+  "IM": "A",
+  "RP": "I",
+  "EL": "D",
+  "BR": "A"
+ }
+}

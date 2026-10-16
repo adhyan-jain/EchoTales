@@ -1,0 +1,20 @@
+{
+  "label_provenance": "NO LABELS (system-internal)",
+  "note": "negative control per PREREG_T4 v1 definition",
+  "N_context_dependent": {
+    "n": 11174,
+    "agree": 11169,
+    "agreement": 0.9995525326651155,
+    "wilson95": [
+      0.999,
+      0.9998
+    ],
+    "bcubed_f1": 0.9999,
+    "same_method_share": 0.9995,
+    "mean_abs_conf_change": 0.0,
+    "changed": 5,
+    "changed_classification": {
+      "evidence_loss": 5
+    }
+  }
+}

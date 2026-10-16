@@ -1,0 +1,867 @@
+{
+  "probe": "E2 order/batching/re-run sensitivity",
+  "label_provenance": "SYSTEM-INTERNAL, no labels",
+  "novel": "reverend-insanity",
+  "chapters": 199,
+  "reference": {
+    "entities": 266,
+    "linked": 1259,
+    "deferred": 2,
+    "unresolved": 50
+  },
+  "idempotence_second_run_in_place": {
+    "mentions_leq_k": 11174,
+    "same_target": 11174,
+    "disagree": 0,
+    "disagree_rate": 0.0,
+    "disagree_wilson": [
+      0.0,
+      0.00034
+    ],
+    "ari": 1.0,
+    "linked_in_prefix": 11092,
+    "linked_in_full": 11092,
+    "categories": [],
+    "disagree_by_chapter": {},
+    "alias_bindings_learned_leq_k": {
+      "prefix": 11092,
+      "full": 11092,
+      "only_in_prefix": 0,
+      "only_in_full": 0
+    },
+    "examples_first_10": [],
+    "partition": {
+      "both_linked": 11092,
+      "moved_var_to_ref": 0,
+      "moved_ref_to_var": 0,
+      "moved_max": 0,
+      "moved_rate_max": 0.0,
+      "linked_only_in_variant": 0,
+      "linked_only_in_reference": 0,
+      "moved_mention_ids_sample": [],
+      "moved_by_chapter": {}
+    }
+  },
+  "window_size": {
+    "10": {
+      "mentions_leq_k": 11174,
+      "same_target": 11174,
+      "disagree": 0,
+      "disagree_rate": 0.0,
+      "disagree_wilson": [
+        0.0,
+        0.00034
+      ],
+      "ari": 1.0,
+      "linked_in_prefix": 11092,
+      "linked_in_full": 11092,
+      "categories": [],
+      "disagree_by_chapter": {},
+      "alias_bindings_learned_leq_k": {
+        "prefix": 11092,
+        "full": 11092,
+        "only_in_prefix": 0,
+        "only_in_full": 0
+      },
+      "examples_first_10": [],
+      "entities": 266,
+      "deferred": 2,
+      "partition": {
+        "both_linked": 11092,
+        "moved_var_to_ref": 0,
+        "moved_ref_to_var": 0,
+        "moved_max": 0,
+        "moved_rate_max": 0.0,
+        "linked_only_in_variant": 0,
+        "linked_only_in_reference": 0,
+        "moved_mention_ids_sample": [],
+        "moved_by_chapter": {}
+      }
+    },
+    "20": {
+      "mentions_leq_k": 11174,
+      "same_target": 11174,
+      "disagree": 0,
+      "disagree_rate": 0.0,
+      "disagree_wilson": [
+        0.0,
+        0.00034
+      ],
+      "ari": 1.0,
+      "linked_in_prefix": 11092,
+      "linked_in_full": 11092,
+      "categories": [],
+      "disagree_by_chapter": {},
+      "alias_bindings_learned_leq_k": {
+        "prefix": 11092,
+        "full": 11092,
+        "only_in_prefix": 0,
+        "only_in_full": 0
+      },
+      "examples_first_10": [],
+      "entities": 266,
+      "deferred": 2,
+      "partition": {
+        "both_linked": 11092,
+        "moved_var_to_ref": 0,
+        "moved_ref_to_var": 0,
+        "moved_max": 0,
+        "moved_rate_max": 0.0,
+        "linked_only_in_variant": 0,
+        "linked_only_in_reference": 0,
+        "moved_mention_ids_sample": [],
+        "moved_by_chapter": {}
+      }
+    },
+    "1000000": {
+      "mentions_leq_k": 11174,
+      "same_target": 11174,
+      "disagree": 0,
+      "disagree_rate": 0.0,
+      "disagree_wilson": [
+        0.0,
+        0.00034
+      ],
+      "ari": 1.0,
+      "linked_in_prefix": 11092,
+      "linked_in_full": 11092,
+      "categories": [],
+      "disagree_by_chapter": {},
+      "alias_bindings_learned_leq_k": {
+        "prefix": 11092,
+        "full": 11092,
+        "only_in_prefix": 0,
+        "only_in_full": 0
+      },
+      "examples_first_10": [],
+      "entities": 266,
+      "deferred": 2,
+      "partition": {
+        "both_linked": 11092,
+        "moved_var_to_ref": 0,
+        "moved_ref_to_var": 0,
+        "moved_max": 0,
+        "moved_rate_max": 0.0,
+        "linked_only_in_variant": 0,
+        "linked_only_in_reference": 0,
+        "moved_mention_ids_sample": [],
+        "moved_by_chapter": {}
+      }
+    }
+  },
+  "adjacent_swaps_10pct": {
+    "0": {
+      "mentions_leq_k": 11174,
+      "same_target": 11016,
+      "disagree": 158,
+      "disagree_rate": 0.01414,
+      "disagree_wilson": [
+        0.01211,
+        0.0165
+      ],
+      "ari": 1.0,
+      "linked_in_prefix": 11092,
+      "linked_in_full": 11092,
+      "categories": [
+        [
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "GAZETTEER_EXACT",
+          133
+        ],
+        [
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED",
+          23
+        ],
+        [
+          "linked_to_different_entity",
+          "SCORED",
+          "GAZETTEER_EXACT",
+          2
+        ]
+      ],
+      "disagree_by_chapter": {
+        "42": 19,
+        "43": 1,
+        "44": 7,
+        "45": 23,
+        "46": 16,
+        "47": 13,
+        "54": 1,
+        "55": 10,
+        "56": 17,
+        "57": 6,
+        "59": 5,
+        "60": 1,
+        "72": 2,
+        "109": 4,
+        "113": 6,
+        "132": 4,
+        "133": 1,
+        "153": 1,
+        "171": 2,
+        "174": 2,
+        "175": 1,
+        "176": 4,
+        "178": 3,
+        "179": 1,
+        "181": 3,
+        "182": 3,
+        "184": 2
+      },
+      "alias_bindings_learned_leq_k": {
+        "prefix": 11092,
+        "full": 11092,
+        "only_in_prefix": 158,
+        "only_in_full": 158
+      },
+      "examples_first_10": [
+        [
+          "reverend-insanity:42:m1",
+          42.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:42:m4",
+          42.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:42:m7",
+          42.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:42:m9",
+          42.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:42:m12",
+          42.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:42:m15",
+          42.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:42:m16",
+          42.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:42:m17",
+          42.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:42:m19",
+          42.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:42:m21",
+          42.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ]
+      ],
+      "chapters_displaced": 28,
+      "entities": 266,
+      "partition": {
+        "both_linked": 11092,
+        "moved_var_to_ref": 0,
+        "moved_ref_to_var": 0,
+        "moved_max": 0,
+        "moved_rate_max": 0.0,
+        "linked_only_in_variant": 0,
+        "linked_only_in_reference": 0,
+        "moved_mention_ids_sample": [],
+        "moved_by_chapter": {}
+      }
+    },
+    "1": {
+      "mentions_leq_k": 11174,
+      "same_target": 10583,
+      "disagree": 591,
+      "disagree_rate": 0.05289,
+      "disagree_wilson": [
+        0.04889,
+        0.0572
+      ],
+      "ari": 1.0,
+      "linked_in_prefix": 11092,
+      "linked_in_full": 11092,
+      "categories": [
+        [
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "GAZETTEER_EXACT",
+          520
+        ],
+        [
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED",
+          53
+        ],
+        [
+          "linked_to_different_entity",
+          "SCORED",
+          "GAZETTEER_EXACT",
+          14
+        ],
+        [
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "NAME_CONTAINMENT",
+          2
+        ],
+        [
+          "linked_to_different_entity",
+          "NAME_CONTAINMENT",
+          "NAME_CONTAINMENT",
+          1
+        ],
+        [
+          "linked_to_different_entity",
+          "NAME_CONTAINMENT",
+          "GAZETTEER_EXACT",
+          1
+        ]
+      ],
+      "disagree_by_chapter": {
+        "32": 5,
+        "33": 6,
+        "34": 25,
+        "35": 22,
+        "36": 13,
+        "37": 9,
+        "38": 5,
+        "39": 1,
+        "42": 19,
+        "43": 1,
+        "44": 7,
+        "45": 23,
+        "46": 16,
+        "47": 13,
+        "48": 1,
+        "51": 1,
+        "54": 1,
+        "55": 10,
+        "56": 17,
+        "57": 6,
+        "59": 5,
+        "60": 1,
+        "66": 1,
+        "72": 2,
+        "78": 1,
+        "82": 15,
+        "83": 4,
+        "84": 2,
+        "85": 3,
+        "87": 1,
+        "90": 1,
+        "104": 18,
+        "105": 22,
+        "106": 2,
+        "107": 2,
+        "109": 4,
+        "112": 1,
+        "113": 9,
+        "114": 1,
+        "119": 1
+      },
+      "alias_bindings_learned_leq_k": {
+        "prefix": 11092,
+        "full": 11092,
+        "only_in_prefix": 591,
+        "only_in_full": 591
+      },
+      "examples_first_10": [
+        [
+          "reverend-insanity:32:m21",
+          32.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:32:m31",
+          32.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:32:m41",
+          32.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:32:m61",
+          32.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:32:m63",
+          32.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:33:m52",
+          33.0,
+          "linked_to_different_entity",
+          "SCORED",
+          "GAZETTEER_EXACT"
+        ],
+        [
+          "reverend-insanity:33:m53",
+          33.0,
+          "linked_to_different_entity",
+          "SCORED",
+          "GAZETTEER_EXACT"
+        ],
+        [
+          "reverend-insanity:33:m64",
+          33.0,
+          "linked_to_different_entity",
+          "SCORED",
+          "GAZETTEER_EXACT"
+        ],
+        [
+          "reverend-insanity:33:m68",
+          33.0,
+          "linked_to_different_entity",
+          "SCORED",
+          "GAZETTEER_EXACT"
+        ],
+        [
+          "reverend-insanity:33:m71",
+          33.0,
+          "linked_to_different_entity",
+          "SCORED",
+          "GAZETTEER_EXACT"
+        ]
+      ],
+      "chapters_displaced": 42,
+      "entities": 266,
+      "partition": {
+        "both_linked": 11092,
+        "moved_var_to_ref": 0,
+        "moved_ref_to_var": 0,
+        "moved_max": 0,
+        "moved_rate_max": 0.0,
+        "linked_only_in_variant": 0,
+        "linked_only_in_reference": 0,
+        "moved_mention_ids_sample": [],
+        "moved_by_chapter": {}
+      }
+    },
+    "2": {
+      "mentions_leq_k": 11174,
+      "same_target": 11031,
+      "disagree": 143,
+      "disagree_rate": 0.0128,
+      "disagree_wilson": [
+        0.01087,
+        0.01506
+      ],
+      "ari": 1.0,
+      "linked_in_prefix": 11092,
+      "linked_in_full": 11092,
+      "categories": [
+        [
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "GAZETTEER_EXACT",
+          100
+        ],
+        [
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED",
+          17
+        ],
+        [
+          "linked_to_different_entity",
+          "SCORED",
+          "GAZETTEER_EXACT",
+          14
+        ],
+        [
+          "linked_to_different_entity",
+          "NAME_CONTAINMENT",
+          "NAME_CONTAINMENT",
+          12
+        ]
+      ],
+      "disagree_by_chapter": {
+        "87": 9,
+        "88": 16,
+        "89": 11,
+        "90": 9,
+        "91": 17,
+        "92": 9,
+        "93": 1,
+        "94": 12,
+        "95": 15,
+        "96": 16,
+        "97": 1,
+        "98": 3,
+        "107": 2,
+        "131": 4,
+        "132": 8,
+        "135": 1,
+        "138": 3,
+        "167": 4,
+        "168": 2
+      },
+      "alias_bindings_learned_leq_k": {
+        "prefix": 11092,
+        "full": 11092,
+        "only_in_prefix": 143,
+        "only_in_full": 143
+      },
+      "examples_first_10": [
+        [
+          "reverend-insanity:87:m24",
+          87.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:87:m25",
+          87.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:87:m27",
+          87.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:87:m35",
+          87.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:87:m36",
+          87.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:87:m37",
+          87.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:87:m47",
+          87.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:87:m50",
+          87.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:87:m58",
+          87.0,
+          "linked_to_different_entity",
+          "GAZETTEER_EXACT",
+          "SCORED"
+        ],
+        [
+          "reverend-insanity:88:m0",
+          88.0,
+          "linked_to_different_entity",
+          "SCORED",
+          "GAZETTEER_EXACT"
+        ]
+      ],
+      "chapters_displaced": 42,
+      "entities": 266,
+      "partition": {
+        "both_linked": 11092,
+        "moved_var_to_ref": 0,
+        "moved_ref_to_var": 0,
+        "moved_max": 0,
+        "moved_rate_max": 0.0,
+        "linked_only_in_variant": 0,
+        "linked_only_in_reference": 0,
+        "moved_mention_ids_sample": [],
+        "moved_by_chapter": {}
+      }
+    }
+  },
+  "control_reversed_order": {
+    "mentions_leq_k": 11174,
+    "same_target": 618,
+    "disagree": 10556,
+    "disagree_rate": 0.94469,
+    "disagree_wilson": [
+      0.9403,
+      0.94878
+    ],
+    "ari": 0.98504,
+    "linked_in_prefix": 11037,
+    "linked_in_full": 11092,
+    "categories": [
+      [
+        "linked_to_different_entity",
+        "GAZETTEER_EXACT",
+        "GAZETTEER_EXACT",
+        9640
+      ],
+      [
+        "linked_to_different_entity",
+        "GAZETTEER_EXACT",
+        "SCORED",
+        416
+      ],
+      [
+        "linked_to_different_entity",
+        "SCORED",
+        "GAZETTEER_EXACT",
+        253
+      ],
+      [
+        "linked_to_different_entity",
+        "GAZETTEER_EXACT",
+        "NAME_CONTAINMENT",
+        93
+      ],
+      [
+        "unlinked_in_prefix__linked_in_full",
+        null,
+        "GAZETTEER_EXACT",
+        58
+      ],
+      [
+        "linked_to_different_entity",
+        "DECLARATION",
+        "DECLARATION",
+        39
+      ]
+    ],
+    "disagree_by_chapter": {
+      "1": 22,
+      "2": 22,
+      "3": 54,
+      "4": 34,
+      "5": 24,
+      "6": 30,
+      "7": 10,
+      "8": 45,
+      "9": 58,
+      "10": 29,
+      "11": 52,
+      "12": 25,
+      "13": 26,
+      "14": 33,
+      "15": 18,
+      "16": 26,
+      "17": 36,
+      "18": 85,
+      "19": 24,
+      "20": 43,
+      "21": 53,
+      "22": 14,
+      "23": 54,
+      "24": 19,
+      "25": 59,
+      "26": 33,
+      "27": 42,
+      "28": 45,
+      "29": 34,
+      "30": 45,
+      "31": 51,
+      "32": 71,
+      "33": 73,
+      "34": 58,
+      "35": 48,
+      "36": 66,
+      "37": 72,
+      "38": 63,
+      "39": 18,
+      "40": 23
+    },
+    "alias_bindings_learned_leq_k": {
+      "prefix": 11037,
+      "full": 11092,
+      "only_in_prefix": 10496,
+      "only_in_full": 10551
+    },
+    "examples_first_10": [
+      [
+        "reverend-insanity:1:m0",
+        1.0,
+        "linked_to_different_entity",
+        "GAZETTEER_EXACT",
+        "SCORED"
+      ],
+      [
+        "reverend-insanity:1:m2",
+        1.0,
+        "linked_to_different_entity",
+        "GAZETTEER_EXACT",
+        "SCORED"
+      ],
+      [
+        "reverend-insanity:1:m4",
+        1.0,
+        "linked_to_different_entity",
+        "GAZETTEER_EXACT",
+        "SCORED"
+      ],
+      [
+        "reverend-insanity:1:m5",
+        1.0,
+        "linked_to_different_entity",
+        "GAZETTEER_EXACT",
+        "SCORED"
+      ],
+      [
+        "reverend-insanity:1:m6",
+        1.0,
+        "linked_to_different_entity",
+        "GAZETTEER_EXACT",
+        "SCORED"
+      ],
+      [
+        "reverend-insanity:1:m7",
+        1.0,
+        "linked_to_different_entity",
+        "GAZETTEER_EXACT",
+        "SCORED"
+      ],
+      [
+        "reverend-insanity:1:m8",
+        1.0,
+        "linked_to_different_entity",
+        "GAZETTEER_EXACT",
+        "SCORED"
+      ],
+      [
+        "reverend-insanity:1:m9",
+        1.0,
+        "linked_to_different_entity",
+        "GAZETTEER_EXACT",
+        "SCORED"
+      ],
+      [
+        "reverend-insanity:1:m10",
+        1.0,
+        "linked_to_different_entity",
+        "GAZETTEER_EXACT",
+        "SCORED"
+      ],
+      [
+        "reverend-insanity:1:m11",
+        1.0,
+        "linked_to_different_entity",
+        "GAZETTEER_EXACT",
+        "SCORED"
+      ]
+    ],
+    "entities": 265,
+    "partition": {
+      "both_linked": 11032,
+      "moved_var_to_ref": 41,
+      "moved_ref_to_var": 11,
+      "moved_max": 41,
+      "moved_rate_max": 0.00372,
+      "linked_only_in_variant": 5,
+      "linked_only_in_reference": 60,
+      "moved_mention_ids_sample": [
+        "reverend-insanity:121:m1",
+        "reverend-insanity:123:m10",
+        "reverend-insanity:126:m19",
+        "reverend-insanity:126:m30",
+        "reverend-insanity:126:m31",
+        "reverend-insanity:126:m32",
+        "reverend-insanity:135:m28",
+        "reverend-insanity:154:m114",
+        "reverend-insanity:155:m29",
+        "reverend-insanity:157:m41",
+        "reverend-insanity:157:m43",
+        "reverend-insanity:157:m47",
+        "reverend-insanity:157:m49",
+        "reverend-insanity:157:m50",
+        "reverend-insanity:157:m53",
+        "reverend-insanity:158:m13",
+        "reverend-insanity:158:m17",
+        "reverend-insanity:158:m18",
+        "reverend-insanity:158:m25",
+        "reverend-insanity:158:m31",
+        "reverend-insanity:158:m35",
+        "reverend-insanity:158:m36",
+        "reverend-insanity:158:m39",
+        "reverend-insanity:158:m4",
+        "reverend-insanity:158:m41"
+      ],
+      "moved_by_chapter": {
+        "44": 4,
+        "62": 6,
+        "121": 1,
+        "123": 1,
+        "126": 4,
+        "135": 1,
+        "154": 1,
+        "155": 1,
+        "157": 6,
+        "158": 19,
+        "159": 3,
+        "161": 1,
+        "171": 1,
+        "174": 1,
+        "178": 2
+      }
+    }
+  }
+}

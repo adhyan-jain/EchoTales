@@ -1,0 +1,1189 @@
+{
+  "probe": "E1 prefix causality of the resolver (graph level)",
+  "label_provenance": "SYSTEM-INTERNAL, no labels",
+  "novel": "lord-of-the-mysteries",
+  "chapters": 40,
+  "ks": [
+    5,
+    10,
+    20,
+    30
+  ],
+  "determinism_F0_twice": {
+    "k": 1000000000,
+    "mentions_leq_k": 2402,
+    "same_target": 2402,
+    "disagree": 0,
+    "disagree_rate": 0.0,
+    "disagree_wilson": [
+      0.0,
+      0.0016
+    ],
+    "ari": 1.0,
+    "linked_in_prefix": 2334,
+    "linked_in_full": 2334,
+    "categories": [],
+    "disagree_by_chapter": {},
+    "alias_bindings_learned_leq_k": {
+      "prefix": 2334,
+      "full": 2334,
+      "only_in_prefix": 0,
+      "only_in_full": 0
+    },
+    "examples_mention_id_chapter_category_methods": null
+  },
+  "F0_report": {
+    "groups": 453,
+    "linked": 292,
+    "created": 93,
+    "deferred": 0,
+    "recovered": 0,
+    "unresolved": 14,
+    "entities": 93,
+    "by_window": {
+      "0": {
+        "SCORED": 93,
+        "DECLARATION": 9,
+        "GAZETTEER_EXACT": 268,
+        "NAME_CONTAINMENT": 8,
+        "RELATIONAL_COPRESENCE": 1
+      },
+      "1": {
+        "GAZETTEER_EXACT": 6
+      }
+    }
+  },
+  "by_k": {
+    "5": {
+      "prefix_vs_F0": {
+        "k": 5,
+        "mentions_leq_k": 207,
+        "same_target": 207,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.01822
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 201,
+        "linked_in_full": 201,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 201,
+          "full": 201,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "prefix_vs_F0_single_final_sweep_only": {
+        "k": 5,
+        "mentions_leq_k": 207,
+        "same_target": 207,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.01822
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 201,
+        "linked_in_full": 201,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 201,
+          "full": 201,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "F1_volume_passes_vs_F0_restricted": {
+        "k": 5,
+        "mentions_leq_k": 207,
+        "same_target": 196,
+        "disagree": 11,
+        "disagree_rate": 0.05314,
+        "disagree_wilson": [
+          0.02993,
+          0.09264
+        ],
+        "ari": 0.85825,
+        "linked_in_prefix": 201,
+        "linked_in_full": 201,
+        "categories": [
+          [
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED",
+            11
+          ]
+        ],
+        "disagree_by_chapter": {
+          "2": 1,
+          "4": 10
+        },
+        "alias_bindings_learned_leq_k": {
+          "prefix": 203,
+          "full": 201,
+          "only_in_prefix": 2,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": [
+          [
+            "lord-of-the-mysteries:2:m4",
+            2.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m2",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m7",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m11",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m17",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m20",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m24",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m29",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m30",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m36",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m40",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ]
+        ]
+      },
+      "prefix_report": {
+        "groups": 42,
+        "linked": 12,
+        "created": 24,
+        "deferred": 0,
+        "recovered": 0,
+        "unresolved": 1,
+        "entities": 24
+      }
+    },
+    "10": {
+      "prefix_vs_F0": {
+        "k": 10,
+        "mentions_leq_k": 452,
+        "same_target": 452,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.00843
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 436,
+        "linked_in_full": 436,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 436,
+          "full": 436,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "prefix_vs_F0_single_final_sweep_only": {
+        "k": 10,
+        "mentions_leq_k": 452,
+        "same_target": 452,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.00843
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 436,
+        "linked_in_full": 436,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 436,
+          "full": 436,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "F1_volume_passes_vs_F0_restricted": {
+        "k": 10,
+        "mentions_leq_k": 452,
+        "same_target": 372,
+        "disagree": 80,
+        "disagree_rate": 0.17699,
+        "disagree_wilson": [
+          0.14457,
+          0.21486
+        ],
+        "ari": 0.65365,
+        "linked_in_prefix": 436,
+        "linked_in_full": 436,
+        "categories": [
+          [
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT",
+            69
+          ],
+          [
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED",
+            11
+          ]
+        ],
+        "disagree_by_chapter": {
+          "2": 1,
+          "4": 10,
+          "6": 1,
+          "7": 3,
+          "9": 34,
+          "10": 31
+        },
+        "alias_bindings_learned_leq_k": {
+          "prefix": 438,
+          "full": 436,
+          "only_in_prefix": 2,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": [
+          [
+            "lord-of-the-mysteries:2:m4",
+            2.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m2",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m7",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m11",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m17",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m20",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m24",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m29",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m30",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m36",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m40",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:6:m22",
+            6.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:7:m51",
+            7.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:7:m52",
+            7.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:7:m53",
+            7.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m1",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m2",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m3",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m4",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m5",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m6",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m7",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m8",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m9",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m10",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m11",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m12",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m14",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m16",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m17",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ]
+        ]
+      },
+      "prefix_report": {
+        "groups": 104,
+        "linked": 49,
+        "created": 39,
+        "deferred": 0,
+        "recovered": 0,
+        "unresolved": 2,
+        "entities": 39
+      }
+    },
+    "20": {
+      "prefix_vs_F0": {
+        "k": 20,
+        "mentions_leq_k": 1140,
+        "same_target": 1140,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.00336
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 1105,
+        "linked_in_full": 1105,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 1105,
+          "full": 1105,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "prefix_vs_F0_single_final_sweep_only": {
+        "k": 20,
+        "mentions_leq_k": 1140,
+        "same_target": 1140,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.00336
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 1105,
+        "linked_in_full": 1105,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 1105,
+          "full": 1105,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "F1_volume_passes_vs_F0_restricted": {
+        "k": 20,
+        "mentions_leq_k": 1140,
+        "same_target": 729,
+        "disagree": 411,
+        "disagree_rate": 0.36053,
+        "disagree_wilson": [
+          0.33316,
+          0.38882
+        ],
+        "ari": 0.67102,
+        "linked_in_prefix": 1105,
+        "linked_in_full": 1105,
+        "categories": [
+          [
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT",
+            400
+          ],
+          [
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED",
+            11
+          ]
+        ],
+        "disagree_by_chapter": {
+          "2": 1,
+          "4": 10,
+          "6": 1,
+          "7": 3,
+          "9": 34,
+          "10": 31,
+          "11": 32,
+          "12": 35,
+          "13": 33,
+          "14": 38,
+          "15": 24,
+          "16": 43,
+          "17": 31,
+          "18": 25,
+          "19": 18,
+          "20": 52
+        },
+        "alias_bindings_learned_leq_k": {
+          "prefix": 1107,
+          "full": 1105,
+          "only_in_prefix": 2,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": [
+          [
+            "lord-of-the-mysteries:2:m4",
+            2.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m2",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m7",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m11",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m17",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m20",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m24",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m29",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m30",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m36",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m40",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:6:m22",
+            6.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:7:m51",
+            7.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:7:m52",
+            7.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:7:m53",
+            7.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m1",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m2",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m3",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m4",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m5",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m6",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m7",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m8",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m9",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m10",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m11",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m12",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m14",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m16",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m17",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ]
+        ]
+      },
+      "prefix_report": {
+        "groups": 213,
+        "linked": 118,
+        "created": 60,
+        "deferred": 0,
+        "recovered": 0,
+        "unresolved": 4,
+        "entities": 60
+      }
+    },
+    "30": {
+      "prefix_vs_F0": {
+        "k": 30,
+        "mentions_leq_k": 1806,
+        "same_target": 1806,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.00212
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 1755,
+        "linked_in_full": 1755,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 1755,
+          "full": 1755,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "prefix_vs_F0_single_final_sweep_only": {
+        "k": 30,
+        "mentions_leq_k": 1806,
+        "same_target": 1806,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.00212
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 1755,
+        "linked_in_full": 1755,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 1755,
+          "full": 1755,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "F1_volume_passes_vs_F0_restricted": {
+        "k": 30,
+        "mentions_leq_k": 1806,
+        "same_target": 1097,
+        "disagree": 709,
+        "disagree_rate": 0.39258,
+        "disagree_wilson": [
+          0.37031,
+          0.41531
+        ],
+        "ari": 0.74981,
+        "linked_in_prefix": 1755,
+        "linked_in_full": 1755,
+        "categories": [
+          [
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT",
+            698
+          ],
+          [
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED",
+            11
+          ]
+        ],
+        "disagree_by_chapter": {
+          "2": 1,
+          "4": 10,
+          "6": 1,
+          "7": 3,
+          "9": 34,
+          "10": 31,
+          "11": 32,
+          "12": 35,
+          "13": 33,
+          "14": 38,
+          "15": 24,
+          "16": 43,
+          "17": 31,
+          "18": 25,
+          "19": 18,
+          "20": 52,
+          "21": 26,
+          "22": 25,
+          "23": 34,
+          "24": 34,
+          "25": 34,
+          "26": 42,
+          "27": 33,
+          "28": 23,
+          "29": 20,
+          "30": 27
+        },
+        "alias_bindings_learned_leq_k": {
+          "prefix": 1757,
+          "full": 1755,
+          "only_in_prefix": 2,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": [
+          [
+            "lord-of-the-mysteries:2:m4",
+            2.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m2",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m7",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m11",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m17",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m20",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m24",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m29",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m30",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m36",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:4:m40",
+            4.0,
+            "linked_to_different_entity",
+            "SCORED",
+            "SCORED"
+          ],
+          [
+            "lord-of-the-mysteries:6:m22",
+            6.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:7:m51",
+            7.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:7:m52",
+            7.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:7:m53",
+            7.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m1",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m2",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m3",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m4",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m5",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m6",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m7",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m8",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m9",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m10",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m11",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m12",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m14",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m16",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ],
+          [
+            "lord-of-the-mysteries:9:m17",
+            9.0,
+            "linked_to_different_entity",
+            "GAZETTEER_EXACT",
+            "GAZETTEER_EXACT"
+          ]
+        ]
+      },
+      "prefix_report": {
+        "groups": 335,
+        "linked": 209,
+        "created": 75,
+        "deferred": 0,
+        "recovered": 0,
+        "unresolved": 4,
+        "entities": 75
+      }
+    }
+  }
+}

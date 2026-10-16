@@ -1,0 +1,266 @@
+{
+ "note": "Stored for later review (owner request 2026-10-16): is the R0 gate useful? verdict_bearing=true only for models that passed R0 under PREREG_PD v1. All others are descriptive; their gaps include renaming damage. Labels text-derived, selection by model-drafter, owner check pending.",
+ "models": {
+  "gpt-5.6-luna": {
+   "verdict_bearing": true,
+   "R0_agreement": {
+    "k": 20,
+    "n": 21,
+    "rate": 0.9523809523809523,
+    "wilson95": [
+     0.7733018341376451,
+     0.9915442305280766
+    ]
+   },
+   "premature_A": 0.06976744186046512,
+   "premature_B": 0.0,
+   "gap": 0.06976744186046512,
+   "gap_ci95": [
+    0.0,
+    0.16279069767441862
+   ],
+   "sign_test_p": 0.25,
+   "synthetic_gap": 0.0,
+   "closed_book": {
+    "events": 7,
+    "C_orig_names_identity": 3,
+    "C_ren_names_identity": 0,
+    "memory_present": true
+   },
+   "abstain_A": 32,
+   "abstain_B": 39,
+   "plain_control_accuracy_A": 0.9523809523809523,
+   "post_reveal_accuracy_A": 0.75,
+   "invalid_answers": 0,
+   "r0_diagnosis": {
+    "ctrl_disagree": {
+     "same": 20,
+     "A_wrong": 1
+    },
+    "ctrl_B_accuracy": "21/21",
+    "synth_nonpre_items": 41,
+    "synth_A_eq_B": 41,
+    "invalid": 0,
+    "types": [
+     "plain",
+     "post_alias",
+     "pre_alias"
+    ]
+   }
+  },
+  "llama3.1:8b": {
+   "verdict_bearing": false,
+   "R0_agreement": {
+    "k": 12,
+    "n": 21,
+    "rate": 0.5714285714285714,
+    "wilson95": [
+     0.3654621629703245,
+     0.7553030051347894
+    ]
+   },
+   "premature_A": 0.18604651162790697,
+   "premature_B": 0.023255813953488372,
+   "gap": 0.16279069767441862,
+   "gap_ci95": [
+    0.046511627906976744,
+    0.3023255813953488
+   ],
+   "sign_test_p": 0.0390625,
+   "synthetic_gap": 0.14285714285714285,
+   "closed_book": {
+    "events": 7,
+    "C_orig_names_identity": 3,
+    "C_ren_names_identity": 0,
+    "memory_present": true
+   },
+   "abstain_A": 1,
+   "abstain_B": 0,
+   "plain_control_accuracy_A": 0.8095238095238095,
+   "post_reveal_accuracy_A": 0.5,
+   "invalid_answers": 10,
+   "r0_diagnosis": {
+    "ctrl_disagree": {
+     "B_invalid": 2,
+     "same": 12,
+     "B_other_letter": 4,
+     "A_wrong": 3
+    },
+    "ctrl_B_accuracy": "13/21",
+    "synth_nonpre_items": 41,
+    "synth_A_eq_B": 31,
+    "invalid": 3,
+    "types": [
+     "plain",
+     "post_alias",
+     "pre_alias"
+    ]
+   }
+  },
+  "mistral:7b-instruct": {
+   "verdict_bearing": false,
+   "R0_agreement": {
+    "k": 18,
+    "n": 21,
+    "rate": 0.8571428571428571,
+    "wilson95": [
+     0.6536350585077049,
+     0.950190782017865
+    ]
+   },
+   "premature_A": 0.37209302325581395,
+   "premature_B": 0.046511627906976744,
+   "gap": 0.32558139534883723,
+   "gap_ci95": [
+    0.18604651162790697,
+    0.46511627906976744
+   ],
+   "sign_test_p": 0.000518798828125,
+   "synthetic_gap": 0.0,
+   "closed_book": {
+    "events": 7,
+    "C_orig_names_identity": 3,
+    "C_ren_names_identity": 0,
+    "memory_present": true
+   },
+   "abstain_A": 0,
+   "abstain_B": 0,
+   "plain_control_accuracy_A": 1.0,
+   "post_reveal_accuracy_A": 1.0,
+   "invalid_answers": 35,
+   "r0_diagnosis": {
+    "ctrl_disagree": {
+     "same": 18,
+     "B_other_letter": 2,
+     "B_invalid": 1
+    },
+    "ctrl_B_accuracy": "18/21",
+    "synth_nonpre_items": 41,
+    "synth_A_eq_B": 32,
+    "invalid": 13,
+    "types": [
+     "plain",
+     "post_alias",
+     "pre_alias"
+    ]
+   }
+  },
+  "phi4-mini:latest": {
+   "verdict_bearing": false,
+   "R0_agreement": {
+    "k": 15,
+    "n": 21,
+    "rate": 0.7142857142857143,
+    "wilson95": [
+     0.5004322617716241,
+     0.8618632425437179
+    ]
+   },
+   "premature_A": 0.13953488372093023,
+   "premature_B": 0.046511627906976744,
+   "gap": 0.09302325581395349,
+   "gap_ci95": [
+    -0.023255813953488372,
+    0.23255813953488372
+   ],
+   "sign_test_p": 0.2890625,
+   "synthetic_gap": -0.09523809523809523,
+   "closed_book": {
+    "events": 7,
+    "C_orig_names_identity": 0,
+    "C_ren_names_identity": 0,
+    "memory_present": false
+   },
+   "abstain_A": 3,
+   "abstain_B": 2,
+   "plain_control_accuracy_A": 0.8571428571428571,
+   "post_reveal_accuracy_A": 0.25,
+   "invalid_answers": 6,
+   "r0_diagnosis": {
+    "ctrl_disagree": {
+     "B_other_letter": 4,
+     "same": 15,
+     "A_wrong": 2
+    },
+    "ctrl_B_accuracy": "16/21",
+    "synth_nonpre_items": 41,
+    "synth_A_eq_B": 37,
+    "invalid": 3,
+    "types": [
+     "plain",
+     "post_alias",
+     "pre_alias"
+    ]
+   }
+  },
+  "qwen2.5:7b": {
+   "verdict_bearing": false,
+   "R0_agreement": {
+    "k": 14,
+    "n": 21,
+    "rate": 0.6666666666666666,
+    "wilson95": [
+     0.45373075657210293,
+     0.828054635673163
+    ]
+   },
+   "premature_A": 0.4418604651162791,
+   "premature_B": 0.0,
+   "gap": 0.4418604651162791,
+   "gap_ci95": [
+    0.3023255813953488,
+    0.5813953488372093
+   ],
+   "sign_test_p": 3.814697265625e-06,
+   "synthetic_gap": 0.047619047619047616,
+   "closed_book": {
+    "events": 7,
+    "C_orig_names_identity": 3,
+    "C_ren_names_identity": 0,
+    "memory_present": true
+   },
+   "abstain_A": 7,
+   "abstain_B": 15,
+   "plain_control_accuracy_A": 1.0,
+   "post_reveal_accuracy_A": 0.625,
+   "invalid_answers": 6,
+   "r0_diagnosis": {
+    "ctrl_disagree": {
+     "B_invalid": 2,
+     "B_other_letter": 5,
+     "same": 14
+    },
+    "ctrl_B_accuracy": "14/21",
+    "synth_nonpre_items": 41,
+    "synth_A_eq_B": 40,
+    "invalid": 6,
+    "types": [
+     "plain",
+     "post_alias",
+     "pre_alias"
+    ]
+   }
+  }
+ },
+ "pooled_verdict": {
+  "models_passing_R0": 1,
+  "pooled_gap": 0.06976744186046512,
+  "pooled_gap_ci95": [
+   0.0,
+   0.16279069767441862
+  ],
+  "synthetic_gap": 0.0,
+  "did": 0.06976744186046512,
+  "did_ci95": [
+   0.0,
+   0.16279069767441862
+  ],
+  "models_with_memory_present_among_R0": 1,
+  "conditions": {
+   "i_gap_ge_10pts_ci_above_0": false,
+   "ii_did_positive_ci_excludes_0": false,
+   "iii_memory_present_in_ge_3_models": false
+  },
+  "verdict": "NOT SUPPORTED"
+ }
+}

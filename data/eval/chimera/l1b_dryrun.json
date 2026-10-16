@@ -1,0 +1,36 @@
+{
+  "mode": "dry-run (no network, no key)",
+  "model": "gpt-5.6-luna",
+  "n_items": 70,
+  "split": {
+    "dev": 33,
+    "test": 37
+  },
+  "primary_in_test": [
+    "CP-001",
+    "CP-002",
+    "CP-003",
+    "CP-017"
+  ],
+  "calls": {
+    "D1": 70,
+    "D2_max": 70
+  },
+  "expected": {
+    "input_tokens": 68739,
+    "output_tokens": 5180,
+    "usd": 0.0199638
+  },
+  "worst_case": {
+    "input_tokens": 89360,
+    "output_tokens": 24500,
+    "usd": 0.047272140000000004,
+    "assumption": "every call hits its max_completion_tokens cap; input 1.3x the estimate"
+  },
+  "token_estimate_method": "chars/3.5 + 15 per call; no tokenizer; ESTIMATE",
+  "prices_usd_per_1M": {
+    "input": 0.2,
+    "output": 1.2,
+    "source": "OpenAI pricing page, fetched 2026-10-15 (summarising tool)"
+  }
+}

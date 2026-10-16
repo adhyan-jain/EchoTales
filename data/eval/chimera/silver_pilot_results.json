@@ -1,0 +1,667 @@
+{
+  "label_provenance": "SILVER (model-drafted hard-case gold, confirmed=false) for gold-sourced items; system-sourced items have no independent label. NO human labels. NO reader-view labels.",
+  "n_items": 72,
+  "outcome_by_tier_gold_sourced": {
+    "P": {
+      "linked-matches-silver": 12,
+      "not-detected": 8
+    },
+    "H": {
+      "not-detected": 11,
+      "linked-differs-from-silver": 3,
+      "linked-matches-silver": 3
+    },
+    "C": {
+      "not-entity (no mention expected)": 2
+    }
+  },
+  "outcome_by_category_gold_sourced": {
+    "body_change": {
+      "linked-matches-silver": 1,
+      "not-detected": 5
+    },
+    "reveal": {
+      "linked-matches-silver": 5,
+      "not-detected": 3,
+      "linked-differs-from-silver": 2
+    },
+    "relational_deictic": {
+      "not-detected": 7
+    },
+    "disguise": {
+      "linked-matches-silver": 9,
+      "linked-differs-from-silver": 1
+    },
+    "title_transfer": {
+      "not-detected": 4
+    },
+    "not_entity_control": {
+      "not-entity (no mention expected)": 2
+    }
+  },
+  "sheet_integrity_system_sourced": {
+    "clan_head_prereveal|recovered=True": 3,
+    "plain_control|recovered=True": 30
+  },
+  "real_RI_title_events": {
+    "note": "system-internal consistency; no reference labels involved",
+    "title_holder_link_events_stamped_before_holder_binding": {
+      "k": 5,
+      "n": 22,
+      "rate": 0.22727272727272727,
+      "wilson95": [
+        0.10122890794820355,
+        0.4344035606295935
+      ]
+    },
+    "examples": [
+      {
+        "event_cause_chapter": 1,
+        "holder_binding_learned_chapter": 6
+      },
+      {
+        "event_cause_chapter": 1,
+        "holder_binding_learned_chapter": 6
+      },
+      {
+        "event_cause_chapter": 1,
+        "holder_binding_learned_chapter": 6
+      },
+      {
+        "event_cause_chapter": 1,
+        "holder_binding_learned_chapter": 6
+      },
+      {
+        "event_cause_chapter": 1,
+        "holder_binding_learned_chapter": 6
+      }
+    ]
+  },
+  "premature_resolution_eligibility": {
+    "note": "items that could even yield a premature-resolution count once a human reader label exists",
+    "tier_P_items": 23,
+    "tier_P_gold_items": 20,
+    "tier_P_gold_linked_by_system": 12,
+    "tier_P_gold_linked_to_silver_omniscient_identity": 12,
+    "exact_95_upper_bound_if_zero_events_of_linked": 0.22092219194555585,
+    "exact_95_upper_bound_if_zero_events_of_23": 0.12212338890652308
+  },
+  "per_item": [
+    {
+      "item": "CP-001",
+      "tier": "P",
+      "category": "clan_head_prereveal",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:7fc3b9af53"
+    },
+    {
+      "item": "CP-002",
+      "tier": "P",
+      "category": "clan_head_prereveal",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:7fc3b9af53"
+    },
+    {
+      "item": "CP-003",
+      "tier": "P",
+      "category": "clan_head_prereveal",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:7fc3b9af53"
+    },
+    {
+      "item": "CP-004",
+      "tier": "P",
+      "category": "body_change",
+      "source": "gold",
+      "result": "linked-matches-silver",
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-005",
+      "tier": "P",
+      "category": "reveal",
+      "source": "gold",
+      "result": "linked-matches-silver",
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-006",
+      "tier": "P",
+      "category": "reveal",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-007",
+      "tier": "P",
+      "category": "relational_deictic",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-008",
+      "tier": "P",
+      "category": "disguise",
+      "source": "gold",
+      "result": "linked-matches-silver",
+      "system_target_id": "reverend-insanity:self:8e53ff2823"
+    },
+    {
+      "item": "CP-009",
+      "tier": "P",
+      "category": "disguise",
+      "source": "gold",
+      "result": "linked-matches-silver",
+      "system_target_id": "reverend-insanity:self:a785fbd308"
+    },
+    {
+      "item": "CP-010",
+      "tier": "P",
+      "category": "disguise",
+      "source": "gold",
+      "result": "linked-matches-silver",
+      "system_target_id": "reverend-insanity:self:8e53ff2823"
+    },
+    {
+      "item": "CP-011",
+      "tier": "P",
+      "category": "disguise",
+      "source": "gold",
+      "result": "linked-matches-silver",
+      "system_target_id": "reverend-insanity:self:8e53ff2823"
+    },
+    {
+      "item": "CP-012",
+      "tier": "P",
+      "category": "reveal",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-013",
+      "tier": "P",
+      "category": "relational_deictic",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-014",
+      "tier": "P",
+      "category": "title_transfer",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-015",
+      "tier": "P",
+      "category": "reveal",
+      "source": "gold",
+      "result": "linked-matches-silver",
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-016",
+      "tier": "P",
+      "category": "relational_deictic",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-017",
+      "tier": "P",
+      "category": "relational_deictic",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-018",
+      "tier": "P",
+      "category": "reveal",
+      "source": "gold",
+      "result": "linked-matches-silver",
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-019",
+      "tier": "P",
+      "category": "disguise",
+      "source": "gold",
+      "result": "linked-matches-silver",
+      "system_target_id": "reverend-insanity:self:852e6a60a5"
+    },
+    {
+      "item": "CP-020",
+      "tier": "P",
+      "category": "reveal",
+      "source": "gold",
+      "result": "linked-matches-silver",
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-021",
+      "tier": "P",
+      "category": "reveal",
+      "source": "gold",
+      "result": "linked-matches-silver",
+      "system_target_id": "reverend-insanity:self:a8bdaf3bfb"
+    },
+    {
+      "item": "CP-022",
+      "tier": "P",
+      "category": "disguise",
+      "source": "gold",
+      "result": "linked-matches-silver",
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-023",
+      "tier": "P",
+      "category": "body_change",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-024",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:7fc3b9af53"
+    },
+    {
+      "item": "CP-025",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-026",
+      "tier": "H",
+      "category": "relational_deictic",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-027",
+      "tier": "C",
+      "category": "not_entity_control",
+      "source": "gold",
+      "result": "not-entity (no mention expected)",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-028",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-029",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:0035e71331"
+    },
+    {
+      "item": "CP-030",
+      "tier": "H",
+      "category": "body_change",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-031",
+      "tier": "H",
+      "category": "reveal",
+      "source": "gold",
+      "result": "linked-differs-from-silver",
+      "system_target_id": "reverend-insanity:self:a785fbd308"
+    },
+    {
+      "item": "CP-032",
+      "tier": "H",
+      "category": "disguise",
+      "source": "gold",
+      "result": "linked-matches-silver",
+      "system_target_id": "reverend-insanity:self:8e53ff2823"
+    },
+    {
+      "item": "CP-033",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-034",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-035",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:f143c49c6a"
+    },
+    {
+      "item": "CP-036",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-037",
+      "tier": "H",
+      "category": "body_change",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-038",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:0fab26886a"
+    },
+    {
+      "item": "CP-039",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-040",
+      "tier": "H",
+      "category": "title_transfer",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-041",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-042",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:b1ef741901"
+    },
+    {
+      "item": "CP-043",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:44ad35812f"
+    },
+    {
+      "item": "CP-044",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:0035e71331"
+    },
+    {
+      "item": "CP-045",
+      "tier": "H",
+      "category": "title_transfer",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-046",
+      "tier": "H",
+      "category": "body_change",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-047",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-048",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:6d62f8b46c"
+    },
+    {
+      "item": "CP-049",
+      "tier": "H",
+      "category": "title_transfer",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-050",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-051",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-052",
+      "tier": "C",
+      "category": "not_entity_control",
+      "source": "gold",
+      "result": "not-entity (no mention expected)",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-053",
+      "tier": "H",
+      "category": "relational_deictic",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-054",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-055",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-056",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:a785fbd308"
+    },
+    {
+      "item": "CP-057",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-058",
+      "tier": "H",
+      "category": "relational_deictic",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-059",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-060",
+      "tier": "H",
+      "category": "disguise",
+      "source": "gold",
+      "result": "linked-matches-silver",
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-061",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:0fab26886a"
+    },
+    {
+      "item": "CP-062",
+      "tier": "H",
+      "category": "reveal",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-063",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:a785fbd308"
+    },
+    {
+      "item": "CP-064",
+      "tier": "H",
+      "category": "body_change",
+      "source": "gold",
+      "result": "not-detected",
+      "system_target_id": null
+    },
+    {
+      "item": "CP-065",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-066",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:0035e71331"
+    },
+    {
+      "item": "CP-067",
+      "tier": "H",
+      "category": "disguise",
+      "source": "gold",
+      "result": "linked-matches-silver",
+      "system_target_id": "reverend-insanity:self:c33bd48e97"
+    },
+    {
+      "item": "CP-068",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-069",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-070",
+      "tier": "H",
+      "category": "disguise",
+      "source": "gold",
+      "result": "linked-differs-from-silver",
+      "system_target_id": "reverend-insanity:self:be86673b83"
+    },
+    {
+      "item": "CP-071",
+      "tier": "C",
+      "category": "plain_control",
+      "source": "system",
+      "recovered": true,
+      "system_target_id": "reverend-insanity:self:476821534c"
+    },
+    {
+      "item": "CP-072",
+      "tier": "H",
+      "category": "reveal",
+      "source": "gold",
+      "result": "linked-differs-from-silver",
+      "system_target_id": "reverend-insanity:self:a785fbd308"
+    }
+  ]
+}

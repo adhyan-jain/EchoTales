@@ -1,0 +1,71 @@
+{
+ "note": "EXPLORATORY, POST HOC (after the frozen v2 verdict). Tests whether A-vs-B disagreement on plain controls is asymmetric toward A (memory/name cues help the original-names arm) rather than symmetric renaming noise.",
+ "models": {
+  "gemma2:9b": {
+   "ctrl": 152,
+   "A_right_B_wrong": 23,
+   "B_right_A_wrong": 1,
+   "sign_p": 2.9802322387695312e-06,
+   "B_right_B2_wrong": 0,
+   "B2_right_B_wrong": 2,
+   "sign_p_B_B2": 0.5,
+   "synthetic_non_pre_items": 41,
+   "synthetic_A_eq_B": 38
+  },
+  "gpt-5.6-luna": {
+   "ctrl": 152,
+   "A_right_B_wrong": 21,
+   "B_right_A_wrong": 1,
+   "sign_p": 1.0967254638671875e-05,
+   "B_right_B2_wrong": 8,
+   "B2_right_B_wrong": 7,
+   "sign_p_B_B2": 1.0,
+   "synthetic_non_pre_items": 41,
+   "synthetic_A_eq_B": 40
+  },
+  "llama3.1:8b": {
+   "ctrl": 152,
+   "A_right_B_wrong": 16,
+   "B_right_A_wrong": 9,
+   "sign_p": 0.2295229434967041,
+   "B_right_B2_wrong": 3,
+   "B2_right_B_wrong": 9,
+   "sign_p_B_B2": 0.14599609375,
+   "synthetic_non_pre_items": 41,
+   "synthetic_A_eq_B": 35
+  },
+  "mistral:7b-instruct": {
+   "ctrl": 152,
+   "A_right_B_wrong": 15,
+   "B_right_A_wrong": 1,
+   "sign_p": 0.000518798828125,
+   "B_right_B2_wrong": 5,
+   "B2_right_B_wrong": 6,
+   "sign_p_B_B2": 1.0,
+   "synthetic_non_pre_items": 41,
+   "synthetic_A_eq_B": 34
+  },
+  "phi4-mini:latest": {
+   "ctrl": 152,
+   "A_right_B_wrong": 12,
+   "B_right_A_wrong": 6,
+   "sign_p": 0.237884521484375,
+   "B_right_B2_wrong": 6,
+   "B2_right_B_wrong": 3,
+   "sign_p_B_B2": 0.5078125,
+   "synthetic_non_pre_items": 41,
+   "synthetic_A_eq_B": 41
+  },
+  "qwen2.5:7b": {
+   "ctrl": 152,
+   "A_right_B_wrong": 26,
+   "B_right_A_wrong": 3,
+   "sign_p": 1.5236437320709229e-05,
+   "B_right_B2_wrong": 8,
+   "B2_right_B_wrong": 13,
+   "sign_p_B_B2": 0.38331031799316406,
+   "synthetic_non_pre_items": 41,
+   "synthetic_A_eq_B": 40
+  }
+ }
+}

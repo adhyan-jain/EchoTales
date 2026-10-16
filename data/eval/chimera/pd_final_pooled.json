@@ -1,0 +1,358 @@
+{
+ "note": "Read-only pooled view of all PD leakage data; event-cluster; includes the PD v6 result that did not replicate.",
+ "per_dataset_valid_models": {
+  "v2": [
+   "gemma2:9b",
+   "llama3.1:8b",
+   "mistral:7b-instruct",
+   "phi4-mini:latest"
+  ],
+  "v3": [
+   "gemma2:9b",
+   "llama3.1:8b",
+   "mistral:7b-instruct",
+   "phi4-mini:latest"
+  ],
+  "v6": [
+   "llama3.1:8b",
+   "mistral:7b-instruct",
+   "phi4-mini:latest"
+  ]
+ },
+ "valid_pool": {
+  "v2": {
+   "events": 19,
+   "gap_A_minus_B": 0.1537,
+   "ci": [
+    0.0588,
+    0.2632
+   ],
+   "gap_A_minus_B3": 0.1556,
+   "ci_B3": [
+    0.0567,
+    0.2696
+   ],
+   "events_positive": 13,
+   "events_negative": 4,
+   "sign_p": 0.04904
+  },
+  "v3": {
+   "events": 12,
+   "gap_A_minus_B": 0.1341,
+   "ci": [
+    0.0117,
+    0.263
+   ],
+   "gap_A_minus_B3": 0.1693,
+   "ci_B3": [
+    0.0469,
+    0.3151
+   ],
+   "events_positive": 8,
+   "events_negative": 2,
+   "sign_p": 0.10938
+  },
+  "v6": {
+   "events": 7,
+   "gap_A_minus_B": -0.0586,
+   "ci": [
+    -0.1481,
+    0.0096
+   ],
+   "gap_A_minus_B3": 0.0494,
+   "ci_B3": [
+    -0.0192,
+    0.1429
+   ],
+   "events_positive": 1,
+   "events_negative": 4,
+   "sign_p": 0.375
+  },
+  "fresh_v3_v6": {
+   "events": 19,
+   "gap_A_minus_B": 0.0769,
+   "ci": [
+    -0.0204,
+    0.1823
+   ],
+   "gap_A_minus_B3": 0.1337,
+   "ci_B3": [
+    0.041,
+    0.2419
+   ],
+   "events_positive": 9,
+   "events_negative": 6,
+   "sign_p": 0.60724
+  },
+  "all_v2_v3_v6": {
+   "events": 38,
+   "gap_A_minus_B": 0.1151,
+   "ci": [
+    0.0454,
+    0.1899
+   ],
+   "gap_A_minus_B3": 0.1446,
+   "ci_B3": [
+    0.0733,
+    0.2217
+   ],
+   "events_positive": 22,
+   "events_negative": 10,
+   "sign_p": 0.0501
+  }
+ },
+ "luna_only": {
+  "v2": {
+   "events": 19,
+   "gap_A_minus_B": 0.3519,
+   "ci": [
+    0.2024,
+    0.5
+   ],
+   "gap_A_minus_B3": 0.3556,
+   "ci_B3": [
+    0.2113,
+    0.5
+   ],
+   "events_positive": 13,
+   "events_negative": 0,
+   "sign_p": 0.00024
+  },
+  "v3": {
+   "events": 12,
+   "gap_A_minus_B": 0.1823,
+   "ci": [
+    0.0417,
+    0.3385
+   ],
+   "gap_A_minus_B3": 0.1875,
+   "ci_B3": [
+    0.0521,
+    0.3438
+   ],
+   "events_positive": 5,
+   "events_negative": 1,
+   "sign_p": 0.21875
+  },
+  "v6": {
+   "events": 7,
+   "gap_A_minus_B": 0.1667,
+   "ci": [
+    0.0536,
+    0.2857
+   ],
+   "gap_A_minus_B3": 0.2407,
+   "ci_B3": [
+    0.0577,
+    0.4464
+   ],
+   "events_positive": 4,
+   "events_negative": 0,
+   "sign_p": 0.125
+  },
+  "fresh_v3_v6": {
+   "events": 19,
+   "gap_A_minus_B": 0.1767,
+   "ci": [
+    0.0799,
+    0.2833
+   ],
+   "gap_A_minus_B3": 0.2067,
+   "ci_B3": [
+    0.0946,
+    0.3289
+   ],
+   "events_positive": 9,
+   "events_negative": 1,
+   "sign_p": 0.02148
+  },
+  "all_v2_v3_v6": {
+   "events": 38,
+   "gap_A_minus_B": 0.2596,
+   "ci": [
+    0.1678,
+    0.3604
+   ],
+   "gap_A_minus_B3": 0.2772,
+   "ci_B3": [
+    0.1856,
+    0.3788
+   ],
+   "events_positive": 22,
+   "events_negative": 1,
+   "sign_p": 1e-05
+  }
+ },
+ "all_models_g2a80": {
+  "v6": {
+   "events": 7,
+   "gap_A_minus_B": -0.0216,
+   "ci": [
+    -0.1154,
+    0.0476
+   ],
+   "gap_A_minus_B3": 0.1049,
+   "ci_B3": [
+    0.0179,
+    0.2143
+   ],
+   "events_positive": 3,
+   "events_negative": 2,
+   "sign_p": 1.0
+  },
+  "fresh_v3_v6": {
+   "events": 19,
+   "gap_A_minus_B": 0.0794,
+   "ci": [
+    -0.0104,
+    0.1761
+   ],
+   "gap_A_minus_B3": 0.1456,
+   "ci_B3": [
+    0.0625,
+    0.2389
+   ],
+   "events_positive": 11,
+   "events_negative": 5,
+   "sign_p": 0.21011
+  },
+  "all_v2_v3_v6": {
+   "events": 38,
+   "gap_A_minus_B": 0.1357,
+   "ci": [
+    0.0703,
+    0.2054
+   ],
+   "gap_A_minus_B3": 0.1719,
+   "ci_B3": [
+    0.1105,
+    0.2397
+   ],
+   "events_positive": 26,
+   "events_negative": 8,
+   "sign_p": 0.00294
+  }
+ },
+ "v6_per_model": {
+  "gemma2:9b": {
+   "g2a_v6": 0.857,
+   "synth_v3": 0.927,
+   "cluster": {
+    "events": 7,
+    "gap_A_minus_B": -0.1204,
+    "ci": [
+     -0.2963,
+     -0.0179
+    ],
+    "gap_A_minus_B3": 0.0556,
+    "ci_B3": [
+     0.0,
+     0.1296
+    ],
+    "events_positive": 0,
+    "events_negative": 4,
+    "sign_p": 0.125
+   }
+  },
+  "gpt-5.6-luna": {
+   "g2a_v6": 0.839,
+   "synth_v3": 1.0,
+   "cluster": {
+    "events": 7,
+    "gap_A_minus_B": 0.1667,
+    "ci": [
+     0.0536,
+     0.2857
+    ],
+    "gap_A_minus_B3": 0.2407,
+    "ci_B3": [
+     0.0577,
+     0.4464
+    ],
+    "events_positive": 4,
+    "events_negative": 0,
+    "sign_p": 0.125
+   }
+  },
+  "llama3.1:8b": {
+   "g2a_v6": 0.964,
+   "synth_v3": 0.854,
+   "cluster": {
+    "events": 7,
+    "gap_A_minus_B": -0.1574,
+    "ci": [
+     -0.4074,
+     0.0446
+    ],
+    "gap_A_minus_B3": 0.0556,
+    "ci_B3": [
+     0.0179,
+     0.1071
+    ],
+    "events_positive": 2,
+    "events_negative": 3,
+    "sign_p": 1.0
+   }
+  },
+  "mistral:7b-instruct": {
+   "g2a_v6": 0.946,
+   "synth_v3": 0.829,
+   "cluster": {
+    "events": 7,
+    "gap_A_minus_B": 0.0185,
+    "ci": [
+     -0.0804,
+     0.1296
+    ],
+    "gap_A_minus_B3": 0.0185,
+    "ci_B3": [
+     -0.125,
+     0.2037
+    ],
+    "events_positive": 2,
+    "events_negative": 3,
+    "sign_p": 1.0
+   }
+  },
+  "phi4-mini:latest": {
+   "g2a_v6": 0.911,
+   "synth_v3": 1.0,
+   "cluster": {
+    "events": 7,
+    "gap_A_minus_B": -0.037,
+    "ci": [
+     -0.1442,
+     0.0463
+    ],
+    "gap_A_minus_B3": 0.0741,
+    "ci_B3": [
+     0.0,
+     0.1852
+    ],
+    "events_positive": 1,
+    "events_negative": 2,
+    "sign_p": 1.0
+   }
+  },
+  "qwen2.5:7b": {
+   "g2a_v6": 0.875,
+   "synth_v3": 0.976,
+   "cluster": {
+    "events": 7,
+    "gap_A_minus_B": 0.0,
+    "ci": [
+     -0.1607,
+     0.1429
+    ],
+    "gap_A_minus_B3": 0.1852,
+    "ci_B3": [
+     0.037,
+     0.3393
+    ],
+    "events_positive": 3,
+    "events_negative": 3,
+    "sign_p": 1.0
+   }
+  }
+ }
+}

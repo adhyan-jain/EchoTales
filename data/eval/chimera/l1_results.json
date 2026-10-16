@@ -1,0 +1,3026 @@
+{
+  "status": "COMPLETE",
+  "spent_usd": 0.02674099999999999,
+  "calls": 281,
+  "tok_in": 110905,
+  "tok_out": 3800,
+  "results": {
+    "CP-001": {
+      "A": "G",
+      "B": "B",
+      "C_orig": "UNDETERMINED",
+      "C_ren": "A",
+      "D": {
+        "raw_answer": "G",
+        "accepted": false,
+        "gate": "claimed_name_not_in_spans",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          118,
+          225
+        ]
+      }
+    },
+    "CP-002": {
+      "A": "G",
+      "B": "UNDETERMINED",
+      "C_orig": "UNDETERMINED",
+      "C_ren": "UNDETERMINED",
+      "D": {
+        "raw_answer": "G",
+        "accepted": false,
+        "gate": "claimed_name_not_in_spans",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          179,
+          675
+        ]
+      }
+    },
+    "CP-003": {
+      "A": "G",
+      "B": "C",
+      "C_orig": "G",
+      "C_ren": "UNDETERMINED",
+      "D": {
+        "raw_answer": "G",
+        "accepted": false,
+        "gate": "claimed_name_not_in_spans",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          664,
+          980
+        ]
+      }
+    },
+    "CP-004": {
+      "A": "A",
+      "B": "A",
+      "D": {
+        "raw_answer": "A",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          139,
+          1159
+        ]
+      }
+    },
+    "CP-005": {
+      "A": "J",
+      "B": "J",
+      "D": {
+        "raw_answer": "J",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 1,
+        "n_valid_spans": 0,
+        "span_offsets": []
+      }
+    },
+    "CP-006": {
+      "A": "K",
+      "B": "K",
+      "C_orig": "UNDETERMINED",
+      "C_ren": "UNDETERMINED",
+      "D": {
+        "raw_answer": "K",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          337,
+          1162
+        ]
+      }
+    },
+    "CP-007": {
+      "A": "F",
+      "B": "C",
+      "D": {
+        "raw_answer": "F",
+        "accepted": false,
+        "gate": "claimed_name_not_in_spans",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          64,
+          920
+        ]
+      }
+    },
+    "CP-008": {
+      "A": "E",
+      "B": "E",
+      "D": {
+        "raw_answer": "E",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          908,
+          1119
+        ]
+      }
+    },
+    "CP-009": {
+      "A": "D",
+      "B": "D",
+      "D": {
+        "raw_answer": "D",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          8,
+          121
+        ]
+      }
+    },
+    "CP-010": {
+      "A": "K",
+      "B": "K",
+      "D": {
+        "raw_answer": "K",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          741,
+          1152
+        ]
+      }
+    },
+    "CP-011": {
+      "A": "G",
+      "B": "G",
+      "D": {
+        "raw_answer": "G",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          480,
+          834
+        ]
+      }
+    },
+    "CP-012": {
+      "A": "J",
+      "B": "J",
+      "C_orig": "UNDETERMINED",
+      "C_ren": "UNDETERMINED",
+      "D": {
+        "raw_answer": "J",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 1,
+        "span_offsets": [
+          964
+        ]
+      }
+    },
+    "CP-013": {
+      "A": "F",
+      "B": "UNDETERMINED",
+      "C_orig": "UNDETERMINED",
+      "C_ren": "UNDETERMINED",
+      "D": {
+        "raw_answer": "F",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 1,
+        "span_offsets": [
+          768
+        ]
+      }
+    },
+    "CP-014": {
+      "A": "B",
+      "B": "B",
+      "C_orig": "UNDETERMINED",
+      "C_ren": "UNDETERMINED",
+      "D": {
+        "raw_answer": "B",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 1,
+        "span_offsets": [
+          986
+        ]
+      }
+    },
+    "CP-015": {
+      "A": "J",
+      "B": "J",
+      "D": {
+        "raw_answer": "J",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 1,
+        "span_offsets": [
+          752
+        ]
+      }
+    },
+    "CP-016": {
+      "A": "UNDETERMINED",
+      "B": "UNDETERMINED",
+      "D": {
+        "raw_answer": "UNDETERMINED",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          1106,
+          1043
+        ]
+      }
+    },
+    "CP-017": {
+      "A": "E",
+      "B": "F",
+      "C_orig": "UNDETERMINED",
+      "C_ren": "UNDETERMINED",
+      "D": {
+        "raw_answer": "E",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          550,
+          950
+        ]
+      }
+    },
+    "CP-018": {
+      "A": "I",
+      "B": "I",
+      "D": {
+        "raw_answer": "I",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          91,
+          1120
+        ]
+      }
+    },
+    "CP-019": {
+      "A": "C",
+      "B": "C",
+      "D": {
+        "raw_answer": "C",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 1,
+        "span_offsets": [
+          1149
+        ]
+      }
+    },
+    "CP-020": {
+      "A": "D",
+      "B": "D",
+      "D": {
+        "raw_answer": "D",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          72,
+          1130
+        ]
+      }
+    },
+    "CP-021": {
+      "A": "A",
+      "B": "A",
+      "D": {
+        "raw_answer": "A",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 1,
+        "span_offsets": [
+          1110
+        ]
+      }
+    },
+    "CP-022": {
+      "A": "B",
+      "B": "B",
+      "D": {
+        "raw_answer": "B",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 1,
+        "span_offsets": [
+          386
+        ]
+      }
+    },
+    "CP-023": {
+      "A": "UNDETERMINED",
+      "B": "H",
+      "D": {
+        "raw_answer": "UNDETERMINED",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          182,
+          1088
+        ]
+      }
+    },
+    "CP-024": {
+      "A": "B",
+      "B": "B",
+      "D": {
+        "raw_answer": "B",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 1,
+        "n_valid_spans": 0,
+        "span_offsets": []
+      }
+    },
+    "CP-025": {
+      "A": "D",
+      "B": "D",
+      "D": {
+        "raw_answer": "D",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          255,
+          1090
+        ]
+      }
+    },
+    "CP-026": {
+      "A": "E",
+      "B": "E",
+      "C_orig": "UNDETERMINED",
+      "C_ren": "UNDETERMINED",
+      "D": {
+        "raw_answer": "E",
+        "accepted": false,
+        "gate": "claimed_name_not_in_spans",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          787,
+          224
+        ]
+      }
+    },
+    "CP-028": {
+      "A": "D",
+      "B": "D",
+      "D": {
+        "raw_answer": "D",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          524,
+          905
+        ]
+      }
+    },
+    "CP-029": {
+      "A": "H",
+      "B": "H",
+      "D": {
+        "raw_answer": "H",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          394,
+          727
+        ]
+      }
+    },
+    "CP-030": {
+      "A": "G",
+      "B": "G",
+      "C_orig": "UNDETERMINED",
+      "C_ren": "UNDETERMINED",
+      "D": {
+        "raw_answer": "G",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 1,
+        "span_offsets": [
+          487
+        ]
+      }
+    },
+    "CP-031": {
+      "A": "F",
+      "B": "F",
+      "D": {
+        "raw_answer": "F",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          163,
+          1111
+        ]
+      }
+    },
+    "CP-032": {
+      "A": "B",
+      "B": "B",
+      "D": {
+        "raw_answer": "B",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          842,
+          1149
+        ]
+      }
+    },
+    "CP-033": {
+      "A": "K",
+      "B": "K",
+      "D": {
+        "raw_answer": "K",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 1,
+        "span_offsets": [
+          120
+        ]
+      }
+    },
+    "CP-034": {
+      "A": "F",
+      "B": "F",
+      "D": {
+        "raw_answer": "F",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          303,
+          1139
+        ]
+      }
+    },
+    "CP-035": {
+      "A": "K",
+      "B": "K",
+      "D": {
+        "raw_answer": "K",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          63,
+          1117
+        ]
+      }
+    },
+    "CP-036": {
+      "A": "G",
+      "B": "G",
+      "D": {
+        "raw_answer": "G",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          914,
+          1120
+        ]
+      }
+    },
+    "CP-037": {
+      "A": "C",
+      "B": "C",
+      "C_orig": "UNDETERMINED",
+      "C_ren": "UNDETERMINED",
+      "D": {
+        "raw_answer": "C",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 1,
+        "span_offsets": [
+          1081
+        ]
+      }
+    },
+    "CP-038": {
+      "A": "K",
+      "B": "K",
+      "D": {
+        "raw_answer": "K",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          331,
+          688
+        ]
+      }
+    },
+    "CP-039": {
+      "A": "B",
+      "B": "B",
+      "D": {
+        "raw_answer": "B",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 1,
+        "span_offsets": [
+          206
+        ]
+      }
+    },
+    "CP-040": {
+      "A": "J",
+      "B": "A",
+      "C_orig": "UNDETERMINED",
+      "C_ren": "UNDETERMINED",
+      "D": {
+        "raw_answer": "J",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          265,
+          446
+        ]
+      }
+    },
+    "CP-041": {
+      "A": "C",
+      "B": "C",
+      "D": {
+        "raw_answer": "C",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          21,
+          1175
+        ]
+      }
+    },
+    "CP-042": {
+      "A": "B",
+      "B": "B",
+      "D": {
+        "raw_answer": "B",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          549,
+          902
+        ]
+      }
+    },
+    "CP-043": {
+      "A": "G",
+      "B": "G",
+      "D": {
+        "raw_answer": "UNDETERMINED",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 0,
+        "n_valid_spans": 0,
+        "span_offsets": []
+      }
+    },
+    "CP-044": {
+      "A": "D",
+      "B": "D",
+      "D": {
+        "raw_answer": "D",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          1027,
+          990
+        ]
+      }
+    },
+    "CP-045": {
+      "A": "UNDETERMINED",
+      "B": "UNDETERMINED",
+      "D": {
+        "raw_answer": "UNDETERMINED",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 1,
+        "n_valid_spans": 0,
+        "span_offsets": []
+      }
+    },
+    "CP-046": {
+      "A": "B",
+      "B": "B",
+      "D": {
+        "raw_answer": "B",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          523,
+          980
+        ]
+      }
+    },
+    "CP-047": {
+      "A": "H",
+      "B": "H",
+      "D": {
+        "raw_answer": "H",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          292,
+          656
+        ]
+      }
+    },
+    "CP-048": {
+      "A": "I",
+      "B": "I",
+      "D": {
+        "raw_answer": "I",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          20,
+          323
+        ]
+      }
+    },
+    "CP-049": {
+      "A": "I",
+      "B": "I",
+      "C_orig": "UNDETERMINED",
+      "C_ren": "UNDETERMINED",
+      "D": {
+        "raw_answer": "I",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          636,
+          892
+        ]
+      }
+    },
+    "CP-050": {
+      "A": "B",
+      "B": "B",
+      "D": {
+        "raw_answer": "B",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          367,
+          1084
+        ]
+      }
+    },
+    "CP-051": {
+      "A": "K",
+      "B": "K",
+      "D": {
+        "raw_answer": "K",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          36,
+          362
+        ]
+      }
+    },
+    "CP-053": {
+      "A": "J",
+      "B": "J",
+      "D": {
+        "raw_answer": "J",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          583,
+          678
+        ]
+      }
+    },
+    "CP-054": {
+      "A": "A",
+      "B": "A",
+      "D": {
+        "raw_answer": "A",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          10,
+          194
+        ]
+      }
+    },
+    "CP-055": {
+      "A": "E",
+      "B": "E",
+      "D": {
+        "raw_answer": "E",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 1,
+        "span_offsets": [
+          187
+        ]
+      }
+    },
+    "CP-056": {
+      "A": "C",
+      "B": "C",
+      "D": {
+        "raw_answer": "C",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 1,
+        "span_offsets": [
+          973
+        ]
+      }
+    },
+    "CP-057": {
+      "A": "H",
+      "B": "H",
+      "D": {
+        "raw_answer": "H",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          292,
+          1091
+        ]
+      }
+    },
+    "CP-058": {
+      "A": "H",
+      "B": "H",
+      "C_orig": "UNDETERMINED",
+      "C_ren": "UNDETERMINED",
+      "D": {
+        "raw_answer": "H",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          256,
+          892
+        ]
+      }
+    },
+    "CP-059": {
+      "A": "H",
+      "B": "H",
+      "D": {
+        "raw_answer": "H",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 1,
+        "n_valid_spans": 0,
+        "span_offsets": []
+      }
+    },
+    "CP-060": {
+      "A": "E",
+      "B": "E",
+      "D": {
+        "raw_answer": "E",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          276,
+          934
+        ]
+      }
+    },
+    "CP-061": {
+      "A": "I",
+      "B": "I",
+      "D": {
+        "raw_answer": "I",
+        "accepted": false,
+        "gate": "claimed_name_not_in_spans",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          58,
+          839
+        ]
+      }
+    },
+    "CP-062": {
+      "A": "E",
+      "B": "E",
+      "C_orig": "UNDETERMINED",
+      "C_ren": "UNDETERMINED",
+      "D": {
+        "raw_answer": "E",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          0,
+          1013
+        ]
+      }
+    },
+    "CP-063": {
+      "A": "I",
+      "B": "I",
+      "D": {
+        "raw_answer": "I",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          36,
+          1124
+        ]
+      }
+    },
+    "CP-064": {
+      "A": "UNDETERMINED",
+      "B": "G",
+      "D": {
+        "raw_answer": "UNDETERMINED",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 1,
+        "span_offsets": [
+          1071
+        ]
+      }
+    },
+    "CP-065": {
+      "A": "B",
+      "B": "B",
+      "D": {
+        "raw_answer": "B",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          352,
+          1121
+        ]
+      }
+    },
+    "CP-066": {
+      "A": "G",
+      "B": "G",
+      "D": {
+        "raw_answer": "G",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 1,
+        "span_offsets": [
+          389
+        ]
+      }
+    },
+    "CP-067": {
+      "A": "L",
+      "B": "L",
+      "D": {
+        "raw_answer": "L",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 1,
+        "n_valid_spans": 1,
+        "span_offsets": [
+          1179
+        ]
+      }
+    },
+    "CP-068": {
+      "A": "A",
+      "B": "A",
+      "D": {
+        "raw_answer": "A",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          506,
+          1115
+        ]
+      }
+    },
+    "CP-069": {
+      "A": "I",
+      "B": "I",
+      "D": {
+        "raw_answer": "I",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          0,
+          1040
+        ]
+      }
+    },
+    "CP-070": {
+      "A": "A",
+      "B": "A",
+      "D": {
+        "raw_answer": "A",
+        "accepted": false,
+        "gate": "not_entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          268,
+          999
+        ]
+      }
+    },
+    "CP-071": {
+      "A": "K",
+      "B": "K",
+      "D": {
+        "raw_answer": "K",
+        "accepted": true,
+        "gate": "entailed",
+        "n_spans": 2,
+        "n_valid_spans": 2,
+        "span_offsets": [
+          760,
+          1041
+        ]
+      }
+    },
+    "CP-072": {
+      "A": "B",
+      "B": "B",
+      "D": {
+        "raw_answer": "B",
+        "accepted": false,
+        "gate": "abstained_or_no_valid_spans",
+        "n_spans": 2,
+        "n_valid_spans": 1,
+        "span_offsets": [
+          192
+        ]
+      }
+    }
+  },
+  "log": [
+    {
+      "item": "CP-001",
+      "arm": "A",
+      "tok_in": 430,
+      "tok_out": 4,
+      "prompt_sha": "cfef40c58a891419"
+    },
+    {
+      "item": "CP-002",
+      "arm": "A",
+      "tok_in": 441,
+      "tok_out": 4,
+      "prompt_sha": "a45a770914f2bb9d"
+    },
+    {
+      "item": "CP-003",
+      "arm": "A",
+      "tok_in": 439,
+      "tok_out": 4,
+      "prompt_sha": "244bce9bfc4d6081"
+    },
+    {
+      "item": "CP-004",
+      "arm": "A",
+      "tok_in": 437,
+      "tok_out": 4,
+      "prompt_sha": "17e91dbf0e4f88c2"
+    },
+    {
+      "item": "CP-005",
+      "arm": "A",
+      "tok_in": 465,
+      "tok_out": 4,
+      "prompt_sha": "5309ea90a2f1ac9c"
+    },
+    {
+      "item": "CP-006",
+      "arm": "A",
+      "tok_in": 479,
+      "tok_out": 4,
+      "prompt_sha": "9f4ed080f7af9b88"
+    },
+    {
+      "item": "CP-007",
+      "arm": "A",
+      "tok_in": 469,
+      "tok_out": 4,
+      "prompt_sha": "49cf4065e1265237"
+    },
+    {
+      "item": "CP-008",
+      "arm": "A",
+      "tok_in": 445,
+      "tok_out": 4,
+      "prompt_sha": "895a0c674d7ab4a9"
+    },
+    {
+      "item": "CP-009",
+      "arm": "A",
+      "tok_in": 456,
+      "tok_out": 4,
+      "prompt_sha": "275f37e66a956b0a"
+    },
+    {
+      "item": "CP-010",
+      "arm": "A",
+      "tok_in": 466,
+      "tok_out": 4,
+      "prompt_sha": "688d73547e5a2856"
+    },
+    {
+      "item": "CP-011",
+      "arm": "A",
+      "tok_in": 457,
+      "tok_out": 4,
+      "prompt_sha": "4410e74c02467a93"
+    },
+    {
+      "item": "CP-012",
+      "arm": "A",
+      "tok_in": 464,
+      "tok_out": 4,
+      "prompt_sha": "002d00d847dcf8a6"
+    },
+    {
+      "item": "CP-013",
+      "arm": "A",
+      "tok_in": 479,
+      "tok_out": 4,
+      "prompt_sha": "3ac571b18144f5fd"
+    },
+    {
+      "item": "CP-014",
+      "arm": "A",
+      "tok_in": 471,
+      "tok_out": 4,
+      "prompt_sha": "0d940c947fd0ad38"
+    },
+    {
+      "item": "CP-015",
+      "arm": "A",
+      "tok_in": 452,
+      "tok_out": 4,
+      "prompt_sha": "878933311043c8ce"
+    },
+    {
+      "item": "CP-016",
+      "arm": "A",
+      "tok_in": 464,
+      "tok_out": 8,
+      "prompt_sha": "655a61645d6c5930"
+    },
+    {
+      "item": "CP-017",
+      "arm": "A",
+      "tok_in": 471,
+      "tok_out": 4,
+      "prompt_sha": "2de15633571ebdf3"
+    },
+    {
+      "item": "CP-018",
+      "arm": "A",
+      "tok_in": 457,
+      "tok_out": 4,
+      "prompt_sha": "527d564330701a98"
+    },
+    {
+      "item": "CP-019",
+      "arm": "A",
+      "tok_in": 466,
+      "tok_out": 4,
+      "prompt_sha": "bedb262a25f8b5ce"
+    },
+    {
+      "item": "CP-020",
+      "arm": "A",
+      "tok_in": 454,
+      "tok_out": 4,
+      "prompt_sha": "5ea5385a04149302"
+    },
+    {
+      "item": "CP-021",
+      "arm": "A",
+      "tok_in": 489,
+      "tok_out": 4,
+      "prompt_sha": "57e175971f71114f"
+    },
+    {
+      "item": "CP-022",
+      "arm": "A",
+      "tok_in": 474,
+      "tok_out": 4,
+      "prompt_sha": "f14679d9de175c6b"
+    },
+    {
+      "item": "CP-023",
+      "arm": "A",
+      "tok_in": 445,
+      "tok_out": 8,
+      "prompt_sha": "b7c3a2d39445bd6b"
+    },
+    {
+      "item": "CP-024",
+      "arm": "A",
+      "tok_in": 459,
+      "tok_out": 4,
+      "prompt_sha": "29a9bfea835f2efa"
+    },
+    {
+      "item": "CP-025",
+      "arm": "A",
+      "tok_in": 455,
+      "tok_out": 4,
+      "prompt_sha": "5dcb149603f9bba9"
+    },
+    {
+      "item": "CP-026",
+      "arm": "A",
+      "tok_in": 457,
+      "tok_out": 4,
+      "prompt_sha": "01b77b8ab430f124"
+    },
+    {
+      "item": "CP-028",
+      "arm": "A",
+      "tok_in": 451,
+      "tok_out": 4,
+      "prompt_sha": "9b7ed732acc8934f"
+    },
+    {
+      "item": "CP-029",
+      "arm": "A",
+      "tok_in": 478,
+      "tok_out": 4,
+      "prompt_sha": "3138fb9095f7e55b"
+    },
+    {
+      "item": "CP-030",
+      "arm": "A",
+      "tok_in": 470,
+      "tok_out": 4,
+      "prompt_sha": "9c8eaffe2fb3359b"
+    },
+    {
+      "item": "CP-031",
+      "arm": "A",
+      "tok_in": 480,
+      "tok_out": 4,
+      "prompt_sha": "b7a6f6542458ec0f"
+    },
+    {
+      "item": "CP-032",
+      "arm": "A",
+      "tok_in": 447,
+      "tok_out": 4,
+      "prompt_sha": "51612b9a0dbf5195"
+    },
+    {
+      "item": "CP-033",
+      "arm": "A",
+      "tok_in": 478,
+      "tok_out": 4,
+      "prompt_sha": "216a58db048855d8"
+    },
+    {
+      "item": "CP-034",
+      "arm": "A",
+      "tok_in": 469,
+      "tok_out": 4,
+      "prompt_sha": "f379f604b6ef423e"
+    },
+    {
+      "item": "CP-035",
+      "arm": "A",
+      "tok_in": 481,
+      "tok_out": 4,
+      "prompt_sha": "1762e9df9f568d3e"
+    },
+    {
+      "item": "CP-036",
+      "arm": "A",
+      "tok_in": 463,
+      "tok_out": 4,
+      "prompt_sha": "339e8996cb3c677a"
+    },
+    {
+      "item": "CP-037",
+      "arm": "A",
+      "tok_in": 439,
+      "tok_out": 4,
+      "prompt_sha": "075a0e99852fcbf5"
+    },
+    {
+      "item": "CP-038",
+      "arm": "A",
+      "tok_in": 465,
+      "tok_out": 4,
+      "prompt_sha": "81fcbb7191c6798f"
+    },
+    {
+      "item": "CP-039",
+      "arm": "A",
+      "tok_in": 472,
+      "tok_out": 4,
+      "prompt_sha": "64986220c42132f4"
+    },
+    {
+      "item": "CP-040",
+      "arm": "A",
+      "tok_in": 450,
+      "tok_out": 4,
+      "prompt_sha": "ea6aececb9817f5c"
+    },
+    {
+      "item": "CP-041",
+      "arm": "A",
+      "tok_in": 447,
+      "tok_out": 4,
+      "prompt_sha": "7bd6f73f76aeedcf"
+    },
+    {
+      "item": "CP-042",
+      "arm": "A",
+      "tok_in": 471,
+      "tok_out": 4,
+      "prompt_sha": "01f4edb4cf16db86"
+    },
+    {
+      "item": "CP-043",
+      "arm": "A",
+      "tok_in": 488,
+      "tok_out": 4,
+      "prompt_sha": "9bfca02af8ed68ed"
+    },
+    {
+      "item": "CP-044",
+      "arm": "A",
+      "tok_in": 457,
+      "tok_out": 4,
+      "prompt_sha": "75acff5691c61324"
+    },
+    {
+      "item": "CP-045",
+      "arm": "A",
+      "tok_in": 491,
+      "tok_out": 8,
+      "prompt_sha": "bb51061ceb6cc9ab"
+    },
+    {
+      "item": "CP-046",
+      "arm": "A",
+      "tok_in": 474,
+      "tok_out": 4,
+      "prompt_sha": "f66aa338a7680a3a"
+    },
+    {
+      "item": "CP-047",
+      "arm": "A",
+      "tok_in": 466,
+      "tok_out": 4,
+      "prompt_sha": "b106bbef703151d8"
+    },
+    {
+      "item": "CP-048",
+      "arm": "A",
+      "tok_in": 476,
+      "tok_out": 4,
+      "prompt_sha": "1ad41b82010bca86"
+    },
+    {
+      "item": "CP-049",
+      "arm": "A",
+      "tok_in": 477,
+      "tok_out": 4,
+      "prompt_sha": "417b714c8a41eac7"
+    },
+    {
+      "item": "CP-050",
+      "arm": "A",
+      "tok_in": 457,
+      "tok_out": 4,
+      "prompt_sha": "f727077bcc525ef1"
+    },
+    {
+      "item": "CP-051",
+      "arm": "A",
+      "tok_in": 453,
+      "tok_out": 4,
+      "prompt_sha": "c704f0902c551f93"
+    },
+    {
+      "item": "CP-053",
+      "arm": "A",
+      "tok_in": 470,
+      "tok_out": 4,
+      "prompt_sha": "3ca52a343ce01e36"
+    },
+    {
+      "item": "CP-054",
+      "arm": "A",
+      "tok_in": 455,
+      "tok_out": 4,
+      "prompt_sha": "2da3bc27ecf6b37b"
+    },
+    {
+      "item": "CP-055",
+      "arm": "A",
+      "tok_in": 455,
+      "tok_out": 4,
+      "prompt_sha": "058563a6b94ee901"
+    },
+    {
+      "item": "CP-056",
+      "arm": "A",
+      "tok_in": 472,
+      "tok_out": 4,
+      "prompt_sha": "80686b03ba3330bc"
+    },
+    {
+      "item": "CP-057",
+      "arm": "A",
+      "tok_in": 469,
+      "tok_out": 4,
+      "prompt_sha": "555084cd450c51ca"
+    },
+    {
+      "item": "CP-058",
+      "arm": "A",
+      "tok_in": 471,
+      "tok_out": 4,
+      "prompt_sha": "198059fe23711ede"
+    },
+    {
+      "item": "CP-059",
+      "arm": "A",
+      "tok_in": 483,
+      "tok_out": 4,
+      "prompt_sha": "a4fc21269f790f04"
+    },
+    {
+      "item": "CP-060",
+      "arm": "A",
+      "tok_in": 477,
+      "tok_out": 4,
+      "prompt_sha": "1902bd9e5ee2eeb6"
+    },
+    {
+      "item": "CP-061",
+      "arm": "A",
+      "tok_in": 464,
+      "tok_out": 4,
+      "prompt_sha": "ac4c4b331a196073"
+    },
+    {
+      "item": "CP-062",
+      "arm": "A",
+      "tok_in": 488,
+      "tok_out": 4,
+      "prompt_sha": "e4c13a148a96996d"
+    },
+    {
+      "item": "CP-063",
+      "arm": "A",
+      "tok_in": 472,
+      "tok_out": 4,
+      "prompt_sha": "c361169b7811c511"
+    },
+    {
+      "item": "CP-064",
+      "arm": "A",
+      "tok_in": 449,
+      "tok_out": 8,
+      "prompt_sha": "5bd4e988f57d480e"
+    },
+    {
+      "item": "CP-065",
+      "arm": "A",
+      "tok_in": 489,
+      "tok_out": 4,
+      "prompt_sha": "bb7a7f0481c3cd87"
+    },
+    {
+      "item": "CP-066",
+      "arm": "A",
+      "tok_in": 475,
+      "tok_out": 4,
+      "prompt_sha": "7a44684ec7ee2b14"
+    },
+    {
+      "item": "CP-067",
+      "arm": "A",
+      "tok_in": 496,
+      "tok_out": 4,
+      "prompt_sha": "257ab15273179d10"
+    },
+    {
+      "item": "CP-068",
+      "arm": "A",
+      "tok_in": 450,
+      "tok_out": 4,
+      "prompt_sha": "0897678d1ae29337"
+    },
+    {
+      "item": "CP-069",
+      "arm": "A",
+      "tok_in": 472,
+      "tok_out": 4,
+      "prompt_sha": "961029f777daded6"
+    },
+    {
+      "item": "CP-070",
+      "arm": "A",
+      "tok_in": 476,
+      "tok_out": 4,
+      "prompt_sha": "45c94746dedf9035"
+    },
+    {
+      "item": "CP-071",
+      "arm": "A",
+      "tok_in": 460,
+      "tok_out": 4,
+      "prompt_sha": "5e6d00d1ce48797e"
+    },
+    {
+      "item": "CP-072",
+      "arm": "A",
+      "tok_in": 472,
+      "tok_out": 4,
+      "prompt_sha": "b1574dfe0b2861c4"
+    },
+    {
+      "item": "CP-001",
+      "arm": "B",
+      "tok_in": 440,
+      "tok_out": 4,
+      "prompt_sha": "80176f6eb8359c03"
+    },
+    {
+      "item": "CP-002",
+      "arm": "B",
+      "tok_in": 448,
+      "tok_out": 8,
+      "prompt_sha": "a7aa013848815306"
+    },
+    {
+      "item": "CP-003",
+      "arm": "B",
+      "tok_in": 449,
+      "tok_out": 4,
+      "prompt_sha": "a98e87ca36e0db81"
+    },
+    {
+      "item": "CP-004",
+      "arm": "B",
+      "tok_in": 450,
+      "tok_out": 4,
+      "prompt_sha": "a90e43358ece322a"
+    },
+    {
+      "item": "CP-005",
+      "arm": "B",
+      "tok_in": 494,
+      "tok_out": 4,
+      "prompt_sha": "339c768df92893c4"
+    },
+    {
+      "item": "CP-006",
+      "arm": "B",
+      "tok_in": 506,
+      "tok_out": 4,
+      "prompt_sha": "4837e00047555057"
+    },
+    {
+      "item": "CP-007",
+      "arm": "B",
+      "tok_in": 488,
+      "tok_out": 4,
+      "prompt_sha": "87f245e70adbdec6"
+    },
+    {
+      "item": "CP-008",
+      "arm": "B",
+      "tok_in": 462,
+      "tok_out": 4,
+      "prompt_sha": "95efd9e37f1b21e3"
+    },
+    {
+      "item": "CP-009",
+      "arm": "B",
+      "tok_in": 489,
+      "tok_out": 4,
+      "prompt_sha": "6276253e79684765"
+    },
+    {
+      "item": "CP-010",
+      "arm": "B",
+      "tok_in": 489,
+      "tok_out": 4,
+      "prompt_sha": "d44a7b108a8f02b2"
+    },
+    {
+      "item": "CP-011",
+      "arm": "B",
+      "tok_in": 483,
+      "tok_out": 4,
+      "prompt_sha": "3768ff52325feacb"
+    },
+    {
+      "item": "CP-012",
+      "arm": "B",
+      "tok_in": 491,
+      "tok_out": 4,
+      "prompt_sha": "3ad46787e38fc95e"
+    },
+    {
+      "item": "CP-013",
+      "arm": "B",
+      "tok_in": 507,
+      "tok_out": 8,
+      "prompt_sha": "ede4e61fab917431"
+    },
+    {
+      "item": "CP-014",
+      "arm": "B",
+      "tok_in": 502,
+      "tok_out": 4,
+      "prompt_sha": "be8ddd0f6dec0b31"
+    },
+    {
+      "item": "CP-015",
+      "arm": "B",
+      "tok_in": 470,
+      "tok_out": 4,
+      "prompt_sha": "15432a1a0ec72405"
+    },
+    {
+      "item": "CP-016",
+      "arm": "B",
+      "tok_in": 492,
+      "tok_out": 8,
+      "prompt_sha": "f80dd63818b28be8"
+    },
+    {
+      "item": "CP-017",
+      "arm": "B",
+      "tok_in": 499,
+      "tok_out": 4,
+      "prompt_sha": "38171a5978f99b72"
+    },
+    {
+      "item": "CP-018",
+      "arm": "B",
+      "tok_in": 486,
+      "tok_out": 4,
+      "prompt_sha": "aa2ad81ba16ca69c"
+    },
+    {
+      "item": "CP-019",
+      "arm": "B",
+      "tok_in": 491,
+      "tok_out": 4,
+      "prompt_sha": "2fdb3c0d3a002fca"
+    },
+    {
+      "item": "CP-020",
+      "arm": "B",
+      "tok_in": 486,
+      "tok_out": 4,
+      "prompt_sha": "146e00a24fe59291"
+    },
+    {
+      "item": "CP-021",
+      "arm": "B",
+      "tok_in": 509,
+      "tok_out": 4,
+      "prompt_sha": "95c56eaa11337219"
+    },
+    {
+      "item": "CP-022",
+      "arm": "B",
+      "tok_in": 503,
+      "tok_out": 4,
+      "prompt_sha": "e153df37f8bce608"
+    },
+    {
+      "item": "CP-023",
+      "arm": "B",
+      "tok_in": 467,
+      "tok_out": 4,
+      "prompt_sha": "da36dd21d643dd89"
+    },
+    {
+      "item": "CP-024",
+      "arm": "B",
+      "tok_in": 487,
+      "tok_out": 4,
+      "prompt_sha": "d5e8ace133db5c70"
+    },
+    {
+      "item": "CP-025",
+      "arm": "B",
+      "tok_in": 471,
+      "tok_out": 4,
+      "prompt_sha": "c54085d83acf6afd"
+    },
+    {
+      "item": "CP-026",
+      "arm": "B",
+      "tok_in": 477,
+      "tok_out": 4,
+      "prompt_sha": "8fb242bbe03db283"
+    },
+    {
+      "item": "CP-028",
+      "arm": "B",
+      "tok_in": 474,
+      "tok_out": 4,
+      "prompt_sha": "4b3edf0f9b2c2e2f"
+    },
+    {
+      "item": "CP-029",
+      "arm": "B",
+      "tok_in": 495,
+      "tok_out": 4,
+      "prompt_sha": "28014b9b50df89cf"
+    },
+    {
+      "item": "CP-030",
+      "arm": "B",
+      "tok_in": 500,
+      "tok_out": 4,
+      "prompt_sha": "8ce32f34b4476fe2"
+    },
+    {
+      "item": "CP-031",
+      "arm": "B",
+      "tok_in": 509,
+      "tok_out": 4,
+      "prompt_sha": "56c58de1a09cf7b3"
+    },
+    {
+      "item": "CP-032",
+      "arm": "B",
+      "tok_in": 467,
+      "tok_out": 4,
+      "prompt_sha": "42c2e1cda859560e"
+    },
+    {
+      "item": "CP-033",
+      "arm": "B",
+      "tok_in": 504,
+      "tok_out": 4,
+      "prompt_sha": "5411a2b110add7dc"
+    },
+    {
+      "item": "CP-034",
+      "arm": "B",
+      "tok_in": 494,
+      "tok_out": 4,
+      "prompt_sha": "e6a92d81c3db7a1e"
+    },
+    {
+      "item": "CP-035",
+      "arm": "B",
+      "tok_in": 503,
+      "tok_out": 4,
+      "prompt_sha": "f158b1f63da7a03d"
+    },
+    {
+      "item": "CP-036",
+      "arm": "B",
+      "tok_in": 478,
+      "tok_out": 4,
+      "prompt_sha": "7d37bd71167e1ca2"
+    },
+    {
+      "item": "CP-037",
+      "arm": "B",
+      "tok_in": 450,
+      "tok_out": 4,
+      "prompt_sha": "37925956a2ca72f5"
+    },
+    {
+      "item": "CP-038",
+      "arm": "B",
+      "tok_in": 489,
+      "tok_out": 4,
+      "prompt_sha": "57166886705d8fad"
+    },
+    {
+      "item": "CP-039",
+      "arm": "B",
+      "tok_in": 503,
+      "tok_out": 4,
+      "prompt_sha": "8b28227091271ebb"
+    },
+    {
+      "item": "CP-040",
+      "arm": "B",
+      "tok_in": 475,
+      "tok_out": 4,
+      "prompt_sha": "2c12c87bca0e4a11"
+    },
+    {
+      "item": "CP-041",
+      "arm": "B",
+      "tok_in": 470,
+      "tok_out": 4,
+      "prompt_sha": "fa66e9145856c560"
+    },
+    {
+      "item": "CP-042",
+      "arm": "B",
+      "tok_in": 492,
+      "tok_out": 4,
+      "prompt_sha": "8aa49fc2c56641fa"
+    },
+    {
+      "item": "CP-043",
+      "arm": "B",
+      "tok_in": 516,
+      "tok_out": 4,
+      "prompt_sha": "28e693cbcf3b7a41"
+    },
+    {
+      "item": "CP-044",
+      "arm": "B",
+      "tok_in": 480,
+      "tok_out": 4,
+      "prompt_sha": "aea27c76254d77b1"
+    },
+    {
+      "item": "CP-045",
+      "arm": "B",
+      "tok_in": 519,
+      "tok_out": 8,
+      "prompt_sha": "6dd82f850bcb3f4d"
+    },
+    {
+      "item": "CP-046",
+      "arm": "B",
+      "tok_in": 509,
+      "tok_out": 4,
+      "prompt_sha": "3a44145acc4a867b"
+    },
+    {
+      "item": "CP-047",
+      "arm": "B",
+      "tok_in": 482,
+      "tok_out": 4,
+      "prompt_sha": "4daddfad8cfc097d"
+    },
+    {
+      "item": "CP-048",
+      "arm": "B",
+      "tok_in": 497,
+      "tok_out": 4,
+      "prompt_sha": "d9102c496417a603"
+    },
+    {
+      "item": "CP-049",
+      "arm": "B",
+      "tok_in": 496,
+      "tok_out": 4,
+      "prompt_sha": "dcb0b45f2125ce57"
+    },
+    {
+      "item": "CP-050",
+      "arm": "B",
+      "tok_in": 483,
+      "tok_out": 4,
+      "prompt_sha": "84283417c78df7ca"
+    },
+    {
+      "item": "CP-051",
+      "arm": "B",
+      "tok_in": 483,
+      "tok_out": 4,
+      "prompt_sha": "99f7252032f2ab27"
+    },
+    {
+      "item": "CP-053",
+      "arm": "B",
+      "tok_in": 480,
+      "tok_out": 4,
+      "prompt_sha": "cceac59be403d2b5"
+    },
+    {
+      "item": "CP-054",
+      "arm": "B",
+      "tok_in": 471,
+      "tok_out": 4,
+      "prompt_sha": "c1d4517b10dc81c1"
+    },
+    {
+      "item": "CP-055",
+      "arm": "B",
+      "tok_in": 485,
+      "tok_out": 4,
+      "prompt_sha": "278dcf084a29a2d5"
+    },
+    {
+      "item": "CP-056",
+      "arm": "B",
+      "tok_in": 506,
+      "tok_out": 4,
+      "prompt_sha": "ac81964dc7fb4109"
+    },
+    {
+      "item": "CP-057",
+      "arm": "B",
+      "tok_in": 495,
+      "tok_out": 4,
+      "prompt_sha": "38c75f0f98875958"
+    },
+    {
+      "item": "CP-058",
+      "arm": "B",
+      "tok_in": 497,
+      "tok_out": 4,
+      "prompt_sha": "8ed4fef1adaffd0e"
+    },
+    {
+      "item": "CP-059",
+      "arm": "B",
+      "tok_in": 499,
+      "tok_out": 4,
+      "prompt_sha": "b8daafea5b289414"
+    },
+    {
+      "item": "CP-060",
+      "arm": "B",
+      "tok_in": 502,
+      "tok_out": 4,
+      "prompt_sha": "cc707ef039a4ec61"
+    },
+    {
+      "item": "CP-061",
+      "arm": "B",
+      "tok_in": 481,
+      "tok_out": 4,
+      "prompt_sha": "04bc05c20eea8178"
+    },
+    {
+      "item": "CP-062",
+      "arm": "B",
+      "tok_in": 512,
+      "tok_out": 4,
+      "prompt_sha": "f46c55de3448dc6c"
+    },
+    {
+      "item": "CP-063",
+      "arm": "B",
+      "tok_in": 503,
+      "tok_out": 4,
+      "prompt_sha": "0303b78a8f3b25c8"
+    },
+    {
+      "item": "CP-064",
+      "arm": "B",
+      "tok_in": 467,
+      "tok_out": 4,
+      "prompt_sha": "440a7e3fbfa03258"
+    },
+    {
+      "item": "CP-065",
+      "arm": "B",
+      "tok_in": 506,
+      "tok_out": 4,
+      "prompt_sha": "9e84ba5cdcb4f536"
+    },
+    {
+      "item": "CP-066",
+      "arm": "B",
+      "tok_in": 502,
+      "tok_out": 4,
+      "prompt_sha": "443501f771aad99c"
+    },
+    {
+      "item": "CP-067",
+      "arm": "B",
+      "tok_in": 520,
+      "tok_out": 4,
+      "prompt_sha": "0ae7c3a8c6cece08"
+    },
+    {
+      "item": "CP-068",
+      "arm": "B",
+      "tok_in": 492,
+      "tok_out": 4,
+      "prompt_sha": "4e7fcb7e0f24107d"
+    },
+    {
+      "item": "CP-069",
+      "arm": "B",
+      "tok_in": 502,
+      "tok_out": 4,
+      "prompt_sha": "42ae4793d69e7691"
+    },
+    {
+      "item": "CP-070",
+      "arm": "B",
+      "tok_in": 508,
+      "tok_out": 4,
+      "prompt_sha": "8513ba42752b3765"
+    },
+    {
+      "item": "CP-071",
+      "arm": "B",
+      "tok_in": 477,
+      "tok_out": 4,
+      "prompt_sha": "5ffccd3c9ca0265b"
+    },
+    {
+      "item": "CP-072",
+      "arm": "B",
+      "tok_in": 506,
+      "tok_out": 4,
+      "prompt_sha": "de197d44333dc852"
+    },
+    {
+      "item": "CP-001",
+      "arm": "C_orig",
+      "tok_in": 108,
+      "tok_out": 8,
+      "prompt_sha": "0a4a2158ea1dcbbd"
+    },
+    {
+      "item": "CP-002",
+      "arm": "C_orig",
+      "tok_in": 108,
+      "tok_out": 8,
+      "prompt_sha": "d1370d59dcdbf8b7"
+    },
+    {
+      "item": "CP-003",
+      "arm": "C_orig",
+      "tok_in": 108,
+      "tok_out": 4,
+      "prompt_sha": "74f3d231b7c5d6a8"
+    },
+    {
+      "item": "CP-006",
+      "arm": "C_orig",
+      "tok_in": 124,
+      "tok_out": 8,
+      "prompt_sha": "6bbe606fbd5d632b"
+    },
+    {
+      "item": "CP-012",
+      "arm": "C_orig",
+      "tok_in": 131,
+      "tok_out": 8,
+      "prompt_sha": "1aa814a5c9dc6cbc"
+    },
+    {
+      "item": "CP-013",
+      "arm": "C_orig",
+      "tok_in": 132,
+      "tok_out": 8,
+      "prompt_sha": "ed205b7128c20ceb"
+    },
+    {
+      "item": "CP-014",
+      "arm": "C_orig",
+      "tok_in": 127,
+      "tok_out": 8,
+      "prompt_sha": "df4e962fd39aa9ed"
+    },
+    {
+      "item": "CP-017",
+      "arm": "C_orig",
+      "tok_in": 129,
+      "tok_out": 8,
+      "prompt_sha": "d15ba4f535ba213a"
+    },
+    {
+      "item": "CP-026",
+      "arm": "C_orig",
+      "tok_in": 130,
+      "tok_out": 8,
+      "prompt_sha": "86ed6034e163cb86"
+    },
+    {
+      "item": "CP-030",
+      "arm": "C_orig",
+      "tok_in": 122,
+      "tok_out": 8,
+      "prompt_sha": "c4dec882968cb0f5"
+    },
+    {
+      "item": "CP-037",
+      "arm": "C_orig",
+      "tok_in": 105,
+      "tok_out": 8,
+      "prompt_sha": "d267a5d48e93a7a4"
+    },
+    {
+      "item": "CP-040",
+      "arm": "C_orig",
+      "tok_in": 131,
+      "tok_out": 8,
+      "prompt_sha": "85fbba6243a6cabf"
+    },
+    {
+      "item": "CP-049",
+      "arm": "C_orig",
+      "tok_in": 129,
+      "tok_out": 8,
+      "prompt_sha": "f2ce95d68926dc92"
+    },
+    {
+      "item": "CP-058",
+      "arm": "C_orig",
+      "tok_in": 124,
+      "tok_out": 8,
+      "prompt_sha": "78c2573d14b79750"
+    },
+    {
+      "item": "CP-062",
+      "arm": "C_orig",
+      "tok_in": 127,
+      "tok_out": 8,
+      "prompt_sha": "3b0cef2358450da9"
+    },
+    {
+      "item": "CP-001",
+      "arm": "C_ren",
+      "tok_in": 114,
+      "tok_out": 4,
+      "prompt_sha": "1739b225426d94c7"
+    },
+    {
+      "item": "CP-002",
+      "arm": "C_ren",
+      "tok_in": 114,
+      "tok_out": 8,
+      "prompt_sha": "7d25819d7e92952d"
+    },
+    {
+      "item": "CP-003",
+      "arm": "C_ren",
+      "tok_in": 114,
+      "tok_out": 8,
+      "prompt_sha": "2f9f4023e5f97c23"
+    },
+    {
+      "item": "CP-006",
+      "arm": "C_ren",
+      "tok_in": 136,
+      "tok_out": 8,
+      "prompt_sha": "1146146c2586a6dd"
+    },
+    {
+      "item": "CP-012",
+      "arm": "C_ren",
+      "tok_in": 143,
+      "tok_out": 8,
+      "prompt_sha": "51aa9c19252ff9f7"
+    },
+    {
+      "item": "CP-013",
+      "arm": "C_ren",
+      "tok_in": 146,
+      "tok_out": 8,
+      "prompt_sha": "14437cdab391c1d9"
+    },
+    {
+      "item": "CP-014",
+      "arm": "C_ren",
+      "tok_in": 140,
+      "tok_out": 8,
+      "prompt_sha": "f1a02e20db9aa2a1"
+    },
+    {
+      "item": "CP-017",
+      "arm": "C_ren",
+      "tok_in": 138,
+      "tok_out": 8,
+      "prompt_sha": "3ab6561047d97411"
+    },
+    {
+      "item": "CP-026",
+      "arm": "C_ren",
+      "tok_in": 139,
+      "tok_out": 8,
+      "prompt_sha": "532a410f8a8298ea"
+    },
+    {
+      "item": "CP-030",
+      "arm": "C_ren",
+      "tok_in": 134,
+      "tok_out": 8,
+      "prompt_sha": "6568e1a5e6cf86b4"
+    },
+    {
+      "item": "CP-037",
+      "arm": "C_ren",
+      "tok_in": 112,
+      "tok_out": 8,
+      "prompt_sha": "db3bd3f3e364b265"
+    },
+    {
+      "item": "CP-040",
+      "arm": "C_ren",
+      "tok_in": 143,
+      "tok_out": 8,
+      "prompt_sha": "e70bb863ef3f7e21"
+    },
+    {
+      "item": "CP-049",
+      "arm": "C_ren",
+      "tok_in": 142,
+      "tok_out": 8,
+      "prompt_sha": "a84eceaae665f097"
+    },
+    {
+      "item": "CP-058",
+      "arm": "C_ren",
+      "tok_in": 138,
+      "tok_out": 8,
+      "prompt_sha": "f8b265275d6cac4b"
+    },
+    {
+      "item": "CP-062",
+      "arm": "C_ren",
+      "tok_in": 136,
+      "tok_out": 8,
+      "prompt_sha": "ca2cb01571317d38"
+    },
+    {
+      "item": "CP-001",
+      "arm": "D1",
+      "tok_in": 467,
+      "tok_out": 40,
+      "prompt_sha": "ad07a1f4dfceaacc"
+    },
+    {
+      "item": "CP-002",
+      "arm": "D1",
+      "tok_in": 478,
+      "tok_out": 28,
+      "prompt_sha": "2caf34599a520271"
+    },
+    {
+      "item": "CP-003",
+      "arm": "D1",
+      "tok_in": 476,
+      "tok_out": 28,
+      "prompt_sha": "d5e9f1d33ecda38e"
+    },
+    {
+      "item": "CP-004",
+      "arm": "D1",
+      "tok_in": 474,
+      "tok_out": 29,
+      "prompt_sha": "60f05f0e8870f025"
+    },
+    {
+      "item": "CP-004",
+      "arm": "D2",
+      "tok_in": 114,
+      "tok_out": 5,
+      "prompt_sha": "a76a80924bec4953"
+    },
+    {
+      "item": "CP-005",
+      "arm": "D1",
+      "tok_in": 502,
+      "tok_out": 33,
+      "prompt_sha": "323191ef539caa08"
+    },
+    {
+      "item": "CP-006",
+      "arm": "D1",
+      "tok_in": 516,
+      "tok_out": 29,
+      "prompt_sha": "c4e26f51f5bb2c66"
+    },
+    {
+      "item": "CP-006",
+      "arm": "D2",
+      "tok_in": 114,
+      "tok_out": 7,
+      "prompt_sha": "a9713eadc295cd85"
+    },
+    {
+      "item": "CP-007",
+      "arm": "D1",
+      "tok_in": 506,
+      "tok_out": 32,
+      "prompt_sha": "bcbbc34bebc5b129"
+    },
+    {
+      "item": "CP-008",
+      "arm": "D1",
+      "tok_in": 482,
+      "tok_out": 38,
+      "prompt_sha": "59b573839ac9618f"
+    },
+    {
+      "item": "CP-008",
+      "arm": "D2",
+      "tok_in": 123,
+      "tok_out": 7,
+      "prompt_sha": "1bebc6071c243f34"
+    },
+    {
+      "item": "CP-009",
+      "arm": "D1",
+      "tok_in": 493,
+      "tok_out": 43,
+      "prompt_sha": "a47972b65235a9c5"
+    },
+    {
+      "item": "CP-009",
+      "arm": "D2",
+      "tok_in": 133,
+      "tok_out": 5,
+      "prompt_sha": "58c551e772d201e5"
+    },
+    {
+      "item": "CP-010",
+      "arm": "D1",
+      "tok_in": 503,
+      "tok_out": 31,
+      "prompt_sha": "ff908a4ed02d6b56"
+    },
+    {
+      "item": "CP-010",
+      "arm": "D2",
+      "tok_in": 123,
+      "tok_out": 5,
+      "prompt_sha": "ff25a46a6d373144"
+    },
+    {
+      "item": "CP-011",
+      "arm": "D1",
+      "tok_in": 494,
+      "tok_out": 27,
+      "prompt_sha": "4562ebe746355343"
+    },
+    {
+      "item": "CP-011",
+      "arm": "D2",
+      "tok_in": 114,
+      "tok_out": 6,
+      "prompt_sha": "00dfc419ccd51205"
+    },
+    {
+      "item": "CP-012",
+      "arm": "D1",
+      "tok_in": 501,
+      "tok_out": 37,
+      "prompt_sha": "7f4611f50c307b82"
+    },
+    {
+      "item": "CP-013",
+      "arm": "D1",
+      "tok_in": 516,
+      "tok_out": 35,
+      "prompt_sha": "e6f2ddcf546d8666"
+    },
+    {
+      "item": "CP-014",
+      "arm": "D1",
+      "tok_in": 508,
+      "tok_out": 41,
+      "prompt_sha": "a1b1b8e9f8b5f782"
+    },
+    {
+      "item": "CP-015",
+      "arm": "D1",
+      "tok_in": 489,
+      "tok_out": 34,
+      "prompt_sha": "fe19b1d64615743d"
+    },
+    {
+      "item": "CP-016",
+      "arm": "D1",
+      "tok_in": 501,
+      "tok_out": 40,
+      "prompt_sha": "c0a86a2927583786"
+    },
+    {
+      "item": "CP-017",
+      "arm": "D1",
+      "tok_in": 508,
+      "tok_out": 48,
+      "prompt_sha": "4b64b3af41dd5f3b"
+    },
+    {
+      "item": "CP-017",
+      "arm": "D2",
+      "tok_in": 141,
+      "tok_out": 7,
+      "prompt_sha": "f185ddae5603d275"
+    },
+    {
+      "item": "CP-018",
+      "arm": "D1",
+      "tok_in": 494,
+      "tok_out": 37,
+      "prompt_sha": "117307d7da36ddf6"
+    },
+    {
+      "item": "CP-018",
+      "arm": "D2",
+      "tok_in": 131,
+      "tok_out": 5,
+      "prompt_sha": "4ea93c518525582d"
+    },
+    {
+      "item": "CP-019",
+      "arm": "D1",
+      "tok_in": 503,
+      "tok_out": 50,
+      "prompt_sha": "4c5932c1723ea818"
+    },
+    {
+      "item": "CP-020",
+      "arm": "D1",
+      "tok_in": 491,
+      "tok_out": 39,
+      "prompt_sha": "195c47c842c6ce81"
+    },
+    {
+      "item": "CP-020",
+      "arm": "D2",
+      "tok_in": 124,
+      "tok_out": 5,
+      "prompt_sha": "55a3f3eeb5ceced2"
+    },
+    {
+      "item": "CP-021",
+      "arm": "D1",
+      "tok_in": 526,
+      "tok_out": 38,
+      "prompt_sha": "e3bf1248b1cb9cc9"
+    },
+    {
+      "item": "CP-022",
+      "arm": "D1",
+      "tok_in": 511,
+      "tok_out": 77,
+      "prompt_sha": "237dea43cb074046"
+    },
+    {
+      "item": "CP-023",
+      "arm": "D1",
+      "tok_in": 482,
+      "tok_out": 41,
+      "prompt_sha": "471b3799b9a1a8a8"
+    },
+    {
+      "item": "CP-024",
+      "arm": "D1",
+      "tok_in": 496,
+      "tok_out": 33,
+      "prompt_sha": "32ca529b8ce104f8"
+    },
+    {
+      "item": "CP-025",
+      "arm": "D1",
+      "tok_in": 492,
+      "tok_out": 38,
+      "prompt_sha": "3dded11b086a2ecd"
+    },
+    {
+      "item": "CP-025",
+      "arm": "D2",
+      "tok_in": 123,
+      "tok_out": 5,
+      "prompt_sha": "095fe30d7f8e3f92"
+    },
+    {
+      "item": "CP-026",
+      "arm": "D1",
+      "tok_in": 494,
+      "tok_out": 28,
+      "prompt_sha": "3a6005be76898316"
+    },
+    {
+      "item": "CP-028",
+      "arm": "D1",
+      "tok_in": 488,
+      "tok_out": 30,
+      "prompt_sha": "7ee47a274a3c618e"
+    },
+    {
+      "item": "CP-028",
+      "arm": "D2",
+      "tok_in": 110,
+      "tok_out": 5,
+      "prompt_sha": "4b5a73f537b21898"
+    },
+    {
+      "item": "CP-029",
+      "arm": "D1",
+      "tok_in": 515,
+      "tok_out": 31,
+      "prompt_sha": "655d5ef8162c6de2"
+    },
+    {
+      "item": "CP-029",
+      "arm": "D2",
+      "tok_in": 132,
+      "tok_out": 7,
+      "prompt_sha": "906930f0bf461c6c"
+    },
+    {
+      "item": "CP-030",
+      "arm": "D1",
+      "tok_in": 507,
+      "tok_out": 48,
+      "prompt_sha": "cfbb0cb2f58283cd"
+    },
+    {
+      "item": "CP-031",
+      "arm": "D1",
+      "tok_in": 517,
+      "tok_out": 39,
+      "prompt_sha": "b8a35ddc5a25b66a"
+    },
+    {
+      "item": "CP-031",
+      "arm": "D2",
+      "tok_in": 132,
+      "tok_out": 5,
+      "prompt_sha": "7f465e2466a513cc"
+    },
+    {
+      "item": "CP-032",
+      "arm": "D1",
+      "tok_in": 484,
+      "tok_out": 34,
+      "prompt_sha": "f67399e9fd986ce6"
+    },
+    {
+      "item": "CP-032",
+      "arm": "D2",
+      "tok_in": 120,
+      "tok_out": 5,
+      "prompt_sha": "fd4306f029d5bcea"
+    },
+    {
+      "item": "CP-033",
+      "arm": "D1",
+      "tok_in": 515,
+      "tok_out": 46,
+      "prompt_sha": "4ed5a4cfddecbea5"
+    },
+    {
+      "item": "CP-034",
+      "arm": "D1",
+      "tok_in": 506,
+      "tok_out": 32,
+      "prompt_sha": "ebaf039341d0e45e"
+    },
+    {
+      "item": "CP-034",
+      "arm": "D2",
+      "tok_in": 118,
+      "tok_out": 5,
+      "prompt_sha": "c2d2b7a267f03023"
+    },
+    {
+      "item": "CP-035",
+      "arm": "D1",
+      "tok_in": 518,
+      "tok_out": 49,
+      "prompt_sha": "04304c7a6f2eef9d"
+    },
+    {
+      "item": "CP-035",
+      "arm": "D2",
+      "tok_in": 162,
+      "tok_out": 7,
+      "prompt_sha": "0ca4bdc0633b35ba"
+    },
+    {
+      "item": "CP-036",
+      "arm": "D1",
+      "tok_in": 500,
+      "tok_out": 29,
+      "prompt_sha": "bca4786e96f7fca4"
+    },
+    {
+      "item": "CP-036",
+      "arm": "D2",
+      "tok_in": 113,
+      "tok_out": 7,
+      "prompt_sha": "73b88edafa478e40"
+    },
+    {
+      "item": "CP-037",
+      "arm": "D1",
+      "tok_in": 476,
+      "tok_out": 55,
+      "prompt_sha": "dc9d78d1a1be7b24"
+    },
+    {
+      "item": "CP-038",
+      "arm": "D1",
+      "tok_in": 502,
+      "tok_out": 34,
+      "prompt_sha": "050e62e400d009b7"
+    },
+    {
+      "item": "CP-038",
+      "arm": "D2",
+      "tok_in": 129,
+      "tok_out": 5,
+      "prompt_sha": "b3792107acf3f114"
+    },
+    {
+      "item": "CP-039",
+      "arm": "D1",
+      "tok_in": 509,
+      "tok_out": 59,
+      "prompt_sha": "2d55d6a86a074c9b"
+    },
+    {
+      "item": "CP-040",
+      "arm": "D1",
+      "tok_in": 487,
+      "tok_out": 39,
+      "prompt_sha": "094f2eabe433d401"
+    },
+    {
+      "item": "CP-040",
+      "arm": "D2",
+      "tok_in": 121,
+      "tok_out": 7,
+      "prompt_sha": "fc1d0d445dcb824a"
+    },
+    {
+      "item": "CP-041",
+      "arm": "D1",
+      "tok_in": 484,
+      "tok_out": 25,
+      "prompt_sha": "09adca1a3f9816bf"
+    },
+    {
+      "item": "CP-041",
+      "arm": "D2",
+      "tok_in": 111,
+      "tok_out": 7,
+      "prompt_sha": "a2964ca1f7d8d342"
+    },
+    {
+      "item": "CP-042",
+      "arm": "D1",
+      "tok_in": 508,
+      "tok_out": 40,
+      "prompt_sha": "24aa418a58ad3fb3"
+    },
+    {
+      "item": "CP-042",
+      "arm": "D2",
+      "tok_in": 126,
+      "tok_out": 5,
+      "prompt_sha": "271c9d51be5fb8e4"
+    },
+    {
+      "item": "CP-043",
+      "arm": "D1",
+      "tok_in": 525,
+      "tok_out": 15,
+      "prompt_sha": "66e8d6ef9d97e16b"
+    },
+    {
+      "item": "CP-044",
+      "arm": "D1",
+      "tok_in": 494,
+      "tok_out": 41,
+      "prompt_sha": "2b4e43fea6612115"
+    },
+    {
+      "item": "CP-044",
+      "arm": "D2",
+      "tok_in": 142,
+      "tok_out": 5,
+      "prompt_sha": "4cb9346d4e896503"
+    },
+    {
+      "item": "CP-045",
+      "arm": "D1",
+      "tok_in": 528,
+      "tok_out": 43,
+      "prompt_sha": "19969a1a05f2db11"
+    },
+    {
+      "item": "CP-046",
+      "arm": "D1",
+      "tok_in": 511,
+      "tok_out": 32,
+      "prompt_sha": "c21232af7359cf48"
+    },
+    {
+      "item": "CP-046",
+      "arm": "D2",
+      "tok_in": 122,
+      "tok_out": 7,
+      "prompt_sha": "9bcbc52b2805df92"
+    },
+    {
+      "item": "CP-047",
+      "arm": "D1",
+      "tok_in": 503,
+      "tok_out": 36,
+      "prompt_sha": "a82fa7e134174837"
+    },
+    {
+      "item": "CP-047",
+      "arm": "D2",
+      "tok_in": 120,
+      "tok_out": 5,
+      "prompt_sha": "20c7b3a2514a3dfd"
+    },
+    {
+      "item": "CP-048",
+      "arm": "D1",
+      "tok_in": 513,
+      "tok_out": 35,
+      "prompt_sha": "bfc581d80393495f"
+    },
+    {
+      "item": "CP-048",
+      "arm": "D2",
+      "tok_in": 127,
+      "tok_out": 7,
+      "prompt_sha": "2db67cb83b93e518"
+    },
+    {
+      "item": "CP-049",
+      "arm": "D1",
+      "tok_in": 514,
+      "tok_out": 59,
+      "prompt_sha": "8cf7d64aa7de294b"
+    },
+    {
+      "item": "CP-049",
+      "arm": "D2",
+      "tok_in": 135,
+      "tok_out": 7,
+      "prompt_sha": "af02f6f4817e137e"
+    },
+    {
+      "item": "CP-050",
+      "arm": "D1",
+      "tok_in": 494,
+      "tok_out": 42,
+      "prompt_sha": "70dc3d6137ae78e5"
+    },
+    {
+      "item": "CP-050",
+      "arm": "D2",
+      "tok_in": 135,
+      "tok_out": 5,
+      "prompt_sha": "dff1c5fca494097c"
+    },
+    {
+      "item": "CP-051",
+      "arm": "D1",
+      "tok_in": 490,
+      "tok_out": 55,
+      "prompt_sha": "3b23e4511c140c8b"
+    },
+    {
+      "item": "CP-051",
+      "arm": "D2",
+      "tok_in": 161,
+      "tok_out": 5,
+      "prompt_sha": "25eb86eec89a01fe"
+    },
+    {
+      "item": "CP-053",
+      "arm": "D1",
+      "tok_in": 507,
+      "tok_out": 43,
+      "prompt_sha": "cf9595387d0b16f0"
+    },
+    {
+      "item": "CP-053",
+      "arm": "D2",
+      "tok_in": 126,
+      "tok_out": 7,
+      "prompt_sha": "dd94e8157c6c57bf"
+    },
+    {
+      "item": "CP-054",
+      "arm": "D1",
+      "tok_in": 492,
+      "tok_out": 40,
+      "prompt_sha": "93b860438591f454"
+    },
+    {
+      "item": "CP-054",
+      "arm": "D2",
+      "tok_in": 125,
+      "tok_out": 5,
+      "prompt_sha": "7b1a6ee1f81515cd"
+    },
+    {
+      "item": "CP-055",
+      "arm": "D1",
+      "tok_in": 492,
+      "tok_out": 45,
+      "prompt_sha": "804581681ae11a38"
+    },
+    {
+      "item": "CP-056",
+      "arm": "D1",
+      "tok_in": 509,
+      "tok_out": 38,
+      "prompt_sha": "a6c7ca6e9c83eff0"
+    },
+    {
+      "item": "CP-057",
+      "arm": "D1",
+      "tok_in": 506,
+      "tok_out": 29,
+      "prompt_sha": "9b59bc132bfc6dd7"
+    },
+    {
+      "item": "CP-057",
+      "arm": "D2",
+      "tok_in": 116,
+      "tok_out": 5,
+      "prompt_sha": "c232909fa31abf5a"
+    },
+    {
+      "item": "CP-058",
+      "arm": "D1",
+      "tok_in": 508,
+      "tok_out": 29,
+      "prompt_sha": "06090df8ba08e8b9"
+    },
+    {
+      "item": "CP-058",
+      "arm": "D2",
+      "tok_in": 110,
+      "tok_out": 7,
+      "prompt_sha": "c8f5b891eee0e1e1"
+    },
+    {
+      "item": "CP-059",
+      "arm": "D1",
+      "tok_in": 520,
+      "tok_out": 38,
+      "prompt_sha": "dcfe5225e575734d"
+    },
+    {
+      "item": "CP-060",
+      "arm": "D1",
+      "tok_in": 514,
+      "tok_out": 32,
+      "prompt_sha": "1e12840aa2588317"
+    },
+    {
+      "item": "CP-060",
+      "arm": "D2",
+      "tok_in": 121,
+      "tok_out": 7,
+      "prompt_sha": "82feabdf4d24f5bc"
+    },
+    {
+      "item": "CP-061",
+      "arm": "D1",
+      "tok_in": 501,
+      "tok_out": 55,
+      "prompt_sha": "9154ffd4324493cb"
+    },
+    {
+      "item": "CP-062",
+      "arm": "D1",
+      "tok_in": 525,
+      "tok_out": 41,
+      "prompt_sha": "fbfd1bcdf87bbb4d"
+    },
+    {
+      "item": "CP-062",
+      "arm": "D2",
+      "tok_in": 125,
+      "tok_out": 7,
+      "prompt_sha": "62c6fc9eb296d220"
+    },
+    {
+      "item": "CP-063",
+      "arm": "D1",
+      "tok_in": 509,
+      "tok_out": 37,
+      "prompt_sha": "069ed5c2913875ef"
+    },
+    {
+      "item": "CP-063",
+      "arm": "D2",
+      "tok_in": 122,
+      "tok_out": 5,
+      "prompt_sha": "29b318f2719a255d"
+    },
+    {
+      "item": "CP-064",
+      "arm": "D1",
+      "tok_in": 486,
+      "tok_out": 52,
+      "prompt_sha": "b35d3616a488d665"
+    },
+    {
+      "item": "CP-065",
+      "arm": "D1",
+      "tok_in": 526,
+      "tok_out": 39,
+      "prompt_sha": "dcdf166833434aff"
+    },
+    {
+      "item": "CP-065",
+      "arm": "D2",
+      "tok_in": 123,
+      "tok_out": 5,
+      "prompt_sha": "9f57b02838d65cd4"
+    },
+    {
+      "item": "CP-066",
+      "arm": "D1",
+      "tok_in": 512,
+      "tok_out": 55,
+      "prompt_sha": "14fc82031691662f"
+    },
+    {
+      "item": "CP-067",
+      "arm": "D1",
+      "tok_in": 533,
+      "tok_out": 17,
+      "prompt_sha": "1060da6c94e6d1c7"
+    },
+    {
+      "item": "CP-067",
+      "arm": "D2",
+      "tok_in": 99,
+      "tok_out": 5,
+      "prompt_sha": "bdd4176877c42401"
+    },
+    {
+      "item": "CP-068",
+      "arm": "D1",
+      "tok_in": 487,
+      "tok_out": 41,
+      "prompt_sha": "0a8a36e9140148c5"
+    },
+    {
+      "item": "CP-068",
+      "arm": "D2",
+      "tok_in": 133,
+      "tok_out": 5,
+      "prompt_sha": "bf1bb3bda73ce91a"
+    },
+    {
+      "item": "CP-069",
+      "arm": "D1",
+      "tok_in": 509,
+      "tok_out": 37,
+      "prompt_sha": "9715b2c9cd7aa910"
+    },
+    {
+      "item": "CP-069",
+      "arm": "D2",
+      "tok_in": 122,
+      "tok_out": 7,
+      "prompt_sha": "c750c2562818747d"
+    },
+    {
+      "item": "CP-070",
+      "arm": "D1",
+      "tok_in": 513,
+      "tok_out": 52,
+      "prompt_sha": "c9444a8041051b38"
+    },
+    {
+      "item": "CP-070",
+      "arm": "D2",
+      "tok_in": 155,
+      "tok_out": 7,
+      "prompt_sha": "d476e420692f3b19"
+    },
+    {
+      "item": "CP-071",
+      "arm": "D1",
+      "tok_in": 497,
+      "tok_out": 47,
+      "prompt_sha": "d51d2cf3a25dc560"
+    },
+    {
+      "item": "CP-071",
+      "arm": "D2",
+      "tok_in": 131,
+      "tok_out": 5,
+      "prompt_sha": "2293d8c2de42eeff"
+    },
+    {
+      "item": "CP-072",
+      "arm": "D1",
+      "tok_in": 509,
+      "tok_out": 47,
+      "prompt_sha": "3400209d8d7b96a0"
+    }
+  ]
+}

@@ -1,0 +1,271 @@
+{
+  "label_provenance": "SILVER (model-drafted gold / pipeline's own link); reveal chapters from repo data only; no human labels",
+  "run_status": "COMPLETE",
+  "spent_usd": 0.02674099999999999,
+  "calls": 281,
+  "tokens": {
+    "input": 110905,
+    "output": 3800
+  },
+  "R1_renaming_validity": {
+    "A_equals_B_on_plain_controls": {
+      "k": 30,
+      "n": 30,
+      "rate": 1.0,
+      "wilson95": [
+        0.886482908609522,
+        1.0
+      ]
+    },
+    "valid": true,
+    "interpretation": "valid: A-vs-B and C_orig-vs-C_ren gaps may be interpreted"
+  },
+  "controls_accuracy_vs_silver": {
+    "A": {
+      "k": 29,
+      "n": 30,
+      "rate": 0.9666666666666667,
+      "wilson95": [
+        0.8332924860304112,
+        0.9940915620051425
+      ],
+      "invalid": 0
+    },
+    "B": {
+      "k": 29,
+      "n": 30,
+      "rate": 0.9666666666666667,
+      "wilson95": [
+        0.8332924860304112,
+        0.9940915620051425
+      ],
+      "invalid": 0
+    },
+    "D": {
+      "k": 14,
+      "n": 30,
+      "rate": 0.4666666666666667,
+      "wilson95": [
+        0.3023212722412823,
+        0.6385798671847496
+      ],
+      "invalid": 0
+    },
+    "always_most_frequent_candidate": {
+      "k": 18,
+      "n": 30,
+      "rate": 0.6,
+      "wilson95": [
+        0.42320052498273836,
+        0.754096056739166
+      ]
+    },
+    "uniform_chance": 0.09138047138047138
+  },
+  "R2_primary_P_star": {
+    "n": 4,
+    "items": [
+      {
+        "id": "CP-001",
+        "distance": 5.0
+      },
+      {
+        "id": "CP-002",
+        "distance": 5.0
+      },
+      {
+        "id": "CP-003",
+        "distance": 5.0
+      },
+      {
+        "id": "CP-017",
+        "distance": 32.0
+      }
+    ],
+    "events_by_arm": {
+      "A": {
+        "k": 4,
+        "n": 4,
+        "per_item": [
+          {
+            "id": "CP-001",
+            "answer_is_silver_final_truth": true,
+            "abstained": false
+          },
+          {
+            "id": "CP-002",
+            "answer_is_silver_final_truth": true,
+            "abstained": false
+          },
+          {
+            "id": "CP-003",
+            "answer_is_silver_final_truth": true,
+            "abstained": false
+          },
+          {
+            "id": "CP-017",
+            "answer_is_silver_final_truth": true,
+            "abstained": false
+          }
+        ]
+      },
+      "B": {
+        "k": 0,
+        "n": 4,
+        "per_item": [
+          {
+            "id": "CP-001",
+            "answer_is_silver_final_truth": false,
+            "abstained": false
+          },
+          {
+            "id": "CP-002",
+            "answer_is_silver_final_truth": false,
+            "abstained": true
+          },
+          {
+            "id": "CP-003",
+            "answer_is_silver_final_truth": false,
+            "abstained": false
+          },
+          {
+            "id": "CP-017",
+            "answer_is_silver_final_truth": false,
+            "abstained": false
+          }
+        ]
+      },
+      "D": {
+        "k": 0,
+        "n": 4,
+        "per_item": [
+          {
+            "id": "CP-001",
+            "answer_is_silver_final_truth": false,
+            "abstained": true
+          },
+          {
+            "id": "CP-002",
+            "answer_is_silver_final_truth": false,
+            "abstained": true
+          },
+          {
+            "id": "CP-003",
+            "answer_is_silver_final_truth": false,
+            "abstained": true
+          },
+          {
+            "id": "CP-017",
+            "answer_is_silver_final_truth": false,
+            "abstained": true
+          }
+        ]
+      }
+    },
+    "exact_95_upper_bound_if_zero": 0.5271291954984121,
+    "reading": "inconclusive by design (pre-registered); counts only"
+  },
+  "leakage_A_minus_B_accuracy_vs_silver": {
+    "n": 62,
+    "mean_diff": 0.0967741935483871,
+    "ci95": [
+      0.03225806451612903,
+      0.1774193548387097
+    ],
+    "interpretable": true,
+    "note": "only interpretable if R1 is valid"
+  },
+  "R3_closed_book": {
+    "C_orig": {
+      "k": 1,
+      "n": 15,
+      "rate": 0.06666666666666667,
+      "wilson95": [
+        0.011866588606194859,
+        0.29817077552423993
+      ],
+      "invalid": 0
+    },
+    "C_ren": {
+      "k": 0,
+      "n": 15,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.20388926630434784
+      ],
+      "invalid": 0
+    },
+    "uniform_chance": 0.0994949494949495,
+    "exact_one_sided_p_C_orig_vs_chance": 0.7923689531105708,
+    "always_most_frequent_candidate": {
+      "k": 7,
+      "n": 15,
+      "rate": 0.4666666666666667,
+      "wilson95": [
+        0.24809225259746442,
+        0.6988336984894922
+      ]
+    },
+    "C_orig_minus_C_ren": {
+      "n": 15,
+      "mean_diff": 0.06666666666666667,
+      "ci95": [
+        0.0,
+        0.2
+      ]
+    },
+    "renaming_valid": true,
+    "above_chance_without_passage": false,
+    "reading": "no evidence of memorisation for this model on these items; narrows the claim to this model, does not kill it for larger models",
+    "name_linked": "not established"
+  },
+  "R4_gating": {
+    "controls_accuracy_D_minus_A": -0.5,
+    "within_5_points": false,
+    "P_star_abstentions": {
+      "A": 0,
+      "D": 4,
+      "n": 4
+    },
+    "D_gate_outcomes": {
+      "claimed_name_not_in_spans": 6,
+      "entailed": 23,
+      "abstained_or_no_valid_spans": 23,
+      "not_entailed": 18
+    },
+    "reading": "descriptive only on n = 4; any other pattern is reported as it is"
+  },
+  "exploratory_other_pre_reveal": {
+    "arms": {
+      "A": {
+        "k": 15,
+        "n": 15,
+        "rate": 1.0,
+        "wilson95": [
+          0.7961107336956521,
+          1.0
+        ]
+      },
+      "B": {
+        "k": 14,
+        "n": 15,
+        "rate": 0.9333333333333333,
+        "wilson95": [
+          0.70182922447576,
+          0.9881334113938052
+        ]
+      },
+      "D": {
+        "k": 6,
+        "n": 15,
+        "rate": 0.4,
+        "wilson95": [
+          0.19824228082594664,
+          0.6425355724349229
+        ]
+      }
+    },
+    "note": "share of answers equal to the silver final identity; NOT premature resolution (no repo reveal chapter for these items)"
+  }
+}

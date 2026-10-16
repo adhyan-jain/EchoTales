@@ -1,0 +1,832 @@
+{
+  "preregistration": "PREREG_SIO_synthetic_identity_oracle.md v1 (sha256 df93ef3a...)",
+  "worlds": 40,
+  "determinism": "resolve_novel run twice on every full world; outputs identical (asserted)",
+  "M1_prefix_invariance_violation_pooled_mention_cut_pairs": {
+    "k": 0,
+    "n": 3741,
+    "rate": 0.0,
+    "wilson95": [
+      0.0,
+      0.0010258377817635865
+    ]
+  },
+  "M1_worlds_with_any_violation": {
+    "k": 0,
+    "n": 40,
+    "rate": 0.0,
+    "wilson95": [
+      0.0,
+      0.08762453925039232
+    ]
+  },
+  "M1_examples": [],
+  "M2_premature_resolution_F": {
+    "k": 0,
+    "n": 218,
+    "rate": 0.0,
+    "wilson95": [
+      0.0,
+      0.017316860318353274
+    ]
+  },
+  "M2_premature_resolution_P_before_reveal": {
+    "k": 0,
+    "n": 218,
+    "rate": 0.0,
+    "wilson95": [
+      0.0,
+      0.017316860318353274
+    ]
+  },
+  "M2_F_by_reveal_distance": {
+    "2": {
+      "k": 0,
+      "n": 70,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.05202487486728348
+      ]
+    },
+    "3": {
+      "k": 0,
+      "n": 96,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.03847694748481595
+      ]
+    },
+    "4": {
+      "k": 0,
+      "n": 52,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.06879459041288215
+      ]
+    }
+  },
+  "M3_post_reveal_miss_F": {
+    "k": 221,
+    "n": 221,
+    "rate": 1.0,
+    "wilson95": [
+      0.9829141938146678,
+      1.0
+    ]
+  },
+  "M4_retro_title_link_F": {
+    "k": 40,
+    "n": 40,
+    "rate": 1.0,
+    "wilson95": [
+      0.9123754607496077,
+      1.0
+    ]
+  },
+  "M4_retro_title_link_P_cut4": {
+    "k": 40,
+    "n": 40,
+    "rate": 1.0,
+    "wilson95": [
+      0.9123754607496077,
+      1.0
+    ]
+  },
+  "control_title_after_naming_linked_to_holder_F": {
+    "k": 40,
+    "n": 40,
+    "rate": 1.0,
+    "wilson95": [
+      0.9123754607496077,
+      1.0
+    ]
+  },
+  "exploratory_not_preregistered": {
+    "pre_reveal_alias_linked_to_any_entity_F": {
+      "k": 218,
+      "n": 218,
+      "rate": 1.0,
+      "wilson95": [
+        0.9826831396816468,
+        1.0
+      ]
+    },
+    "pre_reveal_alias_linked_to_any_entity_P": {
+      "k": 218,
+      "n": 218,
+      "rate": 1.0,
+      "wilson95": [
+        0.9826831396816468,
+        1.0
+      ]
+    },
+    "pre_reveal_alias_linked_to_co_present_Z_F": {
+      "k": 218,
+      "n": 218,
+      "rate": 1.0,
+      "wilson95": [
+        0.9826831396816468,
+        1.0
+      ]
+    },
+    "post_reveal_alias_linked_to_any_entity_F": {
+      "k": 221,
+      "n": 221,
+      "rate": 1.0,
+      "wilson95": [
+        0.9829141938146678,
+        1.0
+      ]
+    },
+    "title_in_H2_tenure_linked_to_H2_F": {
+      "k": 27,
+      "n": 40,
+      "rate": 0.675,
+      "wilson95": [
+        0.52017458088898,
+        0.7991568303733828
+      ]
+    },
+    "present_named_controls_resolved_to_own_label_F": {
+      "k": 702,
+      "n": 702,
+      "rate": 1.0,
+      "wilson95": [
+        0.994557419114997,
+        1.0
+      ]
+    },
+    "title_link_event_cause_pos_earlier_than_holder_binding_learned_at_pos": {
+      "k": 40,
+      "n": 107,
+      "rate": 0.37383177570093457,
+      "wilson95": [
+        0.28802680314038603,
+        0.4683823428842112
+      ]
+    },
+    "frozen_reveal_sentence_matches_repo_REVEAL_PATTERNS": {
+      "k": 0,
+      "n": 80,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.0458197362645751
+      ]
+    },
+    "repo_stock_phrases_match_REVEAL_PATTERNS": {
+      "k": 2,
+      "n": 2,
+      "rate": 1.0,
+      "wilson95": [
+        0.3423719528896193,
+        1.0
+      ]
+    }
+  },
+  "worlds_spec": [
+    {
+      "seed": 0,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          5,
+          2
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 1,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          6,
+          3
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 2,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          7,
+          4
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 3,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          5,
+          2
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 4,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          6,
+          3
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 5,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          7,
+          4
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 6,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          5,
+          2
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 7,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          6,
+          3
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 8,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          7,
+          4
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 9,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          5,
+          2
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 10,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          6,
+          3
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 11,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          7,
+          4
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 12,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          5,
+          2
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 13,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          6,
+          3
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 14,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          7,
+          4
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 15,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          5,
+          2
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 16,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          6,
+          3
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 17,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          7,
+          4
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 18,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          5,
+          2
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 19,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          6,
+          3
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 20,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          7,
+          4
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 21,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          5,
+          2
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 22,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          6,
+          3
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 23,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          7,
+          4
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 24,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          5,
+          2
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 25,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          6,
+          3
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 26,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          7,
+          4
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 27,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          5,
+          2
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 28,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          6,
+          3
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 29,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          7,
+          4
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 30,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          5,
+          2
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 31,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          6,
+          3
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 32,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          7,
+          4
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 33,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          5,
+          2
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 34,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          6,
+          3
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 35,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          7,
+          4
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    },
+    {
+      "seed": 36,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          5,
+          2
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 37,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          6,
+          3
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 38,
+      "retro": true,
+      "reveals": [
+        [
+          3,
+          7,
+          4
+        ],
+        [
+          9,
+          11,
+          2
+        ]
+      ]
+    },
+    {
+      "seed": 39,
+      "retro": false,
+      "reveals": [
+        [
+          3,
+          5,
+          2
+        ],
+        [
+          9,
+          12,
+          3
+        ]
+      ]
+    }
+  ]
+}

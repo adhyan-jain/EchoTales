@@ -1,0 +1,82 @@
+{
+ "qwen2.5_7b": {
+  "ctrl_disagree": {
+   "B_invalid": 2,
+   "B_other_letter": 5,
+   "same": 14
+  },
+  "ctrl_B_accuracy": "14/21",
+  "synth_nonpre_items": 41,
+  "synth_A_eq_B": 40,
+  "invalid": 6,
+  "types": [
+   "plain",
+   "post_alias",
+   "pre_alias"
+  ]
+ },
+ "llama3.1_8b": {
+  "ctrl_disagree": {
+   "B_invalid": 2,
+   "same": 12,
+   "B_other_letter": 4,
+   "A_wrong": 3
+  },
+  "ctrl_B_accuracy": "13/21",
+  "synth_nonpre_items": 41,
+  "synth_A_eq_B": 31,
+  "invalid": 3,
+  "types": [
+   "plain",
+   "post_alias",
+   "pre_alias"
+  ]
+ },
+ "mistral_7b-instruct": {
+  "ctrl_disagree": {
+   "same": 18,
+   "B_other_letter": 2,
+   "B_invalid": 1
+  },
+  "ctrl_B_accuracy": "18/21",
+  "synth_nonpre_items": 41,
+  "synth_A_eq_B": 32,
+  "invalid": 13,
+  "types": [
+   "plain",
+   "post_alias",
+   "pre_alias"
+  ]
+ },
+ "phi4-mini_latest": {
+  "ctrl_disagree": {
+   "B_other_letter": 4,
+   "same": 15,
+   "A_wrong": 2
+  },
+  "ctrl_B_accuracy": "16/21",
+  "synth_nonpre_items": 41,
+  "synth_A_eq_B": 37,
+  "invalid": 3,
+  "types": [
+   "plain",
+   "post_alias",
+   "pre_alias"
+  ]
+ },
+ "gpt-5.6-luna": {
+  "ctrl_disagree": {
+   "same": 20,
+   "A_wrong": 1
+  },
+  "ctrl_B_accuracy": "21/21",
+  "synth_nonpre_items": 41,
+  "synth_A_eq_B": 41,
+  "invalid": 0,
+  "types": [
+   "plain",
+   "post_alias",
+   "pre_alias"
+  ]
+ }
+}

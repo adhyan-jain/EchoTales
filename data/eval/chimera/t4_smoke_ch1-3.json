@@ -1,0 +1,131 @@
+{
+  "prereg": "docs/research/preregistrations/PREREG_T4_renaming_validity.md v1",
+  "smoke_chapters": 3,
+  "pi_vocabulary_size": 336,
+  "pi_seed": 20261015,
+  "conditions": {
+    "O2": {
+      "n": 120,
+      "agree": 120,
+      "agreement": 1.0,
+      "wilson95": [
+        0.969,
+        1.0
+      ],
+      "bcubed_f1": 1.0,
+      "same_method_share": 1.0,
+      "mean_abs_conf_change": 0.0,
+      "changed": 0,
+      "changed_classification": {},
+      "transform_counts": {},
+      "entity_clustered_bootstrap95": [
+        1.0,
+        1.0
+      ],
+      "resolve_seconds": 0.3,
+      "example_changed_ids": []
+    },
+    "I": {
+      "n": 120,
+      "agree": 120,
+      "agreement": 1.0,
+      "wilson95": [
+        0.969,
+        1.0
+      ],
+      "bcubed_f1": 1.0,
+      "same_method_share": 1.0,
+      "mean_abs_conf_change": 0.0,
+      "changed": 0,
+      "changed_classification": {},
+      "transform_counts": {
+        "clean": 97,
+        "preexisting_offset_defect": 23
+      },
+      "entity_clustered_bootstrap95": [
+        1.0,
+        1.0
+      ],
+      "resolve_seconds": 0.3,
+      "example_changed_ids": []
+    },
+    "R": {
+      "n": 120,
+      "agree": 57,
+      "agreement": 0.475,
+      "wilson95": [
+        0.3878,
+        0.5637
+      ],
+      "bcubed_f1": 1.0,
+      "same_method_share": 0.9917,
+      "mean_abs_conf_change": 0.0,
+      "changed": 63,
+      "changed_classification": {
+        "evidence_loss": 49,
+        "preexisting_offset_defect": 14
+      },
+      "transform_counts": {
+        "clean": 97,
+        "preexisting_offset_defect": 23
+      },
+      "entity_clustered_bootstrap95": [
+        0.1468,
+        1.0
+      ],
+      "resolve_seconds": 0.3,
+      "example_changed_ids": [
+        "reverend-insanity:1:m0",
+        "reverend-insanity:1:m10",
+        "reverend-insanity:1:m11",
+        "reverend-insanity:1:m12",
+        "reverend-insanity:1:m14",
+        "reverend-insanity:1:m16",
+        "reverend-insanity:1:m2",
+        "reverend-insanity:1:m21",
+        "reverend-insanity:1:m26",
+        "reverend-insanity:1:m27",
+        "reverend-insanity:1:m30",
+        "reverend-insanity:1:m39",
+        "reverend-insanity:1:m4",
+        "reverend-insanity:1:m43",
+        "reverend-insanity:1:m5",
+        "reverend-insanity:1:m6",
+        "reverend-insanity:1:m7",
+        "reverend-insanity:1:m8",
+        "reverend-insanity:1:m9",
+        "reverend-insanity:2:m0"
+      ]
+    },
+    "N": {
+      "n": 120,
+      "agree": 119,
+      "agreement": 0.9916666666666667,
+      "wilson95": [
+        0.9543,
+        0.9985
+      ],
+      "bcubed_f1": 1.0,
+      "same_method_share": 0.9917,
+      "mean_abs_conf_change": 0.0,
+      "changed": 1,
+      "changed_classification": {
+        "evidence_loss": 1
+      },
+      "transform_counts": {
+        "clean": 97,
+        "preexisting_offset_defect": 23
+      },
+      "entity_clustered_bootstrap95": [
+        0.9459,
+        1.0
+      ],
+      "resolve_seconds": 0.3,
+      "example_changed_ids": [
+        "reverend-insanity:1:m21"
+      ]
+    }
+  },
+  "o1_resolve_seconds": 0.3,
+  "o1_summary": "reverend-insanity: 21 groups -> 10 entities\n  linked=4  created=10  deferred=1 (4.8%)  recovered=1  unresolved=1\n  deictic-only groups (no entity created): 6\n  non-person entities (not voice-cast): ITEM=1, LOCATION=4\n  kind coverage: 10/10 typed (0 unknown, 0%) \n  methods: DEFERRED_RERESOLVED=1, GAZETTEER_EXACT=3, NAME_CONTAINMENT=1, SCORED=10\n  detectors: REVEAL=1\n  contradictions: 1 -> 1 split(s)\n  gazetteer share of links by window: w0=21%(n=14)\n  events logged: 15"
+}

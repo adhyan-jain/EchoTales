@@ -1,0 +1,32 @@
+{
+  "prereg": "PREREG_T4_renaming_validity_v4.md (single attempt; no v5)",
+  "commutation_gate": {
+    "surfaces": 335,
+    "G1_display_violations": [
+      "Reward Contributions",
+      "Thunderwings"
+    ],
+    "G1_count": 2,
+    "G2_violations": [
+      "orig-class 'gumaster' splits",
+      "orig-class 'moonlightgu' splits",
+      "orig-class 'rewardcontribution' splits",
+      "orig-class 'thunderwing' splits"
+    ],
+    "G2_count": 4,
+    "G3_violations": [],
+    "G3_count": 0,
+    "passed": false,
+    "G4_injectivity_violations": [
+      "'gu' and 'zu' -> same"
+    ],
+    "G4_count": 1,
+    "G5_collision_count": 7,
+    "vocab_tokens_changed": 147,
+    "vocab_tokens": 378
+  },
+  "violation_classes_engine_vs_renamer": {
+    "engine": 6
+  },
+  "status": "GATE_FAILED_NO_RUN"
+}

@@ -1,0 +1,132 @@
+{
+  "probe": "E3 state_of invariants (synthetic, spec-derived expectations)",
+  "label_provenance": "SYNTHETIC",
+  "I3_retraction_vs_interval_end": {
+    "alias": {
+      "retracted_visible_at_ch9": true,
+      "retracted_hidden_at_ch10": true,
+      "retracted_hidden_at_ch30": true,
+      "retracted_hidden_story5_know30": true,
+      "retraction_representable": true,
+      "closed_visible_story5_know30": true,
+      "closed_hidden_story12_know30": true
+    },
+    "attribute": {
+      "retracted_visible_at_ch9": true,
+      "retracted_hidden_at_ch10": true,
+      "retracted_hidden_at_ch30": true,
+      "retracted_hidden_story5_know30": true,
+      "retraction_representable": true,
+      "closed_visible_story5_know30": true,
+      "closed_hidden_story12_know30": true
+    },
+    "relation": {
+      "retracted_visible_at_ch9": true,
+      "retracted_hidden_at_ch10": true,
+      "retracted_hidden_at_ch30": true,
+      "retracted_hidden_story5_know30": true,
+      "retraction_representable": true,
+      "closed_visible_story5_know30": true,
+      "closed_hidden_story12_know30": true
+    },
+    "persona": {
+      "retracted_visible_at_ch9": true,
+      "retracted_hidden_at_ch10": false,
+      "retracted_hidden_at_ch30": false,
+      "retracted_hidden_story5_know30": false,
+      "retraction_representable": false,
+      "closed_visible_story5_know30": true,
+      "closed_hidden_story12_know30": true
+    }
+  },
+  "I4_false_hidden_in_world": {
+    "alias": {
+      "hidden_from_reader": true,
+      "visible_to_system": true
+    },
+    "attribute": {
+      "hidden_from_reader": true,
+      "visible_to_system": true
+    },
+    "relation": {
+      "hidden_from_reader": true,
+      "visible_to_system": true
+    },
+    "persona": {
+      "hidden_from_reader": false,
+      "visible_to_system": true
+    }
+  },
+  "I5_retraction_observer_global": {
+    "c_believes_at_ch15": true,
+    "c_still_believes_at_ch30_when_never_told": false,
+    "verdict_if_false": "C is made to know the reader's retraction (reader knowledge inherited by a character)",
+    "binding_id": 1
+  },
+  "I6_reader_knowledge_off_main": {
+    "dream_fact_learned_ch30_visible_to_reader_with_default_args": true,
+    "dream_fact_visible_when_knowledge_pos_ch10_passed": false,
+    "main_timeline_fact_learned_ch30_visible_at_ch10_default": false
+  },
+  "I7_canonicity": {
+    "voided_separate_timeline_does_not_hide_main_fact": true,
+    "voided_main_segment_ch5_6__fact_outside_segment_still_visible": false,
+    "voided_main_segment__aliases_returned": 0,
+    "pipeline_callers_of_void_span": 0
+  },
+  "I8_tie_order_dependence": {
+    "same_chapter_same_offset": {
+      "winners_by_insertion_order": [
+        "white",
+        "black"
+      ],
+      "order_dependent": true
+    },
+    "same_chapter_diff_offset": {
+      "winners_by_insertion_order": [
+        "white",
+        "white"
+      ],
+      "order_dependent": false
+    }
+  },
+  "E4b_chapter_lag_miniature": {
+    "visible_at_p5": false,
+    "visible_at_p5_9": false,
+    "visible_at_p6": true,
+    "visible_with_explicit_end_of_chapter_knowledge": true
+  },
+  "metamorphic": {
+    "seed": 20261016,
+    "stores": 300,
+    "I1_prefix_truncation": {
+      "queries": 4800,
+      "violations": 0
+    },
+    "I2_insertion_order": {
+      "queries": 1200,
+      "violations": 8,
+      "classified": {
+        "attribute_only": 8,
+        "tie_on_a_key": 8
+      },
+      "examples": [
+        {
+          "p": 2.0,
+          "only_attribute_differs": true,
+          "tie_on_learned_at": true
+        },
+        {
+          "p": 5.5,
+          "only_attribute_differs": true,
+          "tie_on_learned_at": true
+        },
+        {
+          "p": 9.0,
+          "only_attribute_differs": true,
+          "tie_on_learned_at": true
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "label_provenance": "NO LABELS: system-internal consistency audit (no reference labels, not accuracy)",
+  "novel": "reverend-insanity",
+  "mention_level": {
+    "linked_mentions": 11122,
+    "linked_before_reader_binding_learned": {
+      "k": 5,
+      "n": 11122,
+      "rate": 0.0004495594317568783,
+      "wilson95": [
+        0.00019203688875063881,
+        0.001052057760233039
+      ]
+    },
+    "by_method": {
+      "SCORED": {
+        "linked": 977,
+        "before_binding": 0,
+        "no_binding_for_surface": 0
+      },
+      "NAME_CONTAINMENT": {
+        "linked": 98,
+        "before_binding": 0,
+        "no_binding_for_surface": 0
+      },
+      "TITLE_HOLDER": {
+        "linked": 30,
+        "before_binding": 5,
+        "no_binding_for_surface": 19
+      },
+      "GAZETTEER_EXACT": {
+        "linked": 9975,
+        "before_binding": 0,
+        "no_binding_for_surface": 0
+      },
+      "DECLARATION": {
+        "linked": 39,
+        "before_binding": 0,
+        "no_binding_for_surface": 0
+      },
+      "RELATIONAL_COPRESENCE": {
+        "linked": 3,
+        "before_binding": 0,
+        "no_binding_for_surface": 0
+      }
+    },
+    "examples_numbers_only": [
+      {
+        "mention_chapter": 1.0,
+        "binding_learned_chapter": 6,
+        "method": "TITLE_HOLDER",
+        "alias_type": "TRANSFERABLE_TITLE"
+      },
+      {
+        "mention_chapter": 1.0,
+        "binding_learned_chapter": 6,
+        "method": "TITLE_HOLDER",
+        "alias_type": "TRANSFERABLE_TITLE"
+      },
+      {
+        "mention_chapter": 1.0,
+        "binding_learned_chapter": 6,
+        "method": "TITLE_HOLDER",
+        "alias_type": "TRANSFERABLE_TITLE"
+      },
+      {
+        "mention_chapter": 1.0,
+        "binding_learned_chapter": 6,
+        "method": "TITLE_HOLDER",
+        "alias_type": "TRANSFERABLE_TITLE"
+      },
+      {
+        "mention_chapter": 1.0,
+        "binding_learned_chapter": 6,
+        "method": "TITLE_HOLDER",
+        "alias_type": "TRANSFERABLE_TITLE"
+      }
+    ]
+  },
+  "brief_level": {
+    "note": "briefs built by the real story_context (include_appearance=False); PRESENT characters reached only through a mention linked before the reader was told",
+    "chapters_sampled": 21,
+    "briefs_with_characters": 547,
+    "briefs_naming_an_entity_early": {
+      "k": 5,
+      "n": 547,
+      "rate": 0.009140767824497258,
+      "wilson95": [
+        0.003910472488104579,
+        0.021217622412498423
+      ]
+    },
+    "leaked_entity_slots": 5,
+    "examples_numbers_only": [
+      {
+        "chapter": 1.0,
+        "block": 64,
+        "leaked_entities": 1
+      },
+      {
+        "chapter": 1.0,
+        "block": 68,
+        "leaked_entities": 1
+      },
+      {
+        "chapter": 1.0,
+        "block": 73,
+        "leaked_entities": 1
+      },
+      {
+        "chapter": 1.0,
+        "block": 75,
+        "leaked_entities": 1
+      },
+      {
+        "chapter": 1.0,
+        "block": 78,
+        "leaked_entities": 1
+      }
+    ]
+  }
+}

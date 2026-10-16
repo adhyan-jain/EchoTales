@@ -1,0 +1,65 @@
+{
+  "preregistration": "PREREG_L2U_unseen_text_control.md v1",
+  "label_provenance": "SYNTHETIC by construction (this side); SILVER (L1 real-text side)",
+  "status": "COMPLETE",
+  "spent_usd": 0.009451400000000002,
+  "calls": 124,
+  "tokens": {
+    "input": 43321,
+    "output": 656
+  },
+  "U1_renaming_validity_synthetic_plain": {
+    "A_equals_B": {
+      "k": 20,
+      "n": 20,
+      "rate": 1.0,
+      "wilson95": [
+        0.8388698745050667,
+        0.9999999999999998
+      ]
+    },
+    "valid": true
+  },
+  "synthetic": {
+    "n": 62,
+    "acc_A": 1.0,
+    "acc_B": 0.967741935483871,
+    "gap_g_s": 0.032258064516129004,
+    "gap_ci95": [
+      0.0,
+      0.08064516129032258
+    ],
+    "by_type": {
+      "pre_alias": {
+        "n": 21,
+        "A": 21,
+        "B": 19
+      },
+      "post_alias": {
+        "n": 21,
+        "A": 21,
+        "B": 21
+      },
+      "plain": {
+        "n": 20,
+        "A": 20,
+        "B": 20
+      }
+    },
+    "ceiling_both_arms_95": true
+  },
+  "real_L1": {
+    "n": 62,
+    "acc_A": 0.9516129032258065,
+    "acc_B": 0.8548387096774194,
+    "gap_g_r": 0.09677419354838712
+  },
+  "difference_in_differences": {
+    "D": 0.06451612903225812,
+    "ci95": [
+      -0.016129032258064516,
+      0.14516129032258066
+    ]
+  },
+  "reading": "(c) inconclusive"
+}

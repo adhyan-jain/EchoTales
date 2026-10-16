@@ -1,0 +1,72 @@
+{
+  "prereg": "PREREG_T4_v5_addendum_2_crossnovel.md (frozen v5 rules; single attempt)",
+  "novel": "omniscient-readers-viewpoint",
+  "label_provenance": "NO LABELS (system-internal)",
+  "v3_token_level_gate": {
+    "surfaces": 68,
+    "G1": 0,
+    "G2": 0,
+    "G3": 0,
+    "passed": true
+  },
+  "v5_gate": {
+    "surfaces": 68,
+    "G1_count": 0,
+    "G2_count": 0,
+    "G3_count": 0,
+    "passed": true,
+    "G4_count": 0,
+    "G5_collision_count": 0,
+    "vocab_tokens_changed": 67,
+    "vocab_tokens": 100,
+    "closure_passes": 1,
+    "closure_stable": true
+  },
+  "mentions": 2267,
+  "conditions": {
+    "O2": {
+      "n": 2267,
+      "agree": 2267,
+      "agreement": 1.0,
+      "wilson95": [
+        0.9983,
+        1.0
+      ],
+      "bcubed_f1": 1.0,
+      "same_method_share": 1.0,
+      "mean_abs_conf_change": 0.0,
+      "changed": 0,
+      "changed_classification": {}
+    },
+    "I": {
+      "n": 2267,
+      "agree": 2267,
+      "agreement": 1.0,
+      "wilson95": [
+        0.9983,
+        1.0
+      ],
+      "bcubed_f1": 1.0,
+      "same_method_share": 1.0,
+      "mean_abs_conf_change": 0.0,
+      "changed": 0,
+      "changed_classification": {}
+    },
+    "R": {
+      "n": 2267,
+      "agree": 2267,
+      "agreement": 1.0,
+      "wilson95": [
+        0.9983,
+        1.0
+      ],
+      "bcubed_f1": 1.0,
+      "same_method_share": 1.0,
+      "mean_abs_conf_change": 0.0,
+      "changed": 0,
+      "changed_classification": {}
+    }
+  },
+  "status": "COMPLETE_NO_NEGATIVE_CONTROL",
+  "verdict": "gate passed; O2 and I at 100%: True; R agreement 1.00000; negative control N not run: NOT a full PASS"
+}

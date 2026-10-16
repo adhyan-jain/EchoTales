@@ -1,0 +1,294 @@
+{
+  "probe": "E6 persona-stage prefix causality",
+  "label_provenance": "SYSTEM-INTERNAL, no labels",
+  "novel": "omniscient-readers-viewpoint",
+  "by_k": {
+    "5": {
+      "entities_in_both": 7,
+      "entities_only_in_full": 18,
+      "entities_only_in_prefix": 0,
+      "entities_with_persona_facts_compared": 7,
+      "entities_with_any_trait_difference": 2,
+      "entity_difference_rate": 0.2857,
+      "entity_difference_wilson": [
+        0.08222,
+        0.64107
+      ],
+      "per_key": {
+        "age_band": {
+          "compared": 7,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.35434
+          ]
+        },
+        "gender": {
+          "compared": 7,
+          "differ": 2,
+          "rate": 0.2857,
+          "wilson": [
+            0.08222,
+            0.64107
+          ]
+        },
+        "register": {
+          "compared": 7,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.35434
+          ]
+        },
+        "archetype": {
+          "compared": 7,
+          "differ": 2,
+          "rate": 0.2857,
+          "wilson": [
+            0.08222,
+            0.64107
+          ]
+        },
+        "big_five": {
+          "compared": 7,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.35434
+          ]
+        }
+      },
+      "alias_sets_differ": 0,
+      "persona_id_sets_differ": 0,
+      "examples": [
+        {
+          "entity": "omniscient-readers-viewpoint:self:3f5124390a",
+          "key": "gender",
+          "full_graph_value": "male",
+          "prefix_graph_value": "unknown"
+        },
+        {
+          "entity": "omniscient-readers-viewpoint:self:3f5124390a",
+          "key": "archetype",
+          "full_graph_value": "male:adult:neutral",
+          "prefix_graph_value": "unknown:adult:neutral"
+        },
+        {
+          "entity": "omniscient-readers-viewpoint:self:9ce09384f9",
+          "key": "gender",
+          "full_graph_value": "male",
+          "prefix_graph_value": "unknown"
+        },
+        {
+          "entity": "omniscient-readers-viewpoint:self:9ce09384f9",
+          "key": "archetype",
+          "full_graph_value": "male:adult:neutral",
+          "prefix_graph_value": "unknown:adult:neutral"
+        }
+      ]
+    },
+    "10": {
+      "entities_in_both": 10,
+      "entities_only_in_full": 15,
+      "entities_only_in_prefix": 0,
+      "entities_with_persona_facts_compared": 10,
+      "entities_with_any_trait_difference": 1,
+      "entity_difference_rate": 0.1,
+      "entity_difference_wilson": [
+        0.01788,
+        0.40416
+      ],
+      "per_key": {
+        "age_band": {
+          "compared": 10,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.27754
+          ]
+        },
+        "gender": {
+          "compared": 10,
+          "differ": 1,
+          "rate": 0.1,
+          "wilson": [
+            0.01788,
+            0.40416
+          ]
+        },
+        "register": {
+          "compared": 10,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.27754
+          ]
+        },
+        "archetype": {
+          "compared": 10,
+          "differ": 1,
+          "rate": 0.1,
+          "wilson": [
+            0.01788,
+            0.40416
+          ]
+        },
+        "big_five": {
+          "compared": 10,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.27754
+          ]
+        }
+      },
+      "alias_sets_differ": 0,
+      "persona_id_sets_differ": 0,
+      "examples": [
+        {
+          "entity": "omniscient-readers-viewpoint:self:194c0af503",
+          "key": "gender",
+          "full_graph_value": "male",
+          "prefix_graph_value": "unknown"
+        },
+        {
+          "entity": "omniscient-readers-viewpoint:self:194c0af503",
+          "key": "archetype",
+          "full_graph_value": "male:adult:neutral",
+          "prefix_graph_value": "unknown:adult:neutral"
+        }
+      ]
+    },
+    "20": {
+      "entities_in_both": 16,
+      "entities_only_in_full": 9,
+      "entities_only_in_prefix": 0,
+      "entities_with_persona_facts_compared": 16,
+      "entities_with_any_trait_difference": 0,
+      "entity_difference_rate": 0.0,
+      "entity_difference_wilson": [
+        0.0,
+        0.19361
+      ],
+      "per_key": {
+        "age_band": {
+          "compared": 16,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.19361
+          ]
+        },
+        "gender": {
+          "compared": 16,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.19361
+          ]
+        },
+        "register": {
+          "compared": 16,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.19361
+          ]
+        },
+        "archetype": {
+          "compared": 16,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.19361
+          ]
+        },
+        "big_five": {
+          "compared": 16,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.19361
+          ]
+        }
+      },
+      "alias_sets_differ": 0,
+      "persona_id_sets_differ": 0,
+      "examples": []
+    },
+    "30": {
+      "entities_in_both": 21,
+      "entities_only_in_full": 4,
+      "entities_only_in_prefix": 0,
+      "entities_with_persona_facts_compared": 21,
+      "entities_with_any_trait_difference": 0,
+      "entity_difference_rate": 0.0,
+      "entity_difference_wilson": [
+        0.0,
+        0.15464
+      ],
+      "per_key": {
+        "age_band": {
+          "compared": 21,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.15464
+          ]
+        },
+        "gender": {
+          "compared": 21,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.15464
+          ]
+        },
+        "register": {
+          "compared": 21,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.15464
+          ]
+        },
+        "archetype": {
+          "compared": 21,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.15464
+          ]
+        },
+        "big_five": {
+          "compared": 21,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.15464
+          ]
+        }
+      },
+      "alias_sets_differ": 0,
+      "persona_id_sets_differ": 0,
+      "examples": []
+    }
+  },
+  "full_personas": 25
+}

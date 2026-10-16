@@ -1,0 +1,43 @@
+{
+ "gpt-5.6-luna": {
+  "verdicts": {
+   "PH": "EXPLICIT",
+   "PI": "EXPLICIT",
+   "GE": "NOT_SUPPORTED",
+   "CI": "EXPLICIT",
+   "SS": "NOT_SUPPORTED",
+   "JE": "EXPLICIT",
+   "RH": "NOT_SUPPORTED",
+   "MC": "NOT_SUPPORTED",
+   "LM": "EXPLICIT",
+   "JH": "NOT_SUPPORTED",
+   "IV": "EXPLICIT",
+   "MI": "NOT_SUPPORTED",
+   "VI": "EXPLICIT",
+   "SA": "IMPLIED",
+   "DL": "EXPLICIT",
+   "DQ": "EXPLICIT",
+   "WW": "EXPLICIT",
+   "OT": "NOT_SUPPORTED",
+   "TM": "EXPLICIT",
+   "KM": "EXPLICIT",
+   "VW": "EXPLICIT",
+   "LA": "EXPLICIT",
+   "CO": "EXPLICIT",
+   "GG": "EXPLICIT",
+   "PG": "EXPLICIT",
+   "MK": "NOT_SUPPORTED",
+   "YR": "EXPLICIT",
+   "IM": "IMPLIED",
+   "RP": "NOT_SUPPORTED",
+   "EL": "EXPLICIT",
+   "BR": "EXPLICIT"
+  },
+  "spent": {
+   "calls": 31,
+   "tok_in": 5579,
+   "tok_out": 279,
+   "usd": 0.0014506
+  }
+ }
+}

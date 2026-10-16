@@ -1,0 +1,119 @@
+{
+  "prereg": "PREREG_T4_renaming_validity_v5.md (single attempt; no v6)",
+  "commutation_gate": {
+    "surfaces": 335,
+    "G1_display_violations": [],
+    "G1_count": 0,
+    "G2_violations": [],
+    "G2_count": 0,
+    "G3_violations": [],
+    "G3_count": 0,
+    "passed": true,
+    "G4_injectivity_violations": [],
+    "G4_count": 0,
+    "G5_collision_count": 0,
+    "vocab_tokens_changed": 135,
+    "vocab_tokens": 378,
+    "closure_passes": 2,
+    "closure_stable": true
+  },
+  "smoke_chapters": null,
+  "pi_vocabulary_size": 379,
+  "pi_seed": 20261015,
+  "conditions": {
+    "O2": {
+      "n": 11174,
+      "agree": 11174,
+      "agreement": 1.0,
+      "wilson95": [
+        0.9997,
+        1.0
+      ],
+      "bcubed_f1": 1.0,
+      "same_method_share": 1.0,
+      "mean_abs_conf_change": 0.0,
+      "changed": 0,
+      "changed_classification": {},
+      "transform_counts": {},
+      "entity_clustered_bootstrap95": [
+        1.0,
+        1.0
+      ],
+      "resolve_seconds": 27.0
+    },
+    "I": {
+      "n": 11174,
+      "agree": 11174,
+      "agreement": 1.0,
+      "wilson95": [
+        0.9997,
+        1.0
+      ],
+      "bcubed_f1": 1.0,
+      "same_method_share": 1.0,
+      "mean_abs_conf_change": 0.0,
+      "changed": 0,
+      "changed_classification": {},
+      "transform_counts": {
+        "clean": 9103,
+        "preexisting_offset_defect": 2071
+      },
+      "entity_clustered_bootstrap95": [
+        1.0,
+        1.0
+      ],
+      "resolve_seconds": 25.8
+    },
+    "R": {
+      "n": 11174,
+      "agree": 11170,
+      "agreement": 0.9996420261320924,
+      "wilson95": [
+        0.9991,
+        0.9999
+      ],
+      "bcubed_f1": 1.0,
+      "same_method_share": 0.9996,
+      "mean_abs_conf_change": 0.0,
+      "changed": 4,
+      "changed_classification": {
+        "evidence_loss": 4
+      },
+      "transform_counts": {
+        "clean": 9103,
+        "preexisting_offset_defect": 2071
+      },
+      "entity_clustered_bootstrap95": [
+        0.9987,
+        0.9999
+      ],
+      "resolve_seconds": 24.7
+    },
+    "N": {
+      "n": 11174,
+      "agree": 11170,
+      "agreement": 0.9996420261320924,
+      "wilson95": [
+        0.9991,
+        0.9999
+      ],
+      "bcubed_f1": 1.0,
+      "same_method_share": 0.9996,
+      "mean_abs_conf_change": 0.0,
+      "changed": 4,
+      "changed_classification": {
+        "evidence_loss": 4
+      },
+      "transform_counts": {
+        "clean": 9103,
+        "preexisting_offset_defect": 2071
+      },
+      "entity_clustered_bootstrap95": [
+        0.9987,
+        0.9999
+      ],
+      "resolve_seconds": 25.1
+    }
+  },
+  "status": "COMPLETE"
+}

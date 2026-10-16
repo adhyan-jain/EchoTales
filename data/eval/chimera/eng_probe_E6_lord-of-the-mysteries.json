@@ -1,0 +1,379 @@
+{
+  "probe": "E6 persona-stage prefix causality",
+  "label_provenance": "SYSTEM-INTERNAL, no labels",
+  "novel": "lord-of-the-mysteries",
+  "by_k": {
+    "5": {
+      "entities_in_both": 13,
+      "entities_only_in_full": 30,
+      "entities_only_in_prefix": 0,
+      "entities_with_persona_facts_compared": 13,
+      "entities_with_any_trait_difference": 6,
+      "entity_difference_rate": 0.4615,
+      "entity_difference_wilson": [
+        0.23206,
+        0.70857
+      ],
+      "per_key": {
+        "age_band": {
+          "compared": 13,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.2281
+          ]
+        },
+        "gender": {
+          "compared": 13,
+          "differ": 6,
+          "rate": 0.4615,
+          "wilson": [
+            0.23206,
+            0.70857
+          ]
+        },
+        "register": {
+          "compared": 13,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.2281
+          ]
+        },
+        "archetype": {
+          "compared": 13,
+          "differ": 6,
+          "rate": 0.4615,
+          "wilson": [
+            0.23206,
+            0.70857
+          ]
+        },
+        "big_five": {
+          "compared": 13,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.2281
+          ]
+        }
+      },
+      "alias_sets_differ": 0,
+      "persona_id_sets_differ": 0,
+      "examples": [
+        {
+          "entity": "lord-of-the-mysteries:self:0e279a9b87",
+          "key": "gender",
+          "full_graph_value": "male",
+          "prefix_graph_value": "unknown"
+        },
+        {
+          "entity": "lord-of-the-mysteries:self:0e279a9b87",
+          "key": "archetype",
+          "full_graph_value": "male:adult:neutral",
+          "prefix_graph_value": "unknown:adult:neutral"
+        },
+        {
+          "entity": "lord-of-the-mysteries:self:110bc1f3e3",
+          "key": "gender",
+          "full_graph_value": "male",
+          "prefix_graph_value": "unknown"
+        },
+        {
+          "entity": "lord-of-the-mysteries:self:110bc1f3e3",
+          "key": "archetype",
+          "full_graph_value": "male:adult:neutral",
+          "prefix_graph_value": "unknown:adult:neutral"
+        },
+        {
+          "entity": "lord-of-the-mysteries:self:19c2dcb5af",
+          "key": "gender",
+          "full_graph_value": "male",
+          "prefix_graph_value": "unknown"
+        },
+        {
+          "entity": "lord-of-the-mysteries:self:19c2dcb5af",
+          "key": "archetype",
+          "full_graph_value": "male:adult:neutral",
+          "prefix_graph_value": "unknown:adult:neutral"
+        },
+        {
+          "entity": "lord-of-the-mysteries:self:478688907a",
+          "key": "gender",
+          "full_graph_value": "male",
+          "prefix_graph_value": "unknown"
+        },
+        {
+          "entity": "lord-of-the-mysteries:self:478688907a",
+          "key": "archetype",
+          "full_graph_value": "male:adult:neutral",
+          "prefix_graph_value": "unknown:adult:neutral"
+        },
+        {
+          "entity": "lord-of-the-mysteries:self:4afd3a0760",
+          "key": "gender",
+          "full_graph_value": "female",
+          "prefix_graph_value": "unknown"
+        },
+        {
+          "entity": "lord-of-the-mysteries:self:4afd3a0760",
+          "key": "archetype",
+          "full_graph_value": "female:adult:neutral",
+          "prefix_graph_value": "unknown:adult:neutral"
+        },
+        {
+          "entity": "lord-of-the-mysteries:self:7485f659b6",
+          "key": "gender",
+          "full_graph_value": "unknown",
+          "prefix_graph_value": "female"
+        },
+        {
+          "entity": "lord-of-the-mysteries:self:7485f659b6",
+          "key": "archetype",
+          "full_graph_value": "unknown:adult:neutral",
+          "prefix_graph_value": "female:adult:neutral"
+        }
+      ]
+    },
+    "10": {
+      "entities_in_both": 19,
+      "entities_only_in_full": 24,
+      "entities_only_in_prefix": 0,
+      "entities_with_persona_facts_compared": 19,
+      "entities_with_any_trait_difference": 3,
+      "entity_difference_rate": 0.1579,
+      "entity_difference_wilson": [
+        0.0552,
+        0.37566
+      ],
+      "per_key": {
+        "age_band": {
+          "compared": 19,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.16818
+          ]
+        },
+        "gender": {
+          "compared": 19,
+          "differ": 3,
+          "rate": 0.1579,
+          "wilson": [
+            0.0552,
+            0.37566
+          ]
+        },
+        "register": {
+          "compared": 19,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.16818
+          ]
+        },
+        "archetype": {
+          "compared": 19,
+          "differ": 3,
+          "rate": 0.1579,
+          "wilson": [
+            0.0552,
+            0.37566
+          ]
+        },
+        "big_five": {
+          "compared": 19,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.16818
+          ]
+        }
+      },
+      "alias_sets_differ": 0,
+      "persona_id_sets_differ": 0,
+      "examples": [
+        {
+          "entity": "lord-of-the-mysteries:self:0e279a9b87",
+          "key": "gender",
+          "full_graph_value": "male",
+          "prefix_graph_value": "unknown"
+        },
+        {
+          "entity": "lord-of-the-mysteries:self:0e279a9b87",
+          "key": "archetype",
+          "full_graph_value": "male:adult:neutral",
+          "prefix_graph_value": "unknown:adult:neutral"
+        },
+        {
+          "entity": "lord-of-the-mysteries:self:19c2dcb5af",
+          "key": "gender",
+          "full_graph_value": "male",
+          "prefix_graph_value": "unknown"
+        },
+        {
+          "entity": "lord-of-the-mysteries:self:19c2dcb5af",
+          "key": "archetype",
+          "full_graph_value": "male:adult:neutral",
+          "prefix_graph_value": "unknown:adult:neutral"
+        },
+        {
+          "entity": "lord-of-the-mysteries:self:7485f659b6",
+          "key": "gender",
+          "full_graph_value": "unknown",
+          "prefix_graph_value": "female"
+        },
+        {
+          "entity": "lord-of-the-mysteries:self:7485f659b6",
+          "key": "archetype",
+          "full_graph_value": "unknown:adult:neutral",
+          "prefix_graph_value": "female:adult:neutral"
+        }
+      ]
+    },
+    "20": {
+      "entities_in_both": 29,
+      "entities_only_in_full": 14,
+      "entities_only_in_prefix": 1,
+      "entities_with_persona_facts_compared": 29,
+      "entities_with_any_trait_difference": 1,
+      "entity_difference_rate": 0.0345,
+      "entity_difference_wilson": [
+        0.00611,
+        0.17176
+      ],
+      "per_key": {
+        "age_band": {
+          "compared": 29,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.11697
+          ]
+        },
+        "gender": {
+          "compared": 29,
+          "differ": 1,
+          "rate": 0.0345,
+          "wilson": [
+            0.00611,
+            0.17176
+          ]
+        },
+        "register": {
+          "compared": 29,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.11697
+          ]
+        },
+        "archetype": {
+          "compared": 29,
+          "differ": 1,
+          "rate": 0.0345,
+          "wilson": [
+            0.00611,
+            0.17176
+          ]
+        },
+        "big_five": {
+          "compared": 29,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.11697
+          ]
+        }
+      },
+      "alias_sets_differ": 0,
+      "persona_id_sets_differ": 0,
+      "examples": [
+        {
+          "entity": "lord-of-the-mysteries:self:19c2dcb5af",
+          "key": "gender",
+          "full_graph_value": "male",
+          "prefix_graph_value": "unknown"
+        },
+        {
+          "entity": "lord-of-the-mysteries:self:19c2dcb5af",
+          "key": "archetype",
+          "full_graph_value": "male:adult:neutral",
+          "prefix_graph_value": "unknown:adult:neutral"
+        }
+      ]
+    },
+    "30": {
+      "entities_in_both": 36,
+      "entities_only_in_full": 7,
+      "entities_only_in_prefix": 0,
+      "entities_with_persona_facts_compared": 34,
+      "entities_with_any_trait_difference": 0,
+      "entity_difference_rate": 0.0,
+      "entity_difference_wilson": [
+        0.0,
+        0.10152
+      ],
+      "per_key": {
+        "age_band": {
+          "compared": 34,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.10152
+          ]
+        },
+        "gender": {
+          "compared": 34,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.10152
+          ]
+        },
+        "register": {
+          "compared": 34,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.10152
+          ]
+        },
+        "archetype": {
+          "compared": 34,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.10152
+          ]
+        },
+        "big_five": {
+          "compared": 34,
+          "differ": 0,
+          "rate": 0.0,
+          "wilson": [
+            0.0,
+            0.10152
+          ]
+        }
+      },
+      "alias_sets_differ": 0,
+      "persona_id_sets_differ": 2,
+      "examples": []
+    }
+  },
+  "full_personas": 50
+}

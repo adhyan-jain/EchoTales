@@ -1,0 +1,361 @@
+{
+ "389": {
+  "Helen": {
+   "role": "first",
+   "gender": "female",
+   "pseudonym": "Josephine"
+  },
+  "Vaughan": {
+   "role": "last",
+   "gender": "female",
+   "pseudonym": "Whitcombe"
+  },
+  "Clarke": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Theodore"
+  },
+  "Villiers": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Norman"
+  },
+  "Austin": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Gideon"
+  },
+  "Raymond": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Eastwick"
+  },
+  "Meyrick": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Roland"
+  },
+  "Crashaw": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Oliver"
+  },
+  "Mary": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Quillfeather"
+  },
+  "Beaumont": {
+   "role": "last",
+   "gender": "female",
+   "pseudonym": "Yardley"
+  }
+ },
+ "1695": {
+  "Wilks": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Pickering"
+  },
+  "Syme": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Alan"
+  },
+  "Gregory": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Philip"
+  },
+  "Gogol": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Nigel"
+  },
+  "Witherspoon": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Terrence"
+  },
+  "Bull": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Oliver"
+  },
+  "Marquis": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Fenton"
+  },
+  "Rosamond": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Trevelyan"
+  },
+  "Worms": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Chaloner"
+  }
+ },
+ "10007": {
+  "Mircalla": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Bernard"
+  },
+  "Laura": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Kestrel"
+  },
+  "Perrodon": {
+   "role": "first",
+   "gender": "female",
+   "pseudonym": "Frances"
+  },
+  "Lafontaine": {
+   "role": "first",
+   "gender": "female",
+   "pseudonym": "Joan"
+  },
+  "Spielsdorf": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Wilfred"
+  },
+  "Bertha": {
+   "role": "first",
+   "gender": "unknown",
+   "pseudonym": "Taylor"
+  },
+  "Rheinfeldt": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Whitcombe"
+  },
+  "Hesselius": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Ivor"
+  },
+  "Carmilla": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Philip"
+  }
+ },
+ "2275": {
+  "Effingham": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Reginald"
+  },
+  "Natty": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Daniel"
+  },
+  "Marmaduke": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Emmett"
+  },
+  "Elizabeth": {
+   "role": "first",
+   "gender": "female",
+   "pseudonym": "Helena"
+  },
+  "Louisa": {
+   "role": "first",
+   "gender": "female",
+   "pseudonym": "Judith"
+  },
+  "Richard": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Stanley"
+  },
+  "Hiram": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Terrence"
+  },
+  "Benjamin": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Gordon"
+  },
+  "Mohegan": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Rupert"
+  },
+  "Oliver": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Fenton"
+  },
+  "Edwards": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Kendall"
+  }
+ },
+ "5142": {
+  "Yetive": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Chaloner"
+  },
+  "Lorry": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Daniel"
+  },
+  "Anguish": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Conrad"
+  },
+  "Dangloss": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Desmond"
+  },
+  "Ostrom": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Merrick"
+  },
+  "Hedrick": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Gilbert"
+  },
+  "Sitzky": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Lindsay"
+  },
+  "Geddos": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Jessop"
+  },
+  "Guggenslocker": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Ingram"
+  }
+ },
+ "34758": {
+  "Ars": {
+   "role": "first",
+   "gender": "unknown",
+   "pseudonym": "Avery"
+  },
+  "Lupin": {
+   "role": "last",
+   "gender": "male",
+   "pseudonym": "Fenwick"
+  },
+  "Lenormand": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Lionel"
+  },
+  "Kesselbach": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Dudley"
+  },
+  "Valenglay": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Nigel"
+  },
+  "Gourel": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Emmett"
+  },
+  "Weber": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Basil"
+  },
+  "Dudouis": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Rowley"
+  },
+  "Chapman": {
+   "role": "first",
+   "gender": "male",
+   "pseudonym": "Sidney"
+  },
+  "Sernine": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Marlowe"
+  },
+  "Paul": {
+   "role": "first",
+   "gender": "unknown",
+   "pseudonym": "Sasha"
+  }
+ },
+ "3268": {
+  "Laurentini": {
+   "role": "first",
+   "gender": "female",
+   "pseudonym": "Diana"
+  },
+  "Emily": {
+   "role": "first",
+   "gender": "female",
+   "pseudonym": "Dorothy"
+  },
+  "Montoni": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Rowley"
+  },
+  "Valancourt": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Yardley"
+  },
+  "Annette": {
+   "role": "first",
+   "gender": "female",
+   "pseudonym": "Una"
+  },
+  "Doroth": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Pemberton"
+  },
+  "Blanche": {
+   "role": "first",
+   "gender": "female",
+   "pseudonym": "Winifred"
+  },
+  "Ludovico": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Kingsley"
+  },
+  "Morano": {
+   "role": "last",
+   "gender": "unknown",
+   "pseudonym": "Denholm"
+  },
+  "Agnes": {
+   "role": "last",
+   "gender": "female",
+   "pseudonym": "Fitzroy"
+  }
+ }
+}

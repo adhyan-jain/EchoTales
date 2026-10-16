@@ -1,0 +1,747 @@
+{
+ "label_provenance": "TEXT-DERIVED oracle; selection by model-drafter; owner spot-check pending; no novel text here",
+ "n_items": 72,
+ "counts": {
+  "CI|ctrl": 3,
+  "CI|pre": 8,
+  "GE|ctrl": 3,
+  "GE|post": 2,
+  "GE|pre": 6,
+  "JE|ctrl": 3,
+  "JE|post": 1,
+  "JE|pre": 4,
+  "PH|ctrl": 3,
+  "PH|post": 2,
+  "PH|pre": 8,
+  "PI|ctrl": 3,
+  "PI|post": 2,
+  "PI|pre": 8,
+  "RH|ctrl": 3,
+  "RH|pre": 8,
+  "SS|ctrl": 3,
+  "SS|post": 1,
+  "SS|pre": 1
+ },
+ "items": [
+  {
+   "event": "PH",
+   "kind": "pre",
+   "start": 2920,
+   "end": 2935,
+   "truth": null,
+   "distance": 298129,
+   "id": "PH-pre000",
+   "surface_sha": "22189e82dcf2"
+  },
+  {
+   "event": "PH",
+   "kind": "pre",
+   "start": 14468,
+   "end": 14477,
+   "truth": null,
+   "distance": 286592,
+   "id": "PH-pre001",
+   "surface_sha": "a958c43e0797"
+  },
+  {
+   "event": "PH",
+   "kind": "pre",
+   "start": 23888,
+   "end": 23897,
+   "truth": null,
+   "distance": 277173,
+   "id": "PH-pre002",
+   "surface_sha": "a958c43e0797"
+  },
+  {
+   "event": "PH",
+   "kind": "pre",
+   "start": 57690,
+   "end": 57705,
+   "truth": null,
+   "distance": 243285,
+   "id": "PH-pre003",
+   "surface_sha": "22189e82dcf2"
+  },
+  {
+   "event": "PH",
+   "kind": "pre",
+   "start": 78412,
+   "end": 78421,
+   "truth": null,
+   "distance": 222660,
+   "id": "PH-pre004",
+   "surface_sha": "a958c43e0797"
+  },
+  {
+   "event": "PH",
+   "kind": "pre",
+   "start": 138594,
+   "end": 138603,
+   "truth": null,
+   "distance": 162342,
+   "id": "PH-pre005",
+   "surface_sha": "a958c43e0797"
+  },
+  {
+   "event": "PH",
+   "kind": "pre",
+   "start": 276028,
+   "end": 276037,
+   "truth": null,
+   "distance": 25051,
+   "id": "PH-pre006",
+   "surface_sha": "a958c43e0797"
+  },
+  {
+   "event": "PH",
+   "kind": "pre",
+   "start": 299323,
+   "end": 299332,
+   "truth": null,
+   "distance": 1756,
+   "id": "PH-pre007",
+   "surface_sha": "a958c43e0797"
+  },
+  {
+   "event": "PH",
+   "kind": "post",
+   "start": 303815,
+   "end": 303830,
+   "truth": "Erik",
+   "distance": null,
+   "id": "PH-post008",
+   "surface_sha": "22189e82dcf2"
+  },
+  {
+   "event": "PH",
+   "kind": "post",
+   "start": 463589,
+   "end": 463604,
+   "truth": "Erik",
+   "distance": null,
+   "id": "PH-post009",
+   "surface_sha": "22189e82dcf2"
+  },
+  {
+   "event": "PH",
+   "kind": "ctrl",
+   "start": 105755,
+   "end": 105764,
+   "truth": "Christine Daa\u00e9",
+   "distance": null,
+   "id": "PH-ctrl010",
+   "surface_sha": "9e375b4353cf"
+  },
+  {
+   "event": "PH",
+   "kind": "ctrl",
+   "start": 172471,
+   "end": 172480,
+   "truth": "Christine Daa\u00e9",
+   "distance": null,
+   "id": "PH-ctrl011",
+   "surface_sha": "9e375b4353cf"
+  },
+  {
+   "event": "PH",
+   "kind": "ctrl",
+   "start": 216879,
+   "end": 216888,
+   "truth": "Christine Daa\u00e9",
+   "distance": null,
+   "id": "PH-ctrl012",
+   "surface_sha": "9e375b4353cf"
+  },
+  {
+   "event": "PI",
+   "kind": "pre",
+   "start": 8,
+   "end": 25,
+   "truth": null,
+   "distance": 275574,
+   "id": "PI-pre013",
+   "surface_sha": "b0949b69408a"
+  },
+  {
+   "event": "PI",
+   "kind": "pre",
+   "start": 55200,
+   "end": 55217,
+   "truth": null,
+   "distance": 220415,
+   "id": "PI-pre014",
+   "surface_sha": "b0949b69408a"
+  },
+  {
+   "event": "PI",
+   "kind": "pre",
+   "start": 118913,
+   "end": 118930,
+   "truth": null,
+   "distance": 156564,
+   "id": "PI-pre015",
+   "surface_sha": "b0949b69408a"
+  },
+  {
+   "event": "PI",
+   "kind": "pre",
+   "start": 133184,
+   "end": 133205,
+   "truth": null,
+   "distance": 142370,
+   "id": "PI-pre016",
+   "surface_sha": "61b6bbf66d79"
+  },
+  {
+   "event": "PI",
+   "kind": "pre",
+   "start": 156051,
+   "end": 156072,
+   "truth": null,
+   "distance": 119560,
+   "id": "PI-pre017",
+   "surface_sha": "61b6bbf66d79"
+  },
+  {
+   "event": "PI",
+   "kind": "pre",
+   "start": 178018,
+   "end": 178035,
+   "truth": null,
+   "distance": 97537,
+   "id": "PI-pre018",
+   "surface_sha": "b0949b69408a"
+  },
+  {
+   "event": "PI",
+   "kind": "pre",
+   "start": 210110,
+   "end": 210127,
+   "truth": null,
+   "distance": 65505,
+   "id": "PI-pre019",
+   "surface_sha": "b0949b69408a"
+  },
+  {
+   "event": "PI",
+   "kind": "pre",
+   "start": 265804,
+   "end": 265825,
+   "truth": null,
+   "distance": 9785,
+   "id": "PI-pre020",
+   "surface_sha": "61b6bbf66d79"
+  },
+  {
+   "event": "PI",
+   "kind": "post",
+   "start": 297726,
+   "end": 297747,
+   "truth": "Sir Percy Blakeney",
+   "distance": null,
+   "id": "PI-post021",
+   "surface_sha": "61b6bbf66d79"
+  },
+  {
+   "event": "PI",
+   "kind": "post",
+   "start": 454381,
+   "end": 454402,
+   "truth": "Sir Percy Blakeney",
+   "distance": null,
+   "id": "PI-post022",
+   "surface_sha": "61b6bbf66d79"
+  },
+  {
+   "event": "PI",
+   "kind": "ctrl",
+   "start": 105539,
+   "end": 105549,
+   "truth": "Marguerite Blakeney",
+   "distance": null,
+   "id": "PI-ctrl023",
+   "surface_sha": "5a0268fe332e"
+  },
+  {
+   "event": "PI",
+   "kind": "ctrl",
+   "start": 166011,
+   "end": 166021,
+   "truth": "Marguerite Blakeney",
+   "distance": null,
+   "id": "PI-ctrl024",
+   "surface_sha": "5a0268fe332e"
+  },
+  {
+   "event": "PI",
+   "kind": "ctrl",
+   "start": 210626,
+   "end": 210636,
+   "truth": "Marguerite Blakeney",
+   "distance": null,
+   "id": "PI-ctrl025",
+   "surface_sha": "5a0268fe332e"
+  },
+  {
+   "event": "GE",
+   "kind": "pre",
+   "start": 196011,
+   "end": 196020,
+   "truth": null,
+   "distance": 444499,
+   "id": "GE-pre026",
+   "surface_sha": "abad3f57354f"
+  },
+  {
+   "event": "GE",
+   "kind": "pre",
+   "start": 238368,
+   "end": 238381,
+   "truth": null,
+   "distance": 402280,
+   "id": "GE-pre027",
+   "surface_sha": "2f756d042b40"
+  },
+  {
+   "event": "GE",
+   "kind": "pre",
+   "start": 359555,
+   "end": 359568,
+   "truth": null,
+   "distance": 281089,
+   "id": "GE-pre028",
+   "surface_sha": "2f756d042b40"
+  },
+  {
+   "event": "GE",
+   "kind": "pre",
+   "start": 588122,
+   "end": 588135,
+   "truth": null,
+   "distance": 52495,
+   "id": "GE-pre029",
+   "surface_sha": "2f756d042b40"
+  },
+  {
+   "event": "GE",
+   "kind": "pre",
+   "start": 590431,
+   "end": 590444,
+   "truth": null,
+   "distance": 50158,
+   "id": "GE-pre030",
+   "surface_sha": "2f756d042b40"
+  },
+  {
+   "event": "GE",
+   "kind": "pre",
+   "start": 591129,
+   "end": 591138,
+   "truth": null,
+   "distance": 49481,
+   "id": "GE-pre031",
+   "surface_sha": "abad3f57354f"
+  },
+  {
+   "event": "GE",
+   "kind": "post",
+   "start": 732456,
+   "end": 732465,
+   "truth": "Abel Magwitch",
+   "distance": null,
+   "id": "GE-post032",
+   "surface_sha": "abad3f57354f"
+  },
+  {
+   "event": "GE",
+   "kind": "post",
+   "start": 960723,
+   "end": 960732,
+   "truth": "Abel Magwitch",
+   "distance": null,
+   "id": "GE-post033",
+   "surface_sha": "abad3f57354f"
+  },
+  {
+   "event": "GE",
+   "kind": "ctrl",
+   "start": 89324,
+   "end": 89327,
+   "truth": "Joe Gargery",
+   "distance": null,
+   "id": "GE-ctrl034",
+   "surface_sha": "6dd8b7d7d3c5"
+  },
+  {
+   "event": "GE",
+   "kind": "ctrl",
+   "start": 193834,
+   "end": 193837,
+   "truth": "Joe Gargery",
+   "distance": null,
+   "id": "GE-ctrl035",
+   "surface_sha": "6dd8b7d7d3c5"
+  },
+  {
+   "event": "GE",
+   "kind": "ctrl",
+   "start": 287565,
+   "end": 287568,
+   "truth": "Joe Gargery",
+   "distance": null,
+   "id": "GE-ctrl036",
+   "surface_sha": "6dd8b7d7d3c5"
+  },
+  {
+   "event": "CI",
+   "kind": "pre",
+   "start": 103346,
+   "end": 103358,
+   "truth": null,
+   "distance": 23930,
+   "id": "CI-pre037",
+   "surface_sha": "77d67a196541"
+  },
+  {
+   "event": "CI",
+   "kind": "pre",
+   "start": 107525,
+   "end": 107537,
+   "truth": null,
+   "distance": 19751,
+   "id": "CI-pre038",
+   "surface_sha": "77d67a196541"
+  },
+  {
+   "event": "CI",
+   "kind": "pre",
+   "start": 107761,
+   "end": 107773,
+   "truth": null,
+   "distance": 19478,
+   "id": "CI-pre039",
+   "surface_sha": "77d67a196541"
+  },
+  {
+   "event": "CI",
+   "kind": "pre",
+   "start": 109636,
+   "end": 109648,
+   "truth": null,
+   "distance": 17640,
+   "id": "CI-pre040",
+   "surface_sha": "77d67a196541"
+  },
+  {
+   "event": "CI",
+   "kind": "pre",
+   "start": 113990,
+   "end": 114002,
+   "truth": null,
+   "distance": 13231,
+   "id": "CI-pre041",
+   "surface_sha": "77d67a196541"
+  },
+  {
+   "event": "CI",
+   "kind": "pre",
+   "start": 119493,
+   "end": 119505,
+   "truth": null,
+   "distance": 7784,
+   "id": "CI-pre042",
+   "surface_sha": "77d67a196541"
+  },
+  {
+   "event": "CI",
+   "kind": "pre",
+   "start": 120347,
+   "end": 120359,
+   "truth": null,
+   "distance": 6915,
+   "id": "CI-pre043",
+   "surface_sha": "77d67a196541"
+  },
+  {
+   "event": "CI",
+   "kind": "pre",
+   "start": 124874,
+   "end": 124886,
+   "truth": null,
+   "distance": 2402,
+   "id": "CI-pre044",
+   "surface_sha": "77d67a196541"
+  },
+  {
+   "event": "CI",
+   "kind": "ctrl",
+   "start": 40981,
+   "end": 40987,
+   "truth": "Sherlock Holmes",
+   "distance": null,
+   "id": "CI-ctrl045",
+   "surface_sha": "0fbbc4a47c14"
+  },
+  {
+   "event": "CI",
+   "kind": "ctrl",
+   "start": 70415,
+   "end": 70421,
+   "truth": "Sherlock Holmes",
+   "distance": null,
+   "id": "CI-ctrl046",
+   "surface_sha": "0fbbc4a47c14"
+  },
+  {
+   "event": "CI",
+   "kind": "ctrl",
+   "start": 102742,
+   "end": 102748,
+   "truth": "Sherlock Holmes",
+   "distance": null,
+   "id": "CI-ctrl047",
+   "surface_sha": "0fbbc4a47c14"
+  },
+  {
+   "event": "SS",
+   "kind": "pre",
+   "start": 61055,
+   "end": 61065,
+   "truth": null,
+   "distance": 57439,
+   "id": "SS-pre048",
+   "surface_sha": "13a51957bec4"
+  },
+  {
+   "event": "SS",
+   "kind": "post",
+   "start": 119546,
+   "end": 119556,
+   "truth": "Jefferson Hope",
+   "distance": null,
+   "id": "SS-post049",
+   "surface_sha": "13a51957bec4"
+  },
+  {
+   "event": "SS",
+   "kind": "ctrl",
+   "start": 44974,
+   "end": 44980,
+   "truth": "Sherlock Holmes",
+   "distance": null,
+   "id": "SS-ctrl050",
+   "surface_sha": "0fbbc4a47c14"
+  },
+  {
+   "event": "SS",
+   "kind": "ctrl",
+   "start": 76728,
+   "end": 76734,
+   "truth": "Sherlock Holmes",
+   "distance": null,
+   "id": "SS-ctrl051",
+   "surface_sha": "0fbbc4a47c14"
+  },
+  {
+   "event": "SS",
+   "kind": "ctrl",
+   "start": 100269,
+   "end": 100275,
+   "truth": "Sherlock Holmes",
+   "distance": null,
+   "id": "SS-ctrl052",
+   "surface_sha": "0fbbc4a47c14"
+  },
+  {
+   "event": "JE",
+   "kind": "pre",
+   "start": 430628,
+   "end": 430637,
+   "truth": null,
+   "distance": 20757,
+   "id": "JE-pre053",
+   "surface_sha": "56e02c5cb283"
+  },
+  {
+   "event": "JE",
+   "kind": "pre",
+   "start": 438204,
+   "end": 438213,
+   "truth": null,
+   "distance": 13218,
+   "id": "JE-pre054",
+   "surface_sha": "56e02c5cb283"
+  },
+  {
+   "event": "JE",
+   "kind": "pre",
+   "start": 439049,
+   "end": 439058,
+   "truth": null,
+   "distance": 12434,
+   "id": "JE-pre055",
+   "surface_sha": "9ef7f05b22d5"
+  },
+  {
+   "event": "JE",
+   "kind": "pre",
+   "start": 447106,
+   "end": 447115,
+   "truth": null,
+   "distance": 4376,
+   "id": "JE-pre056",
+   "surface_sha": "56e02c5cb283"
+  },
+  {
+   "event": "JE",
+   "kind": "post",
+   "start": 455082,
+   "end": 455091,
+   "truth": "Mr. Rochester",
+   "distance": null,
+   "id": "JE-post057",
+   "surface_sha": "56e02c5cb283"
+  },
+  {
+   "event": "JE",
+   "kind": "ctrl",
+   "start": 237662,
+   "end": 237669,
+   "truth": "Mrs. Fairfax",
+   "distance": null,
+   "id": "JE-ctrl058",
+   "surface_sha": "a82a5e2b64e8"
+  },
+  {
+   "event": "JE",
+   "kind": "ctrl",
+   "start": 268704,
+   "end": 268711,
+   "truth": "Mrs. Fairfax",
+   "distance": null,
+   "id": "JE-ctrl059",
+   "surface_sha": "a82a5e2b64e8"
+  },
+  {
+   "event": "JE",
+   "kind": "ctrl",
+   "start": 342360,
+   "end": 342367,
+   "truth": "Mrs. Fairfax",
+   "distance": null,
+   "id": "JE-ctrl060",
+   "surface_sha": "a82a5e2b64e8"
+  },
+  {
+   "event": "RH",
+   "kind": "pre",
+   "start": 55227,
+   "end": 55244,
+   "truth": null,
+   "distance": 33802,
+   "id": "RH-pre061",
+   "surface_sha": "548f8ce56fec"
+  },
+  {
+   "event": "RH",
+   "kind": "pre",
+   "start": 56485,
+   "end": 56494,
+   "truth": null,
+   "distance": 32457,
+   "id": "RH-pre062",
+   "surface_sha": "0859afb2ee16"
+  },
+  {
+   "event": "RH",
+   "kind": "pre",
+   "start": 59449,
+   "end": 59466,
+   "truth": null,
+   "distance": 29457,
+   "id": "RH-pre063",
+   "surface_sha": "548f8ce56fec"
+  },
+  {
+   "event": "RH",
+   "kind": "pre",
+   "start": 60278,
+   "end": 60287,
+   "truth": null,
+   "distance": 28725,
+   "id": "RH-pre064",
+   "surface_sha": "0859afb2ee16"
+  },
+  {
+   "event": "RH",
+   "kind": "pre",
+   "start": 60433,
+   "end": 60442,
+   "truth": null,
+   "distance": 28618,
+   "id": "RH-pre065",
+   "surface_sha": "0859afb2ee16"
+  },
+  {
+   "event": "RH",
+   "kind": "pre",
+   "start": 63749,
+   "end": 63766,
+   "truth": null,
+   "distance": 25315,
+   "id": "RH-pre066",
+   "surface_sha": "548f8ce56fec"
+  },
+  {
+   "event": "RH",
+   "kind": "pre",
+   "start": 65775,
+   "end": 65784,
+   "truth": null,
+   "distance": 23203,
+   "id": "RH-pre067",
+   "surface_sha": "0859afb2ee16"
+  },
+  {
+   "event": "RH",
+   "kind": "pre",
+   "start": 71396,
+   "end": 71413,
+   "truth": null,
+   "distance": 17667,
+   "id": "RH-pre068",
+   "surface_sha": "548f8ce56fec"
+  },
+  {
+   "event": "RH",
+   "kind": "ctrl",
+   "start": 19095,
+   "end": 19101,
+   "truth": "Sherlock Holmes",
+   "distance": null,
+   "id": "RH-ctrl069",
+   "surface_sha": "0fbbc4a47c14"
+  },
+  {
+   "event": "RH",
+   "kind": "ctrl",
+   "start": 46278,
+   "end": 46284,
+   "truth": "Sherlock Holmes",
+   "distance": null,
+   "id": "RH-ctrl070",
+   "surface_sha": "0fbbc4a47c14"
+  },
+  {
+   "event": "RH",
+   "kind": "ctrl",
+   "start": 70415,
+   "end": 70421,
+   "truth": "Sherlock Holmes",
+   "distance": null,
+   "id": "RH-ctrl071",
+   "surface_sha": "0fbbc4a47c14"
+  }
+ ]
+}
