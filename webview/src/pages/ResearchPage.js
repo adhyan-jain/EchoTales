@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FlaskConical, Play, Timer } from 'lucide-react';
+import { FlaskConical, Layers, Play, Timer } from 'lucide-react';
 import { api } from '../api';
 import { AccountShell } from './Projects';
 import { PageHeader, StatCard } from '../components/app/Chrome';
@@ -97,6 +97,73 @@ function Headline({ data }) {
         evidence the model is using memory of the book, not the text in front of it.
       </p>
     </section>
+  );
+}
+
+// ------------------------------------------------------------------ Channel 2 Card
+export function Channel2Card() {
+  return (
+    <Card className="border border-border/80 bg-surface shadow-sm" data-testid="channel-2-card">
+      <CardHeader className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3">
+        <div className="flex items-center gap-2">
+          <Layers className="h-5 w-5 text-accent" />
+          <h3 className="font-display text-base font-semibold">
+            Channel 2: Derivation Look-Ahead (Prefix-Faithfulness)
+          </h3>
+        </div>
+        <Badge tone="accent">Audit &amp; Repair · Truncate-and-Rebuild Oracle</Badge>
+      </CardHeader>
+      <CardBody className="space-y-4 pt-4">
+        <p className="text-sm text-muted">
+          Measures whether facts derived across multiple chapters (e.g. persona traits) leak future information
+          when filtered to early reader positions. Audited by rebuilding on truncated prefixes (<code>chapters &le; k</code>)
+          versus whole-volume builds.
+        </p>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border border-border bg-surface-hover/30 p-3">
+            <span className="text-xs font-medium text-muted">Status Quo Divergence</span>
+            <div className="mt-1 font-display text-2xl font-bold text-warn">6.0%</div>
+            <p className="mt-1 text-xs text-muted">
+              41 of 685 cuts across 3 web novels (4.5% to 8.0%); 4.5% of 179 on English originals.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-border bg-surface-hover/30 p-3">
+            <span className="text-xs font-medium text-muted">Premature Disclosures</span>
+            <div className="mt-1 font-display text-2xl font-bold text-warn">2.6%</div>
+            <p className="mt-1 text-xs text-muted">
+              18 of 685 cuts (11 characters) by model annotators (range 1.7% to 3.5%); rest supported by text.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-border bg-surface-hover/30 p-3">
+            <span className="text-xs font-medium text-muted">Horizon-Versioned Repair</span>
+            <div className="mt-1 font-display text-2xl font-bold text-good">0</div>
+            <p className="mt-1 text-xs text-muted">
+              0 divergences of 685 cuts (95% CI [0.0%, 1.3%]); 0 across all real, English, and synthetic runs.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-border bg-surface-hover/30 p-3">
+            <span className="text-xs font-medium text-muted">Anchored Cue Recovery</span>
+            <div className="mt-1 font-display text-2xl font-bold text-good">97%</div>
+            <p className="mt-1 text-xs text-muted">
+              Recovers 97% of withheld values at 1.2% error rate on web novels (prominence gate: 50 &rarr; 0).
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/50 pt-3 text-xs text-muted">
+          <span>
+            <strong>Repair trade-off:</strong> Horizon stamping guarantees divergence 0 (safe rather than correct); naive hiding is worse (82 divergences).
+          </span>
+          <span className="font-mono text-[11px]">
+            Source: claude/prefix-faithfulness · REPORT.md
+          </span>
+        </div>
+      </CardBody>
+    </Card>
   );
 }
 
@@ -666,6 +733,16 @@ export default function ResearchPage() {
       {data && (
         <div className="space-y-12">
           <Headline data={data} />
+
+          <section aria-labelledby="r-channel2">
+            <SectionTitle
+              id="r-channel2"
+              hint="In addition to parametric memory (Channel 1), reader-faithfulness can be broken through pipeline derivations stamped earlier than the chapters they were computed from (Channel 2)."
+            >
+              Channel 2: Pipeline Derivation Look-Ahead
+            </SectionTitle>
+            <Channel2Card />
+          </section>
 
           {data.gap_by_model && (
             <section aria-labelledby="r-gap">
