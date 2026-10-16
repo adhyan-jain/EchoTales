@@ -167,6 +167,58 @@ export function Channel2Card() {
   );
 }
 
+// ------------------------------------------------------------------ Channel 2 on a generic design (RF-E2E)
+// Whole-volume vs versioned LLM character card on the confirmatory reveal events; renamed text separates the build's
+// leak (input channel) from the model's memory. Numbers come from /api/research/summary (rf_e2e/analysis.json).
+export function RfE2ECard({ rf, confirm }) {
+  if (!rf || !rf.strata || rf.strata.length === 0) return null;
+  const ci = (iv) => (iv ? `${pp(iv.gap, true)} [${pp(iv.lo, true)}, ${pp(iv.hi, true)}]` : '—');
+  return (
+    <Card className="border border-border/80 bg-surface shadow-sm" data-testid="rf-e2e-card">
+      <CardHeader className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3">
+        <div className="flex items-center gap-2">
+          <Layers className="h-5 w-5 text-accent" />
+          <h3 className="font-display text-base font-semibold">Found and fixed: whole-book character cards leak the reveal</h3>
+        </div>
+        <Badge tone="accent">Pre-registered · addenda 6 to 8</Badge>
+      </CardHeader>
+      <CardBody className="space-y-4 pt-4">
+        <p className="text-sm text-muted">
+          A card built once from the whole book and shown from the character&rsquo;s first appearance, against a versioned card built
+          only from the text before the reader&rsquo;s position. On renamed text no model has seen, any leak comes from the build, not memory.
+        </p>
+        {rf.strata.map((st) => (
+          <div key={st.label} className="space-y-2">
+            <div className="text-xs font-medium uppercase tracking-wide text-muted">{st.label}: {(st.models || []).join(', ')}</div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {st.rules.map((r) => (
+                <div key={r.rule} className="rounded-xl border border-border bg-surface-hover/30 p-3">
+                  <span className="text-xs font-medium text-muted">{r.rule} · {r.events} events</span>
+                  <div className="mt-1 flex items-baseline gap-3">
+                    <span className="font-display text-2xl font-bold text-warn">{pct0(r.whole_renamed)}</span>
+                    <span className="text-xs text-muted">whole-book card</span>
+                    <span className="font-display text-2xl font-bold text-good">{pct0(r.versioned_renamed)}</span>
+                    <span className="text-xs text-muted">versioned card</span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted">
+                    Input leak {ci(r.input_channel)} points{r.supported ? ' (supported)' : ''}; memory-only leak {ci(r.memory_channel)}.
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+        {confirm && confirm.pooled_gap && (
+          <p className="border-t border-border/50 pt-3 text-xs text-muted">
+            Channel 1 confirmatory run ({confirm.events} events, {(confirm.models || []).join(', ')}): pooled memory gap {ci(confirm.pooled_gap)} points on
+            mostly obscure books; fame contrast {ci(confirm.fame_contrast)}, p = {confirm.fame_p}.
+          </p>
+        )}
+      </CardBody>
+    </Card>
+  );
+}
+
 // ------------------------------------------------------------------ 2. interval plot
 function IntervalPlot({ gap }) {
   const rows = useMemo(() => {
@@ -720,7 +772,7 @@ export default function ResearchPage() {
         eyebrow="Research"
         title="Name-keyed memory in LLM reading of fiction"
         description="Does a language model answer from the text in front of it, or from memory of the book? Compare the same question with the original names and with consistently renamed text."
-        actions={<Badge tone="warning">Exploratory results; human labelling pending</Badge>}
+        actions={<Badge tone="warning">Text-derived oracle; pre-registered where marked</Badge>}
       />
 
       {error && (
@@ -742,6 +794,9 @@ export default function ResearchPage() {
               Channel 2: Pipeline Derivation Look-Ahead
             </SectionTitle>
             <Channel2Card />
+            <div className="mt-4">
+              <RfE2ECard rf={data.rf_e2e} confirm={data.confirmatory} />
+            </div>
           </section>
 
           {data.gap_by_model && (
@@ -793,8 +848,8 @@ export default function ResearchPage() {
           <Details data={data} />
 
           <p className="border-t border-border pt-4 text-xs text-muted">
-            Exploratory results; human labelling pending. Labels are text-derived (an explicit revealing sentence plus a located cutoff);
-            event selection was by the model-drafter and an owner spot-check is pending. Sources:{' '}
+            Labels are text-derived (an explicit revealing sentence plus a located cutoff); events were selected by a model; the judge rule
+            is labelled by a separate model. Sources:{' '}
             {Object.values(data.sources || {}).join(', ')}.
             {data.missing && data.missing.length > 0 ? ` Missing: ${data.missing.join(', ')}.` : ''}
           </p>

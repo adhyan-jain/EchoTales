@@ -18,11 +18,11 @@ jest.mock('../api', () => ({
 // eslint-disable-next-line import/first
 import { api } from '../api';
 // eslint-disable-next-line import/first
-import ResearchPage, { excerptAroundMarker, Channel2Card } from '../pages/ResearchPage';
+import ResearchPage, { excerptAroundMarker, Channel2Card, RfE2ECard } from '../pages/ResearchPage';
 
 const cell = (gap, lo, hi, events = 10) => ({ gap, lo, hi, events, items: null });
 const SUMMARY = {
-  provenance: 'Exploratory results; human labelling pending.',
+  provenance: 'Text-derived oracle; model-selected events; no human labels.',
   headline: {
     reference_gap: cell(0.2596, 0.1678, 0.3604, 38),
     local_pool_gap: cell(0.1151, 0.0454, 0.1899, 38),
@@ -132,7 +132,7 @@ test('headline cards show the stored gaps and the recovered fraction, with the p
   expect(await screen.findByText('+26.0 pts')).toBeInTheDocument();
   expect(screen.getByText('+11.5 pts')).toBeInTheDocument();
   expect(screen.getByText('−11%')).toBeInTheDocument();
-  expect(screen.getAllByText(/human labelling pending/i).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/events were selected by a model/i).length).toBeGreaterThan(0);
   expect(screen.getByRole('img', { name: /gap between original-name and renamed accuracy/i })).toBeInTheDocument();
   expect(screen.getByRole('img', { name: /mean gap by how many of five local models/i })).toBeInTheDocument();
 });
@@ -215,3 +215,17 @@ test('Channel2Card renders standalone with read-only badge and headline metrics'
   expect(screen.getByText('97%')).toBeInTheDocument();
 });
 
+
+test('RfE2ECard shows whole-book versus versioned leak per rule and renders nothing without data', () => {
+  const rf = { strata: [{ label: '7-8B local models', models: ['qwen2.5:7b'], rules: [
+    { rule: 'Judge rule', events: 54, whole_renamed: 0.222, versioned_renamed: 0.019, input_channel: { gap: 0.204, lo: 0.111, hi: 0.306 }, memory_channel: { gap: 0.009, lo: 0, hi: 0.028 }, supported: true },
+  ] }] };
+  const { container, unmount } = render(<RfE2ECard rf={rf} />);
+  expect(screen.getByTestId('rf-e2e-card')).toBeInTheDocument();
+  expect(screen.getByText('22%')).toBeInTheDocument();
+  expect(screen.getByText(/supported/)).toBeInTheDocument();
+  unmount();
+  const empty = render(<RfE2ECard rf={null} />);
+  expect(empty.container).toBeEmptyDOMElement();
+  void container;
+});
