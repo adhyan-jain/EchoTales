@@ -30,7 +30,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from echotales.core.enums import ReferenceMode, TargetKind
+from echotales.core.models import Mention
 from echotales.core.store import Store
+from echotales.pipeline.ingest.normalize import comparison_key
 from echotales.pipeline.world.schema import keys_for
 
 #: Per-entity fact cap in a brief. A brief is a *summary*: past a handful of
@@ -157,6 +159,24 @@ def _ranked(facts: dict[str, str], kind: TargetKind) -> dict[str, str]:
     return dict(ordered[:_MAX_FACTS_PER_ENTITY])
 
 
+def _reader_binding_chapters(store: Store, novel_id: str) -> dict[tuple[str, str], int]:
+    """(entity, normalised surface) -> earliest chapter at which the READER was told that surface names that entity."""
+    learned: dict[tuple[str, str], int] = {}
+    for b in store.all_aliases(novel_id):
+        if b.observer_id != "READER":
+            continue
+        key = (b.target_id, comparison_key(b.alias))
+        learned[key] = min(learned.get(key, 10**9), b.learned_at_pos.chapter)
+    return learned
+
+
+def _reader_entitled(mention: Mention, learned: dict[tuple[str, str], int]) -> bool:
+    """False when the mention was linked to its entity before the reader was told that surface names it
+    (a retroactive link such as the title-holder pass's chapter-1 "the clan head": audit A1/A2, CHIMERA backlog)."""
+    first = learned.get((mention.target_id or "", comparison_key(mention.text)))
+    return first is None or mention.chapter >= first
+
+
 def story_context(
     novel_id: str,
     store: Store,
@@ -164,6 +184,8 @@ def story_context(
     blocks: list[int],
     *,
     include_appearance: bool = True,
+    reader_entitled: bool = False,
+    date_wiki_canon: bool = False,
 ) -> StoryContext:
     """Assemble the brief for a position, from the graph alone.
 
@@ -171,16 +193,25 @@ def story_context(
     character a moment is *about* is often named in one block of it and
     acted in another -- the same reason `panels.py::present_beat_entities`
     reads across the beat.
+
+    `reader_entitled=True` (A1/A2, CHIMERA backlog) additionally drops any
+    mention whose link predates the reader's alias binding, so a brief cannot
+    name an entity through a retroactive link the reader has not been told
+    yet. Off by default (the shipped behaviour); the standing audit is
+    `scripts/chimera/prompt_invariant_check.py`.
     """
     context = StoryContext(
         novel_id=novel_id, chapter=chapter, block_index=blocks[0] if blocks else 0
     )
     wanted = set(blocks)
+    learned = _reader_binding_chapters(store, novel_id) if reader_entitled else None
 
     present: list[str] = []
     referenced: list[str] = []
     for mention in store.get_mentions(novel_id, chapter):
         if mention.block_index not in wanted or not mention.target_id:
+            continue
+        if learned is not None and not _reader_entitled(mention, learned):
             continue
         bucket = (
             present
@@ -206,7 +237,9 @@ def story_context(
                 # what `ReferenceMode` exists for.
                 continue
             if include_appearance:
-                brief.appearance = _appearance_brief(store, novel_id, target_id, chapter)
+                brief.appearance = _appearance_brief(
+                    store, novel_id, target_id, chapter, date_wiki_canon=date_wiki_canon
+                )
             context.characters.append(brief)
         elif kind is TargetKind.LOCATION and context.location is None:
             context.location = brief
@@ -219,7 +252,7 @@ def story_context(
 
 
 def _appearance_brief(
-    store: Store, novel_id: str, entity_id: str, chapter: float
+    store: Store, novel_id: str, entity_id: str, chapter: float, *, date_wiki_canon: bool = False
 ) -> str:
     """A character's look as of this chapter, phrased for a prompt.
 
@@ -246,7 +279,9 @@ def _appearance_brief(
     facts = _facts_as_of(store, TargetKind.PERSONA, persona_id, chapter)
     appearance = {k: v for k, v in facts.items() if k in STANDING_KEYS}
     appearance = apply_canon(
-        novel_id, entity.canonical_label, appearance, persona_id
+        novel_id, entity.canonical_label, appearance, persona_id,
+        position=chapter if date_wiki_canon else None,
+        first_appearance=entity.first_attested_pos.chapter if date_wiki_canon else None,
     )
     appearance = resolve_appearance(novel_id, appearance)
     if not appearance:

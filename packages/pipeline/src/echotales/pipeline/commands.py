@@ -733,6 +733,8 @@ def cmd_resolve(args: argparse.Namespace) -> int:
             force_rewipe=getattr(args, "force_rewipe", False),
             capture_evidence=getattr(args, "capture_evidence", False),
             evidence_run_tag=getattr(args, "evidence_run_tag", ""),
+            # B2: `--chapters` was accepted and ignored; it now selects the chapters to resolve.
+            chapters=_chapter_range(getattr(args, "chapters", None)),
         ).summary()
     )
     store.close()
