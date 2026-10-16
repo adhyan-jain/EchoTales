@@ -208,6 +208,13 @@ export function RfE2ECard({ rf, confirm }) {
             </div>
           </div>
         ))}
+        {rf.robust && (
+          <p className="text-xs text-muted" data-testid="rf-robust">
+            Robustness ({(rf.robust.models || []).join(', ')}): with an &ldquo;avoid spoilers&rdquo; instruction the whole-book card still leaks in{' '}
+            {pct0(rf.robust.whole_nospoil_renamed)} of events against {pct0(rf.robust.versioned_renamed)} for the versioned card
+            {rf.robust.prompting_does_not_remove_leak ? ' (prompting does not replace versioning)' : ''}; second cipher input leak {ci(rf.robust.cipher2_input)} points.
+          </p>
+        )}
         {confirm && confirm.pooled_gap && (
           <p className="border-t border-border/50 pt-3 text-xs text-muted">
             Channel 1 confirmatory run ({confirm.events} events, {(confirm.models || []).join(', ')}): pooled memory gap {ci(confirm.pooled_gap)} points on

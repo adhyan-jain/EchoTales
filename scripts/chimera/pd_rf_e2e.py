@@ -422,6 +422,49 @@ def fixes(cards, judged, A_ids, common, evs, models, res):
     return out
 
 
+def robust(cards, judged, A_ids, common, evs, models):
+    """Addendum 10: don't-spoil instruction on W and a second cipher, against the main W and P cells, per rule."""
+    rb, rbj = {}, {}
+    for m in models:
+        f = OUT / f"robust_{m.replace(':', '_')}.json"
+        if f.exists() and json.loads(f.read_text()).get("status") == "COMPLETE":
+            rb[m] = json.loads(f.read_text())["cards"]
+        jf = OUT / f"judge_{JUDGE.replace(':', '_')}_of_{m.replace(':', '_')}_robust.json"
+        if jf.exists() and json.loads(jf.read_text()).get("status") == "COMPLETE":
+            rbj[m] = json.loads(jf.read_text())["labels"]
+    if not rb:
+        return None
+    labs = {"EXPLICIT", "IMPLIED"}
+    out = dict(models=sorted(rb))
+    for rule in ("A", "B"):
+        ms = sorted(rb) if rule == "A" else sorted(set(rbj) & set(judged))
+        if not ms:
+            continue
+        ids = [i for i in (A_ids if rule == "A" else common) if evs[i]["audit"] in labs and all(i in rb[m] for m in ms)]
+
+        def g(m, i, k):
+            if rule == "A":
+                return float((cards[m][i]["cells"].get(k) or rb[m][i]["cells"][k])["leak"])
+            v = judged[m][i].get(k) if k in KEYS else rbj[m].get(i, {}).get(k)
+            return None if v is None else float(v)
+
+        ks = ("W_ren", "P_ren", "W_orig", "W_ren_nospoil", "W_orig_nospoil", "W_ren2", "P_ren2")
+        ids = [i for i in ids if all(g(m, i, k) is not None for m in ms for k in ks)]
+        if not ids:
+            continue
+        pe = {i: {k: sum(g(m, i, k) for m in ms) / len(ms) for k in ks} for i in ids}
+        rates = {k: sum(pe[i][k] for i in ids) / len(ids) for k in ks}
+        con = {}
+        for name, x, y in (("nospoil_vs_versioned_ren", "W_ren_nospoil", "P_ren"), ("instruction_effect_ren", "W_ren", "W_ren_nospoil"),
+                           ("instruction_effect_orig", "W_orig", "W_orig_nospoil"), ("input_channel_cipher2", "W_ren2", "P_ren2")):
+            pt, lo, hi = boot(pe, lambda xs, x=x, y=y: sum(v[x] - v[y] for v in xs) / len(xs))
+            con[name] = dict(estimate=pt, ci=[lo, hi])
+        out[f"rule{rule}"] = dict(events=len(ids), models=ms, rates=rates, contrasts=con,
+                                  prompting_does_not_remove_leak=bool(con["nospoil_vs_versioned_ren"]["ci"][0] > 0),
+                                  robust_to_cipher=bool(con["input_channel_cipher2"]["ci"][0] > 0))
+    return out
+
+
 def cmd_analyze(_a):
     small = analyse(lambda m: m not in LARGE)
     large = analyse(lambda m: m in LARGE, quiet=False)
@@ -472,6 +515,7 @@ def analyse(keep, quiet=False):
             p1, p2 = sum(x for x, _ in pairs) / n, sum(y for _, y in pairs) / n
             pe = p1 * p2 + (1 - p1) * (1 - p2)
             res["judge_agreement"] = dict(labels=n, identical=po, kappa=(po - pe) / (1 - pe) if pe < 1 else None, rate_judge1=p1, rate_judge2=p2)
+    res["robust"] = robust(cards, judged, A_ids, common, evs, models)
     res["utility"] = {m: dict(alias_in_card_share={k: sum(cards[m][i]["cells"][k]["has_alias"] for i in common) / len(common) for k in KEYS},
                               mean_words={k: sum(cards[m][i]["cells"][k]["words"] for i in common) / len(common) for k in KEYS}) for m in models}
     res["fixes"] = fixes(cards, judged, A_ids, common, evs, models, res)
