@@ -3,5 +3,9 @@
  "sha256": "d23c85997e717c3b07ce627aa8b2919a7c9f245d48d7041ba715a3dd94011222",
  "note": "written before any model call on candidates; round 1 books file hash at this time below",
  "round1_books_sha256": "8f62d0732a0cadf19e7ffc8da7e0fa8898dae947f4249aec9f689322695cc2e4",
- "addendum_2_sha256": "a4c2d1bfbf12bbe9d163dd51dbf7554ca56b8bab301bd6ea29d358bf231cee1c"
+ "addendum_2_sha256": "a4c2d1bfbf12bbe9d163dd51dbf7554ca56b8bab301bd6ea29d358bf231cee1c",
+ "addendum_3_sha256": "433c9edba63b6190e179c0977d9cedc0ed7408dd472edc4f86f3f03c157965b1",
+ "addendum_3_note": "hash of the corrected text (17:41 IST, before any E5 call)",
+ "addendum_4_sha256": "169dda8bf6b0ab0c20b5567a83cb0272e5c1c970c6ebf9f4d9f1188346ad05b1",
+ "addendum_5_sha256": "31db42eddc3c11a5f08dc9acbbba9601c340045690e55c09e9b669e29d14c21e"
 }
