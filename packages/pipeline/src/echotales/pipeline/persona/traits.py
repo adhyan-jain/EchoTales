@@ -141,6 +141,61 @@ _MALE_PRONOUNS = re.compile(r"(?<!\w)(?:he|him|his|himself)(?!\w)", re.IGNORECAS
 _FEMALE_PRONOUNS = re.compile(r"(?<!\w)(?:she|her|hers|herself)(?!\w)", re.IGNORECASE)
 
 
+#: Anchored pronoun cue (docs/research/PREFIX_FAITHFULNESS/PREREG_ANCHORED.md). `gender_from_pronouns` needs six pronouns
+#: from the whole paragraph around every mention, which an early prefix often lacks although a reader sees "Alger Wilson
+#: stood on deck, his body ..." in one sentence. The window is the text right after a mention, up to the sentence end,
+#: 160 characters, or the next capitalised word (another name), so the pronoun in it is about that mention's referent.
+_SENTENCE_END = re.compile(r"[.!?”\"]")
+_NEXT_NAME = re.compile(r"\b(?!I\b)[A-Z][a-z]+")
+_ANCHOR_CHARS = 160
+
+
+#: v2 (PREREG_ANCHORED.md Addendum 1): also stop at a clause boundary and before an unnamed third party, the two patterns
+#: behind the cue's errors on the English originals ("Milady, seeing the stranger lay his hand ..."; "Milady; he cast ...").
+_V2_CLAUSE = re.compile(r"[;:]|--|—")
+_V2_THIRD_PARTY = re.compile(
+    r"\b(?:the|a|an)\s+(?:young man|young woman|stranger|man|woman|officer|gentleman|lady|girl|boy|fellow|maid|servant|soldier)\b",
+    re.IGNORECASE,
+)
+
+
+def anchored_window(text_after_mention: str, variant: str = "v1") -> str:
+    seg = text_after_mention[:_ANCHOR_CHARS]
+    end = _SENTENCE_END.search(seg)
+    if end:
+        seg = seg[: end.start()]
+    name = _NEXT_NAME.search(seg)
+    if name:
+        seg = seg[: name.start()]
+    if variant == "v2":
+        for pattern in (_V2_CLAUSE, _V2_THIRD_PARTY):
+            cut = pattern.search(seg)
+            if cut:
+                seg = seg[: cut.start()]
+    return seg
+
+
+def _anchored_observation(window: str) -> str | None:
+    male, female = _MALE_PRONOUNS.search(window), _FEMALE_PRONOUNS.search(window)
+    if male and female:
+        return "male" if male.start() < female.start() else "female"
+    return "male" if male else "female" if female else None
+
+
+def gender_from_anchors(windows: list[str], *, min_obs: int, majority: float) -> tuple[str | None, str]:
+    """Gender from the first pronoun after each mention; at most one observation per mention."""
+    obs = [o for o in map(_anchored_observation, windows) if o]
+    n = len(obs)
+    if n < min_obs:
+        return None, f"only {n} anchored pronouns, below {min_obs}"
+    male = obs.count("male")
+    if male / n >= majority:
+        return "male", f"{male}/{n} anchored male pronouns"
+    if (n - male) / n >= majority:
+        return "female", f"{n - male}/{n} anchored female pronouns"
+    return None, f"mixed anchored pronouns ({male}m/{n - male}f)"
+
+
 #: Number words this corpus actually spells out for ages. Bounded to the
 #: range where the band boundaries sit -- past "twenty" the band is `adult`
 #: either way, so there is nothing to gain from a longer table.
@@ -286,6 +341,9 @@ def infer_traits_deterministic(
     mention_count: int = 0,
     prominence: Prominence = Prominence.INCIDENTAL,
     pronoun_passages: list[str] | None = None,
+    anchor_windows: list[str] | None = None,
+    anchor_min_obs: int = 2,
+    anchor_majority: float = 0.85,
 ) -> TraitProfile:
     """Traits from what the graph already knows, with no model call.
 
@@ -306,10 +364,16 @@ def infer_traits_deterministic(
     # Age keeps the opposite priority (honorific first, below): "Granny" is
     # an exact statement of age band with no pronoun equivalent.
     pronoun_reason = ""
+    from_pronouns = None
     if pronoun_passages:
         from_pronouns, pronoun_reason = gender_from_pronouns(pronoun_passages)
         if from_pronouns is not None:
             gender = from_pronouns
+    # Fallback only when the paragraph rule could not call it; a pronoun still outranks an address form.
+    if from_pronouns is None and anchor_windows:
+        from_anchor, anchor_reason = gender_from_anchors(anchor_windows, min_obs=anchor_min_obs, majority=anchor_majority)
+        if from_anchor is not None:
+            gender, pronoun_reason = from_anchor, anchor_reason
 
     profile = TraitProfile(
         target_id=target_id,
