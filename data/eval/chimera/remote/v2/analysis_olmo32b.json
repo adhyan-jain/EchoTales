@@ -1,0 +1,50 @@
+{
+ "exploratory": true,
+ "set": "v2",
+ "model": "olmo32b",
+ "label_provenance": "TEXT-DERIVED oracle; model-selected; no human labels",
+ "G2a_B_eq_B2_plain_controls": 0.9079,
+ "G2b": "not run for this model (needs the PD v3 synthetic items)",
+ "events": 19,
+ "M2": {
+  "M2_orig": 0
+ },
+ "M2_k_needed": 6,
+ "M2_memory_present": false,
+ "alias_only_closed_book": {
+  "C_orig": 8,
+  "C_ren": 1,
+  "C_ren2": 0
+ },
+ "ctrl_acc": {
+  "A": 0.9474,
+  "B": 0.7566,
+  "B2": 0.7829
+ },
+ "cluster": {
+  "events": 19,
+  "pairs": 135,
+  "gap_A_minus_B": 0.0741,
+  "gap_A_minus_B_ci": [
+   0.0321,
+   0.1204
+  ],
+  "gap_A_minus_B3": 0.0741,
+  "gap_A_minus_B3_ci": [
+   0.0321,
+   0.1204
+  ],
+  "recovered_fraction": 0.0,
+  "recovered_fraction_ci": [
+   0.0,
+   0.0
+  ],
+  "events_positive": 7,
+  "events_negative": 0,
+  "event_sign_test_p": 0.01562
+ },
+ "invalid": 0,
+ "wall_seconds": 152.4,
+ "calls": 1008,
+ "est_pod_cost_usd": 0.048
+}

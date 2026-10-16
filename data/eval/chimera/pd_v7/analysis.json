@@ -1,0 +1,87 @@
+{
+ "preregistration": "PREREG_PD_v7.md",
+ "per_model": {
+  "gemma2:9b": {
+   "G2a": 0.8333,
+   "G2b_from_v3": 0.9268,
+   "G2_valid": false
+  },
+  "llama3.1:8b": {
+   "G2a": 0.8611,
+   "G2b_from_v3": 0.8537,
+   "G2_valid": false
+  },
+  "mistral:7b-instruct": {
+   "G2a": 0.9306,
+   "G2b_from_v3": 0.8293,
+   "G2_valid": true
+  },
+  "phi4-mini:latest": {
+   "G2a": 0.9306,
+   "G2b_from_v3": 1.0,
+   "G2_valid": true
+  },
+  "qwen2.5:7b": {
+   "G2a": 0.8472,
+   "G2b_from_v3": 0.9756,
+   "G2_valid": false
+  }
+ },
+ "strata": {
+  "valid_local_pool": {
+   "models": [
+    "mistral:7b-instruct",
+    "phi4-mini:latest"
+   ],
+   "famous_events": 5,
+   "obscure_events": 4,
+   "mean_gap_famous": -0.05,
+   "mean_gap_obscure": 0.0,
+   "difference": -0.05,
+   "difference_ci95": [
+    -0.1141,
+    0.0078
+   ],
+   "one_sided_perm_p": 0.95285,
+   "condition_met": false
+  },
+  "all_models": {
+   "models": [
+    "gemma2:9b",
+    "llama3.1:8b",
+    "mistral:7b-instruct",
+    "phi4-mini:latest",
+    "qwen2.5:7b"
+   ],
+   "famous_events": 5,
+   "obscure_events": 4,
+   "mean_gap_famous": 0.04,
+   "mean_gap_obscure": -0.0188,
+   "difference": 0.0588,
+   "difference_ci95": [
+    0.0056,
+    0.1156
+   ],
+   "one_sided_perm_p": 0.0613,
+   "condition_met": false
+  },
+  "recognition_M2": {
+   "models": [
+    "mistral:7b-instruct",
+    "phi4-mini:latest"
+   ],
+   "mean_famous": 0.2,
+   "mean_obscure": 0.0,
+   "difference": 0.2,
+   "one_sided_perm_p": 0.55187,
+   "condition_met": false
+  }
+ },
+ "label_provenance": "TEXT-DERIVED oracle; model-selected; fame by Gutenberg top-100 rule; no human labels",
+ "conditions": {
+  "H1_valid_local_famous_minus_obscure_ge10_p05": false,
+  "H2_luna_same": false,
+  "H3_recognition_higher_for_famous": false
+ },
+ "verdict": "INCONCLUSIVE (fewer than 3 valid local models or fewer than 4 events in a stratum)"
+}

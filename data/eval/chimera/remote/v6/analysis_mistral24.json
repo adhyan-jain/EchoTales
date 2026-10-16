@@ -1,0 +1,53 @@
+{
+ "exploratory": true,
+ "set": "v6",
+ "model": "mistral24",
+ "label_provenance": "TEXT-DERIVED oracle; model-selected; no human labels",
+ "G2a_B_eq_B2_plain_controls": 0.875,
+ "G2b": "not run for this model (needs the PD v3 synthetic items)",
+ "events": 7,
+ "M2": {
+  "M2_orig": 3,
+  "M2_ren": 1,
+  "M2_ren2": 0
+ },
+ "M2_k_needed": 3,
+ "M2_memory_present": true,
+ "alias_only_closed_book": {
+  "C_orig": 2,
+  "C_ren": 1,
+  "C_ren2": 0
+ },
+ "ctrl_acc": {
+  "A": 0.9464,
+  "B": 0.8571,
+  "B2": 0.9464,
+  "B3": 0.9643
+ },
+ "cluster": {
+  "events": 7,
+  "pairs": 54,
+  "gap_A_minus_B": 0.1111,
+  "gap_A_minus_B_ci": [
+   -0.0769,
+   0.3571
+  ],
+  "gap_A_minus_B3": 0.1852,
+  "gap_A_minus_B3_ci": [
+   0.0357,
+   0.4074
+  ],
+  "recovered_fraction": -0.6667,
+  "recovered_fraction_ci": [
+   -4.0,
+   0.0
+  ],
+  "events_positive": 2,
+  "events_negative": 1,
+  "event_sign_test_p": 1.0
+ },
+ "invalid": 0,
+ "wall_seconds": 56.7,
+ "calls": 538,
+ "est_pod_cost_usd": 0.018
+}
