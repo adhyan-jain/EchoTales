@@ -334,7 +334,13 @@ def _rf(rf: dict | None) -> dict | None:
                       # second cipher read by the text rule: the judge over-flags second-cipher prefix cards (7.4% > the 5% validity bound)
                       cipher2_input=_interval(*(lambda c2: (c2.get("estimate"), c2.get("ci")))((((rf.get("robust") or {}).get("ruleA") or {}).get("contrasts") or {}).get("input_channel_cipher2") or {})),
                       prompting_does_not_remove_leak=rb.get("prompting_does_not_remove_leak"))
-    return dict(strata=strata, robust=robust, not_run=rf.get("not_run"), source="data/eval/chimera/rf_e2e/analysis.json") if strata else None
+    xb = ((rf.get("extra") or {}).get("ruleB")) or {}
+    extra = None
+    if xb:
+        xr, xc = xb.get("rates") or {}, (xb.get("contrasts") or {}).get("prompt2_input_channel") or {}
+        extra = dict(models=(rf.get("extra") or {}).get("models"), whole_any_position=_r(xr.get("W_ren")), versioned_half=_r(xr.get("P_ren_pos50")),
+                     versioned_three_quarters=_r(xr.get("P_ren_pos75")), prompt2_input=_interval(xc.get("estimate"), xc.get("ci")))
+    return dict(strata=strata, robust=robust, extra=extra, not_run=rf.get("not_run"), source="data/eval/chimera/rf_e2e/analysis.json") if strata else None
 
 
 def _confirm(c: dict | None) -> dict | None:
