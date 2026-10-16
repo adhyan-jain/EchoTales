@@ -214,6 +214,55 @@ def cmd_mitigate(a):
     print("wrote", path, done["status"], flush=True)
 
 
+def naming(rec, k, ev):
+    """Alias and identity in the naming arm of cell k: original, first cipher (_ren) or second cipher (_ren2, addendum 10)."""
+    if "ren2" in k:
+        return rec["alias_ren2"], rec["identity_ren2"]
+    if "_ren" in k:
+        return rec.get("alias_ren"), rec.get("identity_ren")
+    return ev["alias"][0], ev["identity"]
+
+
+NOSPOIL = "Avoid spoilers: do not reveal secret identities, disguises or plot twists. "
+
+
+def cmd_robust(a):
+    """Addendum 10: don't-spoil instruction on W (both arms) and a second cipher on W and P."""
+    check_frozen()
+    evs = json.loads(EVENTS.read_text())["events"]
+    books, rows = prepare(evs)
+    rn = V3.renamers_for(books)
+    path = OUT / f"robust_{a.model.replace(':', '_')}.json"
+    done = json.loads(path.read_text()) if path.exists() else dict(model=a.model, options=OPTS, prompt=PROMPT, nospoil=NOSPOIL, cards={}, status="PARTIAL")
+    todo = [r for r in rows if r["measurable"] and r["ev"]["id"] not in done["cards"]]
+    t0 = time.time()
+    c = client_for(a.model)
+
+    def one(r):
+        ev, text, cut = r["ev"], r["text"], r["cut"]
+        r1, r2 = rn[ev["gutenberg"]]
+        w, pfx = passages(text, pick(r["all_m"]), None), passages(text, pick(r["pre_m"]), cut)
+        alias = ev["alias"][0]
+        cells = {}
+        for k, pre, ps, al, tset in (("W_orig_nospoil", NOSPOIL, w, alias, r["T"]),
+                                     ("W_ren_nospoil", NOSPOIL, r1.rename(w), r1.rename(alias), toks(r1.rename(" ".join(sorted(r["T"]))))),
+                                     ("W_ren2", "", r2.rename(w), r2.rename(alias), toks(r2.rename(" ".join(sorted(r["T"]))))),
+                                     ("P_ren2", "", r2.rename(pfx), r2.rename(alias), toks(r2.rename(" ".join(sorted(r["T"])))))):
+            card = ask(c, a.model, pre + PROMPT.format(ALIAS=al, PASSAGES=ps))
+            cells[k] = dict(card=card, leak=has_word(card, tset), has_alias=al.lower() in card.lower(), words=len(card.split()))
+        return ev["id"], dict(T=sorted(r["T"]), measurable_A=r["measurable_A"], alias_ren=r1.rename(alias), identity_ren=r1.rename(ev["identity"]),
+                              alias_ren2=r2.rename(alias), identity_ren2=r2.rename(ev["identity"]), cells=cells)
+
+    for n, (eid, rec) in enumerate(run_events(a.model, one, todo), 1):
+        done["cards"][eid] = rec
+        path.write_text(json.dumps(done, indent=1))
+        if n % 10 == 0:
+            print(f"{a.model} robust {n}/{len(todo)} {time.time() - t0:.0f}s", flush=True)
+    done["status"] = "COMPLETE" if len(done["cards"]) == len([r for r in rows if r["measurable"]]) else "PARTIAL"
+    path.write_text(json.dumps(done, indent=1))
+    print("wrote", path, done["status"], flush=True)
+
+
 JUDGE, JUDGE_PROMPT = "qwen3:8b", ("A reading assistant wrote this character card.\nCard: {CARD}\n\nDoes the card state or clearly imply that the character "
                                     "called \"{ALIAS}\" is the same person as \"{IDENTITY}\"? Reply as JSON: {{\"identifies\": true}} or {{\"identifies\": false}}.")
 
@@ -224,9 +273,9 @@ def cmd_judge(a):
 
     evs = {e["id"]: e for e in json.loads(EVENTS.read_text())["events"]}
     judge = a.judge or JUDGE
-    kind = "cards" if a.cells == "main" else "mitig"
+    kind = {"main": "cards", "mitig": "mitig", "robust": "robust"}[a.cells]
     src = json.loads((OUT / f"{kind}_{a.of.replace(':', '_')}.json").read_text())
-    path = OUT / f"judge_{judge.replace(':', '_')}_of_{a.of.replace(':', '_')}{'' if a.cells == 'main' else '_mitig'}.json"
+    path = OUT / f"judge_{judge.replace(':', '_')}_of_{a.of.replace(':', '_')}{'' if a.cells == 'main' else '_' + a.cells}.json"
     done = json.loads(path.read_text()) if path.exists() else dict(judge=judge, of=a.of, prompt=JUDGE_PROMPT, labels={})
     schema = {"type": "object", "properties": {"identifies": {"type": "boolean"}}, "required": ["identifies"]}
     t0 = time.time()
@@ -239,8 +288,8 @@ def cmd_judge(a):
             eid, rec = item
             ev, lab = evs[eid], {}
             for k, cell in rec["cells"].items():
-                ren = k.endswith("_ren")
-                prompt = JUDGE_PROMPT.format(CARD=cell["card"], ALIAS=rec.get("alias_ren") if ren else ev["alias"][0], IDENTITY=rec.get("identity_ren") if ren else ev["identity"])
+                al, ide = naming(rec, k, ev)
+                prompt = JUDGE_PROMPT.format(CARD=cell["card"], ALIAS=al, IDENTITY=ide)
                 try:
                     lab[k] = bool(json.loads(pod.chat(judge, prompt, 20, schema))["identifies"])
                 except (ValueError, KeyError, TypeError):
@@ -257,8 +306,8 @@ def cmd_judge(a):
                 continue
             ev, lab = evs[eid], {}
             for k, cell in rec["cells"].items():
-                ren = k.endswith("_ren")
-                prompt = JUDGE_PROMPT.format(CARD=cell["card"], ALIAS=rec.get("alias_ren") if ren else ev["alias"][0], IDENTITY=rec.get("identity_ren") if ren else ev["identity"])
+                al, ide = naming(rec, k, ev)
+                prompt = JUDGE_PROMPT.format(CARD=cell["card"], ALIAS=al, IDENTITY=ide)
                 r = c.post(f"{HOST}/api/chat", json=dict(model=JUDGE, stream=False, think=False, format=schema, options={"temperature": 0, "seed": 20261016, "num_predict": 20},
                                                          messages=[dict(role="user", content=prompt)]))
                 r.raise_for_status()
@@ -447,12 +496,14 @@ def main():
     sp.add_parser("analyze")
     j = sp.add_parser("judge")
     j.add_argument("--of", required=True)
-    j.add_argument("--cells", choices=("main", "mitig"), default="main")
+    j.add_argument("--cells", choices=("main", "mitig", "robust"), default="main")
     j.add_argument("--judge", default=None, help="addendum 9: olmo32b as a second judge (pod)")
     mg = sp.add_parser("mitigate")
     mg.add_argument("--model", required=True)
+    rb = sp.add_parser("robust")
+    rb.add_argument("--model", required=True)
     a = ap.parse_args()
-    dict(freeze=cmd_freeze, run=cmd_run, analyze=cmd_analyze, judge=cmd_judge, mitigate=cmd_mitigate)[a.cmd](a)
+    dict(freeze=cmd_freeze, run=cmd_run, analyze=cmd_analyze, judge=cmd_judge, mitigate=cmd_mitigate, robust=cmd_robust)[a.cmd](a)
 
 
 if __name__ == "__main__":
