@@ -1,7 +1,7 @@
 """Builds the course presentation (python-pptx) with speaker notes; numbers read from data/eval/chimera/*.json.
 
 Callers: run by hand with data/scratch/docs_venv/bin/python (needs python-pptx). Output: docs/paper/project_doc/EchoTales_Research_Presentation.pptx.
-Same provenance rules as build_project_doc.py: every result is text-derived, no human labels, confirmatory study shown as plan only.
+Same provenance rules as build_project_doc.py: every result is text-derived, no human labels; the confirmatory run is shown with its results.
 """
 import json
 from pathlib import Path
@@ -24,7 +24,9 @@ v6l = pooled["valid_pool"]["v6"]
 rec = v5["pools"]["G2_valid"]
 dl = dose["luna_gap_vs_local_recognition"]
 dv = dose["valid_local_pool_gap_vs_local_recognition"]
-h100, a100 = plan["H100_80GB_community_assuming_2.5x"], plan["A100_80GB_community"]
+conf = J("confirm/main/analysis.json")
+occ = J("confirm/main/olmo_corpus_check.json")
+c1, c2, c3, cp1, c5 = conf["H1"], conf["H2"], conf["H3"], conf["P1"], conf["H5"]["pooled"]
 
 INK, BLUE, RED, GREY, PALE = RGBColor(0x1B, 0x1F, 0x2A), RGBColor(0x1F, 0x6F, 0xB5), RGBColor(0xA6, 0x1C, 0x1C), RGBColor(0x5A, 0x62, 0x70), RGBColor(0xEE, 0xF3, 0xF9)
 prs = Presentation()
@@ -109,7 +111,7 @@ bullets(s, ["RQ1  Do LLMs name a disguised character's true identity before the 
             "Rule: pre-register, hash, report nulls and failed replications as such."], size=20)
 
 # 4 method
-s = slide("Method: a text-derived oracle and four arms", "Explain the oracle: the book itself says in one sentence that the alias is the identity; we find that sentence by exact search, so nobody has to judge the truth. Then four arms with identical windows. Say plainly: events were selected by a model and not yet verified by a person.")
+s = slide("Method: a text-derived oracle and four arms", "Explain the oracle: the book itself says in one sentence that the alias is the identity; we find that sentence by exact search, so nobody has to judge the truth. Then four arms with identical windows. Say plainly: events were selected by a model and not verified by a person.")
 bullets(s, ["Event = alias before a reveal sentence, identity after it; 38 events from 38 public-domain books (Project Gutenberg).",
             "Item = 1,200 characters ending at an alias mention, a cast list and UNDETERMINED. Correct reader answer: UNDETERMINED.",
             "Premature naming = answering the true identity before the reveal.",
@@ -117,7 +119,7 @@ bullets(s, ["Event = alias before a reveal sentence, identity after it; 38 event
             "Leakage gap = rate(A) minus rate(B), event-cluster bootstrap interval."], size=19)
 
 # 5 architecture
-s = slide("Study architecture", "Walk through in thirty seconds: corpus, mining, verification, frozen list, item builder, four arms, three model backends, scoring, statistics, outputs. The confirmatory study uses the same pipeline at larger scale on rented GPUs; nothing here depends on it.")
+s = slide("Study architecture", "Walk through in thirty seconds: corpus, mining, verification, frozen list, item builder, four arms, three model backends, scoring, statistics, outputs. The confirmatory run used the same pipeline at larger scale on a rented GPU; its results are on slide 12.")
 pic(s, "fig_arch.png", 2.3, 1.2, 8.7)
 
 # 6 result 1
@@ -133,7 +135,7 @@ bullets(s, [f"Gap with cipher {pts(rec['gap_A_minus_B'])}", f"Gap with pseudonym
 # 8 result 3
 s = slide("Result 3: the gap rises with book familiarity", f"Post hoc over 38 events. For the valid local models the gap is about zero when at most two of five local models recognise the book and large when all five do (Spearman {dv['spearman']:+.2f}, p = {dv['perm_p']:.5f}). Cross-family check with the reference model: Spearman {dl['spearman']:+.2f}, p = {dl['perm_p']:.3f}. This explains why the seven obscure books did not replicate for small models. Caveats: post hoc, shared models, small cells.")
 pic(s, "fig_dose.png", 0.4, 1.4, 7.6)
-bullets(s, [f"Local pool: Spearman {dv['spearman']:+.2f}, p = {dv['perm_p']:.5f}", f"Reference model: Spearman {dl['spearman']:+.2f}, p = {dl['perm_p']:.3f}", "Post hoc; a hypothesis for the confirmatory study"], x=8.2, y=1.8, w=4.8, size=16)
+bullets(s, [f"Local pool: Spearman {dv['spearman']:+.2f}, p = {dv['perm_p']:.5f}", f"Reference model: Spearman {dl['spearman']:+.2f}, p = {dl['perm_p']:.3f}", "Post hoc here; tested again in the confirmatory run (slide 12)"], x=8.2, y=1.8, w=4.8, size=16)
 
 # 9 graph audit
 s = slide("Auditing our own graph: causal resolver, leaky persona stage", "Truncate-and-rebuild: build the graph from chapters 1..k only and from the whole volume, and compare what the reader sees at chapter k. The resolver is causal at 14 cuts over three serials: 0 of 28,165 mention-cut pairs differ. By-design whole-volume passes do break it. The persona stage looks ahead for 23 of 288 character-cuts, 8.0 percent. System-internal checks, no labels; counts only because the serials are copyrighted and stay local.")
@@ -147,30 +149,30 @@ pic(s, "ui_04_live_probe_result.png", 6.8, 1.3, 6.1)
 text(s, 0.6, 6.5, 12, 0.5, "Left: stored study results. Right: a live probe, one public-domain item under original names, cipher and pseudonyms, with timings.", size=14, color=GREY)
 
 # 11 limits
-s = slide("What this does and does not show", "Read these limits without being asked; the audience should hear them from us. Human annotation is an assigned role for two team members and is planned; none of it is claimed or used.")
+s = slide("What this does and does not show", "Read these limits without being asked; the audience should hear them from us. No human annotation is used or claimed.")
 bullets(s, ["Events are model-drafted and verified by exact text search; no event has been checked by a person. No human annotation is used or claimed.",
             "The strongest model leaks clearly; small models leak where they know the book; their replication on seven obscure books failed.",
             "Dose-response is post hoc. The memory probes give the book title. Pseudonyms are heuristic.",
             "No claim that EchoTales or any web-serial system leaks; only that two of its stages were audited.",
             "Reference model via API: about USD 0.43 in total (ledgered)."], size=19)
 
-# 12 plan
-s = slide("Next: a pre-registered confirmatory study (planned, not run)", f"150 events from at least 60 new books, split 20/80 by book, three open 24-72B models on one rented GPU, plus a mitigation test and a recap-spoiler task. Planned cost about USD {h100['expected_usd']} on an H100 community pod or USD {a100['expected_usd']} on an A100, over about {h100['total_hours']} to {a100['total_hours']} GPU hours; the speed-up assumption is calibrated first. Everything is hashed before any model sees an item.")
-bullets(s, ["150 events, 7 items each, 120 test events: 80% power for a 9-point gap (Holm).", "Models: Llama-3.3-70B and Qwen2.5-72B (4-bit), OLMo-2-32B (public training data); one subscription-hosted model at reduced scope.",
-            "Mitigation: pseudonymise, run, map names back; 5-point utility margin. Harm task: recap and profile spoilers.", f"Cost plan: about {h100['total_hours']} h on H100 (USD {h100['expected_usd']}) or {a100['total_hours']} h on A100 (USD {a100['expected_usd']}); the 2.5x speed-up is an assumption.",
-            "Human verification of events: planned for the journal version."], size=18)
+# 12 confirmatory run
+s = slide("Confirmatory run: no gap on obscure books", f"68 events from 65 public-domain books, primary set 32 events, 78 percent low-fame; three open models on one rented GPU; pre-registered before any model saw an event. Pooled gap {pts(c1['pooled'])} points {ci(*c1['ci'])}. The fame contrast was {pts(cp1['difference'])} {ci(*cp1['ci'])}, p = {cp1['p_one_sided']:.4f}, not significant and underpowered. The closed-book control recovered the identity in only 2 of 68 events, so these books hold little memory to detect. Pseudonyms halved premature naming at a cost in accuracy. Recap spoilers: none detected. Training-data link: none. A Claude arm was stopped by the usage limit and excluded.")
+bullets(s, [f"68 events, 65 books, 32 primary events; Qwen2.5-32B, OLMo-2-32B, Mistral-Small-3.2-24B; text-derived, no human labels.", f"Pooled gap original minus renamed {pts(c1['pooled'])} points {ci(*c1['ci'])}: not detected (obscure books; closed book recovers 2 of 68).",
+            f"Fame contrast {pts(cp1['difference'])} {ci(*cp1['ci'])}, p = {cp1['p_one_sided']:.4f}: not significant; smallest detectable about 13 points.", f"Pseudonyms: premature naming {100 * c5['pre_O']:.1f}% to {100 * c5['pre_P2']:.1f}%, accuracy {pts(c5['utility_post_P2_minus_O']['point'])} points. Recap spoilers: 0 detected. OLMo training-data link: Spearman {occ['spearman']:+.2f}, p = {occ['perm_p_two_sided']:.2f}."], size=17)
+
 
 # 13 team
-s = slide("Team and contributions", "Be accurate. Adhyan led the research design, all pre-registrations, system architecture, implementation, experiments, analysis and documents. The other two members hold annotation, labelling and test-design roles recorded in the repository; the annotation itself is still to be done and is not claimed. Team to confirm wording before submission.")
-bullets(s, ["Adhyan Jain (24BCI0111): research design; all pre-registrations; EchoTales architecture and pipeline; ~50 experiment and analysis scripts; all runs; audits; confirmatory design; documents and demo.",
-            "Atharva Sheerh Pandey (24BCI0069): annotation and labelling responsibilities, test design and verification; literature study. Annotation planned, not used here.",
-            "Aryan Gahlot (24BCI0033): annotation and labelling responsibilities, test design and verification; literature study. Annotation planned, not used here."], size=19)
+s = slide("Team and contributions", "Be accurate. Adhyan led the research design, all pre-registrations, system architecture, implementation, experiments, analysis and documents. The other two members hold test-design and verification roles and shared the literature study. No human annotation is used or claimed.")
+bullets(s, ["Adhyan Jain (24BCI0111): research design; all pre-registrations; EchoTales architecture and pipeline; ~50 experiment and analysis scripts; all runs including the confirmatory run; audits; documents and demo.",
+            "Atharva Sheerh Pandey (24BCI0069): test design and verification responsibilities; literature study.",
+            "Aryan Gahlot (24BCI0033): test design and verification responsibilities; literature study."], size=19)
 
 # 14 takeaways
 s = slide("Takeaways", "Close in thirty seconds, then invite questions. Expect: why not human labels; why local models failed to replicate; is this just contamination; can your system leak.")
 bullets(s, [f"Name-keyed memory leakage is measurable: {pts(lu['gap_A_minus_B'])} points {ci(*lu['ci'])} for the strongest model over 38 events.",
             "It is not explained by lost name cues, and it rises with how well the book is known.", "Small-model results are mixed and a pre-registered replication failed: reported as such.",
-            "Reader-faithfulness can be audited by truncate-and-rebuild; one stage of our pipeline failed it.", "A larger, hashed confirmatory study is specified; nothing here depends on it."], size=20)
+            "Reader-faithfulness can be audited by truncate-and-rebuild; one stage of our pipeline failed it.", "A pre-registered confirmatory run on obscure books did not detect the effect; the limits are stated."], size=20)
 
 # 15 references
 s = slide("Key references", "Do not read these out; they are on screen for the marker. The full MLA list is in section 15 of the project document.")
