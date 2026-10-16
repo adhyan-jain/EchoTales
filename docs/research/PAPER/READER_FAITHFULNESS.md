@@ -2,13 +2,13 @@
 
 Status: DRAFT 2026-10-16, merged from branch `claude/prefix-faithfulness` into `chimera/system-adapters`; Channel 1 filled on 2026-10-16 from the exploratory runs (`NOVELTY_REPORT.md` v1.6) and the pre-registered confirmatory run (`PREREG_PD_CONFIRM_v2_L40S.md` with addenda 1 to 5, results in `data/eval/chimera/confirm/`, tables from `scripts/chimera/gen_ch1_tables.py`). Channel 2 numbers are copied from `docs/research/PREFIX_FAITHFULNESS/REPORT.md` and `FORMAL.md` (section numbers in brackets). Every Channel 1 number carries its provenance: *exploratory* (analysed before the confirmatory design existed, some after seeing the data) or *confirmatory* (pre-registered, frozen events, one run).
 
-Label provenance, stated once (the full statement is in Section 9): **no number in this paper is human-labelled and no human annotation exists.** Channel 2 results are system-internal (no labels), synthetic (truth by construction) or labelled by two language models; Channel 1 results use a text-derived oracle whose events were selected by a language model (and, in the confirmatory run, audited by a second language model that is also one of the evaluated models) and are not owner-verified.
+Label provenance, stated once (the full statement is in Section 10): **no number in this paper is human-labelled and no human annotation exists.** Channel 2 results are system-internal (no labels), synthetic (truth by construction) or labelled by two language models; Channel 1 results use a text-derived oracle whose events were selected by a language model (and, in the confirmatory run, audited by a second language model that is also one of the evaluated models) and are not owner-verified.
 
 ---
 
 ## Abstract
 
-A book assistant that answers "as of chapter c" makes a promise to the reader: nothing it says may depend on chapters after c. We call this **reader-faithfulness** and define it as invariance of the output at position c to the rest of the volume. The promise can be broken through two channels that look different but violate the same contract. In **Channel 1, parametric memory**, the language model inside the system has already read the book, so a prompt truncated at chapter c still elicits the later reveal; we measure this as name-keyed premature identity naming, original names against consistently replaced names, with an unseen-text control and a cue-preserving pseudonym control. On famous public-domain books the effect is large for the reference model (exploratory: +26.0 points [16.8, 36.0] over 38 events) and smaller and less reliable for small local models (+11.5 [4.5, 19.0], not replicated on seven fresh books), and it tracks how well known the book is. A pre-registered confirmatory run on 68 events from 65 mostly obscure public-domain books with three open 24B to 32B models found **no gap**: pooled +0.1 points [-5.0, +5.2], with a closed-book positive control that recovers the identity from memory in only 2 of 68 events, so the sample holds little memory to detect; the fame contrast that would link the two results is suggestive and underpowered (+7.6 points [-1.4, +18.3], one-sided p = 0.060, minimum detectable difference about 13 points). In **Channel 2, derivation look-ahead**, the pipeline around the model stores a derived fact (a character's gender, say) stamped with the chapter where the character first appears but computed from up to twelve later chapters, so a query filtered to chapter c returns values that a build over chapters up to c does not hold. Truncating the input and rebuilding gives an exact oracle for this channel. On a deployed narrative knowledge graph the served gender differs from the prefix build for 6.0% of 685 character-cuts of three translated web novels (4.5% to 8.0% depending on where the cuts fall), 4.5% of 179 on two English originals, and 9.2% to 17.1% of pairs on a synthetic volume with exactly known truth. Only 1.7% to 3.5% of character-cuts are premature disclosures by two model annotators; the rest were already supported by the text. Versioning each derived fact by the evidence horizon it was computed from removes the divergence entirely (0 in every real, public-domain and synthetic run) but is safe rather than correct; hiding every exposed fact instead is worse than doing nothing (82 divergences against 23 of 289). A pre-registered anchored pronoun cue recovers 97% of the correct values the repair withholds at 1.2% wrong on the web novels, with a measured failure map, and a prominence gate decided on the prefix removes the model path's own look-ahead (50 to 0 of 296 pairs). The two channels need different instruments, because truncation cannot see a memory held in the weights, and they compose, because a derivation that calls a model inherits the model's memory. We report what each repair costs and what remains unrepaired.
+A book assistant that answers "as of chapter c" makes a promise to the reader: nothing it says may depend on chapters after c. We call this **reader-faithfulness** and define it as invariance of the output at position c to the rest of the volume. We give an audit method for each way the promise can break, prove when the standard repairs work, and validate the method on two systems, in each case finding a leak and showing the fix. The promise can be broken through two channels that look different but violate the same contract. In **Channel 1, parametric memory**, the language model inside the system has already read the book, so a prompt truncated at chapter c still elicits the later reveal; we measure this as name-keyed premature identity naming, original names against consistently replaced names, with an unseen-text control and a cue-preserving pseudonym control. On famous public-domain books the effect is large for the reference model (exploratory: +26.0 points [16.8, 36.0] over 38 events) and smaller and less reliable for small local models (+11.5 [4.5, 19.0], not replicated on seven fresh books), and it tracks how well known the book is. A pre-registered confirmatory run on 68 events from 65 mostly obscure public-domain books with three open 24B to 32B models found **no gap**: pooled +0.1 points [-5.0, +5.2], with a closed-book positive control that recovers the identity from memory in only 2 of 68 events, so the sample holds little memory to detect; the fame contrast that would link the two results is suggestive and underpowered (+7.6 points [-1.4, +18.3], one-sided p = 0.060, minimum detectable difference about 13 points). In **Channel 2, derivation look-ahead**, the pipeline around the model stores a derived fact (a character's gender, say) stamped with the chapter where the character first appears but computed from up to twelve later chapters, so a query filtered to chapter c returns values that a build over chapters up to c does not hold. Truncating the input and rebuilding gives an exact oracle for this channel. On a deployed narrative knowledge graph the served gender differs from the prefix build for 6.0% of 685 character-cuts of three translated web novels (4.5% to 8.0% depending on where the cuts fall), 4.5% of 179 on two English originals, and 9.2% to 17.1% of pairs on a synthetic volume with exactly known truth. Only 1.7% to 3.5% of character-cuts are premature disclosures by two model annotators; the rest were already supported by the text. Versioning each derived fact by the evidence horizon it was computed from removes the divergence entirely (0 in every real, public-domain and synthetic run) but is safe rather than correct; hiding every exposed fact instead is worse than doing nothing (82 divergences against 23 of 289). A pre-registered anchored pronoun cue recovers 97% of the correct values the repair withholds at 1.2% wrong on the web novels, with a measured failure map, and a prominence gate decided on the prefix removes the model path's own look-ahead (50 to 0 of 296 pairs). On a second, generic design, a whole-volume LLM character card stamped at first mention (pre-registered; 54 reveal events in public-domain books, 3 models), the card names the hidden identity before the reveal in 18.5% of events even when every name is a cipher no model has seen (strict text rule: 24.6% of 19 events), against 1.2% for the versioned card; the memory-only leak at that position is +2.5 points. On larger open models (Mistral-Small-3.2-24B, Qwen2.5-32B) the whole-volume card leaks in 23.1% under cipher names against 1.9% for the versioned card, and the memory-only leak is +0.0 points. The two channels need different instruments, because truncation cannot see a memory held in the weights, and they compose, because a derivation that calls a model inherits the model's memory. We report what each repair costs and what remains unrepaired.
 
 ---
 
@@ -22,14 +22,14 @@ The pages describing these systems say how the filter is applied. They do not de
 
 *The pipeline's derived facts look ahead.* If the assistant builds a knowledge graph from the whole volume and filters queries by position, each stored fact carries a position. The position is usually that of the first mention. But many facts are not read off a single mention: a character's gender, register or age band is computed from evidence accumulated over many chapters. A fact computed from chapter 12 but stamped at chapter 1 is served to a reader at chapter 5 with chapter 12's information in it. Nothing in the filter is wrong; the stamp is.
 
-These are not two bugs in one system. They are two ways to violate one contract, and the contract has not been stated. This paper states it (Section 3), measures each violation with an instrument suited to it (Sections 5 and 6), reports what repairs exist and what they cost (Section 7), and says what is not shown (Section 9).
+These are not two bugs in one system. They are two ways to violate one contract, and the contract has not been stated. This paper states it (Section 3), measures each violation with an instrument suited to it (Sections 5 and 6), measures both on a second, generic system and fixes what it finds (Section 7), reports what repairs exist and what they cost (Section 8), and says what is not shown (Section 10).
 
 **Contributions.**
 
 1. A definition, **reader-faithfulness**, that covers both channels, and a short formal note on the part that is elementary (Section 3).
-2. For Channel 2, an audit of a deployed pipeline by truncate-and-rebuild with a static screen for which facts are exposed, a measured divergence rate replicated on three kinds of data (translated web novels, English originals, a synthetic volume with known truth), a labelled split of divergence into premature disclosure versus already-supported values, and a pre-registered repair frontier in which honest stamps alone are worse than the defect.
+2. For Channel 2, an audit method (truncate-and-rebuild with a static exposure screen) validated on two systems: a deployed pipeline and a generic whole-volume LLM character card, where the card leaks the hidden identity before the reveal in 18.5% of events under cipher names and the versioned card in 1.2% (Section 7). On the deployed pipeline, an audit by truncate-and-rebuild with a static screen for which facts are exposed, a measured divergence rate replicated on three kinds of data (translated web novels, English originals, a synthetic volume with known truth), a labelled split of divergence into premature disclosure versus already-supported values, and a pre-registered repair frontier in which honest stamps alone are worse than the defect.
 3. For Channel 1, a renaming-controlled test of premature identity naming with a memory-free validity gate, a closed-book positive control, an unseen-text control and a cue-preserving pseudonym condition. The measured result is conditional: large on famous books (exploratory), absent and well bounded on obscure ones (confirmatory), with the recognition of the book as the apparent moderator. The fame dose-response confirms Chang et al. (2023), and the pseudonym test and the pseudonymisation mitigation replicate or baseline Jiang and Ferraro (arXiv 2412.14368); what we add is the premature-resolution construct under prefix truncation with an entitlement oracle, and the observation that plain-control validity checks on famous books are themselves memory-assisted.
-4. The observation that the channels interact: the guarantee of a repair for Channel 2 belongs to the policy and not to the derivation it wraps (FORMAL P6), so a model-backed derivation is faithful in Channel 2 and can still be unfaithful in Channel 1.
+4. A joint measurement of both channels on one system with one oracle (Section 7): input leak +17.3 points, memory-only leak +2.5 points at the reveal cut for 7 to 8B models. The observation that the channels interact: the guarantee of a repair for Channel 2 belongs to the policy and not to the derivation it wraps (FORMAL P6), so a model-backed derivation is faithful in Channel 2 and can still be unfaithful in Channel 1.
 
 **What this is not.** It is a method-and-measurement paper, not a new algorithm. The core rule behind the Channel 2 repair is point-in-time correctness from ML feature stores, and the repair is structurally the stream-processing idea of emitting early results and revising them as a watermark advances (Section 4). The claim is the combination, measured on a deployed narrative graph, including the case where the textbook fix is worse than the defect. It is one codebase.
 
@@ -243,7 +243,118 @@ Renaming removes memory keyed to names. Memory keyed to plot structure, style or
 
 ---
 
-## 7. Repairs and trade-offs
+## 7. Both channels in one measurement: a second, generic system
+
+*Pre-registered as `PREREG_RF_E2E_addendum_6.md` (frozen by `MANIFEST_RF_E2E.json` before any card existed; one amendment before any card, stated in the file). Results in `data/eval/chimera/rf_e2e/`, produced by `scripts/chimera/pd_rf_e2e.py`.*
+
+### 7.1 Why a second system
+
+Section 5 found derivation look-ahead in one pipeline, EchoTales' deterministic persona stage. That leaves open whether the defect belongs to that code or to a design. A widespread pattern in LLM reading assistants and retrieval pipelines is different from ours: a language model writes a **character card** from passages that mention the character, the card is built once over the whole volume, and it is stamped at the character's first appearance, so a reader-position filter serves it from that chapter on. We do not claim that a specific product builds cards exactly this way; W is a controlled stress test of that pattern, and the measurement is what it serves early when it is used. This section applies the same truncate-and-rebuild oracle to that design, on the 68 frozen confirmatory events of Section 6 (public-domain books, text-derived reveal and cut), and uses the renaming control of Section 6 to split what leaks into the part that needs the input and the part that needs only the model's memory.
+
+### 7.2 Method
+
+For each event the reader stands at the pre-registered cut, just before the reveal chapter. Two builds produce a card of at most 80 words for the aliased character with one fixed prompt ("Write a character card of at most 80 words for the character referred to as ALIAS, using these passages from the book"): the **whole-volume build W** sees up to 12 passages spaced evenly over all alias mentions in the book (each 500 characters before to 700 after the mention), and the **prefix build P** sees the same rule over mentions before the cut with every passage clipped at the cut. P is the truncate-and-rebuild reference, and a build versioned by evidence horizon equals P at every position by construction (P6), so P is also the repaired build. Each build is run on the original text (**orig**) and on the text under the frozen consistent letter cipher (**ren**). Local models (Llama-3.1-8B, Mistral-7B, Qwen2.5-7B) run at temperature 0; each cell is generated once.
+
+A card **leaks** if it tells a reader at the cut who the alias really is. **Rule A (text-derived, primary; independent of any judge)** counts a leak when the card contains a name token of the identity that never occurs in the reader's prefix; it applies only to events whose identity name is new at the reveal (19 of 57 measurable events). **Rule B (model-judged, secondary)** asks a fixed judge outside the generator set (Qwen3-8B, thinking off, temperature 0) whether the card states or clearly implies that the alias and the identity are the same person; it applies to all 57 events with alias mentions on both sides of the reveal. In the renamed arm both rules compare cipher forms.
+
+The four cells give a decomposition. **W-ren** can leak only through the input, because no model has seen the cipher names. **P-ren** should not leak at all (the validity check). **P-orig** can leak only through memory or inference from the prefix. **W-orig** is what a whole-volume card built by a model that knows the book serves to the reader. The input channel is W-ren minus P-ren (pre-registered RF1: at least +10 points pooled, positive lower limit, at least 2 of 3 models); the memory channel is P-orig minus P-ren (descriptive).
+
+Events come from 65 books with almost one event per book (68 events), so the event-level bootstrap is close to a book-level one. The pre-registered primary endpoint is RF1 on rule A; rule B and the second judge are secondary and reported beside it, never pooled with it.
+
+### 7.3 Results: the whole-volume card leaks through the input
+
+
+#### Small local models (7 to 8B; addenda 6 and 7)
+
+**Rule A (text-derived), primary set: 19 events.** Leak rate (% of events) per cell; input channel = W-ren minus P-ren; memory channel = P-orig minus P-ren.
+
+| Model | W-orig | W-ren | P-orig | P-ren | Input channel [95% CI] | Events W-ren > P-ren / < | Memory channel [95% CI] |
+|---|---|---|---|---|---|---|---|
+| Llama-3.1-8B | 36.8 | 31.6 | 0.0 | 0.0 | +31.6 [+10.5, +52.6] | 6 / 0 (p = 0.0156) | +0.0 [+0.0, +0.0] |
+| Mistral-7B | 31.6 | 21.1 | 0.0 | 0.0 | +21.1 [+5.3, +42.1] | 4 / 0 (p = 0.0625) | +0.0 [+0.0, +0.0] |
+| Qwen2.5-7B | 26.3 | 21.1 | 0.0 | 0.0 | +21.1 [+5.3, +42.1] | 4 / 0 (p = 0.0625) | +0.0 [+0.0, +0.0] |
+| **Pooled (mean over models)** | 31.6 | 24.6 | 0.0 | 0.0 | +24.6 [+8.8, +42.1] | 3 of 3 models positive | +0.0 [+0.0, +0.0] |
+
+RF1 SUPPORTED; RF2 validity P-ren rate 0.0% (valid); RF4 W-orig minus P-orig +31.6 [+14.0, +50.9].
+
+**Rule B (judge), EXPLICIT and IMPLIED events: 54 events.** Leak rate (% of events) per cell; input channel = W-ren minus P-ren; memory channel = P-orig minus P-ren.
+
+| Model | W-orig | W-ren | P-orig | P-ren | Input channel [95% CI] | Events W-ren > P-ren / < | Memory channel [95% CI] |
+|---|---|---|---|---|---|---|---|
+| Llama-3.1-8B | 27.8 | 27.8 | 3.7 | 3.7 | +24.1 [+11.1, +37.0] | 14 / 1 (p = 0.000488) | +0.0 [+0.0, +0.0] |
+| Mistral-7B | 13.0 | 11.1 | 5.6 | 0.0 | +11.1 [+3.7, +20.4] | 6 / 0 (p = 0.0156) | +5.6 [+0.0, +13.0] |
+| Qwen2.5-7B | 16.7 | 16.7 | 1.9 | 0.0 | +16.7 [+7.4, +27.8] | 9 / 0 (p = 0.00195) | +1.9 [+0.0, +5.6] |
+| **Pooled (mean over models)** | 19.1 | 18.5 | 3.7 | 1.2 | +17.3 [+9.3, +26.5] | 3 of 3 models positive | +2.5 [+0.0, +5.6] |
+
+RF1 SUPPORTED; RF2 validity P-ren rate 1.2% (valid); RF4 W-orig minus P-orig +15.4 [+6.8, +25.3].
+
+**Fixes.**
+
+| Fix | Rule | Events | Leak before | Leak after | Removed [95% CI] | Content check |
+|---|---|---|---|---|---|---|
+| Versioned card (fix 1), orig names | A | 19 | 31.6% | 0.0% | +31.6 [+14.0, +50.9] | alias named 86.0% vs 82.5%; 94 vs 86 words |
+| Versioned card (fix 1), ren names | A | 19 | 24.6% | 0.0% | +24.6 [+8.8, +42.1] | alias named 86.0% vs 82.5%; 94 vs 86 words |
+| Versioned card (fix 1), orig names | B | 54 | 19.1% | 3.7% | +15.4 [+6.8, +25.3] | alias named 85.2% vs 82.7%; 93 vs 89 words |
+| Versioned card (fix 1), ren names | B | 54 | 18.5% | 1.2% | +17.3 [+9.3, +26.5] | alias named 85.2% vs 82.7%; 93 vs 89 words |
+| Pseudonymise and map back (fix 2) | A | 19 | 0.0% | 0.0% | +0.0 [+0.0, +0.0] | alias named 82.5% vs 87.7%; RF5 evaluated False, passes None |
+| Pseudonymise and map back (fix 2) | B | 54 | 3.7% | 3.1% | +0.6 [-1.9, +3.7] | alias named 82.7% vs 87.7%; RF5 evaluated False, passes False |
+
+Second judge (OLMo-2-32B, addendum 9, robustness only): W-ren 19.1% vs P-ren 1.9%, input channel +17.3 [+8.6, +27.2] over 54 events. Agreement with the first judge: 97.8% identical labels, kappa 0.88 (684 labels).
+
+#### Larger open models (24 to 32B on the pod; addendum 8, separate stratum)
+
+**Rule A (text-derived), primary set: 19 events.** Leak rate (% of events) per cell; input channel = W-ren minus P-ren; memory channel = P-orig minus P-ren.
+
+| Model | W-orig | W-ren | P-orig | P-ren | Input channel [95% CI] | Events W-ren > P-ren / < | Memory channel [95% CI] |
+|---|---|---|---|---|---|---|---|
+| Mistral-Small-3.2-24B | 26.3 | 26.3 | 0.0 | 0.0 | +26.3 [+5.3, +47.4] | 5 / 0 (p = 0.0312) | +0.0 [+0.0, +0.0] |
+| Qwen2.5-32B | 15.8 | 15.8 | 0.0 | 0.0 | +15.8 [+0.0, +31.6] | 3 / 0 (p = 0.125) | +0.0 [+0.0, +0.0] |
+| **Pooled (mean over models)** | 21.1 | 21.1 | 0.0 | 0.0 | +21.1 [+5.3, +39.5] | 2 of 2 models positive | +0.0 [+0.0, +0.0] |
+
+RF1 SUPPORTED; RF2 validity P-ren rate 0.0% (valid); RF4 W-orig minus P-orig +21.1 [+5.3, +39.5].
+
+**Rule B (judge), EXPLICIT and IMPLIED events: 54 events.** Leak rate (% of events) per cell; input channel = W-ren minus P-ren; memory channel = P-orig minus P-ren.
+
+| Model | W-orig | W-ren | P-orig | P-ren | Input channel [95% CI] | Events W-ren > P-ren / < | Memory channel [95% CI] |
+|---|---|---|---|---|---|---|---|
+| Mistral-Small-3.2-24B | 27.8 | 31.5 | 1.9 | 3.7 | +27.8 [+16.7, +40.7] | 15 / 0 (p = 3.05e-05) | -1.9 [-9.3, +3.7] |
+| Qwen2.5-32B | 14.8 | 14.8 | 1.9 | 0.0 | +14.8 [+5.6, +24.1] | 8 / 0 (p = 0.00391) | +1.9 [+0.0, +5.6] |
+| **Pooled (mean over models)** | 21.3 | 23.1 | 1.9 | 1.9 | +21.3 [+13.0, +30.6] | 2 of 2 models positive | +0.0 [-3.7, +4.6] |
+
+RF1 SUPPORTED; RF2 validity P-ren rate 1.9% (valid); RF4 W-orig minus P-orig +19.4 [+9.3, +30.6].
+
+**Fixes.**
+
+| Fix | Rule | Events | Leak before | Leak after | Removed [95% CI] | Content check |
+|---|---|---|---|---|---|---|
+| Versioned card (fix 1), orig names | A | 19 | 21.1% | 0.0% | +21.1 [+5.3, +39.5] | alias named 84.2% vs 78.9%; 91 vs 81 words |
+| Versioned card (fix 1), ren names | A | 19 | 21.1% | 0.0% | +21.1 [+5.3, +39.5] | alias named 84.2% vs 78.9%; 91 vs 81 words |
+| Versioned card (fix 1), orig names | B | 54 | 21.3% | 1.9% | +19.4 [+9.3, +30.6] | alias named 84.3% vs 80.6%; 90 vs 82 words |
+| Versioned card (fix 1), ren names | B | 54 | 23.1% | 1.9% | +21.3 [+13.0, +30.6] | alias named 84.3% vs 80.6%; 90 vs 82 words |
+| Pseudonymise and map back (fix 2) | A | 19 | 0.0% | 0.0% | +0.0 [+0.0, +0.0] | alias named 78.9% vs 81.6%; RF5 evaluated False, passes None |
+| Pseudonymise and map back (fix 2) | B | 54 | 1.9% | 2.8% | -0.9 [-4.6, +1.9] | alias named 80.6% vs 84.3%; RF5 evaluated False, passes False |
+
+Second judge (OLMo-2-32B, addendum 9, robustness only): W-ren 22.2% vs P-ren 0.9%, input channel +21.3 [+13.0, +30.6] over 54 events. Agreement with the first judge: 97.8% identical labels, kappa 0.89 (456 labels).
+
+**Verdicts (pre-registered).** RF1, the input channel, is **supported** on the primary rule A (19 events: W-ren minus P-ren +24.6 points [+8.8, +42.1], 3 of 3 models positive) and **supported** on the secondary judge rule B (54 events: +17.3 [+9.3, +26.5]). The validity check RF2 holds: the prefix card on renamed text leaks in 0.0% (rule A) and 1.2% (rule B) of events. The memory channel RF3 (P-orig minus P-ren) is +2.5 points [+0.0, +5.6] by rule B. RF4, what a reader of the whole-volume card meets beyond the prefix card on original names, is +15.4 points [+6.8, +25.3] by rule B.
+
+**Larger open models (addendum 8, separate stratum: Mistral-Small-3.2-24B, Qwen2.5-32B).** Rule B: W-ren 23.1% vs P-ren 1.9%, input channel +21.3 [+13.0, +30.6], RF1 supported; rule A: 21.1% vs 0.0%, RF1 supported. Memory channel (rule B) +0.0 [-3.7, +4.6]; W-orig minus P-orig +19.4 [+9.3, +30.6]. Fix 2 on these models: prefix-card leak 1.9% to 2.8% (-0.9 [-4.6, +1.9]), alias named 80.6% to 84.3%; RF5 not evaluated (no memory leak with a positive lower limit).
+
+**Second judge (addendum 9, robustness only), the 7 to 8B models.** With OLMo-2-32B as the judge the whole-volume card leaks in 19.1% of events on renamed text against 1.9% for the versioned card (input channel +17.3 [+8.6, +27.2]); the two judges give the same label on 97.8% of 684 cards (Cohen's kappa 0.88). **Second judge (addendum 9, robustness only), the larger models.** With OLMo-2-32B as the judge the whole-volume card leaks in 22.2% of events on renamed text against 0.9% for the versioned card (input channel +21.3 [+13.0, +30.6]); the two judges give the same label on 97.8% of 456 cards (Cohen's kappa 0.89).
+
+### 7.4 The fixes
+
+**Fix 1, the versioned card.** Building the card from the prefix (the versioned policy at this position) removes +17.3 points [+9.3, +26.5] of leak on renamed text and +15.4 [+6.8, +25.3] on original names by rule B (rule A: +24.6 and +31.6); the residual is the memory channel. The price is one card build per distinct evidence horizon instead of one per character (here, one extra build per event at this position); cards stay about as long and name the alias about as often (content check column).
+
+**Fix 2, pseudonymise and map back.** RF5 was not evaluated, because the memory channel had no lower limit above 0 (no memory leak to fix at these models). Descriptively, the prefix card's judge-rule leak goes from 3.7% to 3.1% (+0.6 [-1.9, +3.7]) and the share of cards naming the alias from 82.7% to 87.7%; by the strict text rule from 0.0% to 0.0%.
+
+### 7.5 What the second system adds
+
+The look-ahead defect of Section 5 is not a property of one codebase: a standard whole-volume, first-mention-stamped LLM card has it, at a rate measured on public-domain books with a text-derived oracle, and it persists when every name is replaced by a cipher no model has seen, so it is a property of the build, not of memory. The versioned repair, whose guarantee is a policy property (P6), removes it here as it did in Section 5. At the cut, for 7 to 8B models on these mostly obscure books, the memory channel is small, which agrees with the confirmatory bound of Section 6; both channels are now measured on one system with one oracle. Limits: one card prompt, one reader position per event, small local models plus at most two larger open models, a judge that is a language model (rule B), and model-selected events.
+
+---
+
+## 8. Repairs and trade-offs
 
 The two channels have different repairs because they have different causes. Table 1 puts them side by side.
 
@@ -265,7 +376,7 @@ The two channels have different repairs because they have different causes. Tabl
 
 ---
 
-## 8. Combined view of the evidence
+## 9. Combined view of the evidence
 
 | Claim | Tier | Where |
 |---|---|---|
@@ -282,15 +393,17 @@ The two channels have different repairs because they have different causes. Tabl
 | The effect depends on how well known the book is | Post hoc in the exploratory set; CONFIRMATORY fame contrast underpowered and not passed | Section 6.2 (Spearman +0.59; P1 +7.6, p = 0.060) |
 | Open 24B to 32B models show no gap on obscure books | CONFIRMATORY, one run, 32 events; closed-book control finds memory in 2 of 68 events | Section 6.2 (pooled +0.1 [-5.0, +5.2]) |
 | Pseudonymisation lowers premature naming at an accuracy cost | CONFIRMATORY E4, small base rate; H5 not met | Section 6.2 |
+| A whole-volume LLM character card leaks the reveal through the input; the versioned card fixes it | Pre-registered (addenda 6 and 7); rule A text-derived, rule B judge-labelled | Section 7 (W-ren 18.5% vs P-ren 1.2%) |
 | Recap spoilers and a link to OLMo training data | EXPLORATORY-small; both null | Section 6.2 (0 spoilers in 144 outputs per condition; Spearman +0.13, p = 0.41) |
 
-### 8.1 Claim-to-evidence matrix
+### 9.1 Claim-to-evidence matrix
 
 | Claimed contribution | Evidence | Status | Closest prior work and how it differs |
 |---|---|---|---|
 | 1. Premature resolution under prefix truncation with an entitlement oracle | Section 6; 38 exploratory and 68 confirmatory events | Construct and instrument demonstrated; effect shown on famous books only (exploratory) | WhoDunIt (arXiv 2502.07747, abstract read; Gutenberg source and "full-story only" are LEAD until read in full) and Jiang and Ferraro (arXiv 2412.14368, abstract read, v6) rename characters but do not truncate before the reveal |
 | 2. Renaming validity checks on famous books are themselves memory-assisted | Section 6.1 control 2 and the control accuracy gap in Section 6.2 | Supported in the exploratory pool; the confirmatory control gap is 10 to 23 points | not found in the works above; absence is a bounded negative |
 | 3. Derived-attribute horizon leakage and its repair | Section 5 (Channel 2) | Strongest result: exact oracle, three data kinds, divergence 0 after repair | point-in-time correctness (feature stores) and look-ahead bias (DatedGPT, arXiv 2603.11838, abstract read) are the parent concepts; SurrealDB's spoiler-safe memory is a LEAD for stamped events, not derived attributes |
+| 3b. The look-ahead defect generalises to a standard LLM card design and the versioned repair fixes it | Section 7 | Pre-registered; RF1 supported (rule A), supported (rule B) | position-aware assistants (Kindle Ask this Book, TDC 8646) describe progress filtering, not a check of derived summaries |
 | 4. Link to OLMo training data | Section 6.2 | **Null**: Spearman +0.13, p = 0.41 | none |
 | 5. Recap harm (E5) | Section 6.2 | **Not shown**: 0 spoilers under the detector | none |
 | Not claimed: fame dose-response | Section 6.2 | Confirms Chang et al. (2023) | the claim is theirs |
@@ -298,12 +411,13 @@ The two channels have different repairs because they have different causes. Tabl
 
 ---
 
-## 9. Limitations
+## 10. Limitations
 
 **Label provenance, plainly.**
 - *Channel 2 labels are model-generated.* The first annotator is the Claude session that also designed and implemented the repair; its labels were written blind to every system value and frozen by hash before scoring, but it is not independent of the work. The second annotator is `gpt-5.6-luna`. They agree with kappa 0.61 on 117 characters (0.63 on 46 prefix items) and never contradict, and the premature rate depends on the annotator (1.7% to 3.5% on the same cuts). 31.0% of the 142 labelled characters remain unknown or non-person, above the declared 25% limit, so correctness results are flagged as a subset result. A 30-character human sheet is prepared (`labels/human_check.csv`) and **unfilled**.
 - *Channel 2's system-internal and synthetic results use no labels.* The divergence counts, the repair's zero and the synthetic grid need no annotator; the synthetic generator shares the cue's assumption (own pronouns sit right after the name), so a high cue score there is partly true by construction.
 - *Channel 1's oracle is text-derived, not human-labelled.* The reveal sentence is found by exact search; the choice of events, reveal sentences and cast lists was made by a language model and is not owner-verified. No human check has arrived and none is claimed. In the confirmatory run the miner (`qwen32b`) and the auditor (`mistral24`) are both evaluated models, so event selection and audit are not independent of the subjects; the audit labelled 5 of 68 events NOT_SUPPORTED and 21 IMPLIED, and the primary set keeps only the 42 EXPLICIT events of which 32 are in the test split.
+- *Section 7's rule B is labelled by a judge model (Qwen3-8B), outside the generator set but a language model, and a second judge (OLMo-2-32B) agrees with it; agreement between two models is reliability, not validity, so rule A, text-derived and independent of any judge, is the primary endpoint and applies to 19 events only. Not yet done and the natural next steps: judge validation against independent labels, several cipher families and paraphrase controls, several card prompts and reader positions, a don't-spoil instruction baseline, and products other than this stress-test card.*
 - *Label files contain short quotations from copyrighted translated novels and are not for publication as they are.* Source novels are not distributed.
 
 **Scope.**
@@ -322,9 +436,9 @@ The two channels have different repairs because they have different causes. Tabl
 
 ---
 
-## 10. Conclusion
+## 11. Conclusion
 
-We stated one contract for position-aware reading assistants, reader-faithfulness: the output at chapter c may depend only on chapters up to c. We showed that it can be broken through the input, when a derived fact is stamped earlier than the evidence it was computed from, and through the parameters, when a model has read the book. For the first channel truncate-and-rebuild is an exact oracle; on a deployed narrative graph it finds a stamp-versus-evidence gap in 6.0% of 685 character-cuts (4.5% to 8.0%), of which 1.7% to 3.5% of character-cuts are genuine premature disclosures by two model annotators. Versioning facts by evidence horizon removes the divergence entirely and is safe, not correct; hiding exposed facts is worse than doing nothing; a pre-registered cue and a prefix-causal gate recover most of the price, with a failure map. For the second channel truncation is blind, and a renaming-controlled test with an unseen-text control and a cue-preserving pseudonym condition measures name-keyed premature naming: large for a reference model on famous books (+26.0 points [16.8, 36.0], exploratory), smaller for open models, not detected by a pre-registered run on obscure books (+0.1 [-5.0, +5.2]) where the closed-book control finds almost no memory, and tied to how well known the book is by a fame contrast that is suggestive and underpowered (+7.6 [-1.4, +18.3], p = 0.060). The two compose, and passing one audit does not certify the other. What the evidence supports is a method and a measurement on one system, with the limits above and no human labels; what it invites is a second system, a human-checked label set and a repair for Channel 1 that does better than withholding.
+We stated one contract for position-aware reading assistants, reader-faithfulness: the output at chapter c may depend only on chapters up to c. We showed that it can be broken through the input, when a derived fact is stamped earlier than the evidence it was computed from, and through the parameters, when a model has read the book. For the first channel truncate-and-rebuild is an exact oracle; on a deployed narrative graph it finds a stamp-versus-evidence gap in 6.0% of 685 character-cuts (4.5% to 8.0%), of which 1.7% to 3.5% of character-cuts are genuine premature disclosures by two model annotators. Versioning facts by evidence horizon removes the divergence entirely and is safe, not correct; hiding exposed facts is worse than doing nothing; a pre-registered cue and a prefix-causal gate recover most of the price, with a failure map. For the second channel truncation is blind, and a renaming-controlled test with an unseen-text control and a cue-preserving pseudonym condition measures name-keyed premature naming: large for a reference model on famous books (+26.0 points [16.8, 36.0], exploratory), smaller for open models, not detected by a pre-registered run on obscure books (+0.1 [-5.0, +5.2]) where the closed-book control finds almost no memory, and tied to how well known the book is by a fame contrast that is suggestive and underpowered (+7.6 [-1.4, +18.3], p = 0.060). On a second, generic design, a whole-volume LLM character card, the same audit finds the reveal served early in 18.5% of events under names no model has seen, and the versioned card reduces it to 1.2%. The two compose, and passing one audit does not certify the other. What the evidence supports is a method and a measurement on one system, with the limits above and no human labels; what it invites is a second system, a human-checked label set and a repair for Channel 1 that does better than withholding.
 
 ---
 
@@ -339,6 +453,7 @@ We stated one contract for position-aware reading assistants, reader-faithfulnes
 | Channel 1 confirmatory numbers | `data/eval/chimera/confirm/{main,e2}/analysis.json`, `olmo_corpus_check.json`; pre-registrations `docs/research/preregistrations/PREREG_PD_CONFIRM_v2_L40S.md`, addenda 1 to 5 and `PD_CONFIRM_deviations.md`; tables by `scripts/chimera/gen_ch1_tables.py` |
 | Channel 1 summary table | `docs/research/NOVELTY_REPORT/NOVELTY_ONE_PAGER.md` |
 | Paid spend (Channel 2) | `gpt-5.6-luna`, $0.1140 in total ($0.0524 strict labelling, $0.0006 smoke test, $0.0325 permissive re-read, $0.0285 English-original labels); everything else CPU or local GPU at $0 |
+| Second system (Section 7) | `data/eval/chimera/rf_e2e/` (cards, judge labels, analysis.json); `scripts/chimera/pd_rf_e2e.py`; `PREREG_RF_E2E_addendum_6.md`, `PREREG_RF_E2E_addendum_7_fix.md` and their manifests; local models, $0 |
 | Channel 1 spend | `docs/research/NOVELTY_REPORT/SPEND_LEDGER.md` RunPod L40S pod estimated at 3.9 (as of 19:11 IST; the pod was still billing) USD by uptime at 1.13 USD per hour (an estimate, not the billing page), plus 0.43 USD of earlier OpenAI use; Claude subscription calls are quota, not dollars |
 
 ## Appendix B. Status of placeholders
