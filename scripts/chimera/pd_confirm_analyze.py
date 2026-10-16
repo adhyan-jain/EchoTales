@@ -35,6 +35,8 @@ def boot_events(per_event: dict, stat, n=NB, seed=SEED):
         if not (isinstance(v, float) and math.isnan(v)):
             bs.append(v)
     bs.sort()
+    if len(bs) < 2:  # recovered fraction is undefined when the baseline gap is ~0 in every resample; report NaN, not a crash
+        return pt, float("nan"), float("nan"), float("nan"), bs
     return pt, bs[int(0.025 * len(bs))], bs[int(0.975 * len(bs))], float(np.var(bs, ddof=1)), bs
 
 
