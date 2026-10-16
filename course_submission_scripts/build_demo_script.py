@@ -42,8 +42,8 @@ SEGS = [
     ("6:00-7:00", "Graph audit and honest limits", "Slide 9 then slide 11.",
      "We also audit our own knowledge graph. Rebuilding from the first k chapters and comparing, the entity resolver is causal: zero of twenty-eight thousand one hundred sixty-five mention comparisons differ. "
      "The persona stage is not: twenty-three of two hundred eighty-eight characters change, eight percent. Limits: events were chosen by a model and checked only by exact text search; no human annotation is used or claimed; small models do not replicate on obscure books."),
-    ("7:00-7:40", "Next steps and close", "Slide 12, then slide 14.",
-     "Next we will run a pre-registered confirmatory study: one hundred fifty events, larger open models on a rented GPU, a mitigation test and a recap-spoiler task, all hashed before any model sees an item. "
+    ("7:00-7:40", "Confirmatory run and close", "Slide 12, then slide 14.",
+     "We then ran a pre-registered confirmatory study: sixty-eight events from sixty-five books, three open models on a rented GPU, everything hashed before any model saw an item. On mostly obscure books it found no gap, a pooled difference of zero point one points, and the books were barely remembered by the models, so this is a limit on the effect, not proof it is absent. Pseudonyms halved early naming at a cost in accuracy, and no recap spoilers or training-data link were found. "
      "Takeaway: name-keyed memory leakage is measurable, not explained by lost name cues, and it grows with how well-known the book is. Thank you."),
 ]
 BEFORE = [
@@ -61,7 +61,7 @@ TIMES = [
 CLAIMS = [
     "Say 'text-derived' for every result; never say 'human-annotated'.",
     "Say the replication on seven new books failed for the small local models.",
-    "Say the confirmatory study is planned and has not been run.",
+    "Say the confirmatory run found no gap on obscure books and could not resolve the fame effect.",
     "Do not say the knowledge graph 'leaks to readers'; say its persona stage looks ahead for 8.0 percent of character checks.",
 ]
 
