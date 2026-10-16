@@ -1,0 +1,1014 @@
+{
+ "judge": "mistral24",
+ "of": "olmo32b",
+ "rows": [
+  {
+   "event": "C4537_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C4537_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C4537_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C4537_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C4537_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 0,
+   "unsupported": 4
+  },
+  {
+   "event": "C4537_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 4,
+   "unsupported": 1
+  },
+  {
+   "event": "C7497_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C7497_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C7497_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 10,
+   "unsupported": 0
+  },
+  {
+   "event": "C7497_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C7497_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 5,
+   "unsupported": 1
+  },
+  {
+   "event": "C7497_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C33802_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 10,
+   "unsupported": 0
+  },
+  {
+   "event": "C33802_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 8,
+   "unsupported": 0
+  },
+  {
+   "event": "C33802_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 8,
+   "unsupported": 0
+  },
+  {
+   "event": "C33802_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 1,
+   "unsupported": 0
+  },
+  {
+   "event": "C33802_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 1,
+   "unsupported": 0
+  },
+  {
+   "event": "C33802_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 1,
+   "unsupported": 0
+  },
+  {
+   "event": "C4276_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 10,
+   "unsupported": 2
+  },
+  {
+   "event": "C4276_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C4276_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C4276_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 1,
+   "unsupported": 2
+  },
+  {
+   "event": "C4276_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C4276_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 0,
+   "unsupported": 3
+  },
+  {
+   "event": "C7079_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 12,
+   "unsupported": 0
+  },
+  {
+   "event": "C7079_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 12,
+   "unsupported": 0
+  },
+  {
+   "event": "C7079_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 12,
+   "unsupported": 0
+  },
+  {
+   "event": "C7079_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 5,
+   "unsupported": 1
+  },
+  {
+   "event": "C7079_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 5,
+   "unsupported": 1
+  },
+  {
+   "event": "C7079_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 4,
+   "unsupported": 1
+  },
+  {
+   "event": "C6941_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C6941_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C6941_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 8,
+   "unsupported": 1
+  },
+  {
+   "event": "C6941_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C6941_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C6941_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 1,
+   "unsupported": 1
+  },
+  {
+   "event": "C2516_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 12,
+   "unsupported": 1
+  },
+  {
+   "event": "C2516_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C2516_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C2516_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 4,
+   "unsupported": 1
+  },
+  {
+   "event": "C2516_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 5,
+   "unsupported": 1
+  },
+  {
+   "event": "C2516_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 6,
+   "unsupported": 1
+  },
+  {
+   "event": "C7661_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C7661_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 12,
+   "unsupported": 0
+  },
+  {
+   "event": "C7661_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C7661_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 8,
+   "unsupported": 0
+  },
+  {
+   "event": "C7661_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 7,
+   "unsupported": 0
+  },
+  {
+   "event": "C7661_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 6,
+   "unsupported": 0
+  },
+  {
+   "event": "C9847_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 8,
+   "unsupported": 0
+  },
+  {
+   "event": "C9847_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 7,
+   "unsupported": 0
+  },
+  {
+   "event": "C9847_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 8,
+   "unsupported": 0
+  },
+  {
+   "event": "C9847_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 4,
+   "unsupported": 1
+  },
+  {
+   "event": "C9847_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 4,
+   "unsupported": 1
+  },
+  {
+   "event": "C9847_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 3,
+   "unsupported": 1
+  },
+  {
+   "event": "C35443_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C35443_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 12,
+   "unsupported": 0
+  },
+  {
+   "event": "C35443_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 10,
+   "unsupported": 0
+  },
+  {
+   "event": "C35443_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 5,
+   "unsupported": 1
+  },
+  {
+   "event": "C35443_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 5,
+   "unsupported": 1
+  },
+  {
+   "event": "C35443_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 4,
+   "unsupported": 1
+  },
+  {
+   "event": "C41456_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 8,
+   "unsupported": 1
+  },
+  {
+   "event": "C41456_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 8,
+   "unsupported": 1
+  },
+  {
+   "event": "C41456_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 10,
+   "unsupported": 2
+  },
+  {
+   "event": "C41456_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C41456_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C41456_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C37336_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C37336_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 10,
+   "unsupported": 2
+  },
+  {
+   "event": "C37336_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 10,
+   "unsupported": 2
+  },
+  {
+   "event": "C37336_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 4,
+   "unsupported": 1
+  },
+  {
+   "event": "C37336_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 5,
+   "unsupported": 1
+  },
+  {
+   "event": "C37336_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 5,
+   "unsupported": 1
+  },
+  {
+   "event": "C7265_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C7265_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C7265_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C7265_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 6,
+   "unsupported": 1
+  },
+  {
+   "event": "C7265_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 6,
+   "unsupported": 1
+  },
+  {
+   "event": "C7265_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 0,
+   "unsupported": 7
+  },
+  {
+   "event": "C11720_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C11720_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C11720_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 10,
+   "unsupported": 0
+  },
+  {
+   "event": "C11720_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 1,
+   "unsupported": 1
+  },
+  {
+   "event": "C11720_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C11720_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 1,
+   "unsupported": 2
+  },
+  {
+   "event": "C2160_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C2160_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C2160_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 10,
+   "unsupported": 2
+  },
+  {
+   "event": "C2160_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 4,
+   "unsupported": 0
+  },
+  {
+   "event": "C2160_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 5,
+   "unsupported": 0
+  },
+  {
+   "event": "C2160_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 6,
+   "unsupported": 0
+  },
+  {
+   "event": "C42529_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C42529_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 8,
+   "unsupported": 2
+  },
+  {
+   "event": "C42529_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C42529_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C42529_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C42529_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C38323_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 8,
+   "unsupported": 0
+  },
+  {
+   "event": "C38323_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 10,
+   "unsupported": 0
+  },
+  {
+   "event": "C38323_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 10,
+   "unsupported": 0
+  },
+  {
+   "event": "C38323_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 3,
+   "unsupported": 1
+  },
+  {
+   "event": "C38323_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 4,
+   "unsupported": 1
+  },
+  {
+   "event": "C38323_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 3,
+   "unsupported": 1
+  },
+  {
+   "event": "C33538_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C33538_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C33538_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C33538_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 3,
+   "unsupported": 1
+  },
+  {
+   "event": "C33538_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 5,
+   "unsupported": 1
+  },
+  {
+   "event": "C33538_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 4,
+   "unsupported": 1
+  },
+  {
+   "event": "C11431_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 10,
+   "unsupported": 0
+  },
+  {
+   "event": "C11431_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 12,
+   "unsupported": 1
+  },
+  {
+   "event": "C11431_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 12,
+   "unsupported": 3
+  },
+  {
+   "event": "C11431_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C11431_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 0,
+   "unsupported": 3
+  },
+  {
+   "event": "C11431_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 1,
+   "unsupported": 0
+  },
+  {
+   "event": "C39858_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C39858_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 12,
+   "unsupported": 1
+  },
+  {
+   "event": "C39858_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 8,
+   "unsupported": 1
+  },
+  {
+   "event": "C39858_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 4,
+   "unsupported": 1
+  },
+  {
+   "event": "C39858_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 4,
+   "unsupported": 1
+  },
+  {
+   "event": "C39858_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 4,
+   "unsupported": 1
+  },
+  {
+   "event": "C9589_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 10,
+   "unsupported": 0
+  },
+  {
+   "event": "C9589_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C9589_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 10,
+   "unsupported": 0
+  },
+  {
+   "event": "C9589_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C9589_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C9589_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C7713_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 8,
+   "unsupported": 1
+  },
+  {
+   "event": "C7713_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C7713_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 8,
+   "unsupported": 1
+  },
+  {
+   "event": "C7713_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 1,
+   "unsupported": 2
+  },
+  {
+   "event": "C7713_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C7713_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 0,
+   "unsupported": 1
+  },
+  {
+   "event": "C36592_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C36592_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C36592_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 10,
+   "unsupported": 1
+  },
+  {
+   "event": "C36592_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 1,
+   "unsupported": 0
+  },
+  {
+   "event": "C36592_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 1,
+   "unsupported": 0
+  },
+  {
+   "event": "C36592_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 1,
+   "unsupported": 0
+  },
+  {
+   "event": "C3815_1",
+   "task": "recap",
+   "cond": "O",
+   "supported": 6,
+   "unsupported": 1
+  },
+  {
+   "event": "C3815_1",
+   "task": "recap",
+   "cond": "P1",
+   "supported": 5,
+   "unsupported": 1
+  },
+  {
+   "event": "C3815_1",
+   "task": "recap",
+   "cond": "P2",
+   "supported": 10,
+   "unsupported": 2
+  },
+  {
+   "event": "C3815_1",
+   "task": "profile",
+   "cond": "O",
+   "supported": 1,
+   "unsupported": 2
+  },
+  {
+   "event": "C3815_1",
+   "task": "profile",
+   "cond": "P1",
+   "supported": 1,
+   "unsupported": 2
+  },
+  {
+   "event": "C3815_1",
+   "task": "profile",
+   "cond": "P2",
+   "supported": 3,
+   "unsupported": 1
+  }
+ ]
+}

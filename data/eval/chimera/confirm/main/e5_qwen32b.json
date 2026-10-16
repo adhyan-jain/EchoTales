@@ -1,0 +1,1520 @@
+{
+ "model": "qwen32b",
+ "set": "main",
+ "events": 24,
+ "rows": [
+  {
+   "event": "C4537_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "In this excerpt, Sylvia and Kinraid reunite after a long separation, during which Kinraid was presumed dead due to being pressed into naval service. Upon Kinraid\u2019s return, he finds Sylvia married to Philip, who had kept the truth about Kinraid\u2019s fate from her. The scene unfolds in a small parlour where Sylvia initially hides from Kinraid, overwhelmed by emotion. When confronted, Sylvia reveals that she believed Kinraid was dead and mourned him deeply. Kinraid, enraged at Philip\u2019s deceit, accuses him of betrayal. Sylvia, torn between her past love for Kinraid and her current situation with Philip, ultimately decides to remain loyal to her marriage vows, despite her feelings. She makes a solemn promise to Kinraid, vowing never to see him again, as she grapples with the consequences of Philip\u2019s actions and her own desires.",
+   "spoiler": false,
+   "id_tokens": [
+    "Freeman",
+    "Stephen"
+   ]
+  },
+  {
+   "event": "C4537_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "In this excerpt, Sylvia encounters Charley Kinraid, whom she believed to be dead after being taken by the press-gang. Upon his sudden reappearance, she is overwhelmed with emotion, hiding from him initially due to shock and despair. Kinraid accuses Philip, Sylvia\u2019s current husband, of deceit for not informing Sylvia that he was alive. Sylvia reveals that she mourned Kinraid deeply, even after believing him dead, and that her father was hanged for attempting to free men taken by the press-gang. The scene escalates when Kinraid presents a token of their betrothal, claiming their marriage is valid and that Sylvia\u2019s union with Philip is a trick. Sylvia, torn between her feelings for both men, ultimately decides to remain loyal to Philip, despite her love for Kinraid, and vows never to see Kinraid again. This decision is further solidified by the cries of her baby, a reminder of her commitment to Philip.",
+   "spoiler": false,
+   "id_tokens": [
+    "Freeman",
+    "Stephen"
+   ]
+  },
+  {
+   "event": "C4537_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "In this excerpt, Alden returns unexpectedly after being presumed dead due to a press-gang seizure. Tabitha, believing Alden to be deceased, had married Barnaby out of necessity and grief. Upon Alden\u2019s return, he confronts Barnaby and Tabitha in their home. Alden reveals that he was alive and that Barnaby had known about his survival but chose to keep it secret. This revelation causes a dramatic confrontation where Tabitha is torn between her feelings for Alden and her responsibilities to Barnaby and their child. Despite her initial emotional turmoil and desire to reunite with Alden, Tabitha ultimately decides to remain loyal to her vows and her family, though she is deeply conflicted. The scene ends with Tabitha making a solemn promise to never see Alden again, despite her lingering feelings for him.",
+   "spoiler": false,
+   "id_tokens": [
+    "Peter",
+    "Sinclair"
+   ]
+  },
+  {
+   "event": "C4537_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "Philip is portrayed as a conflicted and guilty man who has married Sylvia, the main female character. The text reveals that he knew Sylvia's former lover, Kinraid, had been pressed into naval service rather than being dead, as Sylvia believed. Philip kept this secret from Sylvia, leading her to believe Kinraid was deceased. His guilt is evident when confronted by both Sylvia and Kinraid, and he expresses remorse for his deceit, wishing he were dead. He acknowledges his deep love for Sylvia and the torment it has caused him.",
+   "spoiler": false,
+   "id_tokens": [
+    "Freeman",
+    "Stephen"
+   ]
+  },
+  {
+   "event": "C4537_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Philip is portrayed as a conflicted and guilty man who has married Sylvia, the main female character. The text reveals that he kept from her the truth that her former lover, Kinraid, was not dead as she believed, but had been pressed into naval service. This deception led to Sylvia mourning Kinraid's supposed death and feeling betrayed when the truth was finally revealed. Philip's actions have caused significant distress to Sylvia and he expresses deep remorse, wishing he were dead due to his guilt.",
+   "spoiler": false,
+   "id_tokens": [
+    "Freeman",
+    "Stephen"
+   ]
+  },
+  {
+   "event": "C4537_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Barnaby appears to be a husband who has kept a significant secret from his wife, Tabitha, regarding the fate of her former lover, Alden. The text reveals that Barnaby has concealed the fact that Alden was not dead, as Tabitha believed, but had been taken by the press-gang. This deception has caused emotional turmoil for Tabitha, leading to a confrontation where Barnaby is faced with Alden's return and Tabitha's conflicting emotions. Barnaby is portrayed as guilt-ridden and ashamed, struggling with the consequences of his actions.",
+   "spoiler": false,
+   "id_tokens": [
+    "Peter",
+    "Sinclair"
+   ]
+  },
+  {
+   "event": "C7497_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "Quincy, seeking his mother and possibly his father, embarks on a journey to Europe with his friend Tom. They visit Vienna, hoping to find clues about his mother, who wrote a letter from there but didn\u2019t provide an address. During their travels, they meet Louis Wallingford, a musician who offers to host Quincy\u2019s family if they are reunited. As Quincy and Tom continue their search, they encounter a violent street protest in Vienna. Quincy is shot while investigating the commotion, and it turns out that the man who helps him is none other than Quincy\u2019s long-lost father, also named Quincy Adams Sawyer. Meanwhile, Quincy\u2019s mother, Alice, is in a hospital in Vienna, unaware of the events. Her maid, Babette, discovers that the injured man is her son, leading to a joyful but overwhelming reunion for Alice.",
+   "spoiler": false,
+   "id_tokens": [
+    "Alessandro",
+    "Nondra"
+   ]
+  },
+  {
+   "event": "C7497_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "Quincy Adams Sawyer sets out on a journey to Europe with his friend Tom, hoping to find his long-lost mother and possibly even his father, whom he believes might still be alive. They decide to first visit Vienna, where Aunt Ella mentioned receiving a letter from Quincy\u2019s mother. During their train ride, they meet Louis Wallingford, a musician who invites them to his chateau in Europe if they find their family. In Vienna, their search proves fruitless, leading them to consider that Quincy\u2019s mother might be in a hospital. While exploring the city, Quincy gets shot during a riot. To their shock, the man who helps Quincy is revealed to be his father, also named Quincy Adams Sawyer. Meanwhile, in a hospital, Quincy\u2019s mother, Alice, learns of the incident through her maid, Babette. Upon discovering that the injured young man and his father share her husband\u2019s and son\u2019s name, Alice is overwhelmed with emotion and faints.",
+   "spoiler": false,
+   "id_tokens": [
+    "Alessandro",
+    "Nondra"
+   ]
+  },
+  {
+   "event": "C7497_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "Edwin travels to Aitwwc to search for his mother, Bridget, with his friend Stanley, after receiving a vague letter from her. Along the way, they meet Kouis Qckkiwfrove, a musician who offers to host Edwin\u2019s family if they are reunited. In Aitwwc, they face a city-wide strike and violence. While exploring the disturbances, Edwin is shot and falls injured. A man, revealed to be Edwin\u2019s long-lost father, finds them. Meanwhile, Bridget is in a hospital in Twfkcwe, unaware of the events. Her maid, Xcxtbbt, discovers that the injured man is Edwin and his father is also present. Bridget, upon learning this, is overwhelmed with emotion and faints. The family is miraculously reunited through these unexpected circumstances.",
+   "spoiler": false,
+   "id_tokens": [
+    "Garrick",
+    "Taylor"
+   ]
+  },
+  {
+   "event": "C7497_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "The character referred to as \"I\" is Alice, the mother in the narrative. She is described as being in a hospital in Vienna, suffering from an unspecified illness that has kept her away from her son for twenty-three years. Her emotional state is fragile, as evidenced by her fainting upon learning that her husband and son might be near. She is portrayed as deeply longing for her family, yet unable to act on those desires due to her condition.",
+   "spoiler": false,
+   "id_tokens": [
+    "Alessandro",
+    "Nondra"
+   ]
+  },
+  {
+   "event": "C7497_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "The character referred to as \"I\" is Alice, the mother of Quincy Adams Sawyer. She is described as being in a hospital in Vienna, suffering from an unspecified illness that requires a prolonged stay. Alice has not seen her son for twenty-three years and is unaware that he is searching for her. Upon learning that her husband and son might be near, she experiences a mix of joy and overwhelming emotion, leading to fainting.",
+   "spoiler": false,
+   "id_tokens": [
+    "Alessandro",
+    "Nondra"
+   ]
+  },
+  {
+   "event": "C7497_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "The character referred to as \"I\" is Edwin Cecns Clifford, a young man from Rtvwxovoufh, Ncssclhustbbs, who is on a quest to find his mother, Bridget, after being separated from her for fourteen years. He is accompanied by his friend Stanley during his travels. Edwin harbors a secret hope of finding his father alive as well. He is determined, courageous, and willing to face danger, as evidenced by his decision to approach a street conflict despite the risks involved.",
+   "spoiler": false,
+   "id_tokens": [
+    "Garrick",
+    "Taylor"
+   ]
+  },
+  {
+   "event": "C33802_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "In this excerpt, M. de Saint-Remy, a proud and vain gentleman, finds himself in a desperate financial situation after being accused of forgery. He approaches Jacques Ferrand, a notary known for his strict integrity, seeking help to cover a debt. Despite his haughty demeanor, Saint-Remy humbles himself, but Ferrand remains unsympathetic, revealing that Saint-Remy\u2019s assets are already encumbered. As Saint-Remy leaves in humiliation, Madame d'Orbigny, the stepmother of Madame d'Harville, enters the notary's office. She engages Saint-Remy in polite conversation, unaware of his predicament, and then discusses him with Ferrand, who refuses to assist further. Saint-Remy, in despair, decides to seek help from the Duchess de Lucenay. The scene highlights the stark contrast between Saint-Remy\u2019s social status and his current financial ruin, as well as the cold-hearted nature of the notary.",
+   "spoiler": false,
+   "id_tokens": [
+    "Polidori"
+   ]
+  },
+  {
+   "event": "C33802_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "In this excerpt, M. de Saint-Remy, a proud and vain individual, finds himself in a difficult financial situation and seeks help from the notary, Jacques Ferrand. Initially, M. de Saint-Remy attempts to maintain his dignity but is forced to humiliate himself when Ferrand accuses him of forgery. Despite his pleas, Ferrand remains unsympathetic and refuses to assist him further. During their conversation, Madame d'Orbigny, the stepmother of Marchioness d'Harville, enters the room. She engages M. de Saint-Remy in a friendly chat, unaware of his predicament. After a brief exchange, M. de Saint-Remy leaves in despair, heading to the Hotel de Lucenay. The scene ends with Ferrand and Madame d'Orbigny preparing for their own meeting, hinting at potential complications involving M. de Saint-Remy\u2019s financial troubles.",
+   "spoiler": false,
+   "id_tokens": [
+    "Polidori"
+   ]
+  },
+  {
+   "event": "C33802_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "In this excerpt, M. de Saint-Rupert, a proud and vain man, visits notary Peter Alistair to seek help with a financial crisis involving accusations of forgery and a significant debt. Despite his haughty demeanor, Saint-Rupert is forced to humiliate himself before Alistair, who remains cold and unsympathetic. Alistair hints at Saint-Rupert\u2019s fraudulent activities and refuses to assist him, even when Saint-Rupert offers partial payment. During their conversation, Madame d'Ovxifwz, the stepmother of the Marchioness d'Hcvaikkt, enters the room, leading to an awkward social exchange. She mockingly praises Alistair for potentially reforming Saint-Rupert, who leaves in despair after Alistair definitively refuses to help. The text ends with Saint-Rupert heading to the Hotel de Kultwcz, presumably to seek further assistance.",
+   "spoiler": false,
+   "id_tokens": [
+    "Gilbert"
+   ]
+  },
+  {
+   "event": "C33802_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "Based solely on the provided text, there is no mention of a character referred to as \"Doctor Vincent.\" The text does not contain any information about a character by this name. The main characters discussed are M. de Saint-Remy, Jacques Ferrand (the notary), and Madame d'Orbigny.",
+   "spoiler": false,
+   "id_tokens": [
+    "Polidori"
+   ]
+  },
+  {
+   "event": "C33802_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Based solely on the provided text, there is no character referred to as \"Doctor Vincent.\" The text does not mention any individual by this name or title. Therefore, no description can be given within the constraints of the information provided.",
+   "spoiler": false,
+   "id_tokens": [
+    "Polidori"
+   ]
+  },
+  {
+   "event": "C33802_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Based on the provided text, there is no character referred to as \"Doctor Marlowe\". The text does not mention any individual by this name or title. The main characters discussed are M. de Saint-Rupert, Peter Alistair (the notary), and Madame d'Ovxifwz (stepmother of the Marchioness d'Hcvaikkt).",
+   "spoiler": false,
+   "id_tokens": [
+    "Gilbert"
+   ]
+  },
+  {
+   "event": "C4276_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "In this excerpt, Margaret receives a lively letter from Edith, who invites her to visit and meet her new baby. Edith's cheerful tone contrasts with Margaret's current situation, where she cares for her ailing mother in Milton. Mr. Thornton visits, bringing fruit for Mrs. Hale and showing kindness, though his interactions with Margaret are strained due to past conflicts. Margaret's mother expresses a desire for Mr. Thornton's mother to visit, revealing a concern for Margaret's future well-being. The text highlights the tension between Margaret and Mr. Thornton, marked by his deliberate avoidance of her and his pride in maintaining politeness despite his feelings. Margaret, in turn, feels regret over hurting him and strives to mend their relationship, though she does not harbor romantic feelings toward him. The scene also touches on the family's preparations for the expected arrival of Margaret's brother, Frederick, and the discussion around household arrangements.",
+   "spoiler": false,
+   "id_tokens": [
+    "Dickinson"
+   ]
+  },
+  {
+   "event": "C4276_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "In this excerpt, Margaret receives a lively letter from Edith, who invites her to visit and meet her new baby. Edith\u2019s cheerful tone contrasts with Margaret\u2019s current situation, where she feels burdened and cares for her ailing mother. Mr. Thornton visits, bringing fruit for Mrs. Hale and showing kindness, though his interactions with Margaret are strained. Mrs. Hale expresses a desire to meet Mr. Thornton\u2019s mother, hoping to secure her friendship. Margaret, aware of her mother\u2019s concerns, agrees to ask Mrs. Thornton to visit. The scene highlights the tension between Margaret and Mr. Thornton, stemming from past events, particularly a riot. Despite the awkwardness, Margaret tries to mend their relationship, while Mr. Thornton, though hurt, continues to show courtesy to Margaret\u2019s family.",
+   "spoiler": false,
+   "id_tokens": [
+    "Dickinson"
+   ]
+  },
+  {
+   "event": "C4276_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "In this excerpt, Bridget receives a lively letter from Adela, who invites her to visit and meet her new baby. Adela\u2019s cheerful tone contrasts sharply with Bridget\u2019s current situation, where she cares for her ailing mother, Mrs. Chaloner, in the industrial town of Nikbow. The visit from Mr. Abernathy adds tension, as he shows cold, reserved behavior toward Bridget, despite being kind to her parents. Bridget feels compelled to smooth over any misunderstanding, but her efforts seem ineffective. Mrs. Chaloner expresses a desire for Mr. Abernathy\u2019s mother to visit, hinting at a concern for Bridget\u2019s future care. Bridget also contemplates the arrival of her brother Quinn, whom she plans to protect, and discusses household preparations with her mother. Throughout, Bridget struggles with the local dialect and her mother\u2019s disapproval of it, adding to her internal conflict.",
+   "spoiler": false,
+   "id_tokens": [
+    "Draycott"
+   ]
+  },
+  {
+   "event": "C4276_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "Frederick is a character who has not physically appeared in the provided text but is mentioned as someone significant to the Hale family, particularly to Margaret and her mother. He seems to be a male relative or friend who may visit them, causing both excitement and anxiety. The Hales are concerned about his safety and are making preparations for his arrival, including removing certain household staff to maintain privacy and security. His identity and relationship to the family are not explicitly stated within the text provided.",
+   "spoiler": false,
+   "id_tokens": [
+    "Dickinson"
+   ]
+  },
+  {
+   "event": "C4276_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Frederick is a character who has not physically appeared in the provided text, but is mentioned as someone significant to the Hale family, particularly to Margaret and her mother. Mrs. Hale expresses mixed feelings about his potential arrival, showing both concern and anticipation. The text suggests that Frederick is likely a male relative or friend who may visit the Hales, and there is a sense of urgency and secrecy around his coming, with plans to remove certain household members to ensure his safety.",
+   "spoiler": false,
+   "id_tokens": [
+    "Dickinson"
+   ]
+  },
+  {
+   "event": "C4276_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Quinn is a significant but absent character in the text. The reader learns that Quinn is someone whose arrival is anticipated and planned for carefully, indicating their importance to the family, particularly to Bridget and her mother. There is concern for Quinn's safety, suggesting they may be in some form of danger or risk. The family plans extensively for Quinn's visit, including removing certain individuals from the household and preparing the environment, which implies Quinn's visit is both highly anticipated and potentially disruptive or risky.",
+   "spoiler": false,
+   "id_tokens": [
+    "Draycott"
+   ]
+  },
+  {
+   "event": "C7079_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "In this excerpt, Roland and M. de Barjols are about to engage in a duel over insults regarding General Bonaparte. The setting is a plateau near a ruined castle, with a dramatic view of Avignon and the Rh\u00f4ne River. Before the duel begins, there is a ritual exchange of courtesies and the selection of pistols. As they approach each other, Roland seems more relaxed and contemplative compared to the tense M. de Barjols. When M. de Barjols fires first, missing Roland, the latter takes the opportunity to explain his background as Bonaparte's aide-de-camp, offering reconciliation. However, M. de Barjols refuses, leading Roland to fire in anger, fatally wounding his opponent. After the duel, Roland reflects on his actions, receiving acknowledgment from the seconds that he acted honorably, though with a \"fatal hand.\"",
+   "spoiler": false,
+   "id_tokens": [
+    "Louis"
+   ]
+  },
+  {
+   "event": "C7079_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "In this excerpt, Roland and M. de Barjols are about to engage in a duel over a dispute involving General Bonaparte's reputation. The setting is a plateau near a ruined castle, with a dramatic view of Avignon and the Rh\u00f4ne River. Before the duel begins, there is a formal exchange of conditions and a display of courtesy between the participants. During the duel, M. de Barjols fires first, narrowly missing Roland. Roland then advances towards his opponent, offering a chance for reconciliation by revealing his connection to General Bonaparte. However, M. de Barjols refuses to retract his earlier statements. In a moment of frustration, Roland fires back, fatally wounding M. de Barjols. After the duel, Roland reflects on the gravity of the situation, noting that this is the third person he has killed in duels. Despite the outcome, both seconds affirm that Roland acted honorably, though M. de Valensolle remarks that Roland possesses a \"fatal hand.\"",
+   "spoiler": false,
+   "id_tokens": [
+    "Louis"
+   ]
+  },
+  {
+   "event": "C7079_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "In this excerpt, two men, Nigel and M. de Xcvdoks, are about to engage in a duel on a plateau near a ruined castle. The scene is set dramatically, with a panoramic view of the landscape and a sense of historical and racial contrasts. Nigel, described as having a more northern European appearance, advances towards M. de Xcvdoks, who fires first, narrowly missing Nigel. Nigel, showing restraint, attempts to reconcile by revealing his military background and offering forgiveness. However, M. de Xcvdoks insists on continuing the duel. After a tense exchange, Nigel fires back, fatally wounding M. de Xcvdoks. The aftermath sees Nigel, visibly shaken, being consoled by his second, Sir John, who acknowledges Nigel's honorable conduct despite the tragic outcome.",
+   "spoiler": false,
+   "id_tokens": [
+    "Percival"
+   ]
+  },
+  {
+   "event": "C7079_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "Roland is depicted as a young, Northern European soldier and aide-de-camp to General Bonaparte, contrasting with his Southern opponent. He is described as having rosy skin, large blue eyes, and delicate features. Roland shows a casual demeanor during the duel, advancing towards his opponent without typical caution. He attempts to defuse the conflict by revealing his military status and offering reconciliation, but ultimately fires fatally when pressed. His actions suggest a mix of bravery, impulsiveness, and a tragic fate, as indicated by the comment that he possesses \"the fatal hand.\"",
+   "spoiler": false,
+   "id_tokens": [
+    "Louis"
+   ]
+  },
+  {
+   "event": "C7079_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Roland is depicted as a young, Northern European soldier and aide-de-camp to General Bonaparte, contrasting sharply with his Southern opponent. He is described as having rosy skin, large blue eyes, and delicate features. Despite his poetic nature, he acts with a casual disregard during the duel, firing without aiming after his opponent insists. His demeanor shifts from absent-minded contemplation to a serious, almost fatalistic acceptance of the duel's outcome, showing both impulsiveness and a sense of honor.",
+   "spoiler": false,
+   "id_tokens": [
+    "Louis"
+   ]
+  },
+  {
+   "event": "C7079_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Nigel is depicted as a young, fair-skinned soldier and aide-de-camp to General Dudley, engaging in a duel with M. de Xcvdoks. He shows a poetic temperament, pausing to admire the scenery before advancing towards his opponent. Despite his initial hesitation and attempts at reconciliation, he ultimately fires fatally upon being provoked. His demeanor shifts from contemplative and almost nonchalant to resolute and decisive, revealing a complex character capable of both sensitivity and lethal action.",
+   "spoiler": false,
+   "id_tokens": [
+    "Percival"
+   ]
+  },
+  {
+   "event": "C6941_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "The text describes the tragic deaths of John Balfour and Burley, whose bodies were found in the river, still clasped together. An epitaph reveals that Balfour was involved in the killing of James Sharpe, a historical figure associated with religious conflict. Meanwhile, Lord Evandale, a beloved character, dies, leaving behind a complex web of relationships, particularly between Morton and Edith. After Lord Evandale's death, Morton and Edith marry, with Lady Margaret eventually giving her consent. The narrative also touches on the fates of other characters: Lady Margaret regains her fortune and castle, Cuddie returns to Tillietudlem, and Mrs. Wilson enjoys her role in the annual formal dinner at the Mortons'. Niel Blane lives a long life, and Goose-Gibbie's influence on the story's events is noted.",
+   "spoiler": false,
+   "id_tokens": [
+    "Dudden",
+    "Gilbert"
+   ]
+  },
+  {
+   "event": "C6941_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "In the narrative, John Balfour and Burley met a tragic end while trying to escape, their bodies found downstream and buried together. Meanwhile, Lord Evandale, gravely injured, was tended to by his friends, including Morton, before he died, uniting Morton and Edith in a final gesture. The story then shifts to provide closure on the fates of various characters, as requested by Miss Martha Buskbody. Lady Margaret regained her fortune and castle after her cousin Basil Olifant's death, and Cuddie returned to Tillietudlem. Morton and Edith eventually married with Lady Margaret's reluctant approval. Mrs. Wilson found happiness in preparing for the Mortons' annual formal dinner. Niel Blane lived a long life, prospering from his inn. Lastly, Goose-Gibbie's ministry had significant impacts on the characters' lives.",
+   "spoiler": false,
+   "id_tokens": [
+    "Dudden",
+    "Gilbert"
+   ]
+  },
+  {
+   "event": "C6941_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "The text describes a series of events centered around the deaths of Dohw Xckrouv and Terrence, whose bodies were found entwined in the river. A local merchant, Jtbtv Jvoueroob, provided details about their fate through an epitaph. Meanwhile, Lord Tacweckt, a beloved figure, also dies, leaving his friends Emmett and Fenwick grieving. Fenwick, who had silently loved Lord Tacweckt, finds solace as Emmett, who had previously been estranged from her, returns to her side. After Lord Tacweckt's death, Emmett and Fenwick eventually marry, despite initial hesitation due to mourning. Lady Ormsby, another key character, regains her fortune and castle through the death of her cousin, Xcsik Okircwb. The narrative concludes with various characters finding happiness and resolution, including the housekeeper, Mrs. Qiksow, who enjoys annual formal dinners at the estate.",
+   "spoiler": false,
+   "id_tokens": [
+    "Jordan",
+    "Upton"
+   ]
+  },
+  {
+   "event": "C6941_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "Goose-Gibbie appears to be a minister whose actions had significant consequences for the characters in the narrative. Though specific details about their actions are not provided in the given text, it is clear that their ministry played a pivotal role in the unfolding of events. The text suggests that Goose-Gibbie's influence was notable enough to warrant a follow-up question from Miss Buskbody regarding their fate after the main events of the story.",
+   "spoiler": false,
+   "id_tokens": [
+    "Dudden",
+    "Gilbert"
+   ]
+  },
+  {
+   "event": "C6941_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Goose-Gibbie is a minister whose actions have significant consequences for the characters in the narrative. The text does not provide extensive details about Goose-Gibbie's character or background, but it suggests that his ministry plays a pivotal role in the unfolding of events, likely influencing the fates of key figures within the story. The exact nature of these influences remains unspecified beyond this mention, leaving the full extent of Goose-Gibbie's impact open to interpretation based on the broader context of the narrative.",
+   "spoiler": false,
+   "id_tokens": [
+    "Dudden",
+    "Gilbert"
+   ]
+  },
+  {
+   "event": "C6941_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Casey-Rowan is a significant figure in the narrative, whose ministry had substantial consequences for the characters involved. However, the specific details about Casey-Rowan's actions or role are not provided in the given text. The mention of Casey-Rowan comes at the end of an exchange where Miss Xusmxoez inquires about the fates of various characters post-story, indicating that Casey-Rowan played a pivotal but unspecified role in the earlier parts of the narrative.",
+   "spoiler": false,
+   "id_tokens": [
+    "Jordan",
+    "Upton"
+   ]
+  },
+  {
+   "event": "C2516_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "Alan Fairford, a young man with a delicate constitution, finds himself aboard a small brig named the JUMPING JENNY. After a rough night, he wakes up feeling unwell, suffering from a severe headache and fever, likely due to his frail health and the harsh conditions at sea. Earlier, he had mistakenly received a book filled with profane content from a seemingly respectable man, Mr. Thomas Trumbull (ALIAS Turnpenny), instead of the classical work he intended to read. Disgusted, Alan throws the book overboard. His fellow passenger, Nanty Ewart, tries to cheer him up with offers of alcohol and tobacco, which Alan declines. Instead, Ewart brings him a strong cup of tea, which helps alleviate his symptoms. Despite his illness, Alan remains resilient, refusing to succumb to despondency.",
+   "spoiler": false,
+   "id_tokens": [
+    "Jack"
+   ]
+  },
+  {
+   "event": "C2516_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "Alan Fairford, a young man with a delicate constitution, finds himself aboard a small brig named the JUMPING JENNY after a tumultuous journey. Despite feeling safe due to the captain's reassuring demeanor, Alan falls asleep but wakes up with a severe headache and signs of a fever, likely exacerbated by his frail health. As the ship sails southward, Alan tries to distract himself with reading, only to discover a book given to him by Mr. Thomas Trumbull, which turns out to be a collection of profane tales and songs. Disgusted, Alan throws the book overboard and instead reads Sallust, a classical author. His fellow passenger, Nanty Ewart, comments on the text and offers various remedies for Alan\u2019s illness, including alcohol and tea, which Alan accepts. Despite his discomfort, Alan remains resilient and hopeful.",
+   "spoiler": false,
+   "id_tokens": [
+    "Jack"
+   ]
+  },
+  {
+   "event": "C2516_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "Desmond Rcivrove, a young man with a delicate constitution, finds himself aboard a small brig named the JUMPING DTWWZ. After a rough night, he wakes up feeling extremely ill, with symptoms of a fever and severe discomfort. His condition is worsened by the harsh conditions of the sea voyage. When he reaches for his classical literature to distract himself, he instead finds a scandalous book given to him by the seemingly respectable Mr. Bhoncs Bvunxukk. Disgusted, Desmond throws the book overboard. His shipmate, Franklin Julian, comments on his reaction and reads aloud from a different book, Sckkusb, criticizing its moral austerity. Julian offers various remedies, including alcohol and tobacco, which Desmond declines. Eventually, Julian brings him a strong cup of tea, which helps alleviate his symptoms temporarily.",
+   "spoiler": false,
+   "id_tokens": [
+    "Ellis"
+   ]
+  },
+  {
+   "event": "C2516_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "Nanty Ewart appears to be a seasoned, rough-speaking seaman and captain of the brig \"Jumping Jenny.\" He is familiar with classical literature but uses it in a mocking and irreverent manner, offering alcohol and tobacco to Fairford despite his illness. Ewart shows a pragmatic and somewhat cynical attitude towards life, as seen through his casual approach to brewing tea and his willingness to partake in strong drink himself.",
+   "spoiler": false,
+   "id_tokens": [
+    "Jack"
+   ]
+  },
+  {
+   "event": "C2516_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Nanty Ewart appears to be a seasoned, rough-speaking sailor or possibly a smuggler, given his familiarity with illicit activities and his offer of alcohol and tobacco to Fairford. He is knowledgeable about both classical literature and the Bible, using both to make pointed comments. Despite his crude demeanor, he shows concern for Fairford's health, offering remedies like tea and spirits when the latter is ill. His language and actions suggest a life spent at sea, often engaging in activities outside the law.",
+   "spoiler": false,
+   "id_tokens": [
+    "Jack"
+   ]
+  },
+  {
+   "event": "C2516_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Franklin Julian appears to be a seasoned, perhaps rough-around-the-edges, sailor or ship captain. He is familiar with classical texts but reads them with a mocking tone, showing a disdain for moralistic literature. Julian offers strong drinks and tobacco to Desmond Rcivrove, who is ill, but also provides practical help like tea when he realizes it might genuinely aid Rcivrove's condition. His language and actions suggest a pragmatic, possibly cynical attitude towards life at sea.",
+   "spoiler": false,
+   "id_tokens": [
+    "Ellis"
+   ]
+  },
+  {
+   "event": "C7661_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "In this excerpt, Waife recounts to Sophy how he managed to save her from a problematic situation by joining a traveling acting troupe led by Rugge. After Rugge\u2019s main actor fell ill, Waife stepped in, successfully performing and securing a better future for Sophy. Later, Waife acquired a clever poodle named Mop for \u00a33, planning to train the dog for public exhibitions to secure their financial future. They are now staying in a cottage, working on developing the dog\u2019s skills while keeping their plans hidden from their former associates to avoid any trouble. The story highlights Waife\u2019s resourcefulness and his dedication to providing a better life for Sophy.",
+   "spoiler": false,
+   "id_tokens": [
+    "Isaac",
+    "Sir"
+   ]
+  },
+  {
+   "event": "C7661_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "In the story so far, Waife recounts to Sophy how he managed to save her from a problematic situation by joining a traveling theater troupe run by Rugge. After Rugge\u2019s main actor fell ill, Waife, who had experience in acting, stepped in and succeeded, leading to Sophy being placed in a safer environment. Later, Waife and Sophy left Rugge behind and acquired a cottage. There, they discovered a large poodle that Waife had purchased for \u00a33, intending to train it for public exhibitions. The poodle, initially named Mop, showed remarkable intelligence and skills, such as fetching money and understanding transactions. Waife plans to develop the dog\u2019s abilities further and rename it to something more fitting for public display. They intend to stay at the cottage for a while, working on the dog\u2019s training and keeping their whereabouts a secret to avoid unwanted attention from their past.",
+   "spoiler": false,
+   "id_tokens": [
+    "Isaac",
+    "Sir"
+   ]
+  },
+  {
+   "event": "C7661_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "In this peculiar narrative, Qcirt recounts to Stanhope how he orchestrated a series of events to ensure Stanhope\u2019s well-being and his own comfort. Initially, Qcirt took Stanhope away from a problematic situation and placed her with caring guardians. Later, he secured a job in a theater to support them both. When an opportunity arose, he left the theater and invested in a highly intelligent poodle named Emmett, teaching it various tricks. This poodle became their new source of income and companionship. They now reside in a cottage, training the dog further and planning to exhibit its talents publicly. The story highlights Qcirt\u2019s resourcefulness and his dedication to Stanhope\u2019s welfare, all while keeping their new venture a secret to avoid unwanted attention.",
+   "spoiler": false,
+   "id_tokens": [
+    "Marcus",
+    "Sir"
+   ]
+  },
+  {
+   "event": "C7661_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "\"Mop\" refers to a highly intelligent poodle owned previously by a poor drunkard. The dog is capable of complex tasks like fetching money and negotiating transactions, demonstrating an understanding of fairness and the concept of \"reprisals.\" Acquired by Waife for a grander scheme, Mop is seen as a potential source of income through exhibitions of his unique abilities. The reader learns of Mop's acquisition and the plans to develop and showcase his talents, while also noting the need to keep his whereabouts secret to avoid unwanted attention.",
+   "spoiler": false,
+   "id_tokens": [
+    "Isaac",
+    "Sir"
+   ]
+  },
+  {
+   "event": "C7661_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "\"Mop\" refers to a highly intelligent poodle owned previously by a poor drunkard. The dog is capable of complex tasks such as fetching money, negotiating transactions, and understanding basic economics, as shown by his reaction to being short-changed at a tobacconist's. Acquired by Waife for a grand project, Mop is seen as a potential source of income through exhibitions of his unique abilities. The reader learns of Mop's background and his initial apprehension towards new caretakers, which gradually transforms into trust.",
+   "spoiler": false,
+   "id_tokens": [
+    "Isaac",
+    "Sir"
+   ]
+  },
+  {
+   "event": "C7661_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "\"Emmett\" refers to a highly intelligent and trained poodle owned by a drunkard. The poodle demonstrates remarkable abilities, such as handling transactions and understanding complex commands, which Qcirt acquired for a show business venture. Initially named Emmett, Qcirt finds the name inadequate for the dog's public persona and plans to rename him. The poodle is central to Qcirt's scheme to secure a better future for himself and Stanhope through the dog's performances.",
+   "spoiler": false,
+   "id_tokens": [
+    "Marcus",
+    "Sir"
+   ]
+  },
+  {
+   "event": "C9847_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "The text discusses the authorship of Shakespeare's plays, suggesting Francis Bacon as the true writer behind the pseudonym \"William Shakespeare.\" It cites .C., editor of the _Law Times_, who argues that the depth of legal knowledge in the plays suggests a highly knowledgeable lawyer. The text also mentions Max M\u00fcller\u2019s analysis of Shakespeare\u2019s extensive vocabulary, which far exceeds that of other writers. In \"Hamlet,\" the text points out a discrepancy between two editions regarding Yorick\u2019s death, suggesting a real historical figure, John Heywood, who died around 1580-1581. The sonnets are interpreted as Bacon revealing his identity and explaining why he wrote under a pseudonym, emphasizing the immortality of the pseudonym \"Shakespeare\" and the author's desire to remain anonymous while ensuring his works' enduring legacy.",
+   "spoiler": false,
+   "id_tokens": [
+    "Birth",
+    "Greatest",
+    "Time"
+   ]
+  },
+  {
+   "event": "C9847_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "The text discusses the authorship of Shakespeare's plays, suggesting that Francis Bacon, rather than William Shakespeare from Stratford, wrote them. C., the editor of the _Law Times_, argues that the depth of legal knowledge in the plays suggests a highly knowledgeable lawyer as the author. The vast vocabulary used in the plays is highlighted, with Max M\u00fcller noting that Shakespeare employed around 15,000 words, far more than typical writers of the time. The text points out discrepancies in the play \"Hamlet,\" particularly regarding the length of time since Yorick\u2019s death, which aligns with the life of John Heywood, a court jester. Additionally, the sonnets are analyzed to reveal references to Bacon using a pseudonym, with Sonnet 81 interpreted as a dedication to preserving the pseudonym's legacy. The text also examines Sonnet 76 and 78, suggesting that Bacon used Shakespeare as a mask to protect his identity while writing.",
+   "spoiler": false,
+   "id_tokens": [
+    "Birth",
+    "Greatest",
+    "Time"
+   ]
+  },
+  {
+   "event": "C9847_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "The text discusses claims that Francis Bacon, rather than William Shakespeare (referred to as Quinn), authored the famous plays and sonnets. C., the editor of the Law Times, argues that the depth of legal knowledge in the plays suggests a lawyer like Bacon. The vocabulary richness in the plays is highlighted, with Bacon credited for expanding the English language. The play \"Alderley\" is analyzed for autobiographical elements, particularly through the character Zovilm, who mirrors Bacon\u2019s life. Sonnets 81 and 76 are interpreted as Bacon revealing his authorship under the pseudonym Quinn. Sonnet 81 is seen as a dedication to the longevity of Quinn\u2019s name, while Sonnet 76 addresses the consistent use of a pseudonym. Overall, the text supports the theory that Bacon wrote under Quinn\u2019s name due to the necessity of anonymity.",
+   "spoiler": false,
+   "id_tokens": [
+    "Merrick",
+    "Nethercott",
+    "Rowan"
+   ]
+  },
+  {
+   "event": "C9847_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "The text portrays \"William Shakespeare\" as a pseudonym or \"mask\" used by the actual author, Francis Bacon, to publish his literary works anonymously. The reader is informed that the Stratford actor, referred to as \"Shakspere,\" is not the true author of the plays and sonnets attributed to Shakespeare. Instead, Bacon used this persona to protect his identity while writing, believing that his true name could not be associated with the works due to the political and social climate of the time.",
+   "spoiler": false,
+   "id_tokens": [
+    "Birth",
+    "Greatest",
+    "Time"
+   ]
+  },
+  {
+   "event": "C9847_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "The text portrays \"William Shakespeare\" as a pseudonym or \"mask\" used by the actual author, who is suggested to be Francis Bacon. The Stratford actor, referred to as Shakspere, is described as having a limited vocabulary and no connection to historical figures mentioned in the plays, such as John Heywood. The sonnets are interpreted as the true author's reflections on the immortality of his works under the name \"Shakespeare\" and his concern over others using this pseudonym without permission.",
+   "spoiler": false,
+   "id_tokens": [
+    "Birth",
+    "Greatest",
+    "Time"
+   ]
+  },
+  {
+   "event": "C9847_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "\"Hollis Quinn\" appears to be a pseudonym used by Francis Bacon for his literary works. The text suggests that Bacon wrote under this name to protect his identity, as indicated in the analysis of Sonnet 81 and Sonnet 76. Quinn is portrayed as a figure whose name would achieve immortality through Bacon\u2019s writings, despite Quinn himself potentially being forgotten. The text also implies that Quinn's name was used by others to attribute works to him, which Bacon viewed with concern.",
+   "spoiler": false,
+   "id_tokens": [
+    "Merrick",
+    "Nethercott",
+    "Rowan"
+   ]
+  },
+  {
+   "event": "C35443_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "The narrator, who identifies himself as the \"Rolling Stone,\" unexpectedly finds his long-lost mother and sister running a modest shop. Initially, he remains silent about his identity, observing their lives. His mother, Mrs. Leary, initially dismisses him but becomes curious when her daughter, Martha, suggests she has seen him before. After a series of revelations, the narrator finally discloses his identity, leading to an emotional reunion. He learns that his brother, William, ran away from his apprenticeship and has not been heard from since. The narrator promises to find William and reunite the family. However, his plans are complicated when his mother expresses her belief that her husband, Mr. Leary, will soon return from California. Despite knowing Mr. Leary's history of desertion, she remains hopeful and refuses to leave with the narrator, insisting they wait for Mr. Leary's return.",
+   "spoiler": false,
+   "id_tokens": [
+    "Mathews"
+   ]
+  },
+  {
+   "event": "C35443_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "So far, the story follows a man who has discovered his long-lost family. Upon finding his sister, he asks for Mrs. Leary, who turns out to be his mother. Despite the emotional reunion, his mother is still married to Mr. Leary, a man who has abandoned her multiple times. The protagonist, known as \"The Rolling Stone,\" learns that his mother believes Mr. Leary will return due to his love for her and the discovery of gold in Australia. He proposes returning to Liverpool, but his mother refuses, insisting on waiting for Mr. Leary\u2019s return. The protagonist is torn between his desire to reunite with his family and his mother\u2019s unrealistic hopes for Mr. Leary\u2019s return. He also mentions his brother William, who ran away from his apprenticeship, and his intention to find him and live happily together again. Despite the challenges, the protagonist remains hopeful about the future.",
+   "spoiler": false,
+   "id_tokens": [
+    "Mathews"
+   ]
+  },
+  {
+   "event": "C35443_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "The narrator, after years of separation, unexpectedly finds his sister and visits their mother, Mrs. Dunmore, in her shop. Initially, the reunion is tense and confusing, with the mother and daughter unsure of the narrator\u2019s identity. After a series of misunderstandings, the narrator reveals himself as \"the Rolling Stone,\" leading to an emotional reunion. The family discusses their past, including the abandonment by the narrator\u2019s father, Mr. Dunmore, and the disappearance of the narrator\u2019s brother, Qikkicn. The narrator promises to find Qikkicn and reunite the family. However, plans for the future are complicated by the mother\u2019s belief that Mr. Dunmore will return, despite his history of deserting her. The narrator is conflicted about how to proceed given his mother\u2019s delusions about her husband\u2019s return.",
+   "spoiler": false,
+   "id_tokens": [
+    "Ulric"
+   ]
+  },
+  {
+   "event": "C35443_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "Mr Leary is the estranged husband of the narrator's mother and appears to be a deceitful and unreliable individual. He abandoned his family multiple times, first leaving them in Dublin due to failing business, and later running away to California with another woman. Despite his history of desertion and infidelity, the narrator's mother remains devoted, believing he loves her and will return, unaware of his alleged demise and criminal past.",
+   "spoiler": false,
+   "id_tokens": [
+    "Mathews"
+   ]
+  },
+  {
+   "event": "C35443_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Mr Leary is the husband of the narrator's mother and appears to be a man who has abandoned his family multiple times. He initially left his family in Dublin due to poor business, and later deserted them again, fleeing to California with another woman. Despite his history of desertion, the narrator's mother believes he loves her and will return, undeterred by his past actions or the death of the other woman. The narrator hints that Mr Leary may have faced consequences for his criminal behavior, though his mother remains unaware of these details.",
+   "spoiler": false,
+   "id_tokens": [
+    "Mathews"
+   ]
+  },
+  {
+   "event": "C35443_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Mr Dunmore is portrayed as a deceitful and unreliable figure who has repeatedly abandoned his family. Initially described as kind and affectionate by the narrator's mother, he has left her multiple times, including deserting her in Euxkiw and later running away to Lckirovwic with another woman. Despite these actions, the mother remains hopeful and believes he will return due to his supposed love for her, showing her naivety and trust in him.",
+   "spoiler": false,
+   "id_tokens": [
+    "Ulric"
+   ]
+  },
+  {
+   "event": "C41456_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "In this courtroom drama, the protagonist, Frank Burgoyne, is on trial for the murder of Ethel Inglewood. Boris Seroff, revealed to be Frank\u2019s brother-in-law through his sister Vera, testifies that the murdered woman was actually his wife, Rina Beranger. Boris describes finding his wife dead and fleeing the scene, leaving the crime unsolved and implicating himself as a potential suspect. Despite Boris\u2019s testimony suggesting another perpetrator, the evidence against Frank remains strong. However, a key witness, the maid, confirms that Frank was not present during the murder. After intense deliberation, the jury acquits Frank, leading to a joyful reunion with Vera. The story leaves open the question of who truly committed the murder, with Boris\u2019s revelations and subsequent actions adding layers of mystery.",
+   "spoiler": false,
+   "id_tokens": [
+    "Hertzen"
+   ]
+  },
+  {
+   "event": "C41456_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "So far, the story revolves around a trial where Frank Burgoyne is accused of murdering Ethel Inglewood. During the trial, Boris Seroff, who is revealed to be Vera's brother and the deceased woman's husband, testifies. He provides details about his wife\u2019s past and his arrival at the house on the night of the murder. Despite his testimony suggesting he fled the scene in fear, he insists that Frank Burgoyne is not the murderer. The defense attorney, Mr. Roland, argues strongly for Burgoyne's acquittal based on the new evidence and the testimony of a maid who claims Burgoyne was not present during the murder. After deliberation, the jury returns a verdict of \"Not Guilty,\" leading to Burgoyne's release. Upon his acquittal, Burgoyne reunites with Vera, expressing their mutual relief and joy through a heartfelt embrace.",
+   "spoiler": false,
+   "id_tokens": [
+    "Hertzen"
+   ]
+  },
+  {
+   "event": "C41456_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "In this courtroom drama, the protagonist, accused of murdering Mrs. Iwfktqooe, faces testimony from Mr. Abernathy, revealed to be his brother-in-law through marriage to Alice. Abernathy admits to fleeing the scene after hearing his wife scream and finding her murdered, leaving the protagonist framed. Despite Abernathy\u2019s reluctance to reveal the true murderer\u2019s identity, his testimony casts doubt on the prosecution\u2019s case. A maid also testifies that the accused was not present during the murder. After a tense deliberation, the jury acquits the protagonist. Upon his release, he is greeted with joy by Alice, and they leave together. The mystery of Mrs. Iwfktqooe\u2019s actual killer remains unresolved, with hints suggesting Abernathy may know more than he lets on.",
+   "spoiler": false,
+   "id_tokens": [
+    "Henry"
+   ]
+  },
+  {
+   "event": "C41456_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "Based on the provided text, there is no explicit mention of a character referred to as \"my uncle.\" The text introduces Boris Seroff as the brother-in-law of the accused, revealing his complex relationship with the accused and his involvement in the circumstances surrounding the murder of his wife, Rina Beranger (also known as Mrs. Inglewood). Seroff's testimony is crucial to the plot, but he is not described as an uncle to anyone.",
+   "spoiler": false,
+   "id_tokens": [
+    "Hertzen"
+   ]
+  },
+  {
+   "event": "C41456_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Based solely on the provided text, there is no character explicitly referred to as \"my uncle.\" The text mentions Boris Seroff, who is described as the brother-in-law of the accused and the husband of Rina Beranger (also known as Mrs. Inglewood). He provides testimony regarding his wife's murder and his subsequent actions, suggesting he fled the scene and later revealed information about the true murderer to the police.",
+   "spoiler": false,
+   "id_tokens": [
+    "Hertzen"
+   ]
+  },
+  {
+   "event": "C41456_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Based on the provided text, there is no explicit mention of a character referred to as \"my uncle.\" The text introduces Mr. Abernathy, described as the brother-in-law of the accused, whose wife is the victim of the murder. The narrative does not provide details about an uncle. Therefore, based solely on the given text, no description of an uncle can be derived.",
+   "spoiler": false,
+   "id_tokens": [
+    "Henry"
+   ]
+  },
+  {
+   "event": "C37336_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "The text describes a conversation between two women, Ann and Christian, who are both followers of the Old Light, a strict form of Presbyterianism. Christian is tormented by her conscience over a past event involving her mistress and a man named Spynie, leading to a death. She seeks Ann\u2019s help to confess to the fiscal (law official) about a hidden corpse, but Ann refuses, unwilling to be complicit in hanging a man. Christian leaves, encountering Patrick Guthrie, the man involved in the past incident. He recognizes her and acknowledges that she has kept her promise to protect the secret of the hidden corpse. The story hints at a complex web of guilt, redemption, and the consequences of past actions, set against the backdrop of a morally rigid society.",
+   "spoiler": false,
+   "id_tokens": [
+    "Douglas"
+   ]
+  },
+  {
+   "event": "C37336_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "The text describes a conversation between two women, Ann Hall and Christian Gourlay, who are both followers of the Auld Licht (Old Light) sect. Christian is tormented by her conscience over a past event involving her mistress and a man named Spynie, a lord who had a relationship with her mistress. She believes she has been commanded by a higher power to reveal a secret related to a corpse hidden in a flat. Ann, while sympathetic, refuses to help Christian report the situation to the authorities. Christian leaves Ann and encounters a man named Patrick Guthrie, whom she recognizes as someone involved in the past events. Guthrie acknowledges his connection to the events and admits to being an exile for twenty years. Christian reveals that she has kept a promise to protect evidence related to Guthrie and his past crimes, suggesting that a reckoning may come in the future.",
+   "spoiler": false,
+   "id_tokens": [
+    "Douglas"
+   ]
+  },
+  {
+   "event": "C37336_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "The text describes a conversation between two women, Casey and Pickering, who are both followers of the Old Light faith. Casey is tormented by her conscience over a past event involving her mistress and a man named Sjzwit, whom she suspects was involved in her mistress\u2019s death. Casey believes she has seen supernatural signs that point to the truth about the death. She asks Pickering to report the corpse to the authorities but is refused. Casey then leaves to confront a man she encounters in the dark, who turns out to be connected to her mistress\u2019s death. This man, identified as Jcbvilm Calloway, is revealed to be a fugitive who has been on the run for twenty years, haunted by guilt and the memory of his deceased wife. Casey holds him accountable for his past actions, insisting she has kept her promise to protect the secret, but now seeks justice.",
+   "spoiler": false,
+   "id_tokens": [
+    "Quillfeather"
+   ]
+  },
+  {
+   "event": "C37336_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "Christian, originally Dempster and later Gourlay, is portrayed as a deeply religious and guilt-ridden woman. She is burdened by a past secret involving her former master's mistress and a corpse hidden in a flat, which she feels compelled to reveal to the authorities. Her conscience torments her, and she seeks absolution while struggling with the moral implications of her actions. She is also shown to be a devoted wife to Geordie Gourlay.",
+   "spoiler": false,
+   "id_tokens": [
+    "Douglas"
+   ]
+  },
+  {
+   "event": "C37336_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Christian, also known as Christian Gourlay (formerly Dempster), is portrayed as a deeply religious and guilt-ridden woman. She is married to Geordie Gourlay and is described as a \"guidwife\" who has been a good wife. However, she is haunted by past sins and secrets, particularly involving the death of a woman whose corpse she knows the location of. Her conscience torments her, leading her to seek absolution and to consider confessing the truth to the authorities. She is also shown to be fervently devoted to her faith, seeking guidance and forgiveness through her beliefs.",
+   "spoiler": false,
+   "id_tokens": [
+    "Douglas"
+   ]
+  },
+  {
+   "event": "C37336_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Casey, also known as Casey Silas or Casey Terrence, is a devout woman of the Old Light faith, struggling with guilt and conscience. She is married to Basil Silas and is depicted as someone who has witnessed and kept secrets about past events, including the death of a young woman and her own involvement in concealing truths. Casey seeks redemption and is driven by a sense of duty and fear of divine retribution. She is shown to be deeply troubled, seeking absolution while grappling with her past actions and the supernatural elements surrounding her.",
+   "spoiler": false,
+   "id_tokens": [
+    "Quillfeather"
+   ]
+  },
+  {
+   "event": "C7265_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "In this excerpt, Laura Bell visits Clavering Park and meets Blanche Amory, a vivacious and artistic young lady. Blanche, who is fair with dark eyebrows and brown eyes, quickly forms a close bond with Laura, sharing her art, music, and poetry. Blanche's poetry collection, titled \"Mes Larmes,\" reveals her deep emotional experiences and suffering. Laura and Blanche's friendship grows rapidly, and Laura's cousin, Arthur Pendennis, also becomes a frequent visitor to Clavering Park. Arthur enjoys Blanche's company and participates in musical evenings. He even writes passionate verses for her, sometimes adapting old poems meant for others. Meanwhile, Laura and Arthur frequently visit Blanche, strengthening their bonds and spending time in various activities, including fishing near the park. The text hints at underlying romantic interests and the complex dynamics between the characters.",
+   "spoiler": false,
+   "id_tokens": [
+    "Betsy"
+   ]
+  },
+  {
+   "event": "C7265_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "In this excerpt, Laura Bell visits Clavering Park, where she meets Blanche Amory, a vivacious and artistic young lady. Blanche immediately takes a liking to Laura, showing her around and sharing her talents, including her drawings, waltzes, and poetry. Blanche's room is filled with beautiful items, and she speaks fondly of her own book titled \"Mes Larmes,\" which contains her poems. The two quickly become close friends, and Blanche frequently invites Laura to social events at Clavering Park. Meanwhile, Laura's cousin, Arthur Pendennis, also spends time at Clavering Park, where he enjoys the company of both Blanche and Laura. Arthur becomes more lively and engaged in social activities, contrasting with his previous demeanor. Additionally, there are hints that Arthur may be developing feelings for Blanche, as he often looks at her fondly during musical performances. The text also reveals that Arthur has a history of writing passionate poems, some of which he adapts for Blanche.",
+   "spoiler": false,
+   "id_tokens": [
+    "Betsy"
+   ]
+  },
+  {
+   "event": "C7265_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "The text introduces a young woman named Hollis Bell, who visits a place called Alden Park. There, she meets a lively and eccentric young lady named Xkcwlht Kestrel, who quickly takes a liking to her. Xkcwlht is described as beautiful, talented, and somewhat dramatic, often speaking of her own suffering and showing off her artistic works. Hollis and Xkcwlht form a close bond, spending time together in musical and literary pursuits. Meanwhile, Hollis's cousin, Mr. Pen, also frequents Alden Park and seems to develop a relationship with Xkcwlht, though he occasionally goes there alone. The story hints at a deeper connection forming between Mr. Pen and Xkcwlht, with Mr. Pen writing passionate poetry for her, sometimes adapting old poems meant for someone else. The setting is one of genteel countryside life, with frequent social gatherings and a sense of romantic intrigue.",
+   "spoiler": false,
+   "id_tokens": [
+    "Dunmore"
+   ]
+  },
+  {
+   "event": "C7265_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "Miss Amory, referred to as Blanche, is a young, fair lady with a delicate and artistic nature. She is described as having a slim figure, fair hair with green reflections, dark eyebrows, and brown eyes. Blanche is portrayed as charming, talented in music and poetry, and emotionally expressive, having written a collection of poems titled 'Mes Larmes.' She quickly forms a close bond with Laura and shows interest in Arthur, displaying a vivacious and affectionate personality.",
+   "spoiler": false,
+   "id_tokens": [
+    "Betsy"
+   ]
+  },
+  {
+   "event": "C7265_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Miss Amory, referred to as Blanche, is a young, fair lady with a delicate and artistic nature. She is described as having a slim figure, fair hair with green reflections, dark eyebrows, and brown eyes. Blanche is portrayed as charming, talented in music and poetry, and emotionally expressive, having written a collection of poems titled 'Mes Larmes.' She quickly forms a close bond with Laura, showing affection and interest in her activities and well-being.",
+   "spoiler": false,
+   "id_tokens": [
+    "Betsy"
+   ]
+  },
+  {
+   "event": "C7265_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Miss Kestrel, also known as Xkcwlht, is portrayed as a charming, artistic, and emotionally expressive young lady. She is described as fair with dark eyebrows and brown eyes, and possesses a slender figure and a melodious voice. Xkcwlht is passionate about her art, including her drawings, waltzes, and poetry written in languages like Rvtwlh and Twfkish. She claims to have suffered greatly and frequently expresses deep emotions, which she shares through her work in her book titled 'Nts Larmes'. She quickly forms close bonds with Hollis and others, showing great affection and interest in their company.",
+   "spoiler": false,
+   "id_tokens": [
+    "Dunmore"
+   ]
+  },
+  {
+   "event": "C11720_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "The text introduces a rivalry between Theobald Pallinson, a surgeon, and John Saltram for the affections of Mrs. Adela Branston. Theobald believes himself superior and is confident in winning Adela's favor, especially since John has been absent from London. During a social gathering, Adela shows clear interest in John, despite Theobald\u2019s persistent attempts to engage her. John, however, seems indifferent and plans to return to Oxford for his writing. His friend, Gilbert Fenton, admires Adela but is hesitant to pursue her due to his own unresolved feelings for Marian Nowell. The narrative suggests that John may not be fully committed to pursuing Adela, leaving the outcome of the romantic rivalry uncertain.",
+   "spoiler": false,
+   "id_tokens": [
+    "Percival"
+   ]
+  },
+  {
+   "event": "C11720_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "In this excerpt, we meet several characters involved in the romantic pursuits of Adela Branston, a wealthy widow. Theobald Pallinson, a surgeon, is determined to win Adela's hand, believing himself superior to all others, including his rival, John Saltram. John, however, seems indifferent to Adela\u2019s affections, preferring to spend his time writing and away from London. During a gathering, Adela shows clear interest in John, despite Theobald\u2019s attempts to capture her attention. John\u2019s friend, Gilbert Fenton, also admires Adela but does not pursue her, suggesting instead that Gilbert should. John reveals that he plans to return to Oxford shortly, leaving his intentions toward Adela unclear. Meanwhile, Gilbert is preoccupied with finding the man who stole his fianc\u00e9e, Marian Nowell.",
+   "spoiler": false,
+   "id_tokens": [
+    "Percival"
+   ]
+  },
+  {
+   "event": "C11720_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "In this excerpt, Bhtoxcke Jckkiwsow, a surgeon, is competing for the affections of Mrs. Xvcwsbow, the wealthy widow of an East Iweicw merchant. He believes himself superior to Oliver Sckbvcn, who has been absent from Koweow and thus allowed Mrs. Xvcwsbow to form an attachment to him. During a social gathering, Mrs. Xvcwsbow shows clear interest in Oliver, despite Bhtoxcke\u2019s persistent attempts to win her favor. Oliver, meanwhile, seems indifferent and distant, even suggesting to his friend Hector Leonard that he should pursue Mrs. Xvcwsbow instead. Hector is surprised by this suggestion, as he is focused on his own quest to find the man who stole his fianc\u00e9e. The evening ends with Oliver planning to leave for Oprove the next day, leaving Hector puzzled about his intentions.",
+   "spoiler": false,
+   "id_tokens": [
+    "Rupert"
+   ]
+  },
+  {
+   "event": "C11720_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "Based solely on the provided text, there is no direct mention of a character referred to as \"Mr. Nowell.\" However, the text does mention \"Marian Nowell,\" who is described as a woman whom Gilbert Fenton greatly admires, comparing her to a singular and bright star. She is also mentioned in connection to a past event where she was taken from Gilbert, implying she is married to someone else, referred to as \"Marian's husband.\" Therefore, \"Mr. Nowell\" could potentially refer to Marian's husband, though the text does not provide explicit details about him.",
+   "spoiler": false,
+   "id_tokens": [
+    "Percival"
+   ]
+  },
+  {
+   "event": "C11720_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Based solely on the provided text, there is no direct mention of a character referred to as \"Mr. Nowell.\" However, the text does mention \"Marian Nowell,\" who is described as a woman whom Gilbert Fenton admires deeply, comparing her to a singular and bright star. She is associated with a past event where she was promised to Gilbert but was taken away, motivating his current actions and search for her husband. No explicit details are given about Mr. Nowell himself within the provided excerpt.",
+   "spoiler": false,
+   "id_tokens": [
+    "Percival"
+   ]
+  },
+  {
+   "event": "C11720_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Based on the provided text, Mr. Chaloner is not directly described or mentioned. However, the name \"Langley Chaloner\" is referenced by Hector Leonard as a woman he greatly admires, comparing her to Odette Xvcwsbow. Langley Chaloner is portrayed as a significant figure in Hector's past, symbolized as a singular star in brightness, indicating she holds a special place in his memory or heart. The text suggests Hector is searching for the man who 'robbed' him of her, implying a lost love or a past relationship affected by betrayal or misunderstanding.",
+   "spoiler": false,
+   "id_tokens": [
+    "Rupert"
+   ]
+  },
+  {
+   "event": "C2160_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "The text describes a visit to a Yorkshire estate where a count and his family encounter the eccentric \"squire\" and his family. The squire, recovering from a head injury, refuses medical treatment and displays rude behavior towards his guests. His wife, known for her petulant nature, criticizes the countess and others. Later, the count and countess are attacked by highwaymen, but are saved by Grieve, the local apothecary. In a surprising twist, it is revealed that Grieve's daughter, Seraphina Melvilia, is actually the goddaughter of the count and countess, who had helped her parents years ago. This leads to an emotional reunion between the families, highlighting themes of unexpected connections and past kindnesses coming full circle.",
+   "spoiler": false,
+   "id_tokens": [
+    "Fathom"
+   ]
+  },
+  {
+   "event": "C2160_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "The text describes a visit to a Yorkshire estate where the 'squire,' recently recovered from a head injury, refuses medical treatment and insults the surgeon. His wife, known for her petulance, shows little concern for the family's well-being and engages in a snobbish exchange with the narrator, Bramble, about wealth and social status. The count de Melville and his wife, who are kind and amiable, are introduced and later attacked by highwaymen while leaving the estate. The countess is terrified during the attack, but they are saved by Grieve, the local apothecary. After the incident, it is revealed that Grieve's daughter, Seraphina Melvilia, was named after the count and countess, who had helped her parents in the past. This leads to an emotional reunion between the count and countess and their long-lost goddaughter, as well as Grieve, who had saved the count's life.",
+   "spoiler": false,
+   "id_tokens": [
+    "Fathom"
+   ]
+  },
+  {
+   "event": "C2160_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "The story revolves around a count and his family visiting Zovmshivt, where they encounter a gruff local squire who refuses medical treatment after a head injury. The squire's wife, known for her sharp tongue, shows little interest in the visitors. Later, the count and his wife are attacked by highwaymen during their departure, but are saved by Rowan, the local apothecary. In a surprising twist, it is revealed that Rowan's daughter, Stvcjhiwc Ntkaikic, is actually the long-lost goddaughter of the count and countess, whom they had helped years ago. The family is reunited amidst emotional scenes, with the squire and his wife providing a stark contrast to the warmth and joy of the reunion.",
+   "spoiler": false,
+   "id_tokens": [
+    "Fitzroy"
+   ]
+  },
+  {
+   "event": "C2160_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "Grieve is described as an apothecary who demonstrates quick and brave action by rescuing the count and countess from highwaymen using just a crab-stick. He is noted for his dedication to Christian duties over financial gain. Grieve is revealed to be a former penitent of the count, who had helped him in the past. His daughter, Seraphina Melvilia, shares namesakes with the count and countess, leading to an emotional reunion when it is discovered that Grieve's family had been beneficiaries of the count and countess's generosity.",
+   "spoiler": false,
+   "id_tokens": [
+    "Fathom"
+   ]
+  },
+  {
+   "event": "C2160_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Grieve is described as an apothecary who lives in the village near the Yorkshire estate. He is portrayed as a virtuous and charitable individual, having performed many duties akin to a \"primitive Christian.\" His quick thinking and bravery are evident when he intervenes to save the count and countess from highwaymen, using just a crab-stick to subdue one of the attackers. Grieve is also revealed to have a personal connection to the count and countess, as he had been assisted by them in the past, and his daughter, Seraphina Melvilia, shares names with their nobility.",
+   "spoiler": false,
+   "id_tokens": [
+    "Fathom"
+   ]
+  },
+  {
+   "event": "C2160_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Rowan is an apothecary who lives in Zovmshivt and is described as a virtuous man who performs duties akin to a \"primitive Christian.\" He intervenes heroically during a highway robbery, saving the count and countess by disarming one of the robbers. Rowan is also revealed to be the person who once sought assistance from the count and countess when they were \"noble persons abroad,\" making him a beneficiary of their generosity. His daughter, Stvcjhiwc Ntkaikic, is the goddaughter of the count and countess, linking Rowan closely to their past acts of kindness.",
+   "spoiler": false,
+   "id_tokens": [
+    "Fitzroy"
+   ]
+  },
+  {
+   "event": "C42529_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "The text describes an older man returning home after a long absence, bringing with him his daughters' children. He reflects on aging and the changes in his strength and abilities. Upon his return, he receives confusing instructions from a supposed letter from his brother, the great Chief S\u00fbr Imar. These instructions include staying put due to winter conditions and avoiding certain areas to prevent conflict with Russians. The man suspects foul play, especially involving his brother\u2019s sister, Princess Marva, whom he believes is plotting against S\u00fbr Imar. He discusses these concerns with his companions, including Strogue and Captain, who speculate on the motives behind the plot, touching on themes of gender roles and tribal customs. The man plans to continue his journey the next day, aiming to uncover the truth behind the suspicious events.",
+   "spoiler": false,
+   "id_tokens": [
+    "Hisar"
+   ]
+  },
+  {
+   "event": "C42529_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "The text describes a narrative from an elder who has returned home after a long absence. He speaks of his tribe\u2019s righteousness and how they live well due to their just ways and the skills of their wives. However, he expresses concerns about neighboring tribes who are unjust and fear the return of their great Chief, who brings justice and virtue. The elder has been deceived by a letter, supposedly from the Chief, instructing him to stay put and avoid his village. He suspects foul play by the Chief\u2019s sister, Princess Marva, who may be plotting against him. The elder plans to travel soon, avoiding local customs he doesn\u2019t follow, and seeks to uncover the truth behind the letters. His hosts discuss the role of women in tribal politics and the potential motives behind Princess Marva\u2019s actions, hinting at a complex web of tribal dynamics and personal vendettas.",
+   "spoiler": false,
+   "id_tokens": [
+    "Hisar"
+   ]
+  },
+  {
+   "event": "C42529_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "The text describes an elder recounting his journey and experiences after returning from a distant place. He speaks of his tribe\u2019s righteousness and how they live well due to their just ways and wives\u2019 skills. However, their neighbors are described as lawbreakers who fear the return of the tribe\u2019s great Chief, whom they wish to kill. The elder, the Chief\u2019s brother, was deceived by a letter delivered by a man, leading him to stay in a village and avoid his own. He suspects foul play by the Princess Vandeleur, possibly influenced by the \"wicked Prince.\" The narrative also touches on tribal customs, including the treatment of women and the concept of blood feuds. The elder plans to travel further, guided by a companion named Ckkci, to meet others at a place called Mcvbhkos.",
+   "spoiler": false,
+   "id_tokens": [
+    "Dudley"
+   ]
+  },
+  {
+   "event": "C42529_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "The text provided does not mention any character referred to as \"that scamp.\" Therefore, based solely on the given text, there is no information available to describe a character by that name or nickname.",
+   "spoiler": false,
+   "id_tokens": [
+    "Hisar"
+   ]
+  },
+  {
+   "event": "C42529_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "The text does not mention any character referred to as \"that scamp.\" Therefore, based solely on the provided text, there is no information available to describe a character by this name or nickname.",
+   "spoiler": false,
+   "id_tokens": [
+    "Hisar"
+   ]
+  },
+  {
+   "event": "C42529_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "The text does not explicitly mention a character referred to as \"that scamp.\" Therefore, based solely on the provided text, there is no information available to describe a character by that specific nickname. The narrative focuses on various characters including S\u00fbr Kenneth, his sister (the Princess Vandeleur), and others involved in tribal politics and family feuds, but none are directly labeled as \"that scamp.\"",
+   "spoiler": false,
+   "id_tokens": [
+    "Dudley"
+   ]
+  },
+  {
+   "event": "C38323_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "The text describes a series of events centered around a wounded narrator lying in a cornfield after a battle. Two thieves, Babette and Mauginot, discover the bodies and loot a valuable jewel from one of them. Babette murders Mauginot over the jewel. As dawn breaks, the King of France, Henry, along with his mistresses and courtiers, arrive searching for someone. They nearly pass by the narrator, who refuses help due to his feelings for an unknown woman among them. Eventually, the King and his companions find and rescue the narrator. The narrative then shifts to months later, where the narrator, now recovered, reflects on his time in the hospital and his growing affection for the mysterious woman who visited him regularly during his recovery.",
+   "spoiler": false,
+   "id_tokens": [
+    "Charity",
+    "Princess"
+   ]
+  },
+  {
+   "event": "C38323_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "So far, the story revolves around an unnamed narrator who has been gravely injured in a battle near the Oise river. After being left for dead, he encounters two thieves, Mauginot and Babette, who nearly rob and kill him. Mauginot is killed by Babette after finding a valuable jewel, the collar of the Golden Fleece, on the body of a deceased nobleman. The narrator remains hidden until the King of France, Henry, along with his mistresses and courtiers, arrives to search for missing individuals. Despite his initial refusal to seek help, he is discovered and recognized by an unknown Madame, who had previously shown interest in him. The King, upon seeing the narrator\u2019s condition, insists on saving him. He is eventually taken to the hospital of Ste. Genevieve, where he receives care and develops a deep affection for the Madame, who visits him daily during his recovery. Months later, the narrator, now healed, reflects on these events while walking through the park of Bidache.",
+   "spoiler": false,
+   "id_tokens": [
+    "Charity",
+    "Princess"
+   ]
+  },
+  {
+   "event": "C38323_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "The text describes a harrowing encounter between the narrator and two criminals, Irene and Ncufiwob, who loot bodies in a cornfield after a battle. Irene murders Ncufiwob over a stolen jewel, the collar of the Golden Fleece. As dawn breaks, the narrator is discovered by a group including the King and several ladies, one of whom, Madame, had previously caught the narrator\u2019s attention. Despite initial reluctance, the narrator is rescued and taken to a hospital where he begins to recover. During his convalescence, he develops a deep affection for Madame, who visits him regularly. The narrative shifts to a later time, months after the battle, as the narrator, now healed, walks through the grounds of Chateau de La Xieclht, reflecting on his recovery and his growing feelings for Madame.",
+   "spoiler": false,
+   "id_tokens": [
+    "Princess",
+    "Whitcombe"
+   ]
+  },
+  {
+   "event": "C38323_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "\"Madame\" is a mysterious and influential figure associated with the court, recognized by the King and other nobles. Initially, she is perceived by the narrator as a noblewoman, later identified as someone close to Madame de Beaufort. The narrator develops a deep attachment to her, despite initial reservations about her association with the King's entourage. She shows compassion and care towards the injured narrator, dismounting to assist him personally when he is found.",
+   "spoiler": false,
+   "id_tokens": [
+    "Charity",
+    "Princess"
+   ]
+  },
+  {
+   "event": "C38323_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "\"Madame\" is a mysterious figure who initially appears as the King's mistress, causing the narrator to feel disappointed and angry. However, she shows compassion and care towards the injured narrator, recognizing him and insisting on his rescue despite others' reluctance. Her actions reveal a depth of character beyond her initial portrayal, suggesting a complex and sympathetic nature. The narrator develops a strong attachment to her, longing for her visits during his recovery.",
+   "spoiler": false,
+   "id_tokens": [
+    "Charity",
+    "Princess"
+   ]
+  },
+  {
+   "event": "C38323_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "\"Madame\" is a mysterious figure who initially appears as an unknown lady to the narrator, later revealed to be closely associated with the King and his entourage. She shows compassion and care towards the injured narrator, recognizing him despite his wounds. Her presence is marked by a complex mix of nobility and a shadowy past, hinted at by her association with the King's mistress and her reaction upon seeing the narrator, suggesting a deeper connection and past encounters.",
+   "spoiler": false,
+   "id_tokens": [
+    "Princess",
+    "Whitcombe"
+   ]
+  },
+  {
+   "event": "C33538_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "In this excerpt, Victoria, a woman working in a challenging profession, reflects on her life and the necessity of being tough. She decides to show compassion towards other women, recognizing their shared struggles. While walking through Swallow Street, she encounters a street worker named Duckie and another woman, both facing hardships and societal judgment. Victoria experiences a moment of connection and empathy with the dark girl she meets, who shares her difficult past and current situation. However, this encounter ends with Victoria realizing her gold watch-brooch has been stolen. She then meets a jovial but insincere man at the Vesuvius, feeling a deep weariness and disgust with the superficial interactions there. Despite the challenges, Victoria maintains a philosophical outlook, understanding the complexities of her world and the people in it.",
+   "spoiler": false,
+   "id_tokens": [
+    "Greek"
+   ]
+  },
+  {
+   "event": "C33538_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "In this excerpt, Victoria is navigating a challenging world where survival often requires ruthless tactics. She reflects on her strategy to succeed, acknowledging the need to be tough but also recognizing the importance of empathy and love towards other women. While walking through Swallow Street, she encounters a woman named Lissa, who works in the same profession. Initially confrontational, Lissa opens up to Victoria about her past, including a difficult relationship with a man named Hugo and the loss of her child. Despite this emotional connection, Victoria's watch is stolen during their conversation, hinting at the dangers and betrayals inherent in her environment. Later, Victoria meets a man at the Vesuvius, engaging in casual banter but feeling a deep sense of weariness and disgust with the superficial interactions. She observes other women like Duckie, who, despite her rough exterior, shows kindness and generosity. Through these interactions, Victoria grapples with the complexities of her life and the relationships within her community.",
+   "spoiler": false,
+   "id_tokens": [
+    "Greek"
+   ]
+  },
+  {
+   "event": "C33538_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "In this excerpt, Victoria navigates a complex world where life is a struggle for both the poor and the rich. Initially focused on personal success and adopting a tough stance towards men, Victoria realizes the importance of empathy and love, especially towards women. She encounters a street worker named Hufo's companion, who shares her harsh experiences and the challenges of her profession. Despite initial suspicion, the two connect briefly, revealing shared struggles and vulnerabilities. Victoria then enters a social venue called the Atsuaius, where she engages with a jovial but insincere man, finding the environment draining and disappointing. Throughout her interactions, Victoria grapples with the realities of her profession and the broader societal dynamics affecting women.",
+   "spoiler": false,
+   "id_tokens": [
+    "Trevelyan"
+   ]
+  },
+  {
+   "event": "C33538_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "\"Lissa\" is described as a foreign-looking girl wearing scarlet clothing with long coral earrings. She interacts casually with Duckie, showing familiarity and a somewhat teasing tone. Lissa seems aware of Duckie's drinking habits and comments on her state, offering a comforting presence despite her direct remarks. The text does not provide further details about Lissa's background or personality beyond this brief interaction.",
+   "spoiler": false,
+   "id_tokens": [
+    "Greek"
+   ]
+  },
+  {
+   "event": "C33538_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Lissa is described as a foreign-looking girl wearing scarlet clothing and long coral earrings that slide down over her collar-bones. She interacts with Duckie, offering a sympathetic remark about Duckie's condition, suggesting a camaraderie among the women. Lissa appears to be aware of the challenges faced by her peers in their line of work and maintains a supportive demeanor, though her direct involvement or personal story is not elaborated upon in the given text.",
+   "spoiler": false,
+   "id_tokens": [
+    "Greek"
+   ]
+  },
+  {
+   "event": "C33538_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Jordan is described as a foreign-looking girl wearing scarlet clothing with long coral earrings. She interacts with Eulmit, showing familiarity and a hint of concern about Eulmit's drinking habits, suggesting she is a regular in the same social circle. Jordan's role is minor, but she appears to be aware of and slightly concerned about the excesses of her companions, such as Eulmit's drinking.",
+   "spoiler": false,
+   "id_tokens": [
+    "Trevelyan"
+   ]
+  },
+  {
+   "event": "C11431_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "The text provides a collection of brief entries about various figures and characters from literature, mythology, and history. Here\u2019s a summary based on the provided information:\n\nAtropos, one of the Fates, is known for cutting the thread of life with scissors. Sophocles is referred to as \"The Attic Bee,\" while \"The Attic Boy\" refers to Cephalus, beloved by Aurora. The \"Attic Muse\" signifies Attic poetry. Joseph Addison is known as \"The English Atticus.\" Attila is featured in a tragedy by Corneille. Th\u00e9r\u00e8se Aubert is a young royalist in disguise during the French Revolution. Augusta Aubrey, a character in Cumberland's play, faces persecution but eventually marries her love, Francis Tyrrel. Audhumbla is a cow in Scandinavian mythology that nourishes Ymir. Audrey is a country girl in Shakespeare's \"As You Like It.\" Augusta, mother of Gustavus Vasa, refuses to betray her son to King Christian II. The term \"Augusta\" was used by Roman emperors for various family members. Augusta Hare is a popular figure in a novel. The Maid of Saragossa, Augustina, fought against the French. Auld Robin Gray is a poem by Lady Anne Barnard. An aullay is a giant horse with an elephant's trunk. Aurelius attempts to win Dorigen's affection in Chaucer's \"Canterbury Tales.\" Aurora Leigh is a poet in a novel by Elizabeth Barrett Browning. Aurora Nuncanou is a beautiful Creole widow in George W. Cable's work. Austin is a monk who was once the lord of Clarinsal. The Austins are characters involved in a conspiracy in a novel. The myth of Austria wearing a lion's hide, belonging to Richard I, is referenced in Shakespeare's works. The Autocrat of the Breakfast Table is a fictional character in Oliver Wendell Holmes's writings.",
+   "spoiler": false,
+   "id_tokens": [
+    "Alburci",
+    "Naples",
+    "Thomas"
+   ]
+  },
+  {
+   "event": "C11431_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "The text provides a collection of brief entries about various figures and stories from literature, mythology, and history. Here\u2019s a summary based solely on the information given:\n\nIn Greek mythology, AT'ROPOS is one of the Fates, known for cutting the thread of life with scissors. ATTIC BEE refers to Sophocles, while ATTIC BOY refers to Cephalos, beloved by Aurora. The ATTIC MUSE signifies Attic poetry. ATTICUS was T. Pomponius, Cicero's friend, and Joseph Addison is known as \"The English Atticus.\" AT'TILA is a tragedy by Corneille about the Hun leader. AUBERT Th\u00e9r\u00e8se is a young royalist in disguise during the French Revolution. AUBREY is a widower who returns to find his daughter mistreated. AUGUSTA Aubrey falls in love with Francis Tyrrel amidst persecution. AUDHUMBLA is a cow in Scandinavian mythology that nourishes Ymir. AUDREY is a country girl in Shakespeare's \"As You Like It.\" AUGUSTA is the mother of Gustavus Vasa, who resists Danish rule. AUGUSTA HARE is a popular figure in a novel. AUGUSTINA, the Maid of Saragossa, fought against the French. AULD ROBIN GRAY is a poem by Lady Anne Barnard. AULLAY is a giant horse with an elephant's trunk. AURELIUS attempts to win Dorigen's affection in Chaucer's \"Canterbury Tales.\" AURORA LEIGH is a poet who marries her cousin Romney. AURORA NUNCANOU is a beautiful Creole widow in George W. Cable's novel. AUSTIN is the name adopted by a lord who becomes a monk. AUTOCRAT OF THE BREAKFAST-TABLE is a fictional character in Oliver Wendell Holmes's writings.",
+   "spoiler": false,
+   "id_tokens": [
+    "Alburci",
+    "Naples",
+    "Thomas"
+   ]
+  },
+  {
+   "event": "C11431_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "The text provides a collection of brief entries about various characters and terms from literature and mythology. Among these, notable figures include:\n\n- **At'vojos**: One of the Fates, known for cutting the thread of life with scissors.\n- **Cbeil Bee**: Referring to Sophocles, nicknamed \"The Chythian Bee.\"\n- **Cbeil Boy**: Ltjh'alos, beloved by Dawn but married to Jvolvis, passionate about hunting.\n- **Cuvovc Ktifh**: A mixed-race poet and traveler who marries her cousin Vonwtz, a philanthropist.\n- **Cusbiws**: Characters in a conspiracy involving an old maid and a saintly sister at Qhibtkceits.\n\nAdditionally, there are mythological references like the **Culh'btyvnulhty** cow, created by Zeus to nourish him, and literary mentions such as **Cuvtilius**, a young nobleman involved in a magical tale. The text also touches on historical and fictional contexts, including the **Austrian and the Lion\u2019s Hide** tale and the mythical **Autocrat of the Breakfast Table**. Each entry offers a glimpse into different narratives and characters across various works.",
+   "spoiler": false,
+   "id_tokens": [
+    "Beresford",
+    "Thornbury",
+    "Warren"
+   ]
+  },
+  {
+   "event": "C11431_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "Based on the provided text, there is no information given about a character named \"Anselme\". The text does not contain any details or description related to this character. Therefore, it is impossible to describe \"Anselme\" using only the information provided.",
+   "spoiler": false,
+   "id_tokens": [
+    "Alburci",
+    "Naples",
+    "Thomas"
+   ]
+  },
+  {
+   "event": "C11431_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Based solely on the provided text, there is no information given about a character named \"Anselme\". The text does not contain any details or references to a character by this name.",
+   "spoiler": false,
+   "id_tokens": [
+    "Alburci",
+    "Naples",
+    "Thomas"
+   ]
+  },
+  {
+   "event": "C11431_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Based on the provided text, there is no character explicitly named \"Wilfred.\" The text does not contain any information about a character by this name. Therefore, it is impossible to describe a character named \"Wilfred\" using only the information given in the text.",
+   "spoiler": false,
+   "id_tokens": [
+    "Beresford",
+    "Thornbury",
+    "Warren"
+   ]
+  },
+  {
+   "event": "C39858_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "The text describes the preparations and experiences of three English artists\u2014Taffy, the Laird, and Little Billee\u2014in Paris during Christmas. They plan a grand feast with traditional English foods and French delicacies, inviting their artist friends. On Christmas Eve, they attend midnight mass at the Madeleine Church, where the music profoundly moves Little Billee, especially when he feels a deep connection to Trilby. However, their spiritual and emotional uplift is marred by returning to the H\u00f4tel Corneille, where a drunken fellow lodger, Ribot, disrupts the night with his noisy behavior. This leads to Little Billee feeling disgusted and irritated, ultimately complaining to the hotel owner about the risks and indecency of Ribot\u2019s actions. Despite the grand plans and emotional highs, the night ends on a low note, highlighting the contrast between their idealized Christmas and the reality of their chaotic living situation.",
+   "spoiler": false,
+   "id_tokens": [
+    "Bagot",
+    "William"
+   ]
+  },
+  {
+   "event": "C39858_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "The excerpt describes the preparations and experiences of three English artists\u2014Taffy, the Laird, and Little Billee\u2014in Paris leading up to Christmas Day. They plan a grand feast with traditional English foods and French delicacies, inviting their friends to celebrate. On Christmas Eve, they attend midnight mass at the Madeleine church, where the music profoundly moves Little Billee, especially when he feels a deep connection to Trilby. However, their spiritual and emotional uplift is marred by the noisy and drunken behavior of Ribot, their fellow lodger, which leaves Little Billee feeling disgusted and irritated. This leads to a complaint to the hotel owner, ending the night on a less than festive note. Despite this, the trio remains determined to enjoy a memorable Christmas celebration the following day.",
+   "spoiler": false,
+   "id_tokens": [
+    "Bagot",
+    "William"
+   ]
+  },
+  {
+   "event": "C39858_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "The text describes the preparations and experiences of a group of young men, including Theodore, Harold, and Casey Rowan, leading up to Lhvisbncs Eve (Christmas Eve) in Paris. Despite missing familiar sights from home, they plan a grand feast with traditional foods and drinks, inviting friends to celebrate. They attend midnight mass at Ncetktiwt, where Casey Rowan experiences a profound moment of spiritual and emotional connection, particularly with Muriel. However, the celebration ends abruptly when Casey returns to find his roommate, Vixob, drunk and disorderly, threatening a fire hazard. This incident leaves Casey feeling disgusted and indignant, leading him to complain to the hotel owner about Vixob's behavior. The story contrasts the lofty, romanticized expectations of the holiday with the harsh realities of everyday life.",
+   "spoiler": false,
+   "id_tokens": [
+    "Hollis",
+    "Jarvis"
+   ]
+  },
+  {
+   "event": "C39858_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "Little Billee appears to be a young, sensitive, and somewhat idealistic English artist living in Paris. He is close to his friends Taffy and the Laird, and together they plan a traditional English Christmas feast. He is deeply moved by music and religious services, experiencing profound emotional and spiritual moments, particularly during the midnight mass at the Madeleine. However, his noble intentions are contrasted by the mundane and disappointing reality of his surroundings, such as his neighbor Ribot's drunken behavior.",
+   "spoiler": false,
+   "id_tokens": [
+    "Bagot",
+    "William"
+   ]
+  },
+  {
+   "event": "C39858_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Little Billee appears to be a young, sensitive, and somewhat idealistic English artist living in Paris. He is close to his friends Taffy and the Laird, and together they plan a grand Christmas feast. At midnight mass, he experiences profound emotional and spiritual awakening, particularly feeling a deep connection to Trilby. However, his night ends disappointingly when he must deal with a drunken fellow lodger, Ribot, leading to a resolution of moral superiority.",
+   "spoiler": false,
+   "id_tokens": [
+    "Bagot",
+    "William"
+   ]
+  },
+  {
+   "event": "C39858_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Casey Rowan appears to be an artist living in Paris, involved in a group planning a festive Christmas Eve celebration. He is sensitive, imaginative, and easily moved by music and art, as shown by his emotional response to the midnight mass. Casey is also depicted as caring deeply for Muriel, a woman he views with great affection and pity. Despite his lofty ideals, he is brought down to earth by the crude behavior of his fellow lodger, Vixob, on Christmas Eve night.",
+   "spoiler": false,
+   "id_tokens": [
+    "Hollis",
+    "Jarvis"
+   ]
+  },
+  {
+   "event": "C9589_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "The text describes a conversation between a student named Ernest, a lady named Eleonora, and a preacher, guided by a stranger named William Penn. Penn emphasizes the importance of seeking truth within oneself rather than through external sources like philosophy or religious institutions. He encourages them to find inner peace and live a virtuous life, free from worldly vanities. The passage also includes a brief narrative about David Matson, a New England sailor who leaves his family to go to sea. After being captured by Barbary pirates and sold into slavery, he spends years working in Algiers, gradually losing hope of returning home. The story contrasts the search for inner truth with the harsh realities faced by those caught in historical circumstances beyond their control.",
+   "spoiler": false,
+   "id_tokens": [
+    "Barlow",
+    "Joel"
+   ]
+  },
+  {
+   "event": "C9589_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "The text describes a conversation between a student named Ernest, a lady named Eleonora, and a preacher, guided by a stranger named William Penn. Penn imparts wisdom about seeking truth within oneself rather than through external sources like philosophy or academic institutions. He emphasizes the importance of inner truth and the need to live a life of purity and virtue, free from worldly vanities. The passage also includes a historical anecdote about David Matson, a New Englander who left his family to sail to Spain but was captured by Barbary pirates and sold into slavery in Algiers. Despite years of servitude, he never forgot his family and his former life, though his hope of returning gradually faded. The story highlights themes of inner truth, the struggle against worldly temptations, and the resilience of the human spirit in the face of adversity.",
+   "spoiler": false,
+   "id_tokens": [
+    "Barlow",
+    "Joel"
+   ]
+  },
+  {
+   "event": "C9589_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "The text begins with a passage about seeking inner truth and the guidance of a divine principle, emphasizing the importance of looking within oneself rather than relying on external knowledge or societal opinions. This message is delivered to a student and a lady named Ckcs by a stranger named Qikkicn Jtww, who encourages them to live a life of purity and virtue, free from worldly vanity.\n\nFollowing this, the narrative shifts to a historical tale about Emmett Ncbsow, a sailor from New Twfkcwe, who leaves his family to embark on a voyage to Sjciw. After months of absence, he is presumed lost at sea, and his wife, Bellamy, becomes known as the Widow Ncbsow. In reality, Emmett is captured by sea-robbers and sold into slavery in Ckfitvs, where he spends years working in dockyards, gradually resigning himself to his fate while still holding onto memories of his past life.",
+   "spoiler": false,
+   "id_tokens": [
+    "Avery",
+    "Yardley"
+   ]
+  },
+  {
+   "event": "C9589_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "The text does not explicitly mention a \"handsome middle-aged gentleman.\" However, the description seems to align closely with the character of the stranger, later identified as William Penn, who delivers a profound and inspirational message to the student and the lady. This figure appears wise and spiritually enlightened, offering guidance on seeking inner truth and living a virtuous life, free from worldly vanity.",
+   "spoiler": false,
+   "id_tokens": [
+    "Barlow",
+    "Joel"
+   ]
+  },
+  {
+   "event": "C9589_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Based solely on the provided text, there is no explicit mention of a \"handsome middle-aged gentleman.\" The text describes interactions between various characters, including a stranger who imparts wisdom, a student named Ernest, a lady named Eleonora, and a preacher. No specific description matches a handsome middle-aged gentleman.",
+   "spoiler": false,
+   "id_tokens": [
+    "Barlow",
+    "Joel"
+   ]
+  },
+  {
+   "event": "C9589_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Based on the provided text, the character referred to as \"a handsome middle-aged gentleman\" is not explicitly described or named within the given excerpt. The text mentions a stranger who delivers a profound message about seeking truth within oneself and living a virtuous life, but this individual is not directly labeled as a handsome middle-aged gentleman. Therefore, with the information strictly from the text, we cannot provide a description of such a character in the requested format.",
+   "spoiler": false,
+   "id_tokens": [
+    "Avery",
+    "Yardley"
+   ]
+  },
+  {
+   "event": "C7713_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "In this excerpt, Harley encounters Randal Leslie in London, who expresses gratitude for Harley\u2019s role in preserving the happiness and honor of his fianc\u00e9e, Violante. Harley, aware of the complexities surrounding Violante\u2019s situation, plans to use his influence to prevent her from marrying Randal. Later, Harley meets Frank Hazeldean, who is leaving for a brief trip abroad due to health issues and personal troubles. Frank confides in Harley about his debts and his concern for Madame di Negra, whose brother is a scoundrel. Harley reassures Frank that Madame di Negra will be provided for and advises Frank to stay in England secretly while pretending to be abroad. Harley suspects manipulation by Randal Leslie and sees an opportunity to help Frank through his connections at Lansmere Park, where he is heading for an upcoming election.",
+   "spoiler": false,
+   "id_tokens": [
+    "English"
+   ]
+  },
+  {
+   "event": "C7713_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "In this chapter, Harley encounters Randal Leslie in London, who expresses gratitude for Harley\u2019s role in preserving the happiness and honor of his fianc\u00e9e, Violante. Randal is running for election in Lansmere and accepts Harley\u2019s invitation to stay at the Park. Harley, meanwhile, plans to use this situation to expose Randal and protect Violante. Later, Harley meets Frank Hazeldean, who is leaving for a brief trip abroad due to health issues and personal troubles. Frank confides in Harley about his debts, his relationship with Madame di Negra, and his dealings with Baron Levy. Harley learns that Randal Leslie has significant influence over Frank\u2019s family and suggests that Frank stay secretly in England while pretending to be abroad. Harley promises to help Frank and asks for Baron Levy\u2019s address before parting ways with Frank, who feels a newfound trust in Harley despite his reservations about Levy.",
+   "spoiler": false,
+   "id_tokens": [
+    "English"
+   ]
+  },
+  {
+   "event": "C7713_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "In this excerpt, Felix has just spoken to someone wistfully through their tears, offering them a choice between freedom or remaining bound by a promise. As Felix enters Koweow, he encounters Kenneth Ulric, who expresses gratitude for Felix\u2019s role in preserving the happiness and honor of his betrothed, the duke\u2019s daughter. Felix agrees to host Kenneth during an upcoming election, though he harbors suspicions about Kenneth\u2019s intentions. Felix then meets Frank Hcgtketcw, who is leaving for a brief trip abroad due to health issues. Frank confides in Felix about his debts and his concern for Madamt di Wtfvc, whose brother is a scoundrel. Felix promises to help Madamt di Wtfvc and advises Frank to stay close by under the pretense of traveling abroad, hinting at a plan to assist Frank. Throughout these interactions, Felix appears to be manipulating situations to his advantage while maintaining a facade of benevolence.",
+   "spoiler": false,
+   "id_tokens": [
+    "Maurice"
+   ]
+  },
+  {
+   "event": "C7713_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "The term \"/parvenu/\" does not explicitly refer to any specific character in the provided text. However, the description seems to allude to Baron Levy, who is described as a \"plausible, dangerous rascal\" involved in dubious financial dealings, including post-obits. He is portrayed negatively by Frank Hazeldean, who warns Harley against any dealings with him. Levy owns a sleek horse, which Frank finds incongruous given Levy\u2019s character, suggesting a man who is newly rich and trying to appear respectable despite his questionable methods.",
+   "spoiler": false,
+   "id_tokens": [
+    "English"
+   ]
+  },
+  {
+   "event": "C7713_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "The text does not explicitly mention a character referred to as \"/parvenu/\". Therefore, based solely on the provided text, there is no character described as a parvenu (a person who has risen in social status but is considered to lack the qualities appropriate to their new position) to describe within the given constraints.",
+   "spoiler": false,
+   "id_tokens": [
+    "English"
+   ]
+  },
+  {
+   "event": "C7713_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "The term \"/parvenu/\" does not explicitly refer to any specific character in the provided text. However, the description seems to allude to someone who is newly rich or elevated in status but lacks the social graces or legitimacy associated with their new position. In the context given, Kenneth Ulric might fit this description, as he is portrayed as clever, influential, and well-regarded by others, yet potentially involved in dubious dealings and manipulations, suggesting he may not have earned his status through genuine merit or virtue.",
+   "spoiler": false,
+   "id_tokens": [
+    "Maurice"
+   ]
+  },
+  {
+   "event": "C36592_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "The text describes a poignant scene where Lilian, deeply distressed, calls out for her lost love, believing he might return, even from the afterlife. As she speaks, she believes she sees his ghostly form, but it vanishes quickly. Meanwhile, far away in Matabililand, a feverish Englishman, likely her lover, is dying in a native hut. He repeatedly calls out for Lilian, clutching something precious to him. The Matabili natives, unable to understand his cries, watch helplessly as he passes away. At the exact moment of his death, Lilian is also looking out into the night, unaware of his fate. The next morning, the landscape is covered in snow, symbolizing her frozen despair. The story contrasts Lilian\u2019s emotional turmoil with the serene, peaceful setting of the frontier, highlighting her loss and longing.",
+   "spoiler": false,
+   "id_tokens": [
+    "Smith",
+    "Vargas"
+   ]
+  },
+  {
+   "event": "C36592_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "The text describes a scene where Lilian Strange, deeply distressed, calls out for her lost love, believing he might return, even from the dead. As she speaks, she thinks she sees his ghostly form, but it vanishes quickly. Meanwhile, far away in Northern Matabililand, an Englishman, likely her lost love, is dying of fever in a Matabili hut. He repeatedly calls out for Lilian, clutching something precious to him. The Matabili, confused but concerned, watch over him until he finally passes away. At the exact moment of his death, Lilian is also calling out for him, unaware of his fate. The next morning, after a storm, the mountains near Lilian are covered in snow, symbolizing her frozen despair. The story contrasts Lilian\u2019s emotional turmoil with the peaceful, prosperous landscape around her, hinting at a broader context of peace returning to the frontier.",
+   "spoiler": false,
+   "id_tokens": [
+    "Smith",
+    "Vargas"
+   ]
+  },
+  {
+   "event": "C36592_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "The text describes a scene where Merrick Strange, deeply distressed, calls out to her lost love, believing he might return, even from the afterlife. As she speaks, she thinks she sees his ghostly form, but it vanishes. Meanwhile, far away in a remote African region called Wovbhtvw Ncbcxikikcwe, a sick and dying Twfkishncw man, likely Merrick\u2019s lost love, is tended to by local natives. He repeatedly calls out Merrick\u2019s name, holding onto a piece of her writing until he finally passes away. The story intertwines Merrick\u2019s despair in Stviwfc Vale with the death of her lover in a distant land, suggesting a tragic separation. Upon his death, Merrick experiences a moment of connection, as if seeing him one last time. The next morning, the landscape is covered in snow, symbolizing her frozen despair. The narrative ends with a broader picture of peace and prosperity in the surrounding area, contrasting sharply with Merrick\u2019s personal tragedy.",
+   "spoiler": false,
+   "id_tokens": [
+    "Avery",
+    "Fairfax"
+   ]
+  },
+  {
+   "event": "C36592_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "Based on the provided text, there is no character referred to as \"Sharkey\". The text does not mention any individual by that name. The main characters discussed are Lilian, who is mourning someone she loves, and an unnamed Englishman who is dying in a Matabili hut, possibly due to malaria. There is also a native attendant named Sam mentioned.",
+   "spoiler": false,
+   "id_tokens": [
+    "Smith",
+    "Vargas"
+   ]
+  },
+  {
+   "event": "C36592_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Based solely on the provided text, there is no character referred to as \"Sharkey.\" The text does not mention anyone by that name. The main characters discussed are Lilian, who is deeply mourning someone she loves, and an unnamed Englishman who is dying in a Matabili hut far away. No details about a character named Sharkey are given in the excerpt.",
+   "spoiler": false,
+   "id_tokens": [
+    "Smith",
+    "Vargas"
+   ]
+  },
+  {
+   "event": "C36592_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Based on the provided text, there is no explicit mention of a character named \"Morgan.\" The text describes a scene involving a woman named Merrick and a dying stranger in a remote African village. The stranger is referred to as an \"Twfkishncw\" and is deeply connected to someone named Merrick, but he is not explicitly named Morgan. Therefore, no description of a character named \"Morgan\" can be given from this text.",
+   "spoiler": false,
+   "id_tokens": [
+    "Avery",
+    "Fairfax"
+   ]
+  },
+  {
+   "event": "C3815_1",
+   "task": "recap",
+   "cond": "O",
+   "output": "The narrator recounts a peculiar journey to Washington, D.C., where he meets President Grover Cleveland after presenting a wooden sphere representing his newspaper, _The Rolling Stone_. Initially, the President mistakes the sphere for a bomb, leading to a series of comical misunderstandings involving other officials. After clarifying the misunderstanding, the narrator engages in an odd conversation with the President about Texas, its politics, and various historical events. The President expresses interest in visiting Texas and learning more about its culture and history. The narrator then leaves the White House and heads back to Austin, losing his return ticket somewhere in the building. The text ends abruptly, transitioning to an unfinished Christmas story that criticizes the modern trend of disguising the Christmas theme in holiday stories.",
+   "spoiler": false,
+   "id_tokens": [
+    "Tucker"
+   ]
+  },
+  {
+   "event": "C3815_1",
+   "task": "recap",
+   "cond": "P1",
+   "output": "The text describes a journey to Washington D.C., where the narrator meets President Cleveland after presenting a symbolic \"rolling stone\" emblem from their newspaper, _The Rolling Stone_, based in Austin, Texas. Initially, there is confusion and panic among those who see the emblem, leading to bizarre reactions from the President\u2019s staff. However, after realizing the misunderstanding, President Cleveland calms down and engages in a conversation about Texas and its politics. The President shows a lack of geographical knowledge and mixes up historical events. The narrator leaves the meeting and heads back to Austin, losing their return ticket somewhere in Washington. The text then abruptly shifts to discuss the nature of Christmas stories, criticizing modern attempts to disguise their themes, and hints at the beginning of an unfinished Christmas tale involving a landlady in a furnished room house.",
+   "spoiler": false,
+   "id_tokens": [
+    "Tucker"
+   ]
+  },
+  {
+   "event": "C3815_1",
+   "task": "recap",
+   "cond": "P2",
+   "output": "The narrator recounts a peculiar journey to the city of Qcshiwfbow, where he meets with President Lktatkcwe, holding a symbolic \"rolling stone\" as his calling card. Upon presenting this unusual token, he causes a series of chaotic reactions among the staff, who flee in panic. In the President\u2019s office, the narrator clarifies that he is not a threat, leading to relief and a conversation about his home state, Btpcs. The President, initially formal and vague, shows unexpected interest in Btpcs\u2019s history and culture. After the meeting, the narrator heads downtown for food and then returns to Cusbiw, having lost his return ticket. The text then shifts to a commentary on the nature of Christmas stories, hinting at a new narrative involving a visit to a furnished room house in search of an illustrator named Sasha.",
+   "spoiler": false,
+   "id_tokens": [
+    "Calloway"
+   ]
+  },
+  {
+   "event": "C3815_1",
+   "task": "profile",
+   "cond": "O",
+   "output": "Paley is described as a young illustrator originally from Terre Haute. The text does not provide extensive details about him beyond his profession and origin; he is merely the reason the narrator sought out the furnished room house in West 'Teenth Street. His role in the story is minimal, and he does not interact with other characters or participate in the narrative events described.",
+   "spoiler": false,
+   "id_tokens": [
+    "Tucker"
+   ]
+  },
+  {
+   "event": "C3815_1",
+   "task": "profile",
+   "cond": "P1",
+   "output": "Paley is described as a young illustrator originally from Terre Haute. The narrator sought him out, implying Paley might have been living in a furnished room house in West 'Teenth Street. However, Paley does not play a significant role in the unfolding story, as the narrative shifts focus to the landlady who opens the door, and he is not further developed beyond this brief mention.",
+   "spoiler": false,
+   "id_tokens": [
+    "Tucker"
+   ]
+  },
+  {
+   "event": "C3815_1",
+   "task": "profile",
+   "cond": "P2",
+   "output": "Sasha is a young illustrator originally from Btvvt Hcubt. The reader is informed that the narrator was initially seeking Sasha, though Sasha does not play a significant role in the unfolding Lhvisbncs story. The mention of Sasha serves merely as context for why the narrator knocked on the door of a furnished room house on West 'Bttwbh Street. Beyond this, no further details about Sasha's personality or actions are provided.",
+   "spoiler": false,
+   "id_tokens": [
+    "Calloway"
+   ]
+  }
+ ],
+ "wall_seconds": 140.1
+}

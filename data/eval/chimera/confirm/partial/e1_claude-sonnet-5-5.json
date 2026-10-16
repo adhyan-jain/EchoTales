@@ -1,0 +1,760 @@
+{
+ "model": "claude-sonnet-5-5",
+ "set": "main",
+ "real": {
+  "C965_1-pre000": {
+   "A": "UNDETERMINED",
+   "B": "C",
+   "B3": "UNDETERMINED",
+   "B2": "C"
+  },
+  "C965_1-pre001": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B3": "UNDETERMINED",
+   "B2": "UNDETERMINED"
+  },
+  "C965_1-pre002": {
+   "A": "G",
+   "B": "G",
+   "B3": "UNDETERMINED",
+   "B2": "G"
+  },
+  "C965_1-pre003": {
+   "A": "H",
+   "B": "H",
+   "B3": "UNDETERMINED",
+   "B2": "H"
+  },
+  "C965_1-post004": {
+   "A": "D",
+   "B": "D",
+   "B3": "UNDETERMINED",
+   "B2": "D"
+  },
+  "C965_1-ctrl005": {
+   "A": "C",
+   "B": "D",
+   "B3": "D",
+   "B2": "D"
+  },
+  "C965_1-ctrl006": {
+   "A": "C",
+   "B": "C",
+   "B3": "C",
+   "B2": "C"
+  },
+  "C1377_1-pre007": {
+   "A": "A",
+   "B": "A",
+   "B3": "E",
+   "B2": "A"
+  },
+  "C1377_1-pre008": {
+   "A": "UNDETERMINED",
+   "B": "F",
+   "B3": "UNDETERMINED",
+   "B2": "F"
+  },
+  "C1377_1-pre009": {
+   "A": "H",
+   "B": "H",
+   "B3": "F",
+   "B2": "H"
+  },
+  "C1377_1-pre010": {
+   "A": "F",
+   "B": "F",
+   "B3": "F",
+   "B2": "F"
+  },
+  "C1377_1-ctrl011": {
+   "A": "H",
+   "B": "H",
+   "B3": "H",
+   "B2": "H"
+  },
+  "C1377_1-ctrl012": {
+   "A": "B",
+   "B": "B",
+   "B3": "B",
+   "B2": "B"
+  },
+  "C1848_1-pre013": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B3": "UNDETERMINED",
+   "B2": "UNDETERMINED"
+  },
+  "C1848_1-pre014": {
+   "A": "A",
+   "B": "A",
+   "B3": "A",
+   "B2": "A"
+  },
+  "C1848_1-pre015": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B3": "UNDETERMINED",
+   "B2": "UNDETERMINED"
+  },
+  "C1848_1-pre016": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B3": "UNDETERMINED",
+   "B2": "UNDETERMINED"
+  },
+  "C1848_1-post017": {
+   "A": "E",
+   "B": "E",
+   "B3": "E",
+   "B2": "E"
+  },
+  "C1848_1-ctrl018": {
+   "A": "G",
+   "B": "G",
+   "B3": "G",
+   "B2": "G"
+  },
+  "C1848_1-ctrl019": {
+   "A": "F",
+   "B": "F",
+   "B3": "F",
+   "B2": "F"
+  },
+  "C1928_1-pre020": {
+   "A": "UNDETERMINED",
+   "B": "B",
+   "B3": "UNDETERMINED",
+   "B2": "B"
+  },
+  "C1928_1-pre021": {
+   "A": "UNDETERMINED",
+   "B": "F",
+   "B3": "UNDETERMINED",
+   "B2": "F"
+  },
+  "C1928_1-pre022": {
+   "A": "E",
+   "B": "E",
+   "B3": "E",
+   "B2": "E"
+  },
+  "C1928_1-ctrl023": {
+   "A": "F",
+   "B": "E",
+   "B3": "F",
+   "B2": "E"
+  },
+  "C1928_1-ctrl024": {
+   "A": "A",
+   "B": "A",
+   "B3": "A",
+   "B2": "A"
+  },
+  "C1942_1-pre025": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B3": "UNDETERMINED",
+   "B2": "UNDETERMINED"
+  },
+  "C1942_1-pre026": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B3": "J",
+   "B2": "UNDETERMINED"
+  },
+  "C1942_1-pre027": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B3": "C",
+   "B2": "UNDETERMINED"
+  },
+  "C1942_1-pre028": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B3": "UNDETERMINED",
+   "B2": "UNDETERMINED"
+  },
+  "C1942_1-post029": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B3": "UNDETERMINED",
+   "B2": "UNDETERMINED"
+  },
+  "C1942_1-ctrl030": {
+   "A": "J",
+   "B": "H",
+   "B3": "H",
+   "B2": "H"
+  },
+  "C1942_1-ctrl031": {
+   "A": "J",
+   "B": "J",
+   "B3": "F",
+   "B2": "J"
+  },
+  "C2078_1-pre032": {
+   "A": "UNDETERMINED",
+   "B": "J",
+   "B3": "UNDETERMINED",
+   "B2": "J"
+  },
+  "C2078_1-pre033": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B3": "D",
+   "B2": "UNDETERMINED"
+  },
+  "C2078_1-pre034": {
+   "A": "UNDETERMINED",
+   "B": "A",
+   "B3": "UNDETERMINED",
+   "B2": "A"
+  },
+  "C2078_1-pre035": {
+   "A": "UNDETERMINED",
+   "B": "B",
+   "B3": "UNDETERMINED",
+   "B2": "B"
+  },
+  "C2078_1-post036": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B3": "UNDETERMINED",
+   "B2": "UNDETERMINED"
+  },
+  "C2078_1-ctrl037": {
+   "A": "G",
+   "B": "G",
+   "B3": "G",
+   "B2": "G"
+  },
+  "C2078_1-ctrl038": {
+   "A": "C",
+   "B": "C",
+   "B3": "C",
+   "B2": "C"
+  },
+  "C2153_1-pre039": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B3": "UNDETERMINED",
+   "B2": "UNDETERMINED"
+  },
+  "C2153_1-pre040": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B3": "UNDETERMINED",
+   "B2": "UNDETERMINED"
+  },
+  "C2153_1-pre041": {
+   "A": "A",
+   "B": "A",
+   "B3": "UNDETERMINED",
+   "B2": "A"
+  },
+  "C2153_1-pre042": {
+   "A": "A",
+   "B": "UNDETERMINED",
+   "B3": "UNDETERMINED",
+   "B2": "UNDETERMINED"
+  },
+  "C2153_1-post043": {
+   "A": "F",
+   "B": "F",
+   "B3": "F",
+   "B2": "F"
+  },
+  "C2153_1-ctrl044": {
+   "A": "UNDETERMINED",
+   "B": "F",
+   "B3": "F",
+   "B2": "F"
+  },
+  "C2153_1-ctrl045": {
+   "A": "D",
+   "B": "D",
+   "B3": "D",
+   "B2": "D"
+  },
+  "C2160_1-pre046": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B3": "UNDETERMINED",
+   "B2": "UNDETERMINED"
+  },
+  "C2160_1-pre047": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B3": "UNDETERMINED",
+   "B2": "UNDETERMINED"
+  },
+  "C2160_1-pre048": {
+   "A": "UNDETERMINED",
+   "B": "F",
+   "B3": "UNDETERMINED",
+   "B2": "F"
+  },
+  "C2160_1-pre049": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B3": "UNDETERMINED",
+   "B2": "UNDETERMINED"
+  },
+  "C2160_1-post050": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B3": "UNDETERMINED",
+   "B2": "UNDETERMINED"
+  },
+  "C2160_1-ctrl051": {
+   "A": "B",
+   "B": "B",
+   "B3": "B",
+   "B2": "B"
+  },
+  "C2160_1-ctrl052": {
+   "A": "H",
+   "B": "H",
+   "B2": "H"
+  }
+ },
+ "closed": {},
+ "m2": {},
+ "status": "STOPPED: You've hit your session limit \u00b7 resets 9:50pm (Asia/Kolkata)",
+ "calls": 1218,
+ "scope": "test split; arms A,B,B3 and M2",
+ "wall_seconds": 417.2,
+ "model_ids_seen": [
+  "claude-sonnet-5-5"
+ ],
+ "truth": {
+  "C965_1-pre000": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "C",
+   "kind": "pre",
+   "event": "C965_1",
+   "distance": 68491,
+   "baseline_letter": "G"
+  },
+  "C965_1-pre001": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "C965_1",
+   "distance": 56792,
+   "baseline_letter": "F"
+  },
+  "C965_1-pre002": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "C965_1",
+   "distance": 34864,
+   "baseline_letter": "F"
+  },
+  "C965_1-pre003": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "H",
+   "kind": "pre",
+   "event": "C965_1",
+   "distance": 7064,
+   "baseline_letter": "B"
+  },
+  "C965_1-post004": {
+   "truth_letter": "D",
+   "identity_letter": "D",
+   "kind": "post",
+   "event": "C965_1",
+   "distance": null,
+   "baseline_letter": "F"
+  },
+  "C965_1-ctrl005": {
+   "truth_letter": "D",
+   "identity_letter": "B",
+   "kind": "ctrl",
+   "event": "C965_1",
+   "distance": null,
+   "baseline_letter": "D"
+  },
+  "C965_1-ctrl006": {
+   "truth_letter": "C",
+   "identity_letter": "E",
+   "kind": "ctrl",
+   "event": "C965_1",
+   "distance": null,
+   "baseline_letter": "C"
+  },
+  "C1377_1-pre007": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "C1377_1",
+   "distance": 662318,
+   "baseline_letter": "F"
+  },
+  "C1377_1-pre008": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "C1377_1",
+   "distance": 620243,
+   "baseline_letter": "C"
+  },
+  "C1377_1-pre009": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "C1377_1",
+   "distance": 385528,
+   "baseline_letter": "B"
+  },
+  "C1377_1-pre010": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "A",
+   "kind": "pre",
+   "event": "C1377_1",
+   "distance": 131313,
+   "baseline_letter": "G"
+  },
+  "C1377_1-ctrl011": {
+   "truth_letter": "H",
+   "identity_letter": "D",
+   "kind": "ctrl",
+   "event": "C1377_1",
+   "distance": null,
+   "baseline_letter": "H"
+  },
+  "C1377_1-ctrl012": {
+   "truth_letter": "B",
+   "identity_letter": "H",
+   "kind": "ctrl",
+   "event": "C1377_1",
+   "distance": null,
+   "baseline_letter": "B"
+  },
+  "C1848_1-pre013": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "I",
+   "kind": "pre",
+   "event": "C1848_1",
+   "distance": 223300,
+   "baseline_letter": "D"
+  },
+  "C1848_1-pre014": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B",
+   "kind": "pre",
+   "event": "C1848_1",
+   "distance": 135664,
+   "baseline_letter": "D"
+  },
+  "C1848_1-pre015": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "C1848_1",
+   "distance": 69419,
+   "baseline_letter": "G"
+  },
+  "C1848_1-pre016": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B",
+   "kind": "pre",
+   "event": "C1848_1",
+   "distance": 12303,
+   "baseline_letter": "D"
+  },
+  "C1848_1-post017": {
+   "truth_letter": "E",
+   "identity_letter": "E",
+   "kind": "post",
+   "event": "C1848_1",
+   "distance": null,
+   "baseline_letter": "C"
+  },
+  "C1848_1-ctrl018": {
+   "truth_letter": "G",
+   "identity_letter": "E",
+   "kind": "ctrl",
+   "event": "C1848_1",
+   "distance": null,
+   "baseline_letter": "G"
+  },
+  "C1848_1-ctrl019": {
+   "truth_letter": "F",
+   "identity_letter": "D",
+   "kind": "ctrl",
+   "event": "C1848_1",
+   "distance": null,
+   "baseline_letter": "F"
+  },
+  "C1928_1-pre020": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B",
+   "kind": "pre",
+   "event": "C1928_1",
+   "distance": 522645,
+   "baseline_letter": "G"
+  },
+  "C1928_1-pre021": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B",
+   "kind": "pre",
+   "event": "C1928_1",
+   "distance": 402298,
+   "baseline_letter": "D"
+  },
+  "C1928_1-pre022": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "J",
+   "kind": "pre",
+   "event": "C1928_1",
+   "distance": 52845,
+   "baseline_letter": "E"
+  },
+  "C1928_1-ctrl023": {
+   "truth_letter": "E",
+   "identity_letter": "J",
+   "kind": "ctrl",
+   "event": "C1928_1",
+   "distance": null,
+   "baseline_letter": "E"
+  },
+  "C1928_1-ctrl024": {
+   "truth_letter": "A",
+   "identity_letter": "J",
+   "kind": "ctrl",
+   "event": "C1928_1",
+   "distance": null,
+   "baseline_letter": "A"
+  },
+  "C1942_1-pre025": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "J",
+   "kind": "pre",
+   "event": "C1942_1",
+   "distance": 13097,
+   "baseline_letter": "B"
+  },
+  "C1942_1-pre026": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "J",
+   "kind": "pre",
+   "event": "C1942_1",
+   "distance": 782,
+   "baseline_letter": "A"
+  },
+  "C1942_1-pre027": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "C",
+   "kind": "pre",
+   "event": "C1942_1",
+   "distance": 653,
+   "baseline_letter": "I"
+  },
+  "C1942_1-pre028": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "C1942_1",
+   "distance": 350,
+   "baseline_letter": "G"
+  },
+  "C1942_1-post029": {
+   "truth_letter": "B",
+   "identity_letter": "B",
+   "kind": "post",
+   "event": "C1942_1",
+   "distance": null,
+   "baseline_letter": "D"
+  },
+  "C1942_1-ctrl030": {
+   "truth_letter": "H",
+   "identity_letter": "F",
+   "kind": "ctrl",
+   "event": "C1942_1",
+   "distance": null,
+   "baseline_letter": "H"
+  },
+  "C1942_1-ctrl031": {
+   "truth_letter": "F",
+   "identity_letter": "D",
+   "kind": "ctrl",
+   "event": "C1942_1",
+   "distance": null,
+   "baseline_letter": "F"
+  },
+  "C2078_1-pre032": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B",
+   "kind": "pre",
+   "event": "C2078_1",
+   "distance": 200435,
+   "baseline_letter": "G"
+  },
+  "C2078_1-pre033": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "C2078_1",
+   "distance": 111468,
+   "baseline_letter": "G"
+  },
+  "C2078_1-pre034": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "I",
+   "kind": "pre",
+   "event": "C2078_1",
+   "distance": 34029,
+   "baseline_letter": "H"
+  },
+  "C2078_1-pre035": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "C2078_1",
+   "distance": 4,
+   "baseline_letter": "G"
+  },
+  "C2078_1-post036": {
+   "truth_letter": "E",
+   "identity_letter": "E",
+   "kind": "post",
+   "event": "C2078_1",
+   "distance": null,
+   "baseline_letter": "H"
+  },
+  "C2078_1-ctrl037": {
+   "truth_letter": "G",
+   "identity_letter": "A",
+   "kind": "ctrl",
+   "event": "C2078_1",
+   "distance": null,
+   "baseline_letter": "G"
+  },
+  "C2078_1-ctrl038": {
+   "truth_letter": "C",
+   "identity_letter": "I",
+   "kind": "ctrl",
+   "event": "C2078_1",
+   "distance": null,
+   "baseline_letter": "C"
+  },
+  "C2153_1-pre039": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "C",
+   "kind": "pre",
+   "event": "C2153_1",
+   "distance": 857990,
+   "baseline_letter": "B"
+  },
+  "C2153_1-pre040": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "C2153_1",
+   "distance": 810118,
+   "baseline_letter": "D"
+  },
+  "C2153_1-pre041": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "A",
+   "kind": "pre",
+   "event": "C2153_1",
+   "distance": 342428,
+   "baseline_letter": "J"
+  },
+  "C2153_1-pre042": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "C2153_1",
+   "distance": 320351,
+   "baseline_letter": "A"
+  },
+  "C2153_1-post043": {
+   "truth_letter": "F",
+   "identity_letter": "F",
+   "kind": "post",
+   "event": "C2153_1",
+   "distance": null,
+   "baseline_letter": "C"
+  },
+  "C2153_1-ctrl044": {
+   "truth_letter": "F",
+   "identity_letter": "A",
+   "kind": "ctrl",
+   "event": "C2153_1",
+   "distance": null,
+   "baseline_letter": "F"
+  },
+  "C2153_1-ctrl045": {
+   "truth_letter": "D",
+   "identity_letter": "A",
+   "kind": "ctrl",
+   "event": "C2153_1",
+   "distance": null,
+   "baseline_letter": "D"
+  },
+  "C2160_1-pre046": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "C2160_1",
+   "distance": 11805,
+   "baseline_letter": "C"
+  },
+  "C2160_1-pre047": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "C2160_1",
+   "distance": 4171,
+   "baseline_letter": "H"
+  },
+  "C2160_1-pre048": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "C2160_1",
+   "distance": 1623,
+   "baseline_letter": "C"
+  },
+  "C2160_1-pre049": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "C2160_1",
+   "distance": 489,
+   "baseline_letter": "E"
+  },
+  "C2160_1-post050": {
+   "truth_letter": "A",
+   "identity_letter": "A",
+   "kind": "post",
+   "event": "C2160_1",
+   "distance": null,
+   "baseline_letter": "B"
+  },
+  "C2160_1-ctrl051": {
+   "truth_letter": "B",
+   "identity_letter": "D",
+   "kind": "ctrl",
+   "event": "C2160_1",
+   "distance": null,
+   "baseline_letter": "B"
+  },
+  "C2160_1-ctrl052": {
+   "truth_letter": "H",
+   "identity_letter": "G",
+   "kind": "ctrl",
+   "event": "C2160_1",
+   "distance": null,
+   "baseline_letter": "H"
+  }
+ },
+ "closed_truth": {},
+ "m2_truth": {}
+}

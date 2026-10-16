@@ -1,0 +1,1665 @@
+{
+ "model": "olmo32b",
+ "set": "e2",
+ "real": {
+  "E2_1-pre000": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_1-pre001": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_1-pre002": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_1-pre003": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "G",
+   "B3": "UNDETERMINED"
+  },
+  "E2_1-ctrl004": {
+   "A": "H",
+   "B": "H",
+   "B2": "H",
+   "B3": "H"
+  },
+  "E2_1-ctrl005": {
+   "A": "G",
+   "B": "G",
+   "B2": "G",
+   "B3": "G"
+  },
+  "E2_2-pre006": {
+   "A": "C",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_2-pre007": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_2-pre008": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_2-pre009": {
+   "A": "UNDETERMINED",
+   "B": "H",
+   "B2": "H",
+   "B3": "H"
+  },
+  "E2_2-ctrl010": {
+   "A": "G",
+   "B": "G",
+   "B2": "G",
+   "B3": "G"
+  },
+  "E2_2-ctrl011": {
+   "A": "H",
+   "B": "H",
+   "B2": "H",
+   "B3": "H"
+  },
+  "E2_3-pre012": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_3-pre013": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "I",
+   "B3": "UNDETERMINED"
+  },
+  "E2_3-pre014": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_3-pre015": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_3-ctrl016": {
+   "A": "G",
+   "B": "G",
+   "B2": "G",
+   "B3": "G"
+  },
+  "E2_3-ctrl017": {
+   "A": "B",
+   "B": "B",
+   "B2": "F",
+   "B3": "F"
+  },
+  "E2_4-pre018": {
+   "A": "F",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_4-pre019": {
+   "A": "UNDETERMINED",
+   "B": "H",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_4-pre020": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_4-pre021": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_4-ctrl022": {
+   "A": "E",
+   "B": "E",
+   "B2": "E",
+   "B3": "E"
+  },
+  "E2_4-ctrl023": {
+   "A": "E",
+   "B": "E",
+   "B2": "E",
+   "B3": "E"
+  },
+  "E2_5-pre024": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_5-pre025": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_5-pre026": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_5-pre027": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_5-ctrl028": {
+   "A": "G",
+   "B": "G",
+   "B2": "G",
+   "B3": "G"
+  },
+  "E2_5-ctrl029": {
+   "A": "D",
+   "B": "D",
+   "B2": "D",
+   "B3": "D"
+  },
+  "E2_6-pre030": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_6-pre031": {
+   "A": "UNDETERMINED",
+   "B": "F",
+   "B2": "UNDETERMINED",
+   "B3": "F"
+  },
+  "E2_6-pre032": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_6-pre033": {
+   "A": "UNDETERMINED",
+   "B": "H",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_6-ctrl034": {
+   "A": "H",
+   "B": "H",
+   "B2": "H",
+   "B3": "H"
+  },
+  "E2_6-ctrl035": {
+   "A": "G",
+   "B": "G",
+   "B2": "G",
+   "B3": "G"
+  },
+  "E2_7-pre036": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_7-pre037": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_7-pre038": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_7-pre039": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_7-ctrl040": {
+   "A": "C",
+   "B": "C",
+   "B2": "C",
+   "B3": "C"
+  },
+  "E2_7-ctrl041": {
+   "A": "I",
+   "B": "I",
+   "B2": "I",
+   "B3": "H"
+  },
+  "E2_11-pre042": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_11-pre043": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_11-pre044": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_11-pre045": {
+   "A": "UNDETERMINED",
+   "B": "F",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_11-ctrl046": {
+   "A": "F",
+   "B": "E",
+   "B2": "E",
+   "B3": "E"
+  },
+  "E2_11-ctrl047": {
+   "A": "B",
+   "B": "J",
+   "B2": "J",
+   "B3": "B"
+  },
+  "E2_12-pre048": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_12-pre049": {
+   "A": "UNDETERMINED",
+   "B": "H",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_12-pre050": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "I"
+  },
+  "E2_12-pre051": {
+   "A": "F",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_12-ctrl052": {
+   "A": "J",
+   "B": "J",
+   "B2": "J",
+   "B3": "E"
+  },
+  "E2_12-ctrl053": {
+   "A": "E",
+   "B": "E",
+   "B2": "E",
+   "B3": "E"
+  },
+  "E2_13-pre054": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_13-pre055": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_13-pre056": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_13-pre057": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_13-ctrl058": {
+   "A": "E",
+   "B": "E",
+   "B2": "E",
+   "B3": "E"
+  },
+  "E2_13-ctrl059": {
+   "A": "D",
+   "B": "D",
+   "B2": "D",
+   "B3": "D"
+  },
+  "E2_14-pre060": {
+   "A": "UNDETERMINED",
+   "B": "I",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_14-pre061": {
+   "A": "UNDETERMINED",
+   "B": "I",
+   "B2": "I",
+   "B3": "UNDETERMINED"
+  },
+  "E2_14-pre062": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_14-pre063": {
+   "A": "UNDETERMINED",
+   "B": "G",
+   "B2": "G",
+   "B3": "UNDETERMINED"
+  },
+  "E2_14-ctrl064": {
+   "A": "D",
+   "B": "D",
+   "B2": "D",
+   "B3": "D"
+  },
+  "E2_14-ctrl065": {
+   "A": "B",
+   "B": "B",
+   "B2": "B",
+   "B3": "B"
+  },
+  "E2_15-pre066": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_15-pre067": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_15-pre068": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_15-pre069": {
+   "A": "UNDETERMINED",
+   "B": "I",
+   "B2": "J",
+   "B3": "H"
+  },
+  "E2_15-ctrl070": {
+   "A": "D",
+   "B": "D",
+   "B2": "H",
+   "B3": "H"
+  },
+  "E2_15-ctrl071": {
+   "A": "C",
+   "B": "UNDETERMINED",
+   "B2": "B",
+   "B3": "C"
+  },
+  "E2_16-pre072": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_16-pre073": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "I",
+   "B3": "UNDETERMINED"
+  },
+  "E2_16-pre074": {
+   "A": "H",
+   "B": "I",
+   "B2": "I",
+   "B3": "UNDETERMINED"
+  },
+  "E2_16-pre075": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_16-ctrl076": {
+   "A": "E",
+   "B": "E",
+   "B2": "E",
+   "B3": "E"
+  },
+  "E2_16-ctrl077": {
+   "A": "H",
+   "B": "H",
+   "B2": "H",
+   "B3": "H"
+  },
+  "E2_17-pre078": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_17-pre079": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_17-pre080": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_17-pre081": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_17-post082": {
+   "A": "J",
+   "B": "J",
+   "B2": "J",
+   "B3": "J"
+  },
+  "E2_17-ctrl083": {
+   "A": "A",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "A"
+  },
+  "E2_17-ctrl084": {
+   "A": "G",
+   "B": "G",
+   "B2": "G",
+   "B3": "G"
+  },
+  "E2_20-pre085": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_20-pre086": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_20-pre087": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_20-pre088": {
+   "A": "H",
+   "B": "UNDETERMINED",
+   "B2": "I",
+   "B3": "H"
+  },
+  "E2_20-ctrl089": {
+   "A": "J",
+   "B": "J",
+   "B2": "J",
+   "B3": "J"
+  },
+  "E2_20-ctrl090": {
+   "A": "F",
+   "B": "E",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_23-pre091": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_23-pre092": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_23-pre093": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_23-pre094": {
+   "A": "C",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_23-ctrl095": {
+   "A": "D",
+   "B": "D",
+   "B2": "D",
+   "B3": "D"
+  },
+  "E2_23-ctrl096": {
+   "A": "I",
+   "B": "I",
+   "B2": "I",
+   "B3": "I"
+  },
+  "E2_24-pre097": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_24-pre098": {
+   "A": "UNDETERMINED",
+   "B": "H",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_24-pre099": {
+   "A": "UNDETERMINED",
+   "B": "UNDETERMINED",
+   "B2": "UNDETERMINED",
+   "B3": "UNDETERMINED"
+  },
+  "E2_24-pre100": {
+   "A": "H",
+   "B": "F",
+   "B2": "UNDETERMINED",
+   "B3": "H"
+  },
+  "E2_24-ctrl101": {
+   "A": "F",
+   "B": "F",
+   "B2": "F",
+   "B3": "F"
+  },
+  "E2_24-ctrl102": {
+   "A": "C",
+   "B": "C",
+   "B2": "C",
+   "B3": "C"
+  }
+ },
+ "closed": {
+  "E2_1": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED",
+   "C_ren2": "UNDETERMINED"
+  },
+  "E2_2": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED",
+   "C_ren2": "UNDETERMINED"
+  },
+  "E2_3": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED",
+   "C_ren2": "UNDETERMINED"
+  },
+  "E2_4": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED",
+   "C_ren2": "UNDETERMINED"
+  },
+  "E2_5": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED",
+   "C_ren2": "UNDETERMINED"
+  },
+  "E2_6": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED",
+   "C_ren2": "UNDETERMINED"
+  },
+  "E2_7": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED",
+   "C_ren2": "UNDETERMINED"
+  },
+  "E2_11": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED",
+   "C_ren2": "UNDETERMINED"
+  },
+  "E2_12": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED",
+   "C_ren2": "UNDETERMINED"
+  },
+  "E2_13": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED",
+   "C_ren2": "UNDETERMINED"
+  },
+  "E2_14": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED",
+   "C_ren2": "UNDETERMINED"
+  },
+  "E2_15": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED",
+   "C_ren2": "UNDETERMINED"
+  },
+  "E2_16": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED",
+   "C_ren2": "UNDETERMINED"
+  },
+  "E2_17": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED",
+   "C_ren2": "E"
+  },
+  "E2_20": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED",
+   "C_ren2": "UNDETERMINED"
+  },
+  "E2_23": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED",
+   "C_ren2": "C"
+  },
+  "E2_24": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED",
+   "C_ren2": "UNDETERMINED"
+  }
+ },
+ "m2": {
+  "E2_1": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "E2_2": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "E2_3": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "E2_4": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "E2_5": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "E2_6": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "E2_7": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "E2_11": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "E2_12": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "E2_13": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "E2_14": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "E2_15": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "E2_16": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "E2_17": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "E2_20": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "E2_23": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "E2_24": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  }
+ },
+ "status": "COMPLETE",
+ "calls": 514,
+ "wall_seconds": 107.7,
+ "truth": {
+  "E2_1-pre000": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "A",
+   "kind": "pre",
+   "event": "E2_1",
+   "distance": 4814,
+   "baseline_letter": "I"
+  },
+  "E2_1-pre001": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "E2_1",
+   "distance": 4676,
+   "baseline_letter": "D"
+  },
+  "E2_1-pre002": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "J",
+   "kind": "pre",
+   "event": "E2_1",
+   "distance": 3064,
+   "baseline_letter": "B"
+  },
+  "E2_1-pre003": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "E2_1",
+   "distance": 3014,
+   "baseline_letter": "F"
+  },
+  "E2_1-ctrl004": {
+   "truth_letter": "H",
+   "identity_letter": "F",
+   "kind": "ctrl",
+   "event": "E2_1",
+   "distance": null,
+   "baseline_letter": "H"
+  },
+  "E2_1-ctrl005": {
+   "truth_letter": "G",
+   "identity_letter": "E",
+   "kind": "ctrl",
+   "event": "E2_1",
+   "distance": null,
+   "baseline_letter": "G"
+  },
+  "E2_2-pre006": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "E2_2",
+   "distance": 1471,
+   "baseline_letter": "C"
+  },
+  "E2_2-pre007": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "E2_2",
+   "distance": 1350,
+   "baseline_letter": "F"
+  },
+  "E2_2-pre008": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "E2_2",
+   "distance": 1084,
+   "baseline_letter": "C"
+  },
+  "E2_2-pre009": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "E2_2",
+   "distance": 320,
+   "baseline_letter": "B"
+  },
+  "E2_2-ctrl010": {
+   "truth_letter": "G",
+   "identity_letter": "A",
+   "kind": "ctrl",
+   "event": "E2_2",
+   "distance": null,
+   "baseline_letter": "G"
+  },
+  "E2_2-ctrl011": {
+   "truth_letter": "H",
+   "identity_letter": "D",
+   "kind": "ctrl",
+   "event": "E2_2",
+   "distance": null,
+   "baseline_letter": "H"
+  },
+  "E2_3-pre012": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "E2_3",
+   "distance": 4408,
+   "baseline_letter": "C"
+  },
+  "E2_3-pre013": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "E2_3",
+   "distance": 4295,
+   "baseline_letter": "E"
+  },
+  "E2_3-pre014": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "E2_3",
+   "distance": 3500,
+   "baseline_letter": "G"
+  },
+  "E2_3-pre015": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "E2_3",
+   "distance": 499,
+   "baseline_letter": "B"
+  },
+  "E2_3-ctrl016": {
+   "truth_letter": "D",
+   "identity_letter": "J",
+   "kind": "ctrl",
+   "event": "E2_3",
+   "distance": null,
+   "baseline_letter": "D"
+  },
+  "E2_3-ctrl017": {
+   "truth_letter": "B",
+   "identity_letter": "G",
+   "kind": "ctrl",
+   "event": "E2_3",
+   "distance": null,
+   "baseline_letter": "B"
+  },
+  "E2_4-pre018": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "E2_4",
+   "distance": 2349,
+   "baseline_letter": "H"
+  },
+  "E2_4-pre019": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "E2_4",
+   "distance": 1803,
+   "baseline_letter": "H"
+  },
+  "E2_4-pre020": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B",
+   "kind": "pre",
+   "event": "E2_4",
+   "distance": 1631,
+   "baseline_letter": "G"
+  },
+  "E2_4-pre021": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B",
+   "kind": "pre",
+   "event": "E2_4",
+   "distance": 175,
+   "baseline_letter": "D"
+  },
+  "E2_4-ctrl022": {
+   "truth_letter": "E",
+   "identity_letter": "J",
+   "kind": "ctrl",
+   "event": "E2_4",
+   "distance": null,
+   "baseline_letter": "E"
+  },
+  "E2_4-ctrl023": {
+   "truth_letter": "E",
+   "identity_letter": "J",
+   "kind": "ctrl",
+   "event": "E2_4",
+   "distance": null,
+   "baseline_letter": "E"
+  },
+  "E2_5-pre024": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "J",
+   "kind": "pre",
+   "event": "E2_5",
+   "distance": 5693,
+   "baseline_letter": "A"
+  },
+  "E2_5-pre025": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "J",
+   "kind": "pre",
+   "event": "E2_5",
+   "distance": 3402,
+   "baseline_letter": "B"
+  },
+  "E2_5-pre026": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "J",
+   "kind": "pre",
+   "event": "E2_5",
+   "distance": 1768,
+   "baseline_letter": "A"
+  },
+  "E2_5-pre027": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "C",
+   "kind": "pre",
+   "event": "E2_5",
+   "distance": 475,
+   "baseline_letter": "I"
+  },
+  "E2_5-ctrl028": {
+   "truth_letter": "G",
+   "identity_letter": "F",
+   "kind": "ctrl",
+   "event": "E2_5",
+   "distance": null,
+   "baseline_letter": "G"
+  },
+  "E2_5-ctrl029": {
+   "truth_letter": "D",
+   "identity_letter": "B",
+   "kind": "ctrl",
+   "event": "E2_5",
+   "distance": null,
+   "baseline_letter": "D"
+  },
+  "E2_6-pre030": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "E2_6",
+   "distance": 3771,
+   "baseline_letter": "H"
+  },
+  "E2_6-pre031": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "E2_6",
+   "distance": 2739,
+   "baseline_letter": "F"
+  },
+  "E2_6-pre032": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B",
+   "kind": "pre",
+   "event": "E2_6",
+   "distance": 1998,
+   "baseline_letter": "G"
+  },
+  "E2_6-pre033": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "E2_6",
+   "distance": 308,
+   "baseline_letter": "G"
+  },
+  "E2_6-ctrl034": {
+   "truth_letter": "H",
+   "identity_letter": "I",
+   "kind": "ctrl",
+   "event": "E2_6",
+   "distance": null,
+   "baseline_letter": "H"
+  },
+  "E2_6-ctrl035": {
+   "truth_letter": "G",
+   "identity_letter": "F",
+   "kind": "ctrl",
+   "event": "E2_6",
+   "distance": null,
+   "baseline_letter": "G"
+  },
+  "E2_7-pre036": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "A",
+   "kind": "pre",
+   "event": "E2_7",
+   "distance": 4710,
+   "baseline_letter": "G"
+  },
+  "E2_7-pre037": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "A",
+   "kind": "pre",
+   "event": "E2_7",
+   "distance": 3508,
+   "baseline_letter": "G"
+  },
+  "E2_7-pre038": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "I",
+   "kind": "pre",
+   "event": "E2_7",
+   "distance": 3187,
+   "baseline_letter": "C"
+  },
+  "E2_7-pre039": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "E2_7",
+   "distance": 957,
+   "baseline_letter": "A"
+  },
+  "E2_7-ctrl040": {
+   "truth_letter": "C",
+   "identity_letter": "D",
+   "kind": "ctrl",
+   "event": "E2_7",
+   "distance": null,
+   "baseline_letter": "C"
+  },
+  "E2_7-ctrl041": {
+   "truth_letter": "I",
+   "identity_letter": "A",
+   "kind": "ctrl",
+   "event": "E2_7",
+   "distance": null,
+   "baseline_letter": "I"
+  },
+  "E2_11-pre042": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "E2_11",
+   "distance": 5333,
+   "baseline_letter": "D"
+  },
+  "E2_11-pre043": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "E2_11",
+   "distance": 2827,
+   "baseline_letter": "A"
+  },
+  "E2_11-pre044": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "A",
+   "kind": "pre",
+   "event": "E2_11",
+   "distance": 2080,
+   "baseline_letter": "J"
+  },
+  "E2_11-pre045": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "A",
+   "kind": "pre",
+   "event": "E2_11",
+   "distance": 1405,
+   "baseline_letter": "H"
+  },
+  "E2_11-ctrl046": {
+   "truth_letter": "E",
+   "identity_letter": "J",
+   "kind": "ctrl",
+   "event": "E2_11",
+   "distance": null,
+   "baseline_letter": "F"
+  },
+  "E2_11-ctrl047": {
+   "truth_letter": "J",
+   "identity_letter": "H",
+   "kind": "ctrl",
+   "event": "E2_11",
+   "distance": null,
+   "baseline_letter": "B"
+  },
+  "E2_12-pre048": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "E2_12",
+   "distance": 4229,
+   "baseline_letter": "F"
+  },
+  "E2_12-pre049": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "E2_12",
+   "distance": 2743,
+   "baseline_letter": "H"
+  },
+  "E2_12-pre050": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B",
+   "kind": "pre",
+   "event": "E2_12",
+   "distance": 1592,
+   "baseline_letter": "D"
+  },
+  "E2_12-pre051": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "I",
+   "kind": "pre",
+   "event": "E2_12",
+   "distance": 447,
+   "baseline_letter": "D"
+  },
+  "E2_12-ctrl052": {
+   "truth_letter": "J",
+   "identity_letter": "C",
+   "kind": "ctrl",
+   "event": "E2_12",
+   "distance": null,
+   "baseline_letter": "J"
+  },
+  "E2_12-ctrl053": {
+   "truth_letter": "E",
+   "identity_letter": "B",
+   "kind": "ctrl",
+   "event": "E2_12",
+   "distance": null,
+   "baseline_letter": "E"
+  },
+  "E2_13-pre054": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "E2_13",
+   "distance": 3508,
+   "baseline_letter": "A"
+  },
+  "E2_13-pre055": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "I",
+   "kind": "pre",
+   "event": "E2_13",
+   "distance": 3340,
+   "baseline_letter": "B"
+  },
+  "E2_13-pre056": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B",
+   "kind": "pre",
+   "event": "E2_13",
+   "distance": 2510,
+   "baseline_letter": "I"
+  },
+  "E2_13-pre057": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "H",
+   "kind": "pre",
+   "event": "E2_13",
+   "distance": 85,
+   "baseline_letter": "D"
+  },
+  "E2_13-ctrl058": {
+   "truth_letter": "E",
+   "identity_letter": "C",
+   "kind": "ctrl",
+   "event": "E2_13",
+   "distance": null,
+   "baseline_letter": "E"
+  },
+  "E2_13-ctrl059": {
+   "truth_letter": "D",
+   "identity_letter": "B",
+   "kind": "ctrl",
+   "event": "E2_13",
+   "distance": null,
+   "baseline_letter": "D"
+  },
+  "E2_14-pre060": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "E2_14",
+   "distance": 3236,
+   "baseline_letter": "D"
+  },
+  "E2_14-pre061": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "H",
+   "kind": "pre",
+   "event": "E2_14",
+   "distance": 2721,
+   "baseline_letter": "A"
+  },
+  "E2_14-pre062": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "E2_14",
+   "distance": 404,
+   "baseline_letter": "F"
+  },
+  "E2_14-pre063": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "I",
+   "kind": "pre",
+   "event": "E2_14",
+   "distance": 39,
+   "baseline_letter": "G"
+  },
+  "E2_14-ctrl064": {
+   "truth_letter": "D",
+   "identity_letter": "B",
+   "kind": "ctrl",
+   "event": "E2_14",
+   "distance": null,
+   "baseline_letter": "D"
+  },
+  "E2_14-ctrl065": {
+   "truth_letter": "B",
+   "identity_letter": "E",
+   "kind": "ctrl",
+   "event": "E2_14",
+   "distance": null,
+   "baseline_letter": "B"
+  },
+  "E2_15-pre066": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "I",
+   "kind": "pre",
+   "event": "E2_15",
+   "distance": 3944,
+   "baseline_letter": "F"
+  },
+  "E2_15-pre067": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "E2_15",
+   "distance": 2287,
+   "baseline_letter": "H"
+  },
+  "E2_15-pre068": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "A",
+   "kind": "pre",
+   "event": "E2_15",
+   "distance": 1752,
+   "baseline_letter": "J"
+  },
+  "E2_15-pre069": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "A",
+   "kind": "pre",
+   "event": "E2_15",
+   "distance": 1162,
+   "baseline_letter": "C"
+  },
+  "E2_15-ctrl070": {
+   "truth_letter": "H",
+   "identity_letter": "B",
+   "kind": "ctrl",
+   "event": "E2_15",
+   "distance": null,
+   "baseline_letter": "H"
+  },
+  "E2_15-ctrl071": {
+   "truth_letter": "B",
+   "identity_letter": "J",
+   "kind": "ctrl",
+   "event": "E2_15",
+   "distance": null,
+   "baseline_letter": "B"
+  },
+  "E2_16-pre072": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "E2_16",
+   "distance": 4260,
+   "baseline_letter": "H"
+  },
+  "E2_16-pre073": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "E2_16",
+   "distance": 3114,
+   "baseline_letter": "H"
+  },
+  "E2_16-pre074": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "E2_16",
+   "distance": 2304,
+   "baseline_letter": "F"
+  },
+  "E2_16-pre075": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "E2_16",
+   "distance": 10,
+   "baseline_letter": "H"
+  },
+  "E2_16-ctrl076": {
+   "truth_letter": "E",
+   "identity_letter": "I",
+   "kind": "ctrl",
+   "event": "E2_16",
+   "distance": null,
+   "baseline_letter": "E"
+  },
+  "E2_16-ctrl077": {
+   "truth_letter": "H",
+   "identity_letter": "I",
+   "kind": "ctrl",
+   "event": "E2_16",
+   "distance": null,
+   "baseline_letter": "H"
+  },
+  "E2_17-pre078": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "E2_17",
+   "distance": 5079,
+   "baseline_letter": "G"
+  },
+  "E2_17-pre079": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "E2_17",
+   "distance": 2712,
+   "baseline_letter": "G"
+  },
+  "E2_17-pre080": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "E2_17",
+   "distance": 1994,
+   "baseline_letter": "E"
+  },
+  "E2_17-pre081": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "E2_17",
+   "distance": 250,
+   "baseline_letter": "I"
+  },
+  "E2_17-post082": {
+   "truth_letter": "J",
+   "identity_letter": "J",
+   "kind": "post",
+   "event": "E2_17",
+   "distance": null,
+   "baseline_letter": "C"
+  },
+  "E2_17-ctrl083": {
+   "truth_letter": "A",
+   "identity_letter": "F",
+   "kind": "ctrl",
+   "event": "E2_17",
+   "distance": null,
+   "baseline_letter": "A"
+  },
+  "E2_17-ctrl084": {
+   "truth_letter": "G",
+   "identity_letter": "I",
+   "kind": "ctrl",
+   "event": "E2_17",
+   "distance": null,
+   "baseline_letter": "G"
+  },
+  "E2_20-pre085": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "J",
+   "kind": "pre",
+   "event": "E2_20",
+   "distance": 2673,
+   "baseline_letter": "D"
+  },
+  "E2_20-pre086": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "E2_20",
+   "distance": 2609,
+   "baseline_letter": "C"
+  },
+  "E2_20-pre087": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "E2_20",
+   "distance": 2511,
+   "baseline_letter": "E"
+  },
+  "E2_20-pre088": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "I",
+   "kind": "pre",
+   "event": "E2_20",
+   "distance": 1205,
+   "baseline_letter": "B"
+  },
+  "E2_20-ctrl089": {
+   "truth_letter": "J",
+   "identity_letter": "F",
+   "kind": "ctrl",
+   "event": "E2_20",
+   "distance": null,
+   "baseline_letter": "J"
+  },
+  "E2_20-ctrl090": {
+   "truth_letter": "F",
+   "identity_letter": "J",
+   "kind": "ctrl",
+   "event": "E2_20",
+   "distance": null,
+   "baseline_letter": "F"
+  },
+  "E2_23-pre091": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "A",
+   "kind": "pre",
+   "event": "E2_23",
+   "distance": 3226,
+   "baseline_letter": "D"
+  },
+  "E2_23-pre092": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "E2_23",
+   "distance": 2927,
+   "baseline_letter": "I"
+  },
+  "E2_23-pre093": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "E2_23",
+   "distance": 1393,
+   "baseline_letter": "C"
+  },
+  "E2_23-pre094": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "C",
+   "kind": "pre",
+   "event": "E2_23",
+   "distance": 309,
+   "baseline_letter": "D"
+  },
+  "E2_23-ctrl095": {
+   "truth_letter": "D",
+   "identity_letter": "H",
+   "kind": "ctrl",
+   "event": "E2_23",
+   "distance": null,
+   "baseline_letter": "D"
+  },
+  "E2_23-ctrl096": {
+   "truth_letter": "I",
+   "identity_letter": "H",
+   "kind": "ctrl",
+   "event": "E2_23",
+   "distance": null,
+   "baseline_letter": "I"
+  },
+  "E2_24-pre097": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "E2_24",
+   "distance": 4929,
+   "baseline_letter": "B"
+  },
+  "E2_24-pre098": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "E2_24",
+   "distance": 4396,
+   "baseline_letter": "G"
+  },
+  "E2_24-pre099": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "E2_24",
+   "distance": 2998,
+   "baseline_letter": "A"
+  },
+  "E2_24-pre100": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B",
+   "kind": "pre",
+   "event": "E2_24",
+   "distance": 1085,
+   "baseline_letter": "G"
+  },
+  "E2_24-ctrl101": {
+   "truth_letter": "F",
+   "identity_letter": "C",
+   "kind": "ctrl",
+   "event": "E2_24",
+   "distance": null,
+   "baseline_letter": "F"
+  },
+  "E2_24-ctrl102": {
+   "truth_letter": "C",
+   "identity_letter": "H",
+   "kind": "ctrl",
+   "event": "E2_24",
+   "distance": null,
+   "baseline_letter": "C"
+  }
+ },
+ "closed_truth": {
+  "E2_1": "J",
+  "E2_2": "B",
+  "E2_3": "I",
+  "E2_4": "B",
+  "E2_5": "H",
+  "E2_6": "J",
+  "E2_7": "A",
+  "E2_11": "C",
+  "E2_12": "G",
+  "E2_13": "C",
+  "E2_14": "H",
+  "E2_15": "E",
+  "E2_16": "G",
+  "E2_17": "F",
+  "E2_20": "A",
+  "E2_23": "J",
+  "E2_24": "H"
+ },
+ "m2_truth": {
+  "E2_1": "J",
+  "E2_2": "D",
+  "E2_3": "B",
+  "E2_4": "F",
+  "E2_5": "B",
+  "E2_6": "H",
+  "E2_7": "D",
+  "E2_11": "I",
+  "E2_12": "G",
+  "E2_13": "G",
+  "E2_14": "F",
+  "E2_15": "A",
+  "E2_16": "C",
+  "E2_17": "E",
+  "E2_20": "C",
+  "E2_23": "F",
+  "E2_24": "H"
+ }
+}

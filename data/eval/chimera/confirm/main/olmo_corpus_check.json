@@ -1,0 +1,20 @@
+{
+ "status": "done",
+ "exploratory": true,
+ "index": "v4_olmo-2-1124-13b-instruct_llama",
+ "books_queried": 62,
+ "books_with_gap": 50,
+ "score_distribution": {
+  "0": 24,
+  "1": 9,
+  "2": 9,
+  "3": 8
+ },
+ "spearman": 0.13385650805851296,
+ "perm_p_two_sided": 0.4054797260136993,
+ "present_books": 17,
+ "absent_books": 33,
+ "mean_gap_present": 0.029411764705882353,
+ "mean_gap_absent": 0.0101010101010101,
+ "wall_seconds": 64.0
+}
