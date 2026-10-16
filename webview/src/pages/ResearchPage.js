@@ -61,10 +61,13 @@ function SectionTitle({ id, children, hint }) {
 
 // ------------------------------------------------------------------ 1. headline cards
 function Headline({ data }) {
-  const h = data.headline || {};
-  const ref = h.reference_gap;
-  const loc = h.local_pool_gap;
-  const cue = h.cue_recovered;
+  // The page leads with the current headline: the pipeline leak of a whole-book card and its fix (RF-E2E, judge rule,
+  // cipher names), then the confirmatory memory gap. Older exploratory Channel 1 numbers are in the charts below.
+  const st = (data.rf_e2e && data.rf_e2e.strata) || [];
+  const judge = (x) => (x && (x.rules || []).find((r) => r.rule === 'Judge rule')) || null;
+  const small = judge(st[0]);
+  const large = judge(st[1]);
+  const conf = data.confirmatory;
   return (
     <section aria-labelledby="r-headline" className="grid gap-4 sm:grid-cols-3">
       <h2 id="r-headline" className="sr-only">
@@ -72,29 +75,29 @@ function Headline({ data }) {
       </h2>
       <StatCard
         icon={FlaskConical}
-        label="Reference model gap"
-        value={ref ? `${pp(ref.gap, true)} pts` : '—'}
-        hint={ref ? `95% CI ${pp(ref.lo)} to ${pp(ref.hi)} · ${ref.events} events · gpt-5.6-luna` : 'result file missing'}
+        label="Whole-book card names the hidden identity early"
+        value={small ? `${pct0(small.whole_renamed)}${large ? ` / ${pct0(large.whole_renamed)}` : ''}` : '—'}
+        hint={small ? `of events on cipher names no model has seen · 7-8B${large ? ' / 24-32B' : ''} models · the pipeline leaks, not memory` : 'result file missing'}
         tone="warn"
       />
       <StatCard
         icon={FlaskConical}
-        label="Pooled local-model gap"
-        value={loc ? `${pp(loc.gap, true)} pts` : '—'}
-        hint={loc ? `95% CI ${pp(loc.lo)} to ${pp(loc.hi)} · ${loc.events} events · models passing the validity gate` : 'result file missing'}
-        tone="warn"
-      />
-      <StatCard
-        icon={FlaskConical}
-        label="Gap recovered by cue-preserving names"
-        value={cue ? pct0(cue.fraction) : '—'}
-        hint={cue ? `95% CI ${pct0(cue.lo)} to ${pct0(cue.hi)} · ${cue.events} events · near zero or below: lost name cues do not explain the gap` : 'result file missing'}
+        label="Versioned card (reader's prefix only)"
+        value={small ? `${pct0(small.versioned_renamed)}${large ? ` / ${pct0(large.versioned_renamed)}` : ''}` : '—'}
+        hint={small ? `same events and models · input leak removed ${pp(small.input_channel && small.input_channel.gap, true)} points` : 'result file missing'}
         tone="good"
       />
+      <StatCard
+        icon={FlaskConical}
+        label="Model-memory gap on obscure books"
+        value={conf && conf.pooled_gap ? `${pp(conf.pooled_gap.gap, true)} pts` : '—'}
+        hint={conf && conf.pooled_gap ? `pre-registered, ${conf.events} events · 95% CI ${pp(conf.pooled_gap.lo)} to ${pp(conf.pooled_gap.hi)} · large only on famous books (charts below)` : 'result file missing'}
+        tone="accent"
+      />
       <p className="text-sm text-muted sm:col-span-3">
-        Gap = share of pre-reveal questions answered with the true identity under the book&rsquo;s original names minus the share when
-        every proper noun is consistently renamed. A first-time reader is not yet entitled to that answer, so a positive gap is
-        evidence the model is using memory of the book, not the text in front of it.
+        A reading assistant at chapter c must not use chapters after c. It can break that promise through its pipeline (a fact built
+        from later chapters) or through the model&rsquo;s memory of the book. Leak = the card or answer names a hidden identity before
+        the book reveals it.
       </p>
     </section>
   );
@@ -473,98 +476,6 @@ function DoseBars({ dose }) {
   );
 }
 
-// ------------------------------------------------------------------ extras: validity + design
-function Details({ data }) {
-  const v = data.validity;
-  const d = data.design;
-  if (!v && !d) return null;
-  return (
-    <details className="rounded-2xl border border-border bg-surface p-5">
-      <summary className="cursor-pointer font-display text-lg font-bold tracking-tight">Validity gate and planned confirmatory study</summary>
-      {v && (
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <caption className="pb-2 text-left text-muted">{v.note}</caption>
-            <thead>
-              <tr className="border-b border-border text-xs uppercase tracking-[0.1em] text-muted">
-                <th className="py-2 pr-4">Model</th>
-                {v.datasets.map((ds) => (
-                  <th key={ds.key} className="py-2 pr-4">
-                    {ds.key} G2a / G2b
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {v.rows.map((r) => (
-                <tr key={r.model} className="border-b border-border/60">
-                  <th scope="row" className="py-1.5 pr-4 font-medium">
-                    {r.model}
-                    {r.reference ? ' (reference)' : ''}
-                  </th>
-                  {v.datasets.map((ds) => {
-                    const c = r.cells[ds.key];
-                    return (
-                      <td key={ds.key} className="py-1.5 pr-4 tabular-nums">
-                        {c ? (
-                          <span className={c.valid ? 'text-success' : 'text-muted'}>
-                            {pct0(c.g2a)} / {pct0(c.g2b)} {c.valid ? '✓' : '×'}
-                          </span>
-                        ) : (
-                          '—'
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      {d && (
-        <div className="mt-6 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <caption className="pb-2 text-left text-muted">
-              Planned confirmatory design on three open models (cost model, not yet run). Community-cloud GPU hours and expected cost.
-            </caption>
-            <thead>
-              <tr className="border-b border-border text-xs uppercase tracking-[0.1em] text-muted">
-                <th className="py-2 pr-4">Design</th>
-                <th className="py-2 pr-4">Events (dev / test)</th>
-                <th className="py-2 pr-4">Items per event</th>
-                <th className="py-2 pr-4">Short calls</th>
-                <th className="py-2 pr-4">A100 hours</th>
-                <th className="py-2 pr-4">A100 cost (worst 2x)</th>
-                <th className="py-2 pr-4">H100 cost</th>
-              </tr>
-            </thead>
-            <tbody>
-              {d.map((x) => (
-                <tr key={x.name} className="border-b border-border/60 tabular-nums">
-                  <th scope="row" className="py-1.5 pr-4 font-medium">
-                    {x.name}
-                  </th>
-                  <td className="py-1.5 pr-4">
-                    {x.events} ({x.dev_events} / {x.test_events})
-                  </td>
-                  <td className="py-1.5 pr-4">{x.items_per_event}</td>
-                  <td className="py-1.5 pr-4">{new Intl.NumberFormat().format(x.short_calls)}</td>
-                  <td className="py-1.5 pr-4">{x.a100_hours}</td>
-                  <td className="py-1.5 pr-4">
-                    ${x.a100_usd} (${x.a100_worst_usd})
-                  </td>
-                  <td className="py-1.5 pr-4">${x.h100_usd}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </details>
-  );
-}
-
 // ------------------------------------------------------------------ 5. live probe
 const OUTCOME = {
   true_identity: { tone: 'danger', text: 'Premature: true identity' },
@@ -800,18 +711,6 @@ export default function ResearchPage() {
         <div className="space-y-12">
           <Headline data={data} />
 
-          <section aria-labelledby="r-channel2">
-            <SectionTitle
-              id="r-channel2"
-              hint="In addition to parametric memory (Channel 1), reader-faithfulness can be broken through pipeline derivations stamped earlier than the chapters they were computed from (Channel 2)."
-            >
-              Channel 2: Pipeline Derivation Look-Ahead
-            </SectionTitle>
-            <Channel2Card />
-            <div className="mt-4">
-              <RfE2ECard rf={data.rf_e2e} confirm={data.confirmatory} />
-            </div>
-          </section>
 
           {data.gap_by_model && (
             <section aria-labelledby="r-gap">
@@ -849,6 +748,19 @@ export default function ResearchPage() {
             </section>
           )}
 
+          <section aria-labelledby="r-channel2">
+            <SectionTitle
+              id="r-channel2"
+              hint="In addition to parametric memory (Channel 1), reader-faithfulness can be broken through pipeline derivations stamped earlier than the chapters they were computed from (Channel 2)."
+            >
+              Channel 2: Pipeline Derivation Look-Ahead
+            </SectionTitle>
+            <Channel2Card />
+            <div className="mt-4">
+              <RfE2ECard rf={data.rf_e2e} confirm={data.confirmatory} />
+            </div>
+          </section>
+
           <section aria-labelledby="r-probe">
             <SectionTitle
               id="r-probe"
@@ -859,7 +771,6 @@ export default function ResearchPage() {
             <Probe timings={data.timings} />
           </section>
 
-          <Details data={data} />
 
           <p className="border-t border-border pt-4 text-xs text-muted">
             Labels are text-derived (an explicit revealing sentence plus a located cutoff); events were selected by a model; the judge rule

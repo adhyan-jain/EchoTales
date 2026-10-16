@@ -205,5 +205,9 @@ for el in items:
     ids.remove(el)
 for k in order:
     ids.append(items[k])
+for pos, sl in enumerate(prs.slides, 1):  # footer numbers were written at creation time; renumber in presentation order
+    for sh in sl.shapes:
+        if sh.has_text_frame and sh.text_frame.text.strip().isdigit():
+            sh.text_frame.paragraphs[0].runs[0].text = str(pos)
 prs.save(out)
 print("saved", out, "slides", n[0])

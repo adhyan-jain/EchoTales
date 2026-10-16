@@ -369,6 +369,17 @@ Rule A (text): with the instruction the whole-volume card still leaks in 15.8% (
 
 **How long a reader is exposed.** A first-mention-stamped card is visible from the alias's first mention until the reveal. Over the 54 events that window is a median 37.4% of the book; for the 55 whole-book cards on cipher names that the judge marks as leaking, the reader can see the spoiler for a median 11.4% (mean 17.8%) of the book before the book itself reveals it. Source: `data/eval/chimera/rf_e2e/posthoc_judge_validity_and_exposure.json`.
 
+### 7.8 Earlier reader positions and a second prompt (addendum 11, Qwen2.5-7B)
+
+Pre-registered after the external review and before any of these cells existed. Cipher names throughout.
+
+| Rule | Whole-volume card (any position) % | Versioned at 50% % | Versioned at 75% % | Versioned at the cut % | Second prompt W vs P %, input channel [95% CI] |
+|---|---|---|---|---|---|
+| Rule A (text), 19 events | 21.1 | 0.0 | 0.0 | 0.0 | 26.3 vs 0.0: +26.3 [+10.5, +47.4] |
+| Rule B (judge), 54 events | 16.7 | 1.9 | 1.9 | 0.0 | 18.5 vs 0.0: +18.5 [+9.3, +29.6] |
+
+Rule A (text): the versioned card leaks in 0.0% at the half-way position and 0.0% at three quarters, while the whole-volume card, served from the first mention, leaks in 21.1% at every position; with the second prompt the input channel is +26.3 [+10.5, +47.4], robust to the prompt. Rule B (judge): the versioned card leaks in 1.9% at the half-way position and 1.9% at three quarters, while the whole-volume card, served from the first mention, leaks in 16.7% at every position; with the second prompt the input channel is +18.5 [+9.3, +29.6], robust to the prompt.
+
 ---
 
 ## 8. Repairs and trade-offs
@@ -434,7 +445,7 @@ The two channels have different repairs because they have different causes. Tabl
 - *Channel 2 labels are model-generated.* The first annotator is the Claude session that also designed and implemented the repair; its labels were written blind to every system value and frozen by hash before scoring, but it is not independent of the work. The second annotator is `gpt-5.6-luna`. They agree with kappa 0.61 on 117 characters (0.63 on 46 prefix items) and never contradict, and the premature rate depends on the annotator (1.7% to 3.5% on the same cuts). 31.0% of the 142 labelled characters remain unknown or non-person, above the declared 25% limit, so correctness results are flagged as a subset result. A 30-character human sheet is prepared (`labels/human_check.csv`) and **unfilled**.
 - *Channel 2's system-internal and synthetic results use no labels.* The divergence counts, the repair's zero and the synthetic grid need no annotator; the synthetic generator shares the cue's assumption (own pronouns sit right after the name), so a high cue score there is partly true by construction.
 - *Channel 1's oracle is text-derived, not human-labelled.* The reveal sentence is found by exact search; the choice of events, reveal sentences and cast lists was made by a language model and is not owner-verified. No human check has arrived and none is claimed. In the confirmatory run the miner (`qwen32b`) and the auditor (`mistral24`) are both evaluated models, so event selection and audit are not independent of the subjects; the audit labelled 5 of 68 events NOT_SUPPORTED and 21 IMPLIED, and the primary set keeps only the 42 EXPLICIT events of which 32 are in the test split.
-- *Section 7's rule B is labelled by a judge model (Qwen3-8B), outside the generator set but a language model, and a second judge (OLMo-2-32B) agrees with it; agreement between two models is reliability, not validity, so rule A, text-derived and independent of any judge, is the primary endpoint and applies to 19 events only. A don't-spoil instruction baseline and a second cipher were run (Section 7.6, two small models). The judge was checked against the text-derived rule (Section 7.7: kappa 0.92). Not yet done and the natural next steps: judge validation on events where the text rule does not apply, paraphrase controls and further cipher families, several card prompts and reader positions, and products other than this stress-test card.*
+- *Section 7's rule B is labelled by a judge model (Qwen3-8B), outside the generator set but a language model, and a second judge (OLMo-2-32B) agrees with it; agreement between two models is reliability, not validity, so rule A, text-derived and independent of any judge, is the primary endpoint and applies to 19 events only. A don't-spoil instruction baseline and a second cipher were run (Section 7.6, two small models). The judge was checked against the text-derived rule (Section 7.7: kappa 0.92). Not yet done and the natural next steps: judge validation on events where the text rule does not apply, paraphrase controls and further cipher families, more prompts and models for Sections 7.6 and 7.8 (run on one model), and products other than this stress-test card.*
 - *Label files contain short quotations from copyrighted translated novels and are not for publication as they are.* Source novels are not distributed.
 
 **Scope.**
