@@ -1,6 +1,6 @@
 # EchoTales Novelty Report
 
-**Status: DRAFT v1.7 (adds section 5.23, the pre-registered confirmatory run PD CONFIRM v2 on 68 events from 65 mostly obscure public-domain books with three open models: no gap on obscure books, fame contrast underpowered and not passed, E4/E5/E2/OLMo-link results; v1.6 added section 5.22, a post hoc dose-response over all 38 events: the leakage gap rises with how well the book is recognised; v1.5 added PD v6, the final pre-registered test on 7 fresh books: NOT SUPPORTED for the valid local models, replicated for Luna, with a pooled event-level view of all data in section 5.21; v1.4 added PD v5, the pre-registered cue-preserving rename test of the reviewer's main objection, verdict MEMORY SURVIVES (strong), section 5.20; v1.3 added section 5.19, a response to an external adversarial review: event-cluster intervals replace item-level intervals as the honest reading, the claim wording is narrowed, and the cue-loss objection is recorded as the main open risk; v1.2 added PD v4: a memory-free validity gate and a title-assisted memory probe, with a pre-registered re-evaluation of v2 and v3 giving SUPPORTED on both; v1.1 added PD v3, a pre-registered confirmatory test with verdict PARTIALLY SUPPORTED; v1.0 added PD v2 (repaired re-run, verdict INCONCLUSIVE), the engineering probes E1-E6 and a ranked novelty table 8b; v0.9 added the PD public-domain reveal benchmark and a novelty-points section; v0.8 added cross-novel replication of the audit and the renaming gate, the Track S adapters on branch `chimera/system-adapters`, the local Qwen replication M2Q, T4 v5 renaming validity, L2U unseen-text control, a gate-versus-engine diagnosis, M1 gate v2, M3, M3b and a prompt-boundary audit; L1 wording softened after the M0 reading), 2026-10-15. L1 (first LLM test of C1a and C1b) has run. Human verification of the real-novel labels is still pending, so every real-novel number, including every L1 number, is SILVER.**
+**Status: DRAFT v1.8 (adds section 5.24, RF-E2E: a whole-volume LLM character card leaks the reveal through the input and a versioned card fixes it, both channels measured on one system; v1.7 added section 5.23, the pre-registered confirmatory run PD CONFIRM v2 on 68 events from 65 mostly obscure public-domain books with three open models: no gap on obscure books, fame contrast underpowered and not passed, E4/E5/E2/OLMo-link results; v1.6 added section 5.22, a post hoc dose-response over all 38 events: the leakage gap rises with how well the book is recognised; v1.5 added PD v6, the final pre-registered test on 7 fresh books: NOT SUPPORTED for the valid local models, replicated for Luna, with a pooled event-level view of all data in section 5.21; v1.4 added PD v5, the pre-registered cue-preserving rename test of the reviewer's main objection, verdict MEMORY SURVIVES (strong), section 5.20; v1.3 added section 5.19, a response to an external adversarial review: event-cluster intervals replace item-level intervals as the honest reading, the claim wording is narrowed, and the cue-loss objection is recorded as the main open risk; v1.2 added PD v4: a memory-free validity gate and a title-assisted memory probe, with a pre-registered re-evaluation of v2 and v3 giving SUPPORTED on both; v1.1 added PD v3, a pre-registered confirmatory test with verdict PARTIALLY SUPPORTED; v1.0 added PD v2 (repaired re-run, verdict INCONCLUSIVE), the engineering probes E1-E6 and a ranked novelty table 8b; v0.9 added the PD public-domain reveal benchmark and a novelty-points section; v0.8 added cross-novel replication of the audit and the renaming gate, the Track S adapters on branch `chimera/system-adapters`, the local Qwen replication M2Q, T4 v5 renaming validity, L2U unseen-text control, a gate-versus-engine diagnosis, M1 gate v2, M3, M3b and a prompt-boundary audit; L1 wording softened after the M0 reading), 2026-10-15. L1 (first LLM test of C1a and C1b) has run. Human verification of the real-novel labels is still pending, so every real-novel number, including every L1 number, is SILVER.**
 
 **Label provenance, stated once and applying to every real-novel number below.** The reference labels for the real novel (Reverend Insanity, "RI") are **silver: drafted by a model, not verified by any human** (`data/gold/reverend-insanity-hardcases.jsonl`, `provenance: model`, `confirmed: false` on all 89 records). No human label exists yet. The only human-keyed number in this work is LitBank (an external dataset). The author's single-annotator human labels for the 72-item pilot arrive after this report is submitted; when they do, the pilot tables are re-run and model-versus-human agreement is reported as a finding (section 9). Every table is tagged **SILVER**, **SYNTHETIC (by construction)** or **NO LABELS (system-internal)**. Nothing here measures reader-view correctness.
 
@@ -10,11 +10,20 @@ Evidence tags: `[REPO]` read in the repository, `[INSPECT]` read by me in code, 
 
 ## 0. Bottom line
 
+**Novelty, redefined (2026-10-16 night; supersedes the ranking in 8a and 8b).** The paper is a methods-and-measurement paper on **reader-faithfulness**: the output of a position-aware reading assistant at chapter c may depend only on chapters up to c.
+1. **Definition and guarantees.** A two-part contract (input channel, parameter channel), the observation that they compose and that passing one audit does not certify the other, and elementary, property-tested guarantees for the repairs (versioning by evidence horizon has zero divergence for any prefix-only derivation; hiding beats doing nothing only when fewer in-window prefixes already hold the final value; prefix-decided gates remove prominence leaks).
+2. **Derivation look-ahead is a design defect, found and fixed on two systems (strongest).** On the deployed narrative graph: 6.0% of 685 character-cuts diverge, the versioned repair gives 0, naive hiding is worse (82 vs 23). On the generic whole-volume LLM character card (pre-registered, 54 reveal events): the card names the hidden identity before the reveal in 18.5% of events for 7 to 8B models and 23.1% for 24 to 32B models **under cipher names no model has seen**, against 1.2% and 1.9% for the versioned card (strict text rule: 24.6% and 21.1% vs 0%); every one of five models is positive; a second judge agrees on 97.8% of labels (kappa 0.88).
+3. **Input and memory leaks separated on one system with one oracle.** At the reveal cut the memory-only leak is +2.5 points (7 to 8B) and +0.0 points (24 to 32B) while the build leak is about 20 points: for these books the pipeline, not the model, is the main risk.
+4. **Premature resolution under prefix truncation (parameter channel).** A text-derived entitlement oracle, a renaming probe with a memory-free validity gate, and the finding that plain renaming validity checks are memory-assisted on famous books; the effect is large on famous books (exploratory, +26.0 points for a reference model) and bounded below about 5 points on obscure books (pre-registered, three 24 to 32B models).
+**Not claimed:** fame dependence of memorisation (Chang et al. 2023), name replacement and pseudonymisation (Jiang and Ferraro), point-in-time correctness (feature stores), look-ahead bias as a concept (finance LLM work). Prior-art search was bounded; "to our knowledge" applies.
+
+
 1. **What is shown.** A failure audit of the identity-resolution pipeline on a real novel, and a mechanism-level test on synthetic worlds. The audit findings are verified in the repository (sections 5 and 6).
 2. **What is shown about the central idea, with its limits.** L1 (one model, `gpt-5.6-luna`, one serial, silver labels) gives a *weak, confounded* signal for C1a (the renaming gap may include renaming damage, not only memory; see section 5.4 caveat): on the 4 items with a repo-derived reveal chapter the model names the silver final identity from the prefix 4 of 4 times under original names and 0 of 4 under renamed names, and the renaming control is valid (30 of 30 agreement on plain controls). That primary comparison is **pre-registered as inconclusive** (n = 4). C1b as implemented **over-rejects**: it blocks all 4 premature answers but also drops control accuracy from 96.7% to 46.7%. A closed-book memorisation probe found **no** evidence of memory for this model (14 of 15 abstentions).
 3. **Net novelty claim.** Still narrow: a precisely specified measurement design (reader-warranted versus final-truth identity, with leakage defined as the change under consistent renaming) for long translated web serials, now with a first pilot signal on one model and a reproducible audit. It is a pilot signal, not a demonstrated result. Section 8 rates it against the gate and the closest prior work.
 4. **Public-domain benchmark (PD, section 5.14).** Pre-registered leakage test on seven famous public-domain novels with a text-derived oracle, a closed-book positive control and an unseen-text control: **verdict NOT SUPPORTED** (only `gpt-5.6-luna` passes the renaming-validity gate; gap +7.0 pts, CI [0.0, 16.3]). Positive results: the closed-book control shows memory in 4 of 5 models and renaming removes it (0 of 7); renaming validity itself fails for 4 of 5 models on real prose. The novelty points, with their evidence tier and weak spots, are in section 8a.
 12. **Confirmatory run (5.23, pre-registered, 2026-10-16).** On 68 events from 65 Gutenberg books (32 EXPLICIT test events form the primary set; 78% low-fame) three open 24B to 32B models show **no premature-naming gap**: pooled A-B +0.1 points [-5.0, +5.2] (H1 not passed), A-B3 +5.7 [-1.3, +12.6] (H2 not passed), the closed-book control recovers the identity in only 2 of 68 events, so the sample holds little memory. The fame contrast (primary P1) is +7.6 [-1.4, +18.3], p = 0.060, not passed, minimum detectable 12.8 points; H3 Spearman +0.30 (raw p 0.041, Holm 0.145, not confirmed). Pseudonymisation halves premature naming (5.0% to 2.6%) at a 6.7 to 15.6 point accuracy cost (H5 not met). E5 recap spoilers: 0 detected (floor), E2 unseen stories: gaps about 0 (n = 17), OLMo training-data link: Spearman +0.13, p = 0.41 (null). The Claude arm stopped at 211 of 1,218 answers and is excluded. Net: the effect is established only as an exploratory result on famous books; the confirmatory run bounds it on obscure books.
+13. **Second system, found and fixed (5.24, pre-registered).** RF-E2E (pre-registered, addenda 6 and 7, written before any card was read): on 54 confirmatory reveal events, a whole-volume LLM character card stamped at first mention names the hidden identity before the reveal in 18.5% of events under cipher names no model has seen (judge rule; strict text rule 24.6% of 19), against 1.2% for the versioned (prefix-built) card. Input-channel RF1 SUPPORTED on the primary text rule (+24.6 [+8.8, +42.1]) and SUPPORTED on the judge rule (+17.3 [+9.3, +26.5]); memory-only leak +2.5 [+0.0, +5.6]. Pseudonymise-and-map-back: prefix-card leak 3.7% to 3.1% (RF5 not evaluated: no memory leak to fix). Models: llama3.1:8b, mistral:7b-instruct, qwen2.5:7b; not run: none. Larger open models (mistral24, qwen32b, addendum 8): W-ren 23.1% vs P-ren 1.9%; memory-only leak +0.0 points.
 11. **Dose-response (5.22, post hoc).** The per-event leakage gap rises with how many local models recognise the book: Luna's gap vs recognition Spearman +0.37 (p = 0.024, cross-family), the valid-local pool's +0.59 (p = 0.00015); the small models' gap is about zero below three recognising models and +40.9 points when all five recognise, which explains the PD v6 null.
 10. **PD v6 final test and pooled view (5.21).** On 7 fresh books the pre-registered verdict is NOT SUPPORTED for the valid local models (gap -5.9 points [-14.8, 1.0]) but the reference model replicates (+16.7 [5.4, 28.6]); pooled over all 38 events the valid-local gap is +11.5 [4.5, 19.0] and Luna's is +26.0 [16.8, 36.0] (22 events positive against 1). The claim is narrowed to the strongest model and well-known books; the cross-model wording is withdrawn.
 9. **Cue-preserving test (5.20).** Natural, gender- and name-type-matched pseudonyms for the cast and alias names restore plain-control accuracy to the original-text level but do not restore premature naming: gap original minus pseudonym +16.1 points [8.2, 25.0], recovered fraction -0.11 [-0.36, 0.06], pre-registered verdict MEMORY SURVIVES (strong). This answers the main open risk from the adversarial review.
@@ -499,6 +508,92 @@ Closed-book recovery of the identity: 2 of 68 events for each model. E5 (24 even
 
 **Reading.** The confirmatory run does not detect the effect on a sample dominated by obscure books and does not resolve the fame contrast. It is consistent with the exploratory dose-response (no memory to leak when the books are not recognised) and it does not contradict the famous-book results; it bounds the pooled gap on obscure books at about 5 points. Nothing in it shows that the effect is absent on famous books; the high band was exhausted with 2 events. E5 and the OLMo link are nulls under narrow detectors. Source: `data/eval/chimera/confirm/{main,e2}/analysis.json`, `olmo_corpus_check.json`; tables by `python scripts/chimera/gen_ch1_tables.py`.
 
+### 5.24 TRACK P. RF-E2E: a whole-volume LLM character card leaks the reveal; the versioned card fixes it (pre-registered, addenda 6 and 7)  `TEXT-DERIVED / MODEL-JUDGED`
+
+**Design.** Same 68 frozen events and cuts as 5.23. Card for the aliased character (at most 80 words, one fixed prompt) from up to 12 passages around alias mentions: W = whole volume, P = prefix only (clipped at the cut; equals the versioned build). Arms: original names and the frozen letter cipher. Leak rule A (text-derived, primary): the card contains an identity token never seen in the prefix (19 events). Rule B (secondary): judge `qwen3:8b` (not a generator) says the card identifies alias with identity (54 events). Fix 2: prefix card from E4-P2 pseudonyms, mapped back. Local ollama models at temperature 0, $0.
+
+
+#### Small local models (7 to 8B; addenda 6 and 7)
+Models finished: ['llama3.1:8b', 'mistral:7b-instruct', 'qwen2.5:7b'] not run: [] judged: ['llama3.1:8b', 'mistral:7b-instruct', 'qwen2.5:7b']
+
+**Rule A (text-derived), primary set: 19 events.** Leak rate (% of events) per cell; input channel = W-ren minus P-ren; memory channel = P-orig minus P-ren.
+
+| Model | W-orig | W-ren | P-orig | P-ren | Input channel [95% CI] | Events W-ren > P-ren / < | Memory channel [95% CI] |
+|---|---|---|---|---|---|---|---|
+| Llama-3.1-8B | 36.8 | 31.6 | 0.0 | 0.0 | +31.6 [+10.5, +52.6] | 6 / 0 (p = 0.0156) | +0.0 [+0.0, +0.0] |
+| Mistral-7B | 31.6 | 21.1 | 0.0 | 0.0 | +21.1 [+5.3, +42.1] | 4 / 0 (p = 0.0625) | +0.0 [+0.0, +0.0] |
+| Qwen2.5-7B | 26.3 | 21.1 | 0.0 | 0.0 | +21.1 [+5.3, +42.1] | 4 / 0 (p = 0.0625) | +0.0 [+0.0, +0.0] |
+| **Pooled (mean over models)** | 31.6 | 24.6 | 0.0 | 0.0 | +24.6 [+8.8, +42.1] | 3 of 3 models positive | +0.0 [+0.0, +0.0] |
+
+RF1 SUPPORTED; RF2 validity P-ren rate 0.0% (valid); RF4 W-orig minus P-orig +31.6 [+14.0, +50.9].
+
+**Rule B (judge), EXPLICIT and IMPLIED events: 54 events.** Leak rate (% of events) per cell; input channel = W-ren minus P-ren; memory channel = P-orig minus P-ren.
+
+| Model | W-orig | W-ren | P-orig | P-ren | Input channel [95% CI] | Events W-ren > P-ren / < | Memory channel [95% CI] |
+|---|---|---|---|---|---|---|---|
+| Llama-3.1-8B | 27.8 | 27.8 | 3.7 | 3.7 | +24.1 [+11.1, +37.0] | 14 / 1 (p = 0.000488) | +0.0 [+0.0, +0.0] |
+| Mistral-7B | 13.0 | 11.1 | 5.6 | 0.0 | +11.1 [+3.7, +20.4] | 6 / 0 (p = 0.0156) | +5.6 [+0.0, +13.0] |
+| Qwen2.5-7B | 16.7 | 16.7 | 1.9 | 0.0 | +16.7 [+7.4, +27.8] | 9 / 0 (p = 0.00195) | +1.9 [+0.0, +5.6] |
+| **Pooled (mean over models)** | 19.1 | 18.5 | 3.7 | 1.2 | +17.3 [+9.3, +26.5] | 3 of 3 models positive | +2.5 [+0.0, +5.6] |
+
+RF1 SUPPORTED; RF2 validity P-ren rate 1.2% (valid); RF4 W-orig minus P-orig +15.4 [+6.8, +25.3].
+A_EXPLICIT_only: events 11, input +27.3 [+6.1, +51.5], passes True
+B_EXPLICIT_only: events 38, input +20.2 [+10.5, +30.7], passes True
+
+**Fixes.**
+
+| Fix | Rule | Events | Leak before | Leak after | Removed [95% CI] | Content check |
+|---|---|---|---|---|---|---|
+| Versioned card (fix 1), orig names | A | 19 | 31.6% | 0.0% | +31.6 [+14.0, +50.9] | alias named 86.0% vs 82.5%; 94 vs 86 words |
+| Versioned card (fix 1), ren names | A | 19 | 24.6% | 0.0% | +24.6 [+8.8, +42.1] | alias named 86.0% vs 82.5%; 94 vs 86 words |
+| Versioned card (fix 1), orig names | B | 54 | 19.1% | 3.7% | +15.4 [+6.8, +25.3] | alias named 85.2% vs 82.7%; 93 vs 89 words |
+| Versioned card (fix 1), ren names | B | 54 | 18.5% | 1.2% | +17.3 [+9.3, +26.5] | alias named 85.2% vs 82.7%; 93 vs 89 words |
+| Pseudonymise and map back (fix 2) | A | 19 | 0.0% | 0.0% | +0.0 [+0.0, +0.0] | alias named 82.5% vs 87.7%; RF5 evaluated False, passes None |
+| Pseudonymise and map back (fix 2) | B | 54 | 3.7% | 3.1% | +0.6 [-1.9, +3.7] | alias named 82.7% vs 87.7%; RF5 evaluated False, passes False |
+
+Second judge (OLMo-2-32B, addendum 9, robustness only): W-ren 19.1% vs P-ren 1.9%, input channel +17.3 [+8.6, +27.2] over 54 events. Agreement with the first judge: 97.8% identical labels, kappa 0.88 (684 labels).
+
+#### Larger open models (24 to 32B on the pod; addendum 8, separate stratum)
+Models finished: ['mistral24', 'qwen32b'] not run: [] judged: ['mistral24', 'qwen32b']
+
+**Rule A (text-derived), primary set: 19 events.** Leak rate (% of events) per cell; input channel = W-ren minus P-ren; memory channel = P-orig minus P-ren.
+
+| Model | W-orig | W-ren | P-orig | P-ren | Input channel [95% CI] | Events W-ren > P-ren / < | Memory channel [95% CI] |
+|---|---|---|---|---|---|---|---|
+| Mistral-Small-3.2-24B | 26.3 | 26.3 | 0.0 | 0.0 | +26.3 [+5.3, +47.4] | 5 / 0 (p = 0.0312) | +0.0 [+0.0, +0.0] |
+| Qwen2.5-32B | 15.8 | 15.8 | 0.0 | 0.0 | +15.8 [+0.0, +31.6] | 3 / 0 (p = 0.125) | +0.0 [+0.0, +0.0] |
+| **Pooled (mean over models)** | 21.1 | 21.1 | 0.0 | 0.0 | +21.1 [+5.3, +39.5] | 2 of 2 models positive | +0.0 [+0.0, +0.0] |
+
+RF1 SUPPORTED; RF2 validity P-ren rate 0.0% (valid); RF4 W-orig minus P-orig +21.1 [+5.3, +39.5].
+
+**Rule B (judge), EXPLICIT and IMPLIED events: 54 events.** Leak rate (% of events) per cell; input channel = W-ren minus P-ren; memory channel = P-orig minus P-ren.
+
+| Model | W-orig | W-ren | P-orig | P-ren | Input channel [95% CI] | Events W-ren > P-ren / < | Memory channel [95% CI] |
+|---|---|---|---|---|---|---|---|
+| Mistral-Small-3.2-24B | 27.8 | 31.5 | 1.9 | 3.7 | +27.8 [+16.7, +40.7] | 15 / 0 (p = 3.05e-05) | -1.9 [-9.3, +3.7] |
+| Qwen2.5-32B | 14.8 | 14.8 | 1.9 | 0.0 | +14.8 [+5.6, +24.1] | 8 / 0 (p = 0.00391) | +1.9 [+0.0, +5.6] |
+| **Pooled (mean over models)** | 21.3 | 23.1 | 1.9 | 1.9 | +21.3 [+13.0, +30.6] | 2 of 2 models positive | +0.0 [-3.7, +4.6] |
+
+RF1 SUPPORTED; RF2 validity P-ren rate 1.9% (valid); RF4 W-orig minus P-orig +19.4 [+9.3, +30.6].
+A_EXPLICIT_only: events 11, input +18.2 [+0.0, +36.4], passes False
+B_EXPLICIT_only: events 38, input +25.0 [+14.5, +36.8], passes True
+
+**Fixes.**
+
+| Fix | Rule | Events | Leak before | Leak after | Removed [95% CI] | Content check |
+|---|---|---|---|---|---|---|
+| Versioned card (fix 1), orig names | A | 19 | 21.1% | 0.0% | +21.1 [+5.3, +39.5] | alias named 84.2% vs 78.9%; 91 vs 81 words |
+| Versioned card (fix 1), ren names | A | 19 | 21.1% | 0.0% | +21.1 [+5.3, +39.5] | alias named 84.2% vs 78.9%; 91 vs 81 words |
+| Versioned card (fix 1), orig names | B | 54 | 21.3% | 1.9% | +19.4 [+9.3, +30.6] | alias named 84.3% vs 80.6%; 90 vs 82 words |
+| Versioned card (fix 1), ren names | B | 54 | 23.1% | 1.9% | +21.3 [+13.0, +30.6] | alias named 84.3% vs 80.6%; 90 vs 82 words |
+| Pseudonymise and map back (fix 2) | A | 19 | 0.0% | 0.0% | +0.0 [+0.0, +0.0] | alias named 78.9% vs 81.6%; RF5 evaluated False, passes None |
+| Pseudonymise and map back (fix 2) | B | 54 | 1.9% | 2.8% | -0.9 [-4.6, +1.9] | alias named 80.6% vs 84.3%; RF5 evaluated False, passes False |
+
+Second judge (OLMo-2-32B, addendum 9, robustness only): W-ren 22.2% vs P-ren 0.9%, input channel +21.3 [+13.0, +30.6] over 54 events. Agreement with the first judge: 97.8% identical labels, kappa 0.89 (456 labels).
+
+
+**Reading.** RF-E2E (pre-registered, addenda 6 and 7, written before any card was read): on 54 confirmatory reveal events, a whole-volume LLM character card stamped at first mention names the hidden identity before the reveal in 18.5% of events under cipher names no model has seen (judge rule; strict text rule 24.6% of 19), against 1.2% for the versioned (prefix-built) card. Input-channel RF1 SUPPORTED on the primary text rule (+24.6 [+8.8, +42.1]) and SUPPORTED on the judge rule (+17.3 [+9.3, +26.5]); memory-only leak +2.5 [+0.0, +5.6]. Pseudonymise-and-map-back: prefix-card leak 3.7% to 3.1% (RF5 not evaluated: no memory leak to fix). Models: llama3.1:8b, mistral:7b-instruct, qwen2.5:7b; not run: none. Larger open models (mistral24, qwen32b, addendum 8): W-ren 23.1% vs P-ren 1.9%; memory-only leak +0.0 points. Limits: one prompt and one reader position per event, small local models, rule B labelled by a model, model-selected events. Source: `data/eval/chimera/rf_e2e/analysis.json`; `python scripts/chimera/pd_rf_e2e.py analyze`.
+
 ## 6. What each test could have falsified, and what happened
 
 | Test | Could have falsified | Outcome |
@@ -625,3 +720,4 @@ Then replace the section 5.2 tables' label banner from SILVER to the new `HUMAN 
 | PD v6: valid-local pool -5.9 [-14.8, 1.0] NOT SUPPORTED; Luna +16.7 [5.4, 28.6]; pooled 38 events (valid-local +11.5, Luna +26.0); Luna B3/v6 spend $0.0585/$0.0568 | `data/eval/chimera/pd_v6/analysis.json`, `run_*.json`, `data/eval/chimera/pd_final_pooled.json`; `python scripts/chimera/pd_v6.py analyze`, `python scripts/chimera/pd_final_pooled.py`; `PREREG_PD_v6.md`, `MANIFEST_PD_v6.json`; `SPEND_LEDGER.md` |
 | Dose-response: Luna gap vs local recognition +0.37 (p = 0.024); valid-local +0.59 (p = 0.00015); mean gap by recognition count | `data/eval/chimera/pd_dose_response.json`; `python scripts/chimera/pd_dose_response.py` |
 | PD CONFIRM v2 (5.23): 68 events, primary 32; pooled A-B +0.1 [-5.0, +5.2]; P1 +7.6 [-1.4, +18.3] p 0.060; H2 +5.7; H3 +0.30 (Holm 0.145); E4 5.0% to 2.6%; E5 0 spoilers; OLMo link +0.13 p 0.41 | `data/eval/chimera/confirm/main/analysis.json`, `e2/analysis.json`, `main/olmo_corpus_check.json`; `python scripts/chimera/pd_confirm_analyze.py`; `scripts/chimera/gen_ch1_tables.py`; `docs/research/preregistrations/PD_CONFIRM_deviations.md` |
+| RF-E2E (5.24): W-ren 18.5% vs P-ren 1.2% (rule B, 54 events); rule A 24.6% vs 0.0% (19 events) | `data/eval/chimera/rf_e2e/analysis.json`; `python scripts/chimera/pd_rf_e2e.py analyze`; `PREREG_RF_E2E_addendum_6.md`, `_addendum_7_fix.md` |
