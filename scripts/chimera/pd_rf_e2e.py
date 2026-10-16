@@ -408,6 +408,21 @@ def analyse(keep, quiet=False):
         jm = sorted(judged)
         res["B_EXPLICIT_IMPLIED"] = summarise(judged, [i for i in common if ok(i, {"EXPLICIT", "IMPLIED"})], jm)
         res["B_EXPLICIT_only"] = summarise(judged, [i for i in common if ok(i, {"EXPLICIT"})], jm)
+    j2 = {}
+    for m in cards:  # addendum 9: second judge, reported beside rule B only
+        jf = OUT / f"judge_olmo32b_of_{m.replace(':', '_')}.json"
+        if jf.exists() and json.loads(jf.read_text()).get("status") == "COMPLETE":
+            j2[m] = json.loads(jf.read_text())["labels"]
+    if j2:
+        res["B2_second_judge_olmo32b"] = summarise(j2, [i for i in common if ok(i, {"EXPLICIT", "IMPLIED"})], sorted(j2))
+        pairs = [(judged[m][i][k], j2[m][i][k]) for m in j2 if m in judged for i in common for k in KEYS
+                 if judged[m].get(i, {}).get(k) is not None and j2[m].get(i, {}).get(k) is not None]
+        if pairs:
+            n = len(pairs)
+            po = sum(x == y for x, y in pairs) / n
+            p1, p2 = sum(x for x, _ in pairs) / n, sum(y for _, y in pairs) / n
+            pe = p1 * p2 + (1 - p1) * (1 - p2)
+            res["judge_agreement"] = dict(labels=n, identical=po, kappa=(po - pe) / (1 - pe) if pe < 1 else None, rate_judge1=p1, rate_judge2=p2)
     res["utility"] = {m: dict(alias_in_card_share={k: sum(cards[m][i]["cells"][k]["has_alias"] for i in common) / len(common) for k in KEYS},
                               mean_words={k: sum(cards[m][i]["cells"][k]["words"] for i in common) / len(common) for k in KEYS}) for m in models}
     res["fixes"] = fixes(cards, judged, A_ids, common, evs, models, res)
