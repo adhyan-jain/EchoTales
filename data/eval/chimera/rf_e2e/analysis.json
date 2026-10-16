@@ -1,0 +1,1265 @@
+{
+ "label_provenance": "rule A TEXT-DERIVED; rule B labelled by a judge model (qwen3:8b); events model-selected; no human labels",
+ "models": [
+  "llama3.1:8b",
+  "mistral:7b-instruct",
+  "qwen2.5:7b"
+ ],
+ "not_run": [],
+ "judged_models": [
+  "llama3.1:8b",
+  "mistral:7b-instruct",
+  "qwen2.5:7b"
+ ],
+ "A_primary_EXPLICIT_IMPLIED": {
+  "events": 19,
+  "per_model": {
+   "llama3.1:8b": {
+    "W_orig": 0.3684210526315789,
+    "W_ren": 0.3157894736842105,
+    "P_orig": 0.0,
+    "P_ren": 0.0,
+    "input_channel": 0.3157894736842105,
+    "input_ci": [
+     0.10526315789473684,
+     0.5263157894736842
+    ],
+    "memory_channel": 0.0,
+    "memory_ci": [
+     0.0,
+     0.0
+    ],
+    "both_W_orig_minus_P_orig": 0.3684210526315789,
+    "events_pos": 6,
+    "events_neg": 0,
+    "sign_p_one_sided": 0.015625
+   },
+   "mistral:7b-instruct": {
+    "W_orig": 0.3157894736842105,
+    "W_ren": 0.21052631578947367,
+    "P_orig": 0.0,
+    "P_ren": 0.0,
+    "input_channel": 0.21052631578947367,
+    "input_ci": [
+     0.05263157894736842,
+     0.42105263157894735
+    ],
+    "memory_channel": 0.0,
+    "memory_ci": [
+     0.0,
+     0.0
+    ],
+    "both_W_orig_minus_P_orig": 0.3157894736842105,
+    "events_pos": 4,
+    "events_neg": 0,
+    "sign_p_one_sided": 0.0625
+   },
+   "qwen2.5:7b": {
+    "W_orig": 0.2631578947368421,
+    "W_ren": 0.21052631578947367,
+    "P_orig": 0.0,
+    "P_ren": 0.0,
+    "input_channel": 0.21052631578947367,
+    "input_ci": [
+     0.05263157894736842,
+     0.42105263157894735
+    ],
+    "memory_channel": 0.0,
+    "memory_ci": [
+     0.0,
+     0.0
+    ],
+    "both_W_orig_minus_P_orig": 0.2631578947368421,
+    "events_pos": 4,
+    "events_neg": 0,
+    "sign_p_one_sided": 0.0625
+   }
+  },
+  "pooled": {
+   "rates": {
+    "W_orig": 0.3157894736842105,
+    "W_ren": 0.2456140350877193,
+    "P_orig": 0.0,
+    "P_ren": 0.0
+   },
+   "RF1_input_channel": {
+    "estimate": 0.2456140350877193,
+    "ci": [
+     0.08771929824561403,
+     0.42105263157894735
+    ],
+    "models_positive": 3,
+    "models": 3,
+    "passes": true
+   },
+   "RF2_P_ren_rate": 0.0,
+   "RF2_valid": true,
+   "RF3_memory_channel": {
+    "estimate": 0.0,
+    "ci": [
+     0.0,
+     0.0
+    ]
+   },
+   "RF4_W_orig_minus_P_orig": {
+    "estimate": 0.3157894736842105,
+    "ci": [
+     0.14035087719298245,
+     0.5087719298245613
+    ]
+   }
+  }
+ },
+ "A_EXPLICIT_only": {
+  "events": 11,
+  "per_model": {
+   "llama3.1:8b": {
+    "W_orig": 0.45454545454545453,
+    "W_ren": 0.45454545454545453,
+    "P_orig": 0.0,
+    "P_ren": 0.0,
+    "input_channel": 0.45454545454545453,
+    "input_ci": [
+     0.18181818181818182,
+     0.7272727272727273
+    ],
+    "memory_channel": 0.0,
+    "memory_ci": [
+     0.0,
+     0.0
+    ],
+    "both_W_orig_minus_P_orig": 0.45454545454545453,
+    "events_pos": 5,
+    "events_neg": 0,
+    "sign_p_one_sided": 0.03125
+   },
+   "mistral:7b-instruct": {
+    "W_orig": 0.2727272727272727,
+    "W_ren": 0.18181818181818182,
+    "P_orig": 0.0,
+    "P_ren": 0.0,
+    "input_channel": 0.18181818181818182,
+    "input_ci": [
+     0.0,
+     0.45454545454545453
+    ],
+    "memory_channel": 0.0,
+    "memory_ci": [
+     0.0,
+     0.0
+    ],
+    "both_W_orig_minus_P_orig": 0.2727272727272727,
+    "events_pos": 2,
+    "events_neg": 0,
+    "sign_p_one_sided": 0.25
+   },
+   "qwen2.5:7b": {
+    "W_orig": 0.2727272727272727,
+    "W_ren": 0.18181818181818182,
+    "P_orig": 0.0,
+    "P_ren": 0.0,
+    "input_channel": 0.18181818181818182,
+    "input_ci": [
+     0.0,
+     0.45454545454545453
+    ],
+    "memory_channel": 0.0,
+    "memory_ci": [
+     0.0,
+     0.0
+    ],
+    "both_W_orig_minus_P_orig": 0.2727272727272727,
+    "events_pos": 2,
+    "events_neg": 0,
+    "sign_p_one_sided": 0.25
+   }
+  },
+  "pooled": {
+   "rates": {
+    "W_orig": 0.3333333333333333,
+    "W_ren": 0.2727272727272727,
+    "P_orig": 0.0,
+    "P_ren": 0.0
+   },
+   "RF1_input_channel": {
+    "estimate": 0.2727272727272727,
+    "ci": [
+     0.0606060606060606,
+     0.5151515151515151
+    ],
+    "models_positive": 3,
+    "models": 3,
+    "passes": true
+   },
+   "RF2_P_ren_rate": 0.0,
+   "RF2_valid": true,
+   "RF3_memory_channel": {
+    "estimate": 0.0,
+    "ci": [
+     0.0,
+     0.0
+    ]
+   },
+   "RF4_W_orig_minus_P_orig": {
+    "estimate": 0.3333333333333333,
+    "ci": [
+     0.09090909090909091,
+     0.6060606060606061
+    ]
+   }
+  }
+ },
+ "B_EXPLICIT_IMPLIED": {
+  "events": 54,
+  "per_model": {
+   "llama3.1:8b": {
+    "W_orig": 0.2777777777777778,
+    "W_ren": 0.2777777777777778,
+    "P_orig": 0.037037037037037035,
+    "P_ren": 0.037037037037037035,
+    "input_channel": 0.24074074074074076,
+    "input_ci": [
+     0.1111111111111111,
+     0.37037037037037035
+    ],
+    "memory_channel": 0.0,
+    "memory_ci": [
+     0.0,
+     0.0
+    ],
+    "both_W_orig_minus_P_orig": 0.24074074074074076,
+    "events_pos": 14,
+    "events_neg": 1,
+    "sign_p_one_sided": 0.00048828125
+   },
+   "mistral:7b-instruct": {
+    "W_orig": 0.12962962962962962,
+    "W_ren": 0.1111111111111111,
+    "P_orig": 0.05555555555555555,
+    "P_ren": 0.0,
+    "input_channel": 0.1111111111111111,
+    "input_ci": [
+     0.037037037037037035,
+     0.2037037037037037
+    ],
+    "memory_channel": 0.05555555555555555,
+    "memory_ci": [
+     0.0,
+     0.12962962962962962
+    ],
+    "both_W_orig_minus_P_orig": 0.07407407407407407,
+    "events_pos": 6,
+    "events_neg": 0,
+    "sign_p_one_sided": 0.015625
+   },
+   "qwen2.5:7b": {
+    "W_orig": 0.16666666666666666,
+    "W_ren": 0.16666666666666666,
+    "P_orig": 0.018518518518518517,
+    "P_ren": 0.0,
+    "input_channel": 0.16666666666666666,
+    "input_ci": [
+     0.07407407407407407,
+     0.2777777777777778
+    ],
+    "memory_channel": 0.018518518518518517,
+    "memory_ci": [
+     0.0,
+     0.05555555555555555
+    ],
+    "both_W_orig_minus_P_orig": 0.14814814814814814,
+    "events_pos": 9,
+    "events_neg": 0,
+    "sign_p_one_sided": 0.001953125
+   }
+  },
+  "pooled": {
+   "rates": {
+    "W_orig": 0.19135802469135801,
+    "W_ren": 0.18518518518518517,
+    "P_orig": 0.037037037037037035,
+    "P_ren": 0.012345679012345678
+   },
+   "RF1_input_channel": {
+    "estimate": 0.17283950617283952,
+    "ci": [
+     0.09259259259259259,
+     0.26543209876543206
+    ],
+    "models_positive": 3,
+    "models": 3,
+    "passes": true
+   },
+   "RF2_P_ren_rate": 0.012345679012345678,
+   "RF2_valid": true,
+   "RF3_memory_channel": {
+    "estimate": 0.02469135802469136,
+    "ci": [
+     0.0,
+     0.055555555555555566
+    ]
+   },
+   "RF4_W_orig_minus_P_orig": {
+    "estimate": 0.15432098765432098,
+    "ci": [
+     0.06790123456790123,
+     0.25308641975308643
+    ]
+   }
+  }
+ },
+ "B_EXPLICIT_only": {
+  "events": 38,
+  "per_model": {
+   "llama3.1:8b": {
+    "W_orig": 0.3684210526315789,
+    "W_ren": 0.3684210526315789,
+    "P_orig": 0.05263157894736842,
+    "P_ren": 0.05263157894736842,
+    "input_channel": 0.3157894736842105,
+    "input_ci": [
+     0.15789473684210525,
+     0.47368421052631576
+    ],
+    "memory_channel": 0.0,
+    "memory_ci": [
+     0.0,
+     0.0
+    ],
+    "both_W_orig_minus_P_orig": 0.3157894736842105,
+    "events_pos": 13,
+    "events_neg": 1,
+    "sign_p_one_sided": 0.00091552734375
+   },
+   "mistral:7b-instruct": {
+    "W_orig": 0.13157894736842105,
+    "W_ren": 0.10526315789473684,
+    "P_orig": 0.05263157894736842,
+    "P_ren": 0.0,
+    "input_channel": 0.10526315789473684,
+    "input_ci": [
+     0.02631578947368421,
+     0.21052631578947367
+    ],
+    "memory_channel": 0.05263157894736842,
+    "memory_ci": [
+     0.0,
+     0.13157894736842105
+    ],
+    "both_W_orig_minus_P_orig": 0.07894736842105263,
+    "events_pos": 4,
+    "events_neg": 0,
+    "sign_p_one_sided": 0.0625
+   },
+   "qwen2.5:7b": {
+    "W_orig": 0.18421052631578946,
+    "W_ren": 0.18421052631578946,
+    "P_orig": 0.02631578947368421,
+    "P_ren": 0.0,
+    "input_channel": 0.18421052631578946,
+    "input_ci": [
+     0.07894736842105263,
+     0.3157894736842105
+    ],
+    "memory_channel": 0.02631578947368421,
+    "memory_ci": [
+     0.0,
+     0.07894736842105263
+    ],
+    "both_W_orig_minus_P_orig": 0.15789473684210525,
+    "events_pos": 7,
+    "events_neg": 0,
+    "sign_p_one_sided": 0.0078125
+   }
+  },
+  "pooled": {
+   "rates": {
+    "W_orig": 0.22807017543859648,
+    "W_ren": 0.2192982456140351,
+    "P_orig": 0.043859649122807015,
+    "P_ren": 0.017543859649122806
+   },
+   "RF1_input_channel": {
+    "estimate": 0.20175438596491227,
+    "ci": [
+     0.10526315789473684,
+     0.30701754385964913
+    ],
+    "models_positive": 3,
+    "models": 3,
+    "passes": true
+   },
+   "RF2_P_ren_rate": 0.017543859649122806,
+   "RF2_valid": true,
+   "RF3_memory_channel": {
+    "estimate": 0.02631578947368421,
+    "ci": [
+     0.0,
+     0.07017543859649124
+    ]
+   },
+   "RF4_W_orig_minus_P_orig": {
+    "estimate": 0.18421052631578946,
+    "ci": [
+     0.07017543859649122,
+     0.30701754385964913
+    ]
+   }
+  }
+ },
+ "B2_second_judge_olmo32b": {
+  "events": 54,
+  "per_model": {
+   "llama3.1:8b": {
+    "W_orig": 0.25925925925925924,
+    "W_ren": 0.2962962962962963,
+    "P_orig": 0.018518518518518517,
+    "P_ren": 0.037037037037037035,
+    "input_channel": 0.25925925925925924,
+    "input_ci": [
+     0.12962962962962962,
+     0.3888888888888889
+    ],
+    "memory_channel": -0.018518518518518517,
+    "memory_ci": [
+     -0.05555555555555555,
+     0.0
+    ],
+    "both_W_orig_minus_P_orig": 0.24074074074074073,
+    "events_pos": 15,
+    "events_neg": 1,
+    "sign_p_one_sided": 0.0002593994140625
+   },
+   "mistral:7b-instruct": {
+    "W_orig": 0.16666666666666666,
+    "W_ren": 0.12962962962962962,
+    "P_orig": 0.037037037037037035,
+    "P_ren": 0.018518518518518517,
+    "input_channel": 0.1111111111111111,
+    "input_ci": [
+     0.018518518518518517,
+     0.2222222222222222
+    ],
+    "memory_channel": 0.018518518518518517,
+    "memory_ci": [
+     -0.037037037037037035,
+     0.09259259259259259
+    ],
+    "both_W_orig_minus_P_orig": 0.12962962962962962,
+    "events_pos": 7,
+    "events_neg": 1,
+    "sign_p_one_sided": 0.03515625
+   },
+   "qwen2.5:7b": {
+    "W_orig": 0.18518518518518517,
+    "W_ren": 0.14814814814814814,
+    "P_orig": 0.037037037037037035,
+    "P_ren": 0.0,
+    "input_channel": 0.14814814814814814,
+    "input_ci": [
+     0.05555555555555555,
+     0.24074074074074073
+    ],
+    "memory_channel": 0.037037037037037035,
+    "memory_ci": [
+     0.0,
+     0.09259259259259259
+    ],
+    "both_W_orig_minus_P_orig": 0.14814814814814814,
+    "events_pos": 8,
+    "events_neg": 0,
+    "sign_p_one_sided": 0.00390625
+   }
+  },
+  "pooled": {
+   "rates": {
+    "W_orig": 0.2037037037037037,
+    "W_ren": 0.19135802469135804,
+    "P_orig": 0.030864197530864196,
+    "P_ren": 0.018518518518518517
+   },
+   "RF1_input_channel": {
+    "estimate": 0.17283950617283952,
+    "ci": [
+     0.08641975308641975,
+     0.2716049382716049
+    ],
+    "models_positive": 3,
+    "models": 3,
+    "passes": true
+   },
+   "RF2_P_ren_rate": 0.018518518518518517,
+   "RF2_valid": true,
+   "RF3_memory_channel": {
+    "estimate": 0.01234567901234568,
+    "ci": [
+     -0.024691358024691353,
+     0.05555555555555555
+    ]
+   },
+   "RF4_W_orig_minus_P_orig": {
+    "estimate": 0.1728395061728395,
+    "ci": [
+     0.09259259259259259,
+     0.26543209876543206
+    ]
+   }
+  }
+ },
+ "judge_agreement": {
+  "labels": 684,
+  "identical": 0.9780701754385965,
+  "kappa": 0.8813982521847692,
+  "rate_judge1": 0.10087719298245613,
+  "rate_judge2": 0.10526315789473684
+ },
+ "utility": {
+  "llama3.1:8b": {
+   "alias_in_card_share": {
+    "W_orig": 0.9122807017543859,
+    "W_ren": 0.9473684210526315,
+    "P_orig": 0.8947368421052632,
+    "P_ren": 0.9473684210526315
+   },
+   "mean_words": {
+    "W_orig": 91.73684210526316,
+    "W_ren": 86.94736842105263,
+    "P_orig": 86.24561403508773,
+    "P_ren": 85.24561403508773
+   }
+  },
+  "mistral:7b-instruct": {
+   "alias_in_card_share": {
+    "W_orig": 0.8245614035087719,
+    "W_ren": 0.8421052631578947,
+    "P_orig": 0.7894736842105263,
+    "P_ren": 0.8771929824561403
+   },
+   "mean_words": {
+    "W_orig": 97.03508771929825,
+    "W_ren": 91.33333333333333,
+    "P_orig": 95.0701754385965,
+    "P_ren": 91.40350877192982
+   }
+  },
+  "qwen2.5:7b": {
+   "alias_in_card_share": {
+    "W_orig": 0.8070175438596491,
+    "W_ren": 0.8596491228070176,
+    "P_orig": 0.7894736842105263,
+    "P_ren": 0.8070175438596491
+   },
+   "mean_words": {
+    "W_orig": 89.70175438596492,
+    "W_ren": 91.94736842105263,
+    "P_orig": 86.03508771929825,
+    "P_ren": 82.45614035087719
+   }
+  }
+ },
+ "fixes": {
+  "fix1_versioned_ruleA": {
+   "events": 19,
+   "models": [
+    "llama3.1:8b",
+    "mistral:7b-instruct",
+    "qwen2.5:7b"
+   ],
+   "orig": {
+    "leak_removed": 0.3157894736842105,
+    "ci": [
+     0.14035087719298245,
+     0.5087719298245613
+    ],
+    "W_rate": 0.3157894736842105,
+    "P_residual": 0.0
+   },
+   "ren": {
+    "leak_removed": 0.2456140350877193,
+    "ci": [
+     0.08771929824561403,
+     0.42105263157894735
+    ],
+    "W_rate": 0.2456140350877193,
+    "P_residual": 0.0
+   },
+   "cost": "one extra card build per event at this reader position (one build per distinct evidence horizon in general)",
+   "content": {
+    "llama3.1:8b": {
+     "words_W": 92.47368421052632,
+     "words_P": 81.42105263157895,
+     "alias_W": 0.9473684210526315,
+     "alias_P": 0.8421052631578947
+    },
+    "mistral:7b-instruct": {
+     "words_W": 99.42105263157895,
+     "words_P": 94.21052631578948,
+     "alias_W": 0.8421052631578947,
+     "alias_P": 0.8421052631578947
+    },
+    "qwen2.5:7b": {
+     "words_W": 91.0,
+     "words_P": 83.84210526315789,
+     "alias_W": 0.7894736842105263,
+     "alias_P": 0.7894736842105263
+    }
+   }
+  },
+  "fix1_versioned_ruleB": {
+   "events": 54,
+   "models": [
+    "llama3.1:8b",
+    "mistral:7b-instruct",
+    "qwen2.5:7b"
+   ],
+   "orig": {
+    "leak_removed": 0.15432098765432098,
+    "ci": [
+     0.06790123456790123,
+     0.25308641975308643
+    ],
+    "W_rate": 0.19135802469135801,
+    "P_residual": 0.037037037037037035
+   },
+   "ren": {
+    "leak_removed": 0.17283950617283952,
+    "ci": [
+     0.09259259259259259,
+     0.26543209876543206
+    ],
+    "W_rate": 0.18518518518518517,
+    "P_residual": 0.012345679012345678
+   },
+   "cost": "one extra card build per event at this reader position (one build per distinct evidence horizon in general)",
+   "content": {
+    "llama3.1:8b": {
+     "words_W": 91.16666666666667,
+     "words_P": 86.27777777777777,
+     "alias_W": 0.9074074074074074,
+     "alias_P": 0.8888888888888888
+    },
+    "mistral:7b-instruct": {
+     "words_W": 97.64814814814815,
+     "words_P": 94.68518518518519,
+     "alias_W": 0.8333333333333334,
+     "alias_P": 0.7962962962962963
+    },
+    "qwen2.5:7b": {
+     "words_W": 89.88888888888889,
+     "words_P": 85.62962962962963,
+     "alias_W": 0.8148148148148148,
+     "alias_P": 0.7962962962962963
+    }
+   }
+  },
+  "fix2_pseudonymise_ruleA": {
+   "events": 19,
+   "models": [
+    "llama3.1:8b",
+    "mistral:7b-instruct",
+    "qwen2.5:7b"
+   ],
+   "P_orig": 0.0,
+   "P_pseudo": 0.0,
+   "reduction": 0.0,
+   "ci": [
+    0.0,
+    0.0
+   ],
+   "alias_share_P_orig": 0.8245614035087719,
+   "alias_share_P_pseudo": 0.8771929824561403,
+   "RF5_evaluated": false,
+   "RF5_passes": null
+  },
+  "fix2_pseudonymise_ruleB": {
+   "events": 54,
+   "models": [
+    "llama3.1:8b",
+    "mistral:7b-instruct",
+    "qwen2.5:7b"
+   ],
+   "P_orig": 0.037037037037037035,
+   "P_pseudo": 0.030864197530864196,
+   "reduction": 0.006172839506172841,
+   "ci": [
+    -0.018518518518518517,
+    0.037037037037037035
+   ],
+   "alias_share_P_orig": 0.8271604938271605,
+   "alias_share_P_pseudo": 0.8765432098765432,
+   "RF5_evaluated": false,
+   "RF5_passes": false
+  }
+ },
+ "empty_cards": {
+  "llama3.1:8b": 0,
+  "mistral:7b-instruct": 0,
+  "qwen2.5:7b": 0
+ },
+ "larger": {
+  "label_provenance": "rule A TEXT-DERIVED; rule B labelled by a judge model (qwen3:8b); events model-selected; no human labels",
+  "models": [
+   "mistral24",
+   "qwen32b"
+  ],
+  "not_run": [],
+  "judged_models": [
+   "mistral24",
+   "qwen32b"
+  ],
+  "A_primary_EXPLICIT_IMPLIED": {
+   "events": 19,
+   "per_model": {
+    "mistral24": {
+     "W_orig": 0.2631578947368421,
+     "W_ren": 0.2631578947368421,
+     "P_orig": 0.0,
+     "P_ren": 0.0,
+     "input_channel": 0.2631578947368421,
+     "input_ci": [
+      0.05263157894736842,
+      0.47368421052631576
+     ],
+     "memory_channel": 0.0,
+     "memory_ci": [
+      0.0,
+      0.0
+     ],
+     "both_W_orig_minus_P_orig": 0.2631578947368421,
+     "events_pos": 5,
+     "events_neg": 0,
+     "sign_p_one_sided": 0.03125
+    },
+    "qwen32b": {
+     "W_orig": 0.15789473684210525,
+     "W_ren": 0.15789473684210525,
+     "P_orig": 0.0,
+     "P_ren": 0.0,
+     "input_channel": 0.15789473684210525,
+     "input_ci": [
+      0.0,
+      0.3157894736842105
+     ],
+     "memory_channel": 0.0,
+     "memory_ci": [
+      0.0,
+      0.0
+     ],
+     "both_W_orig_minus_P_orig": 0.15789473684210525,
+     "events_pos": 3,
+     "events_neg": 0,
+     "sign_p_one_sided": 0.125
+    }
+   },
+   "pooled": {
+    "rates": {
+     "W_orig": 0.21052631578947367,
+     "W_ren": 0.21052631578947367,
+     "P_orig": 0.0,
+     "P_ren": 0.0
+    },
+    "RF1_input_channel": {
+     "estimate": 0.21052631578947367,
+     "ci": [
+      0.05263157894736842,
+      0.39473684210526316
+     ],
+     "models_positive": 2,
+     "models": 2,
+     "passes": true
+    },
+    "RF2_P_ren_rate": 0.0,
+    "RF2_valid": true,
+    "RF3_memory_channel": {
+     "estimate": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "RF4_W_orig_minus_P_orig": {
+     "estimate": 0.21052631578947367,
+     "ci": [
+      0.05263157894736842,
+      0.39473684210526316
+     ]
+    }
+   }
+  },
+  "A_EXPLICIT_only": {
+   "events": 11,
+   "per_model": {
+    "mistral24": {
+     "W_orig": 0.2727272727272727,
+     "W_ren": 0.2727272727272727,
+     "P_orig": 0.0,
+     "P_ren": 0.0,
+     "input_channel": 0.2727272727272727,
+     "input_ci": [
+      0.0,
+      0.5454545454545454
+     ],
+     "memory_channel": 0.0,
+     "memory_ci": [
+      0.0,
+      0.0
+     ],
+     "both_W_orig_minus_P_orig": 0.2727272727272727,
+     "events_pos": 3,
+     "events_neg": 0,
+     "sign_p_one_sided": 0.125
+    },
+    "qwen32b": {
+     "W_orig": 0.09090909090909091,
+     "W_ren": 0.09090909090909091,
+     "P_orig": 0.0,
+     "P_ren": 0.0,
+     "input_channel": 0.09090909090909091,
+     "input_ci": [
+      0.0,
+      0.2727272727272727
+     ],
+     "memory_channel": 0.0,
+     "memory_ci": [
+      0.0,
+      0.0
+     ],
+     "both_W_orig_minus_P_orig": 0.09090909090909091,
+     "events_pos": 1,
+     "events_neg": 0,
+     "sign_p_one_sided": 0.5
+    }
+   },
+   "pooled": {
+    "rates": {
+     "W_orig": 0.18181818181818182,
+     "W_ren": 0.18181818181818182,
+     "P_orig": 0.0,
+     "P_ren": 0.0
+    },
+    "RF1_input_channel": {
+     "estimate": 0.18181818181818182,
+     "ci": [
+      0.0,
+      0.36363636363636365
+     ],
+     "models_positive": 2,
+     "models": 2,
+     "passes": false
+    },
+    "RF2_P_ren_rate": 0.0,
+    "RF2_valid": true,
+    "RF3_memory_channel": {
+     "estimate": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "RF4_W_orig_minus_P_orig": {
+     "estimate": 0.18181818181818182,
+     "ci": [
+      0.0,
+      0.36363636363636365
+     ]
+    }
+   }
+  },
+  "B_EXPLICIT_IMPLIED": {
+   "events": 54,
+   "per_model": {
+    "mistral24": {
+     "W_orig": 0.2777777777777778,
+     "W_ren": 0.3148148148148148,
+     "P_orig": 0.018518518518518517,
+     "P_ren": 0.037037037037037035,
+     "input_channel": 0.2777777777777778,
+     "input_ci": [
+      0.16666666666666666,
+      0.4074074074074074
+     ],
+     "memory_channel": -0.018518518518518517,
+     "memory_ci": [
+      -0.09259259259259259,
+      0.037037037037037035
+     ],
+     "both_W_orig_minus_P_orig": 0.2592592592592593,
+     "events_pos": 15,
+     "events_neg": 0,
+     "sign_p_one_sided": 3.0517578125e-05
+    },
+    "qwen32b": {
+     "W_orig": 0.14814814814814814,
+     "W_ren": 0.14814814814814814,
+     "P_orig": 0.018518518518518517,
+     "P_ren": 0.0,
+     "input_channel": 0.14814814814814814,
+     "input_ci": [
+      0.05555555555555555,
+      0.24074074074074073
+     ],
+     "memory_channel": 0.018518518518518517,
+     "memory_ci": [
+      0.0,
+      0.05555555555555555
+     ],
+     "both_W_orig_minus_P_orig": 0.12962962962962962,
+     "events_pos": 8,
+     "events_neg": 0,
+     "sign_p_one_sided": 0.00390625
+    }
+   },
+   "pooled": {
+    "rates": {
+     "W_orig": 0.21296296296296297,
+     "W_ren": 0.23148148148148148,
+     "P_orig": 0.018518518518518517,
+     "P_ren": 0.018518518518518517
+    },
+    "RF1_input_channel": {
+     "estimate": 0.21296296296296297,
+     "ci": [
+      0.12962962962962962,
+      0.3055555555555556
+     ],
+     "models_positive": 2,
+     "models": 2,
+     "passes": true
+    },
+    "RF2_P_ren_rate": 0.018518518518518517,
+    "RF2_valid": true,
+    "RF3_memory_channel": {
+     "estimate": 0.0,
+     "ci": [
+      -0.037037037037037035,
+      0.046296296296296294
+     ]
+    },
+    "RF4_W_orig_minus_P_orig": {
+     "estimate": 0.19444444444444445,
+     "ci": [
+      0.09259259259259259,
+      0.3055555555555556
+     ]
+    }
+   }
+  },
+  "B_EXPLICIT_only": {
+   "events": 38,
+   "per_model": {
+    "mistral24": {
+     "W_orig": 0.2894736842105263,
+     "W_ren": 0.39473684210526316,
+     "P_orig": 0.02631578947368421,
+     "P_ren": 0.05263157894736842,
+     "input_channel": 0.34210526315789475,
+     "input_ci": [
+      0.21052631578947367,
+      0.5
+     ],
+     "memory_channel": -0.02631578947368421,
+     "memory_ci": [
+      -0.13157894736842105,
+      0.05263157894736842
+     ],
+     "both_W_orig_minus_P_orig": 0.26315789473684215,
+     "events_pos": 13,
+     "events_neg": 0,
+     "sign_p_one_sided": 0.0001220703125
+    },
+    "qwen32b": {
+     "W_orig": 0.18421052631578946,
+     "W_ren": 0.15789473684210525,
+     "P_orig": 0.02631578947368421,
+     "P_ren": 0.0,
+     "input_channel": 0.15789473684210525,
+     "input_ci": [
+      0.05263157894736842,
+      0.2894736842105263
+     ],
+     "memory_channel": 0.02631578947368421,
+     "memory_ci": [
+      0.0,
+      0.07894736842105263
+     ],
+     "both_W_orig_minus_P_orig": 0.15789473684210525,
+     "events_pos": 6,
+     "events_neg": 0,
+     "sign_p_one_sided": 0.015625
+    }
+   },
+   "pooled": {
+    "rates": {
+     "W_orig": 0.23684210526315788,
+     "W_ren": 0.27631578947368424,
+     "P_orig": 0.02631578947368421,
+     "P_ren": 0.02631578947368421
+    },
+    "RF1_input_channel": {
+     "estimate": 0.25,
+     "ci": [
+      0.14473684210526316,
+      0.3684210526315789
+     ],
+     "models_positive": 2,
+     "models": 2,
+     "passes": true
+    },
+    "RF2_P_ren_rate": 0.02631578947368421,
+    "RF2_valid": true,
+    "RF3_memory_channel": {
+     "estimate": 0.0,
+     "ci": [
+      -0.05263157894736842,
+      0.06578947368421052
+     ]
+    },
+    "RF4_W_orig_minus_P_orig": {
+     "estimate": 0.21052631578947367,
+     "ci": [
+      0.07894736842105263,
+      0.34210526315789475
+     ]
+    }
+   }
+  },
+  "B2_second_judge_olmo32b": {
+   "events": 54,
+   "per_model": {
+    "mistral24": {
+     "W_orig": 0.25925925925925924,
+     "W_ren": 0.2962962962962963,
+     "P_orig": 0.018518518518518517,
+     "P_ren": 0.018518518518518517,
+     "input_channel": 0.2777777777777778,
+     "input_ci": [
+      0.16666666666666666,
+      0.4074074074074074
+     ],
+     "memory_channel": 0.0,
+     "memory_ci": [
+      -0.05555555555555555,
+      0.05555555555555555
+     ],
+     "both_W_orig_minus_P_orig": 0.24074074074074073,
+     "events_pos": 15,
+     "events_neg": 0,
+     "sign_p_one_sided": 3.0517578125e-05
+    },
+    "qwen32b": {
+     "W_orig": 0.18518518518518517,
+     "W_ren": 0.14814814814814814,
+     "P_orig": 0.037037037037037035,
+     "P_ren": 0.0,
+     "input_channel": 0.14814814814814814,
+     "input_ci": [
+      0.05555555555555555,
+      0.24074074074074073
+     ],
+     "memory_channel": 0.037037037037037035,
+     "memory_ci": [
+      0.0,
+      0.09259259259259259
+     ],
+     "both_W_orig_minus_P_orig": 0.14814814814814814,
+     "events_pos": 8,
+     "events_neg": 0,
+     "sign_p_one_sided": 0.00390625
+    }
+   },
+   "pooled": {
+    "rates": {
+     "W_orig": 0.2222222222222222,
+     "W_ren": 0.2222222222222222,
+     "P_orig": 0.027777777777777776,
+     "P_ren": 0.009259259259259259
+    },
+    "RF1_input_channel": {
+     "estimate": 0.21296296296296297,
+     "ci": [
+      0.12962962962962962,
+      0.3055555555555556
+     ],
+     "models_positive": 2,
+     "models": 2,
+     "passes": true
+    },
+    "RF2_P_ren_rate": 0.009259259259259259,
+    "RF2_valid": true,
+    "RF3_memory_channel": {
+     "estimate": 0.018518518518518517,
+     "ci": [
+      -0.018518518518518517,
+      0.06481481481481481
+     ]
+    },
+    "RF4_W_orig_minus_P_orig": {
+     "estimate": 0.19444444444444445,
+     "ci": [
+      0.09259259259259259,
+      0.3055555555555556
+     ]
+    }
+   }
+  },
+  "judge_agreement": {
+   "labels": 456,
+   "identical": 0.9780701754385965,
+   "kappa": 0.8914699162223917,
+   "rate_judge1": 0.11403508771929824,
+   "rate_judge2": 0.11403508771929824
+  },
+  "utility": {
+   "mistral24": {
+    "alias_in_card_share": {
+     "W_orig": 0.8596491228070176,
+     "W_ren": 0.8947368421052632,
+     "P_orig": 0.8070175438596491,
+     "P_ren": 0.8070175438596491
+    },
+    "mean_words": {
+     "W_orig": 87.80701754385964,
+     "W_ren": 84.94736842105263,
+     "P_orig": 82.71929824561404,
+     "P_ren": 82.57894736842105
+    }
+   },
+   "qwen32b": {
+    "alias_in_card_share": {
+     "W_orig": 0.8245614035087719,
+     "W_ren": 0.8771929824561403,
+     "P_orig": 0.8070175438596491,
+     "P_ren": 0.8771929824561403
+    },
+    "mean_words": {
+     "W_orig": 92.57894736842105,
+     "W_ren": 83.87719298245614,
+     "P_orig": 82.40350877192982,
+     "P_ren": 79.7719298245614
+    }
+   }
+  },
+  "fixes": {
+   "fix1_versioned_ruleA": {
+    "events": 19,
+    "models": [
+     "mistral24",
+     "qwen32b"
+    ],
+    "orig": {
+     "leak_removed": 0.21052631578947367,
+     "ci": [
+      0.05263157894736842,
+      0.39473684210526316
+     ],
+     "W_rate": 0.21052631578947367,
+     "P_residual": 0.0
+    },
+    "ren": {
+     "leak_removed": 0.21052631578947367,
+     "ci": [
+      0.05263157894736842,
+      0.39473684210526316
+     ],
+     "W_rate": 0.21052631578947367,
+     "P_residual": 0.0
+    },
+    "cost": "one extra card build per event at this reader position (one build per distinct evidence horizon in general)",
+    "content": {
+     "mistral24": {
+      "words_W": 85.42105263157895,
+      "words_P": 79.05263157894737,
+      "alias_W": 0.8947368421052632,
+      "alias_P": 0.7894736842105263
+     },
+     "qwen32b": {
+      "words_W": 97.15789473684211,
+      "words_P": 83.0,
+      "alias_W": 0.7894736842105263,
+      "alias_P": 0.7894736842105263
+     }
+    }
+   },
+   "fix1_versioned_ruleB": {
+    "events": 54,
+    "models": [
+     "mistral24",
+     "qwen32b"
+    ],
+    "orig": {
+     "leak_removed": 0.19444444444444445,
+     "ci": [
+      0.09259259259259259,
+      0.3055555555555556
+     ],
+     "W_rate": 0.21296296296296297,
+     "P_residual": 0.018518518518518517
+    },
+    "ren": {
+     "leak_removed": 0.21296296296296297,
+     "ci": [
+      0.12962962962962962,
+      0.3055555555555556
+     ],
+     "W_rate": 0.23148148148148148,
+     "P_residual": 0.018518518518518517
+    },
+    "cost": "one extra card build per event at this reader position (one build per distinct evidence horizon in general)",
+    "content": {
+     "mistral24": {
+      "words_W": 87.5925925925926,
+      "words_P": 82.51851851851852,
+      "alias_W": 0.8703703703703703,
+      "alias_P": 0.8148148148148148
+     },
+     "qwen32b": {
+      "words_W": 92.38888888888889,
+      "words_P": 82.42592592592592,
+      "alias_W": 0.8148148148148148,
+      "alias_P": 0.7962962962962963
+     }
+    }
+   },
+   "fix2_pseudonymise_ruleA": {
+    "events": 19,
+    "models": [
+     "mistral24",
+     "qwen32b"
+    ],
+    "P_orig": 0.0,
+    "P_pseudo": 0.0,
+    "reduction": 0.0,
+    "ci": [
+     0.0,
+     0.0
+    ],
+    "alias_share_P_orig": 0.7894736842105263,
+    "alias_share_P_pseudo": 0.8157894736842105,
+    "RF5_evaluated": false,
+    "RF5_passes": null
+   },
+   "fix2_pseudonymise_ruleB": {
+    "events": 54,
+    "models": [
+     "mistral24",
+     "qwen32b"
+    ],
+    "P_orig": 0.018518518518518517,
+    "P_pseudo": 0.027777777777777776,
+    "reduction": -0.009259259259259259,
+    "ci": [
+     -0.046296296296296294,
+     0.018518518518518517
+    ],
+    "alias_share_P_orig": 0.8055555555555556,
+    "alias_share_P_pseudo": 0.8425925925925926,
+    "RF5_evaluated": false,
+    "RF5_passes": false
+   }
+  },
+  "empty_cards": {
+   "mistral24": 0,
+   "qwen32b": 0
+  }
+ }
+}

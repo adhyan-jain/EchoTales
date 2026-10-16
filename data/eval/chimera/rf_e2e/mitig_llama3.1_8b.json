@@ -1,0 +1,802 @@
+{
+ "model": "llama3.1:8b",
+ "options": {
+  "temperature": 0,
+  "seed": 20261016,
+  "num_predict": 160,
+  "num_ctx": 8192
+ },
+ "prompt": "Write a character card of at most 80 words for the character referred to as {ALIAS}, using these passages from the book. Passages:\n{PASSAGES}\nCard:",
+ "cards": {
+  "C965_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Jacob:\n\n**Name:** Jacob Fistsk\n**Age:** Nearly 50 years old\n**Physical Description:** Crooked, hideous to look at\n**Personality:** Passionate, intense, fiercely protective of his tulip\n**Motivations:** Loves Rosa's tulip and will stop at nothing to protect it\n**Relationships:** Has a close friendship with Gryphus, who is Rosa's father; has a complicated relationship with Cornelius, the prisoner",
+     "card_raw": "Here is a character card for Edwin:\n\n**Name:** Edwin Fistsk\n**Age:** Nearly 50 years old\n**Physical Description:** Crooked, hideous to look at\n**Personality:** Passionate, intense, fiercely protective of his tulip\n**Motivations:** Loves Sinclair's tulip and will stop at nothing to protect it\n**Relationships:** Has a close friendship with Fvzjhus, who is Sinclair's father; has a complicated relationship with Vincent, the prisoner",
+     "leak": false,
+     "has_alias": true,
+     "words": 61
+    }
+   }
+  },
+  "C1848_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for She:\n\n**Name:** She\n**Relationship:** Wife of Thomas (the narrator)\n**Age:** Late 30s/Early 40s\n**Personality:** Gentle, loving, forgiving, and deeply devoted to her husband. She has a secret sorrow that she keeps hidden from others.\n**Background:** Born into a noble family, but married to a commoner. She is fluent in English, the language of her ancestors, which holds great significance for her.\n**Motivations:** To protect her husband and their relationship, while also keeping her own secrets and sorrows hidden.\n\nNote: She's character is revealed through various passages, particularly [1] where Thomas reflects on his marriage to her.",
+     "card_raw": "Here is a character card for Marion:\n\n**Name:** Marion\n**Relationship:** Wife of Northcott (the narrator)\n**Age:** Late 30s/Early 40s\n**Personality:** Gentle, loving, forgiving, and deeply devoted to her husband. She has a secret sorrow that she keeps hidden from others.\n**Background:** Born into a noble family, but married to a commoner. She is fluent in Twfkish, the language of her ancestors, which holds great significance for her.\n**Motivations:** To protect her husband and their relationship, while also keeping her own secrets and sorrows hidden.\n\nNote: Marion's character is revealed through various passages, particularly [1] where Northcott reflects on his marriage to her.",
+     "leak": false,
+     "has_alias": true,
+     "words": 102
+    }
+   }
+  },
+  "C1942_1": {
+   "T": [
+    "Charles",
+    "Claparon"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Roguin:\n\n**Name:** Roguin\n**Age:** Late 30s/Early 40s\n**Occupation:** Notary\n**Personality:** Virtuous, loyal, and devoted to his family. He is described as \"virtue upon earth\" and is said to love his wife more than his own eyes.\n\n**Relationships:** Husband of Madame Roguin, father of Cesarine (daughter).",
+     "card_raw": "Here is a character card for Vincent:\n\n**Name:** Vincent\n**Age:** Late 30s/Early 40s\n**Occupation:** Notary\n**Personality:** Virtuous, loyal, and devoted to his family. He is described as \"virtue upon earth\" and is said to love his wife more than his own eyes.\n\n**Relationships:** Husband of Madame Vincent, father of Lindsay (daughter).",
+     "leak": false,
+     "has_alias": true,
+     "words": 51
+    }
+   }
+  },
+  "C2078_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is the character card for Thais:\n\n**Name:** Thais\n**Age:** Late teens/early twenties\n**Occupation:** Actress, courtesan\n**Personality:** Beautiful, charming, manipulative, sensual, vain\n**Goals:** To enjoy life's pleasures and desires, to be loved and adored by many men\n**Motivations:** Desire for love, attention, and luxury; a sense of entitlement and self-importance\n**Conflict:** Inner conflict between her desire for pleasure and the moral expectations placed upon her by society; external conflict with those who seek to reform or control her",
+     "card_raw": "Here is the character card for Agnes:\n\n**Name:** Agnes\n**Age:** Late teens/early twenties\n**Occupation:** Actress, courtesan\n**Personality:** Beautiful, charming, manipulative, sensual, vain\n**Goals:** To enjoy life's pleasures and desires, to be loved and adored by many men\n**Motivations:** Desire for love, attention, and luxury; a sense of entitlement and self-importance\n**Conflict:** Inner conflict between her desire for pleasure and the moral expectations placed upon her by society; external conflict with those who seek to reform or control her",
+     "leak": false,
+     "has_alias": true,
+     "words": 78
+    }
+   }
+  },
+  "C2153_1": {
+   "T": [
+    "Butterfly"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Esther:\n\n**Name:** Esther (also referred to as Aunt Hetty)\n\n**Age:** Unknown, but appears to be in her mid-to-late 30s or early 40s\n\n**Physical Description:** Once beautiful and dazzling, now worn out by life. She has put on an air of indifference to account for her long absence.\n\n**Personality:** Loving and yearning, despite her flaws. She is determined to help Jem Wilson, who she believes may be innocent of the crime. She is also fiercely protective of her family and will do whatever it takes to ensure their happiness.\n\n**Background:** Esther has a complicated past, having left her family without explanation. She has been away for some time, but returns when she",
+     "card_raw": "Here is a character card for Flora:\n\n**Name:** Flora (also referred to as Aunt Htbbz)\n\n**Age:** Unknown, but appears to be in her mid-to-late 30s or early 40s\n\n**Physical Description:** Once beautiful and dazzling, now worn out by life. She has put on an air of indifference to account for her long absence.\n\n**Personality:** Loving and yearning, despite her flaws. She is determined to help Fitzroy Pickering, who she believes may be innocent of the crime. She is also fiercely protective of her family and will do whatever it takes to ensure their happiness.\n\n**Background:** Flora has a complicated past, having left her family without explanation. She has been away for some time, but returns when she",
+     "leak": false,
+     "has_alias": true,
+     "words": 117
+    }
+   }
+  },
+  "C2160_1": {
+   "T": [
+    "Fathom"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Grieve:\n\n**Name:** Grieve\n**Age:** Middle-aged\n**Occupation:** Apothecary\n**Personality:** Submissive, respectful, taciturn, yet courageous and selfless\n**Physical Description:** Plain appearance, black hair worn without dressing, dressed in simple attire that resembles a Quaker's garb\n**Skills:** Medical expertise, bravery in the face of danger\n**Relationships:** Patronage by the Count and Countess of Melville, godfather to their daughter Seraphina",
+     "card_raw": "Here is a character card for Rowan:\n\n**Name:** Rowan\n**Age:** Middle-aged\n**Occupation:** Apothecary\n**Personality:** Submissive, respectful, taciturn, yet courageous and selfless\n**Physical Description:** Plain appearance, black hair worn without dressing, dressed in simple attire that resembles a Quaker's garb\n**Skills:** Medical expertise, bravery in the face of danger\n**Relationships:** Patronage by the Count and Countess of Ntkaikkt, godfather to their daughter Stvcjhiwc",
+     "leak": false,
+     "has_alias": true,
+     "words": 62
+    }
+   }
+  },
+  "C2516_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is the character card for Nanty Ewart:\n\n**Name:** Nanty Ewart\n**Age:** Unknown\n**Occupation:** Sailor/ Guide\n**Personality:** Fiercely independent and confident, Nanty is a skilled sailor who knows the Border region like the back of his hand. He is also prone to drinking and has a tendency to be reckless.\n**Physical Description:** Shabby genteel dress, tarnished lace, small cocked hat, scarlet waistcoat with faded embroidery, breeches with silver knee-bands, smart hanger, and pistols in a sullied swordbelt.\n**Skills:** Expert knowledge of the Border region, skilled sailor.",
+     "card_raw": "Here is the character card for Franklin Julian:\n\n**Name:** Franklin Julian\n**Age:** Unknown\n**Occupation:** Sailor/ Guide\n**Personality:** Fiercely independent and confident, Franklin is a skilled sailor who knows the Border region like the back of his hand. He is also prone to drinking and has a tendency to be reckless.\n**Physical Description:** Shabby genteel dress, tarnished lace, small cocked hat, scarlet waistcoat with faded embroidery, breeches with silver knee-bands, smart hanger, and pistols in a sullied swordbelt.\n**Skills:** Expert knowledge of the Border region, skilled sailor.",
+     "leak": false,
+     "has_alias": true,
+     "words": 86
+    }
+   }
+  },
+  "C3815_1": {
+   "T": [
+    "Tucker"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Paley:\n\n**Name:** Paley\n**Age:** Unknown\n**Occupation:** Young Illustrator\n**Nationality:** Originally from Terre Haute ( likely a fictional or misspelled location)\n**Personality:** Not described in detail, but mentioned as the reason for the narrator's visit to the furnished room house.\n**Physical Description:** None given.",
+     "card_raw": "Here is a character card for Sasha:\n\n**Name:** Sasha\n**Age:** Unknown\n**Occupation:** Young Illustrator\n**Nationality:** Originally from Btvvt Hcubt ( likely a fictional or misspelled location)\n**Personality:** Not described in detail, but mentioned as the reason for the narrator's visit to the furnished room house.\n**Physical Description:** None given.",
+     "leak": false,
+     "has_alias": true,
+     "words": 49
+    }
+   }
+  },
+  "C4276_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is the character card for Frederick:\n\n**Name:** Frederick\n**Age:** Late teens/early twenties (at the time of his departure)\n**Relationships:** Son of Mr. and Mrs. Hale, brother of Margaret\n**Personality:** Brave, loyal, principled, but also reckless and impulsive\n**Background:** Served in the navy, became involved in a scandalous affair that led to his exile from society. He is now living abroad, serving with the Spanish army.\n**Physical Description:** Not described in detail, but mentioned as having \"finely cut\" features that are worn and anxious-looking due to his experiences.\n**Motivations:** To stand up against injustice and protect others, even if it means putting himself at risk. He",
+     "card_raw": "Here is the character card for Quinn:\n\n**Name:** Quinn\n**Age:** Late teens/early twenties (at the time of his departure)\n**Relationships:** Son of Mr. and Mrs. Chaloner, brother of Bridget\n**Personality:** Brave, loyal, principled, but also reckless and impulsive\n**Background:** Served in the navy, became involved in a scandalous affair that led to his exile from society. He is now living abroad, serving with the Sjcwish army.\n**Physical Description:** Not described in detail, but mentioned as having \"finely cut\" features that are worn and anxious-looking due to his experiences.\n**Motivations:** To stand up against injustice and protect others, even if it means putting himself at risk. He",
+     "leak": false,
+     "has_alias": true,
+     "words": 106
+    }
+   }
+  },
+  "C4537_1": {
+   "T": [
+    "Freeman",
+    "Stephen"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Philip:\n\n**Name:** Philip Hepburn\n\n**Age:** Late teens/early twenties (exact age not specified)\n\n**Personality:** Philip is a thoughtful and introspective young man. He is deeply in love with Sylvia, but struggles to express his feelings openly. He is also fiercely loyal and protective of those he cares about, as seen in his interactions with Kinraid and Charley.\n\n**Strengths:**\n\n* Loyal and protective\n* Thoughtful and introspective\n* Deeply in love with Sylvia\n\n**Weaknesses:**\n\n* Struggles to express himself openly\n* Jealous and possessive at times\n* Can be overly self-critical and brooding\n\n**Goals:** Philip's",
+     "card_raw": "Here is a character card for Barnaby:\n\n**Name:** Barnaby Edwin\n\n**Age:** Late teens/early twenties (exact age not specified)\n\n**Personality:** Barnaby is a thoughtful and introspective young man. He is deeply in love with Tabitha, but struggles to express his feelings openly. He is also fiercely loyal and protective of those he cares about, as seen in his interactions with Alden and Lhcvktz.\n\n**Strengths:**\n\n* Loyal and protective\n* Thoughtful and introspective\n* Deeply in love with Tabitha\n\n**Weaknesses:**\n\n* Struggles to express himself openly\n* Jealous and possessive at times\n* Can be overly self-critical and brooding\n\n**Goals:** Barnaby's",
+     "leak": false,
+     "has_alias": true,
+     "words": 99
+    }
+   }
+  },
+  "C5122_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for June (also referred to as \"the little girl\" or simply \"she\") in 80 words or less:\n\n**Name:** June\n**Age:** Unknown, but likely a child or young teenager\n**Appearance:** Dark eyes, thick hair, and a shy demeanor. She wears traditional mountain clothing.\n**Personality:** Curious, independent, and fiercely protective of her family and home. She is also intelligent and resourceful, able to read and speak with precision despite her rural upbringing.\n**Goals:** To learn about the world beyond her mountains and to protect her loved ones from outsiders.",
+     "card_raw": "Here is a character card for Duwt (also referred to as \"the little girl\" or simply \"she\") in 80 words or less:\n\n**Name:** Duwt\n**Age:** Unknown, but likely a child or young teenager\n**Appearance:** Dark eyes, thick hair, and a shy demeanor. She wears traditional mountain clothing.\n**Personality:** Curious, independent, and fiercely protective of her family and home. She is also intelligent and resourceful, able to read and speak with precision despite her rural upbringing.\n**Goals:** To learn about the world beyond her mountains and to protect her loved ones from outsiders.",
+     "leak": false,
+     "has_alias": true,
+     "words": 92
+    }
+   }
+  },
+  "C5155_1": {
+   "T": [
+    "Arthur",
+    "Phillips"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Maximilian Petion:\n\n**Name:** Maximilian Petion\n**Age:** Late 20s/Early 30s\n**Occupation:** Attorney\n**Personality:** Confident, firm, kind, and respectful. Has a strong sense of justice and is willing to take risks to protect others.\n**Physical Description:** Dark complexion, bright and penetrating eyes, black hair, prominent nose, and a square-shaped brow.\n**Relationships:** Lives with his mother in the city, is a member of the Brotherhood secret society, and has connections with its leaders.",
+     "card_raw": "Here is a character card for Dudley Jtbiow:\n\n**Name:** Dudley Jtbiow\n**Age:** Late 20s/Early 30s\n**Occupation:** Attorney\n**Personality:** Confident, firm, kind, and respectful. Has a strong sense of justice and is willing to take risks to protect others.\n**Physical Description:** Dark complexion, bright and penetrating eyes, black hair, prominent nose, and a square-shaped brow.\n**Relationships:** Lives with his mother in the city, is a member of the Ormsby secret society, and has connections with its leaders.",
+     "leak": false,
+     "has_alias": false,
+     "words": 76
+    }
+   }
+  },
+  "C5174_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Mavovo (referred to as \"my Snake\" in the passages):\n\n**Name:** My Snake (Mavovo)\n\n**Occupation:** Diviner/Medium\n\n**Personality:** Mysterious, perceptive, and somewhat intimidating. Has an uncanny ability to see into people's thoughts and motives.\n\n**Abilities:** Can communicate with a supernatural entity known as \"my Snake\", which provides him with prophetic visions of the future.\n\n**Goals:** To provide guidance and insight to those who seek it, while also maintaining his own power and influence in the community.",
+     "card_raw": "Here is a character card for Gideon (referred to as \"my Alden\" in the passages):\n\n**Name:** My Alden (Gideon)\n\n**Occupation:** Diviner/Medium\n\n**Personality:** Mysterious, perceptive, and somewhat intimidating. Has an uncanny ability to see into people's thoughts and motives.\n\n**Abilities:** Can communicate with a supernatural entity known as \"my Alden\", which provides him with prophetic visions of the future.\n\n**Goals:** To provide guidance and insight to those who seek it, while also maintaining his own power and influence in the community.",
+     "leak": false,
+     "has_alias": true,
+     "words": 80
+    }
+   }
+  },
+  "C5660_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Colonel Weatherby:\n\n**Name:** Colonel James Weatherby\n**Age:** Late 50s/Early 60s (implied by his snow-white hair)\n**Occupation:** None mentioned, but appears to be a wealthy gentleman with significant financial means.\n**Personality:** Extremely reserved and dignified. Prefers to keep to himself and has little in common with the villagers of Beverly. Has a strong affection for his granddaughter, Mary Louise.\n**Physical Description:** Tall, with piercing dark eyes and snow-white hair. Immaculately dressed at all times.\n**Relationships:** Grandfather to Mary Louise Burrows, who lives with him in the Vandeventer mansion. Has a close relationship with his granddaughter, but",
+     "card_raw": "Here is a character card for Jordan Riley:\n\n**Name:** Jordan Dana Riley\n**Age:** Late 50s/Early 60s (implied by his snow-white hair)\n**Occupation:** None mentioned, but appears to be a wealthy gentleman with significant financial means.\n**Personality:** Extremely reserved and dignified. Prefers to keep to himself and has little in common with the villagers of Quillfeather. Has a strong affection for his granddaughter, Winifred Olive.\n**Physical Description:** Tall, with piercing dark eyes and snow-white hair. Immaculately dressed at all times.\n**Relationships:** Grandfather to Winifred Olive Whitaker, who lives with him in the Acwetatwbtv mansion. Has a close relationship with his granddaughter, but",
+     "leak": false,
+     "has_alias": true,
+     "words": 101
+    }
+   }
+  },
+  "C6086_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for \"his guest\" within the 80-word limit:\n\n**Name:** Donald Earl of Mar (also referred to as Kirkpatrick, Lennox, and Lord Mar)\n\n**Title:** Earl of Mar\n\n**Personality:** Brave, loyal, determined, charismatic leader\n\n**Goals:** To free Scotland from tyranny, to avenge past injustices, to unite the people against oppression\n\n**Relationships:** Wallace (host), Lady Wallace (Wallace's wife), Murray (Wallace's servant)",
+     "card_raw": "Here is a character card for \"his guest\" within the 80-word limit:\n\n**Name:** Eowcke Earl of Mar (also referred to as Mivmjcbvilm, Ktwwop, and Lord Mar)\n\n**Title:** Earl of Mar\n\n**Personality:** Brave, loyal, determined, charismatic leader\n\n**Goals:** To free Slobkcwe from tyranny, to avenge past injustices, to unite the people against oppression\n\n**Relationships:** Orson (host), Lady Orson (Orson's wife), Silas (Orson's servant)",
+     "leak": false,
+     "has_alias": true,
+     "words": 62
+    }
+   }
+  },
+  "C7079_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: Roland**\n\n* Name: Louis de Montrevel (aide-de-camp to General Bonaparte)\n* Age: Unknown\n* Personality: Belligerent, witty, animated, and seemingly fearless. Has a tendency to laugh nervously in tense situations.\n* Physical Description: Fair-haired, with beautiful teeth.\n* Skills: Skilled duelist, excellent singer with an admirable voice and method.\n* Background: Aide-de-camp to General Bonaparte, with a mysterious past that includes a \"fatality\" preventing him from dying.",
+     "card_raw": "**Character Card: Nigel**\n\n* Name: Percival de Nowbvtatk (aide-de-camp to General Dudley)\n* Age: Unknown\n* Personality: Belligerent, witty, animated, and seemingly fearless. Has a tendency to laugh nervously in tense situations.\n* Physical Description: Fair-haired, with beautiful teeth.\n* Skills: Skilled duelist, excellent singer with an admirable voice and method.\n* Background: Aide-de-camp to General Dudley, with a mysterious past that includes a \"fatality\" preventing him from dying.",
+     "leak": false,
+     "has_alias": true,
+     "words": 69
+    }
+   }
+  },
+  "C7265_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Miss Amory:\n\n**Name:** Miss Amory\n**Age:** Unknown\n**Occupation:** Artist (painter, poet, musician)\n**Personality:** Enigmatic, talented, kind-hearted, compassionate\n**Physical Description:** Meek and reserved, with a dove-like appearance\n**Relationships:** Close friendship with Laura, admired by Pen, but also the subject of his disdain for \"clever women\"\n**Goals:** To be accepted and appreciated for her talents, to form meaningful connections with others\n\nNote: The character card is based on the passages provided, which describe Miss Amory's artistic abilities, her relationships with others, and her personality. However, it does not provide a complete picture of her character, and some aspects may",
+     "card_raw": "Here is a character card for Miss Kestrel:\n\n**Name:** Miss Kestrel\n**Age:** Unknown\n**Occupation:** Artist (painter, poet, musician)\n**Personality:** Enigmatic, talented, kind-hearted, compassionate\n**Physical Description:** Meek and reserved, with a dove-like appearance\n**Relationships:** Close friendship with Hollis, admired by Pen, but also the subject of his disdain for \"clever women\"\n**Goals:** To be accepted and appreciated for her talents, to form meaningful connections with others\n\nNote: The character card is based on the passages provided, which describe Miss Kestrel's artistic abilities, her relationships with others, and her personality. However, it does not provide a complete picture of her character, and some aspects may",
+     "leak": false,
+     "has_alias": true,
+     "words": 103
+    }
+   }
+  },
+  "C7497_1": {
+   "T": [
+    "Alessandro",
+    "Nondra"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for \"I\" (Quincy Adams Sawyer) based on the provided passages:\n\n**Name:** Quincy Adams Sawyer\n**Age:** Late 20s/Early 30s\n**Occupation:** Politician (former), Farmer\n**Personality:** Kind, compassionate, humorous, and determined. He values family and community, and is willing to help those in need.\n**Relationships:** Married to Alice, with a young daughter Maude. Has a close relationship with his Aunt Ella and her family.\n**Goals:** To do good for his community, provide for his family, and make a positive impact on the world.\n\nNote: The character's name is often referred to as \"Quincy\" or \"Mr. Sawyer\", but I have used",
+     "card_raw": "Here is a character card for \"I\" (Edwin Cecns Clifford) based on the provided passages:\n\n**Name:** Edwin Cecns Clifford\n**Age:** Late 20s/Early 30s\n**Occupation:** Politician (former), Farmer\n**Personality:** Kind, compassionate, humorous, and determined. He values family and community, and is willing to help those in need.\n**Relationships:** Married to Bridget, with a young daughter Ingrid. Has a close relationship with his Aunt Carrow and her family.\n**Goals:** To do good for his community, provide for his family, and make a positive impact on the world.\n\nNote: The character's name is often referred to as \"Edwin\" or \"Mr. Clifford\", but I have used",
+     "leak": false,
+     "has_alias": true,
+     "words": 102
+    }
+   }
+  },
+  "C7510_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Keith:\n\n**Name:** Keith (also referred to as Jack)\n\n**Age:** Late 20s/Early 30s\n\n**Physical Description:** Tall, slender, and long-limbed with broad shoulders and a deep chest. Clean-shaven face with prominent chin, firm mouth, and gray eyes full of character and daring.\n\n**Personality:** Brave, determined, and resourceful. Keith is a man who has faced hardship and suffering in his past, but he remains strong-willed and resilient. He is also capable of compassion and empathy, as seen in his reaction to the woman's appeal for help.\n\n**Background:** Former cavalry officer who fought in battles against the Confederacy. Lost his father in combat and was",
+     "card_raw": "Here is a character card for Percival:\n\n**Name:** Percival (also referred to as Goodwin)\n\n**Age:** Late 20s/Early 30s\n\n**Physical Description:** Tall, slender, and long-limbed with broad shoulders and a deep chest. Clean-shaven face with prominent chin, firm mouth, and gray eyes full of character and daring.\n\n**Personality:** Brave, determined, and resourceful. Percival is a man who has faced hardship and suffering in his past, but he remains strong-willed and resilient. He is also capable of compassion and empathy, as seen in his reaction to the woman's appeal for help.\n\n**Background:** Former cavalry officer who fought in battles against the Lowrtetvclz. Lost his father in combat and was",
+     "leak": false,
+     "has_alias": true,
+     "words": 107
+    }
+   }
+  },
+  "C7661_1": {
+   "T": [
+    "Isaac"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is the character card for Mop:\n\n**Name:** Mop (formerly)\n**Species:** Dog\n**Personality:** Loyal, intelligent, and adaptable. Mop is a gifted creature who has been trained to develop his native powers.\n**Special Abilities:** None mentioned\n**Relationships:** Fond of Gentleman Waife, but also accustomed to being called \"Mop\" which he finds unattractive.\n\nNote: The character card only includes information that can be inferred from the provided passages.",
+     "card_raw": "Here is the character card for Emmett:\n\n**Name:** Emmett (formerly)\n**Species:** Dog\n**Personality:** Loyal, intelligent, and adaptable. Emmett is a gifted creature who has been trained to develop his native powers.\n**Special Abilities:** None mentioned\n**Relationships:** Fond of Gentleman Qcirt, but also accustomed to being called \"Emmett\" which he finds unattractive.\n\nNote: The character card only includes information that can be inferred from the provided passages.",
+     "leak": false,
+     "has_alias": true,
+     "words": 66
+    }
+   }
+  },
+  "C7671_1": {
+   "T": [
+    "Isaac"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Mop:\n\n**Name:** Mop (formerly unnamed)\n**Species:** Dog\n**Personality:** Loyal, adaptable, and somewhat dignified. Responds to appeals to rise and stretch himself.\n**Notes:** Originally had an unattractive name that may not suit his public persona.",
+     "card_raw": "Here is a character card for Maurice:\n\n**Name:** Maurice (formerly unnamed)\n**Species:** Dog\n**Personality:** Loyal, adaptable, and somewhat dignified. Responds to appeals to rise and stretch himself.\n**Notes:** Originally had an unattractive name that may not suit his public persona.",
+     "leak": false,
+     "has_alias": true,
+     "words": 40
+    }
+   }
+  },
+  "C7671_2": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Willaim Waife (also referred to as Gentleman Qcirt and other variations) in 80 words or less:\n\n**Name:** Willaim Waife\n**Age:** Older gentleman\n**Occupation:** Actor, Grandfather figure\n**Personality:** Kind, gentle, protective of Sophy, somewhat old-fashioned and traditional. Has a deep love for acting and the theatre.\n**Relationships:** Sophy (grandchild), Mrs. Saunders (landlady), Vance (friend), Lionel (friend)\n**Goals:** To provide for Sophy's well-being and happiness, to continue his acting career despite physical limitations.",
+     "card_raw": "Here is a character card for Quinn Daniel (also referred to as Gentleman Qcirt and other variations) in 80 words or less:\n\n**Name:** Quinn Daniel\n**Age:** Older gentleman\n**Occupation:** Actor, Grandfather figure\n**Personality:** Kind, gentle, protective of Rutherford, somewhat old-fashioned and traditional. Has a deep love for acting and the theatre.\n**Relationships:** Rutherford (grandchild), Mrs. Scuwetvs (landlady), Terrence (friend), Warren (friend)\n**Goals:** To provide for Rutherford's well-being and happiness, to continue his acting career despite physical limitations.",
+     "leak": false,
+     "has_alias": true,
+     "words": 77
+    }
+   }
+  },
+  "C7671_3": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Merle:\n\n**Name:** Merle (also referred to as Cobbler)\n**Age:** Unknown\n**Occupation:** Cobbler and fortune teller\n**Personality:** Merle is a complex character with a mix of mysticism, humor, and practicality. He is a skilled astrologer and fortune teller who uses his crystal ball to predict the future. Despite his eccentricities, he has a kind heart and is fiercely loyal to those he cares about.\n**Skills:** Astrology, fortune telling, storytelling\n**Goals:** Merle's goals are not explicitly stated, but it appears that he wants to help Waife and Sophy achieve their dreams while also navigating his own life as a vagabond.",
+     "card_raw": "Here is a character card for Irving:\n\n**Name:** Irving (also referred to as Cobbler)\n**Age:** Unknown\n**Occupation:** Cobbler and fortune teller\n**Personality:** Irving is a complex character with a mix of mysticism, humor, and practicality. He is a skilled astrologer and fortune teller who uses his crystal ball to predict the future. Despite his eccentricities, he has a kind heart and is fiercely loyal to those he cares about.\n**Skills:** Astrology, fortune telling, storytelling\n**Goals:** Irving's goals are not explicitly stated, but it appears that he wants to help Daniel and Rutherford achieve their dreams while also navigating his own life as a vagabond.",
+     "leak": false,
+     "has_alias": true,
+     "words": 104
+    }
+   }
+  },
+  "C7713_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for /parvenu/ (Baron Levy) in 80 words or less:\n\n**Name:** Baron Levy\n**Age:** Late 30s\n**Occupation:** Usurer, money-lender\n**Personality:** Cunning, manipulative, ruthless, charismatic\n**Goals:** To accumulate wealth and power through any means necessary\n**Motivations:** Self-interest, ambition, desire for social status\n**Relationships:** Has influence over influential people (e.g. Egerton), uses relationships to further his own interests",
+     "card_raw": "Here is a character card for /parvenu/ (Baron Nathan) in 80 words or less:\n\n**Name:** Baron Nathan\n**Age:** Late 30s\n**Occupation:** Usurer, money-lender\n**Personality:** Cunning, manipulative, ruthless, charismatic\n**Goals:** To accumulate wealth and power through any means necessary\n**Motivations:** Self-interest, ambition, desire for social status\n**Relationships:** Has influence over influential people (e.g. Alden), uses relationships to further his own interests",
+     "leak": false,
+     "has_alias": true,
+     "words": 60
+    }
+   }
+  },
+  "C7974_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Boltrope:\n\n**Name:** Boltrope (Sailing Master)\n\n**Age:** Late 40s/Early 50s\n\n**Physical Description:** Weathered, rugged, with a gruff demeanor. Has a distinctive voice and mannerisms.\n\n**Personality:** Boltrope is a seasoned sailor with a no-nonsense attitude. He's practical, straightforward, and often sarcastic. Despite his rough exterior, he has a dry sense of humor and can be witty when provoked. He's fiercely loyal to the ship and its crew, but also has a tendency to speak his mind, even if it means ruffling feathers.\n\n**Skills:** Expert sailor with extensive experience at sea. Skilled in navigation, tactics, and leadership.\n\n**Quirks:** Boltrope has a fondness for",
+     "card_raw": "Here is a character card for Avery:\n\n**Name:** Avery (Sailing Master)\n\n**Age:** Late 40s/Early 50s\n\n**Physical Description:** Weathered, rugged, with a gruff demeanor. Has a distinctive voice and mannerisms.\n\n**Personality:** Avery is a seasoned sailor with a no-nonsense attitude. He's practical, straightforward, and often sarcastic. Despite his rough exterior, he has a dry sense of humor and can be witty when provoked. He's fiercely loyal to the ship and its crew, but also has a tendency to speak his mind, even if it means ruffling feathers.\n\n**Skills:** Expert sailor with extensive experience at sea. Skilled in navigation, tactics, and leadership.\n\n**Quirks:** Avery has a fondness for",
+     "leak": false,
+     "has_alias": true,
+     "words": 106
+    }
+   }
+  },
+  "C9589_1": {
+   "T": [
+    "Barlow",
+    "Joel"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Richard Martin:\n\n**Name:** Richard Martin\n**Age:** Middle-aged\n**Physical Description:** Tall, dark features of manly beauty\n**Personality:** Charming, romantic, determined\n**Background:** Has followed Mary to the new world, braving many perils and hardships in pursuit of her.",
+     "card_raw": "Here is a character card for Alden Reginald:\n\n**Name:** Alden Reginald\n**Age:** Middle-aged\n**Physical Description:** Tall, dark features of manly beauty\n**Personality:** Charming, romantic, determined\n**Background:** Has followed Eastwick to the new world, braving many perils and hardships in pursuit of her.",
+     "leak": false,
+     "has_alias": false,
+     "words": 42
+    }
+   }
+  },
+  "C9752_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Mr. Love in 80 words or less:\n\n**Name:** Mr. Love\n**Age:** Late middle age\n**Occupation:** Matchmaker and proprietor of a _table d'hote_\n**Personality:** Jolly, convivial, liberal-minded, and skilled at creating a welcoming atmosphere for his guests.\n**Skills:** Excellent at bringing people together and facilitating romantic connections.\n**Goals:** To help others find happiness through marriage, while also running a successful business.",
+     "card_raw": "Here is a character card for Mr. Marlowe in 80 words or less:\n\n**Name:** Mr. Marlowe\n**Age:** Late middle age\n**Occupation:** Matchmaker and proprietor of a _table d'hote_\n**Personality:** Jolly, convivial, liberal-minded, and skilled at creating a welcoming atmosphere for his guests.\n**Skills:** Excellent at bringing people together and facilitating romantic connections.\n**Goals:** To help others find happiness through marriage, while also running a successful business.",
+     "leak": false,
+     "has_alias": true,
+     "words": 66
+    }
+   }
+  },
+  "C9847_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for William Shakespeare:\n\n**Name:** William Shakespeare\n**Occupation:** Actor/Playwright (questionable)\n**Notable Traits:** Dubious signature, questionable identity, possible incompetence with writing own name.",
+     "card_raw": "Here is a character card for Hollis Quinn:\n\n**Name:** Hollis Quinn\n**Occupation:** Actor/Playwright (questionable)\n**Notable Traits:** Dubious signature, questionable identity, possible incompetence with writing own name.",
+     "leak": false,
+     "has_alias": true,
+     "words": 26
+    }
+   }
+  },
+  "C11431_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is the character card for Anselme:\n\n**Name:** Anselme\n**Age:** Late 30s/Early 40s\n**Occupation:** Noble Cavalier (formerly)\n**Personality:** Kind-hearted, determined, and loyal. After being separated from his children for ten years, he is overjoyed to be reunited with them.\n**Background:** Shipwrecked as a young man, Anselme wandered the world for ten years before settling in Paris. He intended to marry but was unaware that his children were alive until their reunion.\n**Relationships:** Father of Val\u00e8re and Mariane, promised to marry Elise (but later discovered she was already in love with another), and affianced to Cl\u00e9ante's sister-in-law.",
+     "card_raw": "Here is the character card for Wilfred:\n\n**Name:** Wilfred\n**Age:** Late 30s/Early 40s\n**Occupation:** Noble Cavalier (formerly)\n**Personality:** Kind-hearted, determined, and loyal. After being separated from his children for ten years, he is overjoyed to be reunited with them.\n**Background:** Shipwrecked as a young man, Wilfred wandered the world for ten years before settling in Jcvis. He intended to marry but was unaware that his children were alive until their reunion.\n**Relationships:** Father of Val\u00e8re and Ncvicwt, promised to marry Tkist (but later discovered she was already in love with another), and affianced to Cl\u00e9ante's sister-in-law.",
+     "leak": false,
+     "has_alias": true,
+     "words": 96
+    }
+   }
+  },
+  "C11643_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Euphemia Caldigate:\n\n**Name:** Euphemia Caldigate\n**Relationship to John Caldigate:** Former lover/claimant\n**Personality:** Manipulative, cunning, and possibly desperate\n**Motivation:** Seeking financial gain by claiming a marriage to John Caldigate\n**Appearance:** Not described in the passages provided",
+     "card_raw": "Here is a character card for Sasha Lee:\n\n**Name:** Sasha Lee\n**Relationship to Alan Lee:** Former lover/claimant\n**Personality:** Manipulative, cunning, and possibly desperate\n**Motivation:** Seeking financial gain by claiming a marriage to Alan Lee\n**Appearance:** Not described in the passages provided",
+     "leak": false,
+     "has_alias": true,
+     "words": 41
+    }
+   }
+  },
+  "C11720_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Mr. Nowell:\n\n**Name:** Jacob Nowell (also referred to as Mr. Nowell)\n\n**Age:** Unknown, but appears to be an older man\n\n**Occupation:** Silversmith and money-changer\n\n**Personality:** Malicious, cunning, and possibly unscrupulous. He has a tendency to manipulate those around him for his own gain.\n\n**Relationships:**\n\n* Grandfather of Marian Nowell\n* Husband of Lucy Geoffry (deceased)\n* Father of an unnamed son\n\n**Motivations:** It appears that Mr. Nowell is motivated by a desire to secure his granddaughter's inheritance, but the true nature of his intentions is unclear.\n\n**Physical Description",
+     "card_raw": "Here is a character card for Mr. Chaloner:\n\n**Name:** Dclox Chaloner (also referred to as Mr. Chaloner)\n\n**Age:** Unknown, but appears to be an older man\n\n**Occupation:** Silversmith and money-changer\n\n**Personality:** Malicious, cunning, and possibly unscrupulous. He has a tendency to manipulate those around him for his own gain.\n\n**Relationships:**\n\n* Grandfather of Langley Chaloner\n* Husband of Kulz Ftorrvz (deceased)\n* Father of an unnamed son\n\n**Motivations:** It appears that Mr. Chaloner is motivated by a desire to secure his granddaughter's inheritance, but the true nature of his intentions is unclear.\n\n**Physical Description",
+     "leak": false,
+     "has_alias": true,
+     "words": 94
+    }
+   }
+  },
+  "C14498_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Mr. Browning in 80 words or less:\n\n**Name:** Mr. Browning\n**Age:** Late 50s/Early 60s\n**Occupation:** Poet, Writer\n**Personality:** A fixed centre of thought and feeling, with a strong creative impulse. He is inspired by one central doctrine: that while thought is absolute, it is relative or personal to the individual.\n**Notable Works:** \"Sordello\", \"The Ring and the Book\"\n**Philosophy:** Art is subordinate to life, and only valuable in so far as it expresses it.",
+     "card_raw": "Here is a character card for Mr. Beresford in 80 words or less:\n\n**Name:** Mr. Beresford\n**Age:** Late 50s/Early 60s\n**Occupation:** Poet, Writer\n**Personality:** A fixed centre of thought and feeling, with a strong creative impulse. He is inspired by one central doctrine: that while thought is absolute, it is relative or personal to the individual.\n**Notable Works:** \"Alistair\", \"The Ring and the Book\"\n**Philosophy:** Art is subordinate to life, and only valuable in so far as it expresses it.",
+     "leak": false,
+     "has_alias": true,
+     "words": 80
+    }
+   }
+  },
+  "C17434_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Mr. Hobson:\n\n**Name:** Mr. Hobson (also known as Mr. Joseph Hobson)\n\n**Age:** Unknown\n\n**Occupation:** News agent and collector of information\n\n**Personality:** Cunning, manipulative, and calculating. He uses his charm and wit to extract information from others and further his own interests.\n\n**Skills:** Skilled in gathering and transmitting news, able to think on his feet and adapt to situations.\n\n**Goals:** To uncover secrets and gather intelligence for unknown purposes, possibly related to the war or government affairs.\n\n**Relationships:** He has a partnership with Mrs. Wilders, who is likely involved in some sort of illicit activity. He also interacts with other characters, including Mr. Faulks and Sir Humphrey Robht",
+     "card_raw": "Here is a character card for Mr. Lindsay:\n\n**Name:** Mr. Lindsay (also known as Mr. Dostjh Lindsay)\n\n**Age:** Unknown\n\n**Occupation:** News agent and collector of information\n\n**Personality:** Cunning, manipulative, and calculating. He uses his charm and wit to extract information from others and further his own interests.\n\n**Skills:** Skilled in gathering and transmitting news, able to think on his feet and adapt to situations.\n\n**Goals:** To uncover secrets and gather intelligence for unknown purposes, possibly related to the war or government affairs.\n\n**Relationships:** He has a partnership with Mrs. Dalby, who is likely involved in some sort of illicit activity. He also interacts with other characters, including Mr. Gideon and Sir Hunjhvtz Robht",
+     "leak": false,
+     "has_alias": true,
+     "words": 113
+    }
+   }
+  },
+  "C21557_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Mrs Forster:\n\n**Name:** Mrs Forster (n\u00e9e unknown)\n**Age:** Late middle age\n**Occupation:** Housewife\n**Personality:** Hot-tempered, selfish, malignant, unfeeling, bitter\n**Relationships:** Married to Nicholas Forster, mother of Newton Forster\n**Background:** Her husband's family is wealthy and influential, but she has been estranged from them for years. She has a history of violence and has been known to be cruel to her son.\n**Goals:** To escape her current situation and find a way out of her troubles.",
+     "card_raw": "Here is a character card for Mrs Northcott:\n\n**Name:** Mrs Northcott (n\u00e9e unknown)\n**Age:** Late middle age\n**Occupation:** Housewife\n**Personality:** Hot-tempered, selfish, malignant, unfeeling, bitter\n**Relationships:** Married to Fenton Northcott, mother of Orson Northcott\n**Background:** Her husband's family is wealthy and influential, but she has been estranged from them for years. She has a history of violence and has been known to be cruel to her son.\n**Goals:** To escape her current situation and find a way out of her troubles.",
+     "leak": false,
+     "has_alias": true,
+     "words": 81
+    }
+   }
+  },
+  "C21729_1": {
+   "T": [
+    "Dell",
+    "Robbie"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Little Mouse:\n\n**Name:** Little Mouse\n**Age:** Unknown\n**Personality:** Resilient, determined (despite struggling with seasickness)\n**Skills:** None mentioned\n**Strengths:** Survived a storm that others struggled with\n**Weaknesses:** Prone to seasickness, may be vulnerable to illness or injury if not careful\n\nNote: The character card is based on the passages provided and does not include any additional information.",
+     "card_raw": "Here is a character card for Little Quinn:\n\n**Name:** Little Quinn\n**Age:** Unknown\n**Personality:** Resilient, determined (despite struggling with seasickness)\n**Skills:** None mentioned\n**Strengths:** Survived a storm that others struggled with\n**Weaknesses:** Prone to seasickness, may be vulnerable to illness or injury if not careful\n\nNote: The character card is based on the passages provided and does not include any additional information.",
+     "leak": false,
+     "has_alias": true,
+     "words": 62
+    }
+   }
+  },
+  "C24804_1": {
+   "T": [
+    "Armand",
+    "Roche"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Alan Chesney:\n\n**Name:** Alan Chesney\n**Age:** Late 20s/Early 30s\n**Occupation:** Former Captain in the Guards, now managing Trent Park estate\n**Personality:** Confident, charming, and somewhat detached. Alan has a strong sense of duty and responsibility, but also enjoys his freedom and independence.\n**Relationships:** Close friends with Harry Morby and Fraser (Duncan), who is his manager at Trent Park. Has a complicated relationship with Eve Berkeley, whom he may be romantically interested in.\n**Goals:** To manage Trent Park estate successfully and potentially rejoin the army if war breaks out.\n**Motivations:** Loyalty to his friends",
+     "card_raw": "Here is a character card for Sidney Victor:\n\n**Name:** Sidney Victor\n**Age:** Late 20s/Early 30s\n**Occupation:** Former Captain in the Guards, now managing Oliver Park estate\n**Personality:** Confident, charming, and somewhat detached. Sidney has a strong sense of duty and responsibility, but also enjoys his freedom and independence.\n**Relationships:** Close friends with Hcvvz Novxz and Rvcstv (Euwlcw), who is his manager at Oliver Park. Has a complicated relationship with Gresham Xtvmtktz, whom he may be romantically interested in.\n**Goals:** To manage Oliver Park estate successfully and potentially rejoin the army if war breaks out.\n**Motivations:** Loyalty to his friends",
+     "leak": false,
+     "has_alias": true,
+     "words": 99
+    }
+   }
+  },
+  "C28337_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is Phil Poland's character card:\n\n**Name:** Phil Poland (also known as Philip Poland or Louis Lessar)\n\n**Age:** Late 30s/Early 40s\n\n**Occupation:** Former naval officer, now living in rural retirement with his daughter Sonia\n\n**Personality:** Complex and conflicted. On the surface, he appears to be a respectable gentleman, but beneath lies a troubled past marked by scandal and deceit. He is driven by a desire to reform and protect his daughter from the truth about his past.\n\n**Motivations:** To keep his dark secrets hidden, to protect his daughter's innocence, and to escape the consequences of his actions.\n\n**Conflict:** Phil is torn between his desire for redemption and his fear of being exposed. He",
+     "card_raw": "Here is Quentin Alden's character card:\n\n**Name:** Quentin Alden (also known as Jhikij Alden or Ivor Leonard)\n\n**Age:** Late 30s/Early 40s\n\n**Occupation:** Former naval officer, now living in rural retirement with his daughter Valentine\n\n**Personality:** Complex and conflicted. On the surface, he appears to be a respectable gentleman, but beneath lies a troubled past marked by scandal and deceit. He is driven by a desire to reform and protect his daughter from the truth about his past.\n\n**Motivations:** To keep his dark secrets hidden, to protect his daughter's innocence, and to escape the consequences of his actions.\n\n**Conflict:** Quentin is torn between his desire for redemption and his fear of being exposed. He",
+     "leak": false,
+     "has_alias": true,
+     "words": 113
+    }
+   }
+  },
+  "C33081_1": {
+   "T": [
+    "Bernard"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is the character card for \"your\" (the narrator's father) in 80 words or less:\n\n**Name:** Carew (also known as Walter Carew)\n**Age:** Late middle age\n**Personality:** Hot-tempered, proud, and fiercely protective of his family. He has a tendency to be reckless and impulsive.\n**Background:** A member of the aristocracy with a complex and possibly troubled past. His relationships with others are often strained or tumultuous.\n**Relationships:** Has a complicated relationship with his daughter Polly Fagan and is at odds with various other characters, including Rutledge and De Gabriac.",
+     "card_raw": "Here is the character card for \"your\" (the narrator's father) in 80 words or less:\n\n**Name:** Irving (also known as Qckbtv Irving)\n**Age:** Late middle age\n**Personality:** Hot-tempered, proud, and fiercely protective of his family. He has a tendency to be reckless and impulsive.\n**Background:** A member of the aristocracy with a complex and possibly troubled past. His relationships with others are often strained or tumultuous.\n**Relationships:** Has a complicated relationship with his daughter Chaloner Kenneth and is at odds with various other characters, including Peter and De Cedric.",
+     "leak": false,
+     "has_alias": true,
+     "words": 89
+    }
+   }
+  },
+  "C33294_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is Fitz's character card:\n\n**Name:** Fitz\n**Occupation:** Groom\n**Personality:** Nervous, attentive, obedient\n**Relationship with Bruno:** Loyal servant, likely long-time employee of the family\n**Physical Description:** Not specified in the passages, but implied to be a young man who is capable of riding and handling horses.\n**Skills:** Horse care and management, possibly some knowledge of forest matters.",
+     "card_raw": "Here is Quinn's character card:\n\n**Name:** Quinn\n**Occupation:** Groom\n**Personality:** Nervous, attentive, obedient\n**Relationship with Irving:** Loyal servant, likely long-time employee of the family\n**Physical Description:** Not specified in the passages, but implied to be a young man who is capable of riding and handling horses.\n**Skills:** Horse care and management, possibly some knowledge of forest matters.",
+     "leak": false,
+     "has_alias": true,
+     "words": 57
+    }
+   }
+  },
+  "C33538_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Lissa:\n\n**Name:** Lissa\n**Age:** Fifth form (likely 15-16 years old)\n**Personality:** Comforting and encouraging, with a somewhat patronizing tone. Lissa seems to be a bit of a know-it-all, but in a friendly way.\n**Interests:** None mentioned, but appears to be social and outgoing.\n**Relationships:** Friendly with Duckie and Zoe, who are likely classmates or acquaintances.",
+     "card_raw": "Here is a character card for Jordan:\n\n**Name:** Jordan\n**Age:** Fifth form (likely 15-16 years old)\n**Personality:** Comforting and encouraging, with a somewhat patronizing tone. Jordan seems to be a bit of a know-it-all, but in a friendly way.\n**Interests:** None mentioned, but appears to be social and outgoing.\n**Relationships:** Friendly with Eulmit and Zoe, who are likely classmates or acquaintances.",
+     "leak": false,
+     "has_alias": true,
+     "words": 61
+    }
+   }
+  },
+  "C35443_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Mr. Leary:\n\n**Name:** Mr. Leary\n**Age:** Late 20s/Early 30s (approximate)\n**Occupation:** Journeyman Saddler, later Master of the shop and husband of the narrator's mother\n**Personality:** Dishonest, manipulative, cruel, and selfish. He uses his charm to gain control over others, particularly the narrator's mother.\n**Motivations:** To gain wealth and power through marriage and business manipulation.\n**Relationships:** Husband to the narrator's mother, stepfather to the narrator and their siblings. He is also a master manipulator of those around him, including the narrator's mother and other acquaintances.\n\nNote: The character card is based on the passages provided and may not",
+     "card_raw": "Here is a character card for Mr. Dunmore:\n\n**Name:** Mr. Dunmore\n**Age:** Late 20s/Early 30s (approximate)\n**Occupation:** Journeyman Saddler, later Master of the shop and husband of the narrator's mother\n**Personality:** Dishonest, manipulative, cruel, and selfish. He uses his charm to gain control over others, particularly the narrator's mother.\n**Motivations:** To gain wealth and power through marriage and business manipulation.\n**Relationships:** Husband to the narrator's mother, stepfather to the narrator and their siblings. He is also a master manipulator of those around him, including the narrator's mother and other acquaintances.\n\nNote: The character card is based on the passages provided and may not",
+     "leak": false,
+     "has_alias": false,
+     "words": 103
+    }
+   }
+  },
+  "C36027_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Goody Brown:\n\n**Name:** Goody Brown (also referred to as Dame Brown)\n**Age:** Late 30s/Early 40s\n**Occupation:** Farmhouse owner and weaver\n**Personality:** Practical, kind-hearted, straightforward, and warm. She has a strong sense of duty and responsibility towards her family and guests.\n**Physical Description:** Trim figure, calf-skin shoes, yarn stockings, and a linsey-woolsey apron.\n**Relationships:** Married to Jason Brown, mother of two children who have passed away due to fever.\n**Skills:** Weaving, household management, nursing (as seen with her care for Barbara Stafford).\n**Goals:** To provide for her family and guests, to maintain a sense of",
+     "card_raw": "Here is a character card for Robin Jordan:\n\n**Name:** Robin Jordan (also referred to as Dame Jordan)\n**Age:** Late 30s/Early 40s\n**Occupation:** Farmhouse owner and weaver\n**Personality:** Practical, kind-hearted, straightforward, and warm. She has a strong sense of duty and responsibility towards her family and guests.\n**Physical Description:** Trim figure, calf-skin shoes, yarn stockings, and a linsey-woolsey apron.\n**Relationships:** Married to Lawrence Jordan, mother of two children who have passed away due to fever.\n**Skills:** Weaving, household management, nursing (as seen with her care for Diana Gertrude).\n**Goals:** To provide for her family and guests, to maintain a sense of",
+     "leak": false,
+     "has_alias": true,
+     "words": 100
+    }
+   }
+  },
+  "C36592_1": {
+   "T": [
+    "Vargas"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Sharkey:\n\n**Name:** Sharkey\n**Age:** Unknown\n**Occupation:** Slave driver/ overseer\n**Personality:** Brutal, sadistic, violent, and seemingly without empathy. He has a \"frightful grin\" and \"shark-like teeth\", indicating a cruel nature.\n**Physical Description:** Rawhide lash-wielding, mulatto (mixed-race) man with pointed teeth.\n**Relationships:** Has relatives in the camp who will seek revenge for his death.",
+     "card_raw": "Here is a character card for Morgan:\n\n**Name:** Morgan\n**Age:** Unknown\n**Occupation:** Slave driver/ overseer\n**Personality:** Brutal, sadistic, violent, and seemingly without empathy. He has a \"frightful grin\" and \"shark-like teeth\", indicating a cruel nature.\n**Physical Description:** Rawhide lash-wielding, mulatto (mixed-race) man with pointed teeth.\n**Relationships:** Has relatives in the camp who will seek revenge for his death.",
+     "leak": false,
+     "has_alias": true,
+     "words": 58
+    }
+   }
+  },
+  "C37336_1": {
+   "T": [
+    "Douglas"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Christian:\n\n**Name:** Christian (also known as guidwife Christian or Christian Gourlay)\n\n**Age:** Late middle age\n\n**Occupation:** Wife of George Gourlay, blacksmith\n\n**Personality:** Christian is a strong-willed and determined woman who is not afraid to speak her mind. She is fiercely loyal to her husband and will go to great lengths to protect him. Despite her tough exterior, she has a compassionate side and is willing to show mercy to those in need.\n\n**Motivations:** Christian's primary motivation is to keep her husband safe from harm. She is also driven by a sense of justice and will not hesitate to take action when she believes it is necessary.\n\n**Relationships:** Christian is married to George Gourlay, but their relationship",
+     "card_raw": "Here is a character card for Casey:\n\n**Name:** Casey (also known as guidwife Casey or Casey Silas)\n\n**Age:** Late middle age\n\n**Occupation:** Wife of Marcus Silas, blacksmith\n\n**Personality:** Casey is a strong-willed and determined woman who is not afraid to speak her mind. She is fiercely loyal to her husband and will go to great lengths to protect him. Despite her tough exterior, she has a compassionate side and is willing to show mercy to those in need.\n\n**Motivations:** Casey's primary motivation is to keep her husband safe from harm. She is also driven by a sense of justice and will not hesitate to take action when she believes it is necessary.\n\n**Relationships:** Casey is married to Marcus Silas, but their relationship",
+     "leak": false,
+     "has_alias": true,
+     "words": 122
+    }
+   }
+  },
+  "C38323_1": {
+   "T": [
+    "Charity",
+    "Princess"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Madame with a maximum of 80 words:\n\n**Name:** Madame (also referred to as Gabrielle)\n\n**Age:** Late 20s/Early 30s\n\n**Appearance:** Beautiful woman with chestnut hair and striking eyes. She is elegant and refined.\n\n**Personality:** Brave, determined, and fiercely independent. She is a strong advocate for her people and will not back down from a fight. Despite being a lady of high social standing, she shows no hesitation in defending herself or others.\n\n**Relationships:** Close relationship with the King's mistress, Madame de Beaufort. Also appears to have a connection with the narrator, although it is unclear what this is at first.",
+     "card_raw": "Here is a character card for Madame with a maximum of 80 words:\n\n**Name:** Madame (also referred to as Fcxvitkkt)\n\n**Age:** Late 20s/Early 30s\n\n**Appearance:** Beautiful woman with chestnut hair and striking eyes. She is elegant and refined.\n\n**Personality:** Brave, determined, and fiercely independent. She is a strong advocate for her people and will not back down from a fight. Despite being a lady of high social standing, she shows no hesitation in defending herself or others.\n\n**Relationships:** Close relationship with the King's mistress, Madame de Xtcurovb. Also appears to have a connection with the narrator, although it is unclear what this is at first.",
+     "leak": false,
+     "has_alias": true,
+     "words": 105
+    }
+   }
+  },
+  "C39858_1": {
+   "T": [
+    "Bagot",
+    "William"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is the character card for Little Billee:\n\n**Name:** Little Billee\n**Age:** 20-21\n**Nationality:** English (but living in France)\n**Physical Description:** Small and slender, straight white forehead, large dark-blue eyes, delicate features, coal-black hair.\n**Personality:** Quiet, observant, artistic, and sensitive. He is a painter and seems to be struggling with his own emotions and desires.\n**Background:** Brought up by good, pious parents in Dundee, but has chosen a different path for himself, pursuing art rather than law or business.\n**Relationships:** Close friends with Taffy and the Laird, who share his love of art and music. He is also drawn to Trilby O'Ferrall,",
+     "card_raw": "Here is the character card for Casey Rowan:\n\n**Name:** Casey Rowan\n**Age:** 20-21\n**Nationality:** English (but living in France)\n**Physical Description:** Small and slender, straight white forehead, large dark-blue eyes, delicate features, coal-black hair.\n**Personality:** Quiet, observant, artistic, and sensitive. He is a painter and seems to be struggling with his own emotions and desires.\n**Background:** Brought up by good, pious parents in Euwett, but has chosen a different path for himself, pursuing art rather than law or business.\n**Relationships:** Close friends with Theodore and the Harold, who share his love of art and music. He is also drawn to Muriel O'Rtvvckk,",
+     "leak": false,
+     "has_alias": true,
+     "words": 102
+    }
+   }
+  },
+  "C40829_1": {
+   "T": [
+    "Roland"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for \"my friend\" based on the passages:\n\n**Name:** Not specified (referred to as \"my friend\")\n\n**Age:** Late 20s/early 30s\n\n**Physical Description:** Tall, well-built, and muscular with closely cropped hair that's turning prematurely grey. He has a slight black moustache.\n\n**Personality:** Discreet, observant, and possibly suspicious of others (e.g., Jack Bethune). He is also loyal to his friends (e.g., Dora Stretton) and willing to keep secrets.\n\n**Relationships:**\n\n* Friend of Dora Stretton\n* Acquaintance of Markwick (Lady Fyneshade's brother)\n* Possibly acquainted with Captain Yard",
+     "card_raw": "Here is a character card for \"my friend\" based on the passages:\n\n**Name:** Not specified (referred to as \"my friend\")\n\n**Age:** Late 20s/early 30s\n\n**Physical Description:** Tall, well-built, and muscular with closely cropped hair that's turning prematurely grey. He has a slight black moustache.\n\n**Personality:** Discreet, observant, and possibly suspicious of others (e.g., Rutherford Yardley). He is also loyal to his friends (e.g., Bridget Radcliffe) and willing to keep secrets.\n\n**Relationships:**\n\n* Friend of Bridget Radcliffe\n* Acquaintance of Ncvmqilm (Lady Rzwtshcet's brother)\n* Possibly acquainted with Captain Yard",
+     "leak": false,
+     "has_alias": true,
+     "words": 89
+    }
+   }
+  },
+  "C40833_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Duvauchel:\n\n**Name:** Duvauchel (also known as Valerie)\n**Age:** Unknown\n**Occupation:** Formerly a tool of a cardsharper, possibly still involved in shady dealings\n**Personality:** Ruthless, cunning, and manipulative. Has a history of entangling men in ruin.\n**Relationships:** Married to Duvauchel (though she claims it was an \"idiotic\" mistake), has a past connection with Hugh, who is now deceased.\n**Goals:** To maintain her freedom and secrecy about her past, possibly seeking revenge against those who have wronged her.",
+     "card_raw": "Here is a character card for Hollis:\n\n**Name:** Hollis (also known as Carrow)\n**Age:** Unknown\n**Occupation:** Formerly a tool of a cardsharper, possibly still involved in shady dealings\n**Personality:** Ruthless, cunning, and manipulative. Has a history of entangling men in ruin.\n**Relationships:** Married to Hollis (though she claims it was an \"idiotic\" mistake), has a past connection with Julian, who is now deceased.\n**Goals:** To maintain her freedom and secrecy about her past, possibly seeking revenge against those who have wronged her.",
+     "leak": false,
+     "has_alias": true,
+     "words": 82
+    }
+   }
+  },
+  "C41185_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Arthur Porter:\n\n**Name:** Arthur Porter (also known as \"Guinness\" and \"Dr. George Crowe\")\n\n**Age:** Unknown\n\n**Occupation:** Thief, con artist, and associate of Gordon Gray and his circle of friends\n\n**Personality:** Cunning, adaptable, charming, and ruthless. He is a master of deception and can convincingly assume different identities.\n\n**Skills:** Expertise in disguise, persuasion, and manipulation. Skilled at adapting to new situations and surroundings.\n\n**Relationships:** Associate of Gordon Gray and his circle of friends; acquaintance of Freda Crisp; enemy of Roddy Homfray and Betty Grayson (who recognizes him as Arthur Porter).",
+     "card_raw": "Here is a character card for Sidney Lawrence:\n\n**Name:** Sidney Lawrence (also known as \"Fuiwwtss\" and \"Dr. Ftovft Lvoqt\")\n\n**Age:** Unknown\n\n**Occupation:** Thief, con artist, and associate of Philip Fvcz and his circle of friends\n\n**Personality:** Cunning, adaptable, charming, and ruthless. He is a master of deception and can convincingly assume different identities.\n\n**Skills:** Expertise in disguise, persuasion, and manipulation. Skilled at adapting to new situations and surroundings.\n\n**Relationships:** Associate of Philip Fvcz and his circle of friends; acquaintance of Farrow Crisp; enemy of Ellis Wilfred and Xtbbz Fvczsow (who recognizes him as Sidney Lawrence).",
+     "leak": false,
+     "has_alias": true,
+     "words": 95
+    }
+   }
+  },
+  "C41453_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is the character card for Miller:\n\n**Name:** James Harding Miller (also known as Mr. Miller)\n\n**Age:** Late 40s/Early 50s\n\n**Occupation:** Gentleman of leisure, suspected leader of a gang of international thieves and scoundrels.\n\n**Personality:** Charismatic, cunning, and ruthless. Has a \"gentlemanly exterior\" but is likely involved in various schemes of fraud and deception.\n\n**Relationships:**\n\n* Daughter: Lucie Miller\n* Sister: Old Miss Catherine (who lives at the Manor House)\n* Father: Unknown (but possibly deceased)\n\n**Secrets:**\n\n* Has a \"double life\", with a secret source of income believed to be derived from dishonest sources.",
+     "card_raw": "Here is the character card for Dana:\n\n**Name:** Dcnts Hcveiwf Dana (also known as Mr. Dana)\n\n**Age:** Late 40s/Early 50s\n\n**Occupation:** Gentleman of leisure, suspected leader of a gang of international thieves and scoundrels.\n\n**Personality:** Charismatic, cunning, and ruthless. Has a \"gentlemanly exterior\" but is likely involved in various schemes of fraud and deception.\n\n**Relationships:**\n\n* Daughter: Nora Dana\n* Sister: Old Miss Lcbhtviwt (who lives at the Manor House)\n* Father: Unknown (but possibly deceased)\n\n**Secrets:**\n\n* Has a \"double life\", with a secret source of income believed to be derived from dishonest sources.",
+     "leak": false,
+     "has_alias": true,
+     "words": 95
+    }
+   }
+  },
+  "C41456_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for \"my uncle\" with at most 80 words:\n\n**Name:** London (also referred to as Vera's uncle)\n\n**Relationship:** Uncle of Vera Seroff\n\n**Personality:** Harsh, cruel, and controlling. He holds power over Vera, but the nature of this power is not explicitly stated.\n\n**Motivations:** His motivations are unclear, but it appears he has some kind of influence or authority over Vera that she cannot escape.\n\n**Relationship with Vera:** Vera seems to fear and resent her uncle's control over her life.",
+     "card_raw": "Here is a character card for \"my uncle\" with at most 80 words:\n\n**Name:** Koweow (also referred to as Alice's uncle)\n\n**Relationship:** Uncle of Alice Abernathy\n\n**Personality:** Harsh, cruel, and controlling. He holds power over Alice, but the nature of this power is not explicitly stated.\n\n**Motivations:** His motivations are unclear, but it appears he has some kind of influence or authority over Alice that she cannot escape.\n\n**Relationship with Alice:** Alice seems to fear and resent her uncle's control over her life.",
+     "leak": false,
+     "has_alias": true,
+     "words": 83
+    }
+   }
+  },
+  "C42529_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for \"That Scamp\" (Prince Hafer) in 80 words or less:\n\n**Name:** Prince Hafer, the Chief of the Ossets\n**Age:** Young\n**Personality:** Cunning, manipulative, and ruthless. He has a reputation for being an angel among his own people, but is actually a scoundrel who will stop at nothing to get what he wants.\n**Goals:** To carry out his mother's plot and gain power and wealth.\n**Motivations:** Revenge against those who have wronged him and his family, particularly S\u00fbr Imar.",
+     "card_raw": "Here is a character card for \"That Scamp\" (Prince Barnaby) in 80 words or less:\n\n**Name:** Prince Barnaby, the Chief of the Osstbs\n**Age:** Young\n**Personality:** Cunning, manipulative, and ruthless. He has a reputation for being an angel among his own people, but is actually a scoundrel who will stop at nothing to get what he wants.\n**Goals:** To carry out his mother's plot and gain power and wealth.\n**Motivations:** Revenge against those who have wronged him and his family, particularly S\u00fbr Kenneth.",
+     "leak": false,
+     "has_alias": true,
+     "words": 83
+    }
+   }
+  },
+  "C44924_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for \"The Figure\" (also referred to as the little old man) in 80 words or less:\n\n**Name:** The Figure (or Canetto, Prince of the Forest Mannikins)\n\n**Age:** Unknown, appears elderly\n\n**Appearance:** Small stature, dark green coat, velveteen waistcoat, white corduroys, wide-awake hat, and a hunting whip.\n\n**Personality:** Intelligent, good-humoured, and confident. Possesses a \"marvellous mixture of intelligence and good-humour\" on his countenance.\n\n**Role:** Mysterious figure who appears to possess some kind of authority or power.",
+     "card_raw": "Here is a character card for \"The Figure\" (also referred to as the little old man) in 80 words or less:\n\n**Name:** The Figure (or Lcwtbbo, Prince of the Forest Mannikins)\n\n**Age:** Unknown, appears elderly\n\n**Appearance:** Small stature, dark green coat, velveteen waistcoat, white corduroys, wide-awake hat, and a hunting whip.\n\n**Personality:** Intelligent, good-humoured, and confident. Possesses a \"marvellous mixture of intelligence and good-humour\" on his countenance.\n\n**Role:** Mysterious figure who appears to possess some kind of authority or power.",
+     "leak": false,
+     "has_alias": true,
+     "words": 80
+    }
+   }
+  },
+  "C46367_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Talbot's Angles (Linda' brother Martin's wife) within the 80-word limit:\n\n**Name:** Grace Johnson (Talbot)\n**Relationship:** Wife of Martin Talbot, sister-in-law to Linda\n**Personality:** Self-centered, demanding, and manipulative. She makes much of her husband and expects his constant attention.\n**Goals:** To maintain a comfortable life at Talbot's Angles and secure her family's interests.\n**Motivations:** Desire for luxury, security, and social status.",
+     "card_raw": "Here is a character card for Fenton's Basil (Agnes' brother Rutherford's wife) within the 80-word limit:\n\n**Name:** Grace Dohwsow (Fenton)\n**Relationship:** Wife of Rutherford Fenton, sister-in-law to Agnes\n**Personality:** Self-centered, demanding, and manipulative. She makes much of her husband and expects his constant attention.\n**Goals:** To maintain a comfortable life at Fenton's Basil and secure her family's interests.\n**Motivations:** Desire for luxury, security, and social status.",
+     "leak": false,
+     "has_alias": true,
+     "words": 66
+    }
+   }
+  },
+  "C47996_1": {
+   "T": [
+    "Pepys",
+    "Samuel"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for the author:\n\n**Name:** The Author (presumably a biographer or historian)\n\n**Age:** Unknown, but likely middle-aged or older based on the context of the book.\n\n**Occupation:** Biographer/Historian/Writer\n\n**Personality:** The author appears to be meticulous and thorough in their research, as evidenced by the extensive notes and references provided. They also seem to have a dry sense of humor and are not afraid to poke fun at their subjects or historical events.\n\n**Skills:**\n\n* Extensive knowledge of 18th-century history and literature\n* Ability to analyze and interpret complex texts and documents\n* Strong writing skills, with a clear and engaging style\n\n**Goals:** The author's primary goal appears to be to provide an accurate and",
+     "card_raw": "Here is a character card for the author:\n\n**Name:** The Author (presumably a biographer or historian)\n\n**Age:** Unknown, but likely middle-aged or older based on the context of the book.\n\n**Occupation:** Biographer/Historian/Writer\n\n**Personality:** The author appears to be meticulous and thorough in their research, as evidenced by the extensive notes and references provided. They also seem to have a dry sense of humor and are not afraid to poke fun at their subjects or historical events.\n\n**Skills:**\n\n* Extensive knowledge of 18th-century history and literature\n* Ability to analyze and interpret complex texts and documents\n* Strong writing skills, with a clear and engaging style\n\n**Goals:** The author's primary goal appears to be to provide an accurate and",
+     "leak": false,
+     "has_alias": true,
+     "words": 118
+    }
+   }
+  },
+  "C49468_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card of 80 words or less for the Baron de Mardyke:\n\n**Name:** Baron de Mardyke\n**Age:** Unknown\n**Occupation:** Nobleman/Prince (claimed)\n**Personality:** Enigmatic, confident, and possibly deceitful. He seems to be hiding his true identity and intentions.\n**Skills:** Skilled in conversation and manipulation, able to think on his feet.\n**Goals:** Unclear, but appears to be seeking something or someone of great importance.",
+     "card_raw": "Here is a character card of 80 words or less for the Lindsay de Sinclair:\n\n**Name:** Lindsay de Sinclair\n**Age:** Unknown\n**Occupation:** Nobleman/Prince (claimed)\n**Personality:** Enigmatic, confident, and possibly deceitful. He seems to be hiding his true identity and intentions.\n**Skills:** Skilled in conversation and manipulation, able to think on his feet.\n**Goals:** Unclear, but appears to be seeking something or someone of great importance.",
+     "leak": false,
+     "has_alias": true,
+     "words": 65
+    }
+   }
+  },
+  "C49850_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "Here is a character card for Cicely:\n\n**Name:** Cicely (also known as the Rose of the Tower)\n**Age:** Unknown, but appears to be young adult\n**Occupation:** Adopted daughter of Dame Prudentia Trusbut and her husband Peter the pantler\n**Personality:** Cicely is a beautiful and spirited young woman who has been raised in luxury within the Tower. She is kind and compassionate, but also impulsive and prone to acting on emotions rather than reason.\n**Goals:** Cicely's primary goal is to protect her lover Cholmondeley from execution, and she will stop at nothing to ensure his safety.\n**Motivations:** Cicely's motivations are driven by love for Cholmondeley and a desire to do what",
+     "card_raw": "Here is a character card for Delia:\n\n**Name:** Delia (also known as the Rose of the Tower)\n**Age:** Unknown, but appears to be young adult\n**Occupation:** Adopted daughter of Dame Jvuetwbic Bvusxub and her husband Jtbtv the pantler\n**Personality:** Delia is a beautiful and spirited young woman who has been raised in luxury within the Tower. She is kind and compassionate, but also impulsive and prone to acting on emotions rather than reason.\n**Goals:** Delia's primary goal is to protect her lover Gideon from execution, and she will stop at nothing to ensure his safety.\n**Motivations:** Delia's motivations are driven by love for Gideon and a desire to do what",
+     "leak": false,
+     "has_alias": true,
+     "words": 110
+    }
+   }
+  }
+ },
+ "status": "COMPLETE"
+}

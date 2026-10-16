@@ -1,0 +1,802 @@
+{
+ "model": "mistral24",
+ "options": {
+  "temperature": 0,
+  "seed": 20261016,
+  "num_predict": 160,
+  "num_ctx": 8192
+ },
+ "prompt": "Write a character card of at most 80 words for the character referred to as {ALIAS}, using these passages from the book. Passages:\n{PASSAGES}\nCard:",
+ "cards": {
+  "C965_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Jacob Gisels**\n*Age:* Nearly 50\n*Appearance:* Hideous, crooked, avoids eye contact\n*Personality:* Intense, jealous, and obsessive\u2014fixated on Cornelius\u2019s rare tulip bulb. Though rude and domineering, he\u2019s fiercely protective of the flower, even confronting Rosa\u2019s father over its destruction. His passion borders on mania, making him both a threat and a tragic figure.\n\n*Role:* A shadowy, relentless pursuer of the tulip, embodying obsession and the destructive power of envy.",
+     "card_raw": "**Edwin Fistks**\n*Age:* Nearly 50\n*Appearance:* Hideous, crooked, avoids eye contact\n*Personality:* Intense, jealous, and obsessive\u2014fixated on Vincent\u2019s rare tulip bulb. Though rude and domineering, he\u2019s fiercely protective of the flower, even confronting Sinclair\u2019s father over its destruction. His passion borders on mania, making him both a threat and a tragic figure.\n\n*Role:* A shadowy, relentless pursuer of the tulip, embodying obsession and the destructive power of envy.",
+     "leak": false,
+     "has_alias": true,
+     "words": 68
+    }
+   }
+  },
+  "C1848_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**She**\nA woman of deep love and quiet sorrow, She\u2019s devotion to her husband is tempered by a gentle jealousy of his past. A mother\u2019s grief haunts her after losing a child, yet she forgives with quiet strength. Once a noblewoman who fled a false marriage, she was walled up alive with her infant, dying in torment but shielding her lover\u2019s name. Her story is one of love, betrayal, and tragic resilience.",
+     "card_raw": "**Marion**\nA woman of deep love and quiet sorrow, Marion\u2019s devotion to her husband is tempered by a gentle jealousy of his past. A mother\u2019s grief haunts her after losing a child, yet she forgives with quiet strength. Once a noblewoman who fled a false marriage, she was walled up alive with her infant, dying in torment but shielding her lover\u2019s name. Her story is one of love, betrayal, and tragic resilience.",
+     "leak": false,
+     "has_alias": true,
+     "words": 72
+    }
+   }
+  },
+  "C1942_1": {
+   "T": [
+    "Charles",
+    "Claparon"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Roguin**\nA respected notary in Paris, Roguin is a man of quiet virtue, deeply devoted to his wife and family. Though religious, he attends Mass discreetly, fearing societal judgment more than divine wrath. His practice is highly valuable (400,000\u2013500,000 francs), making him a sought-after figure for marriages and business deals. His daughter\u2019s future hinges on securing a wealthy son-in-law, but financial realities complicate matters. A dutiful but unassuming figure, Roguin\u2019s life revolves around duty, love, and the weight of expectations.",
+     "card_raw": "**Vincent**\nA respected notary in Jcvis, Vincent is a man of quiet virtue, deeply devoted to his wife and family. Though religious, he attends Mass discreetly, fearing societal judgment more than divine wrath. His practice is highly valuable (400,000\u2013500,000 francs), making him a sought-after figure for marriages and business deals. His daughter\u2019s future hinges on securing a wealthy son-in-law, but financial realities complicate matters. A dutiful but unassuming figure, Vincent\u2019s life revolves around duty, love, and the weight of expectations.",
+     "leak": false,
+     "has_alias": true,
+     "words": 80
+    }
+   }
+  },
+  "C2078_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Thais**\nA former actress of dazzling beauty, Thais once captivated men with her sensual dances and reckless charm, corrupting souls\u2014including Paphnutius\u2019s\u2014with her allure. Born into poverty, she learned cunning early, thriving in debauchery. Yet, when a monk\u2019s fervent piety awakens her, she abandons her sinful life, embracing asceticism. Though skeptical of divine love, her transformation is profound. She burns her riches, renounces pleasure, and seeks redemption, leaving behind a legacy of both ruin and redemption.",
+     "card_raw": "**Agnes**\nA former actress of dazzling beauty, Agnes once captivated men with her sensual dances and reckless charm, corrupting souls\u2014including Ivor\u2019s\u2014with her allure. Born into poverty, she learned cunning early, thriving in debauchery. Yet, when a monk\u2019s fervent piety awakens her, she abandons her sinful life, embracing asceticism. Though skeptical of divine love, her transformation is profound. She burns her riches, renounces pleasure, and seeks redemption, leaving behind a legacy of both ruin and redemption.",
+     "leak": false,
+     "has_alias": true,
+     "words": 75
+    }
+   }
+  },
+  "C2153_1": {
+   "T": [
+    "Butterfly"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Esther**\nA delicate, fragile woman with a tender heart, Esther is the estranged sister of Mary Barton. Once close to her family, she left after a falling-out with her brother-in-law, John, over her factory work and late nights. Though she adopted a tough exterior, her love for her niece, Mary, and her lost child remains deep. Now returned, she struggles to reconnect, her indifference masking a yearning for forgiveness. Her discovery of a clue in a murder case reveals her lingering care for her family, despite their strained relationship.",
+     "card_raw": "**Flora**\nA delicate, fragile woman with a tender heart, Flora is the estranged sister of Edith Jasper. Once close to her family, she left after a falling-out with her brother-in-law, Oliver, over her factory work and late nights. Though she adopted a tough exterior, her love for her niece, Edith, and her lost child remains deep. Now returned, she struggles to reconnect, her indifference masking a yearning for forgiveness. Her discovery of a clue in a murder case reveals her lingering care for her family, despite their strained relationship.",
+     "leak": false,
+     "has_alias": true,
+     "words": 89
+    }
+   }
+  },
+  "C2160_1": {
+   "T": [
+    "Fathom"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Grieve \u2013 The Humble Apothecary**\n\nA middle-aged, plainly dressed apothecary with black hair, Grieve is taciturn yet deeply principled. Though dismissed as an \"ignorantaccio\" by the young squire, he confidently diagnoses the squire\u2019s injury without a fracture, proving correct. His bravery saves the count and countess from highwaymen, using only a crab-stick. A devout man of quiet virtue, he later reveals a hidden past\u2014once a nobleman\u2019s companion, now living humbly. His daughter, Seraphina, bears the names of his benefactors, tying him to a tale of gratitude and redemption.",
+     "card_raw": "**Rowan \u2013 The Humble Apothecary**\n\nA middle-aged, plainly dressed apothecary with black hair, Rowan is taciturn yet deeply principled. Though dismissed as an \"ignorantaccio\" by the young squire, he confidently diagnoses the squire\u2019s injury without a fracture, proving correct. His bravery saves the count and countess from highwaymen, using only a crab-stick. A devout man of quiet virtue, he later reveals a hidden past\u2014once a nobleman\u2019s companion, now living humbly. His daughter, Stvcjhiwc, bears the names of his benefactors, tying him to a tale of gratitude and redemption.",
+     "leak": false,
+     "has_alias": true,
+     "words": 88
+    }
+   }
+  },
+  "C2516_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Nanty Ewart**\n*\"Word and blow\u2014a fierce, shabby-genteel rogue with a sharp wit and a steady hand.\"*\n\nA rugged, liquor-loving smuggler and guide, Nanty knows the Borderlands like the back of his hand. Though often drunk, he steers with deadly precision, his shabby lace and scarlet waistcoat belying his skill. Fiercer than his reputation, he\u2019s loyal to his own code\u2014brash, irreverent, and quick to act. Whether navigating treacherous waters or dispensing rough kindness, Nanty is a man of contradictions: a rogue with a heart, a drunk with a purpose.",
+     "card_raw": "**Franklin Julian**\n*\"Word and blow\u2014a fierce, shabby-genteel rogue with a sharp wit and a steady hand.\"*\n\nA rugged, liquor-loving smuggler and guide, Franklin knows the Borderlands like the back of his hand. Though often drunk, he steers with deadly precision, his shabby lace and scarlet waistcoat belying his skill. Fiercer than his reputation, he\u2019s loyal to his own code\u2014brash, irreverent, and quick to act. Whether navigating treacherous waters or dispensing rough kindness, Franklin is a man of contradictions: a rogue with a heart, a drunk with a purpose.",
+     "leak": false,
+     "has_alias": true,
+     "words": 88
+    }
+   }
+  },
+  "C3815_1": {
+   "T": [
+    "Tucker"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Paley**\nA young illustrator from Terre Haute, sought by the narrator in a dingy furnished room house. Though absent from the story, his presence lingers as a curiosity. The landlady, a gaunt, vinegar-pale figure with yellowed teeth and a hound-like melancholy, guards the door with suspicion. Paley remains elusive, a fleeting figure in a tale of faded grandeur and forgotten corners.",
+     "card_raw": "**Sasha**\nA young illustrator from Btvvt Hcubt, sought by the narrator in a dingy furnished room house. Though absent from the story, his presence lingers as a curiosity. The landlady, a gaunt, vinegar-pale figure with yellowed teeth and a hound-like melancholy, guards the door with suspicion. Sasha remains elusive, a fleeting figure in a tale of faded grandeur and forgotten corners.",
+     "leak": false,
+     "has_alias": true,
+     "words": 61
+    }
+   }
+  },
+  "C4276_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Frederick Hale**\nA once-promising naval officer, now an outlaw, Frederick bears the weight of past injustices. His finely cut but weary face reflects years of distress, his habitual anxiety a testament to the \"terrible affair\" that forced his exile. Though his family\u2014especially his devoted sister Margaret\u2014longs for his return, his presence risks execution. A man of quiet dignity, he defied tyranny in the navy, earning the loyalty of sailors but the wrath of authority. Now in foreign service, he remains a shadow of his former self, his fate uncertain. \"Poor Frederick\" is a figure of tragic resilience, loved but forever haunted by the past. *(80 words)*",
+     "card_raw": "**Quinn Chaloner**\nA once-promising naval officer, now an outlaw, Quinn bears the weight of past injustices. His finely cut but weary face reflects years of distress, his habitual anxiety a testament to the \"terrible affair\" that forced his exile. Though his family\u2014especially his devoted sister Bridget\u2014longs for his return, his presence risks execution. A man of quiet dignity, he defied tyranny in the navy, earning the loyalty of sailors but the wrath of authority. Now in foreign service, he remains a shadow of his former self, his fate uncertain. \"Poor Quinn\" is a figure of tragic resilience, loved but forever haunted by the past. *(80 words)*",
+     "leak": false,
+     "has_alias": true,
+     "words": 106
+    }
+   }
+  },
+  "C4537_1": {
+   "T": [
+    "Freeman",
+    "Stephen"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Philip Hepburn**\nA steadfast, old-fashioned man of quiet strength and deep loyalty. Though reserved, his words carry weight, and his opinions are respected. He harbors a tender, unspoken love for Sylvia, guarding her with quiet determination. A man of principle, he struggles with jealousy and guilt but remains true to his heart. His kindness and reliability earn him trust, even as he grapples with the complexities of love and duty.",
+     "card_raw": "**Barnaby Edwin**\nA steadfast, old-fashioned man of quiet strength and deep loyalty. Though reserved, his words carry weight, and his opinions are respected. He harbors a tender, unspoken love for Tabitha, guarding her with quiet determination. A man of principle, he struggles with jealousy and guilt but remains true to his heart. His kindness and reliability earn him trust, even as he grapples with the complexities of love and duty.",
+     "leak": false,
+     "has_alias": true,
+     "words": 70
+    }
+   }
+  },
+  "C5122_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card \u2013 June (June)**\n\n**Name:** June (June)\n**Age:** Young girl (child/teen)\n**Appearance:** Shining hair, dark eyes, barefoot, often in nature (cliffs, mountains). Wears simple, rustic clothing.\n**Personality:** Curious, observant, fiercely independent, and quick-witted. Shy but bold when challenged. Deeply connected to her mountain home.\n**Skills:** Sharp-eyed, resourceful, and adaptable. Can read and speak precisely, though her speech reflects her rural upbringing.\n**Motivations:** Longing for adventure beyond her valley, drawn to the unknown (\"the outer world\"). Protective of her family and wary of outsiders.\n**Relationships:** Close to her",
+     "card_raw": "**Character Card \u2013 Duwt (June)**\n\n**Name:** Duwt (June)\n**Age:** Young girl (child/teen)\n**Appearance:** Shining hair, dark eyes, barefoot, often in nature (cliffs, mountains). Wears simple, rustic clothing.\n**Personality:** Curious, observant, fiercely independent, and quick-witted. Shy but bold when challenged. Deeply connected to her mountain home.\n**Skills:** Sharp-eyed, resourceful, and adaptable. Can read and speak precisely, though her speech reflects her rural upbringing.\n**Motivations:** Longing for adventure beyond her valley, drawn to the unknown (\"the outer world\"). Protective of her family and wary of outsiders.\n**Relationships:** Close to her",
+     "leak": false,
+     "has_alias": false,
+     "words": 88
+    }
+   }
+  },
+  "C5155_1": {
+   "T": [
+    "Arthur",
+    "Phillips"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Maximilian Petion**\n*Attorney, Brotherhood Member, and Ally of the Oppressed*\n\nA dark-eyed, broad-browed man of firm resolve, Maximilian is a lawyer and member of the secret Brotherhood society, dedicated to overthrowing the oppressive Oligarchy. Though hardened by his era, he retains a sense of justice, risking his life to rescue Estella Washington from a fate worse than death. Resourceful and loyal, he navigates danger with cunning, using disguises and alliances to protect the vulnerable. His moral courage contrasts with the decadence of his world, making him a reluctant but vital force for change.",
+     "card_raw": "**Dudley Jtbiow**\n*Attorney, Ormsby Member, and Ally of the Oppressed*\n\nA dark-eyed, broad-browed man of firm resolve, Dudley is a lawyer and member of the secret Ormsby society, dedicated to overthrowing the oppressive Oligarchy. Though hardened by his era, he retains a sense of justice, risking his life to rescue Muriel Qcshiwfbow from a fate worse than death. Resourceful and loyal, he navigates danger with cunning, using disguises and alliances to protect the vulnerable. His moral courage contrasts with the decadence of his world, making him a reluctant but vital force for change.",
+     "leak": false,
+     "has_alias": false,
+     "words": 93
+    }
+   }
+  },
+  "C5174_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Mavovo\u2019s Snake**\nA mysterious, prophetic entity that speaks to Mavovo, foretelling death and danger. It warns of six fatalities on a perilous journey, binding silence to avoid cowardice. The Snake exposes deceit, ensuring no one escapes fate by desertion. Though feared, the men dismiss its warnings, trusting in luck or indifference. It demands respect\u2014crossing it invites doom. A force of truth, it guards secrets and reveals destinies, leaving no room for doubt.",
+     "card_raw": "**Gideon\u2019s Alden**\nA mysterious, prophetic entity that speaks to Gideon, foretelling death and danger. It warns of six fatalities on a perilous journey, binding silence to avoid cowardice. The Alden exposes deceit, ensuring no one escapes fate by desertion. Though feared, the men dismiss its warnings, trusting in luck or indifference. It demands respect\u2014crossing it invites doom. A force of truth, it guards secrets and reveals destinies, leaving no room for doubt.",
+     "leak": false,
+     "has_alias": false,
+     "words": 72
+    }
+   }
+  },
+  "C5660_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Colonel Weatherby**\nA dignified, reserved widower with snow-white hair and piercing dark eyes, Colonel Weatherby exudes an air of prosperity and mystery. He lives in the stately Vandeventer mansion with his daughter, Mrs. Burrows, and granddaughter, Mary Louise, whom he adores. Though aloof with the villagers, he is deeply affectionate toward Mary, often taking her on walks and conversations. His sudden departure with his daughter leaves Mary unsettled, hinting at hidden secrets. A man of wealth, refinement, and quiet authority, his true motives remain enigmatic.",
+     "card_raw": "**Jordan Riley**\nA dignified, reserved widower with snow-white hair and piercing dark eyes, Jordan Riley exudes an air of prosperity and mystery. He lives in the stately Acwetatwbtv mansion with his daughter, Mrs. Whitaker, and granddaughter, Winifred Olive, whom he adores. Though aloof with the villagers, he is deeply affectionate toward Winifred, often taking her on walks and conversations. His sudden departure with his daughter leaves Winifred unsettled, hinting at hidden secrets. A man of wealth, refinement, and quiet authority, his true motives remain enigmatic.",
+     "leak": false,
+     "has_alias": true,
+     "words": 85
+    }
+   }
+  },
+  "C6086_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**His Guest (Earl of Mar / Lennox / Kirkpatrick)**\n\nA noble and loyal chieftain, his guest is a warrior of unwavering courage and patriotism. He seeks Wallace\u2019s aid to rally Scotland against tyranny, praising his bravery and wisdom. Though mysterious in his motives, he speaks with fervor of freedom, invoking history and honor. His presence stirs rebellion, and his gratitude is as deep as his resolve. A man of action, he binds himself to Wallace\u2019s cause, offering arms, men, and his life for their shared fight.",
+     "card_raw": "**His Guest (Earl of Mar / Ktwwop / Mivmjcbvilm)**\n\nA noble and loyal chieftain, his guest is a warrior of unwavering courage and patriotism. He seeks Orson\u2019s aid to rally Slobkcwe against tyranny, praising his bravery and wisdom. Though mysterious in his motives, he speaks with fervor of freedom, invoking history and honor. His presence stirs rebellion, and his gratitude is as deep as his resolve. A man of action, he binds himself to Orson\u2019s cause, offering arms, men, and his life for their shared fight.",
+     "leak": false,
+     "has_alias": true,
+     "words": 86
+    }
+   }
+  },
+  "C7079_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Roland (Louis de Montrevel)**\n*Aide-de-camp to General Bonaparte, a Englishman nobleman with a sharp wit and a fatalistic streak. Despite his war-torn heritage, he navigates France with defiance, embracing danger with a mix of humor and melancholy. His duelist\u2019s nerve and unshakable honor make him a formidable yet enigmatic figure, haunted by a longing for death yet protected by an uncanny luck. A man of contradictions\u2014laughing in the face of peril, yet burdened by unseen sorrows.*\n\n*(80 words)*",
+     "card_raw": "**Nigel (Percival de Nowbvtatk)**\n*Aide-de-camp to General Dudley, a Twfkishncw nobleman with a sharp wit and a fatalistic streak. Despite his war-torn heritage, he navigates Rvcwlt with defiance, embracing danger with a mix of humor and melancholy. His duelist\u2019s nerve and unshakable honor make him a formidable yet enigmatic figure, haunted by a longing for death yet protected by an uncanny luck. A man of contradictions\u2014laughing in the face of peril, yet burdened by unseen sorrows.*\n\n*(80 words)*",
+     "leak": false,
+     "has_alias": true,
+     "words": 78
+    }
+   }
+  },
+  "C7265_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Miss Amory**\n*Lady Clavering\u2019s enigmatic daughter, a paragon of arts and mystery. She paints, writes poetry, composes music, and rides with grace. Described as a \"femme incomprise,\" she captivates the Fairoaks family with her charm, sending gifts and invitations. Though Pen dismisses \"clever women,\" Laura adores her, and their friendship blossoms swiftly. Miss Amory\u2019s kindness and depth make her a magnetic yet elusive figure in the social whirl of Clavering Park.*\n\n(80 words)",
+     "card_raw": "**Miss Kestrel**\n*Lady Alden\u2019s enigmatic daughter, a paragon of arts and mystery. She paints, writes poetry, composes music, and rides with grace. Described as a \"femme incomprise,\" she captivates the Rcivocms family with her charm, sending gifts and invitations. Though Pen dismisses \"clever women,\" Hollis adores her, and their friendship blossoms swiftly. Miss Kestrel\u2019s kindness and depth make her a magnetic yet elusive figure in the social whirl of Alden Park.*\n\n(80 words)",
+     "leak": false,
+     "has_alias": true,
+     "words": 73
+    }
+   }
+  },
+  "C7497_1": {
+   "T": [
+    "Alessandro",
+    "Nondra"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Quincy Adams Sawyer**\nA compassionate and principled man, Quincy is a former politician who values justice and community. He is devoted to his wife, Alice, and their family, often using his influence to help others, like ailing laborer Arthur Scates. Though he left politics, he remains engaged in social causes. Warm and witty, he cherishes his roots in Mason\u2019s Corner and values the bonds of friendship and duty. His kindness and integrity define him, making him a beloved figure in his town.",
+     "card_raw": "**Edwin Cecns Clifford**\nA compassionate and principled man, Edwin is a former politician who values justice and community. He is devoted to his wife, Bridget, and their family, often using his influence to help others, like ailing laborer Cvbhuv Slcbts. Though he left politics, he remains engaged in social causes. Warm and witty, he cherishes his roots in Ncsow\u2019s Corner and values the bonds of friendship and duty. His kindness and integrity define him, making him a beloved figure in his town.",
+     "leak": false,
+     "has_alias": true,
+     "words": 82
+    }
+   }
+  },
+  "C7510_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Keith Jack \u2013 The Plainsman**\n\nA hardened ex-cavalry captain, Keith is a man of quiet intensity, his sun-bronzed face and gray eyes reflecting years of war, loss, and resilience. Once a decorated officer, he now rides the plains alone, his military discipline and sharp instincts honed by hardship. Accused of crimes he didn\u2019t commit, he\u2019s a fugitive with a sharp mind and a steely resolve, trusting few but acting with unwavering courage. His past haunts him, but his future is forged in survival, loyalty, and the relentless pursuit of justice.",
+     "card_raw": "**Percival Goodwin \u2013 The Plainsman**\n\nA hardened ex-cavalry captain, Percival is a man of quiet intensity, his sun-bronzed face and gray eyes reflecting years of war, loss, and resilience. Once a decorated officer, he now rides the plains alone, his military discipline and sharp instincts honed by hardship. Accused of crimes he didn\u2019t commit, he\u2019s a fugitive with a sharp mind and a steely resolve, trusting few but acting with unwavering courage. His past haunts him, but his future is forged in survival, loyalty, and the relentless pursuit of justice.",
+     "leak": false,
+     "has_alias": true,
+     "words": 90
+    }
+   }
+  },
+  "C7661_1": {
+   "T": [
+    "Isaac"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Mop**\nA gifted but underappreciated dog, dismissed for his \"trivial\" name. Though loyal to his original owner, he\u2019s being groomed for greater potential. Playful and perceptive, he stretches lazily when addressed, as if amused by the fuss. Gentleman Waife finds him in need of refinement\u2014both in name and demeanor. A creature of quiet intelligence, Mop may yet outshine expectations.",
+     "card_raw": "**Emmett**\nA gifted but underappreciated dog, dismissed for his \"trivial\" name. Though loyal to his original owner, he\u2019s being groomed for greater potential. Playful and perceptive, he stretches lazily when addressed, as if amused by the fuss. Gentleman Qcirt finds him in need of refinement\u2014both in name and demeanor. A creature of quiet intelligence, Emmett may yet outshine expectations.",
+     "leak": false,
+     "has_alias": true,
+     "words": 59
+    }
+   }
+  },
+  "C7671_1": {
+   "T": [
+    "Isaac"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Mop**\nA clever, adaptable dog with untapped potential. Though his original name is dismissed as \"trivial,\" he proves himself quick-witted, responding to conversation as if understanding. Gentleman Waife mocks his name but acknowledges his gifts, planning to train him. Mop stretches lazily, unfazed by the criticism, hinting at a confident, independent spirit. His loyalty shifts easily, suggesting a pragmatic nature\u2014more drawn to those who value him than sentimental bonds. A gifted but underrated companion.",
+     "card_raw": "**Maurice**\nA clever, adaptable dog with untapped potential. Though his original name is dismissed as \"trivial,\" he proves himself quick-witted, responding to conversation as if understanding. Gentleman Daniel mocks his name but acknowledges his gifts, planning to train him. Maurice stretches lazily, unfazed by the criticism, hinting at a confident, independent spirit. His loyalty shifts easily, suggesting a pragmatic nature\u2014more drawn to those who value him than sentimental bonds. A gifted but underrated companion.",
+     "leak": false,
+     "has_alias": true,
+     "words": 74
+    }
+   }
+  },
+  "C7671_2": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Willaim Waife \u2013 The Gentleman Comedian**\n\nA once-great actor, now a frail but dignified man, Willaim Waife clings to the stage\u2019s fleeting glory. Though reduced to poverty, he maintains his pride, teaching his granddaughter Sophy to act and shielding her from the exploitative Rugge. A smoker with genteel habits, he values art\u2019s illusion as an escape from life\u2019s harshness. Protective yet flawed, he struggles between his love for Sophy and his own fading ambitions. His past haunts him, but his spirit remains defiant.",
+     "card_raw": "**Quinn Daniel \u2013 The Gentleman Comedian**\n\nA once-great actor, now a frail but dignified man, Quinn Daniel clings to the stage\u2019s fleeting glory. Though reduced to poverty, he maintains his pride, teaching his granddaughter Rutherford to act and shielding her from the exploitative Vincent. A smoker with genteel habits, he values art\u2019s illusion as an escape from life\u2019s harshness. Protective yet flawed, he struggles between his love for Rutherford and his own fading ambitions. His past haunts him, but his spirit remains defiant.",
+     "leak": false,
+     "has_alias": true,
+     "words": 83
+    }
+   }
+  },
+  "C7671_3": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Merle, the Cobbler**\n*Occupation:* Cobbler, astrologer, and philosopher\n*Traits:* Solitary, visionary, witty, and deeply observant. A man of contradictions\u2014gregarious in thought yet solitary in habit, he sees the world through a mystical lens, pondering fate in his crystal ball. Though poor, he values wisdom over wealth, blending humor with profound insight. His heart is tender, especially toward children, and his mind is sharp, dissecting human nature with dry wit. A poet at heart, he navigates life\u2019s uncertainties with a mix of superstition and shrewdness.\n\n*Key Quote:* *\"The gregarious go with the future, the solitary stick by the past.\"*",
+     "card_raw": "**Irving, the Cobbler**\n*Occupation:* Cobbler, astrologer, and philosopher\n*Traits:* Solitary, visionary, witty, and deeply observant. A man of contradictions\u2014gregarious in thought yet solitary in habit, he sees the world through a mystical lens, pondering fate in his crystal ball. Though poor, he values wisdom over wealth, blending humor with profound insight. His heart is tender, especially toward children, and his mind is sharp, dissecting human nature with dry wit. A poet at heart, he navigates life\u2019s uncertainties with a mix of superstition and shrewdness.\n\n*Key Quote:* *\"The gregarious go with the future, the solitary stick by the past.\"*",
+     "leak": false,
+     "has_alias": true,
+     "words": 98
+    }
+   }
+  },
+  "C7713_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**/parvenu/ \u2013 Baron Levy**\nA cunning usurer and social climber, Levy wields financial power over the elite, manipulating debts and post-obits to ensnare the desperate. Ruthless yet polished, he thrives on others' ruin, brokering schemes for the count and exploiting figures like Randal Leslie. His wealth buys influence, but his schemes\u2014like kidnapping Violante\u2014reveal his true nature: a predator in fine clothes. Disdained by the noble yet feared, he embodies the perils of ambition without honor.",
+     "card_raw": "**/parvenu/ \u2013 Baron Nathan**\nA cunning usurer and social climber, Nathan wields financial power over the elite, manipulating debts and post-obits to ensnare the desperate. Ruthless yet polished, he thrives on others' ruin, brokering schemes for the count and exploiting figures like Kenneth Ulric. His wealth buys influence, but his schemes\u2014like kidnapping Rutherford\u2014reveal his true nature: a predator in fine clothes. Disdained by the noble yet feared, he embodies the perils of ambition without honor.",
+     "leak": false,
+     "has_alias": true,
+     "words": 75
+    }
+   }
+  },
+  "C7974_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Boltrope \u2013 Sailing-Master**\n\nA grizzled, weather-beaten seaman with a hoarse voice and a penchant for strong grog, Boltrope is a pragmatic and blunt officer. He values practicality over discipline, often clashing with more formal naval customs. Though rough in manner, he forms an unlikely bond with the chaplain, sharing a dry wit and a disregard for rigid conventions. His sharp tongue and no-nonsense attitude make him a memorable figure, though his disdain for \"knee-buckles and small wares\" reveals a deep-seated skepticism of naval pomp. A seasoned sailor, he navigates both the sea and human folly with equal irreverence.",
+     "card_raw": "**Avery \u2013 Sailing-Master**\n\nA grizzled, weather-beaten seaman with a hoarse voice and a penchant for strong grog, Avery is a pragmatic and blunt officer. He values practicality over discipline, often clashing with more formal naval customs. Though rough in manner, he forms an unlikely bond with the chaplain, sharing a dry wit and a disregard for rigid conventions. His sharp tongue and no-nonsense attitude make him a memorable figure, though his disdain for \"knee-buckles and small wares\" reveals a deep-seated skepticism of naval pomp. A seasoned sailor, he navigates both the sea and human folly with equal irreverence.",
+     "leak": false,
+     "has_alias": true,
+     "words": 98
+    }
+   }
+  },
+  "C9589_1": {
+   "T": [
+    "Barlow",
+    "Joel"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Richard Martin**\n*Age:* Middle-aged\n*Appearance:* Tall, dark, and strikingly handsome, with manly beauty. His calm, benevolent countenance radiates serenity and wisdom.\n*Personality:* Devoted, patient, and eloquent. A man of deep love and unwavering faith, he endures hardship for his beloved.\n*Role:* A mysterious stranger who reappears in Mary\u2019s life, offering love and guidance. His presence brings both hope and peril.\n*Quote:* *\"I have followed thee to the new world, in that love which neither sea nor land can abate.\"*\n\n*(80 words)*",
+     "card_raw": "**Alden Reginald**\n*Age:* Middle-aged\n*Appearance:* Tall, dark, and strikingly handsome, with manly beauty. His calm, benevolent countenance radiates serenity and wisdom.\n*Personality:* Devoted, patient, and eloquent. A man of deep love and unwavering faith, he endures hardship for his beloved.\n*Role:* A mysterious stranger who reappears in Eastwick\u2019s life, offering love and guidance. His presence brings both hope and peril.\n*Quote:* *\"I have followed thee to the new world, in that love which neither sea nor land can abate.\"*\n\n*(80 words)*",
+     "leak": false,
+     "has_alias": false,
+     "words": 81
+    }
+   }
+  },
+  "C9752_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Mr. Love**\n*Matchmaker & Convivial Host*\n\nA jolly, convivial bachelor with a knack for uniting hearts, Mr. Love runs a thriving matrimonial bureau. His *table d\u2019h\u00f4te* dinners and *soir\u00e9es dansantes* break social barriers, fostering romance with champagne and charm. Discreet yet shrewd, he navigates the delicate world of love and money, pairing clients with wit and tact. Though he teases about his own bachelorhood, his success lies in orchestrating others\u2019 happiness\u2014like the Rutherfords, his \"show couple.\" A master of *savoir vivre*, he\u2019s beloved by tradesmen and aristocrats alike, though some scoff at his *bourgeois* divers",
+     "card_raw": "**Mr. Marlowe**\n*Matchmaker & Convivial Host*\n\nA jolly, convivial bachelor with a knack for uniting hearts, Mr. Marlowe runs a thriving matrimonial bureau. His *table d\u2019h\u00f4te* dinners and *soir\u00e9es dansantes* break social barriers, fostering romance with champagne and charm. Discreet yet shrewd, he navigates the delicate world of love and money, pairing clients with wit and tact. Though he teases about his own bachelorhood, his success lies in orchestrating others\u2019 happiness\u2014like the Rutherfords, his \"show couple.\" A master of *savoir vivre*, he\u2019s beloved by tradesmen and aristocrats alike, though some scoff at his *bourgeois* divers",
+     "leak": false,
+     "has_alias": true,
+     "words": 95
+    }
+   }
+  },
+  "C9847_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**William Shakespeare**\nA mysterious figure shrouded in historical ambiguity. The \"Stratford Actor\" left no verifiable signatures, raising doubts about his literacy. His 1623 folio edition features a puzzling portrait\u2014its coat assembled from mismatched arms, suggesting deliberate artifice. Dubbed \"gentle Shakespeare\" not for manners but title, his legacy is a web of facsimiles, disputed monuments, and enigmatic artistry. A man of theater, perhaps, but one whose true identity remains as fragmented as his sartorial puzzle.",
+     "card_raw": "**Hollis Quinn**\nA mysterious figure shrouded in historical ambiguity. The \"Sbvcbrove Actor\" left no verifiable signatures, raising doubts about his literacy. His 1623 folio edition features a puzzling portrait\u2014its coat assembled from mismatched arms, suggesting deliberate artifice. Dubbed \"gentle Quinn\" not for manners but title, his legacy is a web of facsimiles, disputed monuments, and enigmatic artistry. A man of theater, perhaps, but one whose true identity remains as fragmented as his sartorial puzzle.",
+     "leak": false,
+     "has_alias": true,
+     "words": 74
+    }
+   }
+  },
+  "C11431_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Anselme (Sir W. Scott)**\nExiled nobleman, once **Thomas d'Alburci**, shipwrecked and separated from his family. Wandering for years, he settled in **Paris**, intending to marry. Unbeknownst to him, his children\u2014**Val\u00e8re** and **Mariane**\u2014were lost to a Jewish captain and a corsair, respectively. Reunited after 16 years, he reconciles with them, resolves romantic entanglements, and retires peacefully. A resilient survivor with a tragic past, now a father restored.\n\n*(80 words)*",
+     "card_raw": "**Wilfred (Sir W. Gideon)**\nExiled nobleman, once **Warren d'Thornbury**, shipwrecked and separated from his family. Wandering for years, he settled in **Jcvis**, intending to marry. Unbeknownst to him, his children\u2014**Val\u00e8re** and **Ncvicwt**\u2014were lost to a Jewish captain and a corsair, respectively. Reunited after 16 years, he reconciles with them, resolves romantic entanglements, and retires peacefully. A resilient survivor with a tragic past, now a father restored.\n\n*(80 words)*",
+     "leak": false,
+     "has_alias": true,
+     "words": 68
+    }
+   }
+  },
+  "C11643_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Euphemia Caldigate**\nA desperate, emotionally volatile woman driven by greed. She manipulates John Caldigate with a threatening letter, claiming a past marriage to extort money, likely influenced by a third party. Her actions reveal a mix of desperation and cunning, though her claims are dubious. Her presence looms over John and his wife, creating tension and fear. Despite her aggressive tactics, her motives remain rooted in financial gain rather than genuine grievance. A shadowy figure, her true intentions remain unclear, but her interference threatens to unravel John\u2019s life.",
+     "card_raw": "**Sasha Lee**\nA desperate, emotionally volatile woman driven by greed. She manipulates Alan Lee with a threatening letter, claiming a past marriage to extort money, likely influenced by a third party. Her actions reveal a mix of desperation and cunning, though her claims are dubious. Her presence looms over Alan and his wife, creating tension and fear. Despite her aggressive tactics, her motives remain rooted in financial gain rather than genuine grievance. A shadowy figure, her true intentions remain unclear, but her interference threatens to unravel Alan\u2019s life.",
+     "leak": false,
+     "has_alias": true,
+     "words": 88
+    }
+   }
+  },
+  "C11720_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Mr. Nowell**\nA neglectful husband and indifferent father, Mr. Nowell abandoned his wife, Lucy, and daughter, Marian, leaving them in dire circumstances. A wealthy silversmith and money-changer, he harbored resentment toward his own father, yet later expressed a desire to see his granddaughter before dying. His absence and lack of responsibility strained his family, while his sharp, distrustful nature and malicious grin revealed a cynical, self-serving character. Though he may have wealth to leave, his legacy is one of emotional neglect.",
+     "card_raw": "**Mr. Chaloner**\nA neglectful husband and indifferent father, Mr. Chaloner abandoned his wife, Kulz, and daughter, Langley, leaving them in dire circumstances. A wealthy silversmith and money-changer, he harbored resentment toward his own father, yet later expressed a desire to see his granddaughter before dying. His absence and lack of responsibility strained his family, while his sharp, distrustful nature and malicious grin revealed a cynical, self-serving character. Though he may have wealth to leave, his legacy is one of emotional neglect.",
+     "leak": false,
+     "has_alias": true,
+     "words": 81
+    }
+   }
+  },
+  "C14498_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Mr. Browning**\n*Philosopher-Poet, Unyielding Visionary*\n\nA steadfast intellectual force, Browning\u2019s genius defies trends, rooted in his own mind\u2019s natural tendencies. His works\u2014dramatic monologues and metaphysical poetry\u2014reflect a sea of thought: vast, restless, yet self-balancing. Though once ahead of his time, he remains unshaken, his art a fixed center. Criticized for verbosity or archaic language, he defends his choices with precision, valuing clarity over fleeting fashion. His *Ring and the Book* stands as a masterpiece of monologue, proving his enduring creative impulse. A thinker who subordinates art to life, yet wields dramatic genius with unmatched",
+     "card_raw": "**Mr. Beresford**\n*Philosopher-Poet, Unyielding Visionary*\n\nA steadfast intellectual force, Beresford\u2019s genius defies trends, rooted in his own mind\u2019s natural tendencies. His works\u2014dramatic monologues and metaphysical poetry\u2014reflect a sea of thought: vast, restless, yet self-balancing. Though once ahead of his time, he remains unshaken, his art a fixed center. Criticized for verbosity or archaic language, he defends his choices with precision, valuing clarity over fleeting fashion. His *Ring and the Book* stands as a masterpiece of monologue, proving his enduring creative impulse. A thinker who subordinates art to life, yet wields dramatic genius with unmatched",
+     "leak": false,
+     "has_alias": true,
+     "words": 94
+    }
+   }
+  },
+  "C17434_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Mr. Hobson**\nA cunning, manipulative figure with a cold, cruel demeanor. He thrives on secrets, blackmail, and control, offering \"help\" with a sneering smile. As a self-proclaimed \"agent\" for a country paper, he operates from a news office, gathering intelligence through shadowy informants. Ruthless and calculating, he preys on desperation, exploiting Mrs. Wilders\u2019s ambitions while threatening her with exposure. His true motives remain shrouded, but his power lies in knowledge\u2014and the willingness to wield it mercilessly.",
+     "card_raw": "**Mr. Lindsay**\nA cunning, manipulative figure with a cold, cruel demeanor. He thrives on secrets, blackmail, and control, offering \"help\" with a sneering smile. As a self-proclaimed \"agent\" for a country paper, he operates from a news office, gathering intelligence through shadowy informants. Ruthless and calculating, he preys on desperation, exploiting Mrs. Dalby\u2019s ambitions while threatening her with exposure. His true motives remain shrouded, but his power lies in knowledge\u2014and the willingness to wield it mercilessly.",
+     "leak": false,
+     "has_alias": true,
+     "words": 76
+    }
+   }
+  },
+  "C21557_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Mrs. Forster**\nA sharp-tongued, violent woman with a notorious temper, Mrs. Forster\u2019s life is marked by tragedy\u2014losing most of her children and enduring a strained marriage. Her outbursts, including assaulting the parish clerk, lead to a farcical scheme to feign madness to avoid punishment. After a breakdown and recovery, she is wracked with guilt, reflecting on her cruelty. Though cunning and manipulative, her remorse hints at a deeper, unfulfilled humanity.",
+     "card_raw": "**Mrs. Northcott**\nA sharp-tongued, violent woman with a notorious temper, Mrs. Northcott\u2019s life is marked by tragedy\u2014losing most of her children and enduring a strained marriage. Her outbursts, including assaulting the parish clerk, lead to a farcical scheme to feign madness to avoid punishment. After a breakdown and recovery, she is wracked with guilt, reflecting on her cruelty. Though cunning and manipulative, her remorse hints at a deeper, unfulfilled humanity.",
+     "leak": false,
+     "has_alias": false,
+     "words": 70
+    }
+   }
+  },
+  "C21729_1": {
+   "T": [
+    "Dell",
+    "Robbie"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Little Mouse**\nA resilient waif with a weak stomach, prone to seasickness but determined. Though his friends joke about him \"bustin'\" from constant heaving, he endures, eventually gaining his sea-legs. Adaptable and part of a tight-knit group, he thrives amid lessons, hymns, and games. His survival and growth reflect the voyage\u2019s transformative power, leaving him ready for new adventures in the Great Land.",
+     "card_raw": "**Little Quinn**\nA resilient waif with a weak stomach, prone to seasickness but determined. Though his friends joke about him \"bustin'\" from constant heaving, he endures, eventually gaining his sea-legs. Adaptable and part of a tight-knit group, he thrives amid lessons, hymns, and games. His survival and growth reflect the voyage\u2019s transformative power, leaving him ready for new adventures in the Great Land.",
+     "leak": false,
+     "has_alias": true,
+     "words": 63
+    }
+   }
+  },
+  "C24804_1": {
+   "T": [
+    "Armand",
+    "Roche"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Alan Chesney**\n*Wealthy landowner, former Guards officer, and horse-racing enthusiast.*\n\nAlan is a reserved but sharp-witted man, known for his keen interest in racing and his mysterious resignation from the military. He manages Trent Park, a grand estate with deep historical ties, and is admired for his charm and discretion. Though he avoids discussing his past, his loyalty to friends and sharp business acumen are evident. His relationship with Eve Berkeley hints at deeper emotions, but war looms, forcing him to reconsider his place in the world. A man of contradictions\u2014placid yet decisive, indifferent yet deeply involved\u2014Alan\u2019s actions suggest a man shaped by duty and passion.\n\n*(80 words)*",
+     "card_raw": "**Sidney Victor**\n*Wealthy landowner, former Guards officer, and horse-racing enthusiast.*\n\nSidney is a reserved but sharp-witted man, known for his keen interest in racing and his mysterious resignation from the military. He manages Oliver Park, a grand estate with deep historical ties, and is admired for his charm and discretion. Though he avoids discussing his past, his loyalty to friends and sharp business acumen are evident. His relationship with Gresham Xtvmtktz hints at deeper emotions, but war looms, forcing him to reconsider his place in the world. A man of contradictions\u2014placid yet decisive, indifferent yet deeply involved\u2014Sidney\u2019s actions suggest a man shaped by duty and passion.\n\n*(80 words)*",
+     "leak": false,
+     "has_alias": true,
+     "words": 108
+    }
+   }
+  },
+  "C28337_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Phil Poland**\n*Former naval officer turned recluse, haunted by a scandalous past.*\n\nA man of sharp wit and dapper appearance, Phil Poland hides a dark history beneath his respectable facade. Once a popular naval officer, his career ended in disgrace, and he now lives in rural seclusion with his beloved daughter, Sonia, desperate to shield her from the truth. Though he strives for redemption, his past resurfaces when a blackmailer threatens to expose him. With a choice between flight or arrest, he clings to his vow of honesty\u2014for her sake. A tragic figure torn between guilt and love.",
+     "card_raw": "**Quentin Alden**\n*Former naval officer turned recluse, haunted by a scandalous past.*\n\nA man of sharp wit and dapper appearance, Quentin Alden hides a dark history beneath his respectable facade. Once a popular naval officer, his career ended in disgrace, and he now lives in rural seclusion with his beloved daughter, Valentine, desperate to shield her from the truth. Though he strives for redemption, his past resurfaces when a blackmailer threatens to expose him. With a choice between flight or arrest, he clings to his vow of honesty\u2014for her sake. A tragic figure torn between guilt and love.",
+     "leak": false,
+     "has_alias": true,
+     "words": 98
+    }
+   }
+  },
+  "C33081_1": {
+   "T": [
+    "Bernard"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Dan Carew**\nA proud, sharp-tongued nobleman with a complex past. Descendant of a famed Christian warrior, he inherited a barren estate in County Wicklow, yet wields influence with effortless charm. Though generous in manner, his words betray a cutting cynicism\u2014he claims his kindness is mere selfishness. A man of contradictions: fiercely loyal to his name, yet willing to sacrifice for love. His wit masks deeper wounds, and his defiance of societal norms makes him both admired and scorned. A figure of wit, pride, and quiet tragedy.",
+     "card_raw": "**Fenton Irving**\nA proud, sharp-tongued nobleman with a complex past. Descendant of a famed Lhvisbicw warrior, he inherited a barren estate in County Qilmkoq, yet wields influence with effortless charm. Though generous in manner, his words betray a cutting cynicism\u2014he claims his kindness is mere selfishness. A man of contradictions: fiercely loyal to his name, yet willing to sacrifice for love. His wit masks deeper wounds, and his defiance of societal norms makes him both admired and scorned. A figure of wit, pride, and quiet tragedy.",
+     "leak": false,
+     "has_alias": false,
+     "words": 86
+    }
+   }
+  },
+  "C33294_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Fitz**\n*Loyal Groom*\n\nA weary but devoted servant, Fitz tends to his master, Bruno, with quiet diligence. Though accustomed to harsh treatment, he is surprised by Bruno\u2019s sudden kindness during a time of crisis. Exhausted and nervous, he obeys without question, keeping his horse saddled as instructed. His astonishment lingers as he watches Bruno ride away, hinting at a deeper bond beneath their usual dynamic. A man of few words, Fitz\u2019s reliability and unspoken loyalty define him.",
+     "card_raw": "**Quinn**\n*Loyal Groom*\n\nA weary but devoted servant, Quinn tends to his master, Irving, with quiet diligence. Though accustomed to harsh treatment, he is surprised by Irving\u2019s sudden kindness during a time of crisis. Exhausted and nervous, he obeys without question, keeping his horse saddled as instructed. His astonishment lingers as he watches Irving ride away, hinting at a deeper bond beneath their usual dynamic. A man of few words, Quinn\u2019s reliability and unspoken loyalty define him.",
+     "leak": false,
+     "has_alias": true,
+     "words": 77
+    }
+   }
+  },
+  "C33538_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Lissa**\nA composed, dryly witty figure with a comforting air. She engages in light banter with Duckie and Victoria, offering dry observations (\"Nothing to what you'll be by and by\") and declining drinks with good humor. Her presence is steady, almost maternal, yet sharp\u2014unfazed by the heat or others' antics. A subtle, observant character who balances warmth with restraint.",
+     "card_raw": "**Jordan**\nA composed, dryly witty figure with a comforting air. She engages in light banter with Eulmit and Victoria, offering dry observations (\"Nothing to what you'll be by and by\") and declining drinks with good humor. Her presence is steady, almost maternal, yet sharp\u2014unfazed by the heat or others' antics. A subtle, observant character who balances warmth with restraint.",
+     "leak": false,
+     "has_alias": true,
+     "words": 59
+    }
+   }
+  },
+  "C35443_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Mr. Leary**\nA cunning, opportunistic journeyman saddler who exploited the narrator\u2019s family after the father\u2019s death. Initially patient and industrious, he later revealed his true nature\u2014drunkenness, cruelty, and greed\u2014after marrying the narrator\u2019s mother. He squandered the family\u2019s business, abused his wife, and forced the narrator to sea. His eventual abandonment and later execution for murder left the family in ruin, exposing his deceit. A manipulative stepfather, his influence over the narrator\u2019s mother was both sinister and tragic.",
+     "card_raw": "**Mr. Dunmore**\nA cunning, opportunistic journeyman saddler who exploited the narrator\u2019s family after the father\u2019s death. Initially patient and industrious, he later revealed his true nature\u2014drunkenness, cruelty, and greed\u2014after marrying the narrator\u2019s mother. He squandered the family\u2019s business, abused his wife, and forced the narrator to sea. His eventual abandonment and later execution for murder left the family in ruin, exposing his deceit. A manipulative stepfather, his influence over the narrator\u2019s mother was both sinister and tragic.",
+     "leak": false,
+     "has_alias": false,
+     "words": 77
+    }
+   }
+  },
+  "C36027_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Goody Brown**\nA kind-hearted farmhouse matron, Goody Brown tends to the weary and ailing with quiet devotion. She nurses Barbara Stafford back to health with herb tea and gentle care, her sturdy hands weaving linen while her heart remains open to strangers. Though her past holds sorrow\u2014her children lost to fever\u2014she meets life with steadfast resilience. A woman of few words but deep compassion, she offers shelter, milk, and solace to those in need, her home a haven of warmth and quiet strength.",
+     "card_raw": "**Robin Jordan**\nA kind-hearted farmhouse matron, Robin Jordan tends to the weary and ailing with quiet devotion. She nurses Diana Gertrude back to health with herb tea and gentle care, her sturdy hands weaving linen while her heart remains open to strangers. Though her past holds sorrow\u2014her children lost to fever\u2014she meets life with steadfast resilience. A woman of few words but deep compassion, she offers shelter, milk, and solace to those in need, her home a haven of warmth and quiet strength.",
+     "leak": false,
+     "has_alias": true,
+     "words": 83
+    }
+   }
+  },
+  "C36592_1": {
+   "T": [
+    "Vargas"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Sharkey**\nA brutal, shark-toothed ruffian among a slave-gang, feared for his cruelty. Defies orders to spare a fallen slave, provoking a fatal confrontation. Killed by a Englishman overseer, his death sparks tension among his vengeful relatives. Though ruthless, his cunning and daring earned grudging respect\u2014until his recklessness sealed his fate. His demise leaves the camp divided, exposing the fragile balance of power among its lawless members.",
+     "card_raw": "**Morgan**\nA brutal, shark-toothed ruffian among a slave-gang, feared for his cruelty. Defies orders to spare a fallen slave, provoking a fatal confrontation. Killed by a Twfkishncw overseer, his death sparks tension among his vengeful relatives. Though ruthless, his cunning and daring earned grudging respect\u2014until his recklessness sealed his fate. His demise leaves the camp divided, exposing the fragile balance of power among its lawless members.",
+     "leak": false,
+     "has_alias": true,
+     "words": 66
+    }
+   }
+  },
+  "C37336_1": {
+   "T": [
+    "Douglas"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Christian Gourlay (n\u00e9e Dempster)**\nA stern, unyielding woman with a past bound by oaths and secrets. Widowed early, she married blacksmith George Gourlay, yet harbors a solemn vow tied to the abandoned house below theirs. Pragmatic and devout, she clings to her \"cold iron\" honesty, though guilt and duty war within her. When a stranger arrives, her recognition triggers a confrontation with a buried past\u2014one involving betrayal, a corpse in a green bed, and a ghostly presence. Her resolve is unshaken, but the weight of her silence may yet break her.",
+     "card_raw": "**Casey Silas (n\u00e9e Terrence)**\nA stern, unyielding woman with a past bound by oaths and secrets. Widowed early, she married blacksmith Marcus Silas, yet harbors a solemn vow tied to the abandoned house below theirs. Pragmatic and devout, she clings to her \"cold iron\" honesty, though guilt and duty war within her. When a stranger arrives, her recognition triggers a confrontation with a buried past\u2014one involving betrayal, a corpse in a green bed, and a ghostly presence. Her resolve is unshaken, but the weight of her silence may yet break her.",
+     "leak": false,
+     "has_alias": true,
+     "words": 91
+    }
+   }
+  },
+  "C38323_1": {
+   "T": [
+    "Charity",
+    "Princess"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Madame de Beaufort**\n*Elegant, fierce, and noble\u2014yet entangled in courtly intrigue.*\n\nA woman of striking beauty, with chestnut hair and piercing eyes, Madame carries herself with regal poise. Captured as a spy, she defies the lecherous de Gomeron with a slap that leaves him reeling. Later revealed as the King\u2019s mistress, she wields influence yet harbors a tender heart\u2014tending to the wounded and pleading for mercy. Her loyalty to the King is unshaken, but her past with the mysterious \"Madame\" of the outposts hints at deeper secrets. A woman of contradictions: both a courtesan and a compassionate soul.",
+     "card_raw": "**Madame de Xtcurovb**\n*Elegant, fierce, and noble\u2014yet entangled in courtly intrigue.*\n\nA woman of striking beauty, with chestnut hair and piercing eyes, Madame carries herself with regal poise. Captured as a spy, she defies the lecherous de Fontvow with a slap that leaves him reeling. Later revealed as the King\u2019s mistress, she wields influence yet harbors a tender heart\u2014tending to the wounded and pleading for mercy. Her loyalty to the King is unshaken, but her past with the mysterious \"Madame\" of the outposts hints at deeper secrets. A woman of contradictions: both a courtesan and a compassionate soul.",
+     "leak": false,
+     "has_alias": true,
+     "words": 98
+    }
+   }
+  },
+  "C39858_1": {
+   "T": [
+    "Bagot",
+    "William"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Little Billee**\n*Artist, dreamer, and reluctant aristocrat*\n\nA slender, graceful young man with coal-black hair, delicate features, and piercing blue eyes, Little defied his family\u2019s expectations to pursue art in Paris. He paints toreadors, recites poetry, and fences with reckless abandon\u2014though he\u2019s no match for his more skilled friends. Despite his refined upbringing (his mother is a countess), he embraces bohemian life, sketching models, feasting on saveloy, and longing for purity in a world that often disappoints him. His quiet melancholy hides a sharp wit and a heart that yearns for beauty, both in art and in people.\n\n*Key traits:* Artistic, introspective",
+     "card_raw": "**Casey Rowan**\n*Artist, dreamer, and reluctant aristocrat*\n\nA slender, graceful young man with coal-black hair, delicate features, and piercing blue eyes, Casey defied his family\u2019s expectations to pursue art in Jcvis. He paints toreadors, recites poetry, and fences with reckless abandon\u2014though he\u2019s no match for his more skilled friends. Despite his refined upbringing (his mother is a countess), he embraces bohemian life, sketching models, feasting on saveloy, and longing for purity in a world that often disappoints him. His quiet melancholy hides a sharp wit and a heart that yearns for beauty, both in art and in people.\n\n*Key traits:* Artistic, introspective",
+     "leak": false,
+     "has_alias": true,
+     "words": 102
+    }
+   }
+  },
+  "C40829_1": {
+   "T": [
+    "Roland"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Jack Bethune**\n*Soldier, Novelist, Suspect*\n\nA tall, muscular man of nearly forty, with a prematurely greying moustache and a commanding presence. A celebrated \"younger novelist\" known for his insight into women\u2019s nature, he moves in elite circles, engaged to the spirited Dora Stretton. Though charming and well-connected, his past is shadowed by suspicion\u2014his sudden panic at an unexpected visitor and his refusal to allow entry to a locked room hint at darker secrets. A confidant of Sybil, he may be entangled in a deadly conspiracy. Is he a friend\u2014or a murderer?",
+     "card_raw": "**Rutherford Yardley**\n*Soldier, Novelist, Suspect*\n\nA tall, muscular man of nearly forty, with a prematurely greying moustache and a commanding presence. A celebrated \"younger novelist\" known for his insight into women\u2019s nature, he moves in elite circles, engaged to the spirited Bridget Radcliffe. Though charming and well-connected, his past is shadowed by suspicion\u2014his sudden panic at an unexpected visitor and his refusal to allow entry to a locked room hint at darker secrets. A confidant of Chaloner, he may be entangled in a deadly conspiracy. Is he a friend\u2014or a murderer?",
+     "leak": false,
+     "has_alias": false,
+     "words": 91
+    }
+   }
+  },
+  "C40833_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Valerie Duvauchel**\nA defiant, sharp-witted woman with a turbulent past. Once a cardsharper\u2019s tool, she refuses reconciliation, fiercely resisting her abusive husband\u2019s control. Clever and resilient, she defies threats with bold defiance. Linked to a notorious unsolved crime, she\u2019s a fugitive pursued by detectives. Her past holds dark secrets, and her name evokes suspicion. Though grief-stricken by a lover\u2019s death, she harbors vengeance against the woman she believes responsible\u2014herself. A complex figure of strength and hidden pain.",
+     "card_raw": "**Carrow Hollis**\nA defiant, sharp-witted woman with a turbulent past. Once a cardsharper\u2019s tool, she refuses reconciliation, fiercely resisting her abusive husband\u2019s control. Clever and resilient, she defies threats with bold defiance. Linked to a notorious unsolved crime, she\u2019s a fugitive pursued by detectives. Her past holds dark secrets, and her name evokes suspicion. Though grief-stricken by a lover\u2019s death, she harbors vengeance against the woman she believes responsible\u2014herself. A complex figure of strength and hidden pain.",
+     "leak": false,
+     "has_alias": true,
+     "words": 77
+    }
+   }
+  },
+  "C41185_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Arthur Porter (\"Guinness\")**\n*Cunning, cultured criminal mastermind*\n\nA smooth-talking, adaptable con artist with a penchant for deception. Known in underworld circles as \"Guinness,\" Porter is a clever, well-educated crook who thrives in high society, blending respectability with criminal schemes. He and his associates\u2014including Gordon Gray and Freda Crisp\u2014parasitize London society with daring heists and intricate lies. Despite his polished facade, he\u2019s ruthless, denying his true identity to a traumatized woman who recognizes him, fearing her recovered memory threatens his schemes. A master of disguise, he poses as a doctor to manipulate events, but his panic reveals the truth",
+     "card_raw": "**Sidney Lawrence (\"Fuiwwtss\")**\n*Cunning, cultured criminal mastermind*\n\nA smooth-talking, adaptable con artist with a penchant for deception. Known in underworld circles as \"Fuiwwtss,\" Lawrence is a clever, well-educated crook who thrives in high society, blending respectability with criminal schemes. He and his associates\u2014including Philip Fvcz and Farrow Crisp\u2014parasitize Koweow society with daring heists and intricate lies. Despite his polished facade, he\u2019s ruthless, denying his true identity to a traumatized woman who recognizes him, fearing her recovered memory threatens his schemes. A master of disguise, he poses as a doctor to manipulate events, but his panic reveals the truth",
+     "leak": false,
+     "has_alias": true,
+     "words": 98
+    }
+   }
+  },
+  "C41453_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Miller, James Harding**\n*\"The Mysterious Mr. Miller\"*\n\nA cosmopolitan scoundrel with a gentlemanly exterior, Miller is a suspected mastermind behind international frauds and robberies. His sharp, calculating gaze and hidden motives make him a dangerous figure. Though charming, his wealth stems from dubious sources, and he associates with a notorious gang. His daughter, Lucie, fiercely defends him, but whispers of his past crimes linger. A man of secrets, Miller\u2019s true allegiances remain as elusive as his shadowy dealings.",
+     "card_raw": "**Dana, Dcnts Hcveiwf**\n*\"The Mysterious Mr. Dana\"*\n\nA cosmopolitan scoundrel with a gentlemanly exterior, Dana is a suspected mastermind behind international frauds and robberies. His sharp, calculating gaze and hidden motives make him a dangerous figure. Though charming, his wealth stems from dubious sources, and he associates with a notorious gang. His daughter, Nora, fiercely defends him, but whispers of his past crimes linger. A man of secrets, Dana\u2019s true allegiances remain as elusive as his shadowy dealings.",
+     "leak": false,
+     "has_alias": true,
+     "words": 78
+    }
+   }
+  },
+  "C41456_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: Vera Seroff\u2019s Uncle**\n\nA domineering, cruel figure who holds Vera in his thrall, though not as her husband. His control over her is absolute, and she fears defying him. Vera despises him with fierce hatred, yet cannot escape. His presence is oppressive, and his motives remain shrouded in secrecy. Though he claims familial ties, he is unworthy of the name. His power over Vera is absolute, and she dares not reveal the full truth. A shadowy, menacing force in her life.\n\n*(80 words)*",
+     "card_raw": "**Character Card: Alice Abernathy\u2019s Uncle**\n\nA domineering, cruel figure who holds Alice in his thrall, though not as her husband. His control over her is absolute, and she fears defying him. Alice despises him with fierce hatred, yet cannot escape. His presence is oppressive, and his motives remain shrouded in secrecy. Though he claims familial ties, he is unworthy of the name. His power over Alice is absolute, and she dares not reveal the full truth. A shadowy, menacing force in her life.\n\n*(80 words)*",
+     "leak": false,
+     "has_alias": false,
+     "words": 85
+    }
+   }
+  },
+  "C42529_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: \"That Scamp\" (Prince Hafer)**\n\n**Name:** Prince Hafer, Chief of the Ossets\n**Title:** \"That Scamp\" / \"Prince of Darkness\"\n**Affiliation:** Ossets (dusky, mountain-dwelling people)\n**Traits:** Charismatic, cunning, ruthless, and manipulative. A \"young savage\" with a \"wonderful reputation\" among his people, yet his actions reveal a dark, vengeful nature. Dyes his teeth yellow\u2014a sign of his devilish cunning.\n\n**Motivations:** Power, revenge, and control. He schemes against S\u00fbr Imar, exploiting his influence and the Princess Marva\u2019s schemes. His \"fling\" in civilization masks deeper",
+     "card_raw": "**Character Card: \"That Scamp\" (Prince Barnaby)**\n\n**Name:** Prince Barnaby, Chief of the Osstbs\n**Title:** \"That Scamp\" / \"Prince of Darkness\"\n**Affiliation:** Osstbs (dusky, mountain-dwelling people)\n**Traits:** Charismatic, cunning, ruthless, and manipulative. A \"young savage\" with a \"wonderful reputation\" among his people, yet his actions reveal a dark, vengeful nature. Dyes his teeth yellow\u2014a sign of his devilish cunning.\n\n**Motivations:** Power, revenge, and control. He schemes against S\u00fbr Kenneth, exploiting his influence and the Princess Vandeleur\u2019s schemes. His \"fling\" in civilization masks deeper",
+     "leak": false,
+     "has_alias": true,
+     "words": 82
+    }
+   }
+  },
+  "C44924_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**The Figure (Canetto, Prince of the Forest Mannikins)**\n\nA diminutive yet commanding presence, Canetto stands three feet tall, clad in a dark green coat, velveteen waistcoat, and corduroys. His wide-awake hat and hunting-whip exude a blend of mischief and wisdom. His sparkling eyes betray sharp intelligence and unshakable good humor. Though small, his authority is undeniable\u2014snakes and pole-cats obey his whim, and crowds part at his approach. A ruler of the forest folk, he wields power with a playful yet unyielding air, leaving others to wonder at his true nature.",
+     "card_raw": "**The Figure (Lcwtbbo, Prince of the Forest Mannikins)**\n\nA diminutive yet commanding presence, Lcwtbbo stands three feet tall, clad in a dark green coat, velveteen waistcoat, and corduroys. His wide-awake hat and hunting-whip exude a blend of mischief and wisdom. His sparkling eyes betray sharp intelligence and unshakable good humor. Though small, his authority is undeniable\u2014snakes and pole-cats obey his whim, and crowds part at his approach. A ruler of the forest folk, he wields power with a playful yet unyielding air, leaving others to wonder at his true nature.",
+     "leak": false,
+     "has_alias": true,
+     "words": 90
+    }
+   }
+  },
+  "C46367_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Talbot's Angles**\nA historic family homestead, steeped in tradition and tied to the Talbots' legacy. Once the heart of Linda Talbot\u2019s world, it now stands as a symbol of her longing\u2014its fate uncertain, caught between Grace\u2019s possessiveness and Linda\u2019s quiet resilience. The old church and moss-grown graves whisper of generations past, while its future hangs on marriage, inheritance, and the stubborn will of those who call it home. A place of memory, silver, and unspoken claims.",
+     "card_raw": "**Fenton's Basil**\nA historic family homestead, steeped in tradition and tied to the Bckxobs' legacy. Once the heart of Agnes Fenton\u2019s world, it now stands as a symbol of her longing\u2014its fate uncertain, caught between Grace\u2019s possessiveness and Agnes\u2019s quiet resilience. The old church and moss-grown graves whisper of generations past, while its future hangs on marriage, inheritance, and the stubborn will of those who call it home. A place of memory, silver, and unspoken claims.",
+     "leak": false,
+     "has_alias": true,
+     "words": 76
+    }
+   }
+  },
+  "C47996_1": {
+   "T": [
+    "Pepys",
+    "Samuel"
+   ],
+   "measurable_A": true,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Character Card: The Author**\n\nA witty, observant chronicler of 18th-century society, blending sharp satire with tender affection. Known for his vivid, detailed letters and essays, he captures the eccentricities of his era with humor and insight. Though prone to exaggeration and playful deception, his work reveals a deep, if flawed, humanity\u2014generous, impulsive, and endlessly curious. His writings, often self-deprecating, betray a keen intellect and a heart that, despite its follies, remains devoted to friendship and truth.\n\n*(Word count: 80)*",
+     "card_raw": "**Character Card: The Author**\n\nA witty, observant chronicler of 18th-century society, blending sharp satire with tender affection. Known for his vivid, detailed letters and essays, he captures the eccentricities of his era with humor and insight. Though prone to exaggeration and playful deception, his work reveals a deep, if flawed, humanity\u2014generous, impulsive, and endlessly curious. His writings, often self-deprecating, betray a keen intellect and a heart that, despite its follies, remains devoted to friendship and truth.\n\n*(Word count: 80)*",
+     "leak": false,
+     "has_alias": true,
+     "words": 79
+    }
+   }
+  },
+  "C49468_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Baron de Mardyke**\nA mysterious nobleman of uncertain origins, Baron de Mardyke speaks with quiet authority, hinting at secrets and hidden motives. His calm demeanor masks a sharp intellect, as he navigates intrigue with calculated precision. Though Lady Arabella questions his identity, he remains unshaken, insisting on the truth of his name. His errands are urgent, his words laced with significance, and his presence commands attention\u2014yet his true allegiance and intentions remain veiled. A man of power and purpose, he moves through the world with deliberate grace, leaving others to wonder at his designs.",
+     "card_raw": "**Lindsay de Sinclair**\nA mysterious nobleman of uncertain origins, Lindsay de Sinclair speaks with quiet authority, hinting at secrets and hidden motives. His calm demeanor masks a sharp intellect, as he navigates intrigue with calculated precision. Though Lady Yeomans questions his identity, he remains unshaken, insisting on the truth of his name. His errands are urgent, his words laced with significance, and his presence commands attention\u2014yet his true allegiance and intentions remain veiled. A man of power and purpose, he moves through the world with deliberate grace, leaving others to wonder at his designs.",
+     "leak": false,
+     "has_alias": false,
+     "words": 94
+    }
+   }
+  },
+  "C49850_1": {
+   "T": [],
+   "measurable_A": false,
+   "cells": {
+    "P_pseudo": {
+     "card": "**Cicely \u2013 The Rose of the Tower**\n\nA woman of mystery, Cicely is the adopted daughter of Dame Prudentia Trusbut, though her true lineage remains unknown\u2014rumored to be the child of a noblewoman imprisoned in the Tower. Known for her beauty and grace, she is called the \"Rose of the Tower,\" yet her heart is fiercely independent. She loves Cholmondeley with unwavering devotion, defying danger to save him, even when faced with the cruel jailer Nightgall. Though she doubts Cholmondeley\u2019s promises, her love compels her to act, proving her courage and loyalty. Her story is one of passion, sacrifice, and resilience in a world of intrigue.",
+     "card_raw": "**Delia \u2013 The Rose of the Tower**\n\nA woman of mystery, Delia is the adopted daughter of Dame Jvuetwbic Bvusxub, though her true lineage remains unknown\u2014rumored to be the child of a noblewoman imprisoned in the Tower. Known for her beauty and grace, she is called the \"Rose of the Tower,\" yet her heart is fiercely independent. She loves Gideon with unwavering devotion, defying danger to save him, even when faced with the cruel jailer Wifhbfckk. Though she doubts Gideon\u2019s promises, her love compels her to act, proving her courage and loyalty. Her story is one of passion, sacrifice, and resilience in a world of intrigue.",
+     "leak": false,
+     "has_alias": true,
+     "words": 106
+    }
+   }
+  }
+ },
+ "status": "COMPLETE"
+}

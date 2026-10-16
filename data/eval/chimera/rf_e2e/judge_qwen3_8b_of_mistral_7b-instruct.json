@@ -1,0 +1,350 @@
+{
+ "judge": "qwen3:8b",
+ "of": "mistral:7b-instruct",
+ "prompt": "A reading assistant wrote this character card.\nCard: {CARD}\n\nDoes the card state or clearly imply that the character called \"{ALIAS}\" is the same person as \"{IDENTITY}\"? Reply as JSON: {{\"identifies\": true}} or {{\"identifies\": false}}.",
+ "labels": {
+  "C965_1": {
+   "W_orig": true,
+   "W_ren": true,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C1848_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C1942_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C2078_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C2153_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C2160_1": {
+   "W_orig": true,
+   "W_ren": true,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C2516_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C3815_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C4276_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C4537_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C5122_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C5155_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C5174_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C5660_1": {
+   "W_orig": true,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C6086_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C7079_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": true,
+   "P_ren": false
+  },
+  "C7265_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C7497_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C7510_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C7661_1": {
+   "W_orig": false,
+   "W_ren": true,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C7671_1": {
+   "W_orig": true,
+   "W_ren": true,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C7671_2": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C7671_3": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C7713_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C7974_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C9589_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C9752_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C9847_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": true,
+   "P_ren": false
+  },
+  "C11431_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": true,
+   "P_ren": false
+  },
+  "C11643_1": {
+   "W_orig": false,
+   "W_ren": true,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C11720_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C14498_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C17434_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C21557_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C21729_1": {
+   "W_orig": true,
+   "W_ren": true,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C24804_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C28337_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C33081_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C33294_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C33538_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C35443_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C36027_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C36592_1": {
+   "W_orig": true,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C37336_1": {
+   "W_orig": true,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C38323_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C39858_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C40829_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C40833_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C41185_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C41453_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C41456_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C42529_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C44924_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C46367_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C47996_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C49468_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  },
+  "C49850_1": {
+   "W_orig": false,
+   "W_ren": false,
+   "P_orig": false,
+   "P_ren": false
+  }
+ },
+ "status": "COMPLETE"
+}
