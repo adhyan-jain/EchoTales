@@ -179,7 +179,36 @@ def fig_channels():
     plt.close(fig)
 
 
+def fig_rf():
+    """Whole-book vs versioned character card leak per model, renamed (cipher) text, both rules; addenda 6 to 10."""
+    rf = json.loads((ROOT / "rf_e2e/analysis.json").read_text())
+    nm = {"qwen2.5:7b": "Qwen2.5-7B", "llama3.1:8b": "Llama-3.1-8B", "mistral:7b-instruct": "Mistral-7B", "qwen32b": "Qwen2.5-32B", "mistral24": "Mistral-24B"}
+    rob = rf.get("robust") or {}
+    fig, axes = plt.subplots(1, 2, figsize=(9.4, 3.3), sharey=True)
+    for ax, key, title in ((axes[0], "A_primary_EXPLICIT_IMPLIED", "Strict text rule (19 events)"), (axes[1], "B_EXPLICIT_IMPLIED", "Judge rule (54 events)")):
+        labels, w, pv = [], [], []
+        for st in (rf, rf.get("larger") or {}):
+            for m, r in ((st.get(key) or {}).get("per_model") or {}).items():
+                labels.append(nm.get(m, m)); w.append(pct(r["W_ren"])); pv.append(pct(r["P_ren"]))
+        x = range(len(labels))
+        ax.bar([i - 0.2 for i in x], w, 0.4, color=C["B"], label="Whole-book card (stamped at first mention)")
+        ax.bar([i + 0.2 for i in x], pv, 0.4, color=C["A"], label="Versioned card (reader's prefix only)")
+        rr = (rob.get("ruleA" if key.startswith("A") else "ruleB") or {}).get("rates")
+        if rr and "Qwen2.5-7B" in labels:
+            i = labels.index("Qwen2.5-7B")
+            ax.scatter([i - 0.2], [pct(rr["W_ren_nospoil"])], marker="v", color=C["ink"], zorder=3, label="Whole-book + 'avoid spoilers' (Qwen2.5-7B)")
+        ax.axvline(2.5, color="#bbbbbb", lw=0.8, ls=":")
+        ax.set_xticks(list(x)); ax.set_xticklabels(labels, rotation=25, ha="right", fontsize=8)
+        ax.set_title(title, fontsize=9)
+    axes[0].set_ylabel("% of events where the card names\nthe hidden identity early (cipher names)")
+    h, lab = axes[1].get_legend_handles_labels()
+    fig.legend(h, lab, fontsize=7.5, loc="lower center", ncol=3, frameon=False)
+    fig.tight_layout(rect=(0, 0.08, 1, 1))
+    fig.savefig(OUT / "fig_rf.png", dpi=200)
+    plt.close(fig)
+
+
 if __name__ == "__main__":
-    for f in (fig_forest, fig_cue, fig_dose, fig_pooled, fig_arch, fig_channels):
+    for f in (fig_forest, fig_cue, fig_dose, fig_pooled, fig_arch, fig_channels, fig_rf):
         f()
         print("wrote", f.__name__)
