@@ -27,6 +27,9 @@ dv = dose["valid_local_pool_gap_vs_local_recognition"]
 conf = J("confirm/main/analysis.json")
 occ = J("confirm/main/olmo_corpus_check.json")
 c1, c2, c3, cp1, c5 = conf["H1"], conf["H2"], conf["H3"], conf["P1"], conf["H5"]["pooled"]
+rf = J("rf_e2e/analysis.json")
+rfa, rfb = rf["A_primary_EXPLICIT_IMPLIED"]["pooled"], rf.get("B_EXPLICIT_IMPLIED", {}).get("pooled", {})
+pc = lambda x: f"{100 * x:.1f}"  # noqa: E731
 
 INK, BLUE, RED, GREY, PALE = RGBColor(0x1B, 0x1F, 0x2A), RGBColor(0x1F, 0x6F, 0xB5), RGBColor(0xA6, 0x1C, 0x1C), RGBColor(0x5A, 0x62, 0x70), RGBColor(0xEE, 0xF3, 0xF9)
 prs = Presentation()
@@ -161,6 +164,11 @@ s = slide("Confirmatory run: no gap on obscure books", f"68 events from 65 publi
 bullets(s, [f"68 events, 65 books, 32 primary events; Qwen2.5-32B, OLMo-2-32B, Mistral-Small-3.2-24B; text-derived, no human labels.", f"Pooled gap original minus renamed {pts(c1['pooled'])} points {ci(*c1['ci'])}: not detected (obscure books; closed book recovers 2 of 68).",
             f"Fame contrast {pts(cp1['difference'])} {ci(*cp1['ci'])}, p = {cp1['p_one_sided']:.4f}: not significant; smallest detectable about 13 points.", f"Pseudonyms: premature naming {100 * c5['pre_O']:.1f}% to {100 * c5['pre_P2']:.1f}%, accuracy {pts(c5['utility_post_P2_minus_O']['point'])} points. Recap spoilers: 0 detected. OLMo training-data link: Spearman {occ['spearman']:+.2f}, p = {occ['perm_p_two_sided']:.2f}."], size=17)
 
+
+# 12b second system
+s = slide("Found and fixed: whole-book character cards leak the reveal", f"Pre-registered before any card was read. The common assistant design builds a character card once from the whole book and shows it from the first appearance. On renamed names no model has seen, it named the hidden identity before the reveal in {pc(rfb['rates']['W_ren'])} percent of events by the judge and {pc(rfa['rates']['W_ren'])} percent by the strict text rule; a versioned card built from the prefix leaked in {pc(rfb['rates']['P_ren'])} percent. So the leak is the pipeline's design, not memory, and the versioned card fixes it at the cost of one rebuild per position.")
+bullets(s, [f"Whole-book card, renamed names: leak {pc(rfb['rates']['W_ren'])}% (judge), {pc(rfa['rates']['W_ren'])}% (strict text rule)", f"Versioned (prefix-built) card: leak {pc(rfb['rates']['P_ren'])}% renamed, {pc(rfb['rates']['P_orig'])}% original names",
+            f"Input-channel leak W minus P: {pts(rfb['RF1_input_channel']['estimate'])} points {ci(*rfb['RF1_input_channel']['ci'])}; memory-only leak {pts(rfb['RF3_memory_channel']['estimate'])} points", "Same frozen events and reveal oracle as the confirmatory study; pre-registered (addenda 6 to 8)"] + ([f"Larger 24-32B models: whole-book card {pc(rf['larger']['B_EXPLICIT_IMPLIED']['pooled']['rates']['W_ren'])}% vs versioned {pc(rf['larger']['B_EXPLICIT_IMPLIED']['pooled']['rates']['P_ren'])}%; memory-only {pts(rf['larger']['B_EXPLICIT_IMPLIED']['pooled']['RF3_memory_channel']['estimate'])} points"] if (rf.get('larger') or {}).get('B_EXPLICIT_IMPLIED', {}).get('pooled') else []), size=17)
 
 # 13 team
 s = slide("Team and contributions", "The project work was divided equally among all three team members (33.3% each). Adhyan led narrative graph architecture and the prefix causality audit; Atharva led experimental methodology, event mining, and local model leakage probing; Aryan led confirmatory cloud benchmarking, statistical meta-analysis, and negative controls.")
