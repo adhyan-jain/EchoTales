@@ -1,0 +1,61 @@
+{
+  "manifest_version": "1.0",
+  "generated_at": "2026-10-13T16:38:12Z",
+  "model_configuration": {
+    "model_id": "gpt-5.6-luna",
+    "endpoint": "https://api.openai.com/v1/chat/completions",
+    "reasoning_effort": "low",
+    "batch_size": 10,
+    "response_format": "json_object"
+  },
+  "datasets": {
+    "human_review_200": {
+      "source_file": "data/eval/human_review_200.csv",
+      "annotated_file": "data/eval/human_review_200_annotated.csv",
+      "total_rows": 200,
+      "pilot_rows_reused": 10,
+      "fresh_api_rows": 190,
+      "api_batches": 19,
+      "prompt_tokens": 27146,
+      "completion_tokens": 11841,
+      "reasoning_tokens": 2318,
+      "total_tokens": 38987,
+      "cost_usd": 0.018628
+    },
+    "human_review_hardcases_88": {
+      "source_file": "data/eval/human_review_hardcases_88.csv",
+      "annotated_file": "data/eval/human_review_hardcases_88_annotated.csv",
+      "total_rows": 88,
+      "pilot_rows_reused": 0,
+      "fresh_api_rows": 88,
+      "api_batches": 9,
+      "prompt_tokens": 11458,
+      "completion_tokens": 6361,
+      "reasoning_tokens": 2006,
+      "total_tokens": 17819,
+      "cost_usd": 0.009225
+    },
+    "pilot_run": {
+      "output_file": "data/eval/pilot_review_10.csv",
+      "rows": 10,
+      "api_batches": 1,
+      "prompt_tokens": 1417,
+      "completion_tokens": 630,
+      "reasoning_tokens": 0,
+      "total_tokens": 2047,
+      "cost_usd": 0.000984
+    }
+  },
+  "aggregate_telemetry": {
+    "total_annotated_rows": 288,
+    "total_api_requests": 29,
+    "total_prompt_tokens": 40021,
+    "total_completion_tokens": 18832,
+    "total_reasoning_tokens": 4324,
+    "total_tokens": 58853,
+    "total_cost_usd": 0.028837,
+    "budget_cap_usd": 0.10,
+    "budget_headroom_percent": 71.16
+  },
+  "status": "ready_for_human_adjudication"
+}

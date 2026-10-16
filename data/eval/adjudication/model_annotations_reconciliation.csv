@@ -1,0 +1,289 @@
+sample_id,sheet_type,category,chapter,mention,target_evaluated,target_value,model_id,model_reviewer_label,model_reviewer_notes,is_pilot_row
+R001,standard_200,unresolved_name,1,Bai Ning Bing,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention refers to Bai Ning Bing, but the system left the entity unresolved.",1
+R002,standard_200,unresolved_name,1,Bai Ning Bing,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention refers to Bai Ning Bing, but the system left the entity unresolved.",0
+R003,standard_200,unresolved_name,1,Bai Ning Bing,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention refers to Bai Ning Bing, but the system left the entity unresolved.",0
+R004,standard_200,title,1,the clan head,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention denotes the clan head, but the excerpt does not identify that person by name.",1
+R005,standard_200,title,1,the clan head,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention refers to the clan head, but the excerpt does not identify that person by name and the system left it unresolved.",0
+R006,standard_200,background,4,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, who is explicitly described as having just been reborn.",1
+R007,standard_200,easy_name,6,Fang Zheng,predicted_entity,Fang Zheng,gpt-5.6-luna,correct,"The mention refers to Gu Yue Fang Zheng, who is named immediately before the marked text.",1
+R008,standard_200,easy_name,8,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, who is identified as the older brother whose shadow is being stepped on.",0
+R009,standard_200,easy_name,9,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, explicitly addressed as the speaker's nephew.",0
+R010,standard_200,relational,12,my lord,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,The hunter addresses Fang Yuan as 'my lord' while apologizing for offending him.,1
+R011,standard_200,background,13,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, who is described as standing in the bamboo forest.",0
+R012,standard_200,relational,15,Sir,predicted_entity,Fang Yuan,gpt-5.6-luna,incorrect,"The mention refers to the Flower Wine Monk, whose feet the speaker is embracing, not Fang Yuan.",0
+R013,standard_200,relational,15,sir,predicted_entity,Fang Yuan,gpt-5.6-luna,incorrect,"The mention refers to the person being addressed by the servant, evidently the Flower Wine Monk, not Fang Yuan.",0
+R014,standard_200,relational,15,sir,predicted_entity,Fang Yuan,gpt-5.6-luna,incorrect,"The mention refers to the person who can cure the fourth generation clan head, the Flower Wine Monk, not Fang Yuan.",0
+R015,standard_200,relational,16,Sir,predicted_entity,Fang Yuan,gpt-5.6-luna,incorrect,"The mention refers to Sir Flower Wine, explicitly named in the surrounding dialogue, not Fang Yuan.",0
+R016,standard_200,relational,20,sir,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,The subordinate addresses Fang Yuan as 'sir' while reporting news to him.,0
+R017,standard_200,relational,20,Sir,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,The subordinate's statement indicates that 'Sir' refers to Fang Yuan.,0
+R018,standard_200,relational,21,sir,predicted_entity,Fang Yuan,gpt-5.6-luna,incorrect,"The phrase 'sir elder' refers to an unspecified elder whom Fang Yuan met, not Fang Yuan himself.",0
+R019,standard_200,background,21,Chi Chen,predicted_entity,Gu Yue Chi Chen,gpt-5.6-luna,correct,The excerpt explicitly identifies Chi Chen as Gu Yue Chi Chen when he enters the room.,0
+R020,standard_200,relational,23,miss,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,The mention 'miss' is part of the phrase 'miss the opportunity' and does not identify a person.,0
+R021,standard_200,relational,23,sir,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The innkeeper's messenger addresses the wine-buying young sir, who is Fang Yuan.",0
+R022,standard_200,background,24,Chi Cheng,predicted_entity,Chi Cheng,gpt-5.6-luna,correct,"The possessive reference to Chi Cheng identifies Gu Yue Chi Cheng, who is reacting to Mo Bei.",0
+R023,standard_200,alias,25,Mo Bei,predicted_entity,Gu Yue Mo Bei,gpt-5.6-luna,correct,"The mention refers to Gu Yue Mo Bei, who is listed alongside Chi Cheng and Fang Zheng.",1
+R024,standard_200,relational,28,sir,predicted_entity,Fang Yuan,gpt-5.6-luna,incorrect,"The guard addresses an elder as 'sir elder,' so the title does not refer to Fang Yuan.",0
+R025,standard_200,relational,30,uncle,predicted_entity,Gu Yue Dong Tu,gpt-5.6-luna,correct,"The mention refers to Gu Yue Dong Tu, who is explicitly identified as Fang Yuan's uncle.",1
+R026,standard_200,relational,30,Uncle,predicted_entity,Gu Yue Dong Tu,gpt-5.6-luna,correct,"The uncle speaking to Fang Zheng is Gu Yue Dong Tu, his uncle.",0
+R027,standard_200,alias,30,Mo Bei,predicted_entity,Gu Yue Mo Bei,gpt-5.6-luna,correct,"The excerpt identifies Mo Bei as Gu Yue Mo Bei, who then attacks Fang Yuan.",0
+R028,standard_200,relational,31,Miss,predicted_entity,UNRESOLVED,gpt-5.6-luna,incorrect,"The title “young Miss” refers to Gu Yue Mo Yan, who is being greeted upon her return.",0
+R029,standard_200,relational,31,Miss,predicted_entity,UNRESOLVED,gpt-5.6-luna,incorrect,"The title “young Miss” refers to Gu Yue Mo Yan, who is being greeted upon her return.",0
+R030,standard_200,relational,31,Miss,predicted_entity,UNRESOLVED,gpt-5.6-luna,incorrect,"The title “young Miss” refers to Gu Yue Mo Yan, who is being greeted upon her return.",0
+R031,standard_200,alias,31,Mo Yan,predicted_entity,Gu Yue Mo Yan,gpt-5.6-luna,correct,"The mention refers to Gu Yue Mo Yan, who responds about her younger brother Mo Bei.",1
+R032,standard_200,relational,31,Miss,predicted_entity,UNRESOLVED,gpt-5.6-luna,incorrect,"The phrase “our young Miss” refers to Gu Yue Mo Yan, the Mo family daughter settling the score.",0
+R033,standard_200,alias,32,Mo Yan,predicted_entity,Gu Yue Mo Yan,gpt-5.6-luna,correct,"The honorific “Mo Yan” refers to Gu Yue Mo Yan, whom the guard addresses directly.",0
+R034,standard_200,alias,33,Mo Yan,predicted_entity,Gu Yue Mo Yan,gpt-5.6-luna,correct,"The mention “Mo Yan” refers to Gu Yue Mo Yan, who withdraws her arm.",0
+R035,standard_200,background,34,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, whose eyes shine as he decides to stop attacking.",0
+R036,standard_200,relational,35,Miss,predicted_entity,UNRESOLVED,gpt-5.6-luna,incorrect,"The phrase “young Miss” refers to Gu Yue Mo Yan, whose servant is being chased.",0
+R037,standard_200,background,36,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, whom guards reported Mo Yan had trapped in the Academy.",0
+R038,standard_200,alias,37,Mo Yan,predicted_entity,Gu Yue Mo Yan,gpt-5.6-luna,correct,"The mention “Mo Yan” refers to Gu Yue Mo Yan, who holds her injured shoulder.",0
+R039,standard_200,background,37,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, whose image appears in her mind.",0
+R040,standard_200,background,42,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, whom Jia Jin Sheng addresses directly.",0
+R041,standard_200,easy_name,42,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, who is being called little brother by Jin Jia Sheng.",0
+R042,standard_200,relational,44,Sir,predicted_entity,Fang Yuan,gpt-5.6-luna,incorrect,"The mention refers to Jia Fu, the caravan leader being addressed by the young Gu Master.",0
+R043,standard_200,relational,45,Sir,predicted_entity,Fang Yuan,gpt-5.6-luna,incorrect,"The mention refers to Jia Fu, who is being addressed as a Rank four Gu Master.",0
+R044,standard_200,alias,48,Mo Bei,predicted_entity,Gu Yue Mo Bei,gpt-5.6-luna,correct,"The mention refers to Gu Yue Mo Bei, who was beaten until he vomited blood.",0
+R045,standard_200,easy_name,53,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, whose appointment as class chairman is being considered.",0
+R046,standard_200,title,55,the clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The clan leader is identified in the excerpt as Gu Yue Bo, but the system left the entity unresolved.",0
+R047,standard_200,title,55,The clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The clan leader is a specific person in the conversation, but the system left the entity unresolved.",0
+R048,standard_200,easy_name,55,Jia Fu,predicted_entity,Jia Fu,gpt-5.6-luna,correct,"The mention refers to Jia Fu, who nods after the female Gu Master identifies Fang Yuan.",0
+R049,standard_200,title,55,the clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The clan leader is Gu Yue Bo, as the speaker directly addresses Brother Gu Yue in that role, but the system did not link the mention.",0
+R050,standard_200,title,56,The clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The clan leader is Gu Yue Bo, who interrupts Jia Jin Sheng's interrogation, but the system did not link the mention.",0
+R051,standard_200,title,56,Jia family’s clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The Jia family’s clan leader is Jia Fu, who is described as seeking to divide the family assets, but the system did not link the mention.",0
+R052,standard_200,easy_name,58,Ren Zu,predicted_entity,Ren Zu,gpt-5.6-luna,correct,"The mention refers to Ren Zu, who accepts the second deal and becomes middle-aged.",0
+R053,standard_200,background,58,Gu Yue Bo,predicted_entity,Gu Yue Bo,gpt-5.6-luna,correct,"The mention refers to Gu Yue Bo, who speaks with authority about the situation.",0
+R054,standard_200,relational,58,sir,predicted_entity,Fang Yuan,gpt-5.6-luna,incorrect,"The title sir refers to Gu Yue Bo, whom Fang Yuan addresses as clan elder, not to Fang Yuan.",0
+R055,standard_200,relational,58,sir,predicted_entity,Fang Yuan,gpt-5.6-luna,incorrect,"The title sir refers to Gu Yue Bo, the clan leader being addressed by the academy elder, not to Fang Yuan.",0
+R056,standard_200,background,65,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, who detects traces on the mountain path.",0
+R057,standard_200,alias,73,Mo Bei,predicted_entity,Gu Yue Mo Bei,gpt-5.6-luna,correct,"The mention Mo Bei refers to Gu Yue Mo Bei, who is mentioned alongside Chi Cheng.",0
+R058,standard_200,title,77,Wild boar king,predicted_entity,UNRESOLVED,gpt-5.6-luna,incorrect,"Wild boar king refers to an animal, not a person, place, or organisation.",0
+R059,standard_200,easy_name,82,Gu Yue Bo,predicted_entity,Gu Yue Bo,gpt-5.6-luna,correct,"The mention refers to Gu Yue Bo, explicitly identified as the clan leader.",0
+R060,standard_200,easy_name,85,Gu Yue Bo,predicted_entity,Gu Yue Bo,gpt-5.6-luna,correct,"The mention refers to Gu Yue Bo, who pats the other character's shoulders and offers encouragement.",0
+R061,standard_200,title,86,the clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The clan leader is likely Gu Yue Bo, but the system left the referent unresolved.",0
+R062,standard_200,alias,88,Jiao San,predicted_entity,Gu Yue Jiao San,gpt-5.6-luna,correct,"The mention refers to Gu Yue Jiao San, who points toward the destination.",0
+R063,standard_200,alias,89,Jiao San,predicted_entity,Gu Yue Jiao San,gpt-5.6-luna,correct,"The mention refers to Gu Yue Jiao San, who speaks to Fang Yuan about the hunting mission.",0
+R064,standard_200,background,89,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention directly addresses Fang Yuan, the person being urged to thank the group leader.",0
+R065,standard_200,background,90,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, whose ability to complete the mission is being discussed.",0
+R066,standard_200,easy_name,92,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, who had approached the speaker five days earlier.",0
+R067,standard_200,relational,93,grandfather,predicted_entity,Gu Yue Chi Lian,gpt-5.6-luna,correct,"The mention refers to Gu Yue Chi Lian, explicitly identified as the character's grandfather.",0
+R068,standard_200,relational,94,uncle,predicted_entity,Gu Yue Dong Tu,gpt-5.6-luna,correct,"The mention refers to Gu Yue Dong Tu, explicitly identified as the character's uncle.",0
+R069,standard_200,alias,95,Jiao San,predicted_entity,Gu Yue Jiao San,gpt-5.6-luna,correct,"Jiao San refers to Gu Yue Jiao San, who is angrily addressing Fang Yuan on the battlefield.",0
+R070,standard_200,alias,95,Jiao San,predicted_entity,Gu Yue Jiao San,gpt-5.6-luna,correct,"Jiao San refers to Gu Yue Jiao San, who shouts to Kong Jing as the red lava python nears its limit.",0
+R071,standard_200,easy_name,95,Kong Jing,predicted_entity,Kong Jing,gpt-5.6-luna,correct,Kong Jing is the person shouting to the group leader and explaining that he lacks a speed-enhancing Gu worm.,0
+R072,standard_200,easy_name,95,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,Fang Yuan is the person hiding after the flesh is eaten and facing fewer lightning wolves.,0
+R073,standard_200,easy_name,97,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,Fang Yuan is the person accused of cutting the knife scales net with moonblades.,0
+R074,standard_200,background,98,Gu Yue Dong Tu,predicted_entity,Gu Yue Dong Tu,gpt-5.6-luna,correct,Gu Yue Dong Tu is the person worried about retaining his assets because of Fang Yuan's rapid growth.,0
+R075,standard_200,easy_name,98,Gu Yue Dong Tu,predicted_entity,Gu Yue Dong Tu,gpt-5.6-luna,correct,Gu Yue Dong Tu is the person who stands up and gives a money bag to the middle-aged Gu Master.,0
+R076,standard_200,alias,98,Jiao San,predicted_entity,Gu Yue Jiao San,gpt-5.6-luna,correct,"Jiao San refers to Gu Yue Jiao San, whom the speaker had arranged to suppress Fang Yuan.",0
+R077,standard_200,relational,100,uncle,predicted_entity,Gu Yue Dong Tu,gpt-5.6-luna,correct,"The relational term uncle refers to Gu Yue Dong Tu, who is explicitly identified immediately afterward.",0
+R078,standard_200,relational,101,miss,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,The marked word is the verb 'miss' in the phrase 'miss an arm or leg' and does not refer to an entity.,0
+R079,standard_200,easy_name,104,Fang Zheng,predicted_entity,Fang Zheng,gpt-5.6-luna,correct,"The mention refers to Fang Zheng, whose defense Fang Yuan is attacking.",0
+R080,standard_200,background,105,Fang Zheng,predicted_entity,Fang Zheng,gpt-5.6-luna,correct,"The mention refers to Fang Zheng, who is described as aspiring to become a clan leader.",0
+R081,standard_200,alias,106,Gu Yue Qing Shu,predicted_entity,Qing Shu,gpt-5.6-luna,correct,"The mention refers to Gu Yue Qing Shu, correctly represented by the candidate alias Qing Shu.",0
+R082,standard_200,easy_name,107,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, toward whom the money bags are pushed.",0
+R083,standard_200,background,107,Jiang Ya,predicted_entity,Jiang Ya,gpt-5.6-luna,correct,"The mention refers to Jiang Ya, who receives and checks the cloth bag.",0
+R084,standard_200,alias,108,Man Shi,predicted_entity,Gu Yue Man Shi,gpt-5.6-luna,correct,"The mention refers to Gu Yue Man Shi, who demands compensation for his ruined mood.",0
+R085,standard_200,alias,108,Man Shi,predicted_entity,Gu Yue Man Shi,gpt-5.6-luna,correct,"The mention refers to Gu Yue Man Shi, the person targeted by the moonblade exchange.",0
+R086,standard_200,alias,108,Man Shi,predicted_entity,Gu Yue Man Shi,gpt-5.6-luna,correct,"The mention refers to Gu Yue Man Shi, whose chest injury Fang Yuan is stepping on.",0
+R087,standard_200,relational,110,grandmother,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The grandmother is the young girl's unidentified relative, and the excerpt does not establish her name or identity.",0
+R088,standard_200,relational,111,grandfather,predicted_entity,Gu Yue Chi Lian,gpt-5.6-luna,correct,"The mention refers to Gu Yue Chi Lian, explicitly identified as Chi Cheng's grandfather.",0
+R089,standard_200,relational,112,Uncle,predicted_entity,Gu Yue Dong Tu,gpt-5.6-luna,correct,"The mention 'Uncle' refers to Gu Yue Dong Tu, who appears immediately before the mention and is described as aging.",0
+R090,standard_200,relational,112,uncle,predicted_entity,Gu Yue Dong Tu,gpt-5.6-luna,correct,"The mention 'uncle' refers to Gu Yue Dong Tu, whose influence would recover if he obtained the Nine Leaf Vitality Grass.",0
+R091,standard_200,alias,113,Mo Yan,predicted_entity,Gu Yue Mo Yan,gpt-5.6-luna,correct,"The mention 'Mo Yan' refers to Gu Yue Mo Yan, who is identified as a Rank two upper-stage competitor.",0
+R092,standard_200,background,113,Jia Fu,predicted_entity,Jia Fu,gpt-5.6-luna,correct,"The mention 'Jia Fu' refers to Jia Fu, who took the initiative to recruit Fang Yuan.",0
+R093,standard_200,background,115,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention 'Fang Yuan' refers to Fang Yuan, whose cultivation advancement is being described.",0
+R094,standard_200,easy_name,116,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention 'Fang Yuan' refers to Fang Yuan, who reduced his visits to the Flower Wine Monk's inheritance.",0
+R095,standard_200,alias,118,Chi Shan,predicted_entity,Gu Yue Chi Shan,gpt-5.6-luna,correct,"The mention 'Chi Shan' refers to Gu Yue Chi Shan, who is directly addressed and then identifies Fang Yuan.",0
+R096,standard_200,title,119,the clan head,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention 'the clan head' refers to Gu Yue Bo, but the system left the mention unresolved.",0
+R097,standard_200,title,119,the clan head,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention 'the clan head' refers to Gu Yue Bo's faction, but the system left the mention unresolved.",0
+R098,standard_200,title,119,Lord clan head,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention 'Lord clan head' refers to Gu Yue Bo, but the system left the mention unresolved.",0
+R099,standard_200,alias,119,Chi Shan,predicted_entity,Gu Yue Chi Shan,gpt-5.6-luna,correct,"The mention refers to Gu Yue Chi Shan, who is the character being addressed and asking what help is needed.",0
+R100,standard_200,title,120,Bai clan’s current clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The referent is the unnamed current leader of the Bai clan, but no entity was linked.",0
+R101,standard_200,title,121,the clan head,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention refers to the sender's clan head, likely the Xiong clan head, but the excerpt does not name him and no entity was linked.",0
+R102,standard_200,title,121,Gu Yue’s clan head,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention refers to the Gu Yue clan head, identified elsewhere in the passage as Gu Yue Bo, but no entity was linked.",0
+R103,standard_200,alias,121,Chi Shan,predicted_entity,Gu Yue Chi Shan,gpt-5.6-luna,correct,"The mention refers to Gu Yue Chi Shan, whose group Xiong Li discovers and whose identity is explicitly questioned.",0
+R104,standard_200,alias,121,Chi Shan,predicted_entity,Gu Yue Chi Shan,gpt-5.6-luna,correct,"The mention refers to Gu Yue Chi Shan, whose group is contrasted with Xiong Li's group after the strength contest.",0
+R105,standard_200,background,123,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, whom Chi Shan directly addresses.",0
+R106,standard_200,background,123,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, the character reflecting on Chi Shan's gift and Xiong Li's challenge.",0
+R107,standard_200,title,125,Xiong clan head,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention refers to the unnamed Xiong clan head standing beside Gu Yue Bo, but no entity was linked.",0
+R108,standard_200,title,125,Xiong clan head,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention refers to the unnamed Xiong clan head who laughs beside Gu Yue Bo, but no entity was linked.",0
+R109,standard_200,alias,126,Gu Yue Qing Shu,predicted_entity,Qing Shu,gpt-5.6-luna,correct,"The referent is Qing Shu, whose full name is Gu Yue Qing Shu.",0
+R110,standard_200,background,128,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The referent is Fang Yuan, the character whose body is adapting.",0
+R111,standard_200,easy_name,130,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The referent is Fang Yuan, who is surrounded by the lightning wolves.",0
+R112,standard_200,background,130,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The referent is Fang Yuan, the person who bullied and extorted the classmate.",0
+R113,standard_200,title,130,Hundred beast king,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,The excerpt identifies Hundred beast king as a title but does not establish a linked individual referent.,0
+R114,standard_200,easy_name,132,Xiong Zhan,predicted_entity,Xiong Zhan,gpt-5.6-luna,correct,"The referent is Xiong Zhan, who is described as half-kneeling behind the two Gu Masters.",0
+R115,standard_200,background,134,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The referent is Bai Ning Bing, whose speed and primeval essence are being compared with Fang Yuan's.",0
+R116,standard_200,relational,135,cousin,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,The referent of cousin cannot be identified from the excerpt.,0
+R117,standard_200,background,135,Xiong Jiang,predicted_entity,Xiong Jiang,gpt-5.6-luna,correct,"The referent is Xiong Jiang, whose zombie physique makes the cold feel refreshing.",0
+R118,standard_200,easy_name,135,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The referent is Bai Ning Bing, who has been suppressing his cultivation base to Rank two.",0
+R119,standard_200,background,140,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, who Bai Ning Bing is asking about.",0
+R120,standard_200,alias,142,Gu Yue Qing Shu,predicted_entity,Qing Shu,gpt-5.6-luna,correct,"The mention refers to Qing Shu, whose full name is Gu Yue Qing Shu.",0
+R121,standard_200,background,143,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, who is using the Plunder Gu.",0
+R122,standard_200,easy_name,146,Gu Yue Ye,predicted_entity,Gu Yue Ye,gpt-5.6-luna,correct,"The mention refers to Gu Yue Ye, whose condition concerns Jiang Ya.",0
+R123,standard_200,relational,148,Miss,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The title refers to Miss Yao Le, but the system provided no entity prediction.",0
+R124,standard_200,relational,148,Miss,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The title refers to Miss Yao Le, but the system provided no entity prediction.",0
+R125,standard_200,alias,149,Gu Yue Qing Shu,predicted_entity,Qing Shu,gpt-5.6-luna,correct,"The mention refers to Qing Shu, whose full name is Gu Yue Qing Shu.",0
+R126,standard_200,relational,149,Miss,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The title refers to Yao Le, but the system provided no entity prediction.",0
+R127,standard_200,unresolved_name,150,Thunder Roar Gu,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention refers to the Thunder Roar Gu, but the system provided no entity prediction.",0
+R128,standard_200,unresolved_name,150,Thunder Roar Gu,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention refers to the Thunder Roar Gu, but the system provided no entity prediction.",0
+R129,standard_200,unresolved_name,150,Thunder Roar Gu,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention refers to the Thunder Roar Gu, but the excerpt clarifies that the actual entity involved was the Soundwave Gu.",0
+R130,standard_200,background,154,Mo Chen,predicted_entity,Gu Yue Mo Chen,gpt-5.6-luna,correct,"Mo Chen refers to Gu Yue Mo Chen, who is the person being discussed in relation to Gu Yue Chi Lian.",0
+R131,standard_200,easy_name,154,Gu Yue Chi Lian,predicted_entity,Gu Yue Chi Lian,gpt-5.6-luna,correct,Gu Yue Chi Lian is explicitly identified as the person in question who reacts angrily.,0
+R132,standard_200,easy_name,157,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,Fang Yuan is explicitly the person whose authority to browse the recipes is being questioned.,0
+R133,standard_200,alias,158,Yao Ji,predicted_entity,Gu Yue Yao Ji,gpt-5.6-luna,correct,"Yao Ji refers to Gu Yue Yao Ji, the woman who was reigning and unable to act against Fang Yuan.",0
+R134,standard_200,easy_name,158,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,Fang Yuan is explicitly the person whom Aunt had insulted.,0
+R135,standard_200,relational,160,miss,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The word “miss” is used as a verb meaning fail to notice or collect, not as a person reference.",0
+R136,standard_200,background,161,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,Lord Fang Yuan is explicitly being praised for his phrasing and talent.,0
+R137,standard_200,alias,161,Gu Yue Qing Shu,predicted_entity,Qing Shu,gpt-5.6-luna,correct,"Gu Yue Qing Shu refers to Qing Shu, the elite whose time was being used up.",0
+R138,standard_200,background,161,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,Fang Yuan is explicitly the person for whom fifteen thousand primeval stones was still too little.,0
+R139,standard_200,background,162,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, matching the predicted entity.",0
+R140,standard_200,title,164,the clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The clan leader is identifiable as Gu Yue Bo from the surrounding context, but the system left the mention unresolved.",0
+R141,standard_200,title,164,the clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The clan leader is identifiable as Gu Yue Bo from the surrounding context, but the system left the mention unresolved.",0
+R142,standard_200,title,165,the clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The clan leader is Gu Yue Bo, whose name appears immediately before the title, but the system left the mention unresolved.",0
+R143,standard_200,title,165,the clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The clan leader is identifiable as Gu Yue Bo from the surrounding context, but the system left the mention unresolved.",0
+R144,standard_200,observer_sensitive,166,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The mention refers to Bai Ning Bing, whose presence alongside Fang Yuan is explicitly observed.",1
+R145,standard_200,observer_sensitive,166,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The mention refers to Bai Ning Bing, matching the predicted entity.",0
+R146,standard_200,observer_sensitive,166,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The mention refers to Bai Ning Bing, matching the predicted entity.",0
+R147,standard_200,observer_sensitive,166,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The mention refers to Bai Ning Bing, matching the predicted entity.",0
+R148,standard_200,observer_sensitive,166,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The mention refers to Bai Ning Bing, matching the predicted entity.",0
+R149,standard_200,observer_sensitive,166,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The mention refers to Bai Ning Bing, matching the predicted entity.",0
+R150,standard_200,observer_sensitive,166,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The referent is Bai Ning Bing, who pulls away and uses the Blue Bird Ice Coffin Gu.",0
+R151,standard_200,observer_sensitive,166,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The referent is Bai Ning Bing, who uses the Icicle Gu after the previous attack fails.",0
+R152,standard_200,observer_sensitive,166,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The referent is Bai Ning Bing, who gains an advantage against Fang Yuan and seeks to increase it.",0
+R153,standard_200,observer_sensitive,167,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The referent is Bai Ning Bing, whose unique iceblade storm is described in the excerpt.",0
+R154,standard_200,observer_sensitive,167,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The referent is Bai Ning Bing, whose storm heavily suppresses the thunder crown wolf.",0
+R155,standard_200,observer_sensitive,167,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The referent is Bai Ning Bing, whose actions would destroy valuable loot from the thunder crown wolf.",0
+R156,standard_200,observer_sensitive,167,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The referent is Bai Ning Bing, who shouts at Fang Yuan while using his Lightning Eye Gu.",0
+R157,standard_200,observer_sensitive,169,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The referent is Bai Ning Bing, whom Fang Yuan considers working with for survival.",0
+R158,standard_200,observer_sensitive,169,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The referent is Bai Ning Bing, who responds menacingly to Fang Yuan's challenge.",0
+R159,standard_200,observer_sensitive,169,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The referent is Bai Ning Bing, who mutters about witnessing interesting things before questioning what a path is.",0
+R160,standard_200,observer_sensitive,169,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The mention refers to Bai Ning Bing, who possesses the Lightning Eye Gu.",0
+R161,standard_200,observer_sensitive,169,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The mention refers to Bai Ning Bing, whose Lightning Eye Gu improves his vision.",0
+R162,standard_200,observer_sensitive,169,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The mention refers to Bai Ning Bing, who killed the attacking lightning wolves.",0
+R163,standard_200,observer_sensitive,169,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The mention refers to Bai Ning Bing, traveling with Fang Yuan and using the Lightning Eye Gu.",0
+R164,standard_200,observer_sensitive,169,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The mention refers to Bai Ning Bing, who laughed after they escaped.",0
+R165,standard_200,easy_name,170,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, who was approaching Gu Yue village.",0
+R166,standard_200,observer_sensitive,171,Gu Yue Yao Ji,predicted_entity,Gu Yue Yao Ji,gpt-5.6-luna,correct,"The mention refers to Gu Yue Yao Ji, whose broken arm Fang Yuan observes.",0
+R167,standard_200,observer_sensitive,173,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The mention refers to Bai Ning Bing, who is gazing at the night sky.",0
+R168,standard_200,observer_sensitive,173,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The mention refers to Bai Ning Bing, who sighs while reflecting on the past few years.",0
+R169,standard_200,title,173,the clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The title refers to an unidentified Bai clan leader, but the excerpt does not provide a resolvable named entity.",0
+R170,standard_200,observer_sensitive,173,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The mention refers to Bai Ning Bing, matching the predicted entity.",0
+R171,standard_200,observer_sensitive,173,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The mention refers to Bai Ning Bing, matching the predicted entity.",0
+R172,standard_200,observer_sensitive,173,Bai Ning Bing,predicted_entity,Bai Ning Bing,gpt-5.6-luna,correct,"The mention refers to Bai Ning Bing, matching the predicted entity.",0
+R173,standard_200,alias,174,Tie Ruo Nan,predicted_entity,Ruo Nan,gpt-5.6-luna,correct,"Tie Ruo Nan is the person referred to by the alias Ruo Nan, matching the predicted entity.",0
+R174,standard_200,alias,174,Tie Ruo Nan,predicted_entity,Ruo Nan,gpt-5.6-luna,correct,"Tie Ruo Nan is the person referred to by the alias Ruo Nan, matching the predicted entity.",0
+R175,standard_200,alias,174,Tie Ruo Nan,predicted_entity,Ruo Nan,gpt-5.6-luna,correct,"Tie Ruo Nan is the person referred to by the alias Ruo Nan, matching the predicted entity.",0
+R176,standard_200,observer_sensitive,175,lord Yao Ji,predicted_entity,Gu Yue Yao Ji,gpt-5.6-luna,correct,"The title lord Yao Ji refers to Gu Yue Yao Ji, matching the predicted entity.",0
+R177,standard_200,background,175,Gu Yue Bo,predicted_entity,Gu Yue Bo,gpt-5.6-luna,correct,"The mention refers to Gu Yue Bo, matching the predicted entity.",0
+R178,standard_200,observer_sensitive,175,Gu Yue Yao Ji,predicted_entity,Gu Yue Yao Ji,gpt-5.6-luna,correct,"The mention refers to Gu Yue Yao Ji, matching the predicted entity.",0
+R179,standard_200,background,176,Tie Ruo Nan,predicted_entity,Ruo Nan,gpt-5.6-luna,correct,"Tie Ruo Nan is the person referred to by the alias Ruo Nan, matching the predicted entity.",0
+R180,standard_200,background,176,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, matching the predicted entity.",0
+R181,standard_200,alias,178,Tie Ruo Nan,predicted_entity,Ruo Nan,gpt-5.6-luna,correct,Tie Ruo Nan is the person referred to by the shortened name Ruo Nan.,0
+R182,standard_200,alias,179,Tie Ruo Nan,predicted_entity,Ruo Nan,gpt-5.6-luna,correct,Tie Ruo Nan is the person referred to by the shortened name Ruo Nan.,0
+R183,standard_200,easy_name,179,Chi Cheng,predicted_entity,Chi Cheng,gpt-5.6-luna,correct,"The mention refers to Chi Cheng, matching the predicted entity.",0
+R184,standard_200,observer_sensitive,180,Gu Yue Yao Ji,predicted_entity,Gu Yue Yao Ji,gpt-5.6-luna,correct,"The mention refers to Gu Yue Yao Ji, who secretly brought the Tie father and daughter into the cave.",1
+R185,standard_200,background,180,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, matching the predicted entity.",0
+R186,standard_200,alias,180,Tie Ruo Nan,predicted_entity,Ruo Nan,gpt-5.6-luna,correct,Tie Ruo Nan is the person referred to by the shortened name Ruo Nan.,0
+R187,standard_200,alias,180,Tie Ruo Nan,predicted_entity,Ruo Nan,gpt-5.6-luna,correct,Tie Ruo Nan is the person referred to by the shortened name Ruo Nan.,0
+R188,standard_200,alias,181,Tie Ruo Nan,predicted_entity,Ruo Nan,gpt-5.6-luna,correct,Tie Ruo Nan is the person referred to by the shortened name Ruo Nan.,0
+R189,standard_200,title,181,the clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,incorrect,"The title refers to Gu Yue Bo, who is explicitly identified as the clan leader.",0
+R190,standard_200,easy_name,182,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, matching the predicted entity.",0
+R191,standard_200,easy_name,184,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, who is the character dodging in the excerpt.",0
+R192,standard_200,title,186,Xiong clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention refers to the Xiong clan leader standing alongside Gu Yue Bo and the Bai clan leader, but the system did not link it.",0
+R193,standard_200,title,186,Xiong clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention refers to the Xiong clan leader who proposes starting the preliminary competition, but the system did not link it.",0
+R194,standard_200,title,186,Xiong clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention refers to the Xiong clan leader who announces the competition rules, but the system did not link it.",0
+R195,standard_200,easy_name,188,Tie Xue Leng,predicted_entity,Tie Xue Leng,gpt-5.6-luna,correct,"The mention refers to Tie Xue Leng, whose soundwave indirectly helps Fang Yuan.",0
+R196,standard_200,easy_name,190,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, whom Bai Ning Bing recognizes upon his arrival.",0
+R197,standard_200,title,190,Xiong clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention refers to the Xiong clan leader observing Bai Ning Bing's physique, but the system did not link it.",0
+R198,standard_200,title,190,Xiong clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention refers to the Xiong clan leader addressing the Gu Yue clan leader, but the system did not link it.",0
+R199,standard_200,title,191,Xiong clan leader,predicted_entity,UNRESOLVED,gpt-5.6-luna,unresolved,"The mention refers to the Xiong clan leader being struck by the first ball of light, but the system did not link it.",0
+R200,standard_200,background,199,Fang Yuan,predicted_entity,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, whose expected location had already been cut open.",0
+H001,hardcases_88,body_change,1,Fang Yuan,reference_set_decision,Fang Yuan (500-year-old consciousness now occupying his 5-year-old body),gpt-5.6-luna,correct,"The mention refers to Fang Yuan, whose 500-year-old consciousness now inhabits his five-year-old body.",0
+H002,hardcases_88,body_change,2,He,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,"The pronoun refers to Fang Yuan, who has realized that he has been reborn.",0
+H003,hardcases_88,body_change,2,he,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,"The pronoun refers to Fang Yuan, who was reborn without bringing the Spring Autumn Cicada with him.",0
+H004,hardcases_88,body_change,2,Fang Yuan,reference_set_decision,"Fang Yuan (same consciousness, previous-life body)",gpt-5.6-luna,correct,"The mention refers to Fang Yuan as he existed in his previous life, sharing the same continuing identity.",0
+H005,hardcases_88,body_change,3,Fang Yuan,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan in his previous life, as indicated by the explicit temporal comparison.",0
+H006,hardcases_88,disguise,4,Chi Chen,reference_set_decision,Gu Yue Chi Cheng,gpt-5.6-luna,correct,"Chi Chen is the character identified by the silver identity as Gu Yue Chi Cheng, with the excerpt presenting the same clan member under a variant name.",0
+H007,hardcases_88,reveal,6,Fang Yuan,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,"The mention refers to Fang Yuan, who is identified as the younger character's older brother.",0
+H008,hardcases_88,relational_deictic,9,his Uncle,reference_set_decision,Gu Yue Dong Tu,gpt-5.6-luna,correct,"The relational phrase refers to Gu Yue Dong Tu, who is explicitly named immediately afterward.",0
+H009,hardcases_88,relational_deictic,12,a junior brother,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,"The phrase refers to Fang Yuan, whom the speaker recognizes and addresses as a junior brother.",0
+H010,hardcases_88,relational_deictic,23,junior brother,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,"The phrase refers to Fang Yuan, who is directly asked whether he came to buy a grass puppet.",0
+H011,hardcases_88,disguise,29,you,reference_set_decision,Gu Yue Chi Cheng,gpt-5.6-luna,correct,Gu Yue Chi Cheng is the person whom his grandfather helped impersonate a B-grade talent.,0
+H012,hardcases_88,relational_deictic,32,his master,reference_set_decision,the Mo family (Gao Wan's employer),gpt-5.6-luna,correct,"Gao Wan's master is the Mo family, whom he served for over a decade.",0
+H013,hardcases_88,relational_deictic,32,an uncle,reference_set_decision,Gu Yue Dong Tu,gpt-5.6-luna,correct,"The uncle protecting or connected to Fang Yuan is Gu Yue Dong Tu, alongside Fang Yuan's aunt.",0
+H014,hardcases_88,reveal,32,I,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,Fang Yuan is the speaker referring to himself as I while challenging Mo Yan's assumption.,0
+H015,hardcases_88,reveal,32,Fang Zheng,reference_set_decision,Fang Yuan (the servants' guess is wrong),gpt-5.6-luna,incorrect,"The marked mention explicitly names Fang Zheng, although the silver identity incorrectly assigns it to Fang Yuan.",0
+H016,hardcases_88,reveal,32,Fang Zheng,reference_set_decision,Fang Yuan (hypothetical misidentification),gpt-5.6-luna,incorrect,The hypothetical person identified as Fang Zheng refers to Fang Zheng rather than Fang Yuan.,0
+H017,hardcases_88,reveal,32,he is really Fang Yuan,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,The phrase he is really Fang Yuan directly identifies the person as Fang Yuan.,0
+H018,hardcases_88,relational_deictic,37,his master,reference_set_decision,the Mo family (Gao Wan's employer),gpt-5.6-luna,correct,"Gao Wan's master is the Mo family, his employer and superior.",0
+H019,hardcases_88,relational_deictic,38,his master,reference_set_decision,the Mo family (Gao Wan's employer),gpt-5.6-luna,correct,The master associated with Gao Wan is the Mo family behind him.,0
+H020,hardcases_88,relational_deictic,50,his uncle and aunt,reference_set_decision,Gu Yue Dong Tu (and his wife),gpt-5.6-luna,correct,Fang Zheng's uncle and aunt are Gu Yue Dong Tu and his wife.,0
+H021,hardcases_88,reveal,54,his identity,reference_set_decision,"Fang Yuan (a 500-year-old reborn Gu Master posing, to every official record, as an ordinary clan-born child)",gpt-5.6-luna,correct,"The phrase “his identity” refers to Fang Yuan, whose officially recorded background is described as ordinary and spotless.",0
+H022,hardcases_88,relational_deictic,67,his master,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,“His master” refers to Fang Yuan as the master associated with Wang Er’s offense in this context.,0
+H023,hardcases_88,disguise,74,Wang Da,reference_set_decision,Wang Da,gpt-5.6-luna,correct,The proper name “Wang Da” explicitly identifies the man whose wife opposed his actions.,0
+H024,hardcases_88,disguise,74,Wang Da,reference_set_decision,Wang Da,gpt-5.6-luna,correct,The repeated proper name “Wang Da” identifies the man who occasionally returned home.,0
+H025,hardcases_88,disguise,77,Fang Zheng,reference_set_decision,Fang Zheng,gpt-5.6-luna,correct,The passage explicitly states that Wang Da encountered Fang Zheng by accident.,0
+H026,hardcases_88,disguise,77,Fang Zheng,reference_set_decision,Fang Zheng,gpt-5.6-luna,correct,The sentence directly identifies Fang Zheng as the person who was assassinated.,0
+H027,hardcases_88,title_transfer,78,the clan leader,reference_set_decision,Gu Yue Bo,gpt-5.6-luna,correct,“The clan leader” refers to Gu Yue Bo as the possible person who prepared the bag.,0
+H028,hardcases_88,title_transfer,78,he,reference_set_decision,Fang Zheng,gpt-5.6-luna,correct,"The pronoun “he” refers to Fang Zheng, the immediately discussed A-grade talent who might reach Rank four.",0
+H029,hardcases_88,title_transfer,78,the clan leader,reference_set_decision,Gu Yue Bo,gpt-5.6-luna,correct,The possessive phrase “the clan leader’s faction” refers to Gu Yue Bo’s political faction.,0
+H030,hardcases_88,disguise,78,Wang Da’s true identity,reference_set_decision,Wang Da,gpt-5.6-luna,correct,"“Wang Da’s true identity” refers to Wang Da, whose corpse had been seen and recognized.",0
+H031,hardcases_88,disguise,78,Wang Da,reference_set_decision,Wang Da,gpt-5.6-luna,correct,The mention explicitly names Wang Da as the demonic faction cultivator.,0
+H032,hardcases_88,reveal,86,he turned out to be C grade,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,"The revealed C-grade individual is Fang Yuan, whose apparent lack of talent is contrasted with compensated strength.",0
+H033,hardcases_88,reveal,88,he,reference_set_decision,Gu Yue Jiao San,gpt-5.6-luna,incorrect,"The marked text is the substring “he” within the article “The,” so it does not refer to Gu Yue Jiao San.",0
+H034,hardcases_88,relational_deictic,89,his uncle,reference_set_decision,Gu Yue Dong Tu,gpt-5.6-luna,correct,Fang Yuan’s uncle is identified in the surrounding sentence as Gu Yue Dong Tu.,0
+H035,hardcases_88,relational_deictic,90,his uncle and aunt,reference_set_decision,Gu Yue Dong Tu and his wife,gpt-5.6-luna,correct,"The phrase refers to Fang Yuan’s uncle and aunt, identified as Gu Yue Dong Tu and his wife.",0
+H036,hardcases_88,disguise,92,Fang Yuan,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,The excerpt explicitly states that Fang Yuan was never inside the room.,0
+H037,hardcases_88,relational_deictic,94,his uncle,reference_set_decision,Gu Yue Dong Tu,gpt-5.6-luna,correct,The following apposition explicitly identifies the uncle as Gu Yue Dong Tu.,0
+H038,hardcases_88,relational_deictic,100,his uncle,reference_set_decision,Gu Yue Dong Tu,gpt-5.6-luna,correct,The excerpt directly identifies Fang Yuan’s uncle as Gu Yue Dong Tu.,0
+H039,hardcases_88,relational_deictic,101,this uncle of his,reference_set_decision,Gu Yue Dong Tu,gpt-5.6-luna,correct,"The relational phrase refers to Fang Yuan’s uncle, who is identified as Gu Yue Dong Tu in context.",0
+H040,hardcases_88,title_transfer,103,Young lord,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,"The old man addresses Fang Yuan as “Young lord,” making Fang Yuan the referent.",0
+H041,hardcases_88,title_transfer,103,the landlord,reference_set_decision,Fang Yuan (newly installed as the wine tavern's landlord),gpt-5.6-luna,correct,"The landlord refers to Fang Yuan, who was newly installed in that role.",0
+H042,hardcases_88,title_transfer,103,The previous landlord,reference_set_decision,Gu Yue Dong Tu,gpt-5.6-luna,correct,The phrase explicitly identifies Gu Yue Dong Tu as the previous landlord.,0
+H043,hardcases_88,title_transfer,103,Young lord,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,The shopkeeper addresses Fang Yuan as the young lord in the context of his new authority.,0
+H044,hardcases_88,title_transfer,103,the previous landlord,reference_set_decision,Gu Yue Dong Tu,gpt-5.6-luna,correct,The previous landlord is explicitly stated to be Gu Yue Dong Tu.,0
+H045,hardcases_88,relational_deictic,103,his uncle,reference_set_decision,Gu Yue Dong Tu,gpt-5.6-luna,correct,"Fang Yuan’s uncle, Gu Yue Dong Tu, is the person whose former lifestyle is being described.",0
+H046,hardcases_88,not_entity_control,105,the Spring Autumn Cicada,reference_set_decision,Spring Autumn Cicada,gpt-5.6-luna,correct,The mention directly names the Spring Autumn Cicada as the Rank six Gu worm with the ability of rebirth.,0
+H047,hardcases_88,title_transfer,105,the next clan leader,reference_set_decision,Fang Zheng,gpt-5.6-luna,correct,The excerpt explicitly states that Fang Zheng was being raised as the next clan leader.,0
+H048,hardcases_88,title_transfer,105,a clan leader,reference_set_decision,Fang Zheng,gpt-5.6-luna,correct,The passage identifies Fang Zheng as the person who would become a clan leader.,0
+H049,hardcases_88,relational_deictic,107,his uncle,reference_set_decision,Gu Yue Dong Tu,gpt-5.6-luna,correct,The excerpt explicitly identifies Fang Yuan’s uncle in this instance as Gu Yue Dong Tu.,0
+H050,hardcases_88,relational_deictic,107,his uncle,reference_set_decision,Gu Yue Dong Tu,gpt-5.6-luna,correct,"The repeated familial reference concerns Gu Yue Dong Tu, as established by the surrounding sentence.",0
+H051,hardcases_88,reveal,108,Bai Ning Bing,reference_set_decision,Bai Ning Bing,gpt-5.6-luna,correct,The excerpt explicitly identifies the white-clothed young man as Bai Ning Bing.,0
+H052,hardcases_88,reveal,116,Fang Yuan,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,The excerpt explicitly reveals that Fang Yuan obtained the red steel Relic Gu.,0
+H053,hardcases_88,title_transfer,117,Young master,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,"The tavern worker addresses Fang Yuan as young master, identifying him as the addressee.",0
+H054,hardcases_88,title_transfer,117,the old landlord,reference_set_decision,Gu Yue Dong Tu,gpt-5.6-luna,correct,The old landlord who returned and deducted the workers’ wages is Gu Yue Dong Tu.,0
+H055,hardcases_88,title_transfer,117,young landlord,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,The old man addresses Fang Yuan as young landlord immediately before Fang Yuan responds.,0
+H056,hardcases_88,title_transfer,117,your landlord,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,Fang Yuan directly tells the old man that he is no longer your landlord.,0
+H057,hardcases_88,title_transfer,117,young landlord,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,"The shopkeeper’s plea addresses Fang Yuan, who is being called young landlord.",0
+H058,hardcases_88,relational_deictic,118,his master,reference_set_decision,Jiang Fan's master (never named in the surrounding narration),gpt-5.6-luna,correct,"The pronoun refers to Jiang Fan’s master, the person for whom he manages the fishery.",0
+H059,hardcases_88,title_transfer,118,the previous clan leader,reference_set_decision,Gu Yue Bo's unnamed predecessor as Gu Yue clan leader (never given a proper name in the surrounding text),gpt-5.6-luna,correct,The previous clan leader is explicitly presented as Gu Yue Bo’s predecessor whose words he cites.,0
+H060,hardcases_88,title_transfer,118,clan leader,reference_set_decision,Gu Yue Bo,gpt-5.6-luna,correct,"Chi Shan addresses the current clan leader, who is identified in the reference as Gu Yue Bo.",0
+H061,hardcases_88,relational_deictic,134,the other master,reference_set_decision,Bai Ning Bing,gpt-5.6-luna,correct,"The other master is Bai Ning Bing, whom Gu Yu Man Shi is scolding for attacking a Gu Yue clansman.",0
+H062,hardcases_88,reveal,139,Fang Yuan,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,The excerpt explicitly identifies the person chasing Bai Ning Bing as Fang Yuan.,0
+H063,hardcases_88,reveal,148,he,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,"The pronoun refers to Fang Yuan, whose current situation and secrets are being discussed immediately afterward.",0
+H064,hardcases_88,disguise,154,Gu Yue Chi Cheng’s fake aptitude,reference_set_decision,Gu Yue Chi Cheng,gpt-5.6-luna,incorrect,"The mention denotes Chi Cheng's fake aptitude, an aptitude or secret rather than Chi Cheng himself.",0
+H065,hardcases_88,reveal,155,Fang Yuan,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,The excerpt explicitly states that Fang Yuan was the first to achieve the success being discussed.,0
+H066,hardcases_88,relational_deictic,158,his uncle,reference_set_decision,Gu Yue Dong Tu,gpt-5.6-luna,correct,Fang Yuan's uncle who managed the tavern is Gu Yue Dong Tu.,0
+H067,hardcases_88,relational_deictic,159,his uncle,reference_set_decision,Gu Yue Dong Tu,gpt-5.6-luna,correct,The uncle receiving Fang Yuan's payout alongside his aunt is Gu Yue Dong Tu.,0
+H068,hardcases_88,disguise,175,Wang Er,reference_set_decision,Wang Er (called 'Wang Da' in the earlier ch069-078 telling of this same backstory -- the fan translation is inconsistent about which brother's name attaches to the hunter-turned-demonic-cultivator),gpt-5.6-luna,correct,The excerpt directly names the hunter-turned-demonic Gu Master as Wang Er.,0
+H069,hardcases_88,disguise,175,Fang Zheng,reference_set_decision,Fang Zheng,gpt-5.6-luna,correct,The excerpt explicitly identifies Fang Zheng as the twin whom Wang Er mistakenly attacked for Fang Yuan.,0
+H070,hardcases_88,reveal,178,big brother’s,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,"The possessive phrase refers to Fang Yuan, whose apparent collapse is revealed as an act by Fang Zheng.",0
+H071,hardcases_88,reveal,178,Gu Yue Yao Ji,reference_set_decision,Gu Yue Yao Ji,gpt-5.6-luna,correct,"The excerpt explicitly identifies the crippled old woman as Gu Yue Yao Ji, who remains the medicine faction family head.",0
+H072,hardcases_88,disguise,181,Fang Yuan,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,The dialogue directly names Fang Yuan as the person being described as concealing his true aptitude.,0
+H073,hardcases_88,relational_deictic,190,senior brother,reference_set_decision,First gen Gu Yue,gpt-5.6-luna,correct,Lord Sky Crane addresses First gen Gu Yue as his senior brother after nearly a thousand years.,0
+H074,hardcases_88,relational_deictic,190,your junior brother,reference_set_decision,Lord Sky Crane,gpt-5.6-luna,correct,"The phrase 'your junior brother' refers to the speaker, Lord Sky Crane, who identifies himself as the junior brother.",0
+H075,hardcases_88,relational_deictic,190,Senior brother,reference_set_decision,First gen Gu Yue,gpt-5.6-luna,correct,The speaker addresses First gen Gu Yue as his senior brother while searching for him near the Gu Yue village.,0
+H076,hardcases_88,relational_deictic,191,Senior brother,reference_set_decision,First gen Gu Yue,gpt-5.6-luna,correct,Lord Sky Crane calls First gen Gu Yue his senior brother and announces that he has come to meet him.,0
+H077,hardcases_88,body_change,192,Gu Yue,reference_set_decision,First gen Gu Yue (formerly of the Middle Continent's Immortal Crane Sect; changed his appearance and took the name 'Gu Yue' to hide from his former sect),gpt-5.6-luna,correct,The excerpt states that the fugitive disciple changed his appearance and adopted the name Gu Yue when establishing the village.,0
+H078,hardcases_88,body_change,192,First gen Gu Yue,reference_set_decision,First gen Gu Yue (same individual as the fugitive Immortal Crane Sect disciple),gpt-5.6-luna,correct,"The excerpt explicitly attributes the transformation into a zombie to First gen Gu Yue, the same former Immortal Crane Sect disciple.",0
+H079,hardcases_88,relational_deictic,192,Senior brother,reference_set_decision,First gen Gu Yue,gpt-5.6-luna,correct,The speaker angrily addresses First gen Gu Yue as his senior brother in reference to the earlier betrayal.,0
+H080,hardcases_88,body_change,193,He,reference_set_decision,First gen Gu Yue,gpt-5.6-luna,correct,"The pronoun 'He' refers to First gen Gu Yue, whose conspiracy involved establishing the village and spreading his bloodline.",0
+H081,hardcases_88,relational_deictic,194,senior brother,reference_set_decision,First gen Gu Yue,gpt-5.6-luna,incorrect,"First gen Gu Yue addresses Lord Sky Crane as his senior brother, so the mention does not refer to First gen Gu Yue.",0
+H082,hardcases_88,relational_deictic,194,Junior brother,reference_set_decision,Lord Sky Crane,gpt-5.6-luna,correct,First gen Gu Yue calls Lord Sky Crane his junior brother in the dialogue.,0
+H083,hardcases_88,relational_deictic,195,Junior brother,reference_set_decision,Lord Sky Crane,gpt-5.6-luna,correct,First gen Gu Yue directly addresses Lord Sky Crane as junior brother.,0
+H084,hardcases_88,reveal,197,Bai Ning Bing,reference_set_decision,Bai Ning Bing,gpt-5.6-luna,correct,The excerpt explicitly identifies the laughing person as Bai Ning Bing.,0
+H085,hardcases_88,body_change,199,I,reference_set_decision,Bai Ning Bing,gpt-5.6-luna,correct,Bai Ning Bing is the person shocked to discover that her body has become female and says I.,0
+H086,hardcases_88,body_change,199,Brother Bai,reference_set_decision,Bai Ning Bing,gpt-5.6-luna,correct,Fang Yuan consoles Bai Ning Bing by addressing her as Brother Bai despite her transformed female body.,0
+H087,hardcases_88,body_change,199,her,reference_set_decision,Bai Ning Bing,gpt-5.6-luna,correct,"The pronoun her refers to Bai Ning Bing, whom Fang Yuan is consoling after the body change.",0
+H088,hardcases_88,reveal,199,him,reference_set_decision,Fang Yuan,gpt-5.6-luna,correct,"The searchers have found Fang Yuan, who was hiding in the dangerous area.",0
