@@ -1,0 +1,55 @@
+{
+ "note": "POST HOC dose-response; recognition = number of 5 local models naming the identity under M2 (title-assisted, original names)",
+ "luna_gap_vs_local_recognition": {
+  "events": 38,
+  "spearman": 0.3702,
+  "perm_p": 0.02365,
+  "mean_gap_by_recognition_count": {
+   "0": 0.0875,
+   "1": 0.2062,
+   "2": 0.375,
+   "3": 0.3125,
+   "4": 0.475,
+   "5": 0.2946
+  },
+  "events_per_count": {
+   "0": 10,
+   "1": 10,
+   "2": 4,
+   "3": 2,
+   "4": 5,
+   "5": 7
+  },
+  "leave_one_dataset_out_spearman": {
+   "without_v2": 0.4161,
+   "without_v3": 0.2288,
+   "without_v6": 0.3946
+  }
+ },
+ "valid_local_pool_gap_vs_local_recognition": {
+  "events": 38,
+  "spearman": 0.5861,
+  "perm_p": 0.00015,
+  "mean_gap_by_recognition_count": {
+   "0": 0.0031,
+   "1": 0.0104,
+   "2": 0.0182,
+   "3": -0.0469,
+   "4": 0.1562,
+   "5": 0.4085
+  },
+  "events_per_count": {
+   "0": 10,
+   "1": 10,
+   "2": 4,
+   "3": 2,
+   "4": 5,
+   "5": 7
+  },
+  "leave_one_dataset_out_spearman": {
+   "without_v2": 0.3459,
+   "without_v3": 0.5592,
+   "without_v6": 0.7012
+  }
+ }
+}

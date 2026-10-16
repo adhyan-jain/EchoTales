@@ -1,0 +1,281 @@
+{
+ "preregistration": "PREREG_PD_v4.md",
+ "probe": {
+  "gemma2:9b": {
+   "pd_v2": {
+    "events": 19,
+    "k_needed": 6,
+    "M2_orig": 11,
+    "M2_ren": 3,
+    "M2_ren2": 2,
+    "memory_present": true
+   },
+   "pd_v3": {
+    "events": 12,
+    "k_needed": 5,
+    "M2_orig": 5,
+    "M2_ren": 0,
+    "M2_ren2": 0,
+    "memory_present": true
+   },
+   "all": {
+    "events": 31,
+    "k_needed": 8,
+    "M2_orig": 16,
+    "M2_ren": 3,
+    "M2_ren2": 2,
+    "memory_present": true
+   }
+  },
+  "gpt-5.6-luna": {
+   "pd_v2": {
+    "events": 19,
+    "k_needed": 6,
+    "M2_orig": 17,
+    "M2_ren": 0,
+    "M2_ren2": 0,
+    "memory_present": true
+   },
+   "pd_v3": {
+    "events": 12,
+    "k_needed": 5,
+    "M2_orig": 8,
+    "M2_ren": 0,
+    "M2_ren2": 0,
+    "memory_present": true
+   },
+   "all": {
+    "events": 31,
+    "k_needed": 8,
+    "M2_orig": 25,
+    "M2_ren": 0,
+    "M2_ren2": 0,
+    "memory_present": true
+   }
+  },
+  "llama3.1:8b": {
+   "pd_v2": {
+    "events": 19,
+    "k_needed": 6,
+    "M2_orig": 12,
+    "M2_ren": 2,
+    "M2_ren2": 4,
+    "memory_present": true
+   },
+   "pd_v3": {
+    "events": 12,
+    "k_needed": 5,
+    "M2_orig": 5,
+    "M2_ren": 2,
+    "M2_ren2": 2,
+    "memory_present": true
+   },
+   "all": {
+    "events": 31,
+    "k_needed": 8,
+    "M2_orig": 17,
+    "M2_ren": 4,
+    "M2_ren2": 6,
+    "memory_present": true
+   }
+  },
+  "mistral:7b-instruct": {
+   "pd_v2": {
+    "events": 19,
+    "k_needed": 6,
+    "M2_orig": 7,
+    "M2_ren": 1,
+    "M2_ren2": 1,
+    "memory_present": true
+   },
+   "pd_v3": {
+    "events": 12,
+    "k_needed": 5,
+    "M2_orig": 4,
+    "M2_ren": 1,
+    "M2_ren2": 1,
+    "memory_present": false
+   },
+   "all": {
+    "events": 31,
+    "k_needed": 8,
+    "M2_orig": 11,
+    "M2_ren": 2,
+    "M2_ren2": 2,
+    "memory_present": true
+   }
+  },
+  "phi4-mini:latest": {
+   "pd_v2": {
+    "events": 19,
+    "k_needed": 6,
+    "M2_orig": 10,
+    "M2_ren": 5,
+    "M2_ren2": 3,
+    "memory_present": true
+   },
+   "pd_v3": {
+    "events": 12,
+    "k_needed": 5,
+    "M2_orig": 6,
+    "M2_ren": 0,
+    "M2_ren2": 0,
+    "memory_present": true
+   },
+   "all": {
+    "events": 31,
+    "k_needed": 8,
+    "M2_orig": 16,
+    "M2_ren": 5,
+    "M2_ren2": 3,
+    "memory_present": true
+   }
+  },
+  "qwen2.5:7b": {
+   "pd_v2": {
+    "events": 19,
+    "k_needed": 6,
+    "M2_orig": 7,
+    "M2_ren": 2,
+    "M2_ren2": 1,
+    "memory_present": true
+   },
+   "pd_v3": {
+    "events": 12,
+    "k_needed": 5,
+    "M2_orig": 3,
+    "M2_ren": 0,
+    "M2_ren2": 0,
+    "memory_present": false
+   },
+   "all": {
+    "events": 31,
+    "k_needed": 8,
+    "M2_orig": 10,
+    "M2_ren": 2,
+    "M2_ren2": 1,
+    "memory_present": true
+   }
+  }
+ },
+ "reevaluation": {
+  "pd_v2": {
+   "valid_models": [
+    "gemma2:9b",
+    "llama3.1:8b",
+    "mistral:7b-instruct",
+    "phi4-mini:latest"
+   ],
+   "g2": {
+    "gemma2:9b": [
+     0.974,
+     0.927
+    ],
+    "gpt-5.6-luna": [
+     0.895,
+     0.976
+    ],
+    "llama3.1:8b": [
+     0.908,
+     0.854
+    ],
+    "mistral:7b-instruct": [
+     0.921,
+     0.829
+    ],
+    "phi4-mini:latest": [
+     0.934,
+     1.0
+    ],
+    "qwen2.5:7b": [
+     0.809,
+     0.976
+    ]
+   },
+   "pooled_gap": 0.1537037037037037,
+   "pooled_gap_ci95": [
+    0.10555555555555556,
+    0.20462962962962963
+   ],
+   "synthetic_gap": 0.0,
+   "did": 0.1537037037037037,
+   "did_ci95": [
+    0.10555555555555556,
+    0.20462962962962963
+   ],
+   "memory_models_among_valid": [
+    "gemma2:9b",
+    "llama3.1:8b",
+    "mistral:7b-instruct",
+    "phi4-mini:latest"
+   ],
+   "conditions": {
+    "i": true,
+    "ii": true,
+    "iii": true
+   },
+   "verdict": "SUPPORTED",
+   "spearman_event_premature_vs_M2_models": 0.7298882318186833,
+   "n_events": 19
+  },
+  "pd_v3": {
+   "valid_models": [
+    "gemma2:9b",
+    "llama3.1:8b",
+    "mistral:7b-instruct",
+    "phi4-mini:latest"
+   ],
+   "g2": {
+    "gemma2:9b": [
+     0.906,
+     0.927
+    ],
+    "gpt-5.6-luna": [
+     0.854,
+     1.0
+    ],
+    "llama3.1:8b": [
+     0.969,
+     0.854
+    ],
+    "mistral:7b-instruct": [
+     0.948,
+     0.829
+    ],
+    "phi4-mini:latest": [
+     0.948,
+     1.0
+    ],
+    "qwen2.5:7b": [
+     0.833,
+     0.976
+    ]
+   },
+   "pooled_gap": 0.13411458333333334,
+   "pooled_gap_ci95": [
+    0.07161458333333333,
+    0.19921875
+   ],
+   "synthetic_gap": 0.0,
+   "did": 0.13411458333333334,
+   "did_ci95": [
+    0.07161458333333333,
+    0.19921875
+   ],
+   "memory_models_among_valid": [
+    "gemma2:9b",
+    "llama3.1:8b",
+    "phi4-mini:latest"
+   ],
+   "conditions": {
+    "i": true,
+    "ii": true,
+    "iii": true
+   },
+   "verdict": "SUPPORTED",
+   "spearman_event_premature_vs_M2_models": 0.6620274388571553,
+   "n_events": 12
+  }
+ },
+ "label_provenance": "TEXT-DERIVED oracle; selection by model-drafter; owner spot-check pending; no human labels"
+}

@@ -1,0 +1,128 @@
+{
+  "preregistration": "PREREG_M2Q_qwen_local.md v1",
+  "model": "qwen2.5:7b",
+  "options": {
+    "temperature": 0,
+    "seed": 20261016,
+    "num_predict": 8,
+    "num_ctx": 4096
+  },
+  "label_provenance": "real items SILVER; synthetic items by construction; no human label",
+  "R1_renaming_validity": {
+    "A_equals_B_on_plain_controls": {
+      "k": 29,
+      "n": 30,
+      "rate": 0.9666666666666667,
+      "wilson95": [
+        0.8332924860304112,
+        0.9940915620051425
+      ]
+    },
+    "valid": false
+  },
+  "R2_real_gap": {
+    "acc_A": {
+      "k": 51,
+      "n": 62,
+      "rate": 0.8225806451612904,
+      "wilson95": [
+        0.7095819851661979,
+        0.8979366656563825
+      ]
+    },
+    "acc_B": {
+      "k": 48,
+      "n": 62,
+      "rate": 0.7741935483870968,
+      "wilson95": [
+        0.6559414245921728,
+        0.8604494286070205
+      ]
+    },
+    "gap": 0.048387096774193616,
+    "ci95": [
+      0.0,
+      0.11290322580645161
+    ],
+    "discordant_A_right_B_wrong": 3,
+    "discordant_B_right_A_wrong": 0,
+    "replicates": false
+  },
+  "controls_accuracy": {
+    "A": {
+      "k": 29,
+      "n": 30,
+      "rate": 0.9666666666666667,
+      "wilson95": [
+        0.8332924860304112,
+        0.9940915620051425
+      ]
+    },
+    "B": {
+      "k": 28,
+      "n": 30,
+      "rate": 0.9333333333333333,
+      "wilson95": [
+        0.7867618227892791,
+        0.9815233646723066
+      ]
+    }
+  },
+  "R3_primary_counts": {
+    "n": 4,
+    "A": 0,
+    "B": 0
+  },
+  "R4_closed_book": {
+    "C_orig": {
+      "k": 0,
+      "n": 15,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.20388926630434784
+      ]
+    },
+    "C_ren": {
+      "k": 0,
+      "n": 15,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.20388926630434784
+      ]
+    },
+    "chance": 0.0994949494949495,
+    "exact_p_vs_chance": 0.9999999999999996,
+    "memory_consistent": false,
+    "abstain_orig": 15,
+    "invalid_orig": 0
+  },
+  "R5_unseen_text": {
+    "synthetic_acc_A": 0.7258064516129032,
+    "synthetic_acc_B": 0.7419354838709677,
+    "synthetic_gap": -0.016129032258064502,
+    "synthetic_gap_ci95": [
+      -0.11290322580645161,
+      0.08064516129032258
+    ],
+    "synthetic_plain_A_equals_B": {
+      "k": 20,
+      "n": 20,
+      "rate": 1.0,
+      "wilson95": [
+        0.8388698745050667,
+        0.9999999999999998
+      ]
+    },
+    "real_gap": 0.048387096774193616,
+    "difference_in_differences": 0.06451612903225812,
+    "did_ci95": [
+      -0.03225806451612903,
+      0.1774193548387097
+    ],
+    "ceiling": false,
+    "reading": "(c) inconclusive",
+    "invalid_answers": 0
+  }
+}

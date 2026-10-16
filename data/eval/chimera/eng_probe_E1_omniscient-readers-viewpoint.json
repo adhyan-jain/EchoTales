@@ -1,0 +1,377 @@
+{
+  "probe": "E1 prefix causality of the resolver (graph level)",
+  "label_provenance": "SYSTEM-INTERNAL, no labels",
+  "novel": "omniscient-readers-viewpoint",
+  "chapters": 40,
+  "ks": [
+    5,
+    10,
+    20,
+    30
+  ],
+  "determinism_F0_twice": {
+    "k": 1000000000,
+    "mentions_leq_k": 2267,
+    "same_target": 2267,
+    "disagree": 0,
+    "disagree_rate": 0.0,
+    "disagree_wilson": [
+      0.0,
+      0.00169
+    ],
+    "ari": 1.0,
+    "linked_in_prefix": 2262,
+    "linked_in_full": 2262,
+    "categories": [],
+    "disagree_by_chapter": {},
+    "alias_bindings_learned_leq_k": {
+      "prefix": 2262,
+      "full": 2262,
+      "only_in_prefix": 0,
+      "only_in_full": 0
+    },
+    "examples_mention_id_chapter_category_methods": null
+  },
+  "F0_report": {
+    "groups": 372,
+    "linked": 308,
+    "created": 59,
+    "deferred": 0,
+    "recovered": 0,
+    "unresolved": 6,
+    "entities": 59,
+    "by_window": {
+      "0": {
+        "SCORED": 55,
+        "NAME_CONTAINMENT": 5,
+        "GAZETTEER_EXACT": 295
+      },
+      "1": {
+        "GAZETTEER_EXACT": 8,
+        "SCORED": 4
+      }
+    }
+  },
+  "by_k": {
+    "5": {
+      "prefix_vs_F0": {
+        "k": 5,
+        "mentions_leq_k": 124,
+        "same_target": 124,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.03005
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 123,
+        "linked_in_full": 123,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 123,
+          "full": 123,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "prefix_vs_F0_single_final_sweep_only": {
+        "k": 5,
+        "mentions_leq_k": 124,
+        "same_target": 124,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.03005
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 123,
+        "linked_in_full": 123,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 123,
+          "full": 123,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "F1_volume_passes_vs_F0_restricted": {
+        "k": 5,
+        "mentions_leq_k": 124,
+        "same_target": 124,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.03005
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 123,
+        "linked_in_full": 123,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 123,
+          "full": 123,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "prefix_report": {
+        "groups": 22,
+        "linked": 10,
+        "created": 11,
+        "deferred": 0,
+        "recovered": 0,
+        "unresolved": 0,
+        "entities": 11
+      }
+    },
+    "10": {
+      "prefix_vs_F0": {
+        "k": 10,
+        "mentions_leq_k": 359,
+        "same_target": 359,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.01059
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 358,
+        "linked_in_full": 358,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 358,
+          "full": 358,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "prefix_vs_F0_single_final_sweep_only": {
+        "k": 10,
+        "mentions_leq_k": 359,
+        "same_target": 359,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.01059
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 358,
+        "linked_in_full": 358,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 358,
+          "full": 358,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "F1_volume_passes_vs_F0_restricted": {
+        "k": 10,
+        "mentions_leq_k": 359,
+        "same_target": 359,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.01059
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 358,
+        "linked_in_full": 358,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 358,
+          "full": 358,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "prefix_report": {
+        "groups": 65,
+        "linked": 42,
+        "created": 22,
+        "deferred": 0,
+        "recovered": 0,
+        "unresolved": 1,
+        "entities": 22
+      }
+    },
+    "20": {
+      "prefix_vs_F0": {
+        "k": 20,
+        "mentions_leq_k": 799,
+        "same_target": 799,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.00479
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 798,
+        "linked_in_full": 798,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 798,
+          "full": 798,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "prefix_vs_F0_single_final_sweep_only": {
+        "k": 20,
+        "mentions_leq_k": 799,
+        "same_target": 799,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.00479
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 798,
+        "linked_in_full": 798,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 798,
+          "full": 798,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "F1_volume_passes_vs_F0_restricted": {
+        "k": 20,
+        "mentions_leq_k": 799,
+        "same_target": 799,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.00479
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 798,
+        "linked_in_full": 798,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 798,
+          "full": 798,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "prefix_report": {
+        "groups": 135,
+        "linked": 99,
+        "created": 35,
+        "deferred": 0,
+        "recovered": 0,
+        "unresolved": 1,
+        "entities": 35
+      }
+    },
+    "30": {
+      "prefix_vs_F0": {
+        "k": 30,
+        "mentions_leq_k": 1480,
+        "same_target": 1480,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.00259
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 1478,
+        "linked_in_full": 1478,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 1478,
+          "full": 1478,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "prefix_vs_F0_single_final_sweep_only": {
+        "k": 30,
+        "mentions_leq_k": 1480,
+        "same_target": 1480,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.00259
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 1478,
+        "linked_in_full": 1478,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 1478,
+          "full": 1478,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "F1_volume_passes_vs_F0_restricted": {
+        "k": 30,
+        "mentions_leq_k": 1480,
+        "same_target": 1480,
+        "disagree": 0,
+        "disagree_rate": 0.0,
+        "disagree_wilson": [
+          0.0,
+          0.00259
+        ],
+        "ari": 1.0,
+        "linked_in_prefix": 1478,
+        "linked_in_full": 1478,
+        "categories": [],
+        "disagree_by_chapter": {},
+        "alias_bindings_learned_leq_k": {
+          "prefix": 1478,
+          "full": 1478,
+          "only_in_prefix": 0,
+          "only_in_full": 0
+        },
+        "examples_mention_id_chapter_category_methods": []
+      },
+      "prefix_report": {
+        "groups": 245,
+        "linked": 194,
+        "created": 49,
+        "deferred": 0,
+        "recovered": 0,
+        "unresolved": 1,
+        "entities": 49
+      }
+    }
+  }
+}

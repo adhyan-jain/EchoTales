@@ -1,0 +1,74 @@
+{
+  "probe": "E4 discourse-position semantics (real data)",
+  "label_provenance": "SYSTEM-INTERNAL, no labels",
+  "novel": "lord-of-the-mysteries",
+  "offset_unit": {
+    "mention_level": {
+      "pairs_with_distinct_text_positions": 77678,
+      "concordant": 36135,
+      "discordant": 38704,
+      "tied_offsets": 2839,
+      "concordant_rate": 0.4652,
+      "concordant_wilson": [
+        0.46168,
+        0.4687
+      ],
+      "discordant_rate": 0.4983,
+      "a_random_order_would_give_concordance_about": 0.5
+    },
+    "fact_level": {
+      "alias_bindings_matched_to_a_founding_mention": 1377,
+      "unmatched": 959,
+      "ambiguous_block": 293,
+      "same_chapter_fact_pairs_distinct_in_text": 25295,
+      "concordant": 14199,
+      "discordant": 10733,
+      "tied_offsets": 363,
+      "concordant_rate": 0.5613,
+      "concordant_wilson": [
+        0.55521,
+        0.56744
+      ]
+    },
+    "nonzero_offset_share": {
+      "alias_binding": {
+        "rows": 2336,
+        "with_nonzero_offset": 1901
+      },
+      "attribute": {
+        "rows": 558,
+        "with_nonzero_offset": 528
+      },
+      "self_persona_binding": {
+        "rows": 93,
+        "with_nonzero_offset": 0
+      }
+    }
+  },
+  "chapter_lag": {
+    "entities_with_aliases": 43,
+    "alias_queries_span_first_learned_to_end_of_volume": 1084,
+    "alias_queries_that_change_with_end_of_chapter_knowledge": 34,
+    "alias_change_rate": 0.0314,
+    "alias_change_wilson": [
+      0.02253,
+      0.04351
+    ],
+    "entities_whose_own_name_is_missing_at_their_first_chapter": 30,
+    "persona_attribute_queries": 1084,
+    "persona_attribute_queries_that_change": 40,
+    "persona_attr_change_rate": 0.0369,
+    "persona_attr_change_wilson": [
+      0.02721,
+      0.04986
+    ],
+    "chapters_in_novel": 40
+  },
+  "attribute_conflicts": {
+    "persona_key_groups": 558,
+    "groups_with_two_or_more_distinct_values": 0,
+    "queries_with_conflicting_admissible_values": 0,
+    "of_which_winner_decided_by_exact_tie": 0,
+    "of_which_winner_decided_inside_one_chapter_by_block_relative_offset": 0
+  }
+}

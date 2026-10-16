@@ -1,0 +1,149 @@
+{
+  "preregistration": "PREREG_M3b_title_tenure.md v1",
+  "label_provenance": "SYNTHETIC (by construction from the world spec); no model, no human, no novel text",
+  "worlds": 40,
+  "systems": {
+    "V": {
+      "n_title_mentions": 120,
+      "n_title_pre": 40,
+      "reader_accuracy": {
+        "k": 80,
+        "n": 120,
+        "rate": 0.6666666666666666,
+        "wilson95": [
+          0.5783093452093498,
+          0.7446838977720069
+        ]
+      },
+      "omniscient_accuracy": {
+        "k": 120,
+        "n": 120,
+        "rate": 1.0,
+        "wilson95": [
+          0.9689797289440706,
+          1.0
+        ]
+      },
+      "premature": {
+        "k": 40,
+        "n": 40,
+        "rate": 1.0,
+        "wilson95": [
+          0.9123754607496077,
+          1.0
+        ]
+      }
+    },
+    "C": {
+      "n_title_mentions": 120,
+      "n_title_pre": 40,
+      "reader_accuracy": {
+        "k": 120,
+        "n": 120,
+        "rate": 1.0,
+        "wilson95": [
+          0.9689797289440706,
+          1.0
+        ]
+      },
+      "omniscient_accuracy": {
+        "k": 80,
+        "n": 120,
+        "rate": 0.6666666666666666,
+        "wilson95": [
+          0.5783093452093498,
+          0.7446838977720069
+        ]
+      },
+      "premature": {
+        "k": 0,
+        "n": 40,
+        "rate": 0.0,
+        "wilson95": [
+          0.0,
+          0.08762453925039232
+        ]
+      }
+    },
+    "B": {
+      "n_title_mentions": 120,
+      "n_title_pre": 40,
+      "reader_accuracy": {
+        "k": 120,
+        "n": 120,
+        "rate": 1.0,
+        "wilson95": [
+          0.9689797289440706,
+          1.0
+        ]
+      },
+      "omniscient_accuracy": {
+        "k": 120,
+        "n": 120,
+        "rate": 1.0,
+        "wilson95": [
+          0.9689797289440706,
+          1.0
+        ]
+      },
+      "premature": {
+        "k": 0,
+        "n": 40,
+        "rate": 0.0,
+        "wilson95": [
+          0.0,
+          0.08762453925039232
+        ]
+      }
+    },
+    "S0_shipped": {
+      "n_title_mentions": 120,
+      "n_title_pre": 40,
+      "reader_accuracy": {
+        "k": 67,
+        "n": 120,
+        "rate": 0.5583333333333333,
+        "wilson95": [
+          0.4690436082030291,
+          0.6440040268404459
+        ]
+      },
+      "omniscient_accuracy": {
+        "k": 107,
+        "n": 120,
+        "rate": 0.8916666666666667,
+        "wilson95": [
+          0.8234449199472612,
+          0.9355892010589275
+        ]
+      },
+      "premature": {
+        "k": 40,
+        "n": 40,
+        "rate": 1.0,
+        "wilson95": [
+          0.9123754607496077,
+          1.0
+        ]
+      }
+    }
+  },
+  "shipped_resolver_agrees_with_V_on_links_it_makes": {
+    "k": 107,
+    "n": 120,
+    "rate": 0.8916666666666667,
+    "wilson95": [
+      0.8234449199472612,
+      0.9355892010589275
+    ]
+  },
+  "tenure_score_Q_story_time": {
+    "V": 0.8333333333333334,
+    "B": 0.8333333333333334
+  },
+  "tenure_score_Q_reader_time": {
+    "C": 0.8333333333333334,
+    "B": 0.8333333333333334
+  },
+  "note": "V is volume-first (shipped behaviour); C causal-only; B bitemporal. Designed outcomes hold by construction."
+}

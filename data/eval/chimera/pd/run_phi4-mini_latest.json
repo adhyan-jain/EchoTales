@@ -1,0 +1,1407 @@
+{
+ "model": "phi4-mini:latest",
+ "options": {
+  "temperature": 0,
+  "seed": 20261016,
+  "num_predict": 8,
+  "num_ctx": 4096
+ },
+ "real": {
+  "PH-pre000": {
+   "A": "C",
+   "B": "C"
+  },
+  "PH-pre001": {
+   "A": "UNDETERMINED",
+   "B": "C"
+  },
+  "PH-pre002": {
+   "A": "D",
+   "B": "C"
+  },
+  "PH-pre003": {
+   "A": "UNDETERMINED",
+   "B": "C"
+  },
+  "PH-pre004": {
+   "A": "C",
+   "B": "B"
+  },
+  "PH-pre005": {
+   "A": "G",
+   "B": "G"
+  },
+  "PH-pre006": {
+   "A": "B",
+   "B": "G"
+  },
+  "PH-pre007": {
+   "A": "F",
+   "B": "F"
+  },
+  "PH-post008": {
+   "A": "C",
+   "B": "C"
+  },
+  "PH-post009": {
+   "A": "C",
+   "B": "C"
+  },
+  "PH-ctrl010": {
+   "A": "I",
+   "B": "D"
+  },
+  "PH-ctrl011": {
+   "A": "A",
+   "B": "C"
+  },
+  "PH-ctrl012": {
+   "A": "E",
+   "B": "E"
+  },
+  "PI-pre013": {
+   "A": "D",
+   "B": "C"
+  },
+  "PI-pre014": {
+   "A": "D",
+   "B": "E"
+  },
+  "PI-pre015": {
+   "A": "D",
+   "B": "B"
+  },
+  "PI-pre016": {
+   "A": "C",
+   "B": "D"
+  },
+  "PI-pre017": {
+   "A": "C",
+   "B": "E"
+  },
+  "PI-pre018": {
+   "A": "B",
+   "B": "B"
+  },
+  "PI-pre019": {
+   "A": "C",
+   "B": "E"
+  },
+  "PI-pre020": {
+   "A": "B",
+   "B": "F"
+  },
+  "PI-post021": {
+   "A": "B",
+   "B": "B"
+  },
+  "PI-post022": {
+   "A": "H",
+   "B": "H"
+  },
+  "PI-ctrl023": {
+   "A": "H",
+   "B": "H"
+  },
+  "PI-ctrl024": {
+   "A": "F",
+   "B": "F"
+  },
+  "PI-ctrl025": {
+   "A": "H",
+   "B": "C"
+  },
+  "GE-pre026": {
+   "A": "C",
+   "B": "B"
+  },
+  "GE-pre027": {
+   "A": "E",
+   "B": "UNDETERMINED"
+  },
+  "GE-pre028": {
+   "A": "B",
+   "B": "B"
+  },
+  "GE-pre029": {
+   "A": "A",
+   "B": "F"
+  },
+  "GE-pre030": {
+   "A": "C",
+   "B": "G"
+  },
+  "GE-pre031": {
+   "A": "B",
+   "B": "B"
+  },
+  "GE-post032": {
+   "A": "D",
+   "B": "C"
+  },
+  "GE-post033": {
+   "A": "C",
+   "B": "C"
+  },
+  "GE-ctrl034": {
+   "A": "D",
+   "B": "D"
+  },
+  "GE-ctrl035": {
+   "A": "C",
+   "B": "A"
+  },
+  "GE-ctrl036": {
+   "A": "E",
+   "B": "E"
+  },
+  "CI-pre037": {
+   "A": "D",
+   "B": "INVALID"
+  },
+  "CI-pre038": {
+   "A": "C",
+   "B": "D"
+  },
+  "CI-pre039": {
+   "A": "B",
+   "B": "G"
+  },
+  "CI-pre040": {
+   "A": "A",
+   "B": "B"
+  },
+  "CI-pre041": {
+   "A": "A",
+   "B": "C"
+  },
+  "CI-pre042": {
+   "A": "G",
+   "B": "D"
+  },
+  "CI-pre043": {
+   "A": "C",
+   "B": "C"
+  },
+  "CI-pre044": {
+   "A": "INVALID",
+   "B": "E"
+  },
+  "CI-ctrl045": {
+   "A": "G",
+   "B": "G"
+  },
+  "CI-ctrl046": {
+   "A": "F",
+   "B": "F"
+  },
+  "CI-ctrl047": {
+   "A": "B",
+   "B": "B"
+  },
+  "SS-pre048": {
+   "A": "A",
+   "B": "C"
+  },
+  "SS-post049": {
+   "A": "B",
+   "B": "F"
+  },
+  "SS-ctrl050": {
+   "A": "G",
+   "B": "C"
+  },
+  "SS-ctrl051": {
+   "A": "A",
+   "B": "A"
+  },
+  "SS-ctrl052": {
+   "A": "C",
+   "B": "C"
+  },
+  "JE-pre053": {
+   "A": "UNDETERMINED",
+   "B": "A"
+  },
+  "JE-pre054": {
+   "A": "B",
+   "B": "UNDETERMINED"
+  },
+  "JE-pre055": {
+   "A": "H",
+   "B": "F"
+  },
+  "JE-pre056": {
+   "A": "C",
+   "B": "G"
+  },
+  "JE-post057": {
+   "A": "A",
+   "B": "A"
+  },
+  "JE-ctrl058": {
+   "A": "I",
+   "B": "I"
+  },
+  "JE-ctrl059": {
+   "A": "D",
+   "B": "D"
+  },
+  "JE-ctrl060": {
+   "A": "E",
+   "B": "E"
+  },
+  "RH-pre061": {
+   "A": "G",
+   "B": "D"
+  },
+  "RH-pre062": {
+   "A": "C",
+   "B": "C"
+  },
+  "RH-pre063": {
+   "A": "D",
+   "B": "D"
+  },
+  "RH-pre064": {
+   "A": "G",
+   "B": "E"
+  },
+  "RH-pre065": {
+   "A": "C",
+   "B": "B"
+  },
+  "RH-pre066": {
+   "A": "E",
+   "B": "C"
+  },
+  "RH-pre067": {
+   "A": "B",
+   "B": "E"
+  },
+  "RH-pre068": {
+   "A": "B",
+   "B": "B"
+  },
+  "RH-ctrl069": {
+   "A": "E",
+   "B": "E"
+  },
+  "RH-ctrl070": {
+   "A": "E",
+   "B": "E"
+  },
+  "RH-ctrl071": {
+   "A": "INVALID",
+   "B": "F"
+  }
+ },
+ "closed": {
+  "PH": {
+   "C_orig": "B",
+   "C_ren": "C"
+  },
+  "PI": {
+   "C_orig": "C",
+   "C_ren": "UNDETERMINED"
+  },
+  "GE": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED"
+  },
+  "CI": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED"
+  },
+  "SS": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED"
+  },
+  "JE": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED"
+  },
+  "RH": {
+   "C_orig": "UNDETERMINED",
+   "C_ren": "UNDETERMINED"
+  }
+ },
+ "synth": {
+  "U000": {
+   "A": "D",
+   "B": "D"
+  },
+  "U001": {
+   "A": "H",
+   "B": "E"
+  },
+  "U002": {
+   "A": "B",
+   "B": "B"
+  },
+  "U003": {
+   "A": "A",
+   "B": "A"
+  },
+  "U004": {
+   "A": "E",
+   "B": "E"
+  },
+  "U005": {
+   "A": "F",
+   "B": "E"
+  },
+  "U006": {
+   "A": "E",
+   "B": "C"
+  },
+  "U007": {
+   "A": "A",
+   "B": "A"
+  },
+  "U008": {
+   "A": "C",
+   "B": "C"
+  },
+  "U009": {
+   "A": "H",
+   "B": "H"
+  },
+  "U010": {
+   "A": "C",
+   "B": "C"
+  },
+  "U011": {
+   "A": "E",
+   "B": "E"
+  },
+  "U012": {
+   "A": "C",
+   "B": "C"
+  },
+  "U013": {
+   "A": "D",
+   "B": "D"
+  },
+  "U014": {
+   "A": "D",
+   "B": "D"
+  },
+  "U015": {
+   "A": "G",
+   "B": "G"
+  },
+  "U016": {
+   "A": "C",
+   "B": "C"
+  },
+  "U017": {
+   "A": "B",
+   "B": "B"
+  },
+  "U018": {
+   "A": "D",
+   "B": "D"
+  },
+  "U019": {
+   "A": "C",
+   "B": "F"
+  },
+  "U020": {
+   "A": "E",
+   "B": "F"
+  },
+  "U021": {
+   "A": "D",
+   "B": "D"
+  },
+  "U022": {
+   "A": "F",
+   "B": "E"
+  },
+  "U023": {
+   "A": "E",
+   "B": "E"
+  },
+  "U024": {
+   "A": "E",
+   "B": "E"
+  },
+  "U025": {
+   "A": "D",
+   "B": "D"
+  },
+  "U026": {
+   "A": "A",
+   "B": "A"
+  },
+  "U027": {
+   "A": "E",
+   "B": "E"
+  },
+  "U028": {
+   "A": "H",
+   "B": "B"
+  },
+  "U029": {
+   "A": "D",
+   "B": "D"
+  },
+  "U030": {
+   "A": "INVALID",
+   "B": "E"
+  },
+  "U031": {
+   "A": "H",
+   "B": "H"
+  },
+  "U032": {
+   "A": "INVALID",
+   "B": "D"
+  },
+  "U033": {
+   "A": "D",
+   "B": "D"
+  },
+  "U034": {
+   "A": "A",
+   "B": "A"
+  },
+  "U035": {
+   "A": "D",
+   "B": "D"
+  },
+  "U036": {
+   "A": "C",
+   "B": "C"
+  },
+  "U037": {
+   "A": "INVALID",
+   "B": "B"
+  },
+  "U038": {
+   "A": "C",
+   "B": "C"
+  },
+  "U039": {
+   "A": "E",
+   "B": "E"
+  },
+  "U040": {
+   "A": "B",
+   "B": "B"
+  },
+  "U041": {
+   "A": "A",
+   "B": "A"
+  },
+  "U042": {
+   "A": "D",
+   "B": "D"
+  },
+  "U043": {
+   "A": "C",
+   "B": "C"
+  },
+  "U044": {
+   "A": "E",
+   "B": "E"
+  },
+  "U045": {
+   "A": "G",
+   "B": "G"
+  },
+  "U046": {
+   "A": "G",
+   "B": "G"
+  },
+  "U047": {
+   "A": "H",
+   "B": "H"
+  },
+  "U048": {
+   "A": "F",
+   "B": "F"
+  },
+  "U049": {
+   "A": "F",
+   "B": "F"
+  },
+  "U050": {
+   "A": "D",
+   "B": "D"
+  },
+  "U051": {
+   "A": "F",
+   "B": "F"
+  },
+  "U052": {
+   "A": "E",
+   "B": "E"
+  },
+  "U053": {
+   "A": "E",
+   "B": "E"
+  },
+  "U054": {
+   "A": "E",
+   "B": "E"
+  },
+  "U055": {
+   "A": "B",
+   "B": "B"
+  },
+  "U056": {
+   "A": "B",
+   "B": "B"
+  },
+  "U057": {
+   "A": "A",
+   "B": "A"
+  },
+  "U058": {
+   "A": "F",
+   "B": "F"
+  },
+  "U059": {
+   "A": "A",
+   "B": "A"
+  },
+  "U060": {
+   "A": "H",
+   "B": "H"
+  },
+  "U061": {
+   "A": "D",
+   "B": "D"
+  }
+ },
+ "status": "COMPLETE",
+ "truth": {
+  "PH-pre000": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "H",
+   "kind": "pre",
+   "event": "PH",
+   "distance": 298129
+  },
+  "PH-pre001": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "PH",
+   "distance": 286592
+  },
+  "PH-pre002": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B",
+   "kind": "pre",
+   "event": "PH",
+   "distance": 277173
+  },
+  "PH-pre003": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "PH",
+   "distance": 243285
+  },
+  "PH-pre004": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "PH",
+   "distance": 222660
+  },
+  "PH-pre005": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "PH",
+   "distance": 162342
+  },
+  "PH-pre006": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "C",
+   "kind": "pre",
+   "event": "PH",
+   "distance": 25051
+  },
+  "PH-pre007": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "PH",
+   "distance": 1756
+  },
+  "PH-post008": {
+   "truth_letter": "C",
+   "identity_letter": "C",
+   "kind": "post",
+   "event": "PH",
+   "distance": null
+  },
+  "PH-post009": {
+   "truth_letter": "B",
+   "identity_letter": "B",
+   "kind": "post",
+   "event": "PH",
+   "distance": null
+  },
+  "PH-ctrl010": {
+   "truth_letter": "I",
+   "identity_letter": "H",
+   "kind": "ctrl",
+   "event": "PH",
+   "distance": null
+  },
+  "PH-ctrl011": {
+   "truth_letter": "A",
+   "identity_letter": "H",
+   "kind": "ctrl",
+   "event": "PH",
+   "distance": null
+  },
+  "PH-ctrl012": {
+   "truth_letter": "E",
+   "identity_letter": "B",
+   "kind": "ctrl",
+   "event": "PH",
+   "distance": null
+  },
+  "PI-pre013": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "PI",
+   "distance": 275574
+  },
+  "PI-pre014": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "PI",
+   "distance": 220415
+  },
+  "PI-pre015": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "PI",
+   "distance": 156564
+  },
+  "PI-pre016": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "C",
+   "kind": "pre",
+   "event": "PI",
+   "distance": 142370
+  },
+  "PI-pre017": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "C",
+   "kind": "pre",
+   "event": "PI",
+   "distance": 119560
+  },
+  "PI-pre018": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "PI",
+   "distance": 97537
+  },
+  "PI-pre019": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "PI",
+   "distance": 65505
+  },
+  "PI-pre020": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "PI",
+   "distance": 9785
+  },
+  "PI-post021": {
+   "truth_letter": "B",
+   "identity_letter": "B",
+   "kind": "post",
+   "event": "PI",
+   "distance": null
+  },
+  "PI-post022": {
+   "truth_letter": "C",
+   "identity_letter": "C",
+   "kind": "post",
+   "event": "PI",
+   "distance": null
+  },
+  "PI-ctrl023": {
+   "truth_letter": "H",
+   "identity_letter": "B",
+   "kind": "ctrl",
+   "event": "PI",
+   "distance": null
+  },
+  "PI-ctrl024": {
+   "truth_letter": "F",
+   "identity_letter": "A",
+   "kind": "ctrl",
+   "event": "PI",
+   "distance": null
+  },
+  "PI-ctrl025": {
+   "truth_letter": "H",
+   "identity_letter": "B",
+   "kind": "ctrl",
+   "event": "PI",
+   "distance": null
+  },
+  "GE-pre026": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "A",
+   "kind": "pre",
+   "event": "GE",
+   "distance": 444499
+  },
+  "GE-pre027": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "H",
+   "kind": "pre",
+   "event": "GE",
+   "distance": 402280
+  },
+  "GE-pre028": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "GE",
+   "distance": 281089
+  },
+  "GE-pre029": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "GE",
+   "distance": 52495
+  },
+  "GE-pre030": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "GE",
+   "distance": 50158
+  },
+  "GE-pre031": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "GE",
+   "distance": 49481
+  },
+  "GE-post032": {
+   "truth_letter": "F",
+   "identity_letter": "F",
+   "kind": "post",
+   "event": "GE",
+   "distance": null
+  },
+  "GE-post033": {
+   "truth_letter": "F",
+   "identity_letter": "F",
+   "kind": "post",
+   "event": "GE",
+   "distance": null
+  },
+  "GE-ctrl034": {
+   "truth_letter": "D",
+   "identity_letter": "F",
+   "kind": "ctrl",
+   "event": "GE",
+   "distance": null
+  },
+  "GE-ctrl035": {
+   "truth_letter": "A",
+   "identity_letter": "G",
+   "kind": "ctrl",
+   "event": "GE",
+   "distance": null
+  },
+  "GE-ctrl036": {
+   "truth_letter": "E",
+   "identity_letter": "G",
+   "kind": "ctrl",
+   "event": "GE",
+   "distance": null
+  },
+  "CI-pre037": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "CI",
+   "distance": 23930
+  },
+  "CI-pre038": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B",
+   "kind": "pre",
+   "event": "CI",
+   "distance": 19751
+  },
+  "CI-pre039": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "A",
+   "kind": "pre",
+   "event": "CI",
+   "distance": 19478
+  },
+  "CI-pre040": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "A",
+   "kind": "pre",
+   "event": "CI",
+   "distance": 17640
+  },
+  "CI-pre041": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "CI",
+   "distance": 13231
+  },
+  "CI-pre042": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B",
+   "kind": "pre",
+   "event": "CI",
+   "distance": 7784
+  },
+  "CI-pre043": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "A",
+   "kind": "pre",
+   "event": "CI",
+   "distance": 6915
+  },
+  "CI-pre044": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "CI",
+   "distance": 2402
+  },
+  "CI-ctrl045": {
+   "truth_letter": "G",
+   "identity_letter": "E",
+   "kind": "ctrl",
+   "event": "CI",
+   "distance": null
+  },
+  "CI-ctrl046": {
+   "truth_letter": "F",
+   "identity_letter": "B",
+   "kind": "ctrl",
+   "event": "CI",
+   "distance": null
+  },
+  "CI-ctrl047": {
+   "truth_letter": "B",
+   "identity_letter": "G",
+   "kind": "ctrl",
+   "event": "CI",
+   "distance": null
+  },
+  "SS-pre048": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "C",
+   "kind": "pre",
+   "event": "SS",
+   "distance": 57439
+  },
+  "SS-post049": {
+   "truth_letter": "E",
+   "identity_letter": "E",
+   "kind": "post",
+   "event": "SS",
+   "distance": null
+  },
+  "SS-ctrl050": {
+   "truth_letter": "G",
+   "identity_letter": "B",
+   "kind": "ctrl",
+   "event": "SS",
+   "distance": null
+  },
+  "SS-ctrl051": {
+   "truth_letter": "A",
+   "identity_letter": "B",
+   "kind": "ctrl",
+   "event": "SS",
+   "distance": null
+  },
+  "SS-ctrl052": {
+   "truth_letter": "C",
+   "identity_letter": "H",
+   "kind": "ctrl",
+   "event": "SS",
+   "distance": null
+  },
+  "JE-pre053": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "JE",
+   "distance": 20757
+  },
+  "JE-pre054": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "A",
+   "kind": "pre",
+   "event": "JE",
+   "distance": 13218
+  },
+  "JE-pre055": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B",
+   "kind": "pre",
+   "event": "JE",
+   "distance": 12434
+  },
+  "JE-pre056": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "I",
+   "kind": "pre",
+   "event": "JE",
+   "distance": 4376
+  },
+  "JE-post057": {
+   "truth_letter": "D",
+   "identity_letter": "D",
+   "kind": "post",
+   "event": "JE",
+   "distance": null
+  },
+  "JE-ctrl058": {
+   "truth_letter": "I",
+   "identity_letter": "E",
+   "kind": "ctrl",
+   "event": "JE",
+   "distance": null
+  },
+  "JE-ctrl059": {
+   "truth_letter": "F",
+   "identity_letter": "D",
+   "kind": "ctrl",
+   "event": "JE",
+   "distance": null
+  },
+  "JE-ctrl060": {
+   "truth_letter": "E",
+   "identity_letter": "D",
+   "kind": "ctrl",
+   "event": "JE",
+   "distance": null
+  },
+  "RH-pre061": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "C",
+   "kind": "pre",
+   "event": "RH",
+   "distance": 33802
+  },
+  "RH-pre062": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "RH",
+   "distance": 32457
+  },
+  "RH-pre063": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E",
+   "kind": "pre",
+   "event": "RH",
+   "distance": 29457
+  },
+  "RH-pre064": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "RH",
+   "distance": 28725
+  },
+  "RH-pre065": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G",
+   "kind": "pre",
+   "event": "RH",
+   "distance": 28618
+  },
+  "RH-pre066": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "RH",
+   "distance": 25315
+  },
+  "RH-pre067": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D",
+   "kind": "pre",
+   "event": "RH",
+   "distance": 23203
+  },
+  "RH-pre068": {
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F",
+   "kind": "pre",
+   "event": "RH",
+   "distance": 17667
+  },
+  "RH-ctrl069": {
+   "truth_letter": "E",
+   "identity_letter": "F",
+   "kind": "ctrl",
+   "event": "RH",
+   "distance": null
+  },
+  "RH-ctrl070": {
+   "truth_letter": "E",
+   "identity_letter": "D",
+   "kind": "ctrl",
+   "event": "RH",
+   "distance": null
+  },
+  "RH-ctrl071": {
+   "truth_letter": "F",
+   "identity_letter": "A",
+   "kind": "ctrl",
+   "event": "RH",
+   "distance": null
+  }
+ },
+ "closed_truth": {
+  "PH": "A",
+  "PI": "G",
+  "GE": "I",
+  "CI": "C",
+  "SS": "F",
+  "JE": "C",
+  "RH": "G"
+ },
+ "synth_truth": {
+  "U000": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G"
+  },
+  "U001": {
+   "type": "post_alias",
+   "truth_letter": "H",
+   "identity_letter": null
+  },
+  "U002": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "H"
+  },
+  "U003": {
+   "type": "post_alias",
+   "truth_letter": "A",
+   "identity_letter": null
+  },
+  "U004": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D"
+  },
+  "U005": {
+   "type": "post_alias",
+   "truth_letter": "F",
+   "identity_letter": null
+  },
+  "U006": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "H"
+  },
+  "U007": {
+   "type": "post_alias",
+   "truth_letter": "A",
+   "identity_letter": null
+  },
+  "U008": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "A"
+  },
+  "U009": {
+   "type": "post_alias",
+   "truth_letter": "H",
+   "identity_letter": null
+  },
+  "U010": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G"
+  },
+  "U011": {
+   "type": "post_alias",
+   "truth_letter": "E",
+   "identity_letter": null
+  },
+  "U012": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F"
+  },
+  "U013": {
+   "type": "post_alias",
+   "truth_letter": "D",
+   "identity_letter": null
+  },
+  "U014": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G"
+  },
+  "U015": {
+   "type": "post_alias",
+   "truth_letter": "G",
+   "identity_letter": null
+  },
+  "U016": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D"
+  },
+  "U017": {
+   "type": "post_alias",
+   "truth_letter": "B",
+   "identity_letter": null
+  },
+  "U018": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B"
+  },
+  "U019": {
+   "type": "post_alias",
+   "truth_letter": "F",
+   "identity_letter": null
+  },
+  "U020": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "G"
+  },
+  "U021": {
+   "type": "post_alias",
+   "truth_letter": "D",
+   "identity_letter": null
+  },
+  "U022": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E"
+  },
+  "U023": {
+   "type": "post_alias",
+   "truth_letter": "E",
+   "identity_letter": null
+  },
+  "U024": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F"
+  },
+  "U025": {
+   "type": "post_alias",
+   "truth_letter": "D",
+   "identity_letter": null
+  },
+  "U026": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D"
+  },
+  "U027": {
+   "type": "post_alias",
+   "truth_letter": "E",
+   "identity_letter": null
+  },
+  "U028": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "F"
+  },
+  "U029": {
+   "type": "post_alias",
+   "truth_letter": "D",
+   "identity_letter": null
+  },
+  "U030": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "C"
+  },
+  "U031": {
+   "type": "post_alias",
+   "truth_letter": "H",
+   "identity_letter": null
+  },
+  "U032": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D"
+  },
+  "U033": {
+   "type": "post_alias",
+   "truth_letter": "D",
+   "identity_letter": null
+  },
+  "U034": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B"
+  },
+  "U035": {
+   "type": "post_alias",
+   "truth_letter": "D",
+   "identity_letter": null
+  },
+  "U036": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "B"
+  },
+  "U037": {
+   "type": "post_alias",
+   "truth_letter": "H",
+   "identity_letter": null
+  },
+  "U038": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "E"
+  },
+  "U039": {
+   "type": "post_alias",
+   "truth_letter": "E",
+   "identity_letter": null
+  },
+  "U040": {
+   "type": "pre_alias",
+   "truth_letter": "UNDETERMINED",
+   "identity_letter": "D"
+  },
+  "U041": {
+   "type": "post_alias",
+   "truth_letter": "A",
+   "identity_letter": null
+  },
+  "U042": {
+   "type": "plain",
+   "truth_letter": "D",
+   "identity_letter": null
+  },
+  "U043": {
+   "type": "plain",
+   "truth_letter": "C",
+   "identity_letter": null
+  },
+  "U044": {
+   "type": "plain",
+   "truth_letter": "E",
+   "identity_letter": null
+  },
+  "U045": {
+   "type": "plain",
+   "truth_letter": "G",
+   "identity_letter": null
+  },
+  "U046": {
+   "type": "plain",
+   "truth_letter": "G",
+   "identity_letter": null
+  },
+  "U047": {
+   "type": "plain",
+   "truth_letter": "H",
+   "identity_letter": null
+  },
+  "U048": {
+   "type": "plain",
+   "truth_letter": "F",
+   "identity_letter": null
+  },
+  "U049": {
+   "type": "plain",
+   "truth_letter": "F",
+   "identity_letter": null
+  },
+  "U050": {
+   "type": "plain",
+   "truth_letter": "D",
+   "identity_letter": null
+  },
+  "U051": {
+   "type": "plain",
+   "truth_letter": "F",
+   "identity_letter": null
+  },
+  "U052": {
+   "type": "plain",
+   "truth_letter": "E",
+   "identity_letter": null
+  },
+  "U053": {
+   "type": "plain",
+   "truth_letter": "E",
+   "identity_letter": null
+  },
+  "U054": {
+   "type": "plain",
+   "truth_letter": "E",
+   "identity_letter": null
+  },
+  "U055": {
+   "type": "plain",
+   "truth_letter": "B",
+   "identity_letter": null
+  },
+  "U056": {
+   "type": "plain",
+   "truth_letter": "B",
+   "identity_letter": null
+  },
+  "U057": {
+   "type": "plain",
+   "truth_letter": "A",
+   "identity_letter": null
+  },
+  "U058": {
+   "type": "plain",
+   "truth_letter": "F",
+   "identity_letter": null
+  },
+  "U059": {
+   "type": "plain",
+   "truth_letter": "A",
+   "identity_letter": null
+  },
+  "U060": {
+   "type": "plain",
+   "truth_letter": "H",
+   "identity_letter": null
+  },
+  "U061": {
+   "type": "plain",
+   "truth_letter": "D",
+   "identity_letter": null
+  }
+ }
+}

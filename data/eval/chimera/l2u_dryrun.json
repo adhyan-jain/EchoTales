@@ -1,0 +1,29 @@
+{
+  "mode": "dry-run (no network, no key)",
+  "model": "gpt-5.6-luna",
+  "n_items": 62,
+  "calls": 124,
+  "by_type": {
+    "pre_alias": 21,
+    "post_alias": 21,
+    "plain": 20
+  },
+  "items_where_renaming_changed_no_name": [],
+  "expected": {
+    "input_tokens": 48558,
+    "output_tokens": 372,
+    "usd": 0.010158
+  },
+  "worst_case": {
+    "input_tokens": 63125,
+    "output_tokens": 18600,
+    "usd": 0.03494508,
+    "assumption": "every call at its max_completion_tokens cap; input 1.3x"
+  },
+  "token_estimate_method": "chars/3.5 + 15 per call; ESTIMATE",
+  "prices_usd_per_1M": {
+    "input": 0.2,
+    "output": 1.2,
+    "source": "OpenAI pricing page, fetched 2026-10-15"
+  }
+}

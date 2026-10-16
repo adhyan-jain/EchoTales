@@ -1,0 +1,198 @@
+{
+ "model": "gpt-5.6-luna",
+ "probe": {
+  "PH": {
+   "M2_orig": "E",
+   "M2_ren": "D",
+   "M2_ren2": "C"
+  },
+  "PI": {
+   "M2_orig": "F",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "GE": {
+   "M2_orig": "H",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "CI": {
+   "M2_orig": "A",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "SS": {
+   "M2_orig": "A",
+   "M2_ren": "D",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "JE": {
+   "M2_orig": "B",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "RH": {
+   "M2_orig": "E",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "MC": {
+   "M2_orig": "I",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "LM": {
+   "M2_orig": "C",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "JH": {
+   "M2_orig": "E",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "IV": {
+   "M2_orig": "G",
+   "M2_ren": "B",
+   "M2_ren2": "B"
+  },
+  "MI": {
+   "M2_orig": "C",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "VI": {
+   "M2_orig": "G",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "SA": {
+   "M2_orig": "A",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "DL": {
+   "M2_orig": "G",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "DQ": {
+   "M2_orig": "B",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "D"
+  },
+  "WW": {
+   "M2_orig": "E",
+   "M2_ren": "D",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "OT": {
+   "M2_orig": "B",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "TM": {
+   "M2_orig": "C",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "H"
+  },
+  "KM": {
+   "M2_orig": "A",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "VW": {
+   "M2_orig": "B",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "LA": {
+   "M2_orig": "D",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "CO": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "GG": {
+   "M2_orig": "A",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "PG": {
+   "M2_orig": "D",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "MK": {
+   "M2_orig": "A",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "C"
+  },
+  "YR": {
+   "M2_orig": "B",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "IM": {
+   "M2_orig": "A",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "RP": {
+   "M2_orig": "G",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "EL": {
+   "M2_orig": "UNDETERMINED",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  },
+  "BR": {
+   "M2_orig": "A",
+   "M2_ren": "UNDETERMINED",
+   "M2_ren2": "UNDETERMINED"
+  }
+ },
+ "status": "COMPLETE",
+ "truth": {
+  "PH": "E",
+  "PI": "F",
+  "GE": "H",
+  "CI": "A",
+  "SS": "A",
+  "JE": "D",
+  "RH": "E",
+  "MC": "I",
+  "LM": "C",
+  "JH": "E",
+  "IV": "G",
+  "MI": "C",
+  "VI": "G",
+  "SA": "E",
+  "DL": "G",
+  "DQ": "B",
+  "WW": "E",
+  "OT": "B",
+  "TM": "C",
+  "KM": "A",
+  "VW": "B",
+  "LA": "D",
+  "CO": "H",
+  "GG": "A",
+  "PG": "D",
+  "MK": "A",
+  "YR": "G",
+  "IM": "A",
+  "RP": "I",
+  "EL": "D",
+  "BR": "A"
+ },
+ "spent_usd": 0.004141600000000001,
+ "calls": 93,
+ "tok_in": 14924,
+ "tok_out": 964
+}

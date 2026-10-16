@@ -1,0 +1,74 @@
+{
+  "probe": "E4 discourse-position semantics (real data)",
+  "label_provenance": "SYSTEM-INTERNAL, no labels",
+  "novel": "reverend-insanity",
+  "offset_unit": {
+    "mention_level": {
+      "pairs_with_distinct_text_positions": 354787,
+      "concordant": 170827,
+      "discordant": 169539,
+      "tied_offsets": 14421,
+      "concordant_rate": 0.4815,
+      "concordant_wilson": [
+        0.47985,
+        0.48314
+      ],
+      "discordant_rate": 0.4779,
+      "a_random_order_would_give_concordance_about": 0.5
+    },
+    "fact_level": {
+      "alias_bindings_matched_to_a_founding_mention": 11092,
+      "unmatched": 3,
+      "ambiguous_block": 3003,
+      "same_chapter_fact_pairs_distinct_in_text": 343405,
+      "concordant": 199996,
+      "discordant": 135778,
+      "tied_offsets": 7631,
+      "concordant_rate": 0.5824,
+      "concordant_wilson": [
+        0.58074,
+        0.58404
+      ]
+    },
+    "nonzero_offset_share": {
+      "alias_binding": {
+        "rows": 11095,
+        "with_nonzero_offset": 9002
+      },
+      "attribute": {
+        "rows": 617,
+        "with_nonzero_offset": 552
+      },
+      "self_persona_binding": {
+        "rows": 98,
+        "with_nonzero_offset": 0
+      }
+    }
+  },
+  "chapter_lag": {
+    "entities_with_aliases": 90,
+    "alias_queries_span_first_learned_to_end_of_volume": 9925,
+    "alias_queries_that_change_with_end_of_chapter_knowledge": 80,
+    "alias_change_rate": 0.0081,
+    "alias_change_wilson": [
+      0.00648,
+      0.01002
+    ],
+    "entities_whose_own_name_is_missing_at_their_first_chapter": 61,
+    "persona_attribute_queries": 10049,
+    "persona_attribute_queries_that_change": 88,
+    "persona_attr_change_rate": 0.0088,
+    "persona_attr_change_wilson": [
+      0.00711,
+      0.01078
+    ],
+    "chapters_in_novel": 199
+  },
+  "attribute_conflicts": {
+    "persona_key_groups": 617,
+    "groups_with_two_or_more_distinct_values": 0,
+    "queries_with_conflicting_admissible_values": 0,
+    "of_which_winner_decided_by_exact_tie": 0,
+    "of_which_winner_decided_inside_one_chapter_by_block_relative_offset": 0
+  }
+}

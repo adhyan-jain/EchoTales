@@ -1,0 +1,142 @@
+{
+  "label_provenance": "SILVER; reveal chapters from repo data; one model; v1 outcomes were seen before the design (PREREG_L1b section 1)",
+  "status": "COMPLETE",
+  "spent_usd": 0.0108576,
+  "calls": 80,
+  "tokens": {
+    "input": 38082,
+    "output": 2701
+  },
+  "controls_test": {
+    "n": 16,
+    "gated_correct": {
+      "k": 15,
+      "n": 16,
+      "rate": 0.9375,
+      "wilson95": [
+        0.7167073163197013,
+        0.9888809426916687
+      ]
+    },
+    "ungated_A_correct": {
+      "k": 15,
+      "n": 16,
+      "rate": 0.9375,
+      "wilson95": [
+        0.7167073163197013,
+        0.9888809426916687
+      ]
+    },
+    "gate_paths": {
+      "surface_identity": 15,
+      "abstained_or_invalid": 1
+    },
+    "entailed_path_matches_silver": {
+      "k": 0,
+      "n": 0,
+      "rate": null,
+      "wilson95": [
+        NaN,
+        NaN
+      ]
+    }
+  },
+  "controls_dev": {
+    "n": 14,
+    "gated_correct": {
+      "k": 14,
+      "n": 14,
+      "rate": 1.0,
+      "wilson95": [
+        0.7846829880728186,
+        1.0
+      ]
+    },
+    "ungated_A_correct": {
+      "k": 14,
+      "n": 14,
+      "rate": 1.0,
+      "wilson95": [
+        0.7846829880728186,
+        1.0
+      ]
+    },
+    "gate_paths": {
+      "surface_identity": 14
+    },
+    "entailed_path_matches_silver": {
+      "k": 0,
+      "n": 0,
+      "rate": null,
+      "wilson95": [
+        NaN,
+        NaN
+      ]
+    }
+  },
+  "controls_all": {
+    "n": 30,
+    "gated_correct": {
+      "k": 29,
+      "n": 30,
+      "rate": 0.9666666666666667,
+      "wilson95": [
+        0.8332924860304112,
+        0.9940915620051425
+      ]
+    },
+    "ungated_A_correct": {
+      "k": 29,
+      "n": 30,
+      "rate": 0.9666666666666667,
+      "wilson95": [
+        0.8332924860304112,
+        0.9940915620051425
+      ]
+    },
+    "gate_paths": {
+      "surface_identity": 29,
+      "abstained_or_invalid": 1
+    },
+    "entailed_path_matches_silver": {
+      "k": 0,
+      "n": 0,
+      "rate": null,
+      "wilson95": [
+        NaN,
+        NaN
+      ]
+    }
+  },
+  "primary_test": {
+    "n": 4,
+    "accepted_as_silver_final_identity": 0,
+    "per_item": [
+      {
+        "id": "CP-001",
+        "gate": "claimed_name_not_in_spans",
+        "accepted": false
+      },
+      {
+        "id": "CP-002",
+        "gate": "claimed_name_not_in_spans",
+        "accepted": false
+      },
+      {
+        "id": "CP-003",
+        "gate": "claimed_name_not_in_spans",
+        "accepted": false
+      },
+      {
+        "id": "CP-017",
+        "gate": "not_entailed",
+        "accepted": false
+      }
+    ]
+  },
+  "decision": {
+    "P1_keeps_correct_links_test": true,
+    "P2_blocks_premature_test": true,
+    "result": "PASS (descriptive; see interpretation guard)"
+  }
+}

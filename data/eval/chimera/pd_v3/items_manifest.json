@@ -1,0 +1,2209 @@
+{
+ "label_provenance": "TEXT-DERIVED oracle; selection by model-drafter; owner spot-check pending; no novel text here",
+ "n_items": 216,
+ "kinds": {
+  "pre": 96,
+  "post": 24,
+  "ctrl": 96
+ },
+ "counts": {
+  "BR|ctrl": 8,
+  "BR|post": 2,
+  "BR|pre": 8,
+  "CO|ctrl": 8,
+  "CO|post": 2,
+  "CO|pre": 8,
+  "EL|ctrl": 8,
+  "EL|post": 2,
+  "EL|pre": 8,
+  "GG|ctrl": 8,
+  "GG|post": 2,
+  "GG|pre": 8,
+  "IM|ctrl": 8,
+  "IM|post": 2,
+  "IM|pre": 8,
+  "KM|ctrl": 8,
+  "KM|post": 2,
+  "KM|pre": 8,
+  "LA|ctrl": 8,
+  "LA|post": 2,
+  "LA|pre": 8,
+  "MK|ctrl": 8,
+  "MK|post": 2,
+  "MK|pre": 8,
+  "PG|ctrl": 8,
+  "PG|post": 2,
+  "PG|pre": 8,
+  "RP|ctrl": 8,
+  "RP|post": 2,
+  "RP|pre": 8,
+  "VW|ctrl": 8,
+  "VW|post": 2,
+  "VW|pre": 8,
+  "YR|ctrl": 8,
+  "YR|post": 2,
+  "YR|pre": 8
+ },
+ "items": [
+  {
+   "event": "KM",
+   "kind": "pre",
+   "start": 61403,
+   "end": 61409,
+   "truth": null,
+   "distance": 144030,
+   "id": "KM-pre000",
+   "surface_sha": "98dd46f422db"
+  },
+  {
+   "event": "KM",
+   "kind": "pre",
+   "start": 67918,
+   "end": 67924,
+   "truth": null,
+   "distance": 137390,
+   "id": "KM-pre001",
+   "surface_sha": "98dd46f422db"
+  },
+  {
+   "event": "KM",
+   "kind": "pre",
+   "start": 89672,
+   "end": 89678,
+   "truth": null,
+   "distance": 115756,
+   "id": "KM-pre002",
+   "surface_sha": "98dd46f422db"
+  },
+  {
+   "event": "KM",
+   "kind": "pre",
+   "start": 110602,
+   "end": 110608,
+   "truth": null,
+   "distance": 94765,
+   "id": "KM-pre003",
+   "surface_sha": "98dd46f422db"
+  },
+  {
+   "event": "KM",
+   "kind": "pre",
+   "start": 129791,
+   "end": 129797,
+   "truth": null,
+   "distance": 75683,
+   "id": "KM-pre004",
+   "surface_sha": "98dd46f422db"
+  },
+  {
+   "event": "KM",
+   "kind": "pre",
+   "start": 153030,
+   "end": 153036,
+   "truth": null,
+   "distance": 52393,
+   "id": "KM-pre005",
+   "surface_sha": "98dd46f422db"
+  },
+  {
+   "event": "KM",
+   "kind": "pre",
+   "start": 170151,
+   "end": 170157,
+   "truth": null,
+   "distance": 35179,
+   "id": "KM-pre006",
+   "surface_sha": "98dd46f422db"
+  },
+  {
+   "event": "KM",
+   "kind": "pre",
+   "start": 204176,
+   "end": 204182,
+   "truth": null,
+   "distance": 1256,
+   "id": "KM-pre007",
+   "surface_sha": "98dd46f422db"
+  },
+  {
+   "event": "KM",
+   "kind": "post",
+   "start": 209021,
+   "end": 209027,
+   "truth": "Ignosi",
+   "distance": null,
+   "id": "KM-post008",
+   "surface_sha": "98dd46f422db"
+  },
+  {
+   "event": "KM",
+   "kind": "post",
+   "start": 309166,
+   "end": 309172,
+   "truth": "Ignosi",
+   "distance": null,
+   "id": "KM-post009",
+   "surface_sha": "98dd46f422db"
+  },
+  {
+   "event": "KM",
+   "kind": "ctrl",
+   "start": 3969,
+   "end": 3974,
+   "truth": "Sir Henry Curtis",
+   "distance": null,
+   "id": "KM-ctrl010",
+   "surface_sha": "a950f30a7250"
+  },
+  {
+   "event": "KM",
+   "kind": "ctrl",
+   "start": 47362,
+   "end": 47367,
+   "truth": "Sir Henry Curtis",
+   "distance": null,
+   "id": "KM-ctrl011",
+   "surface_sha": "a950f30a7250"
+  },
+  {
+   "event": "KM",
+   "kind": "ctrl",
+   "start": 93238,
+   "end": 93243,
+   "truth": "Sir Henry Curtis",
+   "distance": null,
+   "id": "KM-ctrl012",
+   "surface_sha": "a950f30a7250"
+  },
+  {
+   "event": "KM",
+   "kind": "ctrl",
+   "start": 198303,
+   "end": 198308,
+   "truth": "Sir Henry Curtis",
+   "distance": null,
+   "id": "KM-ctrl013",
+   "surface_sha": "a950f30a7250"
+  },
+  {
+   "event": "KM",
+   "kind": "ctrl",
+   "start": 160621,
+   "end": 160629,
+   "truth": "Infadoos",
+   "distance": null,
+   "id": "KM-ctrl014",
+   "surface_sha": "c5f3f3ae1c5e"
+  },
+  {
+   "event": "KM",
+   "kind": "ctrl",
+   "start": 171345,
+   "end": 171353,
+   "truth": "Infadoos",
+   "distance": null,
+   "id": "KM-ctrl015",
+   "surface_sha": "c5f3f3ae1c5e"
+  },
+  {
+   "event": "KM",
+   "kind": "ctrl",
+   "start": 182867,
+   "end": 182875,
+   "truth": "Infadoos",
+   "distance": null,
+   "id": "KM-ctrl016",
+   "surface_sha": "c5f3f3ae1c5e"
+  },
+  {
+   "event": "KM",
+   "kind": "ctrl",
+   "start": 205432,
+   "end": 205440,
+   "truth": "Infadoos",
+   "distance": null,
+   "id": "KM-ctrl017",
+   "surface_sha": "c5f3f3ae1c5e"
+  },
+  {
+   "event": "VW",
+   "kind": "pre",
+   "start": 2792,
+   "end": 2803,
+   "truth": null,
+   "distance": 302138,
+   "id": "VW-pre018",
+   "surface_sha": "485dd9a2e01d"
+  },
+  {
+   "event": "VW",
+   "kind": "pre",
+   "start": 31810,
+   "end": 31821,
+   "truth": null,
+   "distance": 273124,
+   "id": "VW-pre019",
+   "surface_sha": "485dd9a2e01d"
+  },
+  {
+   "event": "VW",
+   "kind": "pre",
+   "start": 53378,
+   "end": 53389,
+   "truth": null,
+   "distance": 251071,
+   "id": "VW-pre020",
+   "surface_sha": "485dd9a2e01d"
+  },
+  {
+   "event": "VW",
+   "kind": "pre",
+   "start": 70766,
+   "end": 70777,
+   "truth": null,
+   "distance": 234090,
+   "id": "VW-pre021",
+   "surface_sha": "485dd9a2e01d"
+  },
+  {
+   "event": "VW",
+   "kind": "pre",
+   "start": 99790,
+   "end": 99801,
+   "truth": null,
+   "distance": 205206,
+   "id": "VW-pre022",
+   "surface_sha": "485dd9a2e01d"
+  },
+  {
+   "event": "VW",
+   "kind": "pre",
+   "start": 122916,
+   "end": 122927,
+   "truth": null,
+   "distance": 182078,
+   "id": "VW-pre023",
+   "surface_sha": "485dd9a2e01d"
+  },
+  {
+   "event": "VW",
+   "kind": "pre",
+   "start": 132576,
+   "end": 132587,
+   "truth": null,
+   "distance": 172355,
+   "id": "VW-pre024",
+   "surface_sha": "485dd9a2e01d"
+  },
+  {
+   "event": "VW",
+   "kind": "pre",
+   "start": 221492,
+   "end": 221503,
+   "truth": null,
+   "distance": 83447,
+   "id": "VW-pre025",
+   "surface_sha": "485dd9a2e01d"
+  },
+  {
+   "event": "VW",
+   "kind": "post",
+   "start": 316051,
+   "end": 316062,
+   "truth": "Sir William Thornhill",
+   "distance": null,
+   "id": "VW-post026",
+   "surface_sha": "485dd9a2e01d"
+  },
+  {
+   "event": "VW",
+   "kind": "post",
+   "start": 346349,
+   "end": 346357,
+   "truth": "Sir William Thornhill",
+   "distance": null,
+   "id": "VW-post027",
+   "surface_sha": "9be855439693"
+  },
+  {
+   "event": "VW",
+   "kind": "ctrl",
+   "start": 9514,
+   "end": 9519,
+   "truth": "Moses",
+   "distance": null,
+   "id": "VW-ctrl028",
+   "surface_sha": "b4b140c9d039"
+  },
+  {
+   "event": "VW",
+   "kind": "ctrl",
+   "start": 59045,
+   "end": 59050,
+   "truth": "Moses",
+   "distance": null,
+   "id": "VW-ctrl029",
+   "surface_sha": "b4b140c9d039"
+  },
+  {
+   "event": "VW",
+   "kind": "ctrl",
+   "start": 102058,
+   "end": 102063,
+   "truth": "Moses",
+   "distance": null,
+   "id": "VW-ctrl030",
+   "surface_sha": "b4b140c9d039"
+  },
+  {
+   "event": "VW",
+   "kind": "ctrl",
+   "start": 266485,
+   "end": 266490,
+   "truth": "Moses",
+   "distance": null,
+   "id": "VW-ctrl031",
+   "surface_sha": "b4b140c9d039"
+  },
+  {
+   "event": "VW",
+   "kind": "ctrl",
+   "start": 9201,
+   "end": 9207,
+   "truth": "Olivia",
+   "distance": null,
+   "id": "VW-ctrl032",
+   "surface_sha": "a78a4203908a"
+  },
+  {
+   "event": "VW",
+   "kind": "ctrl",
+   "start": 74795,
+   "end": 74801,
+   "truth": "Olivia",
+   "distance": null,
+   "id": "VW-ctrl033",
+   "surface_sha": "a78a4203908a"
+  },
+  {
+   "event": "VW",
+   "kind": "ctrl",
+   "start": 143709,
+   "end": 143715,
+   "truth": "Olivia",
+   "distance": null,
+   "id": "VW-ctrl034",
+   "surface_sha": "a78a4203908a"
+  },
+  {
+   "event": "VW",
+   "kind": "ctrl",
+   "start": 291708,
+   "end": 291714,
+   "truth": "Olivia",
+   "distance": null,
+   "id": "VW-ctrl035",
+   "surface_sha": "a78a4203908a"
+  },
+  {
+   "event": "LA",
+   "kind": "pre",
+   "start": 9146,
+   "end": 9157,
+   "truth": null,
+   "distance": 445009,
+   "id": "LA-pre036",
+   "surface_sha": "9da4c578c630"
+  },
+  {
+   "event": "LA",
+   "kind": "pre",
+   "start": 99972,
+   "end": 99983,
+   "truth": null,
+   "distance": 354280,
+   "id": "LA-pre037",
+   "surface_sha": "9da4c578c630"
+  },
+  {
+   "event": "LA",
+   "kind": "pre",
+   "start": 128077,
+   "end": 128088,
+   "truth": null,
+   "distance": 326228,
+   "id": "LA-pre038",
+   "surface_sha": "9da4c578c630"
+  },
+  {
+   "event": "LA",
+   "kind": "pre",
+   "start": 164128,
+   "end": 164139,
+   "truth": null,
+   "distance": 290185,
+   "id": "LA-pre039",
+   "surface_sha": "9da4c578c630"
+  },
+  {
+   "event": "LA",
+   "kind": "pre",
+   "start": 226427,
+   "end": 226438,
+   "truth": null,
+   "distance": 227885,
+   "id": "LA-pre040",
+   "surface_sha": "9da4c578c630"
+  },
+  {
+   "event": "LA",
+   "kind": "pre",
+   "start": 265839,
+   "end": 265850,
+   "truth": null,
+   "distance": 188360,
+   "id": "LA-pre041",
+   "surface_sha": "9da4c578c630"
+  },
+  {
+   "event": "LA",
+   "kind": "pre",
+   "start": 415828,
+   "end": 415839,
+   "truth": null,
+   "distance": 38449,
+   "id": "LA-pre042",
+   "surface_sha": "0954871d5282"
+  },
+  {
+   "event": "LA",
+   "kind": "pre",
+   "start": 451710,
+   "end": 451721,
+   "truth": null,
+   "distance": 2531,
+   "id": "LA-pre043",
+   "surface_sha": "9da4c578c630"
+  },
+  {
+   "event": "LA",
+   "kind": "post",
+   "start": 519537,
+   "end": 519548,
+   "truth": "Helen Talboys",
+   "distance": null,
+   "id": "LA-post044",
+   "surface_sha": "9da4c578c630"
+  },
+  {
+   "event": "LA",
+   "kind": "post",
+   "start": 830586,
+   "end": 830597,
+   "truth": "Helen Talboys",
+   "distance": null,
+   "id": "LA-post045",
+   "surface_sha": "9da4c578c630"
+  },
+  {
+   "event": "LA",
+   "kind": "ctrl",
+   "start": 61569,
+   "end": 61575,
+   "truth": "Robert",
+   "distance": null,
+   "id": "LA-ctrl046",
+   "surface_sha": "2238dd61a1bf"
+  },
+  {
+   "event": "LA",
+   "kind": "ctrl",
+   "start": 187057,
+   "end": 187063,
+   "truth": "Robert",
+   "distance": null,
+   "id": "LA-ctrl047",
+   "surface_sha": "2238dd61a1bf"
+  },
+  {
+   "event": "LA",
+   "kind": "ctrl",
+   "start": 330957,
+   "end": 330963,
+   "truth": "Robert",
+   "distance": null,
+   "id": "LA-ctrl048",
+   "surface_sha": "2238dd61a1bf"
+  },
+  {
+   "event": "LA",
+   "kind": "ctrl",
+   "start": 454108,
+   "end": 454114,
+   "truth": "Robert",
+   "distance": null,
+   "id": "LA-ctrl049",
+   "surface_sha": "2238dd61a1bf"
+  },
+  {
+   "event": "LA",
+   "kind": "ctrl",
+   "start": 4431,
+   "end": 4437,
+   "truth": "George",
+   "distance": null,
+   "id": "LA-ctrl050",
+   "surface_sha": "3d28271ec52e"
+  },
+  {
+   "event": "LA",
+   "kind": "ctrl",
+   "start": 120778,
+   "end": 120784,
+   "truth": "George",
+   "distance": null,
+   "id": "LA-ctrl051",
+   "surface_sha": "3d28271ec52e"
+  },
+  {
+   "event": "LA",
+   "kind": "ctrl",
+   "start": 229848,
+   "end": 229854,
+   "truth": "George",
+   "distance": null,
+   "id": "LA-ctrl052",
+   "surface_sha": "3d28271ec52e"
+  },
+  {
+   "event": "LA",
+   "kind": "ctrl",
+   "start": 429601,
+   "end": 429607,
+   "truth": "George",
+   "distance": null,
+   "id": "LA-ctrl053",
+   "surface_sha": "3d28271ec52e"
+  },
+  {
+   "event": "CO",
+   "kind": "pre",
+   "start": 67419,
+   "end": 67425,
+   "truth": null,
+   "distance": 26760,
+   "id": "CO-pre054",
+   "surface_sha": "84c0d888491a"
+  },
+  {
+   "event": "CO",
+   "kind": "pre",
+   "start": 74432,
+   "end": 74438,
+   "truth": null,
+   "distance": 19766,
+   "id": "CO-pre055",
+   "surface_sha": "84c0d888491a"
+  },
+  {
+   "event": "CO",
+   "kind": "pre",
+   "start": 75214,
+   "end": 75220,
+   "truth": null,
+   "distance": 18755,
+   "id": "CO-pre056",
+   "surface_sha": "84c0d888491a"
+  },
+  {
+   "event": "CO",
+   "kind": "pre",
+   "start": 77698,
+   "end": 77704,
+   "truth": null,
+   "distance": 16496,
+   "id": "CO-pre057",
+   "surface_sha": "84c0d888491a"
+  },
+  {
+   "event": "CO",
+   "kind": "pre",
+   "start": 77952,
+   "end": 77958,
+   "truth": null,
+   "distance": 16189,
+   "id": "CO-pre058",
+   "surface_sha": "84c0d888491a"
+  },
+  {
+   "event": "CO",
+   "kind": "pre",
+   "start": 86799,
+   "end": 86805,
+   "truth": null,
+   "distance": 7274,
+   "id": "CO-pre059",
+   "surface_sha": "84c0d888491a"
+  },
+  {
+   "event": "CO",
+   "kind": "pre",
+   "start": 92574,
+   "end": 92580,
+   "truth": null,
+   "distance": 1455,
+   "id": "CO-pre060",
+   "surface_sha": "84c0d888491a"
+  },
+  {
+   "event": "CO",
+   "kind": "pre",
+   "start": 93402,
+   "end": 93408,
+   "truth": null,
+   "distance": 823,
+   "id": "CO-pre061",
+   "surface_sha": "84c0d888491a"
+  },
+  {
+   "event": "CO",
+   "kind": "post",
+   "start": 97383,
+   "end": 97389,
+   "truth": "Count of Falconara",
+   "distance": null,
+   "id": "CO-post062",
+   "surface_sha": "84c0d888491a"
+  },
+  {
+   "event": "CO",
+   "kind": "post",
+   "start": 209824,
+   "end": 209830,
+   "truth": "Count of Falconara",
+   "distance": null,
+   "id": "CO-post063",
+   "surface_sha": "84c0d888491a"
+  },
+  {
+   "event": "CO",
+   "kind": "ctrl",
+   "start": 11939,
+   "end": 11946,
+   "truth": "Manfred",
+   "distance": null,
+   "id": "CO-ctrl064",
+   "surface_sha": "a96ce4416e89"
+  },
+  {
+   "event": "CO",
+   "kind": "ctrl",
+   "start": 32764,
+   "end": 32771,
+   "truth": "Manfred",
+   "distance": null,
+   "id": "CO-ctrl065",
+   "surface_sha": "a96ce4416e89"
+  },
+  {
+   "event": "CO",
+   "kind": "ctrl",
+   "start": 54139,
+   "end": 54146,
+   "truth": "Manfred",
+   "distance": null,
+   "id": "CO-ctrl066",
+   "surface_sha": "a96ce4416e89"
+  },
+  {
+   "event": "CO",
+   "kind": "ctrl",
+   "start": 94178,
+   "end": 94185,
+   "truth": "Manfred",
+   "distance": null,
+   "id": "CO-ctrl067",
+   "surface_sha": "a96ce4416e89"
+  },
+  {
+   "event": "CO",
+   "kind": "ctrl",
+   "start": 12347,
+   "end": 12355,
+   "truth": "Isabella",
+   "distance": null,
+   "id": "CO-ctrl068",
+   "surface_sha": "a81ef43a5000"
+  },
+  {
+   "event": "CO",
+   "kind": "ctrl",
+   "start": 39451,
+   "end": 39459,
+   "truth": "Isabella",
+   "distance": null,
+   "id": "CO-ctrl069",
+   "surface_sha": "a81ef43a5000"
+  },
+  {
+   "event": "CO",
+   "kind": "ctrl",
+   "start": 69784,
+   "end": 69792,
+   "truth": "Isabella",
+   "distance": null,
+   "id": "CO-ctrl070",
+   "surface_sha": "a81ef43a5000"
+  },
+  {
+   "event": "CO",
+   "kind": "ctrl",
+   "start": 86571,
+   "end": 86579,
+   "truth": "Isabella",
+   "distance": null,
+   "id": "CO-ctrl071",
+   "surface_sha": "a81ef43a5000"
+  },
+  {
+   "event": "GG",
+   "kind": "pre",
+   "start": 41,
+   "end": 47,
+   "truth": null,
+   "distance": 144070,
+   "id": "GG-pre072",
+   "surface_sha": "a5e17826d47e"
+  },
+  {
+   "event": "GG",
+   "kind": "pre",
+   "start": 61089,
+   "end": 61095,
+   "truth": null,
+   "distance": 83080,
+   "id": "GG-pre073",
+   "surface_sha": "a5e17826d47e"
+  },
+  {
+   "event": "GG",
+   "kind": "pre",
+   "start": 75711,
+   "end": 75717,
+   "truth": null,
+   "distance": 68385,
+   "id": "GG-pre074",
+   "surface_sha": "a5e17826d47e"
+  },
+  {
+   "event": "GG",
+   "kind": "pre",
+   "start": 99922,
+   "end": 99928,
+   "truth": null,
+   "distance": 44186,
+   "id": "GG-pre075",
+   "surface_sha": "a5e17826d47e"
+  },
+  {
+   "event": "GG",
+   "kind": "pre",
+   "start": 110411,
+   "end": 110417,
+   "truth": null,
+   "distance": 33761,
+   "id": "GG-pre076",
+   "surface_sha": "a5e17826d47e"
+  },
+  {
+   "event": "GG",
+   "kind": "pre",
+   "start": 123944,
+   "end": 123950,
+   "truth": null,
+   "distance": 20130,
+   "id": "GG-pre077",
+   "surface_sha": "a5e17826d47e"
+  },
+  {
+   "event": "GG",
+   "kind": "pre",
+   "start": 135935,
+   "end": 135941,
+   "truth": null,
+   "distance": 8121,
+   "id": "GG-pre078",
+   "surface_sha": "a5e17826d47e"
+  },
+  {
+   "event": "GG",
+   "kind": "pre",
+   "start": 143961,
+   "end": 143967,
+   "truth": null,
+   "distance": 189,
+   "id": "GG-pre079",
+   "surface_sha": "a5e17826d47e"
+  },
+  {
+   "event": "GG",
+   "kind": "post",
+   "start": 145736,
+   "end": 145742,
+   "truth": "James Gatz",
+   "distance": null,
+   "id": "GG-post080",
+   "surface_sha": "a5e17826d47e"
+  },
+  {
+   "event": "GG",
+   "kind": "post",
+   "start": 270425,
+   "end": 270431,
+   "truth": "James Gatz",
+   "distance": null,
+   "id": "GG-post081",
+   "surface_sha": "a5e17826d47e"
+  },
+  {
+   "event": "GG",
+   "kind": "ctrl",
+   "start": 8785,
+   "end": 8790,
+   "truth": "Daisy",
+   "distance": null,
+   "id": "GG-ctrl082",
+   "surface_sha": "3711c817270f"
+  },
+  {
+   "event": "GG",
+   "kind": "ctrl",
+   "start": 30156,
+   "end": 30161,
+   "truth": "Daisy",
+   "distance": null,
+   "id": "GG-ctrl083",
+   "surface_sha": "3711c817270f"
+  },
+  {
+   "event": "GG",
+   "kind": "ctrl",
+   "start": 119965,
+   "end": 119970,
+   "truth": "Daisy",
+   "distance": null,
+   "id": "GG-ctrl084",
+   "surface_sha": "3711c817270f"
+  },
+  {
+   "event": "GG",
+   "kind": "ctrl",
+   "start": 143921,
+   "end": 143926,
+   "truth": "Daisy",
+   "distance": null,
+   "id": "GG-ctrl085",
+   "surface_sha": "3711c817270f"
+  },
+  {
+   "event": "GG",
+   "kind": "ctrl",
+   "start": 8770,
+   "end": 8773,
+   "truth": "Tom",
+   "distance": null,
+   "id": "GG-ctrl086",
+   "surface_sha": "81f3bf42a93c"
+  },
+  {
+   "event": "GG",
+   "kind": "ctrl",
+   "start": 28019,
+   "end": 28022,
+   "truth": "Tom",
+   "distance": null,
+   "id": "GG-ctrl087",
+   "surface_sha": "81f3bf42a93c"
+  },
+  {
+   "event": "GG",
+   "kind": "ctrl",
+   "start": 43922,
+   "end": 43925,
+   "truth": "Tom",
+   "distance": null,
+   "id": "GG-ctrl088",
+   "surface_sha": "81f3bf42a93c"
+  },
+  {
+   "event": "GG",
+   "kind": "ctrl",
+   "start": 124207,
+   "end": 124210,
+   "truth": "Tom",
+   "distance": null,
+   "id": "GG-ctrl089",
+   "surface_sha": "81f3bf42a93c"
+  },
+  {
+   "event": "PG",
+   "kind": "pre",
+   "start": 16810,
+   "end": 16820,
+   "truth": null,
+   "distance": 313104,
+   "id": "PG-pre090",
+   "surface_sha": "95ae1d93e2b5"
+  },
+  {
+   "event": "PG",
+   "kind": "pre",
+   "start": 85202,
+   "end": 85209,
+   "truth": null,
+   "distance": 244679,
+   "id": "PG-pre091",
+   "surface_sha": "c7c0348f9a2f"
+  },
+  {
+   "event": "PG",
+   "kind": "pre",
+   "start": 92367,
+   "end": 92374,
+   "truth": null,
+   "distance": 237548,
+   "id": "PG-pre092",
+   "surface_sha": "c7c0348f9a2f"
+  },
+  {
+   "event": "PG",
+   "kind": "pre",
+   "start": 105970,
+   "end": 105977,
+   "truth": null,
+   "distance": 223895,
+   "id": "PG-pre093",
+   "surface_sha": "c7c0348f9a2f"
+  },
+  {
+   "event": "PG",
+   "kind": "pre",
+   "start": 201617,
+   "end": 201624,
+   "truth": null,
+   "distance": 128179,
+   "id": "PG-pre094",
+   "surface_sha": "c7c0348f9a2f"
+  },
+  {
+   "event": "PG",
+   "kind": "pre",
+   "start": 229715,
+   "end": 229722,
+   "truth": null,
+   "distance": 100107,
+   "id": "PG-pre095",
+   "surface_sha": "c7c0348f9a2f"
+  },
+  {
+   "event": "PG",
+   "kind": "pre",
+   "start": 298056,
+   "end": 298063,
+   "truth": null,
+   "distance": 31819,
+   "id": "PG-pre096",
+   "surface_sha": "c7c0348f9a2f"
+  },
+  {
+   "event": "PG",
+   "kind": "pre",
+   "start": 329813,
+   "end": 329820,
+   "truth": null,
+   "distance": 95,
+   "id": "PG-pre097",
+   "surface_sha": "c7c0348f9a2f"
+  },
+  {
+   "event": "PG",
+   "kind": "post",
+   "start": 380749,
+   "end": 380756,
+   "truth": "Jacques Collin",
+   "distance": null,
+   "id": "PG-post098",
+   "surface_sha": "c7c0348f9a2f"
+  },
+  {
+   "event": "PG",
+   "kind": "post",
+   "start": 497077,
+   "end": 497084,
+   "truth": "Jacques Collin",
+   "distance": null,
+   "id": "PG-post099",
+   "surface_sha": "c7c0348f9a2f"
+  },
+  {
+   "event": "PG",
+   "kind": "ctrl",
+   "start": 2653,
+   "end": 2659,
+   "truth": "Goriot",
+   "distance": null,
+   "id": "PG-ctrl100",
+   "surface_sha": "6659f8b66693"
+  },
+  {
+   "event": "PG",
+   "kind": "ctrl",
+   "start": 78464,
+   "end": 78470,
+   "truth": "Goriot",
+   "distance": null,
+   "id": "PG-ctrl101",
+   "surface_sha": "6659f8b66693"
+  },
+  {
+   "event": "PG",
+   "kind": "ctrl",
+   "start": 164714,
+   "end": 164720,
+   "truth": "Goriot",
+   "distance": null,
+   "id": "PG-ctrl102",
+   "surface_sha": "6659f8b66693"
+  },
+  {
+   "event": "PG",
+   "kind": "ctrl",
+   "start": 327333,
+   "end": 327339,
+   "truth": "Goriot",
+   "distance": null,
+   "id": "PG-ctrl103",
+   "surface_sha": "6659f8b66693"
+  },
+  {
+   "event": "PG",
+   "kind": "ctrl",
+   "start": 275,
+   "end": 282,
+   "truth": "Vauquer",
+   "distance": null,
+   "id": "PG-ctrl104",
+   "surface_sha": "4e17f979ebd9"
+  },
+  {
+   "event": "PG",
+   "kind": "ctrl",
+   "start": 45677,
+   "end": 45684,
+   "truth": "Vauquer",
+   "distance": null,
+   "id": "PG-ctrl105",
+   "surface_sha": "4e17f979ebd9"
+  },
+  {
+   "event": "PG",
+   "kind": "ctrl",
+   "start": 91099,
+   "end": 91106,
+   "truth": "Vauquer",
+   "distance": null,
+   "id": "PG-ctrl106",
+   "surface_sha": "4e17f979ebd9"
+  },
+  {
+   "event": "PG",
+   "kind": "ctrl",
+   "start": 321349,
+   "end": 321356,
+   "truth": "Vauquer",
+   "distance": null,
+   "id": "PG-ctrl107",
+   "surface_sha": "4e17f979ebd9"
+  },
+  {
+   "event": "MK",
+   "kind": "pre",
+   "start": 63412,
+   "end": 63419,
+   "truth": null,
+   "distance": 24088,
+   "id": "MK-pre108",
+   "surface_sha": "5ccf91569e2d"
+  },
+  {
+   "event": "MK",
+   "kind": "pre",
+   "start": 64192,
+   "end": 64199,
+   "truth": null,
+   "distance": 23276,
+   "id": "MK-pre109",
+   "surface_sha": "5ccf91569e2d"
+  },
+  {
+   "event": "MK",
+   "kind": "pre",
+   "start": 65412,
+   "end": 65419,
+   "truth": null,
+   "distance": 22111,
+   "id": "MK-pre110",
+   "surface_sha": "5ccf91569e2d"
+  },
+  {
+   "event": "MK",
+   "kind": "pre",
+   "start": 66718,
+   "end": 66725,
+   "truth": null,
+   "distance": 20659,
+   "id": "MK-pre111",
+   "surface_sha": "5ccf91569e2d"
+  },
+  {
+   "event": "MK",
+   "kind": "pre",
+   "start": 67056,
+   "end": 67063,
+   "truth": null,
+   "distance": 20374,
+   "id": "MK-pre112",
+   "surface_sha": "5ccf91569e2d"
+  },
+  {
+   "event": "MK",
+   "kind": "pre",
+   "start": 68419,
+   "end": 68426,
+   "truth": null,
+   "distance": 19066,
+   "id": "MK-pre113",
+   "surface_sha": "5ccf91569e2d"
+  },
+  {
+   "event": "MK",
+   "kind": "pre",
+   "start": 80437,
+   "end": 80444,
+   "truth": null,
+   "distance": 7050,
+   "id": "MK-pre114",
+   "surface_sha": "5ccf91569e2d"
+  },
+  {
+   "event": "MK",
+   "kind": "pre",
+   "start": 86639,
+   "end": 86646,
+   "truth": null,
+   "distance": 886,
+   "id": "MK-pre115",
+   "surface_sha": "5ccf91569e2d"
+  },
+  {
+   "event": "MK",
+   "kind": "post",
+   "start": 107212,
+   "end": 107219,
+   "truth": "Matilda",
+   "distance": null,
+   "id": "MK-post116",
+   "surface_sha": "5ccf91569e2d"
+  },
+  {
+   "event": "MK",
+   "kind": "post",
+   "start": 448794,
+   "end": 448801,
+   "truth": "Matilda",
+   "distance": null,
+   "id": "MK-post117",
+   "surface_sha": "5ccf91569e2d"
+  },
+  {
+   "event": "MK",
+   "kind": "ctrl",
+   "start": 8750,
+   "end": 8757,
+   "truth": "Lorenzo",
+   "distance": null,
+   "id": "MK-ctrl118",
+   "surface_sha": "114b25448d0a"
+  },
+  {
+   "event": "MK",
+   "kind": "ctrl",
+   "start": 33896,
+   "end": 33903,
+   "truth": "Lorenzo",
+   "distance": null,
+   "id": "MK-ctrl119",
+   "surface_sha": "114b25448d0a"
+  },
+  {
+   "event": "MK",
+   "kind": "ctrl",
+   "start": 43899,
+   "end": 43906,
+   "truth": "Lorenzo",
+   "distance": null,
+   "id": "MK-ctrl120",
+   "surface_sha": "114b25448d0a"
+  },
+  {
+   "event": "MK",
+   "kind": "ctrl",
+   "start": 51326,
+   "end": 51333,
+   "truth": "Lorenzo",
+   "distance": null,
+   "id": "MK-ctrl121",
+   "surface_sha": "114b25448d0a"
+  },
+  {
+   "event": "MK",
+   "kind": "ctrl",
+   "start": 11522,
+   "end": 11529,
+   "truth": "Antonia",
+   "distance": null,
+   "id": "MK-ctrl122",
+   "surface_sha": "a56d0d41108f"
+  },
+  {
+   "event": "MK",
+   "kind": "ctrl",
+   "start": 27697,
+   "end": 27704,
+   "truth": "Antonia",
+   "distance": null,
+   "id": "MK-ctrl123",
+   "surface_sha": "a56d0d41108f"
+  },
+  {
+   "event": "MK",
+   "kind": "ctrl",
+   "start": 42210,
+   "end": 42217,
+   "truth": "Antonia",
+   "distance": null,
+   "id": "MK-ctrl124",
+   "surface_sha": "a56d0d41108f"
+  },
+  {
+   "event": "MK",
+   "kind": "ctrl",
+   "start": 58922,
+   "end": 58929,
+   "truth": "Antonia",
+   "distance": null,
+   "id": "MK-ctrl125",
+   "surface_sha": "a56d0d41108f"
+  },
+  {
+   "event": "YR",
+   "kind": "pre",
+   "start": 946,
+   "end": 961,
+   "truth": null,
+   "distance": 351111,
+   "id": "YR-pre126",
+   "surface_sha": "d91356574656"
+  },
+  {
+   "event": "YR",
+   "kind": "pre",
+   "start": 123088,
+   "end": 123103,
+   "truth": null,
+   "distance": 229053,
+   "id": "YR-pre127",
+   "surface_sha": "d91356574656"
+  },
+  {
+   "event": "YR",
+   "kind": "pre",
+   "start": 187361,
+   "end": 187367,
+   "truth": null,
+   "distance": 164693,
+   "id": "YR-pre128",
+   "surface_sha": "a66392ed4e5d"
+  },
+  {
+   "event": "YR",
+   "kind": "pre",
+   "start": 209533,
+   "end": 209539,
+   "truth": null,
+   "distance": 142465,
+   "id": "YR-pre129",
+   "surface_sha": "a66392ed4e5d"
+  },
+  {
+   "event": "YR",
+   "kind": "pre",
+   "start": 257681,
+   "end": 257696,
+   "truth": null,
+   "distance": 94408,
+   "id": "YR-pre130",
+   "surface_sha": "d91356574656"
+  },
+  {
+   "event": "YR",
+   "kind": "pre",
+   "start": 291769,
+   "end": 291784,
+   "truth": null,
+   "distance": 60266,
+   "id": "YR-pre131",
+   "surface_sha": "d91356574656"
+  },
+  {
+   "event": "YR",
+   "kind": "pre",
+   "start": 331840,
+   "end": 331846,
+   "truth": null,
+   "distance": 20195,
+   "id": "YR-pre132",
+   "surface_sha": "a66392ed4e5d"
+  },
+  {
+   "event": "YR",
+   "kind": "pre",
+   "start": 351756,
+   "end": 351771,
+   "truth": null,
+   "distance": 290,
+   "id": "YR-pre133",
+   "surface_sha": "d91356574656"
+  },
+  {
+   "event": "YR",
+   "kind": "post",
+   "start": 371493,
+   "end": 371499,
+   "truth": "Ballmeyer",
+   "distance": null,
+   "id": "YR-post134",
+   "surface_sha": "a66392ed4e5d"
+  },
+  {
+   "event": "YR",
+   "kind": "post",
+   "start": 419528,
+   "end": 419534,
+   "truth": "Ballmeyer",
+   "distance": null,
+   "id": "YR-post135",
+   "surface_sha": "a66392ed4e5d"
+  },
+  {
+   "event": "YR",
+   "kind": "ctrl",
+   "start": 140,
+   "end": 152,
+   "truth": "Rouletabille",
+   "distance": null,
+   "id": "YR-ctrl136",
+   "surface_sha": "27cf65c2f51d"
+  },
+  {
+   "event": "YR",
+   "kind": "ctrl",
+   "start": 93419,
+   "end": 93431,
+   "truth": "Rouletabille",
+   "distance": null,
+   "id": "YR-ctrl137",
+   "surface_sha": "27cf65c2f51d"
+  },
+  {
+   "event": "YR",
+   "kind": "ctrl",
+   "start": 263924,
+   "end": 263936,
+   "truth": "Rouletabille",
+   "distance": null,
+   "id": "YR-ctrl138",
+   "surface_sha": "27cf65c2f51d"
+  },
+  {
+   "event": "YR",
+   "kind": "ctrl",
+   "start": 352139,
+   "end": 352151,
+   "truth": "Rouletabille",
+   "distance": null,
+   "id": "YR-ctrl139",
+   "surface_sha": "27cf65c2f51d"
+  },
+  {
+   "event": "YR",
+   "kind": "ctrl",
+   "start": 627,
+   "end": 633,
+   "truth": "Darzac",
+   "distance": null,
+   "id": "YR-ctrl140",
+   "surface_sha": "1b6be6612bcb"
+  },
+  {
+   "event": "YR",
+   "kind": "ctrl",
+   "start": 154641,
+   "end": 154647,
+   "truth": "Darzac",
+   "distance": null,
+   "id": "YR-ctrl141",
+   "surface_sha": "1b6be6612bcb"
+  },
+  {
+   "event": "YR",
+   "kind": "ctrl",
+   "start": 230735,
+   "end": 230741,
+   "truth": "Darzac",
+   "distance": null,
+   "id": "YR-ctrl142",
+   "surface_sha": "1b6be6612bcb"
+  },
+  {
+   "event": "YR",
+   "kind": "ctrl",
+   "start": 349181,
+   "end": 349187,
+   "truth": "Darzac",
+   "distance": null,
+   "id": "YR-ctrl143",
+   "surface_sha": "1b6be6612bcb"
+  },
+  {
+   "event": "IM",
+   "kind": "pre",
+   "start": 20,
+   "end": 37,
+   "truth": null,
+   "distance": 130211,
+   "id": "IM-pre144",
+   "surface_sha": "265e81e465cb"
+  },
+  {
+   "event": "IM",
+   "kind": "pre",
+   "start": 20757,
+   "end": 20769,
+   "truth": null,
+   "distance": 109451,
+   "id": "IM-pre145",
+   "surface_sha": "1313ada7d9a9"
+  },
+  {
+   "event": "IM",
+   "kind": "pre",
+   "start": 26514,
+   "end": 26526,
+   "truth": null,
+   "distance": 103621,
+   "id": "IM-pre146",
+   "surface_sha": "1313ada7d9a9"
+  },
+  {
+   "event": "IM",
+   "kind": "pre",
+   "start": 36431,
+   "end": 36443,
+   "truth": null,
+   "distance": 93810,
+   "id": "IM-pre147",
+   "surface_sha": "1313ada7d9a9"
+  },
+  {
+   "event": "IM",
+   "kind": "pre",
+   "start": 56063,
+   "end": 56075,
+   "truth": null,
+   "distance": 74146,
+   "id": "IM-pre148",
+   "surface_sha": "1313ada7d9a9"
+  },
+  {
+   "event": "IM",
+   "kind": "pre",
+   "start": 67366,
+   "end": 67378,
+   "truth": null,
+   "distance": 62782,
+   "id": "IM-pre149",
+   "surface_sha": "9c7fd899b044"
+  },
+  {
+   "event": "IM",
+   "kind": "pre",
+   "start": 90097,
+   "end": 90109,
+   "truth": null,
+   "distance": 40065,
+   "id": "IM-pre150",
+   "surface_sha": "1313ada7d9a9"
+  },
+  {
+   "event": "IM",
+   "kind": "pre",
+   "start": 129090,
+   "end": 129107,
+   "truth": null,
+   "distance": 1083,
+   "id": "IM-pre151",
+   "surface_sha": "d812ecf57b4a"
+  },
+  {
+   "event": "IM",
+   "kind": "post",
+   "start": 139170,
+   "end": 139187,
+   "truth": "Griffin",
+   "distance": null,
+   "id": "IM-post152",
+   "surface_sha": "d812ecf57b4a"
+  },
+  {
+   "event": "IM",
+   "kind": "post",
+   "start": 270378,
+   "end": 270395,
+   "truth": "Griffin",
+   "distance": null,
+   "id": "IM-post153",
+   "surface_sha": "265e81e465cb"
+  },
+  {
+   "event": "IM",
+   "kind": "ctrl",
+   "start": 369,
+   "end": 375,
+   "truth": "Marvel",
+   "distance": null,
+   "id": "IM-ctrl154",
+   "surface_sha": "2e39d0210d48"
+  },
+  {
+   "event": "IM",
+   "kind": "ctrl",
+   "start": 83285,
+   "end": 83291,
+   "truth": "Marvel",
+   "distance": null,
+   "id": "IM-ctrl155",
+   "surface_sha": "2e39d0210d48"
+  },
+  {
+   "event": "IM",
+   "kind": "ctrl",
+   "start": 112284,
+   "end": 112290,
+   "truth": "Marvel",
+   "distance": null,
+   "id": "IM-ctrl156",
+   "surface_sha": "2e39d0210d48"
+  },
+  {
+   "event": "IM",
+   "kind": "ctrl",
+   "start": 129406,
+   "end": 129412,
+   "truth": "Marvel",
+   "distance": null,
+   "id": "IM-ctrl157",
+   "surface_sha": "2e39d0210d48"
+  },
+  {
+   "event": "IM",
+   "kind": "ctrl",
+   "start": 132,
+   "end": 139,
+   "truth": "Henfrey",
+   "distance": null,
+   "id": "IM-ctrl158",
+   "surface_sha": "395441003636"
+  },
+  {
+   "event": "IM",
+   "kind": "ctrl",
+   "start": 18584,
+   "end": 18591,
+   "truth": "Henfrey",
+   "distance": null,
+   "id": "IM-ctrl159",
+   "surface_sha": "395441003636"
+  },
+  {
+   "event": "IM",
+   "kind": "ctrl",
+   "start": 97047,
+   "end": 97054,
+   "truth": "Henfrey",
+   "distance": null,
+   "id": "IM-ctrl160",
+   "surface_sha": "395441003636"
+  },
+  {
+   "event": "IM",
+   "kind": "ctrl",
+   "start": 101756,
+   "end": 101763,
+   "truth": "Henfrey",
+   "distance": null,
+   "id": "IM-ctrl161",
+   "surface_sha": "395441003636"
+  },
+  {
+   "event": "RP",
+   "kind": "pre",
+   "start": 1063,
+   "end": 1067,
+   "truth": null,
+   "distance": 511193,
+   "id": "RP-pre162",
+   "surface_sha": "f73482b6778a"
+  },
+  {
+   "event": "RP",
+   "kind": "pre",
+   "start": 239728,
+   "end": 239732,
+   "truth": null,
+   "distance": 272610,
+   "id": "RP-pre163",
+   "surface_sha": "f73482b6778a"
+  },
+  {
+   "event": "RP",
+   "kind": "pre",
+   "start": 311295,
+   "end": 311299,
+   "truth": null,
+   "distance": 201051,
+   "id": "RP-pre164",
+   "surface_sha": "f73482b6778a"
+  },
+  {
+   "event": "RP",
+   "kind": "pre",
+   "start": 321303,
+   "end": 321307,
+   "truth": null,
+   "distance": 191027,
+   "id": "RP-pre165",
+   "surface_sha": "f73482b6778a"
+  },
+  {
+   "event": "RP",
+   "kind": "pre",
+   "start": 343222,
+   "end": 343226,
+   "truth": null,
+   "distance": 169018,
+   "id": "RP-pre166",
+   "surface_sha": "f73482b6778a"
+  },
+  {
+   "event": "RP",
+   "kind": "pre",
+   "start": 396506,
+   "end": 396510,
+   "truth": null,
+   "distance": 115831,
+   "id": "RP-pre167",
+   "surface_sha": "f73482b6778a"
+  },
+  {
+   "event": "RP",
+   "kind": "pre",
+   "start": 457072,
+   "end": 457076,
+   "truth": null,
+   "distance": 55258,
+   "id": "RP-pre168",
+   "surface_sha": "f73482b6778a"
+  },
+  {
+   "event": "RP",
+   "kind": "pre",
+   "start": 464983,
+   "end": 464987,
+   "truth": null,
+   "distance": 47363,
+   "id": "RP-pre169",
+   "surface_sha": "f73482b6778a"
+  },
+  {
+   "event": "RP",
+   "kind": "post",
+   "start": 533115,
+   "end": 533119,
+   "truth": "Elizabeth Erne",
+   "distance": null,
+   "id": "RP-post170",
+   "surface_sha": "f73482b6778a"
+  },
+  {
+   "event": "RP",
+   "kind": "post",
+   "start": 556784,
+   "end": 556788,
+   "truth": "Elizabeth Erne",
+   "distance": null,
+   "id": "RP-post171",
+   "surface_sha": "f73482b6778a"
+  },
+  {
+   "event": "RP",
+   "kind": "ctrl",
+   "start": 1160,
+   "end": 1167,
+   "truth": "Venters",
+   "distance": null,
+   "id": "RP-ctrl172",
+   "surface_sha": "195e5d5db318"
+  },
+  {
+   "event": "RP",
+   "kind": "ctrl",
+   "start": 163945,
+   "end": 163952,
+   "truth": "Venters",
+   "distance": null,
+   "id": "RP-ctrl173",
+   "surface_sha": "195e5d5db318"
+  },
+  {
+   "event": "RP",
+   "kind": "ctrl",
+   "start": 378989,
+   "end": 378996,
+   "truth": "Venters",
+   "distance": null,
+   "id": "RP-ctrl174",
+   "surface_sha": "195e5d5db318"
+  },
+  {
+   "event": "RP",
+   "kind": "ctrl",
+   "start": 502986,
+   "end": 502993,
+   "truth": "Venters",
+   "distance": null,
+   "id": "RP-ctrl175",
+   "surface_sha": "195e5d5db318"
+  },
+  {
+   "event": "RP",
+   "kind": "ctrl",
+   "start": 1096,
+   "end": 1100,
+   "truth": "Jane",
+   "distance": null,
+   "id": "RP-ctrl176",
+   "surface_sha": "4f23798d9270"
+  },
+  {
+   "event": "RP",
+   "kind": "ctrl",
+   "start": 145359,
+   "end": 145363,
+   "truth": "Jane",
+   "distance": null,
+   "id": "RP-ctrl177",
+   "surface_sha": "4f23798d9270"
+  },
+  {
+   "event": "RP",
+   "kind": "ctrl",
+   "start": 298970,
+   "end": 298974,
+   "truth": "Jane",
+   "distance": null,
+   "id": "RP-ctrl178",
+   "surface_sha": "4f23798d9270"
+  },
+  {
+   "event": "RP",
+   "kind": "ctrl",
+   "start": 512307,
+   "end": 512311,
+   "truth": "Jane",
+   "distance": null,
+   "id": "RP-ctrl179",
+   "surface_sha": "4f23798d9270"
+  },
+  {
+   "event": "EL",
+   "kind": "pre",
+   "start": 64877,
+   "end": 64882,
+   "truth": null,
+   "distance": 760735,
+   "id": "EL-pre180",
+   "surface_sha": "9c5396f2c74a"
+  },
+  {
+   "event": "EL",
+   "kind": "pre",
+   "start": 133380,
+   "end": 133385,
+   "truth": null,
+   "distance": 692232,
+   "id": "EL-pre181",
+   "surface_sha": "9c5396f2c74a"
+  },
+  {
+   "event": "EL",
+   "kind": "pre",
+   "start": 322785,
+   "end": 322790,
+   "truth": null,
+   "distance": 502820,
+   "id": "EL-pre182",
+   "surface_sha": "9c5396f2c74a"
+  },
+  {
+   "event": "EL",
+   "kind": "pre",
+   "start": 405297,
+   "end": 405310,
+   "truth": null,
+   "distance": 420236,
+   "id": "EL-pre183",
+   "surface_sha": "3771ed930e8a"
+  },
+  {
+   "event": "EL",
+   "kind": "pre",
+   "start": 427382,
+   "end": 427387,
+   "truth": null,
+   "distance": 398230,
+   "id": "EL-pre184",
+   "surface_sha": "9c5396f2c74a"
+  },
+  {
+   "event": "EL",
+   "kind": "pre",
+   "start": 466117,
+   "end": 466122,
+   "truth": null,
+   "distance": 359495,
+   "id": "EL-pre185",
+   "surface_sha": "9c5396f2c74a"
+  },
+  {
+   "event": "EL",
+   "kind": "pre",
+   "start": 587276,
+   "end": 587289,
+   "truth": null,
+   "distance": 238328,
+   "id": "EL-pre186",
+   "surface_sha": "3771ed930e8a"
+  },
+  {
+   "event": "EL",
+   "kind": "pre",
+   "start": 653139,
+   "end": 653144,
+   "truth": null,
+   "distance": 172457,
+   "id": "EL-pre187",
+   "surface_sha": "9c5396f2c74a"
+  },
+  {
+   "event": "EL",
+   "kind": "post",
+   "start": 837696,
+   "end": 837701,
+   "truth": "Francis Levison",
+   "distance": null,
+   "id": "EL-post188",
+   "surface_sha": "9c5396f2c74a"
+  },
+  {
+   "event": "EL",
+   "kind": "post",
+   "start": 1025535,
+   "end": 1025540,
+   "truth": "Francis Levison",
+   "distance": null,
+   "id": "EL-post189",
+   "surface_sha": "9c5396f2c74a"
+  },
+  {
+   "event": "EL",
+   "kind": "ctrl",
+   "start": 36322,
+   "end": 36329,
+   "truth": "Barbara",
+   "distance": null,
+   "id": "EL-ctrl190",
+   "surface_sha": "d01926adf945"
+  },
+  {
+   "event": "EL",
+   "kind": "ctrl",
+   "start": 298595,
+   "end": 298602,
+   "truth": "Barbara",
+   "distance": null,
+   "id": "EL-ctrl191",
+   "surface_sha": "d01926adf945"
+  },
+  {
+   "event": "EL",
+   "kind": "ctrl",
+   "start": 462950,
+   "end": 462957,
+   "truth": "Barbara",
+   "distance": null,
+   "id": "EL-ctrl192",
+   "surface_sha": "d01926adf945"
+  },
+  {
+   "event": "EL",
+   "kind": "ctrl",
+   "start": 807059,
+   "end": 807066,
+   "truth": "Barbara",
+   "distance": null,
+   "id": "EL-ctrl193",
+   "surface_sha": "d01926adf945"
+  },
+  {
+   "event": "EL",
+   "kind": "ctrl",
+   "start": 35969,
+   "end": 35976,
+   "truth": "Richard",
+   "distance": null,
+   "id": "EL-ctrl194",
+   "surface_sha": "1deb0a3b8675"
+  },
+  {
+   "event": "EL",
+   "kind": "ctrl",
+   "start": 383935,
+   "end": 383942,
+   "truth": "Richard",
+   "distance": null,
+   "id": "EL-ctrl195",
+   "surface_sha": "1deb0a3b8675"
+  },
+  {
+   "event": "EL",
+   "kind": "ctrl",
+   "start": 574231,
+   "end": 574238,
+   "truth": "Richard",
+   "distance": null,
+   "id": "EL-ctrl196",
+   "surface_sha": "1deb0a3b8675"
+  },
+  {
+   "event": "EL",
+   "kind": "ctrl",
+   "start": 819995,
+   "end": 820002,
+   "truth": "Richard",
+   "distance": null,
+   "id": "EL-ctrl197",
+   "surface_sha": "1deb0a3b8675"
+  },
+  {
+   "event": "BR",
+   "kind": "pre",
+   "start": 4259,
+   "end": 4265,
+   "truth": null,
+   "distance": 314645,
+   "id": "BR-pre198",
+   "surface_sha": "9ca81bd20b55"
+  },
+  {
+   "event": "BR",
+   "kind": "pre",
+   "start": 6360,
+   "end": 6366,
+   "truth": null,
+   "distance": 312709,
+   "id": "BR-pre199",
+   "surface_sha": "9ca81bd20b55"
+  },
+  {
+   "event": "BR",
+   "kind": "pre",
+   "start": 147933,
+   "end": 147939,
+   "truth": null,
+   "distance": 171109,
+   "id": "BR-pre200",
+   "surface_sha": "9ca81bd20b55"
+  },
+  {
+   "event": "BR",
+   "kind": "pre",
+   "start": 150581,
+   "end": 150587,
+   "truth": null,
+   "distance": 168425,
+   "id": "BR-pre201",
+   "surface_sha": "9ca81bd20b55"
+  },
+  {
+   "event": "BR",
+   "kind": "pre",
+   "start": 152825,
+   "end": 152831,
+   "truth": null,
+   "distance": 166244,
+   "id": "BR-pre202",
+   "surface_sha": "9ca81bd20b55"
+  },
+  {
+   "event": "BR",
+   "kind": "pre",
+   "start": 306643,
+   "end": 306649,
+   "truth": null,
+   "distance": 12412,
+   "id": "BR-pre203",
+   "surface_sha": "9ca81bd20b55"
+  },
+  {
+   "event": "BR",
+   "kind": "pre",
+   "start": 316809,
+   "end": 316815,
+   "truth": null,
+   "distance": 2182,
+   "id": "BR-pre204",
+   "surface_sha": "9ca81bd20b55"
+  },
+  {
+   "event": "BR",
+   "kind": "pre",
+   "start": 318576,
+   "end": 318582,
+   "truth": null,
+   "distance": 479,
+   "id": "BR-pre205",
+   "surface_sha": "9ca81bd20b55"
+  },
+  {
+   "event": "BR",
+   "kind": "post",
+   "start": 336012,
+   "end": 336018,
+   "truth": "Fauntleroy",
+   "distance": null,
+   "id": "BR-post206",
+   "surface_sha": "9ca81bd20b55"
+  },
+  {
+   "event": "BR",
+   "kind": "post",
+   "start": 338350,
+   "end": 338356,
+   "truth": "Fauntleroy",
+   "distance": null,
+   "id": "BR-post207",
+   "surface_sha": "9ca81bd20b55"
+  },
+  {
+   "event": "BR",
+   "kind": "ctrl",
+   "start": 6155,
+   "end": 6162,
+   "truth": "Zenobia",
+   "distance": null,
+   "id": "BR-ctrl208",
+   "surface_sha": "d517243fe8a6"
+  },
+  {
+   "event": "BR",
+   "kind": "ctrl",
+   "start": 97255,
+   "end": 97262,
+   "truth": "Zenobia",
+   "distance": null,
+   "id": "BR-ctrl209",
+   "surface_sha": "d517243fe8a6"
+  },
+  {
+   "event": "BR",
+   "kind": "ctrl",
+   "start": 216729,
+   "end": 216736,
+   "truth": "Zenobia",
+   "distance": null,
+   "id": "BR-ctrl210",
+   "surface_sha": "d517243fe8a6"
+  },
+  {
+   "event": "BR",
+   "kind": "ctrl",
+   "start": 317384,
+   "end": 317391,
+   "truth": "Zenobia",
+   "distance": null,
+   "id": "BR-ctrl211",
+   "surface_sha": "d517243fe8a6"
+  },
+  {
+   "event": "BR",
+   "kind": "ctrl",
+   "start": 5491,
+   "end": 5504,
+   "truth": "Hollingsworth",
+   "distance": null,
+   "id": "BR-ctrl212",
+   "surface_sha": "bb836fcccb0d"
+  },
+  {
+   "event": "BR",
+   "kind": "ctrl",
+   "start": 100612,
+   "end": 100625,
+   "truth": "Hollingsworth",
+   "distance": null,
+   "id": "BR-ctrl213",
+   "surface_sha": "bb836fcccb0d"
+  },
+  {
+   "event": "BR",
+   "kind": "ctrl",
+   "start": 214637,
+   "end": 214650,
+   "truth": "Hollingsworth",
+   "distance": null,
+   "id": "BR-ctrl214",
+   "surface_sha": "bb836fcccb0d"
+  },
+  {
+   "event": "BR",
+   "kind": "ctrl",
+   "start": 304637,
+   "end": 304650,
+   "truth": "Hollingsworth",
+   "distance": null,
+   "id": "BR-ctrl215",
+   "surface_sha": "bb836fcccb0d"
+  }
+ ]
+}

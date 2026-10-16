@@ -1,0 +1,86 @@
+{
+  "label_provenance": "NO LABELS for T4 (system-internal); SILVER for the M1 part (counts only)",
+  "T4_renaming_commutation_gate": {
+    "gate_result": {
+      "surfaces": 335,
+      "G1": 2,
+      "G2": 9,
+      "G3": 0
+    },
+    "G2_classification": {
+      "engine": 9
+    },
+    "G1_classification": {
+      "engine": 2
+    },
+    "G1_detail": [
+      {
+        "kind": "engine",
+        "n_surfaces_same_key": 2
+      },
+      {
+        "kind": "engine",
+        "n_surfaces_same_key": 2
+      }
+    ],
+    "G2_detail_counts_only": [
+      {
+        "kind": "engine",
+        "n_surfaces_in_class": 2,
+        "differ_only_by_spacing_case_plural": true
+      },
+      {
+        "kind": "engine",
+        "n_surfaces_in_class": 4,
+        "differ_only_by_spacing_case_plural": true
+      },
+      {
+        "kind": "engine",
+        "n_surfaces_in_class": 3,
+        "differ_only_by_spacing_case_plural": true
+      },
+      {
+        "kind": "engine",
+        "n_surfaces_in_class": 2,
+        "differ_only_by_spacing_case_plural": true
+      },
+      {
+        "kind": "engine",
+        "n_surfaces_in_class": 2,
+        "differ_only_by_spacing_case_plural": true
+      },
+      {
+        "kind": "engine",
+        "n_surfaces_in_class": 2,
+        "differ_only_by_spacing_case_plural": true
+      },
+      {
+        "kind": "engine",
+        "n_surfaces_in_class": 2,
+        "differ_only_by_spacing_case_plural": true
+      },
+      {
+        "kind": "engine",
+        "n_surfaces_in_class": 2,
+        "differ_only_by_spacing_case_plural": true
+      },
+      {
+        "kind": "engine",
+        "n_surfaces_in_class": 2,
+        "differ_only_by_spacing_case_plural": true
+      }
+    ],
+    "reading": "engine = defect in the repo's character-level normaliser (backlog B12), not in the gate or the renamer design intent; renamer = the renamer is at fault; the gate itself flags only genuine non-commutation"
+  },
+  "M1_evidence_gate": {
+    "rejected_with_a_letter_answer": 16,
+    "counts": {
+      "claimed_name_not_in_spans | silver_correct | some_name_tokens_in_window": 4,
+      "no_valid_spans | silver_correct | full_name_in_window": 2,
+      "no_valid_spans | silver_wrong_or_no_label | full_name_in_window": 1,
+      "not_entailed | silver_correct | full_name_in_window": 6,
+      "not_entailed | silver_wrong_or_no_label | full_name_in_window": 3
+    },
+    "reading": "full_name_in_window or some_name_tokens_in_window with silver_correct means evidence existed in the prefix and the gate rejected it (a gate matching or entailment limitation); name_absent_from_window means the rejection is correct (the model named someone the prefix does not name)"
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "prereg": "PREREG_T4_v5_addendum_2_crossnovel.md (frozen v5 rules; single attempt)",
+  "novel": "lord-of-the-mysteries",
+  "label_provenance": "NO LABELS (system-internal)",
+  "v3_token_level_gate": {
+    "surfaces": 126,
+    "G1": 0,
+    "G2": 0,
+    "G3": 0,
+    "passed": true
+  },
+  "v5_gate": {
+    "surfaces": 126,
+    "G1_count": 0,
+    "G2_count": 0,
+    "G3_count": 0,
+    "passed": true,
+    "G4_count": 0,
+    "G5_collision_count": 0,
+    "vocab_tokens_changed": 100,
+    "vocab_tokens": 149,
+    "closure_passes": 1,
+    "closure_stable": true
+  },
+  "mentions": 2402,
+  "conditions": {
+    "O2": {
+      "n": 2402,
+      "agree": 2402,
+      "agreement": 1.0,
+      "wilson95": [
+        0.9984,
+        1.0
+      ],
+      "bcubed_f1": 1.0,
+      "same_method_share": 1.0,
+      "mean_abs_conf_change": 0.0,
+      "changed": 0,
+      "changed_classification": {}
+    },
+    "I": {
+      "n": 2402,
+      "agree": 2402,
+      "agreement": 1.0,
+      "wilson95": [
+        0.9984,
+        1.0
+      ],
+      "bcubed_f1": 1.0,
+      "same_method_share": 1.0,
+      "mean_abs_conf_change": 0.0,
+      "changed": 0,
+      "changed_classification": {}
+    },
+    "R": {
+      "n": 2402,
+      "agree": 2402,
+      "agreement": 1.0,
+      "wilson95": [
+        0.9984,
+        1.0
+      ],
+      "bcubed_f1": 1.0,
+      "same_method_share": 1.0,
+      "mean_abs_conf_change": 0.0,
+      "changed": 0,
+      "changed_classification": {}
+    }
+  },
+  "status": "COMPLETE_NO_NEGATIVE_CONTROL",
+  "verdict": "gate passed; O2 and I at 100%: True; R agreement 1.00000; negative control N not run: NOT a full PASS"
+}

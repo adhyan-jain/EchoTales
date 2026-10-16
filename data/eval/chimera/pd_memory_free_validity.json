@@ -1,0 +1,351 @@
+{
+ "note": "POST HOC on seen data; defines the memory-free gate fixed in PREREG_PD_v4.md. No original-name arm in G2a; unseen text in G2b.",
+ "pd_v2": {
+  "per_model": {
+   "gemma2:9b": {
+    "G2a_B_eq_B2_real_controls": 0.9737,
+    "G2b_A_eq_B_synthetic_unseen": 0.9268,
+    "pre_items": 135,
+    "premature_A": 0.2,
+    "premature_B": 0.0667,
+    "premature_B2": 0.0741,
+    "gap_A_minus_B": 0.1333,
+    "gap_A_minus_B_ci": [
+     0.0667,
+     0.2
+    ],
+    "sign_p_A_vs_B": 0.0005335211753845215,
+    "gap_A_minus_B2": 0.1259,
+    "gap_A_minus_B2_ci": [
+     0.0667,
+     0.1926
+    ],
+    "sign_p_A_vs_B2": 0.00048828125,
+    "premature_B_minus_B2": -0.0074,
+    "both_ciphers_positive": true
+   },
+   "gpt-5.6-luna": {
+    "G2a_B_eq_B2_real_controls": 0.8947,
+    "G2b_A_eq_B_synthetic_unseen": 0.9756,
+    "pre_items": 135,
+    "premature_A": 0.363,
+    "premature_B": 0.0148,
+    "premature_B2": 0.0074,
+    "gap_A_minus_B": 0.3481,
+    "gap_A_minus_B_ci": [
+     0.2667,
+     0.4296
+    ],
+    "sign_p_A_vs_B": 1.7763568394002505e-13,
+    "gap_A_minus_B2": 0.3556,
+    "gap_A_minus_B2_ci": [
+     0.2815,
+     0.437
+    ],
+    "sign_p_A_vs_B2": 7.105427357601002e-15,
+    "premature_B_minus_B2": 0.0074,
+    "both_ciphers_positive": true
+   },
+   "llama3.1:8b": {
+    "G2a_B_eq_B2_real_controls": 0.9079,
+    "G2b_A_eq_B_synthetic_unseen": 0.8537,
+    "pre_items": 135,
+    "premature_A": 0.2148,
+    "premature_B": 0.0667,
+    "premature_B2": 0.0815,
+    "gap_A_minus_B": 0.1481,
+    "gap_A_minus_B_ci": [
+     0.0667,
+     0.2296
+    ],
+    "sign_p_A_vs_B": 0.0011932429624721408,
+    "gap_A_minus_B2": 0.1333,
+    "gap_A_minus_B2_ci": [
+     0.0519,
+     0.2148
+    ],
+    "sign_p_A_vs_B2": 0.0021024015732109547,
+    "premature_B_minus_B2": -0.0148,
+    "both_ciphers_positive": true
+   },
+   "mistral:7b-instruct": {
+    "G2a_B_eq_B2_real_controls": 0.9211,
+    "G2b_A_eq_B_synthetic_unseen": 0.8293,
+    "pre_items": 135,
+    "premature_A": 0.3185,
+    "premature_B": 0.0667,
+    "premature_B2": 0.0889,
+    "gap_A_minus_B": 0.2519,
+    "gap_A_minus_B_ci": [
+     0.1704,
+     0.3333
+    ],
+    "sign_p_A_vs_B": 5.65314621780999e-08,
+    "gap_A_minus_B2": 0.2296,
+    "gap_A_minus_B2_ci": [
+     0.1481,
+     0.3185
+    ],
+    "sign_p_A_vs_B2": 1.636124125070637e-06,
+    "premature_B_minus_B2": -0.0222,
+    "both_ciphers_positive": true
+   },
+   "phi4-mini:latest": {
+    "G2a_B_eq_B2_real_controls": 0.9342,
+    "G2b_A_eq_B_synthetic_unseen": 1.0,
+    "pre_items": 135,
+    "premature_A": 0.163,
+    "premature_B": 0.0889,
+    "premature_B2": 0.0296,
+    "gap_A_minus_B": 0.0741,
+    "gap_A_minus_B_ci": [
+     0.0148,
+     0.1407
+    ],
+    "sign_p_A_vs_B": 0.04138946533203125,
+    "gap_A_minus_B2": 0.1333,
+    "gap_A_minus_B2_ci": [
+     0.0667,
+     0.2
+    ],
+    "sign_p_A_vs_B2": 0.00012111663818359375,
+    "premature_B_minus_B2": 0.0593,
+    "both_ciphers_positive": true
+   },
+   "qwen2.5:7b": {
+    "G2a_B_eq_B2_real_controls": 0.8092,
+    "G2b_A_eq_B_synthetic_unseen": 0.9756,
+    "pre_items": 135,
+    "premature_A": 0.3111,
+    "premature_B": 0.0815,
+    "premature_B2": 0.0963,
+    "gap_A_minus_B": 0.2296,
+    "gap_A_minus_B_ci": [
+     0.1556,
+     0.3111
+    ],
+    "sign_p_A_vs_B": 3.6729034036397934e-08,
+    "gap_A_minus_B2": 0.2148,
+    "gap_A_minus_B2_ci": [
+     0.1407,
+     0.2889
+    ],
+    "sign_p_A_vs_B2": 1.3085082173347473e-07,
+    "premature_B_minus_B2": -0.0148,
+    "both_ciphers_positive": true
+   }
+  },
+  "pooled_G2_80": {
+   "models": [
+    "gemma2:9b",
+    "gpt-5.6-luna",
+    "llama3.1:8b",
+    "mistral:7b-instruct",
+    "phi4-mini:latest",
+    "qwen2.5:7b"
+   ],
+   "pooled_gap": 0.1981,
+   "ci95": [
+    0.1574,
+    0.2414
+   ]
+  },
+  "pooled_G2a_90_G2b_80": {
+   "models": [
+    "gemma2:9b",
+    "llama3.1:8b",
+    "mistral:7b-instruct",
+    "phi4-mini:latest"
+   ],
+   "pooled_gap": 0.1537,
+   "ci95": [
+    0.1056,
+    0.2037
+   ]
+  },
+  "pooled_G2a_95_G2b_80": {
+   "models": [
+    "gemma2:9b"
+   ],
+   "pooled_gap": 0.1296,
+   "ci95": [
+    0.0667,
+    0.1963
+   ]
+  }
+ },
+ "pd_v3": {
+  "per_model": {
+   "gemma2:9b": {
+    "G2a_B_eq_B2_real_controls": 0.9062,
+    "G2b_A_eq_B_synthetic_unseen": 0.9268,
+    "pre_items": 96,
+    "premature_A": 0.3333,
+    "premature_B": 0.0625,
+    "premature_B2": 0.1042,
+    "gap_A_minus_B": 0.2708,
+    "gap_A_minus_B_ci": [
+     0.1771,
+     0.3646
+    ],
+    "sign_p_A_vs_B": 8.67992639541626e-07,
+    "gap_A_minus_B2": 0.2292,
+    "gap_A_minus_B2_ci": [
+     0.125,
+     0.3333
+    ],
+    "sign_p_A_vs_B2": 5.947612226009369e-05,
+    "premature_B_minus_B2": -0.0417,
+    "both_ciphers_positive": true
+   },
+   "gpt-5.6-luna": {
+    "G2a_B_eq_B2_real_controls": 0.8542,
+    "G2b_A_eq_B_synthetic_unseen": 1.0,
+    "pre_items": 96,
+    "premature_A": 0.1875,
+    "premature_B": 0.0104,
+    "premature_B2": 0.0,
+    "gap_A_minus_B": 0.1771,
+    "gap_A_minus_B_ci": [
+     0.1042,
+     0.2604
+    ],
+    "sign_p_A_vs_B": 7.62939453125e-05,
+    "gap_A_minus_B2": 0.1875,
+    "gap_A_minus_B2_ci": [
+     0.1146,
+     0.2708
+    ],
+    "sign_p_A_vs_B2": 7.62939453125e-06,
+    "premature_B_minus_B2": 0.0104,
+    "both_ciphers_positive": true
+   },
+   "llama3.1:8b": {
+    "G2a_B_eq_B2_real_controls": 0.9688,
+    "G2b_A_eq_B_synthetic_unseen": 0.8537,
+    "pre_items": 96,
+    "premature_A": 0.25,
+    "premature_B": 0.1146,
+    "premature_B2": 0.0938,
+    "gap_A_minus_B": 0.1354,
+    "gap_A_minus_B_ci": [
+     0.0417,
+     0.2292
+    ],
+    "sign_p_A_vs_B": 0.010622024536132812,
+    "gap_A_minus_B2": 0.1562,
+    "gap_A_minus_B2_ci": [
+     0.0833,
+     0.2396
+    ],
+    "sign_p_A_vs_B2": 0.000274658203125,
+    "premature_B_minus_B2": 0.0208,
+    "both_ciphers_positive": true
+   },
+   "mistral:7b-instruct": {
+    "G2a_B_eq_B2_real_controls": 0.9479,
+    "G2b_A_eq_B_synthetic_unseen": 0.8293,
+    "pre_items": 96,
+    "premature_A": 0.2292,
+    "premature_B": 0.1667,
+    "premature_B2": 0.0938,
+    "gap_A_minus_B": 0.0625,
+    "gap_A_minus_B_ci": [
+     -0.0417,
+     0.1667
+    ],
+    "sign_p_A_vs_B": 0.30745625495910645,
+    "gap_A_minus_B2": 0.1354,
+    "gap_A_minus_B2_ci": [
+     0.0417,
+     0.2292
+    ],
+    "sign_p_A_vs_B2": 0.01463329792022705,
+    "premature_B_minus_B2": 0.0729,
+    "both_ciphers_positive": true
+   },
+   "phi4-mini:latest": {
+    "G2a_B_eq_B2_real_controls": 0.9479,
+    "G2b_A_eq_B_synthetic_unseen": 1.0,
+    "pre_items": 96,
+    "premature_A": 0.125,
+    "premature_B": 0.1042,
+    "premature_B2": 0.0625,
+    "gap_A_minus_B": 0.0208,
+    "gap_A_minus_B_ci": [
+     -0.0625,
+     0.1042
+    ],
+    "sign_p_A_vs_B": 0.803619384765625,
+    "gap_A_minus_B2": 0.0625,
+    "gap_A_minus_B2_ci": [
+     0.0,
+     0.1354
+    ],
+    "sign_p_A_vs_B2": 0.14599609375,
+    "premature_B_minus_B2": 0.0417,
+    "both_ciphers_positive": true
+   },
+   "qwen2.5:7b": {
+    "G2a_B_eq_B2_real_controls": 0.8333,
+    "G2b_A_eq_B_synthetic_unseen": 0.9756,
+    "pre_items": 96,
+    "premature_A": 0.1979,
+    "premature_B": 0.0729,
+    "premature_B2": 0.125,
+    "gap_A_minus_B": 0.125,
+    "gap_A_minus_B_ci": [
+     0.0312,
+     0.2188
+    ],
+    "sign_p_A_vs_B": 0.022655844688415527,
+    "gap_A_minus_B2": 0.0729,
+    "gap_A_minus_B2_ci": [
+     -0.0312,
+     0.1771
+    ],
+    "sign_p_A_vs_B2": 0.2295229434967041,
+    "premature_B_minus_B2": -0.0521,
+    "both_ciphers_positive": true
+   }
+  },
+  "pooled_G2_80": {
+   "models": [
+    "gemma2:9b",
+    "gpt-5.6-luna",
+    "llama3.1:8b",
+    "mistral:7b-instruct",
+    "phi4-mini:latest",
+    "qwen2.5:7b"
+   ],
+   "pooled_gap": 0.1363,
+   "ci95": [
+    0.079,
+    0.1944
+   ]
+  },
+  "pooled_G2a_90_G2b_80": {
+   "models": [
+    "gemma2:9b",
+    "llama3.1:8b",
+    "mistral:7b-instruct",
+    "phi4-mini:latest"
+   ],
+   "pooled_gap": 0.1341,
+   "ci95": [
+    0.0716,
+    0.1966
+   ]
+  },
+  "pooled_G2a_95_G2b_80": {
+   "models": [
+    "llama3.1:8b"
+   ],
+   "pooled_gap": 0.1458,
+   "ci95": [
+    0.0677,
+    0.2292
+   ]
+  }
+ }
+}

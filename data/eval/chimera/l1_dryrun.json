@@ -1,0 +1,601 @@
+{
+  "mode": "dry-run (no network, no key)",
+  "model": "gpt-5.6-luna",
+  "prices_usd_per_1M": {
+    "input": 0.2,
+    "output": 1.2,
+    "source": "OpenAI pricing page and model page, fetched 2026-10-15 via a summarising fetch tool"
+  },
+  "token_estimate_method": "chars/3.5 + 15 per call; no tokenizer installed; ESTIMATE",
+  "n_items": 70,
+  "n_primary": 4,
+  "n_plain_controls": 30,
+  "n_other_pre_reveal": 19,
+  "n_closed_book_items": 15,
+  "primary": [
+    {
+      "id": "CP-001",
+      "chapter": 1.0,
+      "reveal_chapter": 6,
+      "reveal_source": "alias_binding(title-holder pass)",
+      "distance": 5.0
+    },
+    {
+      "id": "CP-002",
+      "chapter": 1.0,
+      "reveal_chapter": 6,
+      "reveal_source": "alias_binding(title-holder pass)",
+      "distance": 5.0
+    },
+    {
+      "id": "CP-003",
+      "chapter": 1.0,
+      "reveal_chapter": 6,
+      "reveal_source": "alias_binding(title-holder pass)",
+      "distance": 5.0
+    },
+    {
+      "id": "CP-017",
+      "chapter": 134.0,
+      "reveal_chapter": 166,
+      "reveal_source": "observation",
+      "distance": 32.0
+    }
+  ],
+  "dropped_pre_reveal_no_repo_reveal": [
+    "CP-004",
+    "CP-005",
+    "CP-006",
+    "CP-007",
+    "CP-008",
+    "CP-009",
+    "CP-010",
+    "CP-011",
+    "CP-012",
+    "CP-013",
+    "CP-014",
+    "CP-015",
+    "CP-016",
+    "CP-018",
+    "CP-019",
+    "CP-020",
+    "CP-021",
+    "CP-022",
+    "CP-023"
+  ],
+  "items_without_truth_letter": [
+    "CP-007",
+    "CP-016",
+    "CP-019",
+    "CP-023",
+    "CP-045",
+    "CP-053",
+    "CP-064",
+    "CP-070"
+  ],
+  "calls": {
+    "A": 70,
+    "B": 70,
+    "D1": 70,
+    "C": 30,
+    "D2_max": 70
+  },
+  "est_input_tokens": {
+    "A": 40082,
+    "B": 40082,
+    "D1": 42541,
+    "C": 4014,
+    "D2_max": 23800
+  },
+  "output_caps_tokens": {
+    "A": 10500,
+    "B": 10500,
+    "D1": 21000,
+    "C": 4500,
+    "D2_max": 3500
+  },
+  "expected": {
+    "input_tokens": 150519,
+    "output_tokens": 5690,
+    "usd": 0.0369318
+  },
+  "worst_case": {
+    "input_tokens": 195674,
+    "output_tokens": 50000,
+    "usd": 0.09913494,
+    "assumption": "every call hits its max_completion_tokens cap (hidden reasoning tokens, if billed, cannot exceed it) and input is 1.3x the estimate"
+  },
+  "window_chars": 1200,
+  "prompt_hashes": {
+    "CP-001": {
+      "A": "cfef40c58a891419",
+      "B": "80176f6eb8359c03",
+      "C_orig": "0a4a2158ea1dcbbd",
+      "C_ren": "1739b225426d94c7",
+      "D1": "ad07a1f4dfceaacc"
+    },
+    "CP-002": {
+      "A": "a45a770914f2bb9d",
+      "B": "a7aa013848815306",
+      "C_orig": "d1370d59dcdbf8b7",
+      "C_ren": "7d25819d7e92952d",
+      "D1": "2caf34599a520271"
+    },
+    "CP-003": {
+      "A": "244bce9bfc4d6081",
+      "B": "a98e87ca36e0db81",
+      "C_orig": "74f3d231b7c5d6a8",
+      "C_ren": "2f9f4023e5f97c23",
+      "D1": "d5e9f1d33ecda38e"
+    },
+    "CP-004": {
+      "A": "17e91dbf0e4f88c2",
+      "B": "a90e43358ece322a",
+      "C_orig": "f79e902046ffbbc0",
+      "C_ren": "9254538aea00feb5",
+      "D1": "60f05f0e8870f025"
+    },
+    "CP-005": {
+      "A": "5309ea90a2f1ac9c",
+      "B": "339c768df92893c4",
+      "C_orig": "39092af8eca2a37f",
+      "C_ren": "87a38efca83c53e7",
+      "D1": "323191ef539caa08"
+    },
+    "CP-006": {
+      "A": "9f4ed080f7af9b88",
+      "B": "4837e00047555057",
+      "C_orig": "6bbe606fbd5d632b",
+      "C_ren": "1146146c2586a6dd",
+      "D1": "c4e26f51f5bb2c66"
+    },
+    "CP-007": {
+      "A": "49cf4065e1265237",
+      "B": "87f245e70adbdec6",
+      "C_orig": "a761ecd7fa821c23",
+      "C_ren": "ccbadff8c204784e",
+      "D1": "bcbbc34bebc5b129"
+    },
+    "CP-008": {
+      "A": "895a0c674d7ab4a9",
+      "B": "95efd9e37f1b21e3",
+      "C_orig": "fb916e4bb695985c",
+      "C_ren": "02fd4cc2fa9499f1",
+      "D1": "59b573839ac9618f"
+    },
+    "CP-009": {
+      "A": "275f37e66a956b0a",
+      "B": "6276253e79684765",
+      "C_orig": "8840a862d9e83b82",
+      "C_ren": "de0c8428bfc96e9b",
+      "D1": "a47972b65235a9c5"
+    },
+    "CP-010": {
+      "A": "688d73547e5a2856",
+      "B": "d44a7b108a8f02b2",
+      "C_orig": "623e035a596bebc3",
+      "C_ren": "26203f88eb81c63a",
+      "D1": "ff908a4ed02d6b56"
+    },
+    "CP-011": {
+      "A": "4410e74c02467a93",
+      "B": "3768ff52325feacb",
+      "C_orig": "f37e2bf6be4c5ff0",
+      "C_ren": "cd4166035039089f",
+      "D1": "4562ebe746355343"
+    },
+    "CP-012": {
+      "A": "002d00d847dcf8a6",
+      "B": "3ad46787e38fc95e",
+      "C_orig": "1aa814a5c9dc6cbc",
+      "C_ren": "51aa9c19252ff9f7",
+      "D1": "7f4611f50c307b82"
+    },
+    "CP-013": {
+      "A": "3ac571b18144f5fd",
+      "B": "ede4e61fab917431",
+      "C_orig": "ed205b7128c20ceb",
+      "C_ren": "14437cdab391c1d9",
+      "D1": "e6f2ddcf546d8666"
+    },
+    "CP-014": {
+      "A": "0d940c947fd0ad38",
+      "B": "be8ddd0f6dec0b31",
+      "C_orig": "df4e962fd39aa9ed",
+      "C_ren": "f1a02e20db9aa2a1",
+      "D1": "a1b1b8e9f8b5f782"
+    },
+    "CP-015": {
+      "A": "878933311043c8ce",
+      "B": "15432a1a0ec72405",
+      "C_orig": "600743a83946734c",
+      "C_ren": "84442876fd9cc1f9",
+      "D1": "fe19b1d64615743d"
+    },
+    "CP-016": {
+      "A": "655a61645d6c5930",
+      "B": "f80dd63818b28be8",
+      "C_orig": "1eae5e8d7a8dc2e2",
+      "C_ren": "636b9e104de48abb",
+      "D1": "c0a86a2927583786"
+    },
+    "CP-017": {
+      "A": "2de15633571ebdf3",
+      "B": "38171a5978f99b72",
+      "C_orig": "d15ba4f535ba213a",
+      "C_ren": "3ab6561047d97411",
+      "D1": "4b64b3af41dd5f3b"
+    },
+    "CP-018": {
+      "A": "527d564330701a98",
+      "B": "aa2ad81ba16ca69c",
+      "C_orig": "5f8e6a77ee70e6e0",
+      "C_ren": "e7c26b33844c087a",
+      "D1": "117307d7da36ddf6"
+    },
+    "CP-019": {
+      "A": "bedb262a25f8b5ce",
+      "B": "2fdb3c0d3a002fca",
+      "C_orig": "c0570b5e4bfaa5c0",
+      "C_ren": "33f10f23cfcbfce5",
+      "D1": "4c5932c1723ea818"
+    },
+    "CP-020": {
+      "A": "5ea5385a04149302",
+      "B": "146e00a24fe59291",
+      "C_orig": "948ee51747f4c543",
+      "C_ren": "a87ce73f8729c08d",
+      "D1": "195c47c842c6ce81"
+    },
+    "CP-021": {
+      "A": "57e175971f71114f",
+      "B": "95c56eaa11337219",
+      "C_orig": "859553ff215478ae",
+      "C_ren": "a41af3811c03408f",
+      "D1": "e3bf1248b1cb9cc9"
+    },
+    "CP-022": {
+      "A": "f14679d9de175c6b",
+      "B": "e153df37f8bce608",
+      "C_orig": "01027c58a4fd1891",
+      "C_ren": "a1272b485561ddaa",
+      "D1": "237dea43cb074046"
+    },
+    "CP-023": {
+      "A": "b7c3a2d39445bd6b",
+      "B": "da36dd21d643dd89",
+      "C_orig": "401d758c12df521e",
+      "C_ren": "0cf015f267bd1a9e",
+      "D1": "471b3799b9a1a8a8"
+    },
+    "CP-024": {
+      "A": "29a9bfea835f2efa",
+      "B": "d5e8ace133db5c70",
+      "C_orig": "3b2ec598325100b8",
+      "C_ren": "3486f8a76d8c9f84",
+      "D1": "32ca529b8ce104f8"
+    },
+    "CP-025": {
+      "A": "5dcb149603f9bba9",
+      "B": "c54085d83acf6afd",
+      "C_orig": "7170c177766af268",
+      "C_ren": "afffe6b74229d73c",
+      "D1": "3dded11b086a2ecd"
+    },
+    "CP-026": {
+      "A": "01b77b8ab430f124",
+      "B": "8fb242bbe03db283",
+      "C_orig": "86ed6034e163cb86",
+      "C_ren": "532a410f8a8298ea",
+      "D1": "3a6005be76898316"
+    },
+    "CP-028": {
+      "A": "9b7ed732acc8934f",
+      "B": "4b3edf0f9b2c2e2f",
+      "C_orig": "a70ce73d3606c490",
+      "C_ren": "8e64197dc141b2ad",
+      "D1": "7ee47a274a3c618e"
+    },
+    "CP-029": {
+      "A": "3138fb9095f7e55b",
+      "B": "28014b9b50df89cf",
+      "C_orig": "70a164aba0c52f6f",
+      "C_ren": "98df6d3ca2df45cb",
+      "D1": "655d5ef8162c6de2"
+    },
+    "CP-030": {
+      "A": "9c8eaffe2fb3359b",
+      "B": "8ce32f34b4476fe2",
+      "C_orig": "c4dec882968cb0f5",
+      "C_ren": "6568e1a5e6cf86b4",
+      "D1": "cfbb0cb2f58283cd"
+    },
+    "CP-031": {
+      "A": "b7a6f6542458ec0f",
+      "B": "56c58de1a09cf7b3",
+      "C_orig": "a282d990bd20265c",
+      "C_ren": "3fd5df7f2d521ad3",
+      "D1": "b8a35ddc5a25b66a"
+    },
+    "CP-032": {
+      "A": "51612b9a0dbf5195",
+      "B": "42c2e1cda859560e",
+      "C_orig": "c709f2806ad7e64e",
+      "C_ren": "9563de96d456f229",
+      "D1": "f67399e9fd986ce6"
+    },
+    "CP-033": {
+      "A": "216a58db048855d8",
+      "B": "5411a2b110add7dc",
+      "C_orig": "a50d13fe4b9def23",
+      "C_ren": "d8d274b45e156415",
+      "D1": "4ed5a4cfddecbea5"
+    },
+    "CP-034": {
+      "A": "f379f604b6ef423e",
+      "B": "e6a92d81c3db7a1e",
+      "C_orig": "ef2c9973f396ce6a",
+      "C_ren": "79874bc895ca5819",
+      "D1": "ebaf039341d0e45e"
+    },
+    "CP-035": {
+      "A": "1762e9df9f568d3e",
+      "B": "f158b1f63da7a03d",
+      "C_orig": "b175629d5bc82dd3",
+      "C_ren": "65c96c21a64db6e3",
+      "D1": "04304c7a6f2eef9d"
+    },
+    "CP-036": {
+      "A": "339e8996cb3c677a",
+      "B": "7d37bd71167e1ca2",
+      "C_orig": "994b89b3bb939d2d",
+      "C_ren": "13a23bdfb894c848",
+      "D1": "bca4786e96f7fca4"
+    },
+    "CP-037": {
+      "A": "075a0e99852fcbf5",
+      "B": "37925956a2ca72f5",
+      "C_orig": "d267a5d48e93a7a4",
+      "C_ren": "db3bd3f3e364b265",
+      "D1": "dc9d78d1a1be7b24"
+    },
+    "CP-038": {
+      "A": "81fcbb7191c6798f",
+      "B": "57166886705d8fad",
+      "C_orig": "4a2db30dde4ea63d",
+      "C_ren": "8fce37f7d3028850",
+      "D1": "050e62e400d009b7"
+    },
+    "CP-039": {
+      "A": "64986220c42132f4",
+      "B": "8b28227091271ebb",
+      "C_orig": "9aa3192ec4095a9f",
+      "C_ren": "f0b0fb5b54246c5b",
+      "D1": "2d55d6a86a074c9b"
+    },
+    "CP-040": {
+      "A": "ea6aececb9817f5c",
+      "B": "2c12c87bca0e4a11",
+      "C_orig": "85fbba6243a6cabf",
+      "C_ren": "e70bb863ef3f7e21",
+      "D1": "094f2eabe433d401"
+    },
+    "CP-041": {
+      "A": "7bd6f73f76aeedcf",
+      "B": "fa66e9145856c560",
+      "C_orig": "4fcf2fdd12f8c262",
+      "C_ren": "9adbabf125b7b269",
+      "D1": "09adca1a3f9816bf"
+    },
+    "CP-042": {
+      "A": "01f4edb4cf16db86",
+      "B": "8aa49fc2c56641fa",
+      "C_orig": "51c124f34c1fa04c",
+      "C_ren": "eaa01de94cbe882a",
+      "D1": "24aa418a58ad3fb3"
+    },
+    "CP-043": {
+      "A": "9bfca02af8ed68ed",
+      "B": "28e693cbcf3b7a41",
+      "C_orig": "d24edd05bf78f323",
+      "C_ren": "0f55c0e2cefb632d",
+      "D1": "66e8d6ef9d97e16b"
+    },
+    "CP-044": {
+      "A": "75acff5691c61324",
+      "B": "aea27c76254d77b1",
+      "C_orig": "59492943caf79512",
+      "C_ren": "2eff2f5c9cb5d442",
+      "D1": "2b4e43fea6612115"
+    },
+    "CP-045": {
+      "A": "bb51061ceb6cc9ab",
+      "B": "6dd82f850bcb3f4d",
+      "C_orig": "2970824787415eba",
+      "C_ren": "605cf8b38e0e61b1",
+      "D1": "19969a1a05f2db11"
+    },
+    "CP-046": {
+      "A": "f66aa338a7680a3a",
+      "B": "3a44145acc4a867b",
+      "C_orig": "50e0972cf124e9cc",
+      "C_ren": "0cfc521b14d4cfb7",
+      "D1": "c21232af7359cf48"
+    },
+    "CP-047": {
+      "A": "b106bbef703151d8",
+      "B": "4daddfad8cfc097d",
+      "C_orig": "65d47ca5c7abfaa3",
+      "C_ren": "b9cf50f9561b2d0c",
+      "D1": "a82fa7e134174837"
+    },
+    "CP-048": {
+      "A": "1ad41b82010bca86",
+      "B": "d9102c496417a603",
+      "C_orig": "de0d6cf982c62563",
+      "C_ren": "57b431256e7828b8",
+      "D1": "bfc581d80393495f"
+    },
+    "CP-049": {
+      "A": "417b714c8a41eac7",
+      "B": "dcb0b45f2125ce57",
+      "C_orig": "f2ce95d68926dc92",
+      "C_ren": "a84eceaae665f097",
+      "D1": "8cf7d64aa7de294b"
+    },
+    "CP-050": {
+      "A": "f727077bcc525ef1",
+      "B": "84283417c78df7ca",
+      "C_orig": "9a0eabffa67c943b",
+      "C_ren": "2bdf48fb8b6e37e4",
+      "D1": "70dc3d6137ae78e5"
+    },
+    "CP-051": {
+      "A": "c704f0902c551f93",
+      "B": "99f7252032f2ab27",
+      "C_orig": "332961442c5282a2",
+      "C_ren": "ee32a517e805da8d",
+      "D1": "3b23e4511c140c8b"
+    },
+    "CP-053": {
+      "A": "3ca52a343ce01e36",
+      "B": "cceac59be403d2b5",
+      "C_orig": "8137ce379a75a1b4",
+      "C_ren": "5f2da21ebbacd3a3",
+      "D1": "cf9595387d0b16f0"
+    },
+    "CP-054": {
+      "A": "2da3bc27ecf6b37b",
+      "B": "c1d4517b10dc81c1",
+      "C_orig": "d5b68fee42808bb1",
+      "C_ren": "85890507c4907564",
+      "D1": "93b860438591f454"
+    },
+    "CP-055": {
+      "A": "058563a6b94ee901",
+      "B": "278dcf084a29a2d5",
+      "C_orig": "28e9cb1d3dbf7ebe",
+      "C_ren": "4b48a22fc1218f11",
+      "D1": "804581681ae11a38"
+    },
+    "CP-056": {
+      "A": "80686b03ba3330bc",
+      "B": "ac81964dc7fb4109",
+      "C_orig": "d4308105803faf8b",
+      "C_ren": "8c081c35c1bbb436",
+      "D1": "a6c7ca6e9c83eff0"
+    },
+    "CP-057": {
+      "A": "555084cd450c51ca",
+      "B": "38c75f0f98875958",
+      "C_orig": "6c1a4499ec046e77",
+      "C_ren": "d5b2f2728a8458d4",
+      "D1": "9b59bc132bfc6dd7"
+    },
+    "CP-058": {
+      "A": "198059fe23711ede",
+      "B": "8ed4fef1adaffd0e",
+      "C_orig": "78c2573d14b79750",
+      "C_ren": "f8b265275d6cac4b",
+      "D1": "06090df8ba08e8b9"
+    },
+    "CP-059": {
+      "A": "a4fc21269f790f04",
+      "B": "b8daafea5b289414",
+      "C_orig": "ace940fb69731d35",
+      "C_ren": "deaca0072e7a9d4d",
+      "D1": "dcfe5225e575734d"
+    },
+    "CP-060": {
+      "A": "1902bd9e5ee2eeb6",
+      "B": "cc707ef039a4ec61",
+      "C_orig": "e267100269c4765e",
+      "C_ren": "3f9799cfc79eb44f",
+      "D1": "1e12840aa2588317"
+    },
+    "CP-061": {
+      "A": "ac4c4b331a196073",
+      "B": "04bc05c20eea8178",
+      "C_orig": "8f33e14ecc8de8bf",
+      "C_ren": "d39a800919b07664",
+      "D1": "9154ffd4324493cb"
+    },
+    "CP-062": {
+      "A": "e4c13a148a96996d",
+      "B": "f46c55de3448dc6c",
+      "C_orig": "3b0cef2358450da9",
+      "C_ren": "ca2cb01571317d38",
+      "D1": "fbfd1bcdf87bbb4d"
+    },
+    "CP-063": {
+      "A": "c361169b7811c511",
+      "B": "0303b78a8f3b25c8",
+      "C_orig": "39fba188c012856c",
+      "C_ren": "7abaf8e8f14244d9",
+      "D1": "069ed5c2913875ef"
+    },
+    "CP-064": {
+      "A": "5bd4e988f57d480e",
+      "B": "440a7e3fbfa03258",
+      "C_orig": "ae2037c92893d1ad",
+      "C_ren": "74afc748a6f9d415",
+      "D1": "b35d3616a488d665"
+    },
+    "CP-065": {
+      "A": "bb7a7f0481c3cd87",
+      "B": "9e84ba5cdcb4f536",
+      "C_orig": "7c0cc63edc3c0fcc",
+      "C_ren": "8eb1f46e2650ce76",
+      "D1": "dcdf166833434aff"
+    },
+    "CP-066": {
+      "A": "7a44684ec7ee2b14",
+      "B": "443501f771aad99c",
+      "C_orig": "df87721317bb55d9",
+      "C_ren": "693efc65ea22b3fd",
+      "D1": "14fc82031691662f"
+    },
+    "CP-067": {
+      "A": "257ab15273179d10",
+      "B": "0ae7c3a8c6cece08",
+      "C_orig": "da9115de00ace86f",
+      "C_ren": "d1f22f1ba32d0b24",
+      "D1": "1060da6c94e6d1c7"
+    },
+    "CP-068": {
+      "A": "0897678d1ae29337",
+      "B": "4e7fcb7e0f24107d",
+      "C_orig": "71a77c813b90410e",
+      "C_ren": "c856597fd7924872",
+      "D1": "0a8a36e9140148c5"
+    },
+    "CP-069": {
+      "A": "961029f777daded6",
+      "B": "42ae4793d69e7691",
+      "C_orig": "673facdfb9ecdee1",
+      "C_ren": "2978d9a9fd5e24c1",
+      "D1": "9715b2c9cd7aa910"
+    },
+    "CP-070": {
+      "A": "45c94746dedf9035",
+      "B": "8513ba42752b3765",
+      "C_orig": "eb50a7a07b776559",
+      "C_ren": "e3bde48e7070f4c9",
+      "D1": "c9444a8041051b38"
+    },
+    "CP-071": {
+      "A": "5e6d00d1ce48797e",
+      "B": "5ffccd3c9ca0265b",
+      "C_orig": "83b9a76af5dc7701",
+      "C_ren": "c2fce6877d33d9df",
+      "D1": "d51d2cf3a25dc560"
+    },
+    "CP-072": {
+      "A": "b1574dfe0b2861c4",
+      "B": "de197d44333dc852",
+      "C_orig": "6adffb47633a4271",
+      "C_ren": "b89f1659a5b0a1c8",
+      "D1": "3400209d8d7b96a0"
+    }
+  }
+}

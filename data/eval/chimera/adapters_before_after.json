@@ -1,0 +1,80 @@
+{
+  "label_provenance": "NO LABELS: system-internal counts on a scratch copy of the RI database",
+  "B1_default_run": {
+    "recovered_from_deferral": 0,
+    "regated_link_not_applied": 107,
+    "unresolved": 50,
+    "deferred": 2,
+    "old_code_would_have_reported": {
+      "recovered": 107,
+      "unresolved": -57
+    },
+    "summary_counts": {
+      "mentions": 11174,
+      "linked": 11122,
+      "by_method": {
+        "SCORED": 975,
+        "NAME_CONTAINMENT": 98,
+        "TITLE_HOLDER": 30,
+        "GAZETTEER_EXACT": 9977,
+        "DECLARATION": 39,
+        "RELATIONAL_COPRESENCE": 3
+      },
+      "linked_before_reader_binding": 5,
+      "chapters_with_links": 199
+    }
+  },
+  "B1_apply_deferred_links_run": {
+    "recovered_from_deferral": 1,
+    "regated_link_not_applied": 105,
+    "unresolved": 49,
+    "summary_counts": {
+      "mentions": 11174,
+      "linked": 11125,
+      "by_method": {
+        "SCORED": 975,
+        "DEFERRED_RERESOLVED": 3,
+        "NAME_CONTAINMENT": 98,
+        "TITLE_HOLDER": 30,
+        "GAZETTEER_EXACT": 9977,
+        "DECLARATION": 39,
+        "RELATIONAL_COPRESENCE": 3
+      },
+      "linked_before_reader_binding": 5,
+      "chapters_with_links": 199
+    }
+  },
+  "B2_prefix_1_20": {
+    "summary_counts": {
+      "mentions": 11174,
+      "linked": 733,
+      "by_method": {
+        "SCORED": 143,
+        "NAME_CONTAINMENT": 3,
+        "GAZETTEER_EXACT": 582,
+        "DECLARATION": 2,
+        "RELATIONAL_COPRESENCE": 3
+      },
+      "linked_before_reader_binding": 0,
+      "chapters_with_links": 20
+    },
+    "max_chapter_with_a_link": 20.0,
+    "groups_resolved": 114
+  },
+  "A7_causal_titles": {
+    "summary_counts": {
+      "mentions": 11174,
+      "linked": 11117,
+      "by_method": {
+        "SCORED": 975,
+        "NAME_CONTAINMENT": 98,
+        "GAZETTEER_EXACT": 9977,
+        "DECLARATION": 39,
+        "RELATIONAL_COPRESENCE": 3,
+        "TITLE_HOLDER": 25
+      },
+      "linked_before_reader_binding": 0,
+      "chapters_with_links": 199
+    }
+  }
+}

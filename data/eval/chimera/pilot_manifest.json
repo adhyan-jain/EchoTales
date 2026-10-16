@@ -1,0 +1,30 @@
+{
+  "built": "2026-10-15",
+  "seed": 20261015,
+  "n_items": 72,
+  "tiers": {
+    "P": 23,
+    "C": 32,
+    "H": 17
+  },
+  "categories": {
+    "clan_head_prereveal": 3,
+    "body_change": 6,
+    "reveal": 10,
+    "relational_deictic": 7,
+    "disguise": 10,
+    "title_transfer": 4,
+    "plain_control": 30,
+    "not_entity_control": 2
+  },
+  "pre_reveal_candidates": 23,
+  "mention_offset_shifts": {
+    "0": 26,
+    "1": 9
+  },
+  "script_sha256": "1b9f50feea5bd1ac71a86072ed584354cc0203eb030f7fd5db1f4772cfb143a3",
+  "sheet_sha256": "9c091a0226b2078603d416939512629b67a5ad837819080115094fa738368de1",
+  "key_sha256": "03070ea619fec7a46c68462e640b772ba401def030ae7184ba2d7e71ef468a66",
+  "sheet_is_local_only": true,
+  "frozen_cols_sha256": "0774ee7b19c860517fb97a427d95533d63553d88075dbd466414c3a7726bef82"
+}

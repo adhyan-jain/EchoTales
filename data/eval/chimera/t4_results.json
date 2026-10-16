@@ -1,0 +1,27 @@
+{
+  "prereg": "PREREG_T4 v3 (sha256 15573544f317f772bab9f4e2358afbc1bb2bf6cae4974884e18f75697af267c4)",
+  "commutation_gate": {
+    "surfaces": 335,
+    "G1_display_violations": [
+      "Reward Contributions",
+      "Thunderwings"
+    ],
+    "G1_count": 2,
+    "G2_violations": [
+      "orig-class 'bainingbing' splits",
+      "orig-class 'gumaster' splits",
+      "orig-class 'ironbeakflyingcrane' splits",
+      "orig-class 'jiaosan' splits",
+      "orig-class 'kinshipbloodworm' splits",
+      "orig-class 'moonlightgu' splits",
+      "orig-class 'moonscargu' splits",
+      "orig-class 'rewardcontribution' splits",
+      "orig-class 'thunderwing' splits"
+    ],
+    "G2_count": 9,
+    "G3_violations": [],
+    "G3_count": 0,
+    "passed": false
+  },
+  "status": "GATE_FAILED_NO_RUN"
+}
