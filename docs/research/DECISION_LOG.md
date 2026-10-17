@@ -465,3 +465,31 @@ protocols frozen before any result plus results (part 3), and prior art (part 4)
   a flag.
 - **Only remaining research question:** whether listener cost is
   non-linear in voice distance. It needs humans.
+
+## 2026-10-17: reader-faithfulness addenda (pointer entry)
+
+This log tracks the research arena. The reader-faithfulness study keeps its
+own record in `docs/research/PREFIX_FAITHFULNESS/` (pre-registrations, `REPORT.md`,
+`FORMAL.md`) and `docs/research/PAPER/READER_FAITHFULNESS.md`; this entry
+only records the three results of 2026-10-17 so the state of record is not
+silent about them. Full numbers: EVOLUTION 4.103. All local models, $0, no
+human labels.
+
+### Addendum 12, suffix canaries. **SUPPORTED (H12.1-H12.3)**
+
+- **Provenance:** text-derived (string match on tokens planted after the cut); events model-selected.
+- **Results:** whole-volume card 22.8% [14.2, 31.5] of 54 events vs 0 for the versioned card; long-context positional instruction 40.6% [29.7, 51.4] of 46 events vs 0 truncated; 3 of 3 models positive; 0 hits in any prefix-only cell.
+- **Post hoc (not pre-registered):** a judge says 76% (card) and 88% (long-context) of hits equate the alias with the planted identity.
+- **Artifacts:** `data/eval/chimera/rf_e2e/canary_analysis.json`, `posthoc_canary_judge.json`.
+
+### Addendum 13, selection leak. **SUPPORTED (H13.1, H13.2)**
+
+- **Provenance:** judge-labelled (qwen3:8b); resolver qwen2.5:7b; events model-selected.
+- **Result:** over 24 resolver-merged events, merged-entity card 19.4% vs prefix-built 1.4%, +18.1 [4.2, 33.3]; a canary is blind to this class by construction.
+- **Artifact:** `data/eval/chimera/rf_e2e/selection_analysis.json`.
+
+### Counterfactual suffix on the persona stage. **SUPPORTED (H14.1-H14.4)**
+
+- **Provenance:** system-internal, no labels, deterministic path only, one intervention (pronoun swap).
+- **Result:** 47 of 289 gender cuts depend on the suffix vs 23 that diverge under truncate-and-rebuild (all 23 also flip); 0 of 47 outside the exposure window; 0 of 296 move with the `prefix_causal` repair.
+- **Artifact:** `data/eval/prefix_audit/counterfactual_suffix.json`.

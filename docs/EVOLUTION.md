@@ -8307,3 +8307,71 @@ claimed and the owner spot-check is still pending.
 - **Not changed:** the pipeline stages, the store, or any results file.
 - Operating notes, measured probe timings and screenshots:
   `docs/paper/project_doc/FRONTEND_RESEARCH_VIEW.md`.
+
+### 4.103 Reader-faithfulness: suffix canaries, a selection leak, and a counterfactual-suffix test of the persona stage *(2026-10-17)*
+
+Three pre-registered, local-model-only ($0; owner rule of today: no RunPod,
+no OpenAI key) experiments on the reader-faithfulness branch, commits
+`8309cf2..6561dba`. They sharpen how a position-filtered assistant or graph
+can still depend on text after the reader's position; none changes a
+pipeline stage by default. The wider prefix-faithfulness record (stamp
+defect, horizon repair, the earlier RF-E2E addenda) is in
+`docs/research/PREFIX_FAITHFULNESS/` (`REPORT.md`, `HANDOFF.md`,
+`FORMAL.md`) and `docs/research/PAPER/READER_FAITHFULNESS.md`; it has no
+numbered section in this log.
+
+**Provenance, stated once.** Suffix canaries are text-derived (a string
+match against tokens planted after the cut; events are model-selected).
+The selection-leak figures are judge-labelled (qwen3:8b judge, qwen2.5:7b
+resolver, model-selected events). The counterfactual suffix is
+system-internal (no labels, no judge). No human labels anywhere; the
+owner spot-check is still pending.
+
+- **Addendum 12, suffix canaries** (`scripts/chimera/rf_canary.py`;
+  `data/eval/chimera/rf_e2e/canary_analysis.json`; llama3.1:8b,
+  mistral:7b-instruct, qwen2.5:7b). Identity names after the cut are
+  replaced by invented tokens and one sentence about an invented place is
+  planted after the first post-reveal alias mention; a hit is a string
+  match, so it has no false positive and no memory explanation. Whole-volume
+  card: 22.8% [14.2, 31.5] of 54 events quote a planted token, against 0
+  for the versioned card. Long-context assistant given the book and a
+  positional instruction not to reveal what follows the marker: 40.6%
+  [29.7, 51.4] of 46 events, against 0 with the truncated context. 3 of 3
+  models positive in both; 0 hits in any prefix-only cell (342 outputs), so
+  the harness is sound (H12.3). Post hoc judge
+  (`scripts/chimera/rf_canary_posthoc.py`, `posthoc_canary_judge.json`,
+  not pre-registered): 76% of card hits and 88% of long-context hits state
+  the alias is the planted identity, not merely quote the token.
+- **Addendum 13, selection leak** (`scripts/chimera/rf_selection.py`;
+  `selection_analysis.json`). Every passage served is before the reader,
+  but a whole-volume entity merge chose them. Over the 24 of 36 events
+  where the resolver merged alias and identity, the merged-entity card
+  names the hidden identity in 19.4% against 1.4% for a prefix-built index,
+  +18.1 points [4.2, 33.3]; the ideal-merge variant (36 events) is +13.0
+  [3.7, 24.1]. Per-model sign tests are small (4/1, 5/0, 5/0 events). A
+  canary cannot see this class (FORMAL P10): no suffix token is in the input.
+- **Counterfactual-suffix test of the persona stage**
+  (`scripts/prefix_audit/counterfactual_suffix.py`, pre-registration
+  `PREREG_COUNTERFACTUAL.md`, `data/eval/prefix_audit/counterfactual_suffix.json`).
+  Chapters up to the cut are byte-identical; gendered pronouns in later
+  spans are swapped; the whole volume is rebuilt and the gender served at
+  the cut is compared. 47 of 289 gender character-cuts (16.3%) depend on
+  the suffix, against 23 that diverge under truncate-and-rebuild (all 23 also
+  flip); 24 dependent cuts are invisible to truncation. 0 of 47 lie outside
+  the exposure window. With the `prefix_causal` repair, 0 of 296 move. Limits:
+  one intervention (a pronoun swap), the deterministic persona path only,
+  resolution held fixed.
+- **What this does to earlier claims.** Truncate-and-rebuild is a sound but
+  not complete oracle on a single volume (it finds every divergence and
+  half of the dependence); the horizon repair's guarantee (0 divergence)
+  also holds under the stronger test. HANDOFF/paper text that says
+  "divergence" for the persona defect now has a second, larger quantity,
+  "dependence".
+- **Tests.** `packages/pipeline/tests/test_prefix_faithfulness_readset.py`
+  (the P1 read-set table checked against the real
+  `infer_traits_deterministic`) and `test_reader_faithfulness_canaries.py`
+  (FORMAL P9-P10: canary soundness and blindness on toy systems). 1,383
+  core+pipeline tests pass per the change author (was 1,377); not re-run by
+  the docs pass.
+- **Docs written with the change:** `FORMAL.md` P9-P11, paper sections 3.3,
+  5.4, 7.9, 7.10, `NOVELTY_REPORT.md` v1.9 section 5.25 and the one-pager.

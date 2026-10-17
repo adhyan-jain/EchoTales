@@ -22,6 +22,26 @@ conflated.
 
 **Last updated:** 2026-09-27.
 
+## Pick up here — 2026-10-17 (reader-faithfulness: canaries, selection leak, counterfactual suffix, EVOLUTION 4.103)
+
+- **Local, unpushed commits `8309cf2..6561dba` on `reader-faithfulness`.**
+  Three pre-registered experiments, all local models, $0 (owner rule: no
+  RunPod, no OpenAI key). Numbers and files are in EVOLUTION 4.103; the
+  research record is `docs/research/PREFIX_FAITHFULNESS/` and
+  `docs/research/PAPER/READER_FAITHFULNESS.md`.
+- **Provenance to keep when quoting:** suffix canaries are text-derived
+  (whole-volume card 22.8% of 54 events, long-context positional
+  instruction 40.6% of 46, 0 without the suffix); the selection leak
+  (19.4% vs 1.4% over 24 merged events) is judge-labelled; the
+  counterfactual suffix (47 of 289 gender cuts depend on the suffix vs 23
+  that diverge; 0 after the repair) is system-internal. No human labels.
+- **Open:** `labels/human_check.csv` and the CHIMERA spot-check sheets are
+  still unfilled, so every figure above is "model-generated reference".
+  Counterfactual test covers one intervention (pronoun swap) and the
+  deterministic persona path only. Nothing here changes a pipeline
+  default; the `prefix_causal` repair remains off by default.
+- Tests: 1,383 core+pipeline pass (change author's run).
+
 ## Pick up here — 2026-10-16 (webview Research view, EVOLUTION 4.102)
 
 - **Uncommitted, additive UI surface.** `/research` page, three
