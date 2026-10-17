@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { act, render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 // Product Orchestration track UI: the three new screens this session added
@@ -78,6 +78,29 @@ describe('ProjectHome', () => {
 
     expect(await screen.findByText('3 chapters')).toBeInTheDocument();
     expect(screen.getByText('ingest')).toBeInTheDocument();
+  });
+
+  test('follows a queued job to its end instead of freezing on PENDING', async () => {
+    jest.useFakeTimers();
+    try {
+      const base = { id: 'toy', content_type: 'novel', source_uploaded: true, job_count: 1 };
+      api.listProjects
+        .mockResolvedValueOnce([{ ...base, ingested: false, chapter_count: 0, last_job: { kind: 'ingest', status: 'PENDING', error_summary: '' } }])
+        .mockResolvedValue([{ ...base, ingested: true, chapter_count: 3, last_job: { kind: 'ingest', status: 'SUCCEEDED', error_summary: '' } }]);
+      render(<ProjectHome novelId="toy" onNewProject={jest.fn()} />);
+      expect(await screen.findByText('Not yet')).toBeInTheDocument();
+      await act(async () => {
+        jest.advanceTimersByTime(2100);
+      });
+      expect(await screen.findByText('3 chapters')).toBeInTheDocument();
+      const calls = api.listProjects.mock.calls.length;
+      await act(async () => {
+        jest.advanceTimersByTime(7000);
+      });
+      expect(api.listProjects.mock.calls.length).toBe(calls); // finished: it stops polling
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   test('a fresh project not tracked by the backend degrades honestly', async () => {

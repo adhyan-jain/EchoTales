@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { api } from '../api';
 import Button from './ui/Button';
 import Divider from './ui/Divider';
@@ -42,6 +42,19 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false,
   }, [load]);
 
   const current = projects.find((p) => p.id === novelId);
+
+  // `load` runs once right after a job is queued, when it is still PENDING, and nothing refreshed it afterwards:
+  // after "Start ingestion" the page said "Not yet" and PENDING until a reload (found in the 2026-10-18 browser
+  // pass). Poll while this project's last job is in flight, like the Studio does; it stops itself when the job ends.
+  const pollRef = useRef(null);
+  const lastStatus = current && current.last_job ? current.last_job.status : null;
+  useEffect(() => {
+    clearInterval(pollRef.current);
+    if (lastStatus === 'PENDING' || lastStatus === 'RUNNING') {
+      pollRef.current = setInterval(load, 2000);
+    }
+    return () => clearInterval(pollRef.current);
+  }, [lastStatus, load]);
 
   const startIngest = () => {
     setIngesting(true);
