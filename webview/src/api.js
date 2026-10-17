@@ -269,6 +269,9 @@ export const api = {
 
   listProjects: () => request('/api/projects'),
 
+  // Whether the server's GPU is free for a real image engine (pipeline/gpu.py).
+  gpu: () => request('/api/gpu'),
+
   // The visual genre panels and reference sheets are drawn in (persona/genre.py);
   // null returns the project to the genre detected from its text.
   setGenre: (novelId, genre) =>

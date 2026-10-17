@@ -20,6 +20,7 @@ Routes:
     POST /api/projects/<id>/genre      body: {"genre": key | null} -- the visual genre image generation draws in
                                         (persona/genre.py); null returns to the detected one
     GET  /api/novels/<id>              live payload, corrections overlaid
+    GET  /api/gpu                      {"available", "free", "used_mb", "total_mb", "name"} -- the Studio's engine picker
     GET  /api/novels/<id>/reader?chapter=c   the cast as known at the end of chapter c (webview.build_reader_cast)
     GET  /api/novels/<id>/corrections  log + summary
     POST /api/novels/<id>/corrections  body: {"type": "merge_entities",
@@ -560,6 +561,24 @@ def _plan_json(plan) -> dict:  # type: ignore[type-arg, no-untyped-def]
     }
 
 
+def _gpu_refusal(engine_name: str) -> str | None:
+    """Why a job that loads an image model should not be queued right now, or None.
+
+    The stub engine never touches the GPU. Any other loads a diffusion model; with the card busy (ollama resident,
+    another render) it would OOM or spill into system RAM, which the owner has ruled out (2026-10-02).
+    """
+    if engine_name == "stub":
+        return None
+    from echotales.pipeline.gpu import gpu_status
+
+    status = gpu_status()
+    if status is None:
+        return f"engine {engine_name!r} needs an NVIDIA GPU, and none was found on the server"
+    if not status.free:
+        return f"the GPU is busy ({status.describe()}); stop what is using it, or queue the stub engine"
+    return None
+
+
 def _project_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
     novel_row = handle.store.get_novel(handle.source.novel_id) or {}
     chapters = handle.store.chapter_numbers(handle.source.novel_id)
@@ -956,6 +975,18 @@ def make_handler(
 
                 # --- Product Orchestration track ---------------------------
 
+                if parts == ["api", "gpu"]:
+                    from echotales.pipeline.gpu import gpu_status
+
+                    status = gpu_status()
+                    return self._json(200, {
+                        "available": status is not None,
+                        "free": bool(status and status.free),
+                        "name": status.name if status else "",
+                        "used_mb": status.used_mb if status else 0,
+                        "total_mb": status.total_mb if status else 0,
+                    })
+
                 if parts == ["api", "projects"]:
                     return self._json(200, [_project_status(h) for h in registry.handles.values()])
 
@@ -1341,6 +1372,9 @@ def make_handler(
                                 f"allowed: {sorted(ALLOWED_HTTP_ENGINES)}"
                             },
                         )
+                    refusal = _gpu_refusal(engine_name)
+                    if refusal:
+                        return self._json(409, {"error": refusal})
                     return self._json(202, self._enqueue(handle, "render", _with_genre(handle, dict(body))))
 
                 if (
@@ -1360,6 +1394,9 @@ def make_handler(
                                 f"allowed: {sorted(ALLOWED_HTTP_ENGINES)}"
                             },
                         )
+                    refusal = _gpu_refusal(engine_name)
+                    if refusal:
+                        return self._json(409, {"error": refusal})
                     return self._json(202, self._enqueue(handle, "reference_gen", _with_genre(handle, dict(body))))
 
                 if (

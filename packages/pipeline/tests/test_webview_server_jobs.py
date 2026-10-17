@@ -209,6 +209,34 @@ class TestProjectLifecycleAndJobs:
         assert status == 400
         assert "gemini" in body["error"]
 
+    def test_real_engine_is_refused_while_the_gpu_is_busy_but_stub_is_not(
+        self, live_server: int, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from echotales.pipeline import gpu
+
+        port = live_server
+        _request(
+            port, "POST", "/api/projects",
+            body=json.dumps({"id": "toy3", "title": "Toy Novel 3"}).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        monkeypatch.setattr(gpu, "gpu_status", lambda: gpu.GpuStatus("RTX", 5200, 8188))
+        status, body = _request(
+            port, "POST", "/api/novels/toy3/render/generate", body=json.dumps({"engine": "noobai"}).encode()
+        )
+        assert status == 409 and "GPU is busy" in body["error"] and "5200 of 8188" in body["error"]
+        assert _request(port, "GET", "/api/gpu")[1] == {
+            "available": True, "free": False, "name": "RTX", "used_mb": 5200, "total_mb": 8188,
+        }
+        status, _ = _request(port, "POST", "/api/novels/toy3/render/generate", body=json.dumps({"engine": "stub"}).encode())
+        assert status == 202
+
+        monkeypatch.setattr(gpu, "gpu_status", lambda: None)
+        status, body = _request(
+            port, "POST", "/api/novels/toy3/render/generate", body=json.dumps({"engine": "noobai"}).encode()
+        )
+        assert status == 409 and "NVIDIA GPU" in body["error"]
+
     def test_delete_project(self, live_server: int) -> None:
         port = live_server
         _request(

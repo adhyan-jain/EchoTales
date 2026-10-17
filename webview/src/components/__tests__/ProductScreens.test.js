@@ -13,6 +13,7 @@ jest.mock('../../api', () => ({
     listOutput: jest.fn(),
     listJobs: jest.fn(),
     renderGenerate: jest.fn(),
+    gpu: jest.fn(),
     novel: jest.fn(),
     chapters: jest.fn(),
     outputFileUrl: jest.fn(),
@@ -177,6 +178,7 @@ describe('GenerationWorkspace', () => {
   // chapter list via the light `api.chapters` route, matching every other new screen.
   beforeEach(() => {
     api.chapters.mockResolvedValue([{ number: 1 }, { number: 2 }]);
+    api.gpu.mockResolvedValue({ available: false, free: false, name: '', used_mb: 0, total_mb: 0 });
   });
 
   test('fetches its own chapter list rather than trusting a stale prop', async () => {
@@ -202,6 +204,31 @@ describe('GenerationWorkspace', () => {
       expect(api.renderGenerate).toHaveBeenCalledWith('toy', { chapters: [1], engine: 'stub' })
     );
     await waitFor(() => expect(api.listJobs).toHaveBeenCalled());
+  });
+
+  test('real engines are offered only while the server reports a free GPU', async () => {
+    api.listJobs.mockResolvedValue([]);
+    api.gpu.mockResolvedValue({ available: true, free: true, name: 'RTX', used_mb: 15, total_mb: 8188 });
+    withToast(<GenerationWorkspace novelId="toy" />);
+    await screen.findByRole('option', { name: 'Chapter 1' });
+    await waitFor(() => expect(screen.getByRole('option', { name: /NoobAI XL/ })).not.toBeDisabled());
+    fireEvent.change(screen.getByLabelText('Engine'), { target: { value: 'noobai' } });
+    api.renderGenerate.mockResolvedValueOnce({ job_id: 'toy:render:n', kind: 'render', status: 'PENDING' });
+    fireEvent.click(screen.getByRole('button', { name: /generate panels/i }));
+    await waitFor(() =>
+      expect(api.renderGenerate).toHaveBeenCalledWith('toy', { chapters: [1], engine: 'noobai' })
+    );
+    expect(screen.getByTestId('engine-note')).toHaveTextContent(/loads an image model onto the GPU/);
+  });
+
+  test('with the GPU busy the real engines are disabled and the reason is shown', async () => {
+    api.listJobs.mockResolvedValue([]);
+    api.gpu.mockResolvedValue({ available: true, free: false, name: 'RTX', used_mb: 5200, total_mb: 8188 });
+    withToast(<GenerationWorkspace novelId="toy" />);
+    await screen.findByRole('option', { name: 'Chapter 1' });
+    await waitFor(() => expect(screen.getByTestId('engine-note')).toHaveTextContent(/GPU is busy \(5200 of 8188 MiB/));
+    expect(screen.getByRole('option', { name: /NoobAI XL/ })).toBeDisabled();
+    expect(screen.getByRole('option', { name: /Placeholder/ })).not.toBeDisabled();
   });
 
   test('renders honest not-yet-available states for preview and QA', async () => {
