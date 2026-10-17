@@ -226,7 +226,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         # Phase 7 runs last because it reads what every earlier phase produced:
         # resolved entities, their attributed dialogue, and the NER-derived kind
         # that says which of them are people at all.
-        stage("7 personas", lambda: build_personas(novel, store, client=client))
+        stage("7 personas", lambda: build_personas(novel, store, client=client, prefix_causal=get_settings().persona_prefix_causal))
         # 7b reads the personas 7 just minted and needs a model: appearance is
         # never stated by an honorific the way age is, so there is no
         # deterministic path to fall back to (see appearance_extract's docstring).

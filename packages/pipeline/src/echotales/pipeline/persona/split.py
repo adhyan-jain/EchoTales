@@ -50,7 +50,7 @@ from dataclasses import dataclass, field
 
 from echotales.core.enums import Prominence, ReferenceMode, SpanType, TargetKind
 from echotales.core.interval import Certainty, FuzzyInterval
-from echotales.core.models import Persona, SelfPersonaBinding
+from echotales.core.models import DiscoursePosition, Persona, SelfPersonaBinding
 from echotales.core.store import Store
 from pydantic import BaseModel
 
@@ -908,6 +908,38 @@ def persona_at(
     # Before the character's first appearance: their first body is the only
     # honest answer, and returning nothing would make a caller invent one.
     return bindings[0].persona_id
+
+
+def standing_values(
+    store: Store,
+    persona_id: str,
+    *,
+    known_by: DiscoursePosition | None = None,
+    position: float | None = None,
+) -> dict[str, str]:
+    """One value per attribute key: the standing row learned latest (at or before `known_by`).
+
+    `build_personas(prefix_causal=True)` writes a trait as several revisions of one key, each stamped by the chapter
+    its evidence reaches (docs/research/PREFIX_FAITHFULNESS/REPORT.md 4.4). The readers that built
+    `{a.key: a.value for a in get_attributes(...)}` kept whichever row SQLite returned last -- the latest revision
+    only because rows happen to come back in insertion order, and the webview dashboard showed every revision as a
+    separate trait. This picks by `learned_at_pos` explicitly, the same rule `state_of` applies. `known_by=None` is
+    the whole-novel answer (a reference sheet, a voice that must be cast before the narration states the gender);
+    a reader-position caller passes the reader's discourse position. `position` keeps `reference_gen`'s existing
+    story-time filter on the interval start.
+    """
+    best: dict[str, tuple[DiscoursePosition, str]] = {}
+    for a in store.get_attributes(TargetKind.PERSONA, persona_id):
+        if not a.is_standing:
+            continue
+        if known_by is not None and a.learned_at_pos > known_by:
+            continue
+        if position is not None and a.interval.from_lb > position:
+            continue
+        prev = best.get(a.key)
+        if prev is None or a.learned_at_pos >= prev[0]:
+            best[a.key] = (a.learned_at_pos, a.value)
+    return {k: v for k, (_pos, v) in best.items()}
 
 
 def bodies_of(store: Store, self_id: str) -> list[tuple[str, FuzzyInterval]]:

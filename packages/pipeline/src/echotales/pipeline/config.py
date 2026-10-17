@@ -40,6 +40,9 @@ def _load_config_json() -> dict[str, object]:
     render = raw.get("render", {})
     if "direction_first" in render:
         out["render_direction_first"] = render["direction_first"]
+    persona = raw.get("persona", {})
+    if "prefix_causal" in persona:
+        out["persona_prefix_causal"] = persona["prefix_causal"]
     return out
 
 
@@ -111,6 +114,15 @@ class Settings(BaseSettings):
     #: the local GPU (gateway/API backends), never with `ollama` alongside
     #: a local image engine (`docs/EVOLUTION.md` section 9's measured OOM).
     render_direction_first: bool = True
+
+    #: True: persona traits are written as revisions stamped by the chapter their evidence reaches
+    #: (`build_personas(prefix_causal=True)`), so a reader-position query serves only what the reader could know.
+    #: The default build stamped each trait at first sighting but computed it from up to twelve later chapters: 23
+    #: of 289 gender values served at a cut came from chapters not yet read, and 47 depended on them
+    #: (docs/research/PAPER/READER_FAITHFULNESS.md 5.2, 5.4). Whole-novel readers (voice casting, reference sheets,
+    #: the dashboard) read the final revision and were byte-for-byte unchanged on three serials
+    #: (scripts/prefix_audit/product_parity.py). Costs about 9% more attribute rows and ~50% more persona-stage time.
+    persona_prefix_causal: bool = True
 
     #: Below this confidence a local answer is escalated in hybrid mode.
     escalation_confidence_threshold: float = 0.75

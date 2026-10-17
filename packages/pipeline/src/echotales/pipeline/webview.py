@@ -285,6 +285,9 @@ _DASHBOARD_TRAIT_KEYS: tuple[str, ...] = (
     "register",
 )
 
+#: Persona traits that `build_personas(prefix_causal=True)` writes as revisions of one key (persona/build.py).
+_REVISED_TRAIT_KEYS: frozenset[str] = frozenset({"gender", "age_band", "register"})
+
 
 def build_character_dashboard(store: Store, novel_id: str) -> dict:
     """One row per person-kind entity: assigned voice, reference images,
@@ -308,8 +311,19 @@ def build_character_dashboard(store: Store, novel_id: str) -> dict:
             continue
         persona_id = persona_at(store, entity.id)
         traits = []
-        for attr in store.get_attributes(TargetKind.PERSONA, persona_id):
-            if attr.key not in _DASHBOARD_TRAIT_KEYS or not attr.is_standing:
+        persona_attrs = [a for a in store.get_attributes(TargetKind.PERSONA, persona_id) if a.is_standing]
+        # A prefix-causal build writes gender/age band/register as revisions of one fact; this whole-novel review
+        # page shows the latest revision once, not every revision as its own trait (appearance keys stay dated rows).
+        latest_rev: dict[str, object] = {}
+        for attr in persona_attrs:
+            if attr.key in _REVISED_TRAIT_KEYS:
+                prev = latest_rev.get(attr.key)
+                if prev is None or attr.learned_at_pos >= prev.learned_at_pos:  # type: ignore[attr-defined]
+                    latest_rev[attr.key] = attr
+        for attr in persona_attrs:
+            if attr.key not in _DASHBOARD_TRAIT_KEYS:
+                continue
+            if attr.key in _REVISED_TRAIT_KEYS and attr is not latest_rev[attr.key]:
                 continue
             traits.append(
                 {

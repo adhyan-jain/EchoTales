@@ -1,0 +1,55 @@
+{
+ "audit": "product-parity",
+ "label_provenance": "SYSTEM-INTERNAL, no labels",
+ "serials": {
+  "lord-of-the-mysteries": {
+   "people": 43,
+   "persona_seconds_off": 0.72,
+   "persona_seconds_on": 1.9,
+   "voice_profiles_differ": [],
+   "reference_demographics_differ": [],
+   "dashboard_traits_differ": [],
+   "dashboard_rows_off": 129,
+   "dashboard_rows_on": 129,
+   "reader_view_gender_changes_by_cut": {
+    "5": 5,
+    "10": 2,
+    "20": 1,
+    "30": 0
+   }
+  },
+  "omniscient-readers-viewpoint": {
+   "people": 29,
+   "persona_seconds_off": 1.36,
+   "persona_seconds_on": 2.99,
+   "voice_profiles_differ": [],
+   "reference_demographics_differ": [],
+   "dashboard_traits_differ": [],
+   "dashboard_rows_off": 87,
+   "dashboard_rows_on": 87,
+   "reader_view_gender_changes_by_cut": {
+    "5": 3,
+    "10": 2,
+    "20": 0,
+    "30": 0
+   }
+  },
+  "reverend-insanity": {
+   "people": 90,
+   "persona_seconds_off": 4.5,
+   "persona_seconds_on": 9.6,
+   "voice_profiles_differ": [],
+   "reference_demographics_differ": [],
+   "dashboard_traits_differ": [],
+   "dashboard_rows_off": 270,
+   "dashboard_rows_on": 270,
+   "reader_view_gender_changes_by_cut": {
+    "10": 2,
+    "20": 2,
+    "40": 1,
+    "80": 3,
+    "120": 2
+   }
+  }
+ }
+}

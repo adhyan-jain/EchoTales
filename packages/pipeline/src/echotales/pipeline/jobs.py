@@ -197,6 +197,7 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             fn=lambda: extract_appearance(novel_id, store, client=client),
         )
     elif job.kind == "persona":
+        from echotales.pipeline.config import get_settings
         from echotales.pipeline.persona import build_personas
 
         client = None
@@ -208,7 +209,7 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         run_stage(
             store, run_id=pipeline_run.run_id, stage_name="persona",
             input_digest=input_digest,
-            fn=lambda: build_personas(novel_id, store, client=client),
+            fn=lambda: build_personas(novel_id, store, client=client, prefix_causal=get_settings().persona_prefix_causal),
         )
     elif job.kind == "render":
         from echotales.pipeline.render.panels import get_engine, render_panels

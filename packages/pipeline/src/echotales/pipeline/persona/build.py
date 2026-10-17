@@ -42,6 +42,7 @@ from echotales.pipeline.persona.split import (
     detect_permanent_injuries,
     epochs_for,
     persona_at,
+    standing_values,
     write_epochs,
 )
 from echotales.pipeline.persona.traits import TraitProfile, anchored_window, infer_traits_deterministic
@@ -437,6 +438,13 @@ def build_personas(
                         report.profiled_deterministic -= final.provenance == "llm"
                         report.profiled_llm += final.provenance == "llm"
                     profile = final
+                else:
+                    # No attested chapter to replay (a self minted by a whole-volume pass, or one whose mentions were
+                    # all reassigned): the default build still writes its label-only profile, and the repaired build
+                    # wrote nothing, so voice casting lost these characters' traits (two "Klein" selves on LotM,
+                    # scripts/prefix_audit/product_parity.py). That profile reads no chapter evidence, so the
+                    # first-sighting stamp is honest for it.
+                    trait_rows = [(entity.first_attested_pos, _trait_values(profile), profile)]
             else:
                 trait_rows = [(entity.first_attested_pos, _trait_values(profile), profile)]
             for epoch in epochs:
@@ -518,11 +526,8 @@ def load_trait_profiles(
         if not entity.kind.is_person:
             continue
         persona_id = persona_at(store, entity.id, position)
-        attrs = {
-            a.key: a.value
-            for a in store.get_attributes(TargetKind.PERSONA, persona_id)
-            if a.is_standing
-        }
+        # whole-novel values: voice casting must commit before the narration states a gender (REPORT 8)
+        attrs = standing_values(store, persona_id)
         if not attrs:
             continue
         profile = TraitProfile(

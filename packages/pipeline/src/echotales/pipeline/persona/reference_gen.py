@@ -54,7 +54,7 @@ from echotales.pipeline.persona.attire import (
 )
 from echotales.pipeline.persona.canon import apply_canon
 from echotales.pipeline.persona.prompt import fit_to_budget
-from echotales.pipeline.persona.split import bodies_of
+from echotales.pipeline.persona.split import bodies_of, standing_values
 
 log = logging.getLogger(__name__)
 
@@ -237,11 +237,7 @@ def _demographics(
     (2026-09-27, found by `test_generation_state_wiring.py`). Reference sheets
     pass none -- a sheet is the whole-novel canonical look.
     """
-    attrs = {
-        a.key: a.value
-        for a in store.get_attributes(TargetKind.PERSONA, persona_id)
-        if a.is_standing and (position is None or a.interval.from_lb <= position)
-    }
+    attrs = standing_values(store, persona_id, position=position)
     gender = attrs.get("gender", "unknown")
     age_band = attrs.get("age_band", "adult")
 

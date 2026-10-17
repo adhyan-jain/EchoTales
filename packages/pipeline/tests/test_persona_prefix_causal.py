@@ -200,3 +200,37 @@ def test_memo_client_asks_a_repeated_prompt_once() -> None:
     a, b = memo.complete(None, "p", schema), memo.complete(None, "p", schema)
     memo.complete(None, "q", schema)
     assert a is b and inner.calls == 2
+
+
+def _unattested_volume(tmp_path, tag: str, *, prefix_causal: bool) -> Store:
+    """A person self with no mention at all: no attested chapter for the repair to replay."""
+    store = Store(str(tmp_path / f"{tag}.db"))
+    store.add_novel("t", "T", "x.epub", "generic")
+    store.add_chapter(Chapter(novel_id="t", number=1.0, title="T", source_href="1.html",
+                              blocks=[Block(index=0, block_type=BlockType.PROSE, text="Rain.")]))
+    store.add_self(Self(id="t:self2", novel_id="t", canonical_label="Lady Wen",
+                        first_attested_pos=DiscoursePosition(chapter=1.0, offset=0), kind=TargetKind.SELF))
+    store.conn.commit()
+    build_personas("t", store, prefix_causal=prefix_causal)
+    return store
+
+
+def test_prefix_causal_keeps_the_label_only_profile_of_an_unattested_character(tmp_path) -> None:
+    """Regression (product_parity.py on LotM): with no attested chapter the repaired build wrote no trait rows, so voice
+    casting dropped two "Klein" selves that the default build profiles from their label alone."""
+    from echotales.pipeline.persona.build import load_trait_profiles
+
+    off = load_trait_profiles("t", _unattested_volume(tmp_path, "un_off", prefix_causal=False))
+    on = load_trait_profiles("t", _unattested_volume(tmp_path, "un_on", prefix_causal=True))
+    assert "t:self2" in on
+    assert (on["t:self2"].gender, on["t:self2"].age_band) == (off["t:self2"].gender, off["t:self2"].age_band) == ("female", "adult")
+
+
+def test_standing_values_picks_the_latest_revision_and_respects_the_reader_position(tmp_path) -> None:
+    from echotales.pipeline.persona.split import persona_at, standing_values
+
+    full = _volume(tmp_path, 3, "sv_on", prefix_causal=True)
+    pid = persona_at(full, "t:self1")
+    assert standing_values(full, pid)["gender"] == "female"  # whole-novel answer: the final revision
+    assert standing_values(full, pid, known_by=DiscoursePosition(chapter=2, offset=10**6))["gender"] == "unknown"
+    assert standing_values(full, pid, known_by=DiscoursePosition(chapter=3, offset=10**6))["gender"] == "female"
