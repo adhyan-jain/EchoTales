@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import re
 import sys
 import time
 from dataclasses import dataclass, field
@@ -64,7 +65,7 @@ def _open_store(args: argparse.Namespace) -> Store:
     return Store(getattr(args, "db", None) or get_settings().db_path)
 
 
-def _build_client(store: Store, *, no_llm: bool = False):  # type: ignore[no-untyped-def]
+def _build_client(store: Store, *, no_llm: bool = False, tasks=None):  # type: ignore[no-untyped-def]
     """Construct the run's `ModelClient`, or None for a deterministic run.
 
     Returns None rather than a stub client when the backend is `stub`, because
@@ -81,7 +82,7 @@ def _build_client(store: Store, *, no_llm: bool = False):  # type: ignore[no-unt
     if client.backend is ModelBackend.STUB:
         print("note: ECHOTALES_MODEL_BACKEND=stub — running deterministic, no model calls.")
         return None
-    client.require_ready()
+    client.require_ready(tasks)
     print(f"model backend: {client.backend.value}")
     return client
 
@@ -1038,6 +1039,9 @@ def cmd_render(args: argparse.Namespace) -> int:
     if not getattr(args, "no_versioned_output", False):
         _tag = f"ch{wanted[0]:g}" if wanted else "all"
         _version = next_version(Path(args.panel_dir) / _tag)
+        _suffix = re.sub(r"[^A-Za-z0-9-]+", "-", getattr(args, "version_suffix", "") or "").strip("-")
+        if _suffix:
+            _version = f"{_version}_{_suffix}"
         args.out = str(Path(args.out) / _tag / _version)
         args.motion_dir = str(Path(args.motion_dir) / _tag / _version)
         print(f"output version: {_version}")
@@ -1048,7 +1052,10 @@ def cmd_render(args: argparse.Namespace) -> int:
             if image_engine_name == "manga"
             else get_panel_engine(image_engine_name)
         )
-        director_client = _build_client(store) if not args.no_director else None
+        from echotales.pipeline.llm.tasks import Task as _Task
+
+        # Only the panel director runs here; checking every task's model refused a render over llama3:latest.
+        director_client = _build_client(store, tasks={_Task.PANEL_DIRECTION}) if not args.no_director else None
         two_phase = director_client is not None and get_settings().render_direction_first
 
         if two_phase:

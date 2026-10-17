@@ -93,3 +93,11 @@ def test_every_profiles_culture_negative_survives_the_reference_budget() -> None
             assert first in reference_negative("probe"), name
         finally:
             genre._PROJECT_GENRE.pop("probe", None)
+
+
+def test_a_stage_can_check_only_the_models_it_uses() -> None:
+    # `echotales render` was refused over llama3:latest (segmentation, sentiment) though it only calls the panel director.
+    from echotales.pipeline.llm.tasks import Task, models_required
+
+    assert models_required("ollama", {Task.PANEL_DIRECTION}) == {"gemma2:9b"}
+    assert "llama3:latest" in models_required("ollama")

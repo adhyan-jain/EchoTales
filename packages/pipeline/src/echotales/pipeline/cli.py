@@ -424,6 +424,11 @@ def build_parser() -> argparse.ArgumentParser:
         "A chapter gets this many or zero, never a clip inserted for its own sake",
     )
     p_render.add_argument(
+        "--version-suffix", default="",
+        help="short descriptive name appended to the version directory (v4 -> v4_<suffix>). The convention is to name "
+        "every version; `next_version` cannot, so this is how a CLI render gets one",
+    )
+    p_render.add_argument(
         "--max-panels", type=int, default=70,
         help="panels per chapter (default: 70, roughly 60%% of a manhwa's "
         "panel density -- author instruction, HANDOFF 4.37 item 6). One "

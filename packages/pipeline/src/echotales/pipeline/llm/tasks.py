@@ -249,11 +249,15 @@ def profile_for(task: Task) -> TaskProfile:
     return TASK_PROFILES[task]
 
 
-def models_required(backend: str) -> set[str]:
-    """Every model the configured backend needs.
+def models_required(backend: str, tasks: set[Task] | None = None) -> set[str]:
+    """Every model the configured backend needs, or only those `tasks` use.
 
     Used by the preflight check so a missing pull fails at startup with a
-    `ollama pull` command rather than mid-run on chapter 140.
+    `ollama pull` command rather than mid-run on chapter 140. A stage that
+    uses one task passes it: `echotales render` was refused over `llama3:latest`
+    (segmentation, sentiment) though it only ever calls the panel director
+    (2026-10-18, first real render under the genre profiles).
     """
     attr = "ollama_model" if backend == "ollama" else "anthropic_model"
-    return {getattr(p, attr) for p in TASK_PROFILES.values()}
+    profiles = TASK_PROFILES if tasks is None else {t: TASK_PROFILES[t] for t in tasks}
+    return {getattr(p, attr) for p in profiles.values()}

@@ -235,8 +235,8 @@ class ModelClient:
 
     # ---- preflight --------------------------------------------------------
 
-    def preflight(self) -> PreflightResult:
-        """Check every model this backend needs is reachable.
+    def preflight(self, tasks: set[Task] | None = None) -> PreflightResult:
+        """Check every model this backend needs (or only those `tasks` use) is reachable.
 
         Run before a long job: discovering a missing model on chapter 140 of a
         600-chapter run wastes hours, and the failure mode is a silent quality
@@ -264,7 +264,7 @@ class ModelClient:
                 ),
             )
 
-        required = models_required(backend)
+        required = models_required(backend, tasks)
 
         if self.backend is ModelBackend.ANTHROPIC:
             if not self.settings.anthropic_api_key:
@@ -337,8 +337,8 @@ class ModelClient:
             detail="; ".join(problems),
         )
 
-    def require_ready(self) -> None:
-        """Raise unless every needed model is available."""
-        result = self.preflight()
+    def require_ready(self, tasks: set[Task] | None = None) -> None:
+        """Raise unless every needed model (or those `tasks` use) is available."""
+        result = self.preflight(tasks)
         if not result.available:
             raise LLMUnavailable(f"{result.detail}\n{result.instructions()}")
