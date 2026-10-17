@@ -7,7 +7,7 @@ and still drew hanfu reference sheets and sleeve-hidden hands in modern Seoul; a
 tables do not name) was drawn as a Chinese cultivation novel. A profile carries the whole vocabulary for one genre,
 so a novel is described by naming its genre, and a per-novel table entry, where one exists, still wins.
 
-The genre is a project property (`novel.visual_genre`), set from the Settings page or `echotales genre`, and
+The genre is a project property (`novel.visual_genre`), set from the Settings page or `POST /api/projects/<id>/genre`, and
 `detect_genre` proposes one from the book's own words when none is set. `use_store_genre` registers it for the
 process before a render or a reference run, because every `attire.py` lookup takes only a `novel_id`.
 

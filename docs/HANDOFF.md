@@ -18,43 +18,79 @@ conflated.
 | `docs/design/architecture.md` | The model: three axes of time, self vs persona, observers |
 | `docs/design/details.md` | Per-file detail |
 | `docs/design/plans.md` | The original spec. Amended three times; the amendments win and are marked *(revised)* |
+| `docs/design/video_plan.md` | The plan for motion video (2026-10-18, plan only, nothing built, model figures unmeasured). Its flagged defects are Open defects 17 to 19 below. |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
 **Last updated:** 2026-10-18.
 
-## Pick up here — 2026-10-18 (prefix-causal default, spoiler-safe Read page, `echotales faithfulness`, EVOLUTION 4.104)
+## Pick up here — 2026-10-18 (speaker join, Studio versions, genre profiles, GPU-checked engine picker; EVOLUTION 4.104 and 4.105)
 
-- **Local, unpushed commits 165d9bb and 22cbb56 on `reader-faithfulness`.**
-  Verified on real LotM, ORV and RI databases (CPU, stub LLM, $0); numbers in
-  EVOLUTION 4.104.
-- **`persona.prefix_causal` is now ON by default** (`config.json`,
-  `Settings.persona_prefix_causal`, CLI persona stage and the `jobs.py`
-  persona job). Whole-novel consumers are unchanged
+- **Local, unpushed commits on `reader-faithfulness`** (165d9bb and 22cbb56 in
+  4.104; 2495a1d, 69cbb53, 02d4889, f25baf0, f6f0e46 in 4.105). Verified on
+  real LotM, ORV and RI databases (CPU, stub LLM, stub image engine, $0);
+  numbers in EVOLUTION 4.104 and 4.105.
+- **Read these as unfinished: no real image has been generated with the new
+  genre profiles.** The owner said to run ollama and the GPU later. The genre
+  work (`persona/genre.py`) is verified only by diffing rendered prompts with
+  the stub engine on real chapters (RI 60 and LotM 73 panels identical; ORV 54
+  panels lose only the sleeve clause in 48 and the xianxia culture negative).
+  Whether ORV, a new project, or any non-xianxia genre now looks right is
+  unseen. First job for the GPU session: a real-engine render of ORV chapter 1
+  and one project of another genre, then look at them (Open defect 15).
+- **Speaker join fixed (EVOLUTION 4.105).** `Span.speaker_self_id` is a
+  surface, not an entity id; the viewer and the persona stage now join it the
+  way voice casting does. Payload spans have `speaker_entity_id`. Every persona
+  was previously profiled from 0 spoken lines; only extraversion changes. The
+  re-measured prefix audit (`data/eval/prefix_audit/dialogue_fix/`) shows
+  `big_five` unrepaired divergence is 112/289, not 0/289: **any quoted
+  "big_five 0/289" result (4.103 era, `docs/research/PAPER/READER_FAITHFULNESS.md`)
+  is superseded and has not been rewritten there.** Repaired build: 0 on every
+  key, `persona_set` 0/296.
+- **Studio render jobs now write `vN_<engine>-studio` directories and a
+  `VERSIONS.md` line** (`jobs.py`), like the CLI. They used to write into the
+  root of `panels/ch<N>/`. LotM v1's manifest is a reconstruction
+  (`v1/manifest.reconstructed.jsonl`, from `prompt_cache_v1.json`; no negative
+  prompts), not the original.
+- **Visual genre is a project setting.** Settings "Visual style" card or
+  `POST /api/projects/<id>/genre`; `novel.visual_genre` column; render and
+  reference jobs carry it in their digest. `Store.add_novel` is an upsert now.
+  `genre.py`'s docstring mentions an `echotales genre` command that does not
+  exist.
+- **Studio engine picker.** Local engines (noobai, illustrious, sdxl) are
+  offered only when `GET /api/gpu` reports a free card (`pipeline/gpu.py`, busy
+  above 1,500 MiB used); the render and reference_gen routes return 409 with
+  the memory in use when busy or missing. Stub is always allowed.
+- **Video: `docs/design/video_plan.md` is the plan (uncommitted, plan only,
+  nothing built).** Its flagged defects and an owner decision are Open defects
+  17 to 19; none is fixed.
+- **`persona.prefix_causal` is ON by default** (EVOLUTION 4.104).
+  Whole-novel consumers are unchanged
   (`scripts/prefix_audit/product_parity.py`: 0 voice, 0 reference, 0
   dashboard diffs on all three serials); only the reader-position view
   changes. Stamps are written when the persona stage runs, so a database built
   earlier should keep its old stamps until that stage is re-run (inferred
   from the code, not checked per database).
-- **The Read page no longer lists the whole-volume cast.**
+- **The Read page does not list the whole-volume cast.**
   `GET /api/novels/<id>/reader?chapter=c` -> `webview.py::build_reader_cast`.
   LotM chapter 5: 69 of 91 characters hidden. The Review page is unchanged on
   purpose (whole-volume).
-- **New check:** `echotales --db <db> faithfulness --novel <id> --cuts 5,10`
+- **Check:** `echotales --db <db> faithfulness --novel <id> --cuts 5,10`
   (truncate-and-rebuild of persona + reader cast, exit 1 on divergence).
-  Faithful at every tested cut on all three serials with the default build;
-  the legacy build (`--whole-volume-personas`) fails on LotM. Run it after
-  any change under `persona/` or `core/state.py`.
-- **The persona_set residual (2/90 at LotM cut 30) is closed**
-  (`BodyChange.confirmed_at`, `core.state.current_bindings`). Persona bindings
-  of one stint can now be two rows (open-ended and closed); read bindings
-  through `current_bindings`, never raw `get_self_persona_bindings`, when
-  counting or ordering bodies.
-- **Open, new (also listed under Open defects, items 12 to 14):** the Read
-  guarantee is display-only because the whole payload is still sent; echo
-  folding can depend on an earlier change a prefix rejects; the
-  permanent-injury prominence gate is whole-volume.
-- Tests: 1,399 core+pipeline, 29 research, 102 webview jest (change author's
-  run; the docs pass did not re-run them).
+  Faithful at every tested cut on all three serials with the default build,
+  still after the speaker fix; the legacy build (`--whole-volume-personas`)
+  fails on LotM. Run it after any change under `persona/` or `core/state.py`.
+- **The persona_set residual is closed** (`BodyChange.confirmed_at`,
+  `core.state.current_bindings`). Read bindings through `current_bindings`,
+  never raw `get_self_persona_bindings`, when counting or ordering bodies.
+- **Open (Open defects 12 to 14):** the Read guarantee is display-only because
+  the whole payload is still sent; echo folding can depend on an earlier change
+  a prefix rejects; the permanent-injury prominence gate is whole-volume.
+- **Open (new, Open defects 15 to 19):** no real-engine render under the genre
+  profiles; genre detection is a heuristic; video-plan defects and the
+  one-model-per-image decision.
+- **The novelty one-pager was deleted (2495a1d); do not re-add it.**
+- Tests: 1,408 core+pipeline (re-run 2026-10-18, 69 s), 29 research and 108
+  webview jest (change author's run; not re-run by the docs pass).
 
 ## Pick up here — 2026-10-17 (reader-faithfulness: canaries, selection leak, counterfactual suffix, EVOLUTION 4.103)
 
@@ -956,6 +992,28 @@ genuinely unresolved *today*.
     volume** (EVOLUTION 4.104), so a body-change decision can depend on
     mentions after the reader's position. Same caveat as item 13: not
     measured as a divergence, not repaired.
+15. **No real image has been generated under the genre profiles**
+    (EVOLUTION 4.105). `persona/genre.py` is verified by diffing rendered
+    prompts with the stub engine only. Whether ORV, or a project of another
+    genre, now looks right is unseen. Needs the GPU free (check `GET /api/gpu`
+    or `nvidia-smi`; owner rule: no CPU offload) and a real-engine render.
+16. **Genre detection is a word-count heuristic, not a model**
+    (`detect_genre`: first 20 chapters, whole-word lexicon, 6 hits per 10k words
+    and a 1.3x lead, else generic). It gets the three research novels right and
+    classified 30 Gutenberg books plausibly (read by eye, no labelled set). A
+    wrong detection is overridden from Settings. ORV's `WORLD_CONTEXT` is empty
+    in the per-novel table, so the profile's applies.
+17. **OPEN, unverified (from `docs/design/video_plan.md`, plan only):
+    `cmd_render` never passes `seed_images`, so the real SVD engine skips every
+    tag.** Read from the code by the plan's author; not reproduced or fixed.
+18. **OPEN, unverified (same source): `SVDEngine` stretches 2:3 portrait panels
+    to 16:9; `compose` hard-codes 12 fps for clips; the engines use
+    `enable_model_cpu_offload`, against the owner's no-CPU-offload RAM rule.**
+    None reproduced or fixed.
+19. **Owner decision pending: an image-to-video model is a second model writing
+    pixels,** which conflicts with the one-model-per-image rule (memory:
+    NoobAI XL 1.1 primary). `video_plan.md`'s model figures were not measured
+    on this machine (RTX 4060 Laptop, 8 GB VRAM).
 
 ## Architecture-review items not yet implemented
 

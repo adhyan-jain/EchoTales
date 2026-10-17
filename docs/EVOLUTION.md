@@ -8473,3 +8473,129 @@ system rebuilt on truncated input. Not pushed.
   `test_faithfulness_check.py`, `test_config_persona_prefix_causal.py`,
   `test_persona_prefix_causal.py` additions, and
   `webview/src/__tests__/ReaderSpoilers.test.js`. Not re-run by the docs pass.
+
+### 4.105 Speaker-surface join, Studio render versions, genre-aware image generation, Studio engine picker *(2026-10-18)*
+
+Five local commits on `reader-faithfulness` after 4.104 (2495a1d, 69cbb53,
+02d4889, f25baf0, f6f0e46), not pushed. Everything below ran locally on CPU
+with `ECHOTALES_LLM_MODE=stub` and the stub image engine, $0, no cloud. **No
+real image has been generated with the new genre profiles**: the owner said
+to run ollama and the GPU later, so every claim about the genre work is
+"rendered prompts diffed", not "images looked at".
+
+- **69cbb53: `Span.speaker_self_id` holds the attributed surface ("Benson"),
+  never an entity id, and two consumers compared it with entity ids.** The
+  webview payload (`webview.py::build_novel_payload`) and
+  `persona/build.py::_gather_evidence` both did. On LotM none of the 1,215
+  named-speaker spans matched: no character was marked as speaking, focusing a
+  character did not highlight their lines, the Read page could not relabel a
+  speaker, and every persona on LotM, ORV and RI was profiled from 0 spoken
+  lines. Found in a Playwright pass over the webview (the dossier said "0 spoken
+  lines" for Benson, who has 29). Voice casting and `split.py` already did the
+  surface join correctly; the fix reuses it:
+  `voice/runner.py::speaker_index(upto=)` and
+  `persona/split.py::_speaker_keys(upto=)` (the new `upto` keeps the Read page's
+  cast at chapter c from learning what a surface names from a later chapter).
+  Payload spans gain `speaker_entity_id` (`webview.py::_speaker_entity`); the
+  reader cast `speaks` flag uses it. 1,215 of 1,215 named spans resolve and 19
+  LotM characters speak. Only `extraversion` changes (15 LotM, 11 ORV, 39 RI
+  characters); register did not move.
+  **Re-measured prefix audit**, `data/eval/prefix_audit/dialogue_fix/`:
+  unrepaired gender divergence is still 23/289; `big_five`, previously 0/289, is
+  now 112/289 once dialogue is counted (extraversion divides by the
+  whole-volume mention count, which is a later-chapter input); the repaired
+  build is 0 on every key, `persona_set` included (0/296). `echotales
+  faithfulness` still passes at every tested cut on all three serials.
+  **Correction to earlier results:** the "`big_five` diverges 0 times / 0 of
+  289" figure (4.103 era; stated in `docs/research/PAPER/READER_FAITHFULNESS.md`
+  at lines 94, 174, 176, 224 and 541, including the "whole-volume dependency
+  never occurred on real data" sentences) was an artefact of this bug: with 0 dialogue lines
+  the dialogue-gated dependency never fired. Those paper passages have NOT been
+  rewritten by this docs pass; they need the owner's or the paper author's edit
+  against `dialogue_fix/`.
+- **02d4889: Studio render jobs overwrote the CLI's render history.**
+  `jobs.py` wrote a Studio render into the root of `panels/ch<N>/` and
+  replaced LotM v1's only manifest (found in the same browser pass: 33
+  placeholder panels next to the real v1 render). It now uses the CLI's
+  convention: `jobs.py::_studio_version` picks one `vN_<engine>-studio`
+  directory (highest next version across the requested chapters), and
+  `_record_studio_version` appends a line to each chapter's `VERSIONS.md`
+  (stub renders say "placeholder panels from the stub engine, not a real
+  render"). Test: `test_studio_render_versions.py`. LotM v1's manifest was
+  reconstructed from `prompt_cache_v1.json` into
+  `data/novels/LOTM/panels/ch1/v1/manifest.reconstructed.jsonl`; negative
+  prompts are not recoverable from the cache, so the reconstruction lacks
+  them (`data/novels/` is gitignored).
+- **f25baf0: genre-aware image generation.** Every `attire.py` lookup fell back
+  to Reverend Insanity's xianxia value for a novel it did not list: LotM had its
+  own entries, ORV had three of seven and kept "hands concealed in long
+  draping sleeves" in modern Seoul, every new project was drawn as a Chinese
+  cultivation novel, and the reference negative forbade modern clothing for
+  every novel. New `persona/genre.py`: seven `GenreProfile`s (xianxia,
+  victorian_gothic, modern_apocalypse, contemporary, western_fantasy,
+  science_fiction, generic); `NOVEL_GENRE` pins the three research novels;
+  `detect_genre` is deterministic and local (first 20 chapters, whole-word
+  lexicon, at least 6 hits per 10k words and a 1.3x lead over the runner-up,
+  else generic), `detect_genre_cached` because the project list polls it,
+  `use_store_genre` registers the project's genre for the process (every
+  `attire.py` lookup takes only a `novel_id`; called from `render_panels` and
+  `reference_gen.generate_references`). Lookups now fall back to the profile
+  (`style_anchor`, `manga_base`, `reference_anchor/style`, hands clause,
+  `world_setting`, `world_context`, scene locales, `novel_style`,
+  genre-mismatch props); a per-novel table entry still wins, and
+  `novel_id=""` keeps xianxia. `prompt.py::negative_for(style, novel_id)` and
+  `reference_gen.py::reference_negative(novel_id)` take the culture line from
+  the profile. The xianxia and Victorian profiles take RI's and LotM's entries
+  verbatim; the modern-apocalypse profile completes ORV from word counts in its
+  own text (the counts are in `genre.py`'s docstring).
+  Storage and API: new nullable column `novel.visual_genre` (additive
+  migration); `Store.add_novel` is now an upsert, because `INSERT OR REPLACE`
+  would have reset the chosen genre on a re-ingest; `Store.set_visual_genre`;
+  `POST /api/projects/<id>/genre {"genre": key|null}` (400 on an unknown key,
+  null returns to detection); `GET /api/projects` rows gain `visual_genre`,
+  `detected_genre`, `effective_genre`, `genres`; render and reference jobs carry
+  `visual_genre` in params so the input digest changes and a style change
+  re-renders instead of skipping as an already-SUCCEEDED job. Webview: Settings
+  "Visual style" card (`VisualStyleSetting.js`).
+  **Verified:** rendered prompts diffed before/after on real chapters with the
+  stub engine (60 RI, 73 LotM, 54 ORV panels): RI and LotM identical; ORV loses
+  only the "hands concealed in long draping sleeves" clause (48 of 54 panels)
+  and the xianxia culture negative. Detection gets the three research novels
+  right and classifies 30 Gutenberg books plausibly (that plausibility is a
+  read of the output, not a labelled set).
+  **Limits.** Detection is a word-count heuristic, not a model. ORV's
+  `WORLD_CONTEXT` stays empty in the per-novel table, so the profile's applies.
+  `genre.py`'s module docstring says the genre can be set with `echotales
+  genre`; no such CLI subcommand exists (`cli.py` has none), only the Settings
+  card and the POST route.
+- **f6f0e46: Studio engine picker, and the server checks the GPU.** The
+  owner's resource rule (2026-10-02: heavy models on the GPU only after
+  checking it is free, never CPU-offload into RAM) was left to the person at the
+  keyboard on the CLI; a queued Studio render has nobody checking. New
+  `pipeline/gpu.py::gpu_status` (`nvidia-smi` rather than a CUDA binding, so no
+  torch import; busy above `BUSY_ABOVE_MB = 1500` MiB used; `None` when there
+  is no NVIDIA GPU). `GET /api/gpu` returns `{available, free, name, used_mb,
+  total_mb}`. The `render/generate` and `reference/generate` routes return 409
+  with the memory in use when the GPU is busy or missing; the `stub` engine is
+  always allowed. `GenerationWorkspace.js` offers the local engines (noobai,
+  illustrious, sdxl) only when the server reports a free GPU. `gemini` and
+  `openrouter` stay CLI-only (unchanged). Covered by 4 new webview-server tests
+  in `test_webview_server_jobs.py` and a jest case; not exercised against a real
+  busy GPU by the docs pass.
+- **2495a1d: the novelty one-pager is gone.** `NOVELTY_ONE_PAGER.md` and
+  `.docx` were deleted; `docs/research/PAPER/READER_FAITHFULNESS.md` now cites
+  `NOVELTY_REPORT` and its own Section 9.1 instead. The 4.103 sentence above
+  that names "the one-pager" is history and was left as written; do not re-add
+  the file.
+- **`docs/design/video_plan.md` (untracked, uncommitted) is a plan, not an
+  implementation.** Written by a subagent; nothing in it is built and its
+  model figures were not measured on this machine. It flags defects in the
+  existing video path that are listed in HANDOFF as OPEN and unverified here
+  (see HANDOFF "Open defects" items 17 to 19).
+- **Tests.** Core+pipeline: 1,408 pass, re-run by this docs pass
+  (`python -m pytest packages/core/tests packages/pipeline/tests -o addopts=""
+  -q`, 69 s). Research 29 and webview jest 108 are the change author's counts
+  and were not re-run by the docs pass. New:
+  `test_studio_render_versions.py`, `test_genre_profiles.py`,
+  `test_reader_cast.py` additions, `test_webview_server_jobs.py` additions,
+  `VisualStyleSetting.test.js`, `ProductScreens.test.js` additions.

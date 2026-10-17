@@ -175,6 +175,14 @@ Design commitments:
   `self.conn.commit()` every other write method here has; writes were
   silently lost on process exit until a restart-persistence check caught
   it (EVOLUTION 4.53).
+- `novel.visual_genre` (nullable, additive migration; EVOLUTION 4.105) is the
+  project's chosen image-generation genre (`persona/genre.py`); NULL means
+  "not chosen", which detection fills in at render time rather than at
+  migration. `set_visual_genre()` writes it. **`add_novel()` is an upsert
+  (`ON CONFLICT(id) DO UPDATE`), no longer `INSERT OR REPLACE`**: replacing the
+  row reset every column the statement did not name, so a re-ingest would have
+  dropped the chosen genre. Any new `novel` column must stay out of the
+  upsert's SET list for the same reason.
 - `job` table + `add_job`/`update_job`/`get_job`/`list_jobs` (Product
   Orchestration track) — follows the exact `pipeline_run`/`stage_run`
   schema pattern (`store.py:379-419`, `1709-1866`) rather than a new
@@ -1086,6 +1094,44 @@ learned there and writes the old body as an open row plus a closed row (see
 `core/state.py::current_bindings`). `is_split` counts distinct personas, since
 one body can now have two binding rows.
 
+**`build.py::_gather_evidence` and the speaker join** (EVOLUTION 4.105).
+`Span.speaker_self_id` holds the attributed surface, never an entity id, so
+the old `span.speaker_self_id == target_id` test matched nothing and every
+persona was profiled from 0 spoken lines (register and extraversion never saw
+dialogue). It now also accepts `split.py::_is_speaker(span, _speaker_keys(...))`,
+the join voice casting already used, restricted to surfaces mentioned up to
+the last sampled chapter. `_speaker_keys(upto=)` and
+`voice/runner.py::speaker_index(upto=)` take the same cut so a prefix-causal
+caller cannot learn what a surface names from a later chapter. Effect:
+extraversion only; it divides by the whole-volume mention count, so it is a
+whole-volume input that the unrepaired build leaks (`big_five` 112/289) and the
+prefix-causal build does not.
+
+**`genre.py`** (EVOLUTION 4.105) — the style vocabulary image generation uses
+when a novel has no hand-tuned entry. Before it, every `attire.py` lookup fell
+back to Reverend Insanity's xianxia value, so ORV was drawn with
+"hands concealed in long draping sleeves" in modern Seoul and every new
+project looked like a Chinese cultivation novel. A `GenreProfile` carries the
+whole vocabulary for one genre (style anchor, manga base, reference anchor and
+style, hands clause, world setting and context, novel style, culture negative,
+mismatch props, scene locales, appearance defaults, detection lexicon); seven
+exist (xianxia, victorian_gothic, modern_apocalypse, contemporary,
+western_fantasy, science_fiction, generic). The xianxia and Victorian profiles
+take RI's and LotM's entries verbatim, so neither novel's prompts changed;
+facts true of one book only (RI's Gu, LotM's Beyonder potions) stay in that
+novel's `attire.py` entries. `NOVEL_GENRE` pins the three research novels.
+`detect_genre` is deterministic and local, with no model: first 20 chapters,
+whole-word lexicon (plural allowed, trailing `*` for a stem; prefix matching
+for every entry once scored "carriage" and "card" as `car` and put LotM in
+contemporary fiction), at least 6 hits per 10k words and a 1.3x lead over the
+runner-up, else `generic`. `detect_genre_cached` exists because the project
+list polls it. `use_store_genre(store, novel_id)` registers the stored or
+detected genre for the process, called by `render_panels` and
+`reference_gen.generate_references`, because every `attire.py` lookup takes
+only a `novel_id`. `profile("")` stays xianxia. It is a heuristic, and no real
+image has been generated from the new profiles (HANDOFF Open defects 15, 16).
+The module docstring mentions an `echotales genre` command that does not exist.
+
 **`refimg_search.py`** — automated candidate search & domain quality scoring. `evaluate_candidate_quality()` scores candidate hits against character/novel title token alignment and filters aggregator spam domains (`wallpapercave.com` etc.), preventing mislabeled wallpaper candidates without human intervention.
 
 - **Cues were grepped out of the corpus, not imagined.** RI ch1's "I have
@@ -1177,7 +1223,13 @@ as `speakers/contextual.py` discards an off-roster speaker.
 **`attire.py` / `runner.py`** — the 4-tier visual fallback (explicit →
 faction → regional → novel style) and `get_panel_cast`. Faction/regional
 tables are static per-novel dicts because `TargetKind` has no member a
-faction could attach an `Attribute` to.
+faction could attach an `Attribute` to. **Per-novel lookups
+(`style_anchor`, `manga_base`, `reference_anchor/style`,
+`hands_default_clause`, `world_setting`, `world_context`, `scene_locale`,
+`resolve_attire`'s novel style, `resolve_appearance`) now fall back to the
+novel's `genre.py` profile instead of RI's value** (EVOLUTION 4.105); a
+per-novel table entry still wins. `resolve_appearance` gives a named
+non-East-Asian genre no hair/eye default rather than the East Asian fallback.
 
 `get_panel_cast` takes an optional `block_window` (defaulting to just
 `block_index`), which scopes "who is present" to that range rather than to
@@ -1294,6 +1346,13 @@ prompt the same way, most-discriminating clause first (a close-up needs a
 different negative than a scene shot, and that per-framing clause was the
 one silently getting cut).
 
+`negative_for(style, novel_id=None)` and `genre_mismatch_negative` take the
+culture clause (`_NEGATIVE_CULTURE`, "modern clothing, school uniform") and the
+mismatch props from the novel's genre profile when `novel_id` is given
+(EVOLUTION 4.105): forbidding modern clothing is right for a cultivation novel
+and exactly wrong for ORV. Without `novel_id` the xianxia clause is kept, which
+is what every caller got before.
+
 `condense_clause()` trims a character's full appearance clause to what
 identifies them, ranked by feature (hair, eyes, build) rather than by
 position in the clause — a positional cut kept "tall and lean" and dropped
@@ -1308,6 +1367,12 @@ stored appearance rows (not re-read from prose), tiered by prominence
 (principal → full sheet, recurring → short prompt, incidental → none), and
 regeneration is gated on a **digest of the appearance data** so a re-run
 only redraws a character whose description actually changed.
+
+`reference_negative(novel_id=None)` (cached per novel) swaps its culture part
+for the genre profile's, for the same reason as `negative_for`; it forbade
+modern clothing for every novel, ORV's modern cast included. `generate_references`
+calls `genre.use_store_genre` first. (Earlier it became a function rather than a
+constant so importing `persona` stops loading the CLIP tokenizer, EVOLUTION 4.104.)
 
 Reuses `render/panels.py`'s `PanelImageEngine` protocol rather than adding a
 parallel backend abstraction: a reference sheet is one more text-to-image
@@ -1790,6 +1855,13 @@ hues and a long tail of walk-ons doesn't fight for colour; beyond rank 16
 render "Unknown Speaker N" -- there is deliberately no `Self` row behind
 that id for `store.get_self()` to find.
 
+**Speaker join** (EVOLUTION 4.105): `Span.speaker_self_id` is a surface, so
+`_speaker_entity()` resolves it through `voice/runner.py::speaker_index` and
+each payload span carries `speaker_entity_id` (None for an anonymous slot or an
+unresolved name). The `speaks` flag and the viewer's speaker highlighting use
+it; before this, 0 of LotM's 1,215 named-speaker spans matched an entity id.
+`build_reader_cast` uses `speaker_index(upto=chapter)`.
+
 `build_reader_cast(chapter)` (EVOLUTION 4.104) is the spoiler-safe cast for
 the Read page: only entities mentioned in chapters <= `chapter`, with label,
 aliases, count, first/last chapter, `speaks` and traits all computed from
@@ -1830,6 +1902,16 @@ single-thread-per-connection reason.
 `GET /api/novels/<id>/reader?chapter=c` (EVOLUTION 4.104) serves
 `webview.py::build_reader_cast`; 400 on a bad `chapter`, 404 on an unknown
 novel. Used by `webview/src/pages/project/Read.js` via `api.readerCast`.
+
+`POST /api/projects/<id>/genre {"genre": key|null}` (EVOLUTION 4.105) sets
+`novel.visual_genre` (400 on an unknown key, null returns to detection);
+`GET /api/projects` rows gain `visual_genre`, `detected_genre`,
+`effective_genre` (chosen, else the `NOVEL_GENRE` pin, else detected) and
+`genres`. `render/generate` and `reference/generate` add `visual_genre` to the
+job params (`_with_genre`) so the input digest changes with the style.
+`GET /api/gpu` returns `{available, free, name, used_mb, total_mb}` from
+`gpu.py`; the same two generate routes return 409 with the memory in use
+(`_gpu_refusal`) for any engine except `stub` when the GPU is busy or absent.
 
 **Product Orchestration track routes** (previously this file's scope was
 review/correction only -- `docs/status/STATUS.md`'s "Backend API" row used to say
@@ -1893,11 +1975,27 @@ place that skip logic actually runs end-to-end; before this track
 `_dispatch()` maps `Job.kind` to the real stage function (`ingest_novel`,
 `resolve_novel`, `build_personas`, `extract_appearance`, `render_panels`,
 `render_novel`, `refimg.search_batch`, `reference_gen.generate_references`).
+A `render` job writes into its own version directory (EVOLUTION 4.105):
+`_studio_version` picks one `vN_<engine>-studio` name (highest next version
+across the requested chapters) and `_record_studio_version` appends a
+`VERSIONS.md` line per chapter, as `commands.py::cmd_render` does. It used to
+write into the root of `panels/ch<N>/` and replaced LotM v1's only manifest.
 `ALLOWED_HTTP_ENGINES` is the local-only image-engine allowlist
 (`stub`/`sdxl`/`illustrious`/`noobai`/`refined`/`manga`) -- `gemini` and
 `openrouter` are excluded from the HTTP path entirely by design, so a paid
 engine can only be invoked deliberately, by a human, via the CLI's
 `--image-engine` flag.
+
+### `src/echotales/pipeline/gpu.py`
+`gpu_status()` reads the first GPU's memory use from `nvidia-smi` (not a CUDA
+binding, so no torch import) and returns `GpuStatus(name, used_mb, total_mb)`,
+or None when there is no NVIDIA GPU or it cannot be read. `free` means
+`used_mb <= BUSY_ABOVE_MB` (1,500 MiB): above that, ollama or another render is
+holding the card. It exists because the owner's rule (2026-10-02: heavy models
+on the GPU only after checking it is free, never CPU-offload into RAM) is
+checked by the person at the keyboard on the CLI and by nobody for a Studio
+job; `webview_server.py` refuses a non-stub render or reference job with 409
+while it is busy. Not exercised against a real busy GPU by the docs pass.
 
 ### `src/echotales/pipeline/_multipart.py`
 Minimal stdlib-only `multipart/form-data` parser, scoped to exactly the
