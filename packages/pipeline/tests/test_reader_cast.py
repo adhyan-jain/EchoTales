@@ -15,7 +15,14 @@ from http.client import HTTPConnection
 from http.server import HTTPServer
 
 import pytest
-from echotales.core.enums import AliasType, BlockType, ReferenceMode, SpanType, TargetKind
+from echotales.core.enums import (
+    AliasType,
+    AttributionMethod,
+    BlockType,
+    ReferenceMode,
+    SpanType,
+    TargetKind,
+)
 from echotales.core.models import Block, Chapter, DiscoursePosition, Mention, Self, Span
 from echotales.core.store import Store
 from echotales.pipeline.jobs import JobQueue
@@ -35,14 +42,17 @@ MENTIONS = [  # (chapter, offset, text, alias type, target)
     (3, 61, "Corin", AliasType.RIGID_NAME, "t:corin"),
 ]
 LABELS = {"t:guest": "Arthur Vane", "t:mira": "Mira", "t:corin": "Corin"}
+LINE = '"Good evening," said Arthur Vane.'
 
 
 def _book(tmp_path, upto: int, tag: str) -> Store:
     store = Store(str(tmp_path / f"{tag}.db"))
     store.add_novel("t", "T", "x.epub", "generic")
     for c in range(1, upto + 1):
-        store.add_chapter(Chapter(novel_id="t", number=float(c), title="T", source_href=f"{c}.html",
-                                  blocks=[Block(index=0, block_type=BlockType.PROSE, text=TEXT[c])]))
+        blocks = [Block(index=0, block_type=BlockType.PROSE, text=TEXT[c])]
+        if c == 3:
+            blocks.append(Block(index=1, block_type=BlockType.PROSE, text=LINE))
+        store.add_chapter(Chapter(novel_id="t", number=float(c), title="T", source_href=f"{c}.html", blocks=blocks))
     first = {}
     for c, _o, _t, _a, tid in MENTIONS:
         first.setdefault(tid, c)
@@ -52,6 +62,11 @@ def _book(tmp_path, upto: int, tag: str) -> Store:
                                 first_attested_pos=DiscoursePosition(chapter=float(first[tid]), offset=0), kind=TargetKind.SELF))
     store.add_spans([Span(id=f"sp{c}", novel_id="t", chapter=float(c), block_index=0, start=0, end=len(TEXT[c]),
                           span_type=SpanType.NARRATION_ACTION, text=TEXT[c]) for c in range(1, upto + 1)])
+    if upto >= 3:
+        # The attribution ladder writes the speaker's *surface* here, not an entity id.
+        store.add_spans([Span(id="sp3d", novel_id="t", chapter=3.0, block_index=1, start=0, end=len(LINE),
+                              span_type=SpanType.DIALOGUE, text=LINE, speaker_self_id="Arthur Vane",
+                              attribution_method=AttributionMethod.EXPLICIT)])
     store.add_mentions([
         Mention(id=f"m{i}", novel_id="t", segment_id="s", chapter=float(c), offset=o, block_index=0, text=t, alias_type=a,
                 span_type=SpanType.NARRATION_ACTION, reference_mode=ReferenceMode.PRESENT, target_kind=TargetKind.SELF, target_id=tid)
@@ -134,6 +149,22 @@ def test_reader_route(tmp_path) -> None:
     finally:
         httpd.shutdown()
         thread.join(timeout=5)
+
+
+def test_a_speaker_surface_is_joined_to_its_character(tmp_path) -> None:
+    store = _book(tmp_path, 3, "speaker")
+    payload = build_novel_payload(store, "t", "T")
+    line = next(s for s in payload["chapters"][2]["spans"] if s["type"] == "DIALOGUE")
+    assert line["speaker_id"] == "Arthur Vane" and line["speaker_entity_id"] == "t:guest"
+    assert next(e for e in payload["entities"] if e["id"] == "t:guest")["speaks"] is True
+    assert _by_id(build_reader_cast(store, "t", 3))["t:guest"]["speaks"] is True
+
+
+def test_the_persona_stage_counts_a_characters_spoken_lines(tmp_path) -> None:
+    from echotales.pipeline.persona.build import _gather_evidence
+
+    dialogue, _narration, _surfaces, total = _gather_evidence(_book(tmp_path, 3, "evidence"), "t", "t:guest")
+    assert total == 1 and dialogue == [LINE]  # was 0 for every character before the surface join
 
 
 def test_label_keeps_the_canonical_name_across_article_possessive_and_plural() -> None:

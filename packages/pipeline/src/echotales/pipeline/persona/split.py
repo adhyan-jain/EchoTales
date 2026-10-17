@@ -300,7 +300,7 @@ def _near(blocks: set[int], index: int, window: int = _PRESENCE_WINDOW) -> bool:
     return any(abs(b - index) <= window for b in blocks)
 
 
-def _speaker_keys(store: Store, novel_id: str, target_id: str) -> set[str]:
+def _speaker_keys(store: Store, novel_id: str, target_id: str, *, upto: float | None = None) -> set[str]:
     """Every surface form of this entity, normalised for speaker matching.
 
     `Span.speaker_self_id` does not hold a `Self` id despite its name -- the
@@ -312,9 +312,10 @@ def _speaker_keys(store: Store, novel_id: str, target_id: str) -> set[str]:
     from echotales.pipeline.ingest.normalize import comparison_key
 
     keys = set()
+    # `upto`: a prefix-causal caller must not learn that a surface names this character from a later chapter.
     for row in store.conn.execute(
-        "SELECT DISTINCT text FROM mention WHERE novel_id=? AND target_id=?",
-        (novel_id, target_id),
+        "SELECT DISTINCT text FROM mention WHERE novel_id=? AND target_id=? AND chapter <= ?",
+        (novel_id, target_id, float("inf") if upto is None else upto),
     ):
         if key := comparison_key(row["text"]):
             keys.add(key)

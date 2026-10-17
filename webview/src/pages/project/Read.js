@@ -27,7 +27,8 @@ export function readerChapter(chapter, castById) {
         return { ...m, label: known ? known.label : m.surface || s.text.slice(m.s, m.e) };
       });
       if (!s.speaker || s.anonymous_speaker) return { ...s, marks };
-      const known = s.speaker_id && castById ? castById.get(s.speaker_id) : null;
+      const speakerId = s.speaker_entity_id || s.speaker_id;
+      const known = speakerId && castById ? castById.get(speakerId) : null;
       // `castById` is null while the cast loads: an ellipsis, not "unattributed",
       // which would claim the line has no speaker.
       return { ...s, marks, speaker: known ? known.label : castById ? 'unnamed speaker' : '…' };

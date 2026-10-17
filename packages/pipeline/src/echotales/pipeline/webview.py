@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -133,6 +134,9 @@ def build_novel_payload(store: Store, novel_id: str, label: str) -> dict:
             }
         )
     entity_index = {e["id"]: e for e in entities}
+    from echotales.pipeline.voice.runner import speaker_index
+
+    speaker_of = speaker_index(store, novel_id)
 
     dialogue_total = 0
     dialogue_attributed = 0
@@ -209,8 +213,9 @@ def build_novel_payload(store: Store, novel_id: str, label: str) -> dict:
 
             speaker = speaker_label(span.speaker_self_id)
             is_anon_speaker = bool(span.speaker_self_id and _anon_slot_label(span.speaker_self_id))
-            if speaker and span.speaker_self_id and span.speaker_self_id in entity_index:
-                entity_index[span.speaker_self_id]["speaks"] = True
+            speaker_entity_id = _speaker_entity(span.speaker_self_id, entity_index, speaker_of)
+            if speaker_entity_id is not None:
+                entity_index[speaker_entity_id]["speaks"] = True
             is_dialogue = span.span_type.value == "DIALOGUE"
             if is_dialogue:
                 dialogue_total += 1
@@ -226,6 +231,8 @@ def build_novel_payload(store: Store, novel_id: str, label: str) -> dict:
                     "text": span.text,
                     "speaker": speaker,
                     "speaker_id": span.speaker_self_id,
+                    # The entity that surface names (None for an anonymous slot or a name no mention resolves).
+                    "speaker_entity_id": speaker_entity_id,
                     "method": span.attribution_method.value,
                     "marks": marks,
                     # A distinct voice, not a distinct *identity* -- see
@@ -264,6 +271,24 @@ def build_novel_payload(store: Store, novel_id: str, label: str) -> dict:
         "entities": entities,
         "chapters": chapters_out,
     }
+
+
+def _speaker_entity(raw: str | None, known: Mapping[str, object], speaker_of: Mapping[str, str]) -> str | None:
+    """The entity a span's speaker column names, or None.
+
+    `Span.speaker_self_id` holds the attributed *surface* ("Zhou Mingrui"), not an id (`voice/runner.py::speaker_index`
+    explains why). The viewer compared it with entity ids, so on LotM none of 1,215 named-speaker spans matched: no
+    character was ever marked as speaking, focusing a character never highlighted their lines, and the Read page
+    could not relabel a speaker (found in the 2026-10-18 browser pass).
+    """
+    from echotales.pipeline.ingest.normalize import comparison_key
+
+    if not raw or _anon_slot_label(raw) is not None:
+        return None
+    if raw in known:
+        return raw
+    target = speaker_of.get(comparison_key(raw) or "")
+    return target if target in known else None
 
 
 def _name_key(text: str) -> tuple[str, ...]:
@@ -317,12 +342,15 @@ def build_reader_cast(store: Store, novel_id: str, chapter: float) -> dict:
                 read.setdefault(m.target_id, []).append(m)
     colour_of = {tid: _entity_colour(rank) for rank, tid in enumerate(sorted(totals, key=lambda t: totals[t], reverse=True))}
     known_by = DiscoursePosition(chapter=int(chapter), offset=10**6)
-    # Whole-volume `speaks` marks a character who talks only from chapter 30 on as a speaker at chapter 2.
+    # Whole-volume `speaks` marks a character who talks only from chapter 30 on as a speaker at chapter 2; and the
+    # surface-to-entity join reads only the chapters read, for the same reason.
+    from echotales.pipeline.voice.runner import speaker_index
+
+    speaker_of = speaker_index(store, novel_id, upto=chapter)
     speakers = {
-        span.speaker_self_id
+        _speaker_entity(span.speaker_self_id, read, speaker_of)
         for n in store.chapter_numbers(novel_id) if n <= chapter
         for span in store.get_spans(novel_id, n)
-        if span.speaker_self_id and _anon_slot_label(span.speaker_self_id) is None
     }
     entities = []
     for target_id, group in sorted(read.items(), key=lambda kv: len(kv[1]), reverse=True):

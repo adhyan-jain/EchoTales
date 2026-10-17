@@ -6,11 +6,15 @@
   {
    "chapter": 5,
    "people_compared": 43,
-   "seconds": 0.33,
+   "seconds": 0.32,
    "persona_divergent": [
     [
      "lord-of-the-mysteries:self:110bc1f3e3",
      "archetype@lord-of-the-mysteries:self:110bc1f3e3:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:110bc1f3e3",
+     "big_five@lord-of-the-mysteries:self:110bc1f3e3:body1"
     ],
     [
      "lord-of-the-mysteries:self:110bc1f3e3",
@@ -38,6 +42,10 @@
     ],
     [
      "lord-of-the-mysteries:self:4afd3a0760",
+     "big_five@lord-of-the-mysteries:self:4afd3a0760:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:4afd3a0760",
      "gender@lord-of-the-mysteries:self:4afd3a0760:body1"
     ],
     [
@@ -46,7 +54,19 @@
     ],
     [
      "lord-of-the-mysteries:self:7485f659b6",
+     "big_five@lord-of-the-mysteries:self:7485f659b6:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:7485f659b6",
      "gender@lord-of-the-mysteries:self:7485f659b6:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:8f906ddc75",
+     "big_five@lord-of-the-mysteries:self:8f906ddc75:body2"
+    ],
+    [
+     "lord-of-the-mysteries:self:e222d1e462",
+     "big_five@lord-of-the-mysteries:self:e222d1e462:body1"
     ]
    ],
    "cast_divergent": [
@@ -75,8 +95,12 @@
   {
    "chapter": 10,
    "people_compared": 43,
-   "seconds": 0.49,
+   "seconds": 0.46,
    "persona_divergent": [
+    [
+     "lord-of-the-mysteries:self:110bc1f3e3",
+     "big_five@lord-of-the-mysteries:self:110bc1f3e3:body1"
+    ],
     [
      "lord-of-the-mysteries:self:19c2dcb5af",
      "archetype@lord-of-the-mysteries:self:19c2dcb5af:body1"
@@ -86,12 +110,32 @@
      "gender@lord-of-the-mysteries:self:19c2dcb5af:body1"
     ],
     [
+     "lord-of-the-mysteries:self:35674b07ca",
+     "big_five@lord-of-the-mysteries:self:35674b07ca:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:4afd3a0760",
+     "big_five@lord-of-the-mysteries:self:4afd3a0760:body1"
+    ],
+    [
      "lord-of-the-mysteries:self:7485f659b6",
      "archetype@lord-of-the-mysteries:self:7485f659b6:body1"
     ],
     [
      "lord-of-the-mysteries:self:7485f659b6",
+     "big_five@lord-of-the-mysteries:self:7485f659b6:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:7485f659b6",
      "gender@lord-of-the-mysteries:self:7485f659b6:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:8f906ddc75",
+     "big_five@lord-of-the-mysteries:self:8f906ddc75:body2"
+    ],
+    [
+     "lord-of-the-mysteries:self:e222d1e462",
+     "big_five@lord-of-the-mysteries:self:e222d1e462:body1"
     ]
    ],
    "cast_divergent": [
@@ -108,8 +152,12 @@
   {
    "chapter": 20,
    "people_compared": 43,
-   "seconds": 1.2,
+   "seconds": 0.74,
    "persona_divergent": [
+    [
+     "lord-of-the-mysteries:self:110bc1f3e3",
+     "big_five@lord-of-the-mysteries:self:110bc1f3e3:body1"
+    ],
     [
      "lord-of-the-mysteries:self:19c2dcb5af",
      "archetype@lord-of-the-mysteries:self:19c2dcb5af:body1"
@@ -117,6 +165,30 @@
     [
      "lord-of-the-mysteries:self:19c2dcb5af",
      "gender@lord-of-the-mysteries:self:19c2dcb5af:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:3c31a94ca3",
+     "big_five@lord-of-the-mysteries:self:3c31a94ca3:body2"
+    ],
+    [
+     "lord-of-the-mysteries:self:4afd3a0760",
+     "big_five@lord-of-the-mysteries:self:4afd3a0760:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:7485f659b6",
+     "big_five@lord-of-the-mysteries:self:7485f659b6:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:7c63779f62",
+     "big_five@lord-of-the-mysteries:self:7c63779f62:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:87983bcab4",
+     "big_five@lord-of-the-mysteries:self:87983bcab4:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:8f906ddc75",
+     "big_five@lord-of-the-mysteries:self:8f906ddc75:body2"
     ]
    ],
    "cast_divergent": [
@@ -129,15 +201,39 @@
   {
    "chapter": 30,
    "people_compared": 43,
-   "seconds": 1.16,
+   "seconds": 1.07,
    "persona_divergent": [
+    [
+     "lord-of-the-mysteries:self:110bc1f3e3",
+     "big_five@lord-of-the-mysteries:self:110bc1f3e3:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:3c31a94ca3",
+     "big_five@lord-of-the-mysteries:self:3c31a94ca3:body2"
+    ],
     [
      "lord-of-the-mysteries:self:478688907a",
      "persona_set"
     ],
     [
+     "lord-of-the-mysteries:self:4afd3a0760",
+     "big_five@lord-of-the-mysteries:self:4afd3a0760:body1"
+    ],
+    [
      "lord-of-the-mysteries:self:7485f659b6",
      "persona_set"
+    ],
+    [
+     "lord-of-the-mysteries:self:7c63779f62",
+     "big_five@lord-of-the-mysteries:self:7c63779f62:body2"
+    ],
+    [
+     "lord-of-the-mysteries:self:8f906ddc75",
+     "big_five@lord-of-the-mysteries:self:8f906ddc75:body2"
+    ],
+    [
+     "lord-of-the-mysteries:self:b605799aab",
+     "big_five@lord-of-the-mysteries:self:b605799aab:body2"
     ]
    ],
    "cast_divergent": []

@@ -38,6 +38,8 @@ from echotales.core.pipeline_run import PartialStageFailure
 from echotales.core.store import Store
 from echotales.pipeline.persona.split import (
     SplitReport,
+    _is_speaker,
+    _speaker_keys,
     detect_body_changes,
     detect_permanent_injuries,
     epochs_for,
@@ -131,6 +133,11 @@ def _gather_evidence(
     chapters = store.chapters_for_target(novel_id, target_id, limit=max_chapters)
     if upto is not None:
         chapters = [c for c in chapters if c <= upto]
+    # `Span.speaker_self_id` holds the attributed surface ("Benson"), not an id, so comparing it with `target_id`
+    # never matched: every persona on LotM, ORV and RI was profiled from 0 spoken lines (Benson has 29), so register
+    # and extraversion never saw dialogue (found in the 2026-10-18 browser pass, the dossier's "0 spoken lines").
+    # Joined the way `split.py::_is_speaker` joins it, on surfaces read by the last sampled chapter.
+    speaker_keys = _speaker_keys(store, novel_id, target_id, upto=chapters[-1] if chapters else upto)
     for chapter in chapters:
         mentions = [
             m for m in store.get_mentions(novel_id, chapter) if m.target_id == target_id
@@ -141,7 +148,7 @@ def _gather_evidence(
         by_block = {m.block_index for m in mentions}
 
         for span in store.get_spans(novel_id, chapter):
-            if span.speaker_self_id == target_id:
+            if span.speaker_self_id == target_id or _is_speaker(span, speaker_keys):
                 if span.span_type is SpanType.DIALOGUE:
                     dialogue_total += 1
                     if len(dialogue) < 20:

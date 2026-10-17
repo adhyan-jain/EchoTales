@@ -45,10 +45,13 @@ export default function ScriptLine({
   // inner monologue was inside without cross-referencing chapter POV by hand.
   const isInnerMonologue = span.type === 'INNER_MONOLOGUE';
   const speakerEditable = editMode && (isDialogue || isInnerMonologue);
+  // `speaker_id` is the attributed surface ("Zhou Mingrui"), never an entity
+  // id, so comparing it with the focused id never matched a speaker's lines;
+  // `speaker_entity_id` is the server's join of that surface to the entity.
   const relevant =
     !focusId ||
     span.marks.some((m) => m.id === focusId) ||
-    span.speaker_id === focusId;
+    (span.speaker_entity_id || span.speaker_id) === focusId;
   const rowClass = ['line', isDialogue ? 'dialogue' : '', focusId && !relevant ? 'dim' : '']
     .filter(Boolean)
     .join(' ');

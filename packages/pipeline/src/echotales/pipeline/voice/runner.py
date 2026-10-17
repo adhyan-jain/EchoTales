@@ -118,8 +118,11 @@ class VoiceReport:
         )
 
 
-def speaker_index(store: Store, novel_id: str) -> dict[str, str]:
+def speaker_index(store: Store, novel_id: str, *, upto: float | None = None) -> dict[str, str]:
     """Map an attribution's speaker *label* to a resolved entity id.
+
+    `upto` joins on mentions in chapters <= `upto` only: the Read page's cast at chapter c must not decide who an
+    ambiguous surface names from how the rest of the book uses it (`webview.py::build_reader_cast`).
 
     `Span.speaker_self_id` does not hold a `Self` id despite the name: the
     attribution ladder (`speakers/attribution.py`) extracts a capitalised
@@ -137,9 +140,9 @@ def speaker_index(store: Store, novel_id: str) -> dict[str, str]:
     index: dict[str, str] = {}
     for row in store.conn.execute(
         "SELECT text, target_id, COUNT(*) AS n FROM mention"
-        " WHERE novel_id=? AND target_id IS NOT NULL"
+        " WHERE novel_id=? AND target_id IS NOT NULL AND chapter <= ?"
         " GROUP BY text, target_id ORDER BY n",
-        (novel_id,),
+        (novel_id, float("inf") if upto is None else upto),
     ):
         # Ascending count, so the most frequent binding for a surface wins by
         # overwriting the rarer ones.
@@ -147,6 +150,8 @@ def speaker_index(store: Store, novel_id: str) -> dict[str, str]:
             index[key] = row["target_id"]
 
     for entity in store.all_selves(novel_id):
+        if upto is not None and entity.first_attested_pos.chapter > upto:
+            continue
         if entity.kind.is_person and (key := comparison_key(entity.canonical_label)):
             index.setdefault(key, entity.id)
     return index
