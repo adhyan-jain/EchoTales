@@ -70,7 +70,8 @@ Pipeline stages run roughly in this order (see `cli.py` subcommands:
 `ingest`, `resolve`, `appearance`, `persona`, `voice`, `render`, `eval`,
 `query`, `graph`, `export`, `webview`, plus `ablate`, `observations` and
 `annotate` added 2026-09-23 for the evaluation/observer-axis work — see
-`docs/EVOLUTION.md` 4.78/4.80/4.81): raw EPUB -> chapters/blocks ->
+`docs/EVOLUTION.md` 4.78/4.80/4.81 — and `faithfulness` added 2026-10-18, the
+truncate-and-rebuild reader-faithfulness check, 4.104): raw EPUB -> chapters/blocks ->
 spans -> mentions (gazetteer + NER) -> identity resolution -> personas
 (bodies/appearance/canon) -> world context -> panel direction + image
 generation -> voice casting + synthesis -> per-chapter video composite.
@@ -82,7 +83,7 @@ source .venv/bin/activate      # uv-managed venv already present at repo root
 python3 -m pytest packages/core/tests packages/pipeline/tests   # no GPU needed
 ```
 
-1,383 core+pipeline tests pass (2026-10-17, reader-faithfulness branch, after the suffix-canary / selection-leak / counterfactual-suffix tests; webview jest: 94). Root `pyproject` testpaths lists only
+1,399 core+pipeline tests pass (2026-10-18, reader-faithfulness branch, after the spoiler-safe Read page / `faithfulness` command / body-change-confirmation tests; research: 29; webview jest: 102). Root `pyproject` testpaths lists only
 core and pipeline; pass `packages/research/tests` explicitly (and `-o addopts=""`) to include research.
 
 Everything is stub-first: `ECHOTALES_LLM_MODE=stub` and `--image-engine
@@ -162,7 +163,7 @@ Research track: `docs/research/DECISION_LOG.md` is the state of record (EVOLUTIO
 
 See docs/HANDOFF.md's "Pick up here" section for the actual current state — it
 changes every session (the numbered session log itself moved to
-docs/EVOLUTION.md, latest section 4.103). The NER-windowing re-run (EVOLUTION
+docs/EVOLUTION.md, latest section 4.104). The NER-windowing re-run (EVOLUTION
 4.76) that an earlier session left unmeasured did run (4.84): the
 "`ollama` unreachable" blocker was a misdiagnosis — the daemon was simply
 not started — and the fix is now measured on real data (CEAF-e recall

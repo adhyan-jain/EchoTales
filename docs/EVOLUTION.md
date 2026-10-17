@@ -8375,3 +8375,101 @@ owner spot-check is still pending.
   the docs pass.
 - **Docs written with the change:** `FORMAL.md` P9-P11, paper sections 3.3,
   5.4, 7.9, 7.10, `NOVELTY_REPORT.md` v1.9 section 5.25 and the one-pager.
+
+### 4.104 Prefix-causal on by default, a spoiler-safe Read page, `echotales faithfulness`, and a residual persona_set leak closed *(2026-10-18)*
+
+Two commits on `reader-faithfulness`, 165d9bb and 22cbb56. Everything below was
+run on the real LotM, ORV and RI databases, on CPU, `ECHOTALES_LLM_MODE=stub`,
+local only ($0). No human labels; the oracle in the first two bullets is the
+system rebuilt on truncated input. Not pushed.
+
+- **165d9bb: `persona.prefix_causal` is now the default.** `config.json` key
+  `persona.prefix_causal` -> `Settings.persona_prefix_causal`, default `True`,
+  read by the CLI persona stage (`commands.py`, stage 7) and the `jobs.py`
+  persona job. Readers pick the latest trait revision explicitly
+  (`persona/split.py::standing_values`) instead of relying on the last-learned
+  attribute winning. The repaired build keeps the label-only profile of
+  characters with no attested chapters. Parity check `scripts/prefix_audit/product_parity.py` ->
+  `data/eval/prefix_audit/product_parity.json`: 0 voice, 0 reference and 0
+  dashboard diffs on LotM, ORV and RI between the legacy and the prefix-causal
+  build; only the reader-position view changes. This supersedes every earlier
+  "the `prefix_causal` repair remains off by default" statement (HANDOFF
+  2026-10-17 pick-up, 4.103 era). `--whole-volume-personas` on the new
+  `faithfulness` command is the way back to the legacy build for comparison.
+- **22cbb56, Read page.** The reader page used to be labelled from the
+  whole-volume cast: names, aliases and the sidebar could name a character
+  the reader had not yet been told about. New route
+  `GET /api/novels/<id>/reader?chapter=c` (`webview_server.py`; 400 on a bad
+  chapter, 404 on an unknown novel) serves `webview.py::build_reader_cast`:
+  only entities mentioned in chapters <= c, with label, aliases, mention
+  count, first and last chapter, a `speaks` flag and traits all computed from
+  chapters <= c. Colour stays the whole-volume rank so highlights do not
+  shift as the reader advances. Label rule: the canonical name if it has
+  already been seen as a surface (ignoring a leading article, a possessive
+  and a final plural s), else the most frequent proper name read so far.
+  `webview/src/pages/project/Read.js` uses `api.readerCast`; marks, speakers
+  and the sidebar are relabelled, falling back to the printed surface or
+  "unnamed speaker". A failed load shows a retry and never the whole-book
+  cast. The Review page keeps the whole-volume view. LotM: 69 of 91 characters
+  hidden at chapter 5, 54 at chapter 10.
+  **Limits, stated as limits.** (1) The full whole-volume payload is still
+  sent to the browser, so this is a display guarantee, not a data guarantee;
+  a user with devtools can read it. (2) The guarantee is at chapter
+  granularity: a reveal late in chapter c shows from the start of chapter c.
+- **22cbb56, `echotales faithfulness`** (`eval/faithfulness.py`,
+  `commands.py`, `cli.py`):
+  `echotales --db <db> faithfulness --novel <id> [--cuts 5,10]
+  [--whole-volume-personas] [--work-dir] [--out]`. At each cut it truncates
+  and rebuilds the persona stage and the reader cast and compares them with
+  what the full build serves at that position; exit 1 on any divergence, 2 on
+  bad input. The source DB is opened read-only (SQLite backup API into the
+  work dir). Resolution is held fixed (as in the earlier audit), and
+  divergence is the oracle, so it misses a leak that gives the same value
+  either way (4.103: 47 dependent vs 23 divergent gender cuts). Results:
+  `data/eval/prefix_audit/faithfulness_cmd_*.json`. Default (prefix-causal)
+  build, faithful at every tested cut: LotM 5, 10, 20, 30, 31, 35, 38, 39;
+  ORV 5, 10, 20, 30; RI 10, 20, 40, 80, 120. The legacy build fails on LotM
+  at cuts 5, 10, 20 and 30
+  (`faithfulness_cmd_lord-of-the-mysteries_legacy.json`).
+- **Finding: the command's first run exposed a residual leak in the
+  prefix-causal build.** This is the persona_set divergence (2 of 90 at LotM
+  cut 30) that the earlier audit recorded (`docs/research/PREFIX_FAITHFULNESS/`,
+  "body splits ... not repaired") and that was documented as needing a core
+  change. Cause: `persona/split.py::find_change_candidates` accepts a body
+  change only once the character is seen again after it (the life-after
+  rule), but `write_epochs` stamped the binding as learned at the change. LotM's
+  Benson changes body at ch30.24 and is next seen at ch39, so a cut at ch30
+  served a body change that a book ending at ch30 would have rejected.
+  Fix: `BodyChange.confirmed_at` records the first chapter that satisfies the
+  rule. With `prefix_causal`, `write_epochs` stamps the new body as learned at
+  the confirmation (ceil to a whole discourse chapter) and writes the old body
+  twice: open-ended and learned at its start (what a reader before the
+  confirmation knows), and closed at the change and learned at the
+  confirmation. New `core.state.current_bindings` keeps, per (persona,
+  timeline, observer, `from_lb`), the later-learned revision, so a persona
+  worn in two separate stints keeps both. It is applied in `state_of`,
+  `co_present_personas`, `persona_at`, `bodies_of` and `scoped_reference`;
+  `is_split` now counts distinct personas. A store with one binding per
+  persona (every build before today, every whole-volume build) is returned
+  unchanged. Binding rows: LotM 99 -> 105, RI 109 -> 120. Whole-novel
+  consumers are unchanged on all three serials (`bodies_of`, `persona_at` at
+  several positions, voice, reference, dashboard: 0 diffs).
+  This changes the `state_of` binding contract (core): bindings are no longer
+  strictly one row per persona per stint; the last-learned row of a stint is
+  the one in force. See `docs/design/details.md` `core/state.py`.
+- **Remaining known gaps, not fixed.** (a) Echo folding in
+  `find_change_candidates` can still depend on an earlier change that a
+  prefix rejects, so a folded change may differ between a prefix and the full
+  build. (b) The permanent-injury prominence gate is computed over the whole
+  volume. Neither showed up in the tested cuts; the oracle can
+  only see a divergence at the cuts it was run on.
+- **Import cost.** `persona/reference_gen.py::REFERENCE_NEGATIVE` (a
+  constant) became `reference_negative()`, computed on first use. Importing
+  anything under `persona` used to load the CLIP tokenizer, transformers and
+  torch; the web server's first Read request went from 5.7 s to 152 ms.
+- **Tests.** 1,399 core+pipeline pass (was 1,383); research 29 pass;
+  webview jest 102 pass (was 94), per the change author's run. New:
+  `packages/pipeline/tests/test_reader_cast.py`,
+  `test_faithfulness_check.py`, `test_config_persona_prefix_causal.py`,
+  `test_persona_prefix_causal.py` additions, and
+  `webview/src/__tests__/ReaderSpoilers.test.js`. Not re-run by the docs pass.

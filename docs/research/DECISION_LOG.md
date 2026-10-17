@@ -493,3 +493,9 @@ human labels.
 - **Provenance:** system-internal, no labels, deterministic path only, one intervention (pronoun swap).
 - **Result:** 47 of 289 gender cuts depend on the suffix vs 23 that diverge under truncate-and-rebuild (all 23 also flip); 0 of 47 outside the exposure window; 0 of 296 move with the `prefix_causal` repair.
 - **Artifact:** `data/eval/prefix_audit/counterfactual_suffix.json`.
+
+### Update 2026-10-18: body-split (persona_set) residual closed in the product build
+
+- **Pointer:** EVOLUTION 4.104. The persona_set divergence recorded in the PREFIX_FAITHFULNESS audit ("body splits ... not repaired", 7 of 296; 2 of 90 at LotM cut 30 in the prefix-causal build) was found by `echotales faithfulness` to come from a body change stamped at the change but accepted only after the character is seen again (Benson, ch30.24, next seen ch39). Fixed with `BodyChange.confirmed_at` and `core.state.current_bindings`.
+- **Provenance:** system-internal (truncate-and-rebuild, resolution held fixed, no labels). The default build is faithful at every cut tried on LotM, ORV and RI; the legacy build still fails on LotM at 5/10/20/30. `persona.prefix_causal` is now the default. Still open: echo folding and the whole-volume permanent-injury prominence gate.
+- **Artifacts:** `data/eval/prefix_audit/faithfulness_cmd_*.json`, `data/eval/prefix_audit/product_parity.json`.

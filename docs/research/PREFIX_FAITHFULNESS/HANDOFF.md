@@ -14,6 +14,8 @@ Branch `claude/prefix-faithfulness` (worktree `.claude/worktrees/prefix-faithful
 | Pre-registered **L4**: a prefix-causal prominence gate removes the model path's gate effect (50 to 0 of 296 pairs, 0 divergences in 101 both-model pairs, noise floor 0, calls unchanged at 348, real `qwen2.5:7b`). | 4.15; `llm_model_pc_*.json` |
 | Synthetic mechanism and failure map (the cue's wrong rate exceeds 3% only when own cues are sparse and misleading cues are at least half as common). | 4.13 |
 
+> Update 2026-10-18 (EVOLUTION 4.104): "off by default" below no longer holds for the product; `persona.prefix_causal` is on by default and the body-split gap is closed. Text below is the 2026-10-16 state.
+
 Tests: core and pipeline suites passed at 1259 passed, 6 skipped before the v2 window test was added; the two persona test files pass afterwards (34 tests). All new behaviour is off by default and the default path is byte-identical (366 ORV rows reproduced exactly).
 
 ## 2. Documented failures and corrections (keep them in any write-up)

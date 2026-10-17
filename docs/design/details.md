@@ -236,6 +236,16 @@ Other notes:
   black-haired at ch 3 and white-haired at ch 150 renders correctly at each.
 - `persona_ids` is a **list** — concurrency is legitimate and is how clones and
   simultaneous disguises are represented.
+- **`current_bindings()` (EVOLUTION 4.104, 2026-10-18)**: persona bindings are
+  passed through it before use (`state_of`, `co_present_personas`, and in
+  `persona/split.py` `persona_at`/`bodies_of`). A body change is confirmed only
+  by later chapters, so the prefix-causal persona build writes the old body
+  twice -- open-ended (learned at its start) and closed at the change (learned
+  at the confirmation). `current_bindings` keeps, per (persona, timeline,
+  observer, `from_lb`), the later-learned row. Filter by knowledge time
+  *first* and pass the result in, so a reader before the confirmation still
+  sees the open row. A persona worn in two separate stints starts twice and
+  keeps both rows. A store with one binding per persona is returned unchanged.
 - `resolve_alias()` returns *all* temporally valid holders with their
   certainty. A candidate-set filter, never a resolver.
 - `concurrent_personas()` supports suppressing the co-presence penalty for
@@ -272,7 +282,10 @@ unaffected as the evaluation oracle.
 
 ### `src/echotales/pipeline/cli.py`
 `argparse` entry point exposing `run`, `ingest`, `resolve`, `review`,
-`query state-of`, `eval`, `export`, `webview`, `webview-server`. Kept
+`query state-of`, `eval`, `export`, `webview`, `webview-server`, and
+`faithfulness` (2026-10-18: `--novel`, `--cuts`, `--whole-volume-personas`,
+`--work-dir`, `--out`; exit 1 on divergence, 2 on bad input; implemented in
+`eval/faithfulness.py`, EVOLUTION 4.104). Kept
 importable with **no optional dependencies installed** so `--help` works on
 a bare checkout; the heavy import happens inside `main()`.
 
@@ -1066,6 +1079,12 @@ bind to.
 **`split.py`** — body changes: when one continuity of consciousness occupies
 a second body, and from which position. This is what makes
 `docs/design/architecture.md Section 4`'s reincarnation row real rather than aspirational.
+`BodyChange.confirmed_at` (EVOLUTION 4.104) is the first chapter whose text
+satisfies `find_change_candidates`'s life-after rule; with
+`persona.prefix_causal` (default on), `write_epochs` stamps the new body as
+learned there and writes the old body as an open row plus a closed row (see
+`core/state.py::current_bindings`). `is_split` counts distinct personas, since
+one body can now have two binding rows.
 
 **`refimg_search.py`** — automated candidate search & domain quality scoring. `evaluate_candidate_quality()` scores candidate hits against character/novel title token alignment and filters aggregator spam domains (`wallpapercave.com` etc.), preventing mislabeled wallpaper candidates without human intervention.
 
@@ -1771,6 +1790,15 @@ hues and a long tail of walk-ons doesn't fight for colour; beyond rank 16
 render "Unknown Speaker N" -- there is deliberately no `Self` row behind
 that id for `store.get_self()` to find.
 
+`build_reader_cast(chapter)` (EVOLUTION 4.104) is the spoiler-safe cast for
+the Read page: only entities mentioned in chapters <= `chapter`, with label,
+aliases, count, first/last chapter, `speaks` and traits all computed from
+those chapters; colour stays the whole-volume rank so highlights are stable.
+Label rule: the canonical name if already seen as a surface (ignoring a
+leading article, a possessive and a final plural s), else the most frequent
+proper name read so far. Chapter-granular, and a display guarantee only --
+`build_novel_payload()` still ships the whole volume to the browser.
+
 `write_webview()` emits the dependency-free static build: one HTML shell
 plus one `<script src>`-loaded JS data file per novel (not `fetch`,
 specifically because `fetch()` of local JSON is blocked by the browser's
@@ -1798,6 +1826,10 @@ endpoint rather than by reading the code. The one exception is the new
 `JobQueue` worker thread (`jobs.py`), which opens its **own** `Store`
 connection rather than sharing the request thread's, for the same
 single-thread-per-connection reason.
+
+`GET /api/novels/<id>/reader?chapter=c` (EVOLUTION 4.104) serves
+`webview.py::build_reader_cast`; 400 on a bad `chapter`, 404 on an unknown
+novel. Used by `webview/src/pages/project/Read.js` via `api.readerCast`.
 
 **Product Orchestration track routes** (previously this file's scope was
 review/correction only -- `docs/status/STATUS.md`'s "Backend API" row used to say

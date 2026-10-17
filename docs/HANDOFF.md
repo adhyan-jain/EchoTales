@@ -20,7 +20,41 @@ conflated.
 | `docs/design/plans.md` | The original spec. Amended three times; the amendments win and are marked *(revised)* |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-09-27.
+**Last updated:** 2026-10-18.
+
+## Pick up here — 2026-10-18 (prefix-causal default, spoiler-safe Read page, `echotales faithfulness`, EVOLUTION 4.104)
+
+- **Local, unpushed commits 165d9bb and 22cbb56 on `reader-faithfulness`.**
+  Verified on real LotM, ORV and RI databases (CPU, stub LLM, $0); numbers in
+  EVOLUTION 4.104.
+- **`persona.prefix_causal` is now ON by default** (`config.json`,
+  `Settings.persona_prefix_causal`, CLI persona stage and the `jobs.py`
+  persona job). Whole-novel consumers are unchanged
+  (`scripts/prefix_audit/product_parity.py`: 0 voice, 0 reference, 0
+  dashboard diffs on all three serials); only the reader-position view
+  changes. Stamps are written when the persona stage runs, so a database built
+  earlier should keep its old stamps until that stage is re-run (inferred
+  from the code, not checked per database).
+- **The Read page no longer lists the whole-volume cast.**
+  `GET /api/novels/<id>/reader?chapter=c` -> `webview.py::build_reader_cast`.
+  LotM chapter 5: 69 of 91 characters hidden. The Review page is unchanged on
+  purpose (whole-volume).
+- **New check:** `echotales --db <db> faithfulness --novel <id> --cuts 5,10`
+  (truncate-and-rebuild of persona + reader cast, exit 1 on divergence).
+  Faithful at every tested cut on all three serials with the default build;
+  the legacy build (`--whole-volume-personas`) fails on LotM. Run it after
+  any change under `persona/` or `core/state.py`.
+- **The persona_set residual (2/90 at LotM cut 30) is closed**
+  (`BodyChange.confirmed_at`, `core.state.current_bindings`). Persona bindings
+  of one stint can now be two rows (open-ended and closed); read bindings
+  through `current_bindings`, never raw `get_self_persona_bindings`, when
+  counting or ordering bodies.
+- **Open, new (also listed under Open defects, items 12 to 14):** the Read
+  guarantee is display-only because the whole payload is still sent; echo
+  folding can depend on an earlier change a prefix rejects; the
+  permanent-injury prominence gate is whole-volume.
+- Tests: 1,399 core+pipeline, 29 research, 102 webview jest (change author's
+  run; the docs pass did not re-run them).
 
 ## Pick up here — 2026-10-17 (reader-faithfulness: canaries, selection leak, counterfactual suffix, EVOLUTION 4.103)
 
@@ -38,9 +72,10 @@ conflated.
 - **Open:** `labels/human_check.csv` and the CHIMERA spot-check sheets are
   still unfilled, so every figure above is "model-generated reference".
   Counterfactual test covers one intervention (pronoun swap) and the
-  deterministic persona path only. Nothing here changes a pipeline
-  default; the `prefix_causal` repair remains off by default.
-- Tests: 1,383 core+pipeline pass (change author's run).
+  deterministic persona path only. Nothing in this session's work changed
+  a pipeline default. **Superseded 2026-10-18 (EVOLUTION 4.104): the
+  `prefix_causal` repair is now on by default.**
+- Tests: 1,383 core+pipeline pass (change author's run; 1,399 as of 2026-10-18).
 
 ## Pick up here — 2026-10-16 (webview Research view, EVOLUTION 4.102)
 
@@ -903,6 +938,24 @@ genuinely unresolved *today*.
     Not auto-selected anywhere, so it can't reach a render yet, but
     `refimg-list`/`refimg-select` has no "does this actually look like the
     character" signal beyond a human looking at it.
+12. **The spoiler-safe Read page is a display guarantee, not a data
+    guarantee** (EVOLUTION 4.104). `GET /api/novels/<id>/reader?chapter=c`
+    relabels and filters what the page shows, but the full whole-volume
+    payload is still sent to the browser (the Review page needs it), so a
+    user with devtools can read every name. It is also chapter-granular: a
+    reveal late in chapter c shows from the start of chapter c. Closing the
+    first needs the Read page to stop loading the whole payload (serve
+    per-chapter spans and the reader cast only).
+13. **Echo folding in `persona/split.py::find_change_candidates` can depend
+    on an earlier change that a prefix rejects** (EVOLUTION 4.104). Not seen
+    at any tested cut (`echotales faithfulness`, LotM 5 to 39, ORV 5 to 30,
+    RI 10 to 120); known from reading the code, not from a measured
+    divergence. The oracle is divergence at the cuts run, so it cannot rule
+    it out elsewhere.
+14. **The permanent-injury prominence gate is computed over the whole
+    volume** (EVOLUTION 4.104), so a body-change decision can depend on
+    mentions after the reader's position. Same caveat as item 13: not
+    measured as a divergence, not repaired.
 
 ## Architecture-review items not yet implemented
 
