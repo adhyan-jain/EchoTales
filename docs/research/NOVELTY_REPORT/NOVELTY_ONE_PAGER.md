@@ -45,7 +45,17 @@ RF-E2E (pre-registered, addenda 6 and 7, written before any card was read): on 5
 ## Confirmatory run (pre-registered, 2026-10-16): the effect was NOT detected on obscure books
 68 events from 65 public-domain books (primary set 32 events, 78% low-fame), three open 24B to 32B models (Qwen2.5-32B, OLMo-2-32B, Mistral-Small-3.2-24B), events mined and audited by models, no human labels. **Pooled gap original minus renamed +0.1 points [-5.0, +5.2] (H1 not passed); with pseudonyms +5.7 [-1.3, +12.6] (H2 not passed).** The closed-book control recovers the identity in only 2 of 68 events, so these books hold little memory to detect, which fits the dose-response above rather than contradicting it. The pre-registered fame contrast is +7.6 [-1.4, +18.3], p = 0.060, **not passed and underpowered** (minimum detectable 12.8 points); the fame correlation is +0.30 (raw p 0.041, Holm 0.145, not confirmed). Pseudonymisation lowers premature naming from 5.0% to 2.6% but costs 6.7 to 15.6 points of accuracy (a replication of Jiang and Ferraro's idea, not a new method). Recap spoilers (E5): none detected in 144 outputs per condition (a floor, not safety). OLMo training-data link: Spearman +0.13, p = 0.41 (null). Unseen stories (E2, 17): gaps about 0. The Claude arm stopped at 211 of 1,218 answers (subscription limit) and is excluded. Section 5.23 of the report.
 
-## What is new (and what is not)
+## What is new, and what kind of novelty it is (2026-10-17)
+| Kind | Contributions |
+|---|---|
+| **Conceptual** | (1) Reader-faithfulness as a two-channel contract (input, parameters) whose audits do not certify each other. (2) Hiding exposed facts can be worse than doing nothing, and exactly when (82 vs 23). (3) Leak kinds against oracles: content vs selection leaks, divergence vs dependence, and which test sees which; selection leaks are the newest idea |
+| **Method** | Truncate-and-rebuild with an exposure screen (standard causality check, new application); suffix canaries (canaries borrowed, new use after a reading position); counterfactual suffix; renaming probe (largely prior work) |
+| **Borrowed** | Versioned repair (feature-store point-in-time correctness, Dataflow watermarks) |
+| **Empirical** | All leak rates (6.0%, 18.5%, 22.8%, 40.6%, 19.4%, 47 vs 23, +26.0 points) |
+
+A framework-plus-instruments-plus-measurements paper, not a theory or algorithm paper. Prior-art search was bounded.
+
+Earlier list (2026-10-16), kept for the record:
 - **Not new:** renaming characters as a memorisation probe (prior work exists); chapter-prefix evaluation.
 - **Plausibly new in combination (prior-art search was not exhaustive):** (1) a renaming-controlled test of premature identity naming in an alias-reveal setting, with a memory-free validity gate, a closed-book positive control and an unseen-text control; (2) the finding that plain-control validity checks on famous books are themselves memory-assisted; (3) a pre-registered cue-preserving test separating memory from name-borne cue loss; (4) a prefix-causality audit of a narrative graph pipeline (resolver exactly causal; persona stage looks ahead on 8.0% of character checks, 23 of 288), with the resolver shown to behave as a normalised-string lookup.
 

@@ -35,6 +35,22 @@ These are not two bugs in one system. They are two ways to violate one contract,
 
 **What this is not.** It is a method-and-measurement paper, not a new algorithm. The core rule behind the Channel 2 repair is point-in-time correctness from ML feature stores, and the repair is structurally the stream-processing idea of emitting early results and revising them as a watermark advances (Section 4). The claim is the combination, measured on a deployed narrative graph, including the case where the textbook fix is worse than the defect. It is one codebase.
 
+**What kind of novelty each contribution is.** Most of this paper is method and measurement; three pieces are conceptual. Claims of newness rest on a bounded prior-art search (Section 4).
+
+| Contribution | Kind | Status |
+|---|---|---|
+| Reader-faithfulness as a two-channel contract (input and parameters) that compose, so passing one audit does not certify the other (Section 3.1) | **Conceptual** | The main conceptual contribution; the definition itself is causality in the signal-processing sense, the two-channel split and its composition are the new framing |
+| Hiding exposed facts can be worse than doing nothing, and exactly when (P3; 82 against 23 divergences) | **Conceptual insight**, measured | Elementary, non-obvious: the textbook honest-stamp fix loses to the defect it fixes |
+| Leak kinds against oracles: content leaks versus selection leaks, divergence versus dependence, and which test sees which (Section 3.3, P9 to P11) | **Conceptual**, measured instance of each | Selection leaks are the newest idea; the divergence-versus-dependence distinction is standard in testing and causal inference, its application here shows the main audit undercounts by half |
+| Truncate-and-rebuild audit with an exposure screen (Section 5) | Method | A standard causality and point-in-time check applied to a narrative knowledge graph |
+| Suffix canaries (Section 7.9) | Method | Canaries are Carlini et al. (2019); planting them after a reading position as a judge-free, black-box oracle is the new use |
+| Counterfactual suffix (Section 5.4) | Method | An intervention on the suffix only; detects dependence on a closed-vocabulary output |
+| Renaming-controlled premature-naming probe (Section 6) | Method, largely prior work | Name replacement and pseudonyms are Jiang and Ferraro; the new parts are the before-the-reveal entitlement oracle and the finding that plain renaming checks on famous books are memory-assisted |
+| Versioned repair by evidence horizon (Section 5, P4 to P6) | Borrowed | Point-in-time correctness from feature stores and the watermark idea of the Dataflow model |
+| Leak rates: 6.0% of character-cuts, 18.5% of cards under cipher names, 22.8% and 40.6% by canary, 19.4% selection leak, 47 against 23 dependent cuts, +26.0 points on famous books | Empirical | New measurements, not concepts |
+
+The paper should therefore be read as a framework-plus-instruments-plus-measurements contribution, not as a theory or algorithm paper.
+
 ---
 
 ## 2. Setting: a volume, a reader position and a pipeline
