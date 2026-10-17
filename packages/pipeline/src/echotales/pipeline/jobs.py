@@ -36,6 +36,7 @@ import time
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from echotales.core.models import Job, StageStatus
@@ -135,6 +136,27 @@ def run_stage(
     return result
 
 
+def _studio_version(out_dir: Path, chapters: list[float], engine_name: str) -> str:
+    from echotales.pipeline.paths import next_version
+
+    highest = max((int(next_version(out_dir / f"ch{c:g}")[1:]) for c in chapters), default=1)
+    return f"v{highest}_{engine_name}-studio"
+
+
+def _record_studio_version(out_dir: Path, chapters: list[float], version: str, engine_name: str, job_id: str) -> None:
+    what = (
+        "placeholder panels from the stub engine, not a real render"
+        if engine_name == "stub"
+        else f"{engine_name} engine; not yet reviewed"
+    )
+    line = f"\n## {version}\nQueued from the Studio ({job_id}, {time.strftime('%Y-%m-%d')}): {what}.\n"
+    for c in chapters:
+        chapter_dir = out_dir / f"ch{c:g}"
+        if (chapter_dir / version).is_dir():
+            with open(chapter_dir / "VERSIONS.md", "a", encoding="utf-8") as fh:
+                fh.write(line)
+
+
 def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
     """Call the one real stage function `job.kind` names, wrapped by
     `run_stage`. Returns the `pipeline_run.run_id` the stage's bookkeeping
@@ -224,6 +246,12 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             )
         chapters = params.get("chapters")
         out_dir = params.get("panel_dir") or str(paths.asset_dir(novel_id, "panels"))
+        # The CLI gives every render its own version directory (`commands.py::cmd_render`); this job did not, so a
+        # Studio stub render wrote 33 placeholder panels into the root of LotM's `panels/ch1/` next to the real v1
+        # render and replaced the only manifest that render had (2026-10-18 browser pass). One version name, new for
+        # every requested chapter, with the descriptive suffix and VERSIONS.md line the convention asks for.
+        wanted = chapters or store.chapter_numbers(novel_id)
+        version = _studio_version(Path(out_dir), wanted, engine_name)
         run_stage(
             store, run_id=pipeline_run.run_id, stage_name="render",
             input_digest=input_digest,
@@ -233,8 +261,10 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
                 engine=get_engine(engine_name),
                 chapters=chapters,
                 seed=params.get("seed", 20260812),
+                version=version,
             ),
         )
+        _record_studio_version(Path(out_dir), wanted, version, engine_name, job.job_id)
     elif job.kind == "voice":
         from echotales.pipeline.voice import get_engine as get_voice_engine, load_vctk, render_novel
         from echotales.pipeline import paths
