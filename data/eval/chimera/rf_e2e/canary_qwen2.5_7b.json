@@ -1,0 +1,2786 @@
+{
+ "model": "qwen2.5:7b",
+ "card_options": {
+  "temperature": 0,
+  "seed": 20261016,
+  "num_predict": 160,
+  "num_ctx": 8192
+ },
+ "l_options": {
+  "temperature": 0,
+  "seed": 20261016,
+  "num_predict": 120,
+  "num_ctx": 12288
+ },
+ "card_prompt": "Write a character card of at most 80 words for the character referred to as {ALIAS}, using these passages from the book. Passages:\n{PASSAGES}\nCard:",
+ "l_prompt": "You are a reading companion. The reader has read the book only up to the marker [READER POSITION]. Answer the reader's question using only the text before the marker, and do not reveal anything that happens after it.\n\nBook text:\n{CTX}\n\nReader's question: Who is {ALIAS}? Answer in at most 60 words.",
+ "cards": {
+  "C965_1": {
+   "tokens_R": [
+    "Narith",
+    "Vorsevdrin"
+   ],
+   "token_F": "Fendrinnar",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 2968,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card for Jacob Gisels**\n\n- **Age:** Nearly fifty years old\n- **Appearance:** Crooked, hideous to look at\n- **Role:** Envious rival to Cornelius van Baerle in his pursuit of Rosa and the black tulip\n- **Motivation:** Jealousy over Rosa\u2019s affection and Cornelius\u2019 possession of the rare tulip bulb\n- **Behavior:** Follows Rosa secretly, coerces her father into searching for the tulip bulbs, attempts to steal the bulb\n- **Personality Traits:** Cunning, manipulative, willing to go to great lengths to achieve his goals",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 83
+    },
+    "P_can": {
+     "out": "**Character Card: Jacob Gisels**\n\n- **Age:** Nearly fifty years old.\n- **Appearance:** Described as \"hideous to look at,\" with a crooked body and a tendency to avoid eye contact.\n- **Role:** A persistent suitor of Rosa, driven by his love for her but unaware that she despises him. He is also obsessed with Cornelius's tulip, believing it to be the source of Rosa\u2019s affection.\n- **Personality Traits:** Jealous, passionate, and willing to go to great lengths to protect what he perceives as his own. His actions are motivated by a mix of love and possessiveness, often leading him into confrontations with Cornelius.\n- **Motivation:** To win Rosa's heart and protect the tulip from harm",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 114
+    },
+    "L_can": {
+     "out": "Jacob is an envious tulip-fancier who masquerades as different names, including Vorsevdrin Narith. He follows Rosa and Cornelius, trying to uncover their secret of the black tulip while also attempting to win Rosa's affection and Gryphus's favor through flattery and lies.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 41
+    },
+    "L_trunc": {
+     "out": "Jacob is Rosa's lover mentioned earlier. Cornelius expresses concern about relying on him as a messenger due to his age, though Rosa assures Cornelius of his reliability.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 27
+    }
+   }
+  },
+  "C1848_1": {
+   "tokens_R": [
+    "Venbraost"
+   ],
+   "token_F": "Bekzephlum",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": false,
+   "L_pre_chars": 16000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "She, the unnamed protagonist's wife, is a complex character filled with love and sorrow. She deeply loved her husband despite his past indiscretions, showing unwavering devotion even when faced with his children from another marriage. Her secret sorrow and jealousy reveal a depth of emotion that drives much of her actions. Though she abandoned her people for him, her sacrifice ultimately leads to tragedy, as she dies aboard a ship, leaving behind a legacy of both love and loss.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 79
+    },
+    "P_can": {
+     "out": "She is a complex character with a rich past. Her beauty and Spanish heritage are evident, but her life has been marred by loss\u2014her child died in infancy, and she harbors a secret sorrow that fuels her jealousy over her husband's other children. Despite this, she deeply loved her husband, believing him to be the only man who truly understood her. Her gentle care for Thomas after his injury reveals her tender side, though she remains guarded about her true feelings. She is intelligent and resourceful, willing to take risks to help others, but also haunted by past betrayals that weigh heavily on her conscience.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 105
+    },
+    "L_can": {
+     "out": "\"She\" refers to Venbraost, who saved the narrator from sacrifice and later became his ally.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 15
+    },
+    "L_trunc": {
+     "out": "\"She\" refers to Isabella de Siguenza, whom de Garcia cheated and abandoned, who was walled up alive with her baby as per Elfric's message.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 24
+    }
+   }
+  },
+  "C1942_1": {
+   "tokens_R": [
+    "Fensabvor",
+    "Galtortis"
+   ],
+   "token_F": "Nargal",
+   "measurable_A": true,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 3111,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Roguin**\n\nRoguin, a central figure in multiple novels, is a complex character. He is a wealthy notary and banker who appears virtuous but harbors dark secrets. Married to Madame Roguin, he maintains an extramarital relationship with grisettes and engages in financial speculation that leads to significant debt. Despite his outward respectability, he is cunning and manipulative, often using others for his own gain. His true nature is revealed through his financial dealings and the schemes he employs, making him a shadowy yet influential character in the narrative.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 89
+    },
+    "P_can": {
+     "out": "Roguin is a wealthy notary in provincial France, deeply devoted to his wife and daughter. Despite his wealth, he is modest and pious, attending Mass secretly. He is willing to sacrifice everything for his family's happiness, particularly his daughter\u2019s future as a well-off notary\u2019s wife. His wife, however, struggles with doubts about his fidelity and financial prudence.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 57
+    },
+    "L_can": {
+     "out": "Roguin is a client and business associate of Birotteau, involved in a property speculation scheme that promises significant future profits. He is also a lawyer whose practice Cesarine might inherit.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 30
+    },
+    "L_trunc": {
+     "out": "Roguin is a notary whose practice Cesar Birotteau wants to acquire for his daughter, but it is worth much more than Alexandre Crottat can offer.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 25
+    }
+   }
+  },
+  "C2078_1": {
+   "tokens_R": [
+    "Fenzephsab"
+   ],
+   "token_F": "Quilgrim",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": false,
+   "W_exposed_F": false,
+   "L_meas_R": false,
+   "L_meas_F": false,
+   "L_pre_chars": 16000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card for Thais**\n\n- **Name:** Thais\n- **Role:** Actress and courtesan in ancient Alexandria\n- **Appearance:** Beautiful, wealthy, and captivating; her beauty is both a blessing and a curse.\n- **Background:** Led a life of pleasure and sin, performing at public games and theaters. She was known for her allure and ability to entice men with her charm.\n- **Motivations:** Initially driven by desire and pleasure, she later experiences a spiritual awakening that leads to her death.\n- **Key Events:**\n  - Paphnutius' struggle with his own desires and the temptation of Thais.\n  - Her eventual conversion to Christianity and subsequent death.\n- **Impact on Others:** Her influence is profound; she tempts Paph",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 113
+    },
+    "P_can": {
+     "out": "**Character Card: Thais**\n\n- **Name:** Thais\n- **Role:** Actress and courtesan in ancient Alexandria\n- **Background:** Once led a life of pleasure and indulgence; now converted to Christianity under the influence of Paphnutius.\n- **Appearance:** Beautiful, with a mysterious past involving her mother's witchcraft rumors.\n- **Personality:** Charismatic, mischievous, and initially resistant to religious conversion but ultimately transformed by faith.\n- **Motivations:** Initially seeks pleasure and wealth; later finds spiritual fulfillment through Christianity.\n- **Key Actions:** Attends Christian baptism, participates in a banquet, and is led away from her life of sin by Paphnutius.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 94
+    },
+    "L_can": {
+     "out": "Thais is a former prostitute who converted to Christianity after being influenced by Paphnutius. She now seeks spiritual purification under his guidance.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 22
+    },
+    "L_trunc": {
+     "out": "Thais is a former prostitute who converts to Christianity under the influence of Paphnutius. She leaves her sinful life behind and joins a convent, seeking spiritual redemption.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 27
+    }
+   }
+  },
+  "C2153_1": {
+   "tokens_R": [
+    "Lumythost"
+   ],
+   "token_F": "Karfenwyn",
+   "measurable_A": true,
+   "audit": "IMPLIED",
+   "W_exposed_R": true,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 24000,
+   "L_post_chars": 9052,
+   "cells": {
+    "W_can": {
+     "out": "Esther Fergusson, once a beautiful and ambitious weaver's daughter, now a broken and desperate woman. Her journey from innocence to degradation is marked by ambition, pride, and the harsh realities of factory life. Despite her fall, Esther clings to hope for redemption, seeking out her niece Mary in a final, desperate plea for forgiveness and understanding. Her return is met with both curiosity and repulsion, as those she once knew struggle to reconcile their memories with the woman before them.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 80
+    },
+    "P_can": {
+     "out": "Esther is a complex character with a tragic past. She was once a vibrant woman, now reduced to a shadow of her former self due to her husband's death and financial struggles. Esther has transformed into an indifferent aunt, dressing like a mechanic\u2019s wife to blend in and avoid drawing attention. Her presence in Mary Barton\u2019s life is both a source of comfort and discomfort, as she seeks to reconnect with her niece while struggling with her own guilt and the loss of her identity. Despite her flaws, Esther's love for her family remains strong, though it manifests through subtle acts of care and concern.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 105
+    },
+    "L_can": {
+     "out": "Esther is Jem and Mary's aunt, who struggled with addiction. Jem found her near death outside their home, having come from Karfenwyn seeking familiarity before her demise.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": true,
+     "real_identity": false,
+     "words": 27
+    },
+    "L_trunc": {
+     "out": "Esther is not mentioned or referred to in the text before the marker. The passage focuses on Mr. Carson, Jem Wilson, Job Legh, and John Barton, but does not include any character named Esther.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 34
+    }
+   }
+  },
+  "C2160_1": {
+   "tokens_R": [
+    "Venthan"
+   ],
+   "token_F": "Tisvorost",
+   "measurable_A": true,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 3118,
+   "cells": {
+    "W_can": {
+     "out": "Character Card for Grieve\n\nName: Grieve (Ferdinand Count Venthan)\nAge: Middle-aged\nAppearance: Plain appearance, black hair without styling\nBackground: Born in Tisvorost, once a nobleman who changed his name to elude the count\u2019s inquiries. \nProfession: Apothecary and surgeon, respected in the community for his virtue and learning.\nPersonality: Humble, pious, and dedicated to his profession and daughter's education. Resilient and hardworking despite poverty.\nMotivations: To prove himself worthy of the count\u2019s clemency and protection, and to re-unite with the noble family.\nRelationships: Close bond with Seraphina (his daughter), deep gratitude towards the Count and Countess Melville for saving",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": true,
+     "real_identity": false,
+     "words": 98
+    },
+    "P_can": {
+     "out": "Grieve is a middle-aged apothecary with plain, unassuming attire. Despite his humble appearance, he demonstrates remarkable bravery when attacked by highwaymen, saving the lives of Count and Countess Melville. His actions earn him their gratitude and reveal a long-lost connection to their family through his goddaughter Seraphina Melvilia. Grieve is taciturn but deeply respectful and sincere, showing genuine remorse for past mistakes and seeking forgiveness from his patrons.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 68
+    },
+    "L_can": {
+     "out": "Grieve was Ferdinand Count Venthan, a former nobleman who changed his name to become an apothecary and surgeon, living anonymously for years before his identity was revealed.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 27
+    },
+    "L_trunc": {
+     "out": "Grieve is an apothecary who lived in a neighboring village. He treated the squire when he lost his ability to speak and later helped apprehend the robbers attacking the count and countess.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 32
+    }
+   }
+  },
+  "C2516_1": {
+   "tokens_R": [
+    "Galythkar"
+   ],
+   "token_F": "Corven",
+   "measurable_A": false,
+   "audit": "IMPLIED",
+   "W_exposed_R": false,
+   "W_exposed_F": true,
+   "L_meas_R": false,
+   "L_meas_F": false,
+   "L_pre_chars": 16000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Nanty Ewart**\n\n- **Role:** Seaman and smuggler; trusted guide and companion.\n- **Background:** Born in Corven, known for his extensive knowledge of the Border regions. Has a history of evading revenue laws but claims to have reformed.\n- **Personality Traits:** Resourceful, shrewd, and fiercely loyal. Drinks heavily but maintains a sense of honor. Skilled seaman with a knack for navigation.\n- **Skills:** Excellent knowledge of local geography; proficient in smuggling operations; capable of navigating treacherous waters.\n- **Motivations:** Protects his own interests while also aiding Fairford\u2019s mission, driven by both personal gain and a desire to avoid trouble.\n- **Interactions:** Trusted by Mr. Trumb",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": true,
+     "real_identity": false,
+     "words": 106
+    },
+    "P_can": {
+     "out": "Nanty Ewart is a shrewd, resourceful, and somewhat boisterous character from the book. He serves as a guide for Alan Fairford on a clandestine mission to Cumberland, navigating both physical and social landscapes with ease. Nanty's attire reflects his status as a man of the Border, wearing a shabby yet stylish ensemble that hints at his past elegance. Despite his apparent drunkenness, he proves an adept helmsman, guiding the brig through treacherous waters with precision. His wit and charm, often tinged with a touch of mischief, make him both a reliable ally and a lively companion on their journey.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 99
+    },
+    "L_can": {
+     "out": "Nanty Ewart is a former minister turned smuggler, now the captain of the JUMPING JENNY. He has a history of lawless behavior and uses liquor to cope with his past and current circumstances.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 33
+    },
+    "L_trunc": {
+     "out": "Nanty Ewart is a sailor and the captain of the brig, known for his drinking and practical nature. He takes charge after Alan Fairford falls asleep and shows concern for his comfort despite his own intoxicated state.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 37
+    }
+   }
+  },
+  "C3815_1": {
+   "tokens_R": [
+    "Lorkar"
+   ],
+   "token_F": "Grimnar",
+   "measurable_A": true,
+   "audit": "IMPLIED",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 2504,
+   "cells": {
+    "W_can": {
+     "out": "Paley:\n- Born in Grimnar, a mysterious figure from Terre Haute.\n- Described as having grizzled white hair, yellow eyes, teeth, and nails.\n- Works as an illustrator but does not appear in the story's main narrative.\n- Lived in a furnished room on West 'Teenth Street.\n- The landlady, Mrs. Kannon, is suspicious of visitors seeking Paley, suggesting hidden or supernatural elements.\n- Her presence and demeanor are unsettling, hinting at deeper, unexplained circumstances.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": true,
+     "real_identity": false,
+     "words": 75
+    },
+    "P_can": {
+     "out": "Paley:\n- Originally from Terre Haute\n- A young illustrator not featured in the story\n- Described as having grizzled white hair and yellow eyes, teeth, and nails\n- Portrayed with a melancholic demeanor\n- Lived in a cramped, poorly maintained furnished room",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 43
+    },
+    "L_can": {
+     "out": "Paley is a young illustrator the narrator is trying to find, though he ends up going to Mrs. Kannon's triple house instead, leading to an inexplicable encounter with the landlady.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 30
+    },
+    "L_trunc": {
+     "out": "Paley is an illustrator the narrator was looking for but does not appear in this part of the story. He is mentioned only as a reason for the narrator knocking on the door of a furnished room house in West 'Teenth Street.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 42
+    }
+   }
+  },
+  "C4276_1": {
+   "tokens_R": [
+    "Quillor"
+   ],
+   "token_F": "Ostdul",
+   "measurable_A": false,
+   "audit": "IMPLIED",
+   "W_exposed_R": false,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 11244,
+   "cells": {
+    "W_can": {
+     "out": "Frederick Hale is a complex character, marked by his naval career and the distress evident in his features. His father's departure from their home town, Helstone, has left deep emotional scars, as evidenced by Margaret\u2019s observations of his worn, anxious expression. Frederick\u2019s absence has significantly impacted the family, with Margaret often thinking about him and hoping for news. Despite his distant demeanor, he is deeply loved by his sister, who sees in him a source of comfort and hope amidst their family's hardships. His return to England, though uncertain, brings both joy and anxiety, as seen through Margaret\u2019s protective instincts and her father\u2019s cautious optimism.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 105
+    },
+    "P_can": {
+     "out": "**Character Card: Frederick**\n\n- **Appearance:** Graceful features, though worn with anxiety; habitually anxious expression.\n- **Background:** Lost at sea during naval service, involved in a controversial incident leading to his exile from England.\n- **Personality:** Prolific letter writer, known for standing up against injustice. Proud and loyal, but deeply troubled by past events.\n- **Relationships:** Close bond with his sister Margaret; his mother Mrs. Hale is devastated by his absence.\n- **Current Status:** Exiled in Spain, possibly facing legal troubles that could lead to execution if recognized or returned to England.\n- **Motivations:** Desire for justice and recognition of his actions, though haunted by the consequences of his past decisions.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 110
+    },
+    "L_can": {
+     "out": "Frederick is Margaret's brother, who has come to visit his ill mother, Mrs. Hale, despite no prior letter indicating his arrival. He is returning to Milton after being born in Ostdul.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": true,
+     "real_identity": false,
+     "words": 31
+    },
+    "L_trunc": {
+     "out": "Frederick is likely Mrs. Hale's son, whose return Margaret and her mother are anticipating cautiously due to his past actions.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 20
+    }
+   }
+  },
+  "C4537_1": {
+   "tokens_R": [
+    "Fencor",
+    "Quilnar"
+   ],
+   "token_F": "Grimlum",
+   "measurable_A": true,
+   "audit": "EXPLICIT",
+   "W_exposed_R": false,
+   "W_exposed_F": false,
+   "L_meas_R": false,
+   "L_meas_F": false,
+   "L_pre_chars": 16000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Philip**\n\nPhilip Hepburn is a complex character from the text. He is sensitive, thoughtful, and deeply caring towards his cousin Sylvia, though their relationship lacks the intimacy he desires. His anxiety over Sylvia's well-being is palpable, especially after her father's accident. Philip is intelligent and resourceful, often studying agricultural books to help his family, but his efforts are met with resistance from Kester. He shows bravery when hiding Daniel Robson from the constables, demonstrating a sense of duty and sacrifice. Despite his good intentions, Philip struggles with unrequited love for Sylvia, who remains distant and practical in their interactions. His departure from Monkshaven is abrupt and filled with regret, hinting at unresolved feelings and a desire to return.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 120
+    },
+    "P_can": {
+     "out": "Philip Hepburn:\n- A thoughtful and reserved man in his mid-twenties.\n- Has a deep, unwavering love for Sylvia Robson despite her father's disapproval.\n- Respected by the community but considered \"old-fashioned\" by some.\n- Acts with integrity and a sense of duty, often putting others' needs before his own.\n- Experiences internal conflict between his feelings for Sylvia and his desire to protect her from harm.\n- Shows compassion and concern for those in distress, as evidenced by his care for Sylvia's well-being.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 84
+    },
+    "L_can": {
+     "out": "Philip is Sylvia's husband who concealed his fate after being press-ganged, leading to her believing he was dead. He now faces disgrace and leaves town, enlisting as a marine to escape.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 31
+    },
+    "L_trunc": {
+     "out": "Philip is Sylvia's husband, whom she believed was dead but who returned unexpectedly. He had a secret past with Kinraid, leading to confusion and conflict upon their reunion.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 28
+    }
+   }
+  },
+  "C5122_1": {
+   "tokens_R": [
+    "Halrovith",
+    "Kartiswyn"
+   ],
+   "token_F": "Lorlum",
+   "measurable_A": false,
+   "audit": "IMPLIED",
+   "W_exposed_R": false,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 11984,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: June Hale**\n\n- **Name:** June Hale\n- **Age:** 16 (appears younger due to her mountain upbringing)\n- **Background:** Born in Lonesome Cove, she has a deep connection with the mountains and her community. Recently exposed to new ideas through interactions with outsiders.\n- **Appearance:** Shiny bronze-gold hair tied in a Psyche knot, crimson homespun dress, bare feet.\n- **Personality Traits:**\n  - Curious and eager to learn\n  - Shy but determined\n  - Deeply loyal to her community\n  - Afraid of change but willing to embrace new experiences\n- **Motivations:** To see the wonders described by \"circuit riders\" and return home with a sense of wonder and",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 107
+    },
+    "P_can": {
+     "out": "She is a curious and adventurous young girl, driven by tales of the \"furriners\" who have come into her hills to do strange things. Her eyes, once full of wonder at the world beyond, now carry a hint of disappointment and a growing sense of awe. Despite the risks, she climbs steep mountains to see these wonders for herself, only to find them unremarkable. Her encounter with a mysterious \"raider\" leaves her both intrigued and wary, as he challenges her silence and questions her identity. She is intelligent, quick-witted, and possesses a natural curiosity that drives her to explore the unknown, even when it means facing potential danger or disappointment.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 110
+    },
+    "L_can": {
+     "out": "Loretta Tolliver, Dave Tolliver's sister, who is also cousin to June from Lonesome Cove and has a sweetheart involved in the ongoing feud.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 23
+    },
+    "L_trunc": {
+     "out": "The reader's question likely refers to Loretta, young Dave's sister, who moves about noiselessly with drawn faces and whose presence contrasts with the tension in the scene.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 27
+    }
+   }
+  },
+  "C5155_1": {
+   "tokens_R": [
+    "Bektor",
+    "Quilvenlor"
+   ],
+   "token_F": "Tislumbra",
+   "measurable_A": true,
+   "audit": "IMPLIED",
+   "W_exposed_R": false,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 4686,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Estella**\n\n- **Role:** A free American citizen and a key figure in the resistance against slavery.\n- **Appearance:** Tall, with golden hair, she commands respect and fearlessness.\n- **Background:** Escapes from captivity through a daring confrontation with Prince Cabano.\n- **Personality:** Brave, determined, and eloquent, advocating for freedom and equality.\n- **Motivation:** To secure her own release and fight against human bondage.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 64
+    },
+    "P_can": {
+     "out": "**Character Card: Maximilian Petion**\n\n- **Role:** Member of a secret political society; attorney.\n- **Appearance:** Dark complexion, bright eyes, high brow, prominent nose, firm mouth (inspires respect and confidence).\n- **Background:** Born into poverty but rose to prominence through the society's influence. \n- **Motivations:** Seeks to help Estella, a victim of the society\u2019s corruption; values purity and justice.\n- **Skills:** Strategic thinker, skilled in deception and manipulation within the society.\n- **Personality Traits:** Cynical about societal structures, brave, compassionate towards victims like Estella.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 83
+    },
+    "L_can": {
+     "out": "The Count, Maximilian Petion, is revealed to be Bektor Quilvenlor, the third member of the Executive Committee of the Brotherhood, despite his current dissolute lifestyle.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 25
+    },
+    "L_trunc": {
+     "out": "The spy describes C\u00e6sar Lomellini as a former farmer turned revolutionary, now believed to be leading the Brotherhood of Destruction from the city after his involvement in the Mississippi Valley rebellion.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 31
+    }
+   }
+  },
+  "C5174_1": {
+   "tokens_R": [
+    "Karnar",
+    "Karythven",
+    "Tisdrin"
+   ],
+   "token_F": "Moxyth",
+   "measurable_A": false,
+   "audit": "NOT_SUPPORTED",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": false,
+   "L_meas_F": false,
+   "L_pre_chars": 24000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Mavovo**\n\nMavovo is a Zulu diviner who uses his \"Snake\" to predict the future. Despite his warnings of danger and death, the men dismiss his prophecies, showing remarkable indifference to their own fate. His predictions come true, but he remains calm and composed, even when faced with immediate threats. Mavovo's mysterious presence and cryptic statements challenge the characters' beliefs and push them to confront their fears.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 68
+    },
+    "P_can": {
+     "out": "**Character Card: Mavovo**\n\nMavovo is a Zulu diviner who uses his \"Snake\" to predict the future. Despite warnings of impending death and injury for six of those on a dangerous journey, he insists on silence to maintain courage. His predictions are met with indifference by the group, who seem more focused on avoiding immediate threats than acknowledging potential dangers. Mavovo's magic is respected but not fully trusted, as his prophecies are seen as distant and inevitable.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 76
+    },
+    "L_can": {
+     "out": "In the text, Hans refers to Mavovo's \"Snake\" as a magical tool or informant. Mavovo uses it to receive messages from spirits or ancestors, like a conduit for divine communication.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 30
+    },
+    "L_trunc": {
+     "out": "Imbozwi, the witch-doctor, is referred to as a \"snake\" due to his villainous appearance and role as a rival magician. He was discomfited by the magic shown.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 27
+    }
+   }
+  },
+  "C5660_1": {
+   "tokens_R": [
+    "Sevtis",
+    "Thanbra"
+   ],
+   "token_F": "Tisgal",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 14618,
+   "cells": {
+    "W_can": {
+     "out": "Colonel Weatherby is a tall, dignified man with snow-white hair and piercing dark eyes, exuding an air of prosperity and courtly manners that impresses Beverly's simple villagers despite his reserved nature. He owns the stately Vandeventer mansion and has lived in Beverly for two years but remains largely unknown to the townsfolk due to his privacy and wealth. His true identity as the criminal Thanbra J. Sevtis is a closely guarded secret, known only by a few, including his granddaughter Mary Louise.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 82
+    },
+    "P_can": {
+     "out": "Colonel Weatherby\nA tall, dignified man with snow-white hair and piercing dark eyes, Colonel Weatherby exudes an air of prosperity and courtly manners that impresses the simple villagers. Reserved and seldom converses with neighbors, he maintains a stately demeanor even when walking with his granddaughter, Mary Louise. Despite his aloofness, he shows warmth in their interactions, often taking her for walks and discussing books. His sudden departure leaves Beverly residents puzzled, hinting at significant changes in his life.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 78
+    },
+    "L_can": {
+     "out": "Colonel Weatherby is Mary Louise's grandfather who has left Beverly suddenly, leaving her to board with Miss Stearne. He is accused of being a criminal by a federal officer and an editor spreads this false rumor, causing Mary Louise distress.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 40
+    },
+    "L_trunc": {
+     "out": "Colonel Weatherby is Mary Louise's grandfather, who has left Beverly with her mother and will leave Mary Louise as a boarder at Miss Stearne's school. He is described as a good man whom the girl trusts.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 36
+    }
+   }
+  },
+  "C6086_1": {
+   "tokens_R": [
+    "Fenlumsab",
+    "Sevthan"
+   ],
+   "token_F": "Rovsabtis",
+   "measurable_A": false,
+   "audit": "IMPLIED",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": false,
+   "L_pre_chars": 24000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "Character Card: Lady Wallace\n\nLady Wallace is a woman of grace and resilience, deeply devoted to her husband, Sir William Wallace. Her months of solitude are shattered when a chieftain arrives at their castle, leading to Wallace's departure for Douglas Castle. She spends her time in anxious anticipation, counting the hours until his return. Upon his safe return, she shows both relief and concern, tending to his wounds with care and determination. Her unwavering support and love for Wallace are evident, even as she faces the uncertainties of his absence and the potential dangers that come with their cause.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 99
+    },
+    "P_can": {
+     "out": "Character Card: Lady Wallace\n\nLady Wallace is a devoted wife and mother, deeply loyal to her husband, Sir William Wallace. Her presence exudes grace and strength, especially during Wallace's absence when she remains calm despite the tension of his departure. She shows remarkable courage and resilience upon discovering Wallace has been injured, tending to him with care and determination. Her unwavering support for Scotland\u2019s cause is evident in her readiness to rally the people and her willingness to embrace foreign allies like Lord Lennox.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 84
+    },
+    "L_can": {
+     "out": "Wallace's guest is Sir Fenlumsab de Sevthan, who is actually Bruce, though Sinclair and others are unaware of this.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 19
+    },
+    "L_trunc": {
+     "out": "The reader's question seems to be about who Wallace's guest is, but based on the text provided, there is no mention of a guest. The last interaction involves Helen and Edwin, with Edwin bringing news from Lady Helen after her journey.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 41
+    }
+   }
+  },
+  "C7079_1": {
+   "tokens_R": [
+    "Ostithvor"
+   ],
+   "token_F": "Ythdrinyth",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 8916,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Roland**\n\n- **Name:** Roland\n- **Role:** Young aristocrat, aide-de-camp to Napoleon Bonaparte\n- **Appearance:** Calm and composed, with a hint of absent-mindedness; physically fit despite his health issues.\n- **Personality Traits:** Brave, decisive, and resourceful. Confident in his abilities but shows vulnerability regarding his personal life.\n- **Background:** Wealthy, with a family and social status. Struggles with an aneurism but remains determined to make the most of his life.\n- **Key Moments:**\n  - Challenges M. de Barjols to a duel, showing his bravery.\n  - Considers suicide due to his health condition but is ultimately happy despite it.\n  - Guides an expedition to",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 104
+    },
+    "P_can": {
+     "out": "Roland de Montrevel, aide-de-camp to General Bonaparte, is a witty, animated young man with a penchant for danger. Despite his general's reputation for honor and delicacy, Roland often acts impulsively, as seen in his willingness to duel despite the ongoing war between France and England. His charm and bravado mask a deeper fear of death, which he believes is protected by an inexplicable fatality.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 64
+    },
+    "L_can": {
+     "out": "Roland is the son of M. Charles de Montrevel, born in Ythdrinyth, and a pupil at the Ecole Militaire. He shares a bond with Napoleon Bonaparte from their time at military schools.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": true,
+     "real_identity": false,
+     "words": 32
+    },
+    "L_trunc": {
+     "out": "Roland is a young Frenchman, a soldier and General Bonaparte\u2019s aide-de-camp, who is about to engage in a duel with M. de Barjols. He is described as having a southern race appearance and is impulsive but honorable.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 37
+    }
+   }
+  },
+  "C7265_1": {
+   "tokens_R": [
+    "Galbek"
+   ],
+   "token_F": "Brawyn",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": false,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 12430,
+   "cells": {
+    "W_can": {
+     "out": "**Miss Amory**\n\n- **Background**: Born in Brawyn, Miss Amory is the daughter of Lady Clavering by a first marriage.\n- **Personality**: Flirtatious, charming, and somewhat manipulative. She enjoys social gatherings and amusements, often using her charm to get what she wants.\n- **Relationships**: Close with Laura Fairoaks; has a complex history with Mr. Harry Foker, whom she initially rejected but later seems to have feelings for despite his past infidelity.\n- **Appearance**: Described as sweet and attractive, often seen in showy carriages or at social events.\n- **Role**: A central figure in the social circle of Clavering Park, frequently organizing and attending gatherings.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": true,
+     "real_identity": false,
+     "words": 103
+    },
+    "P_can": {
+     "out": "Miss Amory is Lady Clavering's daughter by her first marriage, known for her mysterious and enigmatic nature. Described as a muse, paragon, and femme incomprise, she excels in the arts\u2014painting, poetry, and music\u2014and rides with grace. Her arrival at Fairoaks Park sparks excitement and curiosity among the locals, particularly Laura Pen. Despite her cleverness, she is perceived as somewhat aloof, leading to speculation about her true character.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 67
+    },
+    "L_can": {
+     "out": "Miss Amory, also known as Blanche or Missy, is a talented but unhappy young woman who lives with her stepfather and mother at Clavering Park. She feels unappreciated and often causes distress to those around her through her sensitive nature and sharp tongue.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 43
+    },
+    "L_trunc": {
+     "out": "Miss Amory is a young lady who befriends Laura Bell, sending her gifts and notes. She also reads French and German with Laura and Mr. Pen, showing interest in both of them.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 32
+    }
+   }
+  },
+  "C7497_1": {
+   "tokens_R": [
+    "Brawynquil",
+    "Melwynkar"
+   ],
+   "token_F": "Narquil",
+   "measurable_A": true,
+   "audit": "EXPLICIT",
+   "W_exposed_R": false,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 5399,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Quincy Adams Sawyer**\n\nQuincy is a charming, kind-hearted protagonist from \"Quincy Adams Sawyer and Mason's Corner Folks.\" He runs a successful store in Cottonton and is deeply involved with his community. A devoted husband to Alice, he values their relationship immensely. Quincy is also a friend to many, including the struggling Mr. Chripp, whom he helps send his son to college. His integrity and sense of justice are evident when he defends Robert Wood's innocence despite initial doubts.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 80
+    },
+    "P_can": {
+     "out": "**Character Card: Quincy Adams Sawyer**\n\n- **Background:** A former politician now out of office, Quincy is kind-hearted and deeply involved in his community, often helping those in need.\n- **Family:** Married to Alice, with a daughter named Maude. He has a close relationship with his wife and children.\n- **Personality:** Compassionate, honest, and eager for change. Struggles with the financial burden of supporting his family but remains determined to help others.\n- **Goals:** To provide for his family and make amends for past mistakes, particularly in his political career.\n- **Relationships:** Closely connected with his wife Alice, who supports him emotionally. Has a strong bond with his daughter Maude and is respected by the community.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 115
+    },
+    "L_can": {
+     "out": "\"I\" refers to Quincy Adams Sawyer's father, who was rescued after the shipwreck and worked in Sicily for 23 years before being reunited with his family.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 26
+    },
+    "L_trunc": {
+     "out": "In this context, \"I\" refers to Alice, who is searching for her husband Quincy Adams Sawyer and believes she has found him and their son Quincy in Vienna.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 28
+    }
+   }
+  },
+  "C7510_1": {
+   "tokens_R": [
+    "Drinmoxyth",
+    "Rovgrim"
+   ],
+   "token_F": "Lortor",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": false,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 5780,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Jack Keith**\n\n- **Age:** Approaching 30\n- **Appearance:** Slender and long-limbed with broad shoulders and a deep chest. Clean-shaven face, browned by sun and wind, with a slightly prominent chin and firm mouth.\n- **Background:** A plainsman with military training, likely from the American West. Experienced in frontier life and conflict.\n- **Personality:** Vigilant, resourceful, and principled. Despite his rough exterior, he harbors an ideal of womanhood that remains unshaken by the realities of the frontier.\n- **Motivations:** Protects those in need, seeks justice, and maintains a deep sense of honor. His past experiences have shaped him into a man who values truth and integrity.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 107
+    },
+    "P_can": {
+     "out": "**Character Card: Keith**\n\n- **Age:** Approaching 30\n- **Appearance:** Slender, long-limbed, with broad shoulders and deep chest; clean-shaven face, browned by sun and wind.\n- **Background:** Former Confederate cavalry sergeant, fought in the Civil War. Lost his father at Antietam and returned home to find it destroyed. Now a plainsman, riding alone across the prairies.\n- **Mental State:** Wary, cautious, and determined. Haunted by past, but resilient. Struggles with guilt and innocence after being falsely accused of murder.\n- **Skills:** Skilled rider, marksman, and tracker; experienced in frontier survival and combat.\n- **Motivations:** Clear his name, escape the \"",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 99
+    },
+    "L_can": {
+     "out": "\"He\" refers to Keith, the man who stumbled upon the cabin and met Christie Maclaire inside.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 16
+    },
+    "L_trunc": {
+     "out": "He is Jack Keith, a plainsman and former government scout who got lost in a sandstorm and stumbled upon a deserted cabin, where he encounters Christie Maclaire, whom he recognizes from the Gaiety theater.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 34
+    }
+   }
+  },
+  "C7661_1": {
+   "tokens_R": [
+    "Sabsab"
+   ],
+   "token_F": "Ithbeklum",
+   "measurable_A": true,
+   "audit": "IMPLIED",
+   "W_exposed_R": true,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 11010,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Mop**\n\n- **Name:** Mop (originally), Sir Sabsab (adopted)\n- **Appearance:** A dog with a mysterious past and an uncanny knack for arithmetic.\n- **Personality Traits:** Intelligent, adaptable, and surprisingly articulate. Shows respect through actions rather than words.\n- **Background:** Once named Mop by his first owner, he was later adopted by Gentleman Waife and Sophy, who renamed him Sir Sabsab due to his mathematical abilities.\n- **Skills:** Can perform arithmetic calculations, recognizes the name \"Sir Sabsab\" with affection, and has a mysterious connection to the name \"Newton.\"\n- **Motivations:** To be recognized and appreciated for his talents, despite his humble origins.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 103
+    },
+    "P_can": {
+     "out": "Mop is a dog with the unflattering name \"Mop.\" Despite his trivial moniker, he shows potential for development. His owner, Gentleman Waife, plans to train him and give him a better public image. Mop responds to being addressed, stretching lazily when prompted.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 42
+    },
+    "L_can": {
+     "out": "Mop is a dog who has learned various tricks and was named after Sir Isaac Newton by chance, though he responds better to \"Sir Sabsab,\" which relates to his original owner, an old soldier named Sabsab.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": true,
+     "words": 36
+    },
+    "L_trunc": {
+     "out": "Mop is the name of the poodle Gentleman Waife recently acquired. It was previously named Mop but Waife considers this name trivial and unattractive, planning to give the dog a better name for public exhibition.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 35
+    }
+   }
+  },
+  "C7671_1": {
+   "tokens_R": [
+    "Ployth"
+   ],
+   "token_F": "Plowyntis",
+   "measurable_A": true,
+   "audit": "IMPLIED",
+   "W_exposed_R": true,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 10935,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card for Mop**\n\n- **Name:** Sir Ployth (originally Mop)\n- **Species:** Dog\n- **Appearance:** A well-trained, intelligent dog with a wagging tail and expressive eyes.\n- **Personality Traits:** Clever, adaptable, and surprisingly wise. Shows a deep understanding of arithmetic and the principle of gravity. Initially reluctant to accept new names but eventually takes to \"Sir Ployth\" cheerfully.\n- **Background:** Once named Mop by his first owner, he was taught tricks and arithmetic. Later adopted by Gentleman Waife and Sophy, where he is given a more dignified title. His name connects him to the memory of his old master, Ployth.\n- **Role in Story:** Acts as a mascot and",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 109
+    },
+    "P_can": {
+     "out": "Mop is a dog with the unappealing name \"Mop,\" given by his owner. Despite his trivial name, he shows potential for development in skills. He responds to his owner's commands and stretches obediently when told, indicating a willingness to please but also a hint of skepticism about his new role.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 50
+    },
+    "L_can": {
+     "out": "Mop is a dog who has learned arithmetic tricks under the name Cocker but prefers \"Sir Ployth.\" His name comes from his first owner, an old soldier named Ployth.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 29
+    },
+    "L_trunc": {
+     "out": "Mop is the name of the poodle Gentleman Waife bought, though Waife considers it trivial and unattractive, planning to give the dog a better name for public life.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 28
+    }
+   }
+  },
+  "C7671_2": {
+   "tokens_R": [
+    "Ithrov"
+   ],
+   "token_F": "Lorzeph",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": false,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": false,
+   "L_pre_chars": 24000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "**Willaim Waife**\n\n- **Role**: Actor, teacher, and caretaker of Sophy Araminta.\n- **Background**: Once a promising actor, Waife is now reduced to teaching acting and writing plays for his former manager, Mr. Rugge, who has since become bitter over their separation.\n- **Personality**: Gentle, determined, and deeply devoted to Sophy. Despite financial struggles, he maintains a sense of dignity and pride.\n- **Motivations**: To secure a better future for Sophy, even if it means sacrificing his own comfort. He is willing to go to great lengths to protect her from Mr. Rugge\u2019s manipulations.\n- **Relationships**: Closely bonded with Sophy; has a complex relationship with Mr. Rugge, who",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 107
+    },
+    "P_can": {
+     "out": "**Character Card: William Waife**\n\n- **Role:** Actor and teacher\n- **Background:** Once a renowned actor, now reduced to teaching acting and managing small theatrical productions.\n- **Current Circumstances:** Lives with his grandchild, Sophy Araminta (Juliet), in poverty. Receives minimal support from Mr. Rugge, who had planned to use Waife as a star but abandoned him.\n- **Personality Traits:** Dignified, pathos-filled, and protective of Sophy. Has a mysterious past that includes losing an eye and his voice. Struggles with self-doubt and the balance between his acting career and personal life.\n- **Motivations:** To maintain Sophy\u2019s safety and well-being while pursuing his theatrical ambitions.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 102
+    },
+    "L_can": {
+     "out": "William Waife is mentioned as part of Jasper Losely\u2019s search for his daughter Sophy. A friend of Losely\u2019s in Paris found that William Waife and his granddaughter had sailed to America, but they are not the people Losely seeks.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 39
+    },
+    "L_trunc": {
+     "out": "William Waife is not mentioned in the text before the marker. The closest character related to a business context is Mr. Poole, who discusses speculative companies and his foreman Williams, but there is no specific William Waife mentioned.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 38
+    }
+   }
+  },
+  "C7671_3": {
+   "tokens_R": [
+    "Rovsev",
+    "Sabtorrov"
+   ],
+   "token_F": "Bradul",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": false,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 24000,
+   "L_post_chars": 10886,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Merle**\n\nMerle, a cobbler and self-proclaimed poet, is a solitary figure with a mysterious past. He possesses a crystal that foretells the future, which he uses to navigate his life. Despite his contempt for tailors, Merle shows kindness towards Sophy, a young actress, offering help when Waife leaves town. His loyalty to Waife and his sister, combined with his imperviousness to bribes, makes him a valuable ally in their quest. However, Merle's reliance on his crystal often leads them astray, causing frustration but ultimately proving useful.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 88
+    },
+    "P_can": {
+     "out": "**Character Card for Merle**\n\nMerle is a cobbler and poet, solitary yet insightful. He hosts Lionel and Gentleman Waife, offering them tea and conversation. Despite his humble life, he possesses a visionary soul, keeping crystal balls as treasures. His past experiences have left him wary of others' intentions, especially after being deceived by Waife. Merle is deeply protective of Sophy and shows tenderness towards her, even as he grapples with his own fears and uncertainties.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 75
+    },
+    "L_can": {
+     "out": "Merle is a cobbler Waife once lodged with, who helped him recover Sophy. He later moved to Norwich under an alias, dealing with superstitions and was in danger of being sent to correction.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 33
+    },
+    "L_trunc": {
+     "out": "Merle is not mentioned or referred to in the text before the given marker. The passage focuses on Waife, Lady Montfort, and Sophy.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 23
+    }
+   }
+  },
+  "C7713_1": {
+   "tokens_R": [
+    "Venplotis"
+   ],
+   "token_F": "Halcor",
+   "measurable_A": false,
+   "audit": "IMPLIED",
+   "W_exposed_R": false,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 3718,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card for /parvenu/:**\n\nName: Frank Hazeldean  \nRole: A rising social climber, recently associated with the wealthy Baron Levy.  \nPersonality Traits: Ambitious, shrewd, and calculating. He is eager to secure his future through strategic alliances and financial deals.  \nMotivations: To improve his social standing and secure a great heiress for marriage.  \nRelationships: Close with Lord L'Estrange; wary of Baron Levy but uses him strategically.  \nConflict: Struggles with his past debts and the necessity of making difficult decisions to achieve his goals, including potentially compromising his principles.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 86
+    },
+    "P_can": {
+     "out": "**Character Card: Baron Levy**\n\n- **Role:** Parvenu, Usurer, Manipulator\n- **Appearance:** Sleek, well-dressed, drives a fine horse\n- **Personality Traits:** Cunning, manipulative, ambitious, shrewd\n- **Motivations:** Acquiring wealth and power through any means necessary; securing his own financial stability\n- **Key Actions:** Schemes to acquire a yacht for the Count of Peschiera, pressures Frank Hazeldean into borrowing on a post-obit, uses his influence over Audley Egerton\n- **Interactions:** Forms alliances with Randal Leslie and Lord L'Estrange; clashes with Frank Hazeldean and Count of Peschiera\n- **Backstory:** A fashionable money-lender with connections",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 91
+    },
+    "L_can": {
+     "out": "/Parvenu/ refers to Baron Levy, who is revealed to be a wealthy but socially ambitious man of questionable birth, trying to fit into high society despite his origins.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 28
+    },
+    "L_trunc": {
+     "out": "The term \"/parvenu/\" was not used in the text provided. However, based on context and common literary usage, a parvenu could be inferred as someone who has recently gained social status or wealth but is not accepted by those of established social standing. In this excerpt, there's no direct mention of such a character.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 54
+    }
+   }
+  },
+  "C7974_1": {
+   "tokens_R": [
+    "Vorgrim"
+   ],
+   "token_F": "Ostfenbek",
+   "measurable_A": false,
+   "audit": "NOT_SUPPORTED",
+   "W_exposed_R": true,
+   "W_exposed_F": false,
+   "L_meas_R": false,
+   "L_meas_F": false,
+   "L_pre_chars": 16000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "**Boltrope Character Card**\n\n- **Name:** Boltrope\n- **Role:** Sailing-master on the Alacrity; rough, practical seaman with a sharp tongue.\n- **Appearance:** Weather-beaten, short, bony hands, twirls an inkstand nervously when speaking.\n- **Personality Traits:** Practical, blunt, and often grumpy. Has a secret fondness for the chaplain despite their differences. Shows concern for his crew and personal relationships.\n- **Key Actions:** Advises on navigation; hails approaching boats; assists in burying the dead; shows unexpected loyalty to his comrades.\n- **Motivations:** To survive and maintain order aboard ship, while seeking comfort in small human connections amidst the chaos of war.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 98
+    },
+    "P_can": {
+     "out": "**Character Card: Boltrope**\n\n- **Role:** Sailing-master on the frigate Congress.\n- **Appearance:** Weather-beaten, tough old sailor with a hoarse voice and a penchant for grog.\n- **Personality:** Cranky, practical, and often crude. He values experience over formalities but shows a hidden respect for those who can contribute practically to their cause.\n- **Background:** Invited the chaplain on a boat ride due to shared interests in land and rationality. Known for his sharp tongue and ability to find humor in difficult situations.\n- **Motivations:** Seeks practical solutions over formalities, often at odds with the chaplain's spiritual concerns but finds common ground through mutual respect.\n- **Interactions:** Engages in heated debates with the",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 111
+    },
+    "L_can": {
+     "out": "Boltrope is the boatswain, often seen with the chaplain. He speaks with cynicism and observes events critically, showing little respect for rank or tradition.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 24
+    },
+    "L_trunc": {
+     "out": "Boltrope is the boatswain of the Alacrity, often spoken to by Griffith and noted for his grumbling nature and practical jokes.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 21
+    }
+   }
+  },
+  "C9589_1": {
+   "tokens_R": [
+    "Bratis",
+    "Karnarbra"
+   ],
+   "token_F": "Sevlumbra",
+   "measurable_A": true,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": false,
+   "L_pre_chars": 16000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Richard Martin**\n\nA handsome middle-aged gentleman, Richard Martin, is a man of striking appearance and deep devotion. Standing tall and well-built, he carries the weight of years but retains an air of manly beauty. His journey across seas and wildernesses to find Mary Edmands demonstrates his unwavering love, which nothing can diminish. Despite facing perilous challenges, Richard's determination remains unshaken as he seeks to marry Mary, offering her a future filled with hope and commitment.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 77
+    },
+    "P_can": {
+     "out": "**Character Card: Richard Martin**\n\n- **Appearance:** Handsome middle-aged gentleman with dark, manly features.\n- **Background:** A devoted lover who has traveled across vast distances to find his beloved Mary Edmands.\n- **Motivation:** To win back the love of Mary and marry her despite past hardships.\n- **Emotions:** Deeply passionate, resilient, and determined.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 52
+    },
+    "L_can": {
+     "out": "A handsome middle-aged gentleman is Karnarbra Bratis, the Commissioner of the United States to procure the liberation of American slaves belonging to his government.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 24
+    },
+    "L_trunc": {
+     "out": "The text does not describe any handsome middle-aged gentleman. The closest character is William Penn, described as pure-hearted and eloquent, but no physical description is given.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 26
+    }
+   }
+  },
+  "C9752_1": {
+   "tokens_R": [
+    "Dulbek",
+    "Plosab"
+   ],
+   "token_F": "Bravorven",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 24000,
+   "L_post_chars": 4488,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Mr. Love**\n\n- **Role:** Matchmaker and proprietor of a successful matrimonial establishment in Paris.\n- **Personality Traits:** Jovial, liberal, and innovative in his approach to matchmaking. Skilled at creating a relaxed atmosphere for potential couples.\n- **Background:** Known for his unconventional methods, including hosting social gatherings that break down formal barriers between aspiring partners.\n- **Goals:** To facilitate successful marriages while maintaining the popularity of his establishment.\n- **Challenges:** Dealing with high-profile clients and preventing inappropriate pairings. Maintaining a facade of discretion in his dealings.\n- **Strengths:** Charisma, business acumen, and ability to navigate social complexities.\n- **Weaknesses:** Can be overly trusting and may underestimate the seriousness of certain situations.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 112
+    },
+    "P_can": {
+     "out": "**Character Card: Mr. Love**\n\nMr. Love is a jovial, convivial matchmaker with a knack for bringing people together. He runs a successful establishment that combines formal and informal gatherings to facilitate potential matches. Known for his liberality and spirit of camaraderie, he often hosts dinners and dances where couples can get to know each other more intimately. Despite his own bachelor status, Mr. Love is adept at matchmaking, with a keen eye for suitable partners. His charm and wit make him universally popular, though some find his methods slightly unconventional.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 90
+    },
+    "L_can": {
+     "out": "Mr. Love is Plosab Dulbek, using a different name. He is a man of many trades and a rogue, respected by his associates for his determination and feared for his recklessness.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 31
+    },
+    "L_trunc": {
+     "out": "Mr. Love is not mentioned or referred to in the text before the marker. The passage focuses on Gawtrey and his narrative without introducing a character named Mr. Love.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 29
+    }
+   }
+  },
+  "C9847_1": {
+   "tokens_R": [
+    "Gallum",
+    "Ithzeph",
+    "Sevlor"
+   ],
+   "token_F": "Lorith",
+   "measurable_A": false,
+   "audit": "IMPLIED",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": false,
+   "L_pre_chars": 24000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "William Shakespeare, a complex figure shrouded in mystery. Portraits and signatures suggest a man of modest means, unable to write his own name with any certainty. His works, however, reveal a genius far beyond the Stratford gentleman. The question of authorship remains contentious, with some scholars and writers like Mark Twain doubting the identity of the playwright. Despite the uncertainty, Shakespeare's plays continue to captivate audiences, a testament to an unparalleled literary talent.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 73
+    },
+    "P_can": {
+     "out": "William Shakespeare, a mysterious figure whose identity remains enigmatic. Portraits and signatures attributed to him are questionable, with some suggesting intentional ambiguity. His works, however, stand as testament to his genius, despite the lack of concrete evidence linking them to his name. A complex character shrouded in mystery, his legacy endures through the enduring power of his plays.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 58
+    },
+    "L_can": {
+     "out": "William Shakespeare is likely a pseudonym used by Francis Bacon to publish his works while protecting his identity.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 18
+    },
+    "L_trunc": {
+     "out": "William Shakespeare is described as an illiterate householder from Stratford, involved in small business transactions, not a poet or playwright. However, evidence suggests he used a pseudonym and was actually Francis Bacon, who was considered a great poet by his contemporaries.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 41
+    }
+   }
+  },
+  "C11431_1": {
+   "tokens_R": [
+    "Karmox",
+    "Melmox",
+    "Vorsev"
+   ],
+   "token_F": "Ventis",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 24000,
+   "L_post_chars": 2501,
+   "cells": {
+    "W_can": {
+     "out": "Character: Anselme\n\nAnselme is the father of Val\u00e8re and Mariane, exiled from Naples due to political reasons. After wandering for ten years, he settles in Paris with plans to marry. Reunited with his children after 16 years, Anselme plays a pivotal role in arranging their marriages, bringing long-standing rivalries to an amicable end.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 53
+    },
+    "P_can": {
+     "out": "Anselme, also known as Don Thomas d'Alburci, is a noble and wandering father who has been separated from his children for years due to political exile and shipwreck. After settling in Paris, he discovers his children Val\u00e8re and Mariane, leading to their reunion and eventual marriages. His story contrasts with the tragic fate of Anselmo in Cervantes' tale, highlighting themes of family reunification and enduring love.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 66
+    },
+    "L_can": {
+     "out": "Anselme is a character in Moli\u00e8re's comedy *L'Avare*, where he is first introduced as the father of Elise and later revealed to be Val\u00e8re's biological father, making him Harpagon's son-in-law-to-be.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 30
+    },
+    "L_trunc": {
+     "out": "Anselme and Aspasia are characters from Beaumont and Fletcher's _The Maid's Tragedy_. Aspasia is a maiden of ill-fortune, married to Amintor but loved by Evadne. Anselme is not mentioned in this excerpt, but he likely plays a role in the drama involving these characters.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 44
+    }
+   }
+  },
+  "C11643_1": {
+   "tokens_R": [
+    "Wyncormox"
+   ],
+   "token_F": "Quilbra",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 24000,
+   "L_post_chars": 11874,
+   "cells": {
+    "W_can": {
+     "out": "Euphemia Caldigate is a complex character, born in Quilbra, who finds herself at the center of a legal battle over marriage and money. She claims to have married John Caldigate on a ship, though evidence suggests otherwise. Euphemia is determined and composed under pressure, willing to swear to her marriage despite doubts. Her presence in court is marked by her resilience and calm demeanor, even as she faces scrutiny from the advocate. Despite her circumstances, she clings to her identity and the truth of her claim with unwavering resolve.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": true,
+     "real_identity": false,
+     "words": 89
+    },
+    "P_can": {
+     "out": "Euphemia Caldigate is a woman caught between deception and trust. Sobbing violently, she pleads for John's honesty, fearing a money-hungry relative might threaten him. Her excitement and anxiety are palpable as she reads a letter signed by \"Euphemia Caldigate,\" revealing a man named Crinkett\u2019s scheme. Despite the tension, Euphemia vows unwavering trust in John when he promises complete transparency.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 59
+    },
+    "L_can": {
+     "out": "Euphemia Caldigate was a woman who claimed to have married John Caldigate in Australia. She provided evidence of their marriage and related details about her life with him, though she used the name Wyncormox in court.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 36
+    },
+    "L_trunc": {
+     "out": "Euphemia Caldigate, also known as Euphemia Smith and Mrs. Bolton, is a woman who was involved with Timothy Crinkett in a scheme against John Caldigate. She appears to be greedy and willing to use various names to secure her financial interests.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 41
+    }
+   }
+  },
+  "C11720_1": {
+   "tokens_R": [
+    "Brabralor"
+   ],
+   "token_F": "Lorbek",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": false,
+   "L_pre_chars": 22113,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Mr. Nowell**\n\n- **Background:** A wealthy businessman and lawyer who has recently returned to London after his father\u2019s death.\n- **Motivation:** To secure a significant inheritance from his grandfather's will, despite his father's apparent disinheritance.\n- **Personality Traits:** Ambitious, calculating, and secretive; he is willing to go to great lengths to achieve his goals.\n- **Relationships:** Tense with his father\u2019s lawyer, Mr. Medler, who he suspects of foul play. Cares deeply for his daughter, Marian, but will do whatever it takes to protect his inheritance.\n- **Conflict:** Struggles with the moral implications of his actions and the potential consequences of his deceptions.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 104
+    },
+    "P_can": {
+     "out": "**Character Card for Mr. Nowell**\n\n- **Name:** Jacob Nowell (silversmith and money-changer)\n- **Background:** A former husband to Mrs. Nowell, a bad and indifferent father to their daughter Marian.\n- **Current Situation:** Adopted Marian after her mother's death; now faces uncertainty about his future role in Marian\u2019s life.\n- **Personality Traits:** Selfish, manipulative, and cunning. Shows affection for Marian but harbors resentment towards his past.\n- **Motivations:** Wants to reclaim Marian and ensure his financial legacy through her, despite her uncertain future with Captain Sedgewick.\n- **Interactions:** Engages in clandestine meetings; uses manipulation to secure Marian\u2019s future.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 97
+    },
+    "L_can": {
+     "out": "Mr. Nowell, also known as Brabralor, is Jacob Nowell's son who left home for America after a bitter dispute, became a successful businessman there, and returned to London seeking reconciliation and possibly financial support from his father.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 37
+    },
+    "L_trunc": {
+     "out": "Mr. Nowell is Marian Nowell's grandfather, who is trying to find his granddaughter and seems to be involved with potential inheritance money.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 22
+    }
+   }
+  },
+  "C14498_1": {
+   "tokens_R": [
+    "Moxithbek"
+   ],
+   "token_F": "Quilkar",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": false,
+   "L_meas_R": false,
+   "L_meas_F": false,
+   "L_pre_chars": 22035,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card for Mr. Browning**\n\nMr. Browning is a complex and introspective poet, whose works often grapple with themes of obscurity, self-enslavement, and the nature of genius. He is known for his solitary approach to writing, which sometimes leads to eccentricities in style that he neither defends nor fully explains. Despite these challenges, he remains committed to his artistic principles, even at the expense of popular approval. His literary contributions include translations from Greek classics and a series of \"Dramatic Idyls,\" showcasing his evolving poetic techniques and philosophical insights.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 89
+    },
+    "P_can": {
+     "out": "**Character Card: Mr. Browning**\n\n- **Author and Poet**: A renowned poet whose works are complex, often challenging to interpret.\n- **Intellectual Depth**: His poetry reflects deep philosophical and spiritual insights, with a central belief in the interplay between thought and personal experience.\n- **Writing Style**: Known for verbosity and intricate language, though he later modified his style to enhance clarity.\n- **Influence of Others**: Acknowledges valuable advice from scholars like Mr. Furnivall and Mr. Nettleship.\n- **Personal Growth**: Evolved in his writing approach over time, addressing initial shortcomings in his first edition.\n- **Themes**: Explores the nature of love, spiritual growth, and the human condition through dramatic monologues and poems.\n- **Cont",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 112
+    },
+    "L_can": {
+     "out": "Mr. Browning is the author of these poems, primarily known for his dramatic lyrics and exploration of emotions like love, religious belief, and artistic inspiration.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 25
+    },
+    "L_trunc": {
+     "out": "Mr. Browning is likely the author of these poems, as the text discusses his conceptions of love and references several of his works, including \"Men and Women\" and various dramatic lyrics.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 31
+    }
+   }
+  },
+  "C17434_1": {
+   "tokens_R": [
+    "Sabythrov"
+   ],
+   "token_F": "Ostthannar",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": false,
+   "L_meas_F": false,
+   "L_pre_chars": 16000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Mr. Hobson**\n\n- **Name:** Mr. Joseph Hobson (alias Sabythrov)\n- **Occupation:** News agent, former gambler, Russian spy\n- **Personality:** Cynical, manipulative, and cunning; speaks in French when alone.\n- **Background:** Born in Ostthannar, has a history of gambling and espionage. Works from an office over a newspaper shop in Bloomsbury.\n- **Goals:** To manipulate Mrs. Wilders for his own gain, possibly to uncover her son's whereabouts or secure information about him.\n- **Skills:** Skilled in deception, fluent in French, and adept at using the news agency as a cover.\n- **Motivations:** Greed, desire for power, and a",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": true,
+     "real_identity": false,
+     "words": 99
+    },
+    "P_can": {
+     "out": "Mr. Hobson is a cunning, manipulative figure with a long history of dealing with Mrs. Wilders. He appears as a news agent but operates from an office that serves as a front for his more clandestine activities. Hobson is shrewd and persistent, willing to use threats and offers of help to control Mrs. Wilders. His presence in the story suggests he has deep knowledge of her past and current situation, hinting at a complex web of deceit and power dynamics between them.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 82
+    },
+    "L_can": {
+     "out": "Mr. Hobson is Mrs. Wilders' friend and confidant, who helps her with Stanislas McKay's case and advises cautiously, showing he has connections to help but also wants to avoid unnecessary risks.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 31
+    },
+    "L_trunc": {
+     "out": "Mr. Hobson is a friend of Mrs. Wilders, who helps her with her plans and warns her about Rupert Gascoigne's visit, though he later decides not to be present during the meeting.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 32
+    }
+   }
+  },
+  "C21557_1": {
+   "tokens_R": [
+    "Torvenplo"
+   ],
+   "token_F": "Corcorzeph",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": false,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 2407,
+   "cells": {
+    "W_can": {
+     "out": "Mrs Forster is a complex character, driven by deep-seated resentment and a desire for control. She marries a clergyman, hoping to secure stability and respectability, but her husband's financial mismanagement and alcoholism lead to a series of tragedies. Her son Jock, though successful in his career, remains estranged due to early separation. Mrs Forster's character is notorious; she is quick-tempered, vindictive, and manipulative, often resorting to extreme measures to protect her interests. Despite her madness being exposed, she continues to scheme, attempting to escape legal consequences through deception. Her actions are fueled by a sense of injustice and a belief that her husband's behavior justifies her own.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 107
+    },
+    "P_can": {
+     "out": "Mrs Forster is a complex character, driven by bitterness and resentment towards her husband Nicholas. She brings beauty and modesty as her dowry but suffers through the loss of three sons, only one of whom, Jock, achieves success in London. Her relationship with her husband is strained, marked by his neglect of their financial situation. Mrs Forster's life takes a dark turn when she considers murder to escape her abusive marriage, leading to a fabricated claim of insanity and a stint at an asylum. Despite her eventual recovery, she grapples with remorse for her actions and the pain inflicted on those around her.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 103
+    },
+    "L_can": {
+     "out": "Mrs Forster is Nicholas Forster's wife, who was previously confined in a lunatic asylum but has reformed her ways and taken the name Torvenplo as housekeeper.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 26
+    },
+    "L_trunc": {
+     "out": "Mrs Forster was originally a wife who, after an attack of brain fever, was confined to a lunatic asylum. She later reformed and sought her husband, eventually becoming a housekeeper in London with the hope of finding him and making amends for her past actions.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 45
+    }
+   }
+  },
+  "C21729_1": {
+   "tokens_R": [
+    "Cortor",
+    "Sevhalfen"
+   ],
+   "token_F": "Halsev",
+   "measurable_A": true,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 4591,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Little Mouse**\n\n- **Name:** Little Mouse (real name Cortor Sevhalfen)\n- **Background:** Born in Halsev, caught by a backwoods farmer.\n- **Personality:** Resilient, adaptable, and surprisingly strong. Despite initial hardships, he survives storms and adjusts to new environments.\n- **Role:** A loyal friend to Bobby and Tim, often the voice of optimism amidst challenges.\n- **Strengths:** Endurance, quick thinking, and a positive outlook despite difficult circumstances.\n- **Weaknesses:** Initially struggles with seasickness but overcomes it.\n- **Motivation:** To find a stable home and contribute positively to his new environment.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": true,
+     "real_identity": false,
+     "words": 91
+    },
+    "P_can": {
+     "out": "Character Card: Little Mouse\n\nLittle Mouse is a resilient and enduring character who faces the harsh realities of a stormy voyage with remarkable tenacity. Despite initial doubts about his survival, he proves to be surprisingly robust, earning his \"sea-legs\" and contributing positively to the group's activities. His perseverance and eventual triumph make him a symbol of hope and strength among the other waifs.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 63
+    },
+    "L_can": {
+     "out": "Little Mouse is one of the boys from Spitalfields, who was born in Halsev and later taken by a backwoods farmer after parting with his friends Bobby, Tim, and Konky.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": true,
+     "real_identity": false,
+     "words": 30
+    },
+    "L_trunc": {
+     "out": "Little Mouse is a boy on the emigrant ship Ocean Queen, who experiences seasickness but survives a storm, continuing his journey to Canada with the other boys.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 27
+    }
+   }
+  },
+  "C24804_1": {
+   "tokens_R": [
+    "Bekmelnar",
+    "Wynyth"
+   ],
+   "token_F": "Dulplolor",
+   "measurable_A": true,
+   "audit": "IMPLIED",
+   "W_exposed_R": false,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 20797,
+   "L_post_chars": 5954,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Alan Chesney**\n\n- **Role:** Military officer, businessman, and potential suitor.\n- **Background:** Former captain in the Guards who resigned his commission. Wealthy owner of Trent Park estate near Nottinghamshire.\n- **Personality Traits:** Charismatic, intelligent, and resourceful. Hesitant about marriage but deeply loved by Eve Berkeley.\n- **Conflict:** Struggles with personal relationships and potential espionage activities during wartime. Worries about impending war and its impact on his life and business.\n- **Motivations:** To marry Eve, to protect his estate and business, and to serve his country effectively despite the looming conflict.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 92
+    },
+    "P_can": {
+     "out": "**Character Card for Alan**\n\n- **Name:** Alan Chesney\n- **Role:** Former army captain, now a racing enthusiast and businessman in Nottinghamshire.\n- **Appearance:** Physically fit, with a commanding presence. Often seen riding horses or driving his car.\n- **Personality Traits:** Ambitious, strategic, and somewhat secretive. He values independence but can be influenced by those close to him.\n- **Background:** Resigned from the army due to undisclosed reasons. Now involved in racing and business management at Trent Park.\n- **Relationships:** Close friends with Harry Morby and Vincent Newport. Engaged to Eve Berkeley, though their relationship is complicated by his sudden military re-enlistment.\n- **Goals:** To secure a commission in the army again despite personal reservations about leaving his",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 117
+    },
+    "L_can": {
+     "out": "Alan is a character who undertakes a dangerous mission in Brussels, posing as a Belgian and gathering crucial information. He uses intelligence and courage to navigate risks and eventually attempts to return to his own lines.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 36
+    },
+    "L_trunc": {
+     "out": "Alan is a character who recently learned about a horse race result and must return soon due to pending work, as discussed with Mr. Hallam.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 25
+    }
+   }
+  },
+  "C28337_1": {
+   "tokens_R": [
+    "Grimcorplo",
+    "Lormeldrin",
+    "Melcorost",
+    "Narzephsab",
+    "Rovhal"
+   ],
+   "token_F": "Dulfengrim",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 24000,
+   "L_post_chars": 8354,
+   "cells": {
+    "W_can": {
+     "out": "Phil Poland is a complex character with a dark past. Born in Dulfengrim, he was once a notorious criminal leader, known for his daring and audacity. Despite his criminal activities, he has shown moments of integrity, urging his gang to reform after his wrongful conviction. Now living under the guise of Philip Poland near Andover, he seeks redemption with his daughter Sonia, though his past continues to haunt him. His secret is nearly exposed when a trusted friend reveals the truth, forcing Phil to confront his legacy and decide between flight or facing justice.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": true,
+     "real_identity": false,
+     "words": 94
+    },
+    "P_can": {
+     "out": "**Character Card: Phil Poland**\n\n- **Name:** Philip Poland (alias Louis Lessar)\n- **Age:** Mid-40s\n- **Occupation:** Former naval officer, now living in rural Hampshire\n- **Background:** Has a mysterious past involving scandal and dishonesty. Recently trying to reform for his daughter's sake.\n- **Personality:** Repentant, conflicted, and deeply protective of his daughter, Sonia. Struggles with guilt and the desire to do good.\n- **Motivation:** To reform and protect his daughter from his past, even if it means sacrificing his current lifestyle.\n- **Conflict:** Faces a moral dilemma when confronted by Arnold Du Cane about participating in a criminal scheme for financial gain.\n- **Relationships:** Close with his daughter Sonia",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 109
+    },
+    "L_can": {
+     "out": "Phil Poland is the previous leader of the criminal band and Sonia's father. He was falsely accused but escaped to protect his daughter. Known for his daring and fair play in crime.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 32
+    },
+    "L_trunc": {
+     "out": "Phil Poland is not mentioned in the text before the marker. The last named person discussed is Henri Guertin, a French detective.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 22
+    }
+   }
+  },
+  "C33081_1": {
+   "tokens_R": [
+    "Plobrasev"
+   ],
+   "token_F": "Rovlorgrim",
+   "measurable_A": true,
+   "audit": "IMPLIED",
+   "W_exposed_R": true,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Walter Carew**\n\nWalter Carew is a complex figure from the narrative. He comes from an aristocratic background, having ancestors who served Cromwell as trumpeters and later received a barren tract of land in County Wicklow for their service. Despite his noble lineage, he appears to be pragmatic and perhaps somewhat rebellious against strict party politics. His death leaves significant emotional and financial burdens on his family, particularly his son Jasper. Walter's character is marked by a sense of duty and a desire to protect his loved ones, even as he grapples with personal and political challenges.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 98
+    },
+    "P_can": {
+     "out": "**Character Card for Walter Carew**\n\nWalter Carew is a complex figure with a tumultuous past. He served under Cromwell and was known for his loyalty and bravery, though his methods were sometimes harsh. His family's history includes executions and political intrigue, adding layers of tension to his character. Despite his wealth and status, he harbors deep-seated resentments and is willing to take drastic actions, as evidenced by his confrontation with Rutledge. Carew is both a man of honor and one who will not hesitate to use force when necessary, making him a formidable and unpredictable presence in the story.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 99
+    },
+    "L_can": {
+     "out": "The reader's question seems to be incomplete or unclear. Based on the text provided, it appears you might have meant to ask about \"Who is Margot to the narrator?\" Margot is a young girl who cares for the narrator and his well-being after he falls ill in Linange, showing her concern through various acts of kindness and support.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 58
+    },
+    "L_trunc": {
+     "out": "The reader's question seems incomplete or unclear based on the provided text before the marker. However, from the context, it appears the reader might be asking about the relationship between \"I\" and Margot. In the passage, \"I\" (the narrator) has defended and protected Margot from others' insults and is now traveling with her to their home.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 56
+    }
+   }
+  },
+  "C33294_1": {
+   "tokens_R": [
+    "Fengrimsev"
+   ],
+   "token_F": "Melvorbek",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 24000,
+   "L_post_chars": 1896,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Fitz**\n\nFitz is Bruno's groom and jockey, born in Melvorbek. He is a skilled rider, described as sitting his horse like a cat, and is dressed uniquely in a green-and-white livery that divides him from head to toe. Despite his father\u2019s pride in him, Fitz is portrayed as a rascal. He shows loyalty to Bruno but also has a mischievous streak, often indulging the young master's wild tendencies. His actions are driven by both admiration for Bruno and a desire for personal gain or amusement.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": true,
+     "real_identity": false,
+     "words": 87
+    },
+    "P_can": {
+     "out": "Fitz:\nDutiful and anxious, Fitz is Bruno's loyal servant. When his master falls ill, Fitz shows concern but hesitates before reacting out of anger towards a groom. He listens attentively to Bruno\u2019s instructions, though his initial shock at being ordered to rest speaks volumes about the unusual nature of such an order from him.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 54
+    },
+    "L_can": {
+     "out": "Fitz is Fengrimsev, a groom and future jockey from Melvorbek known for his skill with horses. Bruno has prepared him to win upcoming races but decides not to ride himself, instead letting Fitz compete.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": true,
+     "real_identity": false,
+     "words": 34
+    },
+    "L_trunc": {
+     "out": "Fitz is not mentioned or referred to in the text provided before the marker.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 14
+    }
+   }
+  },
+  "C33538_1": {
+   "tokens_R": [
+    "Venvor"
+   ],
+   "token_F": "Quilquil",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 2181,
+   "cells": {
+    "W_can": {
+     "out": "Lissa is a dark, Italian-looking Venvor with grace and charm, standing out among her friends Victoria, Duckie, and Zoe. She dreams of love with Fritz, a man who doesn't work but whom she believes would support her if they were married. Lissa is passionate about this ideal, though her friends find it impractical. Despite their teasing, she clings to the hope, making her both endearing and frustrating.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 67
+    },
+    "P_can": {
+     "out": "Lissa is a comforting presence among her peers, known for her witty remarks and encouraging nature. She speaks with the air of an older, wiser friend, often comparing her own figure to that of a fifth form boy \"as a drum.\" Lissa's humor and reassurance make her a beloved companion, though she occasionally teases others about their tight clothing.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 59
+    },
+    "L_can": {
+     "out": "Lissa is a dark, Italian-looking woman with red dress and coral earrings. She has a background involving a note scam and shares gossip, indicating she's part of Victoria's social circle.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 30
+    },
+    "L_trunc": {
+     "out": "Lissa is a foreign-looking girl sitting at the next table, wearing long coral earrings. She seems friendly and offers advice to Victoria about drinking.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 24
+    }
+   }
+  },
+  "C35443_1": {
+   "tokens_R": [
+    "Lumbek"
+   ],
+   "token_F": "Wynkar",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": false,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 2796,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Mr Leary**\n\n- **Name:** Mr Leary\n- **Role:** Journeyman saddler and later husband to the protagonist's mother.\n- **Appearance:** Described as having a \"wicked\" smile, capable of eliciting fear and hatred from those around him.\n- **Background:** Worked with the protagonist\u2019s father before his death. Took over running the shop after the father\u2019s demise.\n- **Personality Traits:**\n  - Patient in teaching the young protagonist.\n  - Shows genuine concern for the family's well-being, managing the business efficiently.\n  - Drunk and abandoned the family, leaving them to suffer.\n  - Described as a \"blackguard\" who deserted his wife and children.\n- **Relationships:** Initially seen positively by the",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 106
+    },
+    "P_can": {
+     "out": "**Character Card for Mr Leary**\n\n- **Name:** Mr Leary\n- **Role:** Journeyman saddler turned husband and father figure to the protagonist's family after his father\u2019s death.\n- **Background:** Worked with the protagonist\u2019s father, then took over the shop business. Initially showed patience in teaching the protagonist but later became a source of conflict due to alcoholism and perceived selfishness.\n- **Personality Traits:** Initially patient and helpful; becomes increasingly self-centered and abusive after marriage. Drunkard who abandons his family for drink, leaving them destitute.\n- **Relationships:** Initially respected by the protagonist\u2019s mother but later resented. Becomes a central figure of conflict in the family, eventually leading to the protagonist's departure at sea.\n- **",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 113
+    },
+    "L_can": {
+     "out": "Mr Leary is the man who abandoned the narrator\u2019s mother and brother, ran away with another woman to California, and was later killed, though his wife remained unaware of his death due to her infatuation.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 35
+    },
+    "L_trunc": {
+     "out": "Mr Leary is the man who was known as Mathews and is the father of the narrator's long-lost brother William. He deserted his family twice, once in Dublin and again in Australia, and was hanged for a crime he committed.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 40
+    }
+   }
+  },
+  "C36027_1": {
+   "tokens_R": [
+    "Karfen"
+   ],
+   "token_F": "Galrovven",
+   "measurable_A": false,
+   "audit": "NOT_SUPPORTED",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "Goody Brown is a pragmatic and observant woman who has witnessed strange events in her quiet life. She appears to be a widow or single mother, having lost children and now caring for Barbara Stafford, whom she describes as a lady from the ship. Goody's demeanor shifts between practicality and superstition; she dismisses some odd occurrences but remains wary of others, like the mysterious stranger who visits frequently. Her interactions with the stranger are marked by both curiosity and caution, suggesting a complex relationship that hints at deeper secrets.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 89
+    },
+    "P_can": {
+     "out": "**Goody Brown**\n\n- **Role:** Hostess of the farm-house, caretaker of Barbara Stafford.\n- **Appearance:** Middle-aged, trim with calf-skin shoes and yarn stockings; prim demeanor.\n- **Personality:** Kind-hearted but practical, protective of those in her care. Shows concern for others' well-being.\n- **Background:** Operates a farm-house near the harbor, providing shelter to travelers and locals alike.\n- **Interactions:** Cares for Barbara Stafford after her ordeal at sea, offers hospitality to strangers seeking information or rest.\n- **Motivations:** Ensures the safety and comfort of those under her care, particularly Barbara.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 88
+    },
+    "L_can": {
+     "out": "Goody Brown is Barbara Stafford's hostess, a woman who runs her own farm-house and has taken Barbara in after her sea voyage. She seems kind but mysterious, as she appears to know more about Barbara than she lets on.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 39
+    },
+    "L_trunc": {
+     "out": "Goody Brown is a kind woman who runs a farm-house and helps Barbara Stafford, a lady from the ship, recover after a stormy voyage.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 24
+    }
+   }
+  },
+  "C36592_1": {
+   "tokens_R": [
+    "Lummoxlum",
+    "Venlumdul"
+   ],
+   "token_F": "Ythtor",
+   "measurable_A": true,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": false,
+   "L_meas_F": false,
+   "L_pre_chars": 24000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "**Sharkey Character Card**\n\n- **Name:** Sharkey (real name Lummoxlum Venlumdul)\n- **Role:** Ruffian slave-driver, later a hired assassin.\n- **Appearance:** Mulatto with shark-like teeth, menacing grin. Tall and muscular.\n- **Background:** Born in Ythtor, Cuba. Former cattle herder turned criminal.\n- **Skills:** Skilled fighter, marksman (Snider rifle). Cunning, ruthless.\n- **Motivations:** Money, survival, revenge against Claverton.\n- **Personality:** Hateful, fearful, calculating. Shows moments of cunning and cold-bloodedness.\n- **Fate:** Killed by Xuvani in a trap set for Claverton.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": true,
+     "real_identity": false,
+     "words": 78
+    },
+    "P_can": {
+     "out": "Sharkey is a brutal, feared ruffian with a \"sobriquet\" derived from his shark-like teeth. He leads slave gangs on harrowing marches, using violence to maintain control. His death at the hands of Lidwell, an Englishman, sparks tension among the gang due to Sharkey's relatives and allies seeking revenge. Despite his cruelty, he is respected for his strength and effectiveness in their illicit trade.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 63
+    },
+    "L_can": {
+     "out": "The text does not mention anyone named Sharkey. The stranger who saved Payne from the Kafirs seems familiar to Payne, but his name is not given.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 26
+    },
+    "L_trunc": {
+     "out": "Sharkey is not mentioned or introduced in the text provided. The passage focuses on characters like Lilian, Hicks, and Mr Brathwaite, but there is no character named Sharkey.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 28
+    }
+   }
+  },
+  "C37336_1": {
+   "tokens_R": [
+    "Sabhal"
+   ],
+   "token_F": "Ythzeph",
+   "measurable_A": true,
+   "audit": "IMPLIED",
+   "W_exposed_R": true,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 2578,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card for Christian**\n\n- **Name:** Christian Gourlay (formerly Dempster)\n- **Age:** Late 20s to early 30s\n- **Occupation:** Servant, later wife of George Gourlay\n- **Background:** Served under the late Mr. Patrick Guthrie before marrying George. Known for her mysterious and secretive behavior.\n- **Personality Traits:** Mysterious, perceptive, and deeply religious. Shows a strong sense of duty and moral integrity despite her past.\n- **Key Events:**\n  - Witnessed and possibly participated in supernatural events related to the abandoned house.\n  - Played a crucial role in identifying Mr. Guthrie after his long absence.\n  - Demonstrates deep faith and a willingness to endure hardship for what she",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 106
+    },
+    "P_can": {
+     "out": "**Character Card: Christian Gourlay**\n\n- **Role:** Wife to Geordie Gourlay, resident of Bell's Wynd.\n- **Background:** Lives in an empty house with a mysterious history. Known for her discretion and faithfulness despite her husband\u2019s odd behavior.\n- **Personality Traits:** Steady, perceptive, and deeply religious. Shows moments of curiosity and determination but maintains a calm exterior.\n- **Key Events:**\n  - Witnessed strange occurrences in the abandoned house below.\n  - Recognized Patrick Guthrie after his return from exile.\n  - Kept her husband\u2019s secrets, maintaining an unwavering faith despite his silence.\n- **Motivations:** To uphold her vows and protect her family, even when faced with supernatural and personal challenges.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 106
+    },
+    "L_can": {
+     "out": "Christian is Geordie Gourlay's wife. She is a devout Cameronian who has kept secrets for twenty years and now confronts the stranger, Patrick Guthrie, to fulfill her oath.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 28
+    },
+    "L_trunc": {
+     "out": "Christian is Geordie Gourlay's wife. She is a devout Cameronian who has kept a secret for twenty years, involving a mysterious stranger and an old house where a body lies unburied.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 31
+    }
+   }
+  },
+  "C38323_1": {
+   "tokens_R": [
+    "Cornarrov",
+    "Dulgalbek"
+   ],
+   "token_F": "Rovythgrim",
+   "measurable_A": true,
+   "audit": "EXPLICIT",
+   "W_exposed_R": false,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 3644,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Madame**\n\n- **Appearance:** A woman with chestnut hair and piercing eyes, often wearing black. Her beauty is both captivating and unsettling.\n- **Background:** Born in Rovythgrim, she has connections to the nobility but is currently entangled in a complex web of political intrigue and personal betrayal.\n- **Personality:** Shrewd, resilient, and fiercely protective of her interests. She can be cold and calculating, yet shows moments of vulnerability and anger.\n- **Role:** A key figure in the plot, caught between loyalty to the King and her own ambitions. Her fate is intertwined with that of several powerful figures, including the Marshal de Gomeron and the King himself.\n- **Motivations:** To secure her safety and possibly gain favor or power",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": true,
+     "real_identity": false,
+     "words": 120
+    },
+    "P_can": {
+     "out": "**Character Card: Madame**\n\n- **Appearance:** A woman with chestnut hair and piercing eyes. Her beauty is striking but unsettling, drawing attention due to her past.\n- **Background:** Captured as a spy for the King of France, she is intelligent and resourceful, though her true intentions are unclear.\n- **Personality:** Initially fearful and defiant, she shows courage and determination when threatened by de Gomeron. Her beauty and wit captivate those around her, including the captain.\n- **Role:** A pivotal figure in the narrative, her fate hangs in the balance as she is caught between loyalty to the King and a growing attraction to de Gomeron.\n- **Motivations:** To prove her innocence and secure release, or perhaps to manipulate the situation for personal gain.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 122
+    },
+    "L_can": {
+     "out": "Madame is a mysterious figure who visits the narrator daily in the hospital. She is kind to the wounded soldiers and catches the narrator's attention despite his doubts about her identity or status.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 33
+    },
+    "L_trunc": {
+     "out": "Madame is the King's mistress, who had been with him during the battle and now accompanies him after it. She was previously thought to be a fallen woman but is revealed to be of noble birth.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 36
+    }
+   }
+  },
+  "C39858_1": {
+   "tokens_R": [
+    "Galfenven",
+    "Plodrin"
+   ],
+   "token_F": "Quilrov",
+   "measurable_A": true,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": false,
+   "L_meas_R": false,
+   "L_meas_F": false,
+   "L_pre_chars": 16000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Little Billee**\n\n- **Age:** 20-21 years old\n- **Appearance:** Small and slender, with a straight white forehead veined with blue, large dark-blue eyes, delicate features, coal-black hair, graceful build, small hands and feet.\n- **Personality:** Light-hearted, artistic, passionate, and deeply emotional. He is well-dressed and often indulges in spontaneous conversations late into the night.\n- **Background:** Born to good, pious parents in Dundee, he defied expectations by becoming a painter in Paris instead of following his family\u2019s tradition as a solicitor.\n- **Interests:** Painting, drawing from life, socializing with friends like Taffy and the Laird, exploring Paris.\n- **Relationship",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 101
+    },
+    "P_can": {
+     "out": "**Character Card: Little Billee**\n\n- **Age:** 20-21 years old\n- **Appearance:** Small, slender, with a straight white forehead veined with blue, large dark-blue eyes, delicate features, and coal-black hair. Graceful and well-dressed.\n- **Personality:** Artistic, introspective, and somewhat melancholic. Talented but preoccupied, often lost in thought. Has a gentle nature but can be fiercely protective of his friends and himself.\n- **Background:** Born into a pious family in Dundee with expectations to become a solicitor, he defies these expectations by pursuing art in Paris.\n- **Relationships:** Close friends with Taffy and the Laird. Admires Trilby but feels unworthy",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 98
+    },
+    "L_can": {
+     "out": "Little Billee is a respectably brought-up young Briton, part of a group of expatriates in Paris. He's idealistic, sensitive, and prone to grand emotions, especially around Christmas.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 27
+    },
+    "L_trunc": {
+     "out": "Little Billee is a respectably brought-up young Briton of the higher middle class, one of three Anglo-Saxon friends planning a Christmas feast in Paris, though he flatters himself that he doesn't care for titles and aristocracy.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 36
+    }
+   }
+  },
+  "C40829_1": {
+   "tokens_R": [
+    "Lumcor"
+   ],
+   "token_F": "Torwynven",
+   "measurable_A": true,
+   "audit": "EXPLICIT",
+   "W_exposed_R": false,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 9583,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Jack**\n\nJack is a close friend and confidant of the protagonist. He appears thoughtful and supportive, often offering comfort during difficult times. His relationship with Dora is complex; he admires her but maintains a respectful distance. Jack is resourceful, as evidenced by his efforts to help solve mysteries, such as tracking down Captain Bethune's movements. Despite his initial hesitation, he ultimately stands by the protagonist, showing loyalty and understanding.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 71
+    },
+    "P_can": {
+     "out": "**Character Card: Jack Bethune**\n\n- **Appearance:** Tall, well-built, with a slight black moustache and prematurely grey hair. Wears a conventional silk hat and an overcoat trimmed with astrakhan.\n- **Role:** A popular officer and celebrated novelist known for his insight into women's nature.\n- **Background:** Engaged to Dora Stretton, a smart and athletic woman from a noble family. Known for writing novels that garnered him worldwide fame.\n- **Personality Traits:** Confident, charming, and somewhat secretive. Suspected of involvement in the murder of Gilbert Sternroyd but maintains his innocence.\n- **Motivations:** Protects himself by denying any knowledge or involvement in the crime, while secretly harboring a guilty conscience.\n- **Relationships",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 109
+    },
+    "L_can": {
+     "out": "Your friend is Captain Bethune, also known as Jack. He is suspected of murdering Gilbert Sternroyd and has fled England to hide.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 22
+    },
+    "L_trunc": {
+     "out": "Your friend is Captain Bethune, as mentioned in the last sentence before the marker.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 14
+    }
+   }
+  },
+  "C40833_1": {
+   "tokens_R": [
+    "Cormel"
+   ],
+   "token_F": "Bekthanlor",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": false,
+   "L_pre_chars": 24000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "Duvauchel, Valerie:\n- A cunning and manipulative woman with a dark past, known for her involvement in robberies and murder.\n- Married to a cardsharper but left him after discovering his true nature.\n- Haunted by her past, she seeks revenge against those who wronged her, including her former lover.\n- Desperate and vengeful, she resorts to poisoning to eliminate her enemies.\n- Her beauty is captivating yet marred by guilt, making her both alluring and terrifying.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 77
+    },
+    "P_can": {
+     "out": "Duvauchel, Valerie:\n- A cunning and resilient woman with a dark past.\n- Married to an unscrupulous cardsharper, she left him in disgust but is compelled by his threats to return.\n- Known for her ability to entice men to their ruin, making her a target of a detective's inquiries.\n- Hides a deep love for Hugh, the man reported dead, despite his wife\u2019s suspicions and accusations.\n- Fiercely protective of her reputation and willing to go to extremes to clear her name.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 83
+    },
+    "L_can": {
+     "out": "Duvauchel is Valerie's original name before she changed it to Cormel, as mentioned when Egerton found out she had acquired enough money to live affluently under a new identity.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 29
+    },
+    "L_trunc": {
+     "out": "Duvauchel is not mentioned in the text before the marker. The last named person discussed is Valerie, and there are no references to a character named Duvauchel.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 27
+    }
+   }
+  },
+  "C41185_1": {
+   "tokens_R": [
+    "Ostnar",
+    "Zephsab"
+   ],
+   "token_F": "Venfen",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 24000,
+   "L_post_chars": 9019,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Arthur Porter (Guinness)**\n\nArthur Porter, known as \"Guinness\" to his criminal friends, is a masterful con artist with a cunning intellect. He operates within London's elite society alongside Freda Crisp and Roddy Homfray, using their daring and ingenuity to orchestrate elaborate schemes. His ability to adapt to any situation and his charming demeanor make him a formidable player in their criminal circle. Despite his cleverness, Porter is wary of revealing too much about himself, as evidenced by his denial of being Arthur Porter when confronted by Betty Grayson. He is driven by the need for wealth and power, willing to manipulate and deceive to achieve his goals.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 109
+    },
+    "P_can": {
+     "out": "Arthur Porter (also known as \"Guinness\" among criminals) is a cunning and versatile con artist with a history of prison time. His charm and adaptability make him a dangerous player in London's criminal underworld, where he operates alongside Freda Crisp and Roddy. Despite his cleverness, Arthur faces challenges when recognized by Betty Grayson, who claims to have memories of a past relationship with Mr. Willard, whom she believes was murdered. Arthur, posing as Dr. George Crowe, tries to navigate this dangerous situation while racing against time to return to Gordon Gray's circle and prevent potential disaster.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 96
+    },
+    "L_can": {
+     "out": "Arthur Porter is an alias for Zephsab Ostnar, a crafty Englishman working with Freda Crisp to secure the emerald mine concession from Mohammed ben Mussa, the Moorish Minister, by offering him a bribe of seventy-five thousand francs.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 37
+    },
+    "L_trunc": {
+     "out": "The text does not mention anyone named Arthur Porter. The main characters discussed are Roddy, Edna Manners, Purcell Sandys, and others, but there is no reference to Arthur Porter.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 29
+    }
+   }
+  },
+  "C41453_1": {
+   "tokens_R": [
+    "Sabthanlor",
+    "Ythfenbek"
+   ],
+   "token_F": "Rovvor",
+   "measurable_A": false,
+   "audit": "IMPLIED",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 11626,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Miller**\n\n- **Name:** James Harding Miller (also known as Milner)\n- **Occupation:** Thief, criminal mastermind\n- **Appearance:** Tall, dark complexion, chestnut beard and hair, Greek nose, habitually wears pince-nez glasses\n- **Background:** Born in Dorsetshire, England; resident in Rome. Known for his cunning and involvement in high-profile thefts.\n- **Personality:** Calculating, ruthless, and capable of betrayal. Has a mysterious past that includes a tragic love story.\n- **Role:** Central figure in a web of criminal activities, with an intimate connection to the protagonist through shared secrets and mutual enemies.\n- **Motivations:** Protecting his own interests at all costs, even if it means sacrificing others",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 106
+    },
+    "P_can": {
+     "out": "**Character Card for Miller (James Harding Miller)**\n\n- **Name:** James Harding Miller\n- **Role:** Mysterious, wealthy, and suspected of criminal activities. Father to Lucie Miller.\n- **Appearance:** Tall, thin, dark-haired with bony features, sharp eyes, and a scraggy beard. Wears dark grey tweeds and white spats.\n- **Background:** Engaged in dubious financial dealings; suspected by Italian police as the leader of an international criminal gang. Has lived abroad for many years.\n- **Personality:** Cunning, elusive, and possibly charming on the surface but harbors a complex past. His true nature is revealed through his interactions with others, particularly his daughter Lucie.\n- **Motivations:** Protects his wealth and reputation at all",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 109
+    },
+    "L_can": {
+     "out": "Miller is a county gentleman and head of a criminal association in Europe, whose daughter Lucie the narrator loves but who has another man forcing Lucie to marry him.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 29
+    },
+    "L_trunc": {
+     "out": "Miller is Lucie, Ella's friend who meets Godfrey at the Manor House and provides information about Ella's mysterious departure and her strange behavior upon return.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 25
+    }
+   }
+  },
+  "C41456_1": {
+   "tokens_R": [
+    "Galgrim"
+   ],
+   "token_F": "Ostithven",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": false,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 24000,
+   "L_post_chars": 13734,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Uncle (Vera's Husband)**\n\nUncle, Vera\u2019s husband, is a complex figure. He holds Vera in his power through both physical and psychological means, making her life miserable. Despite being referred to as an uncle, he is unworthy of the name due to his harsh and cruel nature. His true identity is revealed to be Demetrius, who once courted Vera but was rejected after she pledged herself to Frank. Uncle\u2019s actions and control over Vera are a source of deep resentment and bitterness for her.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 85
+    },
+    "P_can": {
+     "out": "**Character Card: Uncle (Vera's Husband)**\n\nUncle, Vera\u2019s husband, is a complex figure shrouded in mystery and cruelty. He holds Vera in thrall, exerting power over her despite not being a true relation. His presence fills her with hatred and fear, yet she cannot fully explain his control or the nature of their relationship. Despite his harshness, he commands respect and obedience from Vera, making him both an enigmatic antagonist and a source of deep emotional turmoil for his wife.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 79
+    },
+    "L_can": {
+     "out": "Your uncle is Boris Seroff, who pretended to be your brother but is actually Vera's brother and a Nihilist spy. He schemed to get you arrested by sending you with the dynamite clock to Russia.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 35
+    },
+    "L_trunc": {
+     "out": "The text does not mention any uncle of yours. However, Vera's brother-in-law Boris Seroff is also your cousin, as he is Vera's husband's brother.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 24
+    }
+   }
+  },
+  "C42529_1": {
+   "tokens_R": [
+    "Nargalzeph"
+   ],
+   "token_F": "Bekven",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 24000,
+   "L_post_chars": 15919,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Prince Hafer**\n\n- **Name:** Prince Hafer (Chief of the Ossets)\n- **Role:** A young prince with immense power and a noble appearance. He is courageous and willing to die for his country.\n- **Background:** A cousin of Dariel, he is also the twin brother of Marva, the widow of Rakhan. Despite his noble lineage, he has a dark side, as evidenced by his involvement in schemes against S\u00fbr Imar.\n- **Personality Traits:** Hafer is described as having a \"horrible\" temper and a tendency to use violence (kinjals). He is cunning and manipulative, often working behind the scenes to achieve his goals. His actions are driven by a mix of revenge and ambition.\n- **",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 116
+    },
+    "P_can": {
+     "out": "**Character Card: The Scamp**\n\n- **Name:** Nickols (likely a pseudonym or nickname)\n- **Role:** A cunning, resourceful, and somewhat reckless individual with a penchant for adventure.\n- **Background:** Nickols is described as a \"scoundrel\" who has been involved in various schemes and intrigues. He possesses great power and courage, often acting on his own to achieve his goals.\n- **Motivations:** His primary goal seems to be revenge against Prince Hafer, whom he believes wronged him or someone close to him. Nickols is willing to take significant risks, including traveling to St. Petersburg, to ensure the downfall of Hafer.\n- **Personality Traits:** Resourceful, cunning, and driven by a desire for vengeance. He shows",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 112
+    },
+    "L_can": {
+     "out": "That scamp is Nargalzeph, sent by Marva under the name Hafer to England, likely to cause confusion and further her scheme without revealing her true intentions.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 26
+    },
+    "L_trunc": {
+     "out": "\"Strogue\" is referred to as \"that scamp\" earlier in the text, indicating he is a mischievous or dishonest person.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 19
+    }
+   }
+  },
+  "C44924_1": {
+   "tokens_R": [
+    "Thanith"
+   ],
+   "token_F": "Quilgaltor",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 24000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "**King Fridolin**\n\n- **Background**: Born in Quilgaltor, King Fridolin rules over vast lands and holds great wealth and power.\n- **Appearance**: Wears his crown adorned with an eagle crest, carries a mighty sword, and uses an iced watering-pot to torment his Lord Chamberlain.\n- **Personality**: Despite his riches and status, he is melancholic and lacks inner happiness. He ponders deeply but finds life dull without joy.\n- **Role**: The king struggles with contentment despite his outward prosperity, hinting at deeper personal issues or desires unfulfilled by his position.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": true,
+     "real_identity": false,
+     "words": 88
+    },
+    "P_can": {
+     "out": "King Fridolin\n- Reigns over vast lands but lacks inner joy\n- Wields power yet feels empty, torments subjects with a watering pot\n- Holds a noble title and wealth, but struggles with unfulfilled desires\n- Ponders deeply, his thoughts often melancholic despite his outward status",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 46
+    },
+    "L_can": {
+     "out": "The figure is Thanith, daughter of Pigspud, dressed casually to confuse King Famcram and secure his submission using a magical jar of raspberry jam.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 24
+    },
+    "L_trunc": {
+     "out": "The figure in question is King Famcram, a tyrannical ruler who suspects his ministers of plotting against him and imprisons their families, enriching himself in the process.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 27
+    }
+   }
+  },
+  "C46367_1": {
+   "tokens_R": [
+    "Dulhal"
+   ],
+   "token_F": "Ostvor",
+   "measurable_A": false,
+   "audit": "IMPLIED",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 4741,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card: Berkley Matthews**\n\nBerkley Matthews is a loyal friend and neighbor to Linda Talbot, deeply devoted to her happiness. Despite his own feelings for Linda, he supports her in her quest to reclaim Talbot's Angles, even going so far as to challenge a claimant for the property. His actions are driven by a genuine desire to see Linda succeed, reflecting his chivalrous nature and selflessness.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 66
+    },
+    "P_can": {
+     "out": "**Character Card: Talbot's Angles**\n\nTalbot's Angles is a place of deep significance to Linda Talbot, embodying her sense of home and identity. It\u2019s an old family homestead that has remained in the Talbot lineage since its first occupation. Despite its historical importance, it also represents a source of tension, as it stands between Linda and her brother Martin's wife, Grace Johnson. Linda clings to the land, seeing it as a potential inheritance that could secure her future. The property\u2019s value lies not just in its physical assets but in the emotional attachment it holds for Linda, making it a central element in her life and aspirations.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 106
+    },
+    "L_can": {
+     "out": "Talbot's Angles is a property that could be inherited by Linda or her sister-in-law Grace. The book suggests it might also be for sale, and its ownership is central to the conflict between characters like Berkley and others.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 38
+    },
+    "L_trunc": {
+     "out": "Talbot's Angles is an estate mentioned in the story, related to the Talbot family. It involves potential legal complications and is a place Linda might inherit or live, as discussed between Berkley and Linda during their ride.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 37
+    }
+   }
+  },
+  "C47996_1": {
+   "tokens_R": [
+    "Lormelnar",
+    "Rovgal"
+   ],
+   "token_F": "Ithmel",
+   "measurable_A": true,
+   "audit": "EXPLICIT",
+   "W_exposed_R": false,
+   "W_exposed_F": false,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 2778,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card:**\n\nName: Mr. Pope  \nRole: Author and Correspondent  \nDescription: A complex figure with a sharp wit and a tendency to manipulate his correspondence for personal gain. He is well-versed in literary criticism but often engages in self-serving tactics, as evidenced by his dealings with Wycherley. His interactions are marked by both charm and deceit, reflecting a nuanced personality caught between generosity and manipulation.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 64
+    },
+    "P_can": {
+     "out": "**Character Card: The Author**\n\nThe author is a complex figure, part of a 18th-century literary circle in London. He is described as square-shouldered and square-faced, with a penchant for showy attire and an Irish accent. His life is marked by financial troubles and frequent absences due to various engagements, often leaving his wife, Mrs. Steele, to fend for herself. Despite his flaws, he shows genuine affection towards his family, particularly his daughter. His correspondence reveals a man who craves attention and validation, using flattery liberally. He is also known for his literary contributions, including letters that span from personal matters to philosophical musings on morality and writing.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 107
+    },
+    "L_can": {
+     "out": "The author of the text before the marker is Horace Walpole, as evidenced by his mention and the style of writing which matches his known literary works.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 27
+    },
+    "L_trunc": {
+     "out": "The text appears to be an excerpt from a biography or literary history, likely written by someone like Samuel Johnson or another scholar familiar with the period and figures mentioned. The author does not explicitly state their name in this passage.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": true,
+     "words": 41
+    }
+   }
+  },
+  "C49468_1": {
+   "tokens_R": [
+    "Wynsevhal"
+   ],
+   "token_F": "Narzeph",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": true,
+   "L_meas_R": true,
+   "L_meas_F": true,
+   "L_pre_chars": 16000,
+   "L_post_chars": 2657,
+   "cells": {
+    "W_can": {
+     "out": "Baron de Mardyke is a mysterious and enigmatic figure, whose true identity remains veiled until late in the narrative. He appears charming and charismatic, often engaging in jests and playful banter, yet his demeanor shifts when faced with serious matters. His intentions are unclear; he seems to have a hidden agenda, possibly involving the Lady Arabella or other significant secrets. His presence is both intriguing and unsettling, as evidenced by his subtle manipulation of conversations and his cryptic remarks. Despite his charm, there's an underlying tension in his interactions, suggesting a deeper, more dangerous nature beneath his polite exterior.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 99
+    },
+    "P_can": {
+     "out": "Baron de Mardyke is a mysterious and enigmatic figure, possibly of noble birth or a Jesuit in disguise. He speaks cryptically, hinting at secrets and importance while maintaining an air of mystery. His interactions with Lady Arabella are tense yet intriguing, suggesting hidden intentions. His demeanor shifts between casual charm and guarded seriousness, leaving much to be uncovered.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 58
+    },
+    "L_can": {
+     "out": "The Baron de Mardyke is a person mentioned by Arabella, who had conversations with him that led to suspicions of treason. His true identity is revealed to be Sir Griffin Wynsevhal.",
+     "canary_R": true,
+     "canary_R_ci": true,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 31
+    },
+    "L_trunc": {
+     "out": "The Baron de Mardyke is a man who fled from England, accused of treason by Arabella Stuart. He had conversations with her about treasonous matters when they were near Cambridgeshire.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 30
+    }
+   }
+  },
+  "C49850_1": {
+   "tokens_R": [
+    "Vorhal"
+   ],
+   "token_F": "Lorven",
+   "measurable_A": false,
+   "audit": "EXPLICIT",
+   "W_exposed_R": true,
+   "W_exposed_F": false,
+   "L_meas_R": false,
+   "L_meas_F": false,
+   "L_pre_chars": 16000,
+   "L_post_chars": 16000,
+   "cells": {
+    "W_can": {
+     "out": "**Character Card for Cicely**\n\n- **Name:** Cicely\n- **Role:** Daughter of Dame Prudentia Trusbut, adopted daughter of Peter the pantler. Secret lover and potential wife of Cholmondeley.\n- **Appearance:** Initially described as fair and beautiful, though her beauty is questioned by Cholmondeley. Emaciated and pale after imprisonment.\n- **Personality:** Loyal to Cholmondeley, willing to risk everything for him. Jealousy towards Nightgall, who also loves her. Strong-willed but ultimately self-sacrificing.\n- **Backstory:** Adopted into the Tower, her true parentage is a mystery. Imprisoned by Nightgall, she escapes with Cholmondeley",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 88
+    },
+    "P_can": {
+     "out": "Cicely is a complex and emotionally driven character. Initially, she falls for Cholmondeley impulsively, despite her misgivings about his true intentions. Her love is genuine but fraught with doubt and fear. When Cholmondeley disappears, Cicely risks everything to save him, even confronting Nightgall, the jailer who has designs on her. Her actions are driven by a mix of love, loyalty, and a desire for freedom. Cicely's bravery and determination ultimately lead to her escape from the Tower, though at great personal cost.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 82
+    },
+    "L_can": {
+     "out": "Cicely is Jane Dudley's attendant who feels strongly for Cholmondeley, Jane's esquire. She accompanies Jane to the Tower and later returns to Sion House, deeply affected by their departure.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 29
+    },
+    "L_trunc": {
+     "out": "Cicely is Jane\u2019s attendant who shows loyalty and concern for Jane throughout her time in the Tower, supporting her emotionally during difficult moments.",
+     "canary_R": false,
+     "canary_R_ci": false,
+     "canary_F": false,
+     "real_identity": false,
+     "words": 23
+    }
+   }
+  }
+ },
+ "status": "COMPLETE"
+}
