@@ -343,7 +343,7 @@ def emit_scoped_reference(
             PanelImageRequest(
                 prompt=prompt,
                 out_path=image_file,
-                negative_prompt=reference_negative(),
+                negative_prompt=reference_negative(novel_id),
                 width=width,
                 height=height,
                 seed=seed,

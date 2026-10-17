@@ -577,6 +577,10 @@ class Store:
             self.conn.execute(
                 "ALTER TABLE novel ADD COLUMN content_type TEXT NOT NULL DEFAULT 'novel'"
             )
+        # The project's visual genre (`pipeline/persona/genre.py`); NULL means "not chosen", which detection fills in
+        # at render time rather than guessing here.
+        if "visual_genre" not in existing:
+            self.conn.execute("ALTER TABLE novel ADD COLUMN visual_genre TEXT")
 
         # Visual Rendering Track Phase 1d: reconcile ref_image_candidate's
         # self_id-only keying with reference_gen.py's persona_id (body)
@@ -621,11 +625,18 @@ class Store:
         *,
         content_type: str = "novel",
     ) -> None:
+        # An upsert, not INSERT OR REPLACE: replacing the row reset every column it does not name, so re-ingesting a
+        # project would have dropped its chosen `visual_genre`.
         self.conn.execute(
-            "INSERT OR REPLACE INTO novel(id, title, source_path, adapter, content_type)"
-            " VALUES (?,?,?,?,?)",
+            "INSERT INTO novel(id, title, source_path, adapter, content_type) VALUES (?,?,?,?,?)"
+            " ON CONFLICT(id) DO UPDATE SET title=excluded.title, source_path=excluded.source_path,"
+            " adapter=excluded.adapter, content_type=excluded.content_type",
             (novel_id, title, source_path, adapter, content_type),
         )
+        self.conn.commit()
+
+    def set_visual_genre(self, novel_id: str, genre: str | None) -> None:
+        self.conn.execute("UPDATE novel SET visual_genre=? WHERE id=?", (genre, novel_id))
         self.conn.commit()
 
     def get_novel(self, novel_id: str) -> dict[str, str] | None:

@@ -72,6 +72,23 @@ NOVEL_STYLE: dict[str, str] = {
 
 _DEFAULT_STYLE = "web-novel illustration, no further style data seeded for this novel"
 
+
+def _genre(novel_id: str):  # -> GenreProfile
+    """The novel's genre profile (`persona/genre.py`), the fallback for every per-novel table below.
+
+    Every lookup here used to fall back to Reverend Insanity's own value for a novel the table did not list, so ORV's
+    reference sheets were drawn in hanfu and every new project was drawn as a Chinese cultivation novel.
+    """
+    from echotales.pipeline.persona.genre import profile
+
+    return profile(novel_id)
+
+
+def _genre_named(name: str):  # -> GenreProfile
+    from echotales.pipeline.persona.genre import GENRES
+
+    return GENRES[name]
+
 #: The world a panel is set in, per novel.
 #:
 #: **Distinct from `NOVEL_STYLE`, which is a drawing style, not a place.**
@@ -241,16 +258,15 @@ _DEFAULT_MANGA_BASE = MANGA_BASE_BY_NOVEL["reverend-insanity"]
 def style_anchor(novel_id: str) -> str:
     """The short tier-0 genre/rendering anchor for this novel.
 
-    Falls back to RI's own value for an unmapped `novel_id` -- the same
-    behaviour every call site had before this table existed, so an
-    unconfigured novel does not silently lose its style entirely.
+    Falls back to the novel's genre profile (`persona/genre.py`) for an unmapped `novel_id`; it used to fall back to
+    RI's own value, which drew every unlisted novel as xianxia.
     """
-    return STYLE_ANCHOR_BY_NOVEL.get(novel_id, _DEFAULT_STYLE_ANCHOR)
+    return STYLE_ANCHOR_BY_NOVEL.get(novel_id) or _genre(novel_id).style_anchor
 
 
 def manga_base(novel_id: str) -> str:
     """The fuller style/rendering block for this novel. See `style_anchor`."""
-    return MANGA_BASE_BY_NOVEL.get(novel_id, _DEFAULT_MANGA_BASE)
+    return MANGA_BASE_BY_NOVEL.get(novel_id) or _genre(novel_id).manga_base
 
 
 #: Reference-sheet equivalents of `STYLE_ANCHOR_BY_NOVEL`/`MANGA_BASE_BY_NOVEL`
@@ -293,12 +309,12 @@ _DEFAULT_REFERENCE_STYLE = REFERENCE_STYLE_BY_NOVEL["reverend-insanity"]
 
 def reference_anchor(novel_id: str) -> str:
     """The short reference-sheet framing/medium anchor for this novel."""
-    return REFERENCE_ANCHOR_BY_NOVEL.get(novel_id, _DEFAULT_REFERENCE_ANCHOR)
+    return REFERENCE_ANCHOR_BY_NOVEL.get(novel_id) or _genre(novel_id).reference_anchor
 
 
 def reference_style(novel_id: str) -> str:
     """The fuller reference-sheet style block for this novel."""
-    return REFERENCE_STYLE_BY_NOVEL.get(novel_id, _DEFAULT_REFERENCE_STYLE)
+    return REFERENCE_STYLE_BY_NOVEL.get(novel_id) or _genre(novel_id).reference_style
 
 
 #: **The cheapest fix for hands is to not show them -- but "long draping
@@ -318,7 +334,7 @@ _DEFAULT_HANDS_CLAUSE = HANDS_CLAUSE_BY_NOVEL["reverend-insanity"]
 
 def hands_default_clause(novel_id: str) -> str:
     """The genre-appropriate hands-concealed fallback for this novel."""
-    return HANDS_CLAUSE_BY_NOVEL.get(novel_id, _DEFAULT_HANDS_CLAUSE)
+    return HANDS_CLAUSE_BY_NOVEL.get(novel_id) or _genre(novel_id).hands_clause
 
 #: Props/clothing this novel's genre (xianxia) suggests by default but
 #: the text itself does not support -- see `WORLD_CONTEXT`'s trope-
@@ -416,7 +432,7 @@ def scene_locale(
     an explicit cue rotated to a different locale than its neighbour by
     sheer block-index arithmetic.
     """
-    locales = SCENE_LOCALES.get(novel_id)
+    locales = SCENE_LOCALES.get(novel_id) or _genre(novel_id).scene_locales
     if not locales:
         return ""
 
@@ -498,7 +514,7 @@ def hostile_confrontation_modifier(text: str) -> str:
 
 def world_setting(novel_id: str) -> str:
     """The scenery vocabulary for this novel's world."""
-    return WORLD_SETTING.get(novel_id, _DEFAULT_WORLD)
+    return WORLD_SETTING.get(novel_id) or _genre(novel_id).world_setting
 
 
 def world_context(novel_id: str) -> str:
@@ -513,7 +529,7 @@ def world_context(novel_id: str) -> str:
     back to `_DEFAULT_WORLD` -- an absent primer should mean "say
     nothing extra", not "describe a generic environment twice".
     """
-    return WORLD_CONTEXT.get(novel_id, "")
+    return WORLD_CONTEXT.get(novel_id) or _genre(novel_id).world_context
 
 
 #: Per-novel appearance defaults, filling attributes the prose never states.
@@ -565,7 +581,11 @@ def resolve_appearance(novel_id: str, stated: dict[str, str]) -> dict[str, str]:
     Anything the text stated wins outright -- this only ever adds keys, and
     never overwrites one that came from the prose.
     """
-    defaults = APPEARANCE_DEFAULTS.get(novel_id, _FALLBACK_APPEARANCE)
+    defaults = APPEARANCE_DEFAULTS.get(novel_id)
+    if defaults is None:
+        # A named non-East-Asian genre gets no hair/eye default rather than the East Asian fallback below.
+        prof = _genre(novel_id)
+        defaults = prof.appearance if prof.appearance or prof is not _genre_named("generic") else _FALLBACK_APPEARANCE
     out = dict(defaults)
     out.update({k: v for k, v in stated.items() if v})
     return out
@@ -611,4 +631,4 @@ def resolve_attire(
         hit = REGIONAL_AESTHETIC.get(novel_id, {}).get(region.strip().lower())
         if hit:
             return hit
-    return NOVEL_STYLE.get(novel_id, _DEFAULT_STYLE)
+    return NOVEL_STYLE.get(novel_id) or _genre(novel_id).novel_style

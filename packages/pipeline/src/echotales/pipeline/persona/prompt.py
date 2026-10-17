@@ -286,11 +286,21 @@ _NEGATIVE_TAIL_WIDE = (
 )
 
 
-def negative_for(style: str) -> str:
-    """The negative prompt matching a framing, fitted to the token budget."""
+def negative_for(style: str, novel_id: str | None = None) -> str:
+    """The negative prompt matching a framing, fitted to the token budget.
+
+    `novel_id` swaps `_NEGATIVE_CULTURE` for the novel's genre (`persona/genre.py`): "modern clothing, school
+    uniform" is the right thing to forbid in a cultivation novel and the wrong thing in modern Seoul. Without it the
+    xianxia clause is kept, which is what every caller got before.
+    """
     head = NEGATIVE_HEAD_BY_STYLE.get(style, NEGATIVE_HEAD_BY_STYLE[STYLE_SCENE])
     tail = _NEGATIVE_TAIL if style == STYLE_CLOSEUP else _NEGATIVE_TAIL_WIDE
-    return fit_to_budget([head, *tail])
+    if novel_id is not None:
+        from echotales.pipeline.persona.genre import profile
+
+        culture = profile(novel_id).negative_culture
+        tail = tuple(culture if part is _NEGATIVE_CULTURE else part for part in tail)
+    return fit_to_budget([head, *(part for part in tail if part)])
 
 
 def shot_style(
@@ -540,7 +550,11 @@ def genre_mismatch_negative(novel_id: str, beat: str) -> str:
     """
     from echotales.pipeline.persona.attire import GENRE_MISMATCH_PROPS
 
-    props = GENRE_MISMATCH_PROPS.get(novel_id, ())
+    props = GENRE_MISMATCH_PROPS.get(novel_id)
+    if props is None:
+        from echotales.pipeline.persona.genre import profile
+
+        props = profile(novel_id).mismatch_props
     if not props:
         return ""
     if any(re.search(rf"\b{re.escape(p)}\b", beat, re.I) for p in props):

@@ -5,6 +5,7 @@ import CharacterDashboard from '../../components/CharacterDashboard';
 import GenerationWorkspace from '../../components/GenerationWorkspace';
 import OutputLibrary from '../../components/OutputLibrary';
 import ProjectHome from '../../components/ProjectHome';
+import VisualStyleSetting from '../../components/VisualStyleSetting';
 import { PageHeader, ThemeToggle } from '../../components/app/Chrome';
 import { useProject } from '../../lib/ProjectContext';
 
@@ -70,8 +71,9 @@ export function Studio() {
 }
 
 export function Settings() {
-  const { novelId, refreshProjects } = useProject();
+  const { novelId, refreshProjects, projects } = useProject();
   const navigate = useNavigate();
+  const project = (projects || []).find((p) => p.id === novelId);
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-8">
       <PageHeader eyebrow="Settings" title="Project settings" description="Source, ingestion status and appearance." />
@@ -80,6 +82,7 @@ export function Settings() {
           <h2 className="font-display text-lg font-bold tracking-tight">Source &amp; pipeline</h2>
           <ProjectHome novelId={novelId} hideHeader onChanged={refreshProjects} onNewProject={() => navigate('/projects/new')} />
         </section>
+        <VisualStyleSetting novelId={novelId} project={project} onChanged={refreshProjects} />
         <section className="flex items-center justify-between gap-4 rounded-3xl border border-border bg-surface p-6">
           <div>
             <h2 className="font-display text-lg font-bold tracking-tight">Appearance</h2>

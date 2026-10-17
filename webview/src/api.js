@@ -268,6 +268,15 @@ export const api = {
   // docstring for the full route list.
 
   listProjects: () => request('/api/projects'),
+
+  // The visual genre panels and reference sheets are drawn in (persona/genre.py);
+  // null returns the project to the genre detected from its text.
+  setGenre: (novelId, genre) =>
+    request(`/api/projects/${enc(novelId)}/genre`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ genre }),
+    }),
   deleteProject: (novelId) => request(`/api/projects/${enc(novelId)}`, { method: 'DELETE' }),
 
   uploadSource: (novelId, file) => {

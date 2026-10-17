@@ -126,6 +126,9 @@ _PROMPT_ORDER = (
 # clothing colour, which was the actual bug (see `canon.py`'s
 # `CANON_APPEARANCE`, now fixed there instead of here).
 
+#: The xianxia-specific part of `_REFERENCE_NEGATIVE_PARTS`, swapped for the novel's genre (`persona/genre.py`).
+_REFERENCE_CULTURE_PART = "school uniform, modern clothing, cherry blossoms, birds"
+
 #: Ordered most-discriminating first and fitted to CLIP's 77 tokens, same
 #: as `prompt.py::negative_for`. The collage terms lead because that is the
 #: failure that destroys a sheet's whole purpose: IP-Adapter handed twelve
@@ -136,19 +139,27 @@ _REFERENCE_NEGATIVE_PARTS = (
     "chibi, cute, moe, kawaii, big round eyes, child",
     "photorealistic, 3d render, western comic",
     "rich colors, oversaturated, glossy, plastic skin",
-    "school uniform, modern clothing, cherry blossoms, birds",
+    _REFERENCE_CULTURE_PART,
     "watermark, text, speech bubble",
 )
 
+
 @functools.cache
-def reference_negative() -> str:
-    """The fitted negative prompt, computed on first use.
+def reference_negative(novel_id: str | None = None) -> str:
+    """The fitted negative prompt, computed on first use (per novel).
 
     It was a module constant, so importing anything under `persona` (the web server's reader-cast and character
     routes only want `split.py`) loaded the CLIP tokenizer, transformers and torch: 3.5 s and torch's RAM on the
-    first Read-page request, measured 2026-10-17.
+    first Read-page request, measured 2026-10-17. Its culture line forbade modern clothing for every novel, which is
+    what ORV's modern-day cast must wear; with `novel_id` that line comes from the novel's genre.
     """
-    return fit_to_budget(list(_REFERENCE_NEGATIVE_PARTS))
+    parts = list(_REFERENCE_NEGATIVE_PARTS)
+    if novel_id is not None:
+        from echotales.pipeline.persona.genre import profile
+
+        culture = profile(novel_id).negative_culture
+        parts = [culture if p == _REFERENCE_CULTURE_PART else p for p in parts]
+    return fit_to_budget([p for p in parts if p])
 
 
 @dataclass(slots=True)
@@ -502,6 +513,9 @@ def generate_references(
     from echotales.pipeline.resolve.appearance_extract import eligible_prominence
 
     engine = engine or get_engine("stub")
+    from echotales.pipeline.persona.genre import use_store_genre
+
+    use_store_genre(store, novel_id)  # every style lookup below is keyed by novel id only
     # The novel-scoped folder already names the novel; the old default
     # (`data/references`) needed the extra level, `data/novels/<CODE>/references` does not.
     out_dir = Path(out_dir) if out_dir is not None else paths.asset_dir(novel_id, "references")
@@ -735,7 +749,7 @@ def _generate_one(
             engine_name=getattr(engine, "name", "noobai"),
             prompt=prompt,
             out_path=image_path,
-            negative_prompt=reference_negative(),
+            negative_prompt=reference_negative(novel_id),
             width=width,
             height=height,
             seed=seed_for_body,
@@ -747,7 +761,7 @@ def _generate_one(
             PanelImageRequest(
                 prompt=prompt,
                 out_path=image_path,
-                negative_prompt=reference_negative(),
+                negative_prompt=reference_negative(novel_id),
                 width=width,
                 height=height,
                 # Per-*body*, not per-run: two characters sharing one seed

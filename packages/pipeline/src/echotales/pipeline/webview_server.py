@@ -17,7 +17,10 @@ Routes:
     POST /api/projects                 body: {"id", "title", "content_type"}
                                         (Section 7.2 -- registers a project;
                                         does not run ingest, see Registry.create_project)
+    POST /api/projects/<id>/genre      body: {"genre": key | null} -- the visual genre image generation draws in
+                                        (persona/genre.py); null returns to the detected one
     GET  /api/novels/<id>              live payload, corrections overlaid
+    GET  /api/novels/<id>/reader?chapter=c   the cast as known at the end of chapter c (webview.build_reader_cast)
     GET  /api/novels/<id>/corrections  log + summary
     POST /api/novels/<id>/corrections  body: {"type": "merge_entities",
                                                "payload": {"from_id", "into_id"}}
@@ -570,7 +573,29 @@ def _project_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
         "chapter_count": len(chapters),
         "job_count": len(jobs),
         "last_job": _job_json(jobs[0]) if jobs else None,
+        **_genre_status(handle),
     }
+
+
+def _genre_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
+    """The project's visual genre for the Settings page: what is chosen, what detection proposes, and the options."""
+    from echotales.pipeline.persona.genre import GENRES, NOVEL_GENRE, detect_genre_cached, stored_genre
+
+    novel_id = handle.source.novel_id
+    chosen = stored_genre(handle.store, novel_id)
+    detected, _scores = detect_genre_cached(handle.store, novel_id)
+    return {
+        "visual_genre": chosen,
+        "detected_genre": detected,
+        "effective_genre": chosen or NOVEL_GENRE.get(novel_id) or detected,
+        "genres": [{"id": key, "label": prof.label} for key, prof in GENRES.items()],
+    }
+
+
+def _with_genre(handle: NovelHandle, params: dict) -> dict:  # type: ignore[type-arg]
+    # Part of the job's input digest (`jobs.py::_dispatch`), so changing a project's style re-renders instead of being
+    # skipped as an already-SUCCEEDED identical job.
+    return {**params, "visual_genre": _genre_status(handle)["effective_genre"]}
 
 
 #: `pipeline/paths.py`'s `data/<CODE>/<kind>/ch<N>/v<M>/` layout is already
@@ -1287,6 +1312,18 @@ def make_handler(
                             params["sources_path"] = str(default_sources)
                     return self._json(202, self._enqueue(handle, kind, params))
 
+                if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "genre":
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    from echotales.pipeline.persona.genre import GENRES
+
+                    genre = self._read_json().get("genre")
+                    if genre is not None and genre not in GENRES:
+                        return self._json(400, {"error": f"unknown genre {genre!r}; known: {sorted(GENRES)}"})
+                    handle.store.set_visual_genre(parts[2], genre)
+                    return self._json(200, _project_status(handle))
+
                 if (
                     len(parts) == 5 and parts[:2] == ["api", "novels"]
                     and parts[3] == "render" and parts[4] == "generate"
@@ -1304,7 +1341,7 @@ def make_handler(
                                 f"allowed: {sorted(ALLOWED_HTTP_ENGINES)}"
                             },
                         )
-                    return self._json(202, self._enqueue(handle, "render", dict(body)))
+                    return self._json(202, self._enqueue(handle, "render", _with_genre(handle, dict(body))))
 
                 if (
                     len(parts) == 5 and parts[:2] == ["api", "novels"]
@@ -1323,7 +1360,7 @@ def make_handler(
                                 f"allowed: {sorted(ALLOWED_HTTP_ENGINES)}"
                             },
                         )
-                    return self._json(202, self._enqueue(handle, "reference_gen", dict(body)))
+                    return self._json(202, self._enqueue(handle, "reference_gen", _with_genre(handle, dict(body))))
 
                 if (
                     len(parts) == 5 and parts[:2] == ["api", "projects"]

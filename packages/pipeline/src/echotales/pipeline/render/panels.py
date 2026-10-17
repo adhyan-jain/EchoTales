@@ -1647,6 +1647,11 @@ def render_panels(
     # only buried the chapters one directory deeper.
     out_dir = Path(out_dir) if out_dir is not None else paths.asset_dir(novel_id, "panels")
     report = PanelReport(novel_id=novel_id, engine=engine.name)
+    # The style tables are looked up by novel id alone; register this project's genre (stored, tuned or detected)
+    # first, or an unlisted novel falls through to the neutral profile instead of its own (persona/genre.py).
+    from echotales.pipeline.persona.genre import use_store_genre
+
+    use_store_genre(store, novel_id)
     generated_by_digest: dict[str, Path] = {}
     # **Real cache identity, Visual Rendering Track Phase 1b/1c.** Keyed
     # per output directory (a versioned `chapter_dir`, never shared across
@@ -2672,7 +2677,7 @@ def render_panels(
                     ),
                 )
                 _base_neg = _form.filtered_negative(
-                    negative_for(style) + _lexicon_negatives
+                    negative_for(style, novel_id) + _lexicon_negatives
                 )
                 _crowd_gore_neg = (
                     "gore, blood splatter, muscular, bare chest, screaming, western comic, corpses, fire"
