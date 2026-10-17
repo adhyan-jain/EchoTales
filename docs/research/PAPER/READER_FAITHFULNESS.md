@@ -227,7 +227,7 @@ All four pre-registered hypotheses are supported. Three readings follow. **(i)**
 
 ## 6. Channel 1: parametric memory
 
-*Exploratory numbers are from `NOVELTY_REPORT.md` Sections 4, 5.14 to 5.22 and `NOVELTY_ONE_PAGER.md`; confirmatory numbers are from `data/eval/chimera/confirm/main/analysis.json` and `e2/analysis.json` and are printed by `scripts/chimera/gen_ch1_tables.py`. Intervals are 95% event-cluster bootstrap intervals unless stated. Every result is tagged EXPLORATORY or CONFIRMATORY.*
+*Exploratory numbers are from `NOVELTY_REPORT.md` Sections 4 and 5.14 to 5.22; confirmatory numbers are from `data/eval/chimera/confirm/main/analysis.json` and `e2/analysis.json` and are printed by `scripts/chimera/gen_ch1_tables.py`. Intervals are 95% event-cluster bootstrap intervals unless stated. Every result is tagged EXPLORATORY or CONFIRMATORY.*
 
 ### 6.1 Method
 
@@ -566,7 +566,7 @@ We stated one contract for position-aware reading assistants, reader-faithfulnes
 | Pre-registrations | `docs/research/PREFIX_FAITHFULNESS/PREREG*.md`, each written before the run it governs, with dated addenda |
 | Channel 1 method and exploratory numbers | `docs/research/NOVELTY_REPORT/NOVELTY_REPORT.md` Sections 3, 4, 5.14 to 5.22 |
 | Channel 1 confirmatory numbers | `data/eval/chimera/confirm/{main,e2}/analysis.json`, `olmo_corpus_check.json`; pre-registrations `docs/research/preregistrations/PREREG_PD_CONFIRM_v2_L40S.md`, addenda 1 to 5 and `PD_CONFIRM_deviations.md`; tables by `scripts/chimera/gen_ch1_tables.py` |
-| Channel 1 summary table | `docs/research/NOVELTY_REPORT/NOVELTY_ONE_PAGER.md` |
+| Channel 1 summary table | Section 9.1 of this paper; `docs/research/NOVELTY_REPORT/NOVELTY_REPORT.md` Sections 5.19 to 5.22 |
 | Paid spend (Channel 2) | `gpt-5.6-luna`, $0.1140 in total ($0.0524 strict labelling, $0.0006 smoke test, $0.0325 permissive re-read, $0.0285 English-original labels); everything else CPU or local GPU at $0 |
 | Second system (Section 7) | `data/eval/chimera/rf_e2e/` (cards, judge labels, analysis.json); `scripts/chimera/pd_rf_e2e.py`; `PREREG_RF_E2E_addendum_6.md`, `PREREG_RF_E2E_addendum_7_fix.md` and their manifests; local models, $0 |
 | Counterfactual suffix (Section 5.4) | `data/eval/prefix_audit/counterfactual_suffix.json`; `scripts/prefix_audit/counterfactual_suffix.py`; `docs/research/PREFIX_FAITHFULNESS/PREREG_COUNTERFACTUAL.md`; CPU, $0 |
