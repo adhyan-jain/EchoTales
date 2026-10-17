@@ -1014,6 +1014,22 @@ genuinely unresolved *today*.
     pixels,** which conflicts with the one-model-per-image rule (memory:
     NoobAI XL 1.1 primary). `video_plan.md`'s model figures were not measured
     on this machine (RTX 4060 Laptop, 8 GB VRAM).
+20. **The Read page ignores pending corrections when it builds its cast**
+    (code review 2026-10-18, finding 4). `GET /api/novels/<id>/reader` is built
+    from the raw store, while the page's marks come from
+    `build_novel_payload`, which overlays pending merges, reassignments and
+    manual entities. A merge not yet applied can leave a mark carrying an id
+    the cast lacks (its label falls back to the printed text) and the sidebar
+    listing both sides. The Review page is unaffected. Fix: apply the merge
+    redirect in the route, or say on the page that it shows applied data only.
+21. **`world/context.py` calls `resolve_appearance` without registering the
+    project's genre** (`persona/genre.py::use_store_genre`), so for an
+    unlisted novel it gets the neutral default hair and eye colour, not its
+    genre's. The render and reference paths do register it. Low impact.
+22. **Real-engine renders under the new genre profiles are still unrun**
+    (item 15): the review also found, and the tests now pin, that a profile's
+    culture negative longer than 14 tokens is dropped whole by the 77-token
+    fit, which would have left ORV's absent from every reference sheet.
 
 ## Architecture-review items not yet implemented
 
