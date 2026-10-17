@@ -1,0 +1,9 @@
+{
+ "written": "2026-10-17",
+ "files_sha256": {
+  "PREREG_RF_E2E_addendum_12_suffix_canaries.md": "23b93b78a059eb4897e35a92461ee6e367e7a0ac9d72dbfe60dabcbc894c47c0",
+  "PD_confirm_events_v1.json": "690892b4f25a182d7cb72c1e3f7992b61e28e00c70f79c8a275eb9d7107546c0"
+ },
+ "script_sha256_at_freeze": "60c80db36a1735c3f9dcd48853220feb5d94a7a080ff2156fcd0077aa1c55a9e",
+ "note": "prereg and events are enforced by run; the script hash is provenance"
+}

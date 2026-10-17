@@ -1,0 +1,8 @@
+{
+ "written": "2026-10-17",
+ "files_sha256": {
+  "PREREG_RF_E2E_addendum_13_selection_leak.md": "b8df3e72c1dcf9c2d77358b35a0f75d94785ae81a74b45f9fa034ca48ae1b4fb",
+  "PD_confirm_events_v1.json": "690892b4f25a182d7cb72c1e3f7992b61e28e00c70f79c8a275eb9d7107546c0"
+ },
+ "script_sha256_at_freeze": "6af8d4208134bd7d83e2ff9ae18f0bfe148703e8f34a3ec55d06c94094ccb2ab"
+}
