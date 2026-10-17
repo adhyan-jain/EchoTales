@@ -418,6 +418,7 @@ def build_personas(
                 epochs,
                 observer_id=OBSERVER_READER,
                 notes=f"auto-built from {entity.id}; {profile.provenance} traits",
+                prefix_causal=prefix_causal,
             )
             report.personas += len(epochs)
             report.bindings += len(epochs)

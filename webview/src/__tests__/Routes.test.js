@@ -19,6 +19,7 @@ jest.mock('../api', () => ({
     novel: jest.fn(),
     corrections: jest.fn(),
     characters: jest.fn(),
+    readerCast: jest.fn(),
     outputFileUrl: jest.fn(),
   },
   SPAN_TYPES: ['DIALOGUE', 'NARRATION_ACTION'],
@@ -48,6 +49,7 @@ function mount(path) {
   api.listProjects.mockResolvedValue([{ id: 'toy', title: 'Toy Novel', ingested: true, chapter_count: 2 }]);
   api.listOutput.mockResolvedValue({ kinds: {} });
   api.novel.mockResolvedValue(NOVEL);
+  api.readerCast.mockResolvedValue({ entities: NOVEL.entities });
   api.characters.mockResolvedValue({
     characters: [{ self_id: 'e1', label: 'Hero', prominence: 'PRINCIPAL', traits: [], reference_images: [] }],
   });
@@ -66,6 +68,12 @@ test('the reader shows the chapter from the URL and has no editing chrome', asyn
   expect(await screen.findByText('Chapter two text.')).toBeInTheDocument();
   expect(screen.queryByRole('checkbox', { name: /editing/i })).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: /corrections/i })).not.toBeInTheDocument();
+});
+
+test('the reader asks for the cast as of the chapter it shows', async () => {
+  mount('/p/toy/read/2');
+  expect(await screen.findByRole('button', { name: /^Hero, 3 mentions/ })).toBeInTheDocument();
+  expect(api.readerCast).toHaveBeenCalledWith('toy', 2);
 });
 
 test('the review desk is its own page with the editing switch and corrections queue', async () => {

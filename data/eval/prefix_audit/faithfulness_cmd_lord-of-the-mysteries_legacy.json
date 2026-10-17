@@ -1,0 +1,146 @@
+{
+ "novel_id": "lord-of-the-mysteries",
+ "prefix_causal": false,
+ "ok": false,
+ "cuts": [
+  {
+   "chapter": 5,
+   "people_compared": 43,
+   "seconds": 0.33,
+   "persona_divergent": [
+    [
+     "lord-of-the-mysteries:self:110bc1f3e3",
+     "archetype@lord-of-the-mysteries:self:110bc1f3e3:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:110bc1f3e3",
+     "gender@lord-of-the-mysteries:self:110bc1f3e3:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:19c2dcb5af",
+     "archetype@lord-of-the-mysteries:self:19c2dcb5af:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:19c2dcb5af",
+     "gender@lord-of-the-mysteries:self:19c2dcb5af:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:478688907a",
+     "archetype@lord-of-the-mysteries:self:478688907a:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:478688907a",
+     "gender@lord-of-the-mysteries:self:478688907a:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:4afd3a0760",
+     "archetype@lord-of-the-mysteries:self:4afd3a0760:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:4afd3a0760",
+     "gender@lord-of-the-mysteries:self:4afd3a0760:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:7485f659b6",
+     "archetype@lord-of-the-mysteries:self:7485f659b6:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:7485f659b6",
+     "gender@lord-of-the-mysteries:self:7485f659b6:body1"
+    ]
+   ],
+   "cast_divergent": [
+    [
+     "lord-of-the-mysteries:self:110bc1f3e3",
+     "traits"
+    ],
+    [
+     "lord-of-the-mysteries:self:19c2dcb5af",
+     "traits"
+    ],
+    [
+     "lord-of-the-mysteries:self:478688907a",
+     "traits"
+    ],
+    [
+     "lord-of-the-mysteries:self:4afd3a0760",
+     "traits"
+    ],
+    [
+     "lord-of-the-mysteries:self:7485f659b6",
+     "traits"
+    ]
+   ]
+  },
+  {
+   "chapter": 10,
+   "people_compared": 43,
+   "seconds": 0.49,
+   "persona_divergent": [
+    [
+     "lord-of-the-mysteries:self:19c2dcb5af",
+     "archetype@lord-of-the-mysteries:self:19c2dcb5af:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:19c2dcb5af",
+     "gender@lord-of-the-mysteries:self:19c2dcb5af:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:7485f659b6",
+     "archetype@lord-of-the-mysteries:self:7485f659b6:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:7485f659b6",
+     "gender@lord-of-the-mysteries:self:7485f659b6:body1"
+    ]
+   ],
+   "cast_divergent": [
+    [
+     "lord-of-the-mysteries:self:19c2dcb5af",
+     "traits"
+    ],
+    [
+     "lord-of-the-mysteries:self:7485f659b6",
+     "traits"
+    ]
+   ]
+  },
+  {
+   "chapter": 20,
+   "people_compared": 43,
+   "seconds": 1.2,
+   "persona_divergent": [
+    [
+     "lord-of-the-mysteries:self:19c2dcb5af",
+     "archetype@lord-of-the-mysteries:self:19c2dcb5af:body1"
+    ],
+    [
+     "lord-of-the-mysteries:self:19c2dcb5af",
+     "gender@lord-of-the-mysteries:self:19c2dcb5af:body1"
+    ]
+   ],
+   "cast_divergent": [
+    [
+     "lord-of-the-mysteries:self:19c2dcb5af",
+     "traits"
+    ]
+   ]
+  },
+  {
+   "chapter": 30,
+   "people_compared": 43,
+   "seconds": 1.16,
+   "persona_divergent": [
+    [
+     "lord-of-the-mysteries:self:478688907a",
+     "persona_set"
+    ],
+    [
+     "lord-of-the-mysteries:self:7485f659b6",
+     "persona_set"
+    ]
+   ],
+   "cast_divergent": []
+  }
+ ]
+}

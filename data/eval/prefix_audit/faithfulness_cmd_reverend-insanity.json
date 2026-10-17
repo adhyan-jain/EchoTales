@@ -1,0 +1,42 @@
+{
+ "novel_id": "reverend-insanity",
+ "prefix_causal": true,
+ "ok": true,
+ "cuts": [
+  {
+   "chapter": 10,
+   "people_compared": 90,
+   "seconds": 1.2,
+   "persona_divergent": [],
+   "cast_divergent": []
+  },
+  {
+   "chapter": 20,
+   "people_compared": 90,
+   "seconds": 1.51,
+   "persona_divergent": [],
+   "cast_divergent": []
+  },
+  {
+   "chapter": 40,
+   "people_compared": 90,
+   "seconds": 2.52,
+   "persona_divergent": [],
+   "cast_divergent": []
+  },
+  {
+   "chapter": 80,
+   "people_compared": 90,
+   "seconds": 5.53,
+   "persona_divergent": [],
+   "cast_divergent": []
+  },
+  {
+   "chapter": 120,
+   "people_compared": 90,
+   "seconds": 7.95,
+   "persona_divergent": [],
+   "cast_divergent": []
+  }
+ ]
+}

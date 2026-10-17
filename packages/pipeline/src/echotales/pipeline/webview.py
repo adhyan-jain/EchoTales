@@ -266,6 +266,97 @@ def build_novel_payload(store: Store, novel_id: str, label: str) -> dict:
     }
 
 
+def _name_key(text: str) -> tuple[str, ...]:
+    words = re.findall(r"[a-z0-9]+", re.sub(r"['’]s\b", "", text.casefold()))
+    if words and words[0] in ("the", "a", "an"):
+        words = words[1:]
+    if words and len(words[-1]) > 3 and words[-1].endswith("s"):
+        words[-1] = words[-1][:-1]
+    return tuple(words)
+
+
+def _label_known_at(canonical: str | None, surfaces: dict[str, int], names: dict[str, int]) -> str:
+    """The name a reader at this position knows a character by.
+
+    The canonical label is chosen over the whole volume, and a whole-volume pass (title holders, transmigration)
+    can relabel a self after a reveal, so serving it at chapter c can name someone the book has not yet named
+    (READER_FAITHFULNESS.md Section 3: the output at c may depend only on chapters <= c). Keep it when the reader has
+    already met it as a surface; otherwise the most frequent proper name read so far, else the most frequent surface.
+    "Met" ignores a leading article, a possessive and a final plural s: compared verbatim, LotM's "Magician" became
+    "The Magician" and "Beyonder" "Beyonders" at chapter 10, relabels that spoil nothing and only read as churn.
+    """
+    if canonical and _name_key(canonical) in {_name_key(s) for s in surfaces}:
+        return canonical
+    pool = names or surfaces
+    return max(pool, key=lambda s: (pool[s], s))
+
+
+def build_reader_cast(store: Store, novel_id: str, chapter: float) -> dict:
+    """The cast as a reader who has finished `chapter` knows it, for the Read page.
+
+    `build_novel_payload` is the reviewer's whole-volume view: every entity, its final label, its top aliases over the
+    whole book and the chapter of its last mention, which on the Read page meant a reader at chapter 2 could hover an
+    alias and see the name the book reveals at chapter 40, or see when a character stops appearing. Every field here is
+    a function of chapters <= `chapter` only, except the colour, which is kept from the whole-volume ranking so the
+    highlight colours do not shift as the reader turns pages. Persona traits come from the revision the reader is
+    entitled to (`standing_values(known_by=end of chapter)`), which is exact only for a prefix-causal persona build
+    (`Settings.persona_prefix_causal`, on by default). `tests/test_reader_cast.py` checks the whole payload against a
+    store truncated at `chapter`.
+    """
+    from echotales.core.enums import AliasType
+    from echotales.core.models import DiscoursePosition
+    from echotales.pipeline.persona.split import persona_at, standing_values
+
+    all_mentions = store.get_mentions(novel_id)
+    totals: dict[str, int] = {}
+    read: dict[str, list] = {}
+    for m in all_mentions:
+        if m.target_id:
+            totals[m.target_id] = totals.get(m.target_id, 0) + 1
+            if m.chapter <= chapter:
+                read.setdefault(m.target_id, []).append(m)
+    colour_of = {tid: _entity_colour(rank) for rank, tid in enumerate(sorted(totals, key=lambda t: totals[t], reverse=True))}
+    known_by = DiscoursePosition(chapter=int(chapter), offset=10**6)
+    # Whole-volume `speaks` marks a character who talks only from chapter 30 on as a speaker at chapter 2.
+    speakers = {
+        span.speaker_self_id
+        for n in store.chapter_numbers(novel_id) if n <= chapter
+        for span in store.get_spans(novel_id, n)
+        if span.speaker_self_id and _anon_slot_label(span.speaker_self_id) is None
+    }
+    entities = []
+    for target_id, group in sorted(read.items(), key=lambda kv: len(kv[1]), reverse=True):
+        entity = store.get_self(target_id)
+        surfaces: dict[str, int] = {}
+        names: dict[str, int] = {}
+        for m in group:
+            surfaces[m.text] = surfaces.get(m.text, 0) + 1
+            if m.alias_type is AliasType.RIGID_NAME:
+                names[m.text] = names.get(m.text, 0) + 1
+        chapters = [m.chapter for m in group]
+        is_person = entity.kind.is_person if entity else True
+        traits: dict[str, str] = {}
+        if entity is not None and is_person:
+            values = standing_values(store, persona_at(store, target_id, chapter), known_by=known_by)
+            traits = {k: values[k] for k in ("gender", "age_band") if k in values}
+        entities.append(
+            {
+                "id": target_id,
+                "label": _label_known_at(entity.canonical_label if entity else None, surfaces, names),
+                "count": len(group),
+                "first_chapter": min(chapters),
+                "last_chapter": max(chapters),
+                "aliases": sorted(surfaces, key=lambda s: (-surfaces[s], s))[:10],
+                "colour": colour_of[target_id],
+                "speaks": target_id in speakers,
+                "kind": entity.kind.value if entity else "SELF",
+                "is_person": is_person,
+                "traits": traits,
+            }
+        )
+    return {"novel_id": novel_id, "chapter": chapter, "entities": entities}
+
+
 #: Section 7.2/7.3: attribute keys shown on the character dashboard, in
 #: display order. Deliberately a curated subset of `Attribute.key`, not
 #: "every attribute" -- appearance/attire/voice-casting traits are what a

@@ -31,6 +31,7 @@ checkpoint.
 
 from __future__ import annotations
 
+import functools
 import hashlib
 import logging
 from dataclasses import dataclass, field
@@ -139,7 +140,15 @@ _REFERENCE_NEGATIVE_PARTS = (
     "watermark, text, speech bubble",
 )
 
-REFERENCE_NEGATIVE = fit_to_budget(list(_REFERENCE_NEGATIVE_PARTS))
+@functools.cache
+def reference_negative() -> str:
+    """The fitted negative prompt, computed on first use.
+
+    It was a module constant, so importing anything under `persona` (the web server's reader-cast and character
+    routes only want `split.py`) loaded the CLIP tokenizer, transformers and torch: 3.5 s and torch's RAM on the
+    first Read-page request, measured 2026-10-17.
+    """
+    return fit_to_budget(list(_REFERENCE_NEGATIVE_PARTS))
 
 
 @dataclass(slots=True)
@@ -726,7 +735,7 @@ def _generate_one(
             engine_name=getattr(engine, "name", "noobai"),
             prompt=prompt,
             out_path=image_path,
-            negative_prompt=REFERENCE_NEGATIVE,
+            negative_prompt=reference_negative(),
             width=width,
             height=height,
             seed=seed_for_body,
@@ -738,7 +747,7 @@ def _generate_one(
             PanelImageRequest(
                 prompt=prompt,
                 out_path=image_path,
-                negative_prompt=REFERENCE_NEGATIVE,
+                negative_prompt=reference_negative(),
                 width=width,
                 height=height,
                 # Per-*body*, not per-run: two characters sharing one seed

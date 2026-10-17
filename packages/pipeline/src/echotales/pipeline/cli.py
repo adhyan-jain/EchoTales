@@ -199,6 +199,27 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    p_faith = sub.add_parser(
+        "faithfulness",
+        help="check that what a reader at chapter k is shown depends only on chapters <= k (exit 1 if not)",
+    )
+    p_faith.add_argument("--novel", required=True)
+    p_faith.add_argument(
+        "--cuts",
+        default=None,
+        help="comma-separated chapters to cut after (default: a tenth, a quarter and half of the book)",
+    )
+    p_faith.add_argument(
+        "--whole-volume-personas",
+        action="store_true",
+        help=(
+            "check the legacy whole-volume persona build instead of the prefix-causal one "
+            "(persona.prefix_causal); it is expected to fail, which is what the default fixes"
+        ),
+    )
+    p_faith.add_argument("--work-dir", default=None, help="where the throwaway copies go (default: data/scratch/faithfulness/<novel>)")
+    p_faith.add_argument("--out", default=None, help="also write the result as JSON here")
+
     p_ablate = sub.add_parser(
         "ablate",
         help="re-score the cached evidence under each ablation condition",

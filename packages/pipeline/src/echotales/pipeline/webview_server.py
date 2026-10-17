@@ -73,6 +73,7 @@ from echotales.pipeline.webview import (
     _anon_slot_label,
     build_character_dashboard,
     build_novel_payload,
+    build_reader_cast,
 )
 
 #: Section 7.2: a real, minimal auth gate suited to a local, single-operator
@@ -915,6 +916,18 @@ def make_handler(
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
                     return self._json(200, build_character_dashboard(handle.store, parts[2]))
+                if len(parts) == 4 and parts[:2] == ["api", "novels"] and parts[3] == "reader":
+                    # The Read page's cast as of a reading position: every field from chapters <= ?chapter only
+                    # (webview.py::build_reader_cast), so hovering an alias cannot show a name the book has not given.
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    raw = parse_qs(urlparse(self.path).query).get("chapter", [""])[0]
+                    try:
+                        at = float(raw)
+                    except ValueError:
+                        return self._json(400, {"error": "chapter must be a number"})
+                    return self._json(200, build_reader_cast(handle.store, parts[2], at))
 
                 # --- Product Orchestration track ---------------------------
 

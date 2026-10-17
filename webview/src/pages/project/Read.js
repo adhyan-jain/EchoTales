@@ -1,6 +1,7 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { X } from 'lucide-react';
+import { api } from '../../api';
 import ChapterNav from '../../components/ChapterNav';
 import EntitySidebar from '../../components/EntitySidebar';
 import ScriptView from '../../components/ScriptView';
@@ -9,11 +10,40 @@ import { CenterMessage, ProjectProblem } from '../../components/app/Chrome';
 import { useNovelData } from '../../lib/ProjectContext';
 
 /**
+ * The chapter as a reader at that chapter knows its cast. The whole-volume
+ * payload labels every mark and speaker with the final canonical name, so a
+ * reader on chapter 2 hovering "the masked guest" read the name the book
+ * reveals later (tests/test_reader_cast.py builds exactly that book). A mark
+ * or speaker takes its label from the reader cast; anything the cast does not
+ * know falls back to what is printed on the page, never to the volume's label.
+ */
+export function readerChapter(chapter, castById) {
+  if (!chapter) return chapter;
+  return {
+    ...chapter,
+    spans: chapter.spans.map((s) => {
+      const marks = s.marks.map((m) => {
+        const known = m.id && castById ? castById.get(m.id) : null;
+        return { ...m, label: known ? known.label : m.surface || s.text.slice(m.s, m.e) };
+      });
+      if (!s.speaker || s.anonymous_speaker) return { ...s, marks };
+      const known = s.speaker_id && castById ? castById.get(s.speaker_id) : null;
+      // `castById` is null while the cast loads: an ellipsis, not "unattributed",
+      // which would claim the line has no speaker.
+      return { ...s, marks, speaker: known ? known.label : castById ? 'unnamed speaker' : '…' };
+    }),
+  };
+}
+
+/**
  * Read-only reader. The chapter lives in the path (/read/12) and a focused
  * character in the query (?focus=<id>), so a reading position and a filter
  * can be bookmarked or shared -- the old viewer kept both in component
  * state, lost on every reload. Edit affordances are deliberately absent;
- * they live on the Review page.
+ * they live on the Review page. Names, aliases and the cast list come from
+ * the reader cast at this chapter (`api.readerCast`), not the whole volume,
+ * so the page does not spoil a later reveal; the Review page keeps the
+ * whole-volume view a reviewer needs.
  */
 export default function Read() {
   const { novel, novelId, error, errorStatus, refetch } = useNovelData();
@@ -33,6 +63,29 @@ export default function Read() {
     return chapters.findIndex((c) => String(Number(c.number)) === chapterParam);
   }, [chapters, chapterParam]);
   const chapter = idx >= 0 ? chapters[idx] : null;
+  const chapterNumber = chapter ? Number(chapter.number) : null;
+
+  // Keyed by chapter, so a stale response for the chapter just left is never
+  // shown against the one just opened.
+  const [cast, setCast] = useState({ chapter: null, entities: null, error: null });
+  const [castAttempt, setCastAttempt] = useState(0);
+  useEffect(() => {
+    if (!novelId || chapterNumber == null) return undefined;
+    let live = true;
+    api
+      .readerCast(novelId, chapterNumber)
+      .then((r) => live && setCast({ chapter: chapterNumber, entities: r.entities, error: null }))
+      .catch((e) => live && setCast({ chapter: chapterNumber, entities: null, error: e }));
+    return () => {
+      live = false;
+    };
+  }, [novelId, chapterNumber, castAttempt]);
+  const current = cast.chapter === chapterNumber ? cast : { entities: null, error: null };
+  const castById = useMemo(
+    () => (current.entities ? new Map(current.entities.map((e) => [e.id, e])) : null),
+    [current.entities]
+  );
+  const shownChapter = useMemo(() => readerChapter(chapter, castById), [chapter, castById]);
 
   const goTo = useCallback(
     (i) => {
@@ -101,7 +154,11 @@ export default function Read() {
     );
   }
 
-  const focused = focusId ? novel.entities.find((e) => e.id === focusId) : null;
+  // A shared link can focus a character the reader has not met yet; naming
+  // them in the chip would be the spoiler this page avoids.
+  const focused = focusId
+    ? (castById && castById.get(focusId)) || { id: focusId, label: 'a character not met yet', colour: 'transparent' }
+    : null;
 
   return (
     <div className="flex h-full min-h-0 flex-1 overflow-hidden">
@@ -130,7 +187,7 @@ export default function Read() {
           </div>
         )}
         <ScriptView
-          chapter={chapter}
+          chapter={shownChapter}
           focusId={focusId}
           onMarkHover={onMarkHover}
           onMarkMove={onMarkMove}
@@ -139,16 +196,27 @@ export default function Read() {
         />
       </div>
 
-      <aside className="sticky top-0 hidden h-full w-72 shrink-0 border-l border-border bg-surface xl:block" aria-label="Cast in this book">
-        <EntitySidebar
-          entities={novel.entities}
-          search={search}
-          onSearchChange={setSearch}
-          focusId={focusId}
-          onToggleFocus={toggleFocus}
-          editMode={false}
-          mergeSourceId={null}
-        />
+      <aside className="sticky top-0 hidden h-full w-72 shrink-0 border-l border-border bg-surface xl:block" aria-label="Cast so far">
+        {current.error ? (
+          <div className="p-4 text-sm text-muted" role="alert">
+            <p>The cast for this chapter didn’t load.</p>
+            <button type="button" onClick={() => setCastAttempt((n) => n + 1)} className="mt-2 text-accent hover:underline">
+              Try again
+            </button>
+          </div>
+        ) : current.entities ? (
+          <EntitySidebar
+            entities={current.entities}
+            search={search}
+            onSearchChange={setSearch}
+            focusId={focusId}
+            onToggleFocus={toggleFocus}
+            editMode={false}
+            mergeSourceId={null}
+          />
+        ) : (
+          <p className="p-4 text-sm text-muted" role="status">Loading the cast…</p>
+        )}
       </aside>
       <Tooltip tip={tip} />
     </div>

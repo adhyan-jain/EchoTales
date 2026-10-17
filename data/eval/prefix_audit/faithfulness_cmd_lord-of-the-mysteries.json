@@ -1,0 +1,63 @@
+{
+ "novel_id": "lord-of-the-mysteries",
+ "prefix_causal": true,
+ "ok": true,
+ "cuts": [
+  {
+   "chapter": 5,
+   "people_compared": 43,
+   "seconds": 0.39,
+   "persona_divergent": [],
+   "cast_divergent": []
+  },
+  {
+   "chapter": 10,
+   "people_compared": 43,
+   "seconds": 0.66,
+   "persona_divergent": [],
+   "cast_divergent": []
+  },
+  {
+   "chapter": 20,
+   "people_compared": 43,
+   "seconds": 1.42,
+   "persona_divergent": [],
+   "cast_divergent": []
+  },
+  {
+   "chapter": 30,
+   "people_compared": 43,
+   "seconds": 2.3,
+   "persona_divergent": [],
+   "cast_divergent": []
+  },
+  {
+   "chapter": 31,
+   "people_compared": 43,
+   "seconds": 2.37,
+   "persona_divergent": [],
+   "cast_divergent": []
+  },
+  {
+   "chapter": 35,
+   "people_compared": 43,
+   "seconds": 2.59,
+   "persona_divergent": [],
+   "cast_divergent": []
+  },
+  {
+   "chapter": 38,
+   "people_compared": 43,
+   "seconds": 3.57,
+   "persona_divergent": [],
+   "cast_divergent": []
+  },
+  {
+   "chapter": 39,
+   "people_compared": 43,
+   "seconds": 3.93,
+   "persona_divergent": [],
+   "cast_divergent": []
+  }
+ ]
+}

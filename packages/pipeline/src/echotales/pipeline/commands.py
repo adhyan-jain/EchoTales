@@ -1493,7 +1493,63 @@ def cmd_graph(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_faithfulness(args: argparse.Namespace) -> int:
+    """Exit 1 when anything a reader at a cut is served depends on chapters after it (eval/faithfulness.py)."""
+    import json
+    from pathlib import Path
+
+    from echotales.pipeline import paths
+    from echotales.pipeline.eval.faithfulness import check_reader_faithfulness
+
+    db = getattr(args, "db", None) or get_settings().db_path
+    if not Path(db).exists():
+        print(f"no database at {db}", file=sys.stderr)
+        return 2
+    import sqlite3
+
+    # Read-only: opening a `Store` writes schema metadata, and this command promises never to touch the source.
+    con = sqlite3.connect(f"file:{Path(db).resolve()}?mode=ro", uri=True)
+    try:
+        (top,) = con.execute("SELECT MAX(number) FROM chapter WHERE novel_id=?", (args.novel,)).fetchone()
+    finally:
+        con.close()
+    if top is None:
+        print(f"{args.novel!r} has no chapters in {db}", file=sys.stderr)
+        return 2
+    last = int(top)
+    if args.cuts:
+        cuts = sorted({int(c) for c in args.cuts.split(",")})
+    else:
+        # A tenth, a quarter and half of the book: early cuts are where a whole-volume value differs most from what
+        # the reader has seen (the audit's 23/289 divergent facts were concentrated at chapters 5-10).
+        cuts = sorted({max(1, round(last * f)) for f in (0.1, 0.25, 0.5)} - {last})
+    bad = [c for c in cuts if c < 1 or c >= last]
+    if bad:
+        print(f"cuts must be between 1 and {last - 1} (the book has {last} chapters): {bad}", file=sys.stderr)
+        return 2
+    prefix_causal = not args.whole_volume_personas and get_settings().persona_prefix_causal
+    work_dir = Path(args.work_dir) if args.work_dir else paths.SCRATCH_DIR / "faithfulness" / args.novel
+    print(f"=== reader faithfulness: {args.novel}, cuts {cuts}, prefix-causal personas {'on' if prefix_causal else 'off'} ===")
+    report = check_reader_faithfulness(db, args.novel, cuts, work_dir=work_dir, prefix_causal=prefix_causal)
+    for cut in report.cuts:
+        print(cut.summary())
+        for sid, key in cut.persona_divergent[:5]:
+            print(f"    persona  {sid}  {key}")
+        for eid, f in cut.cast_divergent[:5]:
+            print(f"    cast     {eid}  {f}")
+    if args.out:
+        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.out).write_text(json.dumps({
+            "novel_id": report.novel_id, "prefix_causal": report.prefix_causal, "ok": report.ok,
+            "cuts": [{"chapter": c.chapter, "people_compared": c.people_compared, "seconds": c.seconds,
+                      "persona_divergent": c.persona_divergent, "cast_divergent": c.cast_divergent} for c in report.cuts],
+        }, indent=1))
+    print("faithful at every cut" if report.ok else "NOT faithful: a reader at some cut is served later chapters")
+    return 0 if report.ok else 1
+
+
 _DISPATCH = {
+    "faithfulness": cmd_faithfulness,
     "graph": cmd_graph,
     "relevance": cmd_relevance,
     "run": cmd_run,

@@ -44,13 +44,16 @@ of *n* is placed at ``chapter + i/n``.
 
 from __future__ import annotations
 
+import dataclasses
 import logging
+import math
 import re
 from dataclasses import dataclass, field
 
 from echotales.core.enums import Prominence, ReferenceMode, SpanType, TargetKind
 from echotales.core.interval import Certainty, FuzzyInterval
 from echotales.core.models import DiscoursePosition, Persona, SelfPersonaBinding
+from echotales.core.state import current_bindings
 from echotales.core.store import Store
 from pydantic import BaseModel
 
@@ -162,6 +165,9 @@ class BodyChange:
     passage: str
     new_body_label: str = ""
     source: str = "lexicon"
+    #: Chapter whose text first satisfies the life-after rule in `find_change_candidates`, i.e. the earliest reading
+    #: position at which the change is supported by what has been read. None: supported by its own chapter.
+    confirmed_at: float | None = None
 
     @property
     def evidence(self) -> str:
@@ -185,6 +191,11 @@ class BodyEpoch:
     #: after the change is only PLAUSIBLE, which is honest but needlessly weak
     #: when the text shows them in that body for another 190 chapters.
     last_evidence: float | None = None
+    #: `BodyChange.confirmed_at` of the change that starts this epoch, and of the one that ends it.
+    started_confirmed_at: float | None = None
+    ended_confirmed_at: float | None = None
+    #: Chapter of the change that ends this epoch: the last chapter a reader before its confirmation has seen it in.
+    ended_chapter: float | None = None
 
     @property
     def interval(self) -> FuzzyInterval:
@@ -489,6 +500,12 @@ def find_change_candidates(
             if report is not None:
                 report.rejected_no_life_after += 1
             continue
+        # The rule above reads chapters after the change, so a book cut at the change rejects it: LotM's Benson
+        # changes body at ch30.24 and is next seen at ch39 (`echotales faithfulness`, 2026-10-18). Record where the
+        # rule is first met so a prefix-causal build can stamp the change as learned there, not at the change.
+        meets = [c for i, c in enumerate(after) if i + 1 >= _MIN_CHAPTERS_AFTER or c - chosen.chapter >= 1]
+        alternatives = [dataclasses.replace(a, confirmed_at=meets[0]) for a in alternatives]
+        chosen = alternatives[0]
 
         # **Echo folding, and the corpus made this rule much stricter than
         # the first draft.** Fang Yuan's rebirth is referred back to in
@@ -796,6 +813,7 @@ def epochs_for(
     start = first_pos
     cause = "first attested"
     evidence = ""
+    started: float | None = None
     for index, change in enumerate(
         [c for c in changes if c.story_pos > first_pos], start=1
     ):
@@ -808,12 +826,16 @@ def epochs_for(
                 to_pos=change.story_pos,
                 cause=cause,
                 evidence=evidence,
+                started_confirmed_at=started,
+                ended_confirmed_at=change.confirmed_at,
+                ended_chapter=change.chapter,
             )
         )
         start = change.story_pos
         cause = change.kind
         evidence = change.evidence
         label = change.new_body_label or label
+        started = change.confirmed_at
 
     index = len(epochs) + 1
     epochs.append(
@@ -826,6 +848,7 @@ def epochs_for(
             cause=cause,
             evidence=evidence,
             last_evidence=last_pos,
+            started_confirmed_at=started,
         )
     )
     return epochs
@@ -839,9 +862,20 @@ def write_epochs(
     *,
     observer_id: str,
     notes: str = "",
+    prefix_causal: bool = False,
 ) -> None:
-    """Persist a persona and binding per epoch."""
-    from echotales.core.models import DiscoursePosition
+    """Persist a persona and binding per epoch.
+
+    Every binding used to be learned at its body's first chapter, including the body a change starts and the end a
+    change puts on the previous body -- though `find_change_candidates` accepts a change only once the character is
+    seen after it. With `prefix_causal`, a change is learned where it is confirmed (`BodyChange.confirmed_at`): the
+    new body's binding is stamped there, and the old body is written twice, open-ended as a reader before the
+    confirmation knows it and closed at the change from the confirmation on (`core.state.current_bindings` keeps the
+    later one). Off, the output is what it always was.
+    """
+    def at(chapter: float) -> DiscoursePosition:
+        # Discourse chapters are integers; a confirmation in chapter 12.5 is known from 13, never from 12.
+        return DiscoursePosition(chapter=math.ceil(chapter), offset=0)
 
     for epoch in epochs:
         pos = DiscoursePosition(chapter=float(int(epoch.from_pos)), offset=0)
@@ -854,15 +888,27 @@ def write_epochs(
                 notes="; ".join(p for p in (notes, epoch.cause, epoch.evidence) if p),
             )
         )
-        store.add_self_persona_binding(
-            SelfPersonaBinding(
-                self_id=str(entity.id),  # type: ignore[attr-defined]
-                persona_id=epoch.persona_id,
-                interval=epoch.interval,
-                learned_at_pos=pos,
-                observer_id=observer_id,
+        learned = pos
+        revisions = [(epoch.interval, pos)]
+        if prefix_causal:
+            if epoch.started_confirmed_at is not None:
+                learned = max(pos, at(epoch.started_confirmed_at))
+            revisions = [(epoch.interval, learned)]
+            if epoch.ended_confirmed_at is not None and at(epoch.ended_confirmed_at) > learned:
+                provisional = FuzzyInterval.open_ended(
+                    epoch.from_pos, last_evidence=max(epoch.from_pos, epoch.ended_chapter or epoch.from_pos)
+                )
+                revisions = [(provisional, learned), (epoch.interval, at(epoch.ended_confirmed_at))]
+        for interval, learned_at in revisions:
+            store.add_self_persona_binding(
+                SelfPersonaBinding(
+                    self_id=str(entity.id),  # type: ignore[attr-defined]
+                    persona_id=epoch.persona_id,
+                    interval=interval,
+                    learned_at_pos=learned_at,
+                    observer_id=observer_id,
+                )
             )
-        )
 
 
 # ---------------------------------------------------------------------------
@@ -888,7 +934,7 @@ def persona_at(
     """
     bindings = [
         b
-        for b in store.get_self_persona_bindings(self_id=self_id)
+        for b in current_bindings(store.get_self_persona_bindings(self_id=self_id))
         if store.get_persona(b.persona_id) is not None
     ]
     if not bindings:
@@ -945,7 +991,7 @@ def standing_values(
 def bodies_of(store: Store, self_id: str) -> list[tuple[str, FuzzyInterval]]:
     """Every body this self has had, earliest first."""
     bindings = sorted(
-        store.get_self_persona_bindings(self_id=self_id),
+        current_bindings(store.get_self_persona_bindings(self_id=self_id)),
         key=lambda b: b.interval.from_lb,
     )
     return [(b.persona_id, b.interval) for b in bindings]
@@ -953,7 +999,7 @@ def bodies_of(store: Store, self_id: str) -> list[tuple[str, FuzzyInterval]]:
 
 def is_split(store: Store, self_id: str) -> bool:
     """True when this character occupies more than one body over the story."""
-    return len(store.get_self_persona_bindings(self_id=self_id)) > 1
+    return len({b.persona_id for b in store.get_self_persona_bindings(self_id=self_id)}) > 1
 
 
 def split_selves(store: Store, novel_id: str) -> dict[str, list[str]]:

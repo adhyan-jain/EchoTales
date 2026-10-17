@@ -177,6 +177,11 @@ export const api = {
 
   characters: (novelId) => request(`/api/novels/${enc(novelId)}/characters`),
 
+  // The cast as known at the end of `chapter` (webview.py::build_reader_cast):
+  // labels, aliases and traits the reader has met, never the whole volume's.
+  readerCast: (novelId, chapter) =>
+    request(`/api/novels/${enc(novelId)}/reader?chapter=${enc(Number(chapter))}`),
+
   setVoice: (novelId, selfId, speakerId, note) =>
     request(`/api/novels/${enc(novelId)}/characters/${enc(selfId)}/voice`, {
       method: 'POST',

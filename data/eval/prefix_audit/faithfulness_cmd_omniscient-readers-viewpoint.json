@@ -1,0 +1,35 @@
+{
+ "novel_id": "omniscient-readers-viewpoint",
+ "prefix_causal": true,
+ "ok": true,
+ "cuts": [
+  {
+   "chapter": 5,
+   "people_compared": 29,
+   "seconds": 0.42,
+   "persona_divergent": [],
+   "cast_divergent": []
+  },
+  {
+   "chapter": 10,
+   "people_compared": 29,
+   "seconds": 0.92,
+   "persona_divergent": [],
+   "cast_divergent": []
+  },
+  {
+   "chapter": 20,
+   "people_compared": 29,
+   "seconds": 2.2,
+   "persona_divergent": [],
+   "cast_divergent": []
+  },
+  {
+   "chapter": 30,
+   "people_compared": 29,
+   "seconds": 4.19,
+   "persona_divergent": [],
+   "cast_divergent": []
+  }
+ ]
+}

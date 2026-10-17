@@ -24,7 +24,7 @@ from echotales.core.enums import (
 from echotales.core.interval import Certainty, FuzzyInterval
 from echotales.core.models import MAIN_TIMELINE, DiscoursePosition
 from echotales.core.readset import observable_ref
-from echotales.core.state import StateResolver, observer_scope
+from echotales.core.state import StateResolver, current_bindings, observer_scope
 from echotales.core.visual_memory import (
     DisclosurePolicy,
     FactProvenance,
@@ -35,8 +35,8 @@ from echotales.core.visual_memory import (
 )
 from echotales.pipeline.persona.canon import apply_canon
 from echotales.pipeline.persona.reference_gen import (
-    REFERENCE_NEGATIVE,
     build_reference_prompt,
+    reference_negative,
 )
 from echotales.pipeline.resolve.appearance_extract import APPEARANCE_KEYS
 
@@ -140,7 +140,7 @@ def emit_scoped_reference(
     if persona_id is not None:
         if persona_id not in active_personas:
             # Check why it is not active
-            bindings = store.get_self_persona_bindings(self_id=self_id)
+            bindings = current_bindings(store.get_self_persona_bindings(self_id=self_id))
             target_binding = next((b for b in bindings if b.persona_id == persona_id), None)
             if target_binding is not None:
                 if target_binding.interval.contains(story_pos) == Certainty.EXCLUDED:
@@ -310,7 +310,7 @@ def emit_scoped_reference(
     prompt_digest = hashlib.sha256(prompt.encode("utf-8")).hexdigest()[:16]
 
     # 6. Compute bounds & effective cutoff
-    bindings = store.get_self_persona_bindings(self_id=self_id)
+    bindings = current_bindings(store.get_self_persona_bindings(self_id=self_id))
     binding = next((b for b in bindings if b.persona_id == active_persona_id), None)
     story_interval = binding.interval if binding is not None else FuzzyInterval.point_known(story_pos, story_pos)
 
@@ -343,7 +343,7 @@ def emit_scoped_reference(
             PanelImageRequest(
                 prompt=prompt,
                 out_path=image_file,
-                negative_prompt=REFERENCE_NEGATIVE,
+                negative_prompt=reference_negative(),
                 width=width,
                 height=height,
                 seed=seed,

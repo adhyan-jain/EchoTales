@@ -48,6 +48,7 @@ from echotales.core.models import (
     AliasBinding,
     Attribute,
     DiscoursePosition,
+    SelfPersonaBinding,
     StateOfResult,
     TemporalFact,
 )
@@ -316,13 +317,14 @@ class StateResolver:
         # and simultaneous disguises are represented, so this is a list.
         persona_ids: list[str] = []
         if target_kind is TargetKind.SELF:
-            for binding in self.store.get_self_persona_bindings(self_id=target_id):
-                if binding.timeline_id != timeline_id:
-                    continue
-                if binding.observer_id not in (observer_scope(observer_id) or {binding.observer_id}):
-                    continue
-                if binding.learned_at_pos > knowledge_pos and observer_id != OBSERVER_SYSTEM:
-                    continue
+            visible = [
+                b
+                for b in self.store.get_self_persona_bindings(self_id=target_id)
+                if b.timeline_id == timeline_id
+                and b.observer_id in (observer_scope(observer_id) or {b.observer_id})
+                and (b.learned_at_pos <= knowledge_pos or observer_id == OBSERVER_SYSTEM)
+            ]
+            for binding in current_bindings(visible):
                 cert = binding.interval.contains(position)
                 if cert is Certainty.EXCLUDED:
                     continue
@@ -466,9 +468,30 @@ class StateResolver:
         """
         return [
             b.persona_id
-            for b in self.store.get_self_persona_bindings(self_id=self_id)
+            for b in current_bindings(self.store.get_self_persona_bindings(self_id=self_id))
             if b.timeline_id == timeline_id and b.interval.contains(position).is_possible
         ]
+
+
+def current_bindings(bindings: Iterable[SelfPersonaBinding]) -> list[SelfPersonaBinding]:
+    """Drop bindings a later-learned revision of the same stint supersedes.
+
+    A body change is often confirmed only by what comes after it (`persona/split.py`: a change needs the character
+    to be seen again), so the prefix-causal persona build writes the old body twice -- open-ended, learned when the
+    body was first seen, and closed at the change, learned when the change was confirmed. Without this, a reader
+    past the confirmation got both: the old body's open binding still covered every later chapter. A revision is a
+    binding of the same persona, timeline and observer starting at the same story position; a persona worn in two
+    separate stints starts twice and keeps both. Pass the bindings already filtered to what the observer knows, so a
+    reader before the confirmation still sees the open binding. A store with one binding per persona (every build
+    before 2026-10-18, and every whole-volume build) is returned unchanged.
+    """
+    latest: dict[tuple[str, str, str, float], SelfPersonaBinding] = {}
+    for b in bindings:
+        key = (b.persona_id, b.timeline_id, b.observer_id, b.interval.from_lb)
+        prev = latest.get(key)
+        if prev is None or b.learned_at_pos >= prev.learned_at_pos:
+            latest[key] = b
+    return list(latest.values())
 
 
 def state_of(
