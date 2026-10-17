@@ -237,6 +237,19 @@ class TestProjectLifecycleAndJobs:
         )
         assert status == 409 and "NVIDIA GPU" in body["error"]
 
+        # The generic job route used to skip the guard (and the genre digest) for render and reference_gen.
+        monkeypatch.setattr(gpu, "gpu_status", lambda: gpu.GpuStatus("RTX", 5200, 8188))
+        for kind in ("render", "reference_gen"):
+            status, body = _request(
+                port, "POST", f"/api/projects/toy3/{kind}", body=json.dumps({"engine": "noobai"}).encode()
+            )
+            assert status == 409 and "GPU is busy" in body["error"], kind
+
+        # A malformed genre body is a 400, not a server error.
+        for payload in ({"genre": []}, {"genre": "klingon"}, ["x"]):
+            status, _ = _request(port, "POST", "/api/projects/toy3/genre", body=json.dumps(payload).encode())
+            assert status == 400, payload
+
     def test_delete_project(self, live_server: int) -> None:
         port = live_server
         _request(

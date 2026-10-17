@@ -50,6 +50,7 @@ from __future__ import annotations
 import hmac
 import json
 import logging
+import math
 import os
 import re
 import secrets
@@ -598,7 +599,12 @@ def _project_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
 
 def _genre_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
     """The project's visual genre for the Settings page: what is chosen, what detection proposes, and the options."""
-    from echotales.pipeline.persona.genre import GENRES, NOVEL_GENRE, detect_genre_cached, stored_genre
+    from echotales.pipeline.persona.genre import (
+        GENRES,
+        NOVEL_GENRE,
+        detect_genre_cached,
+        stored_genre,
+    )
 
     novel_id = handle.source.novel_id
     chosen = stored_genre(handle.store, novel_id)
@@ -970,7 +976,9 @@ def make_handler(
                     try:
                         at = float(raw)
                     except ValueError:
-                        return self._json(400, {"error": "chapter must be a number"})
+                        at = float("nan")
+                    if not math.isfinite(at):  # "nan" raised in int(), "inf" served the whole book as a reader's view
+                        return self._json(400, {"error": "chapter must be a finite number"})
                     return self._json(200, build_reader_cast(handle.store, parts[2], at))
 
                 # --- Product Orchestration track ---------------------------
@@ -1337,6 +1345,13 @@ def make_handler(
                                 f"HTTP; allowed: {sorted(ALLOWED_HTTP_ENGINES)}"
                             },
                         )
+                    if kind in ("render", "reference_gen"):
+                        # The same guard and digest as the dedicated generate routes: this route used to accept a
+                        # real engine on a busy GPU and ignore a changed genre.
+                        refusal = _gpu_refusal(str(params.get("engine", "stub")))
+                        if refusal:
+                            return self._json(409, {"error": refusal})
+                        params = _with_genre(handle, params)
                     if "sources_path" not in params:
                         default_sources = registry.project_asset_dir(parts[2]) / "sources.toml"
                         if default_sources.is_file():
@@ -1349,8 +1364,11 @@ def make_handler(
                         return self._json(404, {"error": f"unknown project {parts[2]!r}"})
                     from echotales.pipeline.persona.genre import GENRES
 
-                    genre = self._read_json().get("genre")
-                    if genre is not None and genre not in GENRES:
+                    body = self._read_json()
+                    if not isinstance(body, dict):
+                        return self._json(400, {"error": 'body must be an object like {"genre": "xianxia"}'})
+                    genre = body.get("genre")
+                    if genre is not None and (not isinstance(genre, str) or genre not in GENRES):
                         return self._json(400, {"error": f"unknown genre {genre!r}; known: {sorted(GENRES)}"})
                     handle.store.set_visual_genre(parts[2], genre)
                     return self._json(200, _project_status(handle))

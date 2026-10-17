@@ -67,15 +67,23 @@ export default function Read() {
   const chapterNumber = chapter ? Number(chapter.number) : null;
 
   // Keyed by chapter, so a stale response for the chapter just left is never
-  // shown against the one just opened.
+  // shown against the one just opened. The previous chapter's cast stays up
+  // while the next loads (`shown`, below) instead of flashing "Loading the
+  // cast" on every page turn; it only ever holds chapters already read forward
+  // or back, never the whole volume.
   const [cast, setCast] = useState({ chapter: null, entities: null, error: null });
+  const [lastGood, setLastGood] = useState(null);
   const [castAttempt, setCastAttempt] = useState(0);
   useEffect(() => {
     if (!novelId || chapterNumber == null) return undefined;
     let live = true;
     api
       .readerCast(novelId, chapterNumber)
-      .then((r) => live && setCast({ chapter: chapterNumber, entities: r.entities, error: null }))
+      .then((r) => {
+        if (!live) return;
+        setCast({ chapter: chapterNumber, entities: r.entities, error: null });
+        setLastGood({ chapter: chapterNumber, entities: r.entities });
+      })
       .catch((e) => live && setCast({ chapter: chapterNumber, entities: null, error: e }));
     return () => {
       live = false;
@@ -86,6 +94,9 @@ export default function Read() {
     () => (current.entities ? new Map(current.entities.map((e) => [e.id, e])) : null),
     [current.entities]
   );
+  // What the sidebar shows while this chapter's cast is in flight. Marks and speakers still wait for
+  // `castById`: a label from the other chapter's cast could name someone this chapter has not introduced.
+  const sidebarEntities = current.entities || (lastGood ? lastGood.entities : null);
   const shownChapter = useMemo(() => readerChapter(chapter, castById), [chapter, castById]);
 
   const goTo = useCallback(
@@ -157,9 +168,11 @@ export default function Read() {
 
   // A shared link can focus a character the reader has not met yet; naming
   // them in the chip would be the spoiler this page avoids.
-  const focused = focusId
-    ? (castById && castById.get(focusId)) || { id: focusId, label: 'a character not met yet', colour: 'transparent' }
-    : null;
+  // No chip until this chapter's cast has loaded: before that every focus looked like an unmet character.
+  const focused =
+    focusId && castById
+      ? castById.get(focusId) || { id: focusId, label: 'a character not met yet', colour: 'transparent' }
+      : null;
 
   return (
     <div className="flex h-full min-h-0 flex-1 overflow-hidden">
@@ -205,9 +218,9 @@ export default function Read() {
               Try again
             </button>
           </div>
-        ) : current.entities ? (
+        ) : sidebarEntities ? (
           <EntitySidebar
-            entities={current.entities}
+            entities={sidebarEntities}
             search={search}
             onSearchChange={setSearch}
             focusId={focusId}

@@ -145,13 +145,19 @@ _REFERENCE_NEGATIVE_PARTS = (
 
 
 @functools.cache
+def _fitted(parts: tuple[str, ...]) -> str:
+    return fit_to_budget(list(parts))
+
+
 def reference_negative(novel_id: str | None = None) -> str:
-    """The fitted negative prompt, computed on first use (per novel).
+    """The fitted negative prompt, computed on first use (cached on the final parts).
 
     It was a module constant, so importing anything under `persona` (the web server's reader-cast and character
     routes only want `split.py`) loaded the CLIP tokenizer, transformers and torch: 3.5 s and torch's RAM on the
     first Read-page request, measured 2026-10-17. Its culture line forbade modern clothing for every novel, which is
-    what ORV's modern-day cast must wear; with `novel_id` that line comes from the novel's genre.
+    what ORV's modern-day cast must wear; with `novel_id` that line comes from the novel's genre. The cache is keyed
+    on the parts, not the novel id: the genre is a setting that can change while the server runs, and a cache keyed
+    on the id kept the old genre's negative until restart (code review, 2026-10-18).
     """
     parts = list(_REFERENCE_NEGATIVE_PARTS)
     if novel_id is not None:
@@ -159,7 +165,7 @@ def reference_negative(novel_id: str | None = None) -> str:
 
         culture = profile(novel_id).negative_culture
         parts = [culture if p == _REFERENCE_CULTURE_PART else p for p in parts]
-    return fit_to_budget([p for p in parts if p])
+    return _fitted(tuple(p for p in parts if p))
 
 
 @dataclass(slots=True)

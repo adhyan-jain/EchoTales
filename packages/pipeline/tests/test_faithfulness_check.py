@@ -108,3 +108,17 @@ def test_cli_exit_codes_and_the_source_database_is_untouched(tmp_path, capsys) -
     assert main(["--db", str(tmp_path / "missing.db"), "faithfulness", "--novel", "t"]) == 2
     assert "NOT faithful" in capsys.readouterr().out
     assert hashlib.sha256(Path(db).read_bytes()).hexdigest() == before
+
+
+def test_persona_at_hands_a_reader_the_old_body_until_the_change_is_confirmed(tmp_path) -> None:
+    from echotales.pipeline.persona.split import persona_at
+
+    check_reader_faithfulness(_book(tmp_path / "b.db"), "t", [4], work_dir=tmp_path / "w")
+    full = Store(str(tmp_path / "w" / "full.db"))
+    try:
+        for chapter, body in ((3, "body1"), (4, "body1"), (5, "body2")):
+            known = DiscoursePosition(chapter=chapter, offset=10**6)
+            assert persona_at(full, "t:fy", chapter + 0.5, known_by=known) == f"t:fy:{body}", chapter
+        assert persona_at(full, "t:fy", 3.5) == "t:fy:body2"  # no reader position: the whole-novel answer, unchanged
+    finally:
+        full.close()

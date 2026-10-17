@@ -145,6 +145,8 @@ def test_reader_route(tmp_path) -> None:
         assert status == 200
         assert {e["label"] for e in json.loads(body)["entities"]} == {"The masked guest", "Mira"}
         assert get("/api/novels/t/reader?chapter=abc")[0] == 400
+        assert get("/api/novels/t/reader?chapter=nan")[0] == 400  # int(nan) raised: a 500
+        assert get("/api/novels/t/reader?chapter=inf")[0] == 400  # served the whole book as a reader's view
         assert get("/api/novels/nope/reader?chapter=1")[0] == 404
     finally:
         httpd.shutdown()

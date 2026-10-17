@@ -921,6 +921,8 @@ def persona_at(
     store: Store,
     self_id: str,
     position: float | None = None,
+    *,
+    known_by: DiscoursePosition | None = None,
 ) -> str:
     """Which body this consciousness is in at `position`.
 
@@ -933,11 +935,14 @@ def persona_at(
     `position=None` means "the latest body", which is the right default for a
     question that is not about a moment (a cast list, a CLI dump).
     """
-    bindings = [
+    # `known_by`: only bindings the reader has learned by then. A change confirmed at chapter 5 is not a fact at
+    # chapter 3 (`write_epochs(prefix_causal=True)`), so a reader-position caller must not be handed the new body.
+    known = [
         b
-        for b in current_bindings(store.get_self_persona_bindings(self_id=self_id))
-        if store.get_persona(b.persona_id) is not None
+        for b in store.get_self_persona_bindings(self_id=self_id)
+        if known_by is None or b.learned_at_pos <= known_by
     ]
+    bindings = [b for b in current_bindings(known) if store.get_persona(b.persona_id) is not None]
     if not bindings:
         return f"{self_id}:body1"
     bindings.sort(key=lambda b: b.interval.from_lb)

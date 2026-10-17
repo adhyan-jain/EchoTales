@@ -20,14 +20,16 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false,
   const [unreachable, setUnreachable] = useState(false);
   const [ingesting, setIngesting] = useState(false);
 
-  const load = useCallback(() => {
+  // `quiet` is the poll: it refreshes this card only. The parent's project list (`onChanged`) is told once, when the
+  // job ends, not on every tick -- two list requests per tick before.
+  const load = useCallback((quiet = false) => {
     setStatus((prev) => (prev === 'ready' ? 'ready' : 'loading'));
     api
       .listProjects()
       .then((list) => {
         setProjects(list || []);
         setStatus('ready');
-        if (onChanged) onChanged();
+        if (onChanged && quiet !== true) onChanged();
       })
       .catch((err) => {
         setUnreachable(isNetworkError(err));
@@ -48,12 +50,24 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false,
   // pass). Poll while this project's last job is in flight, like the Studio does; it stops itself when the job ends.
   const pollRef = useRef(null);
   const lastStatus = current && current.last_job ? current.last_job.status : null;
+  const wasInFlight = useRef(false);
   useEffect(() => {
     clearInterval(pollRef.current);
-    if (lastStatus === 'PENDING' || lastStatus === 'RUNNING') {
-      pollRef.current = setInterval(load, 2000);
+    const inFlight = lastStatus === 'PENDING' || lastStatus === 'RUNNING';
+    if (inFlight) {
+      // Capped at five minutes: a job left RUNNING by a server restart is not polled forever.
+      let ticks = 0;
+      pollRef.current = setInterval(() => {
+        ticks += 1;
+        if (ticks > 150) clearInterval(pollRef.current);
+        else load(true);
+      }, 2000);
+    } else if (wasInFlight.current && onChanged) {
+      onChanged();
     }
+    wasInFlight.current = inFlight;
     return () => clearInterval(pollRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastStatus, load]);
 
   const startIngest = () => {

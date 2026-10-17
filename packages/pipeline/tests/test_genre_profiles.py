@@ -69,3 +69,27 @@ def test_re_adding_a_novel_keeps_its_chosen_genre(tmp_path) -> None:
     store = _book(tmp_path, "keep", "x", "western_fantasy")
     store.add_novel("keep", "Renamed", "", "generic")  # re-ingest
     assert store.get_novel("keep")["visual_genre"] == "western_fantasy"
+
+
+def test_the_reference_negative_follows_a_genre_change_without_a_restart(tmp_path) -> None:
+    # Cached on the novel id it kept the first genre's culture line until the server restarted (code review).
+    store = _book(tmp_path, "switch", "x", "xianxia")
+    genre.use_store_genre(store, "switch")
+    assert "school uniform" in reference_negative("switch")
+    store.set_visual_genre("switch", "modern_apocalypse")
+    genre.use_store_genre(store, "switch")
+    assert "school uniform" not in reference_negative("switch") and "xianxia" in reference_negative("switch")
+
+
+def test_every_profiles_culture_negative_survives_the_reference_budget() -> None:
+    # A part that does not fit the 77-token negative is dropped whole by `fit_to_budget`: ORV's first draft of its
+    # culture line (17 tokens) was silently absent from every reference sheet.
+    for name, prof in genre.GENRES.items():
+        if not prof.negative_culture:
+            continue
+        genre._PROJECT_GENRE["probe"] = name
+        try:
+            first = prof.negative_culture.split(",")[0].strip()
+            assert first in reference_negative("probe"), name
+        finally:
+            genre._PROJECT_GENRE.pop("probe", None)

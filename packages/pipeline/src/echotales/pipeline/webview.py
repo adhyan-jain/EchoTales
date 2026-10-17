@@ -365,7 +365,7 @@ def build_reader_cast(store: Store, novel_id: str, chapter: float) -> dict:
         is_person = entity.kind.is_person if entity else True
         traits: dict[str, str] = {}
         if entity is not None and is_person:
-            values = standing_values(store, persona_at(store, target_id, chapter), known_by=known_by)
+            values = standing_values(store, persona_at(store, target_id, chapter, known_by=known_by), known_by=known_by)
             traits = {k: values[k] for k in ("gender", "age_band") if k in values}
         entities.append(
             {

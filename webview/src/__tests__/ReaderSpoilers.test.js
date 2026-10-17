@@ -47,12 +47,13 @@ const CH1 = {
     { span_id: 's4', type: 'DIALOGUE', text: '"Hush."', marks: [], speaker: 'Voice A', speaker_id: 'anon:A', anonymous_speaker: true },
   ],
 };
+const CH2 = { number: 2, spans: [{ span_id: 's5', type: 'NARRATION_ACTION', text: 'The next morning.', marks: [] }] };
 const NOVEL = {
   novel_id: 'toy',
   label: 'Toy Novel',
-  stats: { chapters: 1 },
+  stats: { chapters: 2 },
   entities: [GUEST_WHOLE, CORIN_WHOLE],
-  chapters: [CH1],
+  chapters: [CH1, CH2],
 };
 
 function mount(path) {
@@ -107,4 +108,29 @@ test('readerChapter: while the cast loads, marks show the printed text and speak
   expect(out.spans[1].speaker).toBe('…');
   expect(out.spans[3].speaker).toBe('Voice A');
   expect(CH1.spans[0].marks[0].label).toBe('Arthur Vane'); // the payload is not mutated
+});
+
+test('no focus chip until the chapter cast has loaded, so a met character is never shown as unmet', async () => {
+  let release;
+  api.readerCast.mockReturnValue(new Promise((resolve) => { release = resolve; }));
+  mount('/p/toy/read/1?focus=g');
+  await screen.findByText('Good evening.', { exact: false });
+  expect(screen.queryByText('a character not met yet')).not.toBeInTheDocument();
+  release({ entities: [GUEST_AT_1] });
+  expect(await screen.findByRole('button', { name: /^Stop highlighting The masked guest/ })).toBeInTheDocument();
+});
+
+test('turning the page keeps the cast list up while the next chapter loads', async () => {
+  window.scrollTo = jest.fn(); // jsdom does not implement it; the page turn scrolls to the top
+  let release;
+  api.readerCast.mockResolvedValueOnce({ entities: [GUEST_AT_1] });
+  mount('/p/toy/read/1');
+  expect(await screen.findByRole('button', { name: /^The masked guest, 1 mentions/ })).toBeInTheDocument();
+  api.readerCast.mockReturnValueOnce(new Promise((resolve) => { release = resolve; }));
+  fireEvent.click(screen.getByRole('button', { name: /next chapter/i }));
+  await waitFor(() => expect(api.readerCast).toHaveBeenCalledWith('toy', 2));
+  expect(screen.getByRole('button', { name: /^The masked guest, 1 mentions/ })).toBeInTheDocument();
+  expect(screen.queryByText('Loading the cast…')).not.toBeInTheDocument();
+  release({ entities: [GUEST_WHOLE, CORIN_WHOLE] });
+  expect(await screen.findByRole('button', { name: /^Corin, 1 mentions/ })).toBeInTheDocument();
 });

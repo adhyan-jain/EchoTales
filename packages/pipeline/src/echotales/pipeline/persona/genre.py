@@ -38,7 +38,8 @@ class GenreProfile:
     world_context: str
     novel_style: str
     #: Replaces `prompt.py::_NEGATIVE_CULTURE` -- RI's "modern clothing, school uniform" is a correct negative for a
-    #: cultivation novel and exactly wrong for one set in a modern city.
+    #: cultivation novel and exactly wrong for one set in a modern city. At most 14 tokens (what still fits): a longer
+    #: part does not fit the 77-token negative and `fit_to_budget` drops it whole, so it would say nothing.
     negative_culture: str
     mismatch_props: tuple[str, ...] = ()
     scene_locales: dict[str, str] = field(default_factory=dict)
@@ -110,7 +111,7 @@ GENRES: dict[str, GenreProfile] = {
         ),
         world_context="",
         novel_style="Victorian gaslamp fantasy, muted desaturated palette",
-        negative_culture="hanfu, xianxia, japanese shrine, modern clothing, school uniform",
+        negative_culture="hanfu, xianxia, modern clothing, japanese shrine",
         mismatch_props=("xianxia", "hanfu", "cultivator", "samurai", "kimono", "cyberpunk", "futuristic armor"),
         appearance={"hair_color": "brown", "eye_color": "grey", "skin_tone": "pale"},
         lexicon=("carriage", "gas lamp", "gaslight", "revolver", "top hat", "cravat", "waistcoat", "pence", "soli",
@@ -140,7 +141,7 @@ GENRES: dict[str, GenreProfile] = {
         ),
         world_context="scenario system, constellations, dokkaebi, subway carriages",
         novel_style="modern Korean urban apocalypse, high contrast",
-        negative_culture="hanfu, xianxia, ancient chinese, japanese shrine, cherry blossoms",
+        negative_culture="hanfu, xianxia, ancient chinese, cherry blossoms",
         mismatch_props=("hanfu", "xianxia", "cultivator robes", "kimono", "samurai", "medieval armor", "castle"),
         scene_locales={
             "hall": "a fluorescent-lit lobby, shattered glass, dead screens",
@@ -206,7 +207,7 @@ GENRES: dict[str, GenreProfile] = {
         world_setting="medieval fantasy kingdom, stone castles, timber villages, forests, torchlit halls, mountain passes",
         world_context="",
         novel_style="western high fantasy",
-        negative_culture="hanfu, xianxia, modern clothing, school uniform, japanese shrine",
+        negative_culture="hanfu, xianxia, modern clothing, kimono",
         mismatch_props=("hanfu", "xianxia", "katana", "kimono", "modern clothing", "gun", "car"),
         scene_locales={
             "hall": "a torchlit castle hall, banners, stone pillars",
@@ -239,7 +240,7 @@ GENRES: dict[str, GenreProfile] = {
         world_setting="starship corridors, neon megacity, holographic displays, metal and glass, distant planets",
         world_context="",
         novel_style="science fiction",
-        negative_culture="hanfu, xianxia, medieval armor, horse carriage, japanese shrine",
+        negative_culture="hanfu, xianxia, medieval armor, carriage",
         mismatch_props=("hanfu", "xianxia", "castle", "horse-drawn carriage", "kimono", "medieval armor"),
         scene_locales={
             "hall": "a starship bridge, holographic consoles",
