@@ -24,6 +24,15 @@ When a language model is shown a passage of a famous public-domain novel and ask
 | Is the validity check itself sound? | A memory-free gate (two renamed arms against each other, plus unseen text) is satisfied by four of six models; the usual original-versus-renamed gate on plain controls is partly memory | 5.15, 5.18 |
 | Does it survive weak labels? | On the 20 events an independent model judged explicit from the reveal passage: valid-model pool **+15.7 [4.7, 26.8]**, Luna **+29.9 [15.0, 45.8]** | 5.19 |
 
+## New on 2026-10-17: the audit has to fit the leak kind (pre-registered, local models only, $0)
+| Test | Result |
+|---|---|
+| **Suffix canaries** (invented names and a fact planted only after the reader's position; string match, no judge, no false positives by construction) | Whole-volume card: **22.8% [14.2, 31.5] of all 54 events vs 0** for the versioned card; 3/3 models |
+| **Long-context assistant told where the reader is** ("do not reveal anything after the marker") | Quotes the post-marker name in **40.6% [29.7, 51.4] of 46 events vs 0** with the suffix removed; 88% of those hits equate the alias with the planted identity (post hoc) |
+| **Selection leak** (every passage served is before the reader; a whole-volume entity merge chose them) | Card names the hidden identity in **19.4% vs 1.4%** of 24 merged events (+18.1 [+4.2, +33.3]; judge rule); invisible to canaries and to position filters |
+| **Counterfactual suffix on the deployed graph** (pronouns swapped after the cut only) | Served gender depends on later chapters in **47 of 289** character-cuts, twice the 23 truncation finds; 0 after the repair; screen sound under this second oracle |
+| Theory | FORMAL P9 to P11: canaries are sound and blind to selection leaks; truncation finds divergence, not all dependence; property-tested |
+
 ## Found and fixed in a second system (pre-registered, 2026-10-16)
 RF-E2E (pre-registered, addenda 6 and 7, written before any card was read): on 54 confirmatory reveal events, a whole-volume LLM character card stamped at first mention names the hidden identity before the reveal in 18.5% of events under cipher names no model has seen (judge rule; strict text rule 24.6% of 19), against 1.2% for the versioned (prefix-built) card. Input-channel RF1 SUPPORTED on the primary text rule (+24.6 [+8.8, +42.1]) and SUPPORTED on the judge rule (+17.3 [+9.3, +26.5]); memory-only leak +2.5 [+0.0, +5.6]. Pseudonymise-and-map-back: prefix-card leak 3.7% to 3.1% (RF5 not evaluated: no memory leak to fix). Models: llama3.1:8b, mistral:7b-instruct, qwen2.5:7b; not run: none. Larger open models (mistral24, qwen32b, addendum 8): W-ren 23.1% vs P-ren 1.9%; memory-only leak +0.0 points. This shows the look-ahead defect is a property of a common assistant design, not of our code, separates the input leak from the memory leak on one system, and shows the versioned repair removing it. Section 5.24 of the report.
 
