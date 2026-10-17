@@ -1,0 +1,88 @@
+{
+ "label_provenance": "MODEL-JUDGED (qwen3:8b); resolver qwen2.5:7b; events model-selected; no human labels",
+ "models": [
+  "llama3.1:8b",
+  "mistral:7b-instruct",
+  "qwen2.5:7b"
+ ],
+ "selected_events": 36,
+ "resolver_merged": 24,
+ "resolver_unparsed": 0,
+ "H13_1_resolver_merged": {
+  "events": 24,
+  "M_rate": 0.19444444444444445,
+  "P_rate": 0.013888888888888888,
+  "estimate": 0.18055555555555555,
+  "ci": [
+   0.041666666666666664,
+   0.3333333333333333
+  ],
+  "models_positive": 3,
+  "per_model": {
+   "llama3.1:8b": {
+    "M_rate": 0.16666666666666666,
+    "P_rate": 0.041666666666666664,
+    "diff": 0.125,
+    "events_pos": 4,
+    "events_neg": 1,
+    "sign_p_one_sided": 0.1875
+   },
+   "mistral:7b-instruct": {
+    "M_rate": 0.20833333333333334,
+    "P_rate": 0.0,
+    "diff": 0.20833333333333334,
+    "events_pos": 5,
+    "events_neg": 0,
+    "sign_p_one_sided": 0.03125
+   },
+   "qwen2.5:7b": {
+    "M_rate": 0.20833333333333334,
+    "P_rate": 0.0,
+    "diff": 0.20833333333333334,
+    "events_pos": 5,
+    "events_neg": 0,
+    "sign_p_one_sided": 0.03125
+   }
+  },
+  "passes": true
+ },
+ "H13_2_ideal_merge": {
+  "events": 36,
+  "M_rate": 0.14814814814814814,
+  "P_rate": 0.018518518518518517,
+  "estimate": 0.12962962962962965,
+  "ci": [
+   0.037037037037037035,
+   0.24074074074074073
+  ],
+  "models_positive": 3,
+  "per_model": {
+   "llama3.1:8b": {
+    "M_rate": 0.1388888888888889,
+    "P_rate": 0.05555555555555555,
+    "diff": 0.08333333333333334,
+    "events_pos": 4,
+    "events_neg": 1,
+    "sign_p_one_sided": 0.1875
+   },
+   "mistral:7b-instruct": {
+    "M_rate": 0.1388888888888889,
+    "P_rate": 0.0,
+    "diff": 0.1388888888888889,
+    "events_pos": 5,
+    "events_neg": 0,
+    "sign_p_one_sided": 0.03125
+   },
+   "qwen2.5:7b": {
+    "M_rate": 0.16666666666666666,
+    "P_rate": 0.0,
+    "diff": 0.16666666666666666,
+    "events_pos": 6,
+    "events_neg": 0,
+    "sign_p_one_sided": 0.015625
+   }
+  },
+  "passes": true
+ },
+ "identity_passage_share": 0.37817460317460316
+}

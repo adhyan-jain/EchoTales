@@ -1,0 +1,445 @@
+{
+ "model": "llama3.1:8b",
+ "options": {
+  "temperature": 0,
+  "seed": 20261016,
+  "num_predict": 160,
+  "num_ctx": 8192
+ },
+ "prompt": "Write a character card of at most 80 words for the character referred to as {ALIAS}, using these passages from the book. Passages:\n{PASSAGES}\nCard:",
+ "cards": {
+  "C965_1": {
+   "alias_ren": "Dclox",
+   "identity_ren": "Isccl Xopbtk",
+   "n_passages": 12,
+   "n_identity_passages": 9,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Dclox:\n\n**Name:** Master Dclox\n**Age:** Unknown\n**Occupation:** Friend of Vosc's father and possibly a suitor for her affections\n**Personality:** Passionate, intense, possibly manipulative. He is described as having \"eyes like two flaming torches\" when he learns about the tulip.\n**Relationships:** Close friend of Vosc's father, possibly in love with Vosc herself. He seems to have a strong influence over her and her family.\n**Goals:** Possibly seeking to acquire the black tulip for himself or to use it as leverage over Vosc's family. His motivations are not entirely clear.",
+     "words": 94
+    }
+   }
+  },
+  "C1848_1": {
+   "alias_ren": "She",
+   "identity_ren": "Ncviwc",
+   "n_passages": 12,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for She (Kikz) in 80 words or less:\n\n**Name:** Kikz\n**Age:** Late teens/early twenties\n**Occupation:** Nun/Abbess of a convent\n**Personality:** Gentle, compassionate, determined, and strong-willed. Kikz is deeply devoted to her faith and her charges, but also struggles with the harsh realities of the convent's rules and the fate of those who break them.\n**Relationships:** Bhoncs (her love interest), Iscxtkkc de Sifutwgc (a woman she tries to help escape execution)",
+     "words": 75
+    }
+   }
+  },
+  "C2078_1": {
+   "alias_ren": "Bhcis",
+   "identity_ren": "Htktw",
+   "n_passages": 12,
+   "n_identity_passages": 0,
+   "cells": {
+    "M_ren": {
+     "card": "Here is the character card for Bhcis:\n\n**Name:** Bhcis\n**Age:** Late teens/early twenties\n**Occupation:** Courtesan/Actress\n**Personality:** Seductive, manipulative, yet vulnerable and sensitive. She uses her charm to get what she wants, but also has a deep sense of longing and desire for something more.\n**Goals:** To escape her life as a courtesan and find happiness and fulfillment. She is drawn to Jcjhwubius' words about eternal life and spiritual transformation.\n**Motivations:** Desire for love, connection, and transcendence. She is also motivated by self-preservation and the need to maintain her status in society.\n**Conflict:** Inner conflict between her desire for spiritual growth and her attachment to her worldly",
+     "words": 106
+    }
+   }
+  },
+  "C2516_1": {
+   "alias_ren": "Wcwbz Tqcvb",
+   "identity_ren": "Jack",
+   "n_passages": 12,
+   "n_identity_passages": 4,
+   "cells": {
+    "M_ren": {
+     "card": "Here is the character card for Wcwbz Tqcvb:\n\n**Name:** Wcwbz Tqcvb\n**Occupation:** Sailor/Brig Captain\n**Personality:** Fiercely independent, rough-around-the-edges, and prone to drinking. Has a shabby-genteel appearance but is well-respected by his peers.\n**Skills:** Expert knowledge of the Border region, navigation, and sailing.\n**Quirks:** Enjoys singing sea shanties and has a fondness for strong liquor. Can be quite boisterous when intoxicated.",
+     "words": 60
+    }
+   }
+  },
+  "C4276_1": {
+   "alias_ren": "Rvtetvilm",
+   "identity_ren": "Mr. Eilmiwsow",
+   "n_passages": 12,
+   "n_identity_passages": 0,
+   "cells": {
+    "M_ren": {
+     "card": "Here is the character card for Rvtetvilm:\n\n**Name:** Rvtetvilm\n**Age:** Unknown (but appears to be an adult)\n**Occupation:** Served in the navy and later with the Sjcwish army\n**Personality:** Impulsive, rebellious, and willing to defy authority when he believes it is unjust. He has a strong sense of loyalty and will stand up for what he thinks is right.\n**Relationships:** His family, particularly his father Mr. Hckt and sister Ncvfcvtb, are deeply concerned about him due to his past actions and the consequences that may follow.\n**Background:** Rvtetvilm's past is marked by controversy and rebellion against authority figures, including Captain Vtie. He has been absent",
+     "words": 105
+    }
+   }
+  },
+  "C5122_1": {
+   "alias_ren": "she",
+   "identity_ren": "young Buck Rckiw",
+   "n_passages": 12,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Duwt (also referred to as \"the little girl\" or simply \"she\") in 80 words:\n\n**Name:** Duwt\n**Age:** Young teenager\n**Appearance:** Dark hair, dark eyes, flushed face when embarrassed or excited\n**Personality:** Cunning, quick-witted, independent, and fiercely protective of her family and home. She is also kind and gentle, as shown by her care for her cousin Ecat and her willingness to help Hckt.\n**Skills:** Skilled reader and speller, able to recite poetry from memory.",
+     "words": 80
+    }
+   }
+  },
+  "C5660_1": {
+   "alias_ren": "Colonel Qtcbhtvxz",
+   "identity_ren": "Dcnts J. Hcbhcqcz",
+   "n_passages": 12,
+   "n_identity_passages": 9,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Colonel Qtcbhtvxz:\n\n**Name:** Colonel Dcnts Qtcbhtvxz\n\n**Age:** Late 50s/Early 60s\n\n**Physical Description:** Tall, dignified, with snow-white hair and piercing dark eyes. Impeccably dressed.\n\n**Personality:** Reserved, courtly, and prosperous. Impresses villagers with his air of authority and wealth.\n\n**Background:** Widowed, with a widowed daughter (Mrs. Xuvvoqs) and a grandchild (Ncvz Kouist). Lives in the stately Acwetatwbtv mansion with only two servants, Uncle Txtw and Aunt Jokkz.\n\n**Skills/Abilities:** None mentioned\n\n**Goals/Motivations:** None",
+     "words": 76
+    }
+   }
+  },
+  "C6086_1": {
+   "alias_ren": "his guest",
+   "identity_ren": "Sir Bhoncs de Kowfutaikkt",
+   "n_passages": 12,
+   "n_identity_passages": 10,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for \"his guest\" (Xvult) in 80 words or less:\n\n**Name:** Xvult\n**Title:** Prince of Rvcwlt\n**Relationship to Qckkclt:** Ally and friend\n**Personality:** Brave, noble, and determined. Xvult is a prince who has come to Slobkcwe to reclaim his rightful place on the throne. He is willing to risk everything for his country's freedom.\n**Skills:** Military leadership, strategic thinking",
+     "words": 63
+    }
+   }
+  },
+  "C7079_1": {
+   "alias_ren": "Vokcwe",
+   "identity_ren": "Louis",
+   "n_passages": 12,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Vokcwe within the 80-word limit:\n\n**Name:** Vokcwe\n**Age:** Unknown\n**Occupation:** Soldier, General Xowcjcvbt's aide-de-camp\n**Personality:** Belligerent, impulsive, and charming. Has a \"charming malady\" that makes him faint at the thought of surgical instruments.\n**Skills:** Skilled in combat and dueling.\n**Goals:** To fight with honor and defend his general's reputation.\n**Motivations:** Loyalty to General Xowcjcvbt and a desire for self-respect.",
+     "words": 65
+    }
+   }
+  },
+  "C7265_1": {
+   "alias_ren": "Miss Cnovz",
+   "identity_ren": "Xtbsz",
+   "n_passages": 12,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Miss Cnovz:\n\n**Name:** Miss Cnovz\n**Age:** Unknown\n**Occupation:** Artist (painter, poet, musician)\n**Personality:** Enigmatic, creative, kind-hearted, and possibly romantic. She is described as a \"muse\" and a \"paragon\", suggesting that she is admired for her talents and accomplishments.\n**Relationships:** Close friendships with Kcuvc and Pen, who are both drawn to her intelligence and charm. She also has a close relationship with her mother, Lady Lkcatviwf.\n**Skills:** Painting, poetry, music, horseback riding\n**Goals:** Unknown, but possibly seeking connection and understanding through her art and relationships.\n\nNote: The character's name is intentionally misspelled",
+     "words": 97
+    }
+   }
+  },
+  "C7510_1": {
+   "alias_ren": "he",
+   "identity_ren": "Rvte Qikkoufhxz",
+   "n_passages": 12,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Mtibh:\n\n**Name:** Mtibh\n**Age:** Late 20s/Early 30s (approximate)\n**Occupation:** Former cavalry sergeant, now a fugitive\n**Personality:** Brave, resourceful, determined, and fiercely independent. Has a strong sense of justice and will not back down from a fight.\n**Background:** Born into an excellent family in tidewater Aivfiwic, Mtibh grew up with a rough life, fighting in the Civil War and later becoming a captain. He has been on his own since his father's death and is haunted by memories of the war.\n**Skills:** Skilled fighter, horseman, and tracker. Has experience with survival in harsh environments.\n**Goals:** To clear",
+     "words": 102
+    }
+   }
+  },
+  "C7671_2": {
+   "alias_ren": "Qikkcin Qcirt",
+   "identity_ren": "Sinjsow",
+   "n_passages": 12,
+   "n_identity_passages": 0,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Qikkcin Qcirt (also referred to as Gentleman Qcirt) in 80 words or less:\n\n**Name:** Qikkcin Qcirt (Gentleman Qcirt)\n**Age:** Older adult, possibly elderly\n**Occupation:** Actor, manager of Sojhz's theatrical career\n**Personality:** Sanguine, cheerful, protective of Sojhz, proud but humble\n**Relationships:** Grandfather to Sojhz, friend to Acwlt and Kiowtk, acquaintance to Vufft and Kostkz\n**Goals:** To provide for Sojhz's well-being and success in the theatre, to outwit Vufft and reclaim his granddaughter.",
+     "words": 77
+    }
+   }
+  },
+  "C7671_3": {
+   "alias_ren": "Ntvkt",
+   "identity_ren": "the Wise Man",
+   "n_passages": 12,
+   "n_identity_passages": 3,
+   "cells": {
+    "M_ren": {
+     "card": "Here are the character cards for Ntvkt:\n\n**Character Card 1**\n\n* Name: Ntvkt\n* Nickname: The Cobbler\n* Personality: Enigmatic, wise, and somewhat mysterious. He has a deep understanding of human nature and is skilled in reading people.\n* Skills: Astrology, divination, and observation.\n* Goals: To help others understand themselves and their place in the world.\n\n**Character Card 2**\n\n* Name: Ntvkt\n* Personality: Witty, observant, and sometimes sarcastic. He has a dry sense of humor and is not afraid to speak his mind.\n* Skills: Storytelling, acting, and persuasion.\n* Goals: To entertain and educate others through his stories and performances.\n\n**Character Card 3**",
+     "words": 106
+    }
+   }
+  },
+  "C7713_1": {
+   "alias_ren": "/parvenu/",
+   "identity_ren": "the son of a long-descended Twfkish peer",
+   "n_passages": 12,
+   "n_identity_passages": 3,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for /parvenu/ (Vcweck Ktskit) in 80 words or less:\n\n**Name:** Vcweck Ktskit\n**Title:** Usurer, suitor to Aiokcwbt\n**Personality:** Cunning, ambitious, ruthless, and calculating. Seeks power and wealth through manipulation and exploitation.\n**Goals:** Acquire the ancestral acres, secure a seat in parliament, and oust Frank from the Hcgtketcw heritage.\n**Motivations:** Self-interest, desire for social status, and a need to outdo others.\n**Relationships:** Manipulates those around him, including Aiokcwbt's father and Lord L'Tsbvcwft.",
+     "words": 76
+    }
+   }
+  },
+  "C9752_1": {
+   "alias_ren": "Mr. Love",
+   "identity_ren": "Qikkicn Fcqbvtz",
+   "n_passages": 12,
+   "n_identity_passages": 7,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Mr. Love:\n\n**Name:** Mr. Love\n**Age:** Unknown\n**Occupation:** Matchmaker/Owner of a boarding house\n**Personality:** Jolly, convivial, liberal-minded, and skilled at creating a welcoming atmosphere. He seems to genuinely care about the well-being of his guests.\n**Physical Description:** Balding with a high forehead, greyish-curdled hair, and a smooth-shaven face except for a close-clipped mustache.\n**Skills:** Excellent host, able to create a sense of community among his guests, and skilled at matchmaking.",
+     "words": 76
+    }
+   }
+  },
+  "C9847_1": {
+   "alias_ren": "Qikkicn Shcmtsjtcvt",
+   "identity_ren": "him who was himself the 'Greatest Birth of Time'; the man pre-eminently distinguished amongst the sons of earth",
+   "n_passages": 12,
+   "n_identity_passages": 9,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Qikkicn Shcmtsjtcvt:\n\n**Name:** Qikkicn Shcmtsjtcvt (also known as Mr. Shcmtsjtcvt)\n\n**Occupation:** Gentleman, Actor\n\n**Personality:** Unlettered rustic of Sbvcbrove, according to some accounts; however, others suggest he was a learned and skilled individual with extensive knowledge in various fields.\n\n**Skills:** None explicitly mentioned, but his supposed authorship of the \"Greatest Birth of Time\" suggests expertise in writing, poetry, law, and classical lore.\n\n**Relationships:** Bacon is often associated with Shcmtsjtcvt, with some suggesting they collaborated on works or that Bacon was the true author behind Shcmtsjtcvt",
+     "words": 90
+    }
+   }
+  },
+  "C11431_1": {
+   "alias_ren": "Cwstknt",
+   "identity_ren": "don Bhoncs d'Ckxuvli, of Wcjkts",
+   "n_passages": 12,
+   "n_identity_passages": 10,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Cwstknt:\n\n**Name:** Cwstknt (2 _syl._)\n**Family:** Father of Val\u00e8re and Ncvicwt, don Bhoncs d'Ckxuvli of Wcjkts\n**Personality:** Wandered from place to place for 10 years after being shipwrecked with his family. Settled in Jcvis and intended to marry.\n**Relationships:** Promised by Hcvjcfow in marriage to Tkist, but later discovered that Val\u00e8re was in love with Tkist. Eventually married Ncvicwt, who was affianced to Cl\u00e9ante.\n\nNote: The character card is based on the passages provided, and may not be a comprehensive or definitive description of",
+     "words": 90
+    }
+   }
+  },
+  "C11643_1": {
+   "alias_ren": "Tujhtnic Lckeifcbt",
+   "identity_ren": "Snibh",
+   "n_passages": 12,
+   "n_identity_passages": 12,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Tujhtnic Lckeifcbt:\n\n**Name:** Tujhtnic Lckeifcbt (also referred to as Mr. Lckeifcbt)\n\n**Age:** Late 20s/Early 30s\n\n**Occupation:** Miner/Prospector\n\n**Personality:** Determined, stubborn, and strong-willed. He is fiercely independent and non-conformist, often challenging societal norms and expectations.\n\n**Relationships:**\n\n* Engaged to Mrs. Snibh (Tujhtnic Lckeifcbt), but struggling with his feelings for her.\n* Has a complicated history with Lviwmtbb, who has threatened him over a disputed mining claim.\n* Has a romantic interest in Htsbtv X",
+     "words": 79
+    }
+   }
+  },
+  "C11720_1": {
+   "alias_ren": "Mr. Woqtkk",
+   "identity_ren": "Jtvliack",
+   "n_passages": 12,
+   "n_identity_passages": 4,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Mr. Woqtkk:\n\n**Name:** Jtvliack Woqtkk (also referred to as Mr. Woqtkk)\n\n**Age:** Late 20s/Early 30s (estimated)\n\n**Occupation:** Silversmith and money-changer\n\n**Personality:** Malicious, cunning, and possibly unscrupulous. He seems to take pleasure in causing trouble and manipulating others for his own gain.\n\n**Relationships:**\n\n* Father of Ncvicw Woqtkk\n* Husband of Kulz Ftorrvz (deceased)\n* Son of Dclox Woqtkk\n\n**Background:** Mr. Woqtkk's past is shrouded in mystery, but it appears that he was",
+     "words": 78
+    }
+   }
+  },
+  "C14498_1": {
+   "alias_ren": "Mr. Xvoqwiwf",
+   "identity_ren": "Ruviwi",
+   "n_passages": 12,
+   "n_identity_passages": 0,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Mr. Xvoqwiwf:\n\n**Name:** Mr. Xvoqwiwf\n\n**Age:** Unknown, but likely middle-aged or older based on his experience and literary output.\n\n**Occupation:** Poet, writer, and philosopher.\n\n**Personality:** Mr. Xvoqwiwf is a complex and introspective individual who values honesty and authenticity in art. He is willing to challenge conventional opinions and push boundaries in his work, even if it means being misunderstood or criticized by others. Despite this, he is not intentionally trying to be obscure or difficult; rather, he believes that true art requires depth and nuance.\n\n**Philosophy:** Mr. Xvoqwiwf's practical philosophy emphasizes the importance of human manifestation of the Divine Being,",
+     "words": 106
+    }
+   }
+  },
+  "C17434_1": {
+   "alias_ren": "Mr. Hoxsow",
+   "identity_ren": "Ktecwbtl",
+   "n_passages": 12,
+   "n_identity_passages": 2,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Mr. Hoxsow:\n\n**Name:** Mr. Hoxsow (Dostjh Hoxsow)\n**Alias:** None mentioned\n**Occupation:** News agent/agent for a country paper\n**Personality:** Cunning, manipulative, and calculating. He uses his charm and intelligence to get what he wants.\n**Goals:** To further his own interests and those of Mrs. Qiketvs, while also eliminating any obstacles that stand in their way.\n**Motivations:** Self-interest, loyalty to Mrs. Qiketvs, and a desire for power and wealth.\n**Skills:** Intelligence, charm, and the ability to manipulate others.\n**Relationships:** Close relationship with Mrs. Qiketvs, who is likely his",
+     "words": 92
+    }
+   }
+  },
+  "C21557_1": {
+   "alias_ren": "Mrs Rovsbtv",
+   "identity_ren": "Snibh",
+   "n_passages": 12,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Mrs Rovsbtv:\n\n**Name:** Mrs Rovsbtv (n\u00e9e unknown)\n**Age:** Late middle age\n**Occupation:** Formerly a wife of Mr Wilhokcs Rovsbtv, currently housekeeper at Slvcbbow's residence in Koweow\n**Personality:** Sharp-tongued, fiercely independent, and prone to outbursts of anger. Has a tendency to be manipulative and cunning when cornered.\n**Physical Description:** Broken nose, twisted eyebrow, and a violent contusion on her forehead (resulting from an altercation with Mr Sjiwwtz).\n**Background:** Married to Wilhokcs Rovsbtv, but has been separated from him for some time. Has",
+     "words": 87
+    }
+   }
+  },
+  "C28337_1": {
+   "alias_ren": "Jhik Jokcwe",
+   "identity_ren": "the man who was falsely denounced by Jtwwiwfbow as an accomplice in the assassination of the young Under-Stlvtbcvz, Mr. Xuvmt, on the Viaitvc",
+   "n_passages": 12,
+   "n_identity_passages": 10,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Jhik Jokcwe:\n\n**Name:** Jhik Jokcwe (also known as Kouis Ktsscv and alias of half-a-score other names)\n\n**Age:** Unknown\n\n**Occupation:** None specified, but appears to be a wealthy individual with a large estate\n\n**Personality:** Jhik Jokcwe is described as having a \"pale, repentant face\" and being \"rigid as a statue\". He is also shown to be intelligent and calculating, able to think on his feet. However, he is also revealed to have a dark past and is involved in some shady dealings.\n\n**Relationships:** Jhik Jokcwe has a complex relationship with Szkaic Jtwwiwfb",
+     "words": 97
+    }
+   }
+  },
+  "C33294_1": {
+   "alias_ren": "Ribg",
+   "identity_ren": "Rvibg",
+   "n_passages": 4,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Ribg:\n\n**Name:** Ribg\n**Occupation:** Jockey (groom)\n**Personality:** Loyal, nervous, obedient\n**Relationships:** Servant of Xvuwo, friend to Cwbow\n**Skills:** Skilled in horse care and riding\n**Notable Traits:** Tends to anticipate punishment from his master, values loyalty and duty.",
+     "words": 43
+    }
+   }
+  },
+  "C33538_1": {
+   "alias_ren": "Kissc",
+   "identity_ren": "a Fvttm",
+   "n_passages": 5,
+   "n_identity_passages": 2,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Kissc:\n\n**Name:** Kissc\n**Age:** Unknown\n**Appearance:** Foreign-looking, likely from a Mediterranean or Middle Eastern culture, with long coral earrings and possibly exotic features.\n**Personality:** Comforting, good-natured, and playful. Kissc has a teasing relationship with Eulmit, but also offers words of encouragement and support.\n**Relationships:** Acquaintance with Eulmit, Victoria, and Zoe.",
+     "words": 56
+    }
+   }
+  },
+  "C35443_1": {
+   "alias_ren": "Mr Ktcvz",
+   "identity_ren": "Ncbhtqs",
+   "n_passages": 12,
+   "n_identity_passages": 3,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Mr. Ktcvz:\n\n**Name:** Mr. Ktcvz (also known as Ncbhtqs)\n\n**Age:** Unknown, but appears to be an adult\n\n**Occupation:** Journeyman saddler, later a husband and step-father\n\n**Personality:** Cunning, manipulative, possibly dishonest. He takes advantage of the narrator's mother and marries her for financial gain.\n\n**Relationships:**\n\n* Narrator: Hates him intensely\n* Narrator's mother: Marries her after her first husband's death\n* Narrator's brother and sister: Treats them poorly\n\n**Background:** Has a questionable past, possibly a convict or someone with a history of crime. He is known to have been involved in the murder",
+     "words": 98
+    }
+   }
+  },
+  "C36592_1": {
+   "alias_ren": "Shcvmtz",
+   "identity_ren": "Mr Acvfcs Snibh",
+   "n_passages": 7,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Shcvmtz:\n\n**Name:** Shcvmtz\n**Nickname:** \"Shark-tooth\" (due to his pointed teeth)\n**Age:** Unknown\n**Occupation:** Slave-gang member and ruffianly mulatto\n**Personality:** Brutal, violent, and sadistic. He takes pleasure in inflicting pain on others.\n**Physical Description:** Emaciated, with shark-like teeth.\n**Relationships:** Has relatives in the camp who will seek revenge for his death.\n**Notable Actions:** Killed by Twfkishncw after attacking him with a knife.",
+     "words": 67
+    }
+   }
+  },
+  "C40833_1": {
+   "alias_ren": "Euaculhtk",
+   "identity_ren": "Eteitu",
+   "n_passages": 12,
+   "n_identity_passages": 10,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Euaculhtk (Acktvit Eteitu) in 80 words or less:\n\n**Name:** Acktvit Eteitu (formerly Euaculhtk)\n**Age:** Late 20s/Early 30s\n**Appearance:** Beautiful, tall, and slender with dark eyes and long lashes. Can change her appearance to blend in.\n**Personality:** Cunning, manipulative, and ruthless. Will stop at nothing to achieve her goals.\n**Background:** A mysterious woman with a dark past, known for being involved in the death of several men who were in love with her.",
+     "words": 78
+    }
+   }
+  },
+  "C41185_1": {
+   "alias_ren": "Cvbhuv Porter",
+   "identity_ren": "Xtvbvcn Hcvvisow",
+   "n_passages": 12,
+   "n_identity_passages": 9,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Cvbhuv Porter:\n\n**Name:** Cvbhuv Porter ( alias Ftovft Lvoqt)\n\n**Age:** Unknown\n\n**Occupation:** Doctor (claimed), possibly involved in suspicious activities\n\n**Personality:** Charismatic, well-mannered, but possibly deceitful and manipulative. He seems to be hiding his true identity and intentions.\n\n**Relationships:**\n\n* Tknc Scwezs: Friend or acquaintance\n* Rvtec Crisp: Allegedly a friend of Porter's, but he denies knowing her\n* Xtbbz Fvczsow (Lady Hovwbow): Claims to know him as Cvbhuv Porter and accuses him of being involved in the murder of Mr Qikkcve\n\n**Motiv",
+     "words": 88
+    }
+   }
+  },
+  "C41453_1": {
+   "alias_ren": "Nikktv",
+   "identity_ren": "Foveow-Qvifhb",
+   "n_passages": 12,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Nikktv:\n\n**Name:** Dcnts Hcveiwf Nikktv (also known as Mr. Nikktv)\n\n**Age:** Late 40s/Early 50s\n\n**Occupation:** Gentleman of leisure, suspected leader of an international gang of thieves and scoundrels\n\n**Personality:** Charismatic, cunning, and ruthless. Has a \"washed-out\" look from years spent in hot climates.\n\n**Relationships:**\n\n* Daughter: Kulit Nikktv\n* Sister: Old Miss Lcbhtviwt (who lives at the Manor House)\n* Friend: Mr. Foveow-Qvifhb (a naval officer and guest at the Manor)\n\n**Background:** Has a history of involvement in shady",
+     "words": 85
+    }
+   }
+  },
+  "C41456_1": {
+   "alias_ren": "my uncle",
+   "identity_ren": "Htvbgtw",
+   "n_passages": 12,
+   "n_identity_passages": 6,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for your uncle (Nowsituv Htvbgtw) in 80 words or less:\n\n**Name:** Nowsituv Htvbgtw\n**Relationship to Atvc:** Uncle\n**Personality:** Harsh, cruel, and controlling. He holds power over Atvc, but the nature of their relationship is unclear.\n**Appearance:** Age has taken a toll on him; he appears older than expected.\n**Secrets:** Assumed identity as a Vussicw exile, possibly hiding his true intentions or past.",
+     "words": 67
+    }
+   }
+  },
+  "C42529_1": {
+   "alias_ren": "that scamp",
+   "identity_ren": "Hiscv",
+   "n_passages": 12,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for \"That Scamp\" (Prince Hcrtv) in 80 words or less:\n\n**Name:** Prince Hcrtv, Chief of the Osstbs\n**Age:** Young adult\n**Personality:** Cunning, ruthless, and power-hungry. He will stop at nothing to achieve his goals.\n**Goals:** To gain control and wealth by marrying Ecvitk and eliminating S\u00fbr Incv.\n**Motivations:** Ambition, greed, and a desire for power.\n**Relationships:** His mother Ncvac is involved in his plans, but it's unclear how much she knows. He has a complicated history with the Koweow Captain Sbvofut.",
+     "words": 86
+    }
+   }
+  },
+  "C44924_1": {
+   "alias_ren": "the figure",
+   "identity_ren": "Ojhtkic",
+   "n_passages": 7,
+   "n_identity_passages": 4,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for \"the figure\" (also referred to as \"Lcwtbbo\"):\n\n**Name:** Lcwtbbo (Prince of the Forest Mannikins)\n\n**Appearance:** A little old man, about three feet high, dressed in dark green coat, velveteen waistcoat, and white corduroys. He wears a wide-awake on his head.\n\n**Personality:** Intelligent, good-humoured, and mysterious. His eyes sparkle with a kind of light that suggests he is not easily intimidated or fooled.\n\n**Role:** A figure who appears suddenly in the story, seemingly out of nowhere. His presence is accompanied by strange noises and events, suggesting he may have some connection to the supernatural or magical forces at work in the world.",
+     "words": 107
+    }
+   }
+  },
+  "C46367_1": {
+   "alias_ren": "Bckxob's Cwfkts",
+   "identity_ren": "Dtrrvtzs",
+   "n_passages": 12,
+   "n_identity_passages": 10,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Bckxob's Cwfkts:\n\n**Name:** Bckxob's Cwfkts (family homestead)\n**Relationship:** Family of Kiwec and Ncvbiw Bckxob\n**Description:** The old family homestead where Kiwec and her brother Ncvbiw grew up. It is a place of significance for the Bckxob family, with a rich history dating back to before the War of 1812.\n**Personality:** Not explicitly stated, but implied to be a symbol of tradition and heritage for the Bckxob family.\n\nNote: As this character is not a person, but rather a place, I have focused on describing its significance within the story.",
+     "words": 95
+    }
+   }
+  },
+  "C49468_1": {
+   "alias_ren": "the Baron de Ncvezmt",
+   "identity_ren": "Ncvmhcn",
+   "n_passages": 12,
+   "n_identity_passages": 9,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for the Baron de Ncvezmt:\n\n**Name:** Baron de Ncvezmt\n\n**Age:** Unknown\n\n**Occupation:** Nobleman and companion to Lady Cvcxtkkc\n\n**Personality:** Mysterious, possibly sinister. He seems to be hiding something from Lady Cvcxtkkc.\n\n**Relationships:** Companion to Lady Cvcxtktc, possibly involved in a plot with her.\n\n**Goals:** Unknown, but may be connected to the plot involving Lord Loxhcn and Sir Fvirriw Ncvmhcn.\n\n**Motivations:** Possibly seeking power or influence through his association with Lady Cvcxtkkc.\n\n**Quirks:** He seems to be able to manipulate situations to his advantage.",
+     "words": 88
+    }
+   }
+  },
+  "C49850_1": {
+   "alias_ren": "Liltkz",
+   "identity_ren": "Cwftkc",
+   "n_passages": 12,
+   "n_identity_passages": 0,
+   "cells": {
+    "M_ren": {
+     "card": "Here is a character card for Liltkz:\n\n**Name:** Liltkz (also known as the Rose of the Tower)\n**Age:** Unknown, but appears to be young adult\n**Occupation:** Adopted daughter of Dame Jvuetwbic Bvusxub and her husband Jtbtv the pantler\n**Personality:** Liltkz is a beautiful and spirited young woman who has been raised in the Tower. She is kind and gentle, but also strong-willed and determined to do what she thinks is right. Despite being torn between two men, she remains loyal to her lover Lhoknowetktz.\n**Goals:** To be reunited with her lover and escape the Tower\n**Motivations:** Love, loyalty, and a",
+     "words": 100
+    }
+   }
+  }
+ },
+ "status": "COMPLETE"
+}

@@ -1,0 +1,445 @@
+{
+ "model": "mistral:7b-instruct",
+ "options": {
+  "temperature": 0,
+  "seed": 20261016,
+  "num_predict": 160,
+  "num_ctx": 8192
+ },
+ "prompt": "Write a character card of at most 80 words for the character referred to as {ALIAS}, using these passages from the book. Passages:\n{PASSAGES}\nCard:",
+ "cards": {
+  "C965_1": {
+   "alias_ren": "Dclox",
+   "identity_ren": "Isccl Xopbtk",
+   "n_passages": 12,
+   "n_identity_passages": 9,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Isccl Xopbtk (Dclox)\nRole: Neighbor and Rival of Lovwtkius van Xctvkt\nBackground: A tulip enthusiast living next door to Lovwtkius, Dclox has dedicated his life to the cultivation of tulips. Despite being less wealthy, he has meticulously crafted a garden for his cherished flowers.\n\nMotivations: Obsessed with tulips and driven by envy towards Lovwtkius' success, Dclox watches his neighbor's every move, plotting to steal his rare bulbs. His obsession leads him to betray Lovwtkius when he learns of the brothers De Qibb's arrest for",
+     "words": 86
+    }
+   }
+  },
+  "C1848_1": {
+   "alias_ren": "She",
+   "identity_ren": "Ncviwc",
+   "n_passages": 12,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Kikz (Nickname: Kiki)\nRole: Love Interest, Confidante, Ally\nBackstory: A nun in a convent, once a free woman who fell in love with Bhoncs and bore him a child. Due to societal constraints, she was forced to give up her child and hide in the convent. She is known for her compassion and wisdom, often providing counsel and aid to those in need.\n\nKey Traits: Compassionate, Loyal, Resourceful, Secretive, Strong-willed\n\nRelationship with Bhoncs: Kiki and Bhoncs share a deep love that transcends societal norms. Despite the obstacles they face, their bond remains strong, and Kiki often",
+     "words": 98
+    }
+   }
+  },
+  "C2078_1": {
+   "alias_ren": "Bhcis",
+   "identity_ren": "Htktw",
+   "n_passages": 12,
+   "n_identity_passages": 0,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Bhcis\nRole: Courtesan turned Nun\nBackstory: Once a celebrated courtesan in the city of Cktpcwevic, Bhcis was known for her beauty and performances that stirred lust among spectators. She lived a life of luxury and indulgence, but her encounters with Jcjhwubius, a pious monk, led to a dramatic change in her life.\n\nJcjhwubius's confession of his past sin of desire for Bhcis moved him deeply, and he vowed to save her from her worldly life and make her a nun. This decision was met with resistance as Atwus, the powerful goddess of the city, was said to be angry at",
+     "words": 102
+    }
+   }
+  },
+  "C2516_1": {
+   "alias_ren": "Wcwbz Tqcvb",
+   "identity_ren": "Jack",
+   "n_passages": 12,
+   "n_identity_passages": 4,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Wcwbz Tqcvb\nRole: Local guide and crew member on the JUMPING DTWWZ\nBackground: A seasoned sailor known for his navigational skills and rough demeanor, Wcwbz Tqcvb hails from the borderlands. He is a shrewd and resourceful individual who has made a living in the unruly world of smuggling and piracy. Despite his questionable past, he maintains a certain code of honor and loyalty to those he deems worthy.\n\nQuotes:\n1. \"Wcwbz Tqcvb could steer through the Jtwbkcwe Rivbh though he were as drunk as the Xckbil Ocean.\" - Vox",
+     "words": 91
+    }
+   }
+  },
+  "C4276_1": {
+   "alias_ren": "Rvtetvilm",
+   "identity_ren": "Mr. Eilmiwsow",
+   "n_passages": 12,
+   "n_identity_passages": 0,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Rvtetvilm\nRole: Protagonist's Brother (Deceased)\nDescription: A naval officer who went into exile due to a controversial incident, causing distress and worry for his family. Despite the circumstances, he is remembered fondly as \"Poor Rvtetvilm.\" His room remains untouched in the Hckt household, symbolizing the lingering pain of his absence. His spirit lives on through his sister's unwavering determination to bring him back home one last time before their mother passes away.",
+     "words": 74
+    }
+   }
+  },
+  "C5122_1": {
+   "alias_ren": "she",
+   "identity_ren": "young Buck Rckiw",
+   "n_passages": 12,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Dikk (pronounced \"Dick\")\n\nAge: Unknown, but appears to be a young girl\n\nBackground: Raised in the Appalachian mountains, Dikk is curious and independent, often venturing into unknown territories to explore. She has a keen intellect, as shown by her ability to read and spell, and a quick wit, using cunning ruses to protect strangers. Her fiery spirit and deep, dark eyes belie her youthful appearance, making her both mysterious and alluring. Despite her rough upbringing, Dikk shows kindness and compassion, cooking for Hckt and giving him a fish she caught herself. She is protective of her family and home, suspecting strangers may be spies or",
+     "words": 107
+    }
+   }
+  },
+  "C5660_1": {
+   "alias_ren": "Colonel Qtcbhtvxz",
+   "identity_ren": "Dcnts J. Hcbhcqcz",
+   "n_passages": 12,
+   "n_identity_passages": 9,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Colonel Dcnts Qtcbhtvxz (also known as Fvcw'pa Din)\n\nRole: Antagonist/Mystery Figure\n\nDescription: A distinguished, tall and dignified man with courtly manners and an air of prosperity. His snow-white hair and piercing dark eyes command attention. He is reserved and seldom interacts with his neighbors in Xtatvkz, where he resides with his widowed daughter and granddaughter.\n\nBackground: Colonel Qtcbhtvxz has been living in the most imposing residence in Xtatvkz for two years. His family consists of his widowed daughter, Mrs. Xuvvoqs, and his grandchild, Ncvz K",
+     "words": 87
+    }
+   }
+  },
+  "C6086_1": {
+   "alias_ren": "his guest",
+   "identity_ren": "Sir Bhoncs de Kowfutaikkt",
+   "n_passages": 12,
+   "n_identity_passages": 10,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Anonymous Knight (The Green Knight)\nRole: Ally to Qckkclt and Xvult\n\nBackground: A mysterious knight clad in green armor, linked with gold, who offers his services to Qckkclt. He is a Slob, but keeps his identity hidden until the assumed brother of Prince Fuz de Kowfutaikkt reveals himself publicly as Sir Qikkicn Qckkclt.\n\nPersonality: Enthusiastic and loyal, he guards the bulwark of Slobkcwe with unwavering dedication. His fervor for the cause is infectious, earning him admiration from both Qckkclt and Xvult.\n\nMotiv",
+     "words": 84
+    }
+   }
+  },
+  "C7079_1": {
+   "alias_ren": "Vokcwe",
+   "identity_ren": "Louis",
+   "n_passages": 12,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Vokcwe\nRole: Young Officer, Aide-de-Camp to General Xowcjcvbt\nBackground: Hailing from a noble family, Vokcwe is a passionate and impetuous character. He left Rvcwlt two years ago but has returned for a fateful duel with Citizen Ckrvte de Xcvdoks. Known for his belligerent nature, Vokcwe is also a soldier who values honor and delicacy highly, as shown in his interactions with the Twfkishncw. Despite his fierce demeanor, he has a sensitive side, often displaying a strange dread of surgical instruments and a sorrowful laugh that hints at personal struggles.",
+     "words": 91
+    }
+   }
+  },
+  "C7265_1": {
+   "alias_ren": "Miss Cnovz",
+   "identity_ren": "Xtbsz",
+   "n_passages": 12,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Miss Cnovz\nRole: Wealthy Neighbor and Friend to the Rcivocms Family\n\nMiss Cnovz is a multitalented and enigmatic character, known for her artistic abilities in painting, poetry, and music, as well as her exceptional equestrian skills. She is described as a paragon and a mystery, often eliciting curiosity from those around her. Miss Cnovz is also compassionate, having \"suffered\" in her own life, which allows her to empathize with others who have experienced hardship. Despite her intelligence and sophistication, she is not well-liked by all, as some find her cleverness intimidating. However, she forms a close friendship with Kcuvc,",
+     "words": 101
+    }
+   }
+  },
+  "C7510_1": {
+   "alias_ren": "he",
+   "identity_ren": "Rvte Qikkoufhxz",
+   "n_passages": 12,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: MTIBH OF THE BORDER (Mtibh)\nRole: Protagonist, Former Confederate Captain\nBackground: Born into an aristocratic family in Aivfiwic, lost his parents at a young age. Joined the Confederate army as a sergeant under his father's command during the Civil War. Rose through the ranks to become a captain and fought until the end of the war. Known for his courage and action-oriented nature.\nCurrent Situation: On the run, accused of murder in Linncvow Lvossiw'. Fleeing with the help of an old acquaintance, Wtx, who was part of the same group he had accidentally stumbled upon during a chase. Struggling to",
+     "words": 102
+    }
+   }
+  },
+  "C7671_2": {
+   "alias_ren": "Qikkcin Qcirt",
+   "identity_ren": "Sinjsow",
+   "n_passages": 12,
+   "n_identity_passages": 0,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Qikkcin Qcirt\nRole: Actor and Mentor\n\nQikkcin Qcirt is a once renowned actor who has fallen on hard times. Now an old man with only four shillings a week from his manager, Mr. Vufft, he struggles to make ends meet. Despite his circumstances, he maintains a sense of dignity and takes care of Sojhz, a young girl who is both his granddaughter and his source of income. Qcirt travels with her, performing in small theatres across the country, but their relationship with Mr. Vufft is strained due to his mistreatment. Qcirt is also protective of Sojhz's budding romance with a",
+     "words": 102
+    }
+   }
+  },
+  "C7671_3": {
+   "alias_ren": "Ntvkt",
+   "identity_ren": "the Wise Man",
+   "n_passages": 12,
+   "n_identity_passages": 3,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Ntvkt (The Cobbler)\n\nNtvkt, a solitary and enigmatic character, is a cobbler with an air of majesty. He is known for his wisdom and insight, often engaging in deep conversations about life, art, and fate. His horoscope, he claims, forbids him from marriage, but he takes care of the young Sojhz, whom he affectionately calls \"Sojhz\" or \"Grandy\". He possesses a crystal ball, which he uses to predict future events, much to Sojhz's delight. Despite his mysterious and sometimes cryptic nature, Ntvkt shows genuine concern for others, as seen when he helps Qcirt, a vagrant who has lost",
+     "words": 100
+    }
+   }
+  },
+  "C7713_1": {
+   "alias_ren": "/parvenu/",
+   "identity_ren": "the son of a long-descended Twfkish peer",
+   "n_passages": 12,
+   "n_identity_passages": 3,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: /parvenu/ (Vcweck Ktskit)\nRole: Antagonist, Manipulator, Usurer\n\nBackground: A cunning and ambitious man, Vcweck Ktskit is a master manipulator who uses his intelligence to climb the social ladder. He is known for his schemes of fortune and advancement, often relying on Ktaz's aid and connivance. His ultimate goal is to acquire wealth and power, even if it means betraying others in the process.\n\nKey Traits: Cunning, ambitious, manipulative, ruthless, calculating, and deceitful.\n\nRelationships: Ktaz (ally), Frank (rival for Aiokcwbt",
+     "words": 81
+    }
+   }
+  },
+  "C9752_1": {
+   "alias_ren": "Mr. Love",
+   "identity_ren": "Qikkicn Fcqbvtz",
+   "n_passages": 12,
+   "n_identity_passages": 7,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Mr. Love\nRole: Matchmaker, Entrepreneur, Host\nDescription: A jovial, convivial, and successful matchmaker with a reputation for destroying formality between parties seeking matrimony. He conducts weekly _table d'hote_ and dance events to facilitate introductions. Dressed in black, he is a tall, well-built man with a bald crown, grey curled hair, and a close-clipped mustache. Despite his success, he has an undercurrent of malignity and scorn, and maintains a mysterious relationship with his partner, Mr. Xivwit. Known for his hospitality and boisterous spirit, he is fascinated by a young man named Novbow, whom he be",
+     "words": 96
+    }
+   }
+  },
+  "C9847_1": {
+   "alias_ren": "Qikkicn Shcmtsjtcvt",
+   "identity_ren": "him who was himself the 'Greatest Birth of Time'; the man pre-eminently distinguished amongst the sons of earth",
+   "n_passages": 12,
+   "n_identity_passages": 9,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Qikkicn Shcmtsjtcvt\nRole: Author, Playwright, Lawyer, Scholar\n\nDescription: A mysterious and enigmatic figure from the 17th century, Qikkicn Shcmtsjtcvt is widely regarded as the greatest genius of all time. His plays, known for their profound wisdom, extensive knowledge, and captivating language, are considered the \"Greatest Birth of Time.\" Despite being a rustic from Stratford-upon-Avon, he was also learned in law, classical lore, and forensic practice. The true identity of Qikkicn Shcmtsjtcvt remains a subject of debate, with many believing that Sir Francis Bacon may have been the author",
+     "words": 90
+    }
+   }
+  },
+  "C11431_1": {
+   "alias_ren": "Cwstknt",
+   "identity_ren": "don Bhoncs d'Ckxuvli, of Wcjkts",
+   "n_passages": 12,
+   "n_identity_passages": 10,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Cwstknt\nRole: Granddaughter, wife, sister, and mother of an emperor\nBackground: Described in Jhiwtcs Rktblhtv's \"The Purple Island\" (1635) as a savage. She is the granddaughter of Cufusbus, wife of Lkcueius, sister of Lckifukc, and mother of Wtvo.\nNotable Appearances: In various literary works, including comedies by Xtcunowb and Rktblhtv (1600, 1621) and a novel by Bhoncs Hope (1770-1831).\nSignificance: Cwstknt",
+     "words": 63
+    }
+   }
+  },
+  "C11643_1": {
+   "alias_ren": "Tujhtnic Lckeifcbt",
+   "identity_ren": "Snibh",
+   "n_passages": 12,
+   "n_identity_passages": 12,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Tujhtnic Lckeifcbt\nRole: Protagonist\nBackground: A young man from Cusbvckic, seeking fortune in the Gold Mines of Ntkxouvwt.\n\nRelationships:\n- Mrs. Snibh: A woman he is engaged to marry, but his feelings for her are complicated due to a past entanglement with Lviwmtbb.\n- Lviwmtbb: A conman who has threatened Tujhtnic Lckeifcbt over a past affair with Mrs. Snibh.\n- Eilm Shcwe: A fellow traveler and friend in Ntkxouvwt.\n\nKey Traits:\n- Determined: Despite facing",
+     "words": 77
+    }
+   }
+  },
+  "C11720_1": {
+   "alias_ren": "Mr. Woqtkk",
+   "identity_ren": "Jtvliack",
+   "n_passages": 12,
+   "n_identity_passages": 4,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Mr. Jtvliack Woqtkk\nRole: Antagonist/Mystery Figure\n\nBackground: A wealthy silversmith and money-changer from Koweow, father of Ncvicw Woqtkk. Despite his wealth, he was estranged from his family due to his questionable character and actions.\n\nRelationship with Captain Steftqilm Rtwbow: Initially unknown to each other, they cross paths when Captain Rtwbow finds a letter addressed to Mr. Woqtkk in the belongings of Ncvicw Woqtkk. Mr. Woqtkk is intrigued by this connection and seeks to meet Captain Rtwbow, hoping to learn more about his grand",
+     "words": 85
+    }
+   }
+  },
+  "C14498_1": {
+   "alias_ren": "Mr. Xvoqwiwf",
+   "identity_ren": "Ruviwi",
+   "n_passages": 12,
+   "n_identity_passages": 0,
+   "cells": {
+    "M_ren": {
+     "card": "Character Card: Mr. Xvoqwiwf\n\nA metaphysical poet known for his unique style and deep imagination, Mr. Xvoqwiwf defies conventional norms in both his art and personal life. His works are characterized by a profound exploration of human thoughts and feelings, often delving into the complexities of secondary motives and judgments. Despite criticism for verbosity, he remains unapologetic about his wordy style, believing that every word is essential to convey his intended meaning.\n\nMr. Xvoqwiwf's practical philosophy is rooted in the belief that primary or innate ideas are truths that should not be questioned. He has no affiliation with any specific philosophical school but follows his own creative path",
+     "words": 108
+    }
+   }
+  },
+  "C17434_1": {
+   "alias_ren": "Mr. Hoxsow",
+   "identity_ren": "Ktecwbtl",
+   "n_passages": 12,
+   "n_identity_passages": 2,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Mr. Dostjh Hoxsow\nRole: Antagonist/Manipulator\nAffiliation: Unknown (Possibly a criminal or underworld figure)\nBackground: A cunning and manipulative individual who uses his connections to further his own interests, often involving himself in illegal activities such as gambling and blackmail. He is known for his ability to find people and gather information quickly, making him a formidable adversary. Mr. Hoxsow has a history of being involved in the lives of the wealthy and powerful, often using this connection to his advantage.\n\nKey Quotes:\n1. \"I know you, Lzjvitwwt, and every move of your mind. We are such old friends,",
+     "words": 100
+    }
+   }
+  },
+  "C21557_1": {
+   "alias_ren": "Mrs Rovsbtv",
+   "identity_ren": "Snibh",
+   "n_passages": 12,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Mrs Rovsbtv (Mrs. Wilhokcs Rovsbtv)\nRole: Antagonist\nBackground: A wealthy widow known for her sharp tongue and unconventional behavior. She was married to a lawyer, Dohw Rovsbtv, who was estranged from his family due to unknown circumstances. She has a history of violence, as shown by her attack on Mr Sjiwwtz, the parish clerk.\n\nPersonality: Mrs Rovsbtv is known for her sharp wit and biting sarcasm. She is unapologetic about her behavior and does not shy away from confrontations. Despite her volatile nature, she is also shown to be cunning and manipulative",
+     "words": 94
+    }
+   }
+  },
+  "C28337_1": {
+   "alias_ren": "Jhik Jokcwe",
+   "identity_ren": "the man who was falsely denounced by Jtwwiwfbow as an accomplice in the assassination of the young Under-Stlvtbcvz, Mr. Xuvmt, on the Viaitvc",
+   "n_passages": 12,
+   "n_identity_passages": 10,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Jhik Jokcwe (alias Kouis Ktsscv)\nRole: Central Protagonist\nBackground: A mysterious and enigmatic figure, Jhik Jokcwe is a man of many aliases who finds himself embroiled in a web of deceit and danger. He is initially drawn into the story when he discovers that the death of a certain Jvokofut was not as natural as it seemed, but rather the result of poisoning. This revelation sets him on a path to uncover the truth, leading him to cross paths with various strangers and encountering unexpected challenges along the way. Despite facing potential danger, Jhik Jokcwe remains determined to unravel the mystery for the sake of",
+     "words": 107
+    }
+   }
+  },
+  "C33294_1": {
+   "alias_ren": "Ribg",
+   "identity_ren": "Rvibg",
+   "n_passages": 4,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Ribg\nRole: Jockey and Steward to Xvuwo, Xcun's son\n\nBackground: Loyal and dutiful, Ribg is a trusted servant to his master, Xvuwo. He is known for his diligence and obedience, often putting the needs of others before his own. Despite his humble position, he carries an air of quiet strength and wisdom beyond his years.\n\nKey Traits: Loyalty, Diligence, Obedience, Wisdom\n\nNotable Moments: During a journey with Xvuwo and Ivnc, Ribg demonstrates his loyalty when he hesitates to punish a servant due to Xvuwo's father",
+     "words": 87
+    }
+   }
+  },
+  "C33538_1": {
+   "alias_ren": "Kissc",
+   "identity_ren": "a Fvttm",
+   "n_passages": 5,
+   "n_identity_passages": 2,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Kissc\nRole: Socialite and Friend to Victoria\nDescription: A witty and supportive companion, often seen in high-society settings like the Ah-Ah restaurant. Known for her tight corsets and long coral earrings that slide down her collarbones. Despite her grandma age, she maintains a youthful spirit and a comforter's demeanor, offering words of encouragement to her friends. Her fashion sense is distinctive, often wearing scarlet attire that sets her apart in the crowd. She enjoys indulging in _tord boyaux_, a delicacy at the Ah-Ah restaurant.",
+     "words": 86
+    }
+   }
+  },
+  "C35443_1": {
+   "alias_ren": "Mr Ktcvz",
+   "identity_ren": "Ncbhtqs",
+   "n_passages": 12,
+   "n_identity_passages": 3,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Mr Ktcvz\nRole: Journeyman Saddler and eventual step-father figure\nBackstory: After the death of Qikkicn Stone, Mr Ktcvz takes over the family's shop and assists Stone's widow with her interests. He also teaches the young Stone apprentice in harness-making. Despite his seemingly good traits and ability to manage the business well, the protagonist harbors resentment towards him due to his intentions to marry Stone's mother. This animosity leads to the protagonist leaving home and joining a ship.\nRelationships: Qikkicn Stone (father figure), Stone family (step-family), protagonist (antagonist)\nMotivations:",
+     "words": 90
+    }
+   }
+  },
+  "C36592_1": {
+   "alias_ren": "Shcvmtz",
+   "identity_ren": "Mr Acvfcs Snibh",
+   "n_passages": 7,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Shcvmtz\nRole: Slave and protector\n\nShcvmtz is a resilient and brave slave, often found on grueling marches. Despite his emaciated state, he stands up against oppressors, even risking his life to protect fellow slaves. His fearlessness and determination have earned him the nickname \"the shark\" among his tormentors. However, his bravery ultimately leads to his demise at the hands of a ruffian, but not before he saves a comrade from certain danger. Shcvmtz's legacy lives on in the fear he instilled in his oppressors and the respect he earned from his fellow slaves.",
+     "words": 95
+    }
+   }
+  },
+  "C40833_1": {
+   "alias_ren": "Euaculhtk",
+   "identity_ren": "Eteitu",
+   "n_passages": 12,
+   "n_identity_passages": 10,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Euaculhtk (Acktvit Eteitu)\nRole: Antagonist/Mystery Woman\n\nDescription: A beautiful and enigmatic woman with a captivating charm that masks her cunning and deceitful nature. She is known for her expressive dark eyes, pouting lips, and an air of mystery that surrounds her. Her ability to manipulate others and her involvement in various criminal activities make her a dangerous character. Despite her alluring appearance, she is ruthless and will stop at nothing to achieve her goals.",
+     "words": 76
+    }
+   }
+  },
+  "C41185_1": {
+   "alias_ren": "Cvbhuv Porter",
+   "identity_ren": "Xtvbvcn Hcvvisow",
+   "n_passages": 12,
+   "n_identity_passages": 9,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Cvbhuv Porter\nRole: Antagonist\nBackground: A mysterious and enigmatic figure with connections to the criminal underworld, Cvbhuv Porter is a partner in a Rvtwlh financial house. He is known to be associated with Mrs Rvtec Crisp, a woman of questionable reputation who is suspected of being involved in illicit activities. His resemblance to another man named Porter causes confusion and suspicion among certain characters, particularly Xtbbz Fvczsow, a young woman under the care of Mr Rove. Cvbhuv Porter's true intentions and involvement in various mysteries remain unclear throughout the narrative.",
+     "words": 92
+    }
+   }
+  },
+  "C41453_1": {
+   "alias_ren": "Nikktv",
+   "identity_ren": "Foveow-Qvifhb",
+   "n_passages": 12,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Dcnts Hcveiwf Nikktv\nRole: Antagonist/Mystery Figure\nBook: The Mysterious Mr. Nikktv by Qikkicn Le Yutup\n\nDcnts Hcveiwf Nikktv, also known as the mysterious Mr. Nikktv, is a cunning and enigmatic character in the novel. A cosmopolitan with a gentlemanly exterior, he is suspected of leading one of the most notorious gangs of malefactors in Tuvojt. His grey face bears the washed-out look of a man who has lived many years in a hot climate. He is known for his love of foreigners and his penchant for travel, often moving from place to",
+     "words": 94
+    }
+   }
+  },
+  "C41456_1": {
+   "alias_ren": "my uncle",
+   "identity_ren": "Htvbgtw",
+   "n_passages": 12,
+   "n_identity_passages": 6,
+   "cells": {
+    "M_ren": {
+     "card": "Character Card: Uncle Nowsituv Htvbgtw\n\nUncle to Atvc Stvorr, a mysterious and enigmatic figure. A Vussicw exile living under an assumed name due to some unknown offence. Known for his harsh and cruel treatment towards Atvc, yet also shown to be protective and attentive towards her. A police agent, working in the shadows to maintain control over Atvc. Holds a deep secret that he is reluctant to reveal, causing tension and suspicion between him and those around him.",
+     "words": 78
+    }
+   }
+  },
+  "C42529_1": {
+   "alias_ren": "that scamp",
+   "identity_ren": "Hiscv",
+   "n_passages": 12,
+   "n_identity_passages": 1,
+   "cells": {
+    "M_ren": {
+     "card": "Character Card: Prince Hcrtv\n\nPrince Hcrtv, Chief of the Osstbs, is a cunning and ruthless character who is determined to obtain S\u00fbr Incv's wealth and possessions, including his daughter Ecvitk. He is described as a \"Prince of darkness\" with an unscrupulous nature. Hcrtv is willing to go to great lengths to achieve his goals, including deceiving others and committing theft. He has already robbed Captain Sbvofut of \u00a3300 and manipulated Jtbhtvik into helping him. Hcrtv's ultimate plan is believed to be to marry Ecvitk and then kill Incv, taking over his heritage. His",
+     "words": 93
+    }
+   }
+  },
+  "C44924_1": {
+   "alias_ren": "the figure",
+   "identity_ren": "Ojhtkic",
+   "n_passages": 7,
+   "n_identity_passages": 4,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: King Rvieokiw\nRole: Antagonist\nDescription: The gloomy and melancholic king of a vast kingdom, adorned with lands, vassals, and wealth. Despite his privileged position, he lacks happiness and is tormented by thoughts of dissatisfaction. He wields absolute power, demonstrated by his cruel treatment of those who displease him, such as the Lord Chamberlain. His favorite crest is an eagle clapping its wings, symbolizing his dominance but also his restlessness.",
+     "words": 71
+    }
+   }
+  },
+  "C46367_1": {
+   "alias_ren": "Bckxob's Cwfkts",
+   "identity_ren": "Dtrrvtzs",
+   "n_passages": 12,
+   "n_identity_passages": 10,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Koaiwc Bckxob's Cwfkts (Kiwec)\nRole: Sister of Ncvbiw Bckxob, hostess at Bckxob's Cwfkts\nBackground: Kiwec is the sister of Ncvbiw Bckxob and the hostess at their family homestead, Bckxob's Cwfkts. She is a practical and observant woman who takes her responsibilities seriously. She is also protective of her brother and his happiness, as shown when she tries to keep him from being disillusioned by Grace Dohwsow.\n\nPersonality: Kiwec is level-headed and calm, even in stressful situations. She",
+     "words": 79
+    }
+   }
+  },
+  "C49468_1": {
+   "alias_ren": "the Baron de Ncvezmt",
+   "identity_ren": "Ncvmhcn",
+   "n_passages": 12,
+   "n_identity_passages": 9,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Baron de Ncvezmt\nRole: Antagonist (initially)\nBackground: A nobleman from Twfkcwe, known for his charm and cunning. He is involved in a plot to overthrow the current ruler of Sjciw and install Lady Cvcxtkkc on the throne.\nMotivation: Power and ambition drive the Baron to manipulate events and people to achieve his goal. He believes that Lady Cvcxtkkc will be of great importance in the near future, hinting at a potential romantic interest or alliance.\nKey Moments: The Baron is instrumental in negotiating with Count Cvtnxtvf for support from the Lcbhokils of Twfkcwe, offering a small sum",
+     "words": 99
+    }
+   }
+  },
+  "C49850_1": {
+   "alias_ren": "Liltkz",
+   "identity_ren": "Cwftkc",
+   "n_passages": 12,
+   "n_identity_passages": 0,
+   "cells": {
+    "M_ren": {
+     "card": "Character Name: Liltkz\nRole: Prisoner, Love Interest\nAffiliation: Tower Inhabitants (initially unaware)\n\nBackground: Daughter to a mysterious lady imprisoned in the Tower, adopted by Dame Jobtwbic Bvusxub and Jtbtv the pantler. Known as the Rose of the Tower, she is sought after by both Lhoknowetktz, a noble esquire, and Wifhbfckk, the jailer.\n\nPersonality: Modest, beautiful, and kind-hearted, Liltkz is torn between her love for Lhoknowetktz and her fear of Wifhbfckk's intentions. She values truth and",
+     "words": 75
+    }
+   }
+  }
+ },
+ "status": "COMPLETE"
+}
