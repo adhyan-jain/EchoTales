@@ -21,7 +21,55 @@ conflated.
 | `docs/design/video_plan.md` | The plan for motion video (2026-10-18, plan only, nothing built, model figures unmeasured). Its flagged defects are Open defects 17 to 19 below. |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-18.
+**Last updated:** 2026-10-18 (EVOLUTION 4.106).
+
+## Pick up here — 2026-10-18 (first real genre render, ECHOTALES_COMPUTE, hosted-provider switches; EVOLUTION 4.106)
+
+- **Local, unpushed commits** 010c9fb, b9fb688, e66d958 on `reader-faithfulness`
+  (EVOLUTION 4.106), on top of the ones listed in the next block. No request was
+  ever sent to RunPod, OpenAI or Gemini; those paths are tested against mocks.
+- **First real image run under the genre profiles (LotM only).** LotM chapter 1,
+  NoobAI, 10 scenes -> 33 images in 22 minutes
+  (`data/novels/LOTM/panels/ch1/v2_genre-victorian-10panel-noobai`, scratch DB
+  `data/scratch/ui/lotm-render.db`). v1 was xianxia; v2 is Victorian (coat,
+  cravat, gloves, revolver, arched windows; brown hair, grey eyes). One image
+  has a stray signature-like artefact; consistency across images looked decent;
+  not reviewed image by image. **ORV has not been rendered under its new
+  profile** (Open defect 15). `panels/ch1/VERSIONS.md` did not exist for LotM, so
+  no entry was written; add one if you keep that directory.
+- **`ECHOTALES_COMPUTE` (`pipeline/compute.py`) is the laptop-safety switch,
+  default `local-low`.** DEFAULT CHANGE: a bare `echotales render --image-engine
+  <real engine>` now renders **3 scenes**, not 70. `ECHOTALES_COMPUTE=local-high`
+  restores 70 and the old pipeline; `--tier full` or `--max-panels N` set it per
+  run. `local-low` also forces the director to finish and unload before the
+  image model loads, caps the director context at 4096, and refuses a local
+  render (CLI exit 2, server 409) when the GPU is busy or available RAM is under
+  3000 MiB; `--ignore-resource-guard` overrides. A bare render with no
+  `--image-engine` still uses the stub unless a hosted image provider was chosen.
+- **`--max-panels` caps SCENES, not images.** One to three images per scene: 10
+  scenes gave 33 (3.3 per scene). NoobAI is about 45 s per image here, so a
+  3-scene preview is about 7 minutes and a 70-scene chapter about 2.9 hours.
+- **Provider switches** (all `ECHOTALES_*`, empty by default, see `.env.example`):
+  `ECHOTALES_LLM_PROVIDER` (ollama|runpod|openai|gemini|anthropic|gateway|stub),
+  `ECHOTALES_IMAGE_PROVIDER` (local|runpod|gemini|openrouter|stub). Language
+  model precedence: that variable, then the cloud preset, then
+  `ECHOTALES_MODEL_BACKEND`. A hosted image engine is reachable over HTTP only
+  if the operator selected it; paid engines named in a request are still refused.
+- **`GET /api/compute`** (mode, enabled engines with the refusal reason,
+  scenes per tier, estimate inputs, RAM, GPU) replaces `/api/gpu` as what the
+  Studio reads for its engine picker; `/api/gpu` still exists. Studio has a
+  Scope select and a browser notification when a job ends.
+- **`echotales render --version-suffix NAME`** names the version directory
+  (`v2_NAME`); the render's LLM preflight now checks only the panel director's
+  model (it was refused over `llama3:latest`, which a render never calls).
+- **Memory on this machine:** `gemma2:9b` spilled 2 GB into system RAM at
+  `num_ctx` 8192 (9.5 GB total); at 4096 it is 8.1 GB (7.4 in VRAM). A smaller
+  director (`ECHOTALES_LOW_COMPUTE_DIRECTOR_MODEL`) is opt-in and untested for
+  quality; the repo measured `qwen2.5:7b` ignoring the director's negative rules.
+- **Open (Open defects 23 to 26):** hosted paths mock-tested only, RunPod image
+  worker contract needs a real handler, hosted cost unmetered, no few-step
+  image model.
+- Tests: 1,435 core+pipeline pass (re-run by the docs pass, 61 s). Research 29 and webview jest 112 are the change author's counts (total 1,464 with research), not re-run by the docs pass.
 
 ## Pick up here — 2026-10-18 (speaker join, Studio versions, genre profiles, GPU-checked engine picker; EVOLUTION 4.104 and 4.105)
 
@@ -29,14 +77,12 @@ conflated.
   4.104; 2495a1d, 69cbb53, 02d4889, f25baf0, f6f0e46 in 4.105). Verified on
   real LotM, ORV and RI databases (CPU, stub LLM, stub image engine, $0);
   numbers in EVOLUTION 4.104 and 4.105.
-- **Read these as unfinished: no real image has been generated with the new
-  genre profiles.** The owner said to run ollama and the GPU later. The genre
-  work (`persona/genre.py`) is verified only by diffing rendered prompts with
-  the stub engine on real chapters (RI 60 and LotM 73 panels identical; ORV 54
-  panels lose only the sleeve clause in 48 and the xianxia culture negative).
-  Whether ORV, a new project, or any non-xianxia genre now looks right is
-  unseen. First job for the GPU session: a real-engine render of ORV chapter 1
-  and one project of another genre, then look at them (Open defect 15).
+- **Genre profiles: LotM has now been rendered with a real engine (see the
+  block above); ORV and a project of another genre have not.** The stub-engine
+  prompt diff (RI 60 and LotM 73 panels identical; ORV 54 panels lose only the
+  sleeve clause in 48 and the xianxia culture negative) is all there is for
+  them. Next GPU session: ORV chapter 1 and one project of another genre
+  (Open defect 15).
 - **Speaker join fixed (EVOLUTION 4.105).** `Span.speaker_self_id` is a
   surface, not an entity id; the viewer and the persona stage now join it the
   way voice casting does. Payload spans have `speaker_entity_id`. Every persona
@@ -57,9 +103,10 @@ conflated.
   `genre.py`'s docstring mentions an `echotales genre` command that does not
   exist.
 - **Studio engine picker.** Local engines (noobai, illustrious, sdxl) are
-  offered only when `GET /api/gpu` reports a free card (`pipeline/gpu.py`, busy
-  above 1,500 MiB used); the render and reference_gen routes return 409 with
-  the memory in use when busy or missing. Stub is always allowed.
+  offered only when the card is free (`pipeline/gpu.py`, busy above 1,500 MiB
+  used); the render and reference_gen routes return 409 with the memory in use
+  when busy or missing. Stub is always allowed. Superseded in detail by
+  `GET /api/compute` and `compute.resource_refusal` (EVOLUTION 4.106).
 - **Video: `docs/design/video_plan.md` is the plan (uncommitted, plan only,
   nothing built).** Its flagged defects and an owner decision are Open defects
   17 to 19; none is fixed.
@@ -89,8 +136,8 @@ conflated.
   profiles; genre detection is a heuristic; video-plan defects and the
   one-model-per-image decision.
 - **The novelty one-pager was deleted (2495a1d); do not re-add it.**
-- Tests: 1,408 core+pipeline (re-run 2026-10-18, 69 s), 29 research and 108
-  webview jest (change author's run; not re-run by the docs pass).
+- Tests: this block's 1,408 core+pipeline count is superseded by the newer
+  block above.
 
 ## Pick up here — 2026-10-17 (reader-faithfulness: canaries, selection leak, counterfactual suffix, EVOLUTION 4.103)
 
@@ -994,9 +1041,12 @@ genuinely unresolved *today*.
     measured as a divergence, not repaired.
 15. **No real image has been generated under the genre profiles**
     (EVOLUTION 4.105). `persona/genre.py` is verified by diffing rendered
-    prompts with the stub engine only. Whether ORV, or a project of another
-    genre, now looks right is unseen. Needs the GPU free (check `GET /api/gpu`
-    or `nvidia-smi`; owner rule: no CPU offload) and a real-engine render.
+    prompts with the stub engine only, plus one real run: LotM chapter 1 under
+    NoobAI (EVOLUTION 4.106) came out Victorian where v1 was xianxia, with a
+    stray signature-like artefact on one image and no image-by-image review.
+    Whether ORV, or a project of another genre, now looks right is still
+    unseen. Needs the GPU free (check `GET /api/compute` or `nvidia-smi`; owner
+    rule: no CPU offload) and a real-engine render.
 16. **Genre detection is a word-count heuristic, not a model**
     (`detect_genre`: first 20 chapters, whole-word lexicon, 6 hits per 10k words
     and a 1.3x lead, else generic). It gets the three research novels right and
@@ -1026,10 +1076,33 @@ genuinely unresolved *today*.
     project's genre** (`persona/genre.py::use_store_genre`), so for an
     unlisted novel it gets the neutral default hair and eye colour, not its
     genre's. The render and reference paths do register it. Low impact.
-22. **Real-engine renders under the new genre profiles are still unrun**
-    (item 15): the review also found, and the tests now pin, that a profile's
+22. **Real-engine renders under the new genre profiles: LotM done, ORV and
+    other genres still unrun** (item 15; EVOLUTION 4.106): the review also found, and the tests now pin, that a profile's
     culture negative longer than 14 tokens is dropped whole by the 77-token
     fit, which would have left ORV's absent from every reference sheet.
+
+23. **The hosted paths have never touched a real service** (EVOLUTION 4.106).
+    The RunPod, OpenAI and Gemini language models (`llm/gateway.py` backends) and
+    `render/runpod.py::RunPodImageEngine` are tested against
+    `httpx.MockTransport` only. No request was ever made, and no RunPod
+    endpoint exists. The image engine's request/response contract (submit
+    `/v2/<endpoint>/run`, poll `/status/<id>`, several base64 shapes) is
+    documented in its docstring and needs a real worker handler written to it.
+24. **Hosted-engine cost is not metered.** The repo has a $5 to 10 cloud budget
+    and a local-only note from 2026-10-17; `cloud` mode and the hosted
+    providers are opt-in and unused. Nothing counts spend per job.
+25. **No faster preview path.** A few-step image model for previews is not
+    implemented (none installed or compared), so a 3-scene preview is about 7
+    minutes on this laptop. A smaller director model
+    (`ECHOTALES_LOW_COMPUTE_DIRECTOR_MODEL`) is untested for quality; the repo
+    measured `qwen2.5:7b` ignoring the director's negative rules (RI ch1).
+26. **The default render size changed silently for scripts.** Under the default
+    `local-low`, `echotales render --image-engine <real>` renders 3 scenes, not
+    70. Any script or doc that assumed 70 needs `--tier full` /
+    `--max-panels` or `ECHOTALES_COMPUTE=local-high`. A grep of `scripts/`,
+    `docs/ops/` and the README found no invocation of `echotales render` that
+    relies on the old default (the one `max_panels=40` in
+    `scripts/eval/a7_cache_ablation.py` is explicit).
 
 ## Architecture-review items not yet implemented
 

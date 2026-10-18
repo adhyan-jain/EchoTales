@@ -83,7 +83,7 @@ source .venv/bin/activate      # uv-managed venv already present at repo root
 python3 -m pytest packages/core/tests packages/pipeline/tests   # no GPU needed
 ```
 
-1,408 core+pipeline tests pass (2026-10-18, reader-faithfulness branch, after the speaker-surface join, Studio render versions and genre-profile tests; research: 29; webview jest: 108). Root `pyproject` testpaths lists only
+1,435 core+pipeline tests pass (2026-10-18, reader-faithfulness branch, after the compute-policy and hosted-provider tests; research: 29; webview jest: 112). Root `pyproject` testpaths lists only
 core and pipeline; pass `packages/research/tests` explicitly (and `-o addopts=""`) to include research.
 
 Everything is stub-first: `ECHOTALES_LLM_MODE=stub` and `--image-engine
@@ -138,6 +138,14 @@ real data without touching the canonical `data/db/<novel-id>.db`.
 - **Config split**: `.env` for environment-dependent values (LLM mode,
   hosts), `config.json` for values a human hand-edits directly (gateway
   host/model, render two-phase toggle). Don't add a third mechanism.
+  `ECHOTALES_COMPUTE` (`pipeline/compute.py`; `.env`) is the one switch for how
+  heavy a run may be: `local-low` (default: director unloaded before the image
+  model, memory/GPU guard, 3-scene previews, 4096 director context),
+  `local-high` (the old pipeline, 70 scenes), `cloud`. So a bare `render
+  --image-engine <real>` makes 3 scenes unless `--tier full`, `--max-panels`
+  or `local-high`. `--max-panels` caps scenes, each drawn with 1-3 images.
+  `ECHOTALES_LLM_PROVIDER` / `ECHOTALES_IMAGE_PROVIDER` override the preset;
+  the hosted paths (RunPod/OpenAI/Gemini) are mock-tested only (EVOLUTION 4.106).
 - **Source novels are never committed** (`data/raw/`, `*.epub` etc. are
   gitignored) — they're copyrighted texts supplied locally. Never write
   code that assumes they exist in git, and never add one to a commit.
@@ -163,7 +171,7 @@ Research track: `docs/research/DECISION_LOG.md` is the state of record (EVOLUTIO
 
 See docs/HANDOFF.md's "Pick up here" section for the actual current state — it
 changes every session (the numbered session log itself moved to
-docs/EVOLUTION.md, latest section 4.105). The NER-windowing re-run (EVOLUTION
+docs/EVOLUTION.md, latest section 4.106). The NER-windowing re-run (EVOLUTION
 4.76) that an earlier session left unmeasured did run (4.84): the
 "`ollama` unreachable" blocker was a misdiagnosis — the daemon was simply
 not started — and the fix is now measured on real data (CEAF-e recall

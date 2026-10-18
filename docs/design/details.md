@@ -302,6 +302,12 @@ a bare checkout; the heavy import happens inside `main()`.
 `--source` shape plus `--host`/`--port` (default `127.0.0.1:8787`) and has
 no format flag — it only ever serves the live, correctable payload.
 
+`render` (EVOLUTION 4.106): `--image-engine` and `--max-panels` default to
+None and are resolved from `compute.policy()` in `cmd_render` (so the default
+render is a 3-scene preview under `local-low`); new `--tier preview|full`,
+`--ignore-resource-guard`, `--version-suffix NAME`, and `runpod` as an engine
+name. `--max-panels` caps scenes, each drawn with one to three images.
+
 ### `src/echotales/pipeline/commands.py`
 Dispatch layer behind the CLI, one function per verb.
 
@@ -320,6 +326,15 @@ drive-letter path would still break — not hit yet on this project's
 platforms) and hand a list of `NovelSource` to `webview.py`/
 `webview_server.py`.
 
+`cmd_render` (EVOLUTION 4.106) resolves the engine, scene count and two-phase
+flag from `compute.policy()`, prints one `compute:` line, and returns exit 2
+with the numbers when `compute.resource_refusal` refuses a local render
+(`--ignore-resource-guard` skips it). `_build_client(store, tasks=...)` passes
+the stage's tasks to `require_ready`; render passes `{Task.PANEL_DIRECTION}`
+because the preflight otherwise refused it over `llama3:latest`, which a
+render never calls. `--version-suffix` is sanitised to `[A-Za-z0-9-]` and
+appended to `next_version`'s name.
+
 ### `src/echotales/pipeline/config.py`
 `Settings` via pydantic-settings, prefix `ECHOTALES_`, reading `.env`.
 
@@ -328,6 +343,47 @@ Also holds `escalation_confidence_threshold` (0.75),
 `max_escalations_per_run` (a hard ceiling so a misconfiguration cannot turn a
 600-chapter job into an unbounded API bill), `window_size` (40 chapters per LLM
 window) and `conformal_alpha` (0.05).
+
+Compute and provider settings (EVOLUTION 4.106): `compute` (`local-low`
+default), `llm_provider`, `image_provider`, `local_image_engine` (`noobai`),
+`preview_scenes` (3), `full_scenes` (70), `low_compute_num_ctx` (4096),
+`low_compute_director_model` (empty), `low_compute_min_free_ram_mb` (3000), and
+empty-by-default hosted variables (`runpod_*`, `openai_*`, `gemini_*`). All are
+`ECHOTALES_*`; none reads an existing `OPENAI_*`/`RUNPOD_*`/`GEMINI_*`
+variable. `ModelBackend` gained `RUNPOD`, `OPENAI`, `GEMINI`, selected by
+`ECHOTALES_LLM_PROVIDER` or the cloud preset, not by `ECHOTALES_MODEL_BACKEND`.
+
+### `src/echotales/pipeline/compute.py`
+`ECHOTALES_COMPUTE` as one value, because the pieces only make sense together:
+a preview tier without the memory guard is a smaller crash. `policy()` reads
+the settings into a frozen view (`mode`, `llm_provider`, `image_provider`,
+`scenes_for(tier)`, `director_num_ctx`, `director_model`, `force_sequential`,
+`http_engines()`, `llm_missing()`); `resource_refusal(engine, http=)` returns
+the reason a render must not start (busy GPU, available RAM under the
+threshold, a hosted provider with a variable unset, named by variable never by
+value) or None. `local-low` is the default because the 8 GB development
+machine ran out of memory mid-render (2026-10-02, and 2026-10-18 with 20 GB of
+swap in use). The 4096 context is a measurement: `gemma2:9b` at 8192 was 9.5
+GB with 2 GB in system RAM; at 4096, 8.1 GB, 7.4 in VRAM; the longest LotM
+chapter 1 director prompt is about 3,400 tokens at a pessimistic 3 chars per
+token (an estimate, not gemma's tokenizer). The director's model is not
+swapped by default because `qwen2.5:7b` ignored the director's negative rules
+in the RI ch1 measurement. `IMAGES_PER_SCENE` (3.3) and `SECONDS_PER_PANEL`
+(NoobAI about 45 s per image) feed the Studio's estimate. Tested without a
+network in `test_compute_policy.py`; the hosted branches never made a real
+request.
+
+### `src/echotales/pipeline/llm/client.py`, `gateway.py`, `tasks.py`
+`ModelClient.backend` consults `compute.policy().llm_provider` first and falls
+back to `ECHOTALES_MODEL_BACKEND` (EVOLUTION 4.106). OpenAI, Gemini and RunPod
+build a `gateway.GatewayProvider` through `_hosted()` (base URL, key, model per
+provider) rather than three clients, since they share the OpenAI chat protocol;
+`GatewayProvider.available()` also accepts Gemini's `models/<name>` ids. The
+ollama provider cache is keyed `model@num_ctx` and only `Task.PANEL_DIRECTION`
+gets the policy's capped context and optional model. `preflight(tasks)` /
+`require_ready(tasks)` and `tasks.models_required(backend, tasks)` check only
+the models the given tasks use (None = all, as before); a missing hosted
+variable fails preflight with its name before any request.
 
 ### `src/echotales/pipeline/llm/base.py`
 Provider protocol. Every call site requests **structured output validated by a
@@ -1435,6 +1491,12 @@ is the file-by-file map.
 **`_png.py`** — a raw `zlib`/`struct` PNG writer, no Pillow. Shared by the
 two stub image engines below so neither needs the `render` extras installed.
 
+**`runpod.py`** (EVOLUTION 4.106) — `RunPodImageEngine`, a serverless image
+engine behind `get_engine("runpod")`: submits `/v2/<endpoint>/run`, polls
+`/status/<id>`, decodes one of several base64 response shapes. The worker
+contract is in its docstring. Tested only against `httpx.MockTransport`; no
+RunPod endpoint exists or was called.
+
 **`panels.py`** — `render_panels()`: one cached image per beat (see
 `beats.py`), prompted via `persona/prompt.py::build_image_prompt` against
 `persona/runner.py::get_panel_cast`, block-scoped via `block_window`.
@@ -1912,6 +1974,13 @@ job params (`_with_genre`) so the input digest changes with the style.
 `GET /api/gpu` returns `{available, free, name, used_mb, total_mb}` from
 `gpu.py`; the same two generate routes return 409 with the memory in use
 (`_gpu_refusal`) for any engine except `stub` when the GPU is busy or absent.
+`_gpu_refusal` is now a wrapper over `compute.resource_refusal(http=True)`
+(EVOLUTION 4.106), so it also covers low available RAM under `local-low` and a
+hosted engine with unset variables. `GET /api/compute` (`_compute_status`)
+returns mode, providers, enabled engines with a refusal reason each, scenes per
+tier, `images_per_scene`, seconds per image, missing variable names, RAM and
+GPU; the Studio reads it. The generic job route accepts an engine through
+`jobs.http_engine_known`.
 
 **Product Orchestration track routes** (previously this file's scope was
 review/correction only -- `docs/status/STATUS.md`'s "Backend API" row used to say
@@ -1981,10 +2050,14 @@ across the requested chapters) and `_record_studio_version` appends a
 `VERSIONS.md` line per chapter, as `commands.py::cmd_render` does. It used to
 write into the root of `panels/ch<N>/` and replaced LotM v1's only manifest.
 `ALLOWED_HTTP_ENGINES` is the local-only image-engine allowlist
-(`stub`/`sdxl`/`illustrious`/`noobai`/`refined`/`manga`) -- `gemini` and
-`openrouter` are excluded from the HTTP path entirely by design, so a paid
-engine can only be invoked deliberately, by a human, via the CLI's
-`--image-engine` flag.
+(`stub`/`sdxl`/`illustrious`/`noobai`/`refined`/`manga`), unchanged. A paid
+engine cannot be invoked by naming it in a request. EVOLUTION 4.106 adds
+`http_engine_known`, which accepts the allowlist plus the ONE hosted engine
+(`runpod`, `gemini` or `openrouter`) the operator selected with
+`ECHOTALES_IMAGE_PROVIDER` in `.env`; that selection is the opt-in to spend. A
+render job re-runs `compute.resource_refusal` at run time (it may have waited
+in the queue while memory filled) and takes `tier` / `max_panels`
+(scenes, defaulting to the policy's).
 
 ### `src/echotales/pipeline/gpu.py`
 `gpu_status()` reads the first GPU's memory use from `nvidia-smi` (not a CUDA

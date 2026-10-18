@@ -8599,3 +8599,114 @@ to run ollama and the GPU later, so every claim about the genre work is
   `test_studio_render_versions.py`, `test_genre_profiles.py`,
   `test_reader_cast.py` additions, `test_webview_server_jobs.py` additions,
   `VisualStyleSetting.test.js`, `ProductScreens.test.js` additions.
+
+### 4.106 First real image run under the genre profiles, `ECHOTALES_COMPUTE`, hosted-provider switches, scenes versus images *(2026-10-18)*
+
+Two local commits on `reader-faithfulness` after 4.105 (010c9fb, b9fb688) plus
+a one-line Studio subtitle fix (e66d958), not pushed. Nothing in this section
+sent a request to RunPod, OpenAI or Gemini; every hosted path below is tested
+against `httpx.MockTransport` only.
+
+- **First real image run under the genre profiles (supersedes the "no real
+  image has been generated" caveat of 4.105 for LotM; ORV is still unrun).**
+  `echotales render --image-engine noobai --max-panels 10 --version-suffix
+  genre-victorian-10panel-noobai` on LotM chapter 1, ollama director
+  `gemma2:9b` at `num_ctx` 4096, then NoobAI XL, on a scratch copy of the
+  database (`data/scratch/ui/lotm-render.db`). Output
+  `data/novels/LOTM/panels/ch1/v2_genre-victorian-10panel-noobai`: 33 images,
+  22 minutes, RTX 4060 Laptop 8 GB, with other applications holding about
+  20 GB of swap. Side by side with the old v1 for the same blocks: v1 is
+  xianxia (long hair, hanfu, East Asian screens); v2 is Victorian (tailored
+  coat, cravat, gloves, revolver, arched windows) with the brown hair and grey
+  eyes the genre profile and persona give. One image shows a stray
+  signature-like artefact. **Verdict from a viewer's side: the style is right
+  and consistency across the images is decent; it was not reviewed image by
+  image.** No `VERSIONS.md` existed for LotM ch1 when this was written, so the
+  convention's one-line entry was not added (see HANDOFF Open defect 15).
+  **Not run on ORV.**
+- **`--max-panels` caps scenes, not images.** Each scene gets one to three
+  images: 10 scenes produced 33 (3.3 per scene). Tiers therefore count scenes,
+  the CLI help was corrected, and the Studio's estimate uses 3.3 images per
+  scene.
+- **010c9fb: the LLM preflight demanded models the stage never calls.** The
+  first attempt was refused because `llama3:latest` (segmentation, sentiment)
+  was missing, though `render` only runs the panel director.
+  `llm/tasks.py::models_required(backend, tasks=None)`,
+  `ModelClient.preflight(tasks)` and `require_ready(tasks)` now check only the
+  given tasks; `commands.py::cmd_render` passes `{Task.PANEL_DIRECTION}`
+  through `_build_client(store, tasks=...)`. New `echotales render
+  --version-suffix` appends a sanitised name (`v2` -> `v2_<suffix>`), because
+  `paths.next_version` cannot name a version. Test: `test_genre_profiles.py`.
+- **The first run was stopped mid-render for memory.** The machine had 20.5 of
+  23.5 GB of swap in use and about 300 MB of RAM free, and ollama had spilled
+  2 GB of `gemma2:9b` into system RAM at `num_ctx` 8192 (9.5 GB total, 7.5 in
+  VRAM). At 4096: 8.1 GB total, 7.4 in VRAM. The longest director prompt for
+  LotM chapter 1 is about 3,400 tokens at a pessimistic 3 characters per token
+  (an estimate, not gemma's tokenizer), under 4096. The repo's earlier
+  measurement (RI ch1) found `qwen2.5:7b` ignoring the director's negative
+  rules where `gemma2:9b` held them, so a smaller director model is opt-in
+  only (`ECHOTALES_LOW_COMPUTE_DIRECTOR_MODEL`, empty by default); its quality
+  is untested.
+- **b9fb688: `pipeline/compute.py`, one preset for how heavy a run may be.**
+  `ECHOTALES_COMPUTE` = `local-low` (default) | `local-high` | `cloud`.
+  - `local-low`: the director runs to completion and is unloaded before the
+    image model loads (forced two-phase regardless of
+    `render.direction_first`); a memory and GPU guard refuses a local render
+    with the numbers when the GPU is busy or available RAM is under
+    `ECHOTALES_LOW_COMPUTE_MIN_FREE_RAM_MB` (3000) (CLI exit 2,
+    `--ignore-resource-guard` overrides, server 409); a preview is 3 scenes
+    (`ECHOTALES_PREVIEW_SCENES`), a full chapter 70 (`ECHOTALES_FULL_SCENES`);
+    the director's context is capped at `ECHOTALES_LOW_COMPUTE_NUM_CTX` (4096).
+  - `local-high`: the pipeline as it was.
+  - `cloud`: RunPod for both language model and images.
+  - **Default change to know about:** a bare `echotales render --image-engine
+    <real engine>` now renders 3 scenes (it was 70) under the default
+    `local-low`; `ECHOTALES_COMPUTE=local-high` restores 70. A bare render with
+    no `--image-engine` still uses the stub unless a hosted image provider was
+    configured. New flags: `--tier preview|full`, `--ignore-resource-guard`;
+    `--image-engine` and `--max-panels` now default to None (resolved from the
+    policy) and `runpod` is a valid engine name.
+  - Independent overrides: `ECHOTALES_LLM_PROVIDER` (ollama, runpod, openai,
+    gemini, anthropic, gateway, stub), `ECHOTALES_IMAGE_PROVIDER` (local,
+    runpod, gemini, openrouter, stub), `ECHOTALES_LOCAL_IMAGE_ENGINE` (noobai).
+    Language-model precedence: `ECHOTALES_LLM_PROVIDER`, then the cloud preset
+    (runpod), then the long-standing `ECHOTALES_MODEL_BACKEND`. Hosted
+    variables (`ECHOTALES_RUNPOD_API_KEY`, `_LLM_BASE_URL`, `_LLM_MODEL`,
+    `_IMAGE_ENDPOINT`; `ECHOTALES_OPENAI_API_KEY`, `_MODEL`;
+    `ECHOTALES_GEMINI_API_KEY`, `_MODEL`) are empty by default and documented
+    in `.env.example`; nothing reads an existing `OPENAI_*`/`RUNPOD_*`/
+    `GEMINI_*` variable. A provider with a missing variable is refused with the
+    variable's name.
+- **Hosted language models reuse one client.** OpenAI, Gemini and RunPod speak
+  the OpenAI chat protocol, so `ModelBackend.RUNPOD/OPENAI/GEMINI` all build a
+  `llm/gateway.py::GatewayProvider` with their own base URL, key and model
+  (`ModelClient._hosted`); `GatewayProvider.available()` now also matches
+  Gemini's `models/<name>` ids. `ModelClient.backend` follows the policy first,
+  then `ECHOTALES_MODEL_BACKEND`. The ollama provider cache is keyed by
+  `model@num_ctx`, and only the panel director gets the capped context.
+- **`render/runpod.py::RunPodImageEngine`**: submits `/v2/<endpoint>/run`,
+  polls `/status/<id>`, accepts several base64 response shapes; the worker
+  contract is in its docstring and registered as `get_engine("runpod")`.
+  **Unproven: no real RunPod endpoint exists and none was called.**
+- **Server and Studio.** `GET /api/compute` returns the mode, providers, the
+  enabled engines with the refusal reason per engine, scenes per tier,
+  `images_per_scene` 3.3, seconds per image, missing variable names (never
+  values), RAM and GPU. The render and reference_gen routes and the generic
+  job route go through `compute.resource_refusal(http=True)` (the old
+  `_gpu_refusal` name is kept as a wrapper); `jobs.py` re-checks at run time
+  (the job may have waited while memory filled) and takes `tier`/`max_panels`.
+  `ALLOWED_HTTP_ENGINES` is unchanged; `jobs.http_engine_known` adds the one
+  hosted engine the operator chose in `.env`, so a paid engine named in a
+  request is still refused. `GenerationWorkspace` reads `/api/compute`: engine
+  picker with disabled options and reasons, a Scope select (Preview/Full), a
+  time estimate (NoobAI about 45 s per image measured, so a 3-scene preview is
+  about 7 minutes and a 70-scene chapter about 2.9 hours on this laptop), and a
+  browser notification when a job ends. e66d958 drops the page subtitle's claim
+  that every render is a placeholder.
+- **Not done.** A few-step image model for faster previews is not implemented
+  (none installed or compared). Hosted-engine cost is not metered. The repo has
+  a $5 to 10 cloud budget and a local-models-only note from 2026-10-17, so
+  `cloud` is opt-in and unused.
+- **Tests.** New `test_compute_policy.py` and additions to
+  `test_webview_server_jobs.py`, `ProductScreens.test.js`. Counts are in
+  HANDOFF "Pick up here".
