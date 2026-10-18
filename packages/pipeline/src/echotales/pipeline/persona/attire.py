@@ -419,6 +419,15 @@ _LOCALE_CUES: dict[str, str] = {
 }
 
 
+#: How much one whole-word hit counts, for the non-xianxia books. A place-defining word outweighs a material or a
+#: generic one: "bed" says where a scene is, "wood" is mostly what a thing is made of, and "inside" is in nearly every
+#: interior and every thought ("inside his head"), so it says nothing.
+_CUE_WEIGHT: dict[str, float] = {
+    "bedroom": 3.0, "bed": 3.0, "pillow": 2.0, "blanket": 2.0, "mattress": 2.0,
+    "wood": 0.5, "clan": 0.5, "inside": 0.0,
+}
+
+
 def scene_locale(
     novel_id: str, beat: str, *, block_index: int = 0, strict: bool = False
 ) -> str:
@@ -466,7 +475,10 @@ def scene_locale(
     for cue, key in _LOCALE_CUES.items():
         if key not in locales:
             continue
-        hits = len(re.findall(rf"\b{re.escape(cue)}(?:s|es)?\b", low)) if whole_words else low.count(cue)
+        if whole_words:
+            hits = len(re.findall(rf"\b{re.escape(cue)}(?:s|es)?\b", low)) * _CUE_WEIGHT.get(cue, 1.0)
+        else:
+            hits = low.count(cue)
         if hits:
             scores[key] = scores.get(key, 0) + hits
 

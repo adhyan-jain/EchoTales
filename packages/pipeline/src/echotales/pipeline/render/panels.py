@@ -33,6 +33,8 @@ from echotales.core.store import Store
 from echotales.pipeline import paths
 from echotales.pipeline.persona.attire import (
     hostile_confrontation_modifier,
+    scene_locale,
+    setting_first,
     world_context,
     world_setting,
 )
@@ -1765,6 +1767,15 @@ def render_panels(
         for span in spans:
             by_block_spans.setdefault(span.block_index, []).append(span)
 
+        _chapter_locale = (
+            scene_locale(
+                novel_id,
+                " ".join(sp.text for sp in spans if sp.span_type is not SpanType.DIALOGUE),
+                strict=True,
+            )
+            if setting_first(novel_id)
+            else ""
+        )
         for scene in scenes[:max_panels]:
             story_scene_blocks = [
                 b for b in scene.blocks
@@ -1919,6 +1930,12 @@ def render_panels(
                 DiscoursePosition(chapter=int(chapter_number), offset=scene.blocks[0]),
             )
             scene_locale_text = _scene_state.location
+            # **Unstated is not a different place.** For a scene with no place cue of its own, `scene_locale` rotates
+            # through the book's locales by block number, so one bedroom scene was drawn in a study, on a street and on
+            # a moor (LotM render review, 2026-10-18). These books inherit the chapter's own most-cued place instead,
+            # and invent none when the chapter has none either.
+            if setting_first(novel_id) and not scene_locale(novel_id, _scene_text, strict=True):
+                scene_locale_text = _chapter_locale
 
             # **The crowd gets its own cut, not a corner of the hero's
             # panel.** Four rounds of prompt work could not put a crowd in

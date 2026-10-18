@@ -170,3 +170,12 @@ def test_reverend_insanitys_locale_matching_keeps_its_tuned_substring_count() ->
     assert "bamboo grove" in attire.scene_locale("reverend-insanity", "He walked into the bamboo forest under the trees.")
     # No bedroom key in RI's table: the new bedroom cues are skipped, never a KeyError.
     assert attire.scene_locale("reverend-insanity", "She slept in the bedroom on the bed.")
+
+
+def test_a_scene_with_no_place_cue_inherits_the_chapters_place_and_a_bed_outweighs_wood() -> None:
+    chapter = ("Why would I have a headache in the middle of the night? The room was small, with a low wooden bed. "
+               "He touched the wood of the cabinet.")
+    assert attire.scene_locale("lord-of-the-mysteries", chapter, strict=True) == "a modest Victorian bedroom, lamplight"
+    assert attire.scene_locale("lord-of-the-mysteries", "He groaned and shut his eyes.", strict=True) == ""
+    # "inside" is in every interior and every thought, and says nothing about where.
+    assert attire.scene_locale("lord-of-the-mysteries", "Something moved inside his head.", strict=True) == ""
