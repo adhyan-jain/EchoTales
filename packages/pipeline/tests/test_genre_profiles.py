@@ -179,3 +179,17 @@ def test_a_scene_with_no_place_cue_inherits_the_chapters_place_and_a_bed_outweig
     assert attire.scene_locale("lord-of-the-mysteries", "He groaned and shut his eyes.", strict=True) == ""
     # "inside" is in every interior and every thought, and says nothing about where.
     assert attire.scene_locale("lord-of-the-mysteries", "Something moved inside his head.", strict=True) == ""
+
+
+def test_one_ambiguous_word_is_not_evidence_of_a_place() -> None:
+    # "a throbbing pain in his temples" is a body part; it filed LotM's first scene under a temple hall (a study).
+    assert attire.scene_locale("lord-of-the-mysteries", "He felt a throbbing pain in his temples.", strict=True) == ""
+    assert "bedroom" in attire.scene_locale("lord-of-the-mysteries", "He lay on the bed, pain in his temples.", strict=True)
+    # RI keeps its substring count: a single "temple" there is still a hall.
+    assert attire.scene_locale("reverend-insanity", "They walked to the ancestral temple.", strict=True)
+
+
+def test_the_wood_of_a_table_is_not_a_forest() -> None:
+    desk = "The wood of the desk was cold, and his pen was a thin piece of wood."
+    assert attire.scene_locale("lord-of-the-mysteries", desk, strict=True) == ""
+    assert "wood" in attire.scene_locale("lord-of-the-mysteries", "He crossed the woods under the trees.", strict=True)

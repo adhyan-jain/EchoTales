@@ -420,11 +420,14 @@ _LOCALE_CUES: dict[str, str] = {
 
 
 #: How much one whole-word hit counts, for the non-xianxia books. A place-defining word outweighs a material or a
-#: generic one: "bed" says where a scene is, "wood" is mostly what a thing is made of, and "inside" is in nearly every
+#: generic one: "bed" says where a scene is, "wood" is what a thing is made of (a forest says "forest", "woods" or
+#: "trees"), and "inside" is in nearly every
 #: interior and every thought ("inside his head"), so it says nothing.
 _CUE_WEIGHT: dict[str, float] = {
     "bedroom": 3.0, "bed": 3.0, "pillow": 2.0, "blanket": 2.0, "mattress": 2.0,
-    "wood": 0.5, "clan": 0.5, "inside": 0.0,
+    "wood": 0.0, "clan": 0.5, "inside": 0.0,
+    # "his temples" is a body part ("a throbbing pain in his temples", LotM ch1 block 3), not a building.
+    "temple": 0.5,
 }
 
 
@@ -481,6 +484,10 @@ def scene_locale(
             hits = low.count(cue)
         if hits:
             scores[key] = scores.get(key, 0) + hits
+    if whole_words:
+        # One ambiguous word is not evidence of a place: require a full point, so a scene whose only hit is
+        # "temples" or "wood" counts as having no cue and inherits the chapter's place (`panels.py`).
+        scores = {key: score for key, score in scores.items() if score >= 1.0}
 
     # Night only when the text actually reads as night, not when the word
     # occurs anywhere in it. Block 18's *poem* ("the morning is fine like
