@@ -42,6 +42,11 @@ class GenreProfile:
     #: part does not fit the 77-token negative and `fit_to_budget` drops it whole, so it would say nothing.
     negative_culture: str
     mismatch_props: tuple[str, ...] = ()
+    #: Whether the place and the key objects outrank the mood and the quality tags when an image prompt is full
+    #: (`render/direction.py::to_image_prompt_parts`). The tiering was tuned on Reverend Insanity, where the character
+    #: carries the panel and the place is dropped first; on LotM that threw away the room, the bed and the revolver,
+    #: which are the beat (2026-10-18 render review). False for xianxia keeps RI's prompts exactly as tuned.
+    setting_first: bool = True
     scene_locales: dict[str, str] = field(default_factory=dict)
     appearance: dict[str, str] = field(default_factory=dict)
     #: Words whose frequency in the book suggests this genre (`detect_genre`): whole words, plural allowed, and a
@@ -82,6 +87,7 @@ GENRES: dict[str, GenreProfile] = {
         novel_style="xianxia web-novel illustration, Chinese fantasy",
         negative_culture="cherry blossoms, japanese shrine, modern clothing, school uniform",
         mismatch_props=("modern clothes", "modern clothing", "school uniform", "hoodie", "jeans", "business suit"),
+        setting_first=False,
         appearance={"hair_color": "black", "eye_color": "dark brown", "skin_tone": "fair"},
         lexicon=("cultivat*", "sect", "dao", "qi", "dantian", "immortal", "martial", "elder", "clan", "spirit stone",
                  "primeval", "gu master", "young master", "senior brother", "junior sister"),

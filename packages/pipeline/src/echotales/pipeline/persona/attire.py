@@ -255,6 +255,11 @@ _DEFAULT_STYLE_ANCHOR = STYLE_ANCHOR_BY_NOVEL["reverend-insanity"]
 _DEFAULT_MANGA_BASE = MANGA_BASE_BY_NOVEL["reverend-insanity"]
 
 
+def setting_first(novel_id: str) -> bool:
+    """Whether this novel's image prompts rank the place and key objects above mood and quality tags (`genre.py`)."""
+    return _genre(novel_id).setting_first
+
+
 def style_anchor(novel_id: str) -> str:
     """The short tier-0 genre/rendering anchor for this novel.
 

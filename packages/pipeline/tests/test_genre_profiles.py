@@ -101,3 +101,57 @@ def test_a_stage_can_check_only_the_models_it_uses() -> None:
 
     assert models_required("ollama", {Task.PANEL_DIRECTION}) == {"gemma2:9b"}
     assert "llama3:latest" in models_required("ollama")
+
+
+# --- the setting survives the prompt budget (LotM render review, 2026-10-18) --------------------------------------
+
+
+def _direction(novel_id: str):
+    from echotales.pipeline.render.direction import Direction, PanelDirection
+
+    d = PanelDirection(
+        shot="medium", action="sitting_up_in_bed, hand_on_head", layout="Zhou Mingrui, solo",
+        setting="small_room, low_wooden_bed, brown_door, cabinet", lighting="midnight, candlelight",
+        key_objects=["revolver"], mood="anxious", expression="pained_expression",
+    )
+    look = "short brown hair, grey eyes, youth, slender build, pale skin, wearing a black tailored coat and cravat"
+    return Direction(direction=d, cast={"Zhou Mingrui": look}, novel_style="x", novel_id=novel_id)
+
+
+def test_a_victorian_prompt_keeps_the_room_the_bed_and_the_revolver_and_no_duplicate_quality_tags() -> None:
+    prompt = _direction("lord-of-the-mysteries").to_image_prompt()
+    for wanted in ("low_wooden_bed", "revolver", "midnight"):
+        assert wanted in prompt, prompt
+    assert "score_9" not in prompt  # the engine prepends its own quality_prefix; the duplicate cost ~8 tokens
+    assert prompt.index("revolver") < prompt.index("anxious")  # the beat's objects outrank the mood
+
+
+def test_reverend_insanitys_tuned_order_is_untouched() -> None:
+    parts = _direction("reverend-insanity").to_image_prompt_parts()
+    assert "score_9, score_8_up, highly detailed, cinematic lighting" in parts  # tier 2 as tuned
+    assert parts.index("anxious mood") < parts.index("small_room, low_wooden_bed, brown_door, cabinet")  # place last
+    assert parts == _direction("").to_image_prompt_parts()  # no novel in hand keeps the xianxia vocabulary
+
+
+def test_the_directors_instructions_no_longer_hand_it_a_lighting_or_place_to_copy() -> None:
+    from echotales.pipeline.render.direction import build_prompt
+
+    prompt = build_prompt("He woke.", cast={}, novel_style="x")
+    assert "day, bright_sunlight" not in prompt and "mountain_background" not in prompt
+    assert "do not guess daylight" in prompt and "never reuse wording from these instructions" in prompt
+
+
+def test_the_scene_setting_note_finds_the_room_and_the_hour_from_the_whole_scene() -> None:
+    from echotales.pipeline.render.direction import scene_setting_note
+
+    scene = [
+        "Why would I suddenly have such an excruciating headache in the middle of the night?",
+        "He frowned and rubbed his temples.",
+        "The room was not very large, with a brown door on each side of the room. Close to an opposite wall was a low wooden bed.",
+        "Between the bed and the left door was a cabinet.",
+    ]
+    note = scene_setting_note(scene)
+    assert "low wooden bed" in note and "cabinet" in note and "middle of the night" in note
+    assert "rubbed his temples" not in note  # no place or time word: left out
+    assert scene_setting_note(["He nodded.", "She left."]) == ""
+    assert len(scene_setting_note(scene * 20, max_chars=200)) <= 200

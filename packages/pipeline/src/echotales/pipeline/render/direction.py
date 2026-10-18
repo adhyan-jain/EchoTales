@@ -220,10 +220,14 @@ def build_prompt(
         "spatial/count tags. Example when surrounded: \"Fang Yuan, "
         "surrounded\". Example when alone: \"Fang Yuan, solo, "
         "standing_alone\". If CAST is empty, use \"a figure\" instead of a name.",
-        "  setting       location tags, concretely. Example: "
-        "\"mountain_background, stone_courtyard, cliff\".",
-        "  lighting      time of day / weather / light, as tags. Example: "
-        "\"dusk, misty\" or \"day, bright_sunlight\".",
+        "  setting       location tags, concretely: the room or place and its "
+        "notable furniture or landmarks, taken from the passage or from the "
+        "scene setting given above. Leave it empty rather than invent a "
+        "place; never reuse wording from these instructions.",
+        "  lighting      time of day / weather / light, as tags, ONLY if the "
+        "passage or the scene setting states it (night, midnight, dawn, "
+        "candlelight, rain). Leave it empty if it does not -- do not guess "
+        "daylight.",
         "  key_objects   list of object tags that must be visible",
         "  mood          one or two mood tags",
         "  expression    ONE compact face tag, only if the passage states "
@@ -451,7 +455,61 @@ class Direction:
             # director's own setting when there is room, never displaces it.
             tier3.append(scene_locale)
 
+        from echotales.pipeline.persona.attire import setting_first
+
+        if setting_first(self.novel_id):
+            # **Where and with what, before mood and the quality boilerplate.** The tiering above puts the place last
+            # because on Reverend Insanity the character carries the panel. On LotM it threw away the room, the low
+            # wooden bed and the revolver, which were the beat (2026-10-18 render review: 22 of 73 prompts named any
+            # place at all). `score_9, score_8_up` is dropped from the prompt because the engine already prepends it
+            # as its `quality_prefix`; the duplicate cost about 8 of the ~70 tokens. Everything is still subject to
+            # `fit_to_budget` in list order, so this changes what is cut, not how much is kept.
+            action = [d.action] if d.action else []
+            objects = [", ".join(str(o) for o in d.key_objects if o)] if d.key_objects else []
+            place = [t for t in tier3 if t != d.layout]
+            layout = [d.layout] if d.layout else []
+            mood = [f"{d.mood} mood"] if d.mood else []
+            return [*tier0, *tier1, *action, *objects, *place, *layout, *mood, "highly detailed"]
         return [*tier0, *tier1, *tier2, *tier3]
+
+
+#: Words that say where a scene is or when. Generic on purpose: no genre, no book.
+_PLACE_WORDS = frozenset(
+    ["room", "bedroom", "bed", "door", "window", "floor", "wall", "ceiling", "roof", "stairs", "staircase", "corridor", "hallway", "hall", "house", "cottage", "kitchen", "cabinet", "drawer", "drawers", "desk", "table", "chair", "shelf", "shelves", "mirror", "curtain", "fireplace", "lamp", "candle", "street", "road", "alley", "square", "courtyard", "garden", "yard", "gate", "bridge", "shop", "tavern", "inn", "church", "chapel", "cathedral", "station", "platform", "carriage", "cave", "forest", "field", "river", "shore", "beach", "mountain", "cliff", "village", "town", "city", "tower", "castle", "cellar", "attic", "office", "apartment", "elevator", "lobby", "tunnel", "subway"]
+)
+_TIME_WORDS = frozenset(
+    ["night", "midnight", "dawn", "dusk", "sunset", "sunrise", "evening", "morning", "afternoon", "noon", "moonlight", "sunlight", "starlight", "candlelight", "gaslight", "lamplight", "darkness", "dark", "dim", "rain", "snow", "fog", "mist", "storm"]
+)
+
+
+def scene_setting_note(passages: list[str], *, max_chars: int = 420) -> str:
+    """The sentences of a scene that say where it is and when, for the director's "what the story knows" brief.
+
+    The director sees one beat's passage at a time, so the room described in block 30 was invisible when block 8
+    was drawn, and every panel of the scene got its own setting (the 2026-10-18 LotM render: a bedroom scene drawn
+    on grass, in a study, in front of a mirror). Taken from the whole scene, not only what precedes the beat: this is
+    a rendering of the chapter's pictures, not an answer to "what does the reader know here". Sentences are ranked by
+    how many place and time words they hold; the best few are kept, in reading order, within `max_chars`.
+    """
+    import re
+
+    scored: list[tuple[int, int, str]] = []
+    order = 0
+    for passage in passages:
+        for sentence in re.split(r"(?<=[.!?])\s+", passage.strip()):
+            words = set(re.findall(r"[a-z]+", sentence.lower()))
+            score = len(words & _PLACE_WORDS) + len(words & _TIME_WORDS)
+            if score and len(sentence) > 12:
+                scored.append((score, order, sentence.strip()))
+            order += 1
+    chosen: list[tuple[int, str]] = []
+    used = 0
+    for _score, idx, sentence in sorted(scored, key=lambda t: (-t[0], t[1])):
+        if used + len(sentence) + 1 > max_chars:
+            continue
+        chosen.append((idx, sentence))
+        used += len(sentence) + 1
+    return " ".join(sentence for _idx, sentence in sorted(chosen))
 
 
 def direct_beat(

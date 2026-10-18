@@ -1782,6 +1782,18 @@ def render_panels(
                 report.skipped_non_story += len(scene.blocks)
                 continue
 
+            # Where and when the whole scene is set, found once from its own text and shown to the director with every
+            # beat: it used to see only the beat's passage, so one bedroom scene was drawn as grass, a study and a
+            # mirror (`direction.scene_setting_note`; 2026-10-18 LotM render review).
+            from echotales.pipeline.render.direction import scene_setting_note
+
+            _scene_setting = scene_setting_note([
+                span.text
+                for b in scene.blocks
+                for span in by_block_spans.get(b, [])
+                if span.span_type is not SpanType.DIALOGUE
+            ])
+
             # **Carry-forward state for the empty-cast fallback, below.**
             # Reset per scene: a scene boundary is a place/cast/timeline
             # change (`render/scenes.py`), so a cast from the previous scene
@@ -2384,6 +2396,11 @@ def render_panels(
                         # and the director is the cheapest place to say so.
                         if _lexicon_note:
                             brief = f"{brief}\n{_lexicon_note}".strip()
+                        if _scene_setting:
+                            brief = (
+                                f"{brief}\nScene setting, from the text of this whole scene "
+                                f"(keep it unless this passage moves elsewhere): {_scene_setting}"
+                            ).strip()
                         directed_prose = (
                             f"{directive} {beat_prose}".strip() if directive else beat_prose
                         )
