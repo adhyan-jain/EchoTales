@@ -353,7 +353,10 @@ CREATE TABLE IF NOT EXISTS ref_image_candidate (
     backend TEXT NOT NULL DEFAULT '',
     found_at REAL NOT NULL DEFAULT 0,
     user_uploaded INTEGER NOT NULL DEFAULT 0,
-    selected INTEGER NOT NULL DEFAULT 0
+    selected INTEGER NOT NULL DEFAULT 0,
+    persona_id TEXT,
+    quality_score REAL,
+    role TEXT
 );
 CREATE INDEX IF NOT EXISTS ix_refimg_self ON ref_image_candidate(novel_id, self_id);
 
@@ -497,6 +500,7 @@ def _refimg_from_row(row: sqlite3.Row) -> RefImageCandidate:
         selected=bool(row["selected"]),
         persona_id=row["persona_id"] if "persona_id" in keys else None,
         quality_score=row["quality_score"] if "quality_score" in keys else None,
+        role=row["role"] if "role" in keys else None,
     )
 
 
@@ -591,6 +595,8 @@ class Store:
             self.conn.execute("ALTER TABLE ref_image_candidate ADD COLUMN persona_id TEXT")
         if "quality_score" not in existing:
             self.conn.execute("ALTER TABLE ref_image_candidate ADD COLUMN quality_score REAL")
+        if "role" not in existing:
+            self.conn.execute("ALTER TABLE ref_image_candidate ADD COLUMN role TEXT")
 
         existing = {row["name"] for row in self.conn.execute("PRAGMA table_info(ref_image_selection_log)")}
         if "persona_id" not in existing:
@@ -1150,8 +1156,8 @@ class Store:
         self.conn.execute(
             "INSERT OR REPLACE INTO ref_image_candidate(id, novel_id, self_id,"
             " character_label, source_url, thumbnail_url, title, source_page, query,"
-            " backend, found_at, user_uploaded, selected, persona_id, quality_score)"
-            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            " backend, found_at, user_uploaded, selected, persona_id, quality_score, role)"
+            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (
                 candidate.id,
                 candidate.novel_id,
@@ -1168,6 +1174,7 @@ class Store:
                 int(candidate.selected),
                 candidate.persona_id,
                 candidate.quality_score,
+                candidate.role,
             ),
         )
         self.conn.commit()
@@ -1179,13 +1186,23 @@ class Store:
         return _refimg_from_row(r) if r is not None else None
 
     def list_ref_image_candidates(
-        self, novel_id: str, self_id: str
+        self,
+        novel_id: str,
+        self_id: str,
+        *,
+        persona_id: str | None = None,
+        role: str | None = None,
     ) -> list[RefImageCandidate]:
-        cur = self.conn.execute(
-            "SELECT * FROM ref_image_candidate WHERE novel_id=? AND self_id=?"
-            " ORDER BY selected DESC, found_at DESC",
-            (novel_id, self_id),
-        )
+        sql = "SELECT * FROM ref_image_candidate WHERE novel_id=? AND self_id=?"
+        params: list[object] = [novel_id, self_id]
+        if persona_id is not None:
+            sql += " AND persona_id=?"
+            params.append(persona_id)
+        if role is not None:
+            sql += " AND role=?"
+            params.append(role)
+        sql += " ORDER BY selected DESC, found_at DESC"
+        cur = self.conn.execute(sql, tuple(params))
         return [_refimg_from_row(r) for r in cur]
 
     def log_ref_image_event(self, event: RefImageSelectionEvent) -> int:
@@ -1235,24 +1252,30 @@ class Store:
         """Mark one candidate selected and every other candidate for this
         character unselected, logging the change.
 
-        This is the *only* write path that sets `selected=1` -- auto-search
-        (`add_ref_image_candidate`) never does, by construction, so a fresh
-        row is always unselected until this is called explicitly by a human
-        or a future auto-select step that does not exist yet.
+        When the candidate has a persona_id, unselection is scoped to that persona_id
+        so multiple bodies of the same character do not evict each other.
         """
         import time
 
         row = self.conn.execute(
-            "SELECT id FROM ref_image_candidate WHERE id=? AND novel_id=? AND self_id=?",
+            "SELECT id, persona_id FROM ref_image_candidate WHERE id=? AND novel_id=? AND self_id=?",
             (candidate_id, novel_id, self_id),
         ).fetchone()
         if row is None:
             raise KeyError(f"no ref image candidate {candidate_id!r} for self {self_id!r}")
+        cand_persona_id = row["persona_id"] if "persona_id" in row.keys() else None
         with self.transaction():
-            self.conn.execute(
-                "UPDATE ref_image_candidate SET selected=0 WHERE novel_id=? AND self_id=?",
-                (novel_id, self_id),
-            )
+            if cand_persona_id:
+                # Scoped to this body so multi-body characters keep other bodies selected
+                self.conn.execute(
+                    "UPDATE ref_image_candidate SET selected=0 WHERE novel_id=? AND self_id=? AND persona_id=?",
+                    (novel_id, self_id, cand_persona_id),
+                )
+            else:
+                self.conn.execute(
+                    "UPDATE ref_image_candidate SET selected=0 WHERE novel_id=? AND self_id=?",
+                    (novel_id, self_id),
+                )
             self.conn.execute(
                 "UPDATE ref_image_candidate SET selected=1 WHERE id=?", (candidate_id,)
             )
@@ -1265,6 +1288,7 @@ class Store:
                 actor=actor,
                 note=note,
                 at=time.time(),
+                persona_id=cand_persona_id,
             )
         )
 

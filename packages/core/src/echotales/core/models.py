@@ -573,6 +573,9 @@ class RefImageCandidate(BaseModel):
     #: persisted instead of used transiently-only, so a stored candidate
     #: carries its own quality signal rather than losing it after search.
     quality_score: float | None = None
+    #: The candidate's role ('sheet' | 'location' | None). Distinguishes a character
+    #: reference sheet or location plate from general image search hits.
+    role: str | None = None
 
 
 class RefImageSelectionEvent(BaseModel):

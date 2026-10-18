@@ -12,10 +12,13 @@ to condition image generation. See `core/models.py::RefImageCandidate`.
 
 from __future__ import annotations
 
+import hashlib
+import time
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from echotales.core.enums import Prominence
-from echotales.core.models import RefImageCandidate
+from echotales.core.models import RefImageCandidate, RefImageSelectionEvent
 from echotales.core.store import Store
 
 
@@ -132,4 +135,161 @@ def register_user_image(
     label = entity.canonical_label if entity else self_id
     return store.register_user_ref_image(
         novel_id, self_id, label, image_path, actor=actor, note=note
+    )
+
+
+def register_sheet_candidate(
+    store: Store,
+    novel_id: str,
+    self_id: str,
+    persona_id: str,
+    image_path: Path | str,
+    character_label: str = "",
+    *,
+    selected: bool = False,
+    actor: str = "pipeline",
+    note: str = "generated sheet",
+) -> RefImageCandidate:
+    """Register a generated reference sheet as a RefImageCandidate.
+
+    Content-addressed: id includes the first 10 hex digits of the file's sha1.
+    If a row with this id already exists, it is returned without overwriting
+    existing selection state.
+    """
+    path = Path(image_path).resolve()
+    file_bytes = path.read_bytes()
+    file_sha = hashlib.sha1(file_bytes).hexdigest()[:10]
+    candidate_id = f"{persona_id}:sheet:{file_sha}"
+
+    existing = store.get_ref_image_candidate(candidate_id)
+    if existing is not None:
+        return existing
+
+    if not character_label:
+        entity = store.get_self(self_id)
+        character_label = entity.canonical_label if entity else self_id
+
+    candidate = RefImageCandidate(
+        id=candidate_id,
+        novel_id=novel_id,
+        self_id=self_id,
+        character_label=character_label,
+        source_url=f"file://{path}",
+        thumbnail_url="",
+        title=f"{character_label} reference sheet",
+        source_page="",
+        query="",
+        backend="generated-sheet",
+        found_at=time.time(),
+        user_uploaded=False,
+        selected=selected,
+        persona_id=persona_id,
+        quality_score=None,
+        role="sheet",
+    )
+    store.add_ref_image_candidate(candidate)
+    if selected:
+        store.select_ref_image_candidate(novel_id, self_id, candidate_id, actor=actor, note=note)
+    return candidate
+
+
+def approved_reference_path(store: Store, novel_id: str, persona_id: str) -> Path | None:
+    """The human-approved reference image path for this persona, if valid on disk.
+
+    Returns a path only if a selected=1 candidate exists for this persona_id,
+    its source_url is a local file that exists, and its file contents match
+    the candidate's sha1 digest (preventing stale approvals after regeneration).
+    """
+    cur = store.conn.execute(
+        "SELECT * FROM ref_image_candidate WHERE novel_id=? AND persona_id=? AND selected=1"
+        " ORDER BY found_at DESC",
+        (novel_id, persona_id),
+    )
+    for row in cur.fetchall():
+        from echotales.core.store import _refimg_from_row
+
+        candidate = _refimg_from_row(row)
+        if not candidate.source_url.startswith("file://"):
+            continue
+        path = Path(candidate.source_url.removeprefix("file://"))
+        if not path.is_file():
+            continue
+        if ":sheet:" in candidate.id:
+            expected_sha = candidate.id.rsplit(":sheet:", 1)[-1]
+            try:
+                actual_sha = hashlib.sha1(path.read_bytes()).hexdigest()[:10]
+                if actual_sha != expected_sha:
+                    continue
+            except OSError:
+                continue
+        return path
+    return None
+
+
+def approve_sheet(
+    store: Store,
+    novel_id: str,
+    self_id: str,
+    candidate_id: str,
+    *,
+    actor: str = "user",
+    note: str = "",
+) -> RefImageCandidate:
+    """Approve a character reference sheet candidate."""
+    store.select_ref_image_candidate(novel_id, self_id, candidate_id, actor=actor, note=note)
+    candidate = store.get_ref_image_candidate(candidate_id)
+    if candidate is None:
+        raise KeyError(candidate_id)
+    return candidate
+
+
+def reject_sheet(
+    store: Store,
+    novel_id: str,
+    self_id: str,
+    candidate_id: str,
+    *,
+    actor: str = "user",
+    note: str = "",
+) -> RefImageCandidate:
+    """Reject (unselect) a character reference sheet candidate."""
+    row = store.conn.execute(
+        "SELECT id, persona_id FROM ref_image_candidate WHERE id=? AND novel_id=? AND self_id=?",
+        (candidate_id, novel_id, self_id),
+    ).fetchone()
+    if row is None:
+        raise KeyError(f"no ref image candidate {candidate_id!r} for self {self_id!r}")
+    cand_persona_id = row["persona_id"] if "persona_id" in row.keys() else None
+    with store.transaction():
+        store.conn.execute(
+            "UPDATE ref_image_candidate SET selected=0 WHERE id=?", (candidate_id,)
+        )
+    store.log_ref_image_event(
+        RefImageSelectionEvent(
+            novel_id=novel_id,
+            self_id=self_id,
+            candidate_id=candidate_id,
+            action="reject",
+            actor=actor,
+            note=note,
+            at=time.time(),
+            persona_id=cand_persona_id,
+        )
+    )
+    candidate = store.get_ref_image_candidate(candidate_id)
+    if candidate is None:
+        raise KeyError(candidate_id)
+    return candidate
+
+
+def list_sheets(
+    store: Store,
+    novel_id: str,
+    self_id: str,
+    *,
+    persona_id: str | None = None,
+) -> list[RefImageCandidate]:
+    """List reference sheet candidates for a character (or specific persona/body)."""
+    return store.list_ref_image_candidates(
+        novel_id, self_id, persona_id=persona_id, role="sheet"
     )

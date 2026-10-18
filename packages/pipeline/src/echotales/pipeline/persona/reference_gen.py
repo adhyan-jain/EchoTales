@@ -680,6 +680,14 @@ def _generate_one(
     from echotales.pipeline.render.panels import PanelImageRequest
 
     appearance = appearance_of(store, persona_id)
+    # Canon first: a reader beats an extractor. A novel's canon entries
+    # describe characters the extractor never saw or had no passages for.
+    appearance = apply_canon(
+        novel_id,
+        str(entity.canonical_label),  # type: ignore[attr-defined]
+        appearance,
+        persona_id,
+    )
     if not appearance:
         report.skipped_no_appearance += 1
         return None
@@ -687,17 +695,7 @@ def _generate_one(
     gender, age_band = _demographics(
         store, persona_id, novel_id=novel_id, entity_id=str(entity.id)  # type: ignore[attr-defined]
     )
-    # Genre defaults for whatever the prose never stated. Without this
-    # the diffusion model picks those features itself, differently every
-    # time it is asked -- see `attire.py::APPEARANCE_DEFAULTS`.
-    # Canon first (a reader beats an extractor), then genre defaults
-    # for whatever neither states.
-    appearance = apply_canon(
-        novel_id,
-        str(entity.canonical_label),  # type: ignore[attr-defined]
-        appearance,
-        persona_id,
-    )
+    # Genre defaults for whatever neither states.
     appearance = resolve_appearance(novel_id, appearance)
     prompt = build_reference_prompt(
         entity.canonical_label,  # type: ignore[attr-defined]
@@ -726,6 +724,17 @@ def _generate_one(
     ):
         report.reused_cached += 1
         report.paths[_report_key(entity, persona_id, multi_body)] = str(image_path)
+        from echotales.pipeline.persona.refimg import register_sheet_candidate
+
+        register_sheet_candidate(
+            store,
+            novel_id=novel_id,
+            self_id=str(entity.id),  # type: ignore[attr-defined]
+            persona_id=persona_id,
+            image_path=image_path,
+            character_label=str(entity.canonical_label),  # type: ignore[attr-defined]
+            selected=False,
+        )
         return image_path
 
     seed_for_body = _seed_for(persona_id, seed)
@@ -796,6 +805,17 @@ def _generate_one(
 
     report.generated += 1
     report.paths[_report_key(entity, persona_id, multi_body)] = str(image_path)
+    from echotales.pipeline.persona.refimg import register_sheet_candidate
+
+    register_sheet_candidate(
+        store,
+        novel_id=novel_id,
+        self_id=str(entity.id),  # type: ignore[attr-defined]
+        persona_id=persona_id,
+        image_path=image_path,
+        character_label=str(entity.canonical_label),  # type: ignore[attr-defined]
+        selected=False,
+    )
     return image_path
 
 

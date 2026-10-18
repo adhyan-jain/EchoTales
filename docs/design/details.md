@@ -2007,6 +2007,10 @@ browse output over HTTP"; that is no longer true):
   `POST .../reference/search` + `POST .../reference/upload` -- thin HTTP
   wrappers around the already-real `persona/refimg.py` functions
   (`list_candidates`, `search_and_store` via a job, `register_user_image`).
+- `GET /api/novels/<id>/characters/<self_id>/sheets` +
+  `POST .../sheets/<persona_id>/approve` + `POST .../sheets/<persona_id>/reject` --
+  reference sheet candidate listing with SHA1-digest staleness validation, and
+  scoped approval/rejection via `refimg.py` (`approve_sheet`, `reject_sheet`).
 - `GET /api/novels/<id>/render/preview` -- wraps
   `render/plan_builder.py::build_render_plan` read-only, no generation.
 - `POST /api/novels/<id>/render/generate`, `.../reference/generate` --

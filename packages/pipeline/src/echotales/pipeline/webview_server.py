@@ -1106,6 +1106,47 @@ def make_handler(
                         ],
                     )
 
+                if (
+                    len(parts) == 6 and parts[:2] == ["api", "novels"]
+                    and parts[3] == "characters" and parts[5] == "sheets"
+                ):
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    import hashlib
+                    from pathlib import Path
+                    from echotales.pipeline.persona import refimg
+
+                    candidates = refimg.list_sheets(handle.store, parts[2], parts[4])
+                    result = []
+                    for c in candidates:
+                        is_stale = False
+                        file_exists = False
+                        if c.source_url.startswith("file://"):
+                            fpath = Path(c.source_url.removeprefix("file://"))
+                            file_exists = fpath.is_file()
+                            if file_exists and ":sheet:" in c.id:
+                                expected_sha = c.id.rsplit(":sheet:", 1)[-1]
+                                try:
+                                    actual_sha = hashlib.sha1(fpath.read_bytes()).hexdigest()[:10]
+                                    if actual_sha != expected_sha:
+                                        is_stale = True
+                                except OSError:
+                                    is_stale = True
+                        result.append({
+                            "id": c.id,
+                            "persona_id": c.persona_id,
+                            "self_id": c.self_id,
+                            "character_label": c.character_label,
+                            "source_url": c.source_url,
+                            "selected": c.selected and not is_stale and file_exists,
+                            "is_approved": c.selected and not is_stale and file_exists,
+                            "is_stale": is_stale or (c.selected and not file_exists),
+                            "file_exists": file_exists,
+                            "found_at": c.found_at,
+                        })
+                    return self._json(200, result)
+
                 if len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3] == "render" and parts[4] == "preview":
                     handle = registry.handles.get(parts[2])
                     if handle is None:
@@ -1291,6 +1332,68 @@ def make_handler(
                     )
                     handle.invalidate()
                     return self._json(200, {"id": candidate.id, "source_url": candidate.source_url})
+
+                # POST /api/novels/<id>/characters/<self_id>/sheets/<persona_id>/approve or reject
+                # POST /api/novels/<id>/sheets/<persona_id>/approve or reject
+                if (
+                    len(parts) == 8 and parts[:2] == ["api", "novels"]
+                    and parts[3] == "characters" and parts[5] == "sheets"
+                    and parts[7] in ("approve", "reject")
+                ) or (
+                    len(parts) == 6 and parts[:2] == ["api", "novels"]
+                    and parts[3] == "sheets" and parts[5] in ("approve", "reject")
+                ):
+                    novel_id = parts[2]
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    if len(parts) == 8:
+                        self_id = parts[4]
+                        persona_id = parts[6]
+                        action = parts[7]
+                    else:
+                        persona_id = parts[4]
+                        action = parts[5]
+                        self_id = persona_id.rsplit(":", 1)[0] if ":body" in persona_id else persona_id
+
+                    body = self._read_json()
+                    candidate_id = str(body.get("candidate_id", "")).strip()
+                    from echotales.pipeline.persona import refimg
+
+                    if not candidate_id:
+                        candidates = refimg.list_sheets(handle.store, novel_id, self_id, persona_id=persona_id)
+                        if not candidates:
+                            cur = handle.store.conn.execute(
+                                "SELECT id FROM ref_image_candidate WHERE novel_id=? AND persona_id=? ORDER BY found_at DESC LIMIT 1",
+                                (novel_id, persona_id),
+                            )
+                            row = cur.fetchone()
+                            if row:
+                                candidate_id = row["id"]
+                            else:
+                                return self._json(404, {"error": f"no candidate found for persona {persona_id!r}"})
+                        else:
+                            candidate_id = candidates[0].id
+
+                    if action == "approve":
+                        candidate = refimg.approve_sheet(
+                            handle.store, novel_id, self_id, candidate_id,
+                            actor="reviewer", note=str(body.get("note", "")),
+                        )
+                    else:
+                        candidate = refimg.reject_sheet(
+                            handle.store, novel_id, self_id, candidate_id,
+                            actor="reviewer", note=str(body.get("note", "")),
+                        )
+                    handle.invalidate()
+                    return self._json(200, {
+                        "id": candidate.id,
+                        "persona_id": candidate.persona_id,
+                        "self_id": candidate.self_id,
+                        "source_url": candidate.source_url,
+                        "selected": candidate.selected,
+                        "action": action,
+                    })
 
                 if (
                     len(parts) == 4

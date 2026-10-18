@@ -560,6 +560,34 @@ def build_parser() -> argparse.ArgumentParser:
     pe_register.add_argument("--actor", default="user")
     pe_register.add_argument("--note", default="")
 
+    pe_sheets = pe_sub.add_parser(
+        "refimg-sheets",
+        help="list reference sheets for a character or the entire novel with approval status",
+    )
+    pe_sheets.add_argument("--novel", required=True)
+    pe_sheets.add_argument("--character", help="optional self id")
+    pe_sheets.add_argument("--persona", help="optional persona id")
+
+    pe_approve = pe_sub.add_parser(
+        "refimg-approve",
+        help="approve a reference sheet candidate to condition generation",
+    )
+    pe_approve.add_argument("--novel", required=True)
+    pe_approve.add_argument("--character", required=True, help="self id")
+    pe_approve.add_argument("--candidate", required=True, help="candidate id from refimg-sheets")
+    pe_approve.add_argument("--actor", default="user")
+    pe_approve.add_argument("--note", default="")
+
+    pe_reject = pe_sub.add_parser(
+        "refimg-reject",
+        help="reject (revoke approval of) a reference sheet candidate",
+    )
+    pe_reject.add_argument("--novel", required=True)
+    pe_reject.add_argument("--character", required=True, help="self id")
+    pe_reject.add_argument("--candidate", required=True, help="candidate id from refimg-sheets")
+    pe_reject.add_argument("--actor", default="user")
+    pe_reject.add_argument("--note", default="")
+
     p_rel = sub.add_parser(
         "relevance", help="score rendered panels against the blocks they play under"
     )

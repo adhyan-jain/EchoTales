@@ -67,6 +67,35 @@ CANON_APPEARANCE: dict[str, dict[str, dict[str, str]]] = {
             # per-body correctness, not just correct-somewhere.
         },
     },
+    "lord-of-the-mysteries": {
+        "Zhou Mingrui": {
+            "hair_color": "black",
+            "hair_style": "short black hair",
+            "eye_color": "deep grey",
+            "skin_tone": "pale",
+            "height_build": "slender, medium height",
+            "distinguishing_features": "deep grey eyes, scholar demeanour",
+            "typical_attire": "black formal trench coat, white shirt, dark trousers",
+        },
+        "Klein Moretti": {
+            "hair_color": "black",
+            "hair_style": "short black hair",
+            "eye_color": "deep grey",
+            "skin_tone": "pale",
+            "height_build": "slender, medium height",
+            "distinguishing_features": "deep grey eyes, scholar demeanour",
+            "typical_attire": "black formal trench coat, white shirt, dark trousers",
+        },
+        "Audrey Hall": {
+            "hair_color": "golden blonde",
+            "hair_style": "long wavy blonde hair",
+            "eye_color": "emerald green",
+            "skin_tone": "fair",
+            "height_build": "slender, aristocratic posture",
+            "distinguishing_features": "bright emerald green eyes, gentle smile",
+            "typical_attire": "elegant Victorian dress, lace trim",
+        },
+    },
 }
 
 

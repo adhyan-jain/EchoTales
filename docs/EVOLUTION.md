@@ -8756,3 +8756,23 @@ Five commits on `reader-faithfulness` (b22fc1a, d681013, b85f3b6, 97ab2a5, 1898d
 - **Tests.** 1,444 core+pipeline pass (after commits b22fc1a..97ab2a5 added 9 new tests to
   `test_genre_profiles.py`), 29 research pass, 112 webview jest pass.
 
+### 4.108 Approved sheet data model and strategic pivot to Reels & Full Video on Open Models *(2026-10-19)*
+
+Work on `reader-faithfulness`:
+
+- **Phase 1a reference sheet data model & API routes completed.**
+  - `RefImageCandidate`: Added nullable `role: str | None = None` to model and schema reconcile in `store.py`.
+  - `Store.select_ref_image_candidate`: Scoped unselection to `(novel_id, self_id, persona_id)` when `persona_id` is specified, preventing multi-body characters (e.g. Zhou Mingrui vs Klein Moretti) from evicting each other's candidate approvals.
+  - `persona/canon.py`: Added canonical profiles for LotM characters (Zhou Mingrui, Klein Moretti, Audrey Hall).
+  - `persona/reference_gen.py`: Applied canon layering before empty appearance checks, and auto-registered newly generated reference sheets as unselected candidates via `register_sheet_candidate`.
+  - `persona/refimg.py`: Implemented `register_sheet_candidate`, `approved_reference_path`, `approve_sheet`, `reject_sheet`, and `list_sheets`.
+  - `webview_server.py`: Added `GET /api/novels/<id>/characters/<self_id>/sheets` and `POST /api/novels/<id>/characters/<self_id>/sheets/<persona_id>/approve|reject` endpoints with SHA1 digest staleness validation.
+  - New test module `packages/pipeline/tests/test_refimg_sheets.py` (4 tests) and route tests in `test_webview_server_jobs.py` passing.
+- **Product gap analysis and strategic pivot (`reels_and_full_video_build_plan.md`).**
+  - Comprehensive competitor analysis (ByteDance Xiao Yunque, SceneMixer, Novi AI, Toonflow, Huobao Drama) identified core limitations: EchoTales had been configured as an illustrated audiobook with 15-20s SDXL still holds, CLIP 77-token limits, and prompt-only generation.
+  - Approved strategic plan targets two outputs built on an open-weight, commercially clean stack (Qwen-Image, Qwen3-TTS, Dia2, Wan 2.2, DeepSeek-V4-Flash):
+    1. **Path 1 (Immediate Commercial Wedge):** Vertical 9:16 reels (motion comics) cutting every 3-5s, animated with 2.5D layered parallax (Qwen-Image-Layered), eased camera paths, living-still loops, mouth flaps, and manga impact grammar synced to exclamation-rich audio.
+    2. **Path 2 (Full Video Upgrade):** End-to-end video (Wan 2.2 S2V/A14B and LTX-2.5) seeded from validated Path 1 keyframes, falling back to Path 1 on QA failures (~30-60% video screen time).
+  - Legacy IP-Adapter on SDXL Phase 0 measurement gate dropped in favor of native multi-reference generation and series-scale story bible extraction.
+- **Tests.** 1,449 core+pipeline pass (73.47s), 29 research pass (9.11s), 112 webview jest pass (5.08s).
+

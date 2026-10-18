@@ -77,6 +77,11 @@ def _build_epub_bytes() -> bytes:
     return buf.getvalue()
 
 
+class LivePort(int):
+    registry: Registry
+    projects_dir: Path
+
+
 @pytest.fixture
 def live_server(tmp_path: Path):
     registry = Registry(
@@ -88,8 +93,11 @@ def live_server(tmp_path: Path):
     httpd = HTTPServer(("127.0.0.1", 0), handler)
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
+    port = LivePort(httpd.server_address[1])
+    port.registry = registry
+    port.projects_dir = tmp_path / "projects"
     try:
-        yield httpd.server_address[1]
+        yield port
     finally:
         httpd.shutdown()
         thread.join(timeout=5)
@@ -102,7 +110,7 @@ def live_server(tmp_path: Path):
 
 
 def _request(port: int, method: str, path: str, *, body: bytes = b"", headers: dict | None = None):
-    conn = HTTPConnection("127.0.0.1", port, timeout=10)
+    conn = HTTPConnection("127.0.0.1", int(port), timeout=10)
     conn.request(method, path, body=body, headers=headers or {})
     resp = conn.getresponse()
     data = resp.read()
@@ -294,3 +302,52 @@ class TestProjectLifecycleAndJobs:
 
         status, listed = _request(port, "GET", "/api/projects")
         assert all(p["id"] != "toy3" for p in listed)
+
+    def test_sheet_approve_route(self, live_server: LivePort) -> None:
+        port = live_server
+        _request(
+            port, "POST", "/api/projects",
+            body=json.dumps({"id": "toy_sheet", "title": "Toy Sheet Novel"}).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        db_path = live_server.projects_dir / "toy_sheet.db"
+        from echotales.core.store import Store
+        from echotales.pipeline.persona.refimg import register_sheet_candidate
+
+        img = live_server.projects_dir / "hero.png"
+        img.write_bytes(b"sheet_pixels")
+
+        store = Store(str(db_path))
+        cand = register_sheet_candidate(
+            store, "toy_sheet", "toy_sheet:self:1", "toy_sheet:self:1:body1",
+            img, "Hero"
+        )
+        store.close()
+
+        status, sheets = _request(port, "GET", "/api/novels/toy_sheet/characters/toy_sheet:self:1/sheets")
+        assert status == 200
+        assert len(sheets) == 1
+        assert sheets[0]["id"] == cand.id
+        assert sheets[0]["selected"] is False
+        assert sheets[0]["is_approved"] is False
+
+        status, res = _request(
+            port, "POST", "/api/novels/toy_sheet/characters/toy_sheet:self:1/sheets/toy_sheet:self:1:body1/approve",
+            body=json.dumps({"candidate_id": cand.id}).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        assert status == 200
+        assert res["selected"] is True
+
+        status, sheets = _request(port, "GET", "/api/novels/toy_sheet/characters/toy_sheet:self:1/sheets")
+        assert status == 200
+        assert sheets[0]["selected"] is True
+        assert sheets[0]["is_approved"] is True
+
+        status, res = _request(
+            port, "POST", "/api/novels/toy_sheet/characters/toy_sheet:self:1/sheets/toy_sheet:self:1:body1/reject",
+            body=json.dumps({"candidate_id": cand.id}).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        assert status == 200
+        assert res["selected"] is False

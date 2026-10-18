@@ -22,9 +22,24 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-18 (EVOLUTION 4.107).
+**Last updated:** 2026-10-19 (EVOLUTION 4.108).
 
-## Pick up here — 2026-10-18 (consistency plan, setting fixes, Phase 0 measurement gate; EVOLUTION 4.107)
+## Pick up here — 2026-10-19 (Reels & Full Video Build Plan, Phase 1a Sheet Data Model; EVOLUTION 4.108)
+
+- **Phase 1a reference sheet data model & API routes completed.**
+  - `RefImageCandidate.role = "sheet"` column migration and model support.
+  - Persona-scoped selection in `Store.select_ref_image_candidate` (prevents multi-body evictions).
+  - Sheet auto-registration on generation/cache reuse (`persona/reference_gen.py`).
+  - Webview routes: `GET .../characters/<self_id>/sheets` and `POST .../sheets/<persona_id>/approve|reject`.
+  - Passed `test_refimg_sheets.py` and `test_sheet_approve_route` (1,449 core+pipeline tests pass).
+- **Approved Strategic Pivot: Reels & Full Video on Open Models (`reels_and_full_video_build_plan.md`).**
+  - Moves away from prompt-only SDXL illustrated audiobooks and drops the IP-Adapter Phase 0 measurement gate.
+  - Two render outputs: Path 1 (2.5D layered parallax reels / motion comics cutting every 3-5s) and Path 2 (Wan 2.2 / LTX-2.5 video).
+  - Open-model commercial stack: Qwen-Image-Edit, Wan 2.2, Qwen3-TTS, Dia2, DeepSeek-V4-Flash.
+  - Phase 0 tasks underway: showcase novel benchmark, speaker attribution golden test set, shot schema & validation contracts, and RunPod worker stubs.
+- **Tests.** 1,449 core+pipeline pass (73.47s), 29 research pass (9.11s), 112 webview jest pass (5.08s).
+
+## Pick up here — 2026-10-18 (consistency plan, setting fixes, EVOLUTION 4.107)
 
 - **LotM setting fixes (commits b22fc1a..97ab2a5, v6_bedroom-slice-final2).** Setting
   and key objects rank above mood (`setting_first` for non-xianxia), duplicate quality
@@ -37,13 +52,7 @@ conflated.
   since EVOLUTION 4.47 `reference_images=[]` and `reference_weight=0.0` have been hard-coded.
 - **Approved-reference consistency plan (`docs/design/consistency_plan.md`).**
   Human-approved reference assets only, IP-Adapter conditioning with regional masks
-  (no per-character LoRA), and a best-of-k reviewer loop for flagged shots. All changes
-  behind off-by-default flags (`ECHOTALES_REF_CONDITIONING`, `ECHOTALES_REF_REGIONAL`).
-- **Phase 0 measurement gate (`scripts/eval/ref_conditioning_probe.py`).**
-  Throwaway evaluation harness testing whole-image IP-Adapter at scales 0.5-0.8 and
-  regional masks on NoobAI XL before any permanent Phase 2-4 code is built. Blocked on
-  the owner approving 2 front portraits from `data/novels/LOTM/references/` and
-  blind-labelling the 84-panel grid.
+  (superseded 2026-10-19 by `reels_and_full_video_build_plan.md`).
 - **Open defects 27 to 34 added** (identity plan, pronoun-only director cast drop,
   WORLD_CONTEXT token eat, preview sparsity, 77-token CLIP limit, unwired extract_world,
   scene_state key mismatch, stale Illustrious docstring).

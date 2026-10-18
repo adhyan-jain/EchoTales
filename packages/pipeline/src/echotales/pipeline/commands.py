@@ -1340,7 +1340,10 @@ def cmd_persona(args: argparse.Namespace) -> int:
     sub = getattr(args, "persona_command", "")
     if sub == "wiki-canon":
         return _cmd_wiki_canon(args)
-    if sub in ("refimg-search", "refimg-list", "refimg-select", "refimg-register"):
+    if sub in (
+        "refimg-search", "refimg-list", "refimg-select", "refimg-register",
+        "refimg-sheets", "refimg-approve", "refimg-reject",
+    ):
         return _cmd_refimg(args, sub)
 
     store = _open_store(args)
@@ -1464,6 +1467,73 @@ def _cmd_refimg(args: argparse.Namespace, sub: str) -> int:
                 actor=args.actor, note=args.note,
             )
             print(f"registered and selected {candidate.id} for {args.character}: {candidate.source_url}")
+            return 0
+
+        if sub == "refimg-sheets":
+            import hashlib
+            from pathlib import Path
+
+            if getattr(args, "character", None):
+                candidates = refimg.list_sheets(
+                    store, args.novel, args.character, persona_id=getattr(args, "persona", None)
+                )
+            else:
+                cur = store.conn.execute(
+                    "SELECT * FROM ref_image_candidate WHERE novel_id=? AND role='sheet'"
+                    " ORDER BY character_label, found_at DESC",
+                    (args.novel,),
+                )
+                from echotales.core.store import _refimg_from_row
+
+                candidates = [_refimg_from_row(r) for r in cur]
+
+            if not candidates:
+                print(f"no reference sheets stored for {args.novel}")
+                return 0
+
+            for c in candidates:
+                fpath = Path(c.source_url.removeprefix("file://")) if c.source_url.startswith("file://") else None
+                file_exists = fpath.is_file() if fpath else False
+                is_stale = False
+                if file_exists and ":sheet:" in c.id and fpath:
+                    expected_sha = c.id.rsplit(":sheet:", 1)[-1]
+                    try:
+                        actual_sha = hashlib.sha1(fpath.read_bytes()).hexdigest()[:10]
+                        if actual_sha != expected_sha:
+                            is_stale = True
+                    except OSError:
+                        is_stale = True
+
+                if c.selected and not is_stale and file_exists:
+                    status = "APPROVED (conditions panels)"
+                    mark = "x"
+                elif is_stale or (c.selected and not file_exists):
+                    status = "STALE (file modified or missing; approval revoked)"
+                    mark = "!"
+                else:
+                    status = "UNAPPROVED (inert)"
+                    mark = " "
+
+                print(f"[{mark}] {c.character_label} ({c.self_id}) | persona: {c.persona_id}")
+                print(f"    id:     {c.id}")
+                print(f"    status: {status}")
+                print(f"    file:   {c.source_url}")
+            return 0
+
+        if sub == "refimg-approve":
+            candidate = refimg.approve_sheet(
+                store, args.novel, args.character, args.candidate,
+                actor=args.actor, note=args.note,
+            )
+            print(f"approved sheet {candidate.id} for {args.character}: {candidate.source_url}")
+            return 0
+
+        if sub == "refimg-reject":
+            candidate = refimg.reject_sheet(
+                store, args.novel, args.character, args.candidate,
+                actor=args.actor, note=args.note,
+            )
+            print(f"rejected sheet {candidate.id} for {args.character}")
             return 0
 
         raise ValueError(f"unknown refimg subcommand {sub!r}")
