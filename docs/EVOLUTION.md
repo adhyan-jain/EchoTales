@@ -8710,3 +8710,49 @@ against `httpx.MockTransport` only.
 - **Tests.** New `test_compute_policy.py` and additions to
   `test_webview_server_jobs.py`, `ProductScreens.test.js`. Counts are in
   HANDOFF "Pick up here".
+
+### 4.107 LotM render review, setting fixes, and approved-reference consistency plan *(2026-10-18)*
+
+Five commits on `reader-faithfulness` (b22fc1a, d681013, b85f3b6, 97ab2a5, 1898d4f).
+
+- **Correction of 4.106's "consistency decent" verdict.** The first real LotM chapter 1
+  render (NoobAI XL 1.1, `v2_genre-victorian-10panel-noobai`) was evaluated only at
+  a high level in 4.106. An image-by-image review revealed significant defects: hair
+  shade and face structure varied widely across panels, and the setting drifted from
+  panel to panel (grass and bright sunlight in the opening, rotating between a study,
+  a street, and a moor).
+- **Setting fixes (commits b22fc1a through 97ab2a5, LotM v6).**
+  - b22fc1a: `GenreProfile.setting_first` gives setting and key objects priority over
+    mood and drops duplicate quality tags for non-xianxia books; example lighting
+    ("day, bright_sunlight") that the director copied verbatim was removed; scene-wide
+    setting cues are now passed to each beat so earlier blocks know the room context.
+  - d681013: Whole-word cue matching and bedroom locale support for non-xianxia novels;
+    prevented "wooden" matching "wood" (which had misclassified a bedroom as a forest
+    and produced "a moonlit moor, low cloud" on every panel); missing locale table cues
+    now skip gracefully instead of raising.
+  - b85f3b6: Scenes lacking local place cues inherit the chapter's most-cued place;
+    bed cues outweigh wood; generic "inside" cues are ignored.
+  - 97ab2a5: Anatomical "temples" and material "wood" are excluded from place evidence;
+    single weak cues no longer decide scene locale.
+  - Verified on LotM ch1 `v6_bedroom-slice-final2` (blocks 0 to 40, 2 scenes):
+    consistently produced a single wood-panelled bedroom with lamps, bed, desk, notebook,
+    and revolver across panels.
+- **Root cause of identity drift: prompt-only generation.**
+  The setting is now stable, but character identity (hair shade, facial features) still
+  wanders because every panel remains prompt-only. Since EVOLUTION 4.47, `render_panels`
+  has hard-coded `reference_images=[]` and `reference_weight=0.0`.
+- **Consistency architecture research and design plan (`docs/design/consistency_plan.md`).**
+  Survey of production pipelines (Xiaoyunque/Seedance, Kling Elements, Catimind, LTX Studio)
+  and literature (AniMaker, Character-Adapter, Unbounded, CANVAS) establishes a three-part
+  pattern:
+  1. Human-approved reference assets (character sheet and location image baselines).
+  2. Reference-conditioned generation (IP-Adapter with regional masks, no per-character LoRA).
+  3. Reviewer loop for best-of-k selection and selective re-rendering of flagged panels.
+  Operating constraints reaffirmed: local models only (no RunPod/OpenAI/Gemini cloud calls),
+  single model resident in VRAM at any time, zero CPU-offload RAM spill, all new behavior
+  behind off-by-default flags to guarantee byte-identical outputs for existing baselines
+  (Reverend Insanity). Phase 0 measurement gate specifies empirical criteria before Phase 2
+  build proceeds.
+- **Tests.** 1,444 core+pipeline pass (after commits b22fc1a..97ab2a5 added 9 new tests to
+  `test_genre_profiles.py`), 29 research pass, 112 webview jest pass.
+

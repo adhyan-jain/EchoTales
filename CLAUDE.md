@@ -15,6 +15,7 @@ alone — read the source doc for the thing you're touching:
 - [`docs/design/architecture.md`](docs/design/architecture.md) — the bitemporal model, `state_of()`,
   and Section 11's ten non-negotiables (below).
 - [`docs/design/plans.md`](docs/design/plans.md) — the full phase-by-phase specification.
+- [`docs/design/consistency_plan.md`](docs/design/consistency_plan.md) — approved-reference identity and location consistency plan.
 - [`docs/design/details.md`](docs/design/details.md) — per-file design rationale.
 - [`docs/HANDOFF.md`](docs/HANDOFF.md) — **current open tasks only, ephemeral** (restructured
   2026-08-31). "Pick up here" + "Open defects" are the actual
@@ -83,7 +84,7 @@ source .venv/bin/activate      # uv-managed venv already present at repo root
 python3 -m pytest packages/core/tests packages/pipeline/tests   # no GPU needed
 ```
 
-1,435 core+pipeline tests pass (2026-10-18, reader-faithfulness branch, after the compute-policy and hosted-provider tests; research: 29; webview jest: 112). Root `pyproject` testpaths lists only
+1,444 core+pipeline tests pass (2026-10-18, reader-faithfulness branch, after the setting fixes and genre-profile test additions; research: 29; webview jest: 112). Root `pyproject` testpaths lists only
 core and pipeline; pass `packages/research/tests` explicitly (and `-o addopts=""`) to include research.
 
 Everything is stub-first: `ECHOTALES_LLM_MODE=stub` and `--image-engine
@@ -171,7 +172,7 @@ Research track: `docs/research/DECISION_LOG.md` is the state of record (EVOLUTIO
 
 See docs/HANDOFF.md's "Pick up here" section for the actual current state — it
 changes every session (the numbered session log itself moved to
-docs/EVOLUTION.md, latest section 4.106). The NER-windowing re-run (EVOLUTION
+docs/EVOLUTION.md, latest section 4.107). The NER-windowing re-run (EVOLUTION
 4.76) that an earlier session left unmeasured did run (4.84): the
 "`ollama` unreachable" blocker was a misdiagnosis — the daemon was simply
 not started — and the fix is now measured on real data (CEAF-e recall

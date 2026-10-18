@@ -19,9 +19,35 @@ conflated.
 | `docs/design/details.md` | Per-file detail |
 | `docs/design/plans.md` | The original spec. Amended three times; the amendments win and are marked *(revised)* |
 | `docs/design/video_plan.md` | The plan for motion video (2026-10-18, plan only, nothing built, model figures unmeasured). Its flagged defects are Open defects 17 to 19 below. |
+| `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-18 (EVOLUTION 4.106).
+**Last updated:** 2026-10-18 (EVOLUTION 4.107).
+
+## Pick up here — 2026-10-18 (consistency plan, setting fixes, Phase 0 measurement gate; EVOLUTION 4.107)
+
+- **LotM setting fixes (commits b22fc1a..97ab2a5, v6_bedroom-slice-final2).** Setting
+  and key objects rank above mood (`setting_first` for non-xianxia), duplicate quality
+  tags dropped, director no longer copies "day, bright_sunlight", whole-scene setting
+  cues passed to each beat, whole-word place cues, bedroom locale supported, and scenes
+  inherit the chapter's most-cued place. Verified on LotM ch1 blocks 0 to 40 (2 scenes):
+  produces one consistent wood-panelled bedroom across panels.
+- **Correction of 4.106's "consistency decent" verdict.** Detailed review showed hair
+  shade and face structure vary between panels. Root cause: every panel is prompt-only;
+  since EVOLUTION 4.47 `reference_images=[]` and `reference_weight=0.0` have been hard-coded.
+- **Approved-reference consistency plan (`docs/design/consistency_plan.md`).**
+  Human-approved reference assets only, IP-Adapter conditioning with regional masks
+  (no per-character LoRA), and a best-of-k reviewer loop for flagged shots. All changes
+  behind off-by-default flags (`ECHOTALES_REF_CONDITIONING`, `ECHOTALES_REF_REGIONAL`).
+- **Phase 0 measurement gate (`scripts/eval/ref_conditioning_probe.py`).**
+  Throwaway evaluation harness testing whole-image IP-Adapter at scales 0.5-0.8 and
+  regional masks on NoobAI XL before any permanent Phase 2-4 code is built. Blocked on
+  the owner approving 2 front portraits from `data/novels/LOTM/references/` and
+  blind-labelling the 84-panel grid.
+- **Open defects 27 to 34 added** (identity plan, pronoun-only director cast drop,
+  WORLD_CONTEXT token eat, preview sparsity, 77-token CLIP limit, unwired extract_world,
+  scene_state key mismatch, stale Illustrious docstring).
+- Tests: 1,444 core+pipeline pass, 112 webview jest pass, 29 research pass.
 
 ## Pick up here — 2026-10-18 (first real genre render, ECHOTALES_COMPUTE, hosted-provider switches; EVOLUTION 4.106)
 
@@ -1103,6 +1129,32 @@ genuinely unresolved *today*.
     `docs/ops/` and the README found no invocation of `echotales render` that
     relies on the old default (the one `max_panels=40` in
     `scripts/eval/a7_cache_ablation.py` is explicit).
+27. **Character identity drift across panels (open, spec in `docs/design/consistency_plan.md`).**
+    Every panel since EVOLUTION 4.47 is prompt-only (`reference_images=[]`,
+    `reference_weight=0.0`). The setting is now fixed (v6_bedroom-slice-final2), but character
+    hair shade and facial features wander across panels. Addressed by approved-reference
+    conditioning (Phase 0 measurement gate to Phase 5).
+28. **Director omits character names on pronoun-only beats.**
+    When a beat has no explicit name ("He took out the brass revolver"), the director
+    does not inherit the character from the preceding beat in the same scene. Needs scene-level
+    cast carry-forward (`render/beat_canon.py`, `render/director.py`, `render/panels.py`).
+29. **`WORLD_CONTEXT` string eats ~22 tokens atomically.**
+    Appended as a monolithic block, which risks forcing character and action cues out under
+    the 77-token CLIP limit; needs clause-level budget fitting in `persona/prompt.py::fit_to_budget`.
+30. **3-scene preview is too sparse.**
+    `local-low` default selects the first 3 scenes, which can all be the same setting and cast;
+    needs coverage-based selection (distinct places/casts) or a configurable 5-scene tier.
+31. **77-token CLIP limit with no verified long-prompt encoder.**
+    Long prompts get silently truncated past 77 tokens; `compel` or `sd_embed` chunking is
+    unmeasured on NoobAI and unproven. The budget stays hard until proven.
+32. **Location facts are never extracted (`world/extract.py::extract_world` unwired).**
+    0 location facts exist in any DB; needs a `world` CLI command / job kind and evaluation.
+33. **`scene_state` segment_id/index key mismatch.**
+    `render/scene_state.py` builds row ID with `scene.index` (:75) but looks up by
+    `segment_id` (:106); the table is empty everywhere.
+34. **Stale `IllustriousEngine` docstring (`panels.py:~534`).**
+    Claims "No IP-Adapter here yet", but SDXL IP-Adapter support was subsequently implemented
+    in `_load_ip_adapter` (:670).
 
 ## Architecture-review items not yet implemented
 
