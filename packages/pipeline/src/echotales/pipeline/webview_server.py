@@ -20,7 +20,9 @@ Routes:
     POST /api/projects/<id>/genre      body: {"genre": key | null} -- the visual genre image generation draws in
                                         (persona/genre.py); null returns to the detected one
     GET  /api/novels/<id>              live payload, corrections overlaid
-    GET  /api/gpu                      {"available", "free", "used_mb", "total_mb", "name"} -- the Studio's engine picker
+    GET  /api/compute                  ECHOTALES_COMPUTE mode, providers, enabled engines with the reason any is refused,
+                                        panel tiers, memory and GPU (pipeline/compute.py) -- the Studio's engine picker
+    GET  /api/gpu                      {"available", "free", "used_mb", "total_mb", "name"}
     GET  /api/novels/<id>/reader?chapter=c   the cast as known at the end of chapter c (webview.build_reader_cast)
     GET  /api/novels/<id>/corrections  log + summary
     POST /api/novels/<id>/corrections  body: {"type": "merge_entities",
@@ -71,7 +73,13 @@ from echotales.pipeline.corrections import (
     apply_pending,
     new_manual_entity_id,
 )
-from echotales.pipeline.jobs import ALLOWED_HTTP_ENGINES, JOB_KINDS, JobQueue, new_job_id
+from echotales.pipeline.jobs import (
+    ALLOWED_HTTP_ENGINES,
+    JOB_KINDS,
+    JobQueue,
+    http_engine_known,
+    new_job_id,
+)
 from echotales.pipeline.webview import (
     NovelSource,
     _anon_slot_colour,
@@ -562,22 +570,57 @@ def _plan_json(plan) -> dict:  # type: ignore[type-arg, no-untyped-def]
     }
 
 
+def _enabled_engines() -> list[str]:
+    """The engines this server will accept a request for, for error messages: the local set plus the chosen hosted one."""
+    from echotales.pipeline.compute import policy
+
+    return sorted(ALLOWED_HTTP_ENGINES | set(policy().http_engines()))
+
+
 def _gpu_refusal(engine_name: str) -> str | None:
-    """Why a job that loads an image model should not be queued right now, or None.
+    """Why a render with this engine should not be queued right now, or None (`pipeline/compute.py`).
 
-    The stub engine never touches the GPU. Any other loads a diffusion model; with the card busy (ollama resident,
-    another render) it would OOM or spill into system RAM, which the owner has ruled out (2026-10-02).
+    The stub never touches a model. A local engine loads a diffusion model onto the GPU, so it is refused while the
+    card is busy or (in `local-low`) memory is short -- a spill into system RAM is what the owner ruled out
+    (2026-10-02). A hosted engine is accepted only when `ECHOTALES_IMAGE_PROVIDER` selected it, and only with its
+    variables set. Kept under this name because the render routes and their tests call it.
     """
-    if engine_name == "stub":
-        return None
-    from echotales.pipeline.gpu import gpu_status
+    from echotales.pipeline.compute import resource_refusal
 
-    status = gpu_status()
-    if status is None:
-        return f"engine {engine_name!r} needs an NVIDIA GPU, and none was found on the server"
-    if not status.free:
-        return f"the GPU is busy ({status.describe()}); stop what is using it, or queue the stub engine"
-    return None
+    return resource_refusal(engine_name, http=True)
+
+
+def _compute_status() -> dict:  # type: ignore[type-arg]
+    """What the Studio needs to choose an engine and set expectations. Names of missing variables, never values."""
+    from echotales.pipeline import gpu
+    from echotales.pipeline.compute import (
+        IMAGES_PER_SCENE,
+        SECONDS_PER_PANEL,
+        available_ram_mb,
+        policy,
+        resource_refusal,
+    )
+
+    pol = policy()
+    status = gpu.gpu_status()
+    engines = pol.http_engines()
+    return {
+        "mode": pol.mode,
+        "llm_provider": pol.llm_provider,
+        "image_provider": pol.image_provider,
+        "default_tier": pol.default_tier,
+        "scenes": {"preview": pol.preview_scenes, "full": pol.full_scenes},
+        "images_per_scene": IMAGES_PER_SCENE,
+        "engines": engines,
+        "refusals": {e: resource_refusal(e, pol, http=True) for e in engines},
+        "seconds_per_panel": {e: SECONDS_PER_PANEL.get(e) for e in engines},
+        "llm_missing": pol.llm_missing(),
+        "ram_available_mb": available_ram_mb(),
+        "min_free_ram_mb": pol.min_free_ram_mb if pol.low else None,
+        "gpu": {"available": status is not None, "free": bool(status and status.free),
+                "name": status.name if status else "", "used_mb": status.used_mb if status else 0,
+                "total_mb": status.total_mb if status else 0},
+    }
 
 
 def _project_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
@@ -983,6 +1026,9 @@ def make_handler(
 
                 # --- Product Orchestration track ---------------------------
 
+                if parts == ["api", "compute"]:
+                    return self._json(200, _compute_status())
+
                 if parts == ["api", "gpu"]:
                     from echotales.pipeline.gpu import gpu_status
 
@@ -1336,13 +1382,13 @@ def make_handler(
                     if (
                         kind in ("render", "reference_gen")
                         and "engine" in params
-                        and params["engine"] not in ALLOWED_HTTP_ENGINES
+                        and not http_engine_known(str(params["engine"]))
                     ):
                         return self._json(
                             400,
                             {
                                 "error": f"engine {params['engine']!r} is not allowed over "
-                                f"HTTP; allowed: {sorted(ALLOWED_HTTP_ENGINES)}"
+                                f"HTTP; allowed: {_enabled_engines()}"
                             },
                         )
                     if kind in ("render", "reference_gen"):
@@ -1382,12 +1428,12 @@ def make_handler(
                         return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
                     body = self._read_json()
                     engine_name = str(body.get("engine", "stub"))
-                    if engine_name not in ALLOWED_HTTP_ENGINES:
+                    if not http_engine_known(engine_name):
                         return self._json(
                             400,
                             {
                                 "error": f"engine {engine_name!r} is not allowed over HTTP; "
-                                f"allowed: {sorted(ALLOWED_HTTP_ENGINES)}"
+                                f"allowed: {_enabled_engines()}"
                             },
                         )
                     refusal = _gpu_refusal(engine_name)
@@ -1404,12 +1450,12 @@ def make_handler(
                         return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
                     body = self._read_json()
                     engine_name = str(body.get("engine", "stub"))
-                    if engine_name not in ALLOWED_HTTP_ENGINES:
+                    if not http_engine_known(engine_name):
                         return self._json(
                             400,
                             {
                                 "error": f"engine {engine_name!r} is not allowed over HTTP; "
-                                f"allowed: {sorted(ALLOWED_HTTP_ENGINES)}"
+                                f"allowed: {_enabled_engines()}"
                             },
                         )
                     refusal = _gpu_refusal(engine_name)

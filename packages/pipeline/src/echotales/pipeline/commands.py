@@ -1008,7 +1008,15 @@ def cmd_render(args: argparse.Namespace) -> int:
     if selected := _chapter_range(args.chapters):
         wanted = [n for n in store.chapter_numbers(args.novel) if n in selected]
 
-    image_engine_name = args.image_engine
+    from echotales.pipeline.compute import policy as _compute_policy
+    from echotales.pipeline.compute import resource_refusal as _resource_refusal
+
+    pol = _compute_policy()
+    # No `--image-engine`: the stub for the local provider (a bare render never loads a model, as before), the
+    # configured provider's engine when a hosted one was chosen in `.env` -- that choice is the opt-in.
+    image_engine_name = args.image_engine or ("stub" if pol.image_provider in ("local", "stub") else pol.image_provider)
+    max_panels = args.max_panels if args.max_panels is not None else pol.scenes_for(getattr(args, "tier", None))
+    print(f"compute: {pol.mode}; images: {image_engine_name}; language: {pol.llm_provider}; scenes per chapter: {max_panels}")
     if not get_settings().enable_image_gen and image_engine_name != "stub":
         print(
             f"note: ECHOTALES_ENABLE_IMAGE_GEN=false overrides --image-engine "
@@ -1016,6 +1024,13 @@ def cmd_render(args: argparse.Namespace) -> int:
             "the flag back on when done)"
         )
         image_engine_name = "stub"
+
+    if not getattr(args, "ignore_resource_guard", False):
+        refusal = _resource_refusal(image_engine_name, pol)
+        if refusal:
+            print(f"refusing to render: {refusal}\n(--ignore-resource-guard overrides this)", file=sys.stderr)
+            store.close()
+            return 2
 
     block_range = None
     if args.block_range:
@@ -1056,7 +1071,9 @@ def cmd_render(args: argparse.Namespace) -> int:
 
         # Only the panel director runs here; checking every task's model refused a render over llama3:latest.
         director_client = _build_client(store, tasks={_Task.PANEL_DIRECTION}) if not args.no_director else None
-        two_phase = director_client is not None and get_settings().render_direction_first
+        # `local-low` always runs the director to completion and unloads it before the image model loads, whatever
+        # render.direction_first says: two models resident at once is what ran this machine out of memory.
+        two_phase = director_client is not None and (get_settings().render_direction_first or pol.force_sequential)
 
         if two_phase:
             # Direction and image generation split into two passes so an
@@ -1106,7 +1123,7 @@ def cmd_render(args: argparse.Namespace) -> int:
                 width=args.width,
                 height=args.height,
                 client=director_client,
-                max_panels=args.max_panels,
+                max_panels=max_panels,
                 block_range=block_range,
                 prompt_cache_path=cache_path,
                 version=_version,
@@ -1130,7 +1147,7 @@ def cmd_render(args: argparse.Namespace) -> int:
                 width=args.width,
                 height=args.height,
                 client=None,
-                max_panels=args.max_panels,
+                max_panels=max_panels,
                 block_range=block_range,
                 prompt_cache_path=cache_path,
                 version=_version,
@@ -1150,7 +1167,7 @@ def cmd_render(args: argparse.Namespace) -> int:
                 width=args.width,
                 height=args.height,
                 client=director_client,
-                max_panels=args.max_panels,
+                max_panels=max_panels,
                 block_range=block_range,
                 observer_id=getattr(args, "observer", OBSERVER_READER),
             )

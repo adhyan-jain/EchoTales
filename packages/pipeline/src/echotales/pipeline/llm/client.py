@@ -110,6 +110,8 @@ class PreflightResult:
             return "\n".join(lines)
         if self.backend == ModelBackend.GATEWAY.value:
             return self.detail or "gateway unreachable; check it is running on the configured host"
+        if self.backend in ("runpod", "openai", "gemini"):
+            return self.detail or f"set the ECHOTALES_{self.backend.upper()}_* variables listed above"
         return "Set ANTHROPIC_API_KEY and install the api extra: uv sync --extra api"
 
 
@@ -133,10 +135,36 @@ class ModelClient:
     # ---- provider construction -----------------------------------------
 
     @property
-    def backend(self) -> ModelBackend:
-        return self.settings.model_backend
+    def policy(self):  # type: ignore[no-untyped-def]
+        from echotales.pipeline.compute import policy
 
-    def _provider_for(self, profile: TaskProfile) -> LLMProvider:
+        return policy(self.settings)
+
+    @property
+    def backend(self) -> ModelBackend:
+        """The provider this client dispatches to.
+
+        `ECHOTALES_LLM_PROVIDER`, or the `cloud` compute preset, picks a hosted one; otherwise the long-standing
+        `ECHOTALES_MODEL_BACKEND` applies. A test that injected a provider override keeps the configured backend.
+        """
+        chosen = self.policy.llm_provider
+        try:
+            return ModelBackend(chosen)
+        except ValueError:
+            return self.settings.model_backend
+
+    def _hosted(self, backend: ModelBackend) -> tuple[str, str, str]:
+        """`(base_url, api_key, model)` for an OpenAI-chat-compatible hosted provider."""
+        from echotales.pipeline.compute import OPENAI_COMPATIBLE_BASE
+
+        p = self.policy
+        if backend is ModelBackend.RUNPOD:
+            return p.runpod_llm_base_url, p.runpod_api_key, p.runpod_llm_model
+        if backend is ModelBackend.OPENAI:
+            return OPENAI_COMPATIBLE_BASE["openai"], p.openai_api_key, p.openai_model
+        return OPENAI_COMPATIBLE_BASE["gemini"], p.gemini_api_key, p.gemini_model
+
+    def _provider_for(self, profile: TaskProfile, task: Task | None = None) -> LLMProvider:
         if self._override is not None:
             return self._override
 
@@ -144,8 +172,12 @@ class ModelClient:
             return self._providers.setdefault("stub", StubProvider())
 
         if self.backend is ModelBackend.OLLAMA:
-            model = profile.ollama_model
-            existing = self._providers.get(model)
+            # `local-low` caps the director's context (and may swap its model): `compute.py` has the measurements.
+            director = task is Task.PANEL_DIRECTION
+            model = self.policy.director_model(profile.ollama_model) if director else profile.ollama_model
+            num_ctx = self.policy.director_num_ctx(self.settings.llm_local_num_ctx) if director else self.settings.llm_local_num_ctx
+            key = f"{model}@{num_ctx}"
+            existing = self._providers.get(key)
             if existing is None:
                 from echotales.pipeline.llm.ollama import OllamaProvider
 
@@ -153,9 +185,20 @@ class ModelClient:
                     model=model,
                     host=self.settings.llm_local_host,
                     timeout=self.settings.llm_local_timeout,
-                    num_ctx=self.settings.llm_local_num_ctx,
+                    num_ctx=num_ctx,
                 )
-                self._providers[model] = existing
+                self._providers[key] = existing
+            return existing
+
+        if self.backend in (ModelBackend.RUNPOD, ModelBackend.OPENAI, ModelBackend.GEMINI):
+            base, key, model = self._hosted(self.backend)
+            existing = self._providers.get(f"{self.backend.value}:{model}")
+            if existing is None:
+                from echotales.pipeline.llm.gateway import GatewayProvider
+
+                existing = GatewayProvider(model=model, host=base, api_key=key, timeout=self.settings.llm_api_timeout)
+                existing.tier = self.backend.value
+                self._providers[f"{self.backend.value}:{model}"] = existing
             return existing
 
         if self.backend is ModelBackend.GATEWAY:
@@ -187,9 +230,13 @@ class ModelClient:
         if self.backend is ModelBackend.STUB:
             return "stub"
         if self.backend is ModelBackend.OLLAMA:
+            if task is Task.PANEL_DIRECTION:
+                return self.policy.director_model(profile.ollama_model)
             return profile.ollama_model
         if self.backend is ModelBackend.GATEWAY:
             return self.settings.llm_gateway_model
+        if self.backend in (ModelBackend.RUNPOD, ModelBackend.OPENAI, ModelBackend.GEMINI):
+            return self._hosted(self.backend)[2]
         return profile.anthropic_model
 
     # ---- the call --------------------------------------------------------
@@ -207,7 +254,7 @@ class ModelClient:
     ) -> LLMResult[SchemaT]:
         """Run one task-scoped model call."""
         profile = profile_for(task)
-        provider = self._provider_for(profile)
+        provider = self._provider_for(profile, task)
         request = LLMRequest(
             stage=task.value,
             prompt=prompt,
@@ -245,6 +292,23 @@ class ModelClient:
         backend = self.backend.value
         if self.backend is ModelBackend.STUB or self._override is not None:
             return PreflightResult(backend=backend, available=True, missing=[])
+
+        if self.backend in (ModelBackend.RUNPOD, ModelBackend.OPENAI, ModelBackend.GEMINI):
+            missing = self.policy.llm_missing()
+            if missing:
+                return PreflightResult(
+                    backend=backend, available=False, missing=missing,
+                    detail=f"{backend} needs {', '.join(missing)}",
+                )
+            base, key, model = self._hosted(self.backend)
+            from echotales.pipeline.llm.gateway import GatewayProvider
+
+            if GatewayProvider(model=model, host=base, api_key=key).available():
+                return PreflightResult(backend=backend, available=True, missing=[])
+            return PreflightResult(
+                backend=backend, available=False, missing=[model],
+                detail=f"{backend} at {base} is unreachable, rejected the key, or does not list model {model!r}",
+            )
 
         if self.backend is ModelBackend.GATEWAY:
             from echotales.pipeline.llm.gateway import GatewayProvider

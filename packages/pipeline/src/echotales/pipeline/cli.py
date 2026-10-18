@@ -351,7 +351,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_render.add_argument("--out", default=None, help="default: data/novels/<CODE>/video")
     p_render.add_argument(
-        "--image-engine", default="stub", choices=["stub", "sdxl", "manga", "illustrious", "noobai", "refined", "gemini", "openrouter"],
+        "--image-engine", default=None, choices=["stub", "sdxl", "manga", "illustrious", "noobai", "refined", "gemini", "openrouter", "runpod"],
         help="stub writes solid-colour placeholder panels; sdxl and manga need "
         "a GPU. manga is the one that produces the intended look: an "
         "anime/manga checkpoint plus IP-Adapter reference conditioning so a "
@@ -429,11 +429,18 @@ def build_parser() -> argparse.ArgumentParser:
         "every version; `next_version` cannot, so this is how a CLI render gets one",
     )
     p_render.add_argument(
-        "--max-panels", type=int, default=70,
-        help="panels per chapter (default: 70, roughly 60%% of a manhwa's "
-        "panel density -- author instruction, HANDOFF 4.37 item 6). One "
-        "per narrative beat, not per paragraph. 5x the panels is roughly "
-        "5x the render wall-clock on the same GPU",
+        "--max-panels", type=int, default=None,
+        help="scenes per chapter, each drawn with one to three images (10 scenes made 33 images on LotM ch1). "
+        "Default: the tier's -- 70 for a full chapter (HANDOFF 4.37 item 6) and 3 for a preview, which is what "
+        "ECHOTALES_COMPUTE=local-low renders unless told otherwise. 5x the scenes is roughly 5x the wall-clock",
+    )
+    p_render.add_argument(
+        "--tier", choices=["preview", "full"], default=None,
+        help="preview (a handful of panels) or full (the whole chapter); default follows ECHOTALES_COMPUTE",
+    )
+    p_render.add_argument(
+        "--ignore-resource-guard", action="store_true",
+        help="render even if the memory, GPU or credentials check refuses (ECHOTALES_COMPUTE, pipeline/compute.py)",
     )
     p_render.add_argument(
         "--no-director",

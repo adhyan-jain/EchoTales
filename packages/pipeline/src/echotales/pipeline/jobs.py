@@ -61,6 +61,17 @@ ALLOWED_HTTP_ENGINES = frozenset(
     {"stub", "sdxl", "illustrious", "noobai", "refined", "manga"}
 )
 
+
+def http_engine_known(name: str) -> bool:
+    """Whether the HTTP API will consider this engine: the local set, plus the ONE hosted engine the operator chose.
+
+    Paid engines are still never reachable by naming them in a request: a hosted engine is accepted only when
+    `ECHOTALES_IMAGE_PROVIDER` (or the `cloud` preset) selected it in `.env`, which is the operator's opt-in to spend.
+    """
+    from echotales.pipeline.compute import policy
+
+    return name in ALLOWED_HTTP_ENGINES or name in policy().http_engines()
+
 #: The set of job kinds this module knows how to run. Mirrors the CLI's own
 #: subcommand granularity (`cli.py`'s `ingest`/`resolve`/`persona`/
 #: `appearance`/`render`/`voice`/`refimg-search`) rather than inventing a
@@ -234,16 +245,24 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             fn=lambda: build_personas(novel_id, store, client=client, prefix_causal=get_settings().persona_prefix_causal),
         )
     elif job.kind == "render":
-        from echotales.pipeline.render.panels import get_engine, render_panels
         from echotales.pipeline import paths
+        from echotales.pipeline.render.panels import get_engine, render_panels
 
         engine_name = params.get("engine", "stub")
-        if engine_name not in ALLOWED_HTTP_ENGINES:
+        if not http_engine_known(engine_name):
             raise ValueError(
-                f"engine {engine_name!r} is not allowed over HTTP -- paid engines "
-                "(gemini/openrouter) are CLI-only. Allowed: "
-                f"{sorted(ALLOWED_HTTP_ENGINES)}"
+                f"engine {engine_name!r} is not enabled over HTTP. Local: {sorted(ALLOWED_HTTP_ENGINES)}; a hosted engine only if ECHOTALES_IMAGE_PROVIDER selects it"
             )
+        from echotales.pipeline.compute import policy as _policy
+        from echotales.pipeline.compute import resource_refusal as _refusal
+
+        # A second check at run time: the job may have waited in the queue while memory or the GPU filled up, and a
+        # job enqueued by a route that skipped the server's check must not reach the model loader.
+        refusal = _refusal(engine_name, http=True)
+        if refusal:
+            raise ValueError(refusal)
+        # The tier sets how many scenes (each one to three images): a preview by default in `local-low`, the whole chapter otherwise.
+        max_panels = int(params.get("max_panels") or _policy().scenes_for(params.get("tier")))
         chapters = params.get("chapters")
         out_dir = params.get("panel_dir") or str(paths.asset_dir(novel_id, "panels"))
         # The CLI gives every render its own version directory (`commands.py::cmd_render`); this job did not, so a
@@ -261,13 +280,15 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
                 engine=get_engine(engine_name),
                 chapters=chapters,
                 seed=params.get("seed", 20260812),
+                max_panels=max_panels,
                 version=version,
             ),
         )
         _record_studio_version(Path(out_dir), wanted, version, engine_name, job.job_id)
     elif job.kind == "voice":
-        from echotales.pipeline.voice import get_engine as get_voice_engine, load_vctk, render_novel
         from echotales.pipeline import paths
+        from echotales.pipeline.voice import get_engine as get_voice_engine
+        from echotales.pipeline.voice import load_vctk, render_novel
 
         engine_name = params.get("engine", "stub")
         # Same bank selection as `cmd_voice`; the HTTP job path hardcoded VCTK
@@ -313,11 +334,9 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         from echotales.pipeline.render.panels import get_engine
 
         engine_name = params.get("engine", "stub")
-        if engine_name not in ALLOWED_HTTP_ENGINES:
+        if not http_engine_known(engine_name):
             raise ValueError(
-                f"engine {engine_name!r} is not allowed over HTTP -- paid engines "
-                "(gemini/openrouter) are CLI-only. Allowed: "
-                f"{sorted(ALLOWED_HTTP_ENGINES)}"
+                f"engine {engine_name!r} is not enabled over HTTP. Local: {sorted(ALLOWED_HTTP_ENGINES)}; a hosted engine only if ECHOTALES_IMAGE_PROVIDER selects it"
             )
         run_stage(
             store, run_id=pipeline_run.run_id, stage_name="reference_gen",

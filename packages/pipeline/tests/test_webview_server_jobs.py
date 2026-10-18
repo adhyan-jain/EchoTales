@@ -250,6 +250,37 @@ class TestProjectLifecycleAndJobs:
             status, _ = _request(port, "POST", "/api/projects/toy3/genre", body=json.dumps(payload).encode())
             assert status == 400, payload
 
+    def test_compute_route_and_a_hosted_engine_is_only_reachable_when_the_operator_chose_it(
+        self, live_server: int, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from echotales.pipeline import compute
+        from echotales.pipeline.config import Settings
+
+        port = live_server
+        _request(port, "POST", "/api/projects", body=json.dumps({"id": "toy4", "title": "T4"}).encode(),
+                 headers={"Content-Type": "application/json"})
+        original = compute.policy
+
+        def configured(**kw):
+            return lambda settings=None: original(Settings(_env_file=None, **kw))
+
+        # Default laptop profile: the local engines, a preview scope, and no hosted engine reachable by name.
+        monkeypatch.setattr(compute, "policy", configured())
+        _, body = _request(port, "GET", "/api/compute")
+        assert (body["mode"], body["default_tier"], body["scenes"]) == ("local-low", "preview", {"preview": 3, "full": 70})
+        assert body["engines"] == ["stub", "noobai", "illustrious", "sdxl"] and body["images_per_scene"] == 3.3
+        status, err = _request(port, "POST", "/api/novels/toy4/render/generate", body=json.dumps({"engine": "gemini"}).encode())
+        assert status == 400 and "not allowed over HTTP" in err["error"]
+
+        # Cloud preset with the image variables set: only the stub and RunPod, the language model still named as missing.
+        monkeypatch.setattr(compute, "policy", configured(compute="cloud", runpod_api_key="k", runpod_image_endpoint="ep"))
+        _, body = _request(port, "GET", "/api/compute")
+        assert body["engines"] == ["stub", "runpod"] and body["refusals"] == {"stub": None, "runpod": None}
+        assert body["llm_missing"] == ["ECHOTALES_RUNPOD_LLM_BASE_URL", "ECHOTALES_RUNPOD_LLM_MODEL"]
+        assert "k" not in json.dumps(body["llm_missing"]) and "ep" not in body["llm_missing"]
+        status, err = _request(port, "POST", "/api/novels/toy4/render/generate", body=json.dumps({"engine": "noobai"}).encode())
+        assert status == 409 and "not enabled on this server" in err["error"]  # a local engine is off in cloud mode
+
     def test_delete_project(self, live_server: int) -> None:
         port = live_server
         _request(

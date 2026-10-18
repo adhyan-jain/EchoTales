@@ -73,6 +73,12 @@ class ModelBackend(StrEnum):
     #: contention with a local image/TTS engine -- see that module's
     #: docstring for why this exists as a distinct backend from `ollama`.
     GATEWAY = "gateway"
+    #: OpenAI-chat-compatible hosted providers, all served by `llm/gateway.py`'s client with their own base URL, key and
+    #: model (`pipeline/compute.py`). Selected by `ECHOTALES_LLM_PROVIDER` or the `cloud` compute preset, not
+    #: by `ECHOTALES_MODEL_BACKEND`, which keeps meaning the local choice (stub, ollama, anthropic, gateway).
+    RUNPOD = "runpod"
+    OPENAI = "openai"
+    GEMINI = "gemini"
 
 
 class Settings(BaseSettings):
@@ -143,6 +149,34 @@ class Settings(BaseSettings):
     conformal_alpha: float = 0.05
 
     anthropic_api_key: str = Field(default="", alias="ANTHROPIC_API_KEY")
+
+    # --- compute and providers (pipeline/compute.py) -------------------------------------------------------------
+    #: local-low | local-high | cloud. The default is the laptop-safe one; see compute.py for what each changes.
+    compute: str = "local-low"
+    #: Optional overrides of what the preset picks. Empty means "follow the preset".
+    llm_provider: str = ""
+    image_provider: str = ""
+    #: The local diffusion engine when the image provider is `local`.
+    local_image_engine: str = "noobai"
+    #: Scenes rendered in a preview and in a full chapter. `--max-panels` is a cap on SCENES, and a scene gets one to
+    #: three images: 10 scenes produced 33 images on LotM chapter 1 (2026-10-18), so a preview is 3 scenes, about
+    #: ten images. `echotales render --max-panels` still wins.
+    preview_scenes: int = 3
+    full_scenes: int = 70
+    #: `local-low` only: the director's context window, and an optional smaller ollama model for it.
+    low_compute_num_ctx: int = 4096
+    low_compute_director_model: str = ""
+    #: `local-low` only: a local render is refused below this much available RAM.
+    low_compute_min_free_ram_mb: int = 3000
+    #: Hosted providers. Namespaced ECHOTALES_* and empty by default; nothing is read from anywhere else.
+    runpod_api_key: str = ""
+    runpod_llm_base_url: str = ""
+    runpod_llm_model: str = ""
+    runpod_image_endpoint: str = ""
+    openai_api_key: str = ""
+    openai_model: str = ""
+    gemini_api_key: str = ""
+    gemini_model: str = ""
 
     #: Stage toggles, for iterating on one half of the render pipeline
     #: without paying for the other. Both real backends are expensive and

@@ -13,7 +13,7 @@ jest.mock('../../api', () => ({
     listOutput: jest.fn(),
     listJobs: jest.fn(),
     renderGenerate: jest.fn(),
-    gpu: jest.fn(),
+    compute: jest.fn(),
     novel: jest.fn(),
     chapters: jest.fn(),
     outputFileUrl: jest.fn(),
@@ -192,6 +192,17 @@ describe('OutputLibrary', () => {
   });
 });
 
+const COMPUTE_STUB_ONLY = {
+  mode: 'local-low', llm_provider: 'ollama', image_provider: 'local', default_tier: 'preview',
+  scenes: { preview: 3, full: 70 }, images_per_scene: 3.3, engines: ['stub'], refusals: { stub: null },
+  seconds_per_panel: { stub: 0.3 }, llm_missing: [], gpu: { available: false },
+};
+const COMPUTE_LOCAL_LOW = {
+  ...COMPUTE_STUB_ONLY, engines: ['stub', 'noobai', 'illustrious', 'sdxl'],
+  refusals: { stub: null, noobai: null, illustrious: null, sdxl: null },
+  seconds_per_panel: { stub: 0.3, noobai: 45, illustrious: 45, sdxl: 45 },
+};
+
 describe('GenerationWorkspace', () => {
   // Regression test for a real bug found in manual verification: this
   // component used to take `chapters` as a prop from App.js's `novels`
@@ -201,7 +212,7 @@ describe('GenerationWorkspace', () => {
   // chapter list via the light `api.chapters` route, matching every other new screen.
   beforeEach(() => {
     api.chapters.mockResolvedValue([{ number: 1 }, { number: 2 }]);
-    api.gpu.mockResolvedValue({ available: false, free: false, name: '', used_mb: 0, total_mb: 0 });
+    api.compute.mockResolvedValue(COMPUTE_STUB_ONLY);
   });
 
   test('fetches its own chapter list rather than trusting a stale prop', async () => {
@@ -224,34 +235,54 @@ describe('GenerationWorkspace', () => {
     fireEvent.click(screen.getByRole('button', { name: /generate panels/i }));
 
     await waitFor(() =>
-      expect(api.renderGenerate).toHaveBeenCalledWith('toy', { chapters: [1], engine: 'stub' })
+      expect(api.renderGenerate).toHaveBeenCalledWith('toy', { chapters: [1], engine: 'stub', tier: 'preview' })
     );
     await waitFor(() => expect(api.listJobs).toHaveBeenCalled());
   });
 
-  test('real engines are offered only while the server reports a free GPU', async () => {
+  test('offers the engines the server enables and sends the chosen engine and scope', async () => {
     api.listJobs.mockResolvedValue([]);
-    api.gpu.mockResolvedValue({ available: true, free: true, name: 'RTX', used_mb: 15, total_mb: 8188 });
+    api.compute.mockResolvedValue(COMPUTE_LOCAL_LOW);
     withToast(<GenerationWorkspace novelId="toy" />);
     await screen.findByRole('option', { name: 'Chapter 1' });
     await waitFor(() => expect(screen.getByRole('option', { name: /NoobAI XL/ })).not.toBeDisabled());
+    expect(screen.getByLabelText('Scope')).toHaveValue('preview'); // local-low defaults to a preview
     fireEvent.change(screen.getByLabelText('Engine'), { target: { value: 'noobai' } });
+    // 3 scenes x 3.3 images x 45 s = about 7 minutes
+    await waitFor(() => expect(screen.getByTestId('eta')).toHaveTextContent(/about 7 min/));
     api.renderGenerate.mockResolvedValueOnce({ job_id: 'toy:render:n', kind: 'render', status: 'PENDING' });
     fireEvent.click(screen.getByRole('button', { name: /generate panels/i }));
     await waitFor(() =>
-      expect(api.renderGenerate).toHaveBeenCalledWith('toy', { chapters: [1], engine: 'noobai' })
+      expect(api.renderGenerate).toHaveBeenCalledWith('toy', { chapters: [1], engine: 'noobai', tier: 'preview' })
     );
-    expect(screen.getByTestId('engine-note')).toHaveTextContent(/loads an image model onto the GPU/);
   });
 
-  test('with the GPU busy the real engines are disabled and the reason is shown', async () => {
+  test('a refused engine is disabled and the reason is shown', async () => {
     api.listJobs.mockResolvedValue([]);
-    api.gpu.mockResolvedValue({ available: true, free: false, name: 'RTX', used_mb: 5200, total_mb: 8188 });
+    api.compute.mockResolvedValue({
+      ...COMPUTE_LOCAL_LOW,
+      refusals: { stub: null, noobai: 'the GPU is busy (NVIDIA RTX: 5200 of 8188 MiB in use); stop what is using it' },
+    });
     withToast(<GenerationWorkspace novelId="toy" />);
     await screen.findByRole('option', { name: 'Chapter 1' });
-    await waitFor(() => expect(screen.getByTestId('engine-note')).toHaveTextContent(/GPU is busy \(5200 of 8188 MiB/));
-    expect(screen.getByRole('option', { name: /NoobAI XL/ })).toBeDisabled();
+    fireEvent.change(screen.getByLabelText('Engine'), { target: { value: 'stub' } });
+    await waitFor(() => expect(screen.getByRole('option', { name: /NoobAI XL/ })).toBeDisabled());
     expect(screen.getByRole('option', { name: /Placeholder/ })).not.toBeDisabled();
+  });
+
+  test('cloud mode offers the hosted engine and no local ones', async () => {
+    api.listJobs.mockResolvedValue([]);
+    api.compute.mockResolvedValue({
+      ...COMPUTE_STUB_ONLY, mode: 'cloud', default_tier: 'full', engines: ['stub', 'runpod'],
+      refusals: { stub: null, runpod: null }, scenes: { preview: 3, full: 70 },
+      llm_provider: 'runpod', llm_missing: ['ECHOTALES_RUNPOD_API_KEY'],
+    });
+    withToast(<GenerationWorkspace novelId="toy" />);
+    await screen.findByRole('option', { name: 'Chapter 1' });
+    expect(await screen.findByRole('option', { name: /RunPod \(cloud\)/ })).not.toBeDisabled();
+    expect(screen.queryByRole('option', { name: /NoobAI/ })).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Scope')).toHaveValue('full');
+    expect(screen.getByTestId('engine-note')).toHaveTextContent(/still needs ECHOTALES_RUNPOD_API_KEY/);
   });
 
   test('renders honest not-yet-available states for preview and QA', async () => {

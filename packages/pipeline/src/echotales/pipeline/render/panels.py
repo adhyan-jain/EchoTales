@@ -1007,9 +1007,13 @@ def get_engine(name: str = "stub", **kwargs: object) -> PanelImageEngine:
         from echotales.pipeline.render.openrouter import OpenRouterImageEngine
 
         return OpenRouterImageEngine(**kwargs)  # type: ignore[arg-type,return-value]
+    if name == "runpod":
+        from echotales.pipeline.render.runpod import RunPodImageEngine
+
+        return RunPodImageEngine(**kwargs)  # type: ignore[arg-type,return-value]
     raise ValueError(
         f"unknown image engine {name!r}; expected 'stub', 'sdxl', 'manga', "
-        "'illustrious', 'noobai', 'refined', 'gemini' or 'openrouter'"
+        "'illustrious', 'noobai', 'refined', 'gemini', 'openrouter' or 'runpod'"
     )
 
 

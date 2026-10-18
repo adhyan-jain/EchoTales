@@ -104,7 +104,8 @@ class GatewayProvider(LLMProvider):
             models = {m.get("id", "") for m in resp.json().get("data", [])}
         except Exception:
             return False
-        return self._model in models
+        # Gemini's OpenAI-compatible /models lists "models/<name>"; OpenAI, RunPod and the gateway list the bare name.
+        return self._model in models or f"models/{self._model}" in models
 
     def complete(self, request: LLMRequest, schema: type[SchemaT]) -> LLMResult[SchemaT]:
         prompt = f"{request.prompt}\n\n{schema_instructions(schema)}"
