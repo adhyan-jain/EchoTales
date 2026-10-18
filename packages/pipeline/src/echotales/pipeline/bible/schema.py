@@ -151,56 +151,20 @@ class BibleDelta:
         )
 
 
-@dataclass(slots=True)
-class CharacterBibleEntry:
-    """A character's active state at a given chapter."""
+from echotales.core.models import (
+    CharacterBibleEntry,
+    LocationBibleEntry,
+    StoryBibleSnapshot,
+)
 
-    self_id: str
-    canonical_label: str
-    active_persona_id: str
-    active_outfit: str | None = None
-    aliases: list[str] = field(default_factory=list)
-    voice_id: str | None = None
-    attributes: dict[str, str] = field(default_factory=dict)
+__all__ = [
+    "PersonaShiftReason",
+    "EntityDelta",
+    "PersonaShiftDelta",
+    "LocationDelta",
+    "BibleDelta",
+    "CharacterBibleEntry",
+    "LocationBibleEntry",
+    "StoryBibleSnapshot",
+]
 
-
-@dataclass(slots=True)
-class LocationBibleEntry:
-    """A location's canonical appearance and ambience at a given chapter."""
-
-    location_id: str
-    canonical_name: str
-    description: str
-    master_plate_path: str | None = None
-    ambience_sound: str | None = None
-
-
-@dataclass(slots=True)
-class StoryBibleSnapshot:
-    """A point-in-time snapshot of the Story Bible for a specific chapter."""
-
-    novel_id: str
-    chapter: float
-    characters: dict[str, CharacterBibleEntry] = field(default_factory=dict)
-    locations: dict[str, LocationBibleEntry] = field(default_factory=dict)
-    _alias_map: dict[str, str] = field(init=False, default_factory=dict)
-
-    def __post_init__(self) -> None:
-        self._build_alias_index()
-
-    def _build_alias_index(self) -> None:
-        self._alias_map = {}
-        for self_id, char in self.characters.items():
-            self._alias_map[char.canonical_label.strip().lower()] = self_id
-            for alias in char.aliases:
-                self._alias_map[alias.strip().lower()] = self_id
-
-    def resolve_alias(self, text: str) -> str | None:
-        """Resolve a name mention or alias against the snapshot's character index."""
-        cleaned = text.strip().lower()
-        if cleaned in self._alias_map:
-            return self._alias_map[cleaned]
-        return None
-
-    def get_character(self, self_id: str) -> CharacterBibleEntry | None:
-        return self.characters.get(self_id)

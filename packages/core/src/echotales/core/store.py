@@ -42,8 +42,10 @@ from echotales.core.models import (
     AliasBinding,
     Attribute,
     Chapter,
+    CharacterBibleEntry,
     DiscoursePosition,
     Job,
+    LocationBibleEntry,
     Mention,
     NarrativeSegment,
     Observation,
@@ -53,6 +55,7 @@ from echotales.core.models import (
     RefImageSelectionEvent,
     Relation,
     ResolutionEvent,
+    ReviewItem,
     SceneState,
     Self,
     SelfPersonaBinding,
@@ -60,6 +63,7 @@ from echotales.core.models import (
     StageArtifact,
     StageRun,
     StageStatus,
+    StoryBibleSnapshot,
 )
 
 SCHEMA_VERSION = 3
@@ -467,6 +471,19 @@ CREATE TABLE IF NOT EXISTS scoring_evidence (
 );
 CREATE INDEX IF NOT EXISTS ix_scoring_evidence_novel
     ON scoring_evidence(novel_id, run_tag, chapter);
+
+CREATE TABLE IF NOT EXISTS review_item (
+    id TEXT PRIMARY KEY,
+    novel_id TEXT NOT NULL,
+    chapter REAL NOT NULL,
+    kind TEXT NOT NULL,
+    message TEXT NOT NULL,
+    candidates_json TEXT NOT NULL DEFAULT '[]',
+    resolved INTEGER NOT NULL DEFAULT 0,
+    resolution TEXT,
+    created_at REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_review_item_novel ON review_item(novel_id, resolved);
 """
 
 
@@ -1522,6 +1539,14 @@ class Store:
             for r in cur
         ]
 
+    def retract_attribute(self, attr_id: int, at: DiscoursePosition) -> None:
+        """The attribute was never true (e.g. deceptive claim unmasked)."""
+        self.conn.execute(
+            "UPDATE attribute SET retracted_chapter=?, retracted_offset=?,"
+            " truth_status=? WHERE id=?",
+            (at.chapter, at.offset, TruthStatus.FALSE.value, attr_id),
+        )
+
     def add_relation(self, novel_id: str, rel: Relation) -> int:
         lch, loff = _pos_cols(rel.learned_at_pos)
         rch, roff = _opt_pos_cols(rel.retracted_at)
@@ -2220,3 +2245,171 @@ class Store:
             (novel_id, POS_INF),
         ).fetchone()
         return int(row["n"])
+
+    # ---- Studio review items ------------------------------------------
+
+    def _review_item_from_row(self, row: sqlite3.Row) -> ReviewItem:
+        candidates = []
+        if row["candidates_json"]:
+            try:
+                candidates = json.loads(row["candidates_json"])
+            except json.JSONDecodeError:
+                candidates = []
+        return ReviewItem(
+            id=row["id"],
+            novel_id=row["novel_id"],
+            chapter=float(row["chapter"]),
+            kind=row["kind"],
+            message=row["message"],
+            candidates=candidates,
+            resolved=bool(row["resolved"]),
+            resolution=row["resolution"],
+            created_at=float(row["created_at"]),
+        )
+
+    def add_review_item(self, item: ReviewItem) -> None:
+        self.conn.execute(
+            "INSERT OR REPLACE INTO review_item(id, novel_id, chapter, kind, message,"
+            " candidates_json, resolved, resolution, created_at)"
+            " VALUES (?,?,?,?,?,?,?,?,?)",
+            (
+                item.id,
+                item.novel_id,
+                item.chapter,
+                item.kind,
+                item.message,
+                json.dumps(item.candidates),
+                int(item.resolved),
+                item.resolution,
+                item.created_at,
+            ),
+        )
+        self.conn.commit()
+
+    def get_review_item(self, item_id: str) -> ReviewItem | None:
+        row = self.conn.execute("SELECT * FROM review_item WHERE id=?", (item_id,)).fetchone()
+        return self._review_item_from_row(row) if row is not None else None
+
+    def list_review_items(
+        self, novel_id: str, *, resolved: bool | None = None
+    ) -> list[ReviewItem]:
+        sql = "SELECT * FROM review_item WHERE novel_id=?"
+        params: list[object] = [novel_id]
+        if resolved is not None:
+            sql += " AND resolved=?"
+            params.append(int(resolved))
+        sql += " ORDER BY created_at DESC"
+        cur = self.conn.execute(sql, tuple(params))
+        return [self._review_item_from_row(r) for r in cur.fetchall()]
+
+    def resolve_review_item(self, item_id: str, resolution: str) -> None:
+        self.conn.execute(
+            "UPDATE review_item SET resolved=1, resolution=? WHERE id=?",
+            (resolution, item_id),
+        )
+        self.conn.commit()
+
+    # ---- Story Bible point-in-time snapshot ----------------------------
+
+    def bible_at(self, novel_id: str, chapter: float) -> StoryBibleSnapshot:
+        """Return point-in-time Story Bible snapshot for a given novel and chapter.
+
+        Enforces strict bitemporal filtering: zero future chapter leakage
+        (first_chapter / learned_chapter <= chapter). Facts retracted prior to
+        or at chapter are excluded.
+        """
+        characters: dict[str, CharacterBibleEntry] = {}
+        locations: dict[str, LocationBibleEntry] = {}
+
+        # 1. Characters: query selves introduced on or before this chapter
+        cur = self.conn.execute(
+            "SELECT id, canonical_label, notes, kind FROM self_entity "
+            "WHERE novel_id=? AND first_chapter <= ? AND (kind IS NULL OR kind IN ('SELF', 'PERSON'))",
+            (novel_id, chapter),
+        )
+        for r in cur.fetchall():
+            self_id = r["id"]
+            canonical_label = r["canonical_label"]
+
+            # Active persona: find the latest persona binding learned on or before this chapter
+            spb_row = self.conn.execute(
+                "SELECT persona_id FROM self_persona_binding "
+                "WHERE self_id=? AND learned_chapter <= ? AND truth_status != 'FALSE' "
+                "ORDER BY learned_chapter DESC, learned_offset DESC LIMIT 1",
+                (self_id, chapter),
+            ).fetchone()
+            active_persona_id = spb_row["persona_id"] if spb_row else f"{self_id}:default"
+
+            # Aliases learned on or before this chapter and not retracted
+            alias_rows = self.conn.execute(
+                "SELECT alias FROM alias_binding "
+                "WHERE novel_id=? AND target_id IN (?, ?) AND learned_chapter <= ? "
+                "AND ((retracted_chapter IS NULL AND truth_status != 'FALSE') OR retracted_chapter > ?)",
+                (novel_id, self_id, active_persona_id, chapter, chapter),
+            ).fetchall()
+            aliases = list({a["alias"] for a in alias_rows if a["alias"] != canonical_label})
+
+            # Attributes learned on or before this chapter and not retracted
+            attr_rows = self.conn.execute(
+                "SELECT key, value FROM attribute "
+                "WHERE novel_id=? AND target_id IN (?, ?) AND learned_chapter <= ? "
+                "AND ((retracted_chapter IS NULL AND truth_status != 'FALSE') OR retracted_chapter > ?) "
+                "ORDER BY learned_chapter ASC, learned_offset ASC",
+                (novel_id, self_id, active_persona_id, chapter, chapter),
+            ).fetchall()
+            attrs: dict[str, str] = {}
+            for a in attr_rows:
+                attrs[a["key"]] = a["value"]
+
+            active_outfit = attrs.get("outfit") or attrs.get("active_outfit")
+            voice_id = attrs.get("voice_id") or attrs.get("voice_profile")
+
+            characters[self_id] = CharacterBibleEntry(
+                self_id=self_id,
+                canonical_label=canonical_label,
+                active_persona_id=active_persona_id,
+                active_outfit=active_outfit,
+                aliases=aliases,
+                voice_id=voice_id,
+                attributes=attrs,
+            )
+
+        # 2. Locations: query location entities introduced on or before this chapter
+        loc_rows = self.conn.execute(
+            "SELECT id, canonical_label, notes FROM self_entity "
+            "WHERE novel_id=? AND first_chapter <= ? AND kind = 'LOCATION'",
+            (novel_id, chapter),
+        ).fetchall()
+        for lr in loc_rows:
+            loc_id = lr["id"]
+            canonical_name = lr["canonical_label"]
+            desc = lr["notes"] or ""
+
+            loc_attrs_rows = self.conn.execute(
+                "SELECT key, value FROM attribute "
+                "WHERE novel_id=? AND target_id=? AND learned_chapter <= ? "
+                "AND ((retracted_chapter IS NULL AND truth_status != 'FALSE') OR retracted_chapter > ?) "
+                "ORDER BY learned_chapter ASC, learned_offset ASC",
+                (novel_id, loc_id, chapter, chapter),
+            ).fetchall()
+            loc_attrs = {a["key"]: a["value"] for a in loc_attrs_rows}
+            master_plate = loc_attrs.get("master_plate_path") or loc_attrs.get("plate_path")
+            ambience = loc_attrs.get("ambience_sound") or loc_attrs.get("ambience")
+            if not desc and "description" in loc_attrs:
+                desc = loc_attrs["description"]
+
+            locations[loc_id] = LocationBibleEntry(
+                location_id=loc_id,
+                canonical_name=canonical_name,
+                description=desc,
+                master_plate_path=master_plate,
+                ambience_sound=ambience,
+            )
+
+        return StoryBibleSnapshot(
+            novel_id=novel_id,
+            chapter=chapter,
+            characters=characters,
+            locations=locations,
+        )
+

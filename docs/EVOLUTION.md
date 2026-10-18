@@ -8794,3 +8794,30 @@ Execution of Phase 0 from `reels_and_full_video_build_plan.md`:
   - Zero-GPU, zero-network deterministic stubs generating valid PNG images, sine-wave WAV audio, and video payloads for offline CI.
 - **Tests.** 1,462 core+pipeline pass (71.28s, 13 new unit tests across 4 test modules), 29 research pass (9.11s), 112 webview jest pass (4.32s).
 
+### 4.110 Story Bible bitemporal snapshots, delta validator, screenplay compiler, and showcase attribution benchmark *(2026-10-19)*
+
+Execution of Phase 0 and Phase 1 from `reels_and_full_video_build_plan.md`:
+
+- **Story Bible point-in-time snapshots (`Store.bible_at`).**
+  - Implemented `Store.bible_at(novel_id, chapter) -> StoryBibleSnapshot` in `packages/core/src/echotales/core/store.py` with zero future chapter leakage: strictly filters `first_chapter <= chapter` and `learned_chapter <= chapter`.
+  - Added `retract_attribute(attr_id, at)`: implements bitemporal retraction semantics without rewriting history (facts retracted at chapter c remain visible for reader-observer queries before c, but excluded from c onward).
+  - Added Studio review queue support: SQLite `review_item` table, `ReviewItem` model, and `add_review_item`, `get_review_item`, `list_review_items`, and `resolve_review_item` methods.
+- **Story Bible delta validator (`bible/validator.py`).**
+  - Resolves entity aliases against existing Store entities using normalized sequence matching and name containment.
+  - Flags ambiguous entity matches (similarity between 0.65 and 0.95) to the Studio human review queue via `ReviewItem` (`ambiguous_entity_merge`).
+  - Monotonicity and conflict detection: flags core attribute contradictions occurring without a `PersonaShiftDelta` as `conflicting_attribute` review items.
+  - Applies bitemporal store mutations: adds new entities with `TargetKind`, registers `Persona` and `SelfPersonaBinding`, and binds open-ended intervals.
+- **Story Bible delta extractor (`bible/delta.py`).**
+  - Frontier LLM prompt compiler and strict JSON response parser conforming to `BibleDelta` schema.
+  - Deterministic heuristic extractor fallback for offline CI and stub runs.
+- **Episode Screenplay compiler (`screenplay/compiler.py`).**
+  - Compiles novel text + `StoryBibleSnapshot` into a complete `ScreenplayEpisode`.
+  - Enforces production invariants: opening hook in first 3.0s, closing cliffhanger beat, pacing target of 10-25 cuts/minute, maximum 6.0s still hold (`MAX_STILL_DURATION_S`), 180-degree camera axis continuity between conversation partners, and audio duration coverage.
+  - Automatically validates compiled episodes using `validate_screenplay`.
+- **Showcase benchmark story and gold speaker attribution dataset.**
+  - Added legally unencumbered public domain showcase novel: Arthur Conan Doyle's *The Hound of the Baskervilles* (1902, 100% public domain worldwide), establishing Chapters 1, 2, and 3 in `data/novels/showcase/`.
+  - Hand-labeled ground truth speaker attribution dataset for Chapter 1 in `data/eval/attribution/showcase_ch1_gold.json` (69 dialogue lines, verified speakers: Holmes, Watson, Mortimer).
+  - Verified evaluation metrics in `packages/pipeline/tests/test_attribution_gold.py`.
+- **Tests.** 1,477 core+pipeline pass (70.88s, 15 new unit tests across `test_store_bible.py`, `test_bible_validator.py`, `test_attribution_gold.py`, and `test_screenplay_compiler.py`), 29 research pass (8.13s), 112 webview jest pass (4.17s). Total: 1,618 tests passing.
+
+

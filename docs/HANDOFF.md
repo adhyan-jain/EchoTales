@@ -22,23 +22,23 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-19 (EVOLUTION 4.109).
+**Last updated:** 2026-10-19 (EVOLUTION 4.110).
 
-## Pick up here — 2026-10-19 (Phase 0 Foundation Contracts & Stubs, Reels Pivot; EVOLUTION 4.109)
+## Pick up here — 2026-10-19 (Story Bible Snapshots, Delta Validator, Screenplay Compiler; EVOLUTION 4.110)
 
-- **Phase 0 Foundation Contracts, Schemas & Stubs completed.**
-  - `archive/academic-research` branch created to preserve academic/canary research track.
-  - Screenplay shot schema and validator (`screenplay/schema.py`, `screenplay/validator.py`): enforces 6.0s max still hold, 10-25 cuts/min, 180-degree rule, audio dialogue coverage invariant.
-  - Story Bible delta & snapshot schema (`bible/schema.py`): typed `BibleDelta`, `PersonaShiftDelta`, `LocationDelta`, and `StoryBibleSnapshot` with alias resolution.
-  - LLM speaker attribution contract and evaluation metrics (`voice/attribution.py`).
-  - RunPod serverless worker contracts and offline deterministic test stubs (`workers/common/contract.py`, `workers/common/stub.py`).
-  - Added 13 new unit tests across 4 modules (`test_screenplay_schema.py`, `test_bible_schema.py`, `test_voice_attribution.py`, `test_workers_stub.py`).
-  - Passed 1,462 core+pipeline tests, 29 research tests, 112 webview jest tests.
-- **Next steps in Phase 0 / Phase 1**:
-  - Ingest public-domain showcase novel into `data/novels/` for benchmark comparison against Toonflow/Huobao Drama.
-  - Wire `bible/delta.py` and `bible/validator.py` into `Store.bible_at(chapter)`.
-  - Wire `screenplay/compiler.py` against novel text + `bible_at(chapter)`.
-- **Tests.** 1,462 core+pipeline pass (71.28s), 29 research pass (9.11s), 112 webview jest pass (4.32s).
+- **Phase 0 & Phase 1 Core Capabilities completed.**
+  - Point-in-time Story Bible snapshots implemented: `Store.bible_at(novel_id, chapter) -> StoryBibleSnapshot` with zero future chapter leakage.
+  - Bitemporal retraction support: `Store.retract_attribute` closes fact claims without losing historical visibility for earlier queries.
+  - Studio review queue: `review_item` table and Store persistence methods for human review items.
+  - Story Bible delta validator (`bible/validator.py`): alias resolution via SequenceMatcher and name containment, ambiguous merge flagging (`ambiguous_entity_merge`), and monotonicity contradiction detection (`conflicting_attribute`).
+  - Story Bible delta extractor (`bible/delta.py`): frontier LLM prompt builder and strict JSON parser with deterministic offline fallback.
+  - Screenplay compiler (`screenplay/compiler.py`): adapts novel chapters + `StoryBibleSnapshot` into validated `ScreenplayEpisode` enforcing 10-25 cuts/min, <= 6.0s still hold, 180-degree axis continuity, and audio coverage.
+  - Showcase story & speaker ground truth: Arthur Conan Doyle's *The Hound of the Baskervilles* (100% public domain worldwide), 3 chapters in `data/novels/showcase/`, Chapter 1 hand-labeled gold speaker attribution dataset (`data/eval/attribution/showcase_ch1_gold.json`, 69 lines).
+  - Added 15 new unit tests across 4 test modules (`test_store_bible.py`, `test_bible_validator.py`, `test_attribution_gold.py`, `test_screenplay_compiler.py`).
+- **Next steps in Phase 1**:
+  - Asset Studio (`packages/pipeline/src/echotales/pipeline/assets/turnaround.py` and `location.py`): generate 3-view turnarounds and location master plates via worker client.
+  - Keyframe Engine (`packages/pipeline/src/echotales/pipeline/keyframes/engine.py` and `qa.py`): 4-candidate generation and 4-Check QA gate (face match, background structural similarity, VLM script compliance, artifact filter).
+- **Tests.** 1,477 core+pipeline pass (70.88s), 29 research pass (8.13s), 112 webview jest pass (4.17s). Total: 1,618 tests passing.
 
 ## Pick up here — 2026-10-18 (consistency plan, setting fixes, EVOLUTION 4.107)
 

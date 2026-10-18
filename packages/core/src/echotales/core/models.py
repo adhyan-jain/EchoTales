@@ -19,7 +19,7 @@ contesting one persona is possession.
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from typing import Self as SelfType
 
 from echotales.core.enums import (
@@ -733,3 +733,68 @@ class StateOfResult(BaseModel):
     truth_status: TruthStatus = TruthStatus.TRUE
     certainty: Literal["CERTAIN", "PLAUSIBLE", "EXCLUDED"] = "CERTAIN"
     read_set: list[str] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Story Bible & Studio Review Models
+# ---------------------------------------------------------------------------
+
+
+class CharacterBibleEntry(BaseModel):
+    """A character's active state at a given chapter."""
+
+    self_id: str
+    canonical_label: str
+    active_persona_id: str
+    active_outfit: str | None = None
+    aliases: list[str] = Field(default_factory=list)
+    voice_id: str | None = None
+    attributes: dict[str, str] = Field(default_factory=dict)
+
+
+class LocationBibleEntry(BaseModel):
+    """A location's canonical appearance and ambience at a given chapter."""
+
+    location_id: str
+    canonical_name: str
+    description: str = ""
+    master_plate_path: str | None = None
+    ambience_sound: str | None = None
+
+
+class StoryBibleSnapshot(BaseModel):
+    """A point-in-time snapshot of the Story Bible for a specific chapter."""
+
+    novel_id: str
+    chapter: float
+    characters: dict[str, CharacterBibleEntry] = Field(default_factory=dict)
+    locations: dict[str, LocationBibleEntry] = Field(default_factory=dict)
+
+    def resolve_alias(self, text: str) -> str | None:
+        """Resolve a name mention or alias against the snapshot's character index."""
+        cleaned = text.strip().lower()
+        for self_id, char in self.characters.items():
+            if char.canonical_label.strip().lower() == cleaned:
+                return self_id
+            for alias in char.aliases:
+                if alias.strip().lower() == cleaned:
+                    return self_id
+        return None
+
+    def get_character(self, self_id: str) -> CharacterBibleEntry | None:
+        return self.characters.get(self_id)
+
+
+class ReviewItem(BaseModel):
+    """An item flagged for human review in the Studio queue."""
+
+    id: str
+    novel_id: str
+    chapter: float
+    kind: str
+    message: str
+    candidates: list[dict[str, Any]] = Field(default_factory=list)
+    resolved: bool = False
+    resolution: str | None = None
+    created_at: float = 0.0
+

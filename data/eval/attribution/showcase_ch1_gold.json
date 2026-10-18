@@ -1,0 +1,519 @@
+{
+  "novel_id": "hound",
+  "chapter": 1.0,
+  "title": "Mr. Sherlock Holmes",
+  "total_lines": 69,
+  "characters": {
+    "char:holmes": {
+      "name": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Holmes",
+        "my companion"
+      ]
+    },
+    "char:watson": {
+      "name": "Dr. John Watson",
+      "aliases": [
+        "Watson",
+        "Dr. Watson",
+        "my dear Watson",
+        "my dear fellow"
+      ]
+    },
+    "char:mortimer": {
+      "name": "Dr. James Mortimer",
+      "aliases": [
+        "Mortimer",
+        "Dr. Mortimer",
+        "our visitor",
+        "the doctor"
+      ]
+    }
+  },
+  "lines": [
+    {
+      "line_index": 0,
+      "text": "Well, Watson, what do you make of it?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 1,
+      "surrounding_context": "\u201cWell, Watson, what do you make of it?\u201d"
+    },
+    {
+      "line_index": 1,
+      "text": "How did you know what I was doing? I believe you have eyes in the back of your head.",
+      "speaker_id": "char:watson",
+      "paragraph_index": 3,
+      "surrounding_context": "\u201cHow did you know what I was doing? I believe you have eyes in the back of your head.\u201d"
+    },
+    {
+      "line_index": 2,
+      "text": "I have, at least, a well-polished, silver-plated coffee-pot in front of me,",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 4,
+      "surrounding_context": "\u201cI have, at least, a well-polished, silver-plated coffee-pot in front of me,\u201d said he. \u201cBut, tell me, Watson, what do you make of our visitor\u2019s stick? Since we have been so unfortunate as to miss him and have no notion of his errand, this accidental souvenir becomes of importance. Let me hear you reconstruct the man by an examination of it.\u201d"
+    },
+    {
+      "line_index": 3,
+      "text": "But, tell me, Watson, what do you make of our visitor\u2019s stick? Since we have been so unfortunate as to miss him and have no notion of his errand, this accidental souvenir becomes of importance. Let me hear you reconstruct the man by an examination of it.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 4,
+      "surrounding_context": "\u201cI have, at least, a well-polished, silver-plated coffee-pot in front of me,\u201d said he. \u201cBut, tell me, Watson, what do you make of our visitor\u2019s stick? Since we have been so unfortunate as to miss him and have no notion of his errand, this accidental souvenir becomes of importance. Let me hear you reconstruct the man by an examination of it.\u201d"
+    },
+    {
+      "line_index": 4,
+      "text": "I think,",
+      "speaker_id": "char:watson",
+      "paragraph_index": 5,
+      "surrounding_context": "\u201cI think,\u201d said I, following as far as I could the methods of my companion, \u201cthat Dr. Mortimer is a successful, elderly medical man, well-esteemed since those who know him give him this mark of their appreciation.\u201d"
+    },
+    {
+      "line_index": 5,
+      "text": "that Dr. Mortimer is a successful, elderly medical man, well-esteemed since those who know him give him this mark of their appreciation.",
+      "speaker_id": "char:watson",
+      "paragraph_index": 5,
+      "surrounding_context": "\u201cI think,\u201d said I, following as far as I could the methods of my companion, \u201cthat Dr. Mortimer is a successful, elderly medical man, well-esteemed since those who know him give him this mark of their appreciation.\u201d"
+    },
+    {
+      "line_index": 6,
+      "text": "Good!",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 6,
+      "surrounding_context": "\u201cGood!\u201d said Holmes. \u201cExcellent!\u201d"
+    },
+    {
+      "line_index": 7,
+      "text": "Excellent!",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 6,
+      "surrounding_context": "\u201cGood!\u201d said Holmes. \u201cExcellent!\u201d"
+    },
+    {
+      "line_index": 8,
+      "text": "I think also that the probability is in favour of his being a country practitioner who does a great deal of his visiting on foot.",
+      "speaker_id": "char:watson",
+      "paragraph_index": 7,
+      "surrounding_context": "\u201cI think also that the probability is in favour of his being a country practitioner who does a great deal of his visiting on foot.\u201d"
+    },
+    {
+      "line_index": 9,
+      "text": "Why so?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 8,
+      "surrounding_context": "\u201cWhy so?\u201d"
+    },
+    {
+      "line_index": 10,
+      "text": "Because this stick, though originally a very handsome one has been so knocked about that I can hardly imagine a town practitioner carrying it. The thick-iron ferrule is worn down, so it is evident that he has done a great amount of walking with it.",
+      "speaker_id": "char:watson",
+      "paragraph_index": 9,
+      "surrounding_context": "\u201cBecause this stick, though originally a very handsome one has been so knocked about that I can hardly imagine a town practitioner carrying it. The thick-iron ferrule is worn down, so it is evident that he has done a great amount of walking with it.\u201d"
+    },
+    {
+      "line_index": 11,
+      "text": "Perfectly sound!",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 10,
+      "surrounding_context": "\u201cPerfectly sound!\u201d said Holmes."
+    },
+    {
+      "line_index": 12,
+      "text": "And then again, there is the \u2018friends of the C.C.H.\u2019 I should guess that to be the Something Hunt, the local hunt to whose members he has possibly given some surgical assistance, and which has made him a small presentation in return.",
+      "speaker_id": "char:watson",
+      "paragraph_index": 11,
+      "surrounding_context": "\u201cAnd then again, there is the \u2018friends of the C.C.H.\u2019 I should guess that to be the Something Hunt, the local hunt to whose members he has possibly given some surgical assistance, and which has made him a small presentation in return.\u201d"
+    },
+    {
+      "line_index": 13,
+      "text": "Really, Watson, you excel yourself,",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 12,
+      "surrounding_context": "\u201cReally, Watson, you excel yourself,\u201d said Holmes, pushing back his chair and lighting a cigarette. \u201cI am bound to say that in all the accounts which you have been so good as to give of my own small achievements you have habitually underrated your own abilities. It may be that you are not yourself luminous, but you are a conductor of light. Some people without possessing genius have a remarkable power of stimulating it. I confess, my dear fellow, that I am very much in your debt.\u201d"
+    },
+    {
+      "line_index": 14,
+      "text": "I am bound to say that in all the accounts which you have been so good as to give of my own small achievements you have habitually underrated your own abilities. It may be that you are not yourself luminous, but you are a conductor of light. Some people without possessing genius have a remarkable power of stimulating it. I confess, my dear fellow, that I am very much in your debt.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 12,
+      "surrounding_context": "\u201cReally, Watson, you excel yourself,\u201d said Holmes, pushing back his chair and lighting a cigarette. \u201cI am bound to say that in all the accounts which you have been so good as to give of my own small achievements you have habitually underrated your own abilities. It may be that you are not yourself luminous, but you are a conductor of light. Some people without possessing genius have a remarkable power of stimulating it. I confess, my dear fellow, that I am very much in your debt.\u201d"
+    },
+    {
+      "line_index": 15,
+      "text": "Interesting, though elementary,",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 14,
+      "surrounding_context": "\u201cInteresting, though elementary,\u201d said he as he returned to his favourite corner of the settee. \u201cThere are certainly one or two indications upon the stick. It gives us the basis for several deductions.\u201d"
+    },
+    {
+      "line_index": 16,
+      "text": "There are certainly one or two indications upon the stick. It gives us the basis for several deductions.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 14,
+      "surrounding_context": "\u201cInteresting, though elementary,\u201d said he as he returned to his favourite corner of the settee. \u201cThere are certainly one or two indications upon the stick. It gives us the basis for several deductions.\u201d"
+    },
+    {
+      "line_index": 17,
+      "text": "Has anything escaped me?",
+      "speaker_id": "char:watson",
+      "paragraph_index": 15,
+      "surrounding_context": "\u201cHas anything escaped me?\u201d I asked with some self-importance. \u201cI trust that there is nothing of consequence which I have overlooked?\u201d"
+    },
+    {
+      "line_index": 18,
+      "text": "I trust that there is nothing of consequence which I have overlooked?",
+      "speaker_id": "char:watson",
+      "paragraph_index": 15,
+      "surrounding_context": "\u201cHas anything escaped me?\u201d I asked with some self-importance. \u201cI trust that there is nothing of consequence which I have overlooked?\u201d"
+    },
+    {
+      "line_index": 19,
+      "text": "I am afraid, my dear Watson, that most of your conclusions were erroneous. When I said that you stimulated me I meant, to be frank, that in noting your fallacies I was occasionally guided towards the truth. Not that you are entirely wrong in this instance. The man is certainly a country practitioner. And he walks a good deal.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 16,
+      "surrounding_context": "\u201cI am afraid, my dear Watson, that most of your conclusions were erroneous. When I said that you stimulated me I meant, to be frank, that in noting your fallacies I was occasionally guided towards the truth. Not that you are entirely wrong in this instance. The man is certainly a country practitioner. And he walks a good deal.\u201d"
+    },
+    {
+      "line_index": 20,
+      "text": "Then I was right.",
+      "speaker_id": "char:watson",
+      "paragraph_index": 17,
+      "surrounding_context": "\u201cThen I was right.\u201d"
+    },
+    {
+      "line_index": 21,
+      "text": "To that extent.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 18,
+      "surrounding_context": "\u201cTo that extent.\u201d"
+    },
+    {
+      "line_index": 22,
+      "text": "But that was all.",
+      "speaker_id": "char:watson",
+      "paragraph_index": 19,
+      "surrounding_context": "\u201cBut that was all.\u201d"
+    },
+    {
+      "line_index": 23,
+      "text": "No, no, my dear Watson, not all\u2014by no means all. I would suggest, for example, that a presentation to a doctor is more likely to come from a hospital than from a hunt, and that when the initials \u2018C.C.\u2019 are placed before that hospital the words \u2018Charing Cross\u2019 very naturally suggest themselves.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 20,
+      "surrounding_context": "\u201cNo, no, my dear Watson, not all\u2014by no means all. I would suggest, for example, that a presentation to a doctor is more likely to come from a hospital than from a hunt, and that when the initials \u2018C.C.\u2019 are placed before that hospital the words \u2018Charing Cross\u2019 very naturally suggest themselves.\u201d"
+    },
+    {
+      "line_index": 24,
+      "text": "You may be right.",
+      "speaker_id": "char:watson",
+      "paragraph_index": 21,
+      "surrounding_context": "\u201cYou may be right.\u201d"
+    },
+    {
+      "line_index": 25,
+      "text": "The probability lies in that direction. And if we take this as a working hypothesis we have a fresh basis from which to start our construction of this unknown visitor.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 22,
+      "surrounding_context": "\u201cThe probability lies in that direction. And if we take this as a working hypothesis we have a fresh basis from which to start our construction of this unknown visitor.\u201d"
+    },
+    {
+      "line_index": 26,
+      "text": "Well, then, supposing that \u2018C.C.H.\u2019 does stand for \u2018Charing Cross Hospital,\u2019 what further inferences may we draw?",
+      "speaker_id": "char:watson",
+      "paragraph_index": 23,
+      "surrounding_context": "\u201cWell, then, supposing that \u2018C.C.H.\u2019 does stand for \u2018Charing Cross Hospital,\u2019 what further inferences may we draw?\u201d"
+    },
+    {
+      "line_index": 27,
+      "text": "Do none suggest themselves? You know my methods. Apply them!",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 24,
+      "surrounding_context": "\u201cDo none suggest themselves? You know my methods. Apply them!\u201d"
+    },
+    {
+      "line_index": 28,
+      "text": "I can only think of the obvious conclusion that the man has practised in town before going to the country.",
+      "speaker_id": "char:watson",
+      "paragraph_index": 25,
+      "surrounding_context": "\u201cI can only think of the obvious conclusion that the man has practised in town before going to the country.\u201d"
+    },
+    {
+      "line_index": 29,
+      "text": "I think that we might venture a little farther than this. Look at it in this light. On what occasion would it be most probable that such a presentation would be made? When would his friends unite to give him a pledge of their good will? Obviously at the moment when Dr. Mortimer withdrew from the service of the hospital in order to start a practice for himself. We know there has been a presentation. We believe there has been a change from a town hospital to a country practice. Is it, then, stretching our inference too far to say that the presentation was on the occasion of the change?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 26,
+      "surrounding_context": "\u201cI think that we might venture a little farther than this. Look at it in this light. On what occasion would it be most probable that such a presentation would be made? When would his friends unite to give him a pledge of their good will? Obviously at the moment when Dr. Mortimer withdrew from the service of the hospital in order to start a practice for himself. We know there has been a presentation. We believe there has been a change from a town hospital to a country practice. Is it, then, stretching our inference too far to say that the presentation was on the occasion of the change?\u201d"
+    },
+    {
+      "line_index": 30,
+      "text": "It certainly seems probable.",
+      "speaker_id": "char:watson",
+      "paragraph_index": 27,
+      "surrounding_context": "\u201cIt certainly seems probable.\u201d"
+    },
+    {
+      "line_index": 31,
+      "text": "Now, you will observe that he could not have been on the _staff_ of the hospital, since only a man well-established in a London practice could hold such a position, and such a one would not drift into the country. What was he, then? If he was in the hospital and yet not on the staff he could only have been a house-surgeon or a house-physician\u2014little more than a senior student. And he left five years ago\u2014the date is on the stick. So your grave, middle-aged family practitioner vanishes into thin air, my dear Watson, and there emerges a young fellow under thirty, amiable, unambitious, absent-minded, and the possessor of a favourite dog, which I should describe roughly as being larger than a terrier and smaller than a mastiff.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 28,
+      "surrounding_context": "\u201cNow, you will observe that he could not have been on the _staff_ of the hospital, since only a man well-established in a London practice could hold such a position, and such a one would not drift into the country. What was he, then? If he was in the hospital and yet not on the staff he could only have been a house-surgeon or a house-physician\u2014little more than a senior student. And he left five years ago\u2014the date is on the stick. So your grave, middle-aged family practitioner vanishes into thin air, my dear Watson, and there emerges a young fellow under thirty, amiable, unambitious, absent-minded, and the possessor of a favourite dog, which I should describe roughly as being larger than a terrier and smaller than a mastiff.\u201d"
+    },
+    {
+      "line_index": 32,
+      "text": "As to the latter part, I have no means of checking you,",
+      "speaker_id": "char:watson",
+      "paragraph_index": 30,
+      "surrounding_context": "\u201cAs to the latter part, I have no means of checking you,\u201d said I, \u201cbut at least it is not difficult to find out a few particulars about the man\u2019s age and professional career.\u201d From my small medical shelf I took down the Medical Directory and turned up the name. There were several Mortimers, but only one who could be our visitor. I read his record aloud."
+    },
+    {
+      "line_index": 33,
+      "text": "but at least it is not difficult to find out a few particulars about the man\u2019s age and professional career.",
+      "speaker_id": "char:watson",
+      "paragraph_index": 30,
+      "surrounding_context": "\u201cAs to the latter part, I have no means of checking you,\u201d said I, \u201cbut at least it is not difficult to find out a few particulars about the man\u2019s age and professional career.\u201d From my small medical shelf I took down the Medical Directory and turned up the name. There were several Mortimers, but only one who could be our visitor. I read his record aloud."
+    },
+    {
+      "line_index": 34,
+      "text": "Mortimer, James, M.R.C.S., 1882, Grimpen, Dartmoor, Devon. House-surgeon, from 1882 to 1884, at Charing Cross Hospital. Winner of the Jackson prize for Comparative Pathology, with essay entitled \u2018Is Disease a Reversion?\u2019 Corresponding member of the Swedish Pathological Society. Author of \u2018Some Freaks of Atavism\u2019 (_Lancet_ 1882). \u2018Do We Progress?\u2019 (_Journal of Psychology_, March, 1883). Medical Officer for the parishes of Grimpen, Thorsley, and High Barrow.",
+      "speaker_id": "char:watson",
+      "paragraph_index": 31,
+      "surrounding_context": "\u201cMortimer, James, M.R.C.S., 1882, Grimpen, Dartmoor, Devon. House-surgeon, from 1882 to 1884, at Charing Cross Hospital. Winner of the Jackson prize for Comparative Pathology, with essay entitled \u2018Is Disease a Reversion?\u2019 Corresponding member of the Swedish Pathological Society. Author of \u2018Some Freaks of Atavism\u2019 (_Lancet_ 1882). \u2018Do We Progress?\u2019 (_Journal of Psychology_, March, 1883). Medical Officer for the parishes of Grimpen, Thorsley, and High Barrow.\u201d"
+    },
+    {
+      "line_index": 35,
+      "text": "No mention of that local hunt, Watson,",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 32,
+      "surrounding_context": "\u201cNo mention of that local hunt, Watson,\u201d said Holmes with a mischievous smile, \u201cbut a country doctor, as you very astutely observed. I think that I am fairly justified in my inferences. As to the adjectives, I said, if I remember right, amiable, unambitious, and absent-minded. It is my experience that it is only an amiable man in this world who receives testimonials, only an unambitious one who abandons a London career for the country, and only an absent-minded one who leaves his stick and not his visiting-card after waiting an hour in your room.\u201d"
+    },
+    {
+      "line_index": 36,
+      "text": "but a country doctor, as you very astutely observed. I think that I am fairly justified in my inferences. As to the adjectives, I said, if I remember right, amiable, unambitious, and absent-minded. It is my experience that it is only an amiable man in this world who receives testimonials, only an unambitious one who abandons a London career for the country, and only an absent-minded one who leaves his stick and not his visiting-card after waiting an hour in your room.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 32,
+      "surrounding_context": "\u201cNo mention of that local hunt, Watson,\u201d said Holmes with a mischievous smile, \u201cbut a country doctor, as you very astutely observed. I think that I am fairly justified in my inferences. As to the adjectives, I said, if I remember right, amiable, unambitious, and absent-minded. It is my experience that it is only an amiable man in this world who receives testimonials, only an unambitious one who abandons a London career for the country, and only an absent-minded one who leaves his stick and not his visiting-card after waiting an hour in your room.\u201d"
+    },
+    {
+      "line_index": 37,
+      "text": "And the dog?",
+      "speaker_id": "char:watson",
+      "paragraph_index": 33,
+      "surrounding_context": "\u201cAnd the dog?\u201d"
+    },
+    {
+      "line_index": 38,
+      "text": "Has been in the habit of carrying this stick behind his master. Being a heavy stick the dog has held it tightly by the middle, and the marks of his teeth are very plainly visible. The dog\u2019s jaw, as shown in the space between these marks, is too broad in my opinion for a terrier and not broad enough for a mastiff. It may have been\u2014yes, by Jove, it _is_ a curly-haired spaniel.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 34,
+      "surrounding_context": "\u201cHas been in the habit of carrying this stick behind his master. Being a heavy stick the dog has held it tightly by the middle, and the marks of his teeth are very plainly visible. The dog\u2019s jaw, as shown in the space between these marks, is too broad in my opinion for a terrier and not broad enough for a mastiff. It may have been\u2014yes, by Jove, it _is_ a curly-haired spaniel.\u201d"
+    },
+    {
+      "line_index": 39,
+      "text": "My dear fellow, how can you possibly be so sure of that?",
+      "speaker_id": "char:watson",
+      "paragraph_index": 36,
+      "surrounding_context": "\u201cMy dear fellow, how can you possibly be so sure of that?\u201d"
+    },
+    {
+      "line_index": 40,
+      "text": "For the very simple reason that I see the dog himself on our very door-step, and there is the ring of its owner. Don\u2019t move, I beg you, Watson. He is a professional brother of yours, and your presence may be of assistance to me. Now is the dramatic moment of fate, Watson, when you hear a step upon the stair which is walking into your life, and you know not whether for good or ill. What does Dr. James Mortimer, the man of science, ask of Sherlock Holmes, the specialist in crime? Come in!",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 37,
+      "surrounding_context": "\u201cFor the very simple reason that I see the dog himself on our very door-step, and there is the ring of its owner. Don\u2019t move, I beg you, Watson. He is a professional brother of yours, and your presence may be of assistance to me. Now is the dramatic moment of fate, Watson, when you hear a step upon the stair which is walking into your life, and you know not whether for good or ill. What does Dr. James Mortimer, the man of science, ask of Sherlock Holmes, the specialist in crime? Come in!\u201d"
+    },
+    {
+      "line_index": 41,
+      "text": "I am so very glad,",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 38,
+      "surrounding_context": "The appearance of our visitor was a surprise to me, since I had expected a typical country practitioner. He was a very tall, thin man, with a long nose like a beak, which jutted out between two keen, grey eyes, set closely together and sparkling brightly from behind a pair of gold-rimmed glasses. He was clad in a professional but rather slovenly fashion, for his frock-coat was dingy and his trousers frayed. Though young, his long back was already bowed, and he walked with a forward thrust of his head and a general air of peering benevolence. As he entered his eyes fell upon the stick in Holmes\u2019s hand, and he ran towards it with an exclamation of joy. \u201cI am so very glad,\u201d said he. \u201cI was not sure whether I had left it here or in the Shipping Office. I would not lose that stick for the world.\u201d"
+    },
+    {
+      "line_index": 42,
+      "text": "I was not sure whether I had left it here or in the Shipping Office. I would not lose that stick for the world.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 38,
+      "surrounding_context": "The appearance of our visitor was a surprise to me, since I had expected a typical country practitioner. He was a very tall, thin man, with a long nose like a beak, which jutted out between two keen, grey eyes, set closely together and sparkling brightly from behind a pair of gold-rimmed glasses. He was clad in a professional but rather slovenly fashion, for his frock-coat was dingy and his trousers frayed. Though young, his long back was already bowed, and he walked with a forward thrust of his head and a general air of peering benevolence. As he entered his eyes fell upon the stick in Holmes\u2019s hand, and he ran towards it with an exclamation of joy. \u201cI am so very glad,\u201d said he. \u201cI was not sure whether I had left it here or in the Shipping Office. I would not lose that stick for the world.\u201d"
+    },
+    {
+      "line_index": 43,
+      "text": "A presentation, I see,",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 39,
+      "surrounding_context": "\u201cA presentation, I see,\u201d said Holmes."
+    },
+    {
+      "line_index": 44,
+      "text": "Yes, sir.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 40,
+      "surrounding_context": "\u201cYes, sir.\u201d"
+    },
+    {
+      "line_index": 45,
+      "text": "From Charing Cross Hospital?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 41,
+      "surrounding_context": "\u201cFrom Charing Cross Hospital?\u201d"
+    },
+    {
+      "line_index": 46,
+      "text": "From one or two friends there on the occasion of my marriage.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 42,
+      "surrounding_context": "\u201cFrom one or two friends there on the occasion of my marriage.\u201d"
+    },
+    {
+      "line_index": 47,
+      "text": "Dear, dear, that\u2019s bad!",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 43,
+      "surrounding_context": "\u201cDear, dear, that\u2019s bad!\u201d said Holmes, shaking his head."
+    },
+    {
+      "line_index": 48,
+      "text": "Why was it bad?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 44,
+      "surrounding_context": "Dr. Mortimer blinked through his glasses in mild astonishment. \u201cWhy was it bad?\u201d"
+    },
+    {
+      "line_index": 49,
+      "text": "Only that you have disarranged our little deductions. Your marriage, you say?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 45,
+      "surrounding_context": "\u201cOnly that you have disarranged our little deductions. Your marriage, you say?\u201d"
+    },
+    {
+      "line_index": 50,
+      "text": "Yes, sir. I married, and so left the hospital, and with it all hopes of a consulting practice. It was necessary to make a home of my own.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 46,
+      "surrounding_context": "\u201cYes, sir. I married, and so left the hospital, and with it all hopes of a consulting practice. It was necessary to make a home of my own.\u201d"
+    },
+    {
+      "line_index": 51,
+      "text": "Come, come, we are not so far wrong, after all,",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 47,
+      "surrounding_context": "\u201cCome, come, we are not so far wrong, after all,\u201d said Holmes. \u201cAnd now, Dr. James Mortimer\u2014\u201d"
+    },
+    {
+      "line_index": 52,
+      "text": "And now, Dr. James Mortimer\u2014",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 47,
+      "surrounding_context": "\u201cCome, come, we are not so far wrong, after all,\u201d said Holmes. \u201cAnd now, Dr. James Mortimer\u2014\u201d"
+    },
+    {
+      "line_index": 53,
+      "text": "Mister, sir, Mister\u2014a humble M.R.C.S.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 48,
+      "surrounding_context": "\u201cMister, sir, Mister\u2014a humble M.R.C.S.\u201d"
+    },
+    {
+      "line_index": 54,
+      "text": "And a man of precise mind, evidently.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 49,
+      "surrounding_context": "\u201cAnd a man of precise mind, evidently.\u201d"
+    },
+    {
+      "line_index": 55,
+      "text": "A dabbler in science, Mr. Holmes, a picker up of shells on the shores of the great unknown ocean. I presume that it is Mr. Sherlock Holmes whom I am addressing and not\u2014",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 50,
+      "surrounding_context": "\u201cA dabbler in science, Mr. Holmes, a picker up of shells on the shores of the great unknown ocean. I presume that it is Mr. Sherlock Holmes whom I am addressing and not\u2014\u201d"
+    },
+    {
+      "line_index": 56,
+      "text": "No, this is my friend Dr. Watson.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 51,
+      "surrounding_context": "\u201cNo, this is my friend Dr. Watson.\u201d"
+    },
+    {
+      "line_index": 57,
+      "text": "Glad to meet you, sir. I have heard your name mentioned in connection with that of your friend. You interest me very much, Mr. Holmes. I had hardly expected so dolichocephalic a skull or such well-marked supra-orbital development. Would you have any objection to my running my finger along your parietal fissure? A cast of your skull, sir, until the original is available, would be an ornament to any anthropological museum. It is not my intention to be fulsome, but I confess that I covet your skull.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 52,
+      "surrounding_context": "\u201cGlad to meet you, sir. I have heard your name mentioned in connection with that of your friend. You interest me very much, Mr. Holmes. I had hardly expected so dolichocephalic a skull or such well-marked supra-orbital development. Would you have any objection to my running my finger along your parietal fissure? A cast of your skull, sir, until the original is available, would be an ornament to any anthropological museum. It is not my intention to be fulsome, but I confess that I covet your skull.\u201d"
+    },
+    {
+      "line_index": 58,
+      "text": "You are an enthusiast in your line of thought, I perceive, sir, as I am in mine,",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 53,
+      "surrounding_context": "Sherlock Holmes waved our strange visitor into a chair. \u201cYou are an enthusiast in your line of thought, I perceive, sir, as I am in mine,\u201d said he. \u201cI observe from your forefinger that you make your own cigarettes. Have no hesitation in lighting one.\u201d"
+    },
+    {
+      "line_index": 59,
+      "text": "I observe from your forefinger that you make your own cigarettes. Have no hesitation in lighting one.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 53,
+      "surrounding_context": "Sherlock Holmes waved our strange visitor into a chair. \u201cYou are an enthusiast in your line of thought, I perceive, sir, as I am in mine,\u201d said he. \u201cI observe from your forefinger that you make your own cigarettes. Have no hesitation in lighting one.\u201d"
+    },
+    {
+      "line_index": 60,
+      "text": "I presume, sir,",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 55,
+      "surrounding_context": "Holmes was silent, but his little darting glances showed me the interest which he took in our curious companion. \u201cI presume, sir,\u201d said he at last, \u201cthat it was not merely for the purpose of examining my skull that you have done me the honour to call here last night and again today?\u201d"
+    },
+    {
+      "line_index": 61,
+      "text": "that it was not merely for the purpose of examining my skull that you have done me the honour to call here last night and again today?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 55,
+      "surrounding_context": "Holmes was silent, but his little darting glances showed me the interest which he took in our curious companion. \u201cI presume, sir,\u201d said he at last, \u201cthat it was not merely for the purpose of examining my skull that you have done me the honour to call here last night and again today?\u201d"
+    },
+    {
+      "line_index": 62,
+      "text": "No, sir, no; though I am happy to have had the opportunity of doing that as well. I came to you, Mr. Holmes, because I recognized that I am myself an unpractical man and because I am suddenly confronted with a most serious and extraordinary problem. Recognizing, as I do, that you are the second highest expert in Europe\u2014",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 56,
+      "surrounding_context": "\u201cNo, sir, no; though I am happy to have had the opportunity of doing that as well. I came to you, Mr. Holmes, because I recognized that I am myself an unpractical man and because I am suddenly confronted with a most serious and extraordinary problem. Recognizing, as I do, that you are the second highest expert in Europe\u2014\u201d"
+    },
+    {
+      "line_index": 63,
+      "text": "Indeed, sir! May I inquire who has the honour to be the first?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 57,
+      "surrounding_context": "\u201cIndeed, sir! May I inquire who has the honour to be the first?\u201d asked Holmes with some asperity."
+    },
+    {
+      "line_index": 64,
+      "text": "To the man of precisely scientific mind the work of Monsieur Bertillon must always appeal strongly.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 58,
+      "surrounding_context": "\u201cTo the man of precisely scientific mind the work of Monsieur Bertillon must always appeal strongly.\u201d"
+    },
+    {
+      "line_index": 65,
+      "text": "Then had you not better consult him?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 59,
+      "surrounding_context": "\u201cThen had you not better consult him?\u201d"
+    },
+    {
+      "line_index": 66,
+      "text": "I said, sir, to the precisely scientific mind. But as a practical man of affairs it is acknowledged that you stand alone. I trust, sir, that I have not inadvertently\u2014",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 60,
+      "surrounding_context": "\u201cI said, sir, to the precisely scientific mind. But as a practical man of affairs it is acknowledged that you stand alone. I trust, sir, that I have not inadvertently\u2014\u201d"
+    },
+    {
+      "line_index": 67,
+      "text": "Just a little,",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 61,
+      "surrounding_context": "\u201cJust a little,\u201d said Holmes. \u201cI think, Dr. Mortimer, you would do wisely if without more ado you would kindly tell me plainly what the exact nature of the problem is in which you demand my assistance.\u201d"
+    },
+    {
+      "line_index": 68,
+      "text": "I think, Dr. Mortimer, you would do wisely if without more ado you would kindly tell me plainly what the exact nature of the problem is in which you demand my assistance.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 61,
+      "surrounding_context": "\u201cJust a little,\u201d said Holmes. \u201cI think, Dr. Mortimer, you would do wisely if without more ado you would kindly tell me plainly what the exact nature of the problem is in which you demand my assistance.\u201d"
+    }
+  ]
+}
