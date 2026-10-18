@@ -14,6 +14,8 @@ data, scoped to what actually needs it, no migration risk.
 
 from __future__ import annotations
 
+import re
+
 #: novel_id -> faction name (lowercased) -> attire description.
 FACTION_ATTIRE: dict[str, dict[str, str]] = {
     "reverend-insanity": {
@@ -391,6 +393,7 @@ SCENE_LOCALES: dict[str, dict[str, str]] = {
         "forest": "a bare winter wood, mist between trunks",
         "night": "a gaslit street at night, long shadows, fog",
         "night_wild": "a moonlit moor, low cloud",
+        "bedroom": "a modest Victorian bedroom, lamplight",
     },
 }
 
@@ -410,6 +413,9 @@ _LOCALE_CUES: dict[str, str] = {
     "village": "village", "town": "village", "street": "village",
     "market": "village", "clan": "village",
     "forest": "forest", "bamboo": "forest", "trees": "forest", "wood": "forest",
+    # A bedroom needs its own cue: LotM chapter 1 is a bedroom scene and had none, so it fell through to "wood"
+    # (see `scene_locale`) and was filed under a forest. Only books whose locale table has a "bedroom" key use these.
+    "bedroom": "bedroom", "bed": "bedroom", "pillow": "bedroom", "blanket": "bedroom", "mattress": "bedroom",
 }
 
 
@@ -452,8 +458,15 @@ def scene_locale(
     # mountain rock beneath his feet", "the mountain breeze") and still
     # resolved to a bamboo grove because a single "bamboo" appeared first.
     scores: dict[str, int] = {}
+    # Whole-word cues for the non-xianxia books: a substring count read "wooden" in "a low wooden bed" as a forest cue
+    # and stapled "a moonlit moor, low cloud" onto every panel of a night-time bedroom (LotM render review,
+    # 2026-10-18). Reverend Insanity keeps the substring count its locales were tuned with. A cue for a place this
+    # book's table does not have is skipped rather than raising later on `locales[key]`.
+    whole_words = setting_first(novel_id)
     for cue, key in _LOCALE_CUES.items():
-        hits = low.count(cue)
+        if key not in locales:
+            continue
+        hits = len(re.findall(rf"\b{re.escape(cue)}(?:s|es)?\b", low)) if whole_words else low.count(cue)
         if hits:
             scores[key] = scores.get(key, 0) + hits
 

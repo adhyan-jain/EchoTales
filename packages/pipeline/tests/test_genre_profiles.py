@@ -155,3 +155,18 @@ def test_the_scene_setting_note_finds_the_room_and_the_hour_from_the_whole_scene
     assert "rubbed his temples" not in note  # no place or time word: left out
     assert scene_setting_note(["He nodded.", "She left."]) == ""
     assert len(scene_setting_note(scene * 20, max_chars=200)) <= 200
+
+
+def test_a_wooden_bed_is_a_bedroom_not_a_forest_for_the_non_xianxia_books() -> None:
+    # "wood" counted inside "wooden" filed a night-time bedroom under a forest and put a moonlit moor on every panel.
+    text = "Why would I have a headache in the middle of the night? The room was small, with a low wooden bed and a cabinet."
+    assert attire.scene_locale("lord-of-the-mysteries", text) == "a modest Victorian bedroom, lamplight"
+    assert "bedroom" in attire.scene_locale("omniscient-readers-viewpoint", text)
+    # Whole words still match with a plural, and a real forest is still a forest.
+    assert "wood" in attire.scene_locale("lord-of-the-mysteries", "He crossed the woods at dawn. The trees were bare.")
+
+
+def test_reverend_insanitys_locale_matching_keeps_its_tuned_substring_count() -> None:
+    assert "bamboo grove" in attire.scene_locale("reverend-insanity", "He walked into the bamboo forest under the trees.")
+    # No bedroom key in RI's table: the new bedroom cues are skipped, never a KeyError.
+    assert attire.scene_locale("reverend-insanity", "She slept in the bedroom on the bed.")
