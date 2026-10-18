@@ -8776,3 +8776,21 @@ Work on `reader-faithfulness`:
   - Legacy IP-Adapter on SDXL Phase 0 measurement gate dropped in favor of native multi-reference generation and series-scale story bible extraction.
 - **Tests.** 1,449 core+pipeline pass (73.47s), 29 research pass (9.11s), 112 webview jest pass (5.08s).
 
+### 4.109 Phase 0 foundation: screenplay schema, story bible deltas, attribution contracts, and worker stubs *(2026-10-19)*
+
+Execution of Phase 0 from `reels_and_full_video_build_plan.md`:
+
+- **Academic research branch preserved.** Created `archive/academic-research` to freeze the prior paper/canary research track cleanly while active development continues on `reader-faithfulness`.
+- **Screenplay schema and validator (`screenplay/schema.py`, `screenplay/validator.py`).**
+  - Typed dataclasses for `ScreenplayEpisode`, `ScreenplayScene`, `ScreenplayShot`, `ShotDialogue`, and `CharacterAppearanceRef`.
+  - Enforced production rules: maximum still hold capped at 6.0 seconds (`MAX_STILL_DURATION_S`), pacing target of 10-25 cuts/minute, dialogue duration audio coverage invariant, 180-degree camera axis continuity checks, and Story Bible ID resolution.
+- **Story Bible delta schema (`bible/schema.py`).**
+  - Typed dataclasses for `BibleDelta`, `EntityDelta`, `PersonaShiftDelta` (with `PersonaShiftReason` covering transmigration, disguise, injury, aging, outfit changes), `LocationDelta`, and point-in-time `StoryBibleSnapshot` with alias resolution.
+- **LLM-first speaker attribution (`voice/attribution.py`).**
+  - Structured prompt compiler and JSON response parser supplying the Story Bible cast list and alias matrix to address open defect 3 (45.5% heuristic baseline vs >= 90% benchmark target).
+  - Benchmark evaluation harness computing overall accuracy, per-character precision/recall, and same-scene collision detection.
+- **RunPod worker contracts and offline stubs (`workers/common/contract.py`, `workers/common/stub.py`).**
+  - Unified JSON protocol for Image (Qwen-Image/Z-Image), Video (Wan 2.2/LTX-2.5), and TTS (Qwen3-TTS/Dia2) workers.
+  - Zero-GPU, zero-network deterministic stubs generating valid PNG images, sine-wave WAV audio, and video payloads for offline CI.
+- **Tests.** 1,462 core+pipeline pass (71.28s, 13 new unit tests across 4 test modules), 29 research pass (9.11s), 112 webview jest pass (4.32s).
+

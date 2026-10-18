@@ -22,22 +22,23 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-19 (EVOLUTION 4.108).
+**Last updated:** 2026-10-19 (EVOLUTION 4.109).
 
-## Pick up here — 2026-10-19 (Reels & Full Video Build Plan, Phase 1a Sheet Data Model; EVOLUTION 4.108)
+## Pick up here — 2026-10-19 (Phase 0 Foundation Contracts & Stubs, Reels Pivot; EVOLUTION 4.109)
 
-- **Phase 1a reference sheet data model & API routes completed.**
-  - `RefImageCandidate.role = "sheet"` column migration and model support.
-  - Persona-scoped selection in `Store.select_ref_image_candidate` (prevents multi-body evictions).
-  - Sheet auto-registration on generation/cache reuse (`persona/reference_gen.py`).
-  - Webview routes: `GET .../characters/<self_id>/sheets` and `POST .../sheets/<persona_id>/approve|reject`.
-  - Passed `test_refimg_sheets.py` and `test_sheet_approve_route` (1,449 core+pipeline tests pass).
-- **Approved Strategic Pivot: Reels & Full Video on Open Models (`reels_and_full_video_build_plan.md`).**
-  - Moves away from prompt-only SDXL illustrated audiobooks and drops the IP-Adapter Phase 0 measurement gate.
-  - Two render outputs: Path 1 (2.5D layered parallax reels / motion comics cutting every 3-5s) and Path 2 (Wan 2.2 / LTX-2.5 video).
-  - Open-model commercial stack: Qwen-Image-Edit, Wan 2.2, Qwen3-TTS, Dia2, DeepSeek-V4-Flash.
-  - Phase 0 tasks underway: showcase novel benchmark, speaker attribution golden test set, shot schema & validation contracts, and RunPod worker stubs.
-- **Tests.** 1,449 core+pipeline pass (73.47s), 29 research pass (9.11s), 112 webview jest pass (5.08s).
+- **Phase 0 Foundation Contracts, Schemas & Stubs completed.**
+  - `archive/academic-research` branch created to preserve academic/canary research track.
+  - Screenplay shot schema and validator (`screenplay/schema.py`, `screenplay/validator.py`): enforces 6.0s max still hold, 10-25 cuts/min, 180-degree rule, audio dialogue coverage invariant.
+  - Story Bible delta & snapshot schema (`bible/schema.py`): typed `BibleDelta`, `PersonaShiftDelta`, `LocationDelta`, and `StoryBibleSnapshot` with alias resolution.
+  - LLM speaker attribution contract and evaluation metrics (`voice/attribution.py`).
+  - RunPod serverless worker contracts and offline deterministic test stubs (`workers/common/contract.py`, `workers/common/stub.py`).
+  - Added 13 new unit tests across 4 modules (`test_screenplay_schema.py`, `test_bible_schema.py`, `test_voice_attribution.py`, `test_workers_stub.py`).
+  - Passed 1,462 core+pipeline tests, 29 research tests, 112 webview jest tests.
+- **Next steps in Phase 0 / Phase 1**:
+  - Ingest public-domain showcase novel into `data/novels/` for benchmark comparison against Toonflow/Huobao Drama.
+  - Wire `bible/delta.py` and `bible/validator.py` into `Store.bible_at(chapter)`.
+  - Wire `screenplay/compiler.py` against novel text + `bible_at(chapter)`.
+- **Tests.** 1,462 core+pipeline pass (71.28s), 29 research pass (9.11s), 112 webview jest pass (4.32s).
 
 ## Pick up here — 2026-10-18 (consistency plan, setting fixes, EVOLUTION 4.107)
 
