@@ -6,10 +6,8 @@ Spec: docs/design/consistency_plan.md Phase 1.
 from __future__ import annotations
 
 import hashlib
-import sqlite3
 from pathlib import Path
 
-import pytest
 from echotales.core.enums import (
     AliasType,
     AssertedBy,

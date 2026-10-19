@@ -27,7 +27,7 @@ import csv
 import os
 import random
 import time
-from typing import Callable, List, Tuple
+from typing import List, Tuple
 
 from ecrdt.replica import Replica
 from ecrdt.baselines import NaiveUnionReplica, ACLReplica
@@ -127,9 +127,7 @@ def experiment_a_world_only(sizes=(1_000, 10_000, 50_000, 100_000)) -> List[Tupl
 def experiment_b_epistemic(sizes=(200, 500, 1_000, 2_000)) -> List[Tuple]:
     rows = []
     for n in sizes:
-        rng = random.Random(2)
         rep = Replica(replica_id="a")
-        other = Replica(replica_id="b")
         t0 = time.perf_counter()
         for i in range(n):
             f = f"f{i}"

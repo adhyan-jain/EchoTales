@@ -511,9 +511,6 @@ def gather_appearance_passages(
     appearance is frequently the pronoun sentence right after the naming
     one ("Fang Yuan was in deep green robes... His hair was disheveled").
     """
-    seen: set[str] = set()
-    surfaces = _surface_forms(store, novel_id, target_id)
-
     chapters = [
         c
         for c in store.chapters_for_target(novel_id, target_id)
@@ -538,8 +535,6 @@ def gather_appearance_passages(
     # `injured` / robes `torn to shreds` -- an accurate reading of his
     # opening death scene and a useless one for every panel afterwards. A
     # per-chapter cap is what makes "typical appearance" mean typical.
-    per_chapter = max(2, max_passages // len(chapters))
-
     return [t for _c, t in _gather_pairs(
         store,
         novel_id,

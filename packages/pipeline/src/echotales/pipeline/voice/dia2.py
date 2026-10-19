@@ -7,7 +7,7 @@ actions (gasps, sighs, chuckles, interruptions, and coughs).
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Callable
+from typing import Callable
 
 from echotales.pipeline.voice.qwen_tts import TTSResult
 from workers.common.contract import TTSWorkerRequest, TTSWorkerResponse

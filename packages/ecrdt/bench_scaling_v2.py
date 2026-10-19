@@ -15,9 +15,7 @@ import os
 import random
 import resource
 import time
-from typing import List, Tuple
 
-from ecrdt.baselines import ACLReplica, NaiveUnionReplica
 from ecrdt.incremental import IncrementalReplica
 from ecrdt.replica import Replica
 from ecrdt.compaction import causally_stable, compact_for_target

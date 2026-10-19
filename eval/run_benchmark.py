@@ -25,7 +25,7 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 from echotales.core.enums import Prominence
-from echotales.core.models import CharacterBibleEntry, DiscoursePosition, Self
+from echotales.core.models import DiscoursePosition, Self
 from echotales.core.store import Store
 from echotales.pipeline.assets.approval import (
     approve_asset_candidate,
@@ -35,7 +35,6 @@ from echotales.pipeline.cost import estimate_episode_cost
 from echotales.pipeline.keyframes.engine import generate_shot_keyframe
 from echotales.pipeline.keyframes.qa import KeyframeQAGate
 from echotales.pipeline.screenplay.compiler import compile_screenplay
-from echotales.pipeline.screenplay.schema import ScreenplayEpisode
 from echotales.pipeline.voice.attribution import (
     DialogueLine,
     build_attribution_prompt,
@@ -127,7 +126,7 @@ def run_benchmark(
         for item in lines_raw
     ]
 
-    prompt, system = build_attribution_prompt(dialogue_lines, snapshot)
+    _prompt, _system = build_attribution_prompt(dialogue_lines, snapshot)
     mapping = {str(item["line_index"]): item["speaker_id"] for item in lines_raw}
     llm_output = json.dumps(mapping)
     attrib_results = parse_attribution_response(llm_output, dialogue_lines, snapshot)
@@ -163,7 +162,6 @@ def run_benchmark(
         "char:mortimer": VoiceAssignment("char:mortimer", "Mortimer", "p227", "male:mature", "visitor", Prominence.RECURRING),
     }
 
-    scene_chars = [s.location_id for s in episode.scenes]  # scenes cast
     scene_casts = [["char:holmes", "char:watson"]]
     resolved_casting = enforce_episode_zero_collision(scene_casts, raw_assignments, bank)
     collisions = verify_no_co_occurring_voice_collisions(scene_casts[0], resolved_casting)

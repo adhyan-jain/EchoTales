@@ -49,7 +49,7 @@ def main() -> int:
     args = ap.parse_args()
     work = Path(args.workdir)
     work.mkdir(parents=True, exist_ok=True)
-    pi, protected, vocab, surfaces, existing = V5.build_v5(args.base_db)
+    pi, protected, vocab, _surfaces, existing = V5.build_v5(args.base_db)
     broken = ContextBrokenRenamer(vocab, protected, T4.SEED, existing)
     o1 = T4.run_condition("O1b", args.base_db, work, None, broken=False, smoke=0)
     nn = T4.run_condition("Nctx", args.base_db, work, broken, broken=True, smoke=0)

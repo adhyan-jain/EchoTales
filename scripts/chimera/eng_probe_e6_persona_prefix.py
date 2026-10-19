@@ -10,7 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -78,7 +78,7 @@ def main() -> None:
     full_store, full_rep = build(src, work, nid, f"{nid}_e6full", None)
     out["full_personas"] = full_rep.personas
     for k in [int(x) for x in args.ks.split(",")]:
-        tr_store, tr_rep = build(src, work, nid, f"{nid}_e6k{k}", k)
+        tr_store, _tr_rep = build(src, work, nid, f"{nid}_e6k{k}", k)
         fs, ts = read_state(full_store, nid, k), read_state(tr_store, nid, k)
         common = sorted(set(fs) & set(ts))
         key_total: Counter = Counter()

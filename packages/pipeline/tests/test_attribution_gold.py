@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
 
 from echotales.core.models import CharacterBibleEntry, StoryBibleSnapshot
 from echotales.pipeline.voice.attribution import (
@@ -93,7 +92,7 @@ def test_build_and_parse_with_gold_snapshot() -> None:
         DialogueLine(line_index=1, text="How did you know what I was doing?"),
     ]
 
-    system, user_prompt = build_attribution_prompt(lines, snapshot)
+    _system, user_prompt = build_attribution_prompt(lines, snapshot)
     assert "Sherlock Holmes" in user_prompt
     assert "Dr. John Watson" in user_prompt
     assert "Line [0]" in user_prompt

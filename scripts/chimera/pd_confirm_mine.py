@@ -260,7 +260,7 @@ def cmd_mine(a):
             uniq.append((b, c, core))
 
     def cast_job(x):
-        b, c, core = x
+        b, _c, core = x
         cc = cast_candidates(texts[b["id"]], core)
         if len(cc) < 7:
             return x, None, cc

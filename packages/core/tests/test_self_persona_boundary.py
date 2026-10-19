@@ -114,12 +114,12 @@ def _reincarnation_store() -> tuple[Store, StateResolver]:
 
 class TestPersonaAttributesNeverCrossBodies:
     def test_old_body_never_reports_new_bodys_attribute(self) -> None:
-        _store_, resolver = _reincarnation_store()
+        _, resolver = _reincarnation_store()
         result = resolver.state_of("p_old", target_kind=TargetKind.PERSONA, position=50)
         assert result.attributes.get("hair_color") == "black"
 
     def test_new_body_never_reports_old_bodys_attribute(self) -> None:
-        _store_, resolver = _reincarnation_store()
+        _, resolver = _reincarnation_store()
         result = resolver.state_of("p_new", target_kind=TargetKind.PERSONA, position=300)
         assert result.attributes.get("hair_color") == "silver"
 
@@ -129,7 +129,7 @@ class TestPersonaAttributesNeverCrossBodies:
         attribute row must still read back as p_old's, never p_new's,
         because a Persona's attributes are keyed by persona_id, not by
         "whichever body is current for this Self right now"."""
-        _store_, resolver = _reincarnation_store()
+        _, resolver = _reincarnation_store()
         result = resolver.state_of("p_old", target_kind=TargetKind.PERSONA, position=300)
         assert result.attributes.get("hair_color") == "black"
         assert result.attributes.get("hair_color") != "silver"
@@ -141,13 +141,13 @@ class TestSelfAttributesNeverAbsorbPersonaAttributes:
     share one continuity of consciousness."""
 
     def test_self_level_query_never_returns_either_bodys_hair_color(self) -> None:
-        _store_, resolver = _reincarnation_store()
+        _, resolver = _reincarnation_store()
         result = resolver.state_of("s_soul", position=300)
         assert "hair_color" not in result.attributes
         assert result.attributes.get("role") == "wandering scholar"
 
     def test_persona_level_query_never_returns_the_selfs_role(self) -> None:
-        _store_, resolver = _reincarnation_store()
+        _, resolver = _reincarnation_store()
         for persona_id, position in (("p_old", 50), ("p_new", 300)):
             result = resolver.state_of(
                 persona_id, target_kind=TargetKind.PERSONA, position=position

@@ -10,20 +10,18 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import sqlite3
 import sys
-from collections import Counter, defaultdict
+from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import eng_probe_common as C  # noqa: E402
-from echotales.core.enums import OBSERVER_READER, TargetKind, TruthStatus  # noqa: E402
+from echotales.core.enums import TargetKind, TruthStatus  # noqa: E402
 from echotales.core.models import DiscoursePosition as DP  # noqa: E402
 from echotales.core.state import StateResolver  # noqa: E402
-from echotales.pipeline.ingest.normalize import comparison_key  # noqa: E402
 
 from eng_probe_e1_prefix_causality import wilson  # noqa: E402
 
@@ -102,7 +100,7 @@ def chapter_lag(db: str, nid: str, max_entities: int = 10**9) -> dict:
     res = StateResolver(store, nid)
     selves = [s for s in store.all_selves(nid) if s.kind.is_person][:max_entities]
     chapters_total = len(store.chapter_numbers(nid))
-    q = diff = diff_alias = diff_attr = 0
+    q = diff_alias = diff_attr = 0
     q_attr = 0
     first_chapter_missing = n_with_alias = 0
     for s in selves:

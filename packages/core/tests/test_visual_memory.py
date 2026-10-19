@@ -21,7 +21,6 @@ from echotales.core.enums import (
     OBSERVER_READER,
     OBSERVER_SYSTEM,
     TargetKind,
-    TruthStatus,
 )
 from echotales.core.interval import Certainty, FuzzyInterval
 from echotales.core.models import (

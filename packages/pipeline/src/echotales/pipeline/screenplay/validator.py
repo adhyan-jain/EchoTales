@@ -12,12 +12,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Sequence
 
 from echotales.pipeline.screenplay.schema import (
     RenderTier,
     ScreenplayEpisode,
-    ScreenplayShot,
 )
 
 MAX_STILL_DURATION_S = 6.0

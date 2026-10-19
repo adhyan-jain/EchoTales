@@ -8,7 +8,6 @@ LABELS: MODEL-GENERATED, one annotator, no human review.
 
 from __future__ import annotations
 
-import glob
 import hashlib
 import json
 import math

@@ -38,9 +38,6 @@ from echotales.core.models import (
 from echotales.core.store import Store, normalize_alias
 from echotales.pipeline.bible.schema import (
     BibleDelta,
-    EntityDelta,
-    LocationDelta,
-    PersonaShiftDelta,
 )
 
 

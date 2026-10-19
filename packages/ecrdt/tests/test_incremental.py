@@ -18,13 +18,12 @@ def _apply_same_op(ref, inc, op, args):
     """Apply an identical operation to both implementations; both must
     accept or reject it identically."""
     ref_err = inc_err = None
-    ref_result = inc_result = None
     try:
-        ref_result = getattr(ref, op)(*args)
+        getattr(ref, op)(*args)
     except ValueError as e:
         ref_err = str(e)
     try:
-        inc_result = getattr(inc, op)(*args)
+        getattr(inc, op)(*args)
     except ValueError as e:
         inc_err = str(e)
     assert (ref_err is None) == (inc_err is None), (

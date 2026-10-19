@@ -4,7 +4,7 @@ import Button from './ui/Button';
 import Badge from './ui/Badge';
 import { useToast } from './ui/Toast';
 import { describeError } from '../lib/errors';
-import { ShieldCheck, RefreshCw, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import { ShieldCheck, RefreshCw, Lock } from 'lucide-react';
 
 export default function ShotGridQA({ novelId, episodeId = 'ep1', shotIndex = 0 }) {
   const push = useToast();

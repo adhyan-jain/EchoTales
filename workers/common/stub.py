@@ -10,7 +10,6 @@ import io
 import math
 import struct
 import wave
-from typing import Any
 
 from workers.common.contract import (
     ImageWorkerRequest,
@@ -27,7 +26,6 @@ def _generate_solid_png_b64(width: int = 1080, height: int = 1920, color: tuple[
     import zlib
 
     # Minimal uncompressed/deflated raw RGBA PNG
-    raw_rows = []
     r, g, b = color
     row_bytes = bytes([0] + [r, g, b, 255] * width)
     raw_data = row_bytes * height

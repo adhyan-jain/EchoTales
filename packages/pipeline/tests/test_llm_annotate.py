@@ -17,7 +17,6 @@ if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
 from llm_annotate import (
-    VALID_LABELS,
     annotate_dataset,
     build_system_prompt,
     build_user_prompt,

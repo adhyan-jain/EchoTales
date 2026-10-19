@@ -259,8 +259,8 @@ def compare(o: dict, r: dict, pi: Renamer | None, flags: dict, protected: set[st
     ren = (lambda s: pi.rename(s)) if pi is not None else (lambda s: s)
     agree, changed = [], []
     for i in ids:
-        lo, mo, co = o[i]
-        lr, mr, cr = r[i]
+        lo, _mo, _co = o[i]
+        lr, _mr, _cr = r[i]
         same = (lo is None) == (lr is None) and (lo is None or lr == ren(lo))
         (agree if same else changed).append(i)
     n = len(ids)
@@ -346,7 +346,7 @@ def main() -> int:
     workdir = Path(args.workdir)
     workdir.mkdir(parents=True, exist_ok=True)
 
-    pi, protected, vocab, surfaces = build_pi(args.base_db)
+    pi, protected, _vocab, surfaces = build_pi(args.base_db)
     gate = commutation_gate(pi, surfaces, protected)
     print("commutation gate:", json.dumps({k: v for k, v in gate.items() if k.endswith("count") or k in ("surfaces", "passed")}), flush=True)
     if not gate["passed"]:

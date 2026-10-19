@@ -7,9 +7,6 @@ Falls back to deterministic offline stub if CUDA or weights are unavailable.
 
 from __future__ import annotations
 
-import base64
-import io
-import os
 import sys
 import time
 from pathlib import Path

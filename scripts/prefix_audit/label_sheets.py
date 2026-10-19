@@ -60,7 +60,7 @@ def excerpts(c: sqlite3.Connection, nid: str, eid: str, upto: float | None, n: i
     picks = [chapters[round(i * (len(chapters) - 1) / max(1, n - 1))] for i in range(min(n, len(chapters)))] if len(chapters) > 1 else chapters
     out = []
     for ch in dict.fromkeys(picks):
-        ch_, block, off, txt = rng.choice(by_ch[ch])
+        ch_, block, off, _txt = rng.choice(by_ch[ch])
         body = block_text(c, nid, ch_, block)
         passage = re.sub(r"\s+", " ", body[max(0, off - BEFORE): off + AFTER]).strip()
         out.append(f"  [ch {ch_:g}] ...{passage}...")

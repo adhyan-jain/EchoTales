@@ -10,8 +10,6 @@ Provides high-energy comic action language synced with exclamation audio peaks:
 from __future__ import annotations
 
 import math
-from pathlib import Path
-from typing import Any
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont

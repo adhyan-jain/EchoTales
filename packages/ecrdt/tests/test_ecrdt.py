@@ -67,7 +67,7 @@ def test_communicate_grants_knowledge_with_provenance():
 
     b.merge(a)
     assert b.knows("f1")
-    K, prov = b.materialize()
+    _, prov = b.materialize()
     assert "f1" in prov and len(prov["f1"]) >= 1
 
 
@@ -166,7 +166,6 @@ def test_acl_baseline_retroactive_widen_is_a_measurable_leak():
 
 
 def test_orset_join_is_commutative_associative_idempotent():
-    rng = random.Random(42)
     stores = [ORSet() for _ in range(3)]
     for i, s in enumerate(stores):
         for k in range(3):

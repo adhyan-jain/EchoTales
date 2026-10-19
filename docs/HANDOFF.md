@@ -22,7 +22,16 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-19 (EVOLUTION 4.118).
+**Last updated:** 2026-10-19 (EVOLUTION 4.119).
+
+## Pick up here — 2026-10-19 (Repository-wide Dead Code Cleanup; EVOLUTION 4.119)
+
+- **Dead code and unused imports eliminated repository-wide:**
+  - Automated and manual cleanup of unused imports and dead variables across `packages/core/`, `packages/pipeline/`, `packages/ecrdt/`, `packages/research/`, `eval/`, `workers/`, `scripts/`, and `webview/src/`.
+  - Fixed runtime import order bug in `arc.py` (`math` used prior to inline import).
+  - Webview build compiles with 0 warnings.
+  - Zero emojis and zero section symbols across git diff.
+- **Tests.** 1,511 core+pipeline pass (78.50s), 29 research pass (7.13s), 124 webview jest pass (4.35s). Total: 1,664 tests passing across repository.
 
 ## Pick up here — 2026-10-19 (Frontend Studio UX, Worker Containers, Multi-Chapter Benchmark; EVOLUTION 4.118)
 

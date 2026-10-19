@@ -13,7 +13,6 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from ecrdt.replica import Replica
-from ecrdt.baselines import NaiveUnionReplica, ACLReplica
 from ecrdt.model import Event
 from ecrdt.audit import audit_non_interference, total_violation_count
 
@@ -159,7 +158,7 @@ def test_duplicate_merge_is_idempotent():
 
 
 def test_reordered_merge_converges_same_as_in_order():
-    a, b, c = Replica("a"), Replica("b"), Replica("c")
+    a, b = Replica("a"), Replica("b")
     a.assert_world("f1")
     a.observe("f1")
     a.communicate("b", "f1")

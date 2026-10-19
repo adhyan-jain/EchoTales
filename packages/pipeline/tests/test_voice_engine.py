@@ -9,7 +9,6 @@ import wave
 from pathlib import Path
 
 import numpy as np
-import pytest
 
 from echotales.core.enums import Prominence
 from echotales.pipeline.voice.bank import BankVoice, VoiceBank
@@ -29,7 +28,6 @@ from echotales.pipeline.voice.exclamations import (
     extract_audio_peaks,
     generate_intensity_takes,
     insert_nonverbal_breath,
-    measure_dynamic_pitch_range,
     overlap_dialogue_cutoffs,
     select_best_exclamation_take,
 )
@@ -37,7 +35,6 @@ from echotales.pipeline.voice.qwen_tts import (
     build_emotion_instruction,
     synthesize_qwen_tts,
 )
-from workers.common.contract import TTSWorkerRequest, TTSWorkerResponse
 
 
 def _generate_test_wav(duration_s: float = 1.0, freq: float = 440.0, sample_rate: int = 24000) -> bytes:

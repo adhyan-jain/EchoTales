@@ -4,12 +4,10 @@ from __future__ import annotations
 
 import pytest
 
-from echotales.core.enums import Prominence, TargetKind
+from echotales.core.enums import Prominence
 from echotales.core.models import DiscoursePosition, Self
 from echotales.core.store import Store
 from echotales.pipeline.bible.delta import (
-    build_bible_delta_prompt,
-    extract_bible_delta,
     heuristic_extract_bible_delta,
     parse_bible_delta_response,
 )

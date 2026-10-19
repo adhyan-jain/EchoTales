@@ -9,7 +9,6 @@ settings. Leave-one-serial-out selection of the setting; H5 verdict. LABELS: MOD
 
 from __future__ import annotations
 
-import glob
 import json
 import sys
 from collections import Counter

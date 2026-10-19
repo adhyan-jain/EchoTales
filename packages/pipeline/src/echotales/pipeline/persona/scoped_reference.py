@@ -13,13 +13,12 @@ import logging
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Mapping, Sequence
+from typing import TYPE_CHECKING, Mapping, Sequence
 
 from echotales.core.enums import (
     OBSERVER_READER,
     OBSERVER_SYSTEM,
     TargetKind,
-    TruthStatus,
 )
 from echotales.core.interval import Certainty, FuzzyInterval
 from echotales.core.models import MAIN_TIMELINE, DiscoursePosition

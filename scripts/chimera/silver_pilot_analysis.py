@@ -19,7 +19,6 @@ import os
 import csv
 import json
 import re
-import sqlite3
 from collections import Counter, defaultdict
 from math import sqrt
 from pathlib import Path
@@ -110,7 +109,7 @@ def main() -> None:
             if best[3] is None:
                 res = "detected-unresolved"
             else:
-                strict, loose = label_match(labels.get(best[3], ""), k["gold_identity"])
+                _strict, loose = label_match(labels.get(best[3], ""), k["gold_identity"])
                 res = "linked-matches-silver" if loose else "linked-differs-from-silver"
         outcome[k["tier"]][res] += 1
         outcome_cat[k["category"]][res] += 1

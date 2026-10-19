@@ -7,16 +7,13 @@ from raw novel chapter text using strict JSON conformity to BibleDelta.
 from __future__ import annotations
 
 import json
-import re
-from typing import Any, Protocol
+from typing import Protocol
 
 from echotales.core.models import StoryBibleSnapshot
 from echotales.pipeline.bible.schema import (
     BibleDelta,
     EntityDelta,
     LocationDelta,
-    PersonaShiftDelta,
-    PersonaShiftReason,
 )
 
 

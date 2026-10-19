@@ -3,13 +3,11 @@
 from __future__ import annotations
 
 import csv
-import math
 import sqlite3
 import sys
 from collections import defaultdict
 from pathlib import Path
 
-import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_DIR = REPO_ROOT / "scripts" / "review"
@@ -19,9 +17,7 @@ if str(SCRIPTS_DIR) not in sys.path:
 from validate_adjudication_package import (
     KNOWN_LINKED_POPULATION_2026_09_25,
     STRATUM_POPULATION,
-    TOTAL_POPULATION,
     calculate_boundary_aware_confidence_bounds,
-    calculate_cohen_kappa,
     calculate_hypergeometric_upper_error_bound,
     calculate_precision_with_known_denominator,
     calculate_stratified_ratio_precision,
@@ -489,7 +485,7 @@ def test_finite_population_sample_size_hypergeometric_bounds() -> None:
     assert rate_253 <= 0.010
 
     # Verify that n=252 fails to achieve <= 1.0%
-    k_252, rate_252 = calculate_hypergeometric_upper_error_bound(N, 252, 0.95)
+    _, rate_252 = calculate_hypergeometric_upper_error_bound(N, 252, 0.95)
     assert rate_252 > 0.010
 
 

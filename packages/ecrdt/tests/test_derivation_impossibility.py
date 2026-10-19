@@ -209,7 +209,7 @@ def test_derived_fact_has_no_stable_provenance_to_retract():
     # AutoDerivingACLReplica's own provenance dict -- the G-projection -- has
     # no entry at all for "derived", because it was never established via a
     # G record; it exists only as a live re-evaluation of the rule table.
-    held, provenance = a._materialize_grants()
+    _, provenance = a._materialize_grants()
     assert "derived" not in provenance, (
         "a rule-derived fact has no establishing dots in G -- there is nothing "
         "a retract_knowledge-equivalent operation could cite to revoke this "
@@ -229,7 +229,6 @@ def test_derived_fact_has_no_stable_provenance_to_retract():
 
 def test_delegating_a_derived_fact_requires_a_fresh_authorization_event():
     a = AutoDerivingACLReplica(replica_id="a")
-    b = AutoDerivingACLReplica(replica_id="b")
     a.assert_world("p1")
     a.assert_world("p2")
     a.self_grant("p1")
@@ -295,7 +294,7 @@ def test_multi_hop_derivation_stays_confidentiality_safe_but_compounds_the_ident
     # derived) has no G dot, so p5's "derivation" rests on a premise that
     # is itself unrevoked-and-unrevocable-by-dot -- there are now two
     # levels of derived fact with no stable identity, not one.
-    held, provenance = a._materialize_grants()
+    _, provenance = a._materialize_grants()
     assert "p3" not in provenance and "p5" not in provenance
 
 

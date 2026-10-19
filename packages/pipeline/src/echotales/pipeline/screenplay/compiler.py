@@ -11,9 +11,8 @@ enforcing strict cinematic invariants:
 
 from __future__ import annotations
 
-import json
 import re
-from typing import Any, Protocol
+from typing import Protocol
 
 from echotales.core.models import CharacterBibleEntry, StoryBibleSnapshot
 from echotales.pipeline.screenplay.schema import (
@@ -132,7 +131,6 @@ def _compile_rule_based(
 
     # Extract dialogues and action beats
     char_list = list(snapshot.characters.values())
-    p_len = len(paragraphs)
 
     # 180-degree axis tracking: char A at -30.0, char B at +30.0
     speaker_angles: dict[str, float] = {}

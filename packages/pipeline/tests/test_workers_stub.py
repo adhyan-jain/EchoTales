@@ -5,7 +5,6 @@ from __future__ import annotations
 import base64
 import wave
 import io
-import pytest
 
 from workers.common.contract import (
     ImageWorkerRequest,

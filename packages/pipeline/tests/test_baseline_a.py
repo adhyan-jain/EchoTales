@@ -1,9 +1,7 @@
-import pytest
 from echotales.core.enums import BlockType
 from echotales.core.models import Block, Chapter
 from echotales.core.store import Store
 from echotales.pipeline.eval.baseline_a import (
-    MentionOut,
     SectionResult,
     _locate,
     materialize_mentions,

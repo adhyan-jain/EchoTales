@@ -1,4 +1,3 @@
-import pytest
 from echotales.pipeline.persona.refimg_search import (
     RawHit,
     evaluate_candidate_quality,

@@ -17,7 +17,6 @@ extension (signed events) is noted as future work, not attempted here.
 """
 from __future__ import annotations
 
-import itertools
 from dataclasses import dataclass, field
 from typing import Dict, FrozenSet, List, Optional, Set, Tuple
 

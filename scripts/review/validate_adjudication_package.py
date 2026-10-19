@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import argparse
 import csv
-import json
 import math
 import sys
 from collections import Counter, defaultdict
@@ -708,8 +707,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 1
         compute_adjudicated_metrics_v2(p_std_v2, p_hc_v2, p_map, p_recon, args.known_denominator)
         if args.require_complete:
-            adj_200, tot_200, errs_200 = check_adjudication_progress(p_std_v2, require_complete=True)
-            adj_88, tot_88, errs_88 = check_adjudication_progress(p_hc_v2, require_complete=True)
+            _, _, errs_200 = check_adjudication_progress(p_std_v2, require_complete=True)
+            _, _, errs_88 = check_adjudication_progress(p_hc_v2, require_complete=True)
             if errs_200 or errs_88:
                 print("\nIncomplete adjudication errors in V2 package:")
                 for e in (errs_200 + errs_88)[:10]:

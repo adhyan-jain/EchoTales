@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import io
 import math
-import struct
 import wave
 from dataclasses import dataclass
 from enum import StrEnum
@@ -288,7 +287,7 @@ def overlap_dialogue_cutoffs(
     """
     try:
         s1, sr1 = _read_wav_samples(prev_audio)
-        s2, sr2 = _read_wav_samples(next_audio)
+        s2, _ = _read_wav_samples(next_audio)
         sr = sr1
 
         n_overlap = int(sr * (overlap_ms / 1000.0))

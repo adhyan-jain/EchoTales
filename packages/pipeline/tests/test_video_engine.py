@@ -16,7 +16,6 @@ from echotales.pipeline.screenplay.schema import CameraMove
 from echotales.pipeline.video.ltx import generate_ltx_video
 from echotales.pipeline.video.qa import (
     VideoQAGate,
-    VideoQAReport,
     render_shot_with_video_or_fallback,
 )
 from echotales.pipeline.video.wan import (

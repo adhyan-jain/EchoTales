@@ -328,7 +328,6 @@ def _rf(rf: dict | None) -> dict | None:
     rb = ((rf.get("robust") or {}).get("ruleB")) or {}
     robust = None
     if rb:
-        c = rb.get("contrasts") or {}
         robust = dict(models=(rf.get("robust") or {}).get("models"), whole_nospoil_renamed=_r((rb.get("rates") or {}).get("W_ren_nospoil")),
                       versioned_renamed=_r((rb.get("rates") or {}).get("P_ren")),
                       # second cipher read by the text rule: the judge over-flags second-cipher prefix cards (7.4% > the 5% validity bound)

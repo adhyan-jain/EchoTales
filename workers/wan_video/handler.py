@@ -8,9 +8,7 @@ Falls back to deterministic offline stub if CUDA or weights are unavailable.
 from __future__ import annotations
 
 import base64
-import os
 import sys
-import time
 from pathlib import Path
 from typing import Any
 
@@ -28,13 +26,11 @@ except ImportError:
 
 def generate_video(request: VideoWorkerRequest) -> VideoWorkerResponse:
     """Generate video using Wan 2.2 S2V / A14B models."""
-    t0 = time.time()
     # Minimal valid mp4 header / container stub
     calc_duration = request.num_frames / max(1, request.fps)
     # 32-byte minimal container payload for stub test
     dummy_mp4_bytes = b"\x00\x00\x00\x20ftypisom\x00\x00\x02\x00isomiso2mp41\x00\x00\x00\x08free"
     b64_video = base64.b64encode(dummy_mp4_bytes).decode("ascii")
-    elapsed = time.time() - t0
     return VideoWorkerResponse(
         video_b64=b64_video,
         duration_s=round(calc_duration, 2),

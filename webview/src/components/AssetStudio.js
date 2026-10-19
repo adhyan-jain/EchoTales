@@ -12,7 +12,7 @@ export default function AssetStudio({ novelId }) {
   const [characters, setCharacters] = useState([]);
   const [selectedCharId, setSelectedCharId] = useState(null);
   const [turnarounds, setTurnarounds] = useState([]);
-  const [locations, setLocations] = useState([
+  const [locations] = useState([
     { id: 'loc:study', label: 'Victorian Study / Baker Street' },
     { id: 'loc:moor', label: 'Dartmoor Moorlands' },
     { id: 'loc:hall', label: 'Baskerville Hall' },

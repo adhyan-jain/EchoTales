@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import pytest
 
 from echotales.pipeline.screenplay.schema import (
     CameraMove,
@@ -18,7 +17,6 @@ from echotales.pipeline.screenplay.schema import (
     Transition,
 )
 from echotales.pipeline.screenplay.validator import (
-    MAX_STILL_DURATION_S,
     ValidationSeverity,
     validate_screenplay,
 )

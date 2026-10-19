@@ -10,7 +10,6 @@ unauthorized-knowledge-propagation counts under two conditions:
 from __future__ import annotations
 
 import random
-from typing import Dict, Set
 
 from ecrdt.replica import Replica
 from ecrdt.baselines import NaiveUnionReplica, ACLReplica
@@ -20,7 +19,6 @@ from ecrdt.audit import audit_non_interference, total_violation_count
 
 
 def run_clean_workload(n_replicas=6, n_facts=40, rounds=10, seed=17):
-    rng = random.Random(seed)
     ids = [f"r{i}" for i in range(n_replicas)]
     results = {}
 

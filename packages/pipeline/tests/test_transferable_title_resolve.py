@@ -19,7 +19,7 @@ shape.
 
 from __future__ import annotations
 
-from echotales.core.enums import AliasType, BlockType, Decision, ReferenceMode, SpanType
+from echotales.core.enums import AliasType, BlockType, ReferenceMode, SpanType
 from echotales.core.models import Block, Chapter, Mention
 from echotales.core.store import Store
 from echotales.pipeline.resolve import resolve_novel

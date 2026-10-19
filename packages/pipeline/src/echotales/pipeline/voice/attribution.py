@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from typing import Any, Protocol
+from typing import Protocol
 
 from echotales.pipeline.bible.schema import StoryBibleSnapshot
 

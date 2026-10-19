@@ -307,7 +307,6 @@ def metamorphic(n_stores: int, seed: int) -> dict:
             if a_full != a_shuf:
                 i2 += 1
                 only_attr = a_full[:3] == a_shuf[:3] and a_full[4] == a_shuf[4]
-                admissible = StateResolver(full, N).resolve_admissible_attributes("P1", position=p, include_plausible=True)
                 # recompute the full admissible candidate list to find a tie on the contested key
                 res = StateResolver(full, N)
                 cands = {}

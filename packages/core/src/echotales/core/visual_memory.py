@@ -36,11 +36,10 @@ from echotales.core.enums import (
     TargetKind,
     TruthStatus,
 )
-from echotales.core.interval import Certainty, FuzzyInterval, StoryPos
+from echotales.core.interval import Certainty, FuzzyInterval
 from echotales.core.models import (
     MAIN_TIMELINE,
     DiscoursePosition,
-    TemporalFact,
 )
 from echotales.core.state import StateResolver, observer_scope
 

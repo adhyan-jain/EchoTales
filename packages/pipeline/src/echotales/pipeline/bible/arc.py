@@ -9,6 +9,7 @@ Guarantees consistency across 20+ episode narrative arcs:
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -73,10 +74,6 @@ def audit_arc_continuity(
     audited_count = 0
 
     prev_snapshot: StoryBibleSnapshot | None = None
-    start_int = int(math.floor(chapter_start)) if 'math' in globals() else int(chapter_start)
-    end_int = int(math.ceil(chapter_end)) if 'math' in globals() else int(chapter_end)
-
-    import math
     start_int = int(math.floor(chapter_start))
     end_int = int(math.ceil(chapter_end))
 

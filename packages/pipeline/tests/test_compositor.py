@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import base64
 from pathlib import Path
 
 import pytest
@@ -29,7 +28,6 @@ from echotales.pipeline.compositor.manga import (
     render_onomatopoeia_overlay,
 )
 from echotales.pipeline.screenplay.schema import CameraMove
-from workers.common.stub import _generate_solid_png_b64
 
 
 @pytest.fixture

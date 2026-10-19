@@ -8972,5 +8972,22 @@ Execution of Frontend Studio UX, serverless flex worker packages, and multi-chap
   - 124 webview jest pass (3.98s, 12 new unit tests across 4 component test suites).
   - Total: 1,664 tests passing across the repository.
 
+### 4.119 Repository-wide dead code and unused import cleanup *(2026-10-19)*
 
-
+Repository-wide sweep across core, pipeline, ecrdt, research, workers, eval, and frontend:
+- **Dead code and unused imports eliminated:**
+  - Removed 64+ unused imports across `packages/core/`, `packages/pipeline/`, `eval/`, and `workers/` via automated linting.
+  - Removed dead/redundant variable bindings across `packages/pipeline/src/echotales/pipeline/screenplay/compiler.py`, `eval/run_benchmark.py`, `resolve/appearance_extract.py`, `voice/exclamations.py`, and `research_demo.py`.
+  - Cleaned up unused imports and unread unpacking targets in `packages/ecrdt/` (`bench_scaling.py`, `ablation_bench.py`, and unit tests).
+  - Cleaned up unused variable bindings and unpacking dummies across `scripts/chimera/`, `scripts/figures/`, `scripts/prefix_audit/`, and `scripts/review/`.
+  - Cleaned up unused React state setters and unused icon imports in `webview/src/components/AssetStudio.js`, `ScreenplayEditor.js`, and `ShotGridQA.js`. Webview build compiles with 0 warnings.
+- **Bug fix in `arc.py`:**
+  - Moved `import math` to top level in `packages/pipeline/src/echotales/pipeline/bible/arc.py` to fix an undefined name runtime error where `math.ceil` was referenced prior to local import, and removed redundant duplicate assignments.
+- **Verification:**
+  - `python3 -m ruff check --select F401,F841,RUF059,B018 packages/ eval/ workers/ scripts/`: 0 errors.
+  - Zero emojis and zero section symbols across git diff.
+- **Tests.**
+  - 1,511 core+pipeline pass (78.50s).
+  - 29 research pass (7.13s).
+  - 124 webview jest pass (4.35s).
+  - Total: 1,664 tests passing across the repository.

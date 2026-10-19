@@ -11,14 +11,13 @@ from pathlib import Path
 import pytest
 from echotales.core.store import Store
 from echotales.pipeline.jobs import JobQueue
-from echotales.pipeline.webview_server import NovelHandle, NovelSource, Registry, make_handler
+from echotales.pipeline.webview_server import NovelSource, Registry, make_handler
 
 
 @pytest.fixture
 def studio_server(tmp_path: Path):
     db_path = tmp_path / "test.db"
     store = Store(str(db_path))
-    corr_path = tmp_path / "corrections.jsonl"
     source = NovelSource(novel_id="test_novel", label="Test Novel", db_path=db_path)
     registry = Registry([source], corrections_dir=tmp_path / "corrections")
     jobs = JobQueue()
@@ -39,7 +38,7 @@ def studio_server(tmp_path: Path):
 
 
 def test_episodes_get_and_post(studio_server) -> None:
-    port, store = studio_server
+    port, _ = studio_server
     conn = HTTPConnection("127.0.0.1", port)
 
     # 1. GET /api/novels/test_novel/episodes (auto-creates default ep 1)
@@ -85,7 +84,7 @@ def test_episodes_get_and_post(studio_server) -> None:
 
 
 def test_shot_candidates_qa_and_locking(studio_server) -> None:
-    port, store = studio_server
+    port, _ = studio_server
     conn = HTTPConnection("127.0.0.1", port)
 
     # 1. GET shot candidates
@@ -125,7 +124,7 @@ def test_shot_candidates_qa_and_locking(studio_server) -> None:
 
 
 def test_turnaround_and_plate_generation(studio_server) -> None:
-    port, store = studio_server
+    port, _ = studio_server
     conn = HTTPConnection("127.0.0.1", port)
 
     # 1. POST generate turnaround

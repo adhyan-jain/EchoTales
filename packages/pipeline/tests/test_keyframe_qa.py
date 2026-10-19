@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -13,15 +12,12 @@ from echotales.pipeline.assets.approval import (
     register_asset_candidate,
 )
 from echotales.pipeline.keyframes.engine import (
-    build_shot_prompt,
     generate_keyframe_candidates,
     generate_shot_keyframe,
 )
 from echotales.pipeline.keyframes.qa import (
-    CheckResult,
     KeyframeQAGate,
     cosine_similarity,
-    extract_default_image_features,
 )
 from echotales.pipeline.screenplay.schema import (
     CameraMove,

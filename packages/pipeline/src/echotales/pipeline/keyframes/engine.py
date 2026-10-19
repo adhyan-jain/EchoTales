@@ -8,7 +8,7 @@ Enforces the 4-Check automated QA gate with automatic re-rolls and human review 
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 

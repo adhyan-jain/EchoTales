@@ -18,7 +18,6 @@ from __future__ import annotations
 import pytest
 from echotales.core.enums import (
     OBSERVER_READER,
-    AssertedBy,
     TargetKind,
     TruthStatus,
 )

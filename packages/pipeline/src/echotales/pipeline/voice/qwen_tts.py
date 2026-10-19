@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable
+from typing import Callable
 
 from workers.common.contract import TTSWorkerRequest, TTSWorkerResponse
 from workers.common.stub import run_tts_worker

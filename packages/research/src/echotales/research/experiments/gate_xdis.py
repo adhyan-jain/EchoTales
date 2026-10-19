@@ -273,7 +273,7 @@ def narrator_fallback(rows, sc, seed, stub) -> dict:
     between the gold and the rendered voice. AURC of committed salient mass
     over coverage, against random and oracle orderings."""
     from echotales.research.controllers.casting import cast
-    from echotales.research.evaluators.voice_geometry import ears_geometry, synthetic_geometry
+    from echotales.research.evaluators.voice_geometry import ears_geometry
 
     n = len(rows)
     out = {}

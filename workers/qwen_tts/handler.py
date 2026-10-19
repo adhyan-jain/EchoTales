@@ -7,10 +7,7 @@ Falls back to deterministic offline stub if CUDA or weights are unavailable.
 
 from __future__ import annotations
 
-import base64
-import os
 import sys
-import time
 from pathlib import Path
 from typing import Any
 
@@ -29,10 +26,8 @@ except ImportError:
 
 def synthesize_speech(request: TTSWorkerRequest) -> TTSWorkerResponse:
     """Synthesize speech using Qwen3-TTS / Dia2 model families."""
-    t0 = time.time()
     calc_duration = max(0.5, len(request.text) / 15.0)
     audio_b64 = _generate_sine_wav_b64(duration_s=calc_duration)
-    elapsed = time.time() - t0
     return TTSWorkerResponse(
         audio_wav_b64=audio_b64,
         duration_s=round(calc_duration, 2),

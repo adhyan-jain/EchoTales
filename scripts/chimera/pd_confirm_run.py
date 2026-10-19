@@ -99,7 +99,7 @@ def save_name(out: Path, kind: str, model: str) -> Path:
 
 # ---------------------------------------------------------------- E1 + M2
 def cmd_e1(a):
-    evs, texts, out = setup(a)
+    _evs, texts, out = setup(a)
     path = save_name(out, "e1", a.model)
     if path.exists():
         sys.exit(f"REFUSING: {path} exists (each cell is run once)")
@@ -110,7 +110,7 @@ def cmd_e1(a):
     t0 = time.time()
 
     def work(j):
-        sec, kid, arm, prompt, cands = j
+        _sec, _kid, _arm, prompt, cands = j
         allowed = [L for L, _n, _i in cands] + ["UNDETERMINED"]
         schema = {"type": "object", "properties": {"answer": {"type": "string", "enum": allowed}}, "required": ["answer"]}
         return V6.parse(pod.chat(a.model, prompt, 32, schema), cands)

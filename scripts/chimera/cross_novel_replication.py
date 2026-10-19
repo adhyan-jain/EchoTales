@@ -19,7 +19,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import re
 import shutil
 import sqlite3
 import sys
@@ -115,7 +114,7 @@ def t4(args) -> None:
     g3 = T4.commutation_gate(pi3, surf3, prot3)
     out["v3_token_level_gate"] = dict(surfaces=g3["surfaces"], G1=g3["G1_count"], G2=g3["G2_count"], G3=g3["G3_count"],
                                       passed=g3["passed"])
-    pi, protected, vocab, surfaces, existing = V5.build_v5(args.db)
+    pi, protected, _vocab, surfaces, _existing = V5.build_v5(args.db)
     gate = V4.full_gate(pi, surfaces, protected, args.db)
     gate["closure_passes"], gate["closure_stable"] = pi.closure_passes, pi.closure_stable
     gate["passed"] = bool(gate["passed"] and pi.closure_stable)

@@ -54,7 +54,7 @@ def main():
     if path.exists():
         sys.exit(f"REFUSING: {path} exists")
     test_ids = {e["id"] for e in evs if e.get("split") == "test"}
-    real, cb, m2, _ = V6.prompts(texts)
+    real, _cb, m2, _ = V6.prompts(texts)
     js = [("real", p["id"], arm, p[arm], p["cands"]) for p in real if p["event"] in test_ids for arm in ("A", "B", "B3")]
     js += [("m2", p["event"], arm, p[arm], p["cands"]) for p in m2 if p["event"] in test_ids for arm in V6.M2_ARMS]
     js = js[:a.max_items]

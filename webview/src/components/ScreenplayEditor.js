@@ -4,7 +4,7 @@ import Button from './ui/Button';
 import Badge from './ui/Badge';
 import { useToast } from './ui/Toast';
 import { describeError } from '../lib/errors';
-import { Clapperboard, Video, MessageSquare, Clock, AlertTriangle, RefreshCw, Save } from 'lucide-react';
+import { Clapperboard, MessageSquare, Clock, AlertTriangle, RefreshCw, Save } from 'lucide-react';
 
 const SHOT_SIZES = ['establishing', 'wide', 'medium', 'close', 'extreme_close', 'reaction', 'insert'];
 const CAMERA_MOVES = ['static', 'slow_push_in', 'pull_out', 'pan_left', 'pan_right', 'tilt_up', 'tilt_down', 'rack_focus', 'impact_shake'];

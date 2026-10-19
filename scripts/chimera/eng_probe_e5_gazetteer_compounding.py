@@ -113,10 +113,8 @@ def main() -> None:
     rep = C.run_resolve(db, nid, chapters=C.ChapterRange(0, n_ch + 1000))
     groups, owners = load_groups(db, nid)
     n_bins = 5
-    resolved = [g for g in groups if g["target"]]
     exact = [g["method"] == "GAZETTEER_EXACT" for g in groups]
     linked = [bool(g["target"]) for g in groups]
-    scored = [g["method"] == "SCORED" for g in groups]
     pred = seen_before_flags(groups)
     out: dict = dict(probe="E5 gazetteer compounding vs repetition null", label_provenance="SYSTEM-INTERNAL, no labels",
                      novel=nid, chapters=n_ch, groups=len(groups), groups_linked=sum(linked),

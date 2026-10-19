@@ -2878,7 +2878,7 @@ def render_panels(
                         references = curated + references[:1]
 
                     if closeup:
-                        weight = 0.65
+                        _weight = 0.65
                     elif curated:
                         # 0.3 exists because a *sheet* on a wide shot
                         # reproduces its own solo framing and erases the
@@ -2886,11 +2886,11 @@ def render_panels(
                         # opposite problem -- at 0.3 its layout barely
                         # registers -- and copying its layout is the entire
                         # reason it is attached.
-                        weight = 0.5
+                        _weight = 0.5
                     elif _chunk_mobs:
-                        weight = 0.3
+                        _weight = 0.3
                     else:
-                        weight = 0.45
+                        _weight = 0.45
                     # Negative prompt (`neg_prompt`) and the request/plan
                     # objects (`_panel_request`/`_plan`/`_gen_request`) are
                     # already built above -- needed by the cache key before

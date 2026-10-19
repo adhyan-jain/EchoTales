@@ -123,7 +123,7 @@ def cmd_analyze(args):
         fam = [v for e, v in rec.items() if fame[e] == "famous"]
         obs = [v for e, v in rec.items() if fame[e] == "obscure"]
         if len(fam) >= 3 and len(obs) >= 3:
-            d, p, ci = perm_diff(fam, obs)
+            d, p, _ci = perm_diff(fam, obs)
             out["strata"]["recognition_M2"] = dict(models=sorted(loc), mean_famous=round(sum(fam) / len(fam), 4),
                                                    mean_obscure=round(sum(obs) / len(obs), 4), difference=round(d, 4),
                                                    one_sided_perm_p=round(p, 5), condition_met=bool(p < 0.05))

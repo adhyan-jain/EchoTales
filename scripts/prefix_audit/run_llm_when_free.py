@@ -30,7 +30,7 @@ MY_CONTEXT = "8192"
 def wait_free(deadline: float) -> bool:
     ok_since = None
     while time.time() < deadline:
-        free, why = L.gpu_is_free()
+        free, _why = L.gpu_is_free()
         if free:
             ok_since = ok_since or time.time()
             if time.time() - ok_since >= 60:
