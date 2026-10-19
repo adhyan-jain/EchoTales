@@ -173,3 +173,65 @@ def cast_voices(
         report.bucket_pressure[bucket] = (len(members), len(buckets.get(bucket, [])))
 
     return assignments, report
+
+
+def verify_no_co_occurring_voice_collisions(
+    scene_character_ids: list[str],
+    assignments: dict[str, VoiceAssignment],
+) -> list[tuple[str, str, str]]:
+    """Verify that no two characters in the same scene share the same speaker voice.
+    
+    Returns list of collision tuples (char_a, char_b, shared_speaker_id).
+    """
+    collisions: list[tuple[str, str, str]] = []
+    seen: dict[str, str] = {}  # speaker_id -> char_id
+
+    for char_id in scene_character_ids:
+        assignment = assignments.get(char_id)
+        if not assignment:
+            continue
+        spk = assignment.speaker_id
+        if spk in seen:
+            collisions.append((seen[spk], char_id, spk))
+        else:
+            seen[spk] = char_id
+
+    return collisions
+
+
+def enforce_episode_zero_collision(
+    episode_scenes_characters: list[list[str]],
+    assignments: dict[str, VoiceAssignment],
+    bank: VoiceBank,
+) -> dict[str, VoiceAssignment]:
+    """Strictly resolve any co-occurring voice collisions across an episode's scenes."""
+    adjusted = dict(assignments)
+
+    for scene_chars in episode_scenes_characters:
+        collisions = verify_no_co_occurring_voice_collisions(scene_chars, adjusted)
+        for char_a, char_b, shared_spk in collisions:
+            # Reassign char_b to an available voice in their bucket
+            b_assign = adjusted[char_b]
+            bucket_voices = bank.nearest_bucket(
+                b_assign.bucket.split(":")[0], b_assign.bucket.split(":")[1]
+            )
+            # Find an unused voice in this scene
+            scene_used = {
+                adjusted[c].speaker_id for c in scene_chars if c in adjusted and c != char_b
+            }
+            replacement = next(
+                (v for v in bucket_voices if v.speaker_id not in scene_used),
+                None,
+            )
+            if replacement:
+                adjusted[char_b] = VoiceAssignment(
+                    target_id=b_assign.target_id,
+                    label=b_assign.label,
+                    speaker_id=replacement.speaker_id,
+                    bucket=b_assign.bucket,
+                    archetype=b_assign.archetype,
+                    prominence=b_assign.prominence,
+                    collides_with="",
+                )
+
+    return adjusted
