@@ -1147,6 +1147,47 @@ def make_handler(
                         })
                     return self._json(200, result)
 
+                if len(parts) == 6 and parts[:2] == ["api", "novels"] and parts[3] == "locations" and parts[5] == "plates":
+                    novel_id = parts[2]
+                    loc_id = parts[4]
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    candidates = handle.store.list_ref_image_candidates(novel_id, loc_id, role="location")
+                    result = []
+                    for c in candidates:
+                        result.append({
+                            "id": c.id,
+                            "location_id": c.self_id,
+                            "title": c.title,
+                            "source_url": c.source_url,
+                            "selected": c.selected,
+                            "is_approved": c.selected,
+                            "found_at": c.found_at,
+                        })
+                    return self._json(200, result)
+
+                if len(parts) == 4 and parts[:2] == ["api", "novels"] and parts[3] == "review-items":
+                    novel_id = parts[2]
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    items = handle.store.list_review_items(novel_id)
+                    return self._json(200, [
+                        {
+                            "id": item.id,
+                            "novel_id": item.novel_id,
+                            "chapter": item.chapter,
+                            "kind": item.kind,
+                            "message": item.message,
+                            "candidates": item.candidates,
+                            "resolved": item.resolved,
+                            "resolution": item.resolution,
+                            "created_at": item.created_at,
+                        }
+                        for item in items
+                    ])
+
                 if len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3] == "render" and parts[4] == "preview":
                     handle = registry.handles.get(parts[2])
                     if handle is None:
@@ -1394,6 +1435,45 @@ def make_handler(
                         "selected": candidate.selected,
                         "action": action,
                     })
+
+                # POST /api/novels/<id>/locations/<loc_id>/plates/<plate_id>/approve or reject
+                if (
+                    len(parts) == 8 and parts[:2] == ["api", "novels"]
+                    and parts[3] == "locations" and parts[5] == "plates"
+                    and parts[7] in ("approve", "reject")
+                ):
+                    novel_id = parts[2]
+                    loc_id = parts[4]
+                    plate_id = parts[6]
+                    action = parts[7]
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    from echotales.pipeline.assets import approval
+                    body = self._read_json()
+                    note = str(body.get("note", ""))
+                    if action == "approve":
+                        approval.approve_asset_candidate(handle.store, novel_id=novel_id, candidate_id=plate_id, note=note)
+                    else:
+                        approval.reject_asset_candidate(handle.store, novel_id=novel_id, candidate_id=plate_id, note=note)
+                    handle.invalidate()
+                    return self._json(200, {"id": plate_id, "action": action, "location_id": loc_id})
+
+                # POST /api/novels/<id>/review-items/<item_id>/resolve
+                if (
+                    len(parts) == 6 and parts[:2] == ["api", "novels"]
+                    and parts[3] == "review-items" and parts[5] == "resolve"
+                ):
+                    novel_id = parts[2]
+                    item_id = parts[4]
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    body = self._read_json()
+                    resolution = str(body.get("resolution", "RESOLVED_MANUAL"))
+                    handle.store.resolve_review_item(item_id, resolution)
+                    handle.invalidate()
+                    return self._json(200, {"id": item_id, "resolved": True, "resolution": resolution})
 
                 if (
                     len(parts) == 4

@@ -105,3 +105,24 @@ class StubVideoWorker:
             duration_s=dur,
             status="COMPLETED",
         )
+
+
+_default_image_stub = StubImageWorker()
+_default_tts_stub = StubTTSWorker()
+_default_video_stub = StubVideoWorker()
+
+
+def run_image_worker(request: ImageWorkerRequest) -> ImageWorkerResponse:
+    """Run image generation request through deterministic offline stub."""
+    return _default_image_stub(request)
+
+
+def run_tts_worker(request: TTSWorkerRequest) -> TTSWorkerResponse:
+    """Run TTS request through deterministic offline stub."""
+    return _default_tts_stub(request)
+
+
+def run_video_worker(request: VideoWorkerRequest) -> VideoWorkerResponse:
+    """Run video generation request through deterministic offline stub."""
+    return _default_video_stub(request)
+

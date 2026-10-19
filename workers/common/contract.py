@@ -47,6 +47,11 @@ class ImageWorkerResponse:
     duration_s: float = 0.0
     status: str = "COMPLETED"
 
+    @property
+    def image_bytes(self) -> bytes:
+        import base64
+        return base64.b64decode(self.image_b64)
+
 
 @dataclass(slots=True)
 class VideoWorkerRequest:
@@ -79,6 +84,11 @@ class VideoWorkerResponse:
     video_b64: str  # mp4 encoded bytes in base64
     duration_s: float
     status: str = "COMPLETED"
+
+    @property
+    def video_bytes(self) -> bytes:
+        import base64
+        return base64.b64decode(self.video_b64)
 
 
 @dataclass(slots=True)
@@ -113,3 +123,8 @@ class TTSWorkerResponse:
     duration_s: float
     sample_rate: int = 24000
     status: str = "COMPLETED"
+
+    @property
+    def audio_bytes(self) -> bytes:
+        import base64
+        return base64.b64decode(self.audio_wav_b64)
