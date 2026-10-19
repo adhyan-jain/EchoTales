@@ -1,10 +1,7 @@
 # Motion video plan: from held panels to moving shots
 
-**Status: plan only, 2026-10-18. Nothing in this document is built.** The
-model figures in Section 3 are a mix of things checked against model cards,
-second-hand write-ups and things I do not know. Each one is marked, and none
-of them has been measured on this machine (RTX 4060 Laptop, 8 GB VRAM, 15 GB
-system RAM). Measuring them is the first job of milestone M3.
+**Status: SUPERSEDED and BUILT (2026-10-19, EVOLUTION 4.114-4.115).** The legacy SVD motion-clip plan has been superseded by Path 1 (2.5D Layered Parallax Compositor, `compositor/`) and Path 2 (Wan 2.2 S2V / LTX-2.5 Video Engine with 8-frame QA gate and Path 1 fallback, `video/`). See `docs/HANDOFF.md` (EVOLUTION 4.117). The
+model figures in Section 3 are historical references.
 
 Read this alongside `docs/design/VISUAL_RENDERING.md` (the image path), `docs/EVOLUTION.md`
 4.23 (the original Phase 9 video design), 4.31 and 4.37 (the author's

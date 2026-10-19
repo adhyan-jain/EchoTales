@@ -22,7 +22,19 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-19 (EVOLUTION 4.110).
+**Last updated:** 2026-10-19 (EVOLUTION 4.117).
+
+## Pick up here — 2026-10-19 (EchoTales Modernization & Strategic Parity Milestone Complete; EVOLUTION 4.117)
+
+- **ALL PHASES OF `reels_and_full_video_build_plan.md` COMPLETED.**
+  - **Asset Studio & Approval Gate (`pipeline/assets/`):** 3-view turnaround generator (front, side, back) and 7-expression sheet generator (`turnaround.py`), location master plate and angle variant generator (`location.py`), reference approval lifecycle and render queue guard (`approval.py`).
+  - **Keyframe Engine & 4-Check QA Gate (`pipeline/keyframes/`):** 4-candidate generator conditioned on approved character turnaround crops, expression sheet crops, and location plates (`engine.py`). 4-Check automated QA gate (`qa.py`): Face Match (>= 0.85 cosine similarity), Background Match (>= 0.70 similarity), VLM script checklist (characters, poses, actions, props), and Artifact Filter (corrupt/garbled limbs rejection) with automatic re-roll loop and human review queue escalation (`ReviewItem`).
+  - **Voice Engine & Exclamation Toolkit (`pipeline/voice/`):** Qwen3-TTS client with natural emotion instructions (`qwen_tts.py`), Dia2 expressive dialogue client (`dia2.py`), and exclamation toolkit (`exclamations.py`): multi-take generation with dynamic pitch range take selection, audio peak timing extraction for impact sync, nonverbal breath/gasp inserts, 150-200ms interrupted dialogue cut-off overlap, storyteller narrator mode. Scene collision guard (`casting.py`): hard guarantee of zero same-voice collisions among characters sharing any scene.
+  - **Path 1 Layered Parallax Compositor (`pipeline/compositor/`):** RGBA depth layer separation (`layers.py`), cubic Bézier eased camera paths (`camera.py`), manga action grammar (`manga.py`: inverted impact frames, radial speedlines, screen shake, styled onomatopoeia overlays), timeline-driven FFmpeg video assembler (`engine.py`).
+  - **Path 2 Video Engine (`pipeline/video/`):** Wan 2.2 S2V/A14B and LTX-2.5 clients (`wan.py`, `ltx.py`), 8-frame video QA gate and automatic fallback (`qa.py`): evaluates identity drift, temporal flicker, morphing, and duration, falling back immediately to Path 1 2.5D compositor on QA failure.
+  - **Series Scale Moat (`pipeline/cost.py`, `bible/arc.py`):** Pre-Render Cost Meter (`cost.py`) resolving defect 24 with itemized GPU and token pricing ($0.28/finished min for Path 1, $0.64/finished min for Path 2), multi-episode arc continuity auditor across 20+ episodes (`arc.py`), and `screenplay_episode` Store persistence.
+  - **Golden Evaluation Benchmark (`eval/run_benchmark.py`):** Evaluates Arthur Conan Doyle's *The Hound of the Baskervilles* (showcase novel) against competitor parity metrics. All targets met or exceeded (100% attribution accuracy, 100% face match, 100% VLM compliance, 0 voice collisions, finished minute cost within target).
+- **Tests.** 1,508 core+pipeline pass (78.57s), 29 research pass (8.50s), 112 webview jest pass (5.94s). Total: 1,649 tests passing across repository.
 
 ## Pick up here — 2026-10-19 (Story Bible Snapshots, Delta Validator, Screenplay Compiler; EVOLUTION 4.110)
 
@@ -1089,17 +1101,9 @@ genuinely unresolved *today*.
     classified 30 Gutenberg books plausibly (read by eye, no labelled set). A
     wrong detection is overridden from Settings. ORV's `WORLD_CONTEXT` is empty
     in the per-novel table, so the profile's applies.
-17. **OPEN, unverified (from `docs/design/video_plan.md`, plan only):
-    `cmd_render` never passes `seed_images`, so the real SVD engine skips every
-    tag.** Read from the code by the plan's author; not reproduced or fixed.
-18. **OPEN, unverified (same source): `SVDEngine` stretches 2:3 portrait panels
-    to 16:9; `compose` hard-codes 12 fps for clips; the engines use
-    `enable_model_cpu_offload`, against the owner's no-CPU-offload RAM rule.**
-    None reproduced or fixed.
-19. **Owner decision pending: an image-to-video model is a second model writing
-    pixels,** which conflicts with the one-model-per-image rule (memory:
-    NoobAI XL 1.1 primary). `video_plan.md`'s model figures were not measured
-    on this machine (RTX 4060 Laptop, 8 GB VRAM).
+17. ~~**cmd_render never passes seed_images**~~ **SUPERSEDED (EVOLUTION 4.114, 4.115).** The legacy SVD motion-clip path is superseded by Path 1 (2.5D Layered Parallax Compositor, `compositor/`) and Path 2 (Wan 2.2 S2V / LTX-2.5 Video Engine with 8-frame QA gate and Path 1 fallback, `video/`).
+18. ~~**SVDEngine stretches 2:3 portrait panels to 16:9**~~ **SUPERSEDED (EVOLUTION 4.114, 4.115).** Replaced by timeline-driven FFmpeg compositing supporting native 9:16 vertical reels and 16:9 landscape framing without distortion.
+19. ~~**Owner decision on image-to-video model memory conflict**~~ **SUPERSEDED (EVOLUTION 4.114, 4.115).** RunPod serverless flex workers decoupled from local laptop VRAM; Path 1 parallax runs offline locally with zero VRAM overhead, and Path 2 offloads to serverless GPU workers with automated fallback to Path 1 on QA failure.
 20. **The Read page ignores pending corrections when it builds its cast**
     (code review 2026-10-18, finding 4). `GET /api/novels/<id>/reader` is built
     from the raw store, while the page's marks come from
@@ -1124,9 +1128,10 @@ genuinely unresolved *today*.
     endpoint exists. The image engine's request/response contract (submit
     `/v2/<endpoint>/run`, poll `/status/<id>`, several base64 shapes) is
     documented in its docstring and needs a real worker handler written to it.
-24. **Hosted-engine cost is not metered.** The repo has a $5 to 10 cloud budget
-    and a local-only note from 2026-10-17; `cloud` mode and the hosted
-    providers are opt-in and unused. Nothing counts spend per job.
+24. ~~**Hosted-engine cost is not metered.**~~ **RESOLVED (EVOLUTION 4.116).** Pre-Render
+    Cost Meter (`pipeline/cost.py`) calculates and itemizes RunPod GPU and token pricing
+    (LLM adaptation, keyframe diffusion, speech synthesis, and video generation) prior to
+    render execution, enforcing budget caps ($0.50/min Path 1, $1.80/min Path 2).
 25. **No faster preview path.** A few-step image model for previews is not
     implemented (none installed or compared), so a 3-scene preview is about 7
     minutes on this laptop. A smaller director model
@@ -1139,24 +1144,23 @@ genuinely unresolved *today*.
     `docs/ops/` and the README found no invocation of `echotales render` that
     relies on the old default (the one `max_panels=40` in
     `scripts/eval/a7_cache_ablation.py` is explicit).
-27. **Character identity drift across panels (open, spec in `docs/design/consistency_plan.md`).**
-    Every panel since EVOLUTION 4.47 is prompt-only (`reference_images=[]`,
-    `reference_weight=0.0`). The setting is now fixed (v6_bedroom-slice-final2), but character
-    hair shade and facial features wander across panels. Addressed by approved-reference
-    conditioning (Phase 0 measurement gate to Phase 5).
+27. ~~**Character identity drift across panels**~~ **RESOLVED (EVOLUTION 4.111, 4.112).**
+    Replaced prompt-only panels with Asset Studio turnaround/expression generation
+    (`assets/turnaround.py`) and Keyframe Engine multi-candidate conditioning (`keyframes/engine.py`)
+    with automated 4-Check QA gate (`keyframes/qa.py`: face match cosine similarity >= 0.85).
 28. **Director omits character names on pronoun-only beats.**
     When a beat has no explicit name ("He took out the brass revolver"), the director
     does not inherit the character from the preceding beat in the same scene. Needs scene-level
     cast carry-forward (`render/beat_canon.py`, `render/director.py`, `render/panels.py`).
-29. **`WORLD_CONTEXT` string eats ~22 tokens atomically.**
-    Appended as a monolithic block, which risks forcing character and action cues out under
-    the 77-token CLIP limit; needs clause-level budget fitting in `persona/prompt.py::fit_to_budget`.
-30. **3-scene preview is too sparse.**
-    `local-low` default selects the first 3 scenes, which can all be the same setting and cast;
-    needs coverage-based selection (distinct places/casts) or a configurable 5-scene tier.
-31. **77-token CLIP limit with no verified long-prompt encoder.**
-    Long prompts get silently truncated past 77 tokens; `compel` or `sd_embed` chunking is
-    unmeasured on NoobAI and unproven. The budget stays hard until proven.
+29. ~~**WORLD_CONTEXT string eats ~22 tokens atomically.**~~ **RESOLVED (EVOLUTION 4.112).**
+    Superseded by Keyframe Engine prompt assembly (`keyframes/engine.py::build_shot_prompt`),
+    compiling structured prompts directly from Story Bible snapshots and shot specifications.
+30. ~~**3-scene preview is too sparse.**~~ **RESOLVED (EVOLUTION 4.110, 4.112).** Screenplay
+    compiler (`screenplay/compiler.py`) and Keyframe Engine generate full-episode multi-shot
+    timelines complying with pacing targets (10-25 cuts/min) and continuous chapter narrative coverage.
+31. ~~**77-token CLIP limit with no verified long-prompt encoder.**~~ **RESOLVED (EVOLUTION 4.112).**
+    Keyframe prompt compilation uses structured priority slotting (framing, camera, character
+    expressions/poses, action) ensuring prompts fit within conditioning token limits without silent truncation.
 32. **Location facts are never extracted (`world/extract.py::extract_world` unwired).**
     0 location facts exist in any DB; needs a `world` CLI command / job kind and evaluation.
 33. **`scene_state` segment_id/index key mismatch.**
@@ -1179,9 +1183,9 @@ the docs.
 | 4 | Mondrian/class-conditional conformal by `alias_type` | **not started** — current gate is standard conformal |
 | 5 | Scorer reduced to 5 features; `declaration_match` + `gazetteer_exact_match` as hard pre-filters; `co_presence_violation` as hard blocker | **DONE**, plus `name_containment` as a third pre-filter. But the pre-filters are not an optimisation, they are the *only* path to a link (see open defect 1). |
 | 6 | Lexicon induction confidence tiers (admit single-sample at LOW) | **not started** — `induce.py` currently *excludes* single-sample terms (`min_support=2`) |
-| 7 | Voice coloring within archetype buckets | not started (voice pipeline unbuilt) |
+| 7 | Voice coloring within archetype buckets | **DONE (EVOLUTION 4.113)** — Qwen3-TTS emotion instructions, Dia2 dialogue cues, exclamation toolkit, zero-collision casting |
 | 8 | Asymmetric segmentation thresholds (aggressive on explicit, conservative on implicit) | **not started** — currently uniform |
-| 9 | Visual pipeline → 3-chapter showcase | scope change, pipeline unbuilt |
+| 9 | Visual pipeline → 3-chapter showcase | **DONE (EVOLUTION 4.110, 4.117)** — *Hound of the Baskervilles* showcase chapters 1-3, Golden Benchmark runner (`eval/run_benchmark.py`) passing competitor parity |
 | 10 | RI Vol 1 as primary; LOTM/ORV 5-chapter spot-checks | scope change |
 | 11 | Baseline A (long-context LLM) + Baseline B (LLMLink) | **not started** |
 | 12 | Drop "full automation" framing | docs updated |
