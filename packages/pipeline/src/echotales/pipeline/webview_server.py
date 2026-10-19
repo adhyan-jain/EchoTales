@@ -1188,6 +1188,62 @@ def make_handler(
                         for item in items
                     ])
 
+                if len(parts) == 6 and parts[:2] == ["api", "novels"] and parts[3] == "episodes" and parts[5] == "cost":
+                    novel_id = parts[2]
+                    ep_id = parts[4]
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    query = parse_qs(urlparse(self.path).query)
+                    tier = query.get("tier", ["path1"])[0]
+                    from echotales.pipeline.cost import estimate_episode_cost
+                    from echotales.pipeline.screenplay.schema import (
+                        ScreenplayEpisode,
+                        ScreenplayScene,
+                        ScreenplayShot,
+                    )
+                    ep_row = handle.store.get_screenplay_episode(ep_id)
+                    if ep_row:
+                        ep = ScreenplayEpisode.from_dict(ep_row)
+                    else:
+                        ep = ScreenplayEpisode(
+                            episode_id=ep_id,
+                            novel_id=novel_id,
+                            chapter_range=(1.0, 1.0),
+                            title=f"Episode {ep_id}",
+                            scenes=[
+                                ScreenplayScene(
+                                    scene_index=1,
+                                    scene_id="sc1",
+                                    location_id="loc1",
+                                    time_of_day="day",
+                                    shots=[
+                                        ScreenplayShot(
+                                            shot_index=i,
+                                            scene_id="sc1",
+                                            location_id="loc1",
+                                            duration_s=3.5,
+                                        )
+                                        for i in range(12)
+                                    ],
+                                )
+                            ],
+                        )
+                    estimate = estimate_episode_cost(ep, novel_id=novel_id, tier=tier)
+                    return self._json(200, estimate.to_dict())
+
+                if len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3] == "arc" and parts[4] == "audit":
+                    novel_id = parts[2]
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    query = parse_qs(urlparse(self.path).query)
+                    start_ch = float(query.get("start", ["1.0"])[0])
+                    end_ch = float(query.get("end", ["5.0"])[0])
+                    from echotales.pipeline.bible.arc import audit_arc_continuity
+                    report = audit_arc_continuity(handle.store, novel_id, start_ch, end_ch)
+                    return self._json(200, report.to_dict())
+
                 if len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3] == "render" and parts[4] == "preview":
                     handle = registry.handles.get(parts[2])
                     if handle is None:

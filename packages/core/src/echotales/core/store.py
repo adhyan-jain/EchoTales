@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import time
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from pathlib import Path
@@ -484,6 +485,16 @@ CREATE TABLE IF NOT EXISTS review_item (
     created_at REAL NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_review_item_novel ON review_item(novel_id, resolved);
+
+CREATE TABLE IF NOT EXISTS screenplay_episode (
+    id TEXT PRIMARY KEY,
+    novel_id TEXT NOT NULL,
+    title TEXT NOT NULL DEFAULT '',
+    source_chapters_json TEXT NOT NULL DEFAULT '[]',
+    episode_json TEXT NOT NULL,
+    created_at REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_screenplay_episode_novel ON screenplay_episode(novel_id);
 """
 
 
@@ -2308,6 +2319,44 @@ class Store:
             (resolution, item_id),
         )
         self.conn.commit()
+
+    def save_screenplay_episode(
+        self,
+        episode_id: str,
+        novel_id: str,
+        episode_dict: dict[str, Any],
+        title: str = "",
+        source_chapters: list[float] | None = None,
+    ) -> None:
+        chapters = source_chapters or episode_dict.get("source_chapters", [])
+        self.conn.execute(
+            "INSERT OR REPLACE INTO screenplay_episode(id, novel_id, title, source_chapters_json, episode_json, created_at) "
+            "VALUES(?, ?, ?, ?, ?, ?)",
+            (
+                episode_id,
+                novel_id,
+                title or episode_dict.get("title", ""),
+                json.dumps(chapters),
+                json.dumps(episode_dict),
+                time.time(),
+            ),
+        )
+        self.conn.commit()
+
+    def get_screenplay_episode(self, episode_id: str) -> dict[str, Any] | None:
+        row = self.conn.execute(
+            "SELECT episode_json FROM screenplay_episode WHERE id=?", (episode_id,)
+        ).fetchone()
+        if row is None:
+            return None
+        return json.loads(row["episode_json"])
+
+    def list_screenplay_episodes(self, novel_id: str) -> list[dict[str, Any]]:
+        cur = self.conn.execute(
+            "SELECT episode_json FROM screenplay_episode WHERE novel_id=? ORDER BY created_at ASC",
+            (novel_id,),
+        )
+        return [json.loads(r["episode_json"]) for r in cur.fetchall()]
 
     # ---- Story Bible point-in-time snapshot ----------------------------
 
