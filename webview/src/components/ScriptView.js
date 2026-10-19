@@ -54,7 +54,7 @@ export default function ScriptView({
             onMarkLeave={onMarkLeave}
             editMode={editMode}
             onMentionClick={onMentionClick}
-            onSpeakerClick={(s, e) => onSpeakerClick(s, e, chapter.number)}
+            onSpeakerClick={onSpeakerClick ? (s, e) => onSpeakerClick(s, e, chapter.number) : undefined}
             onFlagLine={(s) => onFlagLine(s, chapter.number)}
             canMergeUp={editMode && sameBlock(prev, span)}
             onMergeUp={() => onMergeLines(prev.span_id, span.span_id, chapter.number)}

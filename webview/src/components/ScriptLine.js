@@ -44,7 +44,7 @@ export default function ScriptLine({
   // for DIALOGUE, so a reader had no way to tell whose head a paragraph of
   // inner monologue was inside without cross-referencing chapter POV by hand.
   const isInnerMonologue = span.type === 'INNER_MONOLOGUE';
-  const speakerEditable = editMode && (isDialogue || isInnerMonologue);
+  const speakerEditable = (editMode || Boolean(onSpeakerClick)) && (isDialogue || isInnerMonologue);
   // `speaker_id` is the attributed surface ("Zhou Mingrui"), never an entity
   // id, so comparing it with the focused id never matched a speaker's lines;
   // `speaker_entity_id` is the server's join of that surface to the entity.

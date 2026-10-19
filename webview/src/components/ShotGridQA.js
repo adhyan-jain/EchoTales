@@ -129,10 +129,31 @@ export default function ShotGridQA({ novelId, episodeId = 'ep1', shotIndex = 0 }
                   </Badge>
                 </div>
 
-                <div className="relative flex h-52 items-center justify-center rounded-xl bg-bg/90">
-                  <span className="text-xs text-muted">Keyframe #{cand.seed}</span>
+                <div className="relative flex h-52 items-center justify-center rounded-xl bg-bg/90 overflow-hidden border border-border/40">
+                  {cand.image_url ? (
+                    <img
+                      src={cand.image_url}
+                      alt={cand.prompt || `Keyframe #${cand.seed}`}
+                      className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        if (e.currentTarget.nextSibling) {
+                          e.currentTarget.nextSibling.style.display = 'flex';
+                        }
+                      }}
+                    />
+                  ) : null}
+                  <div
+                    className={
+                      'flex h-full w-full flex-col items-center justify-center p-3 text-center ' +
+                      (cand.image_url ? 'hidden' : '')
+                    }
+                  >
+                    <span className="font-mono text-xs text-muted">Keyframe #{cand.seed}</span>
+                    <span className="mt-1 text-[11px] text-muted/70">{cand.prompt || 'Keyframe Candidate'}</span>
+                  </div>
                   {isSelected && (
-                    <div className="absolute top-2 right-2 rounded-full bg-accent p-1 text-black shadow-sm">
+                    <div className="absolute top-2 right-2 rounded-full bg-accent p-1.5 text-black shadow-md z-10">
                       <Lock className="h-3.5 w-3.5" />
                     </div>
                   )}

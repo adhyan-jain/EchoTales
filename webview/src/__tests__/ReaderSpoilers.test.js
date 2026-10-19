@@ -18,6 +18,7 @@ jest.mock('../api', () => ({
     characters: jest.fn(),
     readerCast: jest.fn(),
     outputFileUrl: jest.fn(),
+    reassignSpeaker: jest.fn(),
   },
   SPAN_TYPES: ['DIALOGUE', 'NARRATION_ACTION'],
 }));
@@ -133,4 +134,15 @@ test('turning the page keeps the cast list up while the next chapter loads', asy
   expect(screen.queryByText('Loading the cast…')).not.toBeInTheDocument();
   release({ entities: [GUEST_WHOLE, CORIN_WHOLE] });
   expect(await screen.findByRole('button', { name: /^Corin, 1 mentions/ })).toBeInTheDocument();
+});
+
+test('clicking a dialogue speaker in the reader opens EntityPicker and allows reassigning speaker', async () => {
+  api.readerCast.mockResolvedValue({ entities: [GUEST_AT_1] });
+  api.reassignSpeaker.mockResolvedValue({ id: 'corr-1' });
+  mount('/p/toy/read/1');
+  const speakerBtn = await screen.findByRole('button', { name: /Reassign speaker The masked guest/i });
+  expect(speakerBtn).toBeInTheDocument();
+  fireEvent.click(speakerBtn);
+  expect(await screen.findByRole('dialog', { name: /Choose a character/i })).toBeInTheDocument();
+  expect(screen.getByPlaceholderText(/Search or type a new name/i)).toBeInTheDocument();
 });

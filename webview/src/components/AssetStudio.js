@@ -26,7 +26,13 @@ export default function AssetStudio({ novelId }) {
   const loadCharacters = useCallback(async () => {
     try {
       const data = await api.characters(novelId);
-      const list = (data && data.characters) || [];
+      const raw = (data && data.characters) || [];
+      const list = raw.map((c) => ({
+        ...c,
+        id: c.self_id || c.id,
+        label: c.label || c.canonical_label || c.name || c.self_id || c.id,
+        canonical_label: c.canonical_label || c.label || c.name || c.self_id || c.id,
+      }));
       setCharacters(list);
       if (list.length > 0 && !selectedCharId) {
         setSelectedCharId(list[0].id);
@@ -34,9 +40,9 @@ export default function AssetStudio({ novelId }) {
     } catch {
       // Fallback cast
       const fallback = [
-        { id: 'char:holmes', canonical_label: 'Sherlock Holmes' },
-        { id: 'char:watson', canonical_label: 'Dr. John Watson' },
-        { id: 'char:mortimer', canonical_label: 'Dr. James Mortimer' },
+        { id: 'char:holmes', canonical_label: 'Sherlock Holmes', label: 'Sherlock Holmes' },
+        { id: 'char:watson', canonical_label: 'Dr. John Watson', label: 'Dr. John Watson' },
+        { id: 'char:mortimer', canonical_label: 'Dr. James Mortimer', label: 'Dr. James Mortimer' },
       ];
       setCharacters(fallback);
       if (!selectedCharId) setSelectedCharId(fallback[0].id);
@@ -229,19 +235,24 @@ export default function AssetStudio({ novelId }) {
           <div className="rounded-3xl border border-border bg-surface p-4 lg:col-span-1">
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted">Characters</h3>
             <div className="space-y-1">
-              {characters.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setSelectedCharId(c.id)}
-                  className={
-                    'flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition-colors ' +
-                    (selectedCharId === c.id ? 'bg-primary/10 text-primary font-semibold' : 'text-muted hover:bg-surface2 hover:text-text')
-                  }
-                >
-                  <span>{c.canonical_label || c.name || c.id}</span>
-                </button>
-              ))}
+              {characters.map((c) => {
+                const charId = c.self_id || c.id;
+                const charLabel = c.label || c.canonical_label || c.name || charId;
+                const isSelected = selectedCharId === charId;
+                return (
+                  <button
+                    key={charId}
+                    type="button"
+                    onClick={() => setSelectedCharId(charId)}
+                    className={
+                      'flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition-colors ' +
+                      (isSelected ? 'bg-primary/10 text-primary font-semibold' : 'text-muted hover:bg-surface2 hover:text-text')
+                    }
+                  >
+                    <span>{charLabel}</span>
+                  </button>
+                );
+              })}
             </div>
             <div className="mt-4 border-t border-border pt-4">
               <Button variant="secondary" size="sm" className="w-full" onClick={handleGenerateTurnaround} disabled={loading}>
@@ -254,7 +265,12 @@ export default function AssetStudio({ novelId }) {
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
                 <h3 className="font-display text-base font-bold text-text">
-                  Turnarounds &amp; Expressions for {characters.find((c) => c.id === selectedCharId)?.canonical_label || selectedCharId}
+                  Turnarounds &amp; Expressions for {
+                    (() => {
+                      const sel = characters.find((c) => (c.self_id || c.id) === selectedCharId);
+                      return sel ? (sel.label || sel.canonical_label || sel.name || sel.self_id || sel.id) : (selectedCharId || 'Character');
+                    })()
+                  }
                 </h3>
                 <p className="text-xs text-muted">3-View Turnaround (Front, Side, Back) &bull; 7 Expression Set</p>
               </div>
@@ -280,8 +296,29 @@ export default function AssetStudio({ novelId }) {
                           {cand.is_approved ? 'Approved' : 'Pending Approval'}
                         </Badge>
                       </div>
-                      <div className="flex h-44 items-center justify-center rounded-xl bg-bg/80">
-                        <span className="text-xs text-muted">3-View Turnaround + 7 Expressions</span>
+                      <div className="relative flex h-48 items-center justify-center rounded-xl bg-bg/80 overflow-hidden border border-border/40">
+                        {cand.image_url ? (
+                          <img
+                            src={cand.image_url}
+                            alt={cand.title || `Turnaround ${cand.id}`}
+                            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              if (e.currentTarget.nextSibling) {
+                                e.currentTarget.nextSibling.style.display = 'flex';
+                              }
+                            }}
+                          />
+                        ) : null}
+                        <div
+                          className={
+                            'flex h-full w-full flex-col items-center justify-center p-3 text-center ' +
+                            (cand.image_url ? 'hidden' : '')
+                          }
+                        >
+                          <span className="font-mono text-xs text-muted">{cand.title || '3-View Turnaround + 7 Expressions'}</span>
+                          <span className="mt-1 text-[11px] text-muted/70">Qwen-Image Angles LoRA</span>
+                        </div>
                       </div>
                       <div className="mt-4 flex gap-2">
                         <Button
@@ -361,8 +398,29 @@ export default function AssetStudio({ novelId }) {
                           {plate.is_approved ? 'Approved' : 'Pending Approval'}
                         </Badge>
                       </div>
-                      <div className="flex h-44 items-center justify-center rounded-xl bg-bg/80">
-                        <span className="text-xs text-muted">Master Plate Variant</span>
+                      <div className="relative flex h-48 items-center justify-center rounded-xl bg-bg/80 overflow-hidden border border-border/40">
+                        {plate.image_url ? (
+                          <img
+                            src={plate.image_url}
+                            alt={plate.title || `Master Plate ${plate.id}`}
+                            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              if (e.currentTarget.nextSibling) {
+                                e.currentTarget.nextSibling.style.display = 'flex';
+                              }
+                            }}
+                          />
+                        ) : null}
+                        <div
+                          className={
+                            'flex h-full w-full flex-col items-center justify-center p-3 text-center ' +
+                            (plate.image_url ? 'hidden' : '')
+                          }
+                        >
+                          <span className="font-mono text-xs text-muted">{plate.title || 'Master Plate Variant'}</span>
+                          <span className="mt-1 text-[11px] text-muted/70">Establishing Background</span>
+                        </div>
                       </div>
                       <div className="mt-4 flex gap-2">
                         <Button

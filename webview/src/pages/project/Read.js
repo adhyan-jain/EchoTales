@@ -3,10 +3,13 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { X } from 'lucide-react';
 import { api } from '../../api';
 import ChapterNav from '../../components/ChapterNav';
+import EntityPicker from '../../components/EntityPicker';
 import EntitySidebar from '../../components/EntitySidebar';
 import ScriptView from '../../components/ScriptView';
 import Tooltip from '../../components/Tooltip';
 import { CenterMessage, ProjectProblem } from '../../components/app/Chrome';
+import { useToast } from '../../components/ui/Toast';
+import { describeError } from '../../lib/errors';
 import { useNovelData } from '../../lib/ProjectContext';
 
 /**
@@ -51,9 +54,13 @@ export default function Read() {
   const { chapter: chapterParam } = useParams();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
+  const push = useToast();
+  const [picker, setPicker] = useState(null);
   const [search, setSearch] = useState('');
   const [tip, setTip] = useState({ visible: false, x: 0, y: 0, text: '' });
   const focusId = params.get('focus');
+
+  const fail = useCallback((e) => push(describeError(e, 'That change could not be saved.'), 'danger'), [push]);
 
   const chapters = useMemo(() => (novel ? novel.chapters : []), [novel]);
   // -1 = the URL names a chapter this book does not have. It used to fall
@@ -134,6 +141,43 @@ export default function Read() {
     return total ? `${attributed}/${total} lines voiced` : '';
   }, [chapter]);
 
+  const usedAnonSlots = useMemo(() => {
+    let max = 0;
+    ((chapter && chapter.spans) || []).forEach((sp) => {
+      const m = /^Unknown Speaker (\d+)$/.exec(sp.speaker || '');
+      if (m) max = Math.max(max, Number(m[1]));
+    });
+    return max;
+  }, [chapter]);
+
+  const onSpeakerClick = useCallback(
+    (span, e, chapterNum) => {
+      setPicker({
+        kind: 'speaker',
+        spanId: span.span_id,
+        chapter: chapterNum || chapterNumber,
+        anchor: { x: e.clientX, y: e.clientY },
+      });
+    },
+    [chapterNumber]
+  );
+
+  const applySpeaker = useCallback(
+    (target) => {
+      if (!picker) return;
+      api
+        .reassignSpeaker(novelId, picker.spanId, picker.chapter, target)
+        .then(() => {
+          setPicker(null);
+          refetch();
+          setCastAttempt((n) => n + 1);
+          push('Speaker updated.', 'success');
+        })
+        .catch(fail);
+    },
+    [picker, novelId, refetch, push, fail]
+  );
+
   const onMarkHover = useCallback((e, text) => setTip({ visible: true, x: e.clientX, y: e.clientY, text }), []);
   const onMarkMove = useCallback((e) => setTip((p) => (p.visible ? { ...p, x: e.clientX, y: e.clientY } : p)), []);
   const onMarkLeave = useCallback(() => setTip((p) => ({ ...p, visible: false })), []);
@@ -207,6 +251,7 @@ export default function Read() {
           onMarkMove={onMarkMove}
           onMarkLeave={onMarkLeave}
           editMode={false}
+          onSpeakerClick={onSpeakerClick}
         />
       </div>
 
@@ -233,6 +278,28 @@ export default function Read() {
         )}
       </aside>
       <Tooltip tip={tip} />
+      {picker && (
+        <EntityPicker
+          entities={(novel && novel.entities) || sidebarEntities || []}
+          anchor={picker.anchor}
+          onSelect={applySpeaker}
+          onCreateNew={(label) => applySpeaker({ new_label: label })}
+          onClear={() => applySpeaker(null)}
+          onAnonSlot={(slot) =>
+            api
+              .reassignSpeaker(novelId, picker.spanId, picker.chapter, { anon_slot: slot })
+              .then(() => {
+                setPicker(null);
+                refetch();
+                setCastAttempt((n) => n + 1);
+                push('Speaker updated.', 'success');
+              })
+              .catch(fail)
+          }
+          usedAnonSlots={usedAnonSlots}
+          onCancel={() => setPicker(null)}
+        />
+      )}
     </div>
   );
 }

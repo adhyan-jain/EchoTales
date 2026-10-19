@@ -495,9 +495,12 @@ def build_character_dashboard(store: Store, novel_id: str) -> dict:
         candidates = store.list_ref_image_candidates(novel_id, entity.id)
         rows.append(
             {
+                "id": entity.id,
                 "self_id": entity.id,
                 "persona_id": persona_id,
                 "label": entity.canonical_label,
+                "canonical_label": entity.canonical_label,
+                "name": entity.canonical_label,
                 "prominence": entity.prominence.value,
                 "voice": voice,
                 "traits": traits,

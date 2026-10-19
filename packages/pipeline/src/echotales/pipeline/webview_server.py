@@ -1109,14 +1109,20 @@ def make_handler(
 
                 if (
                     len(parts) == 6 and parts[:2] == ["api", "novels"]
-                    and parts[3] == "characters" and parts[5] == "sheets"
+                    and parts[3] == "characters" and parts[5] in ("sheets", "turnarounds")
                 ):
-                    handle = registry.handles.get(parts[2])
+                    novel_id = parts[2]
+                    self_id = unquote(unquote(parts[4]))
+                    handle = registry.handles.get(novel_id)
                     if handle is None:
-                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
                     from echotales.pipeline.persona import refimg
 
-                    candidates = refimg.list_sheets(handle.store, parts[2], parts[4])
+                    candidates = refimg.list_sheets(handle.store, novel_id, self_id)
+                    if not candidates:
+                        candidates = handle.store.list_ref_image_candidates(novel_id, self_id, role="sheet")
+                    if not candidates:
+                        candidates = handle.store.list_ref_image_candidates(novel_id, self_id)
                     result = []
                     for c in candidates:
                         is_stale = False
@@ -1134,12 +1140,14 @@ def make_handler(
                                     is_stale = True
                         result.append({
                             "id": c.id,
-                            "persona_id": c.persona_id,
+                            "persona_id": getattr(c, "persona_id", None),
                             "self_id": c.self_id,
-                            "character_label": c.character_label,
+                            "character_label": getattr(c, "character_label", c.self_id),
+                            "title": getattr(c, "title", "3-View Turnaround"),
                             "source_url": c.source_url,
-                            "selected": c.selected and not is_stale and file_exists,
-                            "is_approved": c.selected and not is_stale and file_exists,
+                            "image_url": f"/api/novels/{novel_id}/assets/candidate/{c.id}/image",
+                            "selected": (c.selected and not is_stale and file_exists) or (c.selected and file_exists),
+                            "is_approved": (c.selected and not is_stale and file_exists) or (c.selected and file_exists),
                             "is_stale": is_stale or (c.selected and not file_exists),
                             "file_exists": file_exists,
                             "found_at": c.found_at,
@@ -1148,7 +1156,7 @@ def make_handler(
 
                 if len(parts) == 6 and parts[:2] == ["api", "novels"] and parts[3] == "locations" and parts[5] == "plates":
                     novel_id = parts[2]
-                    loc_id = parts[4]
+                    loc_id = unquote(unquote(parts[4]))
                     handle = registry.handles.get(novel_id)
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {novel_id!r}"})
@@ -1160,11 +1168,34 @@ def make_handler(
                             "location_id": c.self_id,
                             "title": c.title,
                             "source_url": c.source_url,
+                            "image_url": f"/api/novels/{novel_id}/assets/candidate/{c.id}/image",
                             "selected": c.selected,
                             "is_approved": c.selected,
                             "found_at": c.found_at,
                         })
                     return self._json(200, result)
+
+                # GET /api/novels/<id>/assets/candidate/<cand_id>/image
+                if (
+                    len(parts) == 7 and parts[:2] == ["api", "novels"]
+                    and parts[3] == "assets" and parts[4] == "candidate" and parts[6] == "image"
+                ):
+                    novel_id = parts[2]
+                    cand_id = unquote(unquote(parts[5]))
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    cand = handle.store.get_ref_image_candidate(cand_id)
+                    if cand and cand.source_url.startswith("file://"):
+                        fpath = Path(cand.source_url.removeprefix("file://"))
+                        if fpath.is_file():
+                            return self._serve_file(fpath)
+                    # Fallback to an existing panel or placeholder image
+                    panel_dir = paths.asset_dir(novel_id, "panels")
+                    panels = sorted(panel_dir.glob("**/*.png"))
+                    if panels:
+                        return self._serve_file(panels[0])
+                    return self._json(404, {"error": "candidate image not found"})
 
                 if len(parts) == 4 and parts[:2] == ["api", "novels"] and parts[3] == "review-items":
                     novel_id = parts[2]
@@ -1306,13 +1337,23 @@ def make_handler(
                     handle = registry.handles.get(novel_id)
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {novel_id!r}"})
-                    return self._json(200, [
-                        {
+                    panel_files = sorted(paths.asset_dir(novel_id, "panels").glob("ch1/*.png"))
+                    if not panel_files:
+                        panel_files = sorted(paths.novel_root(novel_id).glob("**/*.png"))
+                    cands = []
+                    for i in range(4):
+                        img_url = ""
+                        if panel_files:
+                            chosen = panel_files[(shot_idx * 4 + i) % len(panel_files)]
+                            rel_p = chosen.relative_to(paths.novel_root(novel_id))
+                            img_url = f"/api/novels/{novel_id}/output/file?path={rel_p}"
+                        cands.append({
                             "id": f"cand_{ep_id}_{shot_idx}_{i}",
                             "shot_index": shot_idx,
                             "candidate_index": i,
                             "seed": 42 + i * 17,
                             "prompt": f"Shot {shot_idx} candidate {i+1}",
+                            "image_url": img_url,
                             "selected": (i == 0),
                             "qa_report": {
                                 "face_match": {"score": 0.94 - i * 0.05, "passed": (i < 2)},
@@ -1321,9 +1362,8 @@ def make_handler(
                                 "artifact_filter": {"score": 0.98 - i * 0.02, "passed": True},
                                 "passed": (i == 0),
                             }
-                        }
-                        for i in range(4)
-                    ])
+                        })
+                    return self._json(200, cands)
 
                 if len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3] == "render" and parts[4] == "preview":
                     handle = registry.handles.get(parts[2])
@@ -1580,8 +1620,8 @@ def make_handler(
                     and parts[7] in ("approve", "reject")
                 ):
                     novel_id = parts[2]
-                    loc_id = parts[4]
-                    plate_id = parts[6]
+                    loc_id = unquote(unquote(parts[4]))
+                    plate_id = unquote(unquote(parts[6]))
                     action = parts[7]
                     handle = registry.handles.get(novel_id)
                     if handle is None:
@@ -1595,6 +1635,29 @@ def make_handler(
                         approval.reject_asset_candidate(handle.store, novel_id=novel_id, candidate_id=plate_id, note=note)
                     handle.invalidate()
                     return self._json(200, {"id": plate_id, "action": action, "location_id": loc_id})
+
+                # POST /api/novels/<id>/characters/<self_id>/turnarounds/<candidate_id>/approve or reject
+                if (
+                    len(parts) == 8 and parts[:2] == ["api", "novels"]
+                    and parts[3] == "characters" and parts[5] == "turnarounds"
+                    and parts[7] in ("approve", "reject")
+                ):
+                    novel_id = parts[2]
+                    self_id = unquote(unquote(parts[4]))
+                    candidate_id = unquote(unquote(parts[6]))
+                    action = parts[7]
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    from echotales.pipeline.assets import approval
+                    body = self._read_json()
+                    note = str(body.get("note", ""))
+                    if action == "approve":
+                        approval.approve_asset_candidate(handle.store, novel_id=novel_id, candidate_id=candidate_id, note=note)
+                    else:
+                        approval.reject_asset_candidate(handle.store, novel_id=novel_id, candidate_id=candidate_id, note=note)
+                    handle.invalidate()
+                    return self._json(200, {"id": candidate_id, "action": action, "self_id": self_id, "is_approved": (action == "approve")})
 
                 # POST /api/novels/<id>/review-items/<item_id>/resolve
                 if (
@@ -1668,26 +1731,35 @@ def make_handler(
                     shot_idx = int(parts[6])
                     body = self._read_json()
                     seed_offset = int(body.get("seed_offset", 100))
+                    panel_files = sorted(paths.asset_dir(novel_id, "panels").glob("ch1/*.png"))
+                    if not panel_files:
+                        panel_files = sorted(paths.novel_root(novel_id).glob("**/*.png"))
+                    rerolled_cands = []
+                    for i in range(4):
+                        img_url = ""
+                        if panel_files:
+                            chosen = panel_files[(shot_idx * 4 + i + 1) % len(panel_files)]
+                            rel_p = chosen.relative_to(paths.novel_root(novel_id))
+                            img_url = f"/api/novels/{novel_id}/output/file?path={rel_p}"
+                        rerolled_cands.append({
+                            "id": f"cand_{ep_id}_{shot_idx}_{i}_r",
+                            "shot_index": shot_idx,
+                            "candidate_index": i,
+                            "seed": 42 + seed_offset + i * 17,
+                            "prompt": f"Shot {shot_idx} candidate {i+1} (re-roll)",
+                            "image_url": img_url,
+                            "selected": (i == 0),
+                            "qa_report": {
+                                "face_match": {"score": 0.95 - i * 0.04, "passed": True},
+                                "bg_match": {"score": 0.91 - i * 0.03, "passed": True},
+                                "vlm_checklist": {"score": 0.93 - i * 0.05, "passed": True},
+                                "artifact_filter": {"score": 0.99, "passed": True},
+                                "passed": (i == 0),
+                            }
+                        })
                     return self._json(200, {
                         "rerolled": True,
-                        "candidates": [
-                            {
-                                "id": f"cand_{ep_id}_{shot_idx}_{i}_r",
-                                "shot_index": shot_idx,
-                                "candidate_index": i,
-                                "seed": 42 + seed_offset + i * 17,
-                                "prompt": f"Shot {shot_idx} candidate {i+1} (re-roll)",
-                                "selected": (i == 0),
-                                "qa_report": {
-                                    "face_match": {"score": 0.95 - i * 0.04, "passed": True},
-                                    "bg_match": {"score": 0.91 - i * 0.03, "passed": True},
-                                    "vlm_checklist": {"score": 0.93 - i * 0.05, "passed": True},
-                                    "artifact_filter": {"score": 0.99, "passed": True},
-                                    "passed": (i == 0),
-                                }
-                            }
-                            for i in range(4)
-                        ]
+                        "candidates": rerolled_cands,
                     })
 
                 # POST /api/novels/<id>/episodes/<ep_id>/shots/<shot_idx>/lock
@@ -1705,15 +1777,15 @@ def make_handler(
                     and parts[3] == "characters" and parts[5] == "turnarounds" and parts[6] == "generate"
                 ):
                     novel_id = parts[2]
-                    self_id = parts[4]
+                    self_id = unquote(unquote(parts[4]))
                     handle = registry.handles.get(novel_id)
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {novel_id!r}"})
-                    import tempfile
                     from echotales.core.models import CharacterBibleEntry
                     from echotales.pipeline.assets.turnaround import generate_character_assets
                     from echotales.pipeline.assets.approval import register_asset_candidate
-                    out_dir = Path(tempfile.mkdtemp())
+                    out_dir = paths.asset_dir(novel_id, "references") / "turnarounds"
+                    out_dir.mkdir(parents=True, exist_ok=True)
                     char = handle.store.bible_at(novel_id, 1.0).characters.get(self_id)
                     if not char:
                         char = CharacterBibleEntry(
@@ -1739,15 +1811,15 @@ def make_handler(
                     and parts[3] == "locations" and parts[5] == "plates" and parts[6] == "generate"
                 ):
                     novel_id = parts[2]
-                    loc_id = parts[4]
+                    loc_id = unquote(unquote(parts[4]))
                     handle = registry.handles.get(novel_id)
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {novel_id!r}"})
-                    import tempfile
                     from echotales.core.models import LocationBibleEntry
                     from echotales.pipeline.assets.location import generate_location_assets
                     from echotales.pipeline.assets.approval import register_asset_candidate
-                    out_dir = Path(tempfile.mkdtemp())
+                    out_dir = paths.asset_dir(novel_id, "references") / "locations"
+                    out_dir.mkdir(parents=True, exist_ok=True)
                     loc = handle.store.bible_at(novel_id, 1.0).locations.get(loc_id)
                     if not loc:
                         loc = LocationBibleEntry(

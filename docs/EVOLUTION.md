@@ -9021,3 +9021,39 @@ Comprehensive resolution of all findings identified during the Standards and Spe
   - 29 research pass (8.60s).
   - 124 webview jest pass (4.44s).
   - Total: 1,665 tests passing across the repository.
+
+### 4.121 Reader Speaker Editing, Asset Studio Previews, and Keyframe Images *(2026-10-19)*
+
+Completed interactive reader speaker editing, populated Asset Studio character metadata and visual turnaround/plate previews, and connected ShotGrid QA keyframe candidate images:
+
+- **Reader Speaker Editing:**
+  - Enabled clickable dialogue and inner monologue speaker tags in `ScriptLine.js` and `ScriptView.js` when `onSpeakerClick` is provided (even when `editMode` is off in reader view).
+  - Wired `onSpeakerClick`, `usedAnonSlots`, and `EntityPicker` dialog in `Read.js` with `api.reassignSpeaker` calls, toast notifications, refetching, and cast counter bumps.
+  - Added unit test in `webview/src/__tests__/ReaderSpoilers.test.js` verifying clicking a dialogue speaker tag opens the `EntityPicker`.
+
+- **Asset Studio Character Normalization & Route Handling:**
+  - Added `id`, `name`, `canonical_label` keys to character rows in `build_character_dashboard` (`webview.py`).
+  - Added defensive character ID and label normalization (`c.self_id || c.id`, `c.label || c.canonical_label || c.name || charId`) in `AssetStudio.js` eliminating blank character pill buttons and header titles.
+  - Added `GET /api/novels/<id>/characters/<self_id>/turnarounds` route in `webview_server.py`.
+  - Added `POST /api/novels/<id>/characters/<self_id>/turnarounds/<candidate_id>/approve` and `reject` routes with URL-unquoting for percent-encoded IDs.
+  - Added `GET /api/novels/<id>/assets/candidate/<cand_id>/image` endpoint serving candidate reference files directly via HTTP.
+  - Saved turnaround and location reference generations into `paths.asset_dir(novel_id, "references")`.
+  - Replaced empty placeholder boxes in `AssetStudio.js` with `<img>` tags and styled fallbacks.
+
+- **ShotGrid QA Keyframe Previews:**
+  - Populated `image_url` on `/shots/<idx>/candidates` and `/shots/<idx>/reroll` endpoints in `webview_server.py` using novel output panels.
+  - Replaced dark empty boxes in `ShotGridQA.js` with `<img>` previews with styled fallbacks and candidate lock badges.
+
+- **Verification:**
+  - 125 webview Jest tests pass (including new `ReaderSpoilers.test.js` test).
+  - 1,512 core+pipeline Pytest tests pass.
+  - End-to-end Playwright browser automation test verified all 3 workflows against live server on port 8787:
+    - Reader speaker tag clicks open `EntityPicker` and reassign speakers.
+    - ShotGrid QA keyframe candidate images render with natural dimensions and re-roll properly.
+    - Asset Studio character rail renders 43 named characters, loads turnaround sheets and location master plates with natural dimensions, and handles candidate approval/rejection.
+  - Zero emojis, zero section symbols, zero co-author trailers.
+- **Tests.**
+  - 1,512 core+pipeline pass.
+  - 29 research pass.
+  - 125 webview jest pass.
+  - Total: 1,666 tests passing across the repository.
