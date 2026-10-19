@@ -570,7 +570,7 @@ class Store:
         self.path = str(path)
         if self.path != ":memory:":
             Path(self.path).parent.mkdir(parents=True, exist_ok=True)
-        self.conn = sqlite3.connect(self.path)
+        self.conn = sqlite3.connect(self.path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
         self.conn.executescript(_SCHEMA)
         self._migrate()
@@ -2324,10 +2324,15 @@ class Store:
         self,
         episode_id: str,
         novel_id: str,
-        episode_dict: dict[str, Any],
+        episode_dict: dict[str, Any] | None = None,
         title: str = "",
         source_chapters: list[float] | None = None,
+        episode_json: str | None = None,
     ) -> None:
+        if episode_dict is None and episode_json is not None:
+            episode_dict = json.loads(episode_json)
+        elif episode_dict is None:
+            episode_dict = {}
         chapters = source_chapters or episode_dict.get("source_chapters", [])
         self.conn.execute(
             "INSERT OR REPLACE INTO screenplay_episode(id, novel_id, title, source_chapters_json, episode_json, created_at) "

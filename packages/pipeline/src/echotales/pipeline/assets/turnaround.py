@@ -165,3 +165,6 @@ def generate_character_assets(
         expression_crops=expression_crops,
         seed=seed,
     )
+
+
+generate_character_turnaround = generate_character_assets

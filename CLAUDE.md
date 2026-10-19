@@ -84,7 +84,7 @@ source .venv/bin/activate      # uv-managed venv already present at repo root
 python3 -m pytest packages/core/tests packages/pipeline/tests   # no GPU needed
 ```
 
-1,508 core+pipeline tests pass (2026-10-19, reader-faithfulness branch, after Asset Studio, Keyframe QA, Voice Engine, Parallax Compositor, Video Engine, Series Scale, and Golden Benchmark; research: 29; webview jest: 112; total: 1,649). Root `pyproject` testpaths lists only
+1,511 core+pipeline tests pass (2026-10-19, reader-faithfulness branch, after Asset Studio, Keyframe QA, Voice Engine, Parallax Compositor, Video Engine, Series Scale, Golden Benchmark, Studio UX Widgets, and Multi-Chapter Expansion; research: 29; webview jest: 124; total: 1,664). Root `pyproject` testpaths lists only
 core and pipeline; pass `packages/research/tests` explicitly (and `-o addopts=""`) to include research.
 
 Everything is stub-first: `ECHOTALES_LLM_MODE=stub` and `--image-engine
@@ -172,7 +172,7 @@ Research track: `docs/research/DECISION_LOG.md` is the state of record (EVOLUTIO
 
 See docs/HANDOFF.md's "Pick up here" section for the actual current state — it
 changes every session (the numbered session log itself moved to
-docs/EVOLUTION.md, latest section 4.117). The NER-windowing re-run (EVOLUTION
+docs/EVOLUTION.md, latest section 4.118). The NER-windowing re-run (EVOLUTION
 4.76) that an earlier session left unmeasured did run (4.84): the
 "`ollama` unreachable" blocker was a misdiagnosis — the daemon was simply
 not started — and the fix is now measured on real data (CEAF-e recall

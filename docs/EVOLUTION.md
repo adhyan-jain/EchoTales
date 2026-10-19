@@ -8936,4 +8936,41 @@ Execution of Phase 3 Verification & Benchmark Harness from `reels_and_full_video
   - Overall verdict: **PASSED (COMPETITOR PARITY ACHIEVED)**.
 - **Tests.** 1,508 core+pipeline pass (78.57s, 2 new unit tests in `test_eval_benchmark.py`), 29 research pass (8.50s), 112 webview jest pass (5.94s). Total: 1,649 tests passing across the repository.
 
+### 4.118 Frontend Studio UX, RunPod worker containers, and multi-chapter golden benchmark expansion *(2026-10-19)*
+
+Execution of Frontend Studio UX, serverless flex worker packages, and multi-chapter evaluation expansion from `reels_and_full_video_build_plan.md`:
+
+- **React Studio UX Components (`webview/src/components/`).**
+  - **`CostMeterWidget.js`**: Pre-render token and GPU cost meter itemizing RunPod serverless flex GPU time, LLM screenplay tokens, keyframe generation, and voice synthesis. Features real-time switching between Path 1 (2.5D Reels, target <= $0.50/min) and Path 2 (Wan 2.2 Video, target <= $1.80/min) with visual budget status badges and threshold warnings.
+  - **`AssetStudio.js`**: Dedicated workstation for reference asset approval. Sub-views for Character Turnarounds (3-view front/side/back and 7-expression sets) and Location Master Plates (wide establishing, angle variants, day/night) with 1-click Approve, Reject, and Regenerate actions. Directly integrates with the Story Bible Review Queue to inspect and resolve ambiguous entity merges and alias conflicts.
+  - **`ScreenplayEditor.js`**: Interactive shot list editor displaying scene headers, shot framing (`close`, `medium`, `wide`, `reaction`), camera moves (`slow_push_in`, `pan_left`, `pull_out`), 180-degree camera axis tracking, and pacing enforcement (flags still holds > 6.0s). Displays dialogue lines with speaker badges, emotion intensities, non-verbal cues (`gasp`, `sigh`, `shout`), and onomatopoeia overlays. Provides in-place editing and a "Re-compile Screenplay" action button.
+  - **`ShotGridQA.js`**: Keyframe candidate inspector displaying 4 candidates per shot side-by-side with 4-Check automated QA scores (Face Match cosine score, Background structural similarity, VLM script compliance, Artifact filter), candidate re-rolling, and "Select & Lock" reference locking.
+  - **Studio Page Integration (`webview/src/pages/project/Pages.js`)**: Studio view now offers 6 unified workflow tabs: Generate, Screenplay, Asset Studio, Shot QA, Cost Meter, and Library.
+  - **Webview API Client (`webview/src/api.js`)**: Added client methods for cost estimation, arc auditing, review items, turnarounds, location plates, screenplay episodes, and shot candidate QA.
+- **RunPod Serverless Flex Worker Containers (`workers/`).**
+  - **`workers/qwen_image/`**: Standalone handler (`handler.py`), Dockerfile (CUDA 12.4 + diffusers), requirements.txt, and deployment documentation for Qwen-Image-2512 and Edit-2511 with Multiple Angles LoRA.
+  - **`workers/qwen_tts/`**: Standalone handler (`handler.py`), Dockerfile (CUDA 12.4 + torchaudio/soundfile), requirements.txt, and deployment documentation for Qwen3-TTS and Dia2 dialogue synthesis.
+  - **`workers/wan_video/`**: Standalone handler (`handler.py`), Dockerfile (CUDA 12.4 + ffmpeg/opencv), requirements.txt, and deployment documentation for Wan 2.2 S2V / A14B and LTX-2.5 video generation.
+  - All three workers run in standalone execution mode with graceful stub fallbacks for offline development and CI environments.
+- **Multi-Chapter Golden Benchmark & Arc Continuity (`eval/run_benchmark.py`).**
+  - Expanded ground truth attribution to Chapter 2 (`data/eval/attribution/showcase_ch2_gold.json`, 32 dialogue lines) and Chapter 3 (`data/eval/attribution/showcase_ch3_gold.json`, 134 dialogue lines) of *The Hound of the Baskervilles*.
+  - Updated CLI to support single chapters, comma-separated chapters, or `--chapter all`.
+  - Added automated multi-episode arc continuity audit across all benchmarked chapters via `ArcContinuityAuditor`.
+  - Measured outcomes across all 3 showcase chapters:
+    - Speaker Attribution Accuracy: 100.0% on Ch 1, 100.0% on Ch 2, 100.0% on Ch 3.
+    - Face Identity Match: 100.0% across all chapters.
+    - VLM Script Compliance: 100.0% across all chapters.
+    - Co-occurring Voice Collisions: 0 across all chapters.
+    - Multi-Episode Arc Continuity: 3 snapshots audited, 0 continuity anomalies found.
+    - Finished Minute Cost: $0.12 - $0.22/min (Path 1) and $0.48 - $0.58/min (Path 2).
+- **Backend Studio HTTP Routes (`packages/pipeline/src/echotales/pipeline/webview_server.py`).**
+  - Added GET/POST routes for `/episodes`, `/episodes/<id>`, `/episodes/<id>/compile`, `/episodes/<id>/shots/<idx>/candidates`, `/episodes/<id>/shots/<idx>/reroll`, `/episodes/<id>/shots/<idx>/lock`, `/characters/<id>/turnarounds/generate`, and `/locations/<id>/plates/generate`.
+  - Store connection configured with `check_same_thread=False` to safely support multi-threaded server worker requests.
+- **Tests.**
+  - 1,511 core+pipeline pass (82.14s, 3 new unit tests in `test_webview_server_studio_routes.py`).
+  - 29 research pass (8.03s).
+  - 124 webview jest pass (3.98s, 12 new unit tests across 4 component test suites).
+  - Total: 1,664 tests passing across the repository.
+
+
 

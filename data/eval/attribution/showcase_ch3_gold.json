@@ -1,0 +1,972 @@
+{
+  "novel_id": "hound",
+  "chapter": 3.0,
+  "title": "The Problem",
+  "total_lines": 134,
+  "characters": {
+    "char:holmes": {
+      "name": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Holmes",
+        "my companion"
+      ]
+    },
+    "char:watson": {
+      "name": "Dr. John Watson",
+      "aliases": [
+        "Watson",
+        "Dr. Watson",
+        "my dear Watson"
+      ]
+    },
+    "char:mortimer": {
+      "name": "Dr. James Mortimer",
+      "aliases": [
+        "Mortimer",
+        "Dr. Mortimer",
+        "the doctor"
+      ]
+    }
+  },
+  "lines": [
+    {
+      "line_index": 0,
+      "text": "You saw this?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 2,
+      "surrounding_context": "\u201cYou saw this?\u201d"
+    },
+    {
+      "line_index": 1,
+      "text": "As clearly as I see you.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 3,
+      "surrounding_context": "\u201cAs clearly as I see you.\u201d"
+    },
+    {
+      "line_index": 2,
+      "text": "And you said nothing?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 4,
+      "surrounding_context": "\u201cAnd you said nothing?\u201d"
+    },
+    {
+      "line_index": 3,
+      "text": "What was the use?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 5,
+      "surrounding_context": "\u201cWhat was the use?\u201d"
+    },
+    {
+      "line_index": 4,
+      "text": "How was it that no one else saw it?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 6,
+      "surrounding_context": "\u201cHow was it that no one else saw it?\u201d"
+    },
+    {
+      "line_index": 5,
+      "text": "The marks were some twenty yards from the body and no one gave\n      them a thought. I don\u2019t suppose I should have done so had I not\n      known this legend.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 7,
+      "surrounding_context": "\u201cThe marks were some twenty yards from the body and no one gave them a thought. I don\u2019t suppose I should have done so had I not known this legend.\u201d"
+    },
+    {
+      "line_index": 6,
+      "text": "There are many sheep-dogs on the moor?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 8,
+      "surrounding_context": "\u201cThere are many sheep-dogs on the moor?\u201d"
+    },
+    {
+      "line_index": 7,
+      "text": "No doubt, but this was no sheep-dog.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 9,
+      "surrounding_context": "\u201cNo doubt, but this was no sheep-dog.\u201d"
+    },
+    {
+      "line_index": 8,
+      "text": "You say it was large?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 10,
+      "surrounding_context": "\u201cYou say it was large?\u201d"
+    },
+    {
+      "line_index": 9,
+      "text": "Enormous.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 11,
+      "surrounding_context": "\u201cEnormous.\u201d"
+    },
+    {
+      "line_index": 10,
+      "text": "But it had not approached the body?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 12,
+      "surrounding_context": "\u201cBut it had not approached the body?\u201d"
+    },
+    {
+      "line_index": 11,
+      "text": "No.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 13,
+      "surrounding_context": "\u201cNo.\u201d"
+    },
+    {
+      "line_index": 12,
+      "text": "What sort of night was it?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 14,
+      "surrounding_context": "\u201cWhat sort of night was it?\u201d"
+    },
+    {
+      "line_index": 13,
+      "text": "Damp and raw.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 15,
+      "surrounding_context": "\u201cDamp and raw.\u201d"
+    },
+    {
+      "line_index": 14,
+      "text": "But not actually raining?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 16,
+      "surrounding_context": "\u201cBut not actually raining?\u201d"
+    },
+    {
+      "line_index": 15,
+      "text": "No.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 17,
+      "surrounding_context": "\u201cNo.\u201d"
+    },
+    {
+      "line_index": 16,
+      "text": "What is the alley like?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 18,
+      "surrounding_context": "\u201cWhat is the alley like?\u201d"
+    },
+    {
+      "line_index": 17,
+      "text": "There are two lines of old yew hedge, twelve feet high and\n      impenetrable. The walk in the centre is about eight feet across.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 19,
+      "surrounding_context": "\u201cThere are two lines of old yew hedge, twelve feet high and impenetrable. The walk in the centre is about eight feet across.\u201d"
+    },
+    {
+      "line_index": 18,
+      "text": "Is there anything between the hedges and the walk?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 20,
+      "surrounding_context": "\u201cIs there anything between the hedges and the walk?\u201d"
+    },
+    {
+      "line_index": 19,
+      "text": "Yes, there is a strip of grass about six feet broad on either\n      side.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 21,
+      "surrounding_context": "\u201cYes, there is a strip of grass about six feet broad on either side.\u201d"
+    },
+    {
+      "line_index": 20,
+      "text": "I understand that the yew hedge is penetrated at one point by a\n      gate?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 22,
+      "surrounding_context": "\u201cI understand that the yew hedge is penetrated at one point by a gate?\u201d"
+    },
+    {
+      "line_index": 21,
+      "text": "Yes, the wicket-gate which leads on to the moor.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 23,
+      "surrounding_context": "\u201cYes, the wicket-gate which leads on to the moor.\u201d"
+    },
+    {
+      "line_index": 22,
+      "text": "Is there any other opening?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 24,
+      "surrounding_context": "\u201cIs there any other opening?\u201d"
+    },
+    {
+      "line_index": 23,
+      "text": "None.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 25,
+      "surrounding_context": "\u201cNone.\u201d"
+    },
+    {
+      "line_index": 24,
+      "text": "So that to reach the yew alley one either has to come down it\n      from the house or else to enter it by the moor-gate?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 26,
+      "surrounding_context": "\u201cSo that to reach the yew alley one either has to come down it from the house or else to enter it by the moor-gate?\u201d"
+    },
+    {
+      "line_index": 25,
+      "text": "There is an exit through a summer-house at the far end.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 27,
+      "surrounding_context": "\u201cThere is an exit through a summer-house at the far end.\u201d"
+    },
+    {
+      "line_index": 26,
+      "text": "Had Sir Charles reached this?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 28,
+      "surrounding_context": "\u201cHad Sir Charles reached this?\u201d"
+    },
+    {
+      "line_index": 27,
+      "text": "No; he lay about fifty yards from it.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 29,
+      "surrounding_context": "\u201cNo; he lay about fifty yards from it.\u201d"
+    },
+    {
+      "line_index": 28,
+      "text": "Now, tell me, Dr. Mortimer\u2014and this is important\u2014the marks which\n      you saw were on the path and not on the grass?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 30,
+      "surrounding_context": "\u201cNow, tell me, Dr. Mortimer\u2014and this is important\u2014the marks which you saw were on the path and not on the grass?\u201d"
+    },
+    {
+      "line_index": 29,
+      "text": "No marks could show on the grass.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 31,
+      "surrounding_context": "\u201cNo marks could show on the grass.\u201d"
+    },
+    {
+      "line_index": 30,
+      "text": "Were they on the same side of the path as the moor-gate?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 32,
+      "surrounding_context": "\u201cWere they on the same side of the path as the moor-gate?\u201d"
+    },
+    {
+      "line_index": 31,
+      "text": "Yes; they were on the edge of the path on the same side as the\n      moor-gate.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 33,
+      "surrounding_context": "\u201cYes; they were on the edge of the path on the same side as the moor-gate.\u201d"
+    },
+    {
+      "line_index": 32,
+      "text": "You interest me exceedingly. Another point. Was the wicket-gate\n      closed?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 34,
+      "surrounding_context": "\u201cYou interest me exceedingly. Another point. Was the wicket-gate closed?\u201d"
+    },
+    {
+      "line_index": 33,
+      "text": "Closed and padlocked.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 35,
+      "surrounding_context": "\u201cClosed and padlocked.\u201d"
+    },
+    {
+      "line_index": 34,
+      "text": "How high was it?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 36,
+      "surrounding_context": "\u201cHow high was it?\u201d"
+    },
+    {
+      "line_index": 35,
+      "text": "About four feet high.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 37,
+      "surrounding_context": "\u201cAbout four feet high.\u201d"
+    },
+    {
+      "line_index": 36,
+      "text": "Then anyone could have got over it?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 38,
+      "surrounding_context": "\u201cThen anyone could have got over it?\u201d"
+    },
+    {
+      "line_index": 37,
+      "text": "Yes.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 39,
+      "surrounding_context": "\u201cYes.\u201d"
+    },
+    {
+      "line_index": 38,
+      "text": "And what marks did you see by the wicket-gate?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 40,
+      "surrounding_context": "\u201cAnd what marks did you see by the wicket-gate?\u201d"
+    },
+    {
+      "line_index": 39,
+      "text": "None in particular.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 41,
+      "surrounding_context": "\u201cNone in particular.\u201d"
+    },
+    {
+      "line_index": 40,
+      "text": "Good heaven! Did no one examine?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 42,
+      "surrounding_context": "\u201cGood heaven! Did no one examine?\u201d"
+    },
+    {
+      "line_index": 41,
+      "text": "Yes, I examined, myself.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 43,
+      "surrounding_context": "\u201cYes, I examined, myself.\u201d"
+    },
+    {
+      "line_index": 42,
+      "text": "And found nothing?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 44,
+      "surrounding_context": "\u201cAnd found nothing?\u201d"
+    },
+    {
+      "line_index": 43,
+      "text": "It was all very confused. Sir Charles had evidently stood there\n      for five or ten minutes.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 45,
+      "surrounding_context": "\u201cIt was all very confused. Sir Charles had evidently stood there for five or ten minutes.\u201d"
+    },
+    {
+      "line_index": 44,
+      "text": "How do you know that?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 46,
+      "surrounding_context": "\u201cHow do you know that?\u201d"
+    },
+    {
+      "line_index": 45,
+      "text": "Because the ash had twice dropped from his cigar.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 47,
+      "surrounding_context": "\u201cBecause the ash had twice dropped from his cigar.\u201d"
+    },
+    {
+      "line_index": 46,
+      "text": "Excellent! This is a colleague, Watson, after our own heart. But\n      the marks?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 48,
+      "surrounding_context": "\u201cExcellent! This is a colleague, Watson, after our own heart. But the marks?\u201d"
+    },
+    {
+      "line_index": 47,
+      "text": "He had left his own marks all over that small patch of gravel. I\n      could discern no others.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 49,
+      "surrounding_context": "\u201cHe had left his own marks all over that small patch of gravel. I could discern no others.\u201d"
+    },
+    {
+      "line_index": 48,
+      "text": "If I had only been there!",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 51,
+      "surrounding_context": "\u201cIf I had only been there!\u201d he cried. \u201cIt is evidently a case of extraordinary interest, and one which presented immense opportunities to the scientific expert. That gravel page upon which I might hav"
+    },
+    {
+      "line_index": 49,
+      "text": "It is evidently a case of\n      extraordinary interest, and one which presented immense\n      opportunities to the scientific expert. That gravel page upon\n      which I might have read so much has been long ere this smudged by\n      the rain and defaced by the clogs of curious peasants. Oh, Dr.\n      Mortimer, Dr. Mortimer, to think that you should not have called\n      me in! You have indeed much to answer for.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 51,
+      "surrounding_context": "\u201cIf I had only been there!\u201d he cried. \u201cIt is evidently a case of extraordinary interest, and one which presented immense opportunities to the scientific expert. That gravel page upon which I might hav"
+    },
+    {
+      "line_index": 50,
+      "text": "I could not call you in, Mr. Holmes, without disclosing these\n      facts to the world, and I have already given my reasons for not\n      wishing to do so. Besides, besides\u2014",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 52,
+      "surrounding_context": "\u201cI could not call you in, Mr. Holmes, without disclosing these facts to the world, and I have already given my reasons for not wishing to do so. Besides, besides\u2014\u201d"
+    },
+    {
+      "line_index": 51,
+      "text": "Why do you hesitate?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 53,
+      "surrounding_context": "\u201cWhy do you hesitate?\u201d"
+    },
+    {
+      "line_index": 52,
+      "text": "There is a realm in which the most acute and most experienced of\n      detectives is helpless.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 54,
+      "surrounding_context": "\u201cThere is a realm in which the most acute and most experienced of detectives is helpless.\u201d"
+    },
+    {
+      "line_index": 53,
+      "text": "You mean that the thing is supernatural?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 55,
+      "surrounding_context": "\u201cYou mean that the thing is supernatural?\u201d"
+    },
+    {
+      "line_index": 54,
+      "text": "I did not positively say so.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 56,
+      "surrounding_context": "\u201cI did not positively say so.\u201d"
+    },
+    {
+      "line_index": 55,
+      "text": "No, but you evidently think it.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 57,
+      "surrounding_context": "\u201cNo, but you evidently think it.\u201d"
+    },
+    {
+      "line_index": 56,
+      "text": "Since the tragedy, Mr. Holmes, there have come to my ears\n      several incidents which are hard to reconcile with the settled\n      order of Nature.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 58,
+      "surrounding_context": "\u201cSince the tragedy, Mr. Holmes, there have come to my ears several incidents which are hard to reconcile with the settled order of Nature.\u201d"
+    },
+    {
+      "line_index": 57,
+      "text": "For example?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 59,
+      "surrounding_context": "\u201cFor example?\u201d"
+    },
+    {
+      "line_index": 58,
+      "text": "I find that before the terrible event occurred several people\n      had seen a creature upon the moor which corresponds with this\n      Baskerville demon, and which could not possibly be any animal\n      known to science. They all agreed that it was a huge creature,\n      luminous, ghastly, and spectral. I have cross-examined these men,\n      one of them a hard-headed countryman, one a farrier, and one a\n      moorland farmer, who all tell the same story of this dreadful\n      apparition, exactly corresponding to the hell-hound of the\n      legend. I assure you that there is a reign of terror in the\n      district, and that it is a hardy man who will cross the moor at\n      night.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 60,
+      "surrounding_context": "\u201cI find that before the terrible event occurred several people had seen a creature upon the moor which corresponds with this Baskerville demon, and which could not possibly be any animal known to scie"
+    },
+    {
+      "line_index": 59,
+      "text": "And you, a trained man of science, believe it to be\n      supernatural?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 61,
+      "surrounding_context": "\u201cAnd you, a trained man of science, believe it to be supernatural?\u201d"
+    },
+    {
+      "line_index": 60,
+      "text": "I do not know what to believe.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 62,
+      "surrounding_context": "\u201cI do not know what to believe.\u201d"
+    },
+    {
+      "line_index": 61,
+      "text": "I have hitherto confined my\n      investigations to this world,",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 63,
+      "surrounding_context": "Holmes shrugged his shoulders. \u201cI have hitherto confined my investigations to this world,\u201d said he. \u201cIn a modest way I have combated evil, but to take on the Father of Evil himself would, perhaps, be "
+    },
+    {
+      "line_index": 62,
+      "text": "In a modest way I have\n      combated evil, but to take on the Father of Evil himself would,\n      perhaps, be too ambitious a task. Yet you must admit that the\n      footmark is material.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 63,
+      "surrounding_context": "Holmes shrugged his shoulders. \u201cI have hitherto confined my investigations to this world,\u201d said he. \u201cIn a modest way I have combated evil, but to take on the Father of Evil himself would, perhaps, be "
+    },
+    {
+      "line_index": 63,
+      "text": "The original hound was material enough to tug a man\u2019s throat\n      out, and yet he was diabolical as well.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 64,
+      "surrounding_context": "\u201cThe original hound was material enough to tug a man\u2019s throat out, and yet he was diabolical as well.\u201d"
+    },
+    {
+      "line_index": 64,
+      "text": "I see that you have quite gone over to the supernaturalists. But\n      now, Dr. Mortimer, tell me this. If you hold these views, why\n      have you come to consult me at all? You tell me in the same\n      breath that it is useless to investigate Sir Charles\u2019s death, and\n      that you desire me to do it.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 65,
+      "surrounding_context": "\u201cI see that you have quite gone over to the supernaturalists. But now, Dr. Mortimer, tell me this. If you hold these views, why have you come to consult me at all? You tell me in the same breath that "
+    },
+    {
+      "line_index": 65,
+      "text": "I did not say that I desired you to do it.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 66,
+      "surrounding_context": "\u201cI did not say that I desired you to do it.\u201d"
+    },
+    {
+      "line_index": 66,
+      "text": "Then, how can I assist you?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 67,
+      "surrounding_context": "\u201cThen, how can I assist you?\u201d"
+    },
+    {
+      "line_index": 67,
+      "text": "By advising me as to what I should do with Sir Henry\n      Baskerville, who arrives at Waterloo Station",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 68,
+      "surrounding_context": "\u201cBy advising me as to what I should do with Sir Henry Baskerville, who arrives at Waterloo Station\u201d\u2014Dr. Mortimer looked at his watch\u2014\u201cin exactly one hour and a quarter.\u201d"
+    },
+    {
+      "line_index": 68,
+      "text": "in exactly one hour and a quarter.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 68,
+      "surrounding_context": "\u201cBy advising me as to what I should do with Sir Henry Baskerville, who arrives at Waterloo Station\u201d\u2014Dr. Mortimer looked at his watch\u2014\u201cin exactly one hour and a quarter.\u201d"
+    },
+    {
+      "line_index": 69,
+      "text": "He being the heir?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 69,
+      "surrounding_context": "\u201cHe being the heir?\u201d"
+    },
+    {
+      "line_index": 70,
+      "text": "Yes. On the death of Sir Charles we inquired for this young\n      gentleman and found that he had been farming in Canada. From the\n      accounts which have reached us he is an excellent fellow in every\n      way. I speak now not as a medical man but as a trustee and\n      executor of Sir Charles\u2019s will.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 70,
+      "surrounding_context": "\u201cYes. On the death of Sir Charles we inquired for this young gentleman and found that he had been farming in Canada. From the accounts which have reached us he is an excellent fellow in every way. I s"
+    },
+    {
+      "line_index": 71,
+      "text": "There is no other claimant, I presume?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 71,
+      "surrounding_context": "\u201cThere is no other claimant, I presume?\u201d"
+    },
+    {
+      "line_index": 72,
+      "text": "None. The only other kinsman whom we have been able to trace was\n      Rodger Baskerville, the youngest of three brothers of whom poor\n      Sir Charles was the elder. The second brother, who died young, is\n      the father of this lad Henry. The third, Rodger, was the black\n      sheep of the family. He came of the old masterful Baskerville\n      strain and was the very image, they tell me, of the family\n      picture of old Hugo. He made England too hot to hold him, fled to\n      Central America, and died there in 1876 of yellow fever. Henry is\n      the last of the Baskervilles. In one hour and five minutes I meet\n      him at Waterloo Station. I have had a wire that he arrived at\n      Southampton this morning. Now, Mr. Holmes, what would you advise\n      me to do with him?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 72,
+      "surrounding_context": "\u201cNone. The only other kinsman whom we have been able to trace was Rodger Baskerville, the youngest of three brothers of whom poor Sir Charles was the elder. The second brother, who died young, is the "
+    },
+    {
+      "line_index": 73,
+      "text": "Why should he not go to the home of his fathers?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 73,
+      "surrounding_context": "\u201cWhy should he not go to the home of his fathers?\u201d"
+    },
+    {
+      "line_index": 74,
+      "text": "It seems natural, does it not? And yet, consider that every\n      Baskerville who goes there meets with an evil fate. I feel sure\n      that if Sir Charles could have spoken with me before his death he\n      would have warned me against bringing this, the last of the old\n      race, and the heir to great wealth, to that deadly place. And yet\n      it cannot be denied that the prosperity of the whole poor, bleak\n      countryside depends upon his presence. All the good work which\n      has been done by Sir Charles will crash to the ground if there is\n      no tenant of the Hall. I fear lest I should be swayed too much by\n      my own obvious interest in the matter, and that is why I bring\n      the case before you and ask for your advice.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 74,
+      "surrounding_context": "\u201cIt seems natural, does it not? And yet, consider that every Baskerville who goes there meets with an evil fate. I feel sure that if Sir Charles could have spoken with me before his death he would hav"
+    },
+    {
+      "line_index": 75,
+      "text": "Put into plain words, the matter is this,",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 76,
+      "surrounding_context": "\u201cPut into plain words, the matter is this,\u201d said he. \u201cIn your opinion there is a diabolical agency which makes Dartmoor an unsafe abode for a Baskerville\u2014that is your opinion?\u201d"
+    },
+    {
+      "line_index": 76,
+      "text": "In your\n      opinion there is a diabolical agency which makes Dartmoor an\n      unsafe abode for a Baskerville\u2014that is your opinion?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 76,
+      "surrounding_context": "\u201cPut into plain words, the matter is this,\u201d said he. \u201cIn your opinion there is a diabolical agency which makes Dartmoor an unsafe abode for a Baskerville\u2014that is your opinion?\u201d"
+    },
+    {
+      "line_index": 77,
+      "text": "At least I might go the length of saying that there is some\n      evidence that this may be so.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 77,
+      "surrounding_context": "\u201cAt least I might go the length of saying that there is some evidence that this may be so.\u201d"
+    },
+    {
+      "line_index": 78,
+      "text": "Exactly. But surely, if your supernatural theory be correct, it\n      could work the young man evil in London as easily as in\n      Devonshire. A devil with merely local powers like a parish vestry\n      would be too inconceivable a thing.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 78,
+      "surrounding_context": "\u201cExactly. But surely, if your supernatural theory be correct, it could work the young man evil in London as easily as in Devonshire. A devil with merely local powers like a parish vestry would be too "
+    },
+    {
+      "line_index": 79,
+      "text": "You put the matter more flippantly, Mr. Holmes, than you would\n      probably do if you were brought into personal contact with these\n      things. Your advice, then, as I understand it, is that the young\n      man will be as safe in Devonshire as in London. He comes in fifty\n      minutes. What would you recommend?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 79,
+      "surrounding_context": "\u201cYou put the matter more flippantly, Mr. Holmes, than you would probably do if you were brought into personal contact with these things. Your advice, then, as I understand it, is that the young man wi"
+    },
+    {
+      "line_index": 80,
+      "text": "I recommend, sir, that you take a cab, call off your spaniel who\n      is scratching at my front door, and proceed to Waterloo to meet\n      Sir Henry Baskerville.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 80,
+      "surrounding_context": "\u201cI recommend, sir, that you take a cab, call off your spaniel who is scratching at my front door, and proceed to Waterloo to meet Sir Henry Baskerville.\u201d"
+    },
+    {
+      "line_index": 81,
+      "text": "And then?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 81,
+      "surrounding_context": "\u201cAnd then?\u201d"
+    },
+    {
+      "line_index": 82,
+      "text": "And then you will say nothing to him at all until I have made up\n      my mind about the matter.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 82,
+      "surrounding_context": "\u201cAnd then you will say nothing to him at all until I have made up my mind about the matter.\u201d"
+    },
+    {
+      "line_index": 83,
+      "text": "How long will it take you to make up your mind?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 83,
+      "surrounding_context": "\u201cHow long will it take you to make up your mind?\u201d"
+    },
+    {
+      "line_index": 84,
+      "text": "Twenty-four hours. At ten o\u2019clock tomorrow, Dr. Mortimer, I will\n      be much obliged to you if you will call upon me here, and it will\n      be of help to me in my plans for the future if you will bring Sir\n      Henry Baskerville with you.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 84,
+      "surrounding_context": "\u201cTwenty-four hours. At ten o\u2019clock tomorrow, Dr. Mortimer, I will be much obliged to you if you will call upon me here, and it will be of help to me in my plans for the future if you will bring Sir He"
+    },
+    {
+      "line_index": 85,
+      "text": "I will do so, Mr. Holmes.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 85,
+      "surrounding_context": "\u201cI will do so, Mr. Holmes.\u201d He scribbled the appointment on his shirt-cuff and hurried off in his strange, peering, absent-minded fashion. Holmes stopped him at the head of the stair."
+    },
+    {
+      "line_index": 86,
+      "text": "Only one more question, Dr. Mortimer. You say that before Sir\n      Charles Baskerville\u2019s death several people saw this apparition\n      upon the moor?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 86,
+      "surrounding_context": "\u201cOnly one more question, Dr. Mortimer. You say that before Sir Charles Baskerville\u2019s death several people saw this apparition upon the moor?\u201d"
+    },
+    {
+      "line_index": 87,
+      "text": "Three people did.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 87,
+      "surrounding_context": "\u201cThree people did.\u201d"
+    },
+    {
+      "line_index": 88,
+      "text": "Did any see it after?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 88,
+      "surrounding_context": "\u201cDid any see it after?\u201d"
+    },
+    {
+      "line_index": 89,
+      "text": "I have not heard of any.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 89,
+      "surrounding_context": "\u201cI have not heard of any.\u201d"
+    },
+    {
+      "line_index": 90,
+      "text": "Thank you. Good-morning.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 90,
+      "surrounding_context": "\u201cThank you. Good-morning.\u201d"
+    },
+    {
+      "line_index": 91,
+      "text": "Going out, Watson?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 92,
+      "surrounding_context": "\u201cGoing out, Watson?\u201d"
+    },
+    {
+      "line_index": 92,
+      "text": "Unless I can help you.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 93,
+      "surrounding_context": "\u201cUnless I can help you.\u201d"
+    },
+    {
+      "line_index": 93,
+      "text": "No, my dear fellow, it is at the hour of action that I turn to\n      you for aid. But this is splendid, really unique from some points\n      of view. When you pass Bradley\u2019s, would you ask him to send up a\n      pound of the strongest shag tobacco? Thank you. It would be as\n      well if you could make it convenient not to return before\n      evening. Then I should be very glad to compare impressions as to\n      this most interesting problem which has been submitted to us this\n      morning.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 94,
+      "surrounding_context": "\u201cNo, my dear fellow, it is at the hour of action that I turn to you for aid. But this is splendid, really unique from some points of view. When you pass Bradley\u2019s, would you ask him to send up a pound"
+    },
+    {
+      "line_index": 94,
+      "text": "Caught cold, Watson?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 97,
+      "surrounding_context": "\u201cCaught cold, Watson?\u201d said he."
+    },
+    {
+      "line_index": 95,
+      "text": "No, it\u2019s this poisonous atmosphere.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 98,
+      "surrounding_context": "\u201cNo, it\u2019s this poisonous atmosphere.\u201d"
+    },
+    {
+      "line_index": 96,
+      "text": "I suppose it _is_ pretty thick, now that you mention it.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 99,
+      "surrounding_context": "\u201cI suppose it _is_ pretty thick, now that you mention it.\u201d"
+    },
+    {
+      "line_index": 97,
+      "text": "Thick! It is intolerable.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 100,
+      "surrounding_context": "\u201cThick! It is intolerable.\u201d"
+    },
+    {
+      "line_index": 98,
+      "text": "Open the window, then! You have been at your club all day, I\n      perceive.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 101,
+      "surrounding_context": "\u201cOpen the window, then! You have been at your club all day, I perceive.\u201d"
+    },
+    {
+      "line_index": 99,
+      "text": "My dear Holmes!",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 102,
+      "surrounding_context": "\u201cMy dear Holmes!\u201d"
+    },
+    {
+      "line_index": 100,
+      "text": "Am I right?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 103,
+      "surrounding_context": "\u201cAm I right?\u201d"
+    },
+    {
+      "line_index": 101,
+      "text": "Certainly, but how?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 104,
+      "surrounding_context": "\u201cCertainly, but how?\u201d"
+    },
+    {
+      "line_index": 102,
+      "text": "There is a delightful\n      freshness about you, Watson, which makes it a pleasure to\n      exercise any small powers which I possess at your expense. A\n      gentleman goes forth on a showery and miry day. He returns\n      immaculate in the evening with the gloss still on his hat and his\n      boots. He has been a fixture therefore all day. He is not a man\n      with intimate friends. Where, then, could he have been? Is it not\n      obvious?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 105,
+      "surrounding_context": "He laughed at my bewildered expression. \u201cThere is a delightful freshness about you, Watson, which makes it a pleasure to exercise any small powers which I possess at your expense. A gentleman goes for"
+    },
+    {
+      "line_index": 103,
+      "text": "Well, it is rather obvious.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 106,
+      "surrounding_context": "\u201cWell, it is rather obvious.\u201d"
+    },
+    {
+      "line_index": 104,
+      "text": "The world is full of obvious things which nobody by any chance\n      ever observes. Where do you think that I have been?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 107,
+      "surrounding_context": "\u201cThe world is full of obvious things which nobody by any chance ever observes. Where do you think that I have been?\u201d"
+    },
+    {
+      "line_index": 105,
+      "text": "A fixture also.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 108,
+      "surrounding_context": "\u201cA fixture also.\u201d"
+    },
+    {
+      "line_index": 106,
+      "text": "On the contrary, I have been to Devonshire.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 109,
+      "surrounding_context": "\u201cOn the contrary, I have been to Devonshire.\u201d"
+    },
+    {
+      "line_index": 107,
+      "text": "In spirit?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 110,
+      "surrounding_context": "\u201cIn spirit?\u201d"
+    },
+    {
+      "line_index": 108,
+      "text": "Exactly. My body has remained in this armchair and has, I regret\n      to observe, consumed in my absence two large pots of coffee and\n      an incredible amount of tobacco. After you left I sent down to\n      Stamford\u2019s for the Ordnance map of this portion of the moor, and\n      my spirit has hovered over it all day. I flatter myself that I\n      could find my way about.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 111,
+      "surrounding_context": "\u201cExactly. My body has remained in this armchair and has, I regret to observe, consumed in my absence two large pots of coffee and an incredible amount of tobacco. After you left I sent down to Stamfor"
+    },
+    {
+      "line_index": 109,
+      "text": "A large-scale map, I presume?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 112,
+      "surrounding_context": "\u201cA large-scale map, I presume?\u201d"
+    },
+    {
+      "line_index": 110,
+      "text": "Very large.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 113,
+      "surrounding_context": "\u201cVery large.\u201d"
+    },
+    {
+      "line_index": 111,
+      "text": "Here you have\n      the particular district which concerns us. That is Baskerville\n      Hall in the middle.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 114,
+      "surrounding_context": "He unrolled one section and held it over his knee. \u201cHere you have the particular district which concerns us. That is Baskerville Hall in the middle.\u201d"
+    },
+    {
+      "line_index": 112,
+      "text": "With a wood round it?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 115,
+      "surrounding_context": "\u201cWith a wood round it?\u201d"
+    },
+    {
+      "line_index": 113,
+      "text": "Exactly. I fancy the yew alley, though not marked under that\n      name, must stretch along this line, with the moor, as you\n      perceive, upon the right of it. This small clump of buildings\n      here is the hamlet of Grimpen, where our friend Dr. Mortimer has\n      his headquarters. Within a radius of five miles there are, as you\n      see, only a very few scattered dwellings. Here is Lafter Hall,\n      which was mentioned in the narrative. There is a house indicated\n      here which may be the residence of the naturalist\u2014Stapleton, if I\n      remember right, was his name. Here are two moorland farmhouses,\n      High Tor and Foulmire. Then fourteen miles away the great convict\n      prison of Princetown. Between and around these scattered points\n      extends the desolate, lifeless moor. This, then, is the stage\n      upon which tragedy has been played, and upon which we may help to\n      play it again.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 116,
+      "surrounding_context": "\u201cExactly. I fancy the yew alley, though not marked under that name, must stretch along this line, with the moor, as you perceive, upon the right of it. This small clump of buildings here is the hamlet"
+    },
+    {
+      "line_index": 114,
+      "text": "It must be a wild place.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 117,
+      "surrounding_context": "\u201cIt must be a wild place.\u201d"
+    },
+    {
+      "line_index": 115,
+      "text": "Yes, the setting is a worthy one. If the devil did desire to\n      have a hand in the affairs of men\u2014",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 118,
+      "surrounding_context": "\u201cYes, the setting is a worthy one. If the devil did desire to have a hand in the affairs of men\u2014\u201d"
+    },
+    {
+      "line_index": 116,
+      "text": "Then you are yourself inclining to the supernatural\n      explanation.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 119,
+      "surrounding_context": "\u201cThen you are yourself inclining to the supernatural explanation.\u201d"
+    },
+    {
+      "line_index": 117,
+      "text": "The devil\u2019s agents may be of flesh and blood, may they not?\n      There are two questions waiting for us at the outset. The one is\n      whether any crime has been committed at all; the second is, what\n      is the crime and how was it committed? Of course, if Dr.\n      Mortimer\u2019s surmise should be correct, and we are dealing with\n      forces outside the ordinary laws of Nature, there is an end of\n      our investigation. But we are bound to exhaust all other\n      hypotheses before falling back upon this one. I think we\u2019ll shut\n      that window again, if you don\u2019t mind. It is a singular thing, but\n      I find that a concentrated atmosphere helps a concentration of\n      thought. I have not pushed it to the length of getting into a box\n      to think, but that is the logical outcome of my convictions. Have\n      you turned the case over in your mind?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 120,
+      "surrounding_context": "\u201cThe devil\u2019s agents may be of flesh and blood, may they not? There are two questions waiting for us at the outset. The one is whether any crime has been committed at all; the second is, what is the cr"
+    },
+    {
+      "line_index": 118,
+      "text": "Yes, I have thought a good deal of it in the course of the day.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 121,
+      "surrounding_context": "\u201cYes, I have thought a good deal of it in the course of the day.\u201d"
+    },
+    {
+      "line_index": 119,
+      "text": "What do you make of it?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 122,
+      "surrounding_context": "\u201cWhat do you make of it?\u201d"
+    },
+    {
+      "line_index": 120,
+      "text": "It is very bewildering.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 123,
+      "surrounding_context": "\u201cIt is very bewildering.\u201d"
+    },
+    {
+      "line_index": 121,
+      "text": "It has certainly a character of its own. There are points of\n      distinction about it. That change in the footprints, for example.\n      What do you make of that?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 124,
+      "surrounding_context": "\u201cIt has certainly a character of its own. There are points of distinction about it. That change in the footprints, for example. What do you make of that?\u201d"
+    },
+    {
+      "line_index": 122,
+      "text": "Mortimer said that the man had walked on tiptoe down that\n      portion of the alley.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 125,
+      "surrounding_context": "\u201cMortimer said that the man had walked on tiptoe down that portion of the alley.\u201d"
+    },
+    {
+      "line_index": 123,
+      "text": "He only repeated what some fool had said at the inquest. Why\n      should a man walk on tiptoe down the alley?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 126,
+      "surrounding_context": "\u201cHe only repeated what some fool had said at the inquest. Why should a man walk on tiptoe down the alley?\u201d"
+    },
+    {
+      "line_index": 124,
+      "text": "What then?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 127,
+      "surrounding_context": "\u201cWhat then?\u201d"
+    },
+    {
+      "line_index": 125,
+      "text": "He was running, Watson\u2014running desperately, running for his\n      life, running until he burst his heart\u2014and fell dead upon his\n      face.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 128,
+      "surrounding_context": "\u201cHe was running, Watson\u2014running desperately, running for his life, running until he burst his heart\u2014and fell dead upon his face.\u201d"
+    },
+    {
+      "line_index": 126,
+      "text": "Running from what?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 129,
+      "surrounding_context": "\u201cRunning from what?\u201d"
+    },
+    {
+      "line_index": 127,
+      "text": "There lies our problem. There are indications that the man was\n      crazed with fear before ever he began to run.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 130,
+      "surrounding_context": "\u201cThere lies our problem. There are indications that the man was crazed with fear before ever he began to run.\u201d"
+    },
+    {
+      "line_index": 128,
+      "text": "How can you say that?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 131,
+      "surrounding_context": "\u201cHow can you say that?\u201d"
+    },
+    {
+      "line_index": 129,
+      "text": "I am presuming that the cause of his fears came to him across\n      the moor. If that were so, and it seems most probable, only a man\n      who had lost his wits would have run _from_ the house instead of\n      towards it. If the gipsy\u2019s evidence may be taken as true, he ran\n      with cries for help in the direction where help was least likely\n      to be. Then, again, whom was he waiting for that night, and why\n      was he waiting for him in the yew alley rather than in his own\n      house?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 132,
+      "surrounding_context": "\u201cI am presuming that the cause of his fears came to him across the moor. If that were so, and it seems most probable, only a man who had lost his wits would have run _from_ the house instead of toward"
+    },
+    {
+      "line_index": 130,
+      "text": "You think that he was waiting for someone?",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 133,
+      "surrounding_context": "\u201cYou think that he was waiting for someone?\u201d"
+    },
+    {
+      "line_index": 131,
+      "text": "The man was elderly and infirm. We can understand his taking an\n      evening stroll, but the ground was damp and the night inclement.\n      Is it natural that he should stand for five or ten minutes, as\n      Dr. Mortimer, with more practical sense than I should have given\n      him credit for, deduced from the cigar ash?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 134,
+      "surrounding_context": "\u201cThe man was elderly and infirm. We can understand his taking an evening stroll, but the ground was damp and the night inclement. Is it natural that he should stand for five or ten minutes, as Dr. Mor"
+    },
+    {
+      "line_index": 132,
+      "text": "But he went out every evening.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 135,
+      "surrounding_context": "\u201cBut he went out every evening.\u201d"
+    },
+    {
+      "line_index": 133,
+      "text": "I think it unlikely that he waited at the moor-gate every\n      evening. On the contrary, the evidence is that he avoided the\n      moor. That night he waited there. It was the night before he made\n      his departure for London. The thing takes shape, Watson. It\n      becomes coherent. Might I ask you to hand me my violin, and we\n      will postpone all further thought upon this business until we\n      have had the advantage of meeting Dr. Mortimer and Sir Henry\n      Baskerville in the morning.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 136,
+      "surrounding_context": "\u201cI think it unlikely that he waited at the moor-gate every evening. On the contrary, the evidence is that he avoided the moor. That night he waited there. It was the night before he made his departure"
+    }
+  ]
+}

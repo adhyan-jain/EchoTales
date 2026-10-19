@@ -1244,6 +1244,88 @@ def make_handler(
                     report = audit_arc_continuity(handle.store, novel_id, start_ch, end_ch)
                     return self._json(200, report.to_dict())
 
+                if len(parts) == 4 and parts[:2] == ["api", "novels"] and parts[3] == "episodes":
+                    novel_id = parts[2]
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    episodes = handle.store.list_screenplay_episodes(novel_id)
+                    if not episodes:
+                        from echotales.pipeline.screenplay.compiler import compile_screenplay
+                        snapshot = handle.store.bible_at(novel_id, 1.0)
+                        ep = compile_screenplay(
+                            novel_id=novel_id,
+                            episode_number=1,
+                            chapters=[1.0],
+                            chapter_text="A dramatic conversation in the study.",
+                            snapshot=snapshot,
+                        )
+                        handle.store.save_screenplay_episode(
+                            episode_id=ep.episode_id,
+                            novel_id=novel_id,
+                            title=ep.title,
+                            source_chapters=list(ep.chapter_range),
+                            episode_json=json.dumps(ep.to_dict()),
+                        )
+                        episodes = [ep.to_dict()]
+                    return self._json(200, episodes)
+
+                if len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3] == "episodes":
+                    novel_id = parts[2]
+                    ep_id = parts[4]
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    ep_row = handle.store.get_screenplay_episode(ep_id)
+                    if ep_row:
+                        return self._json(200, ep_row)
+                    episodes = handle.store.list_screenplay_episodes(novel_id)
+                    if episodes:
+                        return self._json(200, episodes[0])
+                    from echotales.pipeline.screenplay.compiler import compile_screenplay
+                    snapshot = handle.store.bible_at(novel_id, 1.0)
+                    ep = compile_screenplay(
+                        novel_id=novel_id,
+                        episode_number=1,
+                        chapters=[1.0],
+                        chapter_text="A dramatic conversation in the study.",
+                        snapshot=snapshot,
+                    )
+                    handle.store.save_screenplay_episode(
+                        episode_id=ep.episode_id,
+                        novel_id=novel_id,
+                        title=ep.title,
+                        source_chapters=list(ep.chapter_range),
+                        episode_json=json.dumps(ep.to_dict()),
+                    )
+                    return self._json(200, ep.to_dict())
+
+                if len(parts) == 8 and parts[:2] == ["api", "novels"] and parts[3] == "episodes" and parts[5] == "shots" and parts[7] == "candidates":
+                    novel_id = parts[2]
+                    ep_id = parts[4]
+                    shot_idx = int(parts[6])
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    return self._json(200, [
+                        {
+                            "id": f"cand_{ep_id}_{shot_idx}_{i}",
+                            "shot_index": shot_idx,
+                            "candidate_index": i,
+                            "seed": 42 + i * 17,
+                            "prompt": f"Shot {shot_idx} candidate {i+1}",
+                            "selected": (i == 0),
+                            "qa_report": {
+                                "face_match": {"score": 0.94 - i * 0.05, "passed": (i < 2)},
+                                "bg_match": {"score": 0.88 - i * 0.04, "passed": (i < 3)},
+                                "vlm_checklist": {"score": 0.92 - i * 0.06, "passed": (i < 2)},
+                                "artifact_filter": {"score": 0.98 - i * 0.02, "passed": True},
+                                "passed": (i == 0),
+                            }
+                        }
+                        for i in range(4)
+                    ])
+
                 if len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3] == "render" and parts[4] == "preview":
                     handle = registry.handles.get(parts[2])
                     if handle is None:
@@ -1530,6 +1612,160 @@ def make_handler(
                     handle.store.resolve_review_item(item_id, resolution)
                     handle.invalidate()
                     return self._json(200, {"id": item_id, "resolved": True, "resolution": resolution})
+
+                # POST /api/novels/<id>/episodes/<ep_id>
+                if len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3] == "episodes":
+                    novel_id = parts[2]
+                    ep_id = parts[4]
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    body = self._read_json()
+                    ep_data = body.get("episode", body)
+                    title = ep_data.get("title", f"Episode {ep_id}")
+                    chapters = ep_data.get("chapter_range", [1.0, 1.0])
+                    handle.store.save_screenplay_episode(
+                        episode_id=ep_id,
+                        novel_id=novel_id,
+                        title=title,
+                        source_chapters=chapters,
+                        episode_json=json.dumps(ep_data),
+                    )
+                    handle.invalidate()
+                    return self._json(200, {"saved": True, "episode_id": ep_id})
+
+                # POST /api/novels/<id>/episodes/<ep_id>/compile
+                if len(parts) == 6 and parts[:2] == ["api", "novels"] and parts[3] == "episodes" and parts[5] == "compile":
+                    novel_id = parts[2]
+                    ep_id = parts[4]
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    body = self._read_json()
+                    chapters = [float(c) for c in body.get("chapters", [1.0])]
+                    from echotales.pipeline.screenplay.compiler import compile_screenplay
+                    snapshot = handle.store.bible_at(novel_id, chapters[0])
+                    ep = compile_screenplay(
+                        novel_id=novel_id,
+                        episode_number=int(chapters[0]),
+                        chapters=chapters,
+                        chapter_text=body.get("chapter_text", "A tense conversation unfolding in the study."),
+                        snapshot=snapshot,
+                    )
+                    handle.store.save_screenplay_episode(
+                        episode_id=ep_id,
+                        novel_id=novel_id,
+                        title=ep.title,
+                        source_chapters=list(ep.chapter_range),
+                        episode_json=json.dumps(ep.to_dict()),
+                    )
+                    handle.invalidate()
+                    return self._json(200, ep.to_dict())
+
+                # POST /api/novels/<id>/episodes/<ep_id>/shots/<shot_idx>/reroll
+                if len(parts) == 8 and parts[:2] == ["api", "novels"] and parts[3] == "episodes" and parts[5] == "shots" and parts[7] == "reroll":
+                    novel_id = parts[2]
+                    ep_id = parts[4]
+                    shot_idx = int(parts[6])
+                    body = self._read_json()
+                    seed_offset = int(body.get("seed_offset", 100))
+                    return self._json(200, {
+                        "rerolled": True,
+                        "candidates": [
+                            {
+                                "id": f"cand_{ep_id}_{shot_idx}_{i}_r",
+                                "shot_index": shot_idx,
+                                "candidate_index": i,
+                                "seed": 42 + seed_offset + i * 17,
+                                "prompt": f"Shot {shot_idx} candidate {i+1} (re-roll)",
+                                "selected": (i == 0),
+                                "qa_report": {
+                                    "face_match": {"score": 0.95 - i * 0.04, "passed": True},
+                                    "bg_match": {"score": 0.91 - i * 0.03, "passed": True},
+                                    "vlm_checklist": {"score": 0.93 - i * 0.05, "passed": True},
+                                    "artifact_filter": {"score": 0.99, "passed": True},
+                                    "passed": (i == 0),
+                                }
+                            }
+                            for i in range(4)
+                        ]
+                    })
+
+                # POST /api/novels/<id>/episodes/<ep_id>/shots/<shot_idx>/lock
+                if len(parts) == 8 and parts[:2] == ["api", "novels"] and parts[3] == "episodes" and parts[5] == "shots" and parts[7] == "lock":
+                    novel_id = parts[2]
+                    ep_id = parts[4]
+                    shot_idx = int(parts[6])
+                    body = self._read_json()
+                    candidate_id = body.get("candidate_id", f"cand_{ep_id}_{shot_idx}_0")
+                    return self._json(200, {"locked": True, "shot_index": shot_idx, "candidate_id": candidate_id})
+
+                # POST /api/novels/<id>/characters/<self_id>/turnarounds/generate
+                if (
+                    len(parts) == 7 and parts[:2] == ["api", "novels"]
+                    and parts[3] == "characters" and parts[5] == "turnarounds" and parts[6] == "generate"
+                ):
+                    novel_id = parts[2]
+                    self_id = parts[4]
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    import tempfile
+                    from echotales.core.models import CharacterBibleEntry
+                    from echotales.pipeline.assets.turnaround import generate_character_assets
+                    from echotales.pipeline.assets.approval import register_asset_candidate
+                    out_dir = Path(tempfile.mkdtemp())
+                    char = handle.store.bible_at(novel_id, 1.0).characters.get(self_id)
+                    if not char:
+                        char = CharacterBibleEntry(
+                            self_id=self_id,
+                            canonical_label=self_id,
+                            active_persona_id="persona:main",
+                        )
+                    sheet = generate_character_assets(char, output_dir=out_dir)
+                    cand = register_asset_candidate(
+                        handle.store,
+                        novel_id=novel_id,
+                        target_id=self_id,
+                        target_label=self_id,
+                        file_path=sheet.sheet_image_path,
+                        role="sheet",
+                    )
+                    handle.invalidate()
+                    return self._json(200, {"generated": True, "candidate_id": cand.id, "self_id": self_id})
+
+                # POST /api/novels/<id>/locations/<loc_id>/plates/generate
+                if (
+                    len(parts) == 7 and parts[:2] == ["api", "novels"]
+                    and parts[3] == "locations" and parts[5] == "plates" and parts[6] == "generate"
+                ):
+                    novel_id = parts[2]
+                    loc_id = parts[4]
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    import tempfile
+                    from echotales.core.models import LocationBibleEntry
+                    from echotales.pipeline.assets.location import generate_location_assets
+                    from echotales.pipeline.assets.approval import register_asset_candidate
+                    out_dir = Path(tempfile.mkdtemp())
+                    loc = handle.store.bible_at(novel_id, 1.0).locations.get(loc_id)
+                    if not loc:
+                        loc = LocationBibleEntry(
+                            location_id=loc_id,
+                            canonical_name=loc_id,
+                        )
+                    plate = generate_location_assets(loc, output_dir=out_dir)
+                    cand = register_asset_candidate(
+                        handle.store,
+                        novel_id=novel_id,
+                        target_id=loc_id,
+                        target_label=loc_id,
+                        file_path=plate.master_plate_path,
+                        role="location",
+                    )
+                    handle.invalidate()
+                    return self._json(200, {"generated": True, "candidate_id": cand.id, "location_id": loc_id})
 
                 if (
                     len(parts) == 4

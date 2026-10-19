@@ -20,6 +20,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
 from echotales.core.enums import Prominence
 from echotales.core.models import CharacterBibleEntry, DiscoursePosition, Self
 from echotales.core.store import Store
@@ -85,7 +89,10 @@ def run_benchmark(
 ) -> BenchmarkReport:
     """Execute end-to-end golden benchmark evaluation."""
     repo_root = Path(__file__).resolve().parent.parent
-    gold_path = repo_root / "data" / "eval" / "attribution" / "showcase_ch1_gold.json"
+    ch_int = int(chapter)
+    gold_path = repo_root / "data" / "eval" / "attribution" / f"{novel_id}_ch{ch_int}_gold.json"
+    if not gold_path.exists():
+        gold_path = repo_root / "data" / "eval" / "attribution" / "showcase_ch1_gold.json"
 
     if not gold_path.exists():
         raise FileNotFoundError(f"Gold attribution ground truth missing: {gold_path}")
@@ -131,7 +138,9 @@ def run_benchmark(
     correct_count = metrics.correct_lines
 
     # 3. Compile Screenplay
-    ch_text_file = repo_root / "data" / "novels" / "showcase" / "ch1.txt"
+    ch_text_file = repo_root / "data" / "novels" / "showcase" / f"chapter_{ch_int}.txt"
+    if not ch_text_file.exists():
+        ch_text_file = repo_root / "data" / "novels" / "showcase" / f"ch{ch_int}.txt"
     chapter_text = ch_text_file.read_text("utf-8") if ch_text_file.exists() else "\n\n".join(l["text"] for l in lines_raw)
 
     episode = compile_screenplay(
@@ -249,14 +258,51 @@ def run_benchmark(
 def main() -> None:
     parser = argparse.ArgumentParser(description="EchoTales Golden Evaluation Benchmark")
     parser.add_argument("--novel", default="showcase", help="Novel ID to benchmark")
-    parser.add_argument("--chapter", type=float, default=1.0, help="Chapter number")
+    parser.add_argument("--chapter", default="1.0", help="Chapter number, comma-separated list (e.g. 1,2,3), or 'all'")
     parser.add_argument("--tier", default="path1", choices=["path1", "path2"], help="Render tier")
     args = parser.parse_args()
 
-    report = run_benchmark(novel_id=args.novel, chapter=args.chapter, tier=args.tier)
-    report.print_summary()
+    if args.chapter == "all":
+        chapters = [1.0, 2.0, 3.0]
+    elif "," in str(args.chapter):
+        chapters = [float(c.strip()) for c in args.chapter.split(",")]
+    else:
+        chapters = [float(args.chapter)]
 
-    if not report.passed_all_gates:
+    all_passed = True
+    reports = []
+    for ch in chapters:
+        report = run_benchmark(novel_id=args.novel, chapter=ch, tier=args.tier)
+        report.print_summary()
+        reports.append(report)
+        if not report.passed_all_gates:
+            all_passed = False
+
+    if len(chapters) > 1:
+        from echotales.pipeline.bible.arc import audit_arc_continuity
+        shared_store = Store(":memory:")
+        for char_id, name in [
+            ("char:holmes", "Sherlock Holmes"),
+            ("char:watson", "Dr. John Watson"),
+            ("char:mortimer", "Dr. James Mortimer"),
+        ]:
+            shared_store.add_self(
+                Self(
+                    id=char_id,
+                    novel_id=args.novel,
+                    canonical_label=name,
+                    first_attested_pos=DiscoursePosition(chapter=1, offset=0),
+                    prominence=Prominence.PRINCIPAL,
+                )
+            )
+        arc_report = audit_arc_continuity(shared_store, args.novel, min(chapters), max(chapters))
+        print("=" * 68)
+        print(f"MULTI-EPISODE ARC CONTINUITY AUDIT: CH {min(chapters)} -> CH {max(chapters)}")
+        print(f"Audited Snapshots: {arc_report.total_snapshots_audited} | Issues Found: {len(arc_report.issues)}")
+        print(f"Status: {'CONTINUITY VERIFIED' if arc_report.passed else 'ISSUES FOUND'}")
+        print("=" * 68 + "\n")
+
+    if not all_passed:
         sys.exit(1)
 
 

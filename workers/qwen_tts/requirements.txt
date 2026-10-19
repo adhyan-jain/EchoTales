@@ -1,0 +1,7 @@
+runpod>=1.6.0
+torch>=2.4.0
+torchaudio>=2.4.0
+transformers>=4.45.0
+soundfile>=0.12.1
+numpy>=1.26.0
+scipy>=1.14.0

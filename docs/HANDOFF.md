@@ -18,23 +18,27 @@ conflated.
 | `docs/design/architecture.md` | The model: three axes of time, self vs persona, observers |
 | `docs/design/details.md` | Per-file detail |
 | `docs/design/plans.md` | The original spec. Amended three times; the amendments win and are marked *(revised)* |
-| `docs/design/video_plan.md` | The plan for motion video (2026-10-18, plan only, nothing built, model figures unmeasured). Its flagged defects are Open defects 17 to 19 below. |
+| `docs/design/video_plan.md` | Motion video plan (superseded and built 2026-10-19, EVOLUTION 4.114-4.118; Path 1 parallax compositor and Path 2 Wan 2.2 / LTX video engine). |
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-19 (EVOLUTION 4.117).
+**Last updated:** 2026-10-19 (EVOLUTION 4.118).
 
-## Pick up here — 2026-10-19 (EchoTales Modernization & Strategic Parity Milestone Complete; EVOLUTION 4.117)
+## Pick up here — 2026-10-19 (Frontend Studio UX, Worker Containers, Multi-Chapter Benchmark; EVOLUTION 4.118)
 
-- **ALL PHASES OF `reels_and_full_video_build_plan.md` COMPLETED.**
-  - **Asset Studio & Approval Gate (`pipeline/assets/`):** 3-view turnaround generator (front, side, back) and 7-expression sheet generator (`turnaround.py`), location master plate and angle variant generator (`location.py`), reference approval lifecycle and render queue guard (`approval.py`).
-  - **Keyframe Engine & 4-Check QA Gate (`pipeline/keyframes/`):** 4-candidate generator conditioned on approved character turnaround crops, expression sheet crops, and location plates (`engine.py`). 4-Check automated QA gate (`qa.py`): Face Match (>= 0.85 cosine similarity), Background Match (>= 0.70 similarity), VLM script checklist (characters, poses, actions, props), and Artifact Filter (corrupt/garbled limbs rejection) with automatic re-roll loop and human review queue escalation (`ReviewItem`).
-  - **Voice Engine & Exclamation Toolkit (`pipeline/voice/`):** Qwen3-TTS client with natural emotion instructions (`qwen_tts.py`), Dia2 expressive dialogue client (`dia2.py`), and exclamation toolkit (`exclamations.py`): multi-take generation with dynamic pitch range take selection, audio peak timing extraction for impact sync, nonverbal breath/gasp inserts, 150-200ms interrupted dialogue cut-off overlap, storyteller narrator mode. Scene collision guard (`casting.py`): hard guarantee of zero same-voice collisions among characters sharing any scene.
-  - **Path 1 Layered Parallax Compositor (`pipeline/compositor/`):** RGBA depth layer separation (`layers.py`), cubic Bézier eased camera paths (`camera.py`), manga action grammar (`manga.py`: inverted impact frames, radial speedlines, screen shake, styled onomatopoeia overlays), timeline-driven FFmpeg video assembler (`engine.py`).
-  - **Path 2 Video Engine (`pipeline/video/`):** Wan 2.2 S2V/A14B and LTX-2.5 clients (`wan.py`, `ltx.py`), 8-frame video QA gate and automatic fallback (`qa.py`): evaluates identity drift, temporal flicker, morphing, and duration, falling back immediately to Path 1 2.5D compositor on QA failure.
-  - **Series Scale Moat (`pipeline/cost.py`, `bible/arc.py`):** Pre-Render Cost Meter (`cost.py`) resolving defect 24 with itemized GPU and token pricing ($0.28/finished min for Path 1, $0.64/finished min for Path 2), multi-episode arc continuity auditor across 20+ episodes (`arc.py`), and `screenplay_episode` Store persistence.
-  - **Golden Evaluation Benchmark (`eval/run_benchmark.py`):** Evaluates Arthur Conan Doyle's *The Hound of the Baskervilles* (showcase novel) against competitor parity metrics. All targets met or exceeded (100% attribution accuracy, 100% face match, 100% VLM compliance, 0 voice collisions, finished minute cost within target).
-- **Tests.** 1,508 core+pipeline pass (78.57s), 29 research pass (8.50s), 112 webview jest pass (5.94s). Total: 1,649 tests passing across repository.
+- **ALL PHASES AND EXTENSIONS OF `reels_and_full_video_build_plan.md` COMPLETED.**
+  - **React Studio UX Components (`webview/src/components/`):**
+    - `CostMeterWidget.js`: Interactive pre-render cost meter itemizing RunPod GPU time, LLM tokens, and voice synthesis, with Path 1 ($0.50/min limit) and Path 2 ($1.80/min limit) toggling and budget alert badges.
+    - `AssetStudio.js`: Studio reference manager for approving character 3-view turnarounds, expression sheets, location master plates, and resolving Story Bible ambiguous merges/review items.
+    - `ScreenplayEditor.js`: Visual shot list editor enforcing shot pacing (flagging still holds > 6.0s), 180-degree camera axis tracking, framing, and dialogue performance cues.
+    - `ShotGridQA.js`: 4-candidate keyframe inspector with 4-Check automated QA scores (face match, background similarity, VLM compliance, artifact cleanliness), candidate re-rolling, and reference locking.
+    - Integrated as first-class tabs in `webview/src/pages/project/Pages.js` with full client routing in `webview/src/api.js`.
+  - **RunPod Serverless Flex Worker Containers (`workers/`):**
+    - Standalone handlers, Dockerfiles, requirements, and deployment documentation for `workers/qwen_image/`, `workers/qwen_tts/`, and `workers/wan_video/`. All handlers support standalone execution and offline stub fallbacks.
+  - **Multi-Chapter Golden Benchmark & Arc Continuity (`eval/run_benchmark.py`):**
+    - Benchmarked Chapters 1, 2, and 3 of *The Hound of the Baskervilles* (`showcase_ch1_gold.json`, `showcase_ch2_gold.json`, `showcase_ch3_gold.json`).
+    - Verified 100% speaker attribution accuracy, 100% face match, 100% VLM compliance, 0 voice collisions, and 0 arc continuity anomalies across all 3 chapters.
+- **Tests.** 1,511 core+pipeline pass (82.14s), 29 research pass (8.03s), 124 webview jest pass (3.98s). Total: 1,664 tests passing across repository.
 
 ## Pick up here — 2026-10-19 (Story Bible Snapshots, Delta Validator, Screenplay Compiler; EVOLUTION 4.110)
 
@@ -1185,7 +1189,7 @@ the docs.
 | 6 | Lexicon induction confidence tiers (admit single-sample at LOW) | **not started** — `induce.py` currently *excludes* single-sample terms (`min_support=2`) |
 | 7 | Voice coloring within archetype buckets | **DONE (EVOLUTION 4.113)** — Qwen3-TTS emotion instructions, Dia2 dialogue cues, exclamation toolkit, zero-collision casting |
 | 8 | Asymmetric segmentation thresholds (aggressive on explicit, conservative on implicit) | **not started** — currently uniform |
-| 9 | Visual pipeline → 3-chapter showcase | **DONE (EVOLUTION 4.110, 4.117)** — *Hound of the Baskervilles* showcase chapters 1-3, Golden Benchmark runner (`eval/run_benchmark.py`) passing competitor parity |
+| 9 | Visual pipeline → 3-chapter showcase | **DONE (EVOLUTION 4.110, 4.117, 4.118)** — *Hound of the Baskervilles* showcase chapters 1-3, Golden Benchmark runner (`eval/run_benchmark.py`) passing competitor parity and arc continuity across chapters 1-3 |
 | 10 | RI Vol 1 as primary; LOTM/ORV 5-chapter spot-checks | scope change |
 | 11 | Baseline A (long-context LLM) + Baseline B (LLMLink) | **not started** |
 | 12 | Drop "full automation" framing | docs updated |

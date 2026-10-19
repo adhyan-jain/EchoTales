@@ -1,9 +1,13 @@
 import React from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Clapperboard, FolderOpen } from 'lucide-react';
+import { Clapperboard, FolderOpen, DollarSign, Palette, ShieldCheck, FileText } from 'lucide-react';
 import CharacterDashboard from '../../components/CharacterDashboard';
 import GenerationWorkspace from '../../components/GenerationWorkspace';
 import OutputLibrary from '../../components/OutputLibrary';
+import CostMeterWidget from '../../components/CostMeterWidget';
+import AssetStudio from '../../components/AssetStudio';
+import ScreenplayEditor from '../../components/ScreenplayEditor';
+import ShotGridQA from '../../components/ShotGridQA';
 import ProjectHome from '../../components/ProjectHome';
 import VisualStyleSetting from '../../components/VisualStyleSetting';
 import { PageHeader, ThemeToggle } from '../../components/app/Chrome';
@@ -29,25 +33,36 @@ export function Cast() {
 
 const STUDIO_TABS = [
   { key: 'generate', label: 'Generate', icon: Clapperboard },
+  { key: 'screenplay', label: 'Screenplay', icon: FileText },
+  { key: 'assets', label: 'Asset Studio', icon: Palette },
+  { key: 'qa', label: 'Shot QA', icon: ShieldCheck },
+  { key: 'cost', label: 'Cost Meter', icon: DollarSign },
   { key: 'library', label: 'Library', icon: FolderOpen },
 ];
+
+const STUDIO_INFO = {
+  generate: { title: 'Generate', description: 'Queue a render for a chapter, a preview or the full chapter, and follow its progress.' },
+  screenplay: { title: 'Screenplay Editor', description: 'Rule-enforced shot list, camera pacing, axis tracking, and performance cues.' },
+  assets: { title: 'Asset Studio', description: 'Approve 3-view character turnarounds, expression sheets, and master location plates.' },
+  qa: { title: 'Keyframe QA Gate', description: '4-Check automated QA gate, face and background matching, and candidate locking.' },
+  cost: { title: 'Pre-Render Cost Meter', description: 'RunPod serverless GPU and open-model token itemized budget.' },
+  library: { title: 'Output library', description: 'Every video, audio clip and panel rendered for this book.' },
+};
 
 export function Studio() {
   const { novelId } = useProject();
   const [params, setParams] = useSearchParams();
-  const tab = params.get('tab') === 'library' ? 'library' : 'generate';
+  const tab = params.get('tab') || 'generate';
+  const info = STUDIO_INFO[tab] || STUDIO_INFO.generate;
+
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-8">
       <PageHeader
         eyebrow="Studio"
-        title={tab === 'library' ? 'Output library' : 'Generate'}
-        description={
-          tab === 'library'
-            ? 'Every video, audio clip and panel rendered for this book.'
-            : 'Queue a render for a chapter, a preview or the full chapter, and follow its progress.'
-        }
+        title={info.title}
+        description={info.description}
       />
-      <div role="group" aria-label="Studio view" className="mb-8 inline-flex rounded-2xl border border-border bg-surface p-1">
+      <div role="group" aria-label="Studio view" className="mb-8 inline-flex flex-wrap gap-1 rounded-2xl border border-border bg-surface p-1">
         {STUDIO_TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -64,7 +79,12 @@ export function Studio() {
         ))}
       </div>
       <div>
-        {tab === 'library' ? <OutputLibrary novelId={novelId} hideHeader /> : <GenerationWorkspace novelId={novelId} hideHeader />}
+        {tab === 'library' && <OutputLibrary novelId={novelId} hideHeader />}
+        {tab === 'generate' && <GenerationWorkspace novelId={novelId} hideHeader />}
+        {tab === 'screenplay' && <ScreenplayEditor novelId={novelId} />}
+        {tab === 'assets' && <AssetStudio novelId={novelId} />}
+        {tab === 'qa' && <ShotGridQA novelId={novelId} />}
+        {tab === 'cost' && <CostMeterWidget novelId={novelId} />}
       </div>
     </div>
   );

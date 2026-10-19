@@ -357,6 +357,104 @@ export const api = {
     const auth = token ? `&access_token=${encodeURIComponent(token)}` : '';
     return `${API_BASE}/api/novels/${enc(novelId)}/output/file?path=${encodeURIComponent(path)}${auth}`;
   },
+
+  // Series-Scale & Studio API Endpoints
+  getEpisodeCost: (novelId, episodeId, tier = 'path1') =>
+    request(`/api/novels/${enc(novelId)}/episodes/${enc(episodeId)}/cost?tier=${enc(tier)}`),
+
+  getArcAudit: (novelId, start = 1.0, end = 5.0) =>
+    request(`/api/novels/${enc(novelId)}/arc/audit?start=${start}&end=${end}`),
+
+  listReviewItems: (novelId) =>
+    request(`/api/novels/${enc(novelId)}/review-items`),
+
+  resolveReviewItem: (novelId, itemId, resolution = 'RESOLVED_MANUAL') =>
+    request(`/api/novels/${enc(novelId)}/review-items/${enc(itemId)}/resolve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ resolution }),
+    }),
+
+  listTurnarounds: (novelId, selfId) =>
+    request(`/api/novels/${enc(novelId)}/characters/${enc(selfId)}/turnarounds`),
+
+  generateTurnaround: (novelId, selfId) =>
+    request(`/api/novels/${enc(novelId)}/characters/${enc(selfId)}/turnarounds/generate`, {
+      method: 'POST',
+    }),
+
+  approveTurnaround: (novelId, selfId, candidateId, note = '') =>
+    request(`/api/novels/${enc(novelId)}/characters/${enc(selfId)}/turnarounds/${enc(candidateId)}/approve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note }),
+    }),
+
+  rejectTurnaround: (novelId, selfId, candidateId, note = '') =>
+    request(`/api/novels/${enc(novelId)}/characters/${enc(selfId)}/turnarounds/${enc(candidateId)}/reject`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note }),
+    }),
+
+  listLocationPlates: (novelId, locId) =>
+    request(`/api/novels/${enc(novelId)}/locations/${enc(locId)}/plates`),
+
+  generateLocationPlate: (novelId, locId) =>
+    request(`/api/novels/${enc(novelId)}/locations/${enc(locId)}/plates/generate`, {
+      method: 'POST',
+    }),
+
+  approveLocationPlate: (novelId, locId, plateId, note = '') =>
+    request(`/api/novels/${enc(novelId)}/locations/${enc(locId)}/plates/${enc(plateId)}/approve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note }),
+    }),
+
+  rejectLocationPlate: (novelId, locId, plateId, note = '') =>
+    request(`/api/novels/${enc(novelId)}/locations/${enc(locId)}/plates/${enc(plateId)}/reject`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note }),
+    }),
+
+  listScreenplayEpisodes: (novelId) =>
+    request(`/api/novels/${enc(novelId)}/episodes`),
+
+  getScreenplayEpisode: (novelId, episodeId) =>
+    request(`/api/novels/${enc(novelId)}/episodes/${enc(episodeId)}`),
+
+  saveScreenplayEpisode: (novelId, episodeId, episode) =>
+    request(`/api/novels/${enc(novelId)}/episodes/${enc(episodeId)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ episode }),
+    }),
+
+  compileScreenplay: (novelId, episodeId, body = {}) =>
+    request(`/api/novels/${enc(novelId)}/episodes/${enc(episodeId)}/compile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+
+  listShotCandidates: (novelId, episodeId, shotIndex) =>
+    request(`/api/novels/${enc(novelId)}/episodes/${enc(episodeId)}/shots/${enc(shotIndex)}/candidates`),
+
+  rerollShotCandidates: (novelId, episodeId, shotIndex, body = {}) =>
+    request(`/api/novels/${enc(novelId)}/episodes/${enc(episodeId)}/shots/${enc(shotIndex)}/reroll`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+
+  lockShotCandidate: (novelId, episodeId, shotIndex, candidateId) =>
+    request(`/api/novels/${enc(novelId)}/episodes/${enc(episodeId)}/shots/${enc(shotIndex)}/lock`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ candidate_id: candidateId }),
+    }),
 };
 
 // Mirrors `SpanType` in packages/core/.../enums.py. NON_DIEGETIC and the

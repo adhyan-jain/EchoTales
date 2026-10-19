@@ -15,7 +15,7 @@ excluded by the owner. Local models only. One model resident on the GPU at a tim
 Intended outcome: with a flag on, panels are conditioned on HUMAN-APPROVED references only, characters keep their
 hair/face, scenes in one room share a background, and failures are flagged and re-rendered selectively.
 
-**Status: SUPERSEDED and BUILT (2026-10-19, EVOLUTION 4.111-4.112).** Approved-reference conditioning and automated QA were implemented in Asset Studio (`pipeline/assets/turnaround.py`, `pipeline/assets/location.py`, `pipeline/assets/approval.py`) and Keyframe Engine (`pipeline/keyframes/engine.py`, `pipeline/keyframes/qa.py`) with face similarity >= 0.85 cosine and background structural similarity >= 0.70. See `docs/HANDOFF.md` (EVOLUTION 4.117).
+**Status: SUPERSEDED and BUILT (2026-10-19, EVOLUTION 4.111-4.112).** Approved-reference conditioning and automated QA were implemented in Asset Studio (`pipeline/assets/turnaround.py`, `pipeline/assets/location.py`, `pipeline/assets/approval.py`) and Keyframe Engine (`pipeline/keyframes/engine.py`, `pipeline/keyframes/qa.py`) with face similarity >= 0.85 cosine and background structural similarity >= 0.70. See `docs/HANDOFF.md` (EVOLUTION 4.118).
 
 ## Deliverables once this plan is approved (docs only, no code)
 

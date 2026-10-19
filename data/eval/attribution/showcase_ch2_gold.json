@@ -1,0 +1,258 @@
+{
+  "novel_id": "hound",
+  "chapter": 2.0,
+  "title": "The Curse of the Baskervilles",
+  "total_lines": 32,
+  "characters": {
+    "char:holmes": {
+      "name": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Holmes",
+        "my companion"
+      ]
+    },
+    "char:watson": {
+      "name": "Dr. John Watson",
+      "aliases": [
+        "Watson",
+        "Dr. Watson",
+        "my dear Watson"
+      ]
+    },
+    "char:mortimer": {
+      "name": "Dr. James Mortimer",
+      "aliases": [
+        "Mortimer",
+        "Dr. Mortimer",
+        "the doctor"
+      ]
+    }
+  },
+  "lines": [
+    {
+      "line_index": 0,
+      "text": "I have in my pocket a manuscript,",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 1,
+      "surrounding_context": "\u201cI have in my pocket a manuscript,\u201d said Dr. James Mortimer."
+    },
+    {
+      "line_index": 1,
+      "text": "I observed it as you entered the room,",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 2,
+      "surrounding_context": "\u201cI observed it as you entered the room,\u201d said Holmes."
+    },
+    {
+      "line_index": 2,
+      "text": "It is an old manuscript.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 3,
+      "surrounding_context": "\u201cIt is an old manuscript.\u201d"
+    },
+    {
+      "line_index": 3,
+      "text": "Early eighteenth century, unless it is a forgery.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 4,
+      "surrounding_context": "\u201cEarly eighteenth century, unless it is a forgery.\u201d"
+    },
+    {
+      "line_index": 4,
+      "text": "How can you say that, sir?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 5,
+      "surrounding_context": "\u201cHow can you say that, sir?\u201d"
+    },
+    {
+      "line_index": 5,
+      "text": "You have presented an inch or two of it to my examination all\n      the time that you have been talking. It would be a poor expert\n      who could not give the date of a document within a decade or so.\n      You may possibly have read my little monograph upon the subject.\n      I put that at 1730.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 6,
+      "surrounding_context": "\u201cYou have presented an inch or two of it to my examination all the time that you have been talking. It would be a poor expert who could not give the date of a document within a decade or so. You may p"
+    },
+    {
+      "line_index": 6,
+      "text": "The exact date is 1742.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 7,
+      "surrounding_context": "\u201cThe exact date is 1742.\u201d Dr. Mortimer drew it from his breast-pocket. \u201cThis family paper was committed to my care by Sir Charles Baskerville, whose sudden and tragic death some three months ago creat"
+    },
+    {
+      "line_index": 7,
+      "text": "This family paper was committed to my care by Sir\n      Charles Baskerville, whose sudden and tragic death some three\n      months ago created so much excitement in Devonshire. I may say\n      that I was his personal friend as well as his medical attendant.\n      He was a strong-minded man, sir, shrewd, practical, and as\n      unimaginative as I am myself. Yet he took this document very\n      seriously, and his mind was prepared for just such an end as did\n      eventually overtake him.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 7,
+      "surrounding_context": "\u201cThe exact date is 1742.\u201d Dr. Mortimer drew it from his breast-pocket. \u201cThis family paper was committed to my care by Sir Charles Baskerville, whose sudden and tragic death some three months ago creat"
+    },
+    {
+      "line_index": 8,
+      "text": "You will observe, Watson, the alternative use of\n      the long _s_ and the short. It is one of several indications\n      which enabled me to fix the date.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 8,
+      "surrounding_context": "Holmes stretched out his hand for the manuscript and flattened it upon his knee. \u201cYou will observe, Watson, the alternative use of the long _s_ and the short. It is one of several indications which en"
+    },
+    {
+      "line_index": 9,
+      "text": "Baskerville Hall,",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 9,
+      "surrounding_context": "I looked over his shoulder at the yellow paper and the faded script. At the head was written: \u201cBaskerville Hall,\u201d and below in large, scrawling figures: \u201c1742.\u201d"
+    },
+    {
+      "line_index": 10,
+      "text": "1742.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 9,
+      "surrounding_context": "I looked over his shoulder at the yellow paper and the faded script. At the head was written: \u201cBaskerville Hall,\u201d and below in large, scrawling figures: \u201c1742.\u201d"
+    },
+    {
+      "line_index": 11,
+      "text": "It appears to be a statement of some sort.",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 10,
+      "surrounding_context": "\u201cIt appears to be a statement of some sort.\u201d"
+    },
+    {
+      "line_index": 12,
+      "text": "Yes, it is a statement of a certain legend which runs in the\n      Baskerville family.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 11,
+      "surrounding_context": "\u201cYes, it is a statement of a certain legend which runs in the Baskerville family.\u201d"
+    },
+    {
+      "line_index": 13,
+      "text": "But I understand that it is something more modern and practical\n      upon which you wish to consult me?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 12,
+      "surrounding_context": "\u201cBut I understand that it is something more modern and practical upon which you wish to consult me?\u201d"
+    },
+    {
+      "line_index": 14,
+      "text": "Most modern. A most practical, pressing matter, which must be\n      decided within twenty-four hours. But the manuscript is short and\n      is intimately connected with the affair. With your permission I\n      will read it to you.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 13,
+      "surrounding_context": "\u201cMost modern. A most practical, pressing matter, which must be decided within twenty-four hours. But the manuscript is short and is intimately connected with the affair. With your permission I will re"
+    },
+    {
+      "line_index": 15,
+      "text": "[This from Hugo Baskerville to his sons Rodger and John,\n            with instructions that they say nothing thereof to their\n            sister Elizabeth.]",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 22,
+      "surrounding_context": "\u201c[This from Hugo Baskerville to his sons Rodger and John, with instructions that they say nothing thereof to their sister Elizabeth.]\u201d"
+    },
+    {
+      "line_index": 16,
+      "text": "Well?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 24,
+      "surrounding_context": "\u201cWell?\u201d said he."
+    },
+    {
+      "line_index": 17,
+      "text": "Do you not find it interesting?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 25,
+      "surrounding_context": "\u201cDo you not find it interesting?\u201d"
+    },
+    {
+      "line_index": 18,
+      "text": "To a collector of fairy tales.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 26,
+      "surrounding_context": "\u201cTo a collector of fairy tales.\u201d"
+    },
+    {
+      "line_index": 19,
+      "text": "Now, Mr. Holmes, we will give you something a little more\n      recent. This is the _Devon County Chronicle_ of May 14th of this\n      year. It is a short account of the facts elicited at the death of\n      Sir Charles Baskerville which occurred a few days before that\n      date.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 28,
+      "surrounding_context": "\u201cNow, Mr. Holmes, we will give you something a little more recent. This is the _Devon County Chronicle_ of May 14th of this year. It is a short account of the facts elicited at the death of Sir Charle"
+    },
+    {
+      "line_index": 20,
+      "text": "The facts of the case are simple.  Sir Charles Baskerville\n            was in the habit every night before going to bed of walking\n            down the famous yew alley of Baskerville Hall.  The\n            evidence of the Barrymores shows that this had been his\n            custom. On the fourth of May Sir Charles had declared his\n            intention of starting next day for London, and had ordered\n            Barrymore to prepare his luggage.  That night he went out\n            as usual for his nocturnal walk, in the course of which he\n            was in the habit of smoking a cigar.  He never returned. \n            At twelve o\u2019clock Barrymore, finding the hall door still\n            open, became alarmed, and, lighting a lantern, went in\n            search of his master.  The day had been wet, and Sir\n            Charles\u2019s footmarks were easily traced down the alley. \n            Halfway down this walk there is a gate which leads out on\n            to the moor. There were indications that Sir Charles had\n            stood for some little time here.  He then proceeded down\n            the alley, and it was at the far end of it that his body\n            was discovered. One fact which has not been explained is\n            the statement of Barrymore that his master\u2019s footprints\n            altered their character from the time that he passed the\n            moor-gate, and that he appeared from thence onward to have\n            been walking upon his toes.  One Murphy, a gipsy\n            horse-dealer, was on the moor at no great distance at the\n            time, but he appears by his own confession to have been the\n            worse for drink. He declares that he heard cries but is\n            unable to state from what direction they came.  No signs of\n            violence were to be discovered upon Sir Charles\u2019s person,\n            and though the doctor\u2019s evidence pointed to an almost\n            incredible facial distortion\u2014so great that Dr. Mortimer\n            refused at first to believe that it was indeed his friend\n            and patient who lay before him\u2014it was explained that that\n            is a symptom which is not unusual in cases of dyspn\u0153a and\n            death from cardiac exhaustion.  This explanation was borne\n            out by the post-mortem examination, which showed\n            long-standing organic disease, and the coroner\u2019s jury\n            returned a verdict in accordance with the medical evidence.\n             It is well that this is so, for it is obviously of the\n            utmost importance that Sir Charles\u2019s heir should settle at\n            the Hall and continue the good work which has been so sadly\n            interrupted.  Had the prosaic finding of the coroner not\n            finally put an end to the romantic stories which have been\n            whispered in connection with the affair, it might have been\n            difficult to find a tenant for Baskerville Hall.  It is\n            understood that the next of kin is Mr. Henry Baskerville,\n            if he be still alive, the son of Sir Charles Baskerville\u2019s\n            younger brother.  The young man when last heard of was in\n            America, and inquiries are being instituted with a view to\n            informing him of his good fortune.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 32,
+      "surrounding_context": "\u201cThe facts of the case are simple. Sir Charles Baskerville was in the habit every night before going to bed of walking down the famous yew alley of Baskerville Hall. The evidence of the Barrymores sho"
+    },
+    {
+      "line_index": 21,
+      "text": "Those are the public facts, Mr. Holmes, in connection with the\n      death of Sir Charles Baskerville.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 33,
+      "surrounding_context": "Dr. Mortimer refolded his paper and replaced it in his pocket. \u201cThose are the public facts, Mr. Holmes, in connection with the death of Sir Charles Baskerville.\u201d"
+    },
+    {
+      "line_index": 22,
+      "text": "I must thank you,",
+      "speaker_id": "char:holmes",
+      "paragraph_index": 34,
+      "surrounding_context": "\u201cI must thank you,\u201d said Sherlock Holmes, \u201cfor calling my attention to a case which certainly presents some features of interest. I had observed some newspaper comment at the time, but I was exceeding"
+    },
+    {
+      "line_index": 23,
+      "text": "for calling my\n      attention to a case which certainly presents some features of\n      interest. I had observed some newspaper comment at the time, but\n      I was exceedingly preoccupied by that little affair of the\n      Vatican cameos, and in my anxiety to oblige the Pope I lost touch\n      with several interesting English cases. This article, you say,\n      contains all the public facts?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 34,
+      "surrounding_context": "\u201cI must thank you,\u201d said Sherlock Holmes, \u201cfor calling my attention to a case which certainly presents some features of interest. I had observed some newspaper comment at the time, but I was exceeding"
+    },
+    {
+      "line_index": 24,
+      "text": "It does.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 35,
+      "surrounding_context": "\u201cIt does.\u201d"
+    },
+    {
+      "line_index": 25,
+      "text": "Then let me have the private ones.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 36,
+      "surrounding_context": "\u201cThen let me have the private ones.\u201d He leaned back, put his finger-tips together, and assumed his most impassive and judicial expression."
+    },
+    {
+      "line_index": 26,
+      "text": "In doing so,",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 37,
+      "surrounding_context": "\u201cIn doing so,\u201d said Dr. Mortimer, who had begun to show signs of some strong emotion, \u201cI am telling that which I have not confided to anyone. My motive for withholding it from the coroner\u2019s inquiry is"
+    },
+    {
+      "line_index": 27,
+      "text": "On the night of Sir Charles\u2019s death Barrymore the butler, who\n      made the discovery, sent Perkins the groom on horseback to me,\n      and as I was sitting up late I was able to reach Baskerville Hall\n      within an hour of the event. I checked and corroborated all the\n      facts which were mentioned at the inquest. I followed the\n      footsteps down the yew alley, I saw the spot at the moor-gate\n      where he seemed to have waited, I remarked the change in the\n      shape of the prints after that point, I noted that there were no\n      other footsteps save those of Barrymore on the soft gravel, and\n      finally I carefully examined the body, which had not been touched\n      until my arrival. Sir Charles lay on his face, his arms out, his\n      fingers dug into the ground, and his features convulsed with some\n      strong emotion to such an extent that I could hardly have sworn\n      to his identity. There was certainly no physical injury of any\n      kind. But one false statement was made by Barrymore at the\n      inquest. He said that there were no traces upon the ground round\n      the body. He did not observe any. But I did\u2014some little distance\n      off, but fresh and clear.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 42,
+      "surrounding_context": "\u201cOn the night of Sir Charles\u2019s death Barrymore the butler, who made the discovery, sent Perkins the groom on horseback to me, and as I was sitting up late I was able to reach Baskerville Hall within a"
+    },
+    {
+      "line_index": 28,
+      "text": "Footprints?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 43,
+      "surrounding_context": "\u201cFootprints?\u201d"
+    },
+    {
+      "line_index": 29,
+      "text": "Footprints.",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 44,
+      "surrounding_context": "\u201cFootprints.\u201d"
+    },
+    {
+      "line_index": 30,
+      "text": "A man\u2019s or a woman\u2019s?",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 45,
+      "surrounding_context": "\u201cA man\u2019s or a woman\u2019s?\u201d"
+    },
+    {
+      "line_index": 31,
+      "text": "Mr. Holmes, they were the footprints of a gigantic hound!",
+      "speaker_id": "char:mortimer",
+      "paragraph_index": 47,
+      "surrounding_context": "\u201cMr. Holmes, they were the footprints of a gigantic hound!\u201d"
+    }
+  ]
+}
