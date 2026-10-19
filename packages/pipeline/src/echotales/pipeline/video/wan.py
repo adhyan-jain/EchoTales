@@ -14,8 +14,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any, Callable
 
-from workers.common.contract import VideoWorkerRequest, VideoWorkerResponse
-from workers.common.stub import run_video_worker
+from echotales.pipeline.workers_contract import VideoWorkerRequest, VideoWorkerResponse, run_video_worker
 
 
 class WanMode(StrEnum):

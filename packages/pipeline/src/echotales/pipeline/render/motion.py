@@ -1,5 +1,9 @@
 """A small, reused library of short motion clips (xyz.md Step 4, video revision).
 
+DEPRECATED: Legacy illustrated-audiobook motion clip module.
+Superseded by `echotales.pipeline.video` and `echotales.pipeline.compositor` in Path 1 / Path 2 modernization.
+Retained for backward compatibility.
+
 The reel that motivated this design (see the conversation, not reproducible
 here) makes a single point worth being explicit about: it did **not**
 generate a new clip for every cut. It generated 2-3 clips for the whole

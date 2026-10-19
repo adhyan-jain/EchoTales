@@ -12,8 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from echotales.core.models import LocationBibleEntry
-from workers.common.contract import ImageWorkerRequest
-from workers.common.stub import run_image_worker
+from echotales.pipeline.workers_contract import ImageWorkerRequest, run_image_worker
 
 
 @dataclass(slots=True)
@@ -61,11 +60,15 @@ def build_location_prompt(
         "dusk": "golden hour dusk, orange and violet sky, moody lighting",
     }.get(time_of_day, "natural ambient light")
 
-    return (
-        f"environment concept art, background plate, {loc.canonical_name}, {desc}, "
-        f"{angle_phrase}, {lighting_phrase}, clean background scenery, no people, "
-        f"matte painting, high detail, {visual_genre} visual style"
-    )
+    from echotales.pipeline.persona.prompt import fit_to_budget
+    clauses = [
+        f"environment concept art, background plate, {loc.canonical_name}",
+        desc,
+        angle_phrase,
+        lighting_phrase,
+        f"clean background scenery, no people, matte painting, {visual_genre} style",
+    ]
+    return fit_to_budget(clauses, limit=75)
 
 
 def generate_location_assets(

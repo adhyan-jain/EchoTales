@@ -49,6 +49,7 @@ does a merge look like."
 
 from __future__ import annotations
 
+import hashlib
 import hmac
 import json
 import logging
@@ -1113,8 +1114,6 @@ def make_handler(
                     handle = registry.handles.get(parts[2])
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
-                    import hashlib
-                    from pathlib import Path
                     from echotales.pipeline.persona import refimg
 
                     candidates = refimg.list_sheets(handle.store, parts[2], parts[4])

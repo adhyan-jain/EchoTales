@@ -47,11 +47,13 @@ from echotales.core.models import (
     DiscoursePosition,
     Job,
     LocationBibleEntry,
+    LocationPlate,
     Mention,
     NarrativeSegment,
     Observation,
     PipelineRun,
     Persona,
+    PersonaVersion,
     RefImageCandidate,
     RefImageSelectionEvent,
     Relation,
@@ -65,6 +67,7 @@ from echotales.core.models import (
     StageRun,
     StageStatus,
     StoryBibleSnapshot,
+    VoiceProfile,
 )
 
 SCHEMA_VERSION = 3
@@ -495,6 +498,46 @@ CREATE TABLE IF NOT EXISTS screenplay_episode (
     created_at REAL NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_screenplay_episode_novel ON screenplay_episode(novel_id);
+
+CREATE TABLE IF NOT EXISTS location_plate (
+    id TEXT PRIMARY KEY,
+    novel_id TEXT NOT NULL,
+    location_id TEXT NOT NULL,
+    title TEXT NOT NULL DEFAULT '',
+    source_url TEXT NOT NULL,
+    angle TEXT NOT NULL DEFAULT 'establishing',
+    time_of_day TEXT NOT NULL DEFAULT 'day',
+    selected INTEGER NOT NULL DEFAULT 0,
+    is_approved INTEGER NOT NULL DEFAULT 0,
+    found_at REAL NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS ix_location_plate_novel ON location_plate(novel_id, location_id);
+
+CREATE TABLE IF NOT EXISTS persona_version (
+    id TEXT PRIMARY KEY,
+    novel_id TEXT NOT NULL,
+    self_id TEXT NOT NULL,
+    persona_id TEXT NOT NULL,
+    chapter_introduced REAL NOT NULL,
+    shift_reason TEXT NOT NULL DEFAULT 'outfit_change',
+    turnaround_sheet_path TEXT,
+    expression_sheet_path TEXT,
+    is_active INTEGER NOT NULL DEFAULT 1
+);
+CREATE INDEX IF NOT EXISTS ix_persona_version_self ON persona_version(novel_id, self_id, chapter_introduced);
+
+CREATE TABLE IF NOT EXISTS voice_profile (
+    id TEXT PRIMARY KEY,
+    novel_id TEXT NOT NULL,
+    self_id TEXT NOT NULL,
+    speaker_id TEXT NOT NULL,
+    gender TEXT NOT NULL DEFAULT 'neutral',
+    age_group TEXT NOT NULL DEFAULT 'adult',
+    pitch REAL NOT NULL DEFAULT 1.0,
+    speed REAL NOT NULL DEFAULT 1.0,
+    accent TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_voice_profile_self ON voice_profile(novel_id, self_id);
 """
 
 
@@ -2460,10 +2503,163 @@ class Store:
                 ambience_sound=ambience,
             )
 
+        # 3. Relationships: active relations between characters learned <= chapter and not retracted
+        rel_rows = self.conn.execute(
+            "SELECT src_self, dst_self, type FROM relation "
+            "WHERE novel_id=? AND learned_chapter <= ? "
+            "AND ((retracted_chapter IS NULL AND truth_status != 'FALSE') OR retracted_chapter > ?)",
+            (novel_id, chapter, chapter),
+        ).fetchall()
+        relationships: dict[str, dict[str, str]] = {}
+        for r in rel_rows:
+            src = r["src_self"]
+            dst = r["dst_self"]
+            rel_type = r["type"]
+            if src not in relationships:
+                relationships[src] = {}
+            relationships[src][dst] = rel_type
+
         return StoryBibleSnapshot(
             novel_id=novel_id,
             chapter=chapter,
             characters=characters,
             locations=locations,
+            relationships=relationships,
+        )
+
+    def add_location_plate(self, plate: LocationPlate) -> None:
+        """Persist a master environmental location plate."""
+        self.conn.execute(
+            "INSERT OR REPLACE INTO location_plate "
+            "(id, novel_id, location_id, title, source_url, angle, time_of_day, selected, is_approved, found_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                plate.id,
+                plate.novel_id,
+                plate.location_id,
+                plate.title,
+                plate.source_url,
+                plate.angle,
+                plate.time_of_day,
+                int(plate.selected),
+                int(plate.is_approved),
+                plate.found_at,
+            ),
+        )
+        self.conn.commit()
+
+    def list_location_plates(self, novel_id: str, location_id: str | None = None) -> list[LocationPlate]:
+        """List environmental plates for a location or novel."""
+        if location_id:
+            rows = self.conn.execute(
+                "SELECT * FROM location_plate WHERE novel_id=? AND location_id=? ORDER BY found_at DESC",
+                (novel_id, location_id),
+            ).fetchall()
+        else:
+            rows = self.conn.execute(
+                "SELECT * FROM location_plate WHERE novel_id=? ORDER BY found_at DESC",
+                (novel_id,),
+            ).fetchall()
+        return [
+            LocationPlate(
+                id=r["id"],
+                novel_id=r["novel_id"],
+                location_id=r["location_id"],
+                title=r["title"],
+                source_url=r["source_url"],
+                angle=r["angle"],
+                time_of_day=r["time_of_day"],
+                selected=bool(r["selected"]),
+                is_approved=bool(r["is_approved"]),
+                found_at=r["found_at"],
+            )
+            for r in rows
+        ]
+
+    def add_persona_version(self, pv: PersonaVersion) -> None:
+        """Persist a versioned persona visual state across serial chapters."""
+        self.conn.execute(
+            "INSERT OR REPLACE INTO persona_version "
+            "(id, novel_id, self_id, persona_id, chapter_introduced, shift_reason, turnaround_sheet_path, expression_sheet_path, is_active) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                pv.id,
+                pv.novel_id,
+                pv.self_id,
+                pv.persona_id,
+                pv.chapter_introduced,
+                pv.shift_reason,
+                pv.turnaround_sheet_path,
+                pv.expression_sheet_path,
+                int(pv.is_active),
+            ),
+        )
+        self.conn.commit()
+
+    def list_persona_versions(self, novel_id: str, self_id: str | None = None) -> list[PersonaVersion]:
+        """List persona versions for a character across serial chapters."""
+        if self_id:
+            rows = self.conn.execute(
+                "SELECT * FROM persona_version WHERE novel_id=? AND self_id=? ORDER BY chapter_introduced ASC",
+                (novel_id, self_id),
+            ).fetchall()
+        else:
+            rows = self.conn.execute(
+                "SELECT * FROM persona_version WHERE novel_id=? ORDER BY chapter_introduced ASC",
+                (novel_id,),
+            ).fetchall()
+        return [
+            PersonaVersion(
+                id=r["id"],
+                novel_id=r["novel_id"],
+                self_id=r["self_id"],
+                persona_id=r["persona_id"],
+                chapter_introduced=r["chapter_introduced"],
+                shift_reason=r["shift_reason"],
+                turnaround_sheet_path=r["turnaround_sheet_path"],
+                expression_sheet_path=r["expression_sheet_path"],
+                is_active=bool(r["is_active"]),
+            )
+            for r in rows
+        ]
+
+    def add_voice_profile(self, vp: VoiceProfile) -> None:
+        """Persist a character's assigned voice profile."""
+        self.conn.execute(
+            "INSERT OR REPLACE INTO voice_profile "
+            "(id, novel_id, self_id, speaker_id, gender, age_group, pitch, speed, accent) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                vp.id,
+                vp.novel_id,
+                vp.self_id,
+                vp.speaker_id,
+                vp.gender,
+                vp.age_group,
+                vp.pitch,
+                vp.speed,
+                vp.accent,
+            ),
+        )
+        self.conn.commit()
+
+    def get_voice_profile(self, novel_id: str, self_id: str) -> VoiceProfile | None:
+        """Fetch the voice profile for a character."""
+        row = self.conn.execute(
+            "SELECT * FROM voice_profile WHERE novel_id=? AND self_id=? LIMIT 1",
+            (novel_id, self_id),
+        ).fetchone()
+        if not row:
+            return None
+        return VoiceProfile(
+            id=row["id"],
+            novel_id=row["novel_id"],
+            self_id=row["self_id"],
+            speaker_id=row["speaker_id"],
+            gender=row["gender"],
+            age_group=row["age_group"],
+            pitch=row["pitch"],
+            speed=row["speed"],
+            accent=row["accent"],
         )
 

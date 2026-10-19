@@ -1,5 +1,9 @@
 """Panel image generation: `PanelCast` -> one cached image per block.
 
+DEPRECATED: Legacy illustrated-audiobook panel generator.
+Superseded by `echotales.pipeline.keyframes.engine` in Path 1 / Path 2 modernization.
+Retained for backward compatibility.
+
 Same shape as `voice/engine.py` (`Protocol`, stub, lazy-loaded real backend)
 and for the same reason: naming a capability rather than a vendor means
 swapping SDXL for another local model later is a config change, not a

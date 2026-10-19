@@ -9,9 +9,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Callable
 
-from echotales.pipeline.voice.qwen_tts import TTSResult
-from workers.common.contract import TTSWorkerRequest, TTSWorkerResponse
-from workers.common.stub import run_tts_worker
+from echotales.pipeline.voice.qwen_tts import TTSResult, save_tts_response
+from echotales.pipeline.workers_contract import TTSWorkerRequest, TTSWorkerResponse, run_tts_worker
 
 VALID_NONVERBAL_TAGS = {"gasp", "sigh", "chuckle", "laughter", "cough", "groan", "sob", "shout"}
 
@@ -53,20 +52,4 @@ def synthesize_dia2(
         language=language,
     )
     resp = run_worker(req)
-
-    out_file = None
-    if output_path is not None:
-        p = Path(output_path)
-        p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_bytes(resp.audio_bytes)
-        out_file = str(p)
-
-    return TTSResult(
-        audio_bytes=resp.audio_bytes,
-        duration_s=resp.duration_s,
-        sample_rate=resp.sample_rate,
-        path=out_file,
-        voice_id=voice_id,
-        emotion="dialogue",
-        intensity=intensity,
-    )
+    return save_tts_response(resp, voice_id, "dialogue", intensity, output_path)

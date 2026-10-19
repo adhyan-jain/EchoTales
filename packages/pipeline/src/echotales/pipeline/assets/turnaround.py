@@ -13,8 +13,8 @@ from pathlib import Path
 from typing import Any
 
 from echotales.core.models import CharacterBibleEntry
-from workers.common.contract import ImageWorkerRequest
-from workers.common.stub import run_image_worker
+from echotales.pipeline.persona.prompt import fit_to_budget
+from echotales.pipeline.workers_contract import ImageWorkerRequest, run_image_worker
 
 
 class TurnaroundView(StrEnum):
@@ -72,23 +72,28 @@ def build_turnaround_prompt(char: CharacterBibleEntry, visual_genre: str = "anim
     """Build standardized prompt for 3-view model turnaround."""
     attr_clauses = [f"{k}: {v}" for k, v in char.attributes.items() if k not in ("voice_id", "voice_profile")]
     attr_desc = ", ".join(attr_clauses) if attr_clauses else "detailed character design"
-    outfit = f", wearing {char.active_outfit}" if char.active_outfit else ""
+    outfit = f"wearing {char.active_outfit}" if char.active_outfit else ""
 
-    return (
-        f"character design sheet, 3-view turnaround, front view, side profile view, back view, "
-        f"same character in all three angles, {char.canonical_label}, {attr_desc}{outfit}, "
-        f"neutral pose, standing, clean lines, neutral grey background, master character sheet, {visual_genre} style"
-    )
+    clauses = [
+        "character design sheet, 3-view turnaround, front view, side profile view, back view",
+        f"same character in all three angles, {char.canonical_label}",
+        attr_desc,
+        outfit,
+        f"neutral pose, standing, clean lines, neutral grey background, master character sheet, {visual_genre} style",
+    ]
+    return fit_to_budget(clauses, limit=75)
 
 
 def build_expression_prompt(char: CharacterBibleEntry, visual_genre: str = "anime") -> str:
     """Build standardized prompt for 7-expression character sheet."""
     expressions_str = ", ".join(e.value for e in STANDARD_EXPRESSIONS)
-    return (
-        f"character expression sheet, 7 facial expressions: {expressions_str}, "
-        f"same character, {char.canonical_label}, bust shot portraits grid, "
-        f"consistent face, high quality, neutral background, {visual_genre} style"
-    )
+    clauses = [
+        f"character expression sheet, 7 facial expressions: {expressions_str}",
+        f"same character, {char.canonical_label}",
+        "bust shot portraits grid, consistent face, high quality",
+        f"neutral background, {visual_genre} style",
+    ]
+    return fit_to_budget(clauses, limit=75)
 
 
 def generate_character_assets(

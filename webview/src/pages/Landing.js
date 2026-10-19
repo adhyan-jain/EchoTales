@@ -35,18 +35,46 @@ function useShowcase() {
     let alive = true;
     api
       .listProjects()
-      .then((projects) => {
-        const first = (projects || []).find((p) => p.ingested) || (projects || [])[0];
-        if (!first) return undefined;
-        return api.listOutput(first.id).then((out) => {
-          if (!alive) return;
-          setData({
-            novelId: first.id,
-            label: first.title || first.id,
-            panels: pickPanels(out, 18),
-            sheets: pickReferenceSheets(out, 4),
-            stats: { chapters: first.chapter_count },
-          });
+      .then(async (projects) => {
+        if (!projects || !projects.length) return;
+        const validProjects = projects.filter((p) => p.ingested || p.source_uploaded);
+        const outputs = await Promise.all(
+          validProjects.map((p) =>
+            api
+              .listOutput(p.id)
+              .then((out) => ({
+                project: p,
+                panels: pickPanels(out, 18).map((path) => ({ novelId: p.id, path, title: p.title })),
+                sheets: pickReferenceSheets(out, 4).map((path) => ({ novelId: p.id, path, title: p.title })),
+              }))
+              .catch(() => ({ project: p, panels: [], sheets: [] }))
+          )
+        );
+        if (!alive) return;
+
+        // Interleave panels across all projects that have generated panels
+        const activeLists = outputs.map((o) => o.panels).filter((arr) => arr.length > 0);
+        const mixedPanels = [];
+        const maxLen = Math.max(0, ...activeLists.map((arr) => arr.length));
+        for (let i = 0; i < maxLen; i++) {
+          for (const list of activeLists) {
+            if (i < list.length) {
+              mixedPanels.push(list[i]);
+            }
+          }
+        }
+
+        const mixedSheets = outputs.flatMap((o) => o.sheets);
+        const totalChapters = validProjects.reduce((acc, p) => acc + (p.chapter_count || 0), 0);
+        const activeProjects = outputs.filter((o) => o.panels.length > 0).map((o) => o.project.title || o.project.id);
+        const label = activeProjects.length > 0 ? activeProjects.join(' · ') : (validProjects[0]?.title || '');
+
+        setData({
+          novelId: validProjects[0]?.id || null,
+          label,
+          panels: mixedPanels,
+          sheets: mixedSheets,
+          stats: { chapters: totalChapters },
         });
       })
       .catch(() => {});
@@ -59,12 +87,14 @@ function useShowcase() {
 
 function Img({ novelId, path, className = '', alt = '', width = 480 }) {
   const [failed, setFailed] = useState(false);
-  if (!novelId || !path || failed) {
+  const actualNovelId = typeof path === 'object' && path !== null ? path.novelId : novelId;
+  const actualPath = typeof path === 'object' && path !== null ? path.path : path;
+  if (!actualNovelId || !actualPath || failed) {
     return <div className={`hero-glow bg-surface2 ${className}`} aria-hidden="true" />;
   }
   return (
     <img
-      src={thumbUrl(novelId, path, width)}
+      src={thumbUrl(actualNovelId, actualPath, width)}
       alt={alt}
       loading="lazy"
       decoding="async"
@@ -244,8 +274,8 @@ export default function Landing() {
           <section id="showcase" className="mx-auto max-w-7xl scroll-mt-20 px-4 pb-24 sm:px-6">
             <SectionIntro eyebrow="Showcase" title={`Straight from ${label}.`} description="Panels from the most recent renders on this server." />
             <div className="mt-14 columns-2 gap-4 sm:columns-3 lg:columns-4">
-              {panels.slice(6, 18).map((p) => (
-                <div key={p} className="mb-4 break-inside-avoid overflow-hidden rounded-2xl border border-border">
+              {panels.slice(6, 18).map((p, idx) => (
+                <div key={typeof p === 'object' ? `${p.novelId}-${p.path}-${idx}` : p} className="mb-4 break-inside-avoid overflow-hidden rounded-2xl border border-border">
                   <Img novelId={novelId} path={p} className="w-full" alt="Generated panel" />
                 </div>
               ))}

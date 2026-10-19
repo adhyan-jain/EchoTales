@@ -22,7 +22,24 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-19 (EVOLUTION 4.119).
+**Last updated:** 2026-10-19 (EVOLUTION 4.120).
+
+## Pick up here — 2026-10-19 (Two-Axis Code Review Resolution across Standards and Spec; EVOLUTION 4.120)
+
+- **Resolved All Two-Axis Code Review Findings across Standards and Spec:**
+  - **CLIP 77-Token Budget Enforcement:** Integrated `fit_to_budget` in `assets/location.py` (`build_location_prompt`), `assets/turnaround.py` (`build_turnaround_prompt`, `build_expression_prompt`), and `keyframes/engine.py` (`build_shot_prompt`).
+  - **Package Boundaries & Workers Contract:** Created `packages/pipeline/src/echotales/pipeline/workers_contract.py` containing typed contracts and offline stubs; eliminated imports from root `workers/` inside `packages/pipeline/`.
+  - **Backend Naming Discipline:** Added `VideoEngine` protocol, `WanVideoEngine`, `LTXVideoEngine`, `StubVideoEngine`, and `get_video_engine()` factory in `packages/pipeline/src/echotales/pipeline/video/`.
+  - **TTS Code Duplication & Clumps:** Extracted `save_tts_response` helper across `voice/qwen_tts.py` and `voice/dia2.py`. Bundled render parameters in `keyframes/engine.py` into `ShotRenderContext`.
+  - **Screenplay LLM Middle Man:** Wired JSON schema parsing and fallback validation in `_compile_with_llm` (`screenplay/compiler.py`).
+  - **Story Bible Schema & Relationships:** Added `location_plate`, `persona_version`, and `voice_profile` tables and CRUD methods in `Store` (`store.py`, `models.py`), with active character relation mapping in `Store.bible_at`.
+  - **Compositor 2x Oversampling & Audio Mixing:** Added 2160x3840 oversampling with Lanczos downscaling to 1080x1920 to eliminate pan stutter, ffmpeg `amix` multi-input SFX mixing, and 0.20 volume BGM ducking during speech in `compositor/engine.py`.
+  - **8-Frame Video QA Implementation:** Implemented temporal frame sampling, luminance difference checks, structural similarity, and keyframe-to-frame cosine similarity in `video/qa.py`.
+  - **Voice Collision Embedding Distance:** Implemented `speaker_embedding_distance` cosine distance checks (>= 0.25) in `voice/casting.py`.
+  - **Non-verbal Breath Syncing:** Synced breath/grunt/sigh inserts to `DeliveryPolarity` in `voice/exclamations.py`.
+  - **Benchmark Report Persistence:** Added `--output-json` flag and automatic JSON persistence in `eval/run_benchmark.py` saving reports to `data/eval/benchmarks/showcase_path1_report.json`.
+  - **Legacy Render Deprecation:** Marked legacy `render/*.py` modules (`direction.py`, `beats.py`, `scenes.py`, `panels.py`, `compose.py`, `motion.py`) with deprecation notices.
+- **Tests.** 1,512 core+pipeline pass (83.72s, 1 new unit test in `test_store_bible.py`), 29 research pass (8.60s), 124 webview jest pass (4.44s). Total: 1,665 tests passing across repository.
 
 ## Pick up here — 2026-10-19 (Repository-wide Dead Code Cleanup; EVOLUTION 4.119)
 

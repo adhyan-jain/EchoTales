@@ -1,5 +1,9 @@
 """The director: deciding what a panel should actually show.
 
+DEPRECATED: Legacy illustrated-audiobook direction module.
+Superseded by `echotales.pipeline.screenplay.compiler` and `echotales.pipeline.keyframes.engine`
+in the Path 1 / Path 2 modernization architecture. Retained for backward compatibility.
+
 Every prompt this pipeline built until now was **assembled**, not composed --
 cast tags, then a truncated slice of narration, then a locale looked up from
 a keyword table, then a style suffix. That produces a grammatical prompt that

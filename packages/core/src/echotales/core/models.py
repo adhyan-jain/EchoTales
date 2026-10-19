@@ -769,6 +769,7 @@ class StoryBibleSnapshot(BaseModel):
     chapter: float
     characters: dict[str, CharacterBibleEntry] = Field(default_factory=dict)
     locations: dict[str, LocationBibleEntry] = Field(default_factory=dict)
+    relationships: dict[str, dict[str, str]] = Field(default_factory=dict)
 
     def resolve_alias(self, text: str) -> str | None:
         """Resolve a name mention or alias against the snapshot's character index."""
@@ -797,4 +798,47 @@ class ReviewItem(BaseModel):
     resolved: bool = False
     resolution: str | None = None
     created_at: float = 0.0
+
+
+class LocationPlate(BaseModel):
+    """A master environmental background plate."""
+
+    id: str
+    novel_id: str
+    location_id: str
+    title: str = ""
+    source_url: str
+    angle: str = "establishing"
+    time_of_day: str = "day"
+    selected: bool = False
+    is_approved: bool = False
+    found_at: float = 0.0
+
+
+class PersonaVersion(BaseModel):
+    """A versioned persona visual state across serial chapters."""
+
+    id: str
+    novel_id: str
+    self_id: str
+    persona_id: str
+    chapter_introduced: float
+    shift_reason: str = "outfit_change"
+    turnaround_sheet_path: str | None = None
+    expression_sheet_path: str | None = None
+    is_active: bool = True
+
+
+class VoiceProfile(BaseModel):
+    """Character voice profile assigned across episodes."""
+
+    id: str
+    novel_id: str
+    self_id: str
+    speaker_id: str
+    gender: str = "neutral"
+    age_group: str = "adult"
+    pitch: float = 1.0
+    speed: float = 1.0
+    accent: str | None = None
 

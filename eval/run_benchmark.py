@@ -65,6 +65,20 @@ class BenchmarkReport:
     passed_all_gates: bool
     details: dict[str, Any] = field(default_factory=dict)
 
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "novel_id": self.novel_id,
+            "chapter": self.chapter,
+            "tier": self.tier,
+            "speaker_attribution_accuracy": self.speaker_attribution_accuracy,
+            "identity_match_score": self.identity_match_score,
+            "vlm_script_compliance_rate": self.vlm_script_compliance_rate,
+            "same_voice_collisions": self.same_voice_collisions,
+            "cost_per_finished_minute_usd": self.cost_per_finished_minute_usd,
+            "passed_all_gates": self.passed_all_gates,
+            "details": self.details,
+        }
+
     def print_summary(self) -> None:
         print("\n" + "=" * 68)
         print(f"ECHOTALES MODERNIZATION BENCHMARK REPORT: {self.novel_id.upper()} CH {self.chapter} ({self.tier.upper()})")
@@ -258,6 +272,7 @@ def main() -> None:
     parser.add_argument("--novel", default="showcase", help="Novel ID to benchmark")
     parser.add_argument("--chapter", default="1.0", help="Chapter number, comma-separated list (e.g. 1,2,3), or 'all'")
     parser.add_argument("--tier", default="path1", choices=["path1", "path2"], help="Render tier")
+    parser.add_argument("--output-json", default=None, help="Path to save consolidated JSON report")
     args = parser.parse_args()
 
     if args.chapter == "all":
@@ -276,6 +291,7 @@ def main() -> None:
         if not report.passed_all_gates:
             all_passed = False
 
+    arc_report = None
     if len(chapters) > 1:
         from echotales.pipeline.bible.arc import audit_arc_continuity
         shared_store = Store(":memory:")
@@ -299,6 +315,28 @@ def main() -> None:
         print(f"Audited Snapshots: {arc_report.total_snapshots_audited} | Issues Found: {len(arc_report.issues)}")
         print(f"Status: {'CONTINUITY VERIFIED' if arc_report.passed else 'ISSUES FOUND'}")
         print("=" * 68 + "\n")
+
+    repo_root = Path(__file__).resolve().parent.parent
+    if args.output_json:
+        out_path = Path(args.output_json)
+    else:
+        out_path = repo_root / "data" / "eval" / "benchmarks" / f"{args.novel}_{args.tier}_report.json"
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    report_payload: dict[str, Any] = {
+        "novel_id": args.novel,
+        "tier": args.tier,
+        "chapters": [r.to_dict() for r in reports],
+        "passed_all_gates": all_passed,
+    }
+    if arc_report is not None:
+        report_payload["arc_continuity"] = {
+            "audited_snapshots": arc_report.total_snapshots_audited,
+            "issues_count": len(arc_report.issues),
+            "passed": arc_report.passed,
+        }
+    out_path.write_text(json.dumps(report_payload, indent=2), encoding="utf-8")
+    print(f"Benchmark report saved to: {out_path.resolve()}\n")
 
     if not all_passed:
         sys.exit(1)

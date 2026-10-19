@@ -1,0 +1,81 @@
+{
+  "novel_id": "showcase",
+  "tier": "path1",
+  "chapters": [
+    {
+      "novel_id": "showcase",
+      "chapter": 1.0,
+      "tier": "path1",
+      "speaker_attribution_accuracy": 1.0,
+      "identity_match_score": 1.0,
+      "vlm_script_compliance_rate": 1.0,
+      "same_voice_collisions": 0,
+      "cost_per_finished_minute_usd": 0.11985124153498869,
+      "passed_all_gates": true,
+      "details": {
+        "total_dialogue_lines": 69,
+        "correct_attributions": 69,
+        "episode_duration_s": 265.8,
+        "num_shots": 35,
+        "cost_breakdown": {
+          "llm_adaptation": 0.0015400000000000001,
+          "keyframe_diffusion": 0.525,
+          "voice_synthesis": 0.004401,
+          "video_generation": 0.0
+        }
+      }
+    },
+    {
+      "novel_id": "showcase",
+      "chapter": 2.0,
+      "tier": "path1",
+      "speaker_attribution_accuracy": 1.0,
+      "identity_match_score": 1.0,
+      "vlm_script_compliance_rate": 1.0,
+      "same_voice_collisions": 0,
+      "cost_per_finished_minute_usd": 0.1479825842696629,
+      "passed_all_gates": true,
+      "details": {
+        "total_dialogue_lines": 32,
+        "correct_attributions": 32,
+        "episode_duration_s": 178.0,
+        "num_shots": 29,
+        "cost_breakdown": {
+          "llm_adaptation": 0.0015400000000000001,
+          "keyframe_diffusion": 0.435,
+          "voice_synthesis": 0.0024749999999999998,
+          "video_generation": 0.0
+        }
+      }
+    },
+    {
+      "novel_id": "showcase",
+      "chapter": 3.0,
+      "tier": "path1",
+      "speaker_attribution_accuracy": 1.0,
+      "identity_match_score": 1.0,
+      "vlm_script_compliance_rate": 1.0,
+      "same_voice_collisions": 0,
+      "cost_per_finished_minute_usd": 0.22006106115107915,
+      "passed_all_gates": true,
+      "details": {
+        "total_dialogue_lines": 134,
+        "correct_attributions": 134,
+        "episode_duration_s": 111.2,
+        "num_shots": 27,
+        "cost_breakdown": {
+          "llm_adaptation": 0.0015400000000000001,
+          "keyframe_diffusion": 0.405,
+          "voice_synthesis": 0.0013065,
+          "video_generation": 0.0
+        }
+      }
+    }
+  ],
+  "passed_all_gates": true,
+  "arc_continuity": {
+    "audited_snapshots": 3,
+    "issues_count": 0,
+    "passed": true
+  }
+}

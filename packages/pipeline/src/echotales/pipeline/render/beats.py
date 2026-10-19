@@ -1,5 +1,9 @@
 """Beat segmentation: how many panels a chapter actually deserves.
 
+DEPRECATED: Legacy illustrated-audiobook beat segmentation module.
+Superseded by `echotales.pipeline.screenplay.compiler` in Path 1 / Path 2 modernization.
+Retained for backward compatibility.
+
 **One panel per block was the wrong unit, and it is why a chapter produced
 89 images that were mostly repeated backgrounds.** A block is a paragraph;
 paragraphs are not panels. A chapter of a web novel contains on the order of

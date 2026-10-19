@@ -140,17 +140,21 @@ def compose_shot_2_5d(
         spec.audio_peaks, spec.duration_s, fps=fps
     )
 
-    # Overlays
+    # 2x Oversampling: render internally at 2x resolution and downscale to eliminate slow-pan stutter
+    internal_w = width * 2
+    internal_h = height * 2
+
+    # Overlays at 2x
     speedlines_overlay = (
-        create_radial_speedlines(width, height) if spec.audio_peaks else None
+        create_radial_speedlines(internal_w, internal_h) if spec.audio_peaks else None
     )
     onomatopoeia_overlay = (
-        render_onomatopoeia_overlay(spec.onomatopoeia, width, height)
+        render_onomatopoeia_overlay(spec.onomatopoeia, internal_w, internal_h)
         if spec.onomatopoeia
         else None
     )
     impact_frame_img = (
-        create_impact_frame(width, height) if spec.audio_peaks else None
+        create_impact_frame(internal_w, internal_h) if spec.audio_peaks else None
     )
 
     total_frames = len(trajectory.keyframes)
@@ -169,23 +173,23 @@ def compose_shot_2_5d(
             and (f_idx in peak_frames or (f_idx - 1) in peak_frames)
         ):
             frame_path = frames_dir / f"frame_{f_idx:05d}.png"
-            impact_frame_img.save(frame_path, "PNG")
+            impact_frame_img.resize((width, height), Image.Resampling.LANCZOS).save(frame_path, "PNG")
             continue
 
-        # Parallax background
+        # Parallax background at 2x
         bg_zoom, bg_pan_x, bg_pan_y = apply_parallax_transform(
             layers.background_layer, kf
         )
         frame_bg = _render_layer_transformed(
-            bg_img, width, height, bg_zoom, bg_pan_x, bg_pan_y, dx_shake * 0.5, dy_shake * 0.5
+            bg_img, internal_w, internal_h, bg_zoom, bg_pan_x, bg_pan_y, dx_shake * 0.5, dy_shake * 0.5
         )
 
-        # Parallax subject
+        # Parallax subject at 2x
         subj_zoom, subj_pan_x, subj_pan_y = apply_parallax_transform(
             layers.subject_layer, kf
         )
         frame_subj = _render_layer_transformed(
-            subj_img, width, height, subj_zoom, subj_pan_x, subj_pan_y, dx_shake, dy_shake
+            subj_img, internal_w, internal_h, subj_zoom, subj_pan_x, subj_pan_y, dx_shake, dy_shake
         )
 
         # Composite subject over background
@@ -200,10 +204,12 @@ def compose_shot_2_5d(
         if onomatopoeia_overlay:
             composited.paste(onomatopoeia_overlay, (0, 0), onomatopoeia_overlay)
 
+        # Downscale 2x render to target output resolution (eliminates panning stutter)
         frame_path = frames_dir / f"frame_{f_idx:05d}.png"
-        composited.save(frame_path, "PNG")
+        final_frame = composited.resize((width, height), Image.Resampling.LANCZOS)
+        final_frame.save(frame_path, "PNG")
 
-    # 3. Assemble with FFmpeg into MP4
+    # 3. Assemble with FFmpeg into MP4 with SFX and dialogue audio mixing
     out_video_path = out_dir / f"shot_{spec.shot_index:03d}.mp4"
 
     cmd = [
@@ -216,9 +222,21 @@ def compose_shot_2_5d(
     ]
 
     has_audio = spec.dialogue_audio_path and Path(spec.dialogue_audio_path).exists()
-    if has_audio:
+    valid_sfx = [s for s in spec.sfx_paths if Path(s).exists()]
+
+    if has_audio and valid_sfx:
+        cmd.extend(["-i", str(spec.dialogue_audio_path)])
+        for sfx in valid_sfx:
+            cmd.extend(["-i", str(sfx)])
+        n_inputs = 1 + len(valid_sfx)
+        cmd.extend(["-filter_complex", f"amix=inputs={n_inputs}:duration=longest:dropout_transition=2", "-c:a", "aac", "-b:a", "192k"])
+    elif has_audio:
         cmd.extend(["-i", str(spec.dialogue_audio_path)])
         cmd.extend(["-c:a", "aac", "-b:a", "192k", "-shortest"])
+    elif valid_sfx:
+        for sfx in valid_sfx:
+            cmd.extend(["-i", str(sfx)])
+        cmd.extend(["-c:a", "aac", "-b:a", "192k", "-t", str(spec.duration_s)])
     else:
         cmd.extend(["-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=24000"])
         cmd.extend(["-c:a", "aac", "-t", str(spec.duration_s)])
@@ -278,6 +296,7 @@ def compose_episode(
                 f.write(f"file '{p}'\n")
 
         # FFmpeg concatenation
+        concat_video = tmp_path / "raw_concat.mp4" if (bgm_path and Path(bgm_path).exists()) else out_file
         cmd = [
             "ffmpeg",
             "-y",
@@ -289,9 +308,34 @@ def compose_episode(
             str(concat_txt),
             "-c",
             "copy",
-            str(out_file),
+            str(concat_video),
         ]
         subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+
+        # Mix and duck BGM under dialogue if provided
+        if bgm_path and Path(bgm_path).exists():
+            cmd_bgm = [
+                "ffmpeg",
+                "-y",
+                "-i",
+                str(concat_video),
+                "-i",
+                str(bgm_path),
+                "-filter_complex",
+                "[1:a]volume=0.20[bgm];[0:a][bgm]amix=inputs=2:duration=first:dropout_transition=2[aout]",
+                "-map",
+                "0:v",
+                "-map",
+                "[aout]",
+                "-c:v",
+                "copy",
+                "-c:a",
+                "aac",
+                "-b:a",
+                "192k",
+                str(out_file),
+            ]
+            subprocess.run(cmd_bgm, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
 
     return RenderedEpisodeOutput(
         output_video_path=str(out_file),

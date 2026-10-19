@@ -19,8 +19,8 @@ from typing import Callable
 
 import numpy as np
 
-from workers.common.contract import TTSWorkerRequest, TTSWorkerResponse
-from workers.common.stub import run_tts_worker
+from echotales.pipeline.spans.delivery import DeliveryPolarity
+from echotales.pipeline.workers_contract import TTSWorkerRequest, TTSWorkerResponse, run_tts_worker
 
 
 class NarratorMood(StrEnum):
@@ -252,20 +252,47 @@ def extract_audio_peaks(
 
 def insert_nonverbal_breath(
     base_audio_bytes: bytes,
-    cue: str = "gasp",
+    cue: str | DeliveryPolarity = "gasp",
     *,
     sample_rate: int = 24000,
 ) -> bytes:
-    """Prepend a subtle dramatic breath or sharp gasp to heighten emotional delivery."""
+    """Prepend a subtle dramatic breath, sharp gasp, or sigh to heighten emotional delivery.
+    
+    Supports syncing directly with DeliveryPolarity (HEIGHTENED, COLD, WARM, HUSHED, HESITANT, FLAT).
+    """
     try:
         base_samples, sr = _read_wav_samples(base_audio_bytes)
 
-        # Generate 120ms shaped noise envelope for intake of breath
-        breath_dur = 0.12
+        if isinstance(cue, DeliveryPolarity):
+            if cue == DeliveryPolarity.HEIGHTENED:
+                cue_name = "gasp"
+            elif cue == DeliveryPolarity.HESITANT:
+                cue_name = "hesitation"
+            elif cue in (DeliveryPolarity.COLD, DeliveryPolarity.FLAT):
+                cue_name = "sigh"
+            elif cue == DeliveryPolarity.HUSHED:
+                cue_name = "whisper"
+            else:
+                cue_name = "breath"
+        else:
+            cue_name = str(cue).lower().strip()
+
+        if cue_name in ("gasp", "sharp"):
+            breath_dur = 0.12
+            amp = 0.18
+        elif cue_name in ("sigh", "cold"):
+            breath_dur = 0.22
+            amp = 0.10
+        elif cue_name in ("whisper", "hushed"):
+            breath_dur = 0.15
+            amp = 0.08
+        else:
+            breath_dur = 0.14
+            amp = 0.12
+
         n_breath = int(sr * breath_dur)
         t = np.linspace(0.0, 1.0, n_breath)
-        # Rising attack envelope
-        envelope = np.sin(t * (np.pi / 2.0)) * 0.15
+        envelope = np.sin(t * (np.pi / 2.0)) * amp
         noise = (np.random.RandomState(42).randn(n_breath) * envelope).astype(np.float32)
 
         combined = np.concatenate([noise, base_samples])

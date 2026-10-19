@@ -1,6 +1,10 @@
 """Compositor: a timed shot list + the rendered voice track -> one mp4 per
 chapter (xyz.md Step 4, video revision -- the final stage).
 
+DEPRECATED: Legacy illustrated-audiobook compositor.
+Superseded by `echotales.pipeline.compositor.engine` in Path 1 / Path 2 modernization.
+Retained for backward compatibility.
+
 **Same protocol/stub/real split as every other backend in this pipeline**
 (`llm/`, `voice/engine.py`, `render/panels.py`, `render/motion.py`), and the
 same reason: `StubComposeEngine` needs no `ffmpeg` on the machine and is

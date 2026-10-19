@@ -261,3 +261,70 @@ def test_store_review_item_lifecycle(store: Store) -> None:
     assert len(resolved_items) == 1
     assert resolved_items[0].resolution == "MERGE_AS_ALIAS"
     assert resolved_items[0].resolved is True
+
+
+def test_location_plates_persona_versions_and_relationships(store: Store) -> None:
+    from echotales.core.models import LocationPlate, PersonaVersion, Relation, VoiceProfile
+
+    # 1. LocationPlate CRUD
+    plate = LocationPlate(
+        id="plate:221b",
+        novel_id="showcase",
+        location_id="loc:study",
+        title="221B Baker St Study",
+        source_url="file:///tmp/study.png",
+        angle="establishing",
+        time_of_day="day",
+        is_approved=True,
+    )
+    store.add_location_plate(plate)
+    plates = store.list_location_plates("showcase", "loc:study")
+    assert len(plates) == 1
+    assert plates[0].id == "plate:221b"
+    assert plates[0].is_approved is True
+
+    # 2. PersonaVersion CRUD
+    pv = PersonaVersion(
+        id="pv:holmes:1",
+        novel_id="showcase",
+        self_id="char:holmes",
+        persona_id="persona:holmes:dressing_gown",
+        chapter_introduced=1.0,
+        shift_reason="outfit_change",
+    )
+    store.add_persona_version(pv)
+    pvs = store.list_persona_versions("showcase", "char:holmes")
+    assert len(pvs) == 1
+    assert pvs[0].persona_id == "persona:holmes:dressing_gown"
+
+    # 3. VoiceProfile CRUD
+    vp = VoiceProfile(
+        id="vp:holmes",
+        novel_id="showcase",
+        self_id="char:holmes",
+        speaker_id="p225",
+        gender="male",
+        pitch=1.05,
+    )
+    store.add_voice_profile(vp)
+    fetched_vp = store.get_voice_profile("showcase", "char:holmes")
+    assert fetched_vp is not None
+    assert fetched_vp.speaker_id == "p225"
+
+    # 4. Relation in StoryBibleSnapshot
+    store.add_self(Self(id="char:holmes", novel_id="showcase", canonical_label="Holmes", first_attested_pos=DiscoursePosition(chapter=1, offset=0)))
+    store.add_self(Self(id="char:watson", novel_id="showcase", canonical_label="Watson", first_attested_pos=DiscoursePosition(chapter=1, offset=0)))
+    store.add_relation("showcase", Relation(
+        src_self="char:holmes",
+        dst_self="char:watson",
+        type="colleague",
+        learned_at_pos=DiscoursePosition(chapter=1, offset=0),
+        observer_id="narrator",
+        asserted_by=AssertedBy.NARRATOR,
+        evidence="my dear Watson",
+        interval=FuzzyInterval.open_ended(1.0),
+    ))
+
+    snapshot = store.bible_at("showcase", 1.0)
+    assert "char:holmes" in snapshot.relationships
+    assert snapshot.relationships["char:holmes"]["char:watson"] == "colleague"

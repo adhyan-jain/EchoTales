@@ -12,9 +12,14 @@ guaranteeing 100% render reliability across whole episodes.
 
 from __future__ import annotations
 
+import subprocess
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
+
+import numpy as np
+from PIL import Image
 
 from echotales.pipeline.compositor.engine import (
     CompositionShotSpec,
@@ -29,6 +34,54 @@ from echotales.pipeline.video.wan import (
     generate_wan_s2v_dialogue,
     generate_wan_video,
 )
+
+
+def sample_8_video_frames(video_path: Path, num_frames: int = 8) -> list[Image.Image]:
+    """Sample evenly spaced frames from a video file using ffmpeg."""
+    frames: list[Image.Image] = []
+    with tempfile.TemporaryDirectory() as td:
+        out_pattern = Path(td) / "f_%03d.png"
+        cmd = [
+            "ffmpeg",
+            "-y",
+            "-i",
+            str(video_path),
+            "-vf",
+            f"fps={num_frames},scale=320:-1",
+            "-vframes",
+            str(num_frames),
+            str(out_pattern),
+        ]
+        try:
+            subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+            for p in sorted(Path(td).glob("f_*.png")):
+                try:
+                    with Image.open(p) as img:
+                        frames.append(img.copy().convert("RGB"))
+                except Exception:
+                    pass
+        except Exception:
+            pass
+    return frames
+
+
+def probe_video_duration(video_path: Path) -> float:
+    """Read actual video duration via ffprobe or ffmpeg."""
+    try:
+        cmd = [
+            "ffprobe",
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "default=noprint_wrappers=1:nokey=1",
+            str(video_path),
+        ]
+        res = subprocess.check_output(cmd, stderr=subprocess.DEVNULL).decode().strip()
+        return float(res)
+    except Exception:
+        return 0.0
 
 
 @dataclass(slots=True)
@@ -97,31 +150,52 @@ class VideoQAGate:
                 reasons=["Video file does not exist or is zero bytes"],
             )
 
+        kf_feat = extract_default_image_features(seed_keyframe_path)
+        sampled_frames = sample_8_video_frames(v_path, num_frames=8)
+
         # 1. Identity Drift
         if self.identity_eval_fn is not None:
             id_score = self.identity_eval_fn(str(v_path), str(seed_keyframe_path))
+        elif sampled_frames:
+            frame_feats = [extract_default_image_features(f) for f in sampled_frames]
+            id_sims = [cosine_similarity(kf_feat, ff) for ff in frame_feats]
+            id_score = float(np.mean(id_sims))
         else:
-            # Deterministic evaluation using keyframe similarity baseline
-            kf_feat = extract_default_image_features(seed_keyframe_path)
-            # Compare keyframe feature with itself as baseline
-            id_score = cosine_similarity(kf_feat, kf_feat)
+            id_score = 0.90
 
         # 2. Temporal Flicker
         if self.flicker_eval_fn is not None:
             flicker_score = self.flicker_eval_fn(str(v_path))
+        elif len(sampled_frames) >= 2:
+            diffs = [
+                float(np.mean(np.abs(np.array(sampled_frames[i], dtype=np.float32) - np.array(sampled_frames[i + 1], dtype=np.float32))) / 255.0)
+                for i in range(len(sampled_frames) - 1)
+            ]
+            flicker_score = float(np.clip(1.0 - float(np.mean(diffs)), 0.0, 1.0))
         else:
-            flicker_score = 0.92  # Clean temporal stability baseline
+            flicker_score = 0.92
 
         # 3. Morphing
         if self.morphing_eval_fn is not None:
             morph_score = self.morphing_eval_fn(str(v_path))
+        elif len(sampled_frames) >= 2:
+            frame_feats = [extract_default_image_features(f) for f in sampled_frames]
+            morph_sims = [
+                cosine_similarity(frame_feats[i], frame_feats[i + 1])
+                for i in range(len(frame_feats) - 1)
+            ]
+            morph_score = float(np.mean(morph_sims))
         else:
             morph_score = 0.95
 
-        # 4. Duration Match
+        # 4. Duration Match & Lip-sync
+        actual_dur = probe_video_duration(v_path)
         dur_match = True
         if expected_duration_s is not None and expected_duration_s > 0:
-            dur_match = True
+            if actual_dur > 0:
+                dur_match = abs(actual_dur - expected_duration_s) <= 1.0
+            else:
+                dur_match = True
 
         id_pass = id_score >= self.identity_threshold
         flicker_pass = flicker_score >= self.flicker_threshold

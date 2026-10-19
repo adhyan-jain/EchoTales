@@ -23,13 +23,13 @@ from echotales.pipeline.keyframes.qa import (
     KeyframeQAGate,
     KeyframeQAReport,
 )
+from echotales.pipeline.persona.prompt import fit_to_budget
 from echotales.pipeline.screenplay.schema import (
     CameraMove,
     ScreenplayShot,
     ShotSize,
 )
-from workers.common.contract import ImageWorkerRequest, ImageWorkerResponse
-from workers.common.stub import run_image_worker
+from echotales.pipeline.workers_contract import ImageWorkerRequest, ImageWorkerResponse, run_image_worker
 
 
 @dataclass(slots=True)
@@ -132,12 +132,14 @@ def build_shot_prompt(
     chars_str = ", ".join(char_descs) if char_descs else "empty environmental scene"
     props_str = f", holding {', '.join(shot.props)}" if shot.props else ""
 
-    positive = (
-        f"{framing_desc}, {camera_desc}, {chars_str}{props_str}. "
-        f"Action: {shot.action}. Location: {shot.location_id}. "
-        f"Masterpiece, cinematic lighting, 8k resolution, crisp manhwa digital illustration, "
-        f"vibrant colors, dramatic shadows, highly detailed artwork."
-    )
+    clauses = [
+        f"{framing_desc}, {camera_desc}",
+        f"{chars_str}{props_str}",
+        f"action: {shot.action}",
+        f"location: {shot.location_id}",
+        "crisp manhwa digital illustration, vibrant colors, dramatic lighting, highly detailed artwork",
+    ]
+    positive = fit_to_budget(clauses, limit=75)
 
     negative = (
         "low quality, blurry, distorted hands, missing fingers, extra limbs, "
@@ -148,11 +150,27 @@ def build_shot_prompt(
     return positive, negative
 
 
+@dataclass(slots=True)
+class ShotRenderContext:
+    """Consolidated context for shot candidate generation and QA."""
+
+    shot: ScreenplayShot
+    store: Store
+    novel_id: str
+    output_dir: Path | str
+    num_candidates: int = 4
+    base_seed: int = 42
+    width: int = 1080
+    height: int = 1920
+    bible_snapshot: StoryBibleSnapshot | None = None
+    run_worker: Callable[[ImageWorkerRequest], ImageWorkerResponse] = run_image_worker
+
+
 def generate_keyframe_candidates(
-    shot: ScreenplayShot,
-    store: Store,
-    novel_id: str,
-    output_dir: Path | str,
+    shot: ScreenplayShot | ShotRenderContext,
+    store: Store | None = None,
+    novel_id: str | None = None,
+    output_dir: Path | str | None = None,
     *,
     num_candidates: int = 4,
     base_seed: int = 42,
@@ -162,6 +180,42 @@ def generate_keyframe_candidates(
     run_worker: Callable[[ImageWorkerRequest], ImageWorkerResponse] = run_image_worker,
 ) -> list[KeyframeCandidate]:
     """Generate multi-candidate keyframes conditioned on approved references."""
+    if isinstance(shot, ShotRenderContext):
+        ctx = shot
+        shot_obj = ctx.shot
+        store_obj = ctx.store
+        novel_id_val = ctx.novel_id
+        out_dir_val = ctx.output_dir
+        num_cands = ctx.num_candidates
+        b_seed = ctx.base_seed
+        w = ctx.width
+        h = ctx.height
+        b_snap = ctx.bible_snapshot
+        worker_fn = ctx.run_worker
+    else:
+        assert store is not None and novel_id is not None and output_dir is not None
+        shot_obj = shot
+        store_obj = store
+        novel_id_val = novel_id
+        out_dir_val = output_dir
+        num_cands = num_candidates
+        b_seed = base_seed
+        w = width
+        h = height
+        b_snap = bible_snapshot
+        worker_fn = run_worker
+
+    shot = shot_obj
+    store = store_obj
+    novel_id = novel_id_val
+    output_dir = out_dir_val
+    num_candidates = num_cands
+    base_seed = b_seed
+    width = w
+    height = h
+    bible_snapshot = b_snap
+    run_worker = worker_fn
+
     violations = verify_shot_approved_references(shot, store, novel_id)
     if violations:
         raise ValueError(

@@ -174,27 +174,57 @@ def cast_voices(
 
     return assignments, report
 
+def speaker_embedding_distance(
+    spk_a: str,
+    spk_b: str,
+    embedding_map: dict[str, list[float]] | None = None,
+) -> float:
+    """Compute acoustic/embedding cosine distance between two speakers."""
+    if spk_a == spk_b:
+        return 0.0
+    if embedding_map and spk_a in embedding_map and spk_b in embedding_map:
+        import numpy as np
+        vec_a = np.array(embedding_map[spk_a], dtype=float)
+        vec_b = np.array(embedding_map[spk_b], dtype=float)
+        norm_a = np.linalg.norm(vec_a)
+        norm_b = np.linalg.norm(vec_b)
+        if norm_a > 0 and norm_b > 0:
+            sim = float(np.dot(vec_a, vec_b) / (norm_a * norm_b))
+            return max(0.0, 1.0 - sim)
+    return 0.50
+
 
 def verify_no_co_occurring_voice_collisions(
     scene_character_ids: list[str],
     assignments: dict[str, VoiceAssignment],
+    *,
+    min_embedding_distance: float = 0.25,
+    embedding_map: dict[str, list[float]] | None = None,
 ) -> list[tuple[str, str, str]]:
-    """Verify that no two characters in the same scene share the same speaker voice.
+    """Verify that no two characters in the same scene share the same speaker voice or near-identical timbre.
     
-    Returns list of collision tuples (char_a, char_b, shared_speaker_id).
+    Returns list of collision tuples (char_a, char_b, shared_or_colliding_speaker_id).
     """
     collisions: list[tuple[str, str, str]] = []
     seen: dict[str, str] = {}  # speaker_id -> char_id
 
-    for char_id in scene_character_ids:
-        assignment = assignments.get(char_id)
-        if not assignment:
-            continue
-        spk = assignment.speaker_id
-        if spk in seen:
-            collisions.append((seen[spk], char_id, spk))
+    # Check identical speaker ID and pairwise embedding distance
+    chars = [c for c in scene_character_ids if c in assignments]
+    for i in range(len(chars)):
+        c_a = chars[i]
+        spk_a = assignments[c_a].speaker_id
+        if spk_a in seen:
+            collisions.append((seen[spk_a], c_a, spk_a))
         else:
-            seen[spk] = char_id
+            seen[spk_a] = c_a
+
+        for j in range(i + 1, len(chars)):
+            c_b = chars[j]
+            spk_b = assignments[c_b].speaker_id
+            if spk_a != spk_b:
+                dist = speaker_embedding_distance(spk_a, spk_b, embedding_map)
+                if dist < min_embedding_distance:
+                    collisions.append((c_a, c_b, f"{spk_a}~{spk_b}"))
 
     return collisions
 
@@ -203,24 +233,34 @@ def enforce_episode_zero_collision(
     episode_scenes_characters: list[list[str]],
     assignments: dict[str, VoiceAssignment],
     bank: VoiceBank,
+    *,
+    min_embedding_distance: float = 0.25,
+    embedding_map: dict[str, list[float]] | None = None,
 ) -> dict[str, VoiceAssignment]:
     """Strictly resolve any co-occurring voice collisions across an episode's scenes."""
     adjusted = dict(assignments)
 
     for scene_chars in episode_scenes_characters:
-        collisions = verify_no_co_occurring_voice_collisions(scene_chars, adjusted)
+        collisions = verify_no_co_occurring_voice_collisions(
+            scene_chars, adjusted, min_embedding_distance=min_embedding_distance, embedding_map=embedding_map
+        )
         for char_a, char_b, shared_spk in collisions:
-            # Reassign char_b to an available voice in their bucket
             b_assign = adjusted[char_b]
             bucket_voices = bank.nearest_bucket(
                 b_assign.bucket.split(":")[0], b_assign.bucket.split(":")[1]
             )
-            # Find an unused voice in this scene
             scene_used = {
                 adjusted[c].speaker_id for c in scene_chars if c in adjusted and c != char_b
             }
             replacement = next(
-                (v for v in bucket_voices if v.speaker_id not in scene_used),
+                (
+                    v for v in bucket_voices
+                    if v.speaker_id not in scene_used
+                    and all(
+                        speaker_embedding_distance(v.speaker_id, adjusted[c].speaker_id, embedding_map) >= min_embedding_distance
+                        for c in scene_chars if c in adjusted and c != char_b
+                    )
+                ),
                 None,
             )
             if replacement:

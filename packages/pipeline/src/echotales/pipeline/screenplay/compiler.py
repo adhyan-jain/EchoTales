@@ -310,8 +310,35 @@ def _compile_with_llm(
     llm: ScreenplayLLM,
     default_render_tier: RenderTier,
 ) -> ScreenplayEpisode:
-    """Frontier LLM screenplay compiler."""
-    # (LLM prompt omitted for brevity, fall back to rule-based on parse failure)
+    """Frontier LLM screenplay compiler with structured JSON output and rule-based fallback."""
+    import json
+    import re
+
+    system = (
+        "You are an expert anime and manhwa screenplay director adapting web novel chapters into "
+        "high-energy visual episodes. Output valid JSON adhering to the ScreenplayEpisode schema."
+    )
+    prompt = (
+        f"Adapt novel '{novel_id}' chapters {chapters} into an animated screenplay episode.\n"
+        f"Characters available: {list(snapshot.characters.keys())}\n"
+        f"Locations available: {list(snapshot.locations.keys())}\n\n"
+        f"Chapter text:\n{chapter_text[:4000]}\n\n"
+        "Return a JSON object with keys: episode_id, title, scenes (list of Scene objects with shots)."
+    )
+
+    try:
+        raw = llm.complete(prompt, system=system).strip()
+        match = re.search(r"\{.*\}", raw, re.DOTALL)
+        if match:
+            data = json.loads(match.group(0))
+            if "scenes" in data:
+                ep = ScreenplayEpisode.from_dict(data)
+                errors = validate_screenplay(ep)
+                if not errors:
+                    return ep
+    except Exception:
+        pass
+
     return _compile_rule_based(
         novel_id, episode_number, chapters, chapter_text, snapshot, default_render_tier
     )

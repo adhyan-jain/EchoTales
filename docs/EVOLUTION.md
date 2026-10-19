@@ -8991,3 +8991,33 @@ Repository-wide sweep across core, pipeline, ecrdt, research, workers, eval, and
   - 29 research pass (7.13s).
   - 124 webview jest pass (4.35s).
   - Total: 1,664 tests passing across the repository.
+
+### 4.120 Resolution of Two-Axis Code Review Findings across Standards and Spec *(2026-10-19)*
+
+Comprehensive resolution of all findings identified during the Standards and Spec two-axis review of modern pipeline components (`b0dde8f..HEAD`):
+
+- **Standards Violations Resolved:**
+  - **CLIP 77-Token Prompt Budget:** Integrated `fit_to_budget` in `build_location_prompt` (`assets/location.py`), `build_turnaround_prompt` and `build_expression_prompt` (`assets/turnaround.py`), and `build_shot_prompt` (`keyframes/engine.py`). Prompts now strictly enforce the 75-token safety threshold.
+  - **Package Isolation (`workers_contract.py`):** Created `packages/pipeline/src/echotales/pipeline/workers_contract.py` defining protocol interfaces (`ImageEngineProtocol`, `VideoEngineProtocol`, `TTSEngineProtocol`), request/response dataclasses, and dependency-free offline stubs. Rerouted all pipeline imports (`assets/`, `keyframes/`, `video/`, `voice/`) to depend on internal contract definitions rather than root `workers/`.
+  - **Backend Naming Discipline:** Added `VideoEngine` protocol, `WanVideoEngine`, `LTXVideoEngine`, `StubVideoEngine`, and `get_video_engine()` factory in `packages/pipeline/src/echotales/pipeline/video/__init__.py`.
+  - **TTS Duplicated Logic:** Extracted shared audio persistence and `TTSResult` mapping into `save_tts_response` in `voice/qwen_tts.py` and reused across `voice/dia2.py`.
+  - **Data Clump Refactoring:** Extracted `ShotRenderContext` in `keyframes/engine.py` consolidating shot rendering parameters.
+  - **Screenplay LLM Middle Man:** Replaced empty pass-through in `_compile_with_llm` (`screenplay/compiler.py`) with structured JSON prompting and robust fallback handling.
+
+- **Spec Incomplete Implementations Resolved:**
+  - **Story Bible Schema & Relationships Matrix:** Added `location_plate`, `persona_version`, and `voice_profile` SQLite tables to `_SCHEMA` in `core/store.py`. Added corresponding dataclasses to `core/models.py`. Implemented Store CRUD methods (`add_location_plate`, `list_location_plates`, `add_persona_version`, `list_persona_versions`, `add_voice_profile`, `get_voice_profile`). Enhanced `Store.bible_at` to compute the active pairwise character `relationships` dictionary.
+  - **Compositor 2x Oversampling & Audio Mixing:** Rendered 2.5D parallax at 2x resolution (`2160x3840`) and downscaled via Lanczos filtering to eliminate pan stutter. Added multi-track SFX audio mixing via ffmpeg `amix` and automated BGM ducking under speech (`volume=0.20`) in `compositor/engine.py`.
+  - **8-Frame Video QA Engine:** Added real frame sampling (`sample_8_video_frames`), video duration probing (`probe_video_duration`), inter-frame luminance diffs (temporal flicker), structural similarity (morphing), and keyframe-to-frame cosine similarity (identity drift) in `video/qa.py`.
+  - **Voice Collision Embedding Distance:** Implemented `speaker_embedding_distance` in `voice/casting.py` enforcing pairwise cosine distance checks (>= 0.25) in `verify_no_co_occurring_voice_collisions` and `enforce_episode_zero_collision`.
+  - **Non-verbal Breath Syncing:** Updated `insert_nonverbal_breath` in `voice/exclamations.py` to sync non-verbal breath inserts with `DeliveryPolarity`.
+  - **Benchmark Report Persistence:** Added `--output-json` flag and automatic JSON persistence in `eval/run_benchmark.py` writing consolidated benchmark metrics to `data/eval/benchmarks/showcase_path1_report.json`.
+  - **Legacy Render Deprecation:** Added deprecation notices to legacy `render/*.py` modules (`direction.py`, `beats.py`, `scenes.py`, `panels.py`, `compose.py`, `motion.py`).
+
+- **Verification:**
+  - `python3 -m ruff check --select F401,F841,RUF059,B018 packages/ eval/ workers/ scripts/`: 0 errors.
+  - Zero emojis and zero section symbols across git diff.
+- **Tests.**
+  - 1,512 core+pipeline pass (83.72s, 1 new unit test in `test_store_bible.py`).
+  - 29 research pass (8.60s).
+  - 124 webview jest pass (4.44s).
+  - Total: 1,665 tests passing across the repository.

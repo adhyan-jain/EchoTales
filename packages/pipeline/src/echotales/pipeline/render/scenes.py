@@ -1,5 +1,9 @@
 """Group a chapter's blocks into scenes, for image-generation budgeting.
 
+DEPRECATED: Legacy illustrated-audiobook scene grouping module.
+Superseded by `echotales.pipeline.screenplay.compiler` in Path 1 / Path 2 modernization.
+Retained for backward compatibility.
+
 **Why this exists, separate from `render/beats.py`.** `beats.py` groups
 blocks into *drawable moments* and then merges down to a hard panel count
 (`max_panels`) by dropping the least dramatic ones -- the right unit for
