@@ -275,6 +275,19 @@ conflated.
 - **Open:** every figure on the page is exploratory; labels are text-derived
   and the owner spot-check is pending. Nothing on it is human-annotated.
 
+## Pick up here — 2026-10-16 (webview Research view, EVOLUTION 4.102)
+
+- **Uncommitted, additive UI surface.** `/research` page, three
+  `/api/research/*` routes, `pipeline/research_demo.py`. Reads stored
+  results under `data/eval/chimera/`; the live probe calls local ollama only
+  (5-model allow-list). Details and run instructions are in EVOLUTION 4.102
+  and `docs/paper/project_doc/FRONTEND_RESEARCH_VIEW.md`.
+- **Open:** `GET /api/research/items` returns 404 until
+  `python scripts/chimera/build_demo_items.py` has been run (needs the
+  Gutenberg texts under `data/raw/pd_gutenberg/`, not in git).
+- **Open:** every figure on the page is exploratory; labels are text-derived
+  and the owner spot-check is pending. Nothing on it is human-annotated.
+
 ## Pick up here — 2026-10-02 (mutation lab, EVOLUTION 4.101)
 
 - **Research state of record is still `docs/research/DECISION_LOG.md`.**
