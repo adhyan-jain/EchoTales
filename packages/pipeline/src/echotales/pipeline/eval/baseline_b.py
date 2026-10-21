@@ -44,7 +44,7 @@ instead of one. Wall time and call counts are recorded per run for exactly
 that reason.
 
 Scored against an LLM-derived SILVER reference set, never human gold; see
-`docs/results/GOLD_DATASET_README.md`.
+`docs/results/GOLD_AND_ANNOTATION.md`.
 """
 
 from __future__ import annotations

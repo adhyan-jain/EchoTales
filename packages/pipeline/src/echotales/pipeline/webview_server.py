@@ -591,6 +591,18 @@ def _gpu_refusal(engine_name: str) -> str | None:
     return resource_refusal(engine_name, http=True)
 
 
+def _stale_build_refusal(handle, novel_id: str, engine_name: str) -> str | None:  # type: ignore[no-untyped-def]
+    """Refuse a real render from a database built by older code (`pipeline/version.py`).
+
+    The stub engine is exempt: it draws placeholders, so a stale bible cannot waste GPU time or leak into a
+    deliverable, and the stub is how the Studio and CI are exercised."""
+    if engine_name == "stub":
+        return None
+    from echotales.pipeline.version import staleness_reason
+
+    return staleness_reason(handle.store, novel_id)
+
+
 def _compute_status() -> dict:  # type: ignore[type-arg]
     """What the Studio needs to choose an engine and set expectations. Names of missing variables, never values."""
     from echotales.pipeline import gpu
@@ -1940,7 +1952,9 @@ def make_handler(
                     if kind in ("render", "reference_gen"):
                         # The same guard and digest as the dedicated generate routes: this route used to accept a
                         # real engine on a busy GPU and ignore a changed genre.
-                        refusal = _gpu_refusal(str(params.get("engine", "stub")))
+                        refusal = _gpu_refusal(str(params.get("engine", "stub"))) or _stale_build_refusal(
+                            handle, parts[2], str(params.get("engine", "stub"))
+                        )
                         if refusal:
                             return self._json(409, {"error": refusal})
                         params = _with_genre(handle, params)
@@ -1982,7 +1996,7 @@ def make_handler(
                                 f"allowed: {_enabled_engines()}"
                             },
                         )
-                    refusal = _gpu_refusal(engine_name)
+                    refusal = _gpu_refusal(engine_name) or _stale_build_refusal(handle, parts[2], engine_name)
                     if refusal:
                         return self._json(409, {"error": refusal})
                     return self._json(202, self._enqueue(handle, "render", _with_genre(handle, dict(body))))

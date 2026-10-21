@@ -48,6 +48,7 @@ from echotales.core.pipeline_run import (
     start_stage,
 )
 from echotales.core.store import Store
+from echotales.pipeline.version import PIPELINE_VERSION
 
 log = logging.getLogger(__name__)
 
@@ -181,8 +182,10 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
     novel_id = job.novel_id
     source_path = params.get("source_path", "")
     source_digest = digest_text(source_path or novel_id)
-    pipeline_run = ensure_pipeline_run(store, novel_id=novel_id, source_digest=source_digest)
-    input_digest = digest_text(f"{source_digest}|{job.kind}|v1|{job.params_json}")
+    pipeline_run = ensure_pipeline_run(
+        store, novel_id=novel_id, source_digest=source_digest, pipeline_version=PIPELINE_VERSION
+    )
+    input_digest = digest_text(f"{source_digest}|{job.kind}|v{PIPELINE_VERSION}|{job.params_json}")
 
     #: A project created through `POST /api/projects` + `/source` (rather
     #: than one of the three research-canonical novels) is never added to

@@ -186,14 +186,28 @@ def stage(
 
 
 def ensure_pipeline_run(
-    store: Store, *, novel_id: str, source_digest: str, run_id: str | None = None
+    store: Store,
+    *,
+    novel_id: str,
+    source_digest: str,
+    run_id: str | None = None,
+    pipeline_version: str = "",
 ) -> PipelineRun:
     """Fetch an existing `pipeline_run` row or create one. Idempotent by
     `run_id` so re-entering the same run (e.g. resuming a chained stage
-    sequence) never duplicates the row."""
+    sequence) never duplicates the row.
+
+    `pipeline_version` was never set before 2026-10-22, so every database in
+    `data/db/` carried an empty stamp and a build made before the speaker-join
+    fix was indistinguishable from a current one (audit: LotM personas built
+    from "0 spoken lines"). A re-entered run is re-stamped to the version now
+    executing, so the stamp always names the newest code that touched it."""
     rid = run_id or new_run_id(novel_id, source_digest)
     existing = store.get_pipeline_run(rid)
     if existing is not None:
+        if pipeline_version and existing.pipeline_version != pipeline_version:
+            store.set_pipeline_run_version(rid, pipeline_version)
+            existing.pipeline_version = pipeline_version
         return existing
     run = PipelineRun(
         run_id=rid,
@@ -201,6 +215,7 @@ def ensure_pipeline_run(
         source_digest=source_digest,
         created_at=time.time(),
         status=StageStatus.RUNNING,
+        pipeline_version=pipeline_version,
     )
     store.add_pipeline_run(run)
     return run

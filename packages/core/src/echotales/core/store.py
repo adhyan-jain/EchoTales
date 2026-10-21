@@ -2020,6 +2020,23 @@ class Store:
         )
         self.conn.commit()
 
+    def set_pipeline_run_version(self, run_id: str, pipeline_version: str) -> None:
+        self.conn.execute(
+            "UPDATE pipeline_run SET pipeline_version=? WHERE run_id=?",
+            (pipeline_version, run_id),
+        )
+        self.conn.commit()
+
+    def latest_pipeline_version(self, novel_id: str) -> str | None:
+        """Stamp of the newest `pipeline_run` for the novel; None when the
+        database has never recorded a run, "" when it predates stamping."""
+        row = self.conn.execute(
+            "SELECT pipeline_version FROM pipeline_run WHERE novel_id=?"
+            " ORDER BY created_at DESC, rowid DESC LIMIT 1",
+            (novel_id,),
+        ).fetchone()
+        return None if row is None else row["pipeline_version"]
+
     def get_pipeline_run(self, run_id: str) -> PipelineRun | None:
         row = self.conn.execute(
             "SELECT * FROM pipeline_run WHERE run_id=?", (run_id,)

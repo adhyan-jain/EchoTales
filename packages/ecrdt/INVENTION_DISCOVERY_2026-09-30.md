@@ -1,6 +1,6 @@
 # Standalone invention discovery — 2026-09-30
 
-Executes `docs/status/REFACTOR_REPORT.md`'s follow-on task: mine EchoTales'
+Executes `docs/archive/REFACTOR_REPORT.md`'s follow-on task: mine EchoTales'
 own measured bottlenecks for a standalone technical invention, independent
 of any patent-EchoTales goal. Full process and triage reasoning:
 `~/.claude/plans/twinkly-snacking-minsky.md` (this session's approved plan).

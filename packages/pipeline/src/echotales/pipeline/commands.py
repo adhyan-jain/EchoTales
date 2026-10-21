@@ -30,6 +30,7 @@ from echotales.core.pipeline_run import (
 from echotales.core.state import StateResolver
 from echotales.core.store import Store
 from echotales.pipeline.config import get_settings
+from echotales.pipeline.version import PIPELINE_VERSION
 
 log = logging.getLogger(__name__)
 
@@ -139,7 +140,9 @@ def cmd_run(args: argparse.Namespace) -> int:
     # this stage run at all against this exact source, this run" rather than
     # "did any upstream input actually change".
     source_digest = source_digest_of(config.path)
-    pipeline_run = ensure_pipeline_run(store, novel_id=novel, source_digest=source_digest)
+    pipeline_run = ensure_pipeline_run(
+        store, novel_id=novel, source_digest=source_digest, pipeline_version=PIPELINE_VERSION
+    )
 
     def stage(name: str, fn):  # type: ignore[no-untyped-def]
         """Timing/report wrapper around `jobs.run_stage` -- the one code
@@ -148,7 +151,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         from echotales.pipeline.jobs import run_stage
 
         started = time.perf_counter()
-        input_digest = digest_text(f"{source_digest}|{name}|v1")
+        input_digest = digest_text(f"{source_digest}|{name}|v{PIPELINE_VERSION}")
         try:
             # `skip_if_succeeded=False`: `echotales run` has always executed
             # every phase unconditionally (its coarse digest doesn't depend
