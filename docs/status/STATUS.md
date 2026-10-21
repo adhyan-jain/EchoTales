@@ -29,11 +29,24 @@ merged to `master`. **Canonical database:** `data/db/reverend-insanity.db`
 
 ---
 
-## Test status (2026-10-02)
+## Phase A in progress (2026-10-22)
+
+The 2026-10-22 audit (LotM ch1-40) found the extractor links names to
+identities but does not read facts; see `docs/HANDOFF.md` "Pick up here" for
+the open audit defects and `docs/design/decisions.md` (D8, D10) for decisions.
+Status of the new work: **A1 done** (`PIPELINE_VERSION="2"` stamped into
+`pipeline_run`; non-stub render routes return 409 on unstamped/older
+databases; stub exempt). **A2 started** (silver-set scorer
+`eval/reader_gold.py`; LotM ch7 baseline speakers 16/43 = 37%). A3-A9 (reader
+pass, validators, look timeline, text-only canon, rebuild) not started. Any
+"Working" row below that depends on appearance attributes, speaker accuracy or
+persona links should be read against those audit defects until Gate A passes.
+
+## Test status (2026-10-22 for backend; other rows as dated 2026-10-02)
 
 | Suite | Result |
 |---|---|
-| Backend (`packages/core` + `packages/pipeline`) | 1,206 passed (130 + 1,076, 2026-10-02) |
+| Backend (`packages/core` + `packages/pipeline`) | 1,520 passed (2026-10-22; was 1,206 on 2026-10-02) |
 | `packages/research` (research arena) | 16 passed |
 | `packages/ecrdt` (standalone research package) | 55 passed |
 | Webview (Jest) | 82 passed |
@@ -78,7 +91,7 @@ not merely undocumented).
 | Candidate retrieval | `resolve/retrieve.py::CandidateRetriever`; recall@10 real: `RIGID_NAME` ~100%, `RELATIONAL_DEICTIC` 0%→59%, `TRANSFERABLE_TITLE` structurally unmeasurable on RI (every real mention correctly resolves to `None` by design, non-negotiable #9) | Partial | none | 1/3 alias types has no defensible recall@k number, ever, on this novel, under the current eval design | redesign the eval question for `TRANSFERABLE_TITLE` (score correct-DEFER, or use a novel with an eventual reveal) | mention detection, gold set |
 | Scorer | `resolve/score.py`, 5 dense features + 3 hard pre-filters | **OPTIONAL / EXPERIMENTAL — contributes 0 links on the canonical run (16,538 pairs, max score 0.41); every link comes from the deterministic pre-filters. Do not claim it improves resolution.** Ranks the correct candidate first 97/103 times (94.2%) — it is not blind — but `speech_partner_compatibility` is 0, `temporal_validity` is 1, and `first_attested_soft_prior` is never positive on every one of 15,796 real pairs, so the best reachable probability is 0.550 against the 0.80 threshold. A chronologically-split refit does not move this. Every one of the 103 labelled gold candidates is decided by a pre-filter before the scorer sees it, so the scorer's own operating region has zero labels | none (pre-filters cover real traffic) | central open research problem; retire or activate the three inert features, or make the decision comparative (rank+margin) since ranking is already 94% correct | see `docs/paper/ABLATION_PLAN.md` | candidate retrieval |
 | Temporal state (`state_of`) | `core/state.py::StateResolver.state_of` — three-axis time, timeline/observer-aware, returns `persona_ids: list[str]` (plural, supports concurrent bodies). Observer axis has schema+model+query+writer (`Store.add_observation`, `resolve/detect_observations.py`, `render --observer`); `docs/design/architecture.md`'s headline acceptance test passes on real data — RI's Bai Ning Bing at ch200 returns 2 aliases for `READER`, 1 (strict subset) for a witness, 0 for a non-witness | Verified | none | the real research contribution, working as designed, demonstrated on real data | — (do not touch without a measured defect) | — |
-| Minimal Disclosure Compiler | `core/disclosure.py::compile_minimal_disclosure` — task-conditioned evidence minimization on top of `state_of()`. Opt-in render integration only (`use_mdc=False` default, unchanged behavior everywhere it isn't explicitly turned on). See `docs/results/MDC_DISCLOSURE_ABLATION.md` | Experimental — measured, one leg (render) structurally hollow because the real DB has zero SELF attributes (open defect below); dialogue_brief synthetic leg demonstrates the mechanism | none in the default pipeline | priority 1 of 3 IPR-review candidates; not yet a patentability determination | populate SELF-kind attributes on the canonical DB to get a real render-leg number | Temporal state |
+| Minimal Disclosure Compiler | `core/disclosure.py::compile_minimal_disclosure` — task-conditioned evidence minimization on top of `state_of()`. Opt-in render integration only (`use_mdc=False` default, unchanged behavior everywhere it isn't explicitly turned on). See `docs/results/ABLATIONS.md` | Experimental — measured, one leg (render) structurally hollow because the real DB has zero SELF attributes (open defect below); dialogue_brief synthetic leg demonstrates the mechanism | none in the default pipeline | priority 1 of 3 IPR-review candidates; not yet a patentability determination | populate SELF-kind attributes on the canonical DB to get a real render-leg number | Temporal state |
 | Truth status (retract vs. close_interval) | `core/enums.py::EventType`, deliberately distinct members | Verified | none | non-negotiable #5, holding | — | — |
 | Contradiction detection | `resolve/contradiction.py`, swept at window boundaries | Experimental (fires on constructed over-merges, zero hits on 60 real chapters) | none observed yet | can't yet claim it catches a real contradiction | needs validation against real data once resolution has anything to over-merge | resolver |
 | Self/Persona split | `persona/split.py` — `BodyChange` detection, `BodyEpoch`, `write_epochs`; LOTM transmigration linking + split verified end-to-end | Verified for detected transmigration/reincarnation cases | none | supports the paper's central downstream-embodiment claim | audit disguise/possession/clone (concurrent, not sequential) cases separately — schema supports it, no dedicated test exists yet | resolver |
@@ -89,7 +102,7 @@ not merely undocumented).
 | SceneState | `render/scene_state.py` | Verified, with a documented partial-backfill caveat for pre-existing databases (kind=NULL rows) | none on fresh databases | — | — | resolver |
 | Beat segmentation | `render/scenes.py`/`beats.py`, `_MAX_BLOCKS_PER_PANEL=4` | Verified | none | — | — | — |
 | Image generation | `render/panels.py` — GuoFeng3/Illustrious/NoobAI/Refined, all 8GB-VRAM CPU-offload | Partial (technically works, quality below product bar by the user's own standard) | visual output is the weakest part of the product | central open question: model/compute vs. architecture | see Visual Rendering Track plan | panel direction |
-| Observer-conditioned generation | `render --observer`, reference conditioning gated on the observer's own knowledge state rather than the reader's | **Verified on a real image engine:** RI chapter 169, blocks 1-10, NoobAI XL on local hardware, everything held constant but `--observer`. Reader: 5/5 panels reference-conditioned, prompt names the character and depicts two people. Non-witness: 0/5 conditioned. Cache keys and pixels differ on all 10/10 blocks (`docs/results/OBSERVER_CONTRAST_VALIDATION.md`). Caveat: the cache key hashes persona ids and attributes but not aliases, so a name-only reveal does not invalidate an already-rendered panel | first end-to-end demonstration that the graph's observer axis changes rendered pixels, not just query results | needs a second corpus/scene with a sustained disguise for a harder contrast | Temporal state, image generation, cache/invalidation |
+| Observer-conditioned generation | `render --observer`, reference conditioning gated on the observer's own knowledge state rather than the reader's | **Verified on a real image engine:** RI chapter 169, blocks 1-10, NoobAI XL on local hardware, everything held constant but `--observer`. Reader: 5/5 panels reference-conditioned, prompt names the character and depicts two people. Non-witness: 0/5 conditioned. Cache keys and pixels differ on all 10/10 blocks (`docs/results/ABLATIONS.md`). Caveat: the cache key hashes persona ids and attributes but not aliases, so a name-only reveal does not invalidate an already-rendered panel | first end-to-end demonstration that the graph's observer axis changes rendered pixels, not just query results | needs a second corpus/scene with a sustained disguise for a harder contrast | Temporal state, image generation, cache/invalidation |
 | Image conditioning | IP-Adapter code still present in SDXL engines; call-site conditioning removed for measured contamination; `RenderBackendCapabilities` typed model exists, unwired | Verified-removed-at-callsite / capability model Experimental | none currently (prompt-text-only identity) | any reconditioning approach must beat the documented contamination baseline with evidence | Visual Rendering Track Phase 4b (conditioning benchmark) | image generation |
 | img2img (body transition) | `persona/reference_gen.py` + `_img2img_worker.py` + `panels.py::IllustriousEngine._ensure_img2img_pipe` | Experimental — own code comments defer the "does it complete on real hardware" verdict; no completed run exists | not in any product path | no side-by-side identity/contamination comparison exists yet | run once on idle hardware | reference generation, body-state appearance |
 | Multi-character composition | Capped at `max_references=2`; SD1.5 (GuoFeng3) cannot hold hero+crowd together (measured checkpoint ceiling); role-based typed model (`CharacterRole`) built, not wired to generation-time behavior | Partial | crowd/3+-person panels are the weakest single case | ceiling confirmed to be checkpoint, not prompt | Visual Rendering Track Phase 4a | image generation |
@@ -128,7 +141,7 @@ not merely undocumented).
    anonymous **voice** every chapter. Open defect, unfixed in the audio path.
 2. **The `TRANSFERABLE_TITLE` recall@k gate.** OVERTURNED — the gate was
    measured and it FAILS at recall@10 = 66.7% (n=9, threshold 80%); see
-   `docs/results/EVAL_RETRIEVER.md`. What blocked it was mechanical, not
+   `docs/results/EXPERIMENT_RESULTS.md`. What blocked it was mechanical, not
    structural: `eval` had no `--gold` flag, so the corpus's one
    alias-diverse hand-drafted file was unreachable from the CLI and
    gitignored. `generate_gold.py` only admits mentions with a resolved
@@ -207,7 +220,7 @@ exist yet. There is also no visual ablation (render with a flat vs.
 `state_of`-driven state) — the render-side twin of the resolver ablations,
 treated as central by `docs/design/plans.md`.
 
-**Visual generation:** CLIPScore measured (`docs/results/CLIPSCORE.md`: 77/87
+**Visual generation:** CLIPScore measured (`docs/results/EXPERIMENT_RESULTS.md`: 77/87
 panels align with own prompt over shuffled). Character identity consistency
 across panels not built (judged by eye in `VERSIONS.md`). Human preference
 rating: none. Observer contrast only at 5 panels/1 chapter, not a benchmark
@@ -227,7 +240,7 @@ built (see component matrix).
 | Retraction as distinct from interval end | Query semantics implemented and tested; writer has no caller | `retract_alias_bindings` has zero callers; `retracted_chapter IS NOT NULL` returns 0 rows in every database |
 | Story-time axis (dream, flashback) | Defined; no fact ever written off `MAIN_TIMELINE` | Segments detected, facts never attached to them |
 | Concurrent Self/Persona (disguise, possession, body-swap, clone, dream persona) | Unit tests only | Real corpus contains only sequential reincarnation |
-| Observer-scoped persona bindings | Column exists; no writer | A witness learns the alias but not the persona; witness-conditioned render drops the character (`SELF_PERSONA_VALIDATION.md` §3) |
+| Observer-scoped persona bindings | Column exists; no writer | A witness learns the alias but not the persona; witness-conditioned render drops the character (`docs/results/EXPERIMENT_RESULTS.md`, Self/Persona validation section, §3) |
 | Shared multimodal `GenerationState` | Built for the image path only | Panel prompt and render cache key read one compiled state per beat; audio has no state-dependent input |
 | Aliases in the render read set | Missing | Render digest hashes persona ids and attributes, not aliases — a name-only reveal doesn't invalidate a panel |
 | Transmigration merge (one Self, new Persona) | Not built | LOTM ch1–3: Zhou Mingrui and Klein resolved as two Selves |

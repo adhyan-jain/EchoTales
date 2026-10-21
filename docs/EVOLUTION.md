@@ -7539,7 +7539,7 @@ The blocker HANDOFF called out as "top priority, ollama unreachable from a
 sandboxed shell" was a **misdiagnosis**, not a real constraint: the daemon was
 simply not running. `ollama serve` brought it up in one second, and the
 re-run 4.76 landed unit-tested-only in the previous session finally ran
-against real data. Full account in `docs/results/NER_WINDOWING_RESULT.md`.
+against real data. Full account in `docs/results/EXPERIMENT_RESULTS.md`.
 
 **Full-volume RI, 47 min, 660 calls, 0 escalations.** The predictions on file
 were adjudicated, not assumed: CEAF-e recall 25.2% → **48.9%**, confirmed.
@@ -7659,7 +7659,7 @@ NoobAI XL on the local RTX 4060, everything held constant but `--observer`.
 Reader: 5/5 panels reference-conditioned, prompt names Bai Ning Bing and
 depicts two people. Non-witness: 0/5 conditioned, prompt says "a figure",
 one person, solo. Cache keys and pixels differ on 10/10 blocks. Closes
-COMPLETION_PLAN item 18. `docs/results/OBSERVER_CONTRAST_VALIDATION.md`.
+COMPLETION_PLAN item 18. `docs/results/ABLATIONS.md`.
 
 **Read-set invalidation, controlled.** A change to a cast character's
 attributes or bodies changes the cache key; a change to an offstage character
@@ -7677,7 +7677,7 @@ existing model barely moves it and links nothing. And every one of the 103
 labelled gold candidates is decided by a pre-filter, so the scorer's own
 operating region contains no labels: neither a fitted scorer nor a bounded
 investigator can be evaluated there, so neither was built.
-`docs/results/SCORER_DIAGNOSIS.md`, `docs/design/STORYTRACE_TRANSFER.md`.
+`docs/results/EXPERIMENT_RESULTS.md`, `docs/design/STORYTRACE_TRANSFER.md`.
 
 **Hard cases are lost at detection.** 59 of 89 never become mentions
 (relational/deictic 25/29, title transfer 16/17). The retriever's 77.8%
@@ -7746,7 +7746,7 @@ see the "Real audio, finally" entry). Chatterbox is kept out of every
 use the overlay. The venv install is local drift, not a new convention.
 
 **Retriever recall@K by hard-case category** (`scripts/eval/recall_by_category.py`,
-`docs/results/EVAL_RETRIEVER.md` Section 7). The snippet-query row reproduces the CLI's
+`docs/results/EXPERIMENT_RESULTS.md` Section 7). The snippet-query row reproduces the CLI's
 84.4% @10 on 45 cases exactly. Querying with production's `_context_for`
 instead gives 88.9%: relational/deictic 1/4 → 3/4, body_change 7/8 → 6/8,
 disguise 9/9 either way, title transfer @1 stuck at 33.3%. Every category has
@@ -7760,7 +7760,7 @@ against the rerun DB, and it flags 7 silver records past the end of chapter 1.
 The rerun's ingest classifies ch1's closing author's note as `TRANSLATOR_NOTE`
 (it was `PROSE`), so `story_text` drops 13,100 → 12,484 chars, and those 7
 records annotated `'Gu'` inside the note. The new classification is right;
-the cost is ≤ 0.4 pts SILVER recall. `docs/results/GOLD_DATASET_README.md` Section 5
+the cost is ≤ 0.4 pts SILVER recall. `docs/results/GOLD_AND_ANNOTATION.md` Section 5
 item 7.
 
 ### 4.88 Speaker attribution audited: "63% attributed" was 879 mislabelled pronoun guesses; the honest rate did not move with the NER fix *(2026-09-25)*
@@ -7921,7 +7921,7 @@ Opus-drafted records for ch1–3.**
 
 ### 4.91 Evidence-upgrade pass — A7 found a stale-cache defect in the render key; A1/A2 make the observer axis causal; LitBank gives the first human-annotated number *(2026-09-26)*
 
-**A7: cache-key ablation** (`scripts/eval/a7_cache_ablation.py`, `docs/results/A7_CACHE_ABLATION.md`).
+**A7: cache-key ablation** (`scripts/eval/a7_cache_ablation.py`, `docs/results/ABLATIONS.md`).
 - Setup: 218 stub panels (ch1, 2, 166, 178, 197) and 8 state-edit events. Keys A (shipped), B (no `state_digest`, also removed from `plan_digest`) and C (B plus no persona ids) are computed from the same captured plan and request objects.
 - **Defect found.** The shipped key served 23/23 panels stale on a drawn-persona hair change, and 23/23 on an attire change.
   - `state_of` on a Self returns only Self-targeted attributes, while every appearance attribute is Persona-targeted.
@@ -7940,7 +7940,7 @@ Opus-drafted records for ch1–3.**
 - A2 (knowledge position → +inf): 14 state leaks, 0 render leaks, because embodiment bindings are reader-scoped.
 - Leaks are counted against the system's own observation records, whose precision is unvalidated. FULL never draws a witness (0/34).
 
-**LitBank** (`eval/litbank.py`, `scripts/eval/litbank_eval.py`, `docs/results/EXTERNAL_BENCHMARK.md`).
+**LitBank** (`eval/litbank.py`, `scripts/eval/litbank_eval.py`, `docs/results/EXPERIMENT_RESULTS.md`).
 - 100 documents, qwen2.5:7b NER, 1,001 s. Gold scored against itself: 100.
 - Standard CoNLL F1:
   - 15.9 on the full person key;
@@ -7952,7 +7952,7 @@ Opus-drafted records for ch1–3.**
   - pooled CEAF-e over 100 documents did not finish, so matching is now per document with pooled numerators and denominators.
 - **Scorer caveat:** the house `b_cubed` scores unmatched system mentions against themselves, so standard-mode B³ precision is lenient. This is documented and tested.
 
-**Human-review package** (`scripts/review/prepare_human_review.py`, `docs/results/HUMAN_REVIEW_PROTOCOL.md`).
+**Human-review package** (`scripts/review/prepare_human_review.py`, `docs/results/GOLD_AND_ANNOTATION.md`).
 - 200 stratified mentions plus the 88 hard cases.
 - The CSVs are gitignored, since they contain text windows.
 - **0 labels; κ is not computed.**
@@ -8026,7 +8026,7 @@ Three commits after 4.92 (`888a158`, `f9bbdba`, `a1bf892`). Amends 4.92, which d
 
 **Voice.** Attributions below confidence 0.7, which is the contextual-LLM tier (12 right / 16 wrong in the spot check), are voiced as a distinct same-gender "unconfirmed" speaker, not as the named character (RI ch1–3: 30 of 51 named lines). Each chapter now also gets a single `chapter.wav`. The static webview export looked for voices at a path the voice stage never wrote, and now finds them (RI: 33/33 clips).
 
-**Measured for the first time.** CLIPScore with a shuffled-prompt control (`docs/results/CLIPSCORE.md`): on the current RI ch1 render, 77/87 panels align better with their own prompt than with another panel's (the August render: 7/21).
+**Measured for the first time.** CLIPScore with a shuffled-prompt control (`docs/results/EXPERIMENT_RESULTS.md`): on the current RI ch1 render, 77/87 panels align better with their own prompt than with another panel's (the August render: 7/21).
 
 **Housekeeping found on the way.** Scratch re-resolves were overwriting the tracked compounding curves; now only a canonical database writes them. Renders wrote their prompt caches to the `panels/` root (40 files); these now live in the render's own version folder.
 
@@ -8121,7 +8121,7 @@ default pipeline.
 
 **Measured (real data + one synthetic fixture, `scripts/eval/
 mdc_disclosure_ablation.py` -> `data/eval/mdc_disclosure_ablation.json`,
-full write-up `docs/results/MDC_DISCLOSURE_ABLATION.md`):**
+full write-up `docs/results/ABLATIONS.md`):**
 
 - **Render (real `data/db/reverend-insanity.db`, 45 queries over the 15
   most-mentioned Selves):** MDC selects 0.00 avg. evidence/target against
@@ -8164,7 +8164,7 @@ defect in `docs/HANDOFF.md`, not just left in the results doc.
 **Scope note:** this is priority 1 of 3 candidates being evaluated for
 whether they constitute a genuine algorithmic contribution worth an IPR
 review (Temporal-Epistemic Delta Compiler and Counterexample-Guided
-Generation are next, not started). `docs/results/MDC_DISCLOSURE_ABLATION.md`
+Generation are next, not started). `docs/results/ABLATIONS.md`
 explicitly does not claim patentability — that determination is a separate,
 later prior-art/IPR review.
 
@@ -9057,3 +9057,34 @@ Completed interactive reader speaker editing, populated Asset Studio character m
   - 29 research pass.
   - 125 webview jest pass.
   - Total: 1,666 tests passing across the repository.
+
+### 4.122 Phase A adopted, A1 version stamping and stale-build refusal, docs consolidation *(2026-10-22)*
+
+- **Audit.** LotM ch1-40 against `data/db/lord-of-the-mysteries.db` found 0
+  appearance attributes, 41% speaker accuracy on hand-labelled ch7 (scorer
+  count 16/43 = 37%), placeholder reference images, stale databases,
+  `persona/canon.py` overriding the text, unwired `bible/` scaffolding and
+  `Store.bible_at` ignoring the story interval. Listed in HANDOFF "Open
+  defects". Plan adopted: Phase A (reader pass on local `qwen2.5:7b`,
+  validators, look timeline, text-only canon, reference set; Gate A speaker
+  >= 90%, appearance >= 85%, persona-link >= 90%, kind >= 95%) -> B review UI
+  -> C real media backends -> D screenplay -> E Path 2. Decisions:
+  `docs/design/decisions.md`.
+- **A1 (verified: full core+pipeline suite, 1,520 passed).**
+  `PipelineRun.pipeline_version` existed but was never set and stage digests
+  hard-coded `"v1"`. New `pipeline/version.py` (`PIPELINE_VERSION="2"`,
+  `staleness_reason()`); `ensure_pipeline_run(pipeline_version=...)` stamps and
+  re-stamps; `Store.set_pipeline_run_version` / `latest_pipeline_version`;
+  digests in `commands.py`/`jobs.py` use the version; `webview_server.py::
+  _stale_build_refusal` makes non-stub render routes return 409 for
+  unstamped/older databases. Test: `test_pipeline_version.py`.
+- **A2 started:** `eval/reader_gold.py` silver-set scorer (see decisions.md D10).
+- **Docs consolidated.** Research docs merged into `docs/research/{CHIMERA,
+  AUDITS_AND_ADJUDICATION,PD_EVENTS_NOTES,RESEARCH_RECORD,ENGINEERING_PROBES,
+  NOVELTY_SUPPORT,FORMAL_NARRATIVE_COMPILER,REVEAL_AWARE_VISUAL_MEMORY}.md`;
+  results into `docs/results/{ABLATIONS,EXPERIMENT_RESULTS,GOLD_AND_ANNOTATION}.md`;
+  root `RUN_STEPS.md`/`Demo_Video_Script.*` removed (copies in
+  `docs/paper/project_doc/`); `docs/status/REFACTOR_REPORT.md` moved to
+  `docs/archive/`. Older sections in this log cite the pre-merge file names;
+  each merged section names its original path. Not edited: preregistrations,
+  `PREFIX_FAITHFULNESS/PREREG*`, `docs/archive/`.

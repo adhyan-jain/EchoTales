@@ -310,11 +310,11 @@ read in full; the rest are cited from their abstracts.)*
 
 ## 16. Appendix
 - `docs/archive/VALIDATION_BASELINE.md` — starting state and environment
-- `docs/results/NER_WINDOWING_RESULT.md` — the adjudicated full-volume re-run
-- `docs/results/GOLD_DATASET_README.md` — reference-set provenance and validity
-- `docs/results/EVAL_RETRIEVER.md`, `docs/results/SCORER_DIAGNOSIS.md`, `docs/results/BASELINES.md`
-- `docs/results/STATE_OF_VALIDATION.md`, `docs/results/SELF_PERSONA_VALIDATION.md`,
-  `docs/results/OBSERVER_CONTRAST_VALIDATION.md`
+- `docs/results/EXPERIMENT_RESULTS.md` — the adjudicated full-volume re-run
+- `docs/results/GOLD_AND_ANNOTATION.md` — reference-set provenance and validity
+- `docs/results/EXPERIMENT_RESULTS.md`, `docs/results/EXPERIMENT_RESULTS.md`, `docs/results/EXPERIMENT_RESULTS.md`
+- `docs/results/EXPERIMENT_RESULTS.md`, `docs/results/EXPERIMENT_RESULTS.md`,
+  `docs/results/ABLATIONS.md`
 - `docs/paper/PRIOR_ART_LINKKG.md` — full-text verification of LLMLINK and LINK-KG
 - `docs/paper/TABLES.md`, `docs/paper/FIGURES.md` — generated from artifacts
 - `data/eval/` — every persisted metric, with commit and seed

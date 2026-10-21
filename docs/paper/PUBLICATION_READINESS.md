@@ -16,10 +16,10 @@
 
 | MUST item | Status |
 |---|---|
-| 1. Human confirmation sample | **Package prepared** (`data/eval/human_review_200.csv`, `human_review_hardcases_88.csv`, gitignored; protocol in `docs/results/HUMAN_REVIEW_PROTOCOL.md`). **0 labels. Waiting on reviewers.** |
-| 2. A1 + A2 | Done (`docs/results/A1_OBSERVER_ABLATION.md`, `A2_OBSERVER_ABLATION.md`) |
-| 3. A7 | Done. It found and fixed a real key defect (`docs/results/A7_CACHE_ABLATION.md`). |
-| 4. External benchmark | Done on LitBank, 100 documents (`docs/results/EXTERNAL_BENCHMARK.md`). The result is weak on the full key (15.9) and moderate on names only (42.4). |
+| 1. Human confirmation sample | **Package prepared** (`data/eval/human_review_200.csv`, `human_review_hardcases_88.csv`, gitignored; protocol in `docs/results/GOLD_AND_ANNOTATION.md`). **0 labels. Waiting on reviewers.** |
+| 2. A1 + A2 | Done (`docs/results/ABLATIONS.md`, same file, A2 section) |
+| 3. A7 | Done. It found and fixed a real key defect (`docs/results/ABLATIONS.md`). |
+| 4. External benchmark | Done on LitBank, 100 documents (`docs/results/EXPERIMENT_RESULTS.md`). The result is weak on the full key (15.9) and moderate on names only (42.4). |
 | 5. LOTM limitation | Already measured; in `EXPERIMENT_TABLE.md` |
 
 **Evidence-standard decision.**

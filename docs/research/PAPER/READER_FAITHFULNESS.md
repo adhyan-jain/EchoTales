@@ -572,7 +572,7 @@ We stated one contract for position-aware reading assistants, reader-faithfulnes
 | Counterfactual suffix (Section 5.4) | `data/eval/prefix_audit/counterfactual_suffix.json`; `scripts/prefix_audit/counterfactual_suffix.py`; `docs/research/PREFIX_FAITHFULNESS/PREREG_COUNTERFACTUAL.md`; CPU, $0 |
 | Suffix canaries and selection leak (Sections 7.9, 7.10) | `data/eval/chimera/rf_e2e/canary_*.json`, `canary_analysis.json`, `posthoc_canary_judge.json`, `selection_*.json`, `selection_analysis.json`; `scripts/chimera/rf_canary.py`, `rf_canary_posthoc.py`, `rf_selection.py`; `PREREG_RF_E2E_addendum_12_suffix_canaries.md`, `PREREG_RF_E2E_addendum_13_selection_leak.md` and their manifests; local models, $0 |
 | Propositions P9 to P11 and the read-set check | `FORMAL.md`; `test_reader_faithfulness_canaries.py`, `test_prefix_faithfulness_readset.py` |
-| Channel 1 spend | `docs/research/NOVELTY_REPORT/SPEND_LEDGER.md` RunPod L40S pod estimated at 3.9 (as of 19:11 IST; the pod was still billing) USD by uptime at 1.13 USD per hour (an estimate, not the billing page), plus 0.43 USD of earlier OpenAI use; Claude subscription calls are quota, not dollars |
+| Channel 1 spend | `docs/research/NOVELTY_SUPPORT.md` RunPod L40S pod estimated at 3.9 (as of 19:11 IST; the pod was still billing) USD by uptime at 1.13 USD per hour (an estimate, not the billing page), plus 0.43 USD of earlier OpenAI use; Claude subscription calls are quota, not dollars |
 
 ## Appendix B. Status of placeholders
 

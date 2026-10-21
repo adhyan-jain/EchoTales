@@ -83,5 +83,5 @@ ship as CSV so any plotting tool can consume them.
 
 - **Kind:** image
 - **Status:** RENDERED
-- **Data source:** `data/novels/RI/experiments/observer-contrast/reader/, data/novels/RI/experiments/observer-contrast/nonwitness/; docs/results/OBSERVER_CONTRAST_VALIDATION.md`
+- **Data source:** `data/novels/RI/experiments/observer-contrast/reader/, data/novels/RI/experiments/observer-contrast/nonwitness/; docs/results/ABLATIONS.md`
 - **Blocked on:** Five blocks, one chapter, NoobAI XL on the local card. It shows the cast changing with the observer (2boys vs 1boy solo); it cannot show two depictions of one character, which needs a sustained disguise the corpus does not contain.

@@ -109,7 +109,7 @@ human-confirmed gold (`docs/EVOLUTION.md` 4.74). The nearest SOTA work in the sp
 is in the same position and says so in print.
 
 **This does not excuse the gap, and must not be used to.** EchoTales still has
-no human-adjudicated ground truth, and `docs/results/GOLD_DATASET_README.md` says so
+no human-adjudicated ground truth, and `docs/results/GOLD_AND_ANNOTATION.md` says so
 plainly. But it does establish that *absence of annotated ground truth is a
 condition of this research area* rather than a failing peculiar to this
 project — legitimate and citable in both the report's limitations section and

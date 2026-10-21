@@ -1,4 +1,4 @@
-"""Regression form of the E3 probe (docs/research/ENGINEERING_NOVELTY_PROBE/E3_state_of_invariants.md).
+"""Regression form of the E3 probe (docs/research/ENGINEERING_PROBES.md).
 
 Invariants that HOLD are plain assertions. Invariants the architecture documents claim and the code does not satisfy are
 `xfail(strict=True)`: when someone fixes the code the test flips to XPASS and fails loudly, which is the signal to move the

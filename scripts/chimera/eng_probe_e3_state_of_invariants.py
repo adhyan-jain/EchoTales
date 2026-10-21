@@ -1,5 +1,5 @@
 """E3. Adversarial invariants of `state_of` on synthetic stores. Pre-declaration:
-docs/research/ENGINEERING_NOVELTY_PROBE/E3_state_of_invariants.md (written before this ran).
+docs/research/ENGINEERING_PROBES.md (written before this ran).
 
 LABEL PROVENANCE: SYNTHETIC (expected values come from the documented spec sentences quoted per check, not from the code
 under test). In-memory stores only; no database file is opened; no novel text.

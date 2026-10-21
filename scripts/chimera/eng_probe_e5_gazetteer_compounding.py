@@ -1,5 +1,5 @@
 """E5. Does the gazetteer compound beyond repetition? Pre-declaration:
-docs/research/ENGINEERING_NOVELTY_PROBE/E5_gazetteer_compounding_null_model.md (written before this ran).
+docs/research/ENGINEERING_PROBES.md (written before this ran).
 
 LABEL PROVENANCE: SYSTEM-INTERNAL (no labels). Resolver loop only (volume passes off), stored mentions held fixed.
 Counts, shares and ids only; no mention text is written (surface keys are used in memory and never serialised).

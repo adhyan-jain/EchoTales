@@ -130,7 +130,7 @@ The full run took 12 minutes on the local RTX 4060. That is not 47: NER response
 | `data/gold/reverend-insanity-hardcases.jsonl` | 88 with identity | Claude | hard cases, retrieval (Table 5) |
 | `data/gold/lord-of-the-mysteries-c1-c3.toml` → `.jsonl` | 155 entity records | Claude Opus, drafted without the pipeline's output | generalisation (secondary run) |
 
-Validation reports for each: `data/eval/validation/*.json`. Circular (`gold-auto-builder`) records are excluded everywhere (`GOLD_DATASET_README.md`).
+Validation reports for each: `data/eval/validation/*.json`. Circular (`gold-auto-builder`) records are excluded everywhere (`GOLD_AND_ANNOTATION.md`).
 
 ## 5. Commands and artifacts
 

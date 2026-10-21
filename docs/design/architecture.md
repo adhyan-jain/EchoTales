@@ -486,7 +486,7 @@ attribution figure above included 879 pronoun-recovery guesses mislabelled
 recovery off (default since 4.88), the honest rate is **46.1%** (2,392/5,192),
 essentially flat against the pre-fix 45.5%. CEAF-e recall (48.9%, now 67.4% on
 the canonical run, `docs/results/CANONICAL_RUN.md`) is unaffected and stays confirmed.
-Speaker attribution is not improved. See `docs/results/NER_WINDOWING_RESULT.md`
+Speaker attribution is not improved. See `docs/results/EXPERIMENT_RESULTS.md`
 Section 8 and `docs/status/STATUS.md`.
 
 **A bounded, evidence-grounded LLM investigator for uncertain resolver pairs
@@ -536,7 +536,7 @@ undrawn concurrent body and a non-visual Self attribute — over-invalidation
 in the other direction, not yet tightened. Aliases are still not in the key.
 
 **Observer-conditioned generation now demonstrated on a real image engine**
-(EVOLUTION 4.85, `docs/results/OBSERVER_CONTRAST_VALIDATION.md`), not only in the
+(EVOLUTION 4.85, `docs/results/ABLATIONS.md`), not only in the
 `state_of` query layer above: chapter 169, blocks 1-10, NoobAI XL on local
 hardware, everything held constant but `--observer`. Reader: 5/5 panels
 reference-conditioned, prompt names the character and depicts two people.

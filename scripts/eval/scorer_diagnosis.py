@@ -10,7 +10,7 @@ SILVER hard-case set, and answers, per gold mention:
                                                                      calibration)
   - do the features separate correct from incorrect at all?        (features)
 
-The starvation hypothesis is already closed (docs/results/NER_WINDOWING_RESULT.md): the
+The starvation hypothesis is already closed (docs/results/EXPERIMENT_RESULTS.md): the
 scorer links nothing on a 57% larger cache. This script asks what *does*
 explain it, and must not presuppose the answer.
 

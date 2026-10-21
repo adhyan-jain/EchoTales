@@ -5,7 +5,7 @@ excerpt as a one-chapter novel, run segment -> mentions -> anaphora ->
 resolve exactly as `echotales run` does (speaker attribution and personas are
 skipped; they do not affect coreference), then score against LitBank's person
 clusters. See `eval/litbank.py` for the two scoring conventions and
-`docs/results/EXTERNAL_BENCHMARK.md` for the protocol and its incompatibilities.
+`docs/results/EXPERIMENT_RESULTS.md` for the protocol and its incompatibilities.
 
 Needs a local ollama (NER is an LLM call); responses are cached per text hash.
 

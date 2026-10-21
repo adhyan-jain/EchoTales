@@ -1809,7 +1809,7 @@ harder finding — every one of the 103 labelled gold candidates turns out to
 be decided by a pre-filter before the scorer ever sees it, so the scorer's
 own operating region contains no labels at all: neither a fitted scorer nor
 a bounded investigator can be evaluated there, which is why neither was
-built past this probe. See `docs/results/SCORER_DIAGNOSIS.md`.
+built past this probe. See `docs/results/EXPERIMENT_RESULTS.md`.
 
 ### `scripts/eval/observer_ablation.py`, `eval/litbank.py`, `scripts/review/prepare_human_review.py` (EVOLUTION 4.91, 2026-09-26)
 

@@ -1,9 +1,9 @@
 # EchoTales: Human-Adjudication Guide (v2 Protocol)
 
 **Package Location**: `data/eval/adjudication/`  
-**Protocol Reference**: [`docs/results/HUMAN_REVIEW_PROTOCOL.md`](file:///home/adhyan/Desktop/EchoTales/docs/results/HUMAN_REVIEW_PROTOCOL.md)  
-**Methodological Audit**: [`docs/research/PRE_ADJUDICATION_VALIDITY_AUDIT.md`](file:///home/adhyan/Desktop/EchoTales/docs/research/PRE_ADJUDICATION_VALIDITY_AUDIT.md)  
-**Publication Strategy**: [`docs/research/HUMAN_ADJUDICATION_PLAN.md`](file:///home/adhyan/Desktop/EchoTales/docs/research/HUMAN_ADJUDICATION_PLAN.md)  
+**Protocol Reference**: [`docs/results/GOLD_AND_ANNOTATION.md`](file:///home/adhyan/Desktop/EchoTales/docs/results/GOLD_AND_ANNOTATION.md)  
+**Methodological Audit**: [`docs/research/AUDITS_AND_ADJUDICATION.md`](file:///home/adhyan/Desktop/EchoTales/docs/research/AUDITS_AND_ADJUDICATION.md)  
+**Publication Strategy**: [`docs/research/AUDITS_AND_ADJUDICATION.md`](file:///home/adhyan/Desktop/EchoTales/docs/research/AUDITS_AND_ADJUDICATION.md)  
 
 ---
 

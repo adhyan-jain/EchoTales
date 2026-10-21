@@ -14,7 +14,7 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 
 *Source: data/eval/validation/*.json (echotales eval --validate-gold)*
 
-*Surface-trivial = share of mentions whose identity is recoverable from the surface string alone. A file near 100% cannot measure an identity resolver; see docs/results/EVAL_RETRIEVER.md section 1.*
+*Surface-trivial = share of mentions whose identity is recoverable from the surface string alone. A file near 100% cannot measure an identity resolver; see docs/results/EXPERIMENT_RESULTS.md section 1.*
 
 
 ### Table 4 — Coreference metrics, current run
@@ -29,7 +29,7 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 
 *Source: data/eval/results/reverend-insanity-1790471566-cd8e9e29/metrics.json (reference: data/gold/reverend-insanity.jsonl, db: data/db/reverend-insanity.db)*
 
-*Scored against the LLM-DRAFTED SILVER REFERENCE SET -- not human-annotated, no inter-annotator agreement. See docs/results/GOLD_DATASET_README.md. B3/MUC are TAUTOLOGICAL on a surface-trivial reference set and must not be quoted as accuracy; CEAF-e is entity-based and is the discriminative one here.*
+*Scored against the LLM-DRAFTED SILVER REFERENCE SET -- not human-annotated, no inter-annotator agreement. See docs/results/GOLD_AND_ANNOTATION.md. B3/MUC are TAUTOLOGICAL on a surface-trivial reference set and must not be quoted as accuracy; CEAF-e is entity-based and is the discriminative one here.*
 
 
 ### Table 5 — Retriever Recall@K by alias type, production query context
@@ -62,7 +62,7 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 
 *Source: data/eval/ablation/reverend-insanity.json (echotales ablate --out, db: data/db/reverend-insanity.db)*
 
-*Re-scores cached evidence; it does not re-run resolution. 'Scorer would link' is 0 under every condition because the scorer's output is capped below its threshold (docs/results/SCORER_DIAGNOSIS.md), so this table measures the pre-filters. Not answerable from the cache: no-alias-typing, no-self-persona-split, no-truth-status.*
+*Re-scores cached evidence; it does not re-run resolution. 'Scorer would link' is 0 under every condition because the scorer's output is capped below its threshold (docs/results/EXPERIMENT_RESULTS.md), so this table measures the pre-filters. Not answerable from the cache: no-alias-typing, no-self-persona-split, no-truth-status.*
 
 
 ### Table 7 — Baselines vs EchoTales, chapters 1-10 (356 silver mentions)
@@ -75,7 +75,7 @@ Every number traces to a file under `data/eval/`; nothing here is typed by hand.
 
 *Source: data/eval/baseline_comparison.json (scripts/eval/baseline_comparison.py)*
 
-*Scored against the LLM-DRAFTED SILVER REFERENCE SET -- not human-annotated, no inter-annotator agreement. See docs/results/GOLD_DATASET_README.md. The reference set for this range is surface-trivial, so B3 recall here measures extraction coverage, not coreference quality. EchoTales' calls column counts resolution only; its upstream NER calls are excluded.*
+*Scored against the LLM-DRAFTED SILVER REFERENCE SET -- not human-annotated, no inter-annotator agreement. See docs/results/GOLD_AND_ANNOTATION.md. The reference set for this range is surface-trivial, so B3 recall here measures extraction coverage, not coreference quality. EchoTales' calls column counts resolution only; its upstream NER calls are excluded.*
 
 
 ### Table 6a — Gazetteer compounding by window (size 40)

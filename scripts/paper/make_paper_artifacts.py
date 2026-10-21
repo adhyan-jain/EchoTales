@@ -38,7 +38,7 @@ ABLATION = Path("data/eval/ablation")
 
 SILVER_NOTE = (
     "Scored against the LLM-DRAFTED SILVER REFERENCE SET -- not human-annotated, "
-    "no inter-annotator agreement. See docs/results/GOLD_DATASET_README.md."
+    "no inter-annotator agreement. See docs/results/GOLD_AND_ANNOTATION.md."
 )
 
 
@@ -170,7 +170,7 @@ def table_dataset() -> Table:
         rows,
         note="Surface-trivial = share of mentions whose identity is recoverable "
         "from the surface string alone. A file near 100% cannot measure an "
-        "identity resolver; see docs/results/EVAL_RETRIEVER.md section 1.",
+        "identity resolver; see docs/results/EXPERIMENT_RESULTS.md section 1.",
         source="data/eval/validation/*.json (echotales eval --validate-gold)",
     )
 
@@ -320,7 +320,7 @@ def table_ablation() -> Table | None:
         rows,
         note="Re-scores cached evidence; it does not re-run resolution. 'Scorer would link' "
         "is 0 under every condition because the scorer's output is capped below its "
-        "threshold (docs/results/SCORER_DIAGNOSIS.md), so this table measures the pre-filters. "
+        "threshold (docs/results/EXPERIMENT_RESULTS.md), so this table measures the pre-filters. "
         "Not answerable from the cache: " + ", ".join(sorted(d.get("requires_reresolve", {}))) + ".",
         source=f"{path} (echotales ablate --out, db: {_db(d.get('db', '?'))})",
     )
@@ -365,7 +365,7 @@ def figures() -> list[Figure]:
                           "sentence unless a corpus produces non-zero escalation."),
         Figure("12", "Observer contrast: one scene, two observers", "image", "RENDERED",
                source="data/novels/RI/experiments/observer-contrast/reader/, data/novels/RI/experiments/observer-contrast/nonwitness/; "
-                      "docs/results/OBSERVER_CONTRAST_VALIDATION.md",
+                      "docs/results/ABLATIONS.md",
                blocked_on="Five blocks, one chapter, NoobAI XL on the local card. It shows "
                           "the cast changing with the observer (2boys vs 1boy solo); it "
                           "cannot show two depictions of one character, which needs a "

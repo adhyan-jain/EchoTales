@@ -1,5 +1,5 @@
 """E6. Prefix causality of the persona (trait) stage. Pre-declaration:
-docs/research/ENGINEERING_NOVELTY_PROBE/E6_persona_stage_prefix_causality.md (written before this ran).
+docs/research/ENGINEERING_PROBES.md (written before this ran).
 
 LABEL PROVENANCE: SYSTEM-INTERNAL (no labels). Scratch copies; CPU only; deterministic persona path (client=None); no LLM.
 Counts and ids only; trait values are closed vocabularies (not novel text) and are summarised as counts.

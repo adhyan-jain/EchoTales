@@ -1,7 +1,7 @@
 """LLM-assisted pre-annotation for narrative entity resolution review sheets.
 
 Part of EchoTales Publication Readiness evaluation pass.
-Follows docs/results/HUMAN_REVIEW_PROTOCOL.md strictly:
+Follows docs/results/GOLD_AND_ANNOTATION.md strictly:
 - Preserves all source fields and stable sample IDs.
 - Restricts labels to: 'correct', 'incorrect', 'unresolved'.
 - Enforces concise, evidence-based explanations in reviewer_notes.
@@ -68,7 +68,7 @@ def build_system_prompt(sheet_type: str) -> str:
     else:
         instruction = (
             "You are an expert academic annotator evaluating automated entity linking in long-form serialised fiction.\n"
-            "Follow docs/results/HUMAN_REVIEW_PROTOCOL.md strictly.\n"
+            "Follow docs/results/GOLD_AND_ANNOTATION.md strictly.\n"
             "Your task is to judge whether 'predicted_entity' is the correct referent of the marked mention [[...]].\n\n"
             "Allowed reviewer_label values:\n"
             "- 'correct': The system's 'predicted_entity' is the true referent of the marked mention.\n"

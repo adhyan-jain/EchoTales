@@ -1,5 +1,5 @@
 """E1. Prefix causality of the incremental resolver on real serials. Pre-declaration:
-docs/research/ENGINEERING_NOVELTY_PROBE/E1_prefix_causality_of_resolver.md (written before this ran).
+docs/research/ENGINEERING_PROBES.md (written before this ran).
 
 LABEL PROVENANCE: SYSTEM-INTERNAL (no reference labels). Scratch copies only; CPU only; counts and ids only.
 

@@ -1,5 +1,5 @@
 """E4. Discourse-position semantics on real data. Pre-declaration:
-docs/research/ENGINEERING_NOVELTY_PROBE/E4_discourse_position_semantics.md (written before this ran).
+docs/research/ENGINEERING_PROBES.md (written before this ran).
 
 LABEL PROVENANCE: SYSTEM-INTERNAL (real scratch DB copies, opened read-only; no labels). Counts and ids only.
 

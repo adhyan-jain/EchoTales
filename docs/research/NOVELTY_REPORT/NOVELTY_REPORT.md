@@ -119,12 +119,12 @@ Nothing in this subsection is an accuracy, a reader-view result, or evidence tha
 
 | Finding | Source |
 |---|---|
-| The learned scorer links nothing: best reachable probability 0.550 against a 0.80 threshold; 0 of 880 real links are SCORED | `docs/results/SCORER_DIAGNOSIS.md:50`; `docs/status/STATUS.md:77,79` |
+| The learned scorer links nothing: best reachable probability 0.550 against a 0.80 threshold; 0 of 880 real links are SCORED | `docs/results/EXPERIMENT_RESULTS.md:50`; `docs/status/STATUS.md:77,79` |
 | All 103 labelled gold candidates are decided by pre-filters (FORCE_LINK / BLOCK) before the scorer | `docs/status/STATUS.md:79` |
 | Hard cases are lost at detection: 58 of 88 never become a mention (overlap alignment; 67 by exact span) | `data/eval/hardcase_resolution.json`; `CHIMERA_ERRATA.md` E3 |
 | External anchor (human-keyed): LitBank CoNLL F1 15.95 on the full person key, 42.44 on proper names only | `data/eval/litbank_results.json` |
 | Real data is thin: 3 reveals in the observer ablation | `data/eval/observer_ablation.json` |
-| Verified defects B1-B9 (for example `retract_alias_bindings` has no callers) | `docs/research/CHIMERA_DEFECT_BACKLOG.md` |
+| Verified defects B1-B9 (for example `retract_alias_bindings` has no callers) | `docs/research/CHIMERA.md` |
 
 ### 5.4 L1: first LLM test of C1a and C1b, silver  `SILVER`
 
@@ -728,17 +728,17 @@ Then replace the section 5.2 tables' label banner from SILVER to the new `HUMAN 
 | SIO prereg hash | `docs/research/preregistrations/MANIFEST.json`; `sha256sum` of the prereg file |
 | Silver pilot table, integrity 33/33, title events 5/22, eligibility 12 | `data/eval/chimera/silver_pilot_results.json`; `python scripts/chimera/silver_pilot_analysis.py --db <scratch copy> ...` |
 | T4 gate failure | `data/eval/chimera/t4_results.json`; `docs/research/preregistrations/PREREG_T4_renaming_validity_v3.md` |
-| Scorer 0.550, 0 SCORED of 880 | `docs/results/SCORER_DIAGNOSIS.md:50`, `docs/status/STATUS.md:77,79` |
+| Scorer 0.550, 0 SCORED of 880 | `docs/results/EXPERIMENT_RESULTS.md:50`, `docs/status/STATUS.md:77,79` |
 | L1 pre-registration, frozen prompts, runner, dry run | `docs/research/preregistrations/PREREG_L1_llm_leakage.md`, `L1_prompts_v1.json`, `MANIFEST_L1.json`; `scripts/chimera/l1_llm_leakage.py --dry-run` -> `data/eval/chimera/l1_dryrun.json`; `pytest packages/pipeline/tests/test_l1_runner.py` (8 passed) |
 | L1 results (281 calls, $0.0267, silver): R1 30/30; controls A 29/30, B 29/30, D 14/30; P* A 4/4, B 0/4, D 0/4; A-B +9.7 pts [3.2, 17.7]; closed-book 1/15 | `data/eval/chimera/l1_results.json`, `data/eval/chimera/l1_analysis.json`; `python scripts/chimera/l1_analyze.py --db <scratch copy> --results data/eval/chimera/l1_results.json --out ...` |
-| Hard-case detection 58/88 | `data/eval/hardcase_resolution.json`, `docs/research/CHIMERA_ERRATA.md` E3 |
+| Hard-case detection 58/88 | `data/eval/hardcase_resolution.json`, `docs/research/CHIMERA.md` E3 |
 | LitBank 15.95 / 42.44 | `data/eval/litbank_results.json` |
 | 72-item sheet composition | `data/eval/chimera/pilot_manifest.json` |
-| Prior-art claims | `docs/research/NOVELTY_REPORT/PRIOR_ART.md`, `prior_art_notes_A.md`, `prior_art_notes_B.md` (PDFs read as extracted text; `RECHECKED` rows verified again by me in the raw text) |
+| Prior-art claims | `docs/research/NOVELTY_SUPPORT.md`, `prior_art_notes_A.md`, `prior_art_notes_B.md` (PDFs read as extracted text; `RECHECKED` rows verified again by me in the raw text) |
 | Human-label analysis tool (not yet run on human labels) | `scripts/chimera/human_pilot_analysis.py` (refuses invalid sheets; smoke-tested on a fixture only) |
 | PD benchmark: R0 and gaps per model, verdict NOT SUPPORTED, closed-book 3/7 for four models and 0/7 renamed, Luna spend $0.0254 | `data/eval/chimera/pd/analysis.json`, `run_*.json`, `r0_diagnosis_exploratory.json`; `python scripts/chimera/pd_reveal_benchmark.py analyze`; `docs/research/preregistrations/PREREG_PD_reveal_benchmark.md`, `MANIFEST_PD.json`; `SPEND_LEDGER.md` |
 | PD v2: R0 80-88%, gaps +10 to +35 (Luna +35.2), synthetic 0.0, closed book 6-11 of 19 for five models, verdict INCONCLUSIVE; threshold sensitivity; post-hoc asymmetry; Luna spend $0.1212 | `data/eval/chimera/pd_v2/analysis.json`, `run_*.json`, `r0_asymmetry_exploratory.json`; `python scripts/chimera/pd_v2.py analyze`; `PREREG_PD_v2.md`, `MANIFEST_PD_v2.json` |
-| Engineering probes E1-E6 (0 of 28,165; 23 of 288; ARI 0.971; E3 gaps; E4 47-58%) | `docs/research/ENGINEERING_NOVELTY_PROBE/SUMMARY.md`, `data/eval/chimera/eng_probe_E*.json`, `scripts/chimera/eng_probe_*.py`, `scripts/chimera/test_eng_probe_e3_state_of.py` (E6 and E5 headlines re-read from stored JSON by me; the rest are the subagent's) |
+| Engineering probes E1-E6 (0 of 28,165; 23 of 288; ARI 0.971; E3 gaps; E4 47-58%) | `docs/research/ENGINEERING_PROBES.md`, `data/eval/chimera/eng_probe_E*.json`, `scripts/chimera/eng_probe_*.py`, `scripts/chimera/test_eng_probe_e3_state_of.py` (E6 and E5 headlines re-read from stored JSON by me; the rest are the subagent's) |
 | PD v3: R0 80-96%, gaps +4 to +25 (Luna +18.2), pooled +12.7 [6.8, 19.0] local / +13.6 [7.9, 19.6] with Luna, synthetic 0.0, condition iii fails, verdict PARTIALLY SUPPORTED; Spearman 0.80; sensitivity | `data/eval/chimera/pd_v3/analysis.json`, `run_*.json`, `sensitivity_secondary.json`; `python scripts/chimera/pd_v3.py analyze`; `PREREG_PD_v3.md`, `MANIFEST_PD_v3.json` |
 | PD v4: G2 gate, M2 probe (Luna 25 of 31 vs 0 renamed), re-evaluation SUPPORTED on v2 (+15.4) and v3 (+13.4), Spearman 0.73 / 0.66; Luna probe spend $0.0041 | `data/eval/chimera/pd_v4/analysis.json`, `run_*.json`, `pd_memory_free_validity.json`; `python scripts/chimera/pd_v4_memory.py analyze`; `PREREG_PD_v4.md`, `MANIFEST_PD_v4.json`; `SPEND_LEDGER.md` |
 | Event-cluster intervals, gate sweep, competence floor, objection responses | `data/eval/chimera/pd_adversarial_checks.json`; `python scripts/chimera/pd_adversarial_checks.py` |

@@ -1,5 +1,5 @@
 """E2. Order, batching and re-run sensitivity of the incremental resolver. Pre-declaration:
-docs/research/ENGINEERING_NOVELTY_PROBE/E2_order_and_batching_sensitivity.md (written before this ran).
+docs/research/ENGINEERING_PROBES.md (written before this ran).
 
 LABEL PROVENANCE: SYSTEM-INTERNAL. Scratch copies only; CPU only; counts and ids only.
 """

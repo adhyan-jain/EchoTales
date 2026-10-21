@@ -12,6 +12,9 @@ concisely than anything below.
 Do not try to hold this project's architecture in your head from this file
 alone — read the source doc for the thing you're touching:
 
+- [`docs/design/decisions.md`](docs/design/decisions.md) — **the learn-the-project log**:
+  every decision, why, and effect, kept current by the owner. Start here to
+  learn the project; Phase A (extraction rewrite) decisions D8/D10 live there.
 - [`docs/design/architecture.md`](docs/design/architecture.md) — the bitemporal model, `state_of()`,
   and Section 11's ten non-negotiables (below).
 - [`docs/design/plans.md`](docs/design/plans.md) — the full phase-by-phase specification.
@@ -84,7 +87,7 @@ source .venv/bin/activate      # uv-managed venv already present at repo root
 python3 -m pytest packages/core/tests packages/pipeline/tests   # no GPU needed
 ```
 
-1,511 core+pipeline tests pass (2026-10-19, reader-faithfulness branch, after Asset Studio, Keyframe QA, Voice Engine, Parallax Compositor, Video Engine, Series Scale, Golden Benchmark, Studio UX Widgets, and Multi-Chapter Expansion; research: 29; webview jest: 124; total: 1,664). Root `pyproject` testpaths lists only
+1,520 core+pipeline tests pass (2026-10-22, after A1 version stamping; research: 29 and webview jest: 125 are as of 2026-10-19 and were not re-run). Root `pyproject` testpaths lists only
 core and pipeline; pass `packages/research/tests` explicitly (and `-o addopts=""`) to include research.
 
 Everything is stub-first: `ECHOTALES_LLM_MODE=stub` and `--image-engine
@@ -170,15 +173,20 @@ real data without touching the canonical `data/db/<novel-id>.db`.
 
 Research track: `docs/research/DECISION_LOG.md` is the state of record (EVOLUTION 4.101).
 
+Current work (2026-10-22): the Phase A extraction rewrite (reader pass,
+validators, look timeline, text-only canon) gated on a reference set; A1
+(pipeline version stamping + stale-build refusal) is done, A2 (reference set)
+is next. See docs/HANDOFF.md and docs/design/decisions.md.
+
 See docs/HANDOFF.md's "Pick up here" section for the actual current state — it
 changes every session (the numbered session log itself moved to
-docs/EVOLUTION.md, latest section 4.119). The NER-windowing re-run (EVOLUTION
+docs/EVOLUTION.md, latest section 4.122). The NER-windowing re-run (EVOLUTION
 4.76) that an earlier session left unmeasured did run (4.84): the
 "`ollama` unreachable" blocker was a misdiagnosis — the daemon was simply
 not started — and the fix is now measured on real data (CEAF-e recall
 25.2%→48.9%). The current top finding is that the scorer cannot link by
-arithmetic (max probability 0.550 vs. the 0.80 threshold, `docs/
-SCORER_DIAGNOSIS.md`) and that hard cases are lost at mention detection,
+arithmetic (max probability 0.550 vs. the 0.80 threshold, `docs/results/
+EXPERIMENT_RESULTS.md`, SCORER_DIAGNOSIS section) and that hard cases are lost at mention detection,
 not retrieval (EVOLUTION 4.85/4.86). The render/direction pipeline work
 described in 4.51/4.52 is still open but is no longer the top priority;
 `.claude/agents/image-gen-debugger.md` is still scoped to it if you're

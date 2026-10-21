@@ -22,7 +22,41 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-19 (EVOLUTION 4.121).
+**Last updated:** 2026-10-22 (EVOLUTION 4.122).
+
+## Pick up here — 2026-10-22 (Phase A: trustworthy bible; A1 done, A2 next; EVOLUTION 4.122)
+
+Plan adopted (full text: `/home/adhyan/.claude/plans/gleaming-sniffing-backus.md`;
+decisions and effects: `docs/design/decisions.md`). Order, each phase gated
+before the next: **A** reader pass on local ollama `qwen2.5:7b`, deterministic
+validators, look timeline, text-only canon, reference set -> **B** review UI
+-> **C** real media backends -> **D** screenplay -> **E** Path 2 video.
+Gate A (on the reference set, local model): speaker >= 90%, appearance recall
+>= 85%, persona-link recall >= 90%, kind >= 95%.
+
+- **A1 done (verified: full core+pipeline suite, 1,520 passed).**
+  `pipeline/version.py` (`PIPELINE_VERSION="2"`, `staleness_reason()`);
+  `ensure_pipeline_run(pipeline_version=...)` stamps/re-stamps;
+  `Store.set_pipeline_run_version` / `latest_pipeline_version`; stage digests
+  in `commands.py`/`jobs.py` use the version (were literal `"v1"`, so a bump
+  now invalidates cached stage results); `webview_server.py::_stale_build_refusal`
+  returns 409 on non-stub render routes for unstamped or older databases (stub
+  engine exempt). Bump `PIPELINE_VERSION` whenever extraction output changes
+  meaning. Limit: the stamp means "newest code that touched this run", not
+  "every stage was rebuilt". **Existing run-of-record DBs are unstamped, so
+  real renders against them now return 409 until rebuilt.**
+- **A2 next/started: reference ("silver") set.** Scorer `eval/reader_gold.py`
+  exists and LotM ch7 is labelled (`data/gold/reader/`); baseline speakers
+  16/43 = 37%, persona links 1/4, age 0/1. Remaining: 5 chapters each of
+  LotM, RI, ORV with appearance facts and persona events. Labels are model
+  drafted (`confirmed: false`), so silver until the owner spot-checks.
+- **Then A3-A9:** reader pass (`pipeline/reader/`, `Task.READER`), validators,
+  identity/persona links, speaker attribution, look timeline (`look_at`),
+  text-only canon, cross-check + rebuild into `data/scratch/reruns/` first.
+- Docs consolidated 2026-10-22 (EVOLUTION 4.122): research docs now live in
+  `docs/research/<TOPIC>.md`, results in `docs/results/{ABLATIONS,
+  EXPERIMENT_RESULTS,GOLD_AND_ANNOTATION}.md`; the tables above that name old
+  paths mean those merged files.
 
 ## Pick up here — 2026-10-19 (Reader Speaker Editing, Asset Studio Previews, ShotGrid QA; EVOLUTION 4.121)
 
@@ -368,7 +402,7 @@ conflated.
   dependency closure. Opt-in render integration only
   (`plan_builder.build_render_plan(..., use_mdc=False)` default unchanged).
   13 new tests, full suite still green. Full detail and numbers:
-  EVOLUTION 4.99, `docs/results/MDC_DISCLOSURE_ABLATION.md`.
+  EVOLUTION 4.99, `docs/results/ABLATIONS.md`.
 - **The render-task result (100% evidence reduction) is real but
   structurally hollow** — render's own `RENDER_TASK_SPEC` needs nothing
   SELF-level, and the real database has zero SELF attributes to filter
@@ -409,8 +443,8 @@ conflated.
   hard cases as gitignored CSVs. 0 labels, κ not computed — still the
   single largest gap per `docs/status/STATUS.md`'s readiness
   gate (Area 8, WAITING ON HUMAN).
-- Full detail: EVOLUTION 4.91, `docs/results/A7_CACHE_ABLATION.md`,
-  `docs/results/EXTERNAL_BENCHMARK.md`, `docs/results/HUMAN_REVIEW_PROTOCOL.md`,
+- Full detail: EVOLUTION 4.91, `docs/results/ABLATIONS.md`,
+  `docs/results/EXPERIMENT_RESULTS.md`, `docs/results/GOLD_AND_ANNOTATION.md`,
   `docs/status/STATUS.md` (readiness gate, updated 2026-09-26).
 - Suite: **1,085 passed** (was 1,078).
 
@@ -433,7 +467,7 @@ That file is the single status record. The short version:
   diagnosis. Details in EVOLUTION 4.85.
 - **The scorer cannot link by arithmetic** (max p = 0.550 vs 0.80) because
   three of its five weighted features are inert on this corpus. Ranking is 94%
-  correct. Do not retune weights; see `docs/results/SCORER_DIAGNOSIS.md` Section 6.
+  correct. Do not retune weights; see `docs/results/EXPERIMENT_RESULTS.md` Section 6.
 - **Hard cases are lost at mention detection** — the next real research work.
 - **Run-order trap:** `resolve` deletes persona bindings. Never run it after
   `run` without rebuilding personas.
@@ -458,7 +492,7 @@ per item; `docs/EVOLUTION.md` 4.76-4.83 has the detail. Suite **1,038 passed**
 ### Blocked, in priority order
 
 1. **Track 1 item 3 — the measuring re-run. DONE 2026-09-24.** Full account
-   in `docs/results/NER_WINDOWING_RESULT.md`. The blocker was a **misdiagnosis**:
+   in `docs/results/EXPERIMENT_RESULTS.md`. The blocker was a **misdiagnosis**:
    ollama was not unreachable from a sandboxed shell, the daemon was simply
    not running (`ollama serve` brought it up in one second). Full volume,
    47 min, 660 calls, 0 escalations.
@@ -985,6 +1019,22 @@ default without a completed comparison.
 **Full history — every defect found, fixed, and the reasoning behind each
 change — lives in `docs/EVOLUTION.md`, not here.** This section is only what's
 genuinely unresolved *today*.
+
+**Audit defects, 2026-10-22 (LotM ch1-40 vs `data/db/lord-of-the-mysteries.db`;
+all open, all Phase A targets):**
+
+- **0 appearance attributes** in the audited DB: the extractor links names to
+  identities but never reads facts about looks.
+- **Speaker accuracy is 37-41% on hand-labelled ch7** (16/43 by the scorer, 16/39
+  by hand), with 8 dialogue spans covering no real line (scare quotes).
+- **Reference images are placeholders**, not real generations.
+- **Stale databases**: personas built before the speaker-join fix; A1 now flags
+  them (409 on real render) but they are not rebuilt.
+- **`persona/canon.py` hand-written canon overrides the text** (also
+  `render/beat_canon.py`, per-novel attire tables) -> A8.
+- **`bible/` scaffolding is unwired** (`heuristic_extract_bible_delta` has
+  hard-coded Sherlock/Klein names) -> A3/A5.
+- **`Store.bible_at` ignores the story interval** (and observer) -> A7 `look_at`.
 
 1. **`data/db/reverend-insanity.db` has zero SELF-kind attribute rows and
    zero relation rows at all** (found 2026-09-27 building the MDC

@@ -1,4 +1,4 @@
-"""CPU-only, read-only probes behind docs/research/TECHNICAL_CONTRIBUTION_INVENTORY.md.
+"""CPU-only, read-only probes behind docs/research/RESEARCH_RECORD.md.
 
 In-memory stores, no model, no network, no writes to data/. Each probe prints
 one observation line keyed P1..P9; the inventory cites these keys.

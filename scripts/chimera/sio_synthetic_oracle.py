@@ -6,7 +6,7 @@ on the whole world (F) and on prefixes (P_c). Mentions are supplied with exact
 offsets, so detection is perfect by construction.
 
 Scope: properties of the resolver mechanism on synthetic input. Not real-world
-performance. See docs/research/NOVELTY_REPORT/SIO_IMPLEMENTATION_NOTES.md for how
+performance. See docs/research/NOVELTY_SUPPORT.md for how
 ambiguities in the frozen prereg were resolved.
 
     python scripts/chimera/sio_synthetic_oracle.py --out data/eval/chimera/sio_results.json

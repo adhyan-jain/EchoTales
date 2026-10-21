@@ -264,7 +264,7 @@ def fig5_state_of(f: dict) -> str:
                   size=11, weight="bold"))
     b.append(text(20, 310, f"full: {lk['FULL']} leaks   |   observer collapsed to READER (A1): {lk['A1']}   |   "
                            f"knowledge time removed (A2): {lk['A2']}", size=11))
-    b.append(text(20, 328, "'Leak' is defined against the system's own observation records (docs/results/A1_OBSERVER_ABLATION.md).",
+    b.append(text(20, 328, "'Leak' is defined against the system's own observation records (docs/results/ABLATIONS.md).",
                   size=10, fill=MUTED))
     return svg(900, 370, "Figure 5. state_of() query flow", "Each filter is a condition on one axis of Figure 2.", b)
 

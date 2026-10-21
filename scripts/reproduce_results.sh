@@ -17,7 +17,7 @@
 #   * data/raw/*.epub is gitignored (copyrighted source texts). A fresh
 #     checkout cannot regenerate a database from nothing.
 #   * There is NO human gold (EVOLUTION 4.74). Metrics are scored against the
-#     SILVER tier -- LLM-drafted, non-circular records (docs/results/GOLD_DATASET_README.md)
+#     SILVER tier -- LLM-drafted, non-circular records (docs/results/GOLD_AND_ANNOTATION.md)
 #     -- and every report carries that banner. That is not a bug in this script.
 #   * The default DB is the canonical v1 run (docs/results/CANONICAL_RUN.md, EVOLUTION
 #     4.90), promoted to data/db/reverend-insanity.db with its sha256 recorded.
@@ -63,7 +63,7 @@ echo
 echo "=== silver reference set: automatic validation ==="
 # Exits non-zero on the main RI file by design: its circular records fail the
 # surface-triviality check, and 777 spans no longer sit at their offset (7 of
-# them silver -- see docs/results/GOLD_DATASET_README.md "Span drift"). The verdict is
+# them silver -- see docs/results/GOLD_AND_ANNOTATION.md "Span drift"). The verdict is
 # the finding; it must not abort the rest of the reproduction.
 echotales --db "$DB" eval --novel "$NOVEL" --validate-gold || echo "  (validation verdict: FAIL -- expected, see above)"
 

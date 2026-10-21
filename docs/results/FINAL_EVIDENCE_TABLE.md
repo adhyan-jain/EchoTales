@@ -21,13 +21,13 @@ Status key:
 |---|---|---|---|---|
 | Core pipeline | 199 chapters end to end, local GPU | `CANONICAL_RUN.md` | no | rebuilt from scratch, promoted |
 | Hard cases | detection-bound; linked cases correct | `data/eval/hardcase_resolution.json`, `hardcase_taxonomy.json` | no | taxonomy built, one structural bug fixed |
-| Scorer | contributes 0 links | Table 6, `SCORER_DIAGNOSIS.md` | no | characterised as OPTIONAL/EXPERIMENTAL |
+| Scorer | contributes 0 links | Table 6, `EXPERIMENT_RESULTS.md` (scorer diagnosis) | no | characterised as OPTIONAL/EXPERIMENTAL |
 | Retrieval | 89.1% @10, production context | Table 5 | no | one context used throughout |
 | Observer state | demonstrated on real data | `data/eval/observer_evidence.json` | no | persisted artifact and identity test |
-| Self/Persona | sequential real; exotic test-only; transmigration mis-modelled | `SELF_PERSONA_VALIDATION.md`, LOTM run | no | LOTM failure documented |
+| Self/Persona | sequential real; exotic test-only; transmigration mis-modelled | `EXPERIMENT_RESULTS.md` (self/persona), LOTM run | no | LOTM failure documented |
 | Retraction / timelines | query semantics tested; 0 real rows | SQL counts below | no | re-counted on canonical database |
 | Read-set invalidation | tested; aliases not in read set | `test_readset_invalidation.py` | no | — |
-| Multimodal | visual consumes `state_of`; audio does not | `OBSERVER_CONTRAST_VALIDATION.md` | no | documented asymmetry |
+| Multimodal | visual consumes `state_of`; audio does not | `ABLATIONS.md` (observer contrast) | no | documented asymmetry |
 | Audio | renders; attribution 46.1%, unstable tier 4 | `data/novels/RI/audio-runs/ears-native/`, EVOLUTION 4.88 | no | sanity check, instability measured |
 | Baselines | same-range comparison | Table 7 | no | re-scored on canonical database |
 | Human gold / IAA | none, by owner decision | — | **yes, for human-anchored claims** | none possible without annotators |
@@ -50,8 +50,8 @@ Status key:
 | Observer-scoped knowledge | `data/eval/observer_evidence.json` | RI, Bai Ning Bing, reveal ch166 | aliases by observer | reader 2 / witness 1 / non-witness 0 | 12 observations total, 3 reveals |
 | Knowledge time per observer | same | same witness, asking from ch150/166/200 | aliases | **0 / 1 / 1** | same |
 | Same fact, same identity, visibility differs | same (6 checks, all pass); `test_observer_axis.py::test_one_fact_one_identity_visibility_varies` | real + synthetic | identity and read-set checks | pass | — |
-| Observer-conditioned visual generation | `OBSERVER_CONTRAST_VALIDATION.md` | ch169, 5 blocks, NoobAI XL | reference-conditioned panels | reader 5/5, non-reader 0/5; keys differ 10/10 | one chapter; cast-change contrast, not two depictions of one person |
-| Self/Persona, sequential | `SELF_PERSONA_VALIDATION.md` | RI protagonist | bindings | one Self, two disjoint bodies | one real case |
+| Observer-conditioned visual generation | `ABLATIONS.md` (observer contrast) | ch169, 5 blocks, NoobAI XL | reference-conditioned panels | reader 5/5, non-reader 0/5; keys differ 10/10 | one chapter; cast-change contrast, not two depictions of one person |
+| Self/Persona, sequential | `EXPERIMENT_RESULTS.md` (self/persona) | RI protagonist | bindings | one Self, two disjoint bodies | one real case |
 | Read-set invalidation | `test_readset_invalidation.py` (5 tests) | synthetic | key change on state change | cast change invalidates; offstage does not | aliases are not in the read set |
 | Baselines, same range | `data/eval/baseline_comparison.json`; Table 7 | RI ch1–10, 356 silver mentions | calls; B³ recall | A: 1 call, 0.2%; B: 177 calls, 4.6%; EchoTales: 0 resolution calls, **78.9%** | surface-trivial range, so this measures extraction coverage; an earlier table compared against the full-volume 96.3% by mistake |
 
@@ -125,9 +125,9 @@ Reference types:
 
 | # | Claim | Mechanism | Ablation / baseline | Result | Dataset | Reference type | Evidence file | Status | Limitation |
 |---|---|---|---|---|---|---|---|---|---|
-| C1 | Observer knowledge changes what an observer can resolve | `state_of(observer, knowledge_pos)` with observation records | A1: observer → READER; A2: knowledge time removed | 228 queries: FULL 0 leaks, A1 **194**, A2 **14** | RI canonical, 3 reveal events | system records | `docs/results/A1_OBSERVER_ABLATION.md`, `A2_…` | **SUPPORTED** | Only 3 events / 2 facts; leak is defined against the system's own records; 9 FULL under-exposures from mid-chapter reveals |
-| C2 | Observer-conditioned state changes generated media | render plan built from observer-conditioned `state_of` | A1 at the render-plan level; real-engine contrast | A1: 194 render plans draw an identity FULL withholds; real engine: reader 5/5 vs non-reader 0/5 | RI ch169 (render); 3 reveals (plans) | controlled + real engine | A1 doc; `OBSERVER_CONTRAST_VALIDATION.md` | **SUPPORTED, reader vs non-reader only** | No character observer is ever drawn (READER-scoped persona bindings), so witness-level rendering is **not supported** |
-| C3 | The cache key separates state-dependent artifacts | `state_digest` (drawn persona + attributes, persona ids, Self attributes) inside the render key | A7: full key vs digest removed (B) vs all state-derived parts removed (C), with prompt/plan/seed held fixed | Fixed key: 0 stale reuses on every event; without the digest, **46** stale reuses (E1, E1b). The shipped key had served those 46 stale too; now fixed | 218 panels, 5 chapters | controlled | `docs/results/A7_CACHE_ABLATION.md`, `data/eval/a7_cache_ablation*.json` | **SUPPORTED after a fix found by this experiment** | Aliases are not in the key; reference bytes are not hashed; stub engine |
+| C1 | Observer knowledge changes what an observer can resolve | `state_of(observer, knowledge_pos)` with observation records | A1: observer → READER; A2: knowledge time removed | 228 queries: FULL 0 leaks, A1 **194**, A2 **14** | RI canonical, 3 reveal events | system records | `docs/results/ABLATIONS.md`, `A2_…` | **SUPPORTED** | Only 3 events / 2 facts; leak is defined against the system's own records; 9 FULL under-exposures from mid-chapter reveals |
+| C2 | Observer-conditioned state changes generated media | render plan built from observer-conditioned `state_of` | A1 at the render-plan level; real-engine contrast | A1: 194 render plans draw an identity FULL withholds; real engine: reader 5/5 vs non-reader 0/5 | RI ch169 (render); 3 reveals (plans) | controlled + real engine | A1 doc; `ABLATIONS.md` (observer contrast) | **SUPPORTED, reader vs non-reader only** | No character observer is ever drawn (READER-scoped persona bindings), so witness-level rendering is **not supported** |
+| C3 | The cache key separates state-dependent artifacts | `state_digest` (drawn persona + attributes, persona ids, Self attributes) inside the render key | A7: full key vs digest removed (B) vs all state-derived parts removed (C), with prompt/plan/seed held fixed | Fixed key: 0 stale reuses on every event; without the digest, **46** stale reuses (E1, E1b). The shipped key had served those 46 stale too; now fixed | 218 panels, 5 chapters | controlled | `docs/results/ABLATIONS.md`, `data/eval/a7_cache_ablation*.json` | **SUPPORTED after a fix found by this experiment** | Aliases are not in the key; reference bytes are not hashed; stub engine |
 | C4 | Artifacts whose dependencies do not change are reused | cache lookup by key | A7 E0 / E2 / E5 | 218/218 reused under every condition; **274 unnecessary** regenerations on non-drawn changes (E3, E6) | same | controlled | same | **PARTIAL**: reuse holds, but the digest over-invalidates | GPU saving only estimated (22 s/panel); no measured compute effect |
 | C5 | Removing observer state increases information leakage | as C1 | A1, A2 | +194 (A1) and +14 (A2) leaks | as C1 | system records | as C1 | **SUPPORTED** (same caveats as C1) | Whether the records themselves are right needs human review |
 | C6 | Resolves long-span identity better than the tested simple baselines | deterministic evidence resolution with a compounding gazetteer | long-context LLM; two-LLM memory (ch1–10) | B³ recall 78.9% vs 0.2% / 4.6%, at 0 resolution calls | RI ch1–10, 356 mentions | silver | Table 7 | **SUPPORTED on silver, as extraction coverage** | Surface-trivial range; on human-annotated LitBank the name-level CoNLL F1 is 42.4 (standard) and recall is limited by detection |
@@ -136,6 +136,6 @@ Reference types:
 - Full person key: CoNLL F1 **15.9**.
 - Proper-name mentions: **42.4** (standard scoring) / 46.7 (key-restricted).
 - Name-link precision: MUC 99.0, B³ 99.7 (key-restricted).
-- Not comparable to LitBank's supervised 68.1 (`docs/results/EXTERNAL_BENCHMARK.md`).
+- Not comparable to LitBank's supervised 68.1 (`docs/results/EXPERIMENT_RESULTS.md`).
 
 **Human validation:** the package is prepared (200 + 88 rows), with **no labels**. κ is not computed.

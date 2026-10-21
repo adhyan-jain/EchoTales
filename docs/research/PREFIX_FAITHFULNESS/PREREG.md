@@ -2,7 +2,7 @@
 
 Written 2026-10-16 BEFORE any run of the scripts in `scripts/prefix_audit/` and before any edit to `persona/build.py`. Branch `claude/prefix-faithfulness` (worktree). Label provenance: **SYSTEM-INTERNAL (no labels)**. The oracle is the system itself rebuilt on truncated input. CPU only, deterministic persona mode (`client=None`), `ECHOTALES_LLM_MODE=stub`, $0 spend. Scratch copies only; the canonical `data/db/*.db` files are copied with the SQLite backup API and never opened in place (they have live `-wal` files).
 
-Relation to existing work. `docs/research/ENGINEERING_NOVELTY_PROBE/E6_persona_stage_prefix_causality.md` measured the dynamic divergence (23 of 288 character-cuts) on a first run. This note does not re-claim that. It adds (a) a static certificate, (b) a repair, (c) the cost of the repair. Anything below that restates E6 is a replication check, labelled as such.
+Relation to existing work. `docs/research/ENGINEERING_PROBES.md` measured the dynamic divergence (23 of 288 character-cuts) on a first run. This note does not re-claim that. It adds (a) a static certificate, (b) a repair, (c) the cost of the repair. Anything below that restates E6 is a replication check, labelled as such.
 
 ## Definitions
 

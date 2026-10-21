@@ -1,7 +1,7 @@
 # EchoTales — current architecture
 
 **Written 2026-09-29, as part of a cleanup/refactor pass** (see
-`docs/status/REFACTOR_REPORT.md` for what changed and why). This is the page
+`docs/archive/REFACTOR_REPORT.md` for what changed and why). This is the page
 a new researcher reads first — what EchoTales is, how it's structured, what's
 production vs. research vs. historical, and the exact commands to run it or
 reproduce results — without reading years of session notes first.
@@ -58,7 +58,7 @@ packages/ecrdt/      standalone research prototype — see packages/ecrdt/README
 webview/             React review and production UI
 scripts/             eval/, paper/, review/, maintenance/, reproduce_results.sh
 docs/                README.md is the index: HANDOFF (current state), EVOLUTION (history),
-                     status/ (this file + STATUS.md + REFACTOR_REPORT.md), design/, results/, paper/, ops/, archive/
+                     status/ (this file + STATUS.md), design/, results/, paper/, ops/, archive/
 data/                README.md is the map (db/, novels/, gold/, eval/, scratch/, archive/)
 ```
 
@@ -95,7 +95,7 @@ subcommand.
 - **`core/disclosure.py` (Minimal Disclosure Compiler)** — priority 1 of 3
   IPR-review candidates, opt-in only (`use_mdc=False` default everywhere).
   See `docs/status/STATUS.md`'s component matrix and
-  `docs/results/MDC_DISCLOSURE_ABLATION.md`.
+  `docs/results/ABLATIONS.md`.
 - **The resolver's learned scorer** — contributes 0 links on the canonical
   run; kept as documented, measured infrastructure, not claimed as a
   contribution. See `docs/status/STATUS.md`'s Scorer row.

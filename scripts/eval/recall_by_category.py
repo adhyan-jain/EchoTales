@@ -20,7 +20,7 @@ as the CLI builds it"; it was neither, and produced 95.6% @10 where the CLI
 reported 84.4%.
 
 Note what this measures: retrieval *given the gold span*. Most hard-case spans
-are never detected as mentions in the real pipeline (docs/results/SCORER_DIAGNOSIS.md
+are never detected as mentions in the real pipeline (docs/results/EXPERIMENT_RESULTS.md
 Section 4), so this is an upper bound on what retrieval could contribute.
 
 SILVER -- LLM-derived reference set (Claude), not human gold; no IAA.
