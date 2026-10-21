@@ -125,6 +125,33 @@ What this does and does not show (read before quoting these numbers):
 
 Next (A3 proper): build the reader stage with a cast-discovery pass, the explicit per-tag contract plus omission retries, alternation and first-person hints, then write results into the database and re-score through `scripts/eval/score_reader_gold.py`.
 
+### D12. The reader stage, speaker half (A3a, built 2026-10-22)
+- **Decision**: speaker attribution moves into `reader/` (`speakers_pass.py`, `runner.py`, `quotes.py`; CLI `echotales reader --novel X [--chapters 1-5]`; `Task.READER`). A local model is shown the chapter cast and a window of tagged text and must answer once per quoted line. The old regex ladder only survives where it found an explicit "X said".
+- **How the numbers moved** (real stage through the database path, scored by `scripts/eval/score_reader_gold.py`, local `qwen2.5:7b`, silver references; "-" = not yet run at that step). Each row is one change on top of the previous:
+
+  | Step | What changed | LotM (136 lines) | RI (84) | ORV (144) |
+  |---|---|---|---|---|
+  | 0 | Current run-of-record databases | 34.6% | 32.1% | 20.1% |
+  | 1 | First stage: cast from the database, tagged windows, retry omissions | 78.7% | - | - |
+  | 2 | Count quotes typed as inner speech or crowd reaction (the classifier mistypes dialogue); retype a crowd reaction to dialogue when a named person owns it; mint a named speaker the cast lacks (Daly) but never a place | 80.1% | - | - |
+  | 3 | Show the answer template with **one slot per pending tag** | **87.5%** | 50.0% | 34.7% |
+  | 4 | Cast filter accepts rows with an empty `kind` (all of ORV's people were excluded) | 87.5% | 50.0% | **51.4%** |
+  | 5 | Prompt: "a person only talked about is not the speaker; unnamed people -> UNKNOWN" | 86.0% | 46.4% | 54.2% |
+  | 6 | On UNKNOWN, clear the old ladder's guess unless it was an explicit "X said" | 84.6% | **64.3%** | 52.8% |
+
+- **What each lesson was**:
+  - Step 3 was a pure format bug. The prompt's example showed one entry, the model copied it, and each call answered one tag, so 24 tags per run went unanswered. Showing a slot for every pending tag removed all retries (0 re-asks) and gained about 7 points on LotM.
+  - Step 4 shows the cost of old data: ORV's entity rows predate the `kind` column, so a filter written for the new schema silently emptied the cast.
+  - Steps 5 and 6 trade precision against recall and are mixed: they helped RI (crowd and enemy lines) by 14-18 points and cost LotM about 3. They do not fix ORV.
+  - A quote the classifier called a "crowd reaction" or inner speech is a span-typing defect separate from misattribution; the reader now repairs the crowd-reaction case.
+- **Still open for Gate A (speakers >= 90%)**: LotM 84.6%, RI 64.3%, ORV 52.8%. The remaining errors, read from the miss lists:
+  1. **ORV, first-person narration with two people trading lines**: the model swaps Dokja and Sangah and returns UNKNOWN for many "I"-narrated lines. Needs a narrator hint and an alternation constraint.
+  2. **Recurring unnamed roles** ("the academy elder", "the clan head"): the gold treats them as characters; the old code gives them a new anonymous slot on every line (the audit's slot-rotation defect). Needs one slot per unseen speaker held across lines (A6).
+  3. **Identity splits**: "Fool", "Emperor", "Zhou Mingrui" and "Klein" are separate entities, so a correct reading of "Mr. Fool" can land on the wrong row. Needs persona linking (A5).
+- **Not yet done**: appearance facts, ages and persona links are still 0 (A3b/A5); validators (A4) and the version stamp for the new stage are not wired in; the stage is not yet part of `echotales run`.
+- **Honesty note**: these are scores on the same 14 chapters the prompts were tuned against, so they are optimistic for unseen chapters. A fresh held-out chapter per novel is needed before claiming a number.
+- **Status**: speaker half built and tested (`test_reader_speakers.py`, 5 tests); gate not yet met.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs
