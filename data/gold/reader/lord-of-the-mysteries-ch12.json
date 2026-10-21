@@ -1,0 +1,30 @@
+{
+  "novel_id": "lord-of-the-mysteries",
+  "chapter": 12,
+  "provenance": "model",
+  "confirmed": false,
+  "drafted_by": "Claude (in-session, reading the chapter text only; pipeline output not consulted)",
+  "drafted_on": "2026-10-22",
+  "note": "Silver reference. Most of the chapter is Klein's nightmare of arrest by Dunn Smith; the dream speakers are still the named people. The carriage driver of blocks 68 and 72 is revealed to be Dunn. Quoted phrases in blocks 33, 56 and 63 are scare quotes or a sign, not speech, so they are not listed.",
+  "characters": [
+    {"id": "klein", "name": "Klein Moretti", "kind": "person", "gender": "male", "aliases": ["Zhou Mingrui", "Klein", "Mr. Klein"]},
+    {"id": "dunn", "name": "Dunn Smith", "kind": "person", "gender": "male", "aliases": ["Dunn", "Dunn Smith"]},
+    {"id": "melissa", "name": "Melissa Moretti", "kind": "person", "gender": "female", "aliases": ["Melissa"]}
+  ],
+  "non_characters": [
+    {"name": "Welch", "kind": "person_mentioned"},
+    {"name": "Naya", "kind": "person_mentioned"},
+    {"name": "Emperor Roselle", "kind": "person_mentioned"},
+    {"name": "Backlund", "kind": "location"},
+    {"name": "Enmat Harbor", "kind": "location"},
+    {"name": "Iron Cross Street", "kind": "location"},
+    {"name": "Tussock River", "kind": "location"}
+  ],
+  "personas": [],
+  "appearance": [
+    {"character": "dunn", "attribute": "eye_color", "value": "gray", "quote": "He opened the door to see the gray-eyed police inspector"},
+    {"character": "dunn", "attribute": "typical_attire", "value": "black trench coat", "quote": "That silhouette was wearing a black trench coat that was shorter than a coat, but longer than a jacket."}
+  ],
+  "age_facts": [],
+  "lines": ["10.0:klein", "12.0:dunn", "15.0:klein", "16.0:dunn", "20.0:klein", "21.0:dunn", "22.0:klein", "24.0:dunn", "27.0:klein", "29.0:dunn", "30.0:klein", "31.0:klein", "32.0:klein", "36.0:dunn", "37.0:klein", "38.0:dunn", "38.1:dunn", "40.0:dunn", "41.0:klein", "43.0:dunn", "44.0:klein", "47.0:dunn", "53.0:klein", "57.0:dunn", "66.0:klein", "68.0:dunn", "71.0:klein", "72.0:dunn", "74.0:klein", "77.0:klein", "77.1:klein"]
+}

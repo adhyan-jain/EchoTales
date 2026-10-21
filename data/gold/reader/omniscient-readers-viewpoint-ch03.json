@@ -1,0 +1,21 @@
+{
+  "novel_id": "omniscient-readers-viewpoint",
+  "chapter": 3,
+  "provenance": "model",
+  "confirmed": false,
+  "drafted_by": "Claude (in-session, reading the chapter text only; pipeline output not consulted)",
+  "drafted_on": "2026-10-22",
+  "note": "Silver reference. First-person narration by Kim Dokja. Most commuters are unnamed; Department Head Han is named by Dokja in block 51 and is the speaker of 49 and 54. The dokkaebi is a creature, not a person. Only quote-bearing blocks were read.",
+  "characters": [
+    {"id": "dokja", "name": "Kim Dokja", "kind": "person", "gender": "male", "aliases": ["Kim Dokja", "Dokja", "Dokja-ssi"]},
+    {"id": "sangah", "name": "Yoo Sangah", "kind": "person", "gender": "female", "aliases": ["Yoo Sangah", "Sangah", "Yoo Sangah-ssi"]},
+    {"id": "han", "name": "Department Head Han", "kind": "person", "gender": "male", "aliases": ["Department Head Han", "Finance Manager Han", "Han"]}
+  ],
+  "non_characters": [
+    {"name": "dokkaebi", "kind": "creature"}
+  ],
+  "personas": [],
+  "appearance": [],
+  "age_facts": [],
+  "lines": ["3.0:sangah", "12.0:_anon", "13.0:_anon", "15.0:dokja", "16.0:sangah", "18.0:_anon", "20.0:_anon", "22.0:_anon", "25.0:_anon", "26.0:_anon", "27.0:_anon", "28.0:_anon", "30.0:dokja", "31.0:sangah", "36.0:_anon", "49.0:han", "51.0:dokja", "52.0:sangah", "54.0:han", "57.0:_anon", "60.0:_anon", "62.0:_anon", "65.0:_anon"]
+}

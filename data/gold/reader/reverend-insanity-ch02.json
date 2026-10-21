@@ -1,0 +1,23 @@
+{
+  "novel_id": "reverend-insanity",
+  "chapter": 2,
+  "provenance": "model",
+  "confirmed": false,
+  "drafted_by": "Claude (in-session, reading the chapter text only; pipeline output not consulted)",
+  "drafted_on": "2026-10-22",
+  "note": "Silver reference. Fang Yuan's quoted musings are inner speech (thought); block 36 is a remembered remark by unnamed townspeople.",
+  "characters": [
+    {"id": "fang_yuan", "name": "Fang Yuan", "kind": "person", "gender": "male", "aliases": ["Gu Yue Fang Yuan", "big brother"]},
+    {"id": "fang_zheng", "name": "Fang Zheng", "kind": "person", "gender": "male", "aliases": ["Fang Zheng", "little brother", "twin little brother"]}
+  ],
+  "non_characters": [
+    {"name": "Qing Mao Mountain", "kind": "location"},
+    {"name": "Gu Yue Village", "kind": "location"}
+  ],
+  "personas": [],
+  "appearance": [
+    {"character": "fang_zheng", "attribute": "height_build", "value": "thin", "quote": "The youth was thin, slightly shorter than Fang Yuan."}
+  ],
+  "age_facts": [],
+  "lines": ["7.0:fang_yuan:thought", "11.0:fang_yuan:thought", "17.0:fang_yuan:thought", "19.0:fang_yuan:thought", "23.0:fang_yuan:thought", "26.0:fang_yuan:thought", "28.0:fang_yuan", "30.0:fang_zheng", "32.0:fang_yuan", "33.0:fang_zheng", "36.0:_anon", "38.0:fang_yuan:thought", "59.0:fang_yuan", "59.1:fang_yuan", "62.0:fang_zheng"]
+}

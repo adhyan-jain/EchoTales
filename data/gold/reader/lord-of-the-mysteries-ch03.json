@@ -1,0 +1,29 @@
+{
+  "novel_id": "lord-of-the-mysteries",
+  "chapter": 3,
+  "provenance": "model",
+  "confirmed": false,
+  "drafted_by": "Claude (in-session, reading the chapter text only; pipeline output not consulted)",
+  "drafted_on": "2026-10-22",
+  "note": "Silver reference. Melissa is introduced; Benson is only mentioned. Block 10 is Zhou Mingrui speaking aloud to himself in Klein's room.",
+  "characters": [
+    {"id": "klein", "name": "Klein Moretti", "kind": "person", "gender": "male", "aliases": ["Zhou Mingrui", "Klein"]},
+    {"id": "melissa", "name": "Melissa Moretti", "kind": "person", "gender": "female", "aliases": ["Melissa"]},
+    {"id": "benson", "name": "Benson Moretti", "kind": "person", "gender": "male", "aliases": ["Benson"]}
+  ],
+  "non_characters": [
+    {"name": "Tingen Technical School", "kind": "organization"},
+    {"name": "Tingen University", "kind": "organization"},
+    {"name": "Backlund University", "kind": "organization"},
+    {"name": "Church of Evernight", "kind": "organization"},
+    {"name": "Loen Kingdom", "kind": "location"}
+  ],
+  "personas": [],
+  "appearance": [
+    {"character": "melissa", "attribute": "hair_color", "value": "black", "quote": "After she adjusted her black hair that reached down to her vest"},
+    {"character": "melissa", "attribute": "hair_style", "value": "vest", "quote": "After she adjusted her black hair that reached down to her vest"},
+    {"character": "melissa", "attribute": "eye_color", "value": "brown", "quote": "When Zhou Mingrui saw his sister’s brown eyes look over"}
+  ],
+  "age_facts": [],
+  "lines": ["10.0:klein", "26.0:melissa", "34.0:klein", "40.0:melissa", "50.0:melissa", "55.0:melissa", "57.0:klein", "62.0:melissa", "63.0:klein"]
+}

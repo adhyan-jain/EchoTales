@@ -23,7 +23,8 @@ from echotales.core.store import Store
 
 # A quote runs to its closing mark or, when the paragraph ends first, to the end of the block: multi-paragraph
 # speech opens a quote in every paragraph and closes only in the last (LotM ch7 blocks 10, 26, 27).
-_QUOTE = re.compile(r"“[^”]*(?:”|$)")
+# ORV is set in straight quotes, LotM and RI in curly ones (ORV ch2 had zero curly matches).
+_QUOTE = re.compile(r"“[^”]*(?:”|$)|\"[^\"]*(?:\"|$)")
 
 #: gold `kind` -> the store kinds that count as correct. Kinds with no counterpart are not scored.
 _KIND_MAP: dict[str, frozenset[TargetKind]] = {
@@ -32,6 +33,10 @@ _KIND_MAP: dict[str, frozenset[TargetKind]] = {
     "location": frozenset({TargetKind.LOCATION}),
     "organization": frozenset({TargetKind.ORGANIZATION}),
 }
+
+
+#: Gold speaker for a line whose speaker the text never names.
+ANON = "_anon"
 
 
 def _norm(text: str) -> str:
@@ -50,6 +55,19 @@ class GoldChapter:
     appearance: list[dict] = field(default_factory=list)  # type: ignore[type-arg]
     age_facts: list[dict] = field(default_factory=list)  # type: ignore[type-arg]
     lines: list[dict] = field(default_factory=list)  # type: ignore[type-arg]
+    #: False when only the quotes whose speaker the drafter could establish are listed. A pipeline dialogue span
+    #: over an unlisted quote is then not evidence of false dialogue, so that count is not reported for the chapter.
+    lines_complete: bool = True
+
+
+def _expand_line(line: dict | str) -> dict:  # type: ignore[type-arg]
+    """`"12.1:audrey"` or `"75.0:klein:thought"` -> the dict form. Labelling 15 chapters by hand is the cost of
+    this reference set, so the compact form keeps a chapter's 40-60 lines to one short string each."""
+    if isinstance(line, dict):
+        return line
+    ref, speaker, *kind = line.split(":")
+    block, q = ref.split(".")
+    return {"block": int(block), "q": int(q), "speaker": speaker, "type": kind[0] if kind else "speech"}
 
 
 def load_reader_gold(path: str | Path) -> GoldChapter:
@@ -64,7 +82,8 @@ def load_reader_gold(path: str | Path) -> GoldChapter:
         personas=raw.get("personas", []),
         appearance=raw.get("appearance", []),
         age_facts=raw.get("age_facts", []),
-        lines=raw["lines"],
+        lines=[_expand_line(x) for x in raw["lines"]],
+        lines_complete=bool(raw.get("lines_complete", True)),
     )
 
 
@@ -137,11 +156,18 @@ def score_speakers(gold: GoldChapter, store: Store) -> SpeakerScore:
             out.misses.append(f"{label}: no dialogue span (the line was not detected as speech)")
             continue
         covered.add(hit.id)
-        if _self_is(store, hit.speaker_self_id, gold.characters[line["speaker"]]):
+        if line["speaker"] == ANON:
+            # An unnamed speaker ("a voice from the crowd") is right when left unnamed. Pinning it on a named
+            # character is the failure: it would be cast that character's voice.
+            correct = not hit.speaker_self_id or ":anon:" in hit.speaker_self_id
+        else:
+            correct = _self_is(store, hit.speaker_self_id, gold.characters[line["speaker"]])
+        if correct:
             out.correct += 1
         else:
             out.misses.append(f"{label}: expected {line['speaker']}, got {hit.speaker_self_id}")
-    out.false_dialogue = sum(1 for s in spans if s.id not in covered)
+    if gold.lines_complete:
+        out.false_dialogue = sum(1 for s in spans if s.id not in covered)
     return out
 
 

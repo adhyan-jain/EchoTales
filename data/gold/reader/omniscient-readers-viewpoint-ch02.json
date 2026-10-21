@@ -1,0 +1,23 @@
+{
+  "novel_id": "omniscient-readers-viewpoint",
+  "chapter": 2,
+  "provenance": "model",
+  "confirmed": false,
+  "drafted_by": "Claude (in-session, reading the chapter text only; pipeline output not consulted)",
+  "drafted_on": "2026-10-22",
+  "note": "Silver reference. First-person narration by Kim Dokja, so 'I' is Dokja. Blocks 1-6 open on a remembered exchange whose other speaker is unnamed. Straight-quote style. Block 68 is Yoo Sangah's voice cut off.",
+  "characters": [
+    {"id": "dokja", "name": "Kim Dokja", "kind": "person", "gender": "male", "age": 28, "aliases": ["Kim Dokja", "Dokja", "Dokja-ssi"]},
+    {"id": "sangah", "name": "Yoo Sangah", "kind": "person", "gender": "female", "aliases": ["Yoo Sangah", "Sangah", "Yoo Sangah-ssi"]}
+  ],
+  "non_characters": [
+    {"name": "Personnel Manager Kang", "kind": "person_mentioned"},
+    {"name": "Finance Manager Han", "kind": "person_mentioned"}
+  ],
+  "personas": [],
+  "appearance": [],
+  "age_facts": [
+    {"character": "dokja", "value": 28, "quote": "Kim Dokja, 28 years old, single."}
+  ],
+  "lines": ["1.0:dokja", "3.0:_anon", "4.0:dokja", "5.0:_anon", "6.0:dokja", "10.0:sangah", "12.0:dokja", "13.0:sangah", "14.0:dokja", "15.0:sangah", "16.0:dokja", "17.0:sangah", "19.0:dokja", "20.0:sangah", "23.0:sangah", "24.0:dokja", "25.0:sangah", "26.0:dokja", "27.0:sangah", "28.0:dokja", "29.0:sangah", "30.0:dokja", "31.0:sangah", "32.0:dokja", "33.0:sangah", "33.1:sangah", "35.0:sangah", "36.0:dokja", "37.0:sangah", "42.0:dokja", "43.0:sangah", "44.0:dokja", "45.0:dokja", "46.0:sangah", "47.0:dokja", "48.0:sangah", "50.0:dokja", "51.0:sangah", "59.0:sangah", "60.0:dokja", "61.0:sangah", "66.0:sangah", "68.0:sangah", "73.0:dokja", "74.0:sangah", "75.0:dokja", "77.0:dokja", "78.0:sangah", "79.0:dokja", "81.0:sangah", "83.0:sangah", "84.0:dokja", "85.0:sangah", "98.0:_anon", "99.0:sangah", "100.0:sangah", "101.0:dokja", "102.0:sangah", "103.0:dokja", "105.0:dokja", "109.0:sangah"]
+}

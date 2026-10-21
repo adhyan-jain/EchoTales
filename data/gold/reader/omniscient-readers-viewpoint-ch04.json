@@ -1,0 +1,25 @@
+{
+  "novel_id": "omniscient-readers-viewpoint",
+  "chapter": 4,
+  "provenance": "model",
+  "confirmed": false,
+  "lines_complete": false,
+  "drafted_by": "Claude (in-session, reading the chapter text only; pipeline output not consulted)",
+  "drafted_on": "2026-10-22",
+  "note": "Silver reference, PARTIAL: only quotes whose speaker is clear from the text are listed (blocks up to 40); the crowd exchanges after block 40 are not labelled, so false-dialogue is not reported for this chapter. Lee Hyunsung is the soldier introduced at block 18.",
+  "characters": [
+    {"id": "dokja", "name": "Kim Dokja", "kind": "person", "gender": "male", "aliases": ["Kim Dokja", "Dokja", "Dokja-ssi"]},
+    {"id": "sangah", "name": "Yoo Sangah", "kind": "person", "gender": "female", "aliases": ["Yoo Sangah", "Sangah", "Yoo Sangah-ssi"]},
+    {"id": "hyunsung", "name": "Lee Hyunsung", "kind": "person", "gender": "male", "aliases": ["Lee Hyunsung", "Hyunsung", "Soldier-nim"]}
+  ],
+  "non_characters": [
+    {"name": "Blue House", "kind": "organization"},
+    {"name": "dokkaebi", "kind": "creature"}
+  ],
+  "personas": [],
+  "appearance": [
+    {"character": "hyunsung", "attribute": "hair_style", "value": "short", "quote": "He was a sturdy man with short cut hair"}
+  ],
+  "age_facts": [],
+  "lines": ["1.0:sangah", "2.0:dokja", "2.1:dokja", "3.0:sangah", "4.0:dokja", "5.0:sangah", "6.0:dokja", "7.0:sangah", "8.0:dokja", "18.0:hyunsung", "19.0:hyunsung", "20.0:hyunsung", "21.0:_anon", "22.0:_anon", "23.0:hyunsung", "24.0:_anon", "26.0:hyunsung", "32.0:_anon", "33.0:hyunsung", "34.0:_anon", "35.0:hyunsung", "36.0:_anon", "37.0:hyunsung", "39.0:_anon", "40.0:sangah"]
+}

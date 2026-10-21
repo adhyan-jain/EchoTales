@@ -1,0 +1,33 @@
+{
+  "novel_id": "lord-of-the-mysteries",
+  "chapter": 14,
+  "provenance": "model",
+  "confirmed": false,
+  "drafted_by": "Claude (in-session, reading the chapter text only; pipeline output not consulted)",
+  "drafted_on": "2026-10-22",
+  "note": "Silver reference. Daly's introduction. Quoted words in blocks 12, 21, 34.1 and 48 are scare quotes or a translation gloss, so they are not listed. Blocks 58 and 59 are Daly's voice echoing as she fades.",
+  "characters": [
+    {"id": "klein", "name": "Klein Moretti", "kind": "person", "gender": "male", "aliases": ["Zhou Mingrui", "Klein", "Mr. Klein"]},
+    {"id": "dunn", "name": "Dunn Smith", "kind": "person", "gender": "male", "aliases": ["Dunn", "Dunn Smith"]},
+    {"id": "daly", "name": "Daly Simone", "kind": "person", "gender": "female", "aliases": ["Daly", "Spirit Medium"]}
+  ],
+  "non_characters": [
+    {"name": "Welch", "kind": "person_mentioned"},
+    {"name": "Naya", "kind": "person_mentioned"},
+    {"name": "Nighthawks", "kind": "organization"},
+    {"name": "Church of Storms", "kind": "organization"},
+    {"name": "Psychology Alchemists", "kind": "organization"},
+    {"name": "Mandated Punishers", "kind": "organization"},
+    {"name": "Machinery Hivemind", "kind": "organization"},
+    {"name": "Tingen", "kind": "location"}
+  ],
+  "personas": [],
+  "appearance": [
+    {"character": "daly", "attribute": "eye_color", "value": "emerald", "quote": "took a quick glance at Klein with her twinkling emerald eyes"},
+    {"character": "daly", "attribute": "typical_attire", "value": "black robe", "quote": "a lady in a hooded black robe who wore blue eyeshadow and blush"},
+    {"character": "daly", "attribute": "distinguishing_features", "value": "blue eyeshadow", "quote": "a lady in a hooded black robe who wore blue eyeshadow and blush"},
+    {"character": "dunn", "attribute": "eye_color", "value": "gray", "quote": "Dunn laughed lightly; his gray eyes were hidden in the shadow of the carriage."}
+  ],
+  "age_facts": [],
+  "lines": ["10.0:klein", "11.0:dunn", "14.0:daly", "15.0:dunn", "21.1:daly", "22.0:klein", "23.0:dunn", "24.0:dunn", "25.0:daly", "26.0:klein", "31.0:daly", "33.0:dunn", "34.0:klein", "35.0:dunn", "36.0:daly", "38.0:daly", "41.0:daly", "43.0:daly", "47.0:klein:thought", "48.1:daly", "49.0:klein", "50.0:daly", "51.0:daly", "52.0:daly", "54.0:klein", "57.0:daly", "58.0:daly", "59.0:daly", "63.0:dunn", "64.0:daly", "65.0:daly", "66.0:klein", "69.0:dunn", "69.1:dunn", "70.0:daly", "70.1:daly", "73.0:dunn", "74.0:klein", "75.0:dunn", "76.0:klein", "77.0:dunn", "77.1:dunn", "78.0:klein", "79.0:dunn", "79.1:dunn", "80.0:klein", "84.0:dunn", "85.0:klein", "88.0:dunn", "89.0:dunn", "90.0:dunn", "90.1:dunn", "92.0:dunn"]
+}

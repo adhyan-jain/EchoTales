@@ -83,7 +83,17 @@ Core ideas you will meet everywhere:
   - A multi-paragraph speech opens a quote in every paragraph and closes only in the last, so a quote runs to its closing mark or the end of the block.
   - Tests: `packages/pipeline/tests/test_reader_gold.py`.
 - **First measurement (LotM ch7, current run-of-record DB, scratch copy)**: speakers **16/43 = 37%** (the audit's by-hand count was 16/39 = 41%; same result, different denominator since multi-quote lines are counted separately), **8** pipeline dialogue spans cover no gold line, persona links **1/4** (Fool, Justice, Hanged Man unlinked), age **0/1** (Audrey's 17 not recorded), kind 6/6 on the 6 entities that exist. This is the baseline Phase A must beat; Gate A needs speakers >= 90%.
-- **Status**: scorer done and verified on real data; ch7 labelled. Remaining: 5 chapters each of LotM, RI and ORV, with appearance facts and persona events.
+- **Reference set written (2026-10-22)**: LotM ch1, 3, 7, 12, 14; RI ch1-5; ORV ch2-5 (ch1 is a quote-free prologue). ORV ch4 and ch5 are **partial** (`lines_complete: false`): only quotes whose speaker is clear from the text are listed, so false-dialogue is not reported for them. Unnamed speakers are labelled `_anon`, and the scorer counts them right only if the pipeline left them unnamed (pinning a crowd shout on a named hero would cast that hero's voice). ORV uses straight quotes and LotM/RI curly ones; the scorer handles both.
+- **Baseline of the current run-of-record databases** (`scripts/eval/score_reader_gold.py`; silver, scratch copies):
+
+  | Novel | Speakers | Appearance | Persona links | Kind | False dialogue |
+  |---|---|---|---|---|---|
+  | LotM (5 ch) | 47/136 = 34.6% | 0/14 | 2/5 = 40% | 22/25 = 88% | 27 |
+  | RI (5 ch) | 27/84 = 32.1% | 0/11 | n/a | 24/24 = 100% | 4 |
+  | ORV (4 ch) | 29/144 = 20.1% | 0/3 | n/a | 10/11 = 91% | 18 (ch2-3 only) |
+
+  Gate A is speakers >= 90%, appearance >= 85%, persona links >= 90%, kind >= 95%. Every gate except RI's kind score is currently missed, and appearance is exactly zero everywhere, which confirms the audit: the extractor never reads appearance.
+- **Status**: reference set and scorer done. Next is A3, the chapter reader pass.
 
 ## 3. Documentation policy
 

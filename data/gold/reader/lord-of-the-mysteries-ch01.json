@@ -1,0 +1,32 @@
+{
+  "novel_id": "lord-of-the-mysteries",
+  "chapter": 1,
+  "provenance": "model",
+  "confirmed": false,
+  "drafted_by": "Claude (in-session, reading the chapter text only; pipeline output not consulted)",
+  "drafted_on": "2026-10-22",
+  "note": "Silver reference. One quoted string in this chapter (block 54, the notebook's text) is not speech, so no line is listed: any pipeline dialogue span over it counts as false dialogue.",
+  "characters": [
+    {"id": "klein", "name": "Klein Moretti", "kind": "person", "gender": "male",
+     "aliases": ["Zhou Mingrui", "Klein"]}
+  ],
+  "non_characters": [
+    {"name": "Tingen", "kind": "location"},
+    {"name": "Loen Kingdom", "kind": "location"},
+    {"name": "Awwa County", "kind": "location"},
+    {"name": "Khoy University", "kind": "organization"},
+    {"name": "Lord Ye", "kind": "person_mentioned"}
+  ],
+  "personas": [
+    {"character": "klein", "name": "Klein Moretti", "from_chapter": 1, "quote": "Klein Moretti, a citizen of the Northern Continent’s Loen Kingdom"}
+  ],
+  "appearance": [
+    {"character": "klein", "attribute": "hair_color", "value": "black", "quote": "Black hair, brown eyes, a linen shirt, thinly built"},
+    {"character": "klein", "attribute": "eye_color", "value": "brown", "quote": "Black hair, brown eyes, a linen shirt, thinly built"},
+    {"character": "klein", "attribute": "typical_attire", "value": "linen shirt", "quote": "Black hair, brown eyes, a linen shirt, thinly built"},
+    {"character": "klein", "attribute": "height_build", "value": "thin", "quote": "Black hair, brown eyes, a linen shirt, thinly built"},
+    {"character": "klein", "attribute": "current_condition", "value": "wound", "quote": "His temple had a grotesque wound with burn marks along its periphery."}
+  ],
+  "age_facts": [],
+  "lines": []
+}

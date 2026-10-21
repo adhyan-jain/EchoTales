@@ -1,0 +1,21 @@
+{
+  "novel_id": "reverend-insanity",
+  "chapter": 5,
+  "provenance": "model",
+  "confirmed": false,
+  "drafted_by": "Claude (in-session, reading the chapter text only; pipeline output not consulted)",
+  "drafted_on": "2026-10-22",
+  "note": "Silver reference. A legend of Ren Zu and three Gu is narrated inside the chapter; the Gu and the Predicaments are creatures that speak, not people. Block 25 is the elders' thought, a group.",
+  "characters": [
+    {"id": "fang_yuan", "name": "Fang Yuan", "kind": "person", "gender": "male", "aliases": ["Gu Yue Fang Yuan"]},
+    {"id": "ren_zu", "name": "Ren Zu", "kind": "person", "gender": "male", "aliases": ["Ren Zu", "First Human"]}
+  ],
+  "non_characters": [
+    {"name": "Hope Gu", "kind": "creature"},
+    {"name": "Predicaments", "kind": "creature"}
+  ],
+  "personas": [],
+  "appearance": [],
+  "age_facts": [],
+  "lines": ["8.0:_anon", "14.0:_anon", "16.0:_anon", "17.0:ren_zu", "18.0:_anon", "19.0:ren_zu", "19.1:ren_zu", "21.0:_anon", "25.0:_anon", "26.0:fang_yuan:thought"]
+}

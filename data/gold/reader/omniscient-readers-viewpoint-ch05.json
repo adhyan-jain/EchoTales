@@ -1,0 +1,27 @@
+{
+  "novel_id": "omniscient-readers-viewpoint",
+  "chapter": 5,
+  "provenance": "model",
+  "confirmed": false,
+  "lines_complete": false,
+  "drafted_by": "Claude (in-session, reading the chapter text only; pipeline output not consulted)",
+  "drafted_on": "2026-10-22",
+  "note": "Silver reference, PARTIAL: quotes whose speaker is clear from the text are listed; several crowd shouts in blocks 46-56 and the quoted novel text in blocks 1-14 are not labelled, so false-dialogue is not reported for this chapter. Kim Namwoon is named from his uniform badge (block 22).",
+  "characters": [
+    {"id": "dokja", "name": "Kim Dokja", "kind": "person", "gender": "male", "aliases": ["Kim Dokja", "Dokja", "Dokja-ssi"]},
+    {"id": "sangah", "name": "Yoo Sangah", "kind": "person", "gender": "female", "aliases": ["Yoo Sangah", "Sangah", "Yoo Sangah-ssi"]},
+    {"id": "namwoon", "name": "Kim Namwoon", "kind": "person", "gender": "male", "aliases": ["Kim Namwoon", "Namwoon"]},
+    {"id": "myungoh", "name": "Han Myungoh", "kind": "person", "gender": "male", "aliases": ["Han Myungoh", "Myungoh", "Mister"]}
+  ],
+  "non_characters": [
+    {"name": "Daepong High School", "kind": "organization"},
+    {"name": "dokkaebi", "kind": "creature"}
+  ],
+  "personas": [],
+  "appearance": [
+    {"character": "namwoon", "attribute": "hair_color", "value": "white", "quote": "He was thin and had dyed white hair."},
+    {"character": "namwoon", "attribute": "height_build", "value": "thin", "quote": "He was thin and had dyed white hair."}
+  ],
+  "age_facts": [],
+  "lines": ["20.0:sangah", "21.0:namwoon", "24.0:namwoon", "27.0:_anon", "29.0:namwoon", "30.0:myungoh", "31.0:namwoon", "32.0:myungoh", "33.0:namwoon", "38.0:namwoon", "39.0:myungoh", "40.0:namwoon", "40.1:namwoon", "41.0:myungoh", "42.0:namwoon", "44.0:namwoon", "60.0:dokja", "60.1:dokja", "61.0:sangah", "62.0:dokja", "64.0:dokja", "66.0:sangah", "67.0:dokja", "69.0:sangah", "77.0:dokja", "79.0:dokja", "81.0:dokja", "83.0:dokja", "87.0:dokja", "91.0:_anon", "92.0:dokja", "94.0:_anon", "95.0:_anon", "98.0:dokja", "102.0:_anon"]
+}

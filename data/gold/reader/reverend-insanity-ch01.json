@@ -1,0 +1,32 @@
+{
+  "novel_id": "reverend-insanity",
+  "chapter": 1,
+  "provenance": "model",
+  "confirmed": false,
+  "drafted_by": "Claude (in-session, reading the chapter text only; pipeline output not consulted)",
+  "drafted_on": "2026-10-22",
+  "note": "Silver reference. Attackers and elders are unnamed (_anon). The clan head is never named in this chapter. Blocks 22, 25 and 61 are inner speech. The translator's notes after block 86 are not story.",
+  "characters": [
+    {"id": "fang_yuan", "name": "Fang Yuan", "kind": "person", "gender": "male", "aliases": ["Gu Yue Fang Yuan", "Old bastard Fang"]},
+    {"id": "clan_head", "name": "Gu Yue clan head", "kind": "person", "gender": "male", "aliases": ["clan head", "the head of the Gu Yue clan", "Gu Yue clan head"]}
+  ],
+  "non_characters": [
+    {"name": "Bai Ning Bing", "kind": "person_mentioned"},
+    {"name": "Fang Zhi", "kind": "person_mentioned"},
+    {"name": "Qing Mao Mountain", "kind": "location"},
+    {"name": "Gu Yue Village", "kind": "location"},
+    {"name": "Bai Village", "kind": "location"},
+    {"name": "Xiong Village", "kind": "location"},
+    {"name": "Gu Yue clan", "kind": "organization"},
+    {"name": "Bai clan", "kind": "organization"}
+  ],
+  "personas": [],
+  "appearance": [
+    {"character": "fang_yuan", "attribute": "typical_attire", "value": "deep green robes", "quote": "Fang Yuan was in deep green robes that had been torn to shreds."},
+    {"character": "fang_yuan", "attribute": "current_condition", "value": "blood", "quote": "His hair was disheveled and his entire body was covered in blood."},
+    {"character": "clan_head", "attribute": "distinguishing_features", "value": "graying sideburns", "quote": "his sideburns were graying"},
+    {"character": "clan_head", "attribute": "typical_attire", "value": "white robes", "quote": "he was clothed in ceremonial white robes"}
+  ],
+  "age_facts": [],
+  "lines": ["0.0:_anon", "1.0:_anon", "2.0:_anon", "3.0:_anon", "18.0:fang_yuan", "22.0:fang_yuan:thought", "25.0:fang_yuan:thought", "26.0:_anon", "27.0:_anon", "28.0:_anon", "37.0:clan_head", "45.0:_anon", "46.0:_anon", "47.0:_anon", "48.0:_anon", "49.0:_anon", "54.0:_anon", "55.0:_anon", "56.0:_anon", "61.0:clan_head:thought", "62.0:clan_head", "68.0:clan_head", "69.0:_anon", "70.0:_anon", "71.0:_anon", "78.0:clan_head", "80.0:fang_yuan", "83.0:fang_yuan", "84.0:fang_yuan"]
+}

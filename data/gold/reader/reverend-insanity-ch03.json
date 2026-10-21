@@ -1,0 +1,23 @@
+{
+  "novel_id": "reverend-insanity",
+  "chapter": 3,
+  "provenance": "model",
+  "confirmed": false,
+  "drafted_by": "Claude (in-session, reading the chapter text only; pipeline output not consulted)",
+  "drafted_on": "2026-10-22",
+  "note": "Silver reference. The text once misspells Fang Zheng as 'Fang Zhen' (block 8). Blocks 29-31 are unnamed villagers gossiping.",
+  "characters": [
+    {"id": "fang_yuan", "name": "Fang Yuan", "kind": "person", "gender": "male", "aliases": ["Gu Yue Fang Yuan", "Young master Fang Yuan"]},
+    {"id": "fang_zheng", "name": "Fang Zheng", "kind": "person", "gender": "male", "aliases": ["Fang Zheng", "Fang Zhen"]},
+    {"id": "shen_cui", "name": "Shen Cui", "kind": "person", "gender": "female", "aliases": ["Shen Cui", "maiden"]}
+  ],
+  "non_characters": [],
+  "personas": [],
+  "appearance": [
+    {"character": "shen_cui", "attribute": "typical_attire", "value": "green robe", "quote": "Shen Cui wore a green robe with long sleeves and trousers"},
+    {"character": "shen_cui", "attribute": "hair_color", "value": "black", "quote": "her black hair had a pearl hairpin"},
+    {"character": "fang_zheng", "attribute": "current_condition", "value": "black circles", "quote": "his eyes having black circles"}
+  ],
+  "age_facts": [],
+  "lines": ["2.0:fang_yuan:thought", "9.0:shen_cui", "18.0:fang_zheng:thought", "21.0:fang_yuan", "24.0:fang_yuan", "25.0:fang_yuan", "27.0:fang_yuan", "29.0:_anon", "29.1:_anon", "30.0:_anon", "31.0:_anon", "36.0:fang_yuan:thought", "45.0:fang_yuan"]
+}
