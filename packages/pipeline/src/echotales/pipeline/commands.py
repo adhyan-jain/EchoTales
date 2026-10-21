@@ -1300,6 +1300,24 @@ def cmd_appearance(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_reader(args: argparse.Namespace) -> int:
+    """Chapter reader pass: speaker attribution by a model that is shown the cast list."""
+    from echotales.pipeline.reader.runner import read_novel
+
+    store = _open_store(args)
+    client = _build_client(store)
+    if client is None:
+        print("error: the reader pass needs a model backend (set ECHOTALES_MODEL_BACKEND=ollama).", file=sys.stderr)
+        return 2
+    wanted = None
+    if selected := _chapter_range(getattr(args, "chapters", None)):
+        wanted = [n for n in store.chapter_numbers(args.novel) if n in selected]
+    report = read_novel(args.novel, store, client, chapters=wanted)
+    print(report.summary())
+    store.close()
+    return 0
+
+
 def unload_ollama_models(*, prefix: str = "") -> None:
     """Evict ollama's resident models from VRAM before a local-GPU stage.
 
@@ -1651,6 +1669,7 @@ _DISPATCH = {
     "relevance": cmd_relevance,
     "run": cmd_run,
     "appearance": cmd_appearance,
+    "reader": cmd_reader,
     "persona": cmd_persona,
     "voice": cmd_voice,
     "render": cmd_render,

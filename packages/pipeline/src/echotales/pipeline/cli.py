@@ -472,6 +472,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="how many chapters of evidence to sample per entity (default: 25)",
     )
 
+    p_reader = sub.add_parser(
+        "reader",
+        help="chapter reader pass: a model shown the cast names the speaker of every quoted line "
+        "(decisions D11); run after speakers, before personas",
+    )
+    p_reader.add_argument("--novel", required=True)
+    p_reader.add_argument("--chapters", help="range, e.g. 1-5; default: all")
+
     p_persona = sub.add_parser("persona", help="persona-level operations")
     pe_sub = p_persona.add_subparsers(dest="persona_command", required=True)
     pe_ref = pe_sub.add_parser(

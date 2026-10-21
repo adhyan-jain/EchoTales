@@ -20,11 +20,7 @@ from pathlib import Path
 
 from echotales.core.enums import SpanType, TargetKind
 from echotales.core.store import Store
-
-# A quote runs to its closing mark or, when the paragraph ends first, to the end of the block: multi-paragraph
-# speech opens a quote in every paragraph and closes only in the last (LotM ch7 blocks 10, 26, 27).
-# ORV is set in straight quotes, LotM and RI in curly ones (ORV ch2 had zero curly matches).
-_QUOTE = re.compile(r"“[^”]*(?:”|$)|\"[^\"]*(?:\"|$)")
+from echotales.pipeline.reader.quotes import QUOTE as _QUOTE
 
 #: gold `kind` -> the store kinds that count as correct. Kinds with no counterpart are not scored.
 _KIND_MAP: dict[str, frozenset[TargetKind]] = {
@@ -140,7 +136,11 @@ def score_speakers(gold: GoldChapter, store: Store) -> SpeakerScore:
     if chapter is None:
         raise ValueError(f"{gold.novel_id} chapter {gold.chapter} is not in the database")
     blocks = {b.index: b.text for b in chapter.blocks}
-    spans = [s for s in store.get_spans(gold.novel_id, gold.chapter) if s.span_type is SpanType.DIALOGUE]
+    # A quote the classifier typed as inner speech or a crowd reaction still has a speaker; mistyping is a separate
+    # defect from misattribution, so those spans are matched too. Only DIALOGUE spans count toward false dialogue.
+    quote_types = {SpanType.DIALOGUE, SpanType.INNER_MONOLOGUE, SpanType.CROWD_REACTION}
+    all_spans = [s for s in store.get_spans(gold.novel_id, gold.chapter) if s.span_type in quote_types]
+    spans = all_spans
     out = SpeakerScore()
     covered: set[str] = set()
     for line in gold.lines:
@@ -167,7 +167,9 @@ def score_speakers(gold: GoldChapter, store: Store) -> SpeakerScore:
         else:
             out.misses.append(f"{label}: expected {line['speaker']}, got {hit.speaker_self_id}")
     if gold.lines_complete:
-        out.false_dialogue = sum(1 for s in spans if s.id not in covered)
+        out.false_dialogue = sum(
+            1 for s in spans if s.span_type is SpanType.DIALOGUE and s.id not in covered
+        )
     return out
 
 

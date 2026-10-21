@@ -797,6 +797,23 @@ class Store:
             ],
         )
 
+    def set_span_speaker(
+        self, novel_id: str, span_id: str, speaker_self_id: str | None, method: str, confidence: float
+    ) -> None:
+        """Replace one span's speaker without touching its text, type or delivery markers.
+
+        `add_spans` is a whole-row `INSERT OR REPLACE`, so re-attributing a speaker through it would have to
+        round-trip every other column; the reader pass only knows the speaker."""
+        self.conn.execute(
+            "UPDATE span SET speaker_self_id=?, attribution_method=?, confidence=? WHERE novel_id=? AND id=?",
+            (speaker_self_id, method, confidence, novel_id, span_id),
+        )
+
+    def set_span_type(self, novel_id: str, span_id: str, span_type: str) -> None:
+        """Retype one span. The reader pass uses it when a named speaker owns a quote the classifier called a crowd
+        reaction (LotM ch7 "What about you, Mister?" said by Audrey)."""
+        self.conn.execute("UPDATE span SET span_type=? WHERE novel_id=? AND id=?", (span_type, novel_id, span_id))
+
     def delete_span(self, novel_id: str, span_id: str) -> None:
         """Remove one span permanently.
 

@@ -78,6 +78,10 @@ class Task(StrEnum):
     #: merely refer back to a change? The cue regexes in `persona/split.py`
     #: propose, this vetoes.
     PERSONA_SPLIT = "persona_split"
+    #: Chapter reader pass: who says each quoted line given the cast list, plus
+    #: the appearance facts, new names and ages the chapter states, each with
+    #: its evidence quote -- see `reader/`. Local 7B first (decisions D2).
+    READER = "reader"
     #: One call per entity of any kind, filling the structured world
     #: vocabulary in `world/schema.py` -- the stage that stops locations
     #: and factions being names with nothing attached.
@@ -201,6 +205,15 @@ TASK_PROFILES: dict[Task, TaskProfile] = {
         # degrading -- so this must cover the citation cost, not just the
         # values.
         max_tokens=1200,
+    ),
+    # The reader pass reads whole windows and answers one entry per tagged quote.
+    # 1500 tokens covers ~40 tags of {"tag", "speaker"}; a truncated JSON object
+    # fails validation outright, so this is sized for the longest window.
+    Task.READER: TaskProfile(
+        ollama_model="qwen2.5:7b",
+        anthropic_model="claude-sonnet-5",
+        temperature=0.0,
+        max_tokens=1500,
     ),
     # Deciding what to draw is a creative call, not an extraction.
     # gemma2:9b over qwen2.5:7b here: measured on RI ch1, qwen2.5:7b at
