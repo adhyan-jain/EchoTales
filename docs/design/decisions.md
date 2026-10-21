@@ -95,6 +95,36 @@ Core ideas you will meet everywhere:
   Gate A is speakers >= 90%, appearance >= 85%, persona links >= 90%, kind >= 95%. Every gate except RI's kind score is currently missed, and appearance is exactly zero everywhere, which confirms the audit: the extractor never reads appearance.
 - **Status**: reference set and scorer done. Next is A3, the chapter reader pass.
 
+### D11. Experiment log: can a local 7B model attribute speakers? (A3 feasibility, 2026-10-22)
+Question: Gate A needs speakers >= 90%, and the current pipeline scores 20-35%. The build plan assumed a strong API model would be needed. Does local `qwen2.5:7b` get there if it is given the cast list?
+
+What was tried, in order, on LotM ch7 (43 reference lines), with each step's result:
+
+| Step | Change | ch7 speakers |
+|---|---|---|
+| 0 | Current pipeline (regex ladder + cold-start LLM, rotating anonymous slots) | 16/43 = 37% |
+| 1 | One prompt per ~2,600-character window; cast list with aliases in the prompt; model asked to name the speaker of every tagged quote | 25/43 = 58% (the model silently skipped 12 tags) |
+| 2 | Same prompt, but list every tag that must be answered ("exactly one answer per tag, in order") and re-ask for any tag still missing, up to 3 times | **39/43 = 91%** |
+
+Lesson: the jump from 58% to 91% was **not** a smarter model or a longer prompt; it was making the output contract explicit and retrying omissions. Most of the "errors" in step 1 were not wrong answers, they were absent answers.
+
+Same method, other chapters (no further tuning), local model, about 13-53 seconds per chapter on the 8 GB GPU:
+
+| Chapter | Result | What the misses were |
+|---|---|---|
+| LotM ch12 (dream, Dunn) | 27/31 = 87% | the carriage driver, who is Dunn in disguise, and Dunn confused with Melissa |
+| LotM ch14 (Daly) | 50/53 = 94% | two Dunn/Daly swaps in rapid two-person exchanges |
+| RI ch1 | 22/29 = 76% | unnamed crowd voices attributed to "the clan head"; inner thoughts answered UNKNOWN |
+| RI ch3 | 13/13 = 100% | none |
+| ORV ch2 (first person) | 42/61 = 69% | in a two-person ping-pong, the model swaps Dokja and Sangah, and "I" narration is hard |
+
+What this does and does not show (read before quoting these numbers):
+- **It shows** a 7B local model can reach the 90% bar on named multi-speaker scenes when given the cast list (3 of 5 chapters at 87-100%). Because the failures are swaps within alternating two-person dialogue and unnamed crowds, they point at specific fixes (alternation constraint, an explicit "narrator is the first-person character" hint, a rule that unnamed groups are `_anon`), not at the model being too small.
+- **It does not yet prove Gate A.** (1) The prototype took the cast list from the reference file. The real stage has to discover characters from the text first, and a wrong or missing cast list will cost accuracy. (2) These are scored with a throwaway script, not through the pipeline and database path the scorer measures. (3) The reference set is model-drafted silver, not human-confirmed gold. (4) Only speakers were tested; appearance and persona links are still unbuilt.
+- **Cost**: local only, no cloud spend, within the $5-10 budget rule (D2).
+
+Next (A3 proper): build the reader stage with a cast-discovery pass, the explicit per-tag contract plus omission retries, alternation and first-person hints, then write results into the database and re-score through `scripts/eval/score_reader_gold.py`.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs
