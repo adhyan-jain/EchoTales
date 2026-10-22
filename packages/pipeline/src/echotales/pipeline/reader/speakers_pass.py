@@ -440,6 +440,20 @@ _GENERIC_ROLE_WORDS = frozenset({
 })
 
 
+#: Words that make a role an *office or rank* someone holds and can lose or inherit. Only these roles become persistent
+#: title entities. Measured on ORV with gemma2:9b: minting every non-generic descriptor ("dokkaebi" the creature,
+#: "grandmother", "old man", "first man") put those into later chapters' cast lists, and the model then gave 12 of
+#: Kim Dokja's lines in ch5 to "dokkaebi" (speakers 32 -> 18 on that chapter).
+_TITLE_WORDS = frozenset({
+    "head", "leader", "chief", "elder", "elders", "patriarch", "matriarch", "master", "grandmaster", "lord", "lady",
+    "king", "queen", "emperor", "empress", "prince", "princess", "duke", "duchess", "captain", "commander", "general",
+    "marshal", "inspector", "officer", "magistrate", "minister", "president", "principal", "abbot", "priest", "bishop",
+    "ancestor", "sovereign", "chancellor", "governor", "mayor", "sheriff", "judge", "warden", "headmaster", "dean",
+    "professor", "teacher", "doctor", "soldier", "guard", "sergeant", "lieutenant", "colonel", "admiral", "baron",
+    "count", "sect", "overseer", "steward", "regent", "heir", "patriarchs",
+})
+
+
 def _title_entity(store: Store, novel_id: str, number: float, role: str) -> str:
     """The persistent entity for a title nobody has been named for yet ("academy elder"), or a chapter slot if generic.
 
@@ -448,7 +462,8 @@ def _title_entity(store: Store, novel_id: str, number: float, role: str) -> str:
     (a facts-pass identity claim), and a handover closes this holder's interval and opens the next one's. A chapter-scoped
     slot could do none of that. Generic roles ("a man", "attackers") stay chapter-scoped: they are not one person."""
     text = role.replace("_", " ")
-    if all(w in _GENERIC_ROLE_WORDS for w in role.split("_")):
+    words = role.split("_")
+    if all(w in _GENERIC_ROLE_WORDS for w in words) or not any(w in _TITLE_WORDS for w in words):
         return f"{novel_id}:anon:{number:g}:{role}"
     entity_id = f"{novel_id}:title:{role}"
     if store.get_self(entity_id) is None:

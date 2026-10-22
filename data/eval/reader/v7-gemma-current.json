@@ -1,0 +1,475 @@
+{
+ "label": "v7-gemma-current",
+ "commit": "7abb5c1",
+ "chapters": {
+  "lord-of-the-mysteries:1": {
+   "held_out": false,
+   "speakers": [
+    0,
+    0
+   ],
+   "false_dialogue": 4,
+   "appearance": [
+    5,
+    5
+   ],
+   "persona_links": [
+    1,
+    1
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    4,
+    4
+   ],
+   "speaker_misses": []
+  },
+  "lord-of-the-mysteries:3": {
+   "held_out": false,
+   "speakers": [
+    9,
+    9
+   ],
+   "false_dialogue": 3,
+   "appearance": [
+    1,
+    3
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    5,
+    5
+   ],
+   "speaker_misses": []
+  },
+  "lord-of-the-mysteries:7": {
+   "held_out": false,
+   "speakers": [
+    40,
+    43
+   ],
+   "false_dialogue": 8,
+   "appearance": [
+    0,
+    0
+   ],
+   "persona_links": [
+    2,
+    4
+   ],
+   "ages": [
+    0,
+    1
+   ],
+   "kinds": [
+    6,
+    6
+   ],
+   "speaker_misses": [
+    "block 10 quote 0: expected alger, got lord-of-the-mysteries:self:4afd3a0760",
+    "block 11 quote 0: expected alger, got lord-of-the-mysteries:self:4afd3a0760",
+    "block 41 quote 0: expected alger, got lord-of-the-mysteries:self:8f906ddc75"
+   ]
+  },
+  "lord-of-the-mysteries:12": {
+   "held_out": false,
+   "speakers": [
+    31,
+    31
+   ],
+   "false_dialogue": 4,
+   "appearance": [
+    1,
+    2
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    5,
+    5
+   ],
+   "speaker_misses": []
+  },
+  "lord-of-the-mysteries:14": {
+   "held_out": false,
+   "speakers": [
+    50,
+    53
+   ],
+   "false_dialogue": 7,
+   "appearance": [
+    4,
+    4
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    5,
+    5
+   ],
+   "speaker_misses": [
+    "block 58 quote 0: expected daly, got lord-of-the-mysteries:self:efc85087c4",
+    "block 59 quote 0: expected daly, got lord-of-the-mysteries:self:efc85087c4",
+    "block 84 quote 0: expected dunn, got None"
+   ]
+  },
+  "lord-of-the-mysteries:21": {
+   "held_out": true,
+   "speakers": [
+    35,
+    37
+   ],
+   "false_dialogue": 5,
+   "appearance": [
+    0,
+    3
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    3,
+    3
+   ],
+   "speaker_misses": [
+    "block 25 quote 0: expected klein, got lord-of-the-mysteries:self:b605799aab",
+    "block 66 quote 0: expected leonard, got lord-of-the-mysteries:self:8f906ddc75"
+   ]
+  },
+  "reverend-insanity:1": {
+   "held_out": false,
+   "speakers": [
+    26,
+    29
+   ],
+   "false_dialogue": 0,
+   "appearance": [
+    3,
+    4
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    9,
+    9
+   ],
+   "speaker_misses": [
+    "block 0 quote 0: expected _anon, got reverend-insanity:self:7fc3b9af53",
+    "block 1 quote 0: expected _anon, got reverend-insanity:self:60117b7f5a",
+    "block 71 quote 0: expected _anon, got reverend-insanity:self:7fc3b9af53"
+   ]
+  },
+  "reverend-insanity:2": {
+   "held_out": false,
+   "speakers": [
+    15,
+    15
+   ],
+   "false_dialogue": 0,
+   "appearance": [
+    0,
+    1
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    4,
+    4
+   ],
+   "speaker_misses": []
+  },
+  "reverend-insanity:3": {
+   "held_out": false,
+   "speakers": [
+    9,
+    13
+   ],
+   "false_dialogue": 3,
+   "appearance": [
+    2,
+    3
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    3,
+    3
+   ],
+   "speaker_misses": [
+    "block 29 quote 0: expected _anon, got reverend-insanity:title:youths",
+    "block 29 quote 1: expected _anon, got reverend-insanity:title:youths",
+    "block 30 quote 0: expected _anon, got reverend-insanity:self:a785fbd308",
+    "block 31 quote 0: expected _anon, got reverend-insanity:self:a785fbd308"
+   ]
+  },
+  "reverend-insanity:4": {
+   "held_out": false,
+   "speakers": [
+    6,
+    17
+   ],
+   "false_dialogue": 1,
+   "appearance": [
+    2,
+    3
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    7,
+    7
+   ],
+   "speaker_misses": [
+    "block 2 quote 0: expected academy_elder, got reverend-insanity:anon:4:s2:1",
+    "block 9 quote 0: expected _anon, got reverend-insanity:title:youths",
+    "block 10 quote 0: expected _anon, got reverend-insanity:title:youths",
+    "block 12 quote 0: expected academy_elder, got reverend-insanity:title:elder",
+    "block 13 quote 0: expected _anon, got reverend-insanity:title:youths",
+    "block 14 quote 0: expected academy_elder, got reverend-insanity:title:elder",
+    "block 16 quote 0: expected academy_elder, got reverend-insanity:title:elder",
+    "block 23 quote 0: expected academy_elder, got Gu Yue Mo Bei",
+    "block 31 quote 0: expected _anon, got reverend-insanity:self:7fc3b9af53",
+    "block 32 quote 0: expected academy_elder, got reverend-insanity:anon:4:s31:1",
+    "block 36 quote 0: expected academy_elder, got reverend-insanity:anon:4:s31:2"
+   ]
+  },
+  "reverend-insanity:5": {
+   "held_out": false,
+   "speakers": [
+    4,
+    10
+   ],
+   "false_dialogue": 0,
+   "appearance": [
+    0,
+    0
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    2,
+    2
+   ],
+   "speaker_misses": [
+    "block 8 quote 0: expected _anon, got reverend-insanity:title:gu",
+    "block 14 quote 0: expected _anon, got Ren Zu",
+    "block 16 quote 0: expected _anon, got Ren Zu",
+    "block 18 quote 0: expected _anon, got Ren Zu",
+    "block 21 quote 0: expected _anon, got reverend-insanity:self:9869124558",
+    "block 25 quote 0: expected _anon, got reverend-insanity:self:476821534c"
+   ]
+  },
+  "omniscient-readers-viewpoint:2": {
+   "held_out": false,
+   "speakers": [
+    51,
+    61
+   ],
+   "false_dialogue": 9,
+   "appearance": [
+    0,
+    0
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    1,
+    1
+   ],
+   "kinds": [
+    2,
+    2
+   ],
+   "speaker_misses": [
+    "block 3 quote 0: expected _anon, got omniscient-readers-viewpoint:title:old_man",
+    "block 5 quote 0: expected _anon, got omniscient-readers-viewpoint:title:old_man",
+    "block 25 quote 0: expected sangah, got omniscient-readers-viewpoint:self1",
+    "block 27 quote 0: expected sangah, got omniscient-readers-viewpoint:self1",
+    "block 31 quote 0: expected sangah, got omniscient-readers-viewpoint:self1",
+    "block 68 quote 0: expected sangah, got omniscient-readers-viewpoint:self6",
+    "block 83 quote 0: expected sangah, got omniscient-readers-viewpoint:self6",
+    "block 84 quote 0: expected dokja, got omniscient-readers-viewpoint:self2",
+    "block 98 quote 0: expected _anon, got omniscient-readers-viewpoint:self2",
+    "block 99 quote 0: expected sangah, got None"
+   ]
+  },
+  "omniscient-readers-viewpoint:3": {
+   "held_out": false,
+   "speakers": [
+    7,
+    23
+   ],
+   "false_dialogue": 9,
+   "appearance": [
+    0,
+    0
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    2,
+    2
+   ],
+   "speaker_misses": [
+    "block 12 quote 0: expected _anon, got omniscient-readers-viewpoint:self12",
+    "block 13 quote 0: expected _anon, got omniscient-readers-viewpoint:self12",
+    "block 15 quote 0: expected dokja, got None",
+    "block 18 quote 0: expected _anon, got omniscient-readers-viewpoint:self12",
+    "block 20 quote 0: expected _anon, got omniscient-readers-viewpoint:self12",
+    "block 22 quote 0: expected _anon, got omniscient-readers-viewpoint:self12",
+    "block 28 quote 0: expected _anon, got omniscient-readers-viewpoint:self2",
+    "block 30 quote 0: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 36 quote 0: expected _anon, got omniscient-readers-viewpoint:self12",
+    "block 49 quote 0: expected han, got None",
+    "block 51 quote 0: expected dokja, got omniscient-readers-viewpoint:self2",
+    "block 52 quote 0: expected sangah, got omniscient-readers-viewpoint:self12",
+    "block 54 quote 0: expected han, got omniscient-readers-viewpoint:self12",
+    "block 60 quote 0: expected _anon, got omniscient-readers-viewpoint:self12",
+    "block 62 quote 0: expected _anon, got omniscient-readers-viewpoint:self12",
+    "block 65 quote 0: expected _anon, got omniscient-readers-viewpoint:self2"
+   ]
+  },
+  "omniscient-readers-viewpoint:4": {
+   "held_out": false,
+   "speakers": [
+    18,
+    25
+   ],
+   "false_dialogue": null,
+   "appearance": [
+    0,
+    1
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    3,
+    3
+   ],
+   "speaker_misses": [
+    "block 2 quote 0: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 2 quote 1: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 4 quote 0: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 6 quote 0: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 8 quote 0: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 34 quote 0: expected _anon, got Lee Hyunsung",
+    "block 36 quote 0: expected _anon, got Lee Hyunsung"
+   ]
+  },
+  "omniscient-readers-viewpoint:5": {
+   "held_out": false,
+   "speakers": [
+    18,
+    35
+   ],
+   "false_dialogue": null,
+   "appearance": [
+    2,
+    2
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    4,
+    4
+   ],
+   "speaker_misses": [
+    "block 27 quote 0: expected _anon, got omniscient-readers-viewpoint:title:grandmother",
+    "block 32 quote 0: expected myungoh, got omniscient-readers-viewpoint:anon:5:man",
+    "block 41 quote 0: expected myungoh, got None",
+    "block 42 quote 0: expected namwoon, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 60 quote 0: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 60 quote 1: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 62 quote 0: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 64 quote 0: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 67 quote 0: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 77 quote 0: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 79 quote 0: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 81 quote 0: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 83 quote 0: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 87 quote 0: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 92 quote 0: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 98 quote 0: expected dokja, got omniscient-readers-viewpoint:title:dokkaebi",
+    "block 102 quote 0: expected _anon, got omniscient-readers-viewpoint:self12"
+   ]
+  }
+ },
+ "seconds": 1920
+}

@@ -203,3 +203,13 @@ def test_an_honorific_suffix_is_not_a_new_name() -> None:
     assert index.resolve("Yoo Sangah-ssi").self_id == "s"  # type: ignore[union-attr]
     assert index.resolve("Dokja-ssi").self_id == "d"  # type: ignore[union-attr]
     assert index.resolve("Soldier-nim") is None
+
+
+def test_only_offices_become_persistent_title_entities() -> None:
+    """ORV gemma2 run: a minted 'dokkaebi' (a creature) later took 12 of the narrator's lines."""
+    store = Store(":memory:")
+    store.add_novel("n", "N", "x", "epub")
+    assert sp._title_entity(store, "n", 3.0, "academy_elder") == "n:title:academy_elder"
+    assert sp._title_entity(store, "n", 3.0, "dokkaebi") == "n:anon:3:dokkaebi"
+    assert sp._title_entity(store, "n", 3.0, "old_man") == "n:anon:3:old_man"
+    assert store.get_self("n:title:dokkaebi") is None and store.get_self("n:title:academy_elder") is not None
