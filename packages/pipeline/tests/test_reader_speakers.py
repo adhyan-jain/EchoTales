@@ -11,7 +11,7 @@ from echotales.pipeline.reader import speakers_pass as sp
 
 TEXT0 = "“Hello there.” Alice smiled at Bob."
 TEXT1 = "“Who are you?” Carol Wu asked from the doorway."
-TEXT2 = "“Nobody important,” someone muttered."
+TEXT2 = "“Nobody important,” the academy elder muttered."
 
 
 def _world(first_attribution: AttributionMethod = AttributionMethod.PROXIMAL) -> tuple[Store, Chapter]:
@@ -188,3 +188,10 @@ def test_one_person_can_hold_several_titles_as_they_advance() -> None:
     assert early.self_id == later.self_id == "n:self:li"
     assert "elder" in early.aliases and "first elder" not in early.aliases
     assert "first elder" in later.aliases and "elder" not in later.aliases
+
+
+def test_a_role_made_of_words_the_chapter_never_uses_is_rejected() -> None:
+    """The prompt once listed 'the clan head' as an example and the model wrote it into an ORV chapter."""
+    store, report = _run({"0.0": "Alice", "1.0": "UNKNOWN: clan head", "2.0": "UNKNOWN"})
+    assert report.role_rejected == 1 and report.role_slots == 0
+    assert store.get_self("n:title:clan_head") is None

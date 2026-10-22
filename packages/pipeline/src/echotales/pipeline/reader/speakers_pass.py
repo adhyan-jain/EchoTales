@@ -76,6 +76,7 @@ class SpeakerReport:
     minted: int = 0
     role_slots: int = 0
     role_resolved: int = 0
+    role_rejected: int = 0
     cleared: int = 0
     retyped: int = 0
 
@@ -238,9 +239,7 @@ def _prompt(cast: list[CastEntry], text: str, tags: list[str], narrator: CastEnt
         "Use the cues in the text: said/asked, who is addressed, who just acted, and that two people talking to each "
         "other alternate lines. Use the character's name from the list above. A person who is only talked about in the "
         "passage is not the speaker. When unnamed people speak (a crowd, attackers, elders, onlookers) or the text "
-        "never says who it is, answer UNKNOWN; do not guess a name from the list. If an unnamed speaker has a "
-        "recognisable role (the clan head, an elder, a guard, the driver), answer UNKNOWN: followed by the role, for "
-        "example UNKNOWN: academy elder; the same role must always be written the same way. If the speaker is a named person who is not in the list, write the name exactly as the text "
+        "never says who it is, answer UNKNOWN; do not guess a name from the list. If an unnamed speaker is described by a role or title in the text, answer UNKNOWN: followed by those same words copied from the passage, for example UNKNOWN: old man; the same role must always be written the same way. If the speaker is a named person who is not in the list, write the name exactly as the text "
         "gives it. If the quote is not spoken or thought by a person (a sign, written text, a scare quote), "
         f"answer NONE.\n\n{text}\n\n"
         "Answer as JSON with one entry for every tag, like this (replace Name):\n"
@@ -289,6 +288,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
         answers.update(ask_window(client, cast, text, report, novel_id, number, narrator))
 
     blocks = {b.index: b.text for b in chapter.blocks}
+    chapter_words = set(_norm("\n".join(blocks.values())).split())
     role_spans: dict[str, list[Span]] = {}
     spans = [s for s in store.get_spans(novel_id, number) if s.span_type in _QUOTE_SPANS]
     chapter_text = "\n".join(b.text for b in chapter.blocks)
@@ -315,6 +315,11 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
                 speaker, key = named.name, _norm(named.name)
         if key.startswith(UNKNOWN) and key != UNKNOWN:
             role = _role_slug(speaker)
+            # The model copied "clan head" into an ORV chapter that has no clan head: its own prompt example. A
+            # role it claims must be made of words the chapter actually contains.
+            if role and not all(w in chapter_words for w in role.split("_")):
+                report.role_rejected += 1
+                role = ""
             if role:
                 # Written after the chapter-wide pass below: a role the chapter later names is that person, and
                 # only a role nobody names becomes a title entity of its own.
