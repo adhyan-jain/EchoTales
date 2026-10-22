@@ -399,41 +399,39 @@ class TestEpochs:
 
 
 class TestPerBodyCanon:
-    """The reader-supplied half. Extraction cannot describe a body the prose
-    never describes, and RI's narration describes Fang Yuan's death scene and
-    little else -- so what the fifteen-year-old looks like is written down by
-    someone who read the book, per `canon.py`'s own argument."""
+    """The layering mechanism, tested with injected tables. The shipped tables are empty on purpose (decisions D5):
+    hand-typed canon silently beat the book's text (Klein's eyes were "deep grey" while chapter 1 says brown)."""
 
-    def test_bodies_get_different_appearances(self) -> None:
-        from echotales.pipeline.persona.canon import canon_for
+    def test_the_shipped_hand_written_canon_is_empty(self) -> None:
+        from echotales.pipeline.persona.canon import CANON_APPEARANCE, CANON_BY_BODY
 
-        first = canon_for("reverend-insanity", "Fang Yuan", "x:self1:body1")
-        second = canon_for("reverend-insanity", "Fang Yuan", "x:self1:body2")
+        assert CANON_APPEARANCE == {} and CANON_BY_BODY == {}
+
+    def test_bodies_get_different_appearances(self, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+        from echotales.pipeline.persona import canon
+
+        monkeypatch.setattr(canon, "CANON_APPEARANCE", {"n": {"X": {"hair_color": "black"}}})
+        monkeypatch.setattr(canon, "CANON_BY_BODY", {"n": {"X": {1: {"height_build": "gaunt"}, 2: {"height_build": "slim"}}}})
+        first = canon.canon_for("n", "X", "x:self1:body1", wiki=False)
+        second = canon.canon_for("n", "X", "x:self1:body2", wiki=False)
         assert first["height_build"] != second["height_build"]
         # Body-independent identity survives into both.
-        assert first["hair_color"] == second["hair_color"] == "midnight black"
+        assert first["hair_color"] == second["hair_color"] == "black"
 
     def test_a_character_without_body_entries_is_unaffected(self) -> None:
-        """Body layering changes nothing for a character with no body entry.
+        """Body layering changes nothing for a character with no body entry."""
+        from echotales.pipeline.persona.canon import canon_for
 
-        Asserted as "same as with no persona id" rather than "empty": since
-        `wiki_canon.py`, a character with no hand-authored entry can still
-        have imported wiki traits, and this test is about body layering.
-        """
-        from echotales.pipeline.persona.canon import CANON_BY_BODY, canon_for
-
-        assert "Shen Cui" not in CANON_BY_BODY.get("reverend-insanity", {})
         assert canon_for("reverend-insanity", "Shen Cui", "x:self2:body1") == canon_for(
             "reverend-insanity", "Shen Cui"
         )
 
-    def test_no_persona_id_keeps_the_old_behaviour(self) -> None:
-        """Every existing caller passed a label only, and must keep getting
-        the character-level entry."""
-        from echotales.pipeline.persona.canon import canon_for
+    def test_no_persona_id_returns_only_the_character_level_entry(self, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+        from echotales.pipeline.persona import canon
 
-        base = canon_for("reverend-insanity", "Fang Yuan")
-        assert "height_build" in base and "gaunt" not in base["height_build"]
+        monkeypatch.setattr(canon, "CANON_APPEARANCE", {"n": {"X": {"height_build": "tall"}}})
+        monkeypatch.setattr(canon, "CANON_BY_BODY", {"n": {"X": {1: {"height_build": "gaunt"}}}})
+        assert canon.canon_for("n", "X", wiki=False) == {"height_build": "tall"}
 
 
 class TestPersonaAt:

@@ -26,159 +26,20 @@ can do for visual quality on a novel they have actually read.
 
 from __future__ import annotations
 
-#: novel_id -> canonical label -> appearance attributes.
+#: Hand-authored appearance, **now empty on purpose** (decisions D5, 2026-10-22).
 #:
-#: Keys are `appearance_extract.APPEARANCE_KEYS`, so a canon entry drops
-#: into the same slots an extracted one would and needs no special handling
-#: downstream.
-CANON_APPEARANCE: dict[str, dict[str, dict[str, str]]] = {
-    "reverend-insanity": {
-        "Fang Yuan": {
-            "hair_color": "midnight black",
-            "hair_style": "very long straight hair down to the waist",
-            "eye_color": "jet black, cold and narrow",
-            "skin_tone": "pale",
-            "height_build": "tall and lean, 188cm",
-            # Inert for Fang Yuan today -- `CANON_BY_BODY` overrides this key
-            # for both his bodies -- but kept matching the look the author
-            # actually confirmed they wanted (serious, cold, ruthless), not
-            # the "plain ordinary" wording that was tried and reverted (see
-            # `CANON_BY_BODY` below for why).
-            "distinguishing_features": (
-                "cold expressionless stare, utterly ruthless demeanour"
-            ),
-            # No "typical_attire" entry here, deliberately: attire varies by
-            # body for Fang Yuan (green robes dying as the old demon, white
-            # robes reborn as the boy), so it belongs in `CANON_BY_BODY`
-            # below, per body, not here where it would apply to both. This
-            # used to say extraction's real "green robes" would "flow
-            # through" for body 1 as a result -- that was wrong: `canon_for`
-            # also loads the novel's wiki as an unconditional, body-unaware
-            # base layer, and RI's wiki entry states `typical_attire: "white
-            # robes"` (sourced from deep in the story, the body-2 era). With
-            # no body-1 override, that flat wiki value silently beat
-            # extraction's correct answer on every pre-regression panel.
-            # Fixed by stating both bodies' attire explicitly in
-            # `CANON_BY_BODY`, which layers *after* the wiki and actually
-            # overrides it -- an earlier version hardcoded a single
-            # "simple robes with wide sleeves" for the whole character
-            # instead, which silently overwrote the correct extracted
-            # colour with a colourless generic everywhere; the fix is
-            # per-body correctness, not just correct-somewhere.
-        },
-    },
-    "lord-of-the-mysteries": {
-        "Zhou Mingrui": {
-            "hair_color": "black",
-            "hair_style": "short black hair",
-            "eye_color": "deep grey",
-            "skin_tone": "pale",
-            "height_build": "slender, medium height",
-            "distinguishing_features": "deep grey eyes, scholar demeanour",
-            "typical_attire": "black formal trench coat, white shirt, dark trousers",
-        },
-        "Klein Moretti": {
-            "hair_color": "black",
-            "hair_style": "short black hair",
-            "eye_color": "deep grey",
-            "skin_tone": "pale",
-            "height_build": "slender, medium height",
-            "distinguishing_features": "deep grey eyes, scholar demeanour",
-            "typical_attire": "black formal trench coat, white shirt, dark trousers",
-        },
-        "Audrey Hall": {
-            "hair_color": "golden blonde",
-            "hair_style": "long wavy blonde hair",
-            "eye_color": "emerald green",
-            "skin_tone": "fair",
-            "height_build": "slender, aristocratic posture",
-            "distinguishing_features": "bright emerald green eyes, gentle smile",
-            "typical_attire": "elegant Victorian dress, lace trim",
-        },
-    },
-}
+#: These tables held Fang Yuan's and Klein's looks typed by hand and silently won over the book's text. For Klein
+#: they said "deep grey" eyes and a "black formal trench coat" while chapter 1 says "Black hair, brown eyes, a linen
+#: shirt, thinly built", so every v2 render drew grey eyes; Audrey and Melissa were hand-written too. The reader pass
+#: (`reader/facts_pass.py`) now reads appearance from the text with an evidence quote, dated to the chapter that
+#: states it. An override a person wants belongs in the correction log, where it is visible and reversible, not in
+#: source code. The structures remain so `canon_for`/`apply_canon` keep their signatures; the wiki tier still applies.
+#:
+#: novel_id -> canonical label -> appearance attributes (`appearance_extract.APPEARANCE_KEYS`).
+CANON_APPEARANCE: dict[str, dict[str, dict[str, str]]] = {}
 
-
-#: novel_id -> canonical label -> body index -> attributes that differ **for
-#: that body only**, layered on top of the character's entry above.
-#:
-#: **This is where a body change becomes visible.** `persona/split.py` finds
-#: that Fang Yuan is reborn in chapter 1 and binds a second persona from
-#: there; the graph knows the two bodies are different, but nothing in the
-#: prose ever states what the fifteen-year-old looks like -- RI's narration
-#: describes his *death scene* in chapter 1 and almost nothing afterwards
-#: (Section 4.24's honest caveat on that output). An extractor cannot invent what
-#: the text does not say, and a reader can simply write it down.
-#:
-#: Sparse by design: a body with no entry here inherits the character's
-#: appearance unchanged, which is right for the overwhelming majority of
-#: characters, who have exactly one body.
-CANON_BY_BODY: dict[str, dict[str, dict[int, dict[str, str]]]] = {
-    "reverend-insanity": {
-        "Fang Yuan": {
-            # Body 1: the 500-year-old demonic cultivator of chapter 1,
-            # dying at the hands of the righteous factions.
-            #
-            # **The "plain ordinary" wording was tried and reverted.** A
-            # version of this entry pushed hard on plainness in both the
-            # text and `REFERENCE_STYLE`, and the author's own visual
-            # judgement on the result was that it was worse on every axis
-            # except clothing colour -- the original "serious, sharp
-            # features" framing produced the image the author actually
-            # wanted. Only the colour was ever really wrong (see
-            # `CANON_APPEARANCE` above: no more hardcoded "simple robes").
-            #
-            # **`typical_attire` explicit here, for both bodies -- the
-            # comment above used to say extraction's "green robes" flows
-            # through unforced, and that was wrong in practice.**
-            # `canon_for` layers wiki (flat, no body awareness) first, then
-            # this table last; RI's wiki entry has `typical_attire: "white
-            # robes"` sourced from deep into the story (the body-2 era),
-            # applied unconditionally and merged key-by-key over whatever
-            # extraction found -- so it silently overrode body 1's correct
-            # "green robes" on every pre-regression panel whose own local
-            # narration didn't happen to restate the colour. Measured
-            # directly: RI ch1's opening confrontation (body 1, no local
-            # attire restatement) rendered "white_robes" instead of the
-            # green robes his own death-scene text describes two blocks
-            # later. Stating both bodies' attire here, where the per-body
-            # layer actually overrides the flat wiki tier, is what makes
-            # this temporal rather than a global flip to green.
-            1: {
-                "typical_attire": "green robes",
-                "height_build": "tall and lean, gaunt with age and injury",
-                # **Tags, not prose -- the same vocabulary
-                # `render/panels.py::apply_transient_overrides` uses for a
-                # beat's own local condition, and for the same measured
-                # reason (that function's own docstring): a controlled
-                # comparison this session found single Danbooru tags
-                # ("torn_clothes, blood") rendered visible tears and blood
-                # where a merged prose phrase describing the identical
-                # content did not. This canon default was the one holdout
-                # still in prose -- confirmed via the ch1 real-pixel audit
-                # as one of the more frequent "tag present in prompt,
-                # condition absent from the image" cases, on beats whose
-                # own local text has no override so this default carries
-                # straight through unchanged.
-                "current_condition": "wounded, torn_clothes",
-                "distinguishing_features": (
-                    "aged, hollow-cheeked, cold expressionless stare, "
-                    "utterly ruthless demeanour"
-                ),
-            },
-            # Body 2: the same consciousness in his fifteen-year-old self,
-            # from chapter 1's rebirth onward -- which is the entire book.
-            2: {
-                "typical_attire": "white robes",
-                "height_build": "slim adolescent build, not yet grown",
-                "distinguishing_features": (
-                    "a boy's face wearing an adult's cold, ruthless "
-                    "expression"
-                ),
-            },
-        },
-    },
-}
+#: novel_id -> canonical label -> body number -> attributes. Empty for the same reason as `CANON_APPEARANCE`.
+CANON_BY_BODY: dict[str, dict[str, dict[int, dict[str, str]]]] = {}
 
 
 def _body_index(persona_id: str | None) -> int | None:

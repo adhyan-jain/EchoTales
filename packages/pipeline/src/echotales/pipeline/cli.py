@@ -54,6 +54,12 @@ def build_parser() -> argparse.ArgumentParser:
         "entity); CI and deterministic runs want this",
     )
     p_run.add_argument(
+        "--skip-reader",
+        action="store_true",
+        help="skip the 6b chapter reader pass (speakers, appearance, ages, new names; ~15-60 s of local model "
+        "time per chapter)",
+    )
+    p_run.add_argument(
         "--recover-pronoun-speakers",
         action="store_true",
         help=(

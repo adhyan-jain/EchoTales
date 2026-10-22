@@ -227,6 +227,13 @@ def cmd_run(args: argparse.Namespace) -> int:
                 force_rewipe=getattr(args, "force_rewipe", False),
             ),
         )
+        # 6b reader pass: a model shown the cast names every quoted line's speaker and reads appearance, ages and
+        # new names, each with an evidence quote (decisions D11-D13). After resolve because it needs the cast;
+        # before personas so a code name it links (Fool -> Klein) is an alias when personas are built.
+        if client is not None and not getattr(args, "skip_reader", False):
+            from echotales.pipeline.reader.runner import read_novel
+
+            stage("6b reader", lambda: read_novel(novel, store, client))
         # Phase 7 runs last because it reads what every earlier phase produced:
         # resolved entities, their attributed dialogue, and the NER-derived kind
         # that says which of them are people at all.

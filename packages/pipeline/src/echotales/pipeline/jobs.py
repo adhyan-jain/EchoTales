@@ -83,6 +83,7 @@ def http_engine_known(name: str) -> bool:
 JOB_KINDS = (
     "ingest",
     "resolve",
+    "reader",
     "appearance",
     "persona",
     "render",
@@ -220,6 +221,17 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             store, run_id=pipeline_run.run_id, stage_name="resolve",
             input_digest=input_digest,
             fn=lambda: resolve_novel(novel_id, store, lexicon=lexicon),
+        )
+    elif job.kind == "reader":
+        from echotales.pipeline.llm.client import ModelClient
+        from echotales.pipeline.reader.runner import read_novel
+
+        client = ModelClient(store=store)
+        client.require_ready()
+        run_stage(
+            store, run_id=pipeline_run.run_id, stage_name="reader",
+            input_digest=input_digest,
+            fn=lambda: read_novel(novel_id, store, client),
         )
     elif job.kind == "appearance":
         from echotales.pipeline.llm.client import ModelClient
