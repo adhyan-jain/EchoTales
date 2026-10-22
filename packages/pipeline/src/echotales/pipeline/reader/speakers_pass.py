@@ -177,8 +177,8 @@ def first_person_narrator(store: Store, novel_id: str, chapter: Chapter, cast: l
     best: tuple[int, CastEntry] | None = None
     for entry in cast:
         words = {w for surface in entry.surfaces() for w in _norm(surface).split() if len(w) >= 4}
-        in_quotes = sum(_norm(quotes).split().count(w) for w in words)
-        in_narration = sum(_norm(narration).split().count(w) for w in words)
+        in_quotes = sum(_norm(quotes).count(w) for w in words)  # substring: 'Dokja-ssi' normalises to 'dokjassi'
+        in_narration = sum(_norm(narration).count(w) for w in words)
         if in_quotes >= 2 and in_narration <= 2 and (best is None or in_quotes > best[0]):
             best = (in_quotes, entry)
     return best[1] if best else None
