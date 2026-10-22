@@ -2130,6 +2130,17 @@ this document comes from, never those databases directly. Verified after
 a full edit-and-apply pass: originals byte-identical to before, working
 copy showing every change.
 
+### `src/echotales/pipeline/reader/` (decisions D11-D18, EVOLUTION 4.122-4.123)
+
+The chapter reader pass: a model reads each chapter with the cast list in view and returns facts that carry their own evidence. It exists because the older stages link names to identities but never *read* facts, so LotM had 0 appearance attributes and speaker accuracy of 34.6%. Runs as `echotales reader` or stage `6b reader` of `echotales run` (`--skip-reader` opts out), and as the `reader` job kind. Model: `Task.READER`, local `qwen2.5:7b` first.
+
+- `quotes.py` -- the one definition of a quoted line (`QUOTE`, `quote_starts`, `tag_block`). A line is addressed `block.q`; curly and straight quotes both count, and a multi-paragraph speech runs to the end of the block. Shared with `eval/reader_gold.py` so the scorer and the stage can never disagree on what "quote 3 of block 10" is.
+- `speakers_pass.py` -- windows of ~2,600 characters with every quote tagged; builds the chapter cast (people already attested whose name occurs in the text); asks for exactly one answer per tag and shows a slot for every pending tag in the answer template (a single-entry example made the model answer one tag per call); re-asks for omissions; names resolve through `NameIndex`. Writes the speaker onto the covering span, retypes a mistyped crowd reaction to dialogue, mints a person the cast lacks but never a place, clears the old ladder's non-explicit guess when the model says UNKNOWN, gives an unnamed speaker with a role one stable slot (`UNKNOWN: academy elder`), treats dated written entries and NONE answers as narration, and tells the model who the first-person narrator is (the character addressed in quotes but rarely named in narration).
+- `facts_pass.py` -- appearance (own focused call over body/clothing cue sentences, one worked example), ages and new names. A claim is stored only if its evidence quote is real passage text (a paraphrase is repaired to the passage sentence that states the value, never kept as the model's words) and the value fits its key (makeup is a mark not an eye colour; `height_build` needs a build word; an age must be written in the quote). Appearance lands as dated `PERSONA` attributes open-ended from the stating chapter; a new name as an alias binding on the character.
+- `runner.py` -- chapters in order, speakers then facts (a minted speaker is in the cast for the facts pass), totalled in `ReaderReport`.
+
+Measured with `scripts/eval/score_reader_gold.py` against model-drafted silver references in `data/gold/reader/` (never called gold): see `docs/design/decisions.md` D11-D18 for each experiment. Gate A is not yet met for speakers or appearance.
+
 ### `tests/test_anaphora.py`
 33 tests, weighted toward what the resolver must decline to do: no cataphora,
 no distant antecedents, no gender-mismatched links, no split when personas are
