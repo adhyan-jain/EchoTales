@@ -513,6 +513,20 @@ CREATE TABLE IF NOT EXISTS location_plate (
 );
 CREATE INDEX IF NOT EXISTS ix_location_plate_novel ON location_plate(novel_id, location_id);
 
+-- A locked, versioned bible: the review gate's output (decisions D6). Renders read a lock, never live edits. The
+-- per-chapter digests are what let a later lock say exactly which chapters (and so which episodes) an edit touched.
+CREATE TABLE IF NOT EXISTS bible_lock (
+    novel_id TEXT NOT NULL,
+    version INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    note TEXT NOT NULL DEFAULT '',
+    pipeline_version TEXT NOT NULL DEFAULT '',
+    digest TEXT NOT NULL,
+    chapter_digests_json TEXT NOT NULL DEFAULT '{}',
+    counts_json TEXT NOT NULL DEFAULT '{}',
+    PRIMARY KEY (novel_id, version)
+);
+
 CREATE TABLE IF NOT EXISTS persona_version (
     id TEXT PRIMARY KEY,
     novel_id TEXT NOT NULL,
@@ -2560,6 +2574,32 @@ class Store:
             locations=locations,
             relationships=relationships,
         )
+
+    def add_bible_lock(self, novel_id: str, lock: dict) -> dict:  # type: ignore[type-arg]
+        """Persist the next locked bible version and return it. Versions count up from 1 per novel and are never reused."""
+        row = self.conn.execute("SELECT COALESCE(MAX(version), 0) FROM bible_lock WHERE novel_id=?", (novel_id,)).fetchone()
+        version = int(row[0]) + 1
+        self.conn.execute(
+            "INSERT INTO bible_lock(novel_id, version, created_at, note, pipeline_version, digest,"
+            " chapter_digests_json, counts_json) VALUES (?,?,?,?,?,?,?,?)",
+            (novel_id, version, lock["created_at"], lock.get("note", ""), lock.get("pipeline_version", ""),
+             lock["digest"], json.dumps(lock.get("chapter_digests", {})), json.dumps(lock.get("counts", {}))),
+        )
+        self.conn.commit()
+        return {**lock, "version": version}
+
+    def list_bible_locks(self, novel_id: str) -> list[dict]:  # type: ignore[type-arg]
+        rows = self.conn.execute(
+            "SELECT * FROM bible_lock WHERE novel_id=? ORDER BY version", (novel_id,)
+        ).fetchall()
+        return [
+            {
+                "version": r["version"], "created_at": r["created_at"], "note": r["note"],
+                "pipeline_version": r["pipeline_version"], "digest": r["digest"],
+                "chapter_digests": json.loads(r["chapter_digests_json"]), "counts": json.loads(r["counts_json"]),
+            }
+            for r in rows
+        ]
 
     def add_location_plate(self, plate: LocationPlate) -> None:
         """Persist a master environmental location plate."""

@@ -598,9 +598,11 @@ def _stale_build_refusal(handle, novel_id: str, engine_name: str) -> str | None:
     deliverable, and the stub is how the Studio and CI are exercised."""
     if engine_name == "stub":
         return None
+    from echotales.pipeline.review_gate import unlocked_reason
     from echotales.pipeline.version import staleness_reason
 
-    return staleness_reason(handle.store, novel_id)
+    # A real render reads a locked bible, never live edits (decisions D6): the version stamp first, then the lock.
+    return staleness_reason(handle.store, novel_id) or unlocked_reason(handle.store, novel_id)
 
 
 def _compute_status() -> dict:  # type: ignore[type-arg]
@@ -1209,6 +1211,40 @@ def make_handler(
                         return self._serve_file(panels[0])
                     return self._json(404, {"error": "candidate image not found"})
 
+                # Phase B review gate (review_gate.py): ranked speaker lines, a character's look/identity timeline, lock state.
+                if len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3:] == ["review", "lines"]:
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    query = parse_qs(urlparse(self.path).query)
+                    try:
+                        chapter = float(query["chapter"][0]) if query.get("chapter") else None
+                        limit = int(query.get("limit", ["100"])[0])
+                    except ValueError:
+                        return self._json(400, {"error": "chapter and limit must be numbers"})
+                    from echotales.pipeline.review_gate import speaker_queue
+
+                    return self._json(200, speaker_queue(
+                        handle.store, parts[2], chapter, limit, include_guesses=query.get("all", ["0"])[0] == "1"
+                    ))
+                if len(parts) == 6 and parts[:2] == ["api", "novels"] and parts[3] == "characters" and parts[5] == "timeline":
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    from echotales.pipeline.review_gate import character_timeline
+
+                    result = character_timeline(handle.store, parts[2], unquote(unquote(parts[4])))
+                    if result is None:
+                        return self._json(404, {"error": "unknown character"})
+                    return self._json(200, result)
+                if len(parts) == 4 and parts[:2] == ["api", "novels"] and parts[3] == "bible":
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    from echotales.pipeline.review_gate import bible_status
+
+                    return self._json(200, bible_status(handle.store, parts[2]))
+
                 if len(parts) == 4 and parts[:2] == ["api", "novels"] and parts[3] == "review-items":
                     novel_id = parts[2]
                     handle = registry.handles.get(novel_id)
@@ -1670,6 +1706,19 @@ def make_handler(
                         approval.reject_asset_candidate(handle.store, novel_id=novel_id, candidate_id=candidate_id, note=note)
                     handle.invalidate()
                     return self._json(200, {"id": candidate_id, "action": action, "self_id": self_id, "is_approved": (action == "approve")})
+
+                # POST /api/novels/<id>/bible/lock
+                if len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3:] == ["bible", "lock"]:
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    from echotales.pipeline.review_gate import StaleBuild, lock_bible
+
+                    body = self._read_json()
+                    try:
+                        return self._json(200, lock_bible(handle.store, parts[2], str(body.get("note", "")) if isinstance(body, dict) else ""))
+                    except StaleBuild as exc:
+                        return self._json(409, {"error": str(exc)})
 
                 # POST /api/novels/<id>/review-items/<item_id>/resolve
                 if (
