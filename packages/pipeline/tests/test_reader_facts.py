@@ -138,3 +138,12 @@ def test_a_wrong_evidence_pointer_for_a_new_name_is_repaired_to_the_sentence_tha
     assert report.identities == 1 and report.repaired == 1
     alias = next(a for a in store.get_aliases_for(TargetKind.SELF, "n:self:audrey") if a.alias == "Justice")
     assert "designation shall be" in alias.evidence  # the real sentence, not the model's pointer
+
+
+def test_a_look_about_her_is_not_stored_for_a_male_character() -> None:
+    """LotM ch3: Melissa's 'her skin remained lustrous' became Klein's skin tone."""
+    assert fp.gender_conflict("male", "her skin remained lustrous as it exuded youth")
+    assert fp.gender_conflict("female", "his eyes were gray")
+    assert not fp.gender_conflict("male", "his eyes were gray")
+    assert not fp.gender_conflict("male", "the gray-eyed inspector")  # no pronoun, no signal
+    assert not fp.gender_conflict("", "her skin")  # unknown gender: nothing to contradict

@@ -9,6 +9,7 @@ from __future__ import annotations
 import base64
 import io
 import math
+import os
 import struct
 import wave
 from dataclasses import dataclass, field
@@ -218,7 +219,14 @@ def _generate_stub_mp4_b64(duration_s: float = 3.0) -> str:
 
 
 def run_image_worker(req: ImageWorkerRequest) -> ImageWorkerResponse:
-    """Deterministic offline stub image worker."""
+    """Image worker: the deterministic offline stub, or a real local model when `ECHOTALES_IMAGE_WORKER` names one.
+
+    `noobai` runs NoobAI XL on the local GPU without CPU offload (`workers_local.py`). Anything else, including unset,
+    is the stub, so CI, tests and every default path stay GPU-free."""
+    if os.environ.get("ECHOTALES_IMAGE_WORKER", "").strip().lower() == "noobai":
+        from echotales.pipeline.workers_local import run_local_image_worker
+
+        return run_local_image_worker(req)
     b64 = _generate_solid_png_b64(req.width, req.height)
     return ImageWorkerResponse(image_b64=b64, seed=req.seed, duration_s=1.2, status="COMPLETED")
 

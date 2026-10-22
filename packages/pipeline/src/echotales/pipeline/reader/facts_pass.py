@@ -352,6 +352,9 @@ def _store_appearance(
     entry = _resolve(index, claim.character, report)
     if entry is None:
         return
+    if gender_conflict(_recorded_gender(store, entry.self_id), quote):
+        report.rejected_value += 1
+        return
     persona_id = persona_at(store, entry.self_id, number + 0.5)
     if _known(store, persona_id, attribute, value):
         report.duplicates += 1
@@ -379,6 +382,28 @@ def _store_age(
         return
     store.add_attribute(novel_id, _attribute(TargetKind.PERSONA, persona_id, "age", str(claim.age), claim.quote, number, pos))
     report.ages += 1
+
+
+_FEMALE = re.compile(r"\b(she|her|hers|herself)\b", re.IGNORECASE)
+_MALE = re.compile(r"\b(he|his|him|himself)\b", re.IGNORECASE)
+
+
+def gender_conflict(gender: str, quote: str) -> bool:
+    """A quote that is about "her" cannot describe a character recorded as male, and the reverse.
+
+    LotM ch3: "her skin remained lustrous" (Melissa) was stored as Klein's skin tone because the nearest named male was
+    Klein. Only a clear one-sided pronoun signal counts; a quote with both, or neither, is left alone."""
+    female, male = bool(_FEMALE.search(quote)), bool(_MALE.search(quote))
+    return (gender == "male" and female and not male) or (gender == "female" and male and not female)
+
+
+def _recorded_gender(store: Store, self_id: str) -> str:
+    for target in (TargetKind.SELF, TargetKind.PERSONA):
+        for tid in (self_id, f"{self_id}:body1"):
+            for a in store.get_attributes(target, tid):
+                if a.key == "gender":
+                    return a.value.strip().lower()
+    return ""
 
 
 def repair_name_quote(core: str, passage: str) -> str | None:

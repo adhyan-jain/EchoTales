@@ -68,18 +68,43 @@ class CharacterTurnaroundAsset:
         }
 
 
+#: Bible attributes that describe how a person *looks*. Everything else the bible holds for a character (`big_five`,
+#: `archetype`, `reference_image_path`, appearance digests, voice ids) is bookkeeping, and the first version of this
+#: builder wrote all of it into the image prompt as "key: value" ("reference_image_path: data/novels/..."), which an
+#: image model can only misread. `current_condition` is left out on purpose: a wound or a state belongs to a scene, not to
+#: a model sheet.
+def look_clauses(char: CharacterBibleEntry) -> list[str]:
+    """Image-prompt tags for one character from its look attributes, in priority order (identity first)."""
+    a = {k: str(v).strip().lower() for k, v in char.attributes.items() if v}
+    clauses: list[str] = []
+    gender = a.get("gender", "")
+    clauses.append({"male": "1boy", "female": "1girl"}.get(gender, "1person"))
+    if a.get("age", "").isdigit() and int(a["age"]) < 20:
+        clauses.append("teenager")
+    if a.get("hair_color"):
+        clauses.append(a["hair_color"] if "hair" in a["hair_color"] else f"{a['hair_color']} hair")
+    if a.get("hair_style"):
+        clauses.append(a["hair_style"])
+    if a.get("eye_color"):
+        clauses.append(a["eye_color"] if "eye" in a["eye_color"] else f"{a['eye_color']} eyes")
+    if a.get("skin_tone"):
+        clauses.append(a["skin_tone"] if "skin" in a["skin_tone"] else f"{a['skin_tone']} skin")
+    if a.get("height_build"):
+        clauses.append(a["height_build"])
+    if a.get("distinguishing_features"):
+        clauses.append(a["distinguishing_features"])
+    outfit = (char.active_outfit or a.get("typical_attire") or "").strip()
+    if outfit:
+        clauses.append(outfit if outfit.startswith("wearing") else f"wearing {outfit}")
+    return clauses
+
+
 def build_turnaround_prompt(char: CharacterBibleEntry, visual_genre: str = "anime") -> str:
     """Build standardized prompt for 3-view model turnaround."""
-    attr_clauses = [f"{k}: {v}" for k, v in char.attributes.items() if k not in ("voice_id", "voice_profile")]
-    attr_desc = ", ".join(attr_clauses) if attr_clauses else "detailed character design"
-    outfit = f"wearing {char.active_outfit}" if char.active_outfit else ""
-
     clauses = [
-        "character design sheet, 3-view turnaround, front view, side profile view, back view",
-        f"same character in all three angles, {char.canonical_label}",
-        attr_desc,
-        outfit,
-        f"neutral pose, standing, clean lines, neutral grey background, master character sheet, {visual_genre} style",
+        "character design sheet, turnaround, front view, side view, back view, same character in all three angles",
+        *look_clauses(char),
+        f"standing, full body, neutral pose, simple grey background, {visual_genre} style",
     ]
     return fit_to_budget(clauses, limit=75)
 
@@ -89,7 +114,7 @@ def build_expression_prompt(char: CharacterBibleEntry, visual_genre: str = "anim
     expressions_str = ", ".join(e.value for e in STANDARD_EXPRESSIONS)
     clauses = [
         f"character expression sheet, 7 facial expressions: {expressions_str}",
-        f"same character, {char.canonical_label}",
+        *look_clauses(char)[:6],
         "bust shot portraits grid, consistent face, high quality",
         f"neutral background, {visual_genre} style",
     ]
@@ -125,7 +150,7 @@ def generate_character_assets(
     view_crops: dict[str, str] = {}
     for view in (TurnaroundView.FRONT, TurnaroundView.SIDE, TurnaroundView.BACK):
         view_req = ImageWorkerRequest(
-            prompt=f"{char.canonical_label}, {view.value} view crop, {visual_genre}",
+            prompt=", ".join([*look_clauses(char), f"{view.value} view", "full body, standing, simple grey background", f"{visual_genre} style"]),
             width=1080,
             height=1920,
             seed=seed + len(view_crops),
@@ -150,7 +175,7 @@ def generate_character_assets(
     expression_crops: dict[str, str] = {}
     for expr in STANDARD_EXPRESSIONS:
         expr_req = ImageWorkerRequest(
-            prompt=f"{char.canonical_label}, facial expression {expr.value}, portrait crop, {visual_genre}",
+            prompt=", ".join([*look_clauses(char)[:6], f"{expr.value} expression, portrait, face focus, simple background", f"{visual_genre} style"]),
             width=1024,
             height=1024,
             seed=seed + 20 + len(expression_crops),
