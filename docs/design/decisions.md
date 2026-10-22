@@ -181,6 +181,13 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Known remaining gaps**: a trait stated about a sibling ("his sister's brown eyes") is assigned to the narrator; appearance on RI is limited by what the cast list contains; ORV first-person two-person dialogue still swaps speakers; 27 LotM dialogue spans cover no reference line (the span classifier voices scare quotes); entity kinds such as universities typed as LOCATION instead of ORGANIZATION are not touched by this stage.
 - **Status**: built, tested (`test_reader_facts.py`, 5 tests; whole suite green), not yet part of `echotales run`.
 
+### D14. Text-only canon, and the reader stage joins the pipeline (A8 + wiring, 2026-10-22)
+- **Decision**: `persona/canon.py` `CANON_APPEARANCE` and `CANON_BY_BODY` are now empty dictionaries. The reader stage is part of `echotales run` as stage `6b reader` (after resolve, before personas; `--skip-reader` opts out) and is a job kind `reader` for the Studio queue.
+- **Why**: those tables held hand-typed looks that silently beat the text. For Klein they said "deep grey" eyes and a black trench coat, while chapter 1 says "Black hair, brown eyes, a linen shirt, thinly built", so every v2 render drew grey eyes. With the reader pass reading appearance with evidence quotes, the tables were not just redundant but harmful.
+- **Effect**: `canon_for`/`apply_canon` keep their signatures, and the wiki tier (imported on request, dated to first appearance) still applies. A look someone wants to force must be a correction record, not source code. The old per-body test now injects its own tables (so the layering mechanism stays covered) and a new test asserts the shipped tables stay empty.
+- **Left for Phase D**: `render/beat_canon.py` (hand-written RI chapter-1 beats keyed by block range) is the same problem one layer up, but it sits inside the render path that Phase D replaces, so it is deleted there rather than patched here.
+- **Status**: done; whole suite green.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs
