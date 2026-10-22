@@ -99,7 +99,7 @@ def test_name_index_resolves_titles_and_unique_words() -> None:
 def test_first_person_narrator_is_the_one_others_address_but_narration_rarely_names() -> None:
     """ORV ch2: Yoo Sangah is named in narration constantly; Dokja only inside her quotes. Choosing the most-mentioned
     character picked Sangah and lowered the score (50.7% -> 47.9%)."""
-    narration = " ".join("I looked at Sangah and Sangah smiled." for _ in range(8))
+    narration = " ".join("I looked at Sangah and Sangah smiled." for _ in range(15))
     text = narration + ' "Dokja-ssi, what do you read?" "Dokja-ssi, you are so quiet."'
     store = Store(":memory:")
     store.add_novel("n", "N", "x", "epub")
