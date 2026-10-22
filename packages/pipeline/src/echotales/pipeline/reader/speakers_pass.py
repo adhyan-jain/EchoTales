@@ -16,8 +16,9 @@ from dataclasses import dataclass, field
 
 from pydantic import BaseModel, Field
 
-from echotales.core.enums import AttributionMethod, Prominence, SpanType, TargetKind
-from echotales.core.models import Chapter, DiscoursePosition, Self, Span
+from echotales.core.enums import AliasType, AssertedBy, AttributionMethod, Prominence, SpanType, TargetKind, TruthStatus
+from echotales.core.interval import FuzzyInterval
+from echotales.core.models import AliasBinding, Chapter, DiscoursePosition, Self, Span
 from echotales.core.store import Store
 from echotales.pipeline.llm.client import ModelClient
 from echotales.pipeline.llm.tasks import Task
@@ -83,11 +84,22 @@ def _norm(text: str) -> str:
     return re.sub(r"[^a-z0-9 ]+", "", text.lower().replace("’", "'")).strip()
 
 
-def build_cast(store: Store, novel_id: str, chapter_text: str, chapter: float) -> list[CastEntry]:
-    """People who can speak in this chapter: kind SELF, already attested, and named somewhere in its text.
+def _valid_at(alias: AliasBinding, chapter: float) -> bool:
+    """Whether the binding holds in story time at this chapter (knowledge time is a separate question)."""
+    return alias.retracted_at is None and alias.interval.from_lb <= chapter <= alias.interval.to_ub
 
-    Requiring a name in the text keeps the list short enough for a 7B prompt and keeps a character who has not
-    appeared yet (a later-chapter alias) out of earlier chapters, the same no-look-ahead rule the Read page enforces.
+
+def build_cast(store: Store, novel_id: str, chapter_text: str, chapter: float) -> list[CastEntry]:
+    """People who can speak in this chapter, shown the way a reader at this chapter knows them.
+
+    Two clocks, kept apart (the research's point-in-time rule): **story time** decides who is on stage, **knowledge
+    time** decides what they are called. RI calls its clan head "the clan head" for five chapters before anyone names
+    him; the database holds that title bound to Gu Yue Bo from story chapter 1 but learned at chapter 6. A cast built
+    from "first attested" dropped him from chapters 1-5, so his lines fell into anonymous slots and got their own
+    voice. So an entity is on stage if one of its aliases is valid in story time here and appears in the text, and
+    it is shown by its title until its personal name has been learned; a later name is never put in an earlier prompt.
+    A title with several holders over time resolves to whoever's interval covers this chapter (transfer is not
+    retraction), and one person may hold several titles at once (elder, then first elder).
     """
     haystack = _norm(chapter_text)
     rank = {"PRINCIPAL": 0, "RECURRING": 1}
@@ -101,11 +113,23 @@ def build_cast(store: Store, novel_id: str, chapter_text: str, chapter: float) -
     ordered: list[tuple[int, int, CastEntry]] = []
     for row in rows:
         entity = store.get_self(row["id"])
-        if entity is None or entity.first_attested_pos.chapter > chapter:
+        if entity is None:
             continue
-        aliases = [a.alias for a in store.get_aliases_for(TargetKind.SELF, entity.id)]
-        entry = CastEntry(entity.id, entity.canonical_label, [a for a in aliases if a != entity.canonical_label])
-        if not any(len(_norm(s)) >= 3 and _norm(s) in haystack for s in entry.surfaces()):
+        bindings = store.get_aliases_for(TargetKind.SELF, entity.id)
+        titles = [a.alias for a in bindings if a.alias_type is AliasType.TRANSFERABLE_TITLE and _valid_at(a, chapter)]
+        name_known = entity.first_attested_pos.chapter <= chapter
+        names = [
+            a.alias for a in bindings
+            if a.alias_type is not AliasType.TRANSFERABLE_TITLE and a.learned_at_pos.chapter <= chapter
+        ]
+        if name_known:
+            entry = CastEntry(entity.id, entity.canonical_label, [x for x in dict.fromkeys(names + titles) if x != entity.canonical_label])
+        elif titles:
+            shown = sorted(set(titles), key=len, reverse=True)
+            entry = CastEntry(entity.id, shown[0], shown[1:])
+        else:
+            continue
+        if not any(len(_norm(x)) >= 3 and _norm(x) in haystack for x in entry.surfaces()):
             continue
         key = _norm(entry.name)
         if key in found:
@@ -292,12 +316,8 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
         if key.startswith(UNKNOWN) and key != UNKNOWN:
             role = _role_slug(speaker)
             if role:
-                # One slot per role per chapter, held across lines. The old ladder rotated slots line by line, so a
-                # single elder got four voices (RI ch4: academy elder -> anon:4:s7:1/2/3 on consecutive lines).
-                store.set_span_speaker(
-                    novel_id, span.id, f"{novel_id}:anon:{number:g}:{role}",
-                    AttributionMethod.EPITHET_SLOT.value, ROLE_CONFIDENCE,
-                )
+                # Written after the chapter-wide pass below: a role the chapter later names is that person, and
+                # only a role nobody names becomes a title entity of its own.
                 report.role_slots += 1
                 role_spans.setdefault(role, []).append(span)
                 continue
@@ -329,8 +349,13 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             store.set_span_type(novel_id, span.id, SpanType.DIALOGUE.value)
             report.retyped += 1
         report.attributed += 1
-    if role_spans and RECONCILE_ROLES:
-        _reconcile_roles(store, client, chapter, cast, index, role_spans, report)
+    resolved_roles = _reconcile_roles(store, client, chapter, cast, index, role_spans, report) if role_spans and RECONCILE_ROLES else set()
+    for role, role_lines in role_spans.items():
+        if role in resolved_roles:
+            continue
+        holder = _title_entity(store, novel_id, number, role)
+        for span in role_lines:
+            store.set_span_speaker(novel_id, span.id, holder, AttributionMethod.EPITHET_SLOT.value, ROLE_CONFIDENCE)
     store.conn.commit()
     return report
 
@@ -365,11 +390,12 @@ def _role_evidence(chapter: Chapter, role: str, cast: list[CastEntry], limit: in
 def _reconcile_roles(
     store: Store, client: ModelClient, chapter: Chapter, cast: list[CastEntry], index: NameIndex,
     role_spans: dict[str, list[Span]], report: SpeakerReport,
-) -> None:
+) -> set[str]:
     """A role slot ("the soldier", "the host") may be a character the chapter names later (ORV ch4: "Soldier-nim!" is
     Lee Hyunsung; LotM ch14: the "ethereal voice" is Daly). A window sees only ~2,600 characters, so the first pass
     cannot connect them; this one shows the whole chapter's relevant sentences, once per role."""
     people = ", ".join(e.name for e in cast)
+    resolved: set[str] = set()
     for role, spans in role_spans.items():
         evidence = _role_evidence(chapter, role, cast)
         examples = " | ".join(s.text[:80] for s in spans[:3])
@@ -392,6 +418,44 @@ def _reconcile_roles(
                 chapter.novel_id, span.id, entry.self_id, AttributionMethod.CONTEXTUAL_LLM.value, ROLE_CONFIDENCE
             )
         report.role_resolved += len(spans)
+        resolved.add(role)
+    return resolved
+
+
+_GENERIC_ROLE_WORDS = frozenset({
+    "man", "woman", "boy", "girl", "child", "voice", "someone", "people", "crowd", "person", "youth", "stranger",
+    "onlooker", "onlookers", "men", "women", "others", "one", "another", "figure", "speaker", "narrator", "who",
+    "unknown", "unnamed", "passerby", "bystander", "voices", "enemy", "enemies", "attacker", "attackers",
+})
+
+
+def _title_entity(store: Store, novel_id: str, number: float, role: str) -> str:
+    """The persistent entity for a title nobody has been named for yet ("academy elder"), or a chapter slot if generic.
+
+    A title is a transferable alias, not a second character (`resolve/title_holders.py`): it keeps one id across
+    chapters, so the same elder keeps one voice; when a later chapter names the holder the name is bound to this entity
+    (a facts-pass identity claim), and a handover closes this holder's interval and opens the next one's. A chapter-scoped
+    slot could do none of that. Generic roles ("a man", "attackers") stay chapter-scoped: they are not one person."""
+    text = role.replace("_", " ")
+    if all(w in _GENERIC_ROLE_WORDS for w in role.split("_")):
+        return f"{novel_id}:anon:{number:g}:{role}"
+    entity_id = f"{novel_id}:title:{role}"
+    if store.get_self(entity_id) is None:
+        pos = DiscoursePosition(chapter=int(number), offset=0)
+        store.add_self(
+            Self(id=entity_id, novel_id=novel_id, canonical_label=text, first_attested_pos=pos,
+                 prominence=Prominence.INCIDENTAL, kind=TargetKind.SELF)
+        )
+        store.add_alias_binding(
+            novel_id,
+            AliasBinding(
+                alias=text, alias_type=AliasType.TRANSFERABLE_TITLE, target_kind=TargetKind.SELF, target_id=entity_id,
+                interval=FuzzyInterval.open_ended(int(number), last_evidence=int(number)), learned_at_pos=pos,
+                observer_id="reader", asserted_by=AssertedBy.INFERENCE, truth_status=TruthStatus.TRUE,
+                evidence=f"speaks as '{text}' in chapter {number:g}", confidence=ROLE_CONFIDENCE,
+            ),
+        )
+    return entity_id
 
 
 def _span_at(spans: list[Span], block_index: int, start: int) -> Span | None:

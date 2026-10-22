@@ -5,10 +5,10 @@
   "confirmed": false,
   "drafted_by": "Claude (in-session, reading the chapter text only; pipeline output not consulted)",
   "drafted_on": "2026-10-22",
-  "note": "Silver reference. Attackers and elders are unnamed (_anon). The clan head is never named in this chapter. Blocks 22, 25 and 61 are inner speech. The translator's notes after block 86 are not story.",
+  "note": "Silver reference. Attackers and elders are unnamed (_anon). The clan head is never named in this chapter; the text names him Gu Yue Bo from chapter 6, so that name is listed as an alias of the same character (a title held by one person, known by title first). Blocks 22, 25 and 61 are inner speech. The translator's notes after block 86 are not story.",
   "characters": [
     {"id": "fang_yuan", "name": "Fang Yuan", "kind": "person", "gender": "male", "aliases": ["Gu Yue Fang Yuan", "Old bastard Fang"]},
-    {"id": "clan_head", "name": "Gu Yue clan head", "kind": "person", "gender": "male", "aliases": ["clan head", "the head of the Gu Yue clan", "Gu Yue clan head"]}
+    {"id": "clan_head", "name": "Gu Yue clan head", "kind": "person", "gender": "male", "aliases": ["clan head", "the clan head", "the head of the Gu Yue clan", "Gu Yue clan head", "the Guyue clan head", "Gu Yue Bo"]}
   ],
   "non_characters": [
     {"name": "Bai Ning Bing", "kind": "person_mentioned"},

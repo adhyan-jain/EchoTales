@@ -115,7 +115,7 @@ def test_first_person_narrator_is_the_one_others_address_but_narration_rarely_na
 def test_an_unnamed_speaker_with_a_role_gets_one_stable_slot() -> None:
     store, report = _run({"0.0": "Alice", "1.0": "UNKNOWN: academy elder", "2.0": "UNKNOWN: The Academy Elder"})
     one, two = _span(store, 1), _span(store, 2)
-    assert one.speaker_self_id == two.speaker_self_id == "n:anon:1:academy_elder"
+    assert one.speaker_self_id == two.speaker_self_id == "n:title:academy_elder"  # a persistent title entity
     assert one.attribution_method is AttributionMethod.EPITHET_SLOT
     assert report.role_slots == 2
     assert sp._role_slug("UNKNOWN") == "" and sp._role_slug("UNKNOWN: a guard") == "guard"
@@ -132,3 +132,59 @@ def test_a_none_answer_retypes_dialogue_to_narration() -> None:
     store, report = _run({"0.0": "Alice", "1.0": "NONE", "2.0": "UNKNOWN"})
     assert _span(store, 1).span_type is SpanType.NARRATION_DESCRIPTION
     assert _span(store, 1).speaker_self_id is None and report.not_speech == 1
+
+
+def _holder(store: Store, sid: str, name: str, first: int, title_bindings: list[tuple[str, tuple[int, float]]],
+            name_learned: int | None = None) -> None:
+    from echotales.core.enums import AliasType, AssertedBy, TruthStatus
+    from echotales.core.interval import FuzzyInterval
+    from echotales.core.models import AliasBinding
+
+    pos = DiscoursePosition(chapter=first, offset=0)
+    store.add_self(Self(id=sid, novel_id="n", canonical_label=name, first_attested_pos=pos, prominence=Prominence.RECURRING))
+
+    def bind(alias: str, kind: AliasType, interval: FuzzyInterval, learned: int) -> None:
+        store.add_alias_binding("n", AliasBinding(
+            alias=alias, alias_type=kind, target_kind=TargetKind.SELF, target_id=sid, interval=interval,
+            learned_at_pos=DiscoursePosition(chapter=learned, offset=0), observer_id="reader",
+            asserted_by=AssertedBy.INFERENCE, truth_status=TruthStatus.TRUE,
+        ))
+
+    for title, (start, end) in title_bindings:
+        interval = FuzzyInterval(from_lb=start, from_ub=start, to_lb=end if end != float("inf") else start, to_ub=end)
+        bind(title, AliasType.TRANSFERABLE_TITLE, interval, name_learned or first)
+    if name_learned:
+        bind(name, AliasType.RIGID_NAME, FuzzyInterval.open_ended(name_learned, last_evidence=name_learned), name_learned)
+
+
+def test_a_title_is_shown_before_its_holders_name_is_known_and_the_name_after() -> None:
+    """RI: 'the clan head' for five chapters, named Gu Yue Bo from chapter 6; the title binds back to chapter 1."""
+    store = Store(":memory:")
+    store.add_novel("n", "N", "x", "epub")
+    _holder(store, "n:self:bo", "Gu Yue Bo", 6, [("the clan head", (1, float("inf")))], name_learned=6)
+    early = sp.build_cast(store, "n", "The clan head spoke to the elders.", 1.0)
+    assert [e.name for e in early] == ["the clan head"] and early[0].self_id == "n:self:bo"
+    assert "Gu Yue Bo" not in early[0].surfaces()  # a name the reader has not learned never reaches an earlier prompt
+    late = sp.build_cast(store, "n", "Go against me, Gu Yue Bo! said the clan head.", 7.0)
+    assert late[0].name == "Gu Yue Bo" and "the clan head" in late[0].aliases
+
+
+def test_a_title_follows_its_holder_through_a_handover() -> None:
+    store = Store(":memory:")
+    store.add_novel("n", "N", "x", "epub")
+    _holder(store, "n:self:old", "Old Holder", 1, [("clan leader", (1, 10))], name_learned=1)
+    _holder(store, "n:self:new", "New Holder", 12, [("clan leader", (10, float("inf")))], name_learned=12)
+    text = "The clan leader spoke."
+    assert [e.self_id for e in sp.build_cast(store, "n", text, 5.0)] == ["n:self:old"]
+    assert [e.self_id for e in sp.build_cast(store, "n", text, 12.0)] == ["n:self:new"]
+
+
+def test_one_person_can_hold_several_titles_as_they_advance() -> None:
+    store = Store(":memory:")
+    store.add_novel("n", "N", "x", "epub")
+    _holder(store, "n:self:li", "Li Wei", 1, [("elder", (1, 20)), ("first elder", (20, float("inf")))], name_learned=1)
+    early = sp.build_cast(store, "n", "The elder nodded.", 3.0)[0]
+    later = sp.build_cast(store, "n", "The first elder nodded.", 25.0)[0]
+    assert early.self_id == later.self_id == "n:self:li"
+    assert "elder" in early.aliases and "first elder" not in early.aliases
+    assert "first elder" in later.aliases and "elder" not in later.aliases
