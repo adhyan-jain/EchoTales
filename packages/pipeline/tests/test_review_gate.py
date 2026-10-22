@@ -111,11 +111,11 @@ def test_a_stale_build_cannot_be_locked_and_an_unlocked_one_cannot_render() -> N
     with pytest.raises(rg.StaleBuild):
         rg.lock_bible(stale, NOVEL)
     store = _world()
-    assert "no locked bible" in rg.unlocked_reason(store, NOVEL)
+    assert "no locked canon" in rg.unlocked_reason(store, NOVEL)
     rg.lock_bible(store, NOVEL)
     assert rg.unlocked_reason(store, NOVEL) is None
     store.add_spans([_span(0, 1.0, None, AttributionMethod.UNRESOLVED, 0.0)])
-    assert "edits since bible v1" in rg.unlocked_reason(store, NOVEL)
+    assert "edits since canon v1" in rg.unlocked_reason(store, NOVEL)
 
 
 @pytest.fixture
@@ -176,11 +176,11 @@ def test_the_render_guard_needs_a_current_lock_for_a_real_engine_but_not_for_the
     assert "no recorded build" in _stale_build_refusal(stale, NOVEL, "sdxl")
 
     handle = SimpleNamespace(store=_world())
-    assert "no locked bible" in _stale_build_refusal(handle, NOVEL, "sdxl")
+    assert "no locked canon" in _stale_build_refusal(handle, NOVEL, "sdxl")
     rg.lock_bible(handle.store, NOVEL)
     assert _stale_build_refusal(handle, NOVEL, "sdxl") is None
     handle.store.add_spans([_span(0, 1.0, None, AttributionMethod.UNRESOLVED, 0.0)])
-    assert "edits since bible v1" in _stale_build_refusal(handle, NOVEL, "sdxl")
+    assert "edits since canon v1" in _stale_build_refusal(handle, NOVEL, "sdxl")
 
 
 def test_timeline_shows_a_repeated_binding_once() -> None:

@@ -79,7 +79,7 @@ describe('BibleReview', () => {
     renderIt();
     fireEvent.click(screen.getByText('Lock'));
     expect(await screen.findByText('Resolver changed since build')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Lock bible v1/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Lock canon v1/ })).toBeDisabled();
   });
 
   test('lock calls lockBible with the note when not stale', async () => {
@@ -88,7 +88,7 @@ describe('BibleReview', () => {
     api.lockBible.mockResolvedValue({ version: 2, changed_chapters: [3] });
     renderIt();
     fireEvent.click(screen.getByText('Lock'));
-    const btn = await screen.findByRole('button', { name: /Lock bible v2/ });
+    const btn = await screen.findByRole('button', { name: /Lock canon v2/ });
     expect(btn).toBeEnabled();
     fireEvent.change(screen.getByLabelText('Lock note'), { target: { value: 'after review' } });
     fireEvent.click(btn);

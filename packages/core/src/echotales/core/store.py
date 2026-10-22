@@ -2495,12 +2495,20 @@ class Store:
             aliases = list({a["alias"] for a in alias_rows if a["alias"] != canonical_label})
 
             # Attributes learned on or before this chapter and not retracted
+            # `persona_at` (pipeline) is the accessor the reader pass and every persona writer use, and without a binding
+            # it answers `<self>:body1`. This query asked only for `<self>:default`, so every look the reader extracted
+            # (LotM: Klein's brown eyes, Daly's emerald eyes) never reached the bible and each character's attributes
+            # were empty. When the active persona is the unbound default, the `:body1` persona is read too.
+            holders = [self_id, active_persona_id]
+            if active_persona_id == f"{self_id}:default":
+                holders.append(f"{self_id}:body1")
+            marks = ",".join("?" for _ in holders)
             attr_rows = self.conn.execute(
                 "SELECT key, value FROM attribute "
-                "WHERE novel_id=? AND target_id IN (?, ?) AND learned_chapter <= ? "
+                f"WHERE novel_id=? AND target_id IN ({marks}) AND learned_chapter <= ? "
                 "AND ((retracted_chapter IS NULL AND truth_status != 'FALSE') OR retracted_chapter > ?) "
                 "ORDER BY learned_chapter ASC, learned_offset ASC",
-                (novel_id, self_id, active_persona_id, chapter, chapter),
+                (novel_id, *holders, chapter, chapter),
             ).fetchall()
             attrs: dict[str, str] = {}
             for a in attr_rows:

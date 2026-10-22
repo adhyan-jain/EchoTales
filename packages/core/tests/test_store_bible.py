@@ -328,3 +328,23 @@ def test_location_plates_persona_versions_and_relationships(store: Store) -> Non
     snapshot = store.bible_at("showcase", 1.0)
     assert "char:holmes" in snapshot.relationships
     assert snapshot.relationships["char:holmes"]["char:watson"] == "colleague"
+
+
+def test_bible_reads_looks_stored_on_the_body1_persona_when_no_binding_exists() -> None:
+    """The reader writes looks to `<self>:body1` (persona_at's answer); bible_at asked for `<self>:default` and found none."""
+    from echotales.core.enums import AssertedBy, TargetKind
+    from echotales.core.interval import FuzzyInterval
+    from echotales.core.models import Attribute, DiscoursePosition, Self
+
+    store = Store(":memory:")
+    store.add_novel("n", "N", "x", "epub")
+    store.add_self(Self(id="n:self:a", novel_id="n", canonical_label="Alice",
+                        first_attested_pos=DiscoursePosition(chapter=1, offset=0)))
+    for chapter, key, value in ((3, "hair_color", "black"), (9, "eye_color", "brown")):
+        store.add_attribute("n", Attribute(
+            target_kind=TargetKind.PERSONA, target_id="n:self:a:body1", key=key, value=value,
+            interval=FuzzyInterval.open_ended(chapter, last_evidence=chapter),
+            learned_at_pos=DiscoursePosition(chapter=chapter, offset=0), observer_id="reader",
+            asserted_by=AssertedBy.INFERENCE))
+    assert store.bible_at("n", 5).characters["n:self:a"].attributes == {"hair_color": "black"}  # no look-ahead
+    assert store.bible_at("n", 9).characters["n:self:a"].attributes == {"hair_color": "black", "eye_color": "brown"}

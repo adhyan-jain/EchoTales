@@ -273,7 +273,7 @@ function LockPanel({ novelId }) {
     try {
       setBible(await api.getBible(novelId));
     } catch (err) {
-      push(describeError(err, 'Failed to load the bible state.'), 'danger');
+      push(describeError(err, 'Failed to load the canon state.'), 'danger');
     }
   }, [novelId, push]);
 
@@ -291,11 +291,11 @@ function LockPanel({ novelId }) {
     try {
       const rec = await api.lockBible(novelId, note.trim() || undefined);
       const n = (rec.changed_chapters || []).length;
-      push(`Locked bible v${rec.version}${n ? ` (${n} chapter${n === 1 ? '' : 's'} changed)` : ''}.`, 'success');
+      push(`Locked canon v${rec.version}${n ? ` (${n} chapter${n === 1 ? '' : 's'} changed)` : ''}.`, 'success');
       setNote('');
       await load();
     } catch (err) {
-      push(describeError(err, 'Could not lock the bible.'), 'danger');
+      push(describeError(err, 'Could not lock the canon.'), 'danger');
     } finally {
       setBusy(false);
     }
@@ -329,7 +329,7 @@ function LockPanel({ novelId }) {
             className="h-10 min-w-[16rem] flex-1 rounded-xl border border-border bg-surface px-3 text-sm text-text"
           />
           <Button onClick={lock} disabled={stale || busy}>
-            <Lock className="h-4 w-4" aria-hidden="true" /> Lock bible v{next}
+            <Lock className="h-4 w-4" aria-hidden="true" /> Lock canon v{next}
           </Button>
         </div>
       </div>
@@ -379,7 +379,7 @@ export default function BibleReview({ novelId }) {
 
   return (
     <div data-testid="bible-review" className="space-y-6">
-      <div role="group" aria-label="Bible review view" className="inline-flex flex-wrap gap-1 rounded-2xl border border-border bg-surface p-1">
+      <div role="group" aria-label="Canon review view" className="inline-flex flex-wrap gap-1 rounded-2xl border border-border bg-surface p-1">
         {SUBTABS.map(({ key, label }) => (
           <button
             key={key}

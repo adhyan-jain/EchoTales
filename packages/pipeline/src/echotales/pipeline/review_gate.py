@@ -222,8 +222,8 @@ def unlocked_reason(store: Store, novel_id: str) -> str | None:
     """Why a real render must not read this bible, or None: no lock yet, or edits since the last lock."""
     status = bible_status(store, novel_id)["current"]
     if status["locked_version"] is None:
-        return f"{novel_id!r} has no locked bible; review it and lock a version before a real render."
+        return f"{novel_id!r} has no locked canon; review it and lock a version before a real render."
     if status["dirty"]:
         chapters = ", ".join(str(c) for c in status["changed_chapters"][:10])
-        return f"{novel_id!r} has edits since bible v{status['locked_version']} (chapters {chapters}); lock a new version first."
+        return f"{novel_id!r} has edits since canon v{status['locked_version']} (chapters {chapters}); lock a new version first."
     return None
