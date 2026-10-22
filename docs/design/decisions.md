@@ -225,6 +225,48 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Remaining misses on ch21**: the model attributes two of Old Neil's lines to Klein, a joint line ("in unison") has no single speaker, and "Midnight Poet" became its own role slot instead of Leonard.
 - **Tests**: `test_dated_written_entries_are_not_speech_and_leave_dialogue`, `test_a_none_answer_retypes_dialogue_to_narration`.
 
+### D19. The ablation series: what moved the speaker score, and what did not (2026-10-22)
+- **Rule adopted** (owner, after D16-D18): never read a gain off the chapter a change was tuned on. `scripts/eval/reader_ablation.py` runs the whole stage on **all 16 reference chapters of all three novels** from a fresh copy of each run-of-record database, writes `data/eval/reader/<label>.json`, and `compare` prints every chapter's change and flags any that got worse. One-chapter swings of about 5 lines happen from prompt wording alone (v2 and v5 have identical totals, 282, but differ by up to 7 lines on single chapters), so a change counts only if the 401-line total moves by more than about 10 and the big chapters agree.
+- **The series.** Speakers = correct of 401 reference lines; appearance of 31 facts. "qwen" = `qwen2.5:7b`, "gemma" = `gemma2:9b`, both local.
+
+  | Run | Change (cumulative) | Model | Speakers | Appearance | Chapters worse |
+  |---|---|---|---|---|---|
+  | v0 | code as of D16 | qwen | 277 (69%) | 17 | - |
+  | v1 | canonical names claim a name before aliases; `UNKNOWN: <cast name>` resolves to that person | qwen | 276 | 18 | 1 |
+  | v2 | + chapter-wide role -> name pass | qwen | 282 (70%) | 18 | 2 |
+  | v3 | same code, **model swapped** | gemma | **330 (82%)** | 21 | 3 |
+  | v4 | + titles as persistent entities, cast by story-time validity | qwen | 279 | 19 | 4 |
+  | v5 | + roles must use words found in the chapter; novel-specific prompt examples removed | qwen | 282 | 19 | 7 |
+  | v6 | + honorific suffixes stripped when matching names | qwen | 291 (73%) | 19 | 1 |
+  | v7 | v6 code | gemma | 319 (80%) | 20 | 6 |
+  | v8 | + only office words ("elder", "head", "captain"...) become persistent title entities | gemma | 339 (85%) | 21 | 4 |
+  | v9 | + concrete example in the names prompt | gemma | 341 (85%) | 21 | 0 |
+  | v10 | + naming-cue focus with the following lines | gemma | 340 | 21 | 1 |
+  | v11 | + wrong evidence pointer for a new name repaired to the sentence naming it | gemma | 339 (85%) | 21 (persona links 4/5) | 1 |
+
+- **What actually moved the number, in order of size**:
+  1. **The model** (v2 -> v3): +48 lines, by far the largest single lever. It is not a clean "more parameters" effect: `gemma2:9b` is a different family from `qwen2.5:7b`, it is 2.75x slower (1,665 s vs 604 s for the 16 chapters), it did **not** win everywhere (ORV ch3 -5, RI ch4 -2 in v3), and it regressed persona links until the prompt bugs below were fixed.
+  2. **Honorific handling** (v5 -> v6): +9 lines, all in ORV ch5 (and -1 in ORV ch3), LotM and RI byte-identical. "Yoo Sangah-ssi" was not recognised as Yoo Sangah, so a **duplicate entity** was minted and later chapters answered with it.
+  3. **Restricting persistent title entities to offices** (v7 -> v8): +20 lines on gemma. v7 had *minted* "dokkaebi" (a creature), "grandmother", "old man", "first man" as persistent entities; they entered later chapters' cast lists and gemma gave **12 of the narrator's lines in ORV ch5 to "dokkaebi"** (32 -> 18 on that chapter, hidden inside a 2-point total dip). The title design was right in principle; its unrestricted version was harmful, and only the per-chapter table showed where.
+  4. **Role reconciliation** (v1 -> v2): +6 lines, uneven by novel (LotM +6, ORV +2, RI -2).
+- **What did not move it, though the trace said it would**: the name-matching fixes (v0 -> v1: 277 -> 276). The trace showed real mechanisms ("UNKNOWN: Dunn Smith" becoming a role slot; an alias "Welch" on Klein stealing an answer), but they were rare in the reference chapters. A correct fix is not the same as a large one.
+- **Two prompt bugs that only showed with the stronger model**: (a) my prompt listed "the clan head" as an example role, and a model wrote it into an ORV chapter that has no clan head (now removed, and a claimed role must be made of words found in the chapter); (b) the names prompt showed `"quote": "..."` as a placeholder, and gemma copied the literal `...` as the evidence quote for "Justice" and "The Hanged Man", failing the quote check (now a concrete example).
+- **Persona-link misses are partly model variance in the evidence pointer.** On some runs gemma named Zhou Mingrui's new identity correctly but quoted an unrelated line ("It's nothing.") as proof. The validator rightly rejected it; the stage now repairs the pointer to the real passage sentence that contains the new name. The scorer also no longer treats "Mr. Fool" and "The Fool" as different code names (article or title only).
+- **Honest scope**: the prompts and fixes above were written while looking at these same 16 chapters. The held-out LotM chapter (ch21) is the only one never used for tuning and it scores 35/37 (95%) on gemma, but it is one chapter of one novel. Nothing here shows the same holds for RI or ORV on unseen chapters.
+
+### D20. Titles are transferable aliases with two clocks (owner's design point, built 2026-10-22)
+- **Decision**: a title ("the clan head", "elder", "first elder") is a **transferable alias** of a person, not an anonymous crowd slot and not a second character. It has a **story interval** (when the person actually held it, which can reach back before the reader learned it) and a **knowledge time** (when the book told the reader). Before the holder's name is learned the reader sees the title; afterwards the name, with the title noted. A title can move to a new holder (the old interval closes, the earlier lines stay attributed to the old holder; transfer is not retraction), and one person can hold several titles over time (elder, then first elder).
+- **Why**: I first treated "clan head" as an unnamed role and called the reference's `clan_head` character an artifact. That was wrong against the project's own research, which already has this machinery: `resolve/title_holders.py` binds RI's "the clan head" to Gu Yue Bo with story time from chapter 1 and knowledge time at chapter 6, so the clan head's first five chapters of lines have a consistent voice.
+- **What was built**: `build_cast` includes a person when an alias is valid in story time at the chapter and appears in its text, shows them by title until the name is learned (a later name never appears in an earlier prompt), and resolves a repeated title to whichever holder's interval covers the chapter. A role with no known holder becomes a persistent **title entity** (only for office words, see D19) that a later chapter can name through an identity claim. The RI reference lists "Gu Yue Bo" and "the clan head" as aliases of the same character.
+- **Tests**: `test_a_title_is_shown_before_its_holders_name_is_known_and_the_name_after`, `test_a_title_follows_its_holder_through_a_handover`, `test_one_person_can_hold_several_titles_as_they_advance`, `test_only_offices_become_persistent_title_entities`.
+- **Not done**: no step yet closes a holder's interval when the *reader pass* sees a handover (that remains `title_holders.py`'s job in the resolve stage); "previous/next/fourth-generation" titles are not handled in the reader; the faithfulness check (truncate-and-rebuild) has not been run on the reader stage.
+
+### D21. A reference error, found by reading the text (ORV ch3, 2026-10-22)
+- The failure taxonomy on the best run showed 27 lines where the model named a speaker the reference called unnamed (RI 13, ORV 14). Eight were ORV ch3 "Han Myungoh". Reading blocks 46-66 in full showed the entire offer scene is Department Head Han (named Han Myungoh in ch5): four lines I had marked unnamed from a truncated view were his, one of his lines (54.1) was missing, and the reference character lacked the alias "Han Myungoh".
+- **Corrected**: those four lines, the missing line and the alias. This changes the reference (ORV 144 -> 145 lines), so the ORV ch3 numbers in earlier rows of D19 were scored against the old labels and are not strictly comparable.
+- **Effect on the best run (v11 outputs, re-scored, no model rerun)**: LotM 165/173 (**95.4%**, passes the 90% gate), RI 64/84 (76.2%), ORV 113/145 (77.9%).
+- **Why it matters for trust**: this is exactly the failure mode the reference-set warning describes. A reference drafted from truncated views understates the model, and the model's disagreement is a prompt to re-read, not proof either way. The remaining 19 "named but expected unnamed" lines (RI 13, ORV 6 after the fix) have **not** been re-checked against the text and could be reference errors in the same way.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs
