@@ -22,9 +22,9 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-22 (EVOLUTION 4.122).
+**Last updated:** 2026-10-22 (EVOLUTION 4.123).
 
-## Pick up here — 2026-10-22 (Phase A: trustworthy bible; A1 done, A2 next; EVOLUTION 4.122)
+## Pick up here — 2026-10-22 (Phase A: reader stage built, Gate A NOT met; EVOLUTION 4.122 and 4.123)
 
 Plan adopted (full text: `/home/adhyan/.claude/plans/gleaming-sniffing-backus.md`;
 decisions and effects: `docs/design/decisions.md`). Order, each phase gated
@@ -34,29 +34,50 @@ validators, look timeline, text-only canon, reference set -> **B** review UI
 Gate A (on the reference set, local model): speaker >= 90%, appearance recall
 >= 85%, persona-link recall >= 90%, kind >= 95%.
 
-- **A1 done (verified: full core+pipeline suite, 1,520 passed).**
-  `pipeline/version.py` (`PIPELINE_VERSION="2"`, `staleness_reason()`);
-  `ensure_pipeline_run(pipeline_version=...)` stamps/re-stamps;
-  `Store.set_pipeline_run_version` / `latest_pipeline_version`; stage digests
-  in `commands.py`/`jobs.py` use the version (were literal `"v1"`, so a bump
-  now invalidates cached stage results); `webview_server.py::_stale_build_refusal`
-  returns 409 on non-stub render routes for unstamped or older databases (stub
-  engine exempt). Bump `PIPELINE_VERSION` whenever extraction output changes
-  meaning. Limit: the stamp means "newest code that touched this run", not
-  "every stage was rebuilt". **Existing run-of-record DBs are unstamped, so
-  real renders against them now return 409 until rebuilt.**
-- **A2 next/started: reference ("silver") set.** Scorer `eval/reader_gold.py`
-  exists and LotM ch7 is labelled (`data/gold/reader/`); baseline speakers
-  16/43 = 37%, persona links 1/4, age 0/1. Remaining: 5 chapters each of
-  LotM, RI, ORV with appearance facts and persona events. Labels are model
-  drafted (`confirmed: false`), so silver until the owner spot-checks.
-- **Then A3-A9:** reader pass (`pipeline/reader/`, `Task.READER`), validators,
-  identity/persona links, speaker attribution, look timeline (`look_at`),
-  text-only canon, cross-check + rebuild into `data/scratch/reruns/` first.
+**Gate A status: not met.** Speakers 84.6 / 64.3 / 58.3 % and appearance
+71.4 / 45.5 / 66.7 % (LotM / RI / ORV) on the silver references; persona links
+LotM 100 %. Kind accuracy not yet at 95 %.
+
+- **A1 done** (`pipeline/version.py`, `PIPELINE_VERSION="2"`, stamped into
+  `pipeline_run`; `webview_server.py::_stale_build_refusal` returns 409 on
+  non-stub render routes for unstamped/older DBs; stage digests use the
+  version). Bump `PIPELINE_VERSION` whenever extraction output changes
+  meaning. The stamp means "newest code that touched this run", not "every
+  stage was rebuilt".
+- **A2 done: reference set.** 14 model-drafted (silver) chapters in
+  `data/gold/reader/`; scorer `eval/reader_gold.py`; CLI
+  `scripts/eval/score_reader_gold.py`; labelling aid
+  `scripts/eval/dump_for_labelling.py`.
+- **A3 done: reader stage.** `pipeline/reader/{quotes,speakers_pass,
+  facts_pass,runner}.py`; CLI `echotales reader`; `echotales run` stage 6b
+  (`--skip-reader` to omit); job kind `reader`; `Task.READER`.
+- **A4 done:** per-attribute validators inside `facts_pass` (reject
+  wrong-facts-stored cases, EVOLUTION 4.123).
+- **A6 done, not proven:** one anonymous slot per unnamed role across a
+  chapter; no measured gain yet.
+- **A8 done:** `persona/canon.py` tables emptied (text-only canon).
+  `render/beat_canon.py` deliberately left for Phase D.
+- **Not done:** A5 (identity merges), A7 (`look_at` / `Store.bible_at`
+  story interval), A9 (cross-check + rebuild into `data/scratch/reruns/`).
 - Docs consolidated 2026-10-22 (EVOLUTION 4.122): research docs now live in
   `docs/research/<TOPIC>.md`, results in `docs/results/{ABLATIONS,
-  EXPERIMENT_RESULTS,GOLD_AND_ANNOTATION}.md`; the tables above that name old
-  paths mean those merged files.
+  EXPERIMENT_RESULTS,GOLD_AND_ANNOTATION}.md`.
+
+**Open Phase A defects (all open):**
+
+- Gate A thresholds not met: speakers >= 90, appearance >= 85, kind >= 95.
+- Entity kind errors: universities typed LOCATION not ORGANIZATION; tarot
+  cards / "the Emperor" typed as people; the author of the novel-within-novel
+  typed as a cast member.
+- Identity merges missing (A5): Fool / Emperor / Zhou Mingrui / Klein remain
+  separate entities.
+- 27 LotM dialogue spans sit over scare quotes (no real line).
+- `render/beat_canon.py` still hand-written canon (Phase D).
+- Databases in `data/db/` are not rebuilt and are unstamped, so real renders
+  return 409 until rebuilt.
+- The reference set is silver (model-drafted, `confirmed: false`) and the
+  prompts were tuned on the same chapters, so every number above is
+  optimistic.
 
 ## Pick up here — 2026-10-19 (Reader Speaker Editing, Asset Studio Previews, ShotGrid QA; EVOLUTION 4.121)
 
@@ -1030,8 +1051,8 @@ all open, all Phase A targets):**
 - **Reference images are placeholders**, not real generations.
 - **Stale databases**: personas built before the speaker-join fix; A1 now flags
   them (409 on real render) but they are not rebuilt.
-- **`persona/canon.py` hand-written canon overrides the text** (also
-  `render/beat_canon.py`, per-novel attire tables) -> A8.
+- **`persona/canon.py` tables emptied (A8, 4.123); `render/beat_canon.py`
+  hand-written canon still open** -> Phase D.
 - **`bible/` scaffolding is unwired** (`heuristic_extract_bible_delta` has
   hard-coded Sherlock/Klein names) -> A3/A5.
 - **`Store.bible_at` ignores the story interval** (and observer) -> A7 `look_at`.

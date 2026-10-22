@@ -9088,3 +9088,38 @@ Completed interactive reader speaker editing, populated Asset Studio character m
   `docs/archive/`. Older sections in this log cite the pre-merge file names;
   each merged section names its original path. Not edited: preregistrations,
   `PREFIX_FAITHFULNESS/PREREG*`, `docs/archive/`.
+
+### 4.123 Phase A reader stage (A2-A8): measured results and defects *(2026-10-22)*
+
+Supersedes the "A2 started / A3-A9 not started" lines of 4.122. Gate A is
+**not met**; verified: full core+pipeline suite, 1,533 passed.
+
+- **Built.** A2 reference set (14 model-drafted silver chapters,
+  `data/gold/reader/`, scorer `eval/reader_gold.py`, `scripts/eval/
+  score_reader_gold.py`, `scripts/eval/dump_for_labelling.py`). A3 reader
+  stage `pipeline/reader/{quotes,speakers_pass,facts_pass,runner}.py`, CLI
+  `echotales reader`, `echotales run` stage 6b (`--skip-reader`), job kind
+  `reader`, `Task.READER`. A4 per-attribute validators inside `facts_pass`.
+  A6 role slots. A8 `persona/canon.py` tables emptied; `render/beat_canon.py`
+  left for Phase D.
+- **Measured (local qwen2.5:7b, silver references, LotM / RI / ORV).**
+  Speaker attribution 34.6 / 32.1 / 20.1 % -> 84.6 / 64.3 / 58.3 %.
+  Appearance recall 0 -> 71.4 / 45.5 / 66.7 %. LotM persona links
+  40 -> 100 %.
+- **Bugs found on the way.** (1) One-slot-per-pending-tag answer template:
+  the model could only answer once per tag, capping speakers. (2) Empty-kind
+  cast filter dropped entities with no kind. (3) Wrong-facts-stored: facts
+  attached to the wrong entity/attribute, which the A4 validators now reject.
+- **Negative results.** Narrator hint experiment: naming the most-mentioned
+  entity as narrator made attribution worse; not kept. Role slots (A6) are
+  not proven by the measurement.
+- **Process failure.** Two commits were pushed with a failing test because
+  the test command was piped and its exit status was lost; fixed in
+  `e9abbc9` (narrator name forms counted as substrings so "Dokja-ssi" counts
+  as Dokja). Run tests without a pipe, or check `PIPESTATUS`, before pushing.
+- **Open.** Gate A thresholds, entity kind errors (universities as LOCATION,
+  tarot cards / Emperor as people, novel-within-novel author as cast),
+  identity merges (A5), 27 LotM dialogue spans over scare quotes,
+  `render/beat_canon.py`, unrebuilt unstamped DBs (real renders 409). Numbers
+  are optimistic: silver labels, prompts tuned on the same chapters.
+

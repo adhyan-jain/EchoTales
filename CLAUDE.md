@@ -72,12 +72,13 @@ project makes structurally, not just in prose.
 
 Pipeline stages run roughly in this order (see `cli.py` subcommands:
 `ingest`, `resolve`, `appearance`, `persona`, `voice`, `render`, `eval`,
-`query`, `graph`, `export`, `webview`, plus `ablate`, `observations` and
+`query`, `graph`, `export`, `webview`, `reader` (added 2026-10-22, Phase A), plus `ablate`, `observations` and
 `annotate` added 2026-09-23 for the evaluation/observer-axis work — see
 `docs/EVOLUTION.md` 4.78/4.80/4.81 — and `faithfulness` added 2026-10-18, the
 truncate-and-rebuild reader-faithfulness check, 4.104): raw EPUB -> chapters/blocks ->
-spans -> mentions (gazetteer + NER) -> identity resolution -> personas
-(bodies/appearance/canon) -> world context -> panel direction + image
+spans -> mentions (gazetteer + NER) -> identity resolution -> 6b reader (speakers,
+appearance facts, validators; `echotales run --skip-reader` omits) -> personas
+(bodies/appearance; `persona/canon.py` tables are now empty, text-only) -> world context -> panel direction + image
 generation -> voice casting + synthesis -> per-chapter video composite.
 
 ## Setup and testing
@@ -87,7 +88,7 @@ source .venv/bin/activate      # uv-managed venv already present at repo root
 python3 -m pytest packages/core/tests packages/pipeline/tests   # no GPU needed
 ```
 
-1,520 core+pipeline tests pass (2026-10-22, after A1 version stamping; research: 29 and webview jest: 125 are as of 2026-10-19 and were not re-run). Root `pyproject` testpaths lists only
+1,533 core+pipeline tests pass (2026-10-22, after Phase A A1-A8; research: 29 and webview jest: 125 are as of 2026-10-19 and were not re-run). Root `pyproject` testpaths lists only
 core and pipeline; pass `packages/research/tests` explicitly (and `-o addopts=""`) to include research.
 
 Everything is stub-first: `ECHOTALES_LLM_MODE=stub` and `--image-engine
@@ -173,14 +174,13 @@ real data without touching the canonical `data/db/<novel-id>.db`.
 
 Research track: `docs/research/DECISION_LOG.md` is the state of record (EVOLUTION 4.101).
 
-Current work (2026-10-22): the Phase A extraction rewrite (reader pass,
-validators, look timeline, text-only canon) gated on a reference set; A1
-(pipeline version stamping + stale-build refusal) is done, A2 (reference set)
-is next. See docs/HANDOFF.md and docs/design/decisions.md.
+Current work (2026-10-22): Phase A extraction rewrite. A1-A4, A6, A8 built
+(EVOLUTION 4.123). Gate A not yet met: speakers 84.6/64.3/58.3, appearance
+71.4/45.5/66.7 (LotM/RI/ORV, silver references). See docs/HANDOFF.md and docs/design/decisions.md.
 
 See docs/HANDOFF.md's "Pick up here" section for the actual current state — it
 changes every session (the numbered session log itself moved to
-docs/EVOLUTION.md, latest section 4.122). The NER-windowing re-run (EVOLUTION
+docs/EVOLUTION.md, latest section 4.123). The NER-windowing re-run (EVOLUTION
 4.76) that an earlier session left unmeasured did run (4.84): the
 "`ollama` unreachable" blocker was a misdiagnosis — the daemon was simply
 not started — and the fix is now measured on real data (CEAF-e recall

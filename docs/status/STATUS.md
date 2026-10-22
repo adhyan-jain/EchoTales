@@ -31,22 +31,23 @@ merged to `master`. **Canonical database:** `data/db/reverend-insanity.db`
 
 ## Phase A in progress (2026-10-22)
 
-The 2026-10-22 audit (LotM ch1-40) found the extractor links names to
-identities but does not read facts; see `docs/HANDOFF.md` "Pick up here" for
-the open audit defects and `docs/design/decisions.md` (D8, D10) for decisions.
-Status of the new work: **A1 done** (`PIPELINE_VERSION="2"` stamped into
-`pipeline_run`; non-stub render routes return 409 on unstamped/older
-databases; stub exempt). **A2 started** (silver-set scorer
-`eval/reader_gold.py`; LotM ch7 baseline speakers 16/43 = 37%). A3-A9 (reader
-pass, validators, look timeline, text-only canon, rebuild) not started. Any
-"Working" row below that depends on appearance attributes, speaker accuracy or
-persona links should be read against those audit defects until Gate A passes.
+See `docs/HANDOFF.md` "Pick up here" and EVOLUTION 4.123. **A1** version
+stamp, **A2** silver reference set (14 chapters, `eval/reader_gold.py`),
+**A3** reader stage (`echotales reader`, run stage 6b, job kind `reader`),
+**A4** validators, **A6** role slots (unproven), **A8** empty canon tables are
+built. A5 (identity merges), A7 (`look_at`), A9 (rebuild) are not done.
+**Gate A not met:** speakers 84.6 / 64.3 / 58.3 % and appearance
+71.4 / 45.5 / 66.7 % (LotM / RI / ORV) on silver references the prompts were
+tuned on, so optimistic. Databases in `data/db/` are unrebuilt and unstamped
+(real renders 409). Any "Working" row below that depends on appearance,
+speaker accuracy or persona links should be read against this until Gate A
+passes.
 
 ## Test status (2026-10-22 for backend; other rows as dated 2026-10-02)
 
 | Suite | Result |
 |---|---|
-| Backend (`packages/core` + `packages/pipeline`) | 1,520 passed (2026-10-22; was 1,206 on 2026-10-02) |
+| Backend (`packages/core` + `packages/pipeline`) | 1,533 passed (2026-10-22; was 1,206 on 2026-10-02) |
 | `packages/research` (research arena) | 16 passed |
 | `packages/ecrdt` (standalone research package) | 55 passed |
 | Webview (Jest) | 82 passed |
