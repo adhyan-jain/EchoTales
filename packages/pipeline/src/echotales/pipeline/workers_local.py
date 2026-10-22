@@ -30,7 +30,10 @@ MODEL_ID = "Laxhar/noobai-XL-1.1"
 #: NoobAI is trained on score tags; "masterpiece, best quality" is the wrong family of quality words for it
 #: (memory: echotales-image-model-stack).
 QUALITY_PREFIX = "score_9, score_8_up, score_7_up, very aesthetic, absurdres"
-DEFAULT_NEGATIVE = "worst quality, low quality, bad anatomy, bad hands, extra fingers, text, watermark, signature, blurry"
+DEFAULT_NEGATIVE = (
+    "worst quality, low quality, bad anatomy, bad hands, extra fingers, text, handwriting, annotations, japanese text, "
+    "speech bubble, watermark, signature, blurry"
+)
 STEPS = 28
 GUIDANCE = 5.5
 #: Pixel budget per image on the 8 GB card: 832x1216 and 1024x1024 are both under it and measured fine.
@@ -44,6 +47,24 @@ def fit_size(width: int, height: int, max_pixels: int = MAX_PIXELS) -> tuple[int
     """Scale a request down to the pixel budget, keeping the aspect ratio, in multiples of 64 (SDXL's grid)."""
     scale = min(1.0, (max_pixels / (width * height)) ** 0.5)
     return max(256, int(width * scale) // 64 * 64), max(256, int(height * scale) // 64 * 64)
+
+
+#: CLIP reads 77 tokens including the start and end markers; everything past it is ignored without a word.
+CLIP_TOKENS = 75
+
+
+def fit_prompt(tokenizer: object, prefix: str, prompt: str, limit: int = CLIP_TOKENS) -> str:
+    """`prefix, prompt` that fits the model's token window, dropping whole trailing clauses from the prompt.
+
+    The quality prefix is spent first and the caller orders its clauses by importance, so what is lost is the least
+    important clause, not the middle of one. Without this the tail was cut silently: a Victorian sheet lost its
+    full-body framing, and a longer one would have lost the era."""
+    count = lambda text: len(tokenizer(text, add_special_tokens=False).input_ids)  # type: ignore[operator]  # noqa: E731
+    clauses = [c.strip() for c in prompt.split(",") if c.strip()]
+    head = f"{prefix}, " if prefix else ""
+    while clauses and count(head + ", ".join(clauses)) > limit:
+        clauses.pop()
+    return head + ", ".join(clauses)
 
 
 def _snapshot(model_id: str) -> str:
@@ -84,7 +105,9 @@ class LocalNoobAIWorker:
         out = []
         for r in requests:
             embeds = enc.encode_prompt(
-                f"{QUALITY_PREFIX}, {r.prompt}", negative_prompt=f"{r.negative_prompt}, {DEFAULT_NEGATIVE}".strip(", "), device="cuda"
+                fit_prompt(enc.tokenizer, QUALITY_PREFIX, r.prompt),
+                negative_prompt=fit_prompt(enc.tokenizer, "", f"{r.negative_prompt}, {DEFAULT_NEGATIVE}".strip(", ")),
+                device="cuda",
             )
             out.append(tuple(e.detach() for e in embeds))
         del enc

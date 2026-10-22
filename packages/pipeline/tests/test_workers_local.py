@@ -46,3 +46,16 @@ def test_a_gpu_that_is_not_free_is_refused_before_any_load(monkeypatch: pytest.M
     monkeypatch.setattr(torch.cuda, "mem_get_info", lambda: (2 * 2**30, 8 * 2**30))
     with pytest.raises(RuntimeError, match="stop ollama"):
         wl.LocalNoobAIWorker()._check_gpu()
+
+
+def test_a_long_prompt_loses_whole_trailing_clauses_not_the_middle_of_one() -> None:
+    class Tok:  # one token per word is enough to check the dropping rule without loading CLIP
+        def __call__(self, text: str, add_special_tokens: bool = False):  # noqa: ANN204
+            class Out:
+                input_ids = text.replace(",", " ").split()
+
+            return Out()
+
+    fitted = wl.fit_prompt(Tok(), "q1 q2", "alpha beta, gamma delta, epsilon zeta, eta theta", limit=8)
+    assert fitted == "q1 q2, alpha beta, gamma delta, epsilon zeta"  # the lowest-priority clause went, whole
+    assert wl.fit_prompt(Tok(), "", "one, two", limit=75) == "one, two"

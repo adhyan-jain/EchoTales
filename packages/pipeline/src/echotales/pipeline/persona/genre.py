@@ -26,6 +26,11 @@ from dataclasses import dataclass, field
 from echotales.core.store import Store
 
 
+#: One art style for every novel (owner, 2026-10-22): Chinese anime / donghua. What changes per novel is the clothing,
+#: the era and the setting (`GenreProfile.wardrobe`, `world_setting`), not how the pictures are drawn.
+FIXED_ART_STYLE = "chinese anime style, donghua, clean lineart, cel shading"
+
+
 @dataclass(frozen=True, slots=True)
 class GenreProfile:
     label: str
@@ -42,6 +47,10 @@ class GenreProfile:
     #: part does not fit the 77-token negative and `fit_to_budget` drops it whole, so it would say nothing.
     negative_culture: str
     mismatch_props: tuple[str, ...] = ()
+    #: What people of this world wear, as image tags. The art style is fixed for every novel (`FIXED_ART_STYLE`); the
+    #: genre decides the clothes and the era. `wardrobe_female` replaces `wardrobe` for female characters when set.
+    wardrobe: str = ""
+    wardrobe_female: str = ""
     #: Whether the place and the key objects outrank the mood and the quality tags when an image prompt is full
     #: (`render/direction.py::to_image_prompt_parts`). The tiering was tuned on Reverend Insanity, where the character
     #: carries the panel and the place is dropped first; on LotM that threw away the room, the bed and the revolver,
@@ -53,6 +62,12 @@ class GenreProfile:
     #: trailing `*` for a stem. Prefix matching for every entry counted "carriage" and "card" as `car`, which
     #: scored LotM as contemporary fiction.
     lexicon: tuple[str, ...] = ()
+
+    @property
+    def sheet_style(self) -> str:
+        """`reference_style` without its three-quarter-shot framing: the genre's look, for a sheet that has its own
+        framing (a full-body turnaround, a portrait). Era, wardrobe, linework and palette stay."""
+        return self.reference_style.replace(f"{_SHEET}, ", "")
 
 
 _FRAMING = "three-quarter shot from head to thigh"
@@ -86,6 +101,8 @@ GENRES: dict[str, GenreProfile] = {
         world_context="",
         novel_style="xianxia web-novel illustration, Chinese fantasy",
         negative_culture="cherry blossoms, japanese shrine, modern clothing, school uniform",
+        wardrobe="hanfu, wide-sleeved robes, ancient chinese clothing, sash",
+        wardrobe_female="hanfu, flowing dress, ancient chinese clothing, hair ornaments",
         mismatch_props=("modern clothes", "modern clothing", "school uniform", "hoodie", "jeans", "business suit"),
         setting_first=False,
         appearance={"hair_color": "black", "eye_color": "dark brown", "skin_tone": "fair"},
@@ -118,6 +135,8 @@ GENRES: dict[str, GenreProfile] = {
         world_context="",
         novel_style="Victorian gaslamp fantasy, muted desaturated palette",
         negative_culture="hanfu, xianxia, modern clothing, japanese shrine",
+        wardrobe="victorian era, tailcoat, waistcoat, cravat, gloves",
+        wardrobe_female="victorian era, long dress, corset, high collar, gloves",
         mismatch_props=("xianxia", "hanfu", "cultivator", "samurai", "kimono", "cyberpunk", "futuristic armor"),
         appearance={"hair_color": "brown", "eye_color": "grey", "skin_tone": "pale"},
         lexicon=("carriage", "gas lamp", "gaslight", "revolver", "top hat", "cravat", "waistcoat", "pence", "soli",
@@ -148,6 +167,8 @@ GENRES: dict[str, GenreProfile] = {
         world_context="scenario system, constellations, dokkaebi, subway carriages",
         novel_style="modern Korean urban apocalypse, high contrast",
         negative_culture="hanfu, xianxia, ancient chinese, cherry blossoms",
+        wardrobe="modern casual clothing, jacket, jeans, sneakers",
+        wardrobe_female="modern casual clothing, jacket, skirt, sneakers",
         mismatch_props=("hanfu", "xianxia", "cultivator robes", "kimono", "samurai", "medieval armor", "castle"),
         scene_locales={
             "hall": "a fluorescent-lit lobby, shattered glass, dead screens",
@@ -182,6 +203,8 @@ GENRES: dict[str, GenreProfile] = {
         world_context="",
         novel_style="contemporary realistic fiction, modern day",
         negative_culture="hanfu, xianxia, medieval armor, japanese shrine",
+        wardrobe="modern clothing, contemporary casual wear",
+        wardrobe_female="modern clothing, contemporary casual wear",
         mismatch_props=("hanfu", "xianxia", "medieval armor", "castle", "robes"),
         scene_locales={
             "hall": "a modern apartment living room, window light",
@@ -216,6 +239,8 @@ GENRES: dict[str, GenreProfile] = {
         world_context="",
         novel_style="western high fantasy",
         negative_culture="hanfu, xianxia, modern clothing, kimono",
+        wardrobe="medieval fantasy clothing, tunic, cloak, boots",
+        wardrobe_female="medieval fantasy dress, laced bodice, cloak, boots",
         mismatch_props=("hanfu", "xianxia", "katana", "kimono", "modern clothing", "gun", "car"),
         scene_locales={
             "hall": "a torchlit castle hall, banners, stone pillars",
@@ -250,6 +275,8 @@ GENRES: dict[str, GenreProfile] = {
         world_context="",
         novel_style="science fiction",
         negative_culture="hanfu, xianxia, medieval armor, carriage",
+        wardrobe="futuristic bodysuit, sleek tech clothing, utility belt",
+        wardrobe_female="futuristic bodysuit, sleek tech clothing, utility belt",
         mismatch_props=("hanfu", "xianxia", "castle", "horse-drawn carriage", "kimono", "medieval armor"),
         scene_locales={
             "hall": "a starship bridge, holographic consoles",

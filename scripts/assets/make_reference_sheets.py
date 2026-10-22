@@ -24,11 +24,12 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 from echotales.core.store import Store
-from echotales.pipeline.assets.turnaround import generate_character_assets, look_clauses
+from echotales.pipeline.assets.turnaround import assumed_traits, generate_character_assets, look_clauses
+from echotales.pipeline.persona.genre import profile as genre_profile
 from echotales.pipeline.workers_local import close_local_worker
 
 
-def _contact_sheet(label: str, looks: list[str], asset, out: Path) -> Path:  # type: ignore[no-untyped-def]
+def _contact_sheet(label: str, looks: list[str], assumed: list[str], asset, out: Path) -> Path:  # type: ignore[no-untyped-def]
     """One image: the 3-view sheet on top, the three view crops and the expression crops below, with the prompt tags."""
     tiles = [Image.open(asset.sheet_image_path)]
     tiles += [Image.open(p) for p in asset.view_crops.values()]
@@ -42,7 +43,8 @@ def _contact_sheet(label: str, looks: list[str], asset, out: Path) -> Path:  # t
     sheet = Image.new("RGB", (width, top.height + 70 + h1 + thumb + 20), (20, 20, 28))
     draw = ImageDraw.Draw(sheet)
     draw.text((12, 8), f"{label}", fill=(255, 255, 255))
-    draw.text((12, 28), "prompt tags from the bible: " + ", ".join(looks), fill=(190, 190, 215))
+    draw.text((12, 24), "from the book: " + ", ".join(looks), fill=(190, 190, 215))
+    draw.text((12, 38), "assumed by the genre (the book says nothing): " + (", ".join(assumed) or "none"), fill=(215, 190, 140))
     sheet.paste(top, (0, 50))
     y = 50 + top.height + 10
     for i, t in enumerate(row1):
@@ -67,6 +69,7 @@ def main() -> int:
 
     store = Store(args.db)
     bible = store.bible_at(args.novel_id, args.chapter)
+    genre = genre_profile(args.novel_id)  # era and clothing come from the genre; the art style is the same for every novel
     wanted = [n.strip() for n in args.names.split(",") if n.strip()]
     by_label = {c.canonical_label: c for c in bible.characters.values()}
     out = Path(args.out)
@@ -79,10 +82,11 @@ def main() -> int:
                 print(f"skip {name!r}: not in the bible at chapter {args.chapter:g}", file=sys.stderr)
                 continue
             started = time.time()
-            asset = generate_character_assets(char, out, visual_genre="anime", seed=args.seed)
+            asset = generate_character_assets(char, out, seed=args.seed, genre=genre)
             looks = look_clauses(char)
-            contact = _contact_sheet(name, looks, asset, out)
-            report.append({"character": name, "looks": looks, "seconds": round(time.time() - started), "contact": str(contact)})
+            assumed = assumed_traits(char, genre)
+            contact = _contact_sheet(name, looks, assumed, asset, out)
+            report.append({"character": name, "looks": looks, "assumed": assumed, "genre": genre.label, "seconds": round(time.time() - started), "contact": str(contact)})
             print(f"{name}: {report[-1]['seconds']}s -> {contact}", flush=True)
     finally:
         close_local_worker()
