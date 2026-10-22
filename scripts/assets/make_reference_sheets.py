@@ -65,6 +65,7 @@ def main() -> int:
     ap.add_argument("--names", required=True, help="comma-separated canonical labels")
     ap.add_argument("--out", default="data/scratch/phase_c")
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--art-style", default=None, help="cute or mature (default: ECHOTALES_ART_STYLE, else mature)")
     args = ap.parse_args()
 
     store = Store(args.db)
@@ -82,7 +83,7 @@ def main() -> int:
                 print(f"skip {name!r}: not in the bible at chapter {args.chapter:g}", file=sys.stderr)
                 continue
             started = time.time()
-            asset = generate_character_assets(char, out, seed=args.seed, genre=genre)
+            asset = generate_character_assets(char, out, seed=args.seed, genre=genre, art_style_key=args.art_style)
             looks = look_clauses(char)
             assumed = assumed_traits(char, genre)
             contact = _contact_sheet(name, looks, assumed, asset, out)

@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from echotales.core.models import CharacterBibleEntry
-from echotales.pipeline.persona.genre import FIXED_ART_STYLE, GenreProfile
+from echotales.pipeline.persona.genre import ArtStyle, GenreProfile, art_style as resolve_art_style
 from echotales.pipeline.persona.prompt import fit_to_budget
 from echotales.pipeline.workers_contract import ImageWorkerRequest, run_image_worker
 
@@ -86,8 +86,15 @@ def look_clauses(char: CharacterBibleEntry, defaults: dict[str, str] | None = No
     clauses: list[str] = []
     gender = a.get("gender", "")
     clauses.append({"male": "1boy", "female": "1girl"}.get(gender, "1person"))
-    if a.get("age", "").isdigit() and int(a["age"]) < 20:
-        clauses.append("teenager")
+    stage = a.get("age_stage", "")
+    if not stage and a.get("age", "").isdigit():
+        from echotales.pipeline.reader.facts_pass import stage_of_years
+
+        stage = stage_of_years(int(a["age"]))
+    tag = {"child": "child", "teen": "teenager", "young_adult": "young adult", "middle_aged": "middle-aged man" if gender == "male"
+           else "middle-aged woman", "elderly": "elderly, old man" if gender == "male" else "elderly, old woman"}.get(stage)
+    if tag:
+        clauses.append(tag)
     if a.get("hair_color"):
         clauses.append(a["hair_color"] if "hair" in a["hair_color"] else f"{a['hair_color']} hair")
     if a.get("hair_style"):
@@ -116,23 +123,30 @@ def assumed_traits(char: CharacterBibleEntry, genre: GenreProfile | None) -> lis
 
 
 def wardrobe_clause(char: CharacterBibleEntry, genre: GenreProfile | None) -> str:
-    """The clothes people of this world wear, for this character's gender. Sits under what the book says the character
-    wears: Klein's "linen shirt" stays, and the Victorian wardrobe says what era the shirt belongs to."""
+    """The clothes people of this world wear, for this character's gender, but only when the book names none.
+
+    When the book states a garment (Daly's "black robe", Klein's "linen shirt") that garment wins and the genre supplies
+    just its era marker, the first phrase of the wardrobe ("victorian era"). Giving the full wardrobe turned Daly's
+    robe into a corset dress."""
     if genre is None:
         return ""
     female = char.attributes.get("gender", "").strip().lower() == "female"
-    return (genre.wardrobe_female if female and genre.wardrobe_female else genre.wardrobe)
+    full = genre.wardrobe_female if female and genre.wardrobe_female else genre.wardrobe
+    return full.split(",")[0].strip() if char.attributes.get("typical_attire") or char.active_outfit else full
 
 
-def style_clauses(char: CharacterBibleEntry, genre: GenreProfile | None, visual_genre: str = "anime") -> list[str]:
-    """Era clothing from the genre, then the one fixed art style. With no genre, the old one-word fallback."""
+def style_clauses(
+    char: CharacterBibleEntry, genre: GenreProfile | None, visual_genre: str = "anime", art: ArtStyle | None = None
+) -> list[str]:
+    """Era clothing from the genre, then the art style. With no genre, the old one-word fallback."""
     if genre is None:
         return [f"{visual_genre} style"]
-    return [c for c in (wardrobe_clause(char, genre), FIXED_ART_STYLE) if c]
+    style = art or resolve_art_style()
+    return [c for c in (wardrobe_clause(char, genre), style.tags) if c]
 
 
 def build_turnaround_prompt(
-    char: CharacterBibleEntry, visual_genre: str = "anime", genre: GenreProfile | None = None
+    char: CharacterBibleEntry, visual_genre: str = "anime", genre: GenreProfile | None = None, art: ArtStyle | None = None
 ) -> str:
     """Build standardized prompt for 3-view model turnaround.
 
@@ -142,21 +156,21 @@ def build_turnaround_prompt(
     clauses = [
         "character design sheet, turnaround, front view, side view, back view",
         *look_clauses(char, genre.appearance if genre else None),
-        *style_clauses(char, genre, visual_genre),
+        *style_clauses(char, genre, visual_genre, art),
         "standing, full body, simple grey background",
     ]
     return fit_to_budget(clauses, limit=75)
 
 
 def build_expression_prompt(
-    char: CharacterBibleEntry, visual_genre: str = "anime", genre: GenreProfile | None = None
+    char: CharacterBibleEntry, visual_genre: str = "anime", genre: GenreProfile | None = None, art: ArtStyle | None = None
 ) -> str:
     """Build standardized prompt for 7-expression character sheet."""
     expressions_str = ", ".join(e.value for e in STANDARD_EXPRESSIONS)
     clauses = [
         f"character expression sheet, 7 facial expressions: {expressions_str}",
         *look_clauses(char, genre.appearance if genre else None)[:6],
-        *style_clauses(char, genre, visual_genre),
+        *style_clauses(char, genre, visual_genre, art),
         "bust shot portraits grid, consistent face",
     ]
     return fit_to_budget(clauses, limit=75)
@@ -169,19 +183,21 @@ def generate_character_assets(
     visual_genre: str = "anime",
     seed: int = 42,
     genre: GenreProfile | None = None,
+    art_style_key: str | None = None,
 ) -> CharacterTurnaroundAsset:
     """Generate model turnaround and expression crops for a character.
 
     With a `genre`, every image carries that world's clothing and era (the art style is the same for all novels), the
     genre's negative list keeps out the wrong era, and traits the book leaves open (hair, eyes, skin) take the genre's
     defaults in every image so one character is not redrawn with a new hair colour each time."""
-    negative = genre.negative_culture if genre is not None else ""
+    style = resolve_art_style(art_style_key)
+    negative = ", ".join(x for x in ((genre.negative_culture if genre is not None else ""), style.negative) if x)
     defaults = genre.appearance if genre is not None else None
     out_dir = Path(output_dir) / char.self_id.replace(":", "_") / char.active_persona_id.replace(":", "_")
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # 1. Turnaround Sheet
-    turnaround_prompt = build_turnaround_prompt(char, visual_genre, genre)
+    turnaround_prompt = build_turnaround_prompt(char, visual_genre, genre, style)
     req_turnaround = ImageWorkerRequest(
         prompt=turnaround_prompt,
         negative_prompt=negative,
@@ -199,7 +215,7 @@ def generate_character_assets(
     view_crops: dict[str, str] = {}
     for view in (TurnaroundView.FRONT, TurnaroundView.SIDE, TurnaroundView.BACK):
         view_req = ImageWorkerRequest(
-            prompt=fit_to_budget([*look_clauses(char, defaults), f"{view.value} view", *style_clauses(char, genre, visual_genre), "full body, standing, simple grey background"], limit=75),
+            prompt=fit_to_budget([*look_clauses(char, defaults), f"{view.value} view", *style_clauses(char, genre, visual_genre, style), "full body, standing, simple grey background"], limit=75),
             negative_prompt=negative,
             width=1080,
             height=1920,
@@ -211,7 +227,7 @@ def generate_character_assets(
         view_crops[view.value] = str(crop_path)
 
     # 2. Expression Sheet
-    expr_prompt = build_expression_prompt(char, visual_genre, genre)
+    expr_prompt = build_expression_prompt(char, visual_genre, genre, style)
     req_expr = ImageWorkerRequest(
         prompt=expr_prompt,
         negative_prompt=negative,
@@ -226,7 +242,7 @@ def generate_character_assets(
     expression_crops: dict[str, str] = {}
     for expr in STANDARD_EXPRESSIONS:
         expr_req = ImageWorkerRequest(
-            prompt=fit_to_budget([*look_clauses(char, defaults)[:6], f"{expr.value} expression, close-up portrait of one face", *style_clauses(char, genre, visual_genre), "simple background"], limit=75),
+            prompt=fit_to_budget([*look_clauses(char, defaults)[:6], f"{expr.value} expression, close-up portrait of one face", *style_clauses(char, genre, visual_genre, style), "simple background"], limit=75),
             negative_prompt=negative,
             width=1024,
             height=1024,

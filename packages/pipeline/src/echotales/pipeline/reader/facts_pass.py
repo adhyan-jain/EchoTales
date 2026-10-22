@@ -54,9 +54,17 @@ class AppearanceOut(BaseModel):
     appearance: list[AppearanceClaim] = Field(default_factory=list)
 
 
+class AgeStageClaim(BaseModel):
+    character: str
+    stage: str
+    approx_years: int | None = None
+    quote: str
+
+
 class NamesOut(BaseModel):
     identities: list[IdentityClaim] = Field(default_factory=list)
     ages: list[AgeClaim] = Field(default_factory=list)
+    age_stages: list[AgeStageClaim] = Field(default_factory=list)
 
 
 @dataclass(slots=True)
@@ -72,6 +80,7 @@ class FactsReport:
     rejected_value: int = 0
     duplicates: int = 0
     repaired: int = 0
+    age_stages: int = 0
 
 
 _KEY_HELP = (
@@ -128,10 +137,14 @@ def _names_prompt(cast: list[CastEntry], text: str) -> str:
         "(for example 'My designation shall be Justice' gives Audrey the name Justice). Do not list names the "
         "character already has.\n"
         "ages: an exact age stated for a character (for example 'had just turned seventeen' is 17).\n"
+        "age_stages: a rough life stage a character is described as (stage is one of child, teen, young_adult, adult, "
+        "middle_aged, elderly; approx_years is your best guess or null), for example 'a middle-aged appearance' is "
+        "middle_aged and 'recent graduate' is young_adult. Only when the passage describes their age.\n"
         "quote is a short phrase copied EXACTLY from the passage. Only facts the passage states.\n"
         "Example. Passage: 'Call me the Wolf from now on,' said Tom, who had just turned seventeen. Answer: "
         '{"identities": [{"character": "Tom", "name": "the Wolf", "quote": "Call me the Wolf from now on"}], '
-        '"ages": [{"character": "Tom", "age": 17, "quote": "had just turned seventeen"}]}\n'
+        '"ages": [{"character": "Tom", "age": 17, "quote": "had just turned seventeen"}], '
+        '"age_stages": [{"character": "Tom", "stage": "teen", "approx_years": 17, "quote": "had just turned seventeen"}]}\n'
         'Use empty lists if the passage states none: {"identities": [], "ages": []}.\n\n'
         f"Passage:\n{text}"
     )
@@ -285,6 +298,8 @@ def read_chapter_facts(store: Store, client: ModelClient, chapter: Chapter) -> F
             _store_appearance(store, novel_id, number, pos, claim, text, index, report)
         for age in names.ages:
             _store_age(store, novel_id, number, pos, age, text, index, report)
+        for stage in names.age_stages:
+            _store_age_stage(store, novel_id, number, pos, stage, text, index, report)
         for identity in names.identities:
             _store_identity(store, novel_id, pos, identity, text, index, report)
     store.conn.commit()
@@ -363,6 +378,34 @@ def _store_appearance(
     report.appearance += 1
 
 
+def _store_age_stage(
+    store: Store, novel_id: str, number: float, pos: DiscoursePosition, claim: AgeStageClaim, passage: str,
+    index: NameIndex, report: FactsReport,
+) -> None:
+    stage = claim.stage.strip().lower().replace("-", "_").replace(" ", "_")
+    quote = claim.quote
+    # A free-form age phrase has no safe repair target, so a quote that is not in the passage is rejected, and so is a
+    # stage whose quote contains none of that stage's cue words.
+    if not quote_in_passage(quote, passage) or not stage_grounded(stage, quote):
+        report.rejected_value += 1
+        return
+    entry = _resolve(index, claim.character, report)
+    if entry is None:
+        return
+    if gender_conflict(_recorded_gender(store, entry.self_id), quote):
+        report.rejected_value += 1
+        return
+    persona_id = persona_at(store, entry.self_id, number + 0.5)
+    if _known(store, persona_id, "age_stage", stage):
+        report.duplicates += 1
+        return
+    store.add_attribute(novel_id, _attribute(TargetKind.PERSONA, persona_id, "age_stage", stage, quote, number, pos))
+    if claim.approx_years and 0 < claim.approx_years < 120 and stage_of_years(claim.approx_years) == stage:
+        store.add_attribute(novel_id, _attribute(
+            TargetKind.PERSONA, persona_id, "age_estimate", f"about {claim.approx_years}", quote, number, pos))
+    report.age_stages += 1
+
+
 def _store_age(
     store: Store, novel_id: str, number: float, pos: DiscoursePosition, claim: AgeClaim, passage: str,
     index: NameIndex, report: FactsReport,
@@ -381,7 +424,32 @@ def _store_age(
         report.duplicates += 1
         return
     store.add_attribute(novel_id, _attribute(TargetKind.PERSONA, persona_id, "age", str(claim.age), claim.quote, number, pos))
+    store.add_attribute(novel_id, _attribute(
+        TargetKind.PERSONA, persona_id, "age_stage", stage_of_years(claim.age), claim.quote, number, pos))
     report.ages += 1
+
+
+#: Rough life stages, and the words that make a quote evidence for each. A stage is stored only when its quote contains
+#: one of its cue words, so the model cannot call someone elderly on a hunch. "boy"/"girl" are not cues on their own.
+AGE_STAGES = ("child", "teen", "young_adult", "adult", "middle_aged", "elderly")
+_STAGE_CUES = {
+    "child": re.compile(r"\b(child|kid|toddler|infant|little (?:boy|girl)|\d{1,2}[- ]year[- ]old|years old|[3-9] years)\b", re.I),
+    "teen": re.compile(r"\b(teen\w*|adolescent|youth|schoolgirl|schoolboy|student|(?:thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen)\b|1[3-9])", re.I),
+    "young_adult": re.compile(r"\b(young|youth|graduate|twenties|twenty|youthful|recent graduate|2\d)\b", re.I),
+    "adult": re.compile(r"\b(adult|man|woman|grown)\b", re.I),
+    "middle_aged": re.compile(r"\b(middle[- ]aged|forties|fifties|forty|fifty|4\d|5\d|graying|greying|sideburns)\b", re.I),
+    "elderly": re.compile(r"\b(old|elderly|aged|grandfather|grandmother|grandma|grandpa|ancient|wrinkle\w*|white[- ]haired|\d0s|sixt\w+|seventy|eighty|6\d|7\d|8\d)\b", re.I),
+}
+
+
+def stage_of_years(years: int) -> str:
+    """Life stage for an exact age."""
+    return "child" if years < 13 else "teen" if years < 20 else "young_adult" if years < 30 else "adult" if years < 45 else (
+        "middle_aged" if years < 62 else "elderly")
+
+
+def stage_grounded(stage: str, quote: str) -> bool:
+    return stage in _STAGE_CUES and bool(_STAGE_CUES[stage].search(quote))
 
 
 _FEMALE = re.compile(r"\b(she|her|hers|herself)\b", re.IGNORECASE)

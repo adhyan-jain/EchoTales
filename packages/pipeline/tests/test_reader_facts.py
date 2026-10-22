@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 from echotales.core.enums import BlockType, Prominence, TargetKind
 from echotales.core.models import Block, Chapter, DiscoursePosition, Self
 from echotales.core.store import Store
@@ -147,3 +149,41 @@ def test_a_look_about_her_is_not_stored_for_a_male_character() -> None:
     assert not fp.gender_conflict("male", "his eyes were gray")
     assert not fp.gender_conflict("male", "the gray-eyed inspector")  # no pronoun, no signal
     assert not fp.gender_conflict("", "her skin")  # unknown gender: nothing to contradict
+
+
+def test_a_rough_age_stage_needs_a_cue_in_its_evidence_and_an_exact_age_implies_one() -> None:
+    text = "Old Neil laughed. Audrey had just turned seventeen. A sturdy man waited."
+    store, chapter = _store()
+    store.add_self(Self(id="n:self:neil", novel_id="n", canonical_label="Old Neil", prominence=Prominence.RECURRING,
+                        first_attested_pos=DiscoursePosition(chapter=1, offset=0)))
+    store.conn.execute("UPDATE chapter SET blocks_json=? WHERE novel_id='n'",
+                       (json.dumps([{"index": 0, "block_type": "PROSE", "text": text, "italic_ranges": [], "system_fields": {}}]),))
+    store.conn.commit()
+    chapter = store.get_chapter("n", 1.0)
+    stub = StubProvider()
+    stub.register_response("reader", {
+        "appearance": [], "identities": [],
+        "ages": [{"character": "Audrey", "age": 17, "quote": "Audrey had just turned seventeen"}],
+        "age_stages": [
+            {"character": "Old Neil", "stage": "elderly", "approx_years": 68, "quote": "Old Neil laughed"},
+            {"character": "Tom", "stage": "elderly", "approx_years": 70, "quote": "A sturdy man waited"},  # no age cue
+        ],
+    })
+    report = fp.read_chapter_facts(store, ModelClient(provider_override=stub), chapter)
+    assert _attrs(store, "n:self:neil")["age_stage"] == "elderly" and _attrs(store, "n:self:neil")["age_estimate"] == "about 68"
+    assert "age_stage" not in _attrs(store, "n:self:tom")  # 'A sturdy man' says nothing about age
+    assert _attrs(store, "n:self:audrey")["age_stage"] == "teen"  # 17 implies a stage
+    assert report.age_stages == 1
+
+
+def test_age_stage_becomes_an_image_tag_and_an_exact_age_is_the_fallback() -> None:
+    from echotales.core.models import CharacterBibleEntry
+    from echotales.pipeline.assets.turnaround import look_clauses
+
+    def char(**attrs: str) -> CharacterBibleEntry:
+        return CharacterBibleEntry(self_id="x", canonical_label="X", active_persona_id="x:body1", attributes=attrs)
+
+    assert "elderly, old man" in look_clauses(char(gender="male", age_stage="elderly"))
+    assert "middle-aged woman" in look_clauses(char(gender="female", age_stage="middle_aged"))
+    assert "teenager" in look_clauses(char(gender="female", age="17"))
+    assert not any("adult" in c or "teen" in c for c in look_clauses(char(gender="male", age_band="adult")))  # the default band says nothing

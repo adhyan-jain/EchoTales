@@ -26,9 +26,47 @@ from dataclasses import dataclass, field
 from echotales.core.store import Store
 
 
-#: One art style for every novel (owner, 2026-10-22): Chinese anime / donghua. What changes per novel is the clothing,
-#: the era and the setting (`GenreProfile.wardrobe`, `world_setting`), not how the pictures are drawn.
-FIXED_ART_STYLE = "chinese anime style, donghua, clean lineart, cel shading"
+@dataclass(frozen=True, slots=True)
+class ArtStyle:
+    """How pictures are drawn, kept apart from what is drawn (clothing, era and setting come from the genre)."""
+
+    key: str
+    label: str
+    tags: str
+    #: Added to the negative prompt: what this style must not drift toward.
+    negative: str
+
+
+#: Art styles are a project-wide choice, not a per-novel one (owner, 2026-10-22): the same style across a series, the
+#: genre changing only the clothing, era and setting. Two so far: the first, softer look the pipeline produced, and a
+#: mature look aimed at the owner's references (adult faces and proportions, painterly shading, dark muted palettes).
+ART_STYLES: dict[str, ArtStyle] = {
+    "cute": ArtStyle(
+        key="cute", label="Cute anime",
+        tags="chinese anime style, donghua, clean lineart, cel shading",
+        negative="",
+    ),
+    "mature": ArtStyle(
+        key="mature", label="Mature donghua",
+        tags=("mature donghua style, semi-realistic anime illustration, painterly shading, detailed adult face, "
+              "sharp features, cinematic lighting, muted dark palette"),
+        negative="chibi, cute, moe, kawaii, childlike, round face, big eyes, blush stickers, simple flat colors",
+    ),
+}
+DEFAULT_ART_STYLE = "mature"
+
+
+def art_style(key: str | None = None) -> ArtStyle:
+    """The chosen art style: `key`, else `ECHOTALES_ART_STYLE`, else the default. An unknown key falls back to the default
+    rather than failing a render over a typo."""
+    import os
+
+    chosen = (key or os.environ.get("ECHOTALES_ART_STYLE", "") or DEFAULT_ART_STYLE).strip().lower()
+    return ART_STYLES.get(chosen, ART_STYLES[DEFAULT_ART_STYLE])
+
+
+#: Kept for callers that import it: the cute preset's tags.
+FIXED_ART_STYLE = ART_STYLES["cute"].tags
 
 
 @dataclass(frozen=True, slots=True)
