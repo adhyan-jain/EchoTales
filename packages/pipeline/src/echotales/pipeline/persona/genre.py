@@ -48,9 +48,12 @@ ART_STYLES: dict[str, ArtStyle] = {
     ),
     "mature": ArtStyle(
         key="mature", label="Mature donghua",
-        tags=("mature donghua style, semi-realistic anime illustration, painterly shading, detailed adult face, "
-              "sharp features, cinematic lighting, muted dark palette"),
-        negative="chibi, cute, moe, kawaii, childlike, round face, big eyes, blush stickers, simple flat colors",
+        # First version said "semi-realistic ... painterly shading" and Klein, a young graduate, came out as a painted
+        # portrait of a 40-year-old actor. Stay inside anime: adult design and moody light, not realism.
+        tags=("donghua style, anime screencap, anime coloring, mature character design, detailed eyes, sharp lineart, "
+              "soft cel shading, cinematic lighting, muted palette"),
+        negative=("chibi, cute, moe, kawaii, childlike, round face, blush stickers, realistic, photorealistic, "
+                  "3d render, western comic, oil painting"),
     ),
 }
 DEFAULT_ART_STYLE = "mature"

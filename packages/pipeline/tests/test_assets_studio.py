@@ -43,7 +43,7 @@ def test_generate_character_turnarounds_and_expressions() -> None:
     )
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        asset = generate_character_assets(char, tmpdir)
+        asset = generate_character_assets(char, tmpdir, composite_sheets=True)
         assert Path(asset.sheet_image_path).is_file()
         assert len(asset.view_crops) == 3
         for view in TurnaroundView:
@@ -149,3 +149,11 @@ def test_verify_shot_approved_references_gate(store: Store) -> None:
     # Now completely cleared!
     violations3 = verify_shot_approved_references(shot, store, novel_id="hound")
     assert len(violations3) == 0
+
+
+def test_everyday_attire_drops_uniforms_and_reader_noise() -> None:
+    from echotales.pipeline.assets.turnaround import everyday_attire
+
+    assert everyday_attire("black robe") == "black robe"
+    assert everyday_attire("policeman's uniform") == ""
+    assert everyday_attire("smilingly shook his hand") == ""

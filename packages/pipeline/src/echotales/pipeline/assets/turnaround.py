@@ -87,6 +87,10 @@ def look_clauses(char: CharacterBibleEntry, defaults: dict[str, str] | None = No
     gender = a.get("gender", "")
     clauses.append({"male": "1boy", "female": "1girl"}.get(gender, "1person"))
     stage = a.get("age_stage", "")
+    if not stage:
+        # The persona stage's age band is only informative when it is not the default "adult": "elder" for an old man.
+        stage = {"elder": "elderly", "child": "child", "teen": "teen", "youth": "young_adult", "young": "young_adult"}.get(
+            a.get("age_band", ""), "")
     if not stage and a.get("age", "").isdigit():
         from echotales.pipeline.reader.facts_pass import stage_of_years
 
@@ -107,7 +111,7 @@ def look_clauses(char: CharacterBibleEntry, defaults: dict[str, str] | None = No
         clauses.append(a["height_build"])
     if a.get("distinguishing_features"):
         clauses.append(a["distinguishing_features"])
-    outfit = (char.active_outfit or a.get("typical_attire") or "").strip()
+    outfit = (char.active_outfit or everyday_attire(a.get("typical_attire", ""))).strip()
     if outfit:
         clauses.append(outfit if outfit.startswith("wearing") else f"wearing {outfit}")
     return clauses
@@ -122,6 +126,19 @@ def assumed_traits(char: CharacterBibleEntry, genre: GenreProfile | None) -> lis
     return [f"{k}={v}" for k, v in genre.appearance.items() if k not in stated]
 
 
+def everyday_attire(value: str) -> str:
+    """A stated garment worth drawing on every image, or "" when it is not one.
+
+    A uniform is worn on duty only (owner, 2026-10-23: Dunn Smith's Nighthawk uniform is for undercover-free missions; he
+    otherwise wears ordinary clothes of the era), so it must not become the default look. Reader noise such as
+    "smilingly shook his hand", stored as Klein's attire, is dropped the same way: a garment is a short noun phrase."""
+    v = value.strip()
+    words = v.lower().split()
+    if not v or "uniform" in words or len(words) > 4 or any(w.endswith("ly") for w in words):
+        return ""
+    return v
+
+
 def wardrobe_clause(char: CharacterBibleEntry, genre: GenreProfile | None) -> str:
     """The clothes people of this world wear, for this character's gender, but only when the book names none.
 
@@ -132,7 +149,8 @@ def wardrobe_clause(char: CharacterBibleEntry, genre: GenreProfile | None) -> st
         return ""
     female = char.attributes.get("gender", "").strip().lower() == "female"
     full = genre.wardrobe_female if female and genre.wardrobe_female else genre.wardrobe
-    return full.split(",")[0].strip() if char.attributes.get("typical_attire") or char.active_outfit else full
+    stated = everyday_attire(char.attributes.get("typical_attire", ""))
+    return full.split(",")[0].strip() if stated or char.active_outfit else full
 
 
 def style_clauses(
@@ -184,6 +202,7 @@ def generate_character_assets(
     seed: int = 42,
     genre: GenreProfile | None = None,
     art_style_key: str | None = None,
+    composite_sheets: bool = False,
 ) -> CharacterTurnaroundAsset:
     """Generate model turnaround and expression crops for a character.
 
@@ -196,6 +215,8 @@ def generate_character_assets(
     out_dir = Path(output_dir) / char.self_id.replace(":", "_") / char.active_persona_id.replace(":", "_")
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    # 1. Turnaround Sheet: a multi-figure composite is opt-in. At 1344x768 every figure's face is a few dozen pixels and
+    # came out blank or distorted, with garbled title text; the separate view crops below are far better.
     # 1. Turnaround Sheet
     turnaround_prompt = build_turnaround_prompt(char, visual_genre, genre, style)
     req_turnaround = ImageWorkerRequest(
@@ -205,10 +226,11 @@ def generate_character_assets(
         height=1080,
         seed=seed,
     )
-    res_turnaround = run_image_worker(req_turnaround)
+    res_turnaround = run_image_worker(req_turnaround) if composite_sheets else None
 
     sheet_path = out_dir / "turnaround_sheet.png"
-    sheet_path.write_bytes(res_turnaround.image_bytes)
+    if res_turnaround is not None:
+        sheet_path.write_bytes(res_turnaround.image_bytes)
 
     # In production with PIL/OpenCV, we slice the 3 views; for deterministic stubs,
     # generate dedicated cropped angles
@@ -235,9 +257,9 @@ def generate_character_assets(
         height=1080,
         seed=seed + 10,
     )
-    res_expr = run_image_worker(req_expr)
     expr_sheet_path = out_dir / "expression_sheet.png"
-    expr_sheet_path.write_bytes(res_expr.image_bytes)
+    if composite_sheets:
+        expr_sheet_path.write_bytes(run_image_worker(req_expr).image_bytes)
 
     expression_crops: dict[str, str] = {}
     for expr in STANDARD_EXPRESSIONS:
@@ -256,9 +278,9 @@ def generate_character_assets(
     return CharacterTurnaroundAsset(
         self_id=char.self_id,
         persona_id=char.active_persona_id,
-        sheet_image_path=str(sheet_path),
+        sheet_image_path=str(sheet_path if composite_sheets else next(iter(view_crops.values()))),
         view_crops=view_crops,
-        expression_sheet_path=str(expr_sheet_path),
+        expression_sheet_path=str(expr_sheet_path) if composite_sheets else None,
         expression_crops=expression_crops,
         seed=seed,
     )
