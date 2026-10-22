@@ -188,6 +188,14 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Left for Phase D**: `render/beat_canon.py` (hand-written RI chapter-1 beats keyed by block range) is the same problem one layer up, but it sits inside the render path that Phase D replaces, so it is deleted there rather than patched here.
 - **Status**: done; whole suite green.
 
+### D15. First-person narrator hint (ORV speakers, 2026-10-22)
+- **Decision**: in a chapter whose non-quoted text has 12 or more standalone "I", the speaker prompt is told who the narrator is. The narrator is the cast member who appears in other people's quotes (two or more times) but is named at most twice in narration.
+- **Why / what was tried**: ORV is told by Kim Dokja, who is almost never named in narration, and the model swapped him with Yoo Sangah through whole two-person scenes (ORV speakers 50.7%). Experiment: pick the narrator as the **most-mentioned** cast member -> it chose Yoo Sangah and made things **worse (47.9%)**. Picking by *where* the name appears (addressed in quotes, absent from narration) chose Kim Dokja and gave **58.3%**.
+- **Side finding**: ORV's cast list contains "Sing Shangshong", the author of the novel-within-the-novel, because the name occurs in the text. The model offered him as the second speaker in a conversation. This is a cast-quality defect (mention-based entities, not speakers) for A5/A6.
+- **Checked for regression**: LotM stays 84.6% and RI 64.3%; the hint fires only on first-person chapters.
+- **Test**: `test_first_person_narrator_is_the_one_others_address_but_narration_rarely_names`.
+- **Status**: ORV speakers 20.1% (original database) -> 58.3% now; gate (90%) still missed.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs
