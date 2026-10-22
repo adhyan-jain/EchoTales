@@ -152,6 +152,35 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Honesty note**: these are scores on the same 14 chapters the prompts were tuned against, so they are optimistic for unseen chapters. A fresh held-out chapter per novel is needed before claiming a number.
 - **Status**: speaker half built and tested (`test_reader_speakers.py`, 5 tests); gate not yet met.
 
+### D13. The reader stage, facts half: appearance, ages, new names (A3b + A4 validators, 2026-10-22)
+- **Decision**: `reader/facts_pass.py` reads each chapter for appearance traits, exact ages and new names/code names. Every claim carries an evidence quote, and is stored only if the quote is real text of the passage and the value passes a per-attribute check. It runs after the speaker pass inside `echotales reader`.
+- **Why**: the audit found 0 appearance attributes for 93 LotM entities and no Fool/Justice/Hanged Man links. Appearance is stored as dated `PERSONA` attributes (open-ended from the chapter that states it), and a new name as an alias binding on the character, so `look_at`/`persona_at` consumers and the review screens can read them.
+- **How the numbers moved** (LotM, silver references; appearance = 14 facts):
+
+  | Step | Change | Appearance | Persona links | Ages |
+  |---|---|---|---|---|
+  | 0 | Run-of-record database | 0/14 | 2/5 | 0/1 |
+  | 1 | One call for appearance + names + ages over whole 2,600-character windows | 2/14 (14%) | 5/5 | 1/1 |
+  | 2 | **Appearance in its own call, with a worked example in the prompt** | 9/14 (64%) | 5/5 | 1/1 |
+  | 3 | Pre-filter to sentences with body/clothing cue words (shorter, focused prompt) | 9/14 | 5/5 | 1/1 |
+  | 4 | Per-attribute validators (below) | **10/14 (71%)** | 5/5 (100%) | 1/1 (100%) |
+
+- **Lessons**:
+  - Asking one JSON object for three things at once made the 7B model return empty lists for "the gray-eyed police inspector". One focused call plus a one-example prompt fixed most of the recall. The cue pre-filter did not change recall but made the calls much shorter.
+  - **The first facts run stored wrong facts**, which no recall number shows: Daly's `eye_color` was "blue eyeshadow", Klein's `height_build` was "quivered", and Klein got an age of 25 that is written nowhere. So the stage now rejects or remaps these: makeup words go to `distinguishing_features`, `height_build` must contain a build word, colour keys must contain a colour word, and an age is accepted only if the number is written in its evidence quote.
+  - Quote handling: a model quote that is not verbatim is repaired to the real passage sentence that states the value, never kept as the model's words. A first version "repaired" a hair-colour claim to a sentence about a black robe; repair now also requires a cue for the right attribute (hair, eyes, skin) and strips the window's block marker. The test that caught it is `test_reader_facts.py`.
+- **Final measurements, current code (all three novels, local `qwen2.5:7b`, silver references)**:
+
+  | Novel | Speakers | Appearance | Persona links | Kind | Ages |
+  |---|---|---|---|---|---|
+  | LotM (5 ch) | 84.6% (was 34.6) | 71.4% (was 0) | **100%** (was 40) | 88% | 1/1 (was 0/1) |
+  | RI (5 ch) | 64.3% (was 32.1) | 45.5% (was 0) | n/a | 100% | n/a |
+  | ORV (4 ch) | 50.7% (was 20.1) | 66.7% (2/3) | n/a | 90.9% | 0/1 |
+
+  Only persona links on LotM meet its gate so far. Speakers (>= 90%), appearance (>= 85%) and kind (>= 95%) are still below.
+- **Known remaining gaps**: a trait stated about a sibling ("his sister's brown eyes") is assigned to the narrator; appearance on RI is limited by what the cast list contains; ORV first-person two-person dialogue still swaps speakers; 27 LotM dialogue spans cover no reference line (the span classifier voices scare quotes); entity kinds such as universities typed as LOCATION instead of ORGANIZATION are not touched by this stage.
+- **Status**: built, tested (`test_reader_facts.py`, 5 tests; whole suite green), not yet part of `echotales run`.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs
