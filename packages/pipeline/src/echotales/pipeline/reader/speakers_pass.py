@@ -139,21 +139,24 @@ class NameIndex:
         return next(iter(hits.values())) if len(hits) == 1 else None
 
 
-def windows(chapter: Chapter) -> list[str]:
-    """Consecutive whole blocks, each quote tagged `[block.q]`, up to `WINDOW_CHARS` per window."""
+def windows(chapter: Chapter, *, tagged: bool = True) -> list[str]:
+    """Consecutive whole blocks up to `WINDOW_CHARS` per window.
+
+    `tagged=True` inserts `[block.q]` before every quote and drops windows with no quote (the speaker pass);
+    `tagged=False` keeps every window as plain text (the facts pass reads narration too)."""
     out: list[list[str]] = []
     current: list[str] = []
     size = 0
     for block in sorted(chapter.blocks, key=lambda b: b.index):
-        tagged = tag_block(block.index, block.text)
-        if size + len(tagged) > WINDOW_CHARS and current:
+        text = tag_block(block.index, block.text) if tagged else block.text
+        if size + len(text) > WINDOW_CHARS and current:
             out.append(current)
             current, size = [], 0
-        current.append(f"#{block.index}: {tagged}")
-        size += len(tagged)
+        current.append(f"#{block.index}: {text}")
+        size += len(text)
     if current:
         out.append(current)
-    return ["\n".join(w) for w in out if "[" in "".join(w)]
+    return ["\n".join(w) for w in out if not tagged or "[" in "".join(w)]
 
 
 def _prompt(cast: list[CastEntry], text: str, tags: list[str]) -> str:

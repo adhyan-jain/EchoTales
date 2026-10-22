@@ -212,14 +212,13 @@ def score_kinds(gold: GoldChapter, store: Store) -> Score:
 
 
 def _attribute_values(store: Store, self_id: str | None, keys: set[str]) -> list[str]:
+    """Values under `keys` on the character itself and on every persona (body) it has worn. Appearance and age belong
+    to the body (`TargetKind.PERSONA`), whose id is `<self>:bodyN` or a bound persona id."""
     if not self_id:
         return []
-    return [
-        a.value
-        for target in (TargetKind.SELF, TargetKind.PERSONA)
-        for a in store.get_attributes(target, self_id)
-        if a.key in keys
-    ]
+    targets: list[tuple[TargetKind, str]] = [(TargetKind.SELF, self_id), (TargetKind.PERSONA, f"{self_id}:body1")]
+    targets += [(TargetKind.PERSONA, b.persona_id) for b in store.get_self_persona_bindings(self_id=self_id)]
+    return [a.value for target, tid in targets for a in store.get_attributes(target, tid) if a.key in keys]
 
 
 def score_ages(gold: GoldChapter, store: Store) -> Score:
