@@ -212,8 +212,9 @@ TASK_PROFILES: dict[Task, TaskProfile] = {
     # fails validation outright, so this is sized for the longest window.
     Task.READER: TaskProfile(
         # Overridable so a model can be compared on every reference chapter without editing code
-        # (`scripts/eval/reader_ablation.py`); the default stays the model D2 chose.
-        ollama_model=os.environ.get("ECHOTALES_READER_MODEL", "qwen2.5:7b"),
+        # (`scripts/eval/reader_ablation.py`). Default gemma2:9b, not D2's original qwen2.5:7b: on all 16 reference
+        # chapters it gave 339 vs 282 correct speakers (decisions D19), at 2.75x the time, and still fits the 8 GB card.
+        ollama_model=os.environ.get("ECHOTALES_READER_MODEL", "gemma2:9b"),
         anthropic_model="claude-sonnet-5",
         temperature=0.0,
         max_tokens=1500,

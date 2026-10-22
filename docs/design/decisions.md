@@ -267,6 +267,11 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Effect on the best run (v11 outputs, re-scored, no model rerun)**: LotM 165/173 (**95.4%**, passes the 90% gate), RI 64/84 (76.2%), ORV 113/145 (77.9%).
 - **Why it matters for trust**: this is exactly the failure mode the reference-set warning describes. A reference drafted from truncated views understates the model, and the model's disagreement is a prompt to re-read, not proof either way. The remaining 19 "named but expected unnamed" lines (RI 13, ORV 6 after the fix) have **not** been re-checked against the text and could be reference errors in the same way.
 
+### D22. The default reader model is now `gemma2:9b` (supersedes the model half of D2, 2026-10-22)
+- **Decision**: `Task.READER` defaults to local `gemma2:9b`; `ECHOTALES_READER_MODEL` overrides it. Still local ollama only, no cloud spend, so the local-only rule and the $5-10 budget are untouched.
+- **Why**: measured on the same 16 reference chapters, same code: 330 vs 282 correct speakers (82% vs 70%), with the held-out LotM chapter at 95%. It fits the 8 GB card. Cost: about 2.75x the time (roughly 27 minutes vs 10 for the 16 chapters; about 49 s per chapter on `qwen2.5:7b` in the full-volume LotM run, so roughly 2 minutes per chapter on gemma, or about 80 minutes for a 40-chapter volume).
+- **Not shown**: that a still larger model would do better, or that gemma holds up on unseen chapters of RI and ORV. `qwen3:8b` and `llama3.1:8b` are installed and were not tried.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs
