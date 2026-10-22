@@ -29,17 +29,18 @@ merged to `master`. **Canonical database:** `data/db/reverend-insanity.db`
 
 ---
 
-## Phase A in progress (2026-10-22)
+## Phase A and B (2026-10-22)
 
-See `docs/HANDOFF.md` "Pick up here" and EVOLUTION 4.123. **A1** version
-stamp, **A2** silver reference set (14 chapters, `eval/reader_gold.py`),
-**A3** reader stage (`echotales reader`, run stage 6b, job kind `reader`),
-**A4** validators, **A6** role slots (unproven), **A8** empty canon tables are
-built. A5 (identity merges), A7 (`look_at`), A9 (rebuild) are not done.
-**Gate A not met:** speakers 84.6 / 64.3 / 58.3 % and appearance
-71.4 / 45.5 / 66.7 % (LotM / RI / ORV) on silver references the prompts were
-tuned on, so optimistic. Databases in `data/db/` are unrebuilt and unstamped
-(real renders 409). Any "Working" row below that depends on appearance,
+See `docs/HANDOFF.md` "Pick up here" and EVOLUTION 4.123/4.124. Reader stage
+(default `gemma2:9b`) built; A5 (identity merges), A7 (`look_at`), A9
+(rebuild) not done. Best v11: speakers 339/401 (85%; LotM 95.4, RI 76.2,
+ORV 77.9), appearance 21/31 (68%), persona links 4/5, kinds 100%. **Gate A
+not met** (only LotM speakers and kinds pass), on silver references the
+prompts were tuned on, so optimistic. Phase B review gate (`review_gate.py`,
+`bible_lock`, Studio tab `bible`) is built and browser-verified; merge from
+that screen, voice screens, places/props and per-episode lock linkage are not.
+Faithfulness check not run on the reader; `data/db/` databases unstamped
+(real renders 409); Phases C-E not started. Any "Working" row below that depends on appearance,
 speaker accuracy or persona links should be read against this until Gate A
 passes.
 
@@ -47,10 +48,10 @@ passes.
 
 | Suite | Result |
 |---|---|
-| Backend (`packages/core` + `packages/pipeline`) | 1,533 passed (2026-10-22; was 1,206 on 2026-10-02) |
+| Backend (`packages/core` + `packages/pipeline`) | 1,553 passed (2026-10-22; was 1,206 on 2026-10-02) |
 | `packages/research` (research arena) | 16 passed |
 | `packages/ecrdt` (standalone research package) | 55 passed |
-| Webview (Jest) | 82 passed |
+| Webview (Jest) | 129 passed (2026-10-22) |
 | Webview accessibility (axe-core) | 0 violations across 16 routes × 4 widths × 2 themes (128 runs) |
 | Webview production build from a clean `npm ci` | compiles; no source maps; no offline novel exports shipped |
 

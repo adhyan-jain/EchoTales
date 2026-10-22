@@ -22,21 +22,55 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-22 (EVOLUTION 4.123).
+**Last updated:** 2026-10-22 (EVOLUTION 4.124).
 
-## Pick up here — 2026-10-22 (Phase A: reader stage built, Gate A NOT met; EVOLUTION 4.122 and 4.123)
+## Pick up here — 2026-10-22 (Phase A reader stage, Gate A NOT met; Phase B review gate built; EVOLUTION 4.122-4.124)
 
 Plan adopted (full text: `/home/adhyan/.claude/plans/gleaming-sniffing-backus.md`;
-decisions and effects: `docs/design/decisions.md`). Order, each phase gated
-before the next: **A** reader pass on local ollama `qwen2.5:7b`, deterministic
-validators, look timeline, text-only canon, reference set -> **B** review UI
--> **C** real media backends -> **D** screenplay -> **E** Path 2 video.
-Gate A (on the reference set, local model): speaker >= 90%, appearance recall
->= 85%, persona-link recall >= 90%, kind >= 95%.
+decisions D1-D23: `docs/design/decisions.md`). Order, each phase gated
+before the next: **A** reader pass, deterministic validators, look timeline,
+text-only canon, reference set -> **B** review UI -> **C** real media
+backends -> **D** screenplay -> **E** Path 2 video. Gate A (reference set,
+local model): speakers >= 90%, appearance >= 85%, persona-link >= 90%,
+kind >= 95%.
 
-**Gate A status: not met.** Speakers 84.6 / 64.3 / 58.3 % and appearance
-71.4 / 45.5 / 66.7 % (LotM / RI / ORV) on the silver references; persona links
-LotM 100 %. Kind accuracy not yet at 95 %.
+### Phase A status: built, Gate A NOT met
+
+- **Model:** the reader defaults to local `gemma2:9b` (was `qwen2.5:7b`).
+  `ECHOTALES_READER_MODEL` overrides; `ECHOTALES_READER_RECONCILE=0` turns
+  off the role-reconcile pass.
+- **Measurement:** `scripts/eval/reader_ablation.py` runs all 16 reference
+  chapters of 3 novels from fresh copies and writes
+  `data/eval/reader/<label>.json`; `compare` prints per-chapter deltas.
+- **Best result (v11):** speakers 339/401 (85%) before the ORV ch3 reference
+  correction; LotM 95.4% (held-out ch21 95%), RI 76.2%, ORV 77.9% after it.
+  Appearance 21/31 (68%). Persona links 4/5. Kinds 100%. Only LotM speakers
+  and kinds pass Gate A; overall it is not met. (The 84.6/64.3/58.3 and
+  71.4/45.5/66.7 figures of 4.123 were the first measurement, superseded.)
+- **Titles** are transferable aliases with story time and knowledge time:
+  `build_cast` chooses by story-time validity and shows the title until the
+  name is learned; persistent title entities only for office words; a role
+  word must occur in the chapter; honorific suffixes stripped in matching.
+
+### Phase B status: built, browser-verified
+
+- `pipeline/review_gate.py`; `bible_lock` table in `core/store.py`.
+- Routes: `GET review/lines` (ranked speaker queue), `GET characters/<id>/timeline`,
+  `GET bible`, `POST bible/lock`. The render guard now requires a current
+  lock for non-stub engines. Webview Studio tab `bible`
+  (`webview/src/components/BibleReview.js`).
+- **Not done in B:** cast-board merge from this screen (the existing Review
+  page has it), voice upload/record screens, places/props screen,
+  per-episode lock linkage.
+
+### Open / unverified
+
+- The faithfulness (truncate-and-rebuild) check has NOT been run on the reader stage.
+- 19 reference lines "named but expected unnamed" (RI 13, ORV 6) are not re-adjudicated.
+- Phases C-E not started. Phase C needs local model downloads; the owner has
+  not approved hosted GPUs.
+
+### Phase A detail
 
 - **A1 done** (`pipeline/version.py`, `PIPELINE_VERSION="2"`, stamped into
   `pipeline_run`; `webview_server.py::_stale_build_refusal` returns 409 on
@@ -65,16 +99,16 @@ LotM 100 %. Kind accuracy not yet at 95 %.
 
 **Open Phase A defects (all open):**
 
-- Gate A thresholds not met: speakers >= 90, appearance >= 85, kind >= 95.
-- Entity kind errors: universities typed LOCATION not ORGANIZATION; tarot
+- Gate A not met overall (v11: appearance 68% vs 85; speakers pass only on LotM).
+- Entity kind errors (listed 4.123; v11 scores kinds 100% on the reference set, not re-audited on whole novels): universities typed LOCATION not ORGANIZATION; tarot
   cards / "the Emperor" typed as people; the author of the novel-within-novel
   typed as a cast member.
 - Identity merges missing (A5): Fool / Emperor / Zhou Mingrui / Klein remain
   separate entities.
 - 27 LotM dialogue spans sit over scare quotes (no real line).
 - `render/beat_canon.py` still hand-written canon (Phase D).
-- Databases in `data/db/` are not rebuilt and are unstamped, so real renders
-  return 409 until rebuilt.
+- Databases in `data/db/` are not rebuilt, are unstamped and have no bible
+  lock, so real renders return 409 until rebuilt and locked.
 - The reference set is silver (model-drafted, `confirmed: false`) and the
   prompts were tuned on the same chapters, so every number above is
   optimistic.

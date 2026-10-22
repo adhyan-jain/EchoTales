@@ -88,7 +88,7 @@ source .venv/bin/activate      # uv-managed venv already present at repo root
 python3 -m pytest packages/core/tests packages/pipeline/tests   # no GPU needed
 ```
 
-1,533 core+pipeline tests pass (2026-10-22, after Phase A A1-A8; research: 29 and webview jest: 125 are as of 2026-10-19 and were not re-run). Root `pyproject` testpaths lists only
+1,553 core+pipeline tests pass (2026-10-22, after Phase A and Phase B; webview jest: 129; research: 29 is as of 2026-10-19 and was not re-run). Root `pyproject` testpaths lists only
 core and pipeline; pass `packages/research/tests` explicitly (and `-o addopts=""`) to include research.
 
 Everything is stub-first: `ECHOTALES_LLM_MODE=stub` and `--image-engine
@@ -174,13 +174,15 @@ real data without touching the canonical `data/db/<novel-id>.db`.
 
 Research track: `docs/research/DECISION_LOG.md` is the state of record (EVOLUTION 4.101).
 
-Current work (2026-10-22): Phase A extraction rewrite. A1-A4, A6, A8 built
-(EVOLUTION 4.123). Gate A not yet met: speakers 84.6/64.3/58.3, appearance
-71.4/45.5/66.7 (LotM/RI/ORV, silver references). See docs/HANDOFF.md and docs/design/decisions.md.
+Current work (2026-10-22): Phase A reader (default `gemma2:9b`) and Phase B
+review gate (`review_gate.py`, `bible_lock`, Studio tab `bible`) built
+(EVOLUTION 4.123/4.124). Gate A NOT met: best v11 speakers 85% overall (LotM
+95.4, RI 76.2, ORV 77.9), appearance 21/31, silver references. Non-stub
+renders need a current bible lock; `data/db/` DBs are unstamped (409). See docs/HANDOFF.md and docs/design/decisions.md.
 
 See docs/HANDOFF.md's "Pick up here" section for the actual current state — it
 changes every session (the numbered session log itself moved to
-docs/EVOLUTION.md, latest section 4.123). The NER-windowing re-run (EVOLUTION
+docs/EVOLUTION.md, latest section 4.124). The NER-windowing re-run (EVOLUTION
 4.76) that an earlier session left unmeasured did run (4.84): the
 "`ollama` unreachable" blocker was a misdiagnosis — the daemon was simply
 not started — and the fix is now measured on real data (CEAF-e recall

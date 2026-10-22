@@ -9123,3 +9123,14 @@ Supersedes the "A2 started / A3-A9 not started" lines of 4.122. Gate A is
   `render/beat_canon.py`, unrebuilt unstamped DBs (real renders 409). Numbers
   are optimistic: silver labels, prompts tuned on the same chapters.
 
+### 4.124 Reader on gemma2:9b, title aliases, Phase B review gate *(2026-10-22)*
+
+Supersedes the `qwen2.5:7b` model and the speaker/appearance numbers of 4.123 (first measurement, not the best). Gate A is still **not met**.
+
+- **Reader model.** Default is now local `gemma2:9b` (`ECHOTALES_READER_MODEL` overrides; `ECHOTALES_READER_RECONCILE=0` disables the role pass). `scripts/eval/reader_ablation.py` runs all 16 reference chapters of 3 novels from fresh copies and writes `data/eval/reader/<label>.json`; `compare` prints per-chapter deltas.
+- **Best result (v11).** Speakers 339/401 (85%) before correcting the ORV ch3 reference; after it LotM 95.4% (held-out ch21 95%), RI 76.2%, ORV 77.9%. Appearance 21/31 (68%), persona links 4/5, kinds 100%. Only LotM speakers and kinds pass Gate A (speakers >= 90, appearance >= 85, persona >= 90, kind >= 95).
+- **Titles.** Transferable aliases with story time and knowledge time: `build_cast` picks by story-time validity and shows the title until the name is learned; persistent title entities only for office words; a role word must occur in the chapter; honorific suffixes stripped in matching (decisions.md D19-D23).
+- **Phase B built and browser-verified.** `pipeline/review_gate.py`, `bible_lock` table (`core/store.py`), routes `GET review/lines`, `GET characters/<id>/timeline`, `GET bible`, `POST bible/lock`; the render guard requires a current lock for non-stub engines; webview Studio tab `bible` (`BibleReview.js`). Not built: merge from this screen, voice upload/record, places/props screen, per-episode lock linkage.
+- **Verified:** core+pipeline suite 1,553 passed; webview Jest 129.
+- **Open / unverified.** Faithfulness (truncate-and-rebuild) check not run on the reader stage; 19 "named but expected unnamed" reference lines (RI 13, ORV 6) not re-adjudicated; `data/db/` databases unstamped so real renders 409; Phases C-E not started.
+

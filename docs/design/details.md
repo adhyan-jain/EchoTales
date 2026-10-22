@@ -2132,7 +2132,7 @@ copy showing every change.
 
 ### `src/echotales/pipeline/reader/` (decisions D11-D18, EVOLUTION 4.122-4.123)
 
-The chapter reader pass: a model reads each chapter with the cast list in view and returns facts that carry their own evidence. It exists because the older stages link names to identities but never *read* facts, so LotM had 0 appearance attributes and speaker accuracy of 34.6%. Runs as `echotales reader` or stage `6b reader` of `echotales run` (`--skip-reader` opts out), and as the `reader` job kind. Model: `Task.READER`, local `qwen2.5:7b` first.
+The chapter reader pass: a model reads each chapter with the cast list in view and returns facts that carry their own evidence. It exists because the older stages link names to identities but never *read* facts, so LotM had 0 appearance attributes and speaker accuracy of 34.6%. Runs as `echotales reader` or stage `6b reader` of `echotales run` (`--skip-reader` opts out), and as the `reader` job kind. Model: `Task.READER`, local `gemma2:9b` by default since 2026-10-22 (`ECHOTALES_READER_MODEL`; `ECHOTALES_READER_RECONCILE=0` disables the role pass; EVOLUTION 4.124).
 
 - `quotes.py` -- the one definition of a quoted line (`QUOTE`, `quote_starts`, `tag_block`). A line is addressed `block.q`; curly and straight quotes both count, and a multi-paragraph speech runs to the end of the block. Shared with `eval/reader_gold.py` so the scorer and the stage can never disagree on what "quote 3 of block 10" is.
 - `speakers_pass.py` -- windows of ~2,600 characters with every quote tagged; builds the chapter cast (people already attested whose name occurs in the text); asks for exactly one answer per tag and shows a slot for every pending tag in the answer template (a single-entry example made the model answer one tag per call); re-asks for omissions; names resolve through `NameIndex`. Writes the speaker onto the covering span, retypes a mistyped crowd reaction to dialogue, mints a person the cast lacks but never a place, clears the old ladder's non-explicit guess when the model says UNKNOWN, gives an unnamed speaker with a role one stable slot (`UNKNOWN: academy elder`), treats dated written entries and NONE answers as narration, and tells the model who the first-person narrator is (the character addressed in quotes but rarely named in narration).
@@ -2140,6 +2140,10 @@ The chapter reader pass: a model reads each chapter with the cast list in view a
 - `runner.py` -- chapters in order, speakers then facts (a minted speaker is in the cast for the facts pass), totalled in `ReaderReport`.
 
 Measured with `scripts/eval/score_reader_gold.py` against model-drafted silver references in `data/gold/reader/` (never called gold): see `docs/design/decisions.md` D11-D18 for each experiment. Gate A is not yet met for speakers or appearance.
+
+### `src/echotales/pipeline/review_gate.py` (Phase B, EVOLUTION 4.124)
+
+The human gate between extraction and rendering. It ranks the speaker-attribution queue (`GET review/lines`, so review effort goes where the reader is weakest: non-negotiable 7, a bounded and measurable queue), builds a per-character look timeline (`GET characters/<id>/timeline`), assembles the bible (`GET bible`) and records a versioned lock (`POST bible/lock`, `bible_lock` table in `core/store.py`). The lock is the reason it exists: non-stub render routes refuse to run without a current lock, so a render cannot silently use a bible nobody looked at. Webview side: Studio tab `bible`, component `webview/src/components/BibleReview.js`. Cast-board merge stays on the existing Review page; voice and places/props screens and per-episode lock linkage are not built.
 
 ### `tests/test_anaphora.py`
 33 tests, weighted toward what the resolver must decline to do: no cataphora,
