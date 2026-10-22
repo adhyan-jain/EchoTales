@@ -119,3 +119,16 @@ def test_an_unnamed_speaker_with_a_role_gets_one_stable_slot() -> None:
     assert one.attribution_method is AttributionMethod.EPITHET_SLOT
     assert report.role_slots == 2
     assert sp._role_slug("UNKNOWN") == "" and sp._role_slug("UNKNOWN: a guard") == "guard"
+
+
+def test_dated_written_entries_are_not_speech_and_leave_dialogue() -> None:
+    """LotM ch21 quotes Emperor Roselle's diary; the old pipeline voiced nine entries as dialogue."""
+    assert sp.looks_written("18th November. Truly a fascinating matter.")
+    assert sp.looks_written("1184, 1st January. At the grand New Year Gala")
+    assert not sp.looks_written("Hello there.") and not sp.looks_written("I was there on 9th September.")
+
+
+def test_a_none_answer_retypes_dialogue_to_narration() -> None:
+    store, report = _run({"0.0": "Alice", "1.0": "NONE", "2.0": "UNKNOWN"})
+    assert _span(store, 1).span_type is SpanType.NARRATION_DESCRIPTION
+    assert _span(store, 1).speaker_self_id is None and report.not_speech == 1

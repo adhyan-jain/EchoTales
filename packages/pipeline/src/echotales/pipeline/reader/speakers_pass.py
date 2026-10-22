@@ -265,6 +265,9 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
         starts = quote_starts(blocks.get(block_index, ""))
         if q >= len(starts):
             continue
+        quote_text = blocks[block_index][starts[q]:].lstrip("“\"")
+        if looks_written(quote_text):
+            speaker = NOT_SPEECH
         span = _span_at(spans, block_index, starts[q])
         if span is None:
             report.no_span += 1
@@ -293,6 +296,11 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
         if key == NOT_SPEECH:
             report.not_speech += 1
             store.set_span_speaker(novel_id, span.id, None, AttributionMethod.UNRESOLVED.value, 0.0)
+            if span.span_type is SpanType.DIALOGUE:
+                # Written text or a scare quote is narration, not a line to voice (audit: 5 scare-quote
+                # sentences voiced as dialogue on LotM ch7).
+                store.set_span_type(novel_id, span.id, SpanType.NARRATION_DESCRIPTION.value)
+                report.retyped += 1
             continue
         entry = index.resolve(speaker)
         if entry is None:
@@ -310,6 +318,20 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
 
 def _span_at(spans: list[Span], block_index: int, start: int) -> Span | None:
     return next((s for s in spans if s.block_index == block_index and s.start <= start < s.end), None)
+
+
+_MONTHS = "January|February|March|April|May|June|July|August|September|October|November|December"
+#: A quote that opens with a date is a dated written entry (a diary, a log, a letter), never speech. LotM ch21 quotes
+#: nine of Emperor Roselle's diary entries ("18th November. ...", "1184, 1st January. ..."); the old pipeline voiced all
+#: of them as dialogue (13 false-dialogue spans on that chapter) and the 7B model did not answer NONE for them.
+_DATED_ENTRY = re.compile(
+    rf"^\W*(?:\d{{1,2}}(?:st|nd|rd|th)?\s+(?:{_MONTHS})\b|(?:{_MONTHS})\s+\d{{1,2}}\b|\d{{4}}\s*,)", re.IGNORECASE
+)
+
+
+def looks_written(quote_text: str) -> bool:
+    """Whether a quoted string is a dated written entry rather than something a person says."""
+    return bool(_DATED_ENTRY.match(quote_text))
 
 
 def _role_slug(answer: str) -> str:

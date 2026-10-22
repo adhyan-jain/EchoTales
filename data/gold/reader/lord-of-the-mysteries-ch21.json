@@ -1,0 +1,28 @@
+{
+  "novel_id": "lord-of-the-mysteries",
+  "chapter": 21,
+  "provenance": "model",
+  "confirmed": false,
+  "held_out": true,
+  "drafted_by": "Claude (in-session, reading the chapter text only; pipeline output not consulted)",
+  "drafted_on": "2026-10-22",
+  "note": "Silver reference, HELD OUT: labelled after the prompts were last tuned and never used to tune them, to estimate how the reader does on an unseen chapter. Blocks 2-10 are quoted entries of Emperor Roselle's diary (written text, not speech) and block 43 is the badge's printed text, so they are not listed and any dialogue span over them counts as false dialogue. Block 25 is Klein and Old Neil in unison, labelled Klein.",
+  "characters": [
+    {"id": "klein", "name": "Klein Moretti", "kind": "person", "gender": "male", "aliases": ["Zhou Mingrui", "Klein"]},
+    {"id": "neil", "name": "Old Neil", "kind": "person", "gender": "male", "aliases": ["Old Neil", "Neil"]},
+    {"id": "leonard", "name": "Leonard Mitchell", "kind": "person", "gender": "male", "aliases": ["Leonard Mitchell", "Leonard", "Midnight Poet"]}
+  ],
+  "non_characters": [
+    {"name": "Emperor Roselle", "kind": "person_mentioned"},
+    {"name": "Awwa County Police Department", "kind": "organization"},
+    {"name": "Nighthawks", "kind": "organization"}
+  ],
+  "personas": [],
+  "appearance": [
+    {"character": "leonard", "attribute": "hair_color", "value": "black", "quote": "the black-haired, green-eyed police inspector"},
+    {"character": "leonard", "attribute": "eye_color", "value": "green", "quote": "the black-haired, green-eyed police inspector"},
+    {"character": "leonard", "attribute": "typical_attire", "value": "white shirt", "quote": "His white shirt was not tucked in"}
+  ],
+  "age_facts": [],
+  "lines": ["16.0:neil", "17.0:klein", "18.0:neil", "18.1:neil", "19.0:klein", "20.0:neil", "20.1:neil", "21.0:klein", "23.0:neil", "24.0:klein", "25.0:klein", "27.0:neil", "27.1:neil", "29.0:neil", "30.0:klein", "31.0:neil", "32.0:klein", "33.0:neil", "34.0:klein", "35.0:neil", "40.0:neil", "44.0:klein", "47.0:klein", "49.0:neil", "52.0:klein:thought", "56.0:leonard", "57.0:klein", "58.0:leonard", "58.1:leonard", "59.0:klein", "60.0:leonard", "61.0:klein", "62.0:leonard", "62.1:leonard", "63.0:klein", "64.0:leonard", "66.0:leonard"]
+}

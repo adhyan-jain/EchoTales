@@ -210,6 +210,21 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Result**: kind accuracy 25/25 (LotM), 24/24 (RI), 11/11 (ORV), so the kind gate (95%) now passes on all three.
 - **Caveats**: the sample is small and is measured only over entities the pipeline created, so a person the pipeline never made is a recall miss (counted under speakers and persona links), not here; the references skip `creature` and a non-person that speaks is checked by the speaker pass, not by this number. This change loosened the scorer, so the improvement is not a model improvement, and it is logged separately for that reason.
 
+### D18. Held-out chapter, and written text is not speech (2026-10-22)
+- **Decision**: (1) keep one reference chapter that no prompt was tuned on (`data/gold/reader/lord-of-the-mysteries-ch21.json`, `"held_out": true`) and report it separately; (2) a quote that opens with a date ("18th November.", "1184, 1st January.") is a written entry, not speech, and a quote the model calls NONE is moved from dialogue to narration.
+- **Why**: every number in D11-D16 was measured on chapters the prompts were tuned against, so they are optimistic. And LotM ch21 quotes nine of Emperor Roselle's diary entries, which the old pipeline voiced as dialogue; the 7B model did not answer NONE for them even though the prompt allows it.
+- **Held-out result** (LotM ch21, 37 reference lines, never used for tuning):
+
+  | | Original database | Reader stage | Reader stage + written-text rule |
+  |---|---|---|---|
+  | Speakers | 18/37 = 49% | 32/37 = 86% | 32/37 = 86% |
+  | False dialogue spans | 13 | 13 | **5** |
+  | Appearance | 0/3 | 0/3 | 0/3 |
+
+  So the speaker gain generalises (49% -> 86%, close to the 84.6% on the tuned LotM chapters), which is the evidence I did not have before. Appearance did **not** generalise on this chapter: Leonard Mitchell had no entity in the database (the old pipeline first saw him in chapter 39) and the facts pass could not resolve him, which matches the "stated about someone not yet in the cast" gap already listed.
+- **Remaining misses on ch21**: the model attributes two of Old Neil's lines to Klein, a joint line ("in unison") has no single speaker, and "Midnight Poet" became its own role slot instead of Leonard.
+- **Tests**: `test_dated_written_entries_are_not_speech_and_leave_dialogue`, `test_a_none_answer_retypes_dialogue_to_narration`.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs
