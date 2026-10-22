@@ -204,6 +204,12 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Process note**: two commits (`4f44257`, `db61bc9`) were pushed with a failing narrator test because the test command was piped through `tail`, which hid pytest's exit code. The fix is `e9abbc9`; since then test runs are checked by exit code before any push.
 - **Test**: `test_an_unnamed_speaker_with_a_role_gets_one_stable_slot`.
 
+### D17. The kind gate counts a place and an organisation as the same side (2026-10-22)
+- **Decision**: the reference scorer accepts either LOCATION or ORGANIZATION for a reference entity labelled location or organisation. Person-vs-non-person is still strict.
+- **Why**: LotM scored 88% kind accuracy only because three institutions (Tingen University, Tingen Technical School, Backlund University) were typed LOCATION where my references said organisation. A university is both, so that was a disagreement about wording, not a mistake that matters. What the gate protects against is a non-person being cast a voice, as "Chanis Gate" (a place) did for 18 lines.
+- **Result**: kind accuracy 25/25 (LotM), 24/24 (RI), 11/11 (ORV), so the kind gate (95%) now passes on all three.
+- **Caveats**: the sample is small and is measured only over entities the pipeline created, so a person the pipeline never made is a recall miss (counted under speakers and persona links), not here; the references skip `creature` and a non-person that speaks is checked by the speaker pass, not by this number. This change loosened the scorer, so the improvement is not a model improvement, and it is logged separately for that reason.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs

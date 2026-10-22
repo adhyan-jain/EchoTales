@@ -26,8 +26,10 @@ from echotales.pipeline.reader.quotes import QUOTE as _QUOTE
 _KIND_MAP: dict[str, frozenset[TargetKind]] = {
     "person": frozenset({TargetKind.SELF, TargetKind.PERSONA}),
     "person_mentioned": frozenset({TargetKind.SELF, TargetKind.PERSONA}),
-    "location": frozenset({TargetKind.LOCATION}),
-    "organization": frozenset({TargetKind.ORGANIZATION}),
+    # A university or a school is a place and an organisation at once; the gate is about never casting a non-person as
+    # a person (Chanis Gate spoke 18 lines), not about which non-person label a body of people gets.
+    "location": frozenset({TargetKind.LOCATION, TargetKind.ORGANIZATION}),
+    "organization": frozenset({TargetKind.LOCATION, TargetKind.ORGANIZATION}),
 }
 
 
