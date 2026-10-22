@@ -81,8 +81,14 @@ class SpeakerReport:
     retyped: int = 0
 
 
+#: Korean/Japanese honorific suffixes attached to a name. "Yoo Sangah-ssi" is Yoo Sangah, but without this the matcher saw a
+#: new word, resolved nothing, and `_mint_new_speakers` created a duplicate entity that later chapters then answered with.
+_HONORIFIC = re.compile(r"[-\s](ssi|nim|sama|san|kun|chan|senpai|sunbae|hyung|noona|oppa|unni)\b", re.IGNORECASE)
+
+
 def _norm(text: str) -> str:
-    return re.sub(r"[^a-z0-9 ]+", "", text.lower().replace("’", "'")).strip()
+    text = _HONORIFIC.sub("", text.lower().replace("’", "'"))
+    return re.sub(r"[^a-z0-9 ]+", "", text).strip()
 
 
 def _valid_at(alias: AliasBinding, chapter: float) -> bool:

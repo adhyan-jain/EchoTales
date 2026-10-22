@@ -195,3 +195,11 @@ def test_a_role_made_of_words_the_chapter_never_uses_is_rejected() -> None:
     store, report = _run({"0.0": "Alice", "1.0": "UNKNOWN: clan head", "2.0": "UNKNOWN"})
     assert report.role_rejected == 1 and report.role_slots == 0
     assert store.get_self("n:title:clan_head") is None
+
+
+def test_an_honorific_suffix_is_not_a_new_name() -> None:
+    """ORV: 'Yoo Sangah-ssi' once became a duplicate entity that later chapters answered with."""
+    index = sp.NameIndex([sp.CastEntry("s", "Yoo Sangah", ["Sangah"]), sp.CastEntry("d", "Kim Dokja", ["Dokja"])])
+    assert index.resolve("Yoo Sangah-ssi").self_id == "s"  # type: ignore[union-attr]
+    assert index.resolve("Dokja-ssi").self_id == "d"  # type: ignore[union-attr]
+    assert index.resolve("Soldier-nim") is None
