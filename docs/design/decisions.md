@@ -196,6 +196,14 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Test**: `test_first_person_narrator_is_the_one_others_address_but_narration_rarely_names`.
 - **Status**: ORV speakers 20.1% (original database) -> 58.3% now; gate (90%) still missed.
 
+### D16. Role slots for unnamed speakers (A6, 2026-10-22) - built, benefit not proven
+- **Decision**: when the model answers `UNKNOWN: <role>` ("UNKNOWN: academy elder"), the line gets one slot id per role per chapter, `<novel>:anon:<chapter>:<role>`, held across lines (attribution method EPITHET_SLOT, confidence 0.5). Plain UNKNOWN clears the old ladder's non-explicit guess.
+- **Why**: the audit's slot-rotation defect gave a single unnamed elder a new voice on each line (RI ch4: `anon:4:s7:1`, `:2`, `:3` for consecutive elder lines).
+- **Honest result**: speaker scores moved slightly down (LotM 84.6 -> 82.4, RI 64.3 -> 63.1, ORV 58.3 -> 55.6) because the scorer cannot credit a role slot as correct for a character the references name (a "carriage driver" who is Dunn; the "clan head" character). The benefit I wanted, fewer distinct voices for unnamed lines, is **not measurable on the reference set**: it has only 2-11 unnamed lines per chapter, and many are now cleared rather than slotted, so I cannot claim the voice count improved.
+- **What to do with it**: kept, because holding one slot per role is the right behaviour and costs nothing; but it is not counted as progress toward Gate A. A real check needs the voice stage to cast these slots and a listening test.
+- **Process note**: two commits (`4f44257`, `db61bc9`) were pushed with a failing narrator test because the test command was piped through `tail`, which hid pytest's exit code. The fix is `e9abbc9`; since then test runs are checked by exit code before any push.
+- **Test**: `test_an_unnamed_speaker_with_a_role_gets_one_stable_slot`.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs
