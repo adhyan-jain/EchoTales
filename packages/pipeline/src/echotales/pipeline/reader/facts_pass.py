@@ -129,8 +129,10 @@ def _names_prompt(cast: list[CastEntry], text: str) -> str:
         "character already has.\n"
         "ages: an exact age stated for a character (for example 'had just turned seventeen' is 17).\n"
         "quote is a short phrase copied EXACTLY from the passage. Only facts the passage states.\n"
-        'Answer as JSON: {"identities": [{"character": "Name", "name": "New name", "quote": "..."}], '
-        '"ages": [{"character": "Name", "age": 17, "quote": "..."}]}. Use empty lists if there are none.\n\n'
+        "Example. Passage: 'Call me the Wolf from now on,' said Tom, who had just turned seventeen. Answer: "
+        '{"identities": [{"character": "Tom", "name": "the Wolf", "quote": "Call me the Wolf from now on"}], '
+        '"ages": [{"character": "Tom", "age": 17, "quote": "had just turned seventeen"}]}\n'
+        'Use empty lists if the passage states none: {"identities": [], "ages": []}.\n\n'
         f"Passage:\n{text}"
     )
 

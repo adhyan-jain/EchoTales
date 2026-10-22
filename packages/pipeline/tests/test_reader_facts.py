@@ -104,3 +104,10 @@ def test_validator_helpers() -> None:
     assert fp.age_in_quote(17, "had just turned seventeen") and not fp.age_in_quote(25, "had just turned seventeen")
     assert fp.grounded("thin", "thinly built") and not fp.grounded("emerald", "thinly built")
     assert "brown eyes" in fp.cue_passage("He sat. She had brown eyes. They left.")
+
+
+def test_the_names_prompt_has_no_placeholder_a_model_could_copy_as_a_quote() -> None:
+    """gemma2:9b copied the literal '...' from the answer template as the evidence quote for 'Justice' and
+    'The Hanged Man', so both claims failed the quote check (LotM ch7 persona links 5/5 -> 3/5)."""
+    prompt = fp._names_prompt([], "x")
+    assert '"quote": "..."' not in prompt and "..." not in prompt.split("Example.")[1]
