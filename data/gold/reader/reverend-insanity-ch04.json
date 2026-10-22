@@ -5,11 +5,12 @@
   "confirmed": false,
   "drafted_by": "Claude (in-session, reading the chapter text only; pipeline output not consulted)",
   "drafted_on": "2026-10-22",
-  "note": "Silver reference. The academy elder is never named; the youths answer as a group. Only quote-bearing blocks were read for speaker labels, plus appearance sentences found by keyword.",
+  "note": "Silver reference. The academy elder is never named; the youths answer as a group. CORRECTED 2026-10-22: block 31 is the clan head (the text says the clan head said it with a deep sigh), first labelled unnamed. Only quote-bearing blocks were read for speaker labels, plus appearance sentences found by keyword.",
   "characters": [
     {"id": "fang_yuan", "name": "Fang Yuan", "kind": "person", "gender": "male", "aliases": ["Gu Yue Fang Yuan"]},
     {"id": "academy_elder", "name": "academy elder", "kind": "person", "gender": "male", "aliases": ["the elder", "academy elder", "the elder of the academy"]},
     {"id": "mo_bei", "name": "Gu Yue Mo Bei", "kind": "person", "gender": "male", "aliases": ["Gu Yue Mo Bei", "Mo Bei"]},
+    {"id": "clan_head", "name": "Gu Yue clan head", "kind": "person", "gender": "male", "aliases": ["clan head", "the clan head", "Gu Yue Bo", "Gu Yue clan head"]},
     {"id": "mo_chen", "name": "Gu Yue Mo Chen", "kind": "person", "gender": "male", "aliases": ["Gu Yue Mo Chen", "Mo Chen"]},
     {"id": "chi_lian", "name": "Gu Yue Chi Lian", "kind": "person", "gender": "male", "aliases": ["Gu Yue Chi Lian", "Chi Lian"]}
   ],
@@ -25,5 +26,5 @@
     {"character": "chi_lian", "attribute": "hair_color", "value": "red", "quote": "Gu Yue Chi Lian had a head full of red hair."}
   ],
   "age_facts": [],
-  "lines": ["2.0:academy_elder", "9.0:_anon", "10.0:_anon", "12.0:academy_elder", "13.0:_anon", "14.0:academy_elder", "16.0:academy_elder", "22.0:mo_bei", "23.0:academy_elder", "28.0:mo_chen", "31.0:_anon", "32.0:academy_elder", "36.0:academy_elder", "38.0:chi_lian", "39.0:fang_yuan:thought", "42.0:fang_yuan:thought", "46.0:academy_elder"]
+  "lines": ["2.0:academy_elder", "9.0:_anon", "10.0:_anon", "12.0:academy_elder", "13.0:_anon", "14.0:academy_elder", "16.0:academy_elder", "22.0:mo_bei", "23.0:academy_elder", "28.0:mo_chen", "31.0:clan_head", "32.0:academy_elder", "36.0:academy_elder", "38.0:chi_lian", "39.0:fang_yuan:thought", "42.0:fang_yuan:thought", "46.0:academy_elder"]
 }

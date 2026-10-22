@@ -289,6 +289,22 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Not done in Phase B**: a cast board that merges entities from this screen (the existing Review page already has merge, reassign, retype and flag), voice screens with upload and record (needs the voice stage, Phase C), a places and props screen, and a lock step that records *which episodes* were built from which bible version (episodes do not exist yet).
 - **How it was built**: the Python side by me; the React side by a subagent against a written API contract. The subagent hit a rate limit before reporting, so I verified its saved work myself (129/129 Jest tests, the build, and the browser run above) instead of trusting a summary.
 
+### D24. Spoiler-safety audit of the reader stage, and re-adjudicating the disputed lines (2026-10-22)
+- **What the audit can and cannot do.** A true truncate-and-rebuild is not possible for this stage alone: its cast is drawn from the resolve-stage database, built over the whole volume, so any dependence on later chapters would come in as a *selection* leak, the kind the research shows a truncated rebuild of one stage cannot expose (FORMAL P10). `scripts/eval/reader_faithfulness_audit.py` measures the one selection channel the reader opens on purpose (D20): a quoted line at chapter k attributed to an entity whose name is first learned after k. That is only safe if the reader at k is shown the title the book used then, not the later name.
+- **Results on the v11 outputs** (reader-attributed lines):
+
+  | Novel | Lines | Name already known | Ahead, servable by a title | Flagged as exposed | Reader facts learned later than they start |
+  |---|---|---|---|---|---|
+  | LotM | 183 | 180 | 0 | 0 | 0 |
+  | RI | 65 | 49 | **8** | 0 | 0 |
+  | ORV | 153 | 133 | 0 | 11 | 0 |
+
+  - RI's 8 are the clan head at chapter 1, attributed to Gu Yue Bo, named from chapter 6: the designed case, safe because the label to show at chapter 1 is the title.
+  - ORV's 11 flags are all chapter 3 lines attributed to "Han Myungoh" (entity first attested at chapter 5). On inspection this is a **false positive of the audit caused by a resolve-stage defect**: chapter 3 names him itself ("It was Han Myungoh, department head of the finance team", block 53), so no early name is shown; the entity's first-attested chapter is simply wrong because mention detection missed that sentence.
+  - **What this does not show**: that the reader stage is faithful in general. It shows the facts it writes are stamped at the stating chapter (0 violations) and that the title-before-name channel behaves as designed on the cases present. The Read page and the review screen still show `canonical_label` for an entity, so serving the title instead of a not-yet-learned name at the display layer is **not built for the reviewer view** (the Read page's `build_reader_cast` does its own gating).
+- **Re-adjudicating the 24 lines where the model named a speaker the reference called unnamed** (RI 13, ORV 11 after the earlier ORV ch3 fix). Read against the text: 22 are the model being wrong (attackers named as the clan head or Fang Zhi, "Someone said..." given to Fang Zheng, a crowd's "Wow, so pretty!" given to named elders, a creature's lines given to Ren Zu, commuters and an unnamed actor given to Han, a crowd shout given to Lee Hyunsung). **One reference error found and fixed**: RI ch4 block 31 ("...the clan head said with a deep sigh"), which I had labelled unnamed. **One left unresolved**: RI ch1 block 71 ("Then this is good night, please take care.") follows the elders' replies with no speaker named; the text does not decide it, so it is neither relabelled nor counted as settled.
+- **Effect**: RI speakers 65/84 = **77.4%** (was 76.2%). Reference errors found by the model's disagreements across D21 and D24: 2 of about 40 disputed lines, so the disputed set was mostly model error, which is the more reassuring answer to the question of whether the remaining gap is a labelling problem.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs
