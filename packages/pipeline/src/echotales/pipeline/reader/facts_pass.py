@@ -210,7 +210,7 @@ _NAME_CUE = re.compile(
 )
 
 
-def name_passage(text: str, before: int = 1, after: int = 4) -> str:
+def name_passage(text: str, before: int = 1, after: int = 8) -> str:
     """Sentences around a naming or age cue: one before it and the next few after it."""
     sentences = [x for x in re.split(r"(?<=[.!?\"”])\s+|\n+", text) if x.strip()]
     keep: set[int] = set()
@@ -381,14 +381,37 @@ def _store_age(
     report.ages += 1
 
 
+def repair_name_quote(core: str, passage: str) -> str | None:
+    """The passage sentence that actually contains the new name, preferring one with a naming cue.
+
+    gemma2:9b named Zhou Mingrui's new identity correctly but quoted an unrelated line ("It's nothing.") as evidence on
+    some runs and the right line on others; the claim was valid, the evidence pointer wasn't. The stored quote is always a
+    real sentence of the passage."""
+    best: tuple[int, str] | None = None
+    for raw in re.split(r"(?<=[.!?\"”])\s+|\n+", passage):
+        sentence = re.sub(r"^#\d+:\s*", "", raw).strip()
+        if len(sentence) < 8 or core not in _norm_text(sentence):
+            continue
+        score = 2 if _NAME_CUE.search(sentence) else 1
+        if best is None or score > best[0]:
+            best = (score, sentence[:240])
+    return best[1] if best else None
+
+
 def _store_identity(
     store: Store, novel_id: str, pos: DiscoursePosition, claim: IdentityClaim, passage: str, index: NameIndex,
     report: FactsReport,
 ) -> None:
     name = claim.name.strip()
-    if not quote_in_passage(claim.quote, passage) or _norm_text(name) not in _norm_text(claim.quote):
-        report.rejected_quote += 1
-        return
+    # "Mr. Fool" vs the quote's "The Fool": the code name is the same; only the article or title differs.
+    core = re.sub(r"^(?:the|a|an|mr\.?|mrs\.?|miss|ms\.?|lord|lady|sir)\s+", "", _norm_text(name))
+    quote = claim.quote
+    if not quote_in_passage(quote, passage) or core not in _norm_text(quote):
+        quote = repair_name_quote(core, passage) or ""
+        if not quote:
+            report.rejected_quote += 1
+            return
+        report.repaired += 1
     entry = _resolve(index, claim.character, report)
     if entry is None or index.resolve(name) is entry:
         # A name the character already answers to is not a new identity.
@@ -407,7 +430,7 @@ def _store_identity(
             observer_id=OBSERVER_READER,
             asserted_by=AssertedBy.INFERENCE,
             truth_status=TruthStatus.TRUE,
-            evidence=claim.quote,
+            evidence=quote,
             confidence=FACT_CONFIDENCE,
         ),
     )

@@ -125,3 +125,16 @@ def test_persona_name_matching_ignores_articles_and_titles() -> None:
 
     assert _bare("Mr. Fool") == _bare("The Fool") == "fool"
     assert _bare("Miss Justice") == _bare("Justice")
+
+
+def test_a_wrong_evidence_pointer_for_a_new_name_is_repaired_to_the_sentence_that_names_it() -> None:
+    store, chapter = _store()
+    stub = StubProvider()
+    stub.register_response("reader", {
+        "appearance": [], "ages": [],
+        "identities": [{"character": "Audrey", "name": "Justice", "quote": "It's nothing at all, truly."}],
+    })
+    report = fp.read_chapter_facts(store, ModelClient(provider_override=stub), chapter)
+    assert report.identities == 1 and report.repaired == 1
+    alias = next(a for a in store.get_aliases_for(TargetKind.SELF, "n:self:audrey") if a.alias == "Justice")
+    assert "designation shall be" in alias.evidence  # the real sentence, not the model's pointer
