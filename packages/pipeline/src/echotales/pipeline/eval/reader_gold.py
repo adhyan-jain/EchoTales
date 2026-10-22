@@ -175,13 +175,21 @@ def score_speakers(gold: GoldChapter, store: Store) -> SpeakerScore:
     return out
 
 
+_LEADING = re.compile(r"^(?:the|a|an|mr|mrs|miss|ms|lord|lady|sir|madam)\s+")
+
+
+def _bare(name: str) -> str:
+    """A name without its leading article or title: "Mr. Fool" and "The Fool" are the same code name."""
+    return _LEADING.sub("", _norm(name))
+
+
 def score_persona_links(gold: GoldChapter, store: Store) -> Score:
     """Every gold persona name must be an alias bound to the right character (Fool -> Klein, Justice -> Audrey)."""
     out = Score()
     for p in gold.personas:
         out.total += 1
         self_id = _find_self(store, gold.novel_id, gold.characters[p["character"]])
-        if self_id is not None and _norm(p["name"]) in _names_of(store, self_id):
+        if self_id is not None and _bare(p["name"]) in {_bare(n) for n in _names_of(store, self_id)}:
             out.correct += 1
         else:
             out.misses.append(f"{p['name']!r} is not linked to {p['character']}")

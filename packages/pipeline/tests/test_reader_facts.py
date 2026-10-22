@@ -111,3 +111,17 @@ def test_the_names_prompt_has_no_placeholder_a_model_could_copy_as_a_quote() -> 
     'The Hanged Man', so both claims failed the quote check (LotM ch7 persona links 5/5 -> 3/5)."""
     prompt = fp._names_prompt([], "x")
     assert '"quote": "..."' not in prompt and "..." not in prompt.split("Example.")[1]
+
+
+def test_the_naming_passage_keeps_the_lines_that_answer_the_cue() -> None:
+    text = "Intro line. My designation shall be 'Justice!' What about you, Mister? The Hanged Man. Filler one. Filler two. Filler three. Unrelated end."
+    focus = fp.name_passage(text)
+    assert "The Hanged Man." in focus and "Intro line." in focus
+    assert fp.name_passage("Nothing to see here. Just walking.") == ""
+
+
+def test_persona_name_matching_ignores_articles_and_titles() -> None:
+    from echotales.pipeline.eval.reader_gold import _bare
+
+    assert _bare("Mr. Fool") == _bare("The Fool") == "fool"
+    assert _bare("Miss Justice") == _bare("Justice")

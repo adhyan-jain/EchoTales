@@ -200,6 +200,26 @@ def age_in_quote(age: int, quote: str) -> bool:
     return age in words | digits
 
 
+#: Words that announce a new name, code name or age. Used the way `_CUE` is for appearance, but with the sentences that
+#: FOLLOW the cue kept too: "My designation shall be 'Justice!'" is followed two lines later by the other speaker's
+#: bare answer "The Hanged Man.", which has no cue word of its own (LotM ch7: that link was missed with gemma2:9b).
+_NAME_CUE = re.compile(
+    r"\b(designation|code ?name|call me|address me|known as|my name|name is|named|called|title|alias|pseudonym|"
+    r"disguise|I am|I\'m|I’m|years old|turned|aged|birthday)\b",
+    re.IGNORECASE,
+)
+
+
+def name_passage(text: str, before: int = 1, after: int = 4) -> str:
+    """Sentences around a naming or age cue: one before it and the next few after it."""
+    sentences = [x for x in re.split(r"(?<=[.!?\"”])\s+|\n+", text) if x.strip()]
+    keep: set[int] = set()
+    for i, sentence in enumerate(sentences):
+        if _NAME_CUE.search(sentence):
+            keep.update(j for j in range(i - before, i + after + 1) if 0 <= j < len(sentences))
+    return " ".join(sentences[i] for i in sorted(keep))
+
+
 _SENTENCE = re.compile(r"(?<=[.!?\"”])\s+|\n+")
 
 
@@ -253,9 +273,12 @@ def read_chapter_facts(store: Store, client: ModelClient, chapter: Chapter) -> F
                 if focus
                 else AppearanceOut()
             )
-            names = client.complete(
-                Task.READER, _names_prompt(cast, text), NamesOut, novel_id=novel_id, chapter=number
-            ).value
+            focus_names = name_passage(text)
+            names = (
+                client.complete(Task.READER, _names_prompt(cast, focus_names), NamesOut, novel_id=novel_id, chapter=number).value
+                if focus_names
+                else NamesOut()
+            )
         except Exception:  # noqa: BLE001
             continue
         for claim in appearance.appearance:
