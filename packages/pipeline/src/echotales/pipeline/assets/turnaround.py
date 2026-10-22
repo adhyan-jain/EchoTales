@@ -124,6 +124,16 @@ _HAIR_POOL = ("black", "dark brown", "brown", "auburn", "dark blond")
 _EYE_POOL = ("dark brown", "grey", "green", "hazel", "blue")
 
 
+_STYLE_POOL = {
+    "male": ("short neat hair", "swept back hair", "long hair tied back", "messy medium hair", "side parted hair",
+             "slicked back hair", "shoulder length hair", "short cropped hair"),
+    "female": ("long wavy hair", "hair in a bun", "braided hair", "short bob hair", "ponytail",
+               "long straight hair with bangs", "hair up with ringlets", "side swept long hair"),
+}
+_FACE_POOL = ("sharp jaw, narrow face", "round face, soft features", "long face, high cheekbones", "angular face, strong brow",
+              "gentle face, thin eyebrows", "square jaw", "heavy lidded eyes, thin face", "wide set eyes, soft jaw")
+
+
 def varied_defaults(char: CharacterBibleEntry, defaults: dict[str, str] | None) -> dict[str, str] | None:
     """Genre defaults with hair and eye colour picked per character. Klein and Dunn Smith, both stored with only an
     age band, came out as one identical face (owner, 2026-10-23); one shared default plus one shared seed was the cause."""
@@ -135,6 +145,11 @@ def varied_defaults(char: CharacterBibleEntry, defaults: dict[str, str] | None) 
         out["hair_color"] = _HAIR_POOL[h % len(_HAIR_POOL)]
     if "eye_color" in out:
         out["eye_color"] = _EYE_POOL[(h // 7) % len(_EYE_POOL)]
+    # Colours alone left every face and haircut the same (owner, 2026-10-23: "the face and hairstyle makes them look
+    # identical"), so the cut and the face shape vary too.
+    pool = _STYLE_POOL["female" if str(char.attributes.get("gender", "")).lower() == "female" else "male"]
+    out["hair_style"] = pool[(h // 49) % len(pool)]
+    out["distinguishing_features"] = _FACE_POOL[(h // 343) % len(_FACE_POOL)]
     return out
 
 
