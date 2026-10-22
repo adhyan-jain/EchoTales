@@ -10,6 +10,7 @@ output contract (one entry per tag, retry omissions) is the load-bearing part of
 from __future__ import annotations
 
 import hashlib
+import os
 import re
 from dataclasses import dataclass, field
 
@@ -73,6 +74,7 @@ class SpeakerReport:
     missing: int = 0
     minted: int = 0
     role_slots: int = 0
+    role_resolved: int = 0
     cleared: int = 0
     retyped: int = 0
 
@@ -120,6 +122,13 @@ class NameIndex:
     def __init__(self, cast: list[CastEntry]) -> None:
         self._full: dict[str, CastEntry] = {}
         words: dict[str, list[CastEntry]] = {}
+        # Canonical names claim their key first, aliases only fill what is left. The database's alias table is
+        # polluted (LotM's Zhou Mingrui carries an alias "Welch"), and with first-come-first-served the answer
+        # "Welch" resolved to Zhou Mingrui and a dead man's name voiced Klein (ORV/LotM trace, 2026-10-22).
+        for entry in cast:
+            key = _norm(entry.name)
+            if key:
+                self._full.setdefault(key, entry)
         for entry in cast:
             for surface in entry.surfaces():
                 key = _norm(surface)
@@ -256,6 +265,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
         answers.update(ask_window(client, cast, text, report, novel_id, number, narrator))
 
     blocks = {b.index: b.text for b in chapter.blocks}
+    role_spans: dict[str, list[Span]] = {}
     spans = [s for s in store.get_spans(novel_id, number) if s.span_type in _QUOTE_SPANS]
     chapter_text = "\n".join(b.text for b in chapter.blocks)
     _mint_new_speakers(store, novel_id, number, answers, index, cast, chapter_text, report)
@@ -274,6 +284,12 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             continue
         key = _norm(speaker)
         if key.startswith(UNKNOWN) and key != UNKNOWN:
+            # The model often writes a known person after UNKNOWN ("UNKNOWN: Dunn Smith", LotM ch14): the format
+            # example invited a hybrid. If what follows is a cast member, that is the answer, not a role.
+            named = index.resolve(speaker.partition(":")[2]) if ":" in speaker else None
+            if named is not None:
+                speaker, key = named.name, _norm(named.name)
+        if key.startswith(UNKNOWN) and key != UNKNOWN:
             role = _role_slug(speaker)
             if role:
                 # One slot per role per chapter, held across lines. The old ladder rotated slots line by line, so a
@@ -283,6 +299,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
                     AttributionMethod.EPITHET_SLOT.value, ROLE_CONFIDENCE,
                 )
                 report.role_slots += 1
+                role_spans.setdefault(role, []).append(span)
                 continue
             key = UNKNOWN
         if key in (UNKNOWN, ""):
@@ -312,8 +329,69 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             store.set_span_type(novel_id, span.id, SpanType.DIALOGUE.value)
             report.retyped += 1
         report.attributed += 1
+    if role_spans and RECONCILE_ROLES:
+        _reconcile_roles(store, client, chapter, cast, index, role_spans, report)
     store.conn.commit()
     return report
+
+
+#: Switch for the chapter-wide role -> name pass, so an ablation can turn it off.
+RECONCILE_ROLES = os.environ.get("ECHOTALES_READER_RECONCILE", "1") == "1"
+
+
+class RoleAnswer(BaseModel):
+    character: str = "NONE"
+
+
+def _role_evidence(chapter: Chapter, role: str, cast: list[CastEntry], limit: int = 1800) -> str:
+    """Sentences of the whole chapter that mention the role word or a cast name: where a "soldier" gets called Lee."""
+    words = [w for w in role.split("_") if len(w) >= 3]
+    surfaces = [x for e in cast for x in e.surfaces() if len(_norm(x)) >= 3]
+    keep: list[str] = []
+    for block in chapter.blocks:
+        for sentence in re.split(r"(?<=[.!?\"”])\s+", block.text):
+            low = _norm(sentence)
+            if any(w in low for w in words) or any(_norm(x) in low for x in surfaces):
+                keep.append(sentence.strip())
+    text, out = 0, []
+    for sentence in keep:
+        if text + len(sentence) > limit:
+            break
+        out.append(sentence)
+        text += len(sentence)
+    return " ".join(out)
+
+
+def _reconcile_roles(
+    store: Store, client: ModelClient, chapter: Chapter, cast: list[CastEntry], index: NameIndex,
+    role_spans: dict[str, list[Span]], report: SpeakerReport,
+) -> None:
+    """A role slot ("the soldier", "the host") may be a character the chapter names later (ORV ch4: "Soldier-nim!" is
+    Lee Hyunsung; LotM ch14: the "ethereal voice" is Daly). A window sees only ~2,600 characters, so the first pass
+    cannot connect them; this one shows the whole chapter's relevant sentences, once per role."""
+    people = ", ".join(e.name for e in cast)
+    for role, spans in role_spans.items():
+        evidence = _role_evidence(chapter, role, cast)
+        examples = " | ".join(s.text[:80] for s in spans[:3])
+        prompt = (
+            f"Known characters: {people}\n\nIn this chapter some lines are spoken by a person only called by the role "
+            f"'{role.replace('_', ' ')}' (lines such as: {examples}).\nUsing the sentences below, which known "
+            "character is that person? Answer a name from the list, or NONE if the text does not make it clear or the "
+            f"person is not on the list.\n\nSentences:\n{evidence}\n\n"
+            'Answer as JSON: {"character": "Name or NONE"}'
+        )
+        try:
+            answer = client.complete(Task.READER, prompt, RoleAnswer, novel_id=chapter.novel_id, chapter=chapter.number).value.character
+        except Exception:  # noqa: BLE001 - one failed role must not stop the chapter
+            continue
+        entry = index.resolve(answer)
+        if entry is None:
+            continue
+        for span in spans:
+            store.set_span_speaker(
+                chapter.novel_id, span.id, entry.self_id, AttributionMethod.CONTEXTUAL_LLM.value, ROLE_CONFIDENCE
+            )
+        report.role_resolved += len(spans)
 
 
 def _span_at(spans: list[Span], block_index: int, start: int) -> Span | None:

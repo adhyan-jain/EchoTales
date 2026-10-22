@@ -35,6 +35,7 @@ first token path.
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from enum import StrEnum
 
@@ -210,7 +211,9 @@ TASK_PROFILES: dict[Task, TaskProfile] = {
     # 1500 tokens covers ~40 tags of {"tag", "speaker"}; a truncated JSON object
     # fails validation outright, so this is sized for the longest window.
     Task.READER: TaskProfile(
-        ollama_model="qwen2.5:7b",
+        # Overridable so a model can be compared on every reference chapter without editing code
+        # (`scripts/eval/reader_ablation.py`); the default stays the model D2 chose.
+        ollama_model=os.environ.get("ECHOTALES_READER_MODEL", "qwen2.5:7b"),
         anthropic_model="claude-sonnet-5",
         temperature=0.0,
         max_tokens=1500,
