@@ -46,6 +46,14 @@ ART_STYLES: dict[str, ArtStyle] = {
         tags="chinese anime style, donghua, clean lineart, cel shading",
         negative="",
     ),
+    "donghua": ArtStyle(
+        key="donghua", label="Donghua (balanced)",
+        # Owner, 2026-10-23: v2 (the cute recipe with its full-body sheets) beat both extremes, "we dont need extreme
+        # realistic ones but half anime ones". Same clean-lineart cel look as `cute`, plus adult-leaning cues so a man
+        # is not drawn as a boy, and negatives against both chibi and realism.
+        tags="chinese anime style, donghua, clean lineart, cel shading, detailed eyes, muted palette, cinematic lighting",
+        negative="chibi, moe, kawaii, childlike, realistic, photorealistic, 3d render, oil painting",
+    ),
     "mature": ArtStyle(
         key="mature", label="Mature donghua",
         # First version said "semi-realistic ... painterly shading" and Klein, a young graduate, came out as a painted
@@ -56,7 +64,7 @@ ART_STYLES: dict[str, ArtStyle] = {
                   "3d render, western comic, oil painting"),
     ),
 }
-DEFAULT_ART_STYLE = "mature"
+DEFAULT_ART_STYLE = "donghua"
 
 
 def art_style(key: str | None = None) -> ArtStyle:

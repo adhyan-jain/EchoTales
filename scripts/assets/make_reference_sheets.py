@@ -66,6 +66,11 @@ def main() -> int:
     ap.add_argument("--out", default="data/scratch/phase_c")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--art-style", default=None, help="cute or mature (default: ECHOTALES_ART_STYLE, else mature)")
+    ap.add_argument("--merge", action="append", default=[], metavar="MAIN=OTHER",
+                    help="draw MAIN with OTHER's stated looks filled in under its own (the same person under two names)")
+    ap.add_argument("--fact", action="append", default=[], metavar="NAME:KEY=VALUE",
+                    help="owner-confirmed fact for this render only, e.g. 'Dunn Smith:age_stage=middle_aged' or "
+                         "'Dunn Smith:gender=male'; it is not written to the database")
     args = ap.parse_args()
 
     store = Store(args.db)
@@ -73,6 +78,17 @@ def main() -> int:
     genre = genre_profile(args.novel_id)  # era and clothing come from the genre; the art style is the same for every novel
     wanted = [n.strip() for n in args.names.split(",") if n.strip()]
     by_label = {c.canonical_label: c for c in bible.characters.values()}
+    for pair in args.merge:
+        main_name, _, other_name = pair.partition("=")
+        if main_name in by_label and other_name in by_label:
+            # The merged persona's own stated looks win; the other name only fills what is missing.
+            merged = {**by_label[other_name].attributes, **{k: v for k, v in by_label[main_name].attributes.items() if v}}
+            by_label[main_name] = by_label[main_name].model_copy(update={"attributes": merged})
+    for item in args.fact:
+        name, _, kv = item.partition(":")
+        key, _, value = kv.partition("=")
+        if name in by_label:
+            by_label[name] = by_label[name].model_copy(update={"attributes": {**by_label[name].attributes, key: value}})
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     report = []

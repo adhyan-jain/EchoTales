@@ -7,6 +7,7 @@ with Multiple Angles LoRA or offline worker stubs.
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
@@ -117,13 +118,38 @@ def look_clauses(char: CharacterBibleEntry, defaults: dict[str, str] | None = No
     return clauses
 
 
+#: Plain-colour pools the genre default is varied within, so characters whose looks the book never states do not all
+#: share one face. Keyed per character by a stable hash, flagged "assumed" like any genre default.
+_HAIR_POOL = ("black", "dark brown", "brown", "auburn", "dark blond")
+_EYE_POOL = ("dark brown", "grey", "green", "hazel", "blue")
+
+
+def varied_defaults(char: CharacterBibleEntry, defaults: dict[str, str] | None) -> dict[str, str] | None:
+    """Genre defaults with hair and eye colour picked per character. Klein and Dunn Smith, both stored with only an
+    age band, came out as one identical face (owner, 2026-10-23); one shared default plus one shared seed was the cause."""
+    if not defaults:
+        return defaults
+    h = int(hashlib.sha256(char.self_id.encode()).hexdigest(), 16)
+    out = dict(defaults)
+    if "hair_color" in out:
+        out["hair_color"] = _HAIR_POOL[h % len(_HAIR_POOL)]
+    if "eye_color" in out:
+        out["eye_color"] = _EYE_POOL[(h // 7) % len(_EYE_POOL)]
+    return out
+
+
+def character_seed(char: CharacterBibleEntry, base: int = 42) -> int:
+    """A stable seed per character, so two characters with similar prompts still get different faces."""
+    return base + int(hashlib.sha256(char.self_id.encode()).hexdigest(), 16) % 100_000 * 100
+
+
 def assumed_traits(char: CharacterBibleEntry, genre: GenreProfile | None) -> list[str]:
     """Look traits the book states nothing about, which `look_clauses` will fill from the genre default. Shown to the
     reviewer so an assumption is never mistaken for a fact from the text."""
     if genre is None:
         return []
     stated = {k for k, v in char.attributes.items() if v}
-    return [f"{k}={v}" for k, v in genre.appearance.items() if k not in stated]
+    return [f"{k}={v}" for k, v in (varied_defaults(char, genre.appearance) or {}).items() if k not in stated]
 
 
 def everyday_attire(value: str) -> str:
@@ -173,7 +199,7 @@ def build_turnaround_prompt(
     white shirt and black trousers (owner: "the genre is not taken into account at all")."""
     clauses = [
         "character design sheet, turnaround, front view, side view, back view",
-        *look_clauses(char, genre.appearance if genre else None),
+        *look_clauses(char, varied_defaults(char, genre.appearance) if genre else None),
         *style_clauses(char, genre, visual_genre, art),
         "standing, full body, simple grey background",
     ]
@@ -187,7 +213,7 @@ def build_expression_prompt(
     expressions_str = ", ".join(e.value for e in STANDARD_EXPRESSIONS)
     clauses = [
         f"character expression sheet, 7 facial expressions: {expressions_str}",
-        *look_clauses(char, genre.appearance if genre else None)[:6],
+        *look_clauses(char, varied_defaults(char, genre.appearance) if genre else None)[:6],
         *style_clauses(char, genre, visual_genre, art),
         "bust shot portraits grid, consistent face",
     ]
@@ -202,7 +228,7 @@ def generate_character_assets(
     seed: int = 42,
     genre: GenreProfile | None = None,
     art_style_key: str | None = None,
-    composite_sheets: bool = False,
+    composite_sheets: bool = True,
 ) -> CharacterTurnaroundAsset:
     """Generate model turnaround and expression crops for a character.
 
@@ -211,13 +237,13 @@ def generate_character_assets(
     defaults in every image so one character is not redrawn with a new hair colour each time."""
     style = resolve_art_style(art_style_key)
     negative = ", ".join(x for x in ((genre.negative_culture if genre is not None else ""), style.negative) if x)
-    defaults = genre.appearance if genre is not None else None
+    defaults = varied_defaults(char, genre.appearance) if genre is not None else None
+    seed = character_seed(char, seed)
     out_dir = Path(output_dir) / char.self_id.replace(":", "_") / char.active_persona_id.replace(":", "_")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Turnaround Sheet: a multi-figure composite is opt-in. At 1344x768 every figure's face is a few dozen pixels and
-    # came out blank or distorted, with garbled title text; the separate view crops below are far better.
-    # 1. Turnaround Sheet
+    # 1. Turnaround Sheet. The composite can be switched off: with the "mature" preset its faces came out blank and its
+    # title text garbled, but the default donghua recipe drew good full-body sheets (owner preferred v2).
     turnaround_prompt = build_turnaround_prompt(char, visual_genre, genre, style)
     req_turnaround = ImageWorkerRequest(
         prompt=turnaround_prompt,
