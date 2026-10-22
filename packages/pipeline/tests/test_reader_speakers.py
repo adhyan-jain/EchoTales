@@ -110,3 +110,12 @@ def test_first_person_narrator_is_the_one_others_address_but_narration_rarely_na
     third = Chapter(novel_id="n", number=2.0, title="T", source_href="a",
                     blocks=[Block(index=0, block_type=BlockType.PROSE, text="Sangah smiled. \"Dokja.\"")])
     assert sp.first_person_narrator(store, "n", third, cast) is None
+
+
+def test_an_unnamed_speaker_with_a_role_gets_one_stable_slot() -> None:
+    store, report = _run({"0.0": "Alice", "1.0": "UNKNOWN: academy elder", "2.0": "UNKNOWN: The Academy Elder"})
+    one, two = _span(store, 1), _span(store, 2)
+    assert one.speaker_self_id == two.speaker_self_id == "n:anon:1:academy_elder"
+    assert one.attribution_method is AttributionMethod.EPITHET_SLOT
+    assert report.role_slots == 2
+    assert sp._role_slug("UNKNOWN") == "" and sp._role_slug("UNKNOWN: a guard") == "guard"

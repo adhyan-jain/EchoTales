@@ -32,6 +32,8 @@ MAX_CAST = 14
 #: Confidence recorded on a model-attributed span: above the regex ladder's anonymous slots (0.2-0.35), below an
 #: explicit "X said" (1.0), because it is one reading by a 7B model.
 MODEL_CONFIDENCE = 0.8
+#: A role slot is the model's reading of who an unnamed speaker is: weaker than a named one.
+ROLE_CONFIDENCE = 0.5
 
 #: Span types a quoted line can carry; the classifier mistypes dialogue as the last two.
 _QUOTE_SPANS = frozenset({SpanType.DIALOGUE, SpanType.INNER_MONOLOGUE, SpanType.CROWD_REACTION})
@@ -70,6 +72,7 @@ class SpeakerReport:
     retried_tags: int = 0
     missing: int = 0
     minted: int = 0
+    role_slots: int = 0
     cleared: int = 0
     retyped: int = 0
 
@@ -202,7 +205,9 @@ def _prompt(cast: list[CastEntry], text: str, tags: list[str], narrator: CastEnt
         "Use the cues in the text: said/asked, who is addressed, who just acted, and that two people talking to each "
         "other alternate lines. Use the character's name from the list above. A person who is only talked about in the "
         "passage is not the speaker. When unnamed people speak (a crowd, attackers, elders, onlookers) or the text "
-        "never says who it is, answer UNKNOWN; do not guess a name from the list. If the speaker is a named person who is not in the list, write the name exactly as the text "
+        "never says who it is, answer UNKNOWN; do not guess a name from the list. If an unnamed speaker has a "
+        "recognisable role (the clan head, an elder, a guard, the driver), answer UNKNOWN: followed by the role, for "
+        "example UNKNOWN: academy elder; the same role must always be written the same way. If the speaker is a named person who is not in the list, write the name exactly as the text "
         "gives it. If the quote is not spoken or thought by a person (a sign, written text, a scare quote), "
         f"answer NONE.\n\n{text}\n\n"
         "Answer as JSON with one entry for every tag, like this (replace Name):\n"
@@ -265,6 +270,18 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             report.no_span += 1
             continue
         key = _norm(speaker)
+        if key.startswith(UNKNOWN) and key != UNKNOWN:
+            role = _role_slug(speaker)
+            if role:
+                # One slot per role per chapter, held across lines. The old ladder rotated slots line by line, so a
+                # single elder got four voices (RI ch4: academy elder -> anon:4:s7:1/2/3 on consecutive lines).
+                store.set_span_speaker(
+                    novel_id, span.id, f"{novel_id}:anon:{number:g}:{role}",
+                    AttributionMethod.EPITHET_SLOT.value, ROLE_CONFIDENCE,
+                )
+                report.role_slots += 1
+                continue
+            key = UNKNOWN
         if key in (UNKNOWN, ""):
             report.unknown += 1
             # The regex ladder's proximity and pronoun guesses named a wrong speaker for crowd lines (RI ch1: the
@@ -293,6 +310,13 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
 
 def _span_at(spans: list[Span], block_index: int, start: int) -> Span | None:
     return next((s for s in spans if s.block_index == block_index and s.start <= start < s.end), None)
+
+
+def _role_slug(answer: str) -> str:
+    """`UNKNOWN: the Academy Elder` -> `academy_elder`; empty when no usable role follows."""
+    _head, _sep, role = answer.partition(":")
+    words = [w for w in re.findall(r"[a-z]+", role.lower()) if w not in {"the", "a", "an"}]
+    return "_".join(words[:3])
 
 
 _GENERIC = frozenset({"the", "a", "an", "he", "she", "they", "someone", "voice", "man", "woman", "boy", "girl"})

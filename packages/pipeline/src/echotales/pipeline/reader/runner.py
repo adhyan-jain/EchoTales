@@ -21,7 +21,7 @@ class ReaderReport:
         s, f = self.speakers, self.facts
         return (
             f"reader pass: {self.chapters} chapters, {s.quotes} quotes read -> {s.attributed} named, "
-            f"{s.unknown} unknown ({s.cleared} legacy guesses cleared), {s.not_speech} not speech, {s.unmapped} name not in cast, "
+            f"{s.role_slots} unnamed-by-role, {s.unknown} unknown ({s.cleared} legacy guesses cleared), {s.not_speech} not speech, {s.unmapped} name not in cast, "
             f"{s.no_span} with no dialogue span; {s.retried_tags} tags re-asked, {s.missing} never answered\n"
             f"facts: {f.appearance} appearance, {f.ages} ages, {f.identities} new names stored from {f.windows} windows; "
             f"rejected {f.rejected_quote} unverifiable quotes, {f.rejected_ungrounded} ungrounded values, "
