@@ -177,6 +177,23 @@ export const api = {
 
   characters: (novelId) => request(`/api/novels/${enc(novelId)}/characters`),
 
+  // Phase B review gate: ranked lines worth a human look, a character's
+  // per-chapter timeline, and the bible lock (409 when the build is stale).
+  reviewLines: (novelId, { chapter, limit = 100 } = {}) =>
+    request(
+      `/api/novels/${enc(novelId)}/review/lines?limit=${limit}` +
+        (chapter ? `&chapter=${enc(chapter)}` : '')
+    ),
+  characterTimeline: (novelId, selfId) =>
+    request(`/api/novels/${enc(novelId)}/characters/${enc(selfId)}/timeline`),
+  getBible: (novelId) => request(`/api/novels/${enc(novelId)}/bible`),
+  lockBible: (novelId, note) =>
+    request(`/api/novels/${enc(novelId)}/bible/lock`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(note ? { note } : {}),
+    }),
+
   // The cast as known at the end of `chapter` (webview.py::build_reader_cast):
   // labels, aliases and traits the reader has met, never the whole volume's.
   readerCast: (novelId, chapter) =>

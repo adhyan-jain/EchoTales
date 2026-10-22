@@ -181,3 +181,15 @@ def test_the_render_guard_needs_a_current_lock_for_a_real_engine_but_not_for_the
     assert _stale_build_refusal(handle, NOVEL, "sdxl") is None
     handle.store.add_spans([_span(0, 1.0, None, AttributionMethod.UNRESOLVED, 0.0)])
     assert "edits since bible v1" in _stale_build_refusal(handle, NOVEL, "sdxl")
+
+
+def test_timeline_shows_a_repeated_binding_once() -> None:
+    store = _world()
+    sid = f"{NOVEL}:self:a"
+    for _ in range(3):
+        store.add_alias_binding(NOVEL, AliasBinding(
+            alias="Klein Moretti", alias_type=AliasType.RIGID_NAME, target_kind=TargetKind.SELF, target_id=sid,
+            interval=FuzzyInterval.open_ended(1, last_evidence=1), learned_at_pos=DiscoursePosition(chapter=1, offset=0),
+            observer_id="reader", asserted_by=AssertedBy.INFERENCE, truth_status=TruthStatus.TRUE, evidence="took Klein's body"))
+    names = [i["alias"] for i in rg.character_timeline(store, NOVEL, sid)["identities"]]
+    assert names.count("Klein Moretti") == 1

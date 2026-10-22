@@ -115,16 +115,21 @@ def character_timeline(store: Store, novel_id: str, self_id: str) -> dict | None
                 "evidence": a.evidence, "confidence": a.confidence, "asserted_by": a.asserted_by.value,
             })
     looks.sort(key=lambda x: (x["key"], x["from_chapter"]))
-    identities = [
-        {
+    # The database can hold the same binding several times (LotM's "Klein Moretti" appeared three times in the first
+    # browser check), so identical bindings are shown once, keeping the longest evidence.
+    unique: dict[tuple, dict] = {}  # type: ignore[type-arg]
+    for a in store.get_aliases_for(TargetKind.SELF, self_id):
+        if a.retracted_at is not None:
+            continue
+        row = {
             "alias": a.alias, "alias_type": a.alias_type.value, "story_from": a.interval.from_lb,
             "story_to": None if a.interval.to_ub == inf else a.interval.to_ub,
             "learned_chapter": a.learned_at_pos.chapter, "evidence": a.evidence,
         }
-        for a in store.get_aliases_for(TargetKind.SELF, self_id)
-        if a.retracted_at is None
-    ]
-    identities.sort(key=lambda x: (x["story_from"], x["alias"]))
+        key = (row["alias"].lower(), row["alias_type"], row["story_from"], row["story_to"], row["learned_chapter"])
+        if key not in unique or len(row["evidence"]) > len(unique[key]["evidence"]):
+            unique[key] = row
+    identities = sorted(unique.values(), key=lambda x: (x["story_from"], x["alias"]))
     return {"self_id": self_id, "label": entity.canonical_label, "personas": personas, "looks": looks, "identities": identities}
 
 

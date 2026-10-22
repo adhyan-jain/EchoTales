@@ -1,12 +1,13 @@
 import React from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Clapperboard, FolderOpen, DollarSign, Palette, ShieldCheck, FileText } from 'lucide-react';
+import { Clapperboard, FolderOpen, DollarSign, Palette, ShieldCheck, FileText, BookCheck } from 'lucide-react';
 import CharacterDashboard from '../../components/CharacterDashboard';
 import GenerationWorkspace from '../../components/GenerationWorkspace';
 import OutputLibrary from '../../components/OutputLibrary';
 import CostMeterWidget from '../../components/CostMeterWidget';
 import AssetStudio from '../../components/AssetStudio';
 import ScreenplayEditor from '../../components/ScreenplayEditor';
+import BibleReview from '../../components/BibleReview';
 import ShotGridQA from '../../components/ShotGridQA';
 import ProjectHome from '../../components/ProjectHome';
 import VisualStyleSetting from '../../components/VisualStyleSetting';
@@ -35,6 +36,7 @@ const STUDIO_TABS = [
   { key: 'generate', label: 'Generate', icon: Clapperboard },
   { key: 'screenplay', label: 'Screenplay', icon: FileText },
   { key: 'assets', label: 'Asset Studio', icon: Palette },
+  { key: 'bible', label: 'Bible review', icon: BookCheck },
   { key: 'qa', label: 'Shot QA', icon: ShieldCheck },
   { key: 'cost', label: 'Cost Meter', icon: DollarSign },
   { key: 'library', label: 'Library', icon: FolderOpen },
@@ -44,6 +46,7 @@ const STUDIO_INFO = {
   generate: { title: 'Generate', description: 'Queue a render for a chapter, a preview or the full chapter, and follow its progress.' },
   screenplay: { title: 'Screenplay Editor', description: 'Rule-enforced shot list, camera pacing, axis tracking, and performance cues.' },
   assets: { title: 'Asset Studio', description: 'Approve 3-view character turnarounds, expression sheets, and master location plates.' },
+  bible: { title: 'Bible review', description: 'Check the lines the reader was least sure of, inspect each character over time, and lock the bible.' },
   qa: { title: 'Keyframe QA Gate', description: '4-Check automated QA gate, face and background matching, and candidate locking.' },
   cost: { title: 'Pre-Render Cost Meter', description: 'RunPod serverless GPU and open-model token itemized budget.' },
   library: { title: 'Output library', description: 'Every video, audio clip and panel rendered for this book.' },
@@ -83,6 +86,7 @@ export function Studio() {
         {tab === 'generate' && <GenerationWorkspace novelId={novelId} hideHeader />}
         {tab === 'screenplay' && <ScreenplayEditor novelId={novelId} />}
         {tab === 'assets' && <AssetStudio novelId={novelId} />}
+        {tab === 'bible' && <BibleReview novelId={novelId} />}
         {tab === 'qa' && <ShotGridQA novelId={novelId} />}
         {tab === 'cost' && <CostMeterWidget novelId={novelId} />}
       </div>
