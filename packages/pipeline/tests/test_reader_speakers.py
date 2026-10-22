@@ -94,3 +94,19 @@ def test_name_index_resolves_titles_and_unique_words() -> None:
     assert index.resolve("Mr. Fool").self_id == "k"  # type: ignore[union-attr]
     assert index.resolve("Audrey").self_id == "a"  # type: ignore[union-attr]
     assert index.resolve("Welch") is None
+
+
+def test_first_person_narrator_is_the_one_others_address_but_narration_rarely_names() -> None:
+    """ORV ch2: Yoo Sangah is named in narration constantly; Dokja only inside her quotes. Choosing the most-mentioned
+    character picked Sangah and lowered the score (50.7% -> 47.9%)."""
+    narration = " ".join("I looked at Sangah and Sangah smiled." for _ in range(8))
+    text = narration + ' "Dokja-ssi, what do you read?" "Dokja-ssi, you are so quiet."'
+    store = Store(":memory:")
+    store.add_novel("n", "N", "x", "epub")
+    chapter = Chapter(novel_id="n", number=1.0, title="T", source_href="a",
+                      blocks=[Block(index=0, block_type=BlockType.PROSE, text=text)])
+    cast = [sp.CastEntry("s", "Yoo Sangah", ["Sangah"]), sp.CastEntry("d", "Kim Dokja", ["Dokja"])]
+    assert sp.first_person_narrator(store, "n", chapter, cast).self_id == "d"  # type: ignore[union-attr]
+    third = Chapter(novel_id="n", number=2.0, title="T", source_href="a",
+                    blocks=[Block(index=0, block_type=BlockType.PROSE, text="Sangah smiled. \"Dokja.\"")])
+    assert sp.first_person_narrator(store, "n", third, cast) is None

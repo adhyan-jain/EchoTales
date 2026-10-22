@@ -20,7 +20,7 @@ from echotales.core.models import Chapter, DiscoursePosition, Self, Span
 from echotales.core.store import Store
 from echotales.pipeline.llm.client import ModelClient
 from echotales.pipeline.llm.tasks import Task
-from echotales.pipeline.reader.quotes import quote_starts, tag_block
+from echotales.pipeline.reader.quotes import QUOTE, quote_starts, tag_block
 
 #: Characters of tagged text per call. ~2,600 fit the local-low 4,096-token context with the cast list and the
 #: answer; larger windows made the 7B model drop tags (measured on ch7).
@@ -159,12 +159,43 @@ def windows(chapter: Chapter, *, tagged: bool = True) -> list[str]:
     return ["\n".join(w) for w in out if not tagged or "[" in "".join(w)]
 
 
-def _prompt(cast: list[CastEntry], text: str, tags: list[str]) -> str:
+_FIRST_PERSON = re.compile(r"(?<![A-Za-z])I(?![A-Za-z])")
+#: "I" tokens in non-quoted text above which a chapter counts as first-person narrated. ORV ch2-5 have 60-200.
+FIRST_PERSON_MIN = 12
+
+
+def first_person_narrator(store: Store, novel_id: str, chapter: Chapter, cast: list[CastEntry]) -> CastEntry | None:
+    """Who "I" is, in a chapter narrated in the first person: the cast member others address but narration rarely names.
+
+    A first-person narrator is called by name only inside other people's quotes ("Dokja-ssi, what do you like?"); in
+    narration they are "I". Most-mentioned-overall picked the wrong person on ORV ch2 (Yoo Sangah, who is named
+    in narration constantly) and made scores worse, 50.7% -> 47.9%, so this uses where the name appears, not how often."""
+    narration = " ".join(QUOTE.sub(" ", b.text) for b in chapter.blocks)
+    if len(_FIRST_PERSON.findall(narration)) < FIRST_PERSON_MIN or not cast:
+        return None
+    quotes = " ".join(m.group(0) for b in chapter.blocks for m in QUOTE.finditer(b.text))
+    best: tuple[int, CastEntry] | None = None
+    for entry in cast:
+        words = {w for surface in entry.surfaces() for w in _norm(surface).split() if len(w) >= 4}
+        in_quotes = sum(_norm(quotes).split().count(w) for w in words)
+        in_narration = sum(_norm(narration).split().count(w) for w in words)
+        if in_quotes >= 2 and in_narration <= 2 and (best is None or in_quotes > best[0]):
+            best = (in_quotes, entry)
+    return best[1] if best else None
+
+
+def _prompt(cast: list[CastEntry], text: str, tags: list[str], narrator: CastEntry | None = None) -> str:
     people = "\n".join(
         f"- {e.name}" + (f" (also called: {', '.join(e.aliases[:6])})" if e.aliases else "") for e in cast
     )
+    voice = (
+        f"This chapter is told in the first person by {narrator.name}: 'I', 'me' and 'my' in the narration mean "
+        f"{narrator.name}, and the person who answers {narrator.name} is the other speaker.\n\n"
+        if narrator
+        else ""
+    )
     return (
-        f"Known characters (a person may be called by any of their names):\n{people}\n\n"
+        f"Known characters (a person may be called by any of their names):\n{people}\n\n{voice}"
         "Below is a passage of a novel. Every quoted utterance is tagged [block.number] just before its opening "
         "quote mark.\n"
         f"For EACH of these tags, name who says or thinks it: {', '.join(tags)}. Give exactly one answer per tag.\n"
@@ -180,7 +211,13 @@ def _prompt(cast: list[CastEntry], text: str, tags: list[str]) -> str:
 
 
 def ask_window(
-    client: ModelClient, cast: list[CastEntry], text: str, report: SpeakerReport, novel_id: str, chapter: float
+    client: ModelClient,
+    cast: list[CastEntry],
+    text: str,
+    report: SpeakerReport,
+    novel_id: str,
+    chapter: float,
+    narrator: CastEntry | None = None,
 ) -> dict[str, str]:
     """Answers for every tag in one window, re-asking for omitted tags (the 58% -> 91% fix, decisions D11)."""
     wanted = re.findall(r"\[(\d+\.\d+)\]", text)
@@ -192,7 +229,7 @@ def ask_window(
         if attempt:
             report.retried_tags += len(pending)
         result = client.complete(
-            Task.READER, _prompt(cast, text, pending), SpeakerAnswers, novel_id=novel_id, chapter=chapter
+            Task.READER, _prompt(cast, text, pending, narrator), SpeakerAnswers, novel_id=novel_id, chapter=chapter
         )
         for entry in result.value.lines:
             if entry.tag in pending:
@@ -208,9 +245,10 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
     novel_id, number = chapter.novel_id, chapter.number
     cast = build_cast(store, novel_id, "\n".join(b.text for b in chapter.blocks), number)
     index = NameIndex(cast)
+    narrator = first_person_narrator(store, novel_id, chapter, cast)
     answers: dict[str, str] = {}
     for text in windows(chapter):
-        answers.update(ask_window(client, cast, text, report, novel_id, number))
+        answers.update(ask_window(client, cast, text, report, novel_id, number, narrator))
 
     blocks = {b.index: b.text for b in chapter.blocks}
     spans = [s for s in store.get_spans(novel_id, number) if s.span_type in _QUOTE_SPANS]
