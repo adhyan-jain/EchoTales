@@ -47,7 +47,7 @@ from echotales.pipeline.voice.casting import (
     enforce_episode_zero_collision,
     verify_no_co_occurring_voice_collisions,
 )
-from workers.common.stub import _generate_solid_png_b64
+from echotales.pipeline.workers_contract import _generate_solid_png_b64
 
 
 @dataclass(slots=True)

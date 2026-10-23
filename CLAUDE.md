@@ -45,7 +45,6 @@ packages/pipeline/   ingest -> spans -> mentions -> resolve -> bible -> screenpl
                      webview_server.py is also the job / correction HTTP API
 packages/research/   research arena (echotales-research): imports core+pipeline, never imported by
                      them (test_import_direction.py).
-workers/             RunPod serverless flex worker contracts and offline CI stubs
 eval/                Golden evaluation benchmark harness (python -m eval.run_benchmark)
 webview/             React review and production UI
 scripts/             eval/, paper/, review/, maintenance/, reproduce_results.sh
