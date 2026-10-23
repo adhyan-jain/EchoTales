@@ -69,21 +69,29 @@ class KeyframeQAReport:
         }
 
 
-def extract_default_image_features(image_path: Path | str) -> list[float]:
+def extract_default_image_features(image: Path | str | Any) -> list[float]:
     """Extract normalized 64-dimensional feature vector using PIL stdlib.
-    
-    Combines 48-dim RGB histogram and 16-dim spatial luminance block averages.
+
+    Combines 48-dim RGB histogram and 16-dim spatial luminance block averages. This is a colour-and-layout
+    similarity, not a face identity check: an unreadable input returns zeros, which score 0.0 and fail the gate.
+    A PIL image is accepted because video QA hands over sampled frames (a path crashed on them).
     """
-    path = Path(image_path)
-    if not path.exists():
-        return [0.0] * 64
+    from PIL import Image as PILImage
+
+    if isinstance(image, PILImage.Image):
+        source: Any = image
+    else:
+        source = Path(image)
+        if not source.exists():
+            return [0.0] * 64
 
     try:
         from PIL import Image
         import numpy as np
 
-        with Image.open(path) as img:
-            img = img.convert("RGB").resize((32, 32))
+        opened = Image.open(source) if isinstance(source, Path) else None
+        try:
+            img = (opened or source).convert("RGB").resize((32, 32))
             arr = np.asarray(img, dtype=np.float32)
 
             r_hist, _ = np.histogram(arr[:, :, 0], bins=16, range=(0, 256))
@@ -104,6 +112,9 @@ def extract_default_image_features(image_path: Path | str) -> list[float]:
             if norm > 1e-6:
                 feat_list = feat_list / norm
             return feat_list.tolist()
+        finally:
+            if opened is not None:
+                opened.close()
     except Exception:
         return [0.0] * 64
 

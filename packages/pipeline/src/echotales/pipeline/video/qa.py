@@ -12,6 +12,7 @@ guaranteeing 100% render reliability across whole episodes.
 
 from __future__ import annotations
 
+import logging
 import subprocess
 import tempfile
 from dataclasses import dataclass, field
@@ -34,6 +35,8 @@ from echotales.pipeline.video.wan import (
     generate_wan_s2v_dialogue,
     generate_wan_video,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def sample_8_video_frames(video_path: Path, num_frames: int = 8) -> list[Image.Image]:
@@ -58,10 +61,11 @@ def sample_8_video_frames(video_path: Path, num_frames: int = 8) -> list[Image.I
                 try:
                     with Image.open(p) as img:
                         frames.append(img.copy().convert("RGB"))
-                except Exception:
-                    pass
-        except Exception:
-            pass
+                except Exception as exc:
+                    logger.warning("video QA could not read sampled frame %s: %s", p.name, exc)
+        except Exception as exc:
+            # An unreadable video returns no frames and evaluate() fails it; it used to read as a pass.
+            logger.warning("video QA could not sample frames from %s: %s", video_path, exc)
     return frames
 
 
@@ -121,12 +125,14 @@ class VideoQAGate:
         identity_eval_fn: Callable[[str, str], float] | None = None,
         flicker_eval_fn: Callable[[str], float] | None = None,
         morphing_eval_fn: Callable[[str], float] | None = None,
+        duration_fn: Callable[[str], float] | None = None,
     ) -> None:
         self.identity_threshold = identity_threshold
         self.flicker_threshold = flicker_threshold
         self.identity_eval_fn = identity_eval_fn
         self.flicker_eval_fn = flicker_eval_fn
         self.morphing_eval_fn = morphing_eval_fn
+        self.duration_fn = duration_fn
 
     def evaluate(
         self,
@@ -161,7 +167,7 @@ class VideoQAGate:
             id_sims = [cosine_similarity(kf_feat, ff) for ff in frame_feats]
             id_score = float(np.mean(id_sims))
         else:
-            id_score = 0.90
+            id_score = 0.0
 
         # 2. Temporal Flicker
         if self.flicker_eval_fn is not None:
@@ -173,7 +179,7 @@ class VideoQAGate:
             ]
             flicker_score = float(np.clip(1.0 - float(np.mean(diffs)), 0.0, 1.0))
         else:
-            flicker_score = 0.92
+            flicker_score = 0.0
 
         # 3. Morphing
         if self.morphing_eval_fn is not None:
@@ -186,16 +192,14 @@ class VideoQAGate:
             ]
             morph_score = float(np.mean(morph_sims))
         else:
-            morph_score = 0.95
+            morph_score = 0.0
 
         # 4. Duration Match & Lip-sync
-        actual_dur = probe_video_duration(v_path)
-        dur_match = True
-        if expected_duration_s is not None and expected_duration_s > 0:
-            if actual_dur > 0:
-                dur_match = abs(actual_dur - expected_duration_s) <= 1.0
-            else:
-                dur_match = True
+        actual_dur = self.duration_fn(str(v_path)) if self.duration_fn else probe_video_duration(v_path)
+        # An unreadable duration fails; it used to count as a match, so a corrupt file could pass.
+        dur_match = actual_dur > 0
+        if dur_match and expected_duration_s is not None and expected_duration_s > 0:
+            dur_match = abs(actual_dur - expected_duration_s) <= 1.0
 
         id_pass = id_score >= self.identity_threshold
         flicker_pass = flicker_score >= self.flicker_threshold
@@ -221,8 +225,10 @@ class VideoQAGate:
             )
         if not morph_pass:
             reasons.append(f"Morphing score {morph_score:.3f} below acceptable threshold")
+        if not sampled_frames and not (self.identity_eval_fn and self.flicker_eval_fn and self.morphing_eval_fn):
+            reasons.append("No frames could be sampled from the video; unscored checks count as failed")
         if not dur_match:
-            reasons.append("Video duration mismatched with audio timing")
+            reasons.append("Video duration unreadable or mismatched with audio timing")
 
         return VideoQAReport(
             video_path=str(v_path),
@@ -288,7 +294,8 @@ def render_shot_with_video_or_fallback(
         if qa_rep.passed or not fallback_to_2_5d:
             return res.video_path, "video", qa_rep
 
-    except Exception:
+    except Exception as exc:
+        logger.warning("Path 2 video failed for shot %s, using the 2.5D fallback: %s", shot_spec.shot_index, exc)
         qa_rep = VideoQAReport(
             video_path=str(video_shot_path),
             passed=False,
@@ -297,7 +304,7 @@ def render_shot_with_video_or_fallback(
             morphing_score=0.0,
             duration_match=False,
             overall_score=0.0,
-            reasons=["Path 2 video generation encountered error; triggering Path 1 fallback"],
+            reasons=[f"Path 2 video generation failed ({type(exc).__name__}: {exc}); using the Path 1 fallback"],
         )
 
     # Automatic Fallback to Path 1 2.5D Parallax Compositor

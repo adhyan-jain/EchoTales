@@ -11,6 +11,7 @@ enforcing strict cinematic invariants:
 
 from __future__ import annotations
 
+import logging
 import re
 from typing import Protocol
 
@@ -31,6 +32,8 @@ from echotales.pipeline.screenplay.validator import (
     MAX_STILL_DURATION_S,
     validate_screenplay,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ScreenplayLLM(Protocol):
@@ -336,8 +339,15 @@ def _compile_with_llm(
                 errors = validate_screenplay(ep)
                 if not errors:
                     return ep
-    except Exception:
-        pass
+                logger.warning("LLM screenplay for episode %s rejected by the validator (%d errors, first: %s); using the rule-based compile",
+                               episode_number, len(errors), errors[0])
+            else:
+                logger.warning("LLM screenplay for episode %s has no scenes; using the rule-based compile", episode_number)
+        else:
+            logger.warning("LLM screenplay for episode %s contained no JSON; using the rule-based compile", episode_number)
+    except Exception as exc:
+        logger.warning("LLM screenplay for episode %s failed (%s: %s); using the rule-based compile",
+                       episode_number, type(exc).__name__, exc)
 
     return _compile_rule_based(
         novel_id, episode_number, chapters, chapter_text, snapshot, default_render_tier

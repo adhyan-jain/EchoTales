@@ -91,24 +91,33 @@ def test_ltx_video_generation(sample_keyframe: Path, tmp_path: Path) -> None:
     assert res.num_frames == 48
 
 
-def test_video_qa_gate(sample_keyframe: Path, tmp_path: Path) -> None:
-    gate = VideoQAGate(identity_threshold=0.82, flicker_threshold=0.75)
+def _real_clip(path: Path) -> Path:
+    import subprocess
+    subprocess.run(["ffmpeg", "-y", "-f", "lavfi", "-i", "testsrc=size=160x120:rate=8", "-t", "2", str(path)],
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+    return path
 
-    dummy_video = tmp_path / "dummy.mp4"
-    dummy_video.write_bytes(b"ftypisom" + b"\x00" * 200)
 
-    # Clean passing evaluation
-    rep = gate.evaluate(dummy_video, sample_keyframe)
-    assert rep.passed is True
-    assert rep.identity_drift_score >= 0.82
+def test_video_qa_gate_scores_a_real_clip(sample_keyframe: Path, tmp_path: Path) -> None:
+    clip = _real_clip(tmp_path / "real.mp4")
+    rep = VideoQAGate(identity_threshold=0.0).evaluate(clip, sample_keyframe, expected_duration_s=2.0)
+    assert rep.duration_match is True
+    assert rep.temporal_flicker_score > 0.0 and rep.morphing_score > 0.0
 
-    # Failing evaluation with strict custom identity check
-    failing_gate = VideoQAGate(
-        identity_eval_fn=lambda v, kf: 0.65,  # Identity drift below 0.82
-    )
-    rep_fail = failing_gate.evaluate(dummy_video, sample_keyframe)
+    failing_gate = VideoQAGate(identity_eval_fn=lambda v, kf: 0.65)
+    rep_fail = failing_gate.evaluate(clip, sample_keyframe)
     assert rep_fail.passed is False
     assert any("Identity drift score" in r for r in rep_fail.reasons)
+
+
+def test_video_qa_gate_fails_closed_on_an_unreadable_file(sample_keyframe: Path, tmp_path: Path) -> None:
+    # Garbage bytes used to score 0.90 / 0.92 / 0.95 and a duration "match", so a corrupt render passed.
+    dummy_video = tmp_path / "dummy.mp4"
+    dummy_video.write_bytes(b"ftypisom" + b"\x00" * 200)
+    rep = VideoQAGate().evaluate(dummy_video, sample_keyframe, expected_duration_s=2.0)
+    assert rep.passed is False
+    assert rep.identity_drift_score == 0.0 and rep.temporal_flicker_score == 0.0 and rep.morphing_score == 0.0
+    assert rep.duration_match is False
 
 
 def test_video_fallback_to_path_1(
@@ -125,7 +134,11 @@ def test_video_fallback_to_path_1(
     )
 
     # 1. When Video QA passes: returns video tier
-    passing_gate = VideoQAGate()
+    # The stub generator writes placeholder bytes, so the measurements are injected here.
+    passing_gate = VideoQAGate(
+        identity_eval_fn=lambda v, kf: 0.95, flicker_eval_fn=lambda v: 0.95, morphing_eval_fn=lambda v: 0.95,
+        duration_fn=lambda v: 0.2,
+    )
     vid_path, tier, rep = render_shot_with_video_or_fallback(
         spec,
         tmp_path / "pass_dir",
