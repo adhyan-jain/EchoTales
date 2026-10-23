@@ -25,7 +25,7 @@ class ReaderReport:
             f"{s.no_span} with no dialogue span; {s.retried_tags} tags re-asked, {s.missing} never answered\n"
             f"facts: {f.appearance} appearance, {f.ages} ages, {f.identities} new names stored from {f.windows} windows; "
             f"rejected {f.rejected_quote} unverifiable quotes, {f.rejected_ungrounded} ungrounded values, "
-            f"{f.rejected_character} unknown characters, {f.rejected_key} bad keys, {f.rejected_value} implausible values; {f.duplicates} already known; {f.repaired} quotes repaired to the passage sentence"
+            f"{f.rejected_character} unknown characters, {f.rejected_key} bad keys, {f.rejected_value} implausible values, {f.rejected_subject} about someone else; {f.duplicates} already known; {f.repaired} quotes repaired to the passage sentence"
         )
 
 

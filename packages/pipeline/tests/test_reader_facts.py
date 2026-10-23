@@ -187,3 +187,51 @@ def test_age_stage_becomes_an_image_tag_and_an_exact_age_is_the_fallback() -> No
     assert "middle-aged woman" in look_clauses(char(gender="female", age_stage="middle_aged"))
     assert "teenager" in look_clauses(char(gender="female", age="17"))
     assert not any("adult" in c or "teen" in c for c in look_clauses(char(gender="male", age_band="adult")))  # the default band says nothing
+
+
+def test_check_attribute_rejects_hats_as_hair_and_moustaches_on_women() -> None:
+    from echotales.pipeline.reader.facts_pass import check_attribute
+
+    assert check_attribute("hair_style", "silk hat") is None
+    assert check_attribute("hair_style", "mustache", "female") is None
+    assert check_attribute("hair_style", "mustache", "male") == ("distinguishing_features", "mustache")
+    assert check_attribute("hair_style", "long braided hair") == ("hair_style", "long braided hair")
+
+
+def test_check_attribute_attire_must_be_a_garment_phrase() -> None:
+    from echotales.pipeline.reader.facts_pass import check_attribute
+
+    assert check_attribute("typical_attire", "such clothes") is None
+    assert check_attribute("typical_attire", "smilingly shook his hand") is None
+    assert check_attribute("typical_attire", "black-hooded robe") is not None
+
+
+def test_about_character_needs_the_sentence_to_name_them() -> None:
+    from echotales.pipeline.reader.facts_pass import about_character
+    from echotales.pipeline.reader.speakers_pass import CastEntry, NameIndex
+
+    audrey, klein = CastEntry("a", "Audrey Hall"), CastEntry("k", "Klein Moretti")
+    index = NameIndex([audrey, klein])
+    passage = "Audrey Hall smiled. Klein Moretti wore a dark brown waistcoat. He frowned."
+    assert about_character(klein, "wore a dark brown waistcoat", passage, index)
+    assert not about_character(audrey, "wore a dark brown waistcoat", passage, index)
+    # a pronoun-only sentence belongs to the one person named just before it
+    assert about_character(klein, "He frowned", passage, index)
+
+
+def test_about_character_handles_description_before_name_and_other_people_in_sentence() -> None:
+    from echotales.pipeline.reader.facts_pass import about_character
+    from echotales.pipeline.reader.speakers_pass import CastEntry, NameIndex
+
+    daly, klein = CastEntry("d", "Daly"), CastEntry("k", "Klein Moretti")
+    index = NameIndex([daly, klein])
+    gender = {"d": "female", "k": "male"}.get
+    # a description that comes before the name (LotM ch14): the first named person after it owns it
+    ahead = "A lady in a hooded black robe wore blue eyeshadow. The air was cold. Daly, the medium, nodded."
+    assert about_character(daly, "wore blue eyeshadow", ahead, index, lambda s: gender(s, ""))
+    # "her" with only a man named: the woman named just before is the owner
+    other = "Daly took out a bottle. Her emerald eyes smiled at Klein Moretti."
+    assert about_character(daly, "Her emerald eyes smiled", other, index, lambda s: gender(s, ""))
+    assert not about_character(klein, "Her emerald eyes smiled", other, index, lambda s: gender(s, ""))
+    # a possessive still names its owner
+    assert about_character(daly, "blue eyeshadow", "Daly's blue eyeshadow shone.", index, lambda s: gender(s, ""))

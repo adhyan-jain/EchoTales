@@ -13,6 +13,7 @@ becomes a fact.
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from pydantic import BaseModel, Field
@@ -61,10 +62,17 @@ class AgeStageClaim(BaseModel):
     quote: str
 
 
+class StatusClaim(BaseModel):
+    character: str
+    status: str
+    quote: str
+
+
 class NamesOut(BaseModel):
     identities: list[IdentityClaim] = Field(default_factory=list)
     ages: list[AgeClaim] = Field(default_factory=list)
     age_stages: list[AgeStageClaim] = Field(default_factory=list)
+    statuses: list[StatusClaim] = Field(default_factory=list)
 
 
 @dataclass(slots=True)
@@ -78,6 +86,9 @@ class FactsReport:
     rejected_character: int = 0
     rejected_key: int = 0
     rejected_value: int = 0
+    rejected_subject: int = 0
+    statuses: int = 0
+    genders: int = 0
     duplicates: int = 0
     repaired: int = 0
     age_stages: int = 0
@@ -140,6 +151,8 @@ def _names_prompt(cast: list[CastEntry], text: str) -> str:
         "age_stages: a rough life stage a character is described as (stage is one of child, teen, young_adult, adult, "
         "middle_aged, elderly; approx_years is your best guess or null), for example 'a middle-aged appearance' is "
         "middle_aged and 'recent graduate' is young_adult. Only when the passage describes their age.\n"
+        "statuses: how well off a character is, when the passage says it (status is one of poor, modest, comfortable, "
+        "wealthy, noble), for example 'the family could barely afford meat' is poor and 'daughter of a count' is noble.\n"
         "quote is a short phrase copied EXACTLY from the passage. Only facts the passage states.\n"
         "Example. Passage: 'Call me the Wolf from now on,' said Tom, who had just turned seventeen. Answer: "
         '{"identities": [{"character": "Tom", "name": "the Wolf", "quote": "Call me the Wolf from now on"}], '
@@ -191,7 +204,20 @@ _NUMBER_WORDS = {
 }
 
 
-def check_attribute(attribute: str, value: str) -> tuple[str, str] | None:
+_GARMENT = re.compile(
+    r"\b(robe|robes|coat|tailcoat|overcoat|jacket|shirt|blouse|dress|gown|suit|waistcoat|vest|cravat|tie|trousers|pants|"
+    r"skirt|uniform|cloak|cape|hat|cap|bonnet|veil|headdress|gloves?|scarf|shawl|apron|corset|boots?|shoes|collar|"
+    r"cassock|armou?r|tunic|sweater|hood|hooded|clothes|clothing|attire|outfit|garb|fabric|cotton|linen|silk|wool|"
+    r"velvet|lace|leather)\b",
+    re.IGNORECASE,
+)
+_HAIR_WORDS = re.compile(r"\b(hair|haired|bald|braid\w*|ponytail|bun|bangs|fringe|curls?|curly|locks|ringlets|bob|"
+                         r"cropped|tied|parted|swept|slicked|wavy|straight|shoulder[- ]length|long|short)\b", re.IGNORECASE)
+_FACIAL_HAIR = re.compile(r"\b(mustache|moustache|beard|sideburns|stubble|goatee)\b", re.IGNORECASE)
+_VAGUE = re.compile(r"\b(such|those|these|that|this|same|some|other|his|her)\b", re.IGNORECASE)
+
+
+def check_attribute(attribute: str, value: str, gender: str = "") -> tuple[str, str] | None:
     """Deterministic sanity on one appearance claim, or None to reject it (A4 validators).
 
     Measured on LotM after the first facts run: Daly's `eye_color` was "blue eyeshadow", Klein's `height_build` was
@@ -202,7 +228,77 @@ def check_attribute(attribute: str, value: str) -> tuple[str, str] | None:
         return (attribute, value) if _COLOUR.search(value) else None
     if attribute == "height_build":
         return (attribute, value) if _BUILD.search(value) else None
+    if attribute == "hair_style":
+        # A hat is clothing, not a haircut (LotM: "veil hat", "silk hat" stored as hair_style), and a moustache is a
+        # facial mark that a woman's record cannot take (LotM: Audrey Hall had hair_style "mustache").
+        if _FACIAL_HAIR.search(value):
+            return None if gender == "female" else ("distinguishing_features", value)
+        return (attribute, value) if _HAIR_WORDS.search(value) and not _GARMENT.search(value) else None
+    if attribute == "distinguishing_features" and gender == "female" and _FACIAL_HAIR.search(value):
+        return None
+    if attribute == "typical_attire":
+        # Reader noise: "smilingly shook his hand", "such clothes", "halved top hat". Attire is a short noun phrase that
+        # names a garment and does not point back at something earlier ("such", "those").
+        words = value.split()
+        if not _GARMENT.search(value) or len(words) > 7 or _VAGUE.search(value) or any(w.lower().endswith("ly") for w in words):
+            return None
     return attribute, value
+
+
+def _split(passage: str) -> list[str]:
+    return [re.sub(r"^#\d+:\s*", "", x).strip() for x in _SENTENCE.split(passage) if x.strip()]
+
+
+#: How far ahead a description may run before the text names its owner ("a lady in a hooded black robe ..." and, five
+#: sentences later, "Daly, the medium"). Measured on LotM ch14, where every one of Daly's looks was introduced this way.
+_NAME_LOOKAHEAD = 6
+
+
+def _side(sentence: str) -> str:
+    female, male = bool(_FEMALE.search(sentence)), bool(_MALE.search(sentence))
+    return "female" if female and not male else "male" if male and not female else ""
+
+
+def about_character(
+    entry: CastEntry, quote: str, passage: str, index: NameIndex, gender_of: Callable[[str], str] | None = None
+) -> bool:
+    """Whether the sentence of `quote` is about `entry` rather than someone else nearby.
+
+    The model's quote only had to exist in the window, so a description of Klein's clothes could be filed under Audrey
+    whenever she was the named person in view (LotM ch3, full-volume run 2026-10-23: Audrey Hall carried a mustache and
+    a waistcoat). The first version of this check demanded the sentence name the character, and reference-chapter
+    scoring showed it cost real facts (appearance 11 of 17 fell to 8): Daly's looks are written "a lady in a hooded
+    black robe" before her name, "her emerald eyes smiled at Klein" names someone else, and "Daly's blue eyeshadow" lost
+    its name to the possessive. So: the sentence names the character, or names only people whose recorded gender
+    contradicts its pronoun (then the owner is whoever the text named last), or names nobody (then the owner is the
+    one person named just before, or, failing that, just after). Anything ambiguous is still rejected."""
+    sentences = _split(passage)
+    needle = _norm_text(quote).strip(" .,;:\"'…")
+    at = next((i for i, x in enumerate(sentences) if needle and needle in _norm_text(x)), None)
+    if at is None:
+        return False
+    here = index.mentioned_in(sentences[at])
+    side = _side(sentences[at])
+    if entry.self_id in here:
+        # Named is not owned: in "her eyes smiled at Klein" Klein is only the object.
+        return not (gender_of and side and gender_of(entry.self_id) not in ("", "unknown", side))
+    if here:
+        others_contradict = bool(gender_of) and bool(side) and all(gender_of(o) not in ("", "unknown", side) for o in here)
+        if not (others_contradict and gender_of(entry.self_id) == side):
+            return False
+    for back in (1, 2):
+        if at - back < 0:
+            break
+        earlier = index.mentioned_in(sentences[at - back])
+        if earlier:
+            return earlier == {entry.self_id}
+    for ahead in range(1, _NAME_LOOKAHEAD + 1):
+        if at + ahead >= len(sentences):
+            break
+        later = index.mentioned_in(sentences[at + ahead])
+        if later:
+            return later == {entry.self_id}
+    return False
 
 
 def age_in_quote(age: int, quote: str) -> bool:
@@ -218,7 +314,9 @@ def age_in_quote(age: int, quote: str) -> bool:
 #: bare answer "The Hanged Man.", which has no cue word of its own (LotM ch7: that link was missed with gemma2:9b).
 _NAME_CUE = re.compile(
     r"\b(designation|code ?name|call me|address me|known as|my name|name is|named|called|title|alias|pseudonym|"
-    r"disguise|I am|I\'m|I’m|years old|turned|aged|birthday)\b",
+    r"disguise|I am|I\'m|I’m|years old|turned|aged|birthday|young|youth|teen\w*|middle[- ]aged|elderly|old man|old woman|"
+    r"graduate|student|twenties|thirties|forties|fifties|sixties|poor|poverty|wealthy|rich|noble|aristocrat\w*|"
+    r"viscount|earl|count|baron|duke|marquis|family|servant|maid|salary|pounds)\b",
     re.IGNORECASE,
 )
 
@@ -275,6 +373,8 @@ def read_chapter_facts(store: Store, client: ModelClient, chapter: Chapter) -> F
     cast = build_cast(store, novel_id, "\n".join(b.text for b in chapter.blocks), number)
     index = NameIndex(cast)
     pos = DiscoursePosition(chapter=int(number), offset=0)
+    # First, so this chapter's own pronoun checks already know who is a "he".
+    infer_genders(store, novel_id, "\n".join(b.text for b in chapter.blocks), index, number, report)
     for text in windows(chapter, tagged=False):
         report.windows += 1
         try:  # one malformed window must not stop the chapter
@@ -300,6 +400,8 @@ def read_chapter_facts(store: Store, client: ModelClient, chapter: Chapter) -> F
             _store_age(store, novel_id, number, pos, age, text, index, report)
         for stage in names.age_stages:
             _store_age_stage(store, novel_id, number, pos, stage, text, index, report)
+        for status in names.statuses:
+            _store_status(store, novel_id, number, pos, status, text, index, report)
         for identity in names.identities:
             _store_identity(store, novel_id, pos, identity, text, index, report)
     store.conn.commit()
@@ -359,13 +461,16 @@ def _store_appearance(
     if not grounded(claim.value, quote):
         report.rejected_ungrounded += 1
         return
-    checked = check_attribute(claim.attribute, claim.value.strip())
+    entry = _resolve(index, claim.character, report)
+    if entry is None:
+        return
+    checked = check_attribute(claim.attribute, claim.value.strip(), _recorded_gender(store, entry.self_id))
     if checked is None:
         report.rejected_value += 1
         return
     attribute, value = checked
-    entry = _resolve(index, claim.character, report)
-    if entry is None:
+    if not about_character(entry, quote, passage, index, lambda sid: _recorded_gender(store, sid)):
+        report.rejected_subject += 1
         return
     if gender_conflict(_recorded_gender(store, entry.self_id), quote):
         report.rejected_value += 1
@@ -392,7 +497,7 @@ def _store_age_stage(
     entry = _resolve(index, claim.character, report)
     if entry is None:
         return
-    if gender_conflict(_recorded_gender(store, entry.self_id), quote):
+    if gender_conflict(_recorded_gender(store, entry.self_id), quote) or not about_character(entry, quote, passage, index, lambda sid: _recorded_gender(store, sid)):
         report.rejected_value += 1
         return
     persona_id = persona_at(store, entry.self_id, number + 0.5)
@@ -404,6 +509,71 @@ def _store_age_stage(
         store.add_attribute(novel_id, _attribute(
             TargetKind.PERSONA, persona_id, "age_estimate", f"about {claim.approx_years}", quote, number, pos))
     report.age_stages += 1
+
+
+_STATUSES = ("poor", "modest", "comfortable", "wealthy", "noble")
+_STATUS_CUES = {
+    "poor": re.compile(r"\b(poor|poverty|barely|shabby|threadbare|worn|cheap|beggar|starv\w+|destitute)\b", re.I),
+    "modest": re.compile(r"\b(modest|ordinary|plain|salary|clerk|worker|tenant|renter|graduate|average|common)\b", re.I),
+    "comfortable": re.compile(r"\b(comfortable|middle class|respectable|merchant|well[- ]off|steady)\b", re.I),
+    "wealthy": re.compile(r"\b(wealthy|rich|fortune|luxur\w+|expensive|extravagant|lavish|gorgeous|fine|servants|estate)\b", re.I),
+    "noble": re.compile(r"\b(noble|aristocra\w+|viscount|earl|count|baron|duke|marquis|lord|lady|countess)\b", re.I),
+}
+
+
+def _store_status(
+    store: Store, novel_id: str, number: float, pos: DiscoursePosition, claim: StatusClaim, passage: str,
+    index: NameIndex, report: FactsReport,
+) -> None:
+    """How well off a character is, so clothes can differ within one era (owner, 2026-10-23: Klein and Melissa are poor
+    and dress plainly, Audrey is rich). The status must be one of five and its quote must hold a cue for it."""
+    status = claim.status.strip().lower()
+    if status not in _STATUSES or not quote_in_passage(claim.quote, passage) or not _STATUS_CUES[status].search(claim.quote):
+        report.rejected_value += 1
+        return
+    entry = _resolve(index, claim.character, report)
+    if entry is None:
+        return
+    if not about_character(entry, claim.quote, passage, index, lambda sid: _recorded_gender(store, sid)):
+        report.rejected_subject += 1
+        return
+    persona_id = persona_at(store, entry.self_id, number + 0.5)
+    if _known(store, persona_id, "social_status", status):
+        report.duplicates += 1
+        return
+    store.add_attribute(novel_id, _attribute(TargetKind.PERSONA, persona_id, "social_status", status, claim.quote, number, pos))
+    report.statuses += 1
+
+
+_SUBJECT_PRONOUN = re.compile(r"^[\"“]?\s*(he|she)\b", re.IGNORECASE)
+
+
+def infer_genders(store: Store, novel_id: str, text: str, index: NameIndex, number: float, report: FactsReport) -> None:
+    """Record a gender for entries that have none, from narration: a sentence that opens with "he" or "she" is about the
+    one entry named in the sentence before it. Needs three agreeing sentences and 80% agreement, so one stray pronoun
+    never decides it. (Full-volume LotM run: Klein and Dunn Smith were left `unknown`, so the pronoun checks and the
+    image prompt's 1boy/1girl had nothing to use.)"""
+    votes: dict[str, dict[str, int]] = {}
+    sentences = _split(text)
+    for i in range(1, len(sentences)):
+        m = _SUBJECT_PRONOUN.match(sentences[i])
+        named = index.mentioned_in(sentences[i - 1])
+        if m and len(named) == 1:
+            who = next(iter(named))
+            side = "male" if m.group(1).lower() == "he" else "female"
+            votes.setdefault(who, {}).setdefault(side, 0)
+            votes[who][side] += 1
+    for self_id, tally in votes.items():
+        total = sum(tally.values())
+        gender, n = max(tally.items(), key=lambda kv: kv[1])
+        if total < 3 or n / total < 0.8 or _recorded_gender(store, self_id) not in ("", "unknown"):
+            continue
+        pos = DiscoursePosition(chapter=int(number), offset=0)
+        persona_id = persona_at(store, self_id, number + 0.5)
+        store.add_attribute(novel_id, _attribute(
+            TargetKind.PERSONA, persona_id, "gender", gender,
+            f"{n} of {total} sentences that continue about them use {'he' if gender == 'male' else 'she'}", number, pos))
+        report.genders += 1
 
 
 def _store_age(

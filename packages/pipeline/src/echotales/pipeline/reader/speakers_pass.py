@@ -169,6 +169,22 @@ class NameIndex:
                     if len(word) >= 4:
                         words.setdefault(word, []).append(entry)
         self._unique_word = {w: es[0] for w, es in words.items() if len({e.self_id for e in es}) == 1}
+        # What it takes to say a sentence is "about" an entry: any full surface of it, or a name word only it owns.
+        self._mention = []
+        for entry in cast:
+            forms = {_norm(x) for x in entry.surfaces() if len(_norm(x)) >= 3}
+            forms |= {w for w, e in self._unique_word.items() if e.self_id == entry.self_id}
+            forms.discard("")
+            if forms:
+                self._mention.append((entry.self_id, re.compile(
+                    r"\b(?:" + "|".join(re.escape(f) for f in sorted(forms, key=len, reverse=True)) + r")\b", re.IGNORECASE)))
+
+    def mentioned_in(self, sentence: str) -> set[str]:
+        """Self ids of the entries a sentence names."""
+        # "Daly's blue eyeshadow" lost its subject when the possessive turned into "dalys" (LotM ch14, reference-chapter
+        # scoring 2026-10-23), so the possessive is dropped before matching.
+        low = _norm(re.sub(r"['’]s\b", "", sentence))
+        return {sid for sid, rx in self._mention if rx.search(low)}
 
     def resolve(self, answer: str) -> CastEntry | None:
         key = _norm(answer)
