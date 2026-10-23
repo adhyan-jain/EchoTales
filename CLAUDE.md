@@ -87,7 +87,7 @@ source .venv/bin/activate      # uv-managed venv already present at repo root
 python3 -m pytest packages/core/tests packages/pipeline/tests   # no GPU needed
 ```
 
-1,553 core+pipeline tests pass (2026-10-22, after Phase A and Phase B; webview jest: 129; research: 29 is as of 2026-10-19 and was not re-run). Root `pyproject` testpaths lists only
+core+pipeline suite exits 0 after the 2026-10-24 honesty pass (it was 1,553 passed on 2026-10-22; the exact count dropped with the deleted tests and was not re-recorded); webview jest: 129; research: 29 is as of 2026-10-19 and was not re-run). Root `pyproject` testpaths lists only
 core and pipeline; pass `packages/research/tests` explicitly (and `-o addopts=""`) to include research.
 
 Everything is stub-first: `ECHOTALES_LLM_MODE=stub` and `--image-engine
@@ -181,7 +181,7 @@ renders need a current bible lock; `data/db/` DBs are unstamped (409). See docs/
 
 See docs/HANDOFF.md's "Pick up here" section for the actual current state — it
 changes every session (the numbered session log itself moved to
-docs/EVOLUTION.md, latest section 4.124). The NER-windowing re-run (EVOLUTION
+docs/EVOLUTION.md, latest section 4.125). The NER-windowing re-run (EVOLUTION
 4.76) that an earlier session left unmeasured did run (4.84): the
 "`ollama` unreachable" blocker was a misdiagnosis — the daemon was simply
 not started — and the fix is now measured on real data (CEAF-e recall

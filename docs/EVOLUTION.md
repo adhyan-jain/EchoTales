@@ -9134,3 +9134,13 @@ Supersedes the `qwen2.5:7b` model and the speaker/appearance numbers of 4.123 (f
 - **Verified:** core+pipeline suite 1,553 passed; webview Jest 129.
 - **Open / unverified.** Faithfulness (truncate-and-rebuild) check not run on the reader stage; 19 "named but expected unnamed" reference lines (RI 13, ORV 6) not re-adjudicated; `data/db/` databases unstamped so real renders 409; Phases C-E not started.
 
+### 4.125 Product-plan step 1: honesty pass *(2026-10-24)*
+
+Commits 30108d5, 8ce4a30, 8d16364, 72e0b19. Implements the first step of the D27 product pivot (decisions.md): nothing the UI or QA reports may be invented. Test evidence: core+pipeline suite exits 0, webview Jest 129; the exact pytest count was not re-recorded (1,553 before the deletions).
+
+- **Fabricated results removed.** `webview_server.py` shot candidates/reroll/lock routes used to return QA scores `0.94 - i*0.05` and a "lock" that stored nothing; they now return 501, and the Shot QA tab is hidden in `webview/src/pages/project/Pages.js`. This supersedes the ShotGridQA description in 4.118/4.121 (4-check scores, reroll, lock), which was not backed by measurement. A missing candidate image is now 404 instead of the first panel.
+- **CORS.** No longer `*`. `_origin_allowed` accepts same host, localhost dev servers, or `ECHOTALES_CORS_ORIGINS`; cross-site POST/DELETE get 403.
+- **Fail closed.** `video/qa.py`: unreadable video scores 0, unreadable duration counts as mismatch; `VideoQAGate` gained `duration_fn`. `keyframes/qa.py::extract_default_image_features` accepts PIL images; it is a colour/layout similarity, not face identity. `screenplay/compiler.py` logs LLM fallbacks instead of swallowing them.
+- **Deleted unwired code.** Top-level `workers/` (RunPod handlers that returned solid PNGs) and `test_workers_stub.py`; `render/reels.py`, `resolve/experimental_clan_features.py`, `voice/dia2.py`, `voice/exclamations.py`, `voice/qwen_tts.py`, `eval/baseline_b.py` and their tests. Reverses the 4.113/4.118 additions of Dia2, the exclamation toolkit, Qwen TTS and the RunPod worker containers (hosted workers were already dropped at the pivot).
+- **Open defect.** `pipeline/workers_contract.py` still returns a solid-colour PNG for any image worker other than `ECHOTALES_IMAGE_WORKER=noobai`. To fix in step 4.
+- **Deferred.** `bible/delta.py` hard-coded names (step 2); `voice/attribution.py` merge into `speakers/` (step 3).

@@ -1721,7 +1721,7 @@ hundreds of mentions in one completion, which is itself evidence for this
 project's per-chapter/per-window LLM-call design (Section 7 of
 `docs/design/architecture.md`) rather than a single-shot extraction call.
 
-**`baseline_b.py`, added 2026-09-24 (EVOLUTION 4.84)** — Baseline B, the
+**`baseline_b.py`, added 2026-09-24 (EVOLUTION 4.84); DELETED 2026-10-24 (unwired, EVOLUTION 4.125)** — Baseline B, the
 dual-LLM memorisation architecture COLING 2025 (LlmLink) and LINK-KG both
 build on: one LLM pass builds a running character memory/summary, a second
 pass resolves each mention against it. Existed only as a documented gap

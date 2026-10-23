@@ -22,7 +22,7 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-22 (EVOLUTION 4.124).
+**Last updated:** 2026-10-24 (EVOLUTION 4.125).
 
 ## Pick up here — 2026-10-24 (PRODUCT PIVOT, decisions.md D27)
 
@@ -36,13 +36,22 @@ is measured, QA fails closed". The plan file is superseded by this order; the
 Phase A/B/C status sections beneath stay accurate as history.
 
 Order (each step verified on real local output):
-1. **Honesty pass** (next): fabricated QA scores and non-persisting lock in
-   `webview_server.py` shot routes; fallback-to-unrelated-panel image route;
-   fail-open `video/qa.py`; swallowed LLM errors in `screenplay/compiler.py`;
-   open CORS; solid-colour `workers/*/handler.py`; unwired code removal
-   (render/reels.py, resolve/experimental_clan_features.py, voice/dia2.py,
-   voice/exclamations.py, eval/baseline_b.py, bible/delta.py names, merge
-   voice/attribution.py into speakers/, qwen_tts.py wire or delete).
+1. **Honesty pass** (partly done 2026-10-24, EVOLUTION 4.125).
+   Done: shot candidates/reroll/lock routes return 501 (no fabricated
+   scores, no non-persisting lock) and the Shot QA tab is hidden; missing
+   candidate image is 404; CORS restricted (`_origin_allowed`,
+   `ECHOTALES_CORS_ORIGINS`) and cross-site POST/DELETE get 403;
+   `video/qa.py` fails closed; `screenplay/compiler.py` logs LLM fallbacks;
+   top-level `workers/` deleted; deleted `render/reels.py`,
+   `resolve/experimental_clan_features.py`, `voice/dia2.py`,
+   `voice/exclamations.py`, `voice/qwen_tts.py`, `eval/baseline_b.py`.
+   Deferred: `bible/delta.py` hard-coded names (step 2); merge
+   `voice/attribution.py` into `speakers/` (step 3; `eval/run_benchmark.py`
+   and 2 tests import it).
+   **Open defect (fix in step 4):** `pipeline/workers_contract.py` still
+   returns a solid-colour PNG for any image worker other than
+   `ECHOTALES_IMAGE_WORKER=noobai`; the default must be the real local
+   worker or an explicit error.
 2. **Generalise to unseen books**: remove novel-keyed tables; acceptance =
    a Gutenberg EPUB end to end with no code change.
 3. **Audiobook end to end** (core): upload -> reader -> review -> lock ->

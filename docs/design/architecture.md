@@ -690,7 +690,9 @@ and each answers a different failure that prompt wording cannot:
   owns them ("Gu Yue clan elders", not "elders"). One novel runs that word
   past four clans in a volume; unqualified, the same role cannot be drawn
 
-## 8e. Short-Form 9:16 Video Reels Engine (`render/reels.py`)
+## 8e. Short-Form 9:16 Video Reels Engine (`render/reels.py`) — REMOVED 2026-10-24
+
+*`render/reels.py` was never wired into any render path and was deleted in the honesty pass (EVOLUTION 4.125). The text below is the retired design, kept as history; chapter videos are composed at 1080x1920 by `render/compose.py`.*
 
 For short-form mobile delivery (TikTok, Instagram Reels, YouTube Shorts), visual pacing and framing follow specialized constraints:
 - **9:16 Vertical Aspect Ratio Specs**: Frames and prompts are framed for vertical mobile viewports rather than traditional 16:9 landscape.

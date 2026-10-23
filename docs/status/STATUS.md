@@ -48,7 +48,7 @@ passes.
 
 | Suite | Result |
 |---|---|
-| Backend (`packages/core` + `packages/pipeline`) | 1,553 passed (2026-10-22; was 1,206 on 2026-10-02) |
+| Backend (`packages/core` + `packages/pipeline`) | suite exits 0 (2026-10-24; 1,553 passed on 2026-10-22 before the honesty-pass deletions, exact count not re-recorded) |
 | `packages/research` (research arena) | 16 passed |
 | `packages/ecrdt` (standalone research package) | 55 passed |
 | Webview (Jest) | 129 passed (2026-10-22) |
@@ -110,7 +110,7 @@ not merely undocumented).
 | Multi-character composition | Capped at `max_references=2`; SD1.5 (GuoFeng3) cannot hold hero+crowd together (measured checkpoint ceiling); role-based typed model (`CharacterRole`) built, not wired to generation-time behavior | Partial | crowd/3+-person panels are the weakest single case | ceiling confirmed to be checkpoint, not prompt | Visual Rendering Track Phase 4a | image generation |
 | Motion generation | `render/motion.py`, SVD, 8GB cpu_offload — real chapter video exists | Verified functional; shot-rule quality never manually reviewed | motion may be technically present but visually wrong and nobody has looked | — | eyeball a real chapter's motion before trusting the heuristics | image generation |
 | Video composition | `render/compose.py`, `FfmpegComposeEngine`, real `.mp4` output exists | Verified functional | — | — | — | motion generation |
-| 9:16 vertical video | `render/compose.py` composes chapter videos at 1080×1920, 30 fps with Ken Burns motion, burned captions, `--speed` control. `render/reels.py` is a separate unused pacing/style planner that duplicates `director.py`; no automatic short highlight cut exists | Verified for full-chapter vertical video; no short highlight-reel generator (nothing measured says one is needed) | vertical chapter videos play in the webview Output library | the planner in `reels.py` is dead code | delete it or wire it, if a short-cut format is ever wanted | panels, audio |
+| 9:16 vertical video | `render/compose.py` composes chapter videos at 1080×1920, 30 fps with Ken Burns motion, burned captions, `--speed` control. `render/reels.py` (an unused planner) was deleted 2026-10-24 (EVOLUTION 4.125); no automatic short highlight cut exists | Verified for full-chapter vertical video; no short highlight-reel generator (nothing measured says one is needed) | vertical chapter videos play in the webview Output library | (planner deleted) | delete it or wire it, if a short-cut format is ever wanted | panels, audio |
 | Audio/TTS | `voice/engine.py::ChatterboxEngine`, real (not stub) — two full-chapter real renders exist; casting deterministic per-seed | Verified (core synthesis + real artifacts); `render_novel` covered end to end by `test_voice_render_novel.py` (stub engine, real WAV output) | orchestration exercised in CI against the stub engine | real-engine (Chatterbox) output still rests on manual artifacts; no listening test | a gated real-engine integration test, and a listening study | speaker attribution, casting |
 | Voice bank / emotional delivery | `voice/bank.py` — VCTK (110 speakers), CREMA-D (6 emotions). EARS added: `load_ears`, `--bank-kind ears` — 107 studio speakers at 48 kHz, 22 emotions, 7 reading styles, CC BY-NC 4.0 (research only). `voice/delivery.py`'s HUSHED polarity requests a real "whisper" clip | Experimental — loader/routing/unit tests landed; full-bank Chatterbox render of RI ch1 completed (97 lines, 892s, `data/novels/RI/audio-runs/ears-native/`) | audible cast with real actors; also makes speaker-attribution errors audible | no listening test or MOS exists | fix attribution before judging voice quality | Audio/TTS, speaker attribution |
 | Temporal voice/persona state | `persona/build.py::load_trait_profiles` is explicitly body-independent | **Missing** entirely — confirmed by reading the code | a transmigrated character (LOTM's Zhou Mingrui→Klein Moretti) sounds identical in both bodies | audio-side twin of the render track's central `state_of`-vs-flat ablation | unbuilt | Self/Persona split, voice casting |
@@ -179,7 +179,7 @@ not merely undocumented).
   hand-curated aliases never as pipeline input.
 - **Real but narrower than the name suggests:** IP-Adapter "removal"
   (call-site only), "Recurring Unnamed Characters — done" (resolution only,
-  not voice), the reels engine (planning logic only, not wired).
+  not voice), the reels engine (planning logic only, not wired; deleted 2026-10-24).
 - **Confirmed structurally broken, not just untuned:** the resolver's
   learned scorer; the `TRANSFERABLE_TITLE` recall@k gate on RI.
 - **Retracted, not merely stale — do not re-cite even as a lower bound:**
@@ -267,7 +267,7 @@ built (see component matrix).
 4. **Two hardcases records need adjudication** — human-only.
 5. Render pipeline items from EVOLUTION 4.51/4.52 are still open — see
    `docs/HANDOFF.md`.
-6. `render/reels.py` is an unused planner (no ffmpeg call). Chapter videos
+6. `render/reels.py` was an unused planner and is deleted (EVOLUTION 4.125). Chapter videos
    are already vertical 1080×1920; only an automatic short highlight cut
    does not exist.
 7. Block/span classification: 188 stray `HEADING` blocks/novel remain
