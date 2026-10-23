@@ -24,6 +24,37 @@ conflated.
 
 **Last updated:** 2026-10-22 (EVOLUTION 4.124).
 
+## Pick up here — 2026-10-24 (PRODUCT PIVOT, decisions.md D27)
+
+EchoTales is a product: "Drop in any EPUB -> review a short queue of
+uncertain lines -> get a full-cast audiobook (M4B with chapter markers), plus
+an illustrated motion-comic for any chapter the user picks." Audio first,
+visuals second, all local. No paper, no new annotation; Gate A is dropped as
+a blocker (silver set = regression check only); Phase E, hosted workers, AI
+video and the research-only items are dropped. Gate C is now "every UI score
+is measured, QA fails closed". The plan file is superseded by this order; the
+Phase A/B/C status sections beneath stay accurate as history.
+
+Order (each step verified on real local output):
+1. **Honesty pass** (next): fabricated QA scores and non-persisting lock in
+   `webview_server.py` shot routes; fallback-to-unrelated-panel image route;
+   fail-open `video/qa.py`; swallowed LLM errors in `screenplay/compiler.py`;
+   open CORS; solid-colour `workers/*/handler.py`; unwired code removal
+   (render/reels.py, resolve/experimental_clan_features.py, voice/dia2.py,
+   voice/exclamations.py, eval/baseline_b.py, bible/delta.py names, merge
+   voice/attribution.py into speakers/, qwen_tts.py wire or delete).
+2. **Generalise to unseen books**: remove novel-keyed tables; acceptance =
+   a Gutenberg EPUB end to end with no code change.
+3. **Audiobook end to end** (core): upload -> reader -> review -> lock ->
+   casting -> Chatterbox -> M4B, resumable, guided first lock.
+4. **Visuals for one chapter**: NoobAI keyframes, real identity checks.
+5. **Packaging**: setup script, CI, ruff, route split, licences, archive
+   course/research files, README as product page (public-domain demos only).
+
+Reader work finished at the pivot: subject-and-pronoun check on appearance
+facts, gender inference, status extraction (`facts_pass.py`,
+`speakers_pass.py`); no more tuning against the silver set.
+
 ## Pick up here — 2026-10-22 (Phase A reader stage, Gate A NOT met; Phase B review gate built; EVOLUTION 4.122-4.124)
 
 Plan adopted (full text: `/home/adhyan/.claude/plans/gleaming-sniffing-backus.md`;
