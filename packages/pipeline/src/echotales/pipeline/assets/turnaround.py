@@ -75,6 +75,14 @@ class CharacterTurnaroundAsset:
 #: builder wrote all of it into the image prompt as "key: value" ("reference_image_path: data/novels/..."), which an
 #: image model can only misread. `current_condition` is left out on purpose: a wound or a state belongs to a scene, not to
 #: a model sheet.
+STATUS_CLOTHES = {
+    "poor": "plain worn clothes, patched, dull fabric",
+    "modest": "plain simple clothes",
+    "wealthy": "fine tailored clothes, rich fabric, ornate details",
+    "noble": "luxurious ornate clothes, jewelry, elegant",
+}
+
+
 def look_clauses(char: CharacterBibleEntry, defaults: dict[str, str] | None = None) -> list[str]:
     """Image-prompt tags for one character from its look attributes, in priority order (identity first).
 
@@ -115,6 +123,10 @@ def look_clauses(char: CharacterBibleEntry, defaults: dict[str, str] | None = No
     outfit = (char.active_outfit or everyday_attire(a.get("typical_attire", ""))).strip()
     if outfit:
         clauses.append(outfit if outfit.startswith("wearing") else f"wearing {outfit}")
+    # Same era, different purse (owner, 2026-10-23: Klein and Melissa are poor and dress plainly, Audrey is rich).
+    quality = STATUS_CLOTHES.get(a.get("social_status", ""))
+    if quality:
+        clauses.append(quality)
     return clauses
 
 
