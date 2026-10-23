@@ -185,7 +185,7 @@ def test_extract_bible_delta_heuristic_and_llm() -> None:
     delta = heuristic_extract_bible_delta("hound", 1.0, sample_text)
     labels = [e.canonical_label for e in delta.new_entities]
     assert "Sherlock Holmes" in labels
-    assert "Dr. John Watson" in labels
+    assert "John Watson" in labels
     assert len(delta.location_deltas) == 1
     assert delta.location_deltas[0].canonical_name == "221B Baker Street"
 

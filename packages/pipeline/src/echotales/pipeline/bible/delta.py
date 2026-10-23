@@ -7,6 +7,7 @@ from raw novel chapter text using strict JSON conformity to BibleDelta.
 from __future__ import annotations
 
 import json
+import re
 from typing import Protocol
 
 from echotales.core.models import StoryBibleSnapshot
@@ -111,6 +112,26 @@ def parse_bible_delta_response(raw_json: str, novel_id: str, chapter: float) -> 
     return BibleDelta.from_dict(data)
 
 
+_HONORIFIC = r"(?:Mr|Mrs|Miss|Ms|Dr|Sir|Lady|Lord|Captain|Inspector)\.?"
+_NAME_RE = re.compile(rf"\b(?:{_HONORIFIC}\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b")
+_PLACE_RE = re.compile(r"\b((?:\d+[A-Z]?\s+)?[A-Z][a-z]+\s+(?:Street|Road|Lane|Square|Hall|House|Inn|Bridge))\b")
+_NOT_NAMES = {"The", "A", "An", "He", "She", "It", "They", "I", "In", "On", "At", "But", "And"}
+
+
+def _candidate_names(text: str) -> list[str]:
+    found: list[str] = []
+    for m in _NAME_RE.finditer(text):
+        words = [w for w in m.group(1).split() if w not in _NOT_NAMES]
+        name = " ".join(words)
+        if len(words) >= 2 and not _PLACE_RE.fullmatch(name) and name not in found:
+            found.append(name)
+    return found
+
+
+def _candidate_places(text: str) -> list[str]:
+    return list(dict.fromkeys(m.group(1) for m in _PLACE_RE.finditer(text)))
+
+
 def heuristic_extract_bible_delta(
     novel_id: str,
     chapter: float,
@@ -121,40 +142,27 @@ def heuristic_extract_bible_delta(
     new_entities: list[EntityDelta] = []
     location_deltas: list[LocationDelta] = []
 
-    # Detect classic Victorian / mystery names if not in prior snapshot
-    candidates = [
-        ("Sherlock Holmes", "char:sherlock", ["Holmes", "Mr. Holmes"], "brilliant analytical detective"),
-        ("Dr. John Watson", "char:watson", ["Watson", "Dr. Watson"], "loyal physician narrator"),
-        ("Dr. James Mortimer", "char:mortimer", ["Mortimer", "Dr. Mortimer"], "humble medical practitioner"),
-        ("Klein Moretti", "char:klein", ["Klein", "Zhou Mingrui"], "history graduate transmigrator"),
-    ]
-
-    for name, sid, aliases, desc in candidates:
+    # Offline stand-in for the LLM: any run of two or more capitalised words is a candidate name, any "<Name> Street /
+    # Road / Square ..." a place. It was a list of Holmes, Watson and Klein, so it only ever worked on those books.
+    for name in _candidate_names(chapter_text):
+        slug = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
         if prior_snapshot and prior_snapshot.resolve_alias(name):
             continue
-        if name in chapter_text:
-            new_entities.append(
-                EntityDelta(
-                    self_id=sid,
-                    canonical_label=name,
-                    kind="SELF",
-                    aliases=aliases,
-                    initial_attributes={"description": desc},
-                )
+        new_entities.append(
+            EntityDelta(
+                self_id=f"{novel_id}:char:{slug}",
+                canonical_label=name,
+                kind="SELF",
+                aliases=[name.split()[-1]],
+                initial_attributes={},
             )
+        )
 
-    # Detect Baker Street or room
-    if "221B Baker Street" in chapter_text or "Baker Street" in chapter_text:
-        loc_id = f"{novel_id}:loc:baker_st"
+    for place in _candidate_places(chapter_text):
+        slug = re.sub(r"[^a-z0-9]+", "_", place.lower()).strip("_")
+        loc_id = f"{novel_id}:loc:{slug}"
         if not prior_snapshot or loc_id not in prior_snapshot.locations:
-            location_deltas.append(
-                LocationDelta(
-                    location_id=loc_id,
-                    canonical_name="221B Baker Street",
-                    description="Victorian sitting room, hearth, gas lamps",
-                    ambience_sound="fireplace_and_rain",
-                )
-            )
+            location_deltas.append(LocationDelta(location_id=loc_id, canonical_name=place, description=""))
 
     return BibleDelta(
         novel_id=novel_id,

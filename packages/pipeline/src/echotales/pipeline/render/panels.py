@@ -59,7 +59,6 @@ from echotales.pipeline.persona.prompt import (
 )
 from echotales.pipeline.persona.runner import get_panel_cast
 from echotales.pipeline.render._png import write_solid_png
-from echotales.pipeline.render.beat_canon import beat_canon_for
 from echotales.pipeline.render.cache_key import compute_render_cache_key
 from echotales.pipeline.render.contract import (
     GenerationAttempt,
@@ -2367,12 +2366,7 @@ def render_panels(
                 _fallback = _slot_dialogue or _scene_narration or block.text
                 beat_prose = beat_text(spans, _slot_blocks, _fallback)
 
-                canon = beat_canon_for(novel_id, chapter_number, lead)
-                directive = canon.staging if canon is not None else ""
-                if canon is not None and canon.style_override == "establishing":
-                    style = STYLE_ESTABLISHING
-                elif canon is not None and canon.style_override == "scene":
-                    style = STYLE_SCENE
+                directive = ""
 
                 # **Keyed by the beat, not just the block.** The key was
                 # `chapter:block`, which silently outlived every change to

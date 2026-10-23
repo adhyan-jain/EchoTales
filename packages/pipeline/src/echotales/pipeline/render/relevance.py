@@ -28,7 +28,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from echotales.pipeline.render.beat_canon import beat_canon_for
 
 if TYPE_CHECKING:
     from echotales.core.store import Store
@@ -284,10 +283,6 @@ def audit(
         exempt = ""
         if "_crowd" in Path(image).name:
             exempt = "crowd cut"
-        elif novel_id and any(
-            beat_canon_for(novel_id, chapter, b) is not None for b in blocks
-        ):
-            exempt = "staged"
 
         panel = PanelRelevance(
             image=image,
