@@ -182,7 +182,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         return result
 
     try:
-        stage("0 ingest", lambda: ingest_novel(novel, store, chapters=chapters))
+        stage("0 ingest", lambda: ingest_novel(novel, store, sources_path=args.sources, chapters=chapters))
         stage("2 segment", lambda: segment_novel(novel, store))
         stage("3 mentions", lambda: detect_mentions(novel, store, lexicon=lexicon, client=client))
         stage(
@@ -694,7 +694,8 @@ def cmd_ingest(args: argparse.Namespace) -> int:
     from echotales.pipeline.ingest import ingest_novel
 
     store = _open_store(args)
-    report = ingest_novel(args.novel, store, chapters=_chapter_range(args.chapters))
+    # `--sources` was parsed but never passed on, so a book outside data/sources.toml could not be ingested.
+    report = ingest_novel(args.novel, store, sources_path=args.sources, chapters=_chapter_range(args.chapters))
     print(report.summary())
     store.close()
     return 0

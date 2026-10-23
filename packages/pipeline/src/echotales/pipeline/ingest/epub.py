@@ -297,6 +297,23 @@ SIDE_LABEL = re.compile(
 )
 
 
+#: Roman-numeral chapter headings ("CHAPTER XIX.") as in Project Gutenberg editions. Searched, not anchored: those
+#: editions fold an illustration caption into the TOC label ("He rode a black horse. CHAPTER III."), which made
+#: Pride and Prejudice ingest as 0 chapters (2026-10-24).
+# Case-sensitive numeral (a lower-case "chapter civil" must not read as 100), keyword any case, space optional
+# (the same edition prints "CHAPTERXXVII").
+_ROMAN_CHAPTER = re.compile(r"\b[Cc][Hh][Aa][Pp][Tt][Ee][Rr]\s*(?P<roman>[IVXLCDM]+)\b\.?")
+_ROMAN_VALUES = {"I": 1, "V": 5, "X": 10, "L": 50, "C": 100, "D": 500, "M": 1000}
+
+
+def _roman_to_int(text: str) -> int:
+    total = 0
+    for ch, nxt in zip(text, text[1:] + " "):
+        value = _ROMAN_VALUES[ch]
+        total += -value if _ROMAN_VALUES.get(nxt, 0) > value else value
+    return total
+
+
 @dataclass(slots=True)
 class ParsedLabel:
     number: float | None
@@ -318,4 +335,7 @@ def parse_chapter_label(label: str) -> ParsedLabel:
             title=title or label.strip(),
             is_side=False,
         )
+    roman = _ROMAN_CHAPTER.search(label)
+    if roman:
+        return ParsedLabel(number=float(_roman_to_int(roman.group("roman").upper())), title=roman.group(0).strip(), is_side=False)
     return ParsedLabel(number=None, title=label.strip(), is_side=bool(SIDE_LABEL.match(label)))

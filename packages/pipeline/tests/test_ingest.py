@@ -530,3 +530,20 @@ class TestRealLordOfTheMysteries:
         ingest_config(cfg, store)
         numbers = [c.number for c in store.iter_chapters("lord-of-the-mysteries")]
         assert max(numbers) == 213.0
+
+
+class TestRomanChapterLabels:
+    """Project Gutenberg editions number chapters in Roman numerals and fold illustration captions into the label."""
+
+    def test_roman_numeral(self) -> None:
+        assert parse_chapter_label("CHAPTER XIX.").number == 19.0
+
+    def test_caption_before_the_keyword(self) -> None:
+        parsed = parse_chapter_label("He rode a black horse. CHAPTER III.")
+        assert parsed.number == 3.0 and parsed.title == "CHAPTER III."
+
+    def test_no_space_after_the_keyword(self) -> None:
+        assert parse_chapter_label("\u201cAt the door.\u201d CHAPTERXXVIII.").number == 28.0
+
+    def test_prose_is_not_a_chapter(self) -> None:
+        assert parse_chapter_label("A civil chapter in the history of Mimi").number is None
