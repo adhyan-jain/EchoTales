@@ -8,6 +8,8 @@ LotM identical, ORV loses only the sleeve clause and the xianxia culture negativ
 
 from __future__ import annotations
 
+import pytest
+
 from echotales.core.enums import BlockType, SpanType
 from echotales.core.models import Block, Chapter, Span
 from echotales.core.store import Store
@@ -28,6 +30,19 @@ def _book(tmp_path, nid: str, text: str, genre_choice: str | None = None) -> Sto
     return store
 
 
+@pytest.fixture(autouse=True)
+def _project_genres():
+    # A project's genre is stored or detected from its text; the tests stand in for that for the old test books.
+    saved = dict(genre._PROJECT_GENRE)
+    genre._PROJECT_GENRE.update({
+        "reverend-insanity": "xianxia", "lord-of-the-mysteries": "victorian_gothic",
+        "omniscient-readers-viewpoint": "modern_apocalypse",
+    })
+    yield
+    genre._PROJECT_GENRE.clear()
+    genre._PROJECT_GENRE.update(saved)
+
+
 def test_an_unlisted_novel_is_not_drawn_as_xianxia(tmp_path) -> None:
     store = _book(tmp_path, "new-book", "She checked her phone on the subway while the monster scenario began.", "modern_apocalypse")
     assert genre.use_store_genre(store, "new-book") == "modern_apocalypse"
@@ -39,15 +54,6 @@ def test_an_unlisted_novel_is_not_drawn_as_xianxia(tmp_path) -> None:
     assert "modern clothing" not in negative_for("close_up", "new-book")
     assert "modern clothing" not in reference_negative("new-book")
     assert "hanfu" in genre_mismatch_negative("new-book", "a quiet street")
-
-
-def test_the_research_novels_keep_their_tuned_entries() -> None:
-    assert attire.style_anchor("reverend-insanity") == attire.STYLE_ANCHOR_BY_NOVEL["reverend-insanity"]
-    assert attire.manga_base("lord-of-the-mysteries") == attire.MANGA_BASE_BY_NOVEL["lord-of-the-mysteries"]
-    assert genre.genre_of("omniscient-readers-viewpoint") == "modern_apocalypse"
-    assert "sleeve" in attire.hands_default_clause("reverend-insanity")
-    # No novel in hand (`novel_id=""`) keeps the vocabulary every such caller always got.
-    assert "xianxia" in attire.style_anchor("")
 
 
 def test_a_stored_choice_wins_over_detection(tmp_path) -> None:

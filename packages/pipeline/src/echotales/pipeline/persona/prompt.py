@@ -548,13 +548,9 @@ def genre_mismatch_negative(novel_id: str, beat: str) -> str:
     both sides: "blade" must not fire on the beat text just because it
     contains "moonblade", RI's real ranged-attack technique.
     """
-    from echotales.pipeline.persona.attire import GENRE_MISMATCH_PROPS
+    from echotales.pipeline.persona.genre import profile
 
-    props = GENRE_MISMATCH_PROPS.get(novel_id)
-    if props is None:
-        from echotales.pipeline.persona.genre import profile
-
-        props = profile(novel_id).mismatch_props
+    props = profile(novel_id).mismatch_props
     if not props:
         return ""
     if any(re.search(rf"\b{re.escape(p)}\b", beat, re.I) for p in props):

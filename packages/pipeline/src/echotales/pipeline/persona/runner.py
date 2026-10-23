@@ -48,19 +48,14 @@ def get_panel_cast(
     spans: list[Span],
     store: object | None = None,
     persona_id_by_self: dict[str, str] | None = None,
-    faction_by_self: dict[str, str] | None = None,
-    mob_faction: dict[str, str] | None = None,
-    region: str | None = None,
     block_window: tuple[int, int] | None = None,
 ) -> PanelCast:
     """Who's in frame at `block_index`, and what they should look like.
 
     `store`/`persona_id_by_self` are optional: if given, an explicit
     `Attribute(target_kind=PERSONA, key="attire")` row wins over the
-    faction/regional/style defaults, same tier-1 slot `attire.py` reserves
-    for it. `faction_by_self`/`mob_faction`/`region` are plain caller-
-    supplied names (the graph has nowhere to store them yet -- see
-    `attire.py`'s docstring) looked up against the seeded tables.
+    genre default, same tier-1 slot `attire.py` reserves for it. Faction, rank
+    and region parameters were removed with the per-novel tables they indexed.
 
     Returns an empty cast (environment only) when `block_index` falls
     outside every tracked scene -- e.g. a chapter with no detected
@@ -93,7 +88,7 @@ def get_panel_cast(
         (s for s in scenes if s.block_from <= block_index <= s.block_to), None
     )
     if scene is None:
-        return PanelCast(environment=resolve_attire(novel_id, region=region))
+        return PanelCast(environment=resolve_attire(novel_id))
 
     lo, hi = block_window or (block_index, block_index)
     lo, hi = max(lo, scene.block_from), min(hi, scene.block_to)
@@ -127,29 +122,16 @@ def get_panel_cast(
     foreground: list[CharacterCast] = []
     for name in sorted(local_cast):
         explicit = None
-        rank = None
         persona_id = (persona_id_by_self or {}).get(name)
         if store is not None and persona_id:
             attrs = store.get_attributes(TargetKind.PERSONA, persona_id)  # type: ignore[attr-defined]
             explicit = next(
                 (a.value for a in attrs if a.key == "attire" and a.is_standing), None
             )
-            # `rank_insignia` is the appearance extractor's own vocabulary
-            # for this (e.g. "... Rank two Gu Master") -- reused here rather
-            # than adding a second rank source, so a character with no
-            # attire of their own but a known title still gets something
-            # closer than the novel's generic drawing style.
-            rank = next(
-                (a.value for a in attrs if a.key == "rank_insignia" and a.is_standing),
-                None,
-            )
-        faction = (faction_by_self or {}).get(name)
         foreground.append(
             CharacterCast(
                 self_label=name,
-                attire=resolve_attire(
-                    novel_id, explicit=explicit, faction=faction, rank=rank, region=region
-                ),
+                attire=resolve_attire(novel_id, explicit=explicit),
             )
         )
 
@@ -165,17 +147,16 @@ def get_panel_cast(
         # frame. Match the foreground scoping.
         if not (lo <= mob.block_index <= hi):
             continue
-        faction = (mob_faction or {}).get(mob.role)
         background.append(
             MobCast(
                 role=mob.role,
                 description=mob.text,
-                attire=resolve_attire(novel_id, faction=faction, region=region),
+                attire=resolve_attire(novel_id),
             )
         )
 
     return PanelCast(
         foreground_characters=foreground,
         background_mobs=background,
-        environment=resolve_attire(novel_id, region=region),
+        environment=resolve_attire(novel_id),
     )

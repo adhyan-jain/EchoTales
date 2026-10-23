@@ -664,7 +664,6 @@ def _genre_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
     """The project's visual genre for the Settings page: what is chosen, what detection proposes, and the options."""
     from echotales.pipeline.persona.genre import (
         GENRES,
-        NOVEL_GENRE,
         detect_genre_cached,
         stored_genre,
     )
@@ -675,7 +674,7 @@ def _genre_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
     return {
         "visual_genre": chosen,
         "detected_genre": detected,
-        "effective_genre": chosen or NOVEL_GENRE.get(novel_id) or detected,
+        "effective_genre": chosen or detected,
         "genres": [{"id": key, "label": prof.label} for key, prof in GENRES.items()],
     }
 

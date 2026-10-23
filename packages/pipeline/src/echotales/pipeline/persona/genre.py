@@ -153,6 +153,16 @@ GENRES: dict[str, GenreProfile] = {
         wardrobe="hanfu, wide-sleeved robes, ancient chinese clothing, sash",
         wardrobe_female="hanfu, flowing dress, ancient chinese clothing, hair ornaments",
         mismatch_props=("modern clothes", "modern clothing", "school uniform", "hoodie", "jeans", "business suit"),
+        scene_locales={
+            "hall": "inside a timber clan hall, carved pillars, hanging banners",
+            "courtyard": "a walled stone courtyard, flagstones, low roofs beyond",
+            "mountain": "a narrow mountain path, pine and mist, cliffs falling away",
+            "cave": "a damp stone cave, rough walls, torchlight",
+            "village": "a terraced hillside village, tiled roofs, stone steps",
+            "forest": "a dense bamboo grove, shafts of light",
+            "night": "a moonlit courtyard at night, deep shadows, paper lanterns",
+            "night_wild": "a dark forest clearing under moonlight, twisted branches",
+        },
         setting_first=False,
         appearance={"hair_color": "black", "eye_color": "dark brown", "skin_tone": "fair"},
         lexicon=("cultivat*", "sect", "dao", "qi", "dantian", "immortal", "martial", "elder", "clan", "spirit stone",
@@ -187,6 +197,17 @@ GENRES: dict[str, GenreProfile] = {
         wardrobe="victorian era, tailcoat, waistcoat, cravat, gloves",
         wardrobe_female="victorian era, long dress, corset, high collar, gloves",
         mismatch_props=("xianxia", "hanfu", "cultivator", "samurai", "kimono", "cyberpunk", "futuristic armor"),
+        scene_locales={
+            "hall": "a panelled Victorian study, bookshelves, oil lamp",
+            "courtyard": "a fog-bound cobbled square, iron railings",
+            "mountain": "a bleak coastal cliff, grey sky",
+            "cave": "a brick undercroft, dripping arches, lantern light",
+            "village": "a narrow terraced street, chimney pots, gaslight",
+            "forest": "a bare winter wood, mist between trunks",
+            "night": "a gaslit street at night, long shadows, fog",
+            "night_wild": "a moonlit moor, low cloud",
+            "bedroom": "a modest Victorian bedroom, lamplight",
+        },
         appearance={"hair_color": "brown", "eye_color": "grey", "skin_tone": "pale"},
         lexicon=("carriage", "gas lamp", "gaslight", "revolver", "top hat", "cravat", "waistcoat", "pence", "soli",
                  "cathedral", "occult", "tarot", "madam", "steam", "shilling", "coachman", "bonnet", "parlour",
@@ -369,13 +390,6 @@ GENRES: dict[str, GenreProfile] = {
     ),
 }
 
-#: The three research novels, so their renders keep the profile they were tuned under without a database lookup.
-NOVEL_GENRE: dict[str, str] = {
-    "reverend-insanity": "xianxia",
-    "lord-of-the-mysteries": "victorian_gothic",
-    "omniscient-readers-viewpoint": "modern_apocalypse",
-}
-
 #: Set per process by `use_store_genre`: a project's stored or detected genre.
 _PROJECT_GENRE: dict[str, str] = {}
 
@@ -385,7 +399,7 @@ def genre_of(novel_id: str) -> str:
     # xianxia vocabulary; they keep it. A real project id the tables do not list is what drew new books as xianxia.
     if not novel_id:
         return "xianxia"
-    return _PROJECT_GENRE.get(novel_id) or NOVEL_GENRE.get(novel_id) or "generic"
+    return _PROJECT_GENRE.get(novel_id) or "generic"
 
 
 def profile(novel_id: str) -> GenreProfile:
@@ -462,6 +476,6 @@ def use_store_genre(store: Store, novel_id: str) -> str:
     at the top of every image-generating entry point (`render_panels`, `generate_references`), since the lookups in
     `attire.py` see only the novel id.
     """
-    genre = stored_genre(store, novel_id) or NOVEL_GENRE.get(novel_id) or detect_genre_cached(store, novel_id)[0]
+    genre = stored_genre(store, novel_id) or detect_genre_cached(store, novel_id)[0]
     _PROJECT_GENRE[novel_id] = genre
     return genre

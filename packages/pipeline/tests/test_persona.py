@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from echotales.core.enums import AliasType, BlockType, ReferenceMode, SpanType, TargetKind
 from echotales.core.models import (
     MAIN_TIMELINE,
@@ -60,55 +62,28 @@ def _span(text: str, block_index: int) -> Span:
     )
 
 
+@pytest.fixture(autouse=True)
+def _project_genres():
+    # A project's genre is stored or detected from its text; these tests stand in for that for the old test books.
+    from echotales.pipeline.persona import genre
+
+    saved = dict(genre._PROJECT_GENRE)
+    genre._PROJECT_GENRE.update({"reverend-insanity": "xianxia"})
+    yield
+    genre._PROJECT_GENRE.clear()
+    genre._PROJECT_GENRE.update(saved)
+
+
 class TestResolveAttire:
-    def test_explicit_wins_over_everything(self) -> None:
-        assert (
-            resolve_attire(
-                "reverend-insanity", explicit="a scholar's robe", faction="Gu Yue Clan"
-            )
-            == "a scholar's robe"
-        )
+    def test_explicit_wins(self) -> None:
+        assert resolve_attire("reverend-insanity", explicit="a scholar's robe") == "a scholar's robe"
 
-    def test_faction_default_when_no_explicit(self) -> None:
-        out = resolve_attire("reverend-insanity", faction="Gu Yue Clan")
-        assert "silk cultivator robes" in out
-
-    def test_regional_default_when_no_faction_match(self) -> None:
-        out = resolve_attire("reverend-insanity", faction="unknown sect", region="Southern Border")
-        assert "bamboo" in out
-
-    def test_rank_default_when_no_faction_match(self) -> None:
-        """Fix 7: a fifth tier between faction and region -- a character
-        with no known faction but a stated title still gets closer than the
-        novel's generic drawing style."""
-        out = resolve_attire("reverend-insanity", rank="Dark Hall Elder")
-        assert "elder" in out
-
-    def test_rank_is_a_substring_match(self) -> None:
-        """Ranks are rarely stated as the bare keyword alone -- "square
-        steel piece ... Rank two Gu Master" is real extracted text, not
-        "disciple" on its own."""
-        out = resolve_attire(
-            "reverend-insanity",
-            rank="square steel piece in the center of the belt - Rank two Gu Master disciple",
-        )
-        assert "disciple" in out
-
-    def test_faction_wins_over_rank(self) -> None:
-        out = resolve_attire("reverend-insanity", faction="Gu Yue Clan", rank="Elder")
-        assert "silk cultivator robes" in out
-
-    def test_rank_wins_over_region(self) -> None:
-        out = resolve_attire("reverend-insanity", rank="Elder", region="Southern Border")
-        assert "elder" in out
-
-    def test_falls_back_to_novel_style(self) -> None:
-        out = resolve_attire("reverend-insanity")
-        assert "xianxia" in out
+    def test_falls_back_to_the_genre_style(self) -> None:
+        assert "xianxia" in resolve_attire("reverend-insanity")
 
     def test_unseeded_novel_gets_a_labelled_default(self) -> None:
         out = resolve_attire("some-other-novel")
-        assert "no further style data" in out
+        assert out and "xianxia" not in out
 
 
 class TestGetPanelCast:
@@ -129,29 +104,6 @@ class TestGetPanelCast:
         )
         assert [c.self_label for c in cast.foreground_characters] == ["Fang Yuan"]
         assert "xianxia" in cast.environment
-
-    def test_faction_default_applied_to_a_named_character(self) -> None:
-        chapter = Chapter(
-            novel_id="reverend-insanity",
-            number=1.0,
-            title="T",
-            source_href="a.html",
-            blocks=[Block(index=0, block_type=BlockType.PROSE, text="Fang Yuan stood.")],
-        )
-        mentions = [_mention("Fang Yuan", 0)]
-        spans = [_span("Fang Yuan stood.", 0)]
-        segments = [_segment(0, 0)]
-
-        cast = get_panel_cast(
-            "reverend-insanity",
-            chapter,
-            0,
-            mentions=mentions,
-            segments=segments,
-            spans=spans,
-            faction_by_self={"Fang Yuan": "Gu Yue Clan"},
-        )
-        assert "silk cultivator robes" in cast.foreground_characters[0].attire
 
     def test_background_mob_scoped_to_exact_block(self) -> None:
         chapter = Chapter(

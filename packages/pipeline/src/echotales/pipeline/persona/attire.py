@@ -16,61 +16,10 @@ from __future__ import annotations
 
 import re
 
-#: novel_id -> faction name (lowercased) -> attire description.
-FACTION_ATTIRE: dict[str, dict[str, str]] = {
-    "reverend-insanity": {
-        "gu yue clan": "green and brown silk cultivator robes with a silver clan emblem",
-        "white province": "plain grey hemp robes, minimal ornamentation",
-    },
-    "lord-of-the-mysteries": {
-        "nighthawks": "black formal trench coat, red glove, top hat, dark trousers",
-        "evernight church": "dark blue clerical cassock, silver emblem of crimson moon and stars",
-        "secret order": "dark hooded cloak, mysterious ritual robes with secret symbols",
-        "mi9": "formal military intelligence uniform, tailored dark coat, high leather boots",
-    },
-}
-
-#: novel_id -> rank keyword (lowercased) -> attire description, checked as a
-#: substring of whatever rank text the caller has (a title like "Dark Hall
-#: Elder" or a `rank_insignia` appearance attribute) -- ranks are rarely
-#: stated as the bare keyword alone, so an exact-match lookup would miss
-#: almost everything a real title contains.
-#:
-#: Sits between faction and region: a character's rank is closer to their
-#: own identity than the region they happen to be standing in, but a named
-#: faction (when known) still says more about what they'd actually wear than
-#: a generic rank bucket does.
-RANK_ATTIRE: dict[str, dict[str, str]] = {
-    "reverend-insanity": {
-        "elder": "aged sect elder's formal robes, dark trim, walking staff",
-        "sect master": "ornate sect master's ceremonial robes, sect crest prominent",
-        "disciple": "simple disciple's robes in sect colours, plain sash",
-    },
-    "lord-of-the-mysteries": {
-        "captain": "formal black trench coat, top hat, brass pocket watch chain",
-        "bishop": "ceremonial dark blue clerical robes, silver star and moon emblem",
-        "beyonder": "Victorian coat, dark formal trousers, high collar shirt, cravat",
-    },
-}
 
 
-#: novel_id -> region name (lowercased) -> aesthetic description.
-REGIONAL_AESTHETIC: dict[str, dict[str, str]] = {
-    "reverend-insanity": {
-        "southern border": "mountainous cultivation-sect robes, bamboo accessories",
-    },
-    "lord-of-the-mysteries": {
-        "tingen": "Loen kingdom Victorian street attire, formal suits and bowler hats",
-        "backlund": "formal Victorian high-society attire, dark double-breasted coats, tailcoats, top hats",
-    },
-}
 
-#: novel_id -> fallback house style when nothing more specific is known.
-NOVEL_STYLE: dict[str, str] = {
-    "reverend-insanity": "xianxia web-novel illustration, Gu-worm era Chinese fantasy",
-    "lord-of-the-mysteries": "Victorian gaslamp fantasy, muted desaturated palette",
-    "omniscient-readers-viewpoint": "modern Korean urban apocalypse, high contrast",
-}
+
 
 _DEFAULT_STYLE = "web-novel illustration, no further style data seeded for this novel"
 
@@ -91,170 +40,12 @@ def _genre_named(name: str):  # -> GenreProfile
 
     return GENRES[name]
 
-#: The world a panel is set in, per novel.
-#:
-#: **Distinct from `NOVEL_STYLE`, which is a drawing style, not a place.**
-#: That distinction was invisible until real panels came out: the panel
-#: prompt's "environment" slot was being filled by `resolve_attire`, whose
-#: last tier returns `"xianxia web-novel illustration, Gu-worm era Chinese
-#: fantasy"` -- an instruction about *how to draw*, containing nothing about
-#: where anyone is standing. The result was characters floating on abstract
-#: ink swirls with no world behind them.
-#:
-#: These are scenery nouns on purpose. A diffusion model draws a courtyard
-#: when told "stone courtyard"; it draws nothing recognisable when told
-#: "Chinese fantasy". Kept per novel because the settings genuinely differ
-#: -- RI's cultivation villages and ORV's collapsing Seoul share no
-#: architecture at all.
-WORLD_SETTING: dict[str, str] = {
-    "reverend-insanity": (
-        "ancient Chinese cultivation world, stone courtyards, timber halls "
-        "with upturned tiled roofs, bamboo groves, terraced mountain "
-        "villages, mist over jagged peaks, stone steps, paper lanterns"
-    ),
-    "lord-of-the-mysteries": (
-        "Victorian gaslamp city, cobbled streets, wrought-iron street lamps, "
-        "brick townhouses, fog, horse-drawn carriages, cathedral spires"
-    ),
-    "omniscient-readers-viewpoint": (
-        "modern Seoul in collapse, subway tunnels, cracked asphalt, "
-        "toppled high-rises, overturned cars, rebar and rubble, ash sky"
-    ),
-}
 
 _DEFAULT_WORLD = "detailed background environment"
 
-#: **Grounded in the novel's own text, not wiki paraphrase.** Every claim
-#: below is a verified quote pulled from `data/archive/db/echotales.db`'s `span`
-#: table (novel `reverend-insanity`, chapter<=30, narration/exposition
-#: spans only) via the same citation-forcing discipline as
-#: `resolve/appearance_extract.py` -- an LLM extraction pass over these
-#: passages was tried first and every claim it returned was discarded on
-#: substring verification (it paraphrased instead of quoting), so this
-#: entry was hand-built directly from the same passages, checked the same
-#: way: nothing here that isn't a literal substring of the source text.
-#: Wiki/fandom sources were checked only for terminology spelling, never
-#: as the source of what's visually true here.
-#:
-#: Citations:
-#: - "level of a level three Gu Master... rank one senior Gu Master...
-#:   rank two senior Gu Master... rank three Gu Masters" (ch1-3): the
-#:   ranked-cultivator system is called "Gu Master", not the generic
-#:   xianxia "cultivator".
-#: - "a large number of primeval stones... the foundation of the Gu Yue
-#:   village... the purchasing power of primeval stones" (ch2-3):
-#:   primeval stones, not gold/spirit-stones, are this world's currency.
-#: - "The light transformed into a small moonblade in the air, the faint
-#:   blue moonblade..." / "to throw out a single moonblade attack, one
-#:   would need to use up 10% of..." (ch8-9, ~30 occurrences): the
-#:   signature *ranged* combat technique is a thrown glowing blue energy
-#:   projectile called a "moonblade" -- not a wielded sword or blade.
-#: - "in the middle of the Gu Yue Village was a magnificent pavilion. A
-#:   grand ceremony was being held..." (ch1): Gu Yue Village has a
-#:   central ceremonial pavilion, not a throne hall.
-#: - "Gu Yue clan came to Qing Mao Mountain and settled down after
-#:   migrating from the central lands to the South Border" (ch1): the
-#:   village sits on Qing Mao Mountain, in the South Border region.
-#: - "Qing Mao Mountain's unique spear bamboo, each bamboo stick as
-#:   straight as a line" (ch1): bamboo groves are a real, stated feature
-#:   of the mountain, not a generic filler.
-#: - "they found a spirit spring in this underground cave" (ch1): an
-#:   underground spirit spring beneath the village, not a surface well.
-#: - Trope-absence, counted rather than assumed: "sword" appears exactly
-#:   twice across 276 world-building passages in chapters 1-30, both as a
-#:   figurative simile ("his gaze sharp like a sword") -- zero literal
-#:   sword weapons. "worm"/"Gu" appear 408 times combined in the same
-#:   passage set. See `GENRE_MISMATCH_PROPS` below.
-#: **Kept short on purpose -- see `fit_to_budget`'s docstring.** This is
-#: injected as one atomic tier-3 part (`Direction.to_image_prompt_parts`),
-#: not split into pieces the way tier 1's identity/condition clauses are,
-#: so it either survives whole or is dropped whole. Two measured misses
-#: before this length: a first ~55-token version never once survived
-#: across an 11-panel verification render, and a still-too-long ~25-token
-#: revision lost to `scene_locale` on the one truly empty-cast panel
-#: tested (block 36: 57 tokens of tier 0-2 content already spent before
-#: tier 3 is even considered, leaving ~18 of the 75 usable tokens --
-#: `scene_locale`'s own entries run 10-15). Cut to the two claims that
-#: actually fight genre-trope drift (the system's name, and the explicit
-#: swords negation) and dropped the location nouns, which `scene_locale`
-#: already covers on its own.
-#: `hanfu` added after the swords fix was verified: the same absence
-#: mechanism (nothing positively asserts a garment register, so an
-#: empty-cast beat gets whatever the checkpoint's own prior fills in)
-#: was measured producing a modern schoolgirl outfit, turtleneck
-#: sweaters and a modern jacket on three genuinely empty-cast panels
-#: (RI ch1 blocks 42, 51, 75) -- none of it in any prompt, all of it
-#: the checkpoint's default when nothing says otherwise. One token,
-#: same budget discipline as the rest of this entry.
-WORLD_CONTEXT: dict[str, str] = {
-    "reverend-insanity": "Gu cultivation, Gu Masters, moonblade attacks not swords, hanfu",
-    # **Citation-verified against `data/scratch/reruns/lord-of-the-mysteries.db`'s
-    # `span` table, same discipline as the RI entry above (nothing here that
-    # isn't a literal substring or a directly counted claim from the source
-    # text).**
-    # - "what can I do to become a Beyonder?" / "join the Churches of either
-    #   the Evernight Goddess, the Lord of Storms, or the God of Steam and
-    #   Machinery" -- Beyonders and named Churches are the world's power
-    #   system, not a generic "magic".
-    # - "I have two sets of Sequence 9 potion formulas" / "humanity can only
-    #   depend on potions to become real Beyonders" -- power comes from
-    #   drunk/injected potions tied to a numbered "Sequence", not a cast
-    #   spell or a cultivated internal energy.
-    # - "My tarot divination is very accurate" -- tarot cards are an actual
-    #   in-world divination tool, not set dressing.
-    # - "the most common gas lamp of the times" / "using candles was most
-    #   apt for their standing and stature" / "installing gas pipes" --
-    #   gaslight-era interiors, not electric light.
-    # - Trope-check, counted rather than assumed: "sword" appears 53 times
-    #   across the volume's spans versus "gun"/"revolver" 230 times --
-    #   firearms, not blades, are this world's default weapon.
-    "lord-of-the-mysteries": (
-        "Beyonder potions, Sequence pathways, tarot divination, "
-        "gaslamp Victorian era, revolvers not swords"
-    ),
-}
 
-#: **The genre/rendering-style anchor, per novel.** `STYLE_ANCHOR` used to be
-#: one hardcoded module-level string in `persona/prompt.py`
-#: ("guofeng illustration, chinese ink painting, xianxia") applied to every
-#: panel of every novel regardless of `novel_id` -- confirmed as the actual
-#: root cause of LOTM renders coming out xianxia-styled (its own
-#: `WORLD_CONTEXT`/`WORLD_SETTING`/`SCENE_LOCALES` entries were already
-#: correct and novel-keyed; only the style/rendering layer was not). Kept
-#: short for the same budget reason `STYLE_ANCHOR`'s own comment gives: it
-#: sits at tier 0, the highest-priority slot, so it should stay a handful of
-#: words.
-STYLE_ANCHOR_BY_NOVEL: dict[str, str] = {
-    "reverend-insanity": "guofeng illustration, chinese ink painting, xianxia",
-    "lord-of-the-mysteries": "gothic engraving illustration, Victorian ink etching, occult mystery",
-    "omniscient-readers-viewpoint": "modern manhwa illustration, high contrast urban apocalypse",
-}
 
-#: The fuller style/rendering block appended late in the prompt (`_MANGA_BASE`
-#: in `persona/prompt.py`), per novel. RI's text is the pipeline's original,
-#: unchanged; LOTM's swaps every China/xianxia-specific term (ink wash, hanfu,
-#: wuxia) for a Victorian-gothic equivalent grounded in the same
-#: `WORLD_CONTEXT` citations above (gaslamp fog, tailored coats, engraving
-#: linework) rather than invented genre assumptions.
-MANGA_BASE_BY_NOVEL: dict[str, str] = {
-    "reverend-insanity": (
-        "guofeng illustration, chinese ink painting, xianxia, wuxia, "
-        "ancient chinese fantasy, hanfu with long wide sleeves, "
-        "ink wash, muted limited palette, "
-        "elegant brushwork, negative space, subtle gradients, "
-        "solemn atmosphere, mature serious art style"
-    ),
-    "lord-of-the-mysteries": (
-        "gothic engraving illustration, Victorian occult mystery, "
-        "period-accurate tailored coats and waistcoats, "
-        "cross-hatched linework, desaturated muted palette, fog and gaslight, "
-        "ornate negative space, subtle gradients, "
-        "solemn atmosphere, mature serious art style"
-    ),
-}
 
-_DEFAULT_STYLE_ANCHOR = STYLE_ANCHOR_BY_NOVEL["reverend-insanity"]
-_DEFAULT_MANGA_BASE = MANGA_BASE_BY_NOVEL["reverend-insanity"]
 
 
 def setting_first(novel_id: str) -> bool:
@@ -268,134 +59,35 @@ def style_anchor(novel_id: str) -> str:
     Falls back to the novel's genre profile (`persona/genre.py`) for an unmapped `novel_id`; it used to fall back to
     RI's own value, which drew every unlisted novel as xianxia.
     """
-    return STYLE_ANCHOR_BY_NOVEL.get(novel_id) or _genre(novel_id).style_anchor
+    return _genre(novel_id).style_anchor
 
 
 def manga_base(novel_id: str) -> str:
     """The fuller style/rendering block for this novel. See `style_anchor`."""
-    return MANGA_BASE_BY_NOVEL.get(novel_id) or _genre(novel_id).manga_base
+    return _genre(novel_id).manga_base
 
 
-#: Reference-sheet equivalents of `STYLE_ANCHOR_BY_NOVEL`/`MANGA_BASE_BY_NOVEL`
-#: -- same hardcoding-to-per-novel fix, for `persona/reference_gen.py`'s
-#: `REFERENCE_ANCHOR`/`REFERENCE_STYLE`, which shared the RI-only vocabulary
-#: deliberately (see that module's own comment on why it mirrors
-#: `persona/prompt.py`).
-REFERENCE_ANCHOR_BY_NOVEL: dict[str, str] = {
-    "reverend-insanity": (
-        "three-quarter shot from head to thigh, "
-        "guofeng illustration, chinese ink painting, xianxia"
-    ),
-    "lord-of-the-mysteries": (
-        "three-quarter shot from head to thigh, "
-        "gothic engraving illustration, Victorian ink etching, occult mystery"
-    ),
-}
 
-REFERENCE_STYLE_BY_NOVEL: dict[str, str] = {
-    "reverend-insanity": (
-        "solo, single character, three-quarter shot from head to thigh, "
-        "facing viewer, detailed face, plain background, "
-        "guofeng illustration, chinese ink painting, xianxia, wuxia, "
-        "hanfu with long wide sleeves, ink wash, muted limited palette, "
-        "serious cold expression, mature proportions, sharp features"
-    ),
-    "lord-of-the-mysteries": (
-        "solo, single character, three-quarter shot from head to thigh, "
-        "facing viewer, detailed face, plain background, "
-        "gothic engraving illustration, Victorian occult mystery, "
-        "period-accurate tailored coat and waistcoat, "
-        "cross-hatched linework, desaturated muted palette, "
-        "serious cold expression, mature proportions, sharp features"
-    ),
-}
 
-_DEFAULT_REFERENCE_ANCHOR = REFERENCE_ANCHOR_BY_NOVEL["reverend-insanity"]
-_DEFAULT_REFERENCE_STYLE = REFERENCE_STYLE_BY_NOVEL["reverend-insanity"]
 
 
 def reference_anchor(novel_id: str) -> str:
     """The short reference-sheet framing/medium anchor for this novel."""
-    return REFERENCE_ANCHOR_BY_NOVEL.get(novel_id) or _genre(novel_id).reference_anchor
+    return _genre(novel_id).reference_anchor
 
 
 def reference_style(novel_id: str) -> str:
     """The fuller reference-sheet style block for this novel."""
-    return REFERENCE_STYLE_BY_NOVEL.get(novel_id) or _genre(novel_id).reference_style
+    return _genre(novel_id).reference_style
 
 
-#: **The cheapest fix for hands is to not show them -- but "long draping
-#: sleeves" is hanfu, not a universal.** Found the same way as
-#: `STYLE_ANCHOR_BY_NOVEL`: this was one hardcoded RI-specific clause
-#: (`persona/prompt.py::hands_clause`) applied to every novel's empty-handed
-#: beats, so a Victorian LOTM panel was getting "hands concealed in long
-#: draping sleeves" -- garment vocabulary this novel's own `GENRE_MISMATCH_
-#: PROPS` negatives out elsewhere. Gloved hands and coat pockets are the
-#: period-appropriate equivalent concealment for Victorian dress.
-HANDS_CLAUSE_BY_NOVEL: dict[str, str] = {
-    "reverend-insanity": "hands concealed in long draping sleeves",
-    "lord-of-the-mysteries": "gloved hands, one resting in a coat pocket",
-}
-_DEFAULT_HANDS_CLAUSE = HANDS_CLAUSE_BY_NOVEL["reverend-insanity"]
 
 
 def hands_default_clause(novel_id: str) -> str:
     """The genre-appropriate hands-concealed fallback for this novel."""
-    return HANDS_CLAUSE_BY_NOVEL.get(novel_id) or _genre(novel_id).hands_clause
+    return _genre(novel_id).hands_clause
 
-#: Props/clothing this novel's genre (xianxia) suggests by default but
-#: the text itself does not support -- see `WORLD_CONTEXT`'s trope-
-#: absence citation. Suppressed in the negative prompt *unless* the
-#: current beat's own narration names one of these, so a scene that
-#: genuinely has one is not silently overridden. Deliberately excludes
-#: "moonblade" as a substring collision -- `genre_mismatch_negative`
-#: matches whole words, so "blade" alone does not match inside
-#: "moonblade", but a future reader adding terms here should keep that
-#: in mind.
-GENRE_MISMATCH_PROPS: dict[str, tuple[str, ...]] = {
-    "reverend-insanity": (
-        "sword", "blade", "saber", "sabre", "katana", "scimitar",
-        # Modern clothing: same measured leak as the weapons above, on
-        # empty-cast beats where no attire clause survives (blocks 42,
-        # 51, 75 -- a schoolgirl outfit, turtleneck sweaters, a modern
-        # jacket, none of it stated anywhere in the prompt).
-        "modern clothes", "modern clothing", "turtleneck", "sweater",
-        "school uniform", "hoodie", "jeans", "business suit", "necktie",
-        "collared shirt",
-    ),
-    "lord-of-the-mysteries": (
-        "xianxia", "hanfu", "cultivator", "gu worm", "magic wand",
-        "samurai", "kimono", "cyberpunk", "futuristic armor",
-    ),
-}
 
-#: Concrete locales per novel, keyed by a cue word that suggests them.
-#: `world_setting` is the world's general vocabulary; these are *places*, and
-#: a panel needs one specific place rather than a list of everything the
-#: world contains.
-SCENE_LOCALES: dict[str, dict[str, str]] = {
-    "reverend-insanity": {
-        "hall": "inside a timber clan hall, carved pillars, hanging banners",
-        "courtyard": "a walled stone courtyard, flagstones, low roofs beyond",
-        "mountain": "a narrow mountain path, pine and mist, cliffs falling away",
-        "cave": "a damp stone cave, rough walls, torchlight",
-        "village": "a terraced hillside village, tiled roofs, stone steps",
-        "forest": "a dense bamboo grove, shafts of light",
-        "night": "a moonlit courtyard at night, deep shadows, paper lanterns",
-        "night_wild": "a dark forest clearing under moonlight, twisted branches",
-    },
-    "lord-of-the-mysteries": {
-        "hall": "a panelled Victorian study, bookshelves, oil lamp",
-        "courtyard": "a fog-bound cobbled square, iron railings",
-        "mountain": "a bleak coastal cliff, grey sky",
-        "cave": "a brick undercroft, dripping arches, lantern light",
-        "village": "a narrow terraced street, chimney pots, gaslight",
-        "forest": "a bare winter wood, mist between trunks",
-        "night": "a gaslit street at night, long shadows, fog",
-        "night_wild": "a moonlit moor, low cloud",
-        "bedroom": "a modest Victorian bedroom, lamplight",
-    },
-}
 
 #: Cue word -> locale key. Checked against the block's own text, so the
 #: setting suits the scene rather than being decided by a coin flip.
@@ -455,7 +147,7 @@ def scene_locale(
     an explicit cue rotated to a different locale than its neighbour by
     sheer block-index arithmetic.
     """
-    locales = SCENE_LOCALES.get(novel_id) or _genre(novel_id).scene_locales
+    locales = _genre(novel_id).scene_locales
     if not locales:
         return ""
 
@@ -551,7 +243,7 @@ def hostile_confrontation_modifier(text: str) -> str:
 
 def world_setting(novel_id: str) -> str:
     """The scenery vocabulary for this novel's world."""
-    return WORLD_SETTING.get(novel_id) or _genre(novel_id).world_setting
+    return _genre(novel_id).world_setting
 
 
 def world_context(novel_id: str) -> str:
@@ -566,41 +258,9 @@ def world_context(novel_id: str) -> str:
     back to `_DEFAULT_WORLD` -- an absent primer should mean "say
     nothing extra", not "describe a generic environment twice".
     """
-    return WORLD_CONTEXT.get(novel_id) or _genre(novel_id).world_context
+    return _genre(novel_id).world_context
 
 
-#: Per-novel appearance defaults, filling attributes the prose never states.
-#:
-#: **A default is not a guess, and it is not randomness.** The text of a
-#: Chinese cultivation novel does not stop to say its characters have black
-#: hair for the same reason an English novel does not say its characters
-#: have two hands -- it is assumed. Leaving those fields empty hands the
-#: choice to the diffusion model, which invents a *different* answer per
-#: panel and produces exactly the chapter-to-chapter drift the reference
-#: sheet exists to prevent. A stated-once default is stable, correct far
-#: more often than not, and always overridden by anything the text
-#: actually says (`resolve_appearance` applies it last).
-#:
-#: Keyed per novel rather than globally because the setting decides: RI and
-#: ORV are East Asian, LOTM is Victorian-European pastiche, and giving all
-#: three the same hair is how a background crowd ends up looking wrong.
-APPEARANCE_DEFAULTS: dict[str, dict[str, str]] = {
-    "reverend-insanity": {
-        "hair_color": "black",
-        "eye_color": "dark brown",
-        "skin_tone": "fair",
-    },
-    "omniscient-readers-viewpoint": {
-        "hair_color": "black",
-        "eye_color": "dark brown",
-        "skin_tone": "fair",
-    },
-    "lord-of-the-mysteries": {
-        "hair_color": "brown",
-        "eye_color": "grey",
-        "skin_tone": "pale",
-    },
-}
 
 #: Used when a novel has no seeded table. Deliberately the East Asian
 #: default: this pipeline's target corpus is predominantly translated
@@ -618,54 +278,22 @@ def resolve_appearance(novel_id: str, stated: dict[str, str]) -> dict[str, str]:
     Anything the text stated wins outright -- this only ever adds keys, and
     never overwrites one that came from the prose.
     """
-    defaults = APPEARANCE_DEFAULTS.get(novel_id)
-    if defaults is None:
-        # A named non-East-Asian genre gets no hair/eye default rather than the East Asian fallback below.
-        prof = _genre(novel_id)
-        defaults = prof.appearance if prof.appearance or prof is not _genre_named("generic") else _FALLBACK_APPEARANCE
+    # A named non-East-Asian genre gets no hair/eye default rather than the East Asian fallback below.
+    prof = _genre(novel_id)
+    defaults = prof.appearance if prof.appearance or prof is not _genre_named("generic") else _FALLBACK_APPEARANCE
     out = dict(defaults)
     out.update({k: v for k, v in stated.items() if v})
     return out
 
 
-def resolve_attire(
-    novel_id: str,
-    *,
-    explicit: str | None = None,
-    faction: str | None = None,
-    rank: str | None = None,
-    region: str | None = None,
-) -> str:
-    """Walk the 5-tier chain and return the first tier that has an answer.
+def resolve_attire(novel_id: str, *, explicit: str | None = None) -> str:
+    """What a character wears: the attire already resolved from the book, else the genre's house style.
 
-    `explicit` is whatever the caller already resolved for this specific
-    character (a persona attribute, if one exists -- see the package
-    docstring for why that's usually `None` today). `faction`/`rank`/
-    `region` are plain text, looked up case-insensitively against the
-    tables above -- `rank` as a substring match (see `RANK_ATTIRE`), the
-    other two exact.
-
-    The bottom of the old 4-tier chain (`NOVEL_STYLE`) is an instruction
-    about *how to draw*, not a garment -- correct as a style suffix, wrong
-    as an attire clause for an undescribed character. `rank` gives one more
-    real tier before falling back to that: a character with no extracted
-    attire and no known faction usually still has a stated or inferable
-    rank ("Elder", "Disciple"), and that says far more about what they'd
-    plausibly wear than the novel's overall drawing style does.
+    The faction, rank and region tiers were hand-written tables keyed by three novel ids, so any other book skipped
+    them (product plan step 2, 2026-10-24). A faction or rank the reader extracts from the text arrives as `explicit`.
+    The last tier is an instruction about how to draw, not a garment; it only keeps an undescribed character from
+    being drawn with nothing at all.
     """
     if explicit:
         return explicit
-    if faction:
-        hit = FACTION_ATTIRE.get(novel_id, {}).get(faction.strip().lower())
-        if hit:
-            return hit
-    if rank:
-        low = rank.strip().lower()
-        for keyword, hit in RANK_ATTIRE.get(novel_id, {}).items():
-            if keyword in low:
-                return hit
-    if region:
-        hit = REGIONAL_AESTHETIC.get(novel_id, {}).get(region.strip().lower())
-        if hit:
-            return hit
-    return NOVEL_STYLE.get(novel_id) or _genre(novel_id).novel_style
+    return _genre(novel_id).novel_style
