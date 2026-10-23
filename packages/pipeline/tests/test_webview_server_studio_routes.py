@@ -83,44 +83,47 @@ def test_episodes_get_and_post(studio_server) -> None:
     assert "scenes" in compiled
 
 
-def test_shot_candidates_qa_and_locking(studio_server) -> None:
+def test_shot_routes_refuse_instead_of_inventing_qa(studio_server) -> None:
+    # They used to return 0.94 - i * 0.05 "scores" over recycled panels and a lock that stored nothing.
     port, _ = studio_server
     conn = HTTPConnection("127.0.0.1", port)
-
-    # 1. GET shot candidates
     conn.request("GET", "/api/novels/test_novel/episodes/ep1/shots/0/candidates")
     resp = conn.getresponse()
-    assert resp.status == 200
-    cands = json.loads(resp.read().decode())
-    assert len(cands) == 4
-    assert "qa_report" in cands[0]
-    assert cands[0]["qa_report"]["face_match"]["score"] >= 0.85
+    assert resp.status == 501
+    resp.read()
+    for action in ("reroll", "lock"):
+        conn.request("POST", f"/api/novels/test_novel/episodes/ep1/shots/0/{action}", body="{}",
+                     headers={"Content-Type": "application/json"})
+        resp = conn.getresponse()
+        assert resp.status == 501
+        resp.read()
 
-    # 2. POST reroll candidates
-    conn.request(
-        "POST",
-        "/api/novels/test_novel/episodes/ep1/shots/0/reroll",
-        body=json.dumps({"seed_offset": 50}),
-        headers={"Content-Type": "application/json"},
-    )
-    resp = conn.getresponse()
-    assert resp.status == 200
-    reroll_res = json.loads(resp.read().decode())
-    assert reroll_res["rerolled"] is True
-    assert len(reroll_res["candidates"]) == 4
 
-    # 3. POST lock candidate
-    conn.request(
-        "POST",
-        "/api/novels/test_novel/episodes/ep1/shots/0/lock",
-        body=json.dumps({"candidate_id": "cand_ep1_0_1"}),
-        headers={"Content-Type": "application/json"},
-    )
+def test_cross_site_writes_are_refused_and_cors_is_not_a_wildcard(studio_server) -> None:
+    port, _ = studio_server
+    conn = HTTPConnection("127.0.0.1", port)
+    conn.request("POST", "/api/novels/test_novel/episodes/ep1/shots/0/lock", body="{}",
+                 headers={"Origin": "https://evil.example", "Content-Type": "text/plain"})
     resp = conn.getresponse()
-    assert resp.status == 200
-    lock_res = json.loads(resp.read().decode())
-    assert lock_res["locked"] is True
-    assert lock_res["candidate_id"] == "cand_ep1_0_1"
+    assert resp.status == 403
+    resp.read()
+    conn.request("GET", "/api/novels", headers={"Origin": "https://evil.example"})
+    resp = conn.getresponse()
+    assert resp.getheader("Access-Control-Allow-Origin") is None
+    resp.read()
+    conn.request("GET", "/api/novels", headers={"Origin": "http://localhost:3000"})
+    resp = conn.getresponse()
+    assert resp.getheader("Access-Control-Allow-Origin") == "http://localhost:3000"
+    resp.read()
+
+
+def test_missing_candidate_image_is_404_not_another_panel(studio_server) -> None:
+    port, _ = studio_server
+    conn = HTTPConnection("127.0.0.1", port)
+    conn.request("GET", "/api/novels/test_novel/assets/candidate/nope/image")
+    resp = conn.getresponse()
+    assert resp.status == 404
+    resp.read()
 
 
 def test_turnaround_and_plate_generation(studio_server) -> None:

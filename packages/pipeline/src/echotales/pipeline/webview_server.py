@@ -99,6 +99,11 @@ from echotales.pipeline.webview import (
 #: which is the right tradeoff for a tool one person runs on their own
 #: machine -- there is no multi-user session store to build here.
 _AUTH_ENV_VAR = "ECHOTALES_WEBVIEW_PASSWORD"
+
+# The shot routes used to return invented QA scores over recycled panels and a lock that stored nothing. They stay
+# refused until they call keyframes/engine.py with a real KeyframeQAGate (product plan step 4); a screen that shows
+# numbers nobody measured is worse than no screen.
+_SHOT_QA_UNWIRED = "per-shot candidates, re-roll and lock are not wired to the keyframe engine yet; no QA score is shown that was not measured"
 _SESSION_TTL_SECONDS = 12 * 3600
 
 
@@ -815,8 +820,27 @@ def make_handler(
         # second request hangs. A socket timeout bounds that to 30 s.
         timeout = 30
 
+        def _origin_allowed(self) -> bool:
+            """The page that calls the API must be the one this server serves (same host and port) or a local dev
+            server. A wildcard let any website the owner visited drive the local server, including POSTs that write
+            corrections, with auth off by default (code review, 2026-10-24)."""
+            origin = self.headers.get("Origin")
+            if not origin:
+                return True
+            if origin == "null":
+                return False
+            netloc = urlparse(origin).netloc
+            if netloc == self.headers.get("Host"):
+                return True
+            host = urlparse(origin).hostname or ""
+            extra = {o.strip() for o in os.environ.get("ECHOTALES_CORS_ORIGINS", "").split(",") if o.strip()}
+            return host in ("localhost", "127.0.0.1", "::1") or origin in extra
+
         def _cors(self) -> None:
-            self.send_header("Access-Control-Allow-Origin", "*")
+            origin = self.headers.get("Origin")
+            if origin and self._origin_allowed():
+                self.send_header("Access-Control-Allow-Origin", origin)
+                self.send_header("Vary", "Origin")
             self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
             self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
@@ -1204,11 +1228,7 @@ def make_handler(
                         fpath = Path(cand.source_url.removeprefix("file://"))
                         if fpath.is_file():
                             return self._serve_file(fpath)
-                    # Fallback to an existing panel or placeholder image
-                    panel_dir = paths.asset_dir(novel_id, "panels")
-                    panels = sorted(panel_dir.glob("**/*.png"))
-                    if panels:
-                        return self._serve_file(panels[0])
+                    # No fallback to another panel: the UI showed an unrelated picture as if it were this candidate.
                     return self._json(404, {"error": "candidate image not found"})
 
                 # Phase B review gate (review_gate.py): ranked speaker lines, a character's look/identity timeline, lock state.
@@ -1379,39 +1399,7 @@ def make_handler(
                     return self._json(200, ep.to_dict())
 
                 if len(parts) == 8 and parts[:2] == ["api", "novels"] and parts[3] == "episodes" and parts[5] == "shots" and parts[7] == "candidates":
-                    novel_id = parts[2]
-                    ep_id = parts[4]
-                    shot_idx = int(parts[6])
-                    handle = registry.handles.get(novel_id)
-                    if handle is None:
-                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
-                    panel_files = sorted(paths.asset_dir(novel_id, "panels").glob("ch1/*.png"))
-                    if not panel_files:
-                        panel_files = sorted(paths.novel_root(novel_id).glob("**/*.png"))
-                    cands = []
-                    for i in range(4):
-                        img_url = ""
-                        if panel_files:
-                            chosen = panel_files[(shot_idx * 4 + i) % len(panel_files)]
-                            rel_p = chosen.relative_to(paths.novel_root(novel_id))
-                            img_url = f"/api/novels/{novel_id}/output/file?path={rel_p}"
-                        cands.append({
-                            "id": f"cand_{ep_id}_{shot_idx}_{i}",
-                            "shot_index": shot_idx,
-                            "candidate_index": i,
-                            "seed": 42 + i * 17,
-                            "prompt": f"Shot {shot_idx} candidate {i+1}",
-                            "image_url": img_url,
-                            "selected": (i == 0),
-                            "qa_report": {
-                                "face_match": {"score": 0.94 - i * 0.05, "passed": (i < 2)},
-                                "bg_match": {"score": 0.88 - i * 0.04, "passed": (i < 3)},
-                                "vlm_checklist": {"score": 0.92 - i * 0.06, "passed": (i < 2)},
-                                "artifact_filter": {"score": 0.98 - i * 0.02, "passed": True},
-                                "passed": (i == 0),
-                            }
-                        })
-                    return self._json(200, cands)
+                    return self._json(501, {"error": _SHOT_QA_UNWIRED})
 
                 if len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3] == "render" and parts[4] == "preview":
                     handle = registry.handles.get(parts[2])
@@ -1493,6 +1481,8 @@ def make_handler(
 
         def do_POST(self) -> None:
             parts = urlparse(self.path).path.strip("/").split("/")
+            if not self._origin_allowed():
+                return self._json(403, {"error": "cross-site request refused"})
             try:
                 if parts == ["api", "auth", "login"]:
                     body = self._read_json()
@@ -1785,52 +1775,9 @@ def make_handler(
                     handle.invalidate()
                     return self._json(200, ep.to_dict())
 
-                # POST /api/novels/<id>/episodes/<ep_id>/shots/<shot_idx>/reroll
-                if len(parts) == 8 and parts[:2] == ["api", "novels"] and parts[3] == "episodes" and parts[5] == "shots" and parts[7] == "reroll":
-                    novel_id = parts[2]
-                    ep_id = parts[4]
-                    shot_idx = int(parts[6])
-                    body = self._read_json()
-                    seed_offset = int(body.get("seed_offset", 100))
-                    panel_files = sorted(paths.asset_dir(novel_id, "panels").glob("ch1/*.png"))
-                    if not panel_files:
-                        panel_files = sorted(paths.novel_root(novel_id).glob("**/*.png"))
-                    rerolled_cands = []
-                    for i in range(4):
-                        img_url = ""
-                        if panel_files:
-                            chosen = panel_files[(shot_idx * 4 + i + 1) % len(panel_files)]
-                            rel_p = chosen.relative_to(paths.novel_root(novel_id))
-                            img_url = f"/api/novels/{novel_id}/output/file?path={rel_p}"
-                        rerolled_cands.append({
-                            "id": f"cand_{ep_id}_{shot_idx}_{i}_r",
-                            "shot_index": shot_idx,
-                            "candidate_index": i,
-                            "seed": 42 + seed_offset + i * 17,
-                            "prompt": f"Shot {shot_idx} candidate {i+1} (re-roll)",
-                            "image_url": img_url,
-                            "selected": (i == 0),
-                            "qa_report": {
-                                "face_match": {"score": 0.95 - i * 0.04, "passed": True},
-                                "bg_match": {"score": 0.91 - i * 0.03, "passed": True},
-                                "vlm_checklist": {"score": 0.93 - i * 0.05, "passed": True},
-                                "artifact_filter": {"score": 0.99, "passed": True},
-                                "passed": (i == 0),
-                            }
-                        })
-                    return self._json(200, {
-                        "rerolled": True,
-                        "candidates": rerolled_cands,
-                    })
-
-                # POST /api/novels/<id>/episodes/<ep_id>/shots/<shot_idx>/lock
-                if len(parts) == 8 and parts[:2] == ["api", "novels"] and parts[3] == "episodes" and parts[5] == "shots" and parts[7] == "lock":
-                    novel_id = parts[2]
-                    ep_id = parts[4]
-                    shot_idx = int(parts[6])
-                    body = self._read_json()
-                    candidate_id = body.get("candidate_id", f"cand_{ep_id}_{shot_idx}_0")
-                    return self._json(200, {"locked": True, "shot_index": shot_idx, "candidate_id": candidate_id})
+                # POST .../shots/<shot_idx>/reroll and .../lock
+                if len(parts) == 8 and parts[:2] == ["api", "novels"] and parts[3] == "episodes" and parts[5] == "shots" and parts[7] in ("reroll", "lock"):
+                    return self._json(501, {"error": _SHOT_QA_UNWIRED})
 
                 # POST /api/novels/<id>/characters/<self_id>/turnarounds/generate
                 if (
@@ -2130,6 +2077,8 @@ def make_handler(
 
         def do_DELETE(self) -> None:
             parts = urlparse(self.path).path.strip("/").split("/")
+            if not self._origin_allowed():
+                return self._json(403, {"error": "cross-site request refused"})
             try:
                 if not self._authorized():
                     return self._json(401, {"error": "unauthorized"})

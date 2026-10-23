@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Clapperboard, FolderOpen, DollarSign, Palette, ShieldCheck, FileText, BookCheck } from 'lucide-react';
+import { Clapperboard, FolderOpen, DollarSign, Palette, FileText, BookCheck } from 'lucide-react';
 import CharacterDashboard from '../../components/CharacterDashboard';
 import GenerationWorkspace from '../../components/GenerationWorkspace';
 import OutputLibrary from '../../components/OutputLibrary';
@@ -8,7 +8,6 @@ import CostMeterWidget from '../../components/CostMeterWidget';
 import AssetStudio from '../../components/AssetStudio';
 import ScreenplayEditor from '../../components/ScreenplayEditor';
 import BibleReview from '../../components/BibleReview';
-import ShotGridQA from '../../components/ShotGridQA';
 import ProjectHome from '../../components/ProjectHome';
 import VisualStyleSetting from '../../components/VisualStyleSetting';
 import { PageHeader, ThemeToggle } from '../../components/app/Chrome';
@@ -37,7 +36,7 @@ const STUDIO_TABS = [
   { key: 'screenplay', label: 'Screenplay', icon: FileText },
   { key: 'assets', label: 'Asset Studio', icon: Palette },
   { key: 'bible', label: 'Canon review', icon: BookCheck },
-  { key: 'qa', label: 'Shot QA', icon: ShieldCheck },
+  // Shot QA is hidden until the shot routes call the keyframe engine with measured checks (product plan step 4).
   { key: 'cost', label: 'Cost Meter', icon: DollarSign },
   { key: 'library', label: 'Library', icon: FolderOpen },
 ];
@@ -87,7 +86,6 @@ export function Studio() {
         {tab === 'screenplay' && <ScreenplayEditor novelId={novelId} />}
         {tab === 'assets' && <AssetStudio novelId={novelId} />}
         {tab === 'bible' && <BibleReview novelId={novelId} />}
-        {tab === 'qa' && <ShotGridQA novelId={novelId} />}
         {tab === 'cost' && <CostMeterWidget novelId={novelId} />}
       </div>
     </div>
