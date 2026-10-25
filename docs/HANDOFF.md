@@ -22,7 +22,16 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-24 (EVOLUTION 4.125).
+**Last updated:** 2026-10-25 (EVOLUTION 4.126).
+
+## Pick up here — 2026-10-25 (journal manuscript, Revision 1; EVOLUTION 4.126)
+
+Research track only. The draft article is `docs/paper/journal/main.tex` (Springer `sn-jnl`, compiled locally to
+`Reader_Faithfulness_draft1.pdf`); `RESPONSE_TO_REVISION.md` maps every point of the 18-page brief. Open: (1) score the
+human reveal-validation labels (`scripts/review/score_reveal_validation.py`, files in
+`data/eval/validation/reveal_labels/`) and fill the red `\pending` marks in 4.1, 6.1 and 8; (2) student emails are
+placeholders; (3) compile once in Overleaf with the professor's class file. Rebuild order: `journal_numbers.py --check`,
+`make_journal_figures.py`, `build_supplementary.py`, `verify_references.py`, then latexmk.
 
 ## Pick up here — 2026-10-24 (PRODUCT PIVOT, decisions.md D27)
 
