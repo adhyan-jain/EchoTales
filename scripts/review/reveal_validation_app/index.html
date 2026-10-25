@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reveal Check</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="bar">
+  <div class="brand">Reveal Check <span class="muted">EchoTales human validation</span></div>
+  <div class="bar-right" id="barRight" hidden>
+    <span id="who" class="chip"></span>
+    <span id="progress" class="muted"></span>
+    <button id="guideBtn" class="ghost">Guidelines</button>
+    <button id="exportBtn" class="primary">Export my labels</button>
+  </div>
+</header>
+
+<main id="start" class="start">
+  <h1>Check 24 story reveals</h1>
+  <p class="lead">Each item is a character in a public-domain novel who is first known under a disguise or alias and is later revealed to be someone else. You will read the passage where the book reveals it, a few passages from earlier in the book, and answer five multiple-choice questions. It takes about 3 minutes per item.</p>
+  <ol class="steps">
+    <li>Pick your name below. You only see the items assigned to you.</li>
+    <li>Read the <a href="#" id="guideLink">guidelines</a> once (2 minutes).</li>
+    <li>Answer every question. Your answers save automatically in this browser.</li>
+    <li>When the counter shows 24 / 24, press <b>Export my labels</b> and send the downloaded file to Adhyan.</li>
+  </ol>
+  <p class="muted small">Do not look anything up, and do not discuss items with the other annotators until everyone has exported. If you switch device, export first and use <b>Import</b> on the new one.</p>
+  <div class="names" id="names"></div>
+  <label class="import">Resume from an exported file: <input type="file" id="importFile" accept="application/json"></label>
+</main>
+
+<div id="app" class="layout" hidden>
+  <nav class="side" id="side"></nav>
+  <section class="item" id="item"></section>
+</div>
+
+<dialog id="guide">
+  <div class="guide-body">
+    <h2>Guidelines</h2>
+    <p>For every item you are told the <b>alias</b> (how the book refers to the character while the identity is hidden) and the <b>hidden identity</b> (who the book later says it is). Judge only the text shown. Do not use what you remember of the book unless a question asks about it.</p>
+    <h3>Q0. Do you know this book's plot?</h3>
+    <p>Answer before reading. <i>Yes</i> if you have read the book, seen an adaptation, or know who the alias turns out to be. This lets us check whether prior knowledge changes the other answers.</p>
+    <h3>Q1. Does the highlighted reveal passage say the alias is the identity?</h3>
+    <ul>
+      <li><b>Explicit</b>: a reader of this passage alone learns that the alias and the identity are the same person (for example "the Opera ghost ... his real name is Erik").</li>
+      <li><b>Implied only</b>: it strongly suggests it, but never quite says it.</li>
+      <li><b>No</b>: it does not identify them, or it identifies someone else.</li>
+    </ul>
+    <h3>Q2. Does the reveal read as a revelation or as a reminder?</h3>
+    <ul>
+      <li><b>Revelation</b>: the passage is written as the moment the truth comes out (surprise, confession, unmasking).</li>
+      <li><b>Reminder</b>: it mentions the identity as something the reader was already told earlier.</li>
+      <li><b>Can't tell</b> from the passage shown.</li>
+    </ul>
+    <h3>Q3. From the earlier passages, could a first-time reader name the hidden identity?</h3>
+    <p>Read the passages from before the reveal (the alias is highlighted). Imagine a careful reader who has read only these.</p>
+    <ul>
+      <li><b>No</b>: nothing points to the identity.</li>
+      <li><b>Suspect</b>: there are hints, and a reader might guess, but it is not settled.</li>
+      <li><b>Confident</b>: the passages make it clear who the alias is, even without the reveal.</li>
+    </ul>
+    <h3>Q4. Is this a valid item?</h3>
+    <p><b>Yes</b> if the alias is a real reference to a hidden person and the identity is a specific named character. <b>No</b> if, for example, the "identity" is a description rather than a person, the alias and identity are obviously different people, or the alias is used openly for the named character from the start.</p>
+    <h3>Notes</h3>
+    <p>Optional. Write anything odd (wrong passage, garbled text, two possible identities).</p>
+    <button class="primary" id="guideClose">Got it</button>
+  </div>
+</dialog>
+
+<script src="app.js"></script>
+</body>
+</html>
