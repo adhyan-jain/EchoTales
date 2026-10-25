@@ -1,0 +1,107 @@
+{
+ "note": "POST HOC; rule fixed before recomputation; stored labels and original estimators only; no model calls",
+ "rule": "identity starts with one of: a, an, her, him, his, one, the",
+ "descriptive_events_all": [
+  "C1377_1",
+  "C2153_1",
+  "C28337_1",
+  "C33538_1",
+  "C7671_3",
+  "C7713_1",
+  "C9847_1"
+ ],
+ "descriptive_count_all": "7/68",
+ "descriptive_count_primary": "2/32",
+ "selection_leak": {
+  "as_reported": {
+   "events": 24,
+   "M_rate": 0.1944,
+   "P_rate": 0.0139,
+   "estimate": 0.1806,
+   "ci": [
+    0.0417,
+    0.3333
+   ]
+  },
+  "excluding_descriptive": {
+   "events": 20,
+   "M_rate": 0.2,
+   "P_rate": 0.0167,
+   "estimate": 0.1833,
+   "ci": [
+    0.0333,
+    0.3667
+   ]
+  }
+ },
+ "confirmatory_H1": {
+  "as_reported": {
+   "per_model": {
+    "mistral24": {
+     "events": 32,
+     "gap_A_minus_B": 0.0443,
+     "ci": [
+      -0.0234,
+      0.1198
+     ]
+    },
+    "olmo32b": {
+     "events": 32,
+     "gap_A_minus_B": 0.0,
+     "ci": [
+      -0.0443,
+      0.0495
+     ]
+    },
+    "qwen32b": {
+     "events": 32,
+     "gap_A_minus_B": -0.0078,
+     "ci": [
+      -0.0469,
+      0.0234
+     ]
+    }
+   },
+   "H1_pooled": 0.0011,
+   "ci": [
+    -0.0497,
+    0.0518
+   ],
+   "p_one_sided": 0.4684
+  },
+  "excluding_descriptive": {
+   "per_model": {
+    "mistral24": {
+     "events": 30,
+     "gap_A_minus_B": 0.0083,
+     "ci": [
+      -0.05,
+      0.0667
+     ]
+    },
+    "olmo32b": {
+     "events": 30,
+     "gap_A_minus_B": -0.0111,
+     "ci": [
+      -0.0556,
+      0.0333
+     ]
+    },
+    "qwen32b": {
+     "events": 30,
+     "gap_A_minus_B": -0.0167,
+     "ci": [
+      -0.05,
+      0.0
+     ]
+    }
+   },
+   "H1_pooled": -0.011,
+   "ci": [
+    -0.0383,
+    0.0163
+   ],
+   "p_one_sided": 0.8872
+  }
+ }
+}

@@ -1,0 +1,571 @@
+{
+ "ref_gap_v2": {
+  "value": "+35.2",
+  "source": "pd_final_pooled.json luna_only",
+  "note": "reference model, item-pooled over pre-reveal items, event-cluster bootstrap"
+ },
+ "ref_ci_v2": {
+  "value": "[+20.2, +50.0]",
+  "source": "pd_final_pooled.json luna_only",
+  "note": ""
+ },
+ "pool_gap_v2": {
+  "value": "+15.4",
+  "source": "pd_final_pooled.json valid_pool",
+  "note": ""
+ },
+ "pool_ci_v2": {
+  "value": "[+5.9, +26.3]",
+  "source": "pd_final_pooled.json valid_pool",
+  "note": ""
+ },
+ "ref_gap_v3": {
+  "value": "+18.2",
+  "source": "pd_final_pooled.json luna_only",
+  "note": "reference model, item-pooled over pre-reveal items, event-cluster bootstrap"
+ },
+ "ref_ci_v3": {
+  "value": "[+4.2, +33.9]",
+  "source": "pd_final_pooled.json luna_only",
+  "note": ""
+ },
+ "pool_gap_v3": {
+  "value": "+13.4",
+  "source": "pd_final_pooled.json valid_pool",
+  "note": ""
+ },
+ "pool_ci_v3": {
+  "value": "[+1.2, +26.3]",
+  "source": "pd_final_pooled.json valid_pool",
+  "note": ""
+ },
+ "ref_gap_v6": {
+  "value": "+16.7",
+  "source": "pd_final_pooled.json luna_only",
+  "note": "reference model, item-pooled over pre-reveal items, event-cluster bootstrap"
+ },
+ "ref_ci_v6": {
+  "value": "[+5.4, +28.6]",
+  "source": "pd_final_pooled.json luna_only",
+  "note": ""
+ },
+ "pool_gap_v6": {
+  "value": "-5.9",
+  "source": "pd_final_pooled.json valid_pool",
+  "note": ""
+ },
+ "pool_ci_v6": {
+  "value": "[-14.8, +1.0]",
+  "source": "pd_final_pooled.json valid_pool",
+  "note": ""
+ },
+ "ref_gap_all_v2_v3_v6": {
+  "value": "+26.0",
+  "source": "pd_final_pooled.json luna_only",
+  "note": "reference model, item-pooled over pre-reveal items, event-cluster bootstrap"
+ },
+ "ref_ci_all_v2_v3_v6": {
+  "value": "[+16.8, +36.0]",
+  "source": "pd_final_pooled.json luna_only",
+  "note": ""
+ },
+ "pool_gap_all_v2_v3_v6": {
+  "value": "+11.5",
+  "source": "pd_final_pooled.json valid_pool",
+  "note": ""
+ },
+ "pool_ci_all_v2_v3_v6": {
+  "value": "[+4.5, +19.0]",
+  "source": "pd_final_pooled.json valid_pool",
+  "note": ""
+ },
+ "ref_events_pos_neg": {
+  "value": "22/1",
+  "source": "pd_final_pooled.json",
+  "note": ""
+ },
+ "pool_sign_p": {
+  "value": "0.05",
+  "source": "pd_final_pooled.json",
+  "note": ""
+ },
+ "pool_v6_pos_neg": {
+  "value": "1/4",
+  "source": "pd_final_pooled.json",
+  "note": ""
+ },
+ "pre_items_by_dataset": {
+  "value": "135/96/54",
+  "source": "pd_adversarial_checks.json, pd_v6 run truth",
+  "note": ""
+ },
+ "ref_gap_reconstructed": {
+  "value": "+26.0",
+  "source": "weighted by pre-reveal items",
+  "note": "equals ref_gap_all_v2_v3_v6 to 0.1 point"
+ },
+ "tab_explor_gpt-5.6-luna": {
+  "value": [
+   "+35.2 [+20.2, +50.0]",
+   "+18.2 [+4.2, +33.9]",
+   "+16.7 [+5.4, +28.6]"
+  ],
+  "source": "pd_final_pooled.stat per model and dataset (item-pooled, event bootstrap, seed 20261019)",
+  "note": ""
+ },
+ "tab_explor_gemma2:9b": {
+  "value": [
+   "+13.0 [+1.8, +25.9]",
+   "+25.0 [+4.7, +47.9]",
+   "-12.0 [-29.6, -1.8]"
+  ],
+  "source": "pd_final_pooled.stat per model and dataset (item-pooled, event bootstrap, seed 20261019)",
+  "note": ""
+ },
+ "tab_explor_llama3.1:8b": {
+  "value": [
+   "+14.1 [+3.2, +27.7]",
+   "+14.6 [+3.6, +27.1]",
+   "-15.7 [-40.7, +4.5]"
+  ],
+  "source": "pd_final_pooled.stat per model and dataset (item-pooled, event bootstrap, seed 20261019)",
+  "note": ""
+ },
+ "tab_explor_mistral:7b-instruct": {
+  "value": [
+   "+24.1 [+12.4, +37.5]",
+   "+9.9 [-5.2, +24.0]",
+   "+1.8 [-8.0, +13.0]"
+  ],
+  "source": "pd_final_pooled.stat per model and dataset (item-pooled, event bootstrap, seed 20261019)",
+  "note": ""
+ },
+ "tab_explor_phi4-mini:latest": {
+  "value": [
+   "+10.4 [+0.8, +22.5]",
+   "+4.2 [-6.2, +17.2]",
+   "-3.7 [-14.4, +4.6]"
+  ],
+  "source": "pd_final_pooled.stat per model and dataset (item-pooled, event bootstrap, seed 20261019)",
+  "note": ""
+ },
+ "tab_explor_qwen2.5:7b": {
+  "value": [
+   "+22.2 [+9.8, +35.9]",
+   "+9.9 [-3.6, +24.5]",
+   "+0.0 [-16.1, +14.3]"
+  ],
+  "source": "pd_final_pooled.stat per model and dataset (item-pooled, event bootstrap, seed 20261019)",
+  "note": ""
+ },
+ "b3_events": {
+  "value": "31",
+  "source": "pd_v5/analysis.json pools.G2_valid",
+  "note": ""
+ },
+ "b3_gap_AB": {
+  "value": "+14.6 [+7.0, +22.7]",
+  "source": "pd_v5/analysis.json",
+  "note": ""
+ },
+ "b3_gap_AB3": {
+  "value": "+16.1 [+8.2, +25.0]",
+  "source": "pd_v5/analysis.json",
+  "note": ""
+ },
+ "b3_recovered": {
+  "value": "-0.11 [-0.36, +0.06]",
+  "source": "pd_v5/analysis.json",
+  "note": ""
+ },
+ "dose_local": {
+  "value": "+0.59, p = 0.00015",
+  "source": "pd_dose_response.json",
+  "note": ""
+ },
+ "dose_ref": {
+  "value": "+0.37, p = 0.024",
+  "source": "pd_dose_response.json",
+  "note": ""
+ },
+ "dose_group_n": {
+  "value": "10/10/4/2/5/7",
+  "source": "pd_dose_response.json events_per_count",
+  "note": ""
+ },
+ "conf_events": {
+  "value": "68/53/32",
+  "source": "confirm/main/analysis.json",
+  "note": "all/test/primary"
+ },
+ "conf_mistral24": {
+  "value": "+4.4 [-2.3, +12.0]",
+  "source": "confirm/main/analysis.json per_model.primary_test",
+  "note": "event-weighted mean of per-event gaps"
+ },
+ "conf_mistral24_closed": {
+  "value": "2",
+  "source": "confirm/main/analysis.json closed_orig_correct",
+  "note": ""
+ },
+ "conf_olmo32b": {
+  "value": "+0.0 [-4.4, +4.9]",
+  "source": "confirm/main/analysis.json per_model.primary_test",
+  "note": "event-weighted mean of per-event gaps"
+ },
+ "conf_olmo32b_closed": {
+  "value": "2",
+  "source": "confirm/main/analysis.json closed_orig_correct",
+  "note": ""
+ },
+ "conf_qwen32b": {
+  "value": "-0.8 [-4.7, +2.3]",
+  "source": "confirm/main/analysis.json per_model.primary_test",
+  "note": "event-weighted mean of per-event gaps"
+ },
+ "conf_qwen32b_closed": {
+  "value": "2",
+  "source": "confirm/main/analysis.json closed_orig_correct",
+  "note": ""
+ },
+ "H1": {
+  "value": "+0.1 [-5.0, +5.2]",
+  "source": "confirm/main/analysis.json H1",
+  "note": "DerSimonian-Laird, Hartung-Knapp, 3 models"
+ },
+ "H2": {
+  "value": "+5.7 [-1.3, +12.6]",
+  "source": "confirm/main/analysis.json H2",
+  "note": ""
+ },
+ "H3": {
+  "value": "+0.30",
+  "source": "confirm/main/analysis.json H3",
+  "note": ""
+ },
+ "H3_holm": {
+  "value": "0.145",
+  "source": "confirm/main/analysis.json holm_adjusted_p",
+  "note": ""
+ },
+ "P1": {
+  "value": "+7.6 [-1.4, +18.3]",
+  "source": "confirm/main/analysis.json P1",
+  "note": ""
+ },
+ "P1_mdd": {
+  "value": "12.8",
+  "source": "confirm/main/analysis.json P1",
+  "note": ""
+ },
+ "P1_p": {
+  "value": "0.059",
+  "source": "confirm/main/analysis.json P1",
+  "note": ""
+ },
+ "H5_premature": {
+  "value": "5.0% to 2.6%",
+  "source": "confirm/main/analysis.json H5.pooled",
+  "note": ""
+ },
+ "H5_post_cost": {
+  "value": "-6.7",
+  "source": "confirm/main/analysis.json H5.pooled",
+  "note": ""
+ },
+ "H5_ctrl_cost": {
+  "value": "-15.6",
+  "source": "confirm/main/analysis.json H5.pooled",
+  "note": ""
+ },
+ "conf_calls": {
+  "value": "2,220 = 453 x 4 + 68 x 3 + 68 x 3",
+  "source": "confirm/main/e1_qwen32b.json",
+  "note": ""
+ },
+ "pa_orig": {
+  "value": "23/289",
+  "source": "prefix_audit/summary.json pooled.off",
+  "note": ""
+ },
+ "pa_orig_wilson": {
+  "value": "[5.4, 11.7]",
+  "source": "prefix_audit/summary.json",
+  "note": ""
+ },
+ "pa_ehv": {
+  "value": "0/289",
+  "source": "prefix_audit/summary.json pooled.on",
+  "note": ""
+ },
+ "pa_hide": {
+  "value": "82/289",
+  "source": "prefix_audit/summary.json hide_only",
+  "note": ""
+ },
+ "pa_hide_destroyed": {
+  "value": "80",
+  "source": "prefix_audit/summary.json hide_only",
+  "note": ""
+ },
+ "pa_certified_safe": {
+  "value": "150/289",
+  "source": "prefix_audit/summary.json",
+  "note": ""
+ },
+ "pa_time": {
+  "value": "6.5 s to 13.8 s",
+  "source": "prefix_audit/summary.json cost",
+  "note": "single wall-clock run; the course report's 'about 50%' used an older 9.1 s timing"
+ },
+ "pa_rows": {
+  "value": "1,074 to 1,172",
+  "source": "prefix_audit/summary.json cost",
+  "note": ""
+ },
+ "pa_unknown": {
+  "value": "39.8% to 46.4%",
+  "source": "prefix_audit/summary.json cost",
+  "note": ""
+ },
+ "pa_pooled": {
+  "value": "41/685",
+  "source": "prefix_audit/labels_summary_permissive.json",
+  "note": ""
+ },
+ "pa_premature_strict": {
+  "value": "18/685 (2.6%)",
+  "source": "labels_summary_permissive.json luna_strict",
+  "note": ""
+ },
+ "pa_premature_permissive": {
+  "value": "2.0%",
+  "source": "labels_summary_permissive.json",
+  "note": ""
+ },
+ "pa_ann2_orig": {
+  "value": "10/289 (3.5%)",
+  "source": "labels_summary_v2.json Aprime.original",
+  "note": ""
+ },
+ "pa_kappa": {
+  "value": "0.61 on 117",
+  "source": "labels_summary_v2.json Dprime_truth",
+  "note": ""
+ },
+ "pa_frontier": {
+  "value": "245 cuts, 67 characters; status quo 184/56/5; versioned 149/91/5",
+  "source": "labels_summary_v2.json Bprime.all",
+  "note": ""
+ },
+ "pa_anchor": {
+  "value": "512 pairs: 361/326/360",
+  "source": "anchored_v2_summary.json",
+  "note": ""
+ },
+ "pa_cf": {
+  "value": "47/289 (16.3%)",
+  "source": "counterfactual_suffix.json pooled.status_quo",
+  "note": "23 also diverge, 24 do not; 4 more among 15 unmatched cuts (51 of 304 compared)"
+ },
+ "pa_cf_compared": {
+  "value": "51/304",
+  "source": "counterfactual_suffix.json pooled.status_quo",
+  "note": ""
+ },
+ "card_W_text": {
+  "value": "24.6% of 19",
+  "source": "rf_e2e/analysis.json rule A (text)",
+  "note": ""
+ },
+ "card_W_judge": {
+  "value": "18.5% of 54",
+  "source": "rf_e2e/analysis.json rule B (judge)",
+  "note": ""
+ },
+ "card_P_text": {
+  "value": "0.0",
+  "source": "rf_e2e/analysis.json",
+  "note": ""
+ },
+ "card_P_judge": {
+  "value": "1.2",
+  "source": "rf_e2e/analysis.json",
+  "note": ""
+ },
+ "card_input_text": {
+  "value": "+24.6 [+8.8, +42.1]",
+  "source": "rf_e2e/analysis.json",
+  "note": ""
+ },
+ "card_input_judge": {
+  "value": "+17.3 [+9.3, +26.5]",
+  "source": "rf_e2e/analysis.json",
+  "note": ""
+ },
+ "card_memory_judge": {
+  "value": "+2.5",
+  "source": "rf_e2e/analysis.json",
+  "note": ""
+ },
+ "card_nospoil": {
+  "value": "14.8% judge, 15.8% text",
+  "source": "rf_e2e/analysis.json robust",
+  "note": ""
+ },
+ "card_larger": {
+  "value": "23.1% vs 1.9%",
+  "source": "rf_e2e/analysis.json larger",
+  "note": ""
+ },
+ "judge_validity": {
+  "value": "sens 91.7%, FP 0.9%, kappa 0.92, 380 labels",
+  "source": "rf_e2e/posthoc_judge_validity_and_exposure.json",
+  "note": ""
+ },
+ "canary_W": {
+  "value": "22.8% [14.2, 31.5] of 54; control 0.0%",
+  "source": "rf_e2e/canary_analysis.json",
+  "note": ""
+ },
+ "canary_L": {
+  "value": "40.6% [29.7, 51.4] of 46; control 0.0%",
+  "source": "rf_e2e/canary_analysis.json",
+  "note": ""
+ },
+ "selection": {
+  "value": "19.4% vs 1.4%; diff +18.1 [+4.2, +33.3]; 24 events",
+  "source": "rf_e2e/selection_analysis.json",
+  "note": "CI is for the paired event-level difference"
+ },
+ "selection_per_model": {
+  "value": "16.7 / 20.8 / 20.8",
+  "source": "rf_e2e/selection_analysis.json",
+  "note": ""
+ },
+ "canary_W_per_model": {
+  "value": "35.2 / 18.5 / 14.8",
+  "source": "rf_e2e/canary_analysis.json",
+  "note": ""
+ },
+ "canary_L_per_model": {
+  "value": "34.8 / 47.8 / 39.1",
+  "source": "rf_e2e/canary_analysis.json",
+  "note": ""
+ },
+ "canary_fact": {
+  "value": "21.0% cards, 11.1% long context",
+  "source": "rf_e2e/canary_analysis.json secondary",
+  "note": ""
+ },
+ "judge_agreement": {
+  "value": "97.8% of 684, kappa 0.88",
+  "source": "rf_e2e/analysis.json judge_agreement",
+  "note": ""
+ },
+ "card_nospoil_diff": {
+  "value": "+14.8 [+5.6, +24.1]; text [+0.0, +31.6]",
+  "source": "rf_e2e/analysis.json robust",
+  "note": ""
+ },
+ "cards_text_small": {
+  "value": "31.6/24.6/0.0/0.0; +24.6 [+8.8, +42.1]",
+  "source": "rf_e2e/analysis.json",
+  "note": ""
+ },
+ "cards_text_large": {
+  "value": "21.1/21.1/0.0/0.0; +21.1 [+5.3, +39.5]",
+  "source": "rf_e2e/analysis.json",
+  "note": ""
+ },
+ "cards_judge_small": {
+  "value": "19.1/18.5/3.7/1.2; +17.3 [+9.3, +26.5]",
+  "source": "rf_e2e/analysis.json",
+  "note": ""
+ },
+ "cards_judge_large": {
+  "value": "21.3/23.1/1.9/1.9; +21.3 [+13.0, +30.6]",
+  "source": "rf_e2e/analysis.json",
+  "note": ""
+ },
+ "label_audit_explicit": {
+  "value": "+29.9 [+15.0, +45.8]",
+  "source": "pd_adversarial_checks.json label_audit_sensitivity (20 audited-EXPLICIT events)",
+  "note": ""
+ },
+ "H5_post_ci": {
+  "value": "[-13.3, -2.2]",
+  "source": "confirm/main/analysis.json H5.pooled",
+  "note": ""
+ },
+ "H3_events": {
+  "value": "32 events, 31 books",
+  "source": "confirm/main/analysis.json H3",
+  "note": ""
+ },
+ "olmo_corpus": {
+  "value": "62 books; Spearman +0.13, p = 0.41",
+  "source": "confirm/main/olmo_corpus_check.json",
+  "note": ""
+ },
+ "recap_outputs": {
+  "value": "144",
+  "source": "confirm/main/analysis.json E5 (48 per model x 3)",
+  "note": ""
+ },
+ "H1_excl_descriptive": {
+  "value": "-1.1 [-3.8, +1.6]",
+  "source": "posthoc_descriptive_identity.json",
+  "note": ""
+ },
+ "selection_excl_descriptive": {
+  "value": "+18.3 [+3.3, +36.7] over 20",
+  "source": "posthoc_descriptive_identity.json",
+  "note": ""
+ },
+ "descriptive_counts": {
+  "value": "7/68; primary 2/32",
+  "source": "posthoc_descriptive_identity.json",
+  "note": ""
+ },
+ "dose_groups_pool": {
+  "value": "+0.7 [-3.7, +5.5] n 20; -0.4 [-8.2, +6.2] n 6; +30.3 [+15.3, +43.8] n 12",
+  "source": "figures/fig5_dose_groups.json (make_journal_figures.py)",
+  "note": ""
+ },
+ "qwen_ctrl_acc_v2": {
+  "value": "95.4/80.3/96.7",
+  "source": "pd_v5/analysis.json per_model",
+  "note": ""
+ },
+ "b3_all_models": {
+  "value": "+17.2 [+10.2, +24.6]; +18.8 [+11.6, +26.4]; -0.09",
+  "source": "pd_v5/analysis.json pools.all_models",
+  "note": ""
+ },
+ "synthetic_range": {
+  "value": "9.2 to 17.1",
+  "source": "prefix_audit/synthetic/syn_*.json totals.status_quo",
+  "note": ""
+ },
+ "synthetic_premature": {
+  "value": "70/17/4",
+  "source": "prefix_audit/synthetic/syn_pa{10,35,70}_pd0.json",
+  "note": ""
+ },
+ "model_path": {
+  "value": "0 of 101 pairs differ; gate 50 of 296",
+  "source": "prefix_audit/llm_model_*.json",
+  "note": ""
+ },
+ "resolver": {
+  "value": "0 of 28,165",
+  "source": "eng_probe_E1_*.json by_k.*.prefix_vs_F0",
+  "note": ""
+ },
+ "anchor_english_wrong": {
+  "value": "7.8% (14 of 179)",
+  "source": "anchored_v2_summary.json",
+  "note": ""
+ }
+}

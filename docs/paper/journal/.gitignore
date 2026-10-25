@@ -1,0 +1,3 @@
+local_build/out/
+local_build/supp/
+local_build/*.log
