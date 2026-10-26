@@ -11,7 +11,6 @@ Start with the two files at this level; everything else is grouped by purpose.
 | [`research/`](research/) | choosing what to research next: [`DECISION_LOG.md`](research/DECISION_LOG.md) (state of record: every hypothesis verdict with its artifact), [`CONVERGENCE.md`](research/CONVERGENCE.md) (the 2026-10-03 convergence pass and its KILL verdict), generated [`EXPERIMENT_STATUS`](research/EXPERIMENT_STATUS.md), [`RESEARCH_ARENA`](research/RESEARCH_ARENA.md) (the `packages/research` arena), [`ENGINEERING_NOTES`](research/ENGINEERING_NOTES.md). The idea-generation docs were removed 2026-10-03; see [`research/README.md`](research/README.md) |
 | [`status/`](status/) | asking "is it done?": [`STATUS.md`](status/STATUS.md) (readiness, per-subsystem matrix, and what's not done and why — merged 2026-09-29 from three overlapping files), [`CURRENT_ARCHITECTURE.md`](status/CURRENT_ARCHITECTURE.md) (package map, production vs. research vs. historical) |
 | [`paper/`](paper/) | writing the paper or the university report: tables, figures, claim boundaries, related work, venue analysis, report material |
-| [`ops/`](ops/) | running things: GPU rental plan, key rotation |
 | [`archive/`](archive/) | superseded plans, earlier validation passes and the 2026-09-29 refactor report, kept for provenance |
 | `private/` | gitignored: the patent packet (`private/IP/`) and anything embargoed until the IPR decision. Never commit it |
 
