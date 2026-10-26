@@ -196,7 +196,7 @@ def fig_cue():
     ax.plot([], [], "s", color=OI["blue"], mec="black", mew=0.4, label="A $-$ B3: original names minus cue-preserving pseudonyms")
     ax.legend(loc="upper left", frameon=False, ncol=2, bbox_to_anchor=(0.0, 1.13), columnspacing=1.2)
     ax.set_ylim(-8, 62)
-    save(fig, "fig4_cue_preserving")
+    save(fig, "fig5_cue_preserving")
 
 
 # ------------------------------------------------------------------------------------------------ Fig 5
@@ -246,8 +246,8 @@ def fig_dose():
     ax.axhline(0, color="black", lw=0.6)
     ax.set_ylabel("Mean per-event gap (points)")
     ax.legend(frameon=False, loc="upper left")
-    (OUT / "fig5_dose_groups.json").write_text(json.dumps(res, indent=1))
-    save(fig, "fig5_familiarity_posthoc")
+    (OUT / "fig6_dose_groups.json").write_text(json.dumps(res, indent=1))
+    save(fig, "fig6_familiarity_posthoc")
 
 
 # ------------------------------------------------------------------------------------------------ Fig 6
@@ -279,13 +279,172 @@ def fig_cards():
     axes[0].plot([], [], "s", color=OI["blue"], mec="black", mew=0.4, label="Versioned, prefix-built card (P)")
     axes[0].plot([], [], "^", color=OI["orange"], mec="black", mew=0.4, label="W with an 'avoid spoilers' instruction")
     fig.legend(loc="upper center", ncol=3, frameon=False, bbox_to_anchor=(0.5, 1.09))
-    save(fig, "fig6_cards")
+    save(fig, "fig9_cards")
+
+
+LBL = dict(fc="white", ec="none", pad=0.5, alpha=0.9)
+
+
+def wilson(k, n, z=1.959964):
+    p = k / n
+    d = 1 + z * z / n
+    c = (p + z * z / (2 * n)) / d
+    h = z * (p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5 / d
+    return 100 * (c - h), 100 * (c + h)
+
+
+# ------------------------------------------------------------------------------------------------ Fig 4
+def fig_human():
+    """Human check of the reveal oracle: how the 72 labels split on each question."""
+    hv = J("data/eval/validation/reveal_human_v1.json")
+    dist, ag = hv["label_distribution"], hv["agreement_fleiss"]
+    qs = [("q1", "Reveal identifies the alias", [("explicit", "explicit", OI["green"]), ("implied", "implied only", OI["yellow"]),
+                                                 ("no", "does not identify", OI["vermillion"])]),
+          ("q2", "Reads as a revelation", [("revelation", "revelation", OI["green"]), ("reminder", "reminder", OI["yellow"]),
+                                           ("cant_tell", "can't tell", OI["grey"])]),
+          ("q3", "Identity inferable earlier", [("no", "no", OI["green"]), ("suspect", "suspect", OI["yellow"]),
+                                                ("confident", "confident", OI["vermillion"])]),
+          ("q4", "Valid item", [("yes", "yes", OI["green"]), ("no", "no", OI["vermillion"])])]
+    hatches = {OI["green"]: "", OI["yellow"]: "///", OI["vermillion"]: "xxx", OI["grey"]: "..."}
+    fig, ax = plt.subplots(figsize=(6.4, 2.5))
+    for row, (q, title, cats) in enumerate(qs):
+        y, left, total = len(qs) - 1 - row, 0, sum(dist[q].values())
+        for key, lab, col in cats:
+            v = dist[q].get(key, 0)
+            if v:
+                ax.barh(y, 100 * v / total, left=left, color=col, edgecolor="black", lw=0.5, hatch=hatches[col], height=0.62)
+                if 100 * v / total >= 7:
+                    ax.text(left + 50 * v / total, y, f"{lab}\n{v}", ha="center", va="center", fontsize=6.5, bbox=LBL)
+                else:
+                    ax.text(left + 100 * v / total + 1, y + 0.42, f"{lab} {v}", ha="left", va="center", fontsize=6.2)
+            left += 100 * v / total
+        ax.text(101.5, y, f"agree {100 * ag[q]['raw_agreement']:.0f}%", va="center", fontsize=6.8)
+    ax.set_yticks(range(len(qs)))
+    ax.set_yticklabels([t for _, t, _ in qs][::-1])
+    ax.set_xlim(0, 100)
+    ax.set_xlabel("Share of the 72 labels (36 events $\\times$ 2 annotators), %")
+    ax.spines["left"].set_visible(False)
+    save(fig, "fig4_human_validation")
+
+
+# ------------------------------------------------------------------------------------------------ Fig 7
+def fig_pipeline():
+    """Persona-stage audit: what each test sees on the same 289 cuts, and the mechanism on the synthetic volume."""
+    PA = Path("data/eval/prefix_audit")
+    s = J(PA / "summary.json")["pooled"]
+    cp = J(PA / "counterfactual_suffix.json")["pooled"]["status_quo"]
+    l2 = J(PA / "labels_summary_v2.json")["Aprime"]["original"]
+    lab1 = J(PA / "labels_summary.json")["A_diverging_cuts"]["classes"]["premature_disclosure"]
+    n = s["off"]["character_cuts"]
+    bars = [("Suffix dependence\n(counterfactual)", cp["diverge_and_flip"] + cp["flip_no_diverge"], OI["purple"], "///"),
+            ("Divergence\n(truncate-and-rebuild)", s["off"]["with_divergence"], OI["orange"], ""),
+            ("Genuine disclosure,\nannotator 2", l2["premature_rate"]["n"], OI["vermillion"], "xxx"),
+            ("Genuine disclosure,\nannotator 1", lab1, OI["vermillion"], "..."),
+            ("Divergence after\nhiding exposed facts", s["hide_only"]["diverge"], OI["grey"], "\\\\\\"),
+            ("Divergence with\nversioning", s["on"]["with_divergence"], OI["blue"], "")]
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(6.8, 2.9), gridspec_kw=dict(width_ratios=[1.35, 1]))
+    for i, (lab, k, col, hat) in enumerate(bars):
+        lo, hi = wilson(k, n)
+        a1.barh(len(bars) - 1 - i, 100 * k / n, color=col, edgecolor="black", lw=0.5, hatch=hat, height=0.62)
+        a1.plot([lo, hi], [len(bars) - 1 - i] * 2, color="black", lw=0.8)
+        a1.text(max(hi, 100 * k / n) + 0.8, len(bars) - 1 - i, f"{k}/{n}", va="center", fontsize=6.6)
+    a1.set_yticks(range(len(bars)))
+    a1.set_yticklabels([b[0] for b in bars][::-1], fontsize=6.8)
+    a1.set_xlim(0, 40)
+    a1.set_xlabel("Character-cuts (%), Wilson 95% interval")
+    a1.set_title("(a) Original 13 cuts, three web serials", loc="left")
+    for pd_, mk, ls in ((0, "o", "-"), (5, "s", "--"), (15, "^", ":")):
+        xs, ys = [], []
+        for pa in (10, 35, 70):
+            t = J(PA / f"synthetic/syn_pa{pa}_pd{pd_}.json")["totals"]["status_quo"]
+            xs.append(pa / 100)
+            ys.append(100 * t["diverge"] / t["pairs"])
+        a2.plot(xs, ys, marker=mk, ls=ls, color=OI["orange"], mec="black", mew=0.4, ms=5, label=f"status quo, adversarial {pd_ / 100:.2f}")
+    a2.plot([0.1, 0.7], [0, 0], color=OI["blue"], lw=1.6, label="versioning (all settings)")
+    a2.set_xlabel("Own-cue density on the synthetic volume")
+    a2.set_ylabel("Divergent pairs (%)")
+    a2.set_title("(b) Synthetic volume, 1,240 pairs each", loc="left")
+    a2.set_ylim(-1, 27)
+    a2.legend(frameon=False, fontsize=6.2, loc="upper right", ncol=1)
+    fig.tight_layout()
+    save(fig, "fig7_pipeline_audit")
+
+
+# ------------------------------------------------------------------------------------------------ Fig 8
+def fig_repair():
+    """What a reader is served at exposed cuts under each build."""
+    PA = Path("data/eval/prefix_audit")
+    b = J(PA / "labels_summary_v2.json")["Bprime"]["all"]
+    an = J(PA / "anchored_v2_summary.json")["confirmatory_web_novels"]
+    rows = [("Status quo", b["status_quo"]["correct"]["n"], b["status_quo"]["withheld"]["n"], b["status_quo"]["wrong"]["n"]),
+            ("Versioning (= prefix build)", b["repaired"]["correct"]["n"], b["repaired"]["withheld"]["n"], b["repaired"]["wrong"]["n"]),
+            ("Status quo", an["status_quo"]["correct"], an["status_quo"]["withheld"], an["status_quo"]["wrong"]),
+            ("Plain versioning", an["plain"]["correct"], an["plain"]["withheld"], an["plain"]["wrong"]),
+            ("Versioning + pronoun cue", an["setting_1_0.8"]["v1"]["correct"], an["setting_1_0.8"]["v1"]["withheld"],
+             an["setting_1_0.8"]["v1"]["wrong"])]
+    fig, ax = plt.subplots(figsize=(6.4, 2.5))
+    ys = [5.6, 4.6, 2.4, 1.4, 0.4]
+    for (lab, c, w, x), y in zip(rows, ys):
+        tot = c + w + x
+        left = 0
+        for v, col, hat in ((c, OI["green"], ""), (w, OI["light"], "..."), (x, OI["vermillion"], "xxx")):
+            ax.barh(y, 100 * v / tot, left=left, color=col, edgecolor="black", lw=0.5, hatch=hat, height=0.7)
+            if 100 * v / tot > 6:
+                ax.text(left + 50 * v / tot, y, f"{100 * v / tot:.1f}%", ha="center", va="center", fontsize=6.6, bbox=LBL)
+            left += 100 * v / tot
+    ax.set_yticks(ys)
+    ax.set_yticklabels([r[0] for r in rows], fontsize=7)
+    ax.text(0, 6.3, "All web-serial cuts (245 exposed cuts)", fontsize=7.2, weight="bold")
+    ax.text(0, 3.1, "Held-out serial evaluation (512 pairs, pre-registered)", fontsize=7.2, weight="bold")
+    ax.set_xlim(0, 100)
+    ax.set_ylim(-0.2, 6.7)
+    ax.set_xlabel("Share of exposed character-cuts (%)")
+    ax.spines["left"].set_visible(False)
+    for lab, col, hat in (("correct", OI["green"], ""), ("withheld (unknown)", OI["light"], "..."), ("wrong", OI["vermillion"], "xxx")):
+        ax.bar([0], [0], color=col, edgecolor="black", hatch=hat, label=lab)
+    ax.legend(frameon=False, ncol=3, loc="upper center", bbox_to_anchor=(0.5, 1.2), fontsize=7)
+    save(fig, "fig8_repair_outcomes")
+
+
+# ------------------------------------------------------------------------------------------------ Fig 10
+def fig_leaks():
+    """Each leaking design next to its reader-faithful counterpart, with the interval of the paired difference."""
+    rf = J(C / "rf_e2e/analysis.json")
+    can = J(C / "rf_e2e/canary_analysis.json")
+    sel = J(C / "rf_e2e/selection_analysis.json")["H13_1_resolver_merged"]
+    A, B = rf["A_primary_EXPLICIT_IMPLIED"]["pooled"], rf["B_EXPLICIT_IMPLIED"]["pooled"]
+    # Interval bars are on the leaking design: the 95% interval of the paired difference, shifted by the faithful rate.
+    rows = [("Character card,\ntext rule (19 ev.)", A["rates"]["W_ren"], A["rates"]["P_ren"], A["RF1_input_channel"]["ci"], "deterministic"),
+            ("Character card,\njudge rule (54 ev.)", B["rates"]["W_ren"], B["rates"]["P_ren"], B["RF1_input_channel"]["ci"], "model judge"),
+            ("Card, suffix canary\n(54 ev.)", can["H12_1_W_card"]["rate_x"], can["H12_1_W_card"]["rate_y"], can["H12_1_W_card"]["ci"], "deterministic"),
+            ("Long context, suffix\ncanary (46 ev.)", can["H12_2_long_context"]["rate_x"], can["H12_2_long_context"]["rate_y"],
+             can["H12_2_long_context"]["ci"], "deterministic"),
+            ("Retrieval, selection\nleak (24 ev.)", sel["M_rate"], sel["P_rate"], sel["ci"], "model judge")]
+    fig, ax = plt.subplots(figsize=(6.6, 3.0))
+    for x, (lab, naive, fixed, cint, kind) in enumerate(rows):
+        ax.bar(x - 0.18, 100 * naive, width=0.34, color=OI["vermillion"], edgecolor="black", lw=0.5, hatch="///")
+        ax.bar(x + 0.18, 100 * fixed, width=0.34, color=OI["blue"], edgecolor="black", lw=0.5)
+        ax.plot([x - 0.18] * 2, [100 * (fixed + cint[0]), 100 * (fixed + cint[1])], color="black", lw=0.9)
+        ax.text(x, -9.5, kind, ha="center", fontsize=6.2, style="italic", color=OI["ink"])
+    ax.set_xticks(range(len(rows)))
+    ax.set_xticklabels([r[0] for r in rows], fontsize=6.8)
+    ax.set_ylabel("Events with the hidden identity\nor planted text disclosed (%)")
+    ax.set_ylim(-12, 58)
+    ax.axhline(0, color="black", lw=0.6)
+    ax.bar([0], [0], color=OI["vermillion"], edgecolor="black", hatch="///", label="leaking design: whole-volume card, position marker, merged index")
+    ax.bar([0], [0], color=OI["blue"], edgecolor="black", label="reader-faithful design: prefix-built card, truncation, prefix index")
+    ax.legend(frameon=False, loc="upper left", fontsize=6.6)
+    save(fig, "fig10_leak_by_design")
 
 
 if __name__ == "__main__":
     fig_channels()
     fig_workflow()
     fig_forest()
+    fig_human()
     fig_cue()
     fig_dose()
+    fig_pipeline()
+    fig_repair()
     fig_cards()
+    fig_leaks()

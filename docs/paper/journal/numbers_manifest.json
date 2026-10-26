@@ -530,7 +530,7 @@
  },
  "dose_groups_pool": {
   "value": "+0.7 [-3.7, +5.5] n 20; -0.4 [-8.2, +6.2] n 6; +30.3 [+15.3, +43.8] n 12",
-  "source": "figures/fig5_dose_groups.json (make_journal_figures.py)",
+  "source": "figures/fig6_dose_groups.json (make_journal_figures.py)",
   "note": ""
  },
  "qwen_ctrl_acc_v2": {

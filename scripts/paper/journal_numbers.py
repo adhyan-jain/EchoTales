@@ -217,9 +217,9 @@ def build():
     sx = pdi["selection_leak"]["excluding_descriptive"]
     put("selection_excl_descriptive", f"{pts(sx['estimate'])} {ci(*sx['ci'])} over {sx['events']}", "posthoc_descriptive_identity.json")
     put("descriptive_counts", f"{pdi['descriptive_count_all']}; primary {pdi['descriptive_count_primary']}", "posthoc_descriptive_identity.json")
-    groups = J("docs/paper/journal/figures/fig5_dose_groups.json")
+    groups = J("docs/paper/journal/figures/fig6_dose_groups.json")
     put("dose_groups_pool", "; ".join(f"{pts(g['mean'])} {ci(*g['ci'])} n {g['events']}" for g in groups["Valid local pool"]),
-        "figures/fig5_dose_groups.json (make_journal_figures.py)")
+        "figures/fig6_dose_groups.json (make_journal_figures.py)")
     v5m = J(C / "pd_v5/analysis.json")["per_model"]["qwen2.5:7b"]["pd_v2"]
     put("qwen_ctrl_acc_v2", f"{pc(v5m['ctrl_acc_A'])}/{pc(v5m['ctrl_acc_B'])}/{pc(v5m['ctrl_acc_B3'])}", "pd_v5/analysis.json per_model")
     v5all = J(C / "pd_v5/analysis.json")["pools"]["all_models"]

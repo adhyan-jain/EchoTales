@@ -1,3 +1,5 @@
 local_build/out/
 local_build/supp/
 local_build/*.log
+# The repo ignores *.pdf; the figure PDFs are the files Overleaf needs, so they are tracked.
+!figures/*.pdf

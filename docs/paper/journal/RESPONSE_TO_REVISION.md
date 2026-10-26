@@ -6,7 +6,7 @@ Future-Information Leakage in Processing Pipelines* (first draft, 26 October 202
 **Files:**
 - `main.tex`: one file, no `\input`, in the Overleaf `sn-jnl` template.
 - `references.bib`: 52 entries.
-- `figures/fig1-6`: vector PDF, plus 600 dpi PNG.
+- `figures/fig1-10`: vector PDF, plus 600 dpi PNG.
 - `supplementary.tex`: the supplementary material.
 
 **Status key:** **Done** = addressed in the draft.
@@ -21,7 +21,7 @@ Future-Information Leakage in Processing Pipelines* (first draft, 26 October 202
 ## Major issues
 | # | Issue | Status | What changed |
 |---|---|---|---|
-| 1 | Rebuild as a research article; numbering of sections, figures and tables | Done | Article order. Sections 1-9 are numbered continuously. Figures 1-6 and Tables 1-12 are numbered in order of first citation, and every float is cited before it appears. There are no sub-numbered tables. |
+| 1 | Rebuild as a research article; numbering of sections, figures and tables | Done | Article order. Sections 1-9 are numbered continuously. Figures 1-10 and Tables 1-12 are numbered in order of first citation, and every float is cited before it appears. There are no sub-numbered tables. |
 | 2 | One central contribution | Done | One reader-faithfulness framework (Sect. 3, Definition 1, Fig. 1) with RQ1-RQ3. Three contributions map 1:1 to the RQs, and the protocols of the two tracks are separated (Sect. 4, Fig. 2). |
 | 3 | Narrow the parametric-memory claim | Done | +26.0 is stated as exploratory and specific to the reference model and tested books. The confirmatory +0.1 [-5.0, +5.2] is given equal weight in the abstract, 6.1, 7 and 9. Nowhere does the text claim that LLMs in general leak. |
 | 4 | Separate divergence from spoilers | Done | Divergent fact, exposed fact and genuine disclosure are defined (Sect. 3). Table 8 reports divergence (41/685) and disclosure (1.7-3.5%) as separate rows with their own denominators. |
@@ -51,10 +51,10 @@ Each defensible interpretation is used:
 | 4.5 | Group the mitigations under one subsection | Done (4.4: one principle, each design described once). |
 | 4.6 | Canary placement, hit rule, long-context assembly, alias-merged vs prefix index; judge limitation in Methods and Results | Done (4.4 and 6.4). |
 | 5 | Datasets and overlap; models with versions, settings and hardware; positive control kept separate; metrics; statistical protocol; reproducibility; incomplete arm; timings not a benchmark | Done. Table 2 (datasets), Table 3 (models), Table 4 (metrics); the Claude arm is labelled incomplete and excluded. |
-| 6.1 | Exploratory and confirmatory as separate blocks; why they do not contradict | Done (Fig. 3, Tables 5-6). Wording: "consistent with a familiarity-dependent effect". |
-| 6.2 | Pseudonym result concise; recovered-fraction interval and pre-registered rule; familiarity post hoc with group sizes and CIs | Done (Fig. 4, Table 7, Fig. 5: groups n = 20/6/12 with bootstrap CIs; six-level counts 10/10/4/2/5/7 in the text). |
-| 6.3 | Tables 9a-9e consolidated; distinct denominators; zero *observed* divergence; costs visible | Done (Tables 8-9). Resolver diagnostics moved to the supplement (Table S5). |
-| 6.4 | Text rule vs judge rule separated; content vs selection in separate paragraphs; which result is deterministic | Done (Table 10, Fig. 6, Table 11). |
+| 6.1 | Exploratory and confirmatory as separate blocks; why they do not contradict | Done (Fig. 3, Tables 5-6). Wording: "fits a familiarity-dependent effect". Human validation of the oracle in Fig. 4. |
+| 6.2 | Pseudonym result concise; recovered-fraction interval and pre-registered rule; familiarity post hoc with group sizes and CIs | Done (Fig. 5, Table 7, Fig. 6: groups n = 20/6/12 with bootstrap CIs; six-level counts 10/10/4/2/5/7 in the text). |
+| 6.3 | Tables 9a-9e consolidated; distinct denominators; zero *observed* divergence; costs visible | Done (Tables 8-9, Figs. 7-8). Resolver diagnostics moved to the supplement (Table S5). |
+| 6.4 | Text rule vs judge rule separated; content vs selection in separate paragraphs; which result is deterministic | Done (Table 10, Fig. 9, Table 11, Fig. 10). |
 | 6.5 | Synthesis table cites its sources; pseudonymisation is a trade-off; key costs; per-run timings to the supplement | Done (Table 12; Table S9). |
 | 7 | Four questions; no repetition of tables; empirical success is not a formal guarantee | Done. |
 | 8 | Seven threats, each with its meaning for the conclusions | Done (construct, selection, external, annotation, power, implementation, reproducibility). |
@@ -66,10 +66,14 @@ Each defensible interpretation is used:
 | Fig. 5 architecture | Redrawn as **Fig. 2**: both tracks and their shared concepts, short labels only. |
 | Fig. 6 channels | **Fig. 1**, at the end of Sect. 3. Shows which evaluation detects each channel and where each mitigation acts. |
 | Fig. 1 forest | **Fig. 3**: exploratory and confirmatory blocks separated; the +10 line removed; CIs defined in the caption. |
-| Fig. 2 cue control | **Fig. 4**: one panel with CIs; A, B and B3 defined in the caption. Per-model numbers in Table S1. |
-| Fig. 3 dose-response | **Fig. 5**: labelled post hoc, with n per group and CIs; the caption states that the predictor shares models with the outcome. |
+| (new) | **Fig. 4**: human validation of the reveal oracle, answers to four questions over 72 labels with raw agreement. |
+| Fig. 2 cue control | **Fig. 5**: one panel with CIs; A, B and B3 defined in the caption. Per-model numbers in Table S1. |
+| Fig. 3 dose-response | **Fig. 6**: labelled post hoc, with n per group and CIs; the caption states that the predictor shares models with the outcome. |
 | Fig. 4 pooled | Removed. Its content is in Fig. 3. |
-| Fig. 11 cards | **Fig. 6**: Okabe-Ito colours plus distinct marker shapes (readable in greyscale); text rule and judge rule in separate panels. |
+| (new) | **Fig. 7**: persona-stage audit, every test on the same 289 cuts with Wilson intervals, plus the synthetic dose-response. |
+| (new) | **Fig. 8**: correct / withheld / wrong values served under each build (Table 9 drawn). |
+| Fig. 11 cards | **Fig. 9**: Okabe-Ito colours plus distinct marker shapes (readable in greyscale); text rule and judge rule in separate panels. |
+| (new) | **Fig. 10**: each leaking assistant design next to its reader-faithful counterpart, with paired-difference intervals and the evidence type labelled. |
 | Figs. 7-10 screenshots | Removed. |
 | Format | Separate vector PDFs (plus 600 dpi PNGs), one font, consistent line widths, self-contained captions. |
 
@@ -133,6 +137,6 @@ These were found while checking every number against its stored source. Each is 
 6. **Miner and auditor overlap.** The confirmatory miner (Qwen2.5-32B) and auditor (Mistral-Small-24B) are also evaluated models. The pre-registration had named larger models. This is stated in Limitations.
 
 ## Open items before submission
-1. **Author emails.** The three student emails are placeholders in `main.tex`.
-2. **Use-of-AI declaration.** Confirm the statement on Claude Code with Dr. Satapathy (Springer Nature requires such disclosure).
+1. **Use-of-AI declaration.** It currently names code and annotation only. Springer Nature also requires disclosure of AI assistance with drafting text; confirm the wording with Dr. Satapathy before submission.
+2. **Similarity check.** `scripts/paper/overlap_check.py` found no run of 6 or more identical words shared with the abstracts of the cited works (`overlap_check.md`). That is not an iThenticate or Turnitin report; the journal's own check remains to be run.
 3. **Overleaf compile.** Compile in Overleaf with the project's own class file. The local build used a public mirror of `sn-jnl` with a local-only shim (`local_build/`); it compiles with 0 errors, 0 undefined references and 0 overfull boxes.
