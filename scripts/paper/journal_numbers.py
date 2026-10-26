@@ -245,6 +245,35 @@ def build():
             res_tot += v["prefix_vs_F0"]["mentions_leq_k"]
             res_dis += v["prefix_vs_F0"]["disagree"]
     put("resolver", f"{res_dis} of {res_tot:,}", "eng_probe_E1_*.json by_k.*.prefix_vs_F0")
+    # ---------------------------------------------------------------- human reveal validation (scripts/review)
+    hv = J("data/eval/validation/reveal_human_v1.json")
+    el, ag = hv["event_level"], hv["agreement_fleiss"]
+
+    def wl(w):
+        return f"{w['k']}/{w['n']} ({pc(w['rate'])}% [{pc(w['ci'][0])}, {pc(w['ci'][1])}])"
+
+    put("human_explicit_both", wl(el["reveal_explicit_both"]), "validation/reveal_human_v1.json")
+    ac = hv["model_audit_agreement"]["explicit_confirmed"]
+    put("human_audit_confirmed", f"{ac['k']} of {ac['n']}, lower {pc(ac['ci'][0])}", "validation/reveal_human_v1.json")
+    put("human_confident", f"{el['inferable_confident_any']['k']}/{el['inferable_confident_any']['n']}, upper {pc(el['inferable_confident_any']['ci'][1])}",
+        "validation/reveal_human_v1.json")
+    put("human_suspect", f"{el['inferable_suspect_or_more_any']['k']} any, {el['inferable_suspect_or_more_both']['k']} both",
+        "validation/reveal_human_v1.json")
+    put("human_reminder_any", str(el["reminder_any"]["k"]), "validation/reveal_human_v1.json")
+    put("human_invalid_any", f"{hv['by_track']['confirmatory']['invalid_any']['k']} of {hv['by_track']['confirmatory']['events']} confirmatory; "
+        f"{hv['by_track']['exploratory']['invalid_any']['k']} exploratory", "validation/reveal_human_v1.json")
+    put("human_agreement", f"q1 raw {pc(ag['q1']['raw_agreement'])} kappa {ag['q1']['kappa']:.2f}; q3 raw {pc(ag['q3']['raw_agreement'])} "
+        f"kappa {ag['q3']['kappa']:.2f}; q4 raw {pc(ag['q4']['raw_agreement'])}; q2 raw {pc(ag['q2']['raw_agreement'])}",
+        "validation/reveal_human_v1.json")
+    pk = hv["prior_knowledge"]["labels_knowing_plot"]
+    put("human_knew_plot", f"{pk['k']} of {pk['n']}", "validation/reveal_human_v1.json")
+    gs = hv["gap_sensitivity"]
+    r = gs["validated_subset"]["reference_model_exploratory"]
+    put("human_ref_gap", f"{pts(r['gap_A_minus_B'])} {ci(*r['ci'])}", "validation/reveal_human_v1.json gap_sensitivity")
+    for lab, key in (("human_conf_validated", "validated_subset"), ("human_conf_minus_flagged", "validated_subset_minus_flagged")):
+        h = gs[key]["confirmatory_H1_pooled"]
+        put(lab, f"{pts(h['pooled'])} {ci(*h['ci'])}", "validation/reveal_human_v1.json gap_sensitivity")
+
     eng = J(PA / "anchored_v2_summary.json")["development_english_originals"]
     v1 = eng["setting_1_0.8"]["v1"]
     put("anchor_english_wrong", f"{pc(v1['wrong'] / v1['cuts'])}% ({v1['wrong']} of {v1['cuts']})", "anchored_v2_summary.json")

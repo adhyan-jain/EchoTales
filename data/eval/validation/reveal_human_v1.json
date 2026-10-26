@@ -1,0 +1,371 @@
+{
+ "label_provenance": "HUMAN: three author-annotators, two per event, blind to model labels; public-domain events only",
+ "item_set": "reveal-validation-v1",
+ "files": [
+  "labels_Adhyan.json",
+  "labels_Aryan.json",
+  "labels_Atharva.json"
+ ],
+ "events_total": 36,
+ "events_double_labelled": 36,
+ "events_single_labelled": 0,
+ "label_distribution": {
+  "q0": {
+   "no": 71,
+   "yes": 1
+  },
+  "q1": {
+   "explicit": 69,
+   "implied": 3
+  },
+  "q2": {
+   "revelation": 63,
+   "reminder": 9
+  },
+  "q3": {
+   "no": 47,
+   "suspect": 25
+  },
+  "q4": {
+   "yes": 66,
+   "no": 6
+  }
+ },
+ "agreement_fleiss": {
+  "q0": {
+   "kappa": -0.014,
+   "raw_agreement": 0.972,
+   "events": 36
+  },
+  "q1": {
+   "kappa": 0.652,
+   "raw_agreement": 0.972,
+   "events": 36
+  },
+  "q2": {
+   "kappa": -0.143,
+   "raw_agreement": 0.75,
+   "events": 36
+  },
+  "q3": {
+   "kappa": 0.449,
+   "raw_agreement": 0.75,
+   "events": 36
+  },
+  "q4": {
+   "kappa": -0.091,
+   "raw_agreement": 0.833,
+   "events": 36
+  }
+ },
+ "event_level": {
+  "reveal_explicit_both": {
+   "k": 34,
+   "n": 36,
+   "rate": 0.9444,
+   "ci": [
+    0.8186,
+    0.9846
+   ]
+  },
+  "reveal_not_identifying_any": {
+   "k": 0,
+   "n": 36,
+   "rate": 0.0,
+   "ci": [
+    0.0,
+    0.0964
+   ]
+  },
+  "revelation_both": {
+   "k": 27,
+   "n": 36,
+   "rate": 0.75,
+   "ci": [
+    0.5893,
+    0.8625
+   ]
+  },
+  "reminder_any": {
+   "k": 9,
+   "n": 36,
+   "rate": 0.25,
+   "ci": [
+    0.1375,
+    0.4107
+   ]
+  },
+  "inferable_confident_any": {
+   "k": 0,
+   "n": 36,
+   "rate": 0.0,
+   "ci": [
+    0.0,
+    0.0964
+   ]
+  },
+  "inferable_confident_both": {
+   "k": 0,
+   "n": 36,
+   "rate": 0.0,
+   "ci": [
+    0.0,
+    0.0964
+   ]
+  },
+  "inferable_suspect_or_more_any": {
+   "k": 17,
+   "n": 36,
+   "rate": 0.4722,
+   "ci": [
+    0.3199,
+    0.6299
+   ]
+  },
+  "inferable_suspect_or_more_both": {
+   "k": 8,
+   "n": 36,
+   "rate": 0.2222,
+   "ci": [
+    0.1172,
+    0.3808
+   ]
+  },
+  "valid_both": {
+   "k": 30,
+   "n": 36,
+   "rate": 0.8333,
+   "ci": [
+    0.6811,
+    0.9213
+   ]
+  },
+  "invalid_any": {
+   "k": 6,
+   "n": 36,
+   "rate": 0.1667,
+   "ci": [
+    0.0787,
+    0.3189
+   ]
+  }
+ },
+ "by_track": {
+  "confirmatory": {
+   "events": 18,
+   "reveal_explicit_both": {
+    "k": 18,
+    "n": 18,
+    "rate": 1.0,
+    "ci": [
+     0.8241,
+     1.0
+    ]
+   },
+   "inferable_confident_any": {
+    "k": 0,
+    "n": 18,
+    "rate": 0.0,
+    "ci": [
+     -0.0,
+     0.1759
+    ]
+   },
+   "invalid_any": {
+    "k": 6,
+    "n": 18,
+    "rate": 0.3333,
+    "ci": [
+     0.1628,
+     0.5625
+    ]
+   }
+  },
+  "exploratory": {
+   "events": 18,
+   "reveal_explicit_both": {
+    "k": 16,
+    "n": 18,
+    "rate": 0.8889,
+    "ci": [
+     0.672,
+     0.969
+    ]
+   },
+   "inferable_confident_any": {
+    "k": 0,
+    "n": 18,
+    "rate": 0.0,
+    "ci": [
+     -0.0,
+     0.1759
+    ]
+   },
+   "invalid_any": {
+    "k": 0,
+    "n": 18,
+    "rate": 0.0,
+    "ci": [
+     -0.0,
+     0.1759
+    ]
+   }
+  }
+ },
+ "prior_knowledge": {
+  "labels_knowing_plot": {
+   "k": 1,
+   "n": 72,
+   "rate": 0.0139,
+   "ci": [
+    0.0025,
+    0.0746
+   ]
+  },
+  "confident_inference_if_known": {
+   "k": 0,
+   "n": 1,
+   "rate": 0.0,
+   "ci": [
+    0.0,
+    0.7935
+   ]
+  },
+  "confident_inference_if_not_known": {
+   "k": 0,
+   "n": 71,
+   "rate": 0.0,
+   "ci": [
+    0.0,
+    0.0513
+   ]
+  }
+ },
+ "model_audit_agreement": {
+  "note": "share of events the model audit called EXPLICIT that both annotators also called explicit",
+  "explicit_confirmed": {
+   "k": 28,
+   "n": 28,
+   "rate": 1.0,
+   "ci": [
+    0.8794,
+    1.0
+   ]
+  }
+ },
+ "flagged_events": [
+  "C10150_1",
+  "C1848_1",
+  "C35443_1",
+  "C39858_1",
+  "C4537_1",
+  "C7497_1"
+ ],
+ "gap_sensitivity": {
+  "rule": "drop an event if either annotator said: invalid item, reveal does not identify, or identity confidently inferable before the reveal",
+  "validated_subset": {
+   "reference_model_exploratory": {
+    "events": 18,
+    "gap_A_minus_B": 0.2743,
+    "ci": [
+     0.1597,
+     0.4028
+    ],
+    "gap_A_minus_B3": 0.2778,
+    "ci_B3": [
+     0.1736,
+     0.4028
+    ],
+    "events_positive": 14,
+    "events_negative": 0,
+    "sign_p": 0.00012
+   },
+   "confirmatory_per_model": {
+    "mistral24": {
+     "events": 18,
+     "gap_A_minus_B": 0.0139,
+     "ci": [
+      -0.0833,
+      0.1111
+     ]
+    },
+    "olmo32b": {
+     "events": 18,
+     "gap_A_minus_B": 0.0,
+     "ci": [
+      -0.0556,
+      0.0694
+     ]
+    },
+    "qwen32b": {
+     "events": 18,
+     "gap_A_minus_B": -0.0278,
+     "ci": [
+      -0.0833,
+      0.0
+     ]
+    }
+   },
+   "confirmatory_H1_pooled": {
+    "pooled": -0.012,
+    "ci": [
+     -0.0627,
+     0.0387
+    ],
+    "models": 3
+   }
+  },
+  "validated_subset_minus_flagged": {
+   "reference_model_exploratory": {
+    "events": 18,
+    "gap_A_minus_B": 0.2743,
+    "ci": [
+     0.1597,
+     0.4028
+    ],
+    "gap_A_minus_B3": 0.2778,
+    "ci_B3": [
+     0.1736,
+     0.4028
+    ],
+    "events_positive": 14,
+    "events_negative": 0,
+    "sign_p": 0.00012
+   },
+   "confirmatory_per_model": {
+    "mistral24": {
+     "events": 12,
+     "gap_A_minus_B": -0.0208,
+     "ci": [
+      -0.1458,
+      0.1042
+     ]
+    },
+    "olmo32b": {
+     "events": 12,
+     "gap_A_minus_B": -0.0417,
+     "ci": [
+      -0.1042,
+      0.0
+     ]
+    },
+    "qwen32b": {
+     "events": 12,
+     "gap_A_minus_B": -0.0417,
+     "ci": [
+      -0.125,
+      0.0
+     ]
+    }
+   },
+   "confirmatory_H1_pooled": {
+    "pooled": -0.0393,
+    "ci": [
+     -0.0595,
+     -0.0191
+    ],
+    "models": 3
+   }
+  }
+ }
+}

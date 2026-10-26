@@ -563,6 +563,61 @@
   "source": "eng_probe_E1_*.json by_k.*.prefix_vs_F0",
   "note": ""
  },
+ "human_explicit_both": {
+  "value": "34/36 (94.4% [81.9, 98.5])",
+  "source": "validation/reveal_human_v1.json",
+  "note": ""
+ },
+ "human_audit_confirmed": {
+  "value": "28 of 28, lower 87.9",
+  "source": "validation/reveal_human_v1.json",
+  "note": ""
+ },
+ "human_confident": {
+  "value": "0/36, upper 9.6",
+  "source": "validation/reveal_human_v1.json",
+  "note": ""
+ },
+ "human_suspect": {
+  "value": "17 any, 8 both",
+  "source": "validation/reveal_human_v1.json",
+  "note": ""
+ },
+ "human_reminder_any": {
+  "value": "9",
+  "source": "validation/reveal_human_v1.json",
+  "note": ""
+ },
+ "human_invalid_any": {
+  "value": "6 of 18 confirmatory; 0 exploratory",
+  "source": "validation/reveal_human_v1.json",
+  "note": ""
+ },
+ "human_agreement": {
+  "value": "q1 raw 97.2 kappa 0.65; q3 raw 75.0 kappa 0.45; q4 raw 83.3; q2 raw 75.0",
+  "source": "validation/reveal_human_v1.json",
+  "note": ""
+ },
+ "human_knew_plot": {
+  "value": "1 of 72",
+  "source": "validation/reveal_human_v1.json",
+  "note": ""
+ },
+ "human_ref_gap": {
+  "value": "+27.4 [+16.0, +40.3]",
+  "source": "validation/reveal_human_v1.json gap_sensitivity",
+  "note": ""
+ },
+ "human_conf_validated": {
+  "value": "-1.2 [-6.3, +3.9]",
+  "source": "validation/reveal_human_v1.json gap_sensitivity",
+  "note": ""
+ },
+ "human_conf_minus_flagged": {
+  "value": "-3.9 [-5.9, -1.9]",
+  "source": "validation/reveal_human_v1.json gap_sensitivity",
+  "note": ""
+ },
  "anchor_english_wrong": {
   "value": "7.8% (14 of 179)",
   "source": "anchored_v2_summary.json",

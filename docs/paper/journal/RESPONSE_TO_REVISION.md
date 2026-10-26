@@ -9,7 +9,7 @@ Future-Information Leakage in Processing Pipelines* (first draft, 26 October 202
 - `figures/fig1-6`: vector PDF, plus 600 dpi PNG.
 - `supplementary.tex`: the supplementary material.
 
-**Status key:** **Done** = addressed in the draft; **Open** = still to do, marked in red in the PDF with `\pending{}`.
+**Status key:** **Done** = addressed in the draft.
 
 ---
 
@@ -25,7 +25,7 @@ Future-Information Leakage in Processing Pipelines* (first draft, 26 October 202
 | 2 | One central contribution | Done | One reader-faithfulness framework (Sect. 3, Definition 1, Fig. 1) with RQ1-RQ3. Three contributions map 1:1 to the RQs, and the protocols of the two tracks are separated (Sect. 4, Fig. 2). |
 | 3 | Narrow the parametric-memory claim | Done | +26.0 is stated as exploratory and specific to the reference model and tested books. The confirmatory +0.1 [-5.0, +5.2] is given equal weight in the abstract, 6.1, 7 and 9. Nowhere does the text claim that LLMs in general leak. |
 | 4 | Separate divergence from spoilers | Done | Divergent fact, exposed fact and genuine disclosure are defined (Sect. 3). Table 8 reports divergence (41/685) and disclosure (1.7-3.5%) as separate rows with their own denominators. |
-| 5 | Human validation of a representative subset | **Open (in progress)** | Protocol in 4.1. 36 events (18 exploratory, 18 confirmatory primary, stratified), each labelled by 2 of 3 authors, blind to model labels. The app is `scripts/review/reveal_validation_app`; scoring (Fleiss' kappa, Wilson CIs, gaps recomputed without flagged events) is `scripts/review/score_reveal_validation.py`. Results go into 6.1 and 8 when the labels are in. The copyrighted serial cuts cannot be shared, so their disclosure labels stay model-only, as stated in 4.3 and 8. |
+| 5 | Human validation of a representative subset | Done | 36 events (18 exploratory, 18 confirmatory primary), each labelled by 2 of 3 author-annotators, blind to model labels (`scripts/review/reveal_validation_app`, scored by `score_reveal_validation.py`, labels in `data/eval/validation/`). Results in 6.1 and Limitations: reveal explicit for both annotators in 34/36 (94.4%, Wilson [81.9, 98.5]); all 28 audit-EXPLICIT events confirmed; identity confidently inferable in 0/36 but suspected by at least one annotator in 17/36; one annotator flagged 6 confirmatory events invalid (the other accepted them). Main estimates on the validated events: reference gap +27.4 [+16.0, +40.3]; confirmatory pooled -1.2 [-6.3, +3.9], and -3.9 [-5.9, -1.9] without the flagged events. The copyrighted serial cuts could not be shared, so their disclosure labels stay model-only (4.3, 8). Supplement S8 lists every disagreement. |
 
 ## Claims table (page 4)
 Every "claim to avoid" was checked by searching the manuscript for universal phrasing ("all LLMs", "guarantee",
@@ -55,7 +55,7 @@ Each defensible interpretation is used:
 | 6.2 | Pseudonym result concise; recovered-fraction interval and pre-registered rule; familiarity post hoc with group sizes and CIs | Done (Fig. 4, Table 7, Fig. 5: groups n = 20/6/12 with bootstrap CIs; six-level counts 10/10/4/2/5/7 in the text). |
 | 6.3 | Tables 9a-9e consolidated; distinct denominators; zero *observed* divergence; costs visible | Done (Tables 8-9). Resolver diagnostics moved to the supplement (Table S5). |
 | 6.4 | Text rule vs judge rule separated; content vs selection in separate paragraphs; which result is deterministic | Done (Table 10, Fig. 6, Table 11). |
-| 6.5 | Synthesis table cites its sources; pseudonymisation is a trade-off; key costs; per-run timings to the supplement | Done (Table 12; Table S8). |
+| 6.5 | Synthesis table cites its sources; pseudonymisation is a trade-off; key costs; per-run timings to the supplement | Done (Table 12; Table S9). |
 | 7 | Four questions; no repetition of tables; empirical success is not a formal guarantee | Done. |
 | 8 | Seven threats, each with its meaning for the conclusions | Done (construct, selection, external, annotation, power, implementation, reproducibility). |
 | 9 | Short; no new numbers or references; engineering lesson | Done (no numbers, no citations). |
@@ -85,7 +85,7 @@ Each defensible interpretation is used:
 | 8 cue control | Table 7 (pooled); per-model rows in Table S1. |
 | 9a, 9b, 9c, 9d | Table 8 (divergence, hiding, dependence, disclosure) and Table 9 (correct / withheld / wrong). |
 | 9e | Table S5 (resolver), plus a sentence on the statistical correction in Sect. 5. |
-| 10 runtime | Table S8; key costs in 6.5. |
+| 10 runtime | Table S9; key costs in 6.5. |
 | 10a, 10b | Table 6. The incomplete arm is stated as excluded. |
 | 10c | Table 10 (rules separated). |
 | 10d | Table 12. Each row cites its source table. |
@@ -120,7 +120,7 @@ Each defensible interpretation is used:
 | Tools merged into Setup | Done. |
 | Mitigations grouped | Done (4.4). |
 | Ablations combined | Done (Table 12; secondary analyses in Table S4). |
-| Moved to supplementary | Done: runtime and API logs (S8), resolver diagnostics (S5), prompts (S6), event manifest (S7), secondary sensitivity results (S4), PD v7 (S3), incomplete arm (S2). |
+| Moved to supplementary | Done: runtime and API logs (S9), human-validation detail (S8), resolver diagnostics (S5), prompts (S6), event manifest (S7), secondary sensitivity results (S4), PD v7 (S3), incomplete arm (S2). |
 | Kept in the main paper | The confirmatory null, the oracle's limitations, the key pipeline findings and the cost of the fixes. |
 
 ## Corrections found while preparing the revision
@@ -133,7 +133,6 @@ These were found while checking every number against its stored source. Each is 
 6. **Miner and auditor overlap.** The confirmatory miner (Qwen2.5-32B) and auditor (Mistral-Small-24B) are also evaluated models. The pre-registration had named larger models. This is stated in Limitations.
 
 ## Open items before submission
-1. **Human-validation results.** Fill in 4.1, 6.1 and 8 (the red `\pending` marks) after the three label files are scored.
-2. **Author emails.** The three student emails are placeholders in `main.tex`.
-3. **Use-of-AI declaration.** Confirm the statement on Claude Code with Dr. Satapathy (Springer Nature requires such disclosure).
-4. **Overleaf compile.** Compile in Overleaf with the project's own class file. The local build used a public mirror of `sn-jnl` with a local-only shim (`local_build/`); it compiles with 0 errors, 0 undefined references and 0 overfull boxes.
+1. **Author emails.** The three student emails are placeholders in `main.tex`.
+2. **Use-of-AI declaration.** Confirm the statement on Claude Code with Dr. Satapathy (Springer Nature requires such disclosure).
+3. **Overleaf compile.** Compile in Overleaf with the project's own class file. The local build used a public mirror of `sn-jnl` with a local-only shim (`local_build/`); it compiles with 0 errors, 0 undefined references and 0 overfull boxes.

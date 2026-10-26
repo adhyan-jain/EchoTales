@@ -27,10 +27,10 @@ conflated.
 ## Pick up here — 2026-10-25 (journal manuscript, Revision 1; EVOLUTION 4.126)
 
 Research track only. The draft article is `docs/paper/journal/main.tex` (Springer `sn-jnl`, compiled locally to
-`Reader_Faithfulness_draft1.pdf`); `RESPONSE_TO_REVISION.md` maps every point of the 18-page brief. Open: (1) score the
-human reveal-validation labels (`scripts/review/score_reveal_validation.py`, files in
-`data/eval/validation/reveal_labels/`) and fill the red `\pending` marks in 4.1, 6.1 and 8; (2) student emails are
-placeholders; (3) compile once in Overleaf with the professor's class file. Rebuild order: `journal_numbers.py --check`,
+`Reader_Faithfulness_draft1.pdf`); `RESPONSE_TO_REVISION.md` maps every point of the 18-page brief. The human
+reveal-validation labels (`data/eval/validation/reveal_labels/`) were scored and written into 4.1, 6.1 and 8 on
+2026-10-26. Open: (1) student emails are placeholders; (2) compile once in Overleaf with the professor's class file;
+(3) confirm the use-of-AI declaration. Rebuild order: `score_reveal_validation.py`, `journal_numbers.py --check`,
 `make_journal_figures.py`, `build_supplementary.py`, `verify_references.py`, then latexmk.
 
 ## Pick up here — 2026-10-24 (PRODUCT PIVOT, decisions.md D27)

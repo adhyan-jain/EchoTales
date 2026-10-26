@@ -1,0 +1,256 @@
+{
+ "app": "reveal-check",
+ "version": "reveal-validation-v1",
+ "seed": 20261025,
+ "annotator": "Adhyan",
+ "exported_at": "2026-10-26T06:50:14.553Z",
+ "assigned": [
+  "E01",
+  "E03",
+  "E04",
+  "E06",
+  "E07",
+  "E09",
+  "E10",
+  "E12",
+  "E13",
+  "E15",
+  "E16",
+  "E18",
+  "E19",
+  "E21",
+  "E22",
+  "E24",
+  "E25",
+  "E27",
+  "E28",
+  "E30",
+  "E31",
+  "E33",
+  "E34",
+  "E36"
+ ],
+ "labels": {
+  "E01": {
+   "event_id": "OT",
+   "q0": "no",
+   "updated_at": "2026-10-26T05:13:13.476Z",
+   "q2": "revelation",
+   "q1": "explicit",
+   "q3": "no",
+   "note": "",
+   "q4": "yes"
+  },
+  "E03": {
+   "event_id": "C49468_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T05:16:55.307Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "yes",
+   "note": "The reveal explicitly connects Sir Griffin Markham to the assumed name Baron de Mardyke"
+  },
+  "E04": {
+   "event_id": "C7497_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T05:20:42.231Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "yes",
+   "note": "The excerpt provided does not show his original identity being named, and the earlier passages do not establish the connection between Alessandro Nondra and his true identity"
+  },
+  "E06": {
+   "event_id": "UD",
+   "q0": "no",
+   "updated_at": "2026-10-26T05:25:25.713Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q4": "yes",
+   "q3": "no"
+  },
+  "E07": {
+   "event_id": "C2160_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:07:32.933Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "yes",
+   "note": "connecting the hidden identity Fathom with the alias Grieve"
+  },
+  "E09": {
+   "event_id": "C9589_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:10:45.900Z",
+   "q2": "revelation",
+   "q1": "explicit",
+   "q3": "no",
+   "q4": "yes",
+   "note": "Revealing the strager's identity as Joel Barlow"
+  },
+  "E10": {
+   "event_id": "BR",
+   "q4": "yes",
+   "updated_at": "2026-10-26T06:11:43.330Z",
+   "q3": "no",
+   "q2": "revelation",
+   "q1": "explicit",
+   "q0": "no"
+  },
+  "E12": {
+   "event_id": "C2078_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:15:30.545Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "yes"
+  },
+  "E13": {
+   "event_id": "PH",
+   "q2": "revelation",
+   "updated_at": "2026-10-26T06:15:55.529Z",
+   "q1": "explicit",
+   "q0": "no",
+   "q3": "no",
+   "q4": "yes"
+  },
+  "E15": {
+   "event_id": "C11720_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:16:36.378Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "yes"
+  },
+  "E16": {
+   "event_id": "C965_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:30:45.781Z",
+   "q3": "no",
+   "q4": "yes",
+   "q2": "revelation",
+   "q1": "explicit"
+  },
+  "E18": {
+   "event_id": "GR",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:32:17.860Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "yes"
+  },
+  "E19": {
+   "event_id": "C17434_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:33:44.138Z",
+   "q3": "no",
+   "q4": "yes",
+   "q2": "revelation",
+   "q1": "explicit"
+  },
+  "E21": {
+   "event_id": "C1942_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:34:10.919Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "yes"
+  },
+  "E22": {
+   "event_id": "MI",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:35:07.985Z",
+   "q4": "yes",
+   "q3": "no",
+   "q1": "explicit",
+   "q2": "revelation"
+  },
+  "E24": {
+   "event_id": "KM",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:37:17.692Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q4": "yes",
+   "q3": "suspect"
+  },
+  "E25": {
+   "event_id": "EL",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:39:34.193Z",
+   "q1": "explicit",
+   "q2": "reminder",
+   "q3": "suspect",
+   "q4": "yes"
+  },
+  "E27": {
+   "event_id": "RP",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:42:52.190Z",
+   "q3": "no",
+   "q4": "yes",
+   "q1": "explicit",
+   "q2": "revelation"
+  },
+  "E28": {
+   "event_id": "C49850_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:43:43.332Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "yes"
+  },
+  "E30": {
+   "event_id": "LM",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:45:18.796Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "suspect",
+   "q4": "yes"
+  },
+  "E31": {
+   "event_id": "AL",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:46:03.218Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "suspect",
+   "q4": "yes"
+  },
+  "E33": {
+   "event_id": "C11643_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:46:59.917Z",
+   "q1": "explicit",
+   "q2": "reminder",
+   "q3": "suspect",
+   "q4": "yes"
+  },
+  "E34": {
+   "event_id": "DL",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:49:00.278Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "suspect",
+   "q4": "yes"
+  },
+  "E36": {
+   "event_id": "TM",
+   "q0": "no",
+   "updated_at": "2026-10-26T06:50:07.234Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "suspect",
+   "q4": "yes"
+  }
+ }
+}

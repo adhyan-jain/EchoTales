@@ -94,8 +94,6 @@
 \raggedbottom
 %%\unnumbered% uncomment this for unnumbered level heads
 
-% Items still open in this first draft are printed in red so that they cannot be missed.
-\newcommand{\pending}[1]{\textcolor{red}{[#1]}}
 
 \begin{document}
 
@@ -118,7 +116,7 @@
 \textbf{Objective.} We define reader-faithfulness as non-interference from the unread text and measure two leakage channels: parametric memory and future information introduced by the pipeline.
 \textbf{Methods and data.} A reveal-time task on public-domain novels presents passages preceding an explicit reveal sentence under original names, letter ciphers and cue-preserving pseudonyms (38 exploratory and 68 pre-registered confirmatory events). A narrative knowledge graph and generic assistant designs are rebuilt from the reader's prefix and compared with whole-volume builds, using counterfactual suffixes and suffix canaries.
 \textbf{Principal results.} A commercial reference model named hidden identities early more often under original names on the exploratory books (+26.0 points); the confirmatory study on mostly low-familiarity books found no gap (+0.1 points, 95\% CI \textminus5.0 to +5.2). A persona-derivation stage diverged from a prefix-only build in 41 of 685 character-cuts; model annotators judged 1.7--3.5\% of cuts genuine premature disclosures. Whole-volume character cards named the hidden identity in 18.5\% (judge rule) and 24.6\% (text rule) of events, a position marker did not stop long-context answers from quoting later text (40.6\% of events), and alias-merged retrieval leaked in 19.4\% of events against 1.4\% for a prefix-built index. Prefix-based construction removed the observed leakage at measured cost.
-\textbf{Limitations.} Events are model-selected, the oracle covers only explicit reveal sentences, most non-deterministic labels come from models, and the memory effect is conditional on familiarity and the tested models.}
+\textbf{Limitations.} Events are model-selected (a human check of 36 events confirmed the reveal as explicit in 34), the oracle covers only explicit reveal sentences, most non-deterministic labels come from models, and the memory effect is conditional on familiarity and the tested models.}
 
 \keywords{Reader-faithfulness, Spoilers, Parametric memory, Information leakage, Narrative understanding, Large language models, Evaluation methodology}
 
@@ -234,7 +232,7 @@ Candidate events are proposed by language models and then verified by these rule
 
 The resulting oracle is a \emph{reproducible, text-grounded oracle with model-assisted event selection}. Matching and cutoff verification are deterministic once an event has been proposed: anyone with the same texts and rules obtains the same items and labels. Which events exist, and whether a reveal sentence really identifies the alias, rest on model judgements. The oracle also fixes only what the book \emph{states}; an explicit reveal sentence is not the first point at which an attentive reader could infer the identity.
 
-To validate the oracle, three authors labelled a stratified, seeded subset of 36 events: 18 exploratory events stratified by dataset, and 18 from the confirmatory primary set, including every high- and mid-fame event. Each event was labelled independently by two annotators, blind to all model labels, in an annotation tool that shows the reveal sentence in context and the same pre-reveal passages the models saw. For each event, annotators recorded whether they knew the book's plot; whether the reveal sentence identifies the alias explicitly, only implicitly or not at all; whether it reads as a revelation or as a reminder; whether a first-time reader of the earlier passages could name the identity (no, suspect, confident); and whether the event is valid. Agreement is summarised with Fleiss' $\kappa$ \cite{fleiss1971measuring}, and the headline gaps are recomputed without events that either annotator flagged. \pending{Human labels are being collected at the time of this draft; results will be added to Sections 6.1 and 8.}
+To validate the oracle, three authors labelled a stratified, seeded subset of 36 events: 18 exploratory events stratified by dataset, and 18 from the confirmatory primary set, including every high- and mid-fame event. Each event was labelled independently by two annotators, blind to all model labels, in an annotation tool that shows the reveal sentence in context and the same pre-reveal passages the models saw. For each event, annotators recorded whether they knew the book's plot; whether the reveal sentence identifies the alias explicitly, only implicitly or not at all; whether it reads as a revelation or as a reminder; whether a first-time reader of the earlier passages could name the identity (no, suspect, confident); and whether the event is valid. Agreement is summarised with Fleiss' $\kappa$ \cite{fleiss1971measuring}, and the headline gaps are recomputed without events that either annotator flagged. The annotators are three of the authors; they were blind to every model label but not to the study's hypotheses. Results are reported in Section~\ref{sec:r-memory}.
 
 \subsection{Parametric-Memory Intervention and Controls}\label{sec:m-memory}
 
@@ -300,6 +298,9 @@ Synthetic volume & 40 chapters, 80 characters; 9 configurations, 5 seeds & 1,240
 Character cards & 54 events (judge), 19 (text rule) & 4 cells per event and model & Content leak \\
 Suffix canaries & 54 (cards), 46 (long context) events & with and without suffix & Content leak \\
 Selection & 36 events, 24 merged & merged vs prefix index & Selection leak \\
+\midrule
+\multicolumn{4}{l}{\emph{Human validation}} \\
+Reveal check & 36 events (18 exploratory, 18 confirmatory) & 72 labels, 2 per event & Oracle validation \\
 \botrule
 \end{tabular*}
 \end{table}
@@ -349,6 +350,7 @@ Card leak, text rule & The card contains an identity token absent from the prefi
 Card leak, judge rule & The judge says the card identifies the alias with the identity & Model judge \\
 Canary rate & The output contains a token planted after the cut & Deterministic \\
 Selection leak & Judge rule applied to cards built from alias-merged retrieval & Model judge \\
+Human reveal check & Two author-annotators per event judge explicitness, inferability and validity & Human \\
 Runtime & Wall-clock time of a stage or run on the stated hardware & Measured \\
 \botrule
 \end{tabular*}
@@ -410,7 +412,9 @@ H5: pseudonymise and map back & premature naming 5.0\% to 2.6\%; post-reveal acc
 \end{tabular*}
 \end{table}
 
-The confirmatory null does not contradict the exploratory finding. The confirmatory sample is dominated by low-familiarity books (25 of 32 primary events), and the closed-book probe indicates that the open models hold little memory of them, whereas the exploratory books include several of the best-known novels in English. The pattern is consistent with a familiarity-dependent effect (Section~\ref{sec:r-cue}). Familiarity was not manipulated, however, the contrast that would test it was underpowered, and the two studies also differ in models and in event-mining procedure, so these alternative explanations are not excluded. \pending{Human validation: event-level agreement and the gaps recomputed without human-flagged events will be added here.}
+The confirmatory null does not contradict the exploratory finding. The confirmatory sample is dominated by low-familiarity books (25 of 32 primary events), and the closed-book probe indicates that the open models hold little memory of them, whereas the exploratory books include several of the best-known novels in English. The pattern is consistent with a familiarity-dependent effect (Section~\ref{sec:r-cue}). Familiarity was not manipulated, however, the contrast that would test it was underpowered, and the two studies also differ in models and in event-mining procedure, so these alternative explanations are not excluded.
+
+\emph{Human validation of the oracle.} Both annotators judged the reveal sentence an explicit identification in 34 of the 36 validated events (94.4\%, Wilson [81.9, 98.5]\%); in the remaining two, one or both annotators judged it implied only, and no annotator judged that a reveal failed to identify the alias. Every validated event that the model audit had labelled \textsc{explicit} (28 of 28; Wilson lower bound 87.9\%) was confirmed as explicit by both annotators. No annotator judged a hidden identity confidently inferable from the pre-reveal passages (0 of 36 events, Wilson upper bound 9.6\%), but at least one annotator suspected it from clues in 17 of 36 events, and both did in 8. In 9 events one annotator read the reveal as a reminder of something already stated rather than as a revelation; the other annotator disagreed in each case. One annotator judged 6 of the 18 validated confirmatory events invalid, and the other annotator accepted all six; no exploratory event was flagged. Raw agreement was 97.2\% on whether the reveal is explicit (Fleiss $\kappa=0.65$) and 75.0\% on inferability ($\kappa=0.45$). For the validity and revelation questions one answer dominates, which makes $\kappa$ uninformative, so raw agreement (83.3\% and 75.0\%) is the better summary. The annotators knew the book's plot in 1 of 72 labels. Recomputing the main estimates on the validated events changed no conclusion. The reference model's exploratory gap was $+27.4$ [$+16.0$, $+40.3$] on the 18 validated exploratory events, none of which was flagged. The confirmatory pooled gap was $-1.2$ [$-6.3$, $+3.9$] on the 18 validated confirmatory events and $-3.9$ [$-5.9$, $-1.9$] after removing the six events one annotator flagged (12 events), so no positive gap appears in either case.
 
 \subsection{Cue-Preserving Controls and Book Familiarity}\label{sec:r-cue}
 
@@ -574,13 +578,13 @@ The fixes have costs. Evidence-horizon versioning increased the persona stage's 
 %% ===================================================================================================== 8
 \section{Limitations and Threats to Validity}\label{sec:limits}
 
-\emph{Construct validity.} An explicit reveal sentence marks when the book states an identity, not the first point at which a reader could infer it. Premature naming against this oracle can therefore include legitimate inference from clues. This affects all arms alike and so does not by itself create a gap, but it blurs what ``premature'' means for an individual item. The human judgement of whether identities were inferable before the cutoff addresses this only for the validated subset. \pending{Report the share of validated events judged confidently inferable.}
+\emph{Construct validity.} An explicit reveal sentence marks when the book states an identity, not the first point at which a reader could infer it. Premature naming against this oracle can therefore include legitimate inference from clues. This affects all arms alike and so does not by itself create a gap, but it blurs what ``premature'' means for an individual item. In the human check, no identity was judged confidently inferable before the reveal, but at least one annotator suspected it in 17 of 36 events: in about half of the events the reveal sentence confirms what earlier clues already suggest, so ``premature'' should be read as ``before the book states it''.
 
-\emph{Event-selection bias.} All events were proposed and audited by language models; two of them, the confirmatory miner and auditor, were also among the evaluated models, and selection was limited to reveals stated in sentences matching fixed cue patterns. Some mined events are of poor quality: seven of the 68 confirmatory events have a descriptive phrase as their ``identity''. The events are therefore not a representative sample of concealed identities in fiction, and the effects may differ for implicit, gradual or visual reveals.
+\emph{Event-selection bias.} All events were proposed and audited by language models; two of them, the confirmatory miner and auditor, were also among the evaluated models, and selection was limited to reveals stated in sentences matching fixed cue patterns. Some mined events are of poor quality: seven of the 68 confirmatory events have a descriptive phrase as their ``identity'', and in the human check one annotator judged 6 of the 18 validated confirmatory events invalid (the other annotator accepted them). The events are therefore not a representative sample of concealed identities in fiction, and the effects may differ for implicit, gradual or visual reveals.
 
 \emph{External validity.} The corpora are public-domain Western fiction, three translated web serials and a synthetic volume; the models are five small local models, three open 24--32B models and one commercial reference model. The results do not establish rates for contemporary serial fiction, other languages, other genres or other assistant architectures.
 
-\emph{Annotation validity.} Apart from the human-validated subset of reveal events, every non-deterministic label comes from a model: the disclosure labels of the pipeline audit (two model annotators, one of which implemented the repair; $\kappa=0.61$), the card judge rule and the selection-leak judge. The judge was validated against a deterministic rule only on the events where that rule applies. Model judgements of whether a divergence is a genuine spoiler have no independent human validation, because the serials could not be shared.
+\emph{Annotation validity.} The human check covers 36 public-domain events with two author-annotators each; the annotators knew the study's hypotheses, though not any model label, and their validity judgements diverged on six events, so the check bounds rather than settles event quality. Apart from it, every non-deterministic label comes from a model: the disclosure labels of the pipeline audit (two model annotators, one of which implemented the repair; $\kappa=0.61$), the card judge rule and the selection-leak judge. The judge was validated against a deterministic rule only on the events where that rule applies. Model judgements of whether a divergence is a genuine spoiler have no independent human validation, because the serials could not be shared.
 
 \emph{Statistical power.} The confirmatory primary set has 32 events, only seven from mid- or high-fame books, and the familiarity contrast could detect only differences of about 13 points. The selection test has 24 merged events. Intervals in the pipeline audit are optimistic because cuts are nested within three serials.
 
@@ -601,13 +605,13 @@ Three priorities follow: extending human validation from the reveal oracle to di
 \backmatter
 
 \bmhead{Supplementary information}
-A supplementary file accompanies this article. It contains per-model cue-preserving results and control accuracies, per-run timings and API costs, resolver diagnostics, the software inventory, the full prompts, the event manifest (Project Gutenberg identifiers, aliases and identities), the PD v7 familiarity contrast, the incomplete fourth confirmatory arm and secondary sensitivity analyses.
+A supplementary file accompanies this article. It contains per-model cue-preserving results and control accuracies, per-run timings and API costs, resolver diagnostics, the software inventory, the full prompts, the event manifest (Project Gutenberg identifiers, aliases and identities), the PD v7 familiarity contrast, the incomplete fourth confirmatory arm, secondary sensitivity analyses, and the human-validation answer counts, agreement and every disagreement.
 
 \section*{Declarations}
 
 \subsection{Ethical Approval} This article contains no studies with human participants or animals performed by the authors. The only human annotation was carried out by the authors themselves, and no personal data were collected.
 
-\subsection{Availability of supporting data} Code, prompts, pre-registrations, event manifests, stored model outputs and analysis files are available in the project repository, \url{https://github.com/adhyan-jain/EchoTales}. Project Gutenberg texts are public domain and are identified by their Gutenberg numbers. The three web serials used in the pipeline audit are copyrighted and are not redistributed; only counts derived from them are reported.
+\subsection{Availability of supporting data} Code, prompts, pre-registrations, event manifests, stored model outputs, the human validation labels and analysis files are available in the project repository, \url{https://github.com/adhyan-jain/EchoTales}. Project Gutenberg texts are public domain and are identified by their Gutenberg numbers. The three web serials used in the pipeline audit are copyrighted and are not redistributed; only counts derived from them are reported.
 
 \subsection{Competing interests} The authors have no competing interests to declare relevant to this article's content.
 

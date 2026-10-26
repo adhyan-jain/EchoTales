@@ -1,0 +1,251 @@
+{
+ "app": "reveal-check",
+ "version": "reveal-validation-v1",
+ "seed": 20261025,
+ "annotator": "Atharva",
+ "exported_at": "2026-10-26T08:55:26.290Z",
+ "assigned": [
+  "E01",
+  "E02",
+  "E04",
+  "E05",
+  "E07",
+  "E08",
+  "E10",
+  "E11",
+  "E13",
+  "E14",
+  "E16",
+  "E17",
+  "E19",
+  "E20",
+  "E22",
+  "E23",
+  "E25",
+  "E26",
+  "E28",
+  "E29",
+  "E31",
+  "E32",
+  "E34",
+  "E35"
+ ],
+ "labels": {
+  "E01": {
+   "event_id": "OT",
+   "q0": "no",
+   "updated_at": "2026-10-26T07:33:06.299Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "yes"
+  },
+  "E02": {
+   "event_id": "PI",
+   "q0": "no",
+   "updated_at": "2026-10-26T07:35:31.727Z",
+   "q1": "explicit",
+   "q2": "reminder",
+   "q3": "suspect",
+   "q4": "yes"
+  },
+  "E04": {
+   "event_id": "C7497_1",
+   "q1": "explicit",
+   "updated_at": "2026-10-26T07:37:26.481Z",
+   "q0": "no",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "no"
+  },
+  "E05": {
+   "event_id": "C5660_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T07:39:28.317Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "yes"
+  },
+  "E07": {
+   "event_id": "C2160_1",
+   "q1": "explicit",
+   "updated_at": "2026-10-26T07:40:35.766Z",
+   "q0": "no",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "yes"
+  },
+  "E08": {
+   "event_id": "C41456_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T07:50:16.969Z",
+   "q1": "explicit",
+   "q2": "reminder",
+   "q3": "no",
+   "q4": "yes"
+  },
+  "E10": {
+   "event_id": "BR",
+   "q0": "no",
+   "updated_at": "2026-10-26T07:51:47.216Z",
+   "q1": "explicit",
+   "q2": "reminder",
+   "q3": "no",
+   "q4": "yes"
+  },
+  "E11": {
+   "event_id": "LA",
+   "q0": "no",
+   "updated_at": "2026-10-26T08:28:29.912Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "suspect",
+   "q4": "yes"
+  },
+  "E13": {
+   "event_id": "PH",
+   "q0": "no",
+   "updated_at": "2026-10-26T08:34:23.607Z",
+   "q1": "explicit",
+   "q2": "reminder",
+   "q3": "no",
+   "q4": "yes"
+  },
+  "E14": {
+   "event_id": "JH",
+   "q1": "explicit",
+   "updated_at": "2026-10-26T08:37:29.605Z",
+   "q2": "revelation",
+   "q0": "no",
+   "q3": "suspect",
+   "q4": "yes"
+  },
+  "E16": {
+   "event_id": "C965_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T08:38:52.251Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "suspect",
+   "q4": "yes"
+  },
+  "E17": {
+   "event_id": "C39858_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T08:39:17.772Z",
+   "q1": "explicit",
+   "q2": "reminder",
+   "q3": "no",
+   "q4": "no"
+  },
+  "E19": {
+   "event_id": "C17434_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T08:40:15.585Z",
+   "q2": "reminder",
+   "q1": "explicit",
+   "q4": "yes",
+   "q3": "no"
+  },
+  "E20": {
+   "event_id": "C1848_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T08:42:04.386Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "no"
+  },
+  "E22": {
+   "event_id": "MI",
+   "q0": "no",
+   "updated_at": "2026-10-26T08:42:26.571Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "yes"
+  },
+  "E23": {
+   "event_id": "C4537_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T08:43:45.149Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "no"
+  },
+  "E25": {
+   "event_id": "EL",
+   "q0": "no",
+   "updated_at": "2026-10-26T08:46:20.547Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "suspect",
+   "q4": "yes"
+  },
+  "E26": {
+   "event_id": "C10150_1",
+   "q0": "yes",
+   "updated_at": "2026-10-26T08:47:50.908Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "no"
+  },
+  "E28": {
+   "event_id": "C49850_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T08:49:02.185Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "yes"
+  },
+  "E29": {
+   "event_id": "RH",
+   "q0": "no",
+   "updated_at": "2026-10-26T08:50:04.503Z",
+   "q1": "implied",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "yes"
+  },
+  "E31": {
+   "event_id": "AL",
+   "q0": "no",
+   "updated_at": "2026-10-26T08:50:47.441Z",
+   "q2": "revelation",
+   "q1": "explicit",
+   "q3": "suspect",
+   "q4": "yes"
+  },
+  "E32": {
+   "event_id": "C35443_1",
+   "q0": "no",
+   "updated_at": "2026-10-26T08:51:46.819Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "no"
+  },
+  "E34": {
+   "event_id": "DL",
+   "q0": "no",
+   "updated_at": "2026-10-26T08:54:33.062Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "suspect",
+   "q4": "yes"
+  },
+  "E35": {
+   "event_id": "PG",
+   "q0": "no",
+   "updated_at": "2026-10-26T08:55:23.243Z",
+   "q1": "explicit",
+   "q2": "revelation",
+   "q3": "no",
+   "q4": "yes"
+  }
+ }
+}

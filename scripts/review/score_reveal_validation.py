@@ -145,6 +145,8 @@ def main():
         reminder_any=wilson(sum(any_(v, "q2", "reminder") for v in vals), n),
         inferable_confident_any=wilson(sum(any_(v, "q3", "confident") for v in vals), n),
         inferable_confident_both=wilson(sum(both(v, "q3", "confident") for v in vals), n),
+        inferable_suspect_or_more_any=wilson(sum(any(r["q3"] != "no" for r in v.values()) for v in vals), n),
+        inferable_suspect_or_more_both=wilson(sum(all(r["q3"] != "no" for r in v.values()) for v in vals), n),
         valid_both=wilson(sum(both(v, "q4", "yes") for v in vals), n),
         invalid_any=wilson(sum(any_(v, "q4", "no") for v in vals), n),
     )
