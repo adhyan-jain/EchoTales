@@ -140,3 +140,52 @@ These were found while checking every number against its stored source. Each is 
 1. **Use-of-AI declaration.** It currently names code and annotation only. Springer Nature also requires disclosure of AI assistance with drafting text; confirm the wording with Dr. Satapathy before submission.
 2. **Similarity check.** `scripts/paper/overlap_check.py` found no run of 6 or more identical words shared with the abstracts of the cited works (`overlap_check.md`). That is not an iThenticate or Turnitin report; the journal's own check remains to be run.
 3. **Overleaf compile.** Compile in Overleaf with the project's own class file. The local build used a public mirror of `sn-jnl` with a local-only shim (`local_build/`); it compiles with 0 errors, 0 undefined references and 0 overfull boxes.
+
+---
+
+# Response to Revision 2: point-by-point
+
+Source: "Echotales - 2nd revision.pdf" (27 October 2026). No experiment was rerun and no quoted number changed;
+`journal_numbers.py --check main.tex` still reports 0 numbers not found, and `overlap_check.py` still finds 0 runs of 8
+or more identical words. **Table numbers in this section are the new numbering:** the new arms table is Table 2, so the
+Revision 1 numbers shift by +1 from Table 2 onward (datasets 3, models 4, metrics 5, exploratory 6, confirmatory 7,
+cue control 8, pipeline 9, repair 10, cards 11, canaries 12, synthesis 13).
+
+**Status key:** Done = addressed in the draft; Deferred = the human-annotation work the owner asked to leave for now.
+
+## Critical technical issues
+| Issue | Status | What changed |
+|---|---|---|
+| 1. Scope of F(B,c); stochastic models; seeds | Done | Sect. 3: F is evaluated for one fixed configuration (weights, prompts, decoding, indexes, caches, persistent state). Equality of single outputs is not a complete criterion for a stochastic model; temperature 0 and fixed seeds make it meaningful here, and residual nondeterminism (GPU kernels, API drift) is stated as uncontrolled. |
+| 2. Ideal property vs empirical tests | Done | Sect. 3: the experiments are operational tests (removed suffix, a few counterfactual suffixes, canaries, selection), not proofs of Definition 1 for all books and suffixes. |
+| 3. What F includes; components held fixed | Done | Sect. 3 and 4.3: entity resolution is held fixed in truncate-and-rebuild to isolate the persona stage; this cannot see a resolution dependence, so the selection experiment tests the merge decision directly and a prefix-causal resolver check is cited. |
+| 4. Behavioural leakage vs pipeline dependence | Done | One sentence in Sect. 3 that an internal change is not itself a spoiler; same wording in the abstract, Fig. 7 and Table 9 captions, 6.3, 8 and 9. |
+| 3.2 Reveal oracle; human validation | Done (wording) / Deferred (new work) | Abstract, 4.1, 6.1 and 8 now say the oracle marks the first selected explicit reveal sentence, not the first inferable point, and that 34/36 validates explicitness, not every event's suitability or an unbiased selection; the disagreements are described as ambiguity. **Deferred:** a further annotation round, an annotation rubric with examples and disagreement categories as new supplement material, and human-validated labels for the pipeline disclosures. Supplement S8 is unchanged. |
+| Memory result: familiarity unconfirmed | Done | 6.1 and 6.2: familiarity is a plausible interpretation, not a demonstrated moderator or the explanation of the failed replication; P1 was inconclusive; the exploratory association is not causal evidence; the cue-preserving arm is consistent with name-specific memory but not a mechanism; the incomplete Claude arm stays out of pooled estimates; the confirmatory null leads the abstract and the +26.0 is labelled exploratory. |
+| Pipeline audit and model labels | Done | 6.3: 41/685 kept apart from 1.7-3.5%; disclosure labels are model-produced and one annotator implemented the repair (bias source stated in the main text, not only Sect. 8); the hiding result (23 to 82) and counterfactual-suffix result (47 vs 23) are kept; zero divergence is called zero *observed* divergence, not a guarantee; the 289- and 685-cut denominators are never merged; Sect. 8 states the Wilson intervals are optimistic for nested cuts from three serials. |
+| Generic-assistant experiments | Done | 6.4: text rule and judge rule kept separate; versioned-card rates bounded to the tested prompts and generators; the long-context design (24,000 / 16,000 characters, marker line, 46 events, exact-match rule) is stated beside the 40.6%; zero-hit controls are described as validating the tested controls and harness; alias-merged retrieval stays preliminary because the judge is least validated there; content and selection leakage stay separate. |
+| Mitigation claims bounded | Done | Abstract: "zero observed leakage under the reported prefix-built or truncated controls"; 6.5 and 7 unchanged in substance (pseudonymisation a measured trade-off; repairs succeed in the tested configurations only); Sect. 9 no longer repeats rates. |
+
+## Section by section
+| Section | Status | What changed |
+|---|---|---|
+| Abstract | Done | Confirmatory null first, +26.0 labelled exploratory; divergence-is-not-disclosure; 34/36 caveat; "zero observed leakage" wording. The structured labels stay; convert to one paragraph if the journal requires an unstructured abstract. |
+| 1 Introduction | No change needed | Three RQs and three contributions kept, no project-history subsection (red note in the review). The RQs are now answered one by one in Sect. 9. |
+| 2 Related work | Done | 2.3 states, for each closest system, what it enforces (reader-visible evidence horizon, story time, consistency, belief views); Table 1 cells the documentation does not support are "Not stated" and the caption says entries follow published descriptions; 2.4 says vendor documentation shows a design exists, not that it was evaluated. No tools subsection, no 2020 cut-off. |
+| 3 Formulation | Done | Definition stays in the main text; plain-language gloss added; item-pooled vs event-weighted kept; "leakage gap" is defined once as the original minus the mean of the two ciphers and other contrasts are named; recovered fraction flagged unstable near a zero gap; Definition 1 not presented as a theorem. No extra subsection. |
+| 4.1 | Done | Deterministic matching verifies after model proposal; unique-reveal rule and fallback cutoff stated; descriptive identities handled by a stated fixed rule (identity starts with an article or pronoun), re-applicable from the manifest and `posthoc_descriptive_identity.py`. |
+| 4.2 | Done | New Table 2 (arms A, B/B2, B3: transformation, cues kept, role); the validity gate is described per model and dataset (v2 and v3: Gemma-2-9B, Llama-3.1-8B, Mistral-7B and Phi-4-mini pass; Qwen2.5-7B and the reference model fall below 90% cipher agreement and are kept out of the gated pool only). |
+| 4.3 | Done | Reason for fixing resolution; nested cuts and optimistic intervals; the English check is a limited transfer check; model labels kept apart from deterministic divergence. |
+| 4.4 | Done | Duplicated judge-limitation text replaced by a pointer to 6.4; full prompts remain in the supplement. |
+| 5 | Done | Table 3 caption: reuse of confirmatory events is not independent replication. Models: ollama image IDs added, read from the installed models on 27 Oct 2026 (not recorded at run time); the vLLM checkpoints have no stored revision hash and the commercial model no snapshot identifier, and the text says so. The statistical protocol lists which analyses use item-pooled, event-weighted and random-effects estimates. **Holm verified:** the registration's final addendum (`PREREG_PD_CONFIRM_v2_addendum_5.md`) makes H1, H2, H3, H5 the Holm family and tests P1 alone at 0.05; the manuscript already matched, and now states that P1 is outside the family and labels raw vs adjusted p-values in Table 7 and the text. The reproducibility paragraph says only what the scripts can do. |
+| 6.1-6.5 | Done | See the rows above. |
+| 7 Discussion | Done | "Across systems" became "within the implementations we tested"; the memory pattern is "conditional ... not confirmed in the primary analysis"; the engineering principle names derived state and selection decisions. No new subsection, no new numbers. |
+| 8 Limitations | Done | Event ambiguity might affect the between-arm difference (the arms-equal argument is plausible, not guaranteed); disclosure rates are provisional and the human check does not extend to the pipeline audit; nested cuts scope the audit to these serials. |
+| 9 Conclusion | Done | RQ1-RQ3 answered explicitly; the final lesson keeps "markers and timestamp filters are insufficient when upstream processing has already used future information" and "does not establish universal spoiler-free behaviour". The future-work human item is stated as a larger independent sample recording both explicitness and prefix inferability, with human-validated disclosure labels on shareable or synthetic text. |
+
+## Open after this revision
+1. **Human annotation (deferred by the owner):** a further annotation round; rubric, representative examples and disagreement categories; human-validated labels (shareable or synthetic) for the pipeline disclosure rates.
+2. **Not recorded, so not claimable:** vLLM checkpoint revisions, the commercial-model snapshot, and ollama IDs at run time. Sect. 5 says so; recording them in the next run would remove the caveat.
+3. **Repository pointer:** the Declarations cite the repository without a tag or commit; tag the version that matches the submitted PDF before submission.
+4. **v6 validity gate:** the stored gate file (`data/eval/chimera/pd_memory_free_validity.json`) covers v2 and v3 only, so Sect. 4.2 reports the gate for those two sets; confirm where the v6 gate result is stored before submission.
+5. **Abstract style:** check the journal's word limit and structured-abstract rule (unchanged from Revision 1).
