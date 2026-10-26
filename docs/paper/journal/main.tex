@@ -110,7 +110,7 @@
 
 \author*[1]{\fnm{Shashank Mouli} \sur{Satapathy}}\email{shashankmouli.s@vit.ac.in}
 
-\affil[1]{\orgdiv{School of Computer Science and Engineering}, \orgname{Vellore Institute of Technology, Vellore}, \orgaddress{\city{Vellore}, \postcode{632014}, \state{Tamil Nadu}, \country{India}}}
+\affil[1]{\orgdiv{School of Computer Science and Engineering}, \orgname{Vellore Institute of Technology}, \orgaddress{\city{Vellore}, \postcode{632014}, \state{Tamil Nadu}, \country{India}}}
 
 \abstract{\textbf{Problem and gap.} An assistant that summarises a novel or answers questions about it should not tell the reader what the book has not yet revealed. Existing studies ask whether models remember books or keep a timeline consistent. They do not ask whether a hidden identity leaks before its reveal, or whether a processing pipeline lets later chapters shape what is shown earlier.
 \textbf{Objective.} We define reader-faithfulness as non-interference from the unread text and measure two leakage channels: parametric memory, and future information introduced by the pipeline.
@@ -633,17 +633,17 @@ A supplementary file accompanies this article. It contains per-model cue-preserv
 
 \section*{Declarations}
 
-\subsection{Ethical Approval} This article contains no studies with human participants or animals performed by the authors. The only human annotation was carried out by the authors themselves, and no personal data were collected.
+\bmhead{Ethical Approval} This article contains no studies with human participants or animals performed by the authors. The only human annotation was carried out by the authors themselves, and no personal data were collected.
 
-\subsection{Availability of supporting data} Code, prompts, pre-registrations, event manifests, stored model outputs, the human validation labels and analysis files are available in the project repository, \url{https://github.com/adhyan-jain/EchoTales}. Project Gutenberg texts are public domain and are identified by their Gutenberg numbers. The three web serials used in the pipeline audit are copyrighted and are not redistributed; only counts derived from them are reported.
+\bmhead{Availability of supporting data} Code, prompts, pre-registrations, event manifests, stored model outputs, the human validation labels and analysis files are available in the project repository, \url{https://github.com/adhyan-jain/EchoTales}. Project Gutenberg texts are public domain and are identified by their Gutenberg numbers. The three web serials used in the pipeline audit are copyrighted and are not redistributed; only counts derived from them are reported.
 
-\subsection{Competing interests} The authors have no competing interests to declare relevant to this article's content.
+\bmhead{Competing interests} The authors have no competing interests to declare relevant to this article's content.
 
-\subsection{Funding} This research received no specific grant from public, commercial, or not-for-profit funding agencies.
+\bmhead{Funding} This research received no specific grant from public, commercial, or not-for-profit funding agencies.
 
-\subsection{Authors' contributions} Adhyan Jain: Conceptualization, Methodology (pipeline audit and mitigations), Software (narrative knowledge graph, audit framework, repairs), Investigation, Writing -- Original Draft. Atharva Sheersh Pandey: Methodology (reveal-time task and renaming arms), Software (event mining, evaluation harness, card, canary and selection experiments), Data Curation, Investigation, Writing -- Original Draft. Aryan Gahlot: Formal Analysis (statistical framework), Investigation (confirmatory study), Validation (validity gates and negative controls), Writing -- Review \& Editing. Shashank Mouli Satapathy: Supervision, Writing -- Review \& Editing. The first three authors contributed equally and carried out the human validation.
+\bmhead{Authors' contributions} Adhyan Jain: Conceptualization, Methodology (pipeline audit and mitigations), Software (narrative knowledge graph, audit framework, repairs), Investigation, Writing -- Original Draft. Atharva Sheersh Pandey: Methodology (reveal-time task and renaming arms), Software (event mining, evaluation harness, card, canary and selection experiments), Data Curation, Investigation, Writing -- Original Draft. Aryan Gahlot: Formal Analysis (statistical framework), Investigation (confirmatory study), Validation (validity gates and negative controls), Writing -- Review \& Editing. Shashank Mouli Satapathy: Supervision, Writing -- Review \& Editing. The first three authors contributed equally and carried out the human validation.
 
-\subsection{Use of generative AI} Language models were research instruments in this study, as described in Sections~\ref{sec:method} and \ref{sec:setup}. An AI coding assistant (Claude Code) was used to implement analysis scripts, and one of its sessions served as one of the two model annotators in the pipeline audit (Section~\ref{sec:m-pipeline}). The authors reviewed all code and analyses and take responsibility for them.
+\bmhead{Use of generative AI} Language models were research instruments in this study, as described in Sections~\ref{sec:method} and \ref{sec:setup}. An AI coding assistant (Claude Code) was used to implement analysis scripts, and one of its sessions served as one of the two model annotators in the pipeline audit (Section~\ref{sec:m-pipeline}). The authors reviewed all code and analyses and take responsibility for them.
 
 \bibliography{references}% common bib file
 
