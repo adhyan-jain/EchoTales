@@ -49,7 +49,7 @@ eval/                Golden evaluation benchmark harness (python -m eval.run_ben
 webview/             React review and production UI
 scripts/             eval/, paper/, review/, maintenance/, reproduce_results.sh
 docs/                README.md is the index: HANDOFF (current state), EVOLUTION (history),
-                     design/, results/, status/, paper/, ops/, archive/
+                     design/, results/, status/, paper/, archive/
 data/                README.md is the map. The parts you touch:
   db/<novel-id>.db     each novel's database (run of record)
   novels/<CODE>/       everything generated for one novel: panels/, video/, audio/, ...

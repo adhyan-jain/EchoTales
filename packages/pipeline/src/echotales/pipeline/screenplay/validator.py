@@ -43,7 +43,6 @@ def validate_screenplay(
     *,
     valid_character_ids: set[str] | None = None,
     valid_location_ids: set[str] | None = None,
-    valid_prop_ids: set[str] | None = None,
 ) -> list[ValidationError]:
     """Validate an episode screenplay against production and continuity invariants."""
     errors: list[ValidationError] = []
