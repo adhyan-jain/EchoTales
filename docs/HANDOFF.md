@@ -22,15 +22,21 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-25 (EVOLUTION 4.126).
+**Last updated:** 2026-10-27 (EVOLUTION 4.127).
 
-## Pick up here — 2026-10-25 (journal manuscript, Revision 1; EVOLUTION 4.126)
+## Pick up here — 2026-10-27 (journal manuscript, second-round review addressed; EVOLUTION 4.126, 4.127)
 
 Research track only. The draft article is `docs/paper/journal/main.tex` (Springer `sn-jnl`, compiled locally to
 `Reader_Faithfulness_draft1.pdf`); `RESPONSE_TO_REVISION.md` maps every point of the 18-page brief. The human
 reveal-validation labels (`data/eval/validation/reveal_labels/`) were scored and written into 4.1, 6.1 and 8 on
-2026-10-26. Open: (1) student emails are placeholders; (2) compile once in Overleaf with the professor's class file;
-(3) confirm the use-of-AI declaration. Rebuild order: `score_reveal_validation.py`, `journal_numbers.py --check`,
+2026-10-26. The second-round review ("Echotales - 2nd revision.pdf") was addressed in commit 4525d4d (EVOLUTION 4.127;
+paper-only, no number changed). Open: (1) student emails are placeholders; (2) compile once in Overleaf with the
+professor's class file; (3) confirm the use-of-AI declaration; (4) vLLM checkpoint revisions and the commercial-model
+snapshot were never recorded; (5) `data/eval/chimera/pd_memory_free_validity.json` covers v2 and v3 only, v6 gate
+location unconfirmed; (6) Declarations cite the repo without a tag/commit; (7) abstract word limit / structured-abstract
+rule unchecked; (8) `overleaf_upload.zip` not regenerated after 4525d4d. Deferred by the owner: further human
+annotation (new round, rubric/examples/disagreement categories, human-validated disclosure labels on shareable or
+synthetic text). Rebuild order: `score_reveal_validation.py`, `journal_numbers.py --check`,
 `make_journal_figures.py`, `build_supplementary.py`, `verify_references.py`, then latexmk.
 
 ## Pick up here — 2026-10-24 (PRODUCT PIVOT, decisions.md D27)
