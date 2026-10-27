@@ -22,7 +22,20 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-27 (EVOLUTION 4.128).
+**Last updated:** 2026-10-27 (EVOLUTION 4.129).
+
+## Pick up here — 2026-10-27 (audio: reader delivery pass, M4B export; EVOLUTION 4.129)
+
+Product track (D27 step 3). Plan: `/home/adhyan/.claude/plans/rosy-snacking-quokka.md`: Phase 1 audio, then the visual
+blockers, then the reader and lock for 5 books (LotM, RI, ORV ch1-3; Pride and Prejudice and Dracula 2 chapters each),
+then one RunPod pod hour (local-high, audio and video together). Built in ac9916c: reader delivery pass (`span_emotion`),
+emotion-aware `settings_for`, `voice --m4b`. Measured on RI ch1 only by proxy metrics; **not yet judged by ear.**
+Next audio steps: (1) owner blind listen of `data/scratch/audio_ab/synth_after_ears/reverend-insanity.m4b`;
+(2) pick a narrator by ear (`config.json` `voice.narrator`); (3) decide the default bank (CLI default `--bank-kind` is
+still `vctk`; EARS is CC BY-NC 4.0, not usable commercially). Open: `data/novels/RI/audio` is all silent stub WAVs (real
+audio only in `audio-runs/ears*`); the canonical RI DB holds pre-Phase-A attributions at 0.65, so 19 of 29 ch1 dialogue
+lines are voiced "unconfirmed" until the reader is re-run (current reader writes 0.8); M4B has not been run through the
+review and lock flow.
 
 ## Pick up here — 2026-10-27 (journal manuscript, second-round review addressed; targeted validation proposed; EVOLUTION 4.126-4.128)
 

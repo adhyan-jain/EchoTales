@@ -573,6 +573,9 @@ Where this section and the code disagree on a number, the code is current.
 2. Delivery marker (if present) overrides scene-level sentiment — **built, and
    it overrides the speaker's Big Five baseline too**, since that is the other
    signal that would argue for a dramatic read of an "expressionless" line.
+   Since 2026-10-27 (EVOLUTION 4.129) the order is marker, then the reader's
+   per-line EARS emotion and intensity (`reader/delivery_pass.py`), then
+   punctuation, then Big Five.
 3. ~~Inner monologue gets filtered voice effect (whisper/reverb)~~ **Not built**
    — no post-processing chain yet. Inner monologue currently gets closer,
    slower synthesis parameters instead, which is not the same thing.
@@ -589,7 +592,7 @@ this model class reliably honours.
 
 **TTS everything in v1.** Span-type tags preserved so filtering is a config change later. When visual pipeline is partially done, add abstraction layer before TTS to filter text.
 
-Export: chaptered M4B.
+Export: chaptered M4B *(built 2026-10-27: `voice/export.py::export_m4b`, `voice --m4b`; not yet run end to end through the review and lock flow, EVOLUTION 4.129)*.
 
 ### Phase 10 — Visual Pipeline *(partially built — panels + video assembly landed 2026-08-12, numbered Phase 9 in code; see HANDOFF Section 4.23)*
 
