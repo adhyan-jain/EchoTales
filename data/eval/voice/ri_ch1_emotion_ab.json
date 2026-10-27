@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-27",
+  "chapter": "reverend-insanity ch1 (97 lines)",
+  "engine": "chatterbox",
+  "bank": "EARS native-English",
+  "before": {
+    "render": "data/novels/RI/audio-runs/ears-native (2026-09-25, no emotion pass)",
+    "dialogue": {
+      "lines": 29,
+      "measured": 29,
+      "pitch_spread_st": 7.86,
+      "within_line_range_st": 16.26,
+      "loudness_spread_db": 5.88,
+      "top_dial_share": 0.38,
+      "emotional_lines": 0
+    },
+    "narration": {
+      "lines": 68,
+      "measured": 67,
+      "pitch_spread_st": 2.54,
+      "within_line_range_st": 9.49,
+      "loudness_spread_db": 2.9,
+      "top_dial_share": 0.91,
+      "emotional_lines": 0
+    }
+  },
+  "after": {
+    "render": "delivery pass (gemma2:9b) + emotion recordings + paced gaps, scratch DB copy",
+    "dialogue": {
+      "lines": 29,
+      "measured": 29,
+      "pitch_spread_st": 8.88,
+      "within_line_range_st": 13.5,
+      "loudness_spread_db": 8.23,
+      "top_dial_share": 0.14,
+      "emotional_lines": 28
+    },
+    "narration": {
+      "lines": 68,
+      "measured": 68,
+      "pitch_spread_st": 1.07,
+      "within_line_range_st": 11.16,
+      "loudness_spread_db": 2.48,
+      "top_dial_share": 0.71,
+      "emotional_lines": 20
+    }
+  },
+  "notes": [
+    "19/29 dialogue lines voiced as unconfirmed in both: the DB's attributions are the pre-Phase-A 0.65 tier; a fresh reader run writes 0.8",
+    "label spot-check: ~24/29 quoted-line emotions plausible by reading",
+    "proxy only; not called better until the owner listens"
+  ]
+}

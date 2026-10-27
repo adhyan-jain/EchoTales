@@ -325,6 +325,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_voice.add_argument("--out", default=None, help="default: data/novels/<CODE>/audio")
     p_voice.add_argument("--chapters", help="range, e.g. 1-5; default: all")
     p_voice.add_argument(
+        "--m4b", action="store_true",
+        help="also write <out>/<novel>.m4b: every chapter track, loudness-normalised, with chapter markers",
+    )
+    p_voice.add_argument(
         "--engine",
         default="stub",
         choices=["stub", "chatterbox"],
@@ -485,6 +489,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_reader.add_argument("--novel", required=True)
     p_reader.add_argument("--chapters", help="range, e.g. 1-5; default: all")
+    p_reader.add_argument(
+        "--passes", default=None,
+        help="comma-separated subset of speakers,facts,delivery (default: all three); delivery alone labels line "
+        "emotions on a book already read without re-running speaker attribution",
+    )
 
     p_persona = sub.add_parser("persona", help="persona-level operations")
     pe_sub = p_persona.add_subparsers(dest="persona_command", required=True)

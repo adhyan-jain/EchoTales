@@ -94,12 +94,29 @@ _BY_POLARITY: dict[DeliveryPolarity, tuple[float, float]] = {
 }
 
 
+#: Emotions a raised dial makes worse rather than stronger: quiet states. A sad line at exaggeration 0.9 came out
+#: sobbing, not sad, so these stay in a lower band at every intensity.
+_LOW_AROUSAL = frozenset({
+    "neutral", "serenity", "sadness", "guilt", "disappointment", "whisper", "interest", "realization", "relief",
+})
+#: Intensity (1-3) -> (exaggeration, cfg_weight), for the reader's per-line emotion (`reader/delivery_pass.py`).
+_BY_INTENSITY: dict[int, tuple[float, float]] = {1: (0.55, 0.50), 2: (0.70, 0.42), 3: (0.90, 0.32)}
+_BY_INTENSITY_LOW: dict[int, tuple[float, float]] = {1: (0.45, 0.55), 2: (0.55, 0.50), 3: (0.65, 0.45)}
+#: Narration takes the passage's mood only when it is clear (intensity >= 2), and never as a performance: these caps
+#: keep the narrator below a performed line, the contrast the narration branch below exists to protect.
+_NARRATION_MOOD: dict[int, tuple[float, float]] = {2: (0.52, 0.50), 3: (0.58, 0.47)}
+#: Reading styles, not emotions; a narrator never whispers or shouts the narration.
+_STYLES = frozenset({"whisper", "loud"})
+
+
 def settings_for(
     *,
     span_type: SpanType,
     polarity: DeliveryPolarity | None = None,
     profile: TraitProfile | None = None,
     text: str = "",
+    emotion: str | None = None,
+    intensity: int = 1,
 ) -> DeliverySettings:
     """Decide synthesis parameters for one line.
 
@@ -107,8 +124,10 @@ def settings_for(
 
     1. **An explicit delivery marker** (non-negotiable #10). Overrides
        everything below, including the speaker's baseline.
-    2. **Terminal punctuation** -- an exclamation is stated intensity.
-    3. **The speaker's baseline** from Big Five, as a gentle offset only.
+    2. **The reader's emotion for the line** (`emotion`, `intensity`): picks
+       the cast voice's recording of that emotion and sets the dial.
+    3. **Terminal punctuation** -- an exclamation is stated intensity.
+    4. **The speaker's baseline** from Big Five, as a gentle offset only.
     """
     # Register reading as older/more authoritative than the cast voice's
     # own age -- the one lever available when the bank has nothing better
@@ -146,12 +165,35 @@ def settings_for(
     ):
         exaggeration, cfg = 0.46, 0.52
         reasons.append("narration: read, calmer than performed")
+        mood = "neutral"
+        if emotion and emotion not in _STYLES and emotion != "neutral" and intensity in _NARRATION_MOOD:
+            exaggeration, cfg = _NARRATION_MOOD[intensity]
+            mood = emotion
+            reasons.append(f"passage mood: {emotion} {intensity}")
         if profile is not None and profile.register == "formal":
             cfg = _clamp(cfg - 0.08)
             reasons.append("formal register: measured pace, pitched down 2 semitones")
         return DeliverySettings(
-            _clamp(exaggeration), _clamp(cfg), pitch, "; ".join(reasons)
+            _clamp(exaggeration), _clamp(cfg), pitch, "; ".join(reasons), mood
         )
+
+    performed = "neutral"
+    if emotion and emotion != "neutral":
+        level = max(1, min(3, intensity))
+        table = _BY_INTENSITY_LOW if emotion in _LOW_AROUSAL else _BY_INTENSITY
+        exaggeration, cfg = table[level]
+        performed = emotion
+        reasons.append(f"read as {emotion} {level}")
+        if span_type is SpanType.INNER_MONOLOGUE:
+            # A thought is closer and quieter than speech, whatever it feels.
+            exaggeration, cfg = min(exaggeration, 0.6), max(cfg, 0.5)
+            reasons.append("inner monologue: closer")
+        if profile is not None:
+            exaggeration = _clamp(exaggeration + (profile.extraversion - 0.5) * 0.2)
+            if profile.register == "formal":
+                cfg = _clamp(cfg - 0.08)
+                reasons.append("formal register: measured pace, pitched down 2 semitones")
+        return DeliverySettings(_clamp(exaggeration), _clamp(cfg), pitch, "; ".join(reasons), performed)
 
     if span_type is SpanType.INNER_MONOLOGUE:
         exaggeration, cfg = 0.45, 0.60

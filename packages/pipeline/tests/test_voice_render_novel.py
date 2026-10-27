@@ -216,14 +216,17 @@ def test_a_confident_tag_and_a_zero_floor_keep_the_character_voice(tmp_path: Pat
 
 
 def test_each_chapter_gets_one_playable_track_in_reading_order(tmp_path: Path) -> None:
-    from echotales.pipeline.voice.runner import LINE_GAP_S
+    from types import SimpleNamespace
+
+    from echotales.pipeline.voice.export import gaps_for
 
     out = tmp_path / "audio"
     report = render_novel("t", _store(tmp_path), _bank(), out_dir=out, engine=get_engine("stub"))
     track = out / "ch1" / "chapter.wav"
     assert report.chapter_tracks == [str(track)]
     lines = _manifest(out)
-    expected = sum(_duration(Path(x["audio_path"])) for x in lines) + LINE_GAP_S * (len(lines) - 1)
+    pauses = gaps_for([SimpleNamespace(**x) for x in lines])
+    expected = sum(_duration(Path(x["audio_path"])) for x in lines) + sum(pauses)
     assert abs(_duration(track) - expected) < 0.01
 
 

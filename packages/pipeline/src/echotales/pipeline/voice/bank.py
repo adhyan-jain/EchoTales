@@ -50,6 +50,20 @@ _EMOTION_FALLBACK: dict[str, str] = {
     "whisper": "fear",
     "loud": "angry",
     "sad": "neutral",
+    # The reader labels lines in EARS's 22 emotion names (`reader/delivery_pass.py`); CREMA-D has six, so each
+    # EARS name degrades to the nearest of those before neutral.
+    "anger": "angry",
+    "sadness": "sad",
+    "disappointment": "sadness",
+    "guilt": "sadness",
+    "pain": "distress",
+    "distress": "fear",
+    "embarassment": "fear",
+    "contentment": "happy",
+    "amusement": "happy",
+    "adoration": "happy",
+    "relief": "happy",
+    "pride": "contentment",
 }
 
 

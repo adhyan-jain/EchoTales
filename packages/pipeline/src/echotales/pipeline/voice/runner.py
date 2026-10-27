@@ -44,6 +44,7 @@ from echotales.pipeline.voice.bank import VoiceBank, pick_mob_voice
 from echotales.pipeline.voice.casting import DEFAULT_SEED, cast_voices
 from echotales.pipeline.voice.delivery import pace_text, settings_for
 from echotales.pipeline.voice.engine import SynthesisRequest, TTSEngine, get_engine
+from echotales.pipeline.voice.export import gaps_for
 from echotales.pipeline.voice.pitch import ffmpeg_available, shift_pitch
 
 #: Span types that reach audio. `NARRATION_EXPOSITION` is included (it is
@@ -78,6 +79,10 @@ class AudioLine:
     text: str
     pitch_semitones: float = 0.0
     audio_path: str = ""
+    #: The reader's emotion for the line (`reader/delivery_pass.py`) as voiced, and the reference clip it chose, so
+    #: a flat-sounding line can be traced to "no label", "label but no recording" or "recording ignored".
+    emotion: str = "neutral"
+    reference_clip: str = ""
 
 
 @dataclass(slots=True)
@@ -157,14 +162,16 @@ def speaker_index(store: Store, novel_id: str, *, upto: float | None = None) -> 
     return index
 
 
-def _narrator_voice(bank: VoiceBank) -> str:
+def _narrator_voice(bank: VoiceBank, preferred: str = "") -> str:
     """A stable narrator voice.
 
-    Picked as the first adult voice by speaker id rather than at random, so
-    the narrator does not change between runs -- it is the one voice a
-    listener hears in every chapter, and the one whose consistency matters
-    most.
+    `preferred` (config.json voice.narrator) wins when the bank has it: the narrator was the first adult by id,
+    which on VCTK was p227, a voice nobody chose, reading 184 of RI's 245 lines. Otherwise picked as the first adult
+    voice by speaker id rather than at random, so the narrator does not change between runs -- it is the one voice a
+    listener hears in every chapter, and the one whose consistency matters most.
     """
+    if preferred and any(v.speaker_id == preferred for v in bank.voices):
+        return preferred
     adults = sorted(
         (v for v in bank.voices if v.age_band == "adult"), key=lambda v: v.speaker_id
     )
@@ -212,7 +219,9 @@ def render_novel(
         novel_id, profiles, bank, store=store, seed=seed
     )
     labels = speaker_index(store, novel_id)
-    narrator = _narrator_voice(bank)
+    from echotales.pipeline.config import get_settings
+
+    narrator = _narrator_voice(bank, get_settings().voice_narrator)
     rng = random.Random(seed)
     #: Anonymous slots keep one voice for the whole run rather than being
     #: re-rolled per line -- the slot exists precisely so two unnamed
@@ -229,6 +238,7 @@ def render_novel(
         chapter_spans = list(store.get_spans(novel_id, chapter))
         chapter_obj = store.get_chapter(novel_id, chapter)
         block_text = {b.index: b.text for b in chapter_obj.blocks} if chapter_obj else {}
+        emotions = store.span_emotions(novel_id, chapter)
 
         # Gender evidence for anonymous/epithet speakers, pooled across every
         # line the same slot speaks in this chapter -- one line's narration
@@ -438,11 +448,14 @@ def render_novel(
                 if span.span_type is SpanType.DIALOGUE:
                     report.unattributed_lines += 1
 
+            emotion, intensity = emotions.get(span.id, ("neutral", 1))
             settings = settings_for(
                 span_type=span.span_type,
                 polarity=line_polarity(span),
                 profile=profile,
                 text=span.text,
+                emotion=emotion,
+                intensity=intensity,
             )
             text = pace_text(span.text, span_type=span.span_type)
 
@@ -459,21 +472,24 @@ def render_novel(
                 pitch_semitones=settings.pitch_semitones,
                 rationale=settings.rationale,
                 text=text,
+                emotion=settings.emotion,
             )
 
+            # The cast voice *performing this line's emotion*, where the
+            # bank has performances. `clip_for` falls back to the
+            # speaker's default clip, so a read-speech bank (VCTK) is
+            # unaffected and this stays one code path. Chosen outside
+            # `synthesize` so a dry run shows which recording each line gets.
+            cast_voice = next(
+                (v for v in bank.voices if v.speaker_id == voice), None
+            )
+            clip = (
+                cast_voice.clip_for(settings.emotion)
+                if cast_voice is not None
+                else None
+            )
+            line.reference_clip = str(clip or "")
             if synthesize:
-                # The cast voice *performing this line's emotion*, where the
-                # bank has performances. `clip_for` falls back to the
-                # speaker's default clip, so a read-speech bank (VCTK) is
-                # unaffected and this stays one code path.
-                cast_voice = next(
-                    (v for v in bank.voices if v.speaker_id == voice), None
-                )
-                clip = (
-                    cast_voice.clip_for(settings.emotion)
-                    if cast_voice is not None
-                    else None
-                )
                 path = out_dir / f"ch{chapter:g}" / f"{span.id.replace(':', '_')}.wav"
                 engine.synthesize(
                     SynthesisRequest(
@@ -505,13 +521,17 @@ def render_novel(
     )
     (out_dir / "casting.txt").write_text(casting.summary() + "\n", encoding="utf-8")
     if synthesize:
-        by_chapter: dict[float, list[Path]] = {}
+        by_chapter: dict[float, list[AudioLine]] = {}
         for line in manifest:
             if line.audio_path:
-                by_chapter.setdefault(line.chapter, []).append(Path(line.audio_path))
-        for chapter, clips in by_chapter.items():
+                by_chapter.setdefault(line.chapter, []).append(line)
+        for chapter, voiced in by_chapter.items():
             report.chapter_tracks.append(
-                str(chapter_track(clips, out_dir / f"ch{chapter:g}" / "chapter.wav"))
+                str(chapter_track(
+                    [Path(v.audio_path) for v in voiced],
+                    out_dir / f"ch{chapter:g}" / "chapter.wav",
+                    gaps=gaps_for(voiced),
+                ))
             )
     return report
 
@@ -522,7 +542,9 @@ def render_novel(
 LINE_GAP_S = 0.35
 
 
-def chapter_track(clips: list[Path], out_path: Path, *, gap_s: float = LINE_GAP_S) -> Path:
+def chapter_track(
+    clips: list[Path], out_path: Path, *, gap_s: float = LINE_GAP_S, gaps: list[float] | None = None
+) -> Path:
     """One WAV for a whole chapter: every line in reading order, with a short gap.
 
     There was no chapter-level audio artifact at all -- only one file per
@@ -531,11 +553,14 @@ def chapter_track(clips: list[Path], out_path: Path, *, gap_s: float = LINE_GAP_
     (docs/status/STATUS.md). A clip whose format differs from the
     first is an error, not resampled: every line of one run comes from one
     engine at one rate, so a mismatch means two runs were mixed.
+
+    `gaps` (one per line after the first, `voice/export.py::gaps_for`) replaces the single `gap_s`, so a reply, a new
+    paragraph and a scene change are audibly different pauses.
     """
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with wave.open(str(clips[0]), "rb") as first:
         params = first.getparams()
-    silence = b"\x00" * int(params.framerate * gap_s) * params.sampwidth * params.nchannels
+    frame = params.sampwidth * params.nchannels
     with wave.open(str(out_path), "wb") as out:
         out.setparams(params)
         for i, clip in enumerate(clips):
@@ -545,6 +570,7 @@ def chapter_track(clips: list[Path], out_path: Path, *, gap_s: float = LINE_GAP_
                 ):
                     raise ValueError(f"{clip} has a different WAV format than {clips[0]}")
                 if i:
-                    out.writeframes(silence)
+                    pause = gaps[i - 1] if gaps is not None and i - 1 < len(gaps) else gap_s
+                    out.writeframes(b"\x00" * int(params.framerate * pause) * frame)
                 out.writeframes(fh.readframes(fh.getnframes()))
     return out_path

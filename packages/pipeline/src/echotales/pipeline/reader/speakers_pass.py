@@ -198,11 +198,14 @@ class NameIndex:
         return next(iter(hits.values())) if len(hits) == 1 else None
 
 
-def windows(chapter: Chapter, *, tagged: bool = True) -> list[str]:
+def windows(chapter: Chapter, *, tagged: bool = True, require_quote: bool | None = None) -> list[str]:
     """Consecutive whole blocks up to `WINDOW_CHARS` per window.
 
     `tagged=True` inserts `[block.q]` before every quote and drops windows with no quote (the speaker pass);
-    `tagged=False` keeps every window as plain text (the facts pass reads narration too)."""
+    `tagged=False` keeps every window as plain text (the facts pass reads narration too). `require_quote=False` keeps
+    the tags but also the quote-free windows (the delivery pass reads the mood of narration-only passages)."""
+    if require_quote is None:
+        require_quote = tagged
     out: list[list[str]] = []
     current: list[str] = []
     size = 0
@@ -215,7 +218,7 @@ def windows(chapter: Chapter, *, tagged: bool = True) -> list[str]:
         size += len(text)
     if current:
         out.append(current)
-    return ["\n".join(w) for w in out if not tagged or "[" in "".join(w)]
+    return ["\n".join(w) for w in out if not require_quote or "[" in "".join(w)]
 
 
 _FIRST_PERSON = re.compile(r"(?<![A-Za-z])I(?![A-Za-z])")

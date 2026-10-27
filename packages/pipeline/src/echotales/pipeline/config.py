@@ -43,6 +43,9 @@ def _load_config_json() -> dict[str, object]:
     persona = raw.get("persona", {})
     if "prefix_causal" in persona:
         out["persona_prefix_causal"] = persona["prefix_causal"]
+    voice = raw.get("voice", {})
+    if "narrator" in voice:
+        out["voice_narrator"] = voice["narrator"]
     return out
 
 
@@ -129,6 +132,10 @@ class Settings(BaseSettings):
     #: the dashboard) read the final revision and were byte-for-byte unchanged on three serials
     #: (scripts/prefix_audit/product_parity.py). Costs about 9% more attribute rows and ~50% more persona-stage time.
     persona_prefix_causal: bool = True
+    #: Bank speaker id that reads the narration, chosen by ear (`config.json` voice.narrator). The narrator reads
+    #: most of every chapter (184 of 245 lines on RI), so it is a taste decision, not something to pick by id order.
+    #: Empty: `voice/runner.py::_narrator_voice`'s deterministic choice.
+    voice_narrator: str = ""
 
     #: Below this confidence a local answer is escalated in hybrid mode.
     escalation_confidence_threshold: float = 0.75

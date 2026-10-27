@@ -527,6 +527,17 @@ CREATE TABLE IF NOT EXISTS bible_lock (
     PRIMARY KEY (novel_id, version)
 );
 
+-- How a line is performed, read by the reader's delivery pass. Its own table rather than a span column: the pass
+-- writes nothing else, so re-running it cannot disturb the measured speaker attribution on the same rows.
+CREATE TABLE IF NOT EXISTS span_emotion (
+    novel_id TEXT NOT NULL,
+    span_id TEXT NOT NULL,
+    chapter REAL NOT NULL,
+    emotion TEXT NOT NULL,
+    intensity INTEGER NOT NULL,
+    PRIMARY KEY (novel_id, span_id)
+);
+
 CREATE TABLE IF NOT EXISTS persona_version (
     id TEXT PRIMARY KEY,
     novel_id TEXT NOT NULL,
@@ -2595,6 +2606,21 @@ class Store:
         )
         self.conn.commit()
         return {**lock, "version": version}
+
+    def set_span_emotions(self, novel_id: str, chapter: float, rows: dict[str, tuple[str, int]]) -> None:
+        """Replace one chapter's line emotions: span id -> (emotion, intensity 1-3)."""
+        self.conn.execute("DELETE FROM span_emotion WHERE novel_id=? AND chapter=?", (novel_id, chapter))
+        self.conn.executemany(
+            "INSERT INTO span_emotion(novel_id, span_id, chapter, emotion, intensity) VALUES (?,?,?,?,?)",
+            [(novel_id, span_id, chapter, emotion, intensity) for span_id, (emotion, intensity) in rows.items()],
+        )
+        self.conn.commit()
+
+    def span_emotions(self, novel_id: str, chapter: float | None = None) -> dict[str, tuple[str, int]]:
+        sql, args = "SELECT span_id, emotion, intensity FROM span_emotion WHERE novel_id=?", [novel_id]
+        if chapter is not None:
+            sql, args = sql + " AND chapter=?", [novel_id, chapter]
+        return {r["span_id"]: (r["emotion"], int(r["intensity"])) for r in self.conn.execute(sql, args)}
 
     def list_bible_locks(self, novel_id: str) -> list[dict]:  # type: ignore[type-arg]
         rows = self.conn.execute(

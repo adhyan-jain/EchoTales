@@ -938,18 +938,25 @@ def cmd_webview_server(args: argparse.Namespace) -> int:
 
 def cmd_voice(args: argparse.Namespace) -> int:
     """Phase 8: cast voices and render the script."""
+    from echotales.pipeline import paths
     from echotales.pipeline.voice import get_engine, load_vctk, render_novel
     from echotales.pipeline.voice.bank import load_cremad, load_ears
 
     store = _open_store(args)
     kind = getattr(args, "bank_kind", "vctk")
+    # Each corpus is extracted in its own folder under the bank root; `--bank-kind ears` with the default root
+    # used to fail, because `load_ears` expects the speaker folders directly under the path it is given.
+    root = Path(args.bank)
+    sub = {"ears": root / "ears", "cremad": root / "cremad" / "extract"}.get(kind)
+    if sub is not None and sub.is_dir():
+        root = sub
     try:
         if kind == "cremad":
-            bank = load_cremad(args.bank)
+            bank = load_cremad(root)
         elif kind == "ears":
-            bank = load_ears(args.bank)
+            bank = load_ears(root)
         else:
-            bank = load_vctk(args.bank)
+            bank = load_vctk(root)
     except FileNotFoundError as exc:
         print(f"error: {exc}", file=sys.stderr)
         print(
@@ -991,7 +998,19 @@ def cmd_voice(args: argparse.Namespace) -> int:
         min_character_confidence=getattr(args, "min_character_confidence", 0.7),
     )
     print(report.summary())
-    print(f"\nmanifest: {Path(args.out) / 'manifest.jsonl'}")
+    out_dir = Path(args.out) if args.out else paths.asset_dir(args.novel, "audio")
+    print(f"\nmanifest: {out_dir / 'manifest.jsonl'}")
+    if getattr(args, "m4b", False) and report.chapter_tracks:
+        from echotales.pipeline.voice.export import export_m4b
+
+        tracks = [Path(t) for t in report.chapter_tracks]
+        book = export_m4b(
+            tracks,
+            out_dir / f"{args.novel}.m4b",
+            titles=[f"Chapter {t.parent.name.removeprefix('ch')}" for t in tracks],
+            title=args.novel.replace("-", " ").title(),
+        )
+        print(f"audiobook: {book}")
     store.close()
     return 0
 
@@ -1310,7 +1329,7 @@ def cmd_appearance(args: argparse.Namespace) -> int:
 
 def cmd_reader(args: argparse.Namespace) -> int:
     """Chapter reader pass: speaker attribution by a model that is shown the cast list."""
-    from echotales.pipeline.reader.runner import read_novel
+    from echotales.pipeline.reader.runner import PASSES, read_novel
 
     store = _open_store(args)
     client = _build_client(store)
@@ -1320,7 +1339,11 @@ def cmd_reader(args: argparse.Namespace) -> int:
     wanted = None
     if selected := _chapter_range(getattr(args, "chapters", None)):
         wanted = [n for n in store.chapter_numbers(args.novel) if n in selected]
-    report = read_novel(args.novel, store, client, chapters=wanted)
+    passes = tuple(p.strip() for p in (getattr(args, "passes", None) or ",".join(PASSES)).split(",") if p.strip())
+    if unknown := [p for p in passes if p not in PASSES]:
+        print(f"error: unknown reader pass {unknown}; choose from {', '.join(PASSES)}", file=sys.stderr)
+        return 2
+    report = read_novel(args.novel, store, client, chapters=wanted, passes=passes)
     print(report.summary())
     store.close()
     return 0
