@@ -106,7 +106,7 @@ def test_a_stage_can_check_only_the_models_it_uses() -> None:
     from echotales.pipeline.llm.tasks import Task, models_required
 
     assert models_required("ollama", {Task.PANEL_DIRECTION}) == {"gemma2:9b"}
-    assert "llama3:latest" in models_required("ollama")
+    assert "gemma2:9b" in models_required("ollama") and "llama3:latest" not in models_required("ollama")
 
 
 # --- the setting survives the prompt budget (LotM render review, 2026-10-18) --------------------------------------

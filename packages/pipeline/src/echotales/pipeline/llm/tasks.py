@@ -139,22 +139,23 @@ TASK_PROFILES: dict[Task, TaskProfile] = {
         max_tokens=800,
     ),
     # Structural tasks: language-agnostic, no cultural knowledge needed, so a
-    # general model is the correct trade rather than a compromise. `llama3` is
-    # what is installed; `llama3.1:8b` also fits in VRAM if pulled.
+    # general model is the correct trade rather than a compromise. They use the same model as every other task: a
+    # separate `llama3:latest` was not installed on a fresh machine, so the first run of any new book was refused
+    # (2026-10-24, Pride and Prejudice), and one model also saves the load/unload swaps on an 8 GB card.
     Task.SEGMENTATION: TaskProfile(
-        ollama_model="llama3:latest",
+        ollama_model="qwen2.5:7b",
         anthropic_model="claude-sonnet-5",
         temperature=0.0,
         max_tokens=800,
     ),
     Task.SPAN_CLASSIFICATION: TaskProfile(
-        ollama_model="llama3:latest",
+        ollama_model="qwen2.5:7b",
         anthropic_model="claude-sonnet-5",
         temperature=0.0,
         max_tokens=1024,
     ),
     Task.SENTIMENT: TaskProfile(
-        ollama_model="llama3:latest",
+        ollama_model="qwen2.5:7b",
         anthropic_model="claude-sonnet-5",
         temperature=0.0,
         max_tokens=512,
