@@ -1,0 +1,442 @@
+{
+ "cases": [
+  {
+   "case": "C001",
+   "cut_set": "original",
+   "entity": "lord-of-the-mysteries:self:13b38645a0",
+   "k": 30.0,
+   "novel": "lord-of-the-mysteries",
+   "stratum": "S3"
+  },
+  {
+   "case": "C002",
+   "cut_set": "original",
+   "entity": "oliver-twist:self3",
+   "k": 30.0,
+   "novel": "oliver-twist",
+   "stratum": "S5"
+  },
+  {
+   "case": "C003",
+   "cut_set": "original",
+   "entity": "oliver-twist:self24",
+   "k": 30.0,
+   "novel": "oliver-twist",
+   "stratum": "S5"
+  },
+  {
+   "case": "C004",
+   "cut_set": "added",
+   "entity": "lord-of-the-mysteries:self:3c31a94ca3",
+   "k": 15.0,
+   "novel": "lord-of-the-mysteries",
+   "stratum": "S6"
+  },
+  {
+   "case": "C005",
+   "cut_set": "original",
+   "entity": "reverend-insanity:self:f818878641",
+   "k": 120.0,
+   "novel": "reverend-insanity",
+   "stratum": "S1"
+  },
+  {
+   "case": "C006",
+   "cut_set": "original",
+   "entity": "oliver-twist:self3",
+   "k": 10.0,
+   "novel": "oliver-twist",
+   "stratum": "S6"
+  },
+  {
+   "case": "C007",
+   "cut_set": "original",
+   "entity": "omniscient-readers-viewpoint:self17",
+   "k": 20.0,
+   "novel": "omniscient-readers-viewpoint",
+   "stratum": "S5"
+  },
+  {
+   "case": "C008",
+   "cut_set": "original",
+   "entity": "omniscient-readers-viewpoint:self11",
+   "k": 10.0,
+   "novel": "omniscient-readers-viewpoint",
+   "stratum": "S3"
+  },
+  {
+   "case": "C009",
+   "cut_set": "original",
+   "entity": "three-musketeers:self9",
+   "k": 50.0,
+   "novel": "three-musketeers",
+   "stratum": "S6"
+  },
+  {
+   "case": "C010",
+   "cut_set": "original",
+   "entity": "lord-of-the-mysteries:self:4afd3a0760",
+   "k": 5.0,
+   "novel": "lord-of-the-mysteries",
+   "stratum": "S3"
+  },
+  {
+   "case": "C011",
+   "cut_set": "original",
+   "entity": "reverend-insanity:self:7fc3b9af53",
+   "k": 20.0,
+   "novel": "reverend-insanity",
+   "stratum": "S3"
+  },
+  {
+   "case": "C012",
+   "cut_set": "original",
+   "entity": "lord-of-the-mysteries:self:7485f659b6",
+   "k": 10.0,
+   "novel": "lord-of-the-mysteries",
+   "stratum": "S4"
+  },
+  {
+   "case": "C013",
+   "cut_set": "added",
+   "entity": "lord-of-the-mysteries:self:87983bcab4",
+   "k": 25.0,
+   "novel": "lord-of-the-mysteries",
+   "stratum": "S5"
+  },
+  {
+   "case": "C014",
+   "cut_set": "original",
+   "entity": "oliver-twist:self1",
+   "k": 10.0,
+   "novel": "oliver-twist",
+   "stratum": "S1"
+  },
+  {
+   "case": "C015",
+   "cut_set": "added",
+   "entity": "omniscient-readers-viewpoint:self4",
+   "k": 15.0,
+   "novel": "omniscient-readers-viewpoint",
+   "stratum": "S1"
+  },
+  {
+   "case": "C016",
+   "cut_set": "original",
+   "entity": "omniscient-readers-viewpoint:self4",
+   "k": 5.0,
+   "novel": "omniscient-readers-viewpoint",
+   "stratum": "S1"
+  },
+  {
+   "case": "C017",
+   "cut_set": "added",
+   "entity": "omniscient-readers-viewpoint:self1",
+   "k": 15.0,
+   "novel": "omniscient-readers-viewpoint",
+   "stratum": "S6"
+  },
+  {
+   "case": "C018",
+   "cut_set": "added",
+   "entity": "omniscient-readers-viewpoint:self17",
+   "k": 15.0,
+   "novel": "omniscient-readers-viewpoint",
+   "stratum": "S5"
+  },
+  {
+   "case": "C019",
+   "cut_set": "added",
+   "entity": "lord-of-the-mysteries:self:478688907a",
+   "k": 25.0,
+   "novel": "lord-of-the-mysteries",
+   "stratum": "S6"
+  },
+  {
+   "case": "C020",
+   "cut_set": "added",
+   "entity": "lord-of-the-mysteries:self:3c31a94ca3",
+   "k": 25.0,
+   "novel": "lord-of-the-mysteries",
+   "stratum": "S6"
+  },
+  {
+   "case": "C021",
+   "cut_set": "added",
+   "entity": "reverend-insanity:self:title-xiong-clan-head",
+   "k": 160.0,
+   "novel": "reverend-insanity",
+   "stratum": "S1"
+  },
+  {
+   "case": "C022",
+   "cut_set": "original",
+   "entity": "three-musketeers:self7",
+   "k": 10.0,
+   "novel": "three-musketeers",
+   "stratum": "S2"
+  },
+  {
+   "case": "C023",
+   "cut_set": "original",
+   "entity": "three-musketeers:self17",
+   "k": 40.0,
+   "novel": "three-musketeers",
+   "stratum": "S5"
+  },
+  {
+   "case": "C024",
+   "cut_set": "added",
+   "entity": "reverend-insanity:self:f143c49c6a",
+   "k": 60.0,
+   "novel": "reverend-insanity",
+   "stratum": "S5"
+  },
+  {
+   "case": "C025",
+   "cut_set": "original",
+   "entity": "reverend-insanity:self:2152ed22e4",
+   "k": 10.0,
+   "novel": "reverend-insanity",
+   "stratum": "S3"
+  },
+  {
+   "case": "C026",
+   "cut_set": "original",
+   "entity": "oliver-twist:self4",
+   "k": 30.0,
+   "novel": "oliver-twist",
+   "stratum": "S2"
+  },
+  {
+   "case": "C027",
+   "cut_set": "original",
+   "entity": "oliver-twist:self9",
+   "k": 30.0,
+   "novel": "oliver-twist",
+   "stratum": "S6"
+  },
+  {
+   "case": "C028",
+   "cut_set": "added",
+   "entity": "lord-of-the-mysteries:self:723afdc48a",
+   "k": 25.0,
+   "novel": "lord-of-the-mysteries",
+   "stratum": "S2"
+  },
+  {
+   "case": "C029",
+   "cut_set": "original",
+   "entity": "omniscient-readers-viewpoint:self4",
+   "k": 10.0,
+   "novel": "omniscient-readers-viewpoint",
+   "stratum": "S1"
+  },
+  {
+   "case": "C030",
+   "cut_set": "original",
+   "entity": "omniscient-readers-viewpoint:self7",
+   "k": 5.0,
+   "novel": "omniscient-readers-viewpoint",
+   "stratum": "S3"
+  },
+  {
+   "case": "C031",
+   "cut_set": "added",
+   "entity": "reverend-insanity:self:0926fccc88",
+   "k": 60.0,
+   "novel": "reverend-insanity",
+   "stratum": "S6"
+  },
+  {
+   "case": "C032",
+   "cut_set": "original",
+   "entity": "omniscient-readers-viewpoint:self16",
+   "k": 10.0,
+   "novel": "omniscient-readers-viewpoint",
+   "stratum": "S3"
+  },
+  {
+   "case": "C033",
+   "cut_set": "original",
+   "entity": "lord-of-the-mysteries:self:110bc1f3e3",
+   "k": 5.0,
+   "novel": "lord-of-the-mysteries",
+   "stratum": "S2"
+  },
+  {
+   "case": "C034",
+   "cut_set": "original",
+   "entity": "lord-of-the-mysteries:self:19c2dcb5af",
+   "k": 5.0,
+   "novel": "lord-of-the-mysteries",
+   "stratum": "S5"
+  },
+  {
+   "case": "C035",
+   "cut_set": "original",
+   "entity": "three-musketeers:self17",
+   "k": 30.0,
+   "novel": "three-musketeers",
+   "stratum": "S6"
+  },
+  {
+   "case": "C036",
+   "cut_set": "original",
+   "entity": "oliver-twist:self16",
+   "k": 15.0,
+   "novel": "oliver-twist",
+   "stratum": "S1"
+  },
+  {
+   "case": "C037",
+   "cut_set": "original",
+   "entity": "oliver-twist:self21",
+   "k": 30.0,
+   "novel": "oliver-twist",
+   "stratum": "S6"
+  },
+  {
+   "case": "C038",
+   "cut_set": "original",
+   "entity": "oliver-twist:self16",
+   "k": 20.0,
+   "novel": "oliver-twist",
+   "stratum": "S1"
+  },
+  {
+   "case": "C039",
+   "cut_set": "added",
+   "entity": "omniscient-readers-viewpoint:self45",
+   "k": 35.0,
+   "novel": "omniscient-readers-viewpoint",
+   "stratum": "S6"
+  },
+  {
+   "case": "C040",
+   "cut_set": "added",
+   "entity": "reverend-insanity:self:e901d48678",
+   "k": 100.0,
+   "novel": "reverend-insanity",
+   "stratum": "S1"
+  },
+  {
+   "case": "C041",
+   "cut_set": "original",
+   "entity": "omniscient-readers-viewpoint:self12",
+   "k": 5.0,
+   "novel": "omniscient-readers-viewpoint",
+   "stratum": "S1"
+  },
+  {
+   "case": "C042",
+   "cut_set": "original",
+   "entity": "reverend-insanity:self:b7c5630249",
+   "k": 40.0,
+   "novel": "reverend-insanity",
+   "stratum": "S2"
+  },
+  {
+   "case": "C043",
+   "cut_set": "original",
+   "entity": "oliver-twist:self19",
+   "k": 5.0,
+   "novel": "oliver-twist",
+   "stratum": "S2"
+  },
+  {
+   "case": "C044",
+   "cut_set": "added",
+   "entity": "reverend-insanity:self:fc520c0f69",
+   "k": 60.0,
+   "novel": "reverend-insanity",
+   "stratum": "S6"
+  },
+  {
+   "case": "C045",
+   "cut_set": "original",
+   "entity": "reverend-insanity:self:2152ed22e4",
+   "k": 20.0,
+   "novel": "reverend-insanity",
+   "stratum": "S2"
+  },
+  {
+   "case": "C046",
+   "cut_set": "original",
+   "entity": "reverend-insanity:self:6a2bfe3f7f",
+   "k": 80.0,
+   "novel": "reverend-insanity",
+   "stratum": "S3"
+  },
+  {
+   "case": "C047",
+   "cut_set": "original",
+   "entity": "three-musketeers:self9",
+   "k": 10.0,
+   "novel": "three-musketeers",
+   "stratum": "S2"
+  },
+  {
+   "case": "C048",
+   "cut_set": "original",
+   "entity": "lord-of-the-mysteries:self:7485f659b6",
+   "k": 5.0,
+   "novel": "lord-of-the-mysteries",
+   "stratum": "S4"
+  },
+  {
+   "case": "R001",
+   "cut_set": "original",
+   "entity": "lord-of-the-mysteries:self:7485f659b6",
+   "k": 10.0,
+   "novel": "lord-of-the-mysteries",
+   "repeat_of": "C012",
+   "stratum": "S4"
+  },
+  {
+   "case": "R002",
+   "cut_set": "original",
+   "entity": "omniscient-readers-viewpoint:self17",
+   "k": 20.0,
+   "novel": "omniscient-readers-viewpoint",
+   "repeat_of": "C007",
+   "stratum": "S5"
+  },
+  {
+   "case": "R003",
+   "cut_set": "original",
+   "entity": "omniscient-readers-viewpoint:self12",
+   "k": 5.0,
+   "novel": "omniscient-readers-viewpoint",
+   "repeat_of": "C041",
+   "stratum": "S1"
+  },
+  {
+   "case": "R004",
+   "cut_set": "original",
+   "entity": "three-musketeers:self17",
+   "k": 40.0,
+   "novel": "three-musketeers",
+   "repeat_of": "C023",
+   "stratum": "S5"
+  }
+ ],
+ "populations": {
+  "S1": 21,
+  "S2": 26,
+  "S3": 13,
+  "S4": 2,
+  "S5": 92,
+  "S6": 363
+ },
+ "seed": 20261101,
+ "shortfall": {},
+ "targets": {
+  "S1": 10,
+  "S2": 8,
+  "S3": 8,
+  "S4": 2,
+  "S5": 8,
+  "S6": 12
+ }
+}

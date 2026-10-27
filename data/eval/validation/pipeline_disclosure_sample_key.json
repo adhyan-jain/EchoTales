@@ -1,0 +1,434 @@
+{
+ "C001": {
+  "annotator1": "female",
+  "annotator2_permissive": "undetermined",
+  "annotator2_strict": "undetermined",
+  "prefix_build": "male",
+  "served_repaired": "male",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C002": {
+  "annotator1": null,
+  "annotator2_permissive": null,
+  "annotator2_strict": "female",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "unknown",
+  "set": "original"
+ },
+ "C003": {
+  "annotator1": null,
+  "annotator2_permissive": null,
+  "annotator2_strict": "female",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "unknown",
+  "set": "original"
+ },
+ "C004": {
+  "annotator1": null,
+  "annotator2_permissive": "male",
+  "annotator2_strict": "male",
+  "prefix_build": "male",
+  "served_repaired": "male",
+  "served_unrepaired": "male",
+  "set": "added"
+ },
+ "C005": {
+  "annotator1": "undetermined",
+  "annotator2_permissive": "undetermined",
+  "annotator2_strict": "undetermined",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C006": {
+  "annotator1": null,
+  "annotator2_permissive": null,
+  "annotator2_strict": "female",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "unknown",
+  "set": "original"
+ },
+ "C007": {
+  "annotator1": null,
+  "annotator2_permissive": "male",
+  "annotator2_strict": "male",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "unknown",
+  "set": "original"
+ },
+ "C008": {
+  "annotator1": "male",
+  "annotator2_permissive": "male",
+  "annotator2_strict": "undetermined",
+  "prefix_build": "male",
+  "served_repaired": "male",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C009": {
+  "annotator1": null,
+  "annotator2_permissive": null,
+  "annotator2_strict": "male",
+  "prefix_build": "male",
+  "served_repaired": "male",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C010": {
+  "annotator1": "female",
+  "annotator2_permissive": "undetermined",
+  "annotator2_strict": "undetermined",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "female",
+  "set": "original"
+ },
+ "C011": {
+  "annotator1": "male",
+  "annotator2_permissive": "male",
+  "annotator2_strict": "undetermined",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C012": {
+  "annotator1": "female",
+  "annotator2_permissive": "female",
+  "annotator2_strict": "female",
+  "prefix_build": "female",
+  "served_repaired": "female",
+  "served_unrepaired": "unknown",
+  "set": "original"
+ },
+ "C013": {
+  "annotator1": null,
+  "annotator2_permissive": "female",
+  "annotator2_strict": "female",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "unknown",
+  "set": "added"
+ },
+ "C014": {
+  "annotator1": null,
+  "annotator2_permissive": null,
+  "annotator2_strict": "undetermined",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C015": {
+  "annotator1": null,
+  "annotator2_permissive": "undetermined",
+  "annotator2_strict": "undetermined",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "added"
+ },
+ "C016": {
+  "annotator1": "undetermined",
+  "annotator2_permissive": "undetermined",
+  "annotator2_strict": "undetermined",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C017": {
+  "annotator1": null,
+  "annotator2_permissive": "male",
+  "annotator2_strict": "undetermined",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "unknown",
+  "set": "added"
+ },
+ "C018": {
+  "annotator1": null,
+  "annotator2_permissive": "male",
+  "annotator2_strict": "male",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "unknown",
+  "set": "added"
+ },
+ "C019": {
+  "annotator1": null,
+  "annotator2_permissive": "male",
+  "annotator2_strict": "male",
+  "prefix_build": "male",
+  "served_repaired": "male",
+  "served_unrepaired": "male",
+  "set": "added"
+ },
+ "C020": {
+  "annotator1": null,
+  "annotator2_permissive": "male",
+  "annotator2_strict": "male",
+  "prefix_build": "male",
+  "served_repaired": "male",
+  "served_unrepaired": "male",
+  "set": "added"
+ },
+ "C021": {
+  "annotator1": null,
+  "annotator2_permissive": "male",
+  "annotator2_strict": "undetermined",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "added"
+ },
+ "C022": {
+  "annotator1": null,
+  "annotator2_permissive": null,
+  "annotator2_strict": "male",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C023": {
+  "annotator1": null,
+  "annotator2_permissive": null,
+  "annotator2_strict": "male",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "unknown",
+  "set": "original"
+ },
+ "C024": {
+  "annotator1": null,
+  "annotator2_permissive": "female",
+  "annotator2_strict": "female",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "unknown",
+  "set": "added"
+ },
+ "C025": {
+  "annotator1": "male",
+  "annotator2_permissive": "male",
+  "annotator2_strict": "undetermined",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C026": {
+  "annotator1": null,
+  "annotator2_permissive": null,
+  "annotator2_strict": "female",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "female",
+  "set": "original"
+ },
+ "C027": {
+  "annotator1": null,
+  "annotator2_permissive": null,
+  "annotator2_strict": "male",
+  "prefix_build": "male",
+  "served_repaired": "male",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C028": {
+  "annotator1": null,
+  "annotator2_permissive": "male",
+  "annotator2_strict": "male",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "added"
+ },
+ "C029": {
+  "annotator1": "undetermined",
+  "annotator2_permissive": "undetermined",
+  "annotator2_strict": "undetermined",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C030": {
+  "annotator1": "male",
+  "annotator2_permissive": "undetermined",
+  "annotator2_strict": "undetermined",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C031": {
+  "annotator1": null,
+  "annotator2_permissive": "female",
+  "annotator2_strict": "female",
+  "prefix_build": "female",
+  "served_repaired": "female",
+  "served_unrepaired": "female",
+  "set": "added"
+ },
+ "C032": {
+  "annotator1": "male",
+  "annotator2_permissive": "undetermined",
+  "annotator2_strict": "undetermined",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C033": {
+  "annotator1": "male",
+  "annotator2_permissive": "male",
+  "annotator2_strict": "male",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C034": {
+  "annotator1": "male",
+  "annotator2_permissive": "male",
+  "annotator2_strict": "male",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C035": {
+  "annotator1": null,
+  "annotator2_permissive": null,
+  "annotator2_strict": "male",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "unknown",
+  "set": "original"
+ },
+ "C036": {
+  "annotator1": null,
+  "annotator2_permissive": null,
+  "annotator2_strict": "undetermined",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C037": {
+  "annotator1": null,
+  "annotator2_permissive": null,
+  "annotator2_strict": "male",
+  "prefix_build": "male",
+  "served_repaired": "male",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C038": {
+  "annotator1": null,
+  "annotator2_permissive": null,
+  "annotator2_strict": "undetermined",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C039": {
+  "annotator1": null,
+  "annotator2_permissive": "female",
+  "annotator2_strict": "female",
+  "prefix_build": "female",
+  "served_repaired": "female",
+  "served_unrepaired": "female",
+  "set": "added"
+ },
+ "C040": {
+  "annotator1": null,
+  "annotator2_permissive": "undetermined",
+  "annotator2_strict": "undetermined",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "added"
+ },
+ "C041": {
+  "annotator1": "undetermined",
+  "annotator2_permissive": "undetermined",
+  "annotator2_strict": "undetermined",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C042": {
+  "annotator1": "male",
+  "annotator2_permissive": "male",
+  "annotator2_strict": "male",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C043": {
+  "annotator1": null,
+  "annotator2_permissive": null,
+  "annotator2_strict": "female",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C044": {
+  "annotator1": null,
+  "annotator2_permissive": "male",
+  "annotator2_strict": "male",
+  "prefix_build": "male",
+  "served_repaired": "male",
+  "served_unrepaired": "male",
+  "set": "added"
+ },
+ "C045": {
+  "annotator1": "male",
+  "annotator2_permissive": "male",
+  "annotator2_strict": "male",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C046": {
+  "annotator1": "undetermined",
+  "annotator2_permissive": "male",
+  "annotator2_strict": "undetermined",
+  "prefix_build": "male",
+  "served_repaired": "male",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C047": {
+  "annotator1": null,
+  "annotator2_permissive": null,
+  "annotator2_strict": "male",
+  "prefix_build": "unknown",
+  "served_repaired": "unknown",
+  "served_unrepaired": "male",
+  "set": "original"
+ },
+ "C048": {
+  "annotator1": "female",
+  "annotator2_permissive": "female",
+  "annotator2_strict": "female",
+  "prefix_build": "female",
+  "served_repaired": "female",
+  "served_unrepaired": "unknown",
+  "set": "original"
+ }
+}
