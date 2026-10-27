@@ -22,9 +22,9 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-27 (EVOLUTION 4.127).
+**Last updated:** 2026-10-27 (EVOLUTION 4.128).
 
-## Pick up here — 2026-10-27 (journal manuscript, second-round review addressed; EVOLUTION 4.126, 4.127)
+## Pick up here — 2026-10-27 (journal manuscript, second-round review addressed; targeted validation proposed; EVOLUTION 4.126-4.128)
 
 Research track only. The draft article is `docs/paper/journal/main.tex` (Springer `sn-jnl`, compiled locally to
 `Reader_Faithfulness_draft1.pdf`); `RESPONSE_TO_REVISION.md` maps every point of the 18-page brief. The human
@@ -34,9 +34,19 @@ paper-only, no number changed). Open: (1) student emails are placeholders; (2) c
 professor's class file; (3) confirm the use-of-AI declaration; (4) vLLM checkpoint revisions and the commercial-model
 snapshot were never recorded; (5) `data/eval/chimera/pd_memory_free_validity.json` covers v2 and v3 only, v6 gate
 location unconfirmed; (6) Declarations cite the repo without a tag/commit; (7) abstract word limit / structured-abstract
-rule unchecked; (8) `overleaf_upload.zip` not regenerated after 4525d4d. Deferred by the owner: further human
-annotation (new round, rubric/examples/disagreement categories, human-validated disclosure labels on shareable or
-synthetic text). Rebuild order: `score_reveal_validation.py`, `journal_numbers.py --check`,
+rule unchecked; (8) `overleaf_upload.zip` not regenerated after 4525d4d. Repo tag `journal-rev2-2026-10-27` (on
+c1aa69f, pushed) is now cited in the main.tex Declarations, so item (6) is closed in the source (not yet in the
+Overleaf zip). **Targeted pipeline-disclosure validation (EVOLUTION 4.128): PROPOSED, annotation pending owner and
+supervisor review; no human has annotated anything under it.** Protocol `docs/paper/journal/VALIDATION_PROTOCOL.md`;
+sample `data/eval/validation/pipeline_disclosure_sample.json` (+ `_key.json`, kept from annotators), built by
+`scripts/paper/build_validation_sample.py`, seed 20261101, manifest sha256
+`450801920be79cc0a2c6c3333a494468bac7d05a5f9e197f41fb117ea680a692`. Still to do before it can run: (a) the
+prefix-boundary assertion script (max chapter/span/mention/segment index <= cut on every truncate-and-rebuild DB;
+`audit.py` has none) is NOT written; (b) the synthetic annotator-accuracy run
+(`scripts/prefix_audit/synthetic_oracle.py` against the model annotators) is NOT done; (c) the blind annotation
+sheets are NOT built. The earlier "deferred by the owner" annotation item is superseded: the supervisor rejected
+exhaustive annotation and asked for the stratified sample, short rubric and effort estimate (about 7 annotator-hours)
+for review first. Rebuild order: `score_reveal_validation.py`, `journal_numbers.py --check`,
 `make_journal_figures.py`, `build_supplementary.py`, `verify_references.py`, then latexmk.
 
 ## Pick up here — 2026-10-24 (PRODUCT PIVOT, decisions.md D27)
