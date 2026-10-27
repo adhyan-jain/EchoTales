@@ -1,0 +1,6 @@
+{
+  "cleanUrls": true,
+  "headers": [
+    { "source": "/cases.json", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }
+  ]
+}

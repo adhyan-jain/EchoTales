@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prefix Check</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="bar">
+  <div class="brand">Prefix Check <span class="muted">EchoTales human validation</span></div>
+  <div class="bar-right" id="barRight" hidden>
+    <span id="who" class="chip"></span>
+    <span id="progress" class="muted"></span>
+    <button id="guideBtn" class="ghost">Guidelines</button>
+    <button id="exportBtn" class="primary">Export my labels</button>
+  </div>
+</header>
+
+<main id="start" class="start">
+  <h1>Check what a reader knows at a cut</h1>
+  <p class="lead">Each item is a character in a novel and a few passages that mention them, taken only from the part of the book up to a cut point. You decide what those passages let a reader conclude about the character's gender, then see what a system served for that character at that cut and say whether the passages back it up. You do not need to have read the book, and you should not read ahead. It takes about 4 minutes per item.</p>
+  <ol class="steps">
+    <li>Pick your name below. You only see the items assigned to you.</li>
+    <li>Read the <a href="#" id="guideLink">guidelines</a> once (2 minutes).</li>
+    <li>For each item, answer the first part, press <b>Show system output</b>, then answer the second part. Once shown, the first part is locked.</li>
+    <li>When the counter shows all items done, press <b>Export my labels</b> and send the downloaded file to Adhyan.</li>
+  </ol>
+  <p class="muted small">Judge only the text shown. Do not look anything up, and do not discuss items with the other annotators until everyone has exported. Some items repeat on purpose, so answer each one on its own. If you switch device, export first and use <b>Import</b> on the new one.</p>
+  <div class="names" id="names"></div>
+  <label class="import">Resume from an exported file: <input type="file" id="importFile" accept="application/json"></label>
+  <p class="muted small" id="loadErr" hidden></p>
+</main>
+
+<div id="app" class="layout" hidden>
+  <nav class="side" id="side"></nav>
+  <section class="item" id="item"></section>
+</div>
+
+<dialog id="guide">
+  <div class="guide-body">
+    <h2>Guidelines</h2>
+    <p>You are checking what the book has shown a reader <b>by the cut</b>, not what is true of the whole book. Passages stop at the cut. Judge only the text shown, and do not use what you remember of the book (Q0 records whether you do).</p>
+    <h3>Q0. Do you know this book's plot?</h3>
+    <p>Answer before reading. <i>Yes</i> if you have read the book or an adaptation, or already know this character.</p>
+    <h3>Part 1. Before seeing any system output</h3>
+    <p><b>Q1.</b> From the passages alone, is the character <b>male</b>, <b>female</b>, or <b>not determined</b>? Choose male or female only if the text signals it: pronouns for this character, a gendered title or kinship term used of them (Mr, Madame, "the young lady", "her father"), or an unambiguous description. A name that sounds male or female, or a stereotype, is not a signal. Several characters may appear in a passage, so check that the cue refers to <i>this</i> character.</p>
+    <p><b>Q2.</b> How sure are you? <i>Clear</i>: explicit and unambiguous cues. <i>Suspect</i>: hints, but not settled. <i>None</i>: no usable cue.</p>
+    <h3>Part 2. After pressing Show system output</h3>
+    <p><b>Q3.</b> The system served a value for this character at the cut. Is it <b>supported</b> by the passages, <b>unsupported</b> (the passages say nothing that settles it), or <b>contradicted</b> (the passages point the other way)?</p>
+    <p>If the system served <b>no value</b>, Q3 asks instead whether the passages did settle one (so a value could have been served) or did not.</p>
+    <p><b>Q4.</b> Would a careful first-time reader of these passages plausibly hold the served value? Not asked when no value was served.</p>
+    <h3>Needs broader context</h3>
+    <p>Tick this if your answers depend on events that are not in the passages shown (for example you suspect a cue exists elsewhere before the cut). Do not tick it just because you are unsure; use Q2 for that.</p>
+    <h3>Notes</h3>
+    <p>Optional. Write anything odd (garbled text, two characters mixed up, a passage that is not about this character).</p>
+    <button class="primary" id="guideClose">Got it</button>
+  </div>
+</dialog>
+
+<script src="app.js"></script>
+</body>
+</html>

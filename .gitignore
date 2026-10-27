@@ -111,3 +111,6 @@ data/eval/prefix_audit/labels/sheet_*.txt
 
 # label files quoting copyrighted novels: kept locally, never published
 data/eval/prefix_audit/labels/luna_labels*.jsonl
+
+# serial excerpts for the disclosure validation app; regenerate with scripts/review/build_disclosure_validation_set.py
+scripts/review/disclosure_validation_app/cases.json

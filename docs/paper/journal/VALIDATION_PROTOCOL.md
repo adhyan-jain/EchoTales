@@ -64,6 +64,11 @@ Limits of the draw: S3 draws only on pairs with both annotators' prefix labels (
 no S3 case comes from the English novels or from the added cuts. S6 is restricted to pairs that have a model prefix
 label, so it is a random draw within the labelled pairs, not within all 685 cut pairs.
 
+Passage budget: humans see up to 8 passages per case (150 characters before and 350 after each mention, spread over
+the chapters up to the cut); model annotator 2 saw up to 24. A human-model disagreement can therefore come from
+different evidence, not only different judgement, and the write-up says so. Annotators are not expected to have read
+any of the books, as in the reveal study; Q0 records it.
+
 ## Rubric (one page)
 
 The blind sheet shows the character's name and aliases and the passages that mention them up to the cut
@@ -85,7 +90,7 @@ or served value in step A.
 |---|---|
 | Engineering (sheets from the manifest, reuse of `reveal_validation_app`, scoring script) | about 1 working day, no annotator time |
 | Calibration (6 cases) | about 30 min per annotator |
-| Annotation, 52 cases at about 4 min | about 3.5 h per annotator, about 7 h in total |
+| Annotation, 52 cases at about 4 min, three annotators, each case to two of them in rotation | about 35 cases (about 2.3 h) per annotator, about 7 h in total |
 | Adjudication by the third author | about 1 h |
 
 Realistically two 2-hour sessions per annotator. If time is short the fallback is S1 + S2 + S4 + S6 only (32 cases,
