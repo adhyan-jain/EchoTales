@@ -55,11 +55,19 @@ class TocEntry:
     label: str
     href: str
     play_order: int
+    #: The next TOC entry's anchor in the same file, set by `SourceAdapter.chapters`. Empty means "to the end of the
+    #: file", which is right for one chapter per file and wrong for a book that packs many into one.
+    end_fragment: str = ""
 
     @property
     def path(self) -> str:
         """Href without its fragment."""
         return self.href.split("#", 1)[0]
+
+    @property
+    def fragment(self) -> str:
+        """The `#anchor` this entry points at, or "" when it points at a whole file."""
+        return self.href.split("#", 1)[1] if "#" in self.href else ""
 
 
 @dataclass(slots=True)

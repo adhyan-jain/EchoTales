@@ -274,6 +274,15 @@ class TestDisplayLabel:
         """Unlike inflection, a title carries information a reviewer wants."""
         assert display_label(["Wang", "Elder Wang"]) == "Elder Wang"
 
+    def test_a_name_ending_in_s_keeps_it(self) -> None:
+        """The plural strip made James "Jame", Lucas "Luca" and Charles "Charle" in the Pride and Prejudice cast."""
+        assert display_label(["Lady Lucas", "Lucas"]) == "Lady Lucas"
+        assert display_label(["James"]) == "James"
+        assert display_label(["Charles"]) == "Charles"
+
+    def test_a_plural_surface_yields_to_the_singular_that_is_also_in_the_text(self) -> None:
+        assert display_label(["the Bennets", "Bennet"]) == "Bennet"
+
     def test_empty_input(self) -> None:
         assert display_label([]) == ""
 

@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterator
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from echotales.core.enums import BlockType
 from echotales.core.models import Block, Chapter
@@ -163,6 +163,45 @@ def iter_block_elements(root: etree._Element) -> Iterator[etree._Element]:
         yield element
 
 
+#: "*** END OF THE PROJECT GUTENBERG EBOOK ... ***" and its older spellings; everything after it is licence text.
+_GUTENBERG_END = re.compile(r"^\W*end of (the |this )?project gutenberg", re.IGNORECASE)
+
+
+def _anchor_window(tree: etree._Element, entry: TocEntry):  # type: ignore[no-untyped-def]
+    """A predicate keeping only the block elements between this entry's anchor and the next entry's anchor, or None
+    when the entry points at a whole file (or at an anchor that is not in the document: then the whole file is the
+    safest reading, as before).
+
+    The block holding an anchor counts as on its own side of it: the chapter heading `<h2><a id=.../>CHAPTER II.</h2>`
+    belongs to the chapter it starts and not to the previous one."""
+    if not entry.fragment:
+        return None
+
+    def find(fragment: str):  # type: ignore[no-untyped-def]
+        hits = tree.xpath("//*[@id=$f or @name=$f]", f=fragment)
+        return hits[0] if hits else None
+
+    start = find(entry.fragment)
+    if start is None:
+        return None
+    end = find(entry.end_fragment) if entry.end_fragment else None
+    order = {element: i for i, element in enumerate(tree.iter())}
+    start_i = order[start]
+    end_i = order[end] if end is not None else None
+    start_ancestors = {start, *start.iterancestors()}
+    end_ancestors = {end, *end.iterancestors()} if end is not None else set()
+
+    def keep(element: etree._Element) -> bool:
+        i = order.get(element)
+        if i is None:
+            return True
+        after_start = i >= start_i or element in start_ancestors
+        before_end = end_i is None or (i < end_i and element not in end_ancestors)
+        return after_start and before_end
+
+    return keep
+
+
 class SourceAdapter:
     """Turns one source's EPUB into `Chapter` objects.
 
@@ -200,7 +239,20 @@ class SourceAdapter:
         """
         in_appendix = False
         seen_a_chapter = False
-        for entry in self.toc_entries():
+        entries = self.toc_entries()
+        for position, entry in enumerate(entries):
+            # Where this chapter stops inside a shared file: at the next entry's anchor in the same file. Project
+            # Gutenberg's Pride and Prejudice has 61 chapters in 15 files, and every chapter in a file was ingested
+            # as the whole file (chapters 2 and 3 were byte-identical, 145 blocks each).
+            if entry.fragment:
+                entry = replace(entry, end_fragment=next(
+                    (
+                        later.fragment
+                        for later in entries[position + 1:]
+                        if later.path == entry.path and later.fragment and later.fragment != entry.fragment
+                    ),
+                    "",
+                ))
             parsed = parse_chapter_label(entry.label)
 
             if parsed.number is None:
@@ -238,6 +290,7 @@ class SourceAdapter:
         blocks: list[Block] = []
 
         italic_classes = self.epub.italic_classes()
+        window = _anchor_window(tree, entry)
         # Once a translator's/author's note starts, every remaining block in
         # the chapter is back matter too -- `classify_block` only recognises
         # the *labelled* block ("TL Note:"), and its own continuation
@@ -251,7 +304,11 @@ class SourceAdapter:
         # itself and is still back matter.
         in_note = False
         for element in iter_block_elements(root):
+            if window is not None and not window(element):
+                continue
             raw_block = extract_block(element, italic_classes=italic_classes)
+            if _GUTENBERG_END.match(raw_block.text or ""):
+                break  # the licence footer after the last chapter is not story
             if raw_block.is_break:
                 # Scene break: zero-width marker that Phase 2 can key on.
                 blocks.append(

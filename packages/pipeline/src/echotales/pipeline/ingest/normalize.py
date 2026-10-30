@@ -169,7 +169,7 @@ def strip_honorifics(name: str, *, strip_articles: bool = False) -> str:
 _POSSESSIVE_RE = re.compile(r"['’]s\b|s['’]$", re.IGNORECASE)
 
 
-def strip_morphology(name: str) -> str:
+def strip_morphology(name: str, *, plural: bool = True) -> str:
     """Remove possessive and plural inflection.
 
     Without this, "<name>" and "<name>'s" become two entities. Measured on one
@@ -183,7 +183,7 @@ def strip_morphology(name: str) -> str:
     text = _POSSESSIVE_RE.sub("", name).strip()
     # Only strip a trailing plural when the stem is long enough that the `s`
     # is unlikely to be part of the name itself.
-    if len(text) > 4 and text.endswith(("s", "S")) and not text.endswith(("ss", "us", "is")):
+    if plural and len(text) > 4 and text.endswith(("s", "S")) and not text.endswith(("ss", "us", "is")):
         text = text[:-1]
     return text.strip()
 
@@ -203,11 +203,20 @@ def display_label(surfaces: Iterable[str]) -> str:
     """
     # Longest wins, tie-broken toward a form that needed no cleaning, so a
     # surface that occurs verbatim in the text beats a reconstructed one.
-    ranked = [
-        (len(cleaned), cleaned == surface.strip(), cleaned)
+    # Possessives are always dropped; a trailing "s" only when the shorter form is itself a surface in the text. The
+    # plural strip is right for matching ("the Bennets" and "Bennet" meet) but displayed alone it turned James into
+    # "Jame", Lucas into "Luca" and Charles into "Charle" (Pride and Prejudice cast, 2026-10-31).
+    pairs = [
+        (surface, cleaned)
         for surface in surfaces
-        if (cleaned := _ARTICLE_RE.sub("", strip_morphology(surface)).strip())
+        if (cleaned := _ARTICLE_RE.sub("", strip_morphology(surface, plural=False)).strip())
     ]
+    present = {cleaned for _, cleaned in pairs}
+    ranked = []
+    for surface, cleaned in pairs:
+        shorter = strip_morphology(cleaned)
+        shown = shorter if shorter in present else cleaned
+        ranked.append((len(shown), shown == surface.strip(), shown))
     return max(ranked)[2] if ranked else ""
 
 

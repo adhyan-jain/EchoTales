@@ -547,3 +547,61 @@ class TestRomanChapterLabels:
 
     def test_prose_is_not_a_chapter(self) -> None:
         assert parse_chapter_label("A civil chapter in the history of Mimi").number is None
+
+
+class TestSharedFileChapters:
+    """Project Gutenberg packs many chapters into one file and points the TOC at `file#anchor`.
+
+    Pride and Prejudice: 61 chapters in 15 files. Every chapter in a file used to be ingested as the whole file, so
+    chapters 2 and 3 were identical and chapter 1 began with the licence header (acceptance run, 2026-10-31)."""
+
+    def build(self, tmp_path: Path) -> Path:
+        body = (
+            "<p>This eBook is for the use of anyone anywhere.</p>"
+            '<h2><a id="c1"></a>CHAPTER I.</h2><p>First chapter text.</p><p>More of the first.</p>'
+            '<h2><a id="c2"></a>CHAPTER II.</h2><p>Second chapter text.</p>'
+            '<h2><a id="c3"></a>CHAPTER III.</h2><p>Third chapter text.</p>'
+            "<p>*** END OF THE PROJECT GUTENBERG EBOOK ***</p><p>Licence terms follow.</p>"
+        )
+        return build_epub(
+            tmp_path / "pg.epub",
+            {"book.html": body},
+            [("Chapter I.", "book.html#c1"), ("CHAPTER II.", "book.html#c2"), ("CHAPTER III.", "book.html#c3")],
+        )
+
+    def test_each_toc_anchor_gets_only_its_own_blocks(self, tmp_path: Path) -> None:
+        from echotales.pipeline.ingest.adapters import GenericAdapter
+        from echotales.pipeline.ingest.epub import Epub
+
+        epub = Epub(self.build(tmp_path))
+        chapters = {c.number: [b.text for b in c.blocks] for c in GenericAdapter(epub, "pg").chapters()}
+
+        assert set(chapters) == {1.0, 2.0, 3.0}
+        assert chapters[1.0] == ["First chapter text.", "More of the first."]  # no licence header, no heading
+        assert chapters[2.0] == ["Second chapter text."]
+        assert chapters[3.0] == ["Third chapter text."]  # stops at the Gutenberg footer
+
+    def test_an_anchor_missing_from_the_file_falls_back_to_the_whole_file(self, tmp_path: Path) -> None:
+        from echotales.pipeline.ingest.adapters import GenericAdapter
+        from echotales.pipeline.ingest.epub import Epub
+
+        path = build_epub(tmp_path / "x.epub", {"b.html": "<p>Only text.</p>"}, [("Chapter 1", "b.html#gone")])
+        chapters = list(GenericAdapter(Epub(path), "x").chapters())
+        assert [b.text for b in chapters[0].blocks] == ["Only text."]
+
+
+@pytest.mark.skipif(
+    not Path("data/raw/gutenberg/pride-and-prejudice.epub").is_file(),
+    reason="the copyrighted-text rule keeps source books out of git; this runs where the EPUB is supplied locally",
+)
+def test_pride_and_prejudice_ingests_as_61_distinct_chapters() -> None:
+    """D27 step 2 acceptance for ingest: a Gutenberg EPUB with no code change and no source-specific config."""
+    from echotales.pipeline.ingest.adapters import GenericAdapter
+    from echotales.pipeline.ingest.epub import Epub
+
+    epub = Epub(Path("data/raw/gutenberg/pride-and-prejudice.epub"))
+    chapters = list(GenericAdapter(epub, "pnp").chapters())
+    assert len(chapters) == 61
+    assert len({c.blocks[0].text[:60] for c in chapters}) == 61
+    assert chapters[0].blocks[0].text.startswith("IT is a truth universally acknowledged")
+    assert not any("project gutenberg" in b.text.lower() for c in chapters for b in c.blocks)
