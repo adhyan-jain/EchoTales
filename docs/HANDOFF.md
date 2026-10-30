@@ -22,7 +22,20 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-27 (EVOLUTION 4.129).
+**Last updated:** 2026-10-30 (EVOLUTION 4.130).
+
+## Pick up here — 2026-10-30 (journal: human disclosure check done and in the paper; EVOLUTION 4.130)
+
+Research track. The Prefix Check annotation ran (3 annotators, 48 cases + 4 repeats); results in
+`data/eval/validation/disclosure_human_v1.json`, written into `main.tex` (table `tab:human_pipeline`) and
+`supplementary.tex`; draft2 PDFs and a regenerated `overleaf_upload.zip` built. **Nothing is pushed.** Open: (1) the
+first author adjudicated 11 cases, departing from the protocol's third-author rule; a third author should re-rule them
+from passages alone; (2) target-journal formatting unchecked (abstract is now 250 words); (3) **Vercel**: project
+`echotales-prefix-check` is Git-linked to the repo root, so each push to master makes an empty production deploy and the
+alias 404s; redeploy from `scripts/review/disclosure_validation_app` by CLI, and set the project Root Directory to
+that folder to fix it permanently (NOT done). The items below (2), (5)-(7) of the 2026-10-27 list still stand except the
+stale zip (resolved) and the abstract limit (word count only); the "annotation PROPOSED, no human has annotated" statement
+there is superseded.
 
 ## Pick up here — 2026-10-27 (audio: reader delivery pass, M4B export; EVOLUTION 4.129)
 
@@ -49,8 +62,7 @@ snapshot were never recorded; (5) `data/eval/chimera/pd_memory_free_validity.jso
 location unconfirmed; (6) Declarations cite the repo without a tag/commit; (7) abstract word limit / structured-abstract
 rule unchecked; (8) `overleaf_upload.zip` not regenerated after 4525d4d. Repo tag `journal-rev2-2026-10-27` (on
 c1aa69f, pushed) is now cited in the main.tex Declarations, so item (6) is closed in the source (not yet in the
-Overleaf zip). **Targeted pipeline-disclosure validation (EVOLUTION 4.128): PROPOSED, annotation pending owner and
-supervisor review; no human has annotated anything under it.** Protocol `docs/paper/journal/VALIDATION_PROTOCOL.md`;
+Overleaf zip). **Targeted pipeline-disclosure validation (EVOLUTION 4.128): PROPOSED at the time; SUPERSEDED, annotation ran 2026-10-30 (4.130).** Protocol `docs/paper/journal/VALIDATION_PROTOCOL.md`;
 sample `data/eval/validation/pipeline_disclosure_sample.json` (+ `_key.json`, kept from annotators), built by
 `scripts/paper/build_validation_sample.py`, seed 20261101, manifest sha256
 `450801920be79cc0a2c6c3333a494468bac7d05a5f9e197f41fb117ea680a692`. Still to do before it can run: (a) the

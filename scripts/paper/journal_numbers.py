@@ -274,6 +274,18 @@ def build():
         h = gs[key]["confirmatory_H1_pooled"]
         put(lab, f"{pts(h['pooled'])} {ci(*h['ci'])}", "validation/reveal_human_v1.json gap_sensitivity")
 
+    dh = J(Path("data/eval/validation/disclosure_human_v1.json"))
+    src = "validation/disclosure_human_v1.json"
+    put("dh_q1_agree", f"{dh['human_human']['q1']['agree']['k']}/{dh['human_human']['q1']['agree']['n']} ({pc(dh['human_human']['q1']['agree']['pct'] / 100)}%), "
+        f"kappa {dh['human_human']['q1']['fleiss_kappa']:.2f}", src)
+    sb = dh["s1_not_supported_by_rule"]
+    put("dh_s1_by_rule", f"both {sb['both_annotators']['k']} of {sb['both_annotators']['n']}; at least one {sb['at_least_one_annotator']['k']}; adjudicated {sb['adjudicated']['k']}", src)
+    sv = dh["served_value"]
+    put("dh_served_not_supported", f"{sv['not_supported']['k']} of {sv['not_supported']['n']} ({sv['not_supported']['pct']}%)", src)
+    put("dh_vs_models", "; ".join(f"{n} {m['agree']['k']}/{m['agree']['n']} kappa {m['cohen_kappa']:.2f}" for n, m in dh["human_vs_model_q1"].items()), src)
+    put("dh_vs_models_agreed_only", "; ".join(f"{n} {m['agree']['k']}/{m['agree']['n']}" for n, m in dh["human_vs_model_q1_agreed_pairs_only"].items()), src)
+    put("dh_self_consistency", f"gender {dh['self_consistency']['q1']['k']}/{dh['self_consistency']['q1']['n']}; support {dh['self_consistency']['q3']['k']}/{dh['self_consistency']['q3']['n']}", src)
+
     eng = J(PA / "anchored_v2_summary.json")["development_english_originals"]
     v1 = eng["setting_1_0.8"]["v1"]
     put("anchor_english_wrong", f"{pc(v1['wrong'] / v1['cuts'])}% ({v1['wrong']} of {v1['cuts']})", "anchored_v2_summary.json")

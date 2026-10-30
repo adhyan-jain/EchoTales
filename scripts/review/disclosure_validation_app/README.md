@@ -34,4 +34,6 @@ rest. Part 1 locks once the output is shown. At all items done, press **Export m
 `labels_<name>.json` to Adhyan.
 
 ## Score
-Put the exported files in `data/eval/validation/disclosure_labels/`. The scoring script is not written yet.
+Put the exported files in `data/eval/validation/disclosure_labels/`. Run `python scripts/review/score_disclosure_validation.py`; it reads
+`labels_*.json` and `adjudicated.json` and writes `data/eval/validation/disclosure_human_v1.json` (agreement, Fleiss
+kappa, per-stratum support, models against adjudicated and agreed-pairs-only labels, repeat self-consistency).

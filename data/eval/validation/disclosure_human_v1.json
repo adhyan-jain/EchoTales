@@ -1,0 +1,376 @@
+{
+ "n_primary": 48,
+ "n_repeats": 4,
+ "human_human": {
+  "q1": {
+   "agree": {
+    "k": 38,
+    "n": 48,
+    "pct": 79.2,
+    "wilson95": [
+     65.7,
+     88.3
+    ]
+   },
+   "fleiss_kappa": 0.644
+  },
+  "q2": {
+   "agree": {
+    "k": 38,
+    "n": 48,
+    "pct": 79.2,
+    "wilson95": [
+     65.7,
+     88.3
+    ]
+   },
+   "fleiss_kappa": 0.272
+  },
+  "q3": {
+   "agree": {
+    "k": 34,
+    "n": 48,
+    "pct": 70.8,
+    "wilson95": [
+     56.8,
+     81.8
+    ]
+   },
+   "fleiss_kappa": 0.535
+  },
+  "q4": {
+   "agree": {
+    "k": 26,
+    "n": 35,
+    "pct": 74.3,
+    "wilson95": [
+     57.9,
+     85.8
+    ]
+   },
+   "fleiss_kappa": 0.15
+  }
+ },
+ "human_human_q1_by_stratum": {
+  "S1": {
+   "k": 3,
+   "n": 10,
+   "pct": 30.0,
+   "wilson95": [
+    10.8,
+    60.3
+   ]
+  },
+  "S2": {
+   "k": 7,
+   "n": 8,
+   "pct": 87.5,
+   "wilson95": [
+    52.9,
+    97.8
+   ]
+  },
+  "S3": {
+   "k": 8,
+   "n": 8,
+   "pct": 100.0,
+   "wilson95": [
+    67.6,
+    100.0
+   ]
+  },
+  "S4": {
+   "k": 2,
+   "n": 2,
+   "pct": 100.0,
+   "wilson95": [
+    34.2,
+    100.0
+   ]
+  },
+  "S5": {
+   "k": 7,
+   "n": 8,
+   "pct": 87.5,
+   "wilson95": [
+    52.9,
+    97.8
+   ]
+  },
+  "S6": {
+   "k": 11,
+   "n": 12,
+   "pct": 91.7,
+   "wilson95": [
+    64.6,
+    98.5
+   ]
+  }
+ },
+ "q1_disagreement_cases": [
+  "C014",
+  "C015",
+  "C016",
+  "C017",
+  "C018",
+  "C021",
+  "C028",
+  "C036",
+  "C038",
+  "C041"
+ ],
+ "human_vs_model_q1": {
+  "claude_annotator1": {
+   "agree": {
+    "k": 14,
+    "n": 18,
+    "pct": 77.8,
+    "wilson95": [
+     54.8,
+     91.0
+    ]
+   },
+   "cohen_kappa": 0.613,
+   "confusion": {
+    "female->female": 4,
+    "male->male": 9,
+    "male->undetermined": 4,
+    "undetermined->undetermined": 1
+   }
+  },
+  "luna_strict": {
+   "agree": {
+    "k": 31,
+    "n": 48,
+    "pct": 64.6,
+    "wilson95": [
+     50.4,
+     76.6
+    ]
+   },
+   "cohen_kappa": 0.466,
+   "confusion": {
+    "female->female": 11,
+    "female->undetermined": 2,
+    "male->male": 18,
+    "male->undetermined": 15,
+    "undetermined->undetermined": 2
+   }
+  },
+  "luna_permissive": {
+   "agree": {
+    "k": 25,
+    "n": 33,
+    "pct": 75.8,
+    "wilson95": [
+     59.0,
+     87.2
+    ]
+   },
+   "cohen_kappa": 0.581,
+   "confusion": {
+    "female->female": 6,
+    "female->undetermined": 2,
+    "male->male": 17,
+    "male->undetermined": 6,
+    "undetermined->undetermined": 2
+   }
+  }
+ },
+ "human_vs_model_q1_agreed_pairs_only": {
+  "claude_annotator1": {
+   "agree": {
+    "k": 15,
+    "n": 16,
+    "pct": 93.8,
+    "wilson95": [
+     71.7,
+     98.9
+    ]
+   },
+   "cohen_kappa": 0.889
+  },
+  "luna_strict": {
+   "agree": {
+    "k": 30,
+    "n": 38,
+    "pct": 78.9,
+    "wilson95": [
+     63.7,
+     88.9
+    ]
+   },
+   "cohen_kappa": 0.668
+  },
+  "luna_permissive": {
+   "agree": {
+    "k": 22,
+    "n": 26,
+    "pct": 84.6,
+    "wilson95": [
+     66.5,
+     93.8
+    ]
+   },
+   "cohen_kappa": 0.748
+  }
+ },
+ "served_value": {
+  "n": 35,
+  "cells": {
+   "correct|not_supported": 2,
+   "correct|supported": 31,
+   "wrong|not_supported": 2
+  },
+  "not_supported": {
+   "k": 4,
+   "n": 35,
+   "pct": 11.4,
+   "wilson95": [
+    4.5,
+    26.0
+   ]
+  },
+  "correct_but_not_supported": [
+   "C029",
+   "C040"
+  ]
+ },
+ "q3_by_stratum": {
+  "S1": {
+   "supported": 8,
+   "unsupported": 2
+  },
+  "S2": {
+   "contradicted": 1,
+   "supported": 7
+  },
+  "S3": {
+   "supported": 7,
+   "contradicted": 1
+  },
+  "S6": {
+   "supported": 9
+  }
+ },
+ "s1_model_disclosures_confirmed": {
+  "k": 2,
+  "n": 10,
+  "pct": 20.0,
+  "wilson95": [
+   5.7,
+   51.0
+  ]
+ },
+ "s2_model_supported_confirmed": {
+  "k": 7,
+  "n": 8,
+  "pct": 87.5,
+  "wilson95": [
+   52.9,
+   97.8
+  ]
+ },
+ "s6_controls_not_supported": {
+  "k": 0,
+  "n": 9,
+  "pct": 0.0,
+  "wilson95": [
+   0.0,
+   29.9
+  ]
+ },
+ "q3_sensitivity_by_stratum": {
+  "S1": {
+   "n": 10,
+   "both_say_not_supported": 3,
+   "one_says_not_supported": 7,
+   "neither": 0,
+   "adjudicated_not_supported": 2
+  },
+  "S2": {
+   "n": 8,
+   "both_say_not_supported": 1,
+   "one_says_not_supported": 1,
+   "neither": 6,
+   "adjudicated_not_supported": 1
+  },
+  "S3": {
+   "n": 8,
+   "both_say_not_supported": 0,
+   "one_says_not_supported": 1,
+   "neither": 7,
+   "adjudicated_not_supported": 1
+  },
+  "S6": {
+   "n": 9,
+   "both_say_not_supported": 0,
+   "one_says_not_supported": 1,
+   "neither": 8,
+   "adjudicated_not_supported": 0
+  }
+ },
+ "s1_not_supported_by_rule": {
+  "both_annotators": {
+   "k": 3,
+   "n": 10,
+   "pct": 30.0,
+   "wilson95": [
+    10.8,
+    60.3
+   ]
+  },
+  "at_least_one_annotator": {
+   "k": 10,
+   "n": 10,
+   "pct": 100.0,
+   "wilson95": [
+    72.2,
+    100.0
+   ]
+  },
+  "adjudicated": {
+   "k": 2,
+   "n": 10,
+   "pct": 20.0,
+   "wilson95": [
+    5.7,
+    51.0
+   ]
+  }
+ },
+ "self_consistency": {
+  "q1": {
+   "k": 8,
+   "n": 8,
+   "pct": 100.0,
+   "wilson95": [
+    67.6,
+    100.0
+   ]
+  },
+  "q3": {
+   "k": 7,
+   "n": 8,
+   "pct": 87.5,
+   "wilson95": [
+    52.9,
+    97.8
+   ]
+  },
+  "inconsistent": [
+   {
+    "case": "C012",
+    "repeat": "R001",
+    "annotator": "Atharva",
+    "q1": true,
+    "q3": false
+   }
+  ]
+ },
+ "adjudication_basis": {
+  "agreement": 37,
+  "adhyan_ruling_not_an_annotator": 4,
+  "adhyan_on_conflict": 7
+ }
+}

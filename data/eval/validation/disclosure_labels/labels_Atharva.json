@@ -1,0 +1,377 @@
+{
+ "app": "prefix-check",
+ "version": "disclosure-validation-v1",
+ "annotator": "Atharva",
+ "exported_at": "2026-10-30T17:22:05.629Z",
+ "assigned": [
+  "C002",
+  "C044",
+  "C027",
+  "C017",
+  "C012",
+  "C020",
+  "C019",
+  "C005",
+  "C037",
+  "C038",
+  "R001",
+  "C024",
+  "C039",
+  "C011",
+  "C021",
+  "C041",
+  "C035",
+  "C030",
+  "C047",
+  "C016",
+  "C033",
+  "C001",
+  "C040",
+  "R003",
+  "C036",
+  "C029",
+  "C009",
+  "C022",
+  "C015",
+  "C042",
+  "C045",
+  "C004",
+  "C008",
+  "C006"
+ ],
+ "labels": {
+  "C002": {
+   "case": "C002",
+   "q0": "yes",
+   "updated_at": "2026-10-30T16:55:30.980Z",
+   "q1": "female",
+   "q2": "clear",
+   "revealed": true,
+   "q3": "settled"
+  },
+  "C044": {
+   "case": "C044",
+   "q0": "no",
+   "updated_at": "2026-10-30T16:56:30.118Z",
+   "q1": "male",
+   "q2": "clear",
+   "revealed": true,
+   "q3": "supported",
+   "q4": "yes"
+  },
+  "C027": {
+   "case": "C027",
+   "q0": "yes",
+   "updated_at": "2026-10-30T16:58:33.589Z",
+   "q1": "male",
+   "q2": "clear",
+   "revealed": true,
+   "q3": "supported",
+   "q4": "yes"
+  },
+  "C017": {
+   "case": "C017",
+   "q0": "no",
+   "updated_at": "2026-10-30T16:59:36.455Z",
+   "q1": "female",
+   "q2": "suspect",
+   "revealed": true,
+   "q3": "not_settled"
+  },
+  "C012": {
+   "case": "C012",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:00:13.970Z",
+   "q1": "female",
+   "q2": "clear",
+   "revealed": true,
+   "q3": "not_settled"
+  },
+  "C020": {
+   "case": "C020",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:01:29.462Z",
+   "q1": "male",
+   "q2": "clear",
+   "revealed": true,
+   "q3": "unsupported",
+   "q4": "yes"
+  },
+  "C019": {
+   "case": "C019",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:02:45.616Z",
+   "q1": "male",
+   "q2": "clear",
+   "revealed": true,
+   "q3": "supported",
+   "q4": "yes"
+  },
+  "C005": {
+   "case": "C005",
+   "q1": "undetermined",
+   "updated_at": "2026-10-30T17:04:25.842Z",
+   "q2": "none",
+   "q0": "no",
+   "revealed": true,
+   "q3": "unsupported",
+   "q4": "no"
+  },
+  "C037": {
+   "case": "C037",
+   "q0": "yes",
+   "updated_at": "2026-10-30T17:04:36.273Z",
+   "q1": "male",
+   "q2": "clear",
+   "revealed": true,
+   "q3": "supported",
+   "q4": "yes"
+  },
+  "C038": {
+   "case": "C038",
+   "q0": "yes",
+   "updated_at": "2026-10-30T17:04:55.824Z",
+   "q1": "male",
+   "q2": "clear",
+   "revealed": true,
+   "q3": "supported",
+   "q4": "yes"
+  },
+  "R001": {
+   "case": "R001",
+   "q1": "female",
+   "updated_at": "2026-10-30T17:05:10.376Z",
+   "q2": "clear",
+   "q0": "no",
+   "revealed": true,
+   "q3": "settled"
+  },
+  "C024": {
+   "case": "C024",
+   "q1": "female",
+   "updated_at": "2026-10-30T17:05:45.032Z",
+   "q2": "clear",
+   "q0": "no",
+   "revealed": true,
+   "q3": "settled"
+  },
+  "C039": {
+   "case": "C039",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:06:26.794Z",
+   "q1": "female",
+   "q2": "clear",
+   "revealed": true,
+   "q3": "supported",
+   "q4": "yes"
+  },
+  "C011": {
+   "case": "C011",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:06:51.870Z",
+   "q1": "male",
+   "q2": "clear",
+   "revealed": true,
+   "q3": "supported",
+   "q4": "yes"
+  },
+  "C021": {
+   "case": "C021",
+   "q1": "undetermined",
+   "updated_at": "2026-10-30T17:09:10.108Z",
+   "q2": "none",
+   "q0": "no",
+   "revealed": true,
+   "q3": "unsupported",
+   "q4": "no"
+  },
+  "C041": {
+   "case": "C041",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:09:44.153Z",
+   "q1": "undetermined",
+   "q2": "none",
+   "revealed": true,
+   "q3": "unsupported",
+   "q4": "no"
+  },
+  "C035": {
+   "case": "C035",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:10:52.449Z",
+   "q1": "male",
+   "q2": "clear",
+   "revealed": true,
+   "q3": "settled"
+  },
+  "C030": {
+   "case": "C030",
+   "q1": "male",
+   "updated_at": "2026-10-30T17:12:09.399Z",
+   "q2": "clear",
+   "q0": "no",
+   "revealed": true,
+   "q4": "yes",
+   "q3": "supported"
+  },
+  "C047": {
+   "case": "C047",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:13:19.281Z",
+   "q1": "male",
+   "q2": "clear",
+   "revealed": true,
+   "q3": "supported",
+   "q4": "yes"
+  },
+  "C016": {
+   "case": "C016",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:14:06.057Z",
+   "q1": "undetermined",
+   "q2": "none",
+   "revealed": true,
+   "q4": "no",
+   "q3": "unsupported"
+  },
+  "C033": {
+   "case": "C033",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:14:16.984Z",
+   "q1": "male",
+   "q2": "clear",
+   "revealed": true,
+   "q3": "supported",
+   "q4": "yes"
+  },
+  "C001": {
+   "case": "C001",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:14:28.055Z",
+   "q1": "female",
+   "q2": "clear",
+   "revealed": true,
+   "q4": "yes",
+   "q3": "supported"
+  },
+  "C040": {
+   "case": "C040",
+   "q1": "undetermined",
+   "updated_at": "2026-10-30T17:14:42.702Z",
+   "q2": "none",
+   "q0": "no",
+   "revealed": true,
+   "q3": "unsupported",
+   "q4": "no"
+  },
+  "R003": {
+   "case": "R003",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:15:32.576Z",
+   "q1": "undetermined",
+   "q2": "none",
+   "revealed": true,
+   "q3": "unsupported",
+   "q4": "no"
+  },
+  "C036": {
+   "case": "C036",
+   "q1": "undetermined",
+   "updated_at": "2026-10-30T17:16:54.146Z",
+   "q0": "no",
+   "q2": "none",
+   "revealed": true,
+   "q3": "unsupported",
+   "q4": "yes"
+  },
+  "C029": {
+   "case": "C029",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:18:00.461Z",
+   "q1": "undetermined",
+   "q2": "none",
+   "revealed": true,
+   "q3": "unsupported",
+   "q4": "no"
+  },
+  "C009": {
+   "case": "C009",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:18:10.370Z",
+   "q1": "male",
+   "q2": "clear",
+   "revealed": true,
+   "q3": "supported",
+   "q4": "yes"
+  },
+  "C022": {
+   "case": "C022",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:18:28.333Z",
+   "q1": "male",
+   "q2": "clear",
+   "revealed": true,
+   "q3": "supported",
+   "q4": "yes"
+  },
+  "C015": {
+   "case": "C015",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:19:15.704Z",
+   "q1": "undetermined",
+   "q2": "none",
+   "revealed": true,
+   "q3": "unsupported",
+   "q4": "no"
+  },
+  "C042": {
+   "case": "C042",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:20:24.021Z",
+   "q1": "male",
+   "q2": "clear",
+   "revealed": true,
+   "q3": "supported",
+   "q4": "yes"
+  },
+  "C045": {
+   "case": "C045",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:20:35.320Z",
+   "q1": "male",
+   "q2": "clear",
+   "revealed": true,
+   "q4": "yes",
+   "q3": "supported"
+  },
+  "C004": {
+   "case": "C004",
+   "q0": "no",
+   "updated_at": "2026-10-30T17:20:50.333Z",
+   "q1": "male",
+   "q2": "clear",
+   "revealed": true,
+   "q4": "yes",
+   "q3": "supported"
+  },
+  "C008": {
+   "case": "C008",
+   "q1": "male",
+   "updated_at": "2026-10-30T17:21:45.399Z",
+   "q2": "clear",
+   "q0": "no",
+   "revealed": true,
+   "q3": "supported",
+   "q4": "yes"
+  },
+  "C006": {
+   "case": "C006",
+   "q1": "female",
+   "updated_at": "2026-10-30T17:21:58.683Z",
+   "q2": "clear",
+   "q0": "yes",
+   "revealed": true,
+   "q3": "settled"
+  }
+ }
+}

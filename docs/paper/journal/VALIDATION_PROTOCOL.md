@@ -1,6 +1,11 @@
 # Targeted validation protocol for the pipeline-disclosure labels
 
-Status: PROPOSAL for review. No human annotation has been done under this protocol.
+Status: ANNOTATION RAN (finished by 2026-10-30; 3 annotators: Adhyan, Aryan, Atharva; 48 cases + 4 repeats, two per case).
+Results: `data/eval/validation/disclosure_human_v1.json`, labels in `data/eval/validation/disclosure_labels/`.
+Deviation from this protocol: adjudication was done by the FIRST author (10 disagreements, plus C005 where the pair
+agreed on "undetermined" and the ruling was male), not by a third author, and not from prefix passages only. The paper
+states this. Third-author adjudication of those 11 rulings, from passages alone, is still open.
+Original status follows: PROPOSAL for review.
 Written 2026-10-27. Sampler: `scripts/paper/build_validation_sample.py` (seed 20261101).
 
 ## Summary for the supervisor

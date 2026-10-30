@@ -391,6 +391,28 @@ E33 & John Caldigate & Smith & conf. low & Ad: expl/remin/yes; Ar: expl/revel/ye
 \end{tabular}
 \end{table}
 
+\section{Human check of the disclosure labels}
+The check follows the protocol file in the repository. It has 48 sampled character-cuts and 4 repeats, drawn by stratum with a fixed seed whose manifest hash was recorded before annotation. Three annotators labelled the cases in rotation, two per case. They saw at most eight passages up to the cut, answered the gender and confidence questions first, and then saw the served value. Table~\ref{tab:s-human} gives the strata. Gender agreement is raw agreement between the two annotators of a case. The last four columns count served values that the annotators judged not supported by the passages, among the cases of the stratum that had a served value.
+
+\begin{table}[h]
+\caption{Disclosure check by stratum. S1: divergent, model-judged genuine disclosure. S2: divergent, model-judged supported. S3: model annotators disagreed. S4: reverse direction. S5: repaired output withholds a value. S6: non-divergent controls. ``Both'' and ``one'' are the numbers of cases in which both or exactly one of the two annotators judged the served value not supported; ``adj.'' is the adjudicated label.}\label{tab:s-human}
+\footnotesize
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lcccccc}
+\toprule
+Stratum & Cases & Gender agreement & Served & Both & One & Adj. \\
+\midrule
+S1 & 10 & 3 of 10 & 10 & 3 & 7 & 2 \\
+S2 & 8 & 7 of 8 & 8 & 1 & 1 & 1 \\
+S3 & 8 & 8 of 8 & 8 & 0 & 1 & 1 \\
+S4 & 2 & 2 of 2 & 0 & -- & -- & -- \\
+S5 & 8 & 7 of 8 & 0 & -- & -- & -- \\
+S6 & 12 & 11 of 12 & 9 & 0 & 1 & 0 \\
+\botrule
+\end{tabular*}
+\end{table}
+
+\noindent Gender agreement over the 48 cases was 38 (79.2\%, Fleiss $\kappa=0.64$); confidence agreed in 38 ($\kappa=0.27$), support of the served value in 34 of 48 ($\kappa=0.54$) and plausibility to a first-time reader in 26 of 35 ($\kappa=0.15$). The low kappas on the last two reflect skewed marginals, since most answers were the same category, and should not be read as the annotators disagreeing more often than the raw agreement shows. Where one annotator wrote ``undetermined'' and the other a gender, the case is a disagreement; nine of the ten disagreements were of that kind and one was male against female.
+
 \section{Run times and costs}
 \begin{table}[!ht]
 \centering

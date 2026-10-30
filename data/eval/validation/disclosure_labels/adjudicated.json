@@ -1,0 +1,484 @@
+{
+ "note": "q1 adjudication: agreement; else Adhyan's label where Adhyan was one of the pair; C017/C038/C021 (Aryan/Atharva conflicts) ruled male by Adhyan",
+ "adjudicated": {
+  "C002": {
+   "q1": "female",
+   "basis": "agreement",
+   "q3": "settled",
+   "q4": null,
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "female"
+  },
+  "C044": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C043": {
+   "q1": "female",
+   "basis": "agreement",
+   "q3": "contradicted",
+   "q4": "no",
+   "q3q4_basis": "adhyan_ruling_derived_from_female_truth",
+   "q2": "clear",
+   "q2_basis": "adhyan_ruling",
+   "book_truth": "female"
+  },
+  "C027": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C034": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "settled",
+   "q4": null,
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C012": {
+   "q1": "female",
+   "basis": "agreement",
+   "q3": "settled",
+   "q3q4_basis": "adhyan_ruling",
+   "q2": "clear",
+   "book_truth": "female"
+  },
+  "C020": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "adhyan_ruling",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C014": {
+   "q1": "male",
+   "basis": "adhyan_on_conflict",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "adhyan_ruling",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C019": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C005": {
+   "q1": "male",
+   "basis": "adhyan_ruling_not_an_annotator",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "adhyan_ruling",
+   "q1_before_ruling": "undetermined",
+   "q2": "clear",
+   "q2_basis": "adhyan_ruling",
+   "book_truth": "male"
+  },
+  "C007": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "settled",
+   "q3q4_basis": "adhyan_ruling",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C037": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C046": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "R001": {
+   "q1": "female",
+   "basis": "agreement",
+   "q3": "settled",
+   "q4": null,
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "female"
+  },
+  "C024": {
+   "q1": "female",
+   "basis": "agreement",
+   "q3": "settled",
+   "q4": null,
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "female"
+  },
+  "C039": {
+   "q1": "female",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "female"
+  },
+  "C025": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "adhyan_ruling",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "R002": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "settled",
+   "q3q4_basis": "adhyan_ruling",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C011": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C028": {
+   "q1": "male",
+   "basis": "adhyan_on_conflict",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "adhyan_ruling",
+   "q2": "clear",
+   "q2_basis": "adhyan_ruling",
+   "book_truth": "male"
+  },
+  "C041": {
+   "q1": "male",
+   "basis": "adhyan_on_conflict",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "adhyan_ruling",
+   "q2": "clear",
+   "q2_basis": "adhyan_ruling",
+   "book_truth": "male"
+  },
+  "C035": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "settled",
+   "q4": null,
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C031": {
+   "q1": "female",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "female"
+  },
+  "C030": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C047": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C013": {
+   "q1": "female",
+   "basis": "agreement",
+   "q3": "settled",
+   "q4": null,
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "female"
+  },
+  "C016": {
+   "q1": "male",
+   "basis": "adhyan_on_conflict",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "adhyan_ruling",
+   "q2": "clear",
+   "q2_basis": "adhyan_ruling",
+   "book_truth": "male"
+  },
+  "C033": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C023": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "settled",
+   "q4": null,
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C001": {
+   "q1": "female",
+   "basis": "agreement",
+   "q3": "contradicted",
+   "q4": "no",
+   "q3q4_basis": "adhyan_ruling_derived_from_female_truth",
+   "q2": "clear",
+   "book_truth": "female"
+  },
+  "C040": {
+   "q1": "undetermined",
+   "basis": "agreement",
+   "q3": "unsupported",
+   "q4": "no",
+   "q3q4_basis": "agreement",
+   "q2": "none",
+   "book_truth": "male"
+  },
+  "R003": {
+   "q1": "male",
+   "basis": "adhyan_on_conflict",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "adhyan_ruling",
+   "q2": "clear",
+   "q2_basis": "adhyan_ruling",
+   "book_truth": "male"
+  },
+  "C032": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C036": {
+   "q1": "male",
+   "basis": "adhyan_on_conflict",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "adhyan_ruling",
+   "q2": "clear",
+   "q2_basis": "adhyan_ruling",
+   "book_truth": "male"
+  },
+  "C029": {
+   "q1": "undetermined",
+   "basis": "agreement",
+   "q3": "unsupported",
+   "q4": "no",
+   "q3q4_basis": "agreement",
+   "q2": "none",
+   "book_truth": "male"
+  },
+  "C010": {
+   "q1": "female",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "female"
+  },
+  "C009": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C022": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C018": {
+   "q1": "male",
+   "basis": "adhyan_on_conflict",
+   "q3": "settled",
+   "q3q4_basis": "adhyan_ruling",
+   "q2": "clear",
+   "q2_basis": "adhyan_ruling",
+   "book_truth": "male"
+  },
+  "C015": {
+   "q1": "male",
+   "basis": "adhyan_on_conflict",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "adhyan_ruling",
+   "q2": "clear",
+   "q2_basis": "adhyan_ruling",
+   "book_truth": "male"
+  },
+  "C042": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "R004": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "settled",
+   "q4": null,
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C003": {
+   "q1": "female",
+   "basis": "agreement",
+   "q3": "settled",
+   "q4": null,
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "female"
+  },
+  "C045": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C004": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C026": {
+   "q1": "female",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "female"
+  },
+  "C008": {
+   "q1": "male",
+   "basis": "agreement",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C006": {
+   "q1": "female",
+   "basis": "agreement",
+   "q3": "settled",
+   "q4": null,
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "female"
+  },
+  "C048": {
+   "q1": "female",
+   "basis": "agreement",
+   "q3": "settled",
+   "q4": null,
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "book_truth": "female"
+  },
+  "C017": {
+   "q1": "male",
+   "basis": "adhyan_ruling_not_an_annotator",
+   "q3": "not_settled",
+   "q4": null,
+   "q3q4_basis": "agreement",
+   "q2": "clear",
+   "q2_basis": "adhyan_ruling",
+   "book_truth": "male"
+  },
+  "C038": {
+   "q1": "male",
+   "basis": "adhyan_ruling_not_an_annotator",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "adhyan_ruling",
+   "q2": "clear",
+   "book_truth": "male"
+  },
+  "C021": {
+   "q1": "male",
+   "basis": "adhyan_ruling_not_an_annotator",
+   "q3": "supported",
+   "q4": "yes",
+   "q3q4_basis": "adhyan_ruling",
+   "q2": "clear",
+   "q2_basis": "adhyan_ruling",
+   "book_truth": "male"
+  }
+ },
+ "pending": [],
+ "pending_q3q4": [],
+ "note_book_truth": "book_truth is the character's gender in the novel (Adhyan). It equals q1 except C040 and C029, where the annotators agreed the prefix does not settle it (q1 undetermined)."
+}
