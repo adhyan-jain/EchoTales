@@ -184,7 +184,7 @@ cue control 8, pipeline 9, repair 10, cards 11, canaries 12, synthesis 13).
 | 9 Conclusion | Done | RQ1-RQ3 answered explicitly; the final lesson keeps "markers and timestamp filters are insufficient when upstream processing has already used future information" and "does not establish universal spoiler-free behaviour". The future-work human item is stated as a larger independent sample recording both explicitness and prefix inferability, with human-validated disclosure labels on shareable or synthetic text. |
 
 ## Open after this revision
-1. **Human annotation (deferred by the owner):** a further annotation round; rubric, representative examples and disagreement categories; human-validated labels (shareable or synthetic) for the pipeline disclosure rates.
+1. **Human annotation:** partly done on 2026-10-30. The supplement now gives the reveal-check rubric, an example and four disagreement categories, and a 48-case human check of the disclosure labels was run and reported (main text and supplement). Still open: a human third-author adjudication of the 11 first-author rulings, and human-validated labels on shareable or synthetic text.
 2. **Not recorded, so not claimable:** vLLM checkpoint revisions, the commercial-model snapshot, and ollama IDs at run time. Sect. 5 says so; recording them in the next run would remove the caveat.
 3. **Repository pointer:** the Declarations cite the repository without a tag or commit; tag the version that matches the submitted PDF before submission.
 4. **v6 validity gate:** the stored gate file (`data/eval/chimera/pd_memory_free_validity.json`) covers v2 and v3 only, so Sect. 4.2 reports the gate for those two sets; confirm where the v6 gate result is stored before submission.
