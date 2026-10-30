@@ -63,7 +63,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
-from echotales.core.models import Job
+from echotales.core.models import Job, StageStatus
 from echotales.core.store import Store
 from echotales.pipeline import paths, research_demo
 from echotales.pipeline._multipart import MultipartError, parse_single_file
@@ -457,6 +457,9 @@ class Registry:
                 )
                 corrections = CorrectionLog(corrections_dir / f"{novel_id}.jsonl")
                 self.handles[novel_id] = NovelHandle(source, store, corrections)
+        # The job queue lives in memory, so whatever was queued or running when the last server stopped is gone.
+        for handle in self.handles.values():
+            handle.store.fail_interrupted_jobs("interrupted: the server stopped before this job finished; run it again")
 
     def manifest(self) -> list[dict[str, str]]:
         return [
@@ -1966,6 +1969,24 @@ def make_handler(
                         201, {"filename": filename, "path": str(epub_path), "bytes": len(data)}
                     )
 
+                if (
+                    len(parts) == 6 and parts[:2] == ["api", "projects"] and parts[3] == "jobs" and parts[5] == "cancel"
+                ):
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    job = handle.store.get_job(parts[4])
+                    if job is None:
+                        return self._json(404, {"error": f"unknown job {parts[4]!r}"})
+                    if job.status.value != "PENDING":
+                        # A running stage is one call into a model or a long loop; stopping the thread mid-write
+                        # could leave a half-written database, so only a job still waiting can be cancelled.
+                        return self._json(409, {"error": f"job is {job.status.value}; only a queued job can be cancelled"})
+                    handle.store.update_job(
+                        parts[4], status=StageStatus.FAILED, finished_at=time.time(), error_summary="cancelled by user"
+                    )
+                    return self._json(200, _job_json(handle.store.get_job(parts[4])))
+
                 if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] in JOB_KINDS:
                     handle = registry.handles.get(parts[2])
                     if handle is None:
@@ -1994,6 +2015,10 @@ def make_handler(
                         if refusal:
                             return self._json(409, {"error": refusal})
                         params = _with_genre(handle, params)
+                    if kind == "pipeline":
+                        # The resolve stage reads the project's review decisions; the path comes from the server's
+                        # registry, never the request.
+                        params["corrections_path"] = str(handle.corrections.path)
                     if kind == "voice":
                         # A path from the request chose which directory the server loads a voice bank from and where
                         # it wrote; both come from the project, never the client (audit B5).

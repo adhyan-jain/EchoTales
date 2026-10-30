@@ -81,6 +81,10 @@ def http_engine_known(name: str) -> bool:
 #: assumptions (segment/mentions/speakers/anaphora already having run,
 #: normally via `echotales run` or their own prior jobs).
 JOB_KINDS = (
+    # Every stage from ingest to personas in one job (the `echotales run` chain). The per-stage kinds below assume
+    # segment, mentions, speakers and anaphora already ran and no job kind ran them, so a freshly uploaded book could
+    # not be built from the Studio at all (audit B4).
+    "pipeline",
     "ingest",
     "resolve",
     "reader",
@@ -170,6 +174,77 @@ def _record_studio_version(out_dir: Path, chapters: list[float], version: str, e
                 fh.write(line)
 
 
+def _run_pipeline(store: Store, job_id: str, novel_id: str, params: dict[str, Any], sources_path: str):  # type: ignore[no-untyped-def]
+    """Ingest through personas as one resumable job: `commands.py::cmd_run`'s chain with `run_stage` bookkeeping.
+
+    Stage names and digests match `cmd_run`'s, so a book built from the CLI resumes here and the reverse. Each stage
+    writes a `StageRun` under the job's run id, which is the per-stage progress the Studio reads. A stage that already
+    succeeded for this exact source is skipped unless `params["force"]` is set; a failure stops the chain and the
+    next run picks up at the failed stage."""
+    from echotales.core.pipeline_run import source_digest_of
+    from echotales.pipeline.anaphora import resolve_anaphora_for_novel as anaphora_resolve
+    from echotales.pipeline.commands import _build_client
+    from echotales.pipeline.config import get_settings
+    from echotales.pipeline.corrections import CorrectionLog
+    from echotales.pipeline.ingest import get_source, ingest_novel
+    from echotales.pipeline.ingest.adapters import ChapterRange
+    from echotales.pipeline.mentions import detect_mentions, load_or_seed
+    from echotales.pipeline.persona import build_personas
+    from echotales.pipeline.resolve import resolve_novel as global_resolve
+    from echotales.pipeline.segment import segment_novel
+    from echotales.pipeline.speakers import attribute_novel
+
+    config = get_source(novel_id, sources_path)
+    lexicon = load_or_seed(config.lexicon)
+    chapters = ChapterRange.parse(params["chapters"]) if params.get("chapters") else None
+    # None means a deterministic run (stub backend or `no_llm`); a real backend that is not reachable raises here, at
+    # the start, instead of on chapter 140.
+    client = _build_client(store, no_llm=bool(params.get("no_llm")))
+    source_digest = source_digest_of(config.path)
+    pipeline_run = ensure_pipeline_run(
+        store, novel_id=novel_id, source_digest=source_digest, pipeline_version=PIPELINE_VERSION
+    )
+    # Stored now, not at the end: the job detail lists stage runs by this id, so a long build shows which stage it is
+    # in instead of an empty list until it finishes.
+    store.update_job(job_id, run_id=pipeline_run.run_id)
+    corrections_path = params.get("corrections_path")
+    corrections_log = CorrectionLog(Path(corrections_path)) if corrections_path else None
+    skip = not params.get("force", False)
+
+    def stage(name: str, fn: Callable[[], Any]) -> None:
+        run_stage(
+            store, run_id=pipeline_run.run_id, stage_name=name,
+            input_digest=digest_text(f"{source_digest}|{name}|v{PIPELINE_VERSION}"),
+            fn=fn, skip_if_succeeded=skip,
+        )
+
+    try:
+        stage("0 ingest", lambda: ingest_novel(novel_id, store, sources_path=sources_path, chapters=chapters))
+        stage("2 segment", lambda: segment_novel(novel_id, store))
+        stage("3 mentions", lambda: detect_mentions(novel_id, store, lexicon=lexicon, client=client))
+        stage("4 speakers", lambda: attribute_novel(novel_id, store, client=client, llm_chapter_cutoff=0.0))
+        stage("5 anaphora", lambda: anaphora_resolve(novel_id, store, recover_pronoun_speakers=False))
+        stage("6 resolve", lambda: global_resolve(
+            novel_id, store, lexicon=lexicon, corrections_log=corrections_log, force_rewipe=False
+        ))
+        if client is not None and not params.get("skip_reader"):
+            from echotales.pipeline.reader.runner import read_novel
+
+            stage("6b reader", lambda: read_novel(novel_id, store, client))
+        stage("7 personas", lambda: build_personas(
+            novel_id, store, client=client, prefix_causal=get_settings().persona_prefix_causal
+        ))
+        if client is not None and not params.get("skip_appearance"):
+            from echotales.pipeline.resolve.appearance_extract import extract_appearance
+
+            stage("7b appearance", lambda: extract_appearance(novel_id, store, client=client))
+    except Exception:
+        store.update_pipeline_run_status(pipeline_run.run_id, StageStatus.FAILED)
+        raise
+    store.update_pipeline_run_status(pipeline_run.run_id, StageStatus.SUCCEEDED)
+    return pipeline_run
+
+
 def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
     """Call the one real stage function `job.kind` names, wrapped by
     `run_stage`. Returns the `pipeline_run.run_id` the stage's bookkeeping
@@ -199,7 +274,9 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
     #: unchanged.
     sources_path = params.get("sources_path", "data/sources.toml")
 
-    if job.kind == "ingest":
+    if job.kind == "pipeline":
+        pipeline_run = _run_pipeline(store, job.job_id, novel_id, params, sources_path)
+    elif job.kind == "ingest":
         from echotales.pipeline.ingest import ingest_novel
         from echotales.pipeline.ingest.adapters import ChapterRange
 
@@ -436,6 +513,10 @@ class JobQueue:
                     job = store.get_job(item.job_id)
                     if job is None:
                         log.error("queued job %s vanished from its own store", item.job_id)
+                        continue
+                    if job.status is not StageStatus.PENDING:
+                        # Cancelled while it waited (`POST .../jobs/<id>/cancel`); the row already says so.
+                        log.info("skipping job %s: status is %s", item.job_id, job.status.value)
                         continue
                     run_job(store, job, item.params)
                 finally:

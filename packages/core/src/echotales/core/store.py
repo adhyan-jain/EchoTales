@@ -2333,6 +2333,18 @@ class Store:
         )
         self.conn.commit()
 
+    def fail_interrupted_jobs(self, reason: str) -> int:
+        """Mark every PENDING or RUNNING job failed. Call once at server start, before the queue accepts work.
+
+        The queue is in memory, so a job left PENDING or RUNNING when the process stopped is gone for good, yet its
+        row stayed that way forever and the Studio showed it spinning (audit)."""
+        cur = self.conn.execute(
+            "UPDATE job SET status=?, finished_at=?, error_summary=? WHERE status IN (?, ?)",
+            (StageStatus.FAILED.value, time.time(), reason, StageStatus.PENDING.value, StageStatus.RUNNING.value),
+        )
+        self.conn.commit()
+        return cur.rowcount
+
     def get_job(self, job_id: str) -> Job | None:
         row = self.conn.execute("SELECT * FROM job WHERE job_id=?", (job_id,)).fetchone()
         return self._job_from_row(row) if row is not None else None

@@ -417,3 +417,80 @@ class TestUploadSafety:
         conn.endheaders()
         assert conn.getresponse().status == 413
         conn.close()
+
+
+class TestPipelineJob:
+    """One `pipeline` job runs ingest through personas; the per-stage kinds could not build an uploaded book."""
+
+    @staticmethod
+    def _wait(port: int, project: str, job_id: str) -> dict:
+        deadline = time.time() + 30
+        while time.time() < deadline:
+            _, job = _request(port, "GET", f"/api/projects/{project}/jobs/{job_id}")
+            if job["status"] in ("SUCCEEDED", "FAILED", "PARTIAL"):
+                return job
+            time.sleep(0.1)
+        raise AssertionError("pipeline job did not finish")
+
+    def test_an_uploaded_book_builds_end_to_end_and_a_rerun_skips_every_stage(self, live_server: int) -> None:
+        port = live_server
+        assert TestUploadSafety._create(port, "whole", "Whole Book")[0] == 201
+        assert TestUploadSafety._upload(port, "whole")[0] == 201
+
+        status, body = _request(port, "POST", "/api/projects/whole/pipeline", body=json.dumps({"no_llm": True}).encode(),
+                                headers={"Content-Type": "application/json"})
+        assert status == 202, body
+        job = self._wait(port, "whole", body["job_id"])
+        assert job["status"] == "SUCCEEDED", job
+
+        _, listed = _request(port, "GET", "/api/projects")
+        whole = next(p for p in listed if p["id"] == "whole")
+        assert whole["ingested"] is True and whole["chapter_count"] == 1
+
+        stages = [r["stage_name"] for r in job["stage_runs"]]
+        for name in ("0 ingest", "2 segment", "3 mentions", "4 speakers", "5 anaphora", "6 resolve", "7 personas"):
+            assert name in stages, (name, stages)
+
+        # Same source, same params: every stage's digest matches a succeeded run, so nothing runs again.
+        status, body2 = _request(port, "POST", "/api/projects/whole/pipeline", body=json.dumps({"no_llm": True}).encode(),
+                                 headers={"Content-Type": "application/json"})
+        assert status == 202
+        job2 = self._wait(port, "whole", body2["job_id"])
+        assert job2["status"] == "SUCCEEDED", job2
+        assert {r["stage_run_id"] for r in job2["stage_runs"]} == {r["stage_run_id"] for r in job["stage_runs"]}
+
+
+class TestJobRecovery:
+    """The queue is in memory: jobs left PENDING or RUNNING by a stopped server must not spin forever."""
+
+    def test_interrupted_jobs_are_failed_when_a_server_starts(self, tmp_path: Path) -> None:
+        from echotales.core.models import Job, StageStatus
+        from echotales.core.store import Store
+
+        projects = tmp_path / "projects"
+        projects.mkdir()
+        store = Store(str(projects / "stuck.db"))
+        store.add_novel("stuck", "Stuck", "x.epub", "generic")
+        for job_id, status in (("j1", StageStatus.RUNNING), ("j2", StageStatus.PENDING), ("j3", StageStatus.SUCCEEDED)):
+            store.add_job(Job(job_id=job_id, novel_id="stuck", kind="ingest", status=status, created_at=1.0))
+        store.close()
+
+        registry = Registry([], corrections_dir=tmp_path / "corrections", projects_dir=projects)
+        after = {j.job_id: j for j in registry.handles["stuck"].store.list_jobs("stuck")}
+        assert after["j1"].status is StageStatus.FAILED and "interrupted" in after["j1"].error_summary
+        assert after["j2"].status is StageStatus.FAILED
+        assert after["j3"].status is StageStatus.SUCCEEDED  # a finished job is left alone
+
+    def test_a_queued_job_can_be_cancelled_but_a_finished_one_cannot(self, live_server: LivePort) -> None:
+        from echotales.core.models import Job, StageStatus
+
+        port = live_server
+        assert TestUploadSafety._create(port, "cx")[0] == 201
+        store = live_server.registry.handles["cx"].store
+        store.add_job(Job(job_id="cx:ingest:queued", novel_id="cx", kind="ingest", status=StageStatus.PENDING, created_at=1.0))
+        store.add_job(Job(job_id="cx:ingest:done", novel_id="cx", kind="ingest", status=StageStatus.SUCCEEDED, created_at=2.0))
+
+        status, body = _request(port, "POST", "/api/projects/cx/jobs/cx:ingest:queued/cancel", body=b"{}")
+        assert status == 200 and body["status"] == "FAILED" and "cancelled" in body["error_summary"]
+        status, _ = _request(port, "POST", "/api/projects/cx/jobs/cx:ingest:done/cancel", body=b"{}")
+        assert status == 409
