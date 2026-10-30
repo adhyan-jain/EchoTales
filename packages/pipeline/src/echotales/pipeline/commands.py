@@ -986,6 +986,33 @@ def cmd_voice(args: argparse.Namespace) -> int:
         )
         engine_name = "stub"
 
+    if engine_name == "stub":
+        # The stub was the CLI default and `--m4b` would package it without a word: a valid, silent audiobook
+        # (audit B7). Say so on every run and refuse to bind it into an M4B unless asked.
+        print("WARNING: stub engine -- every line is SILENT placeholder audio; use --engine chatterbox for speech")
+        if getattr(args, "m4b", False) and not getattr(args, "allow_stub_m4b", False):
+            print("error: --m4b would package silent audio; pass --allow-stub-m4b to do it anyway", file=sys.stderr)
+            return 2
+    else:
+        from echotales.pipeline.corrections import CorrectionLog, apply_pending
+        from echotales.pipeline.review_gate import voice_refusal
+
+        # Review decisions sit in the corrections log until applied, and the voice stage reads the store, so an
+        # unapplied reassignment was silently ignored (audit B2). Apply first, then check the lock.
+        corrections_log = CorrectionLog(Path("data/corrections") / f"{Path(store.path).stem}.jsonl")
+        applied = apply_pending(store, corrections_log)
+        store.conn.commit()
+        if applied["count"]:
+            print(f"applied {applied['count']} pending review decision(s) before voicing")
+        refusal = voice_refusal(store, args.novel, engine_name, corrections_log)
+        if refusal and not getattr(args, "allow_unlocked", False):
+            print(f"error: {refusal} (--allow-unlocked overrides)", file=sys.stderr)
+            return 2
+        if refusal:
+            print(f"WARNING: voicing anyway (--allow-unlocked): {refusal}")
+        # Chatterbox and ollama share the one 8 GB card; a resident model made the load OOM (see cmd_reference).
+        unload_ollama_models(prefix="voice: ")
+
     report = render_novel(
         args.novel,
         store,

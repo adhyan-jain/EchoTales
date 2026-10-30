@@ -222,6 +222,22 @@ def lock_bible(store: Store, novel_id: str, note: str = "") -> dict:  # type: ig
     }
 
 
+def voice_refusal(store: Store, novel_id: str, engine_name: str, corrections: object | None = None) -> str | None:
+    """Why a real voice render must not start, or None. The stub is exempt (silent placeholders, how CI runs).
+
+    `render` was guarded by the stale-build and lock checks but `voice` was not, so a book could be voiced from edits
+    nobody had locked, and from review decisions still sitting unapplied in the corrections log (audit B2/B5)."""
+    if engine_name == "stub":
+        return None
+    reason = staleness_reason(store, novel_id) or unlocked_reason(store, novel_id)
+    if reason:
+        return reason
+    pending = corrections.summary()["pending_actionable"] if corrections is not None else 0  # type: ignore[attr-defined]
+    if pending:
+        return f"{novel_id!r} has {pending} review decision(s) not applied yet; apply them before voicing."
+    return None
+
+
 def unlocked_reason(store: Store, novel_id: str) -> str | None:
     """Why a real render must not read this bible, or None: no lock yet, or edits since the last lock."""
     status = bible_status(store, novel_id)["current"]

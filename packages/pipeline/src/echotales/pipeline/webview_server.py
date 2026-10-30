@@ -1953,6 +1953,19 @@ def make_handler(
                         if refusal:
                             return self._json(409, {"error": refusal})
                         params = _with_genre(handle, params)
+                    if kind == "voice":
+                        # A path from the request chose which directory the server loads a voice bank from and where
+                        # it wrote; both come from the project, never the client (audit B5).
+                        params.pop("bank", None)
+                        params.pop("out_dir", None)
+                        voice_engine = str(params.get("engine", "stub"))
+                        if voice_engine not in ("stub", "chatterbox"):
+                            return self._json(400, {"error": f"voice engine {voice_engine!r} is not allowed; use stub or chatterbox"})
+                        from echotales.pipeline.review_gate import voice_refusal
+
+                        refusal = voice_refusal(handle.store, parts[2], voice_engine, handle.corrections)
+                        if refusal:
+                            return self._json(409, {"error": refusal})
                     if "sources_path" not in params:
                         default_sources = registry.project_asset_dir(parts[2]) / "sources.toml"
                         if default_sources.is_file():

@@ -330,9 +330,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_voice.add_argument(
         "--engine",
-        default="stub",
+        default="chatterbox",
         choices=["stub", "chatterbox"],
-        help="stub writes silent WAVs of realistic duration; chatterbox needs a GPU",
+        help="chatterbox (default) needs a GPU; stub writes silent WAVs of realistic duration for tests and previews",
+    )
+    p_voice.add_argument(
+        "--allow-unlocked", action="store_true",
+        help="voice with a real engine although the canon is unlocked or stale (the Studio refuses this)",
+    )
+    p_voice.add_argument(
+        "--allow-stub-m4b", action="store_true",
+        help="let --m4b package the silent stub output (it otherwise refuses: the result is an empty audiobook)",
     )
     p_voice.add_argument(
         "--dry-run",
