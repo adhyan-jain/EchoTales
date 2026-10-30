@@ -66,7 +66,11 @@ _EPITHET_MARKERS = re.compile(
     re.IGNORECASE,
 )
 
-_TITLE_CASE = re.compile(r"^[A-Z][\w’'\-]*(?:\s+[A-Z][\w’'\-]*)*$")
+# `\.?` after a word lets an abbreviation through when another capitalised word follows ("Mr. Bennet", "Dr. Watson",
+# "St. James"). Without it every "Mr./Mrs./Dr. X" fell to GENERIC_DESCRIPTOR and was dropped from the graph: in the
+# first Pride and Prejudice run no mention of Mr. Bennet, Mrs. Bennet, Mr. Bingley or Mr. Darcy survived chapters 1-3,
+# although the NER model had returned all of them.
+_TITLE_CASE = re.compile(r"^[A-Z][\w’'\-]*(?:\.?\s+[A-Z][\w’'\-]*)*$")
 
 
 def classify_alias_type(

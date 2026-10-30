@@ -22,7 +22,7 @@ function formatBytes(n) {
 }
 
 export const VIDEO_RE = /\.(mp4|webm|mov)$/i;
-export const AUDIO_RE = /\.(wav|mp3|ogg|flac|m4a)$/i;
+export const AUDIO_RE = /\.(wav|mp3|ogg|flac|m4a|m4b)$/i;
 export const IMAGE_RE = /\.(png|jpe?g|webp)$/i;
 
 /**

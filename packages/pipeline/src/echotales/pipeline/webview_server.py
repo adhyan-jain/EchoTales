@@ -2084,6 +2084,10 @@ def make_handler(
                                 f"allowed: {_enabled_engines()}"
                             },
                         )
+                    from echotales.pipeline.compute import density_error
+
+                    if (bad_density := density_error(str(body.get("density", "beat")))) is not None:
+                        return self._json(400, {"error": bad_density})
                     refusal = _gpu_refusal(engine_name) or _stale_build_refusal(handle, parts[2], engine_name)
                     if refusal:
                         return self._json(409, {"error": refusal})

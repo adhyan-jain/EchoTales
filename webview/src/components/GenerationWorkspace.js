@@ -56,6 +56,7 @@ function minutes(seconds) {
 export default function GenerationWorkspace({ novelId, hideHeader = false }) {
   const [engine, setEngine] = useState('stub');
   const [tier, setTier] = useState(null);
+  const [density, setDensity] = useState('beat');
   const [compute, setCompute] = useState(null);
   const [chapters, setChapters] = useState([]);
   const [selected, setSelected] = useState('');
@@ -145,14 +146,16 @@ export default function GenerationWorkspace({ novelId, hideHeader = false }) {
   const activeTier = tier || (compute && compute.default_tier) || 'full';
   const scenes = compute && compute.scenes ? compute.scenes[activeTier] : null;
   const perImage = compute && compute.seconds_per_panel ? compute.seconds_per_panel[engine] : null;
-  const eta =
-    scenes && perImage != null && compute.images_per_scene ? minutes(perImage * compute.images_per_scene * scenes) : null;
+  // Images per scene depend on the density; "dense" is an estimate until a dense render has been measured.
+  const densityInfo = compute && compute.densities ? compute.densities[density] : null;
+  const imagesPerScene = densityInfo ? densityInfo.images_per_scene : compute && compute.images_per_scene;
+  const eta = scenes && perImage != null && imagesPerScene ? minutes(perImage * imagesPerScene * scenes) : null;
 
   const handleGenerate = () => {
     if (!selected) return;
     setSubmitting(true);
     api
-      .renderGenerate(novelId, { chapters: [Number(selected)], engine, tier: activeTier })
+      .renderGenerate(novelId, { chapters: [Number(selected)], engine, tier: activeTier, density })
       .then(() => {
         if (engine !== 'stub' && typeof Notification !== 'undefined' && Notification.permission === 'default') {
           Notification.requestPermission();
@@ -227,6 +230,20 @@ export default function GenerationWorkspace({ novelId, hideHeader = false }) {
               >
                 <option value="preview">Preview ({compute && compute.scenes ? compute.scenes.preview : 3} scenes)</option>
                 <option value="full">Full chapter ({compute && compute.scenes ? compute.scenes.full : 70} scenes)</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.14em] text-muted" htmlFor="gen-density">
+                Detail
+              </label>
+              <select
+                id="gen-density"
+                value={density}
+                onChange={(e) => setDensity(e.target.value)}
+                className="h-10 rounded-xl border border-border bg-transparent px-3 font-sans text-text"
+              >
+                <option value="beat">Key moments (about one picture per four paragraphs)</option>
+                <option value="dense">Every paragraph (about four times the pictures)</option>
               </select>
             </div>
             <Button size="md" disabled={submitting || !selected} onClick={handleGenerate}>

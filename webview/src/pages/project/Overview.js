@@ -15,6 +15,7 @@ import {
   Users,
 } from 'lucide-react';
 import { api } from '../../api';
+import AudiobookPanel from '../../components/AudiobookPanel';
 import { ProjectProblem, StatCard } from '../../components/app/Chrome';
 import { useNovelData } from '../../lib/ProjectContext';
 import { countKind, pickPanels, thumbUrl } from '../../lib/media';
@@ -172,6 +173,8 @@ export default function Overview() {
             </div>
           </section>
         </div>
+
+        <AudiobookPanel novelId={novelId} project={project} />
 
         <section className="rounded-3xl border border-border bg-surface p-6">
           <h2 className="font-display text-lg font-bold tracking-tight">Pipeline</h2>

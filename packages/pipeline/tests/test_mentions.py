@@ -430,3 +430,24 @@ class TestRunner:
         store.conn.commit()
         report = detect_mentions("t", store)
         assert report.gazetteer_size > 0
+
+
+class TestAbbreviatedHonorifics:
+    """"Mr. Bennet" is a person's name, not a generic descriptor.
+
+    The title-case test rejected the abbreviation period, so every "Mr./Mrs./Dr. X" was dropped from the graph. In the
+    first Pride and Prejudice run (2026-10-31) no mention of Mr. Bennet, Mrs. Bennet, Mr. Bingley or Mr. Darcy survived
+    chapters 1-3 even though the NER model returned all of them."""
+
+    @pytest.mark.parametrize(
+        "surface",
+        ["Mr. Bennet", "Mrs. Bennet", "Mr. Darcy", "Dr. Watson", "Mr. Collins", "St. James", "Miss Bingley", "Lady Lucas"],
+    )
+    def test_titled_names_enter_the_graph(self, surface: str) -> None:
+        alias_type, _ = classify_alias_type(surface)
+        assert alias_type is AliasType.RIGID_NAME
+
+    @pytest.mark.parametrize("surface", ["the old man", "an innkeeper", "Bennet.", "mr. bennet", "Mr."])
+    def test_descriptors_and_fragments_still_do_not(self, surface: str) -> None:
+        alias_type, _ = classify_alias_type(surface)
+        assert not alias_type.enters_graph

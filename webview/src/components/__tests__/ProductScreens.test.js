@@ -235,7 +235,7 @@ describe('GenerationWorkspace', () => {
     fireEvent.click(screen.getByRole('button', { name: /generate panels/i }));
 
     await waitFor(() =>
-      expect(api.renderGenerate).toHaveBeenCalledWith('toy', { chapters: [1], engine: 'stub', tier: 'preview' })
+      expect(api.renderGenerate).toHaveBeenCalledWith('toy', { chapters: [1], engine: 'stub', tier: 'preview', density: 'beat' })
     );
     await waitFor(() => expect(api.listJobs).toHaveBeenCalled());
   });
@@ -253,7 +253,7 @@ describe('GenerationWorkspace', () => {
     api.renderGenerate.mockResolvedValueOnce({ job_id: 'toy:render:n', kind: 'render', status: 'PENDING' });
     fireEvent.click(screen.getByRole('button', { name: /generate panels/i }));
     await waitFor(() =>
-      expect(api.renderGenerate).toHaveBeenCalledWith('toy', { chapters: [1], engine: 'noobai', tier: 'preview' })
+      expect(api.renderGenerate).toHaveBeenCalledWith('toy', { chapters: [1], engine: 'noobai', tier: 'preview', density: 'beat' })
     );
   });
 

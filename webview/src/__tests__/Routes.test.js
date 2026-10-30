@@ -21,6 +21,10 @@ jest.mock('../api', () => ({
     characters: jest.fn(),
     readerCast: jest.fn(),
     outputFileUrl: jest.fn(),
+    // The project home now mounts the audiobook panel, which reads these.
+    listJobs: jest.fn(),
+    getBible: jest.fn(),
+    reviewLines: jest.fn(),
   },
   SPAN_TYPES: ['DIALOGUE', 'NARRATION_ACTION'],
 }));
@@ -48,6 +52,9 @@ function mount(path) {
   api.authStatus.mockResolvedValue({ auth_required: false });
   api.listProjects.mockResolvedValue([{ id: 'toy', title: 'Toy Novel', ingested: true, chapter_count: 2 }]);
   api.listOutput.mockResolvedValue({ kinds: {} });
+  api.listJobs.mockResolvedValue([]);
+  api.getBible.mockResolvedValue({ current: { locked_version: null, dirty: true, stale_reason: null } });
+  api.reviewLines.mockResolvedValue({ total: 0, items: [] });
   api.novel.mockResolvedValue(NOVEL);
   api.readerCast.mockResolvedValue({ entities: NOVEL.entities });
   api.characters.mockResolvedValue({
