@@ -64,6 +64,7 @@ _KEEP_LABELS = frozenset({"character", "location", "organization", "item"})
 #: the model's commonest overreach is returning an apposition it copied whole
 #: ("Fang Yuan, the demon") rather than the name inside it.
 _SENTENCE_MARK = re.compile(r"[.!?;:,]")
+_HONORIFIC_PERIOD = re.compile(r"\b(Mr|Mrs|Ms|Dr|St|Jr|Sr|Mt|Mme|Mlle|Capt|Col|Gen|Prof|Rev|Hon|Lt|Sgt|Messrs)\.(?=\s+[A-Z])")
 
 
 @dataclass(slots=True)
@@ -113,6 +114,11 @@ def plausible_name(surface: str) -> bool:
     # (a comma mid-string, a period not at the end) still fails below
     # because _SENTENCE_MARK is a search, not a full-string match.
     surface = surface.rstrip(".!?;:,")
+    # The period of an honorific abbreviation is not sentence punctuation: "Mr. Bennet" failed the internal-period
+    # test below, so the model's "Mr. Bennet", "Mrs. Bennet", "Mr. Bingley" never became mentions (Pride and
+    # Prejudice ch1-3: NER returned them, 38 mentions and none of them titled). Only a known abbreviation followed by
+    # a capitalised word is spared, so "Fang Yuan. He" still fails.
+    surface = _HONORIFIC_PERIOD.sub(r"\1", surface)
     if not (2 <= len(surface) <= MAX_NAME_CHARS):
         return False
     if len(surface.split()) > MAX_NAME_TOKENS:

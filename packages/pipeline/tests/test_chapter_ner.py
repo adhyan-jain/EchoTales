@@ -408,3 +408,20 @@ class TestItemLabel:
     def test_item_is_offered_in_the_schema(self) -> None:
         assert "item" in NerEntity.model_fields["label"].description
         assert "item" in DEFAULT_LABELS
+
+
+class TestHonorificAbbreviations:
+    """The plausibility gate threw out "Mr. Bennet" as a copied sentence (internal period), so the NER model's titled
+    names never became mentions in Pride and Prejudice (2026-10-31)."""
+
+    @pytest.mark.parametrize("surface", ["Mr. Bennet", "Mrs. Bennet", "Mr. Bingley", "Dr. Watson", "St. James"])
+    def test_a_titled_name_is_plausible(self, surface: str) -> None:
+        from echotales.pipeline.mentions.chapter_ner import plausible_name
+
+        assert plausible_name(surface)
+
+    @pytest.mark.parametrize("surface", ["Fang Yuan. He", "Bennet. Then", "Mr. then", "He said. Mr"])
+    def test_sentences_and_fragments_still_fail(self, surface: str) -> None:
+        from echotales.pipeline.mentions.chapter_ner import plausible_name
+
+        assert not plausible_name(surface)

@@ -108,7 +108,7 @@ export default function AudiobookPanel({ novelId, project }) {
           title="Review uncertain lines"
           note={waiting == null ? 'Checking the queue…' : waiting === 0 ? 'Nothing left to review.' : `${waiting} lines have no confirmed speaker. Unreviewed lines are voiced as an unnamed speaker.`}
           action={
-            <Link to="../review" className="inline-flex h-9 items-center rounded-xl border border-border px-3 text-sm font-semibold text-text hover:border-accent/60">
+            <Link to="review" className="inline-flex h-9 items-center rounded-xl border border-border px-3 text-sm font-semibold text-text hover:border-accent/60">
               Open review
             </Link>
           }
