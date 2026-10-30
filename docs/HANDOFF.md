@@ -30,16 +30,17 @@ Research track. The Prefix Check annotation ran (3 annotators, 48 cases + 4 repe
 `data/eval/validation/disclosure_human_v1.json`, written into `main.tex` (table `tab:human_pipeline`) and
 `supplementary.tex`; draft2 PDFs and a regenerated `overleaf_upload.zip` built. **Nothing is pushed.** Open: (1) the
 first author adjudicated 11 cases, departing from the protocol's third-author rule; a third author should re-rule them
-from passages alone (a MODEL-GENERATED passages-only reading by a Claude session is already in `adjudication_model_passages_only.json` and in the paper as a sensitivity result: S1 disclosures not supported 9/10, served not supported 11/35, versus 2/10 and 4/35 under the first author's rulings; it does not replace the human adjudication) (ready to send: `data/scratch/adjudication/third_author_sheet.md`, gitignored, copyrighted excerpts; the answer template is
+from passages alone (OWNER DECISION 2026-10-30: submit as is, with the first-author rulings, raw pairs and model readings reported side by side and the protocol departure stated in the paper; a human re-adjudication stays optional) (a MODEL-GENERATED passages-only reading by a Claude session is already in `adjudication_model_passages_only.json` and in the paper as a sensitivity result: S1 disclosures not supported 9/10, served not supported 11/35, versus 2/10 and 4/35 under the first author's rulings; it does not replace the human adjudication) (ready to send: `data/scratch/adjudication/third_author_sheet.md`, gitignored, copyrighted excerpts; the answer template is
 `adjudication_third.json` beside it; put the filled file in `data/eval/validation/disclosure_labels/` and rerun `scripts/review/score_disclosure_validation.py`,
-which then adds a `third_author` block, then update the paper's table and the S1 sentence); (2) journal formatting: checked only against the
+which then adds a `third_author` block, then update the paper's table and the S1 sentence); (2) journal formatting (OWNER DECISION 2026-10-30: generic Springer Nature, no named journal): checked against the
 common Springer Nature ranges (abstract 250 words, 6 keywords, declarations headings, AI use documented in Methods and Declarations);
 no journal is named, so its own Instructions for Authors still need a pass; (3) **Vercel**: project
 `echotales-prefix-check` is Git-linked to the repo root, so each push to master makes an empty production deploy and the
 alias 404s; redeploy from `scripts/review/disclosure_validation_app` by CLI. Do NOT fix it with Root Directory: `cases.json` is
 gitignored, so a Git deploy of that folder would serve the app without its data. Turn off Git-triggered deployments instead
-(Vercel Settings, Git, or `gitProviderOptions.createDeployments=disabled` via the project API) and keep deploying by CLI (NOT done;
-the assistant's attempt to change the project setting was refused, so the owner has to). The items below (2), (5)-(7) of the 2026-10-27 list still stand except the
+(Vercel Settings, Git, or `gitProviderOptions.createDeployments=disabled` via the project API) and keep deploying by CLI (DONE in the repo: the root `vercel.json` sets
+`git.deploymentEnabled=false`, added with the owner's explicit go-ahead on 2026-10-30 after the project-settings change was refused. Not yet
+confirmed by a real push; check that the next push creates no new deployment). The items below (2), (5)-(7) of the 2026-10-27 list still stand except the
 stale zip (resolved) and the abstract limit (word count only); the "annotation PROPOSED, no human has annotated" statement
 there is superseded.
 

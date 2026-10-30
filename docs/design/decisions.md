@@ -345,6 +345,7 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **What changes**: D27's "no paper and no new human annotation" no longer holds for this one track. The product pivot is unchanged for the rest of the code. The check has three author-annotators, 48 cases and 4 repeats (`data/eval/validation/disclosure_labels/`, scored by `scripts/review/score_disclosure_validation.py`).
 - **Departure from the protocol**: the first author adjudicated, and drew on knowledge of the books, where `VALIDATION_PROTOCOL.md` asked a third author to adjudicate from the passages alone. The paper says so and reports the raw pairs beside the adjudicated labels. A third-author re-adjudication of the 11 rulings is still open (HANDOFF).
 - **Why**: the model-judged disclosure rates were the paper's weakest evidence, and a reviewer would ask for a human check.
+- **Owner decision (2026-10-30)**: submit with the first-author rulings as they stand, reported beside the raw pairs and the model readings, and the protocol departure stated; target is generic Springer Nature formatting, no named journal.
 - **Status**: paper built and committed locally (EVOLUTION 4.130).
 
 ## 3. Documentation policy
