@@ -30,7 +30,11 @@ Research track. The Prefix Check annotation ran (3 annotators, 48 cases + 4 repe
 `data/eval/validation/disclosure_human_v1.json`, written into `main.tex` (table `tab:human_pipeline`) and
 `supplementary.tex`; draft2 PDFs and a regenerated `overleaf_upload.zip` built. **Nothing is pushed.** Open: (1) the
 first author adjudicated 11 cases, departing from the protocol's third-author rule; a third author should re-rule them
-from passages alone; (2) target-journal formatting unchecked (abstract is now 250 words); (3) **Vercel**: project
+from passages alone (ready to send: `data/scratch/adjudication/third_author_sheet.md`, gitignored, copyrighted excerpts; the answer template is
+`adjudication_third.json` beside it; put the filled file in `data/eval/validation/disclosure_labels/` and rerun `scripts/review/score_disclosure_validation.py`,
+which then adds a `third_author` block, then update the paper's table and the S1 sentence); (2) journal formatting: checked only against the
+common Springer Nature ranges (abstract 250 words, 6 keywords, declarations headings, AI use documented in Methods and Declarations);
+no journal is named, so its own Instructions for Authors still need a pass; (3) **Vercel**: project
 `echotales-prefix-check` is Git-linked to the repo root, so each push to master makes an empty production deploy and the
 alias 404s; redeploy from `scripts/review/disclosure_validation_app` by CLI. Do NOT fix it with Root Directory: `cases.json` is
 gitignored, so a Git deploy of that folder would serve the app without its data. Turn off Git-triggered deployments instead
