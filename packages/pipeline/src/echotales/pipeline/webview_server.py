@@ -759,6 +759,26 @@ def _thumbnail(src: Path, width: int, cache_dir: Path) -> Path:
 
 _RANGE_RE = re.compile(r"bytes=([0-9]*)-([0-9]*)")
 
+#: A project id becomes a database file name and an asset directory, and `delete_project` unlinks the children of
+#: that directory. It was slugified only in the browser, so a crafted POST with id "../x" reached the filesystem
+#: (audit B5, ingest/UI).
+_PROJECT_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
+#: `_read_body_bytes` read whatever Content-Length said, so one request could exhaust memory.
+_MAX_JSON_BODY = 2 * 1024 * 1024
+_MAX_UPLOAD_BODY = 200 * 1024 * 1024
+_MAX_IMAGE_BODY = 20 * 1024 * 1024
+_NAME_ORDERS = ("given_first", "family_first")
+
+
+class _BodyTooLarge(Exception):
+    pass
+
+
+def _toml_str(value: str) -> str:
+    """A TOML basic string. The upload route interpolated the title into the file with an f-string, so a quote in
+    the title corrupted `sources.toml` and the project could no longer be ingested."""
+    return json.dumps(value, ensure_ascii=False)
+
 
 def _parse_byte_range(header: str, size: int) -> tuple[int, int] | str | None:
     """A `Range` header -> inclusive (start, end); `None` when it is not a
@@ -853,8 +873,10 @@ def make_handler(
             if self.command != "HEAD":
                 self.wfile.write(data)
 
-        def _read_body_bytes(self) -> bytes:
+        def _read_body_bytes(self, limit: int = _MAX_JSON_BODY) -> bytes:
             length = int(self.headers.get("Content-Length", 0))
+            if length > limit:
+                raise _BodyTooLarge(f"request body of {length:,} bytes exceeds the {limit:,}-byte limit")
             return self.rfile.read(length) if length else b""
 
         def _read_json(self) -> dict:  # type: ignore[type-arg]
@@ -1515,6 +1537,10 @@ def make_handler(
                     content_type = str(body.get("content_type", "novel"))
                     if not novel_id or not title:
                         return self._json(400, {"error": "id and title are required"})
+                    if not _PROJECT_ID_RE.fullmatch(novel_id):
+                        return self._json(
+                            400, {"error": "id must be 1-64 characters: lowercase letters, digits, hyphens and underscores, starting with a letter or digit"}
+                        )
                     if content_type not in ("novel", "short_story", "general_text", "roleplay"):
                         return self._json(400, {"error": f"unknown content_type {content_type!r}"})
                     try:
@@ -1886,9 +1912,22 @@ def make_handler(
                     content_type_header = self.headers.get("Content-Type", "")
                     if "multipart/form-data" not in content_type_header:
                         return self._json(400, {"error": "expected multipart/form-data upload"})
+                    from echotales.pipeline.ingest.adapters import ADAPTERS
+
+                    query = parse_qs(urlparse(self.path).query)
+                    # "generic" suits an arbitrary EPUB; "lightnovelworld" strips one web reader's navigation and is
+                    # wrong for anything else, yet it was hard-coded for every upload (audit B4).
+                    adapter = query.get("adapter", ["generic"])[0]
+                    if adapter not in ADAPTERS:
+                        return self._json(400, {"error": f"unknown adapter {adapter!r}; known: {sorted(ADAPTERS)}"})
+                    # Western names shorten to the given name ("Elizabeth Bennet" -> "Elizabeth"); the default of
+                    # family_first split such characters in two.
+                    name_order = query.get("name_order", ["given_first"])[0]
+                    if name_order not in _NAME_ORDERS:
+                        return self._json(400, {"error": f"name_order must be one of {list(_NAME_ORDERS)}"})
                     try:
                         filename, data = parse_single_file(
-                            content_type_header, self._read_body_bytes()
+                            content_type_header, self._read_body_bytes(_MAX_UPLOAD_BODY)
                         )
                     except MultipartError as exc:
                         return self._json(400, {"error": str(exc)})
@@ -1910,14 +1949,16 @@ def make_handler(
                     sources_path = asset_dir / "sources.toml"
                     sources_path.write_text(
                         "[[novel]]\n"
-                        f'id = "{parts[2]}"\n'
-                        f'title = "{handle.source.label}"\n'
-                        f'path = "{epub_path}"\n'
-                        'adapter = "lightnovelworld"\n'
+                        f"id = {_toml_str(parts[2])}\n"
+                        f"title = {_toml_str(handle.source.label)}\n"
+                        f"path = {_toml_str(str(epub_path))}\n"
+                        f"adapter = {_toml_str(adapter)}\n"
+                        f"name_order = {_toml_str(name_order)}\n",
+                        encoding="utf-8",
                     )
                     novel_row = handle.store.get_novel(parts[2]) or {}
                     handle.store.add_novel(
-                        parts[2], handle.source.label, str(epub_path), "lightnovelworld",
+                        parts[2], handle.source.label, str(epub_path), adapter,
                         content_type=novel_row.get("content_type", "novel"),
                     )
                     handle.invalidate()
@@ -2067,13 +2108,15 @@ def make_handler(
                         return self._json(400, {"error": "expected multipart/form-data upload"})
                     try:
                         filename, data = parse_single_file(
-                            content_type_header, self._read_body_bytes()
+                            content_type_header, self._read_body_bytes(_MAX_IMAGE_BODY)
                         )
                     except MultipartError as exc:
                         return self._json(400, {"error": str(exc)})
                     asset_dir = registry.project_asset_dir(parts[2]) / "reference_uploads"
                     asset_dir.mkdir(parents=True, exist_ok=True)
-                    image_path = asset_dir / f"{parts[4]}_{filename}"
+                    # The client's filename joined a server path unsanitised (audit); keep only a safe base name.
+                    safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", Path(filename).name) or "upload"
+                    image_path = asset_dir / f"{re.sub(r'[^A-Za-z0-9._-]', '_', parts[4])}_{safe_name}"
                     image_path.write_bytes(data)
                     from echotales.pipeline.persona import refimg
 
@@ -2082,6 +2125,8 @@ def make_handler(
                     )
                     handle.invalidate()
                     return self._json(201, {"id": candidate.id, "source_url": candidate.source_url})
+            except _BodyTooLarge as exc:
+                return self._json(413, {"error": str(exc)})
             except Exception as exc:
                 log.exception("POST %s failed", self.path)
                 return self._json(500, {"error": str(exc)})

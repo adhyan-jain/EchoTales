@@ -351,3 +351,69 @@ class TestProjectLifecycleAndJobs:
         )
         assert status == 200
         assert res["selected"] is False
+
+
+class TestUploadSafety:
+    """Audit 2026-10-31 (ingest/UI B4, B5): the project id, the title and the upload were trusted as sent."""
+
+    @staticmethod
+    def _create(port: int, project_id: str, title: str = "T"):
+        return _request(
+            port, "POST", "/api/projects",
+            body=json.dumps({"id": project_id, "title": title}).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+
+    @staticmethod
+    def _upload(port: int, project_id: str, query: str = ""):
+        boundary = "TESTBOUNDARY"
+        body = (
+            f"--{boundary}\r\n"
+            'Content-Disposition: form-data; name="file"; filename="b.epub"\r\n'
+            "Content-Type: application/epub+zip\r\n\r\n"
+        ).encode() + _build_epub_bytes() + f"\r\n--{boundary}--\r\n".encode()
+        return _request(
+            port, "POST", f"/api/projects/{project_id}/source{query}", body=body,
+            headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+        )
+
+    @pytest.mark.parametrize("bad", ["../x", "a/b", "Upper", "-lead", "has space", "x" * 65, ".."])
+    def test_unsafe_project_ids_are_refused(self, live_server: int, bad: str) -> None:
+        status, body = self._create(live_server, bad)
+        assert status == 400, body
+
+    def test_a_title_with_quotes_does_not_corrupt_sources_toml(self, live_server: int) -> None:
+        assert self._create(live_server, "quoted", 'The "Quoted" \\ Title')[0] == 201
+        assert self._upload(live_server, "quoted")[0] == 201
+        status, body = _request(live_server, "POST", "/api/projects/quoted/ingest", body=b"{}")
+        assert status == 202, body
+        deadline = time.time() + 10
+        while time.time() < deadline:
+            _, job = _request(live_server, "GET", f"/api/projects/quoted/jobs/{body['job_id']}")
+            if job["status"] in ("SUCCEEDED", "FAILED", "PARTIAL"):
+                break
+            time.sleep(0.1)
+        assert job["status"] == "SUCCEEDED", job
+
+    def test_upload_defaults_to_the_generic_adapter_with_given_name_first(self, live_server: int) -> None:
+        import tomllib
+
+        assert self._create(live_server, "plain")[0] == 201
+        assert self._upload(live_server, "plain")[0] == 201
+        sources = live_server.registry.project_asset_dir("plain") / "sources.toml"
+        entry = tomllib.loads(sources.read_text(encoding="utf-8"))["novel"][0]
+        assert (entry["adapter"], entry["name_order"]) == ("generic", "given_first")
+
+    def test_an_unknown_adapter_or_name_order_is_refused(self, live_server: int) -> None:
+        assert self._create(live_server, "odd")[0] == 201
+        assert self._upload(live_server, "odd", "?adapter=nope")[0] == 400
+        assert self._upload(live_server, "odd", "?name_order=sideways")[0] == 400
+
+    def test_an_oversized_body_is_refused_before_it_is_read(self, live_server: int) -> None:
+        conn = HTTPConnection("127.0.0.1", int(live_server), timeout=10)
+        conn.putrequest("POST", "/api/projects")
+        conn.putheader("Content-Type", "application/json")
+        conn.putheader("Content-Length", str(50 * 1024 * 1024))
+        conn.endheaders()
+        assert conn.getresponse().status == 413
+        conn.close()
