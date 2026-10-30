@@ -284,6 +284,9 @@ def build():
     put("dh_served_not_supported", f"{sv['not_supported']['k']} of {sv['not_supported']['n']} ({sv['not_supported']['pct']}%)", src)
     put("dh_vs_models", "; ".join(f"{n} {m['agree']['k']}/{m['agree']['n']} kappa {m['cohen_kappa']:.2f}" for n, m in dh["human_vs_model_q1"].items()), src)
     put("dh_vs_models_agreed_only", "; ".join(f"{n} {m['agree']['k']}/{m['agree']['n']}" for n, m in dh["human_vs_model_q1_agreed_pairs_only"].items()), src)
+    mp = dh["model_passages_only"]
+    put("dh_passages_only", f"s1 {mp['s1_not_supported']['k']} of {mp['s1_not_supported']['n']} ({mp['s1_not_supported']['pct']}%); served {mp['served_not_supported']['k']} of {mp['served_not_supported']['n']} ({mp['served_not_supported']['pct']}%); "
+        + "; ".join(f"{n} {m['agree']['k']}/{m['agree']['n']}" for n, m in mp["vs_model"].items()), src)
     put("dh_self_consistency", f"gender {dh['self_consistency']['q1']['k']}/{dh['self_consistency']['q1']['n']}; support {dh['self_consistency']['q3']['k']}/{dh['self_consistency']['q3']['n']}", src)
 
     eng = J(PA / "anchored_v2_summary.json")["development_english_originals"]

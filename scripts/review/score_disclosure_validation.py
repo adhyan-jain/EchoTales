@@ -164,27 +164,31 @@ def main() -> None:
                            q3=lab[a][r].get("q3") == lab[a][o].get("q3")))
     res["self_consistency"] = dict(q1=pct(sum(x["q1"] for x in sc), len(sc)), q3=pct(sum(x["q3"] for x in sc), len(sc)),
                                    inconsistent=[x for x in sc if not (x["q1"] and x["q3"])])
-    # 5. third-author re-adjudication (VALIDATION_PROTOCOL.md asked for one; the first-author rulings are the stand-in). Optional:
-    # data/eval/validation/disclosure_labels/adjudication_third.json, same shape as the scratch template. When present, its q1/q3
-    # replace the first author's rulings on those cases and the adjudicated results are recomputed beside the originals.
-    third_f = LAB / "adjudication_third.json"
-    if third_f.exists():
-        tl = json.load(open(third_f))["labels"]
-        adj3 = {k: dict(v) for k, v in adj.items()}
+    # 5. alternative adjudications of the 11 cases the first author ruled on. VALIDATION_PROTOCOL.md asked a third author to rule
+    # from the passages alone; the first-author rulings are the stand-in. Each optional file below has the shape of the scratch
+    # template (case -> q1, q3); its labels replace the first author's on those cases and the adjudicated results are recomputed.
+    # adjudication_third.json: a human third author (not yet received). adjudication_model_passages_only.json: MODEL-GENERATED,
+    # a coding-assistant session reading only the passages.
+    for fname, rkey in (("adjudication_third.json", "third_author"), ("adjudication_model_passages_only.json", "model_passages_only")):
+        f = LAB / fname
+        if not f.exists():
+            continue
+        tl = json.load(open(f))["labels"]
+        alt = {k: dict(v) for k, v in adj.items()}
         for k, v in tl.items():
             if v.get("q1"):
-                adj3[k]["q1"] = v["q1"]
+                alt[k]["q1"] = v["q1"]
             if v.get("q3"):
-                adj3[k]["q3"] = v["q3"]
-        res["third_author"] = dict(
+                alt[k]["q3"] = v["q3"]
+        res[rkey] = dict(
             cases=sorted(k for k, v in tl.items() if v.get("q1")),
             changed_q1=sorted(k for k in tl if tl[k].get("q1") and tl[k]["q1"] != adj[k]["q1"]),
             changed_q3=sorted(k for k in tl if tl[k].get("q3") and tl[k]["q3"] != adj[k].get("q3")),
-            s1_not_supported=pct(sum(adj3[k]["q3"] != "supported" for k in s1), len(s1)),
-            served_not_supported=pct(sum(adj3[k]["q3"] != "supported" for k in served), len(served)),
-            vs_model={n: dict(agree=pct(sum(adj3[k]["q1"] == key[k][f] for k in prim if key[k].get(f) is not None),
-                                         sum(key[k].get(f) is not None for k in prim)))
-                      for n, f in (("claude_annotator1", "annotator1"), ("luna_strict", "annotator2_strict"), ("luna_permissive", "annotator2_permissive"))})
+            s1_not_supported=pct(sum(alt[k]["q3"] != "supported" for k in s1), len(s1)),
+            served_not_supported=pct(sum(alt[k]["q3"] != "supported" for k in served), len(served)),
+            vs_model={n: dict(agree=pct(sum(alt[k]["q1"] == key[k][f_] for k in prim if key[k].get(f_) is not None),
+                                         sum(key[k].get(f_) is not None for k in prim)))
+                      for n, f_ in (("claude_annotator1", "annotator1"), ("luna_strict", "annotator2_strict"), ("luna_permissive", "annotator2_permissive"))})
     res["adjudication_basis"] = dict(Counter(adj[k]["basis"] for k in prim))
     OUT.write_text(json.dumps(res, indent=1, ensure_ascii=False))
     print(json.dumps(res, indent=1, ensure_ascii=False))

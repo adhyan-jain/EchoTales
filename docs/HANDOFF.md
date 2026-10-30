@@ -30,7 +30,7 @@ Research track. The Prefix Check annotation ran (3 annotators, 48 cases + 4 repe
 `data/eval/validation/disclosure_human_v1.json`, written into `main.tex` (table `tab:human_pipeline`) and
 `supplementary.tex`; draft2 PDFs and a regenerated `overleaf_upload.zip` built. **Nothing is pushed.** Open: (1) the
 first author adjudicated 11 cases, departing from the protocol's third-author rule; a third author should re-rule them
-from passages alone (ready to send: `data/scratch/adjudication/third_author_sheet.md`, gitignored, copyrighted excerpts; the answer template is
+from passages alone (a MODEL-GENERATED passages-only reading by a Claude session is already in `adjudication_model_passages_only.json` and in the paper as a sensitivity result: S1 disclosures not supported 9/10, served not supported 11/35, versus 2/10 and 4/35 under the first author's rulings; it does not replace the human adjudication) (ready to send: `data/scratch/adjudication/third_author_sheet.md`, gitignored, copyrighted excerpts; the answer template is
 `adjudication_third.json` beside it; put the filled file in `data/eval/validation/disclosure_labels/` and rerun `scripts/review/score_disclosure_validation.py`,
 which then adds a `third_author` block, then update the paper's table and the S1 sentence); (2) journal formatting: checked only against the
 common Springer Nature ranges (abstract 250 words, 6 keywords, declarations headings, AI use documented in Methods and Declarations);

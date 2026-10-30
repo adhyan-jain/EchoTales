@@ -643,6 +643,11 @@
   "source": "validation/disclosure_human_v1.json",
   "note": ""
  },
+ "dh_passages_only": {
+  "value": "s1 9 of 10 (90.0%); served 11 of 35 (31.4%); claude_annotator1 17/18; luna_strict 38/48; luna_permissive 26/33",
+  "source": "validation/disclosure_human_v1.json",
+  "note": ""
+ },
  "dh_self_consistency": {
   "value": "gender 8/8; support 7/8",
   "source": "validation/disclosure_human_v1.json",

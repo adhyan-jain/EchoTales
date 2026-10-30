@@ -368,6 +368,95 @@
    }
   ]
  },
+ "model_passages_only": {
+  "cases": [
+   "C005",
+   "C014",
+   "C015",
+   "C016",
+   "C017",
+   "C018",
+   "C021",
+   "C028",
+   "C036",
+   "C038",
+   "C041"
+  ],
+  "changed_q1": [
+   "C005",
+   "C014",
+   "C015",
+   "C016",
+   "C017",
+   "C018",
+   "C021",
+   "C036",
+   "C041"
+  ],
+  "changed_q3": [
+   "C005",
+   "C014",
+   "C015",
+   "C016",
+   "C018",
+   "C021",
+   "C036",
+   "C041"
+  ],
+  "s1_not_supported": {
+   "k": 9,
+   "n": 10,
+   "pct": 90.0,
+   "wilson95": [
+    59.6,
+    98.2
+   ]
+  },
+  "served_not_supported": {
+   "k": 11,
+   "n": 35,
+   "pct": 31.4,
+   "wilson95": [
+    18.6,
+    48.0
+   ]
+  },
+  "vs_model": {
+   "claude_annotator1": {
+    "agree": {
+     "k": 17,
+     "n": 18,
+     "pct": 94.4,
+     "wilson95": [
+      74.2,
+      99.0
+     ]
+    }
+   },
+   "luna_strict": {
+    "agree": {
+     "k": 38,
+     "n": 48,
+     "pct": 79.2,
+     "wilson95": [
+      65.7,
+      88.3
+     ]
+    }
+   },
+   "luna_permissive": {
+    "agree": {
+     "k": 26,
+     "n": 33,
+     "pct": 78.8,
+     "wilson95": [
+      62.2,
+      89.3
+     ]
+    }
+   }
+  }
+ },
  "adjudication_basis": {
   "agreement": 37,
   "adhyan_ruling_not_an_annotator": 4,
