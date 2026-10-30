@@ -139,7 +139,7 @@ _MAX_PASSAGES = 60
 _MAX_PASSAGE_CHARS = 400
 
 SYSTEM = (
-    "You extract physical appearance from a translated web novel. Report only "
+    "You extract physical appearance from a novel. Report only "
     "what the passages state or directly imply about how the character looks. "
     "Never invent a detail that is not there -- omit the key instead. "
     "The passages describe several people; report only the named subject, "

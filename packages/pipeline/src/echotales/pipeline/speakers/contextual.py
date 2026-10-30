@@ -30,7 +30,7 @@ from echotales.pipeline.speakers.attribution import Attribution, _known
 from pydantic import BaseModel, Field
 
 SYSTEM = (
-    "You identify who speaks or thinks one line from a translated web novel. "
+    "You identify who speaks or thinks one line from a novel. "
     "Answer only with a name from the roster you are given, exactly as "
     "spelled there, or an empty string if none of them fit -- never invent a "
     "name that is not on the roster, and never guess when unsure."

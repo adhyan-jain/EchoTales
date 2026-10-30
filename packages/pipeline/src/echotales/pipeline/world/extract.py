@@ -61,7 +61,7 @@ _MAX_PASSAGES = 50
 
 SYSTEM = (
     "You extract structured facts about a world and its characters from a "
-    "translated Chinese web novel. Report only what the passages state or "
+    "novel (often a translated web novel). Report only what the passages state or "
     "directly imply. Never invent a fact that is not there -- omit the key "
     "instead. Return only JSON."
 )

@@ -239,7 +239,7 @@ class CorefResponse(BaseModel):
 
 
 _COREF_SYSTEM = (
-    "You resolve pronouns in translated Chinese and Korean web-novel prose. "
+    "You resolve pronouns in novel prose (English, or translated from Chinese or Korean). "
     "You are given the characters currently present in the scene. "
     "For each unresolved pronoun, say which of those characters it refers to. "
     "If a pronoun does not refer to any listed character, omit it rather than "

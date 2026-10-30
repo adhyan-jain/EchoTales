@@ -148,9 +148,9 @@ class NerResponse(BaseModel):
 
 
 _NER_SYSTEM = (
-    "You extract character and location references from translated Chinese and "
-    "Korean web novels.\n"
-    "These works name characters in ways Western fiction does not:\n"
+    "You extract character and location references from a novel.\n"
+    "Some novels, especially translated Chinese and Korean web novels, name "
+    "characters in ways ordinary English fiction does not:\n"
     "- a descriptive epithet fused to a personal name, which reads in English "
     "as an ordinary noun phrase but is a proper name\n"
     "- cultivation or rank prefixes attached to a personal name\n"

@@ -12,6 +12,7 @@ sits inside the usual audiobook range (ACX asks for -23 to -18 dB RMS) at the lo
 
 from __future__ import annotations
 
+import json
 import shutil
 import subprocess
 import tempfile
@@ -67,6 +68,39 @@ def chapter_metadata(titles: Sequence[str], durations: Sequence[float], *, title
     return "\n".join(lines) + "\n"
 
 
+def _concat_escape(path: Path) -> str:
+    return str(path).replace("'", "'\\''")
+
+
+def book_tracks(audio_dir: Path, titles_by_number: dict[float, str]) -> tuple[list[Path], list[str], list[float]]:
+    """Every `ch<N>/chapter.wav` under `audio_dir` in chapter order, with a title for each.
+
+    The CLI titled chapters "Chapter 1".."Chapter N" from the folder name, so an audiobook's chapter list never showed
+    the book's own chapter titles."""
+    found: list[tuple[float, Path]] = []
+    for track in Path(audio_dir).glob("ch*/chapter.wav"):
+        try:
+            found.append((float(track.parent.name.removeprefix("ch")), track))
+        except ValueError:
+            continue
+    found.sort()
+    tracks = [t for _, t in found]
+    numbers = [n for n, _ in found]
+    titles = []
+    for n in numbers:
+        name = titles_by_number.get(n, "").strip()
+        titles.append(f"Chapter {n:g}: {name}" if name and not name.lower().startswith("chapter") else name or f"Chapter {n:g}")
+    return tracks, titles, numbers
+
+
+def engine_of(audio_dir: Path) -> str:
+    """The engine that wrote this directory's audio (`run.json`), or "" for audio from before the record existed."""
+    try:
+        return str(json.loads((Path(audio_dir) / "run.json").read_text(encoding="utf-8")).get("engine", ""))
+    except (OSError, ValueError):
+        return ""
+
+
 def export_m4b(
     tracks: Sequence[Path],
     out_path: Path,
@@ -85,7 +119,9 @@ def export_m4b(
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
         listing = Path(tmp) / "tracks.txt"
-        listing.write_text("".join(f"file '{Path(t).resolve()}'\n" for t in tracks), encoding="utf-8")
+        # ffmpeg's concat list quotes with '...': a path containing an apostrophe ended the quote early and the whole
+        # export failed ("Alice's Adventures/..."); the escape is close-quote, backslash-quote, reopen.
+        listing.write_text("".join(f"file '{_concat_escape(Path(t).resolve())}'\n" for t in tracks), encoding="utf-8")
         meta = Path(tmp) / "chapters.txt"
         meta.write_text(
             chapter_metadata(titles, [wav_seconds(Path(t)) for t in tracks], title=title, author=author),

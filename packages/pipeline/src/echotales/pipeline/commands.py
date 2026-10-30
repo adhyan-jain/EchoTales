@@ -1028,14 +1028,24 @@ def cmd_voice(args: argparse.Namespace) -> int:
     out_dir = Path(args.out) if args.out else paths.asset_dir(args.novel, "audio")
     print(f"\nmanifest: {out_dir / 'manifest.jsonl'}")
     if getattr(args, "m4b", False) and report.chapter_tracks:
-        from echotales.pipeline.voice.export import export_m4b
+        from echotales.pipeline.voice.export import book_tracks, export_m4b
 
-        tracks = [Path(t) for t in report.chapter_tracks]
+        # The book's own chapter titles, and every chapter voiced so far in this directory (a `--chapters` run used
+        # to bind only that run's chapters and call the result the audiobook).
+        titles_by_number = {
+            float(r["number"]): r["title"]
+            for r in store.conn.execute("SELECT number, title FROM chapter WHERE novel_id=?", (args.novel,))
+        }
+        tracks, titles, numbers = book_tracks(out_dir, titles_by_number)
+        total = len(store.chapter_numbers(args.novel))
+        if len(numbers) < total:
+            print(f"WARNING: audio exists for {len(numbers)} of {total} chapters; the M4B is a partial book")
+        novel_row = store.get_novel(args.novel) or {}
         book = export_m4b(
             tracks,
             out_dir / f"{args.novel}.m4b",
-            titles=[f"Chapter {t.parent.name.removeprefix('ch')}" for t in tracks],
-            title=args.novel.replace("-", " ").title(),
+            titles=titles,
+            title=novel_row.get("title") or args.novel.replace("-", " ").title(),
         )
         print(f"audiobook: {book}")
     store.close()

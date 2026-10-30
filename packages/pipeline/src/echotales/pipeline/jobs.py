@@ -92,6 +92,9 @@ JOB_KINDS = (
     "persona",
     "render",
     "voice",
+    # Binds the finished chapter tracks into one M4B with chapter markers; the CLI had `voice --m4b` and the Studio
+    # had no way to produce or download the audiobook (audit B3).
+    "export_m4b",
     "refimg_search",
     "reference_gen",
 )
@@ -406,6 +409,34 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
                 chapters=params.get("chapters"),
                 seed=params.get("seed", 20260812),
                 synthesize=not params.get("dry_run", False),
+            ),
+        )
+    elif job.kind == "export_m4b":
+        from echotales.pipeline import paths
+        from echotales.pipeline.voice.export import book_tracks, engine_of, export_m4b
+
+        audio_dir = Path(paths.asset_dir(novel_id, "audio"))
+        if engine_of(audio_dir) == "stub" and not params.get("allow_stub"):
+            raise ValueError("the audio in this project was made by the stub engine and is silent; voice it with chatterbox first")
+        titles_by_number = {
+            float(r["number"]): r["title"]
+            for r in store.conn.execute("SELECT number, title FROM chapter WHERE novel_id=?", (novel_id,))
+        }
+        tracks, titles, numbers = book_tracks(audio_dir, titles_by_number)
+        if not tracks:
+            raise ValueError("no chapter audio found; run the voice step first")
+        missing = [n for n in store.chapter_numbers(novel_id) if n not in set(numbers)]
+        if missing and not params.get("allow_partial"):
+            raise ValueError(
+                f"audio exists for {len(numbers)} of {len(numbers) + len(missing)} chapters; "
+                "voice the rest or set allow_partial to export a partial book"
+            )
+        novel_row = store.get_novel(novel_id) or {}
+        run_stage(
+            store, run_id=pipeline_run.run_id, stage_name="export_m4b",
+            input_digest=digest_text(f"{input_digest}|{len(tracks)}|{max(t.stat().st_mtime for t in tracks)}"),
+            fn=lambda: export_m4b(
+                tracks, audio_dir / f"{novel_id}.m4b", titles=titles, title=novel_row.get("title", novel_id)
             ),
         )
     elif job.kind == "refimg_search":
