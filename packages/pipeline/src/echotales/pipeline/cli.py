@@ -453,6 +453,11 @@ def build_parser() -> argparse.ArgumentParser:
         "ECHOTALES_COMPUTE=local-low renders unless told otherwise. 5x the scenes is roughly 5x the wall-clock",
     )
     p_render.add_argument(
+        "--density", choices=["beat", "dense"], default="beat",
+        help="beat (default): one picture per moment, about four paragraphs; dense: one picture per paragraph. "
+        "Dense is roughly four times the images for the same number of scenes, so pair it with --max-panels",
+    )
+    p_render.add_argument(
         "--tier", choices=["preview", "full"], default=None,
         help="preview (a handful of panels) or full (the whole chapter); default follows ECHOTALES_COMPUTE",
     )

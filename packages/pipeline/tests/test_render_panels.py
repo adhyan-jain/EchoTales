@@ -607,3 +607,39 @@ def test_a_versioned_render_keeps_its_own_manifest(tmp_path) -> None:
         assert rows and all(f"/{version}/" in r["image_path"] for r in rows)
     root = [json.loads(x) for x in (out_dir / "manifest.jsonl").read_text().splitlines()]
     assert all("/v2_second/" in r["image_path"] for r in root)  # the root is the latest run
+
+
+class TestDensity:
+    """"beat" draws a picture per moment, "dense" one per block (offered in the frontend, decision 2026-10-31)."""
+
+    @staticmethod
+    def _store(tmp_path) -> Store:
+        store = Store(str(tmp_path / "d.db"))
+        store.add_novel("d", "D", "x.epub", "generic")
+        blocks = [Block(index=0, block_type=BlockType.HEADING, text="Chapter 1")] + [
+            Block(index=i, block_type=BlockType.PROSE, text=f"Fang Yuan walked past the gate, step {i}.")
+            for i in range(1, 10)
+        ]
+        store.add_chapter(Chapter(novel_id="d", number=1.0, title="D", source_href="a.html", blocks=blocks))
+        store.add_self(Self(id="d:self1", novel_id="d", canonical_label="Fang Yuan",
+                            first_attested_pos=DiscoursePosition(chapter=1.0, offset=0), kind=TargetKind.SELF))
+        store.add_mentions([
+            Mention(id=f"m{i}", novel_id="d", segment_id="s", chapter=1.0, offset=0, block_index=i, text="Fang Yuan",
+                    alias_type=AliasType.RIGID_NAME, span_type=SpanType.NARRATION_ACTION,
+                    reference_mode=ReferenceMode.PRESENT, target_kind=TargetKind.SELF, target_id="d:self1")
+            for i in range(1, 10)
+        ])
+        store.conn.commit()
+        return store
+
+    def test_dense_draws_more_pictures_than_beat_for_the_same_scene(self, tmp_path) -> None:
+        store = self._store(tmp_path)
+        beat = render_panels("d", store, out_dir=tmp_path / "beat", max_panels=5, density="beat")
+        dense = render_panels("d", store, out_dir=tmp_path / "dense", max_panels=5, density="dense")
+        assert dense.panels > beat.panels
+
+    def test_an_unknown_density_is_refused_rather_than_ignored(self, tmp_path) -> None:
+        import pytest
+
+        with pytest.raises(ValueError, match="density"):
+            render_panels("d", self._store(tmp_path), out_dir=tmp_path / "x", density="everything")

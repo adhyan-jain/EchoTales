@@ -1585,6 +1585,8 @@ def render_panels(
     #: `StateResolver` rather than threaded per call, so no `state_of` site
     #: below can silently fall back to READER and reintroduce the spoiler.
     observer_id: str = OBSERVER_READER,
+    #: "beat" (a picture per four blocks) or "dense" (a picture per block); see `compute.DENSITY_BLOCKS_PER_PANEL`.
+    density: str = "beat",
 ) -> PanelReport:
     """Render one cached panel image per story-bearing block.
 
@@ -1656,6 +1658,11 @@ def render_panels(
     # only buried the chapters one directory deeper.
     out_dir = Path(out_dir) if out_dir is not None else paths.asset_dir(novel_id, "panels")
     report = PanelReport(novel_id=novel_id, engine=engine.name)
+    from echotales.pipeline.compute import DENSITY_BLOCKS_PER_PANEL, density_error
+
+    if (bad_density := density_error(density)) is not None:
+        raise ValueError(bad_density)
+    blocks_per_panel = DENSITY_BLOCKS_PER_PANEL[density]
     # The style tables are looked up by novel id alone; register this project's genre (stored, tuned or detected)
     # first, or an unlisted novel falls through to the neutral profile instead of its own (persona/genre.py).
     from echotales.pipeline.persona.genre import use_store_genre
@@ -1871,7 +1878,7 @@ def render_panels(
                 # locale, one cast, continuity) and restores beat-level
                 # granularity: each run of blocks gets its own slot, hence
                 # its own director call, drawn from its own prose.
-                chunk = i // _MAX_BLOCKS_PER_PANEL
+                chunk = i // blocks_per_panel
                 slot_for_block[b] = chunk * _SLOTS_PER_CHUNK + base
 
             # Only slots a block actually maps to get generated -- an
@@ -1973,7 +1980,7 @@ def render_panels(
                     # the top of a scene it may be far into.
                     _crowd_block = _dialogue_blocks[0]
                     _crowd_chunk = (
-                        story_scene_blocks.index(_crowd_block) // _MAX_BLOCKS_PER_PANEL
+                        story_scene_blocks.index(_crowd_block) // blocks_per_panel
                     )
                     _crowd_slot = _crowd_chunk * _SLOTS_PER_CHUNK + 3
                     slot_for_block[_crowd_block] = _crowd_slot

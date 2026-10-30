@@ -617,6 +617,8 @@ def _compute_status() -> dict:  # type: ignore[type-arg]
     """What the Studio needs to choose an engine and set expectations. Names of missing variables, never values."""
     from echotales.pipeline import gpu
     from echotales.pipeline.compute import (
+        DENSITY_BLOCKS_PER_PANEL,
+        DENSITY_IMAGES_PER_SCENE,
         IMAGES_PER_SCENE,
         SECONDS_PER_PANEL,
         available_ram_mb,
@@ -634,6 +636,13 @@ def _compute_status() -> dict:  # type: ignore[type-arg]
         "default_tier": pol.default_tier,
         "scenes": {"preview": pol.preview_scenes, "full": pol.full_scenes},
         "images_per_scene": IMAGES_PER_SCENE,
+        # What the density selector offers, with the images each tier makes per scene. "dense" is an estimate until a
+        # dense render is measured.
+        "densities": {
+            name: {"blocks_per_panel": DENSITY_BLOCKS_PER_PANEL[name], "images_per_scene": DENSITY_IMAGES_PER_SCENE[name],
+                   "measured": name == "beat"}
+            for name in DENSITY_BLOCKS_PER_PANEL
+        },
         "engines": engines,
         "refusals": {e: resource_refusal(e, pol, http=True) for e in engines},
         "seconds_per_panel": {e: SECONDS_PER_PANEL.get(e) for e in engines},
@@ -2006,6 +2015,11 @@ def make_handler(
                                 f"HTTP; allowed: {_enabled_engines()}"
                             },
                         )
+                    if kind == "render":
+                        from echotales.pipeline.compute import density_error
+
+                        if (bad_density := density_error(str(params.get("density", "beat")))) is not None:
+                            return self._json(400, {"error": bad_density})
                     if kind in ("render", "reference_gen"):
                         # The same guard and digest as the dedicated generate routes: this route used to accept a
                         # real engine on a busy GPU and ignore a changed genre.

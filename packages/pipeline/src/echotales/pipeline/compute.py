@@ -187,9 +187,10 @@ class ComputePolicy:
             return ["stub"]
         return ["stub", self.image_provider]
 
-    def estimate_seconds(self, engine: str, scenes: int) -> float | None:
+    def estimate_seconds(self, engine: str, scenes: int, density: str = "beat") -> float | None:
         per = SECONDS_PER_PANEL.get(engine)
-        return None if per is None else round(per * IMAGES_PER_SCENE * scenes)
+        images = DENSITY_IMAGES_PER_SCENE.get(density, IMAGES_PER_SCENE)
+        return None if per is None else round(per * images * scenes)
 
 
 def policy(settings: object | None = None) -> ComputePolicy:
@@ -261,3 +262,20 @@ def resource_refusal(engine: str, pol: ComputePolicy | None = None, *, http: boo
             return (f"only {free} MiB of RAM is available (local-low needs {pol.min_free_ram_mb}); close other "
                     "applications, or set ECHOTALES_COMPUTE=local-high to skip this check")
     return None
+
+
+#: Panel density: how many story blocks (roughly paragraphs) share one picture. "beat" is what every render so far
+#: used, a moment per image; "dense" draws every block. The audiobook is the whole text either way, so this only
+#: decides how much of it is illustrated (decision of 2026-10-31: offer both in the frontend).
+DENSITY_BLOCKS_PER_PANEL = {"beat": 4, "dense": 1}
+DEFAULT_DENSITY = "beat"
+#: Images per scene by density. Only "beat" was measured (3.3, LotM ch1); "dense" is the chunk-size ratio applied to
+#: it and must be re-measured on a real dense render before the estimate is trusted.
+DENSITY_IMAGES_PER_SCENE = {"beat": 3.3, "dense": 3.3 * 4}
+
+
+def density_error(density: str) -> str | None:
+    """A message when `density` is not one of the known values, else None."""
+    if density in DENSITY_BLOCKS_PER_PANEL:
+        return None
+    return f"unknown density {density!r}; use one of {sorted(DENSITY_BLOCKS_PER_PANEL)}"

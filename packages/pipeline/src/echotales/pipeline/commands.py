@@ -1191,6 +1191,7 @@ def cmd_render(args: argparse.Namespace) -> int:
                 height=args.height,
                 client=director_client,
                 max_panels=max_panels,
+                density=getattr(args, "density", "beat"),
                 block_range=block_range,
                 prompt_cache_path=cache_path,
                 version=_version,
@@ -1215,6 +1216,7 @@ def cmd_render(args: argparse.Namespace) -> int:
                 height=args.height,
                 client=None,
                 max_panels=max_panels,
+                density=getattr(args, "density", "beat"),
                 block_range=block_range,
                 prompt_cache_path=cache_path,
                 version=_version,
@@ -1235,6 +1237,7 @@ def cmd_render(args: argparse.Namespace) -> int:
                 height=args.height,
                 client=director_client,
                 max_panels=max_panels,
+                density=getattr(args, "density", "beat"),
                 block_range=block_range,
                 observer_id=getattr(args, "observer", OBSERVER_READER),
             )

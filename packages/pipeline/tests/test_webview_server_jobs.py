@@ -494,3 +494,21 @@ class TestJobRecovery:
         assert status == 200 and body["status"] == "FAILED" and "cancelled" in body["error_summary"]
         status, _ = _request(port, "POST", "/api/projects/cx/jobs/cx:ingest:done/cancel", body=b"{}")
         assert status == 409
+
+
+class TestDensityOption:
+    def test_compute_status_offers_both_tiers_and_says_which_is_measured(self, live_server: int) -> None:
+        status, body = _request(live_server, "GET", "/api/compute")
+        assert status == 200
+        assert set(body["densities"]) == {"beat", "dense"}
+        assert body["densities"]["beat"]["measured"] is True and body["densities"]["dense"]["measured"] is False
+        assert body["densities"]["dense"]["blocks_per_panel"] < body["densities"]["beat"]["blocks_per_panel"]
+
+    def test_a_render_job_with_an_unknown_density_is_refused(self, live_server: int) -> None:
+        assert TestUploadSafety._create(live_server, "dens")[0] == 201
+        status, body = _request(
+            live_server, "POST", "/api/projects/dens/render",
+            body=json.dumps({"engine": "stub", "density": "everything"}).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        assert status == 400 and "density" in body["error"]

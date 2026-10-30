@@ -156,11 +156,13 @@ def run_stage(
     return result
 
 
-def _studio_version(out_dir: Path, chapters: list[float], engine_name: str) -> str:
+def _studio_version(out_dir: Path, chapters: list[float], engine_name: str, density: str = "beat") -> str:
     from echotales.pipeline.paths import next_version
 
     highest = max((int(next_version(out_dir / f"ch{c:g}")[1:]) for c in chapters), default=1)
-    return f"v{highest}_{engine_name}-studio"
+    # The tiers draw very different numbers of pictures; the name says which one a version is (repo rule: every
+    # version gets a descriptive suffix).
+    return f"v{highest}_{engine_name}-studio" + ("-dense" if density == "dense" else "")
 
 
 def _record_studio_version(out_dir: Path, chapters: list[float], version: str, engine_name: str, job_id: str) -> None:
@@ -365,7 +367,12 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         # render and replaced the only manifest that render had (2026-10-18 browser pass). One version name, new for
         # every requested chapter, with the descriptive suffix and VERSIONS.md line the convention asks for.
         wanted = chapters or store.chapter_numbers(novel_id)
-        version = _studio_version(Path(out_dir), wanted, engine_name)
+        density = str(params.get("density", "beat"))
+        from echotales.pipeline.compute import density_error
+
+        if (bad := density_error(density)) is not None:
+            raise ValueError(bad)
+        version = _studio_version(Path(out_dir), wanted, engine_name, density)
         run_stage(
             store, run_id=pipeline_run.run_id, stage_name="render",
             input_digest=input_digest,
@@ -377,6 +384,7 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
                 seed=params.get("seed", 20260812),
                 max_panels=max_panels,
                 version=version,
+                density=density,
             ),
         )
         _record_studio_version(Path(out_dir), wanted, version, engine_name, job.job_id)
