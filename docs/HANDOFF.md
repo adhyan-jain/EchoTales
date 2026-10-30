@@ -32,8 +32,10 @@ Research track. The Prefix Check annotation ran (3 annotators, 48 cases + 4 repe
 first author adjudicated 11 cases, departing from the protocol's third-author rule; a third author should re-rule them
 from passages alone; (2) target-journal formatting unchecked (abstract is now 250 words); (3) **Vercel**: project
 `echotales-prefix-check` is Git-linked to the repo root, so each push to master makes an empty production deploy and the
-alias 404s; redeploy from `scripts/review/disclosure_validation_app` by CLI, and set the project Root Directory to
-that folder to fix it permanently (NOT done). The items below (2), (5)-(7) of the 2026-10-27 list still stand except the
+alias 404s; redeploy from `scripts/review/disclosure_validation_app` by CLI. Do NOT fix it with Root Directory: `cases.json` is
+gitignored, so a Git deploy of that folder would serve the app without its data. Turn off Git-triggered deployments instead
+(Vercel Settings, Git, or `gitProviderOptions.createDeployments=disabled` via the project API) and keep deploying by CLI (NOT done;
+the assistant's attempt to change the project setting was refused, so the owner has to). The items below (2), (5)-(7) of the 2026-10-27 list still stand except the
 stale zip (resolved) and the abstract limit (word count only); the "annotation PROPOSED, no human has annotated" statement
 there is superseded.
 

@@ -340,6 +340,13 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **In flight when decided**: the reader's subject-and-pronoun check on appearance facts (finished and committed as the last research-era step) and the course Project Document, which stays as is and moves to the archive in step 5.
 - **Status**: step 1 next.
 
+### D28. Journal paper resumed, with a 48-case human check (owner, 2026-10-30)
+- **Decision**: the journal manuscript (`docs/paper/journal/`) is being finished for submission, and the disclosure labels got a small human check, which D27 had ruled out.
+- **What changes**: D27's "no paper and no new human annotation" no longer holds for this one track. The product pivot is unchanged for the rest of the code. The check has three author-annotators, 48 cases and 4 repeats (`data/eval/validation/disclosure_labels/`, scored by `scripts/review/score_disclosure_validation.py`).
+- **Departure from the protocol**: the first author adjudicated, and drew on knowledge of the books, where `VALIDATION_PROTOCOL.md` asked a third author to adjudicate from the passages alone. The paper says so and reports the raw pairs beside the adjudicated labels. A third-author re-adjudication of the 11 rulings is still open (HANDOFF).
+- **Why**: the model-judged disclosure rates were the paper's weakest evidence, and a reviewer would ask for a human check.
+- **Status**: paper built and committed locally (EVOLUTION 4.130).
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs
