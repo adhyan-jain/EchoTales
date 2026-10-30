@@ -195,6 +195,105 @@ def _with_guessed_line(tmp_path: Path, confidence: float) -> Store:
     return store
 
 
+def test_a_studio_voice_override_reaches_the_audio(tmp_path: Path) -> None:
+    """`POST .../characters/<id>/voice` stored the choice and showed it, but casting never read it (audit M3)."""
+    from echotales.core.enums import AssertedBy
+    from echotales.core.interval import FuzzyInterval
+    from echotales.core.models import Attribute
+    from echotales.pipeline.persona.build import persona_at
+
+    store = _store(tmp_path)
+    render_novel("t", store, _bank(), out_dir=tmp_path / "before", engine=get_engine("stub"))
+    default = {l["span_id"]: l for l in _manifest(tmp_path / "before")}["sp0"]["voice"]
+    chosen = next(v.speaker_id for v in _bank().voices if v.speaker_id != default and v.gender == "male")
+
+    store.add_attribute("t", Attribute(
+        target_kind=TargetKind.PERSONA, target_id=persona_at(store, NAMED), key="voice_override", value=chosen,
+        learned_at_pos=DiscoursePosition(chapter=0, offset=0), observer_id="reviewer", asserted_by=AssertedBy.NARRATOR,
+        evidence="test", interval=FuzzyInterval.open_ended(0.0),
+    ))
+    store.conn.commit()
+    render_novel("t", store, _bank(), out_dir=tmp_path / "after", engine=get_engine("stub"))
+    assert {l["span_id"]: l for l in _manifest(tmp_path / "after")}["sp0"]["voice"] == chosen
+
+
+class _CountingEngine:
+    """Wraps the stub engine; optionally dies on the Nth call, the way a CUDA out-of-memory error would."""
+
+    name = "stub"
+
+    def __init__(self, fail_on_call: int | None = None) -> None:
+        self._inner = get_engine("stub")
+        self.calls = 0
+        self._fail_on = fail_on_call
+
+    def synthesize(self, request):  # type: ignore[no-untyped-def]
+        self.calls += 1
+        if self._fail_on is not None and self.calls == self._fail_on:
+            raise RuntimeError("CUDA out of memory")
+        return self._inner.synthesize(request)
+
+
+def test_a_rerun_reuses_every_unchanged_line(tmp_path: Path) -> None:
+    store, out = _store(tmp_path), tmp_path / "audio"
+    first = _CountingEngine()
+    render_novel("t", store, _bank(), out_dir=out, engine=first)
+    second = _CountingEngine()
+    report = render_novel("t", store, _bank(), out_dir=out, engine=second)
+
+    assert first.calls == 4 and second.calls == 0
+    assert report.reused_lines == 4
+
+
+def test_a_failure_in_a_later_chapter_keeps_the_finished_chapters(tmp_path: Path) -> None:
+    store, out = _with_guessed_line(tmp_path, 0.9), tmp_path / "audio"
+    try:
+        render_novel("t", store, _bank(), out_dir=out, engine=_CountingEngine(fail_on_call=5))
+    except RuntimeError:
+        pass
+    else:  # pragma: no cover
+        raise AssertionError("the engine failure should propagate")
+
+    assert (out / "ch1" / "chapter.wav").is_file()  # chapter 1 finished before chapter 2's line failed
+    assert len(_manifest(out)) == 4
+
+    resumed = _CountingEngine()
+    render_novel("t", store, _bank(), out_dir=out, engine=resumed)
+    assert resumed.calls == 1  # only the line that failed is synthesised again
+
+
+def _with_unknown_and_reviewed_lines(tmp_path: Path) -> Store:
+    """Chapter 2: a quoted line nobody placed, and one a reviewer put in an anonymous slot."""
+    store = _store(tmp_path)
+    texts = ['"Who is there?" a voice asked.', '"Stand back," she said.']
+    store.add_chapter(Chapter(novel_id="t", number=2.0, title="Two", source_href="b.html",
+                              blocks=[Block(index=i, block_type=BlockType.PROSE, text=t) for i, t in enumerate(texts)]))
+    store.add_spans([
+        Span(id="u0", novel_id="t", chapter=2.0, block_index=0, start=0, end=len(texts[0]),
+             span_type=SpanType.DIALOGUE, text=texts[0], attribution_method=AttributionMethod.UNRESOLVED),
+        Span(id="h0", novel_id="t", chapter=2.0, block_index=1, start=0, end=len(texts[1]),
+             span_type=SpanType.DIALOGUE, text=texts[1], speaker_self_id="t:anon:2:1",
+             attribution_method=AttributionMethod.HUMAN, confidence=1.0),
+    ])
+    store.conn.commit()
+    return store
+
+
+def test_an_unplaced_quoted_line_is_not_voiced_by_the_narrator(tmp_path: Path) -> None:
+    """RI ch1: 14 of 29 dialogue lines were "unknown" and all fell to the narrator's voice."""
+    out = tmp_path / "audio"
+    report = render_novel("t", _with_unknown_and_reviewed_lines(tmp_path), _bank(), out_dir=out,
+                          engine=get_engine("stub"))
+    by_span = {line["span_id"]: line for line in _manifest(out)}
+
+    narrator_voice = by_span["sp1"]["voice"]  # chapter 1's narration
+    assert by_span["u0"]["speaker_label"] == "Unknown speaker"
+    assert by_span["u0"]["voice"] != narrator_voice
+    assert report.unattributed_lines == 1
+    # a reviewer's anonymous slot keeps the slot path and its label
+    assert by_span["h0"]["speaker_label"] == "Unknown Speaker 1"
+
+
 def test_a_guessed_speaker_is_not_given_the_characters_own_voice(tmp_path: Path) -> None:
     """The LLM tier (confidence 0.65) was right 12 times in 28; a wrong guess in
     the character's own voice is indistinguishable from a correct line."""

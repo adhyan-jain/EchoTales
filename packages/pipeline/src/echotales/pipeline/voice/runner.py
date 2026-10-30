@@ -22,6 +22,7 @@ rather than hidden inside plausible-sounding audio.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import random
 import wave
@@ -109,6 +110,8 @@ class VoiceReport:
     #: Set once the first pitch-shift call finds no ffmpeg on PATH, so the
     #: note prints once per run, not once per affected line.
     pitch_shift_unavailable_warned: bool = False
+    #: Lines whose WAV from an earlier run matched this run's fingerprint and were not synthesised again.
+    reused_lines: int = 0
 
     def summary(self) -> str:
         return (
@@ -117,8 +120,9 @@ class VoiceReport:
             f"  character={self.character_lines:,}  epithet={self.epithet_lines:,}  "
             f"anonymous={self.anonymous_lines:,}  unconfirmed={self.unconfirmed_lines:,}  "
             f"narrator={self.narrator_lines:,}\n"
-            f"  dialogue with no identity (read as narrator): "
+            f"  dialogue with no identity (voiced as an unknown speaker): "
             f"{self.unattributed_lines:,}\n"
+            f"  reused from an earlier run: {self.reused_lines:,}\n"
             f"  distinct reference voices used: {len(self.voices_used)}"
         )
 
@@ -218,6 +222,7 @@ def render_novel(
     assignments, casting = cast_voices(
         novel_id, profiles, bank, store=store, seed=seed
     )
+    _apply_voice_overrides(store, assignments, bank)
     labels = speaker_index(store, novel_id)
     from echotales.pipeline.config import get_settings
 
@@ -445,11 +450,30 @@ def render_novel(
                 voice = anon_voices["crowd"]
                 label = "Crowd"
                 report.anonymous_lines += 1
+            elif span.span_type is SpanType.DIALOGUE:
+                # A quoted line nobody could place used to fall through to the narrator, so with about half of RI
+                # ch1's dialogue "unknown" (reader pass, 2026-10-31: 14 of 29) half the cast sounded like the
+                # narrator. One stable voice per inferred gender per chapter keeps it audibly a different person
+                # without claiming an identity; the review queue is where the line gets a real speaker.
+                local = [block_text.get(i, "") for i in (span.block_index - 1, span.block_index, span.block_index + 1)]
+                inferred, _ = gender_from_pronouns(local)
+                key = f"unknown:{inferred or 'unknown'}"
+                if key not in anon_voices:
+                    gender = inferred or rng.choice(("male", "female"))
+                    pool = bank.nearest_bucket(gender, "adult")
+                    candidates = [v for v in pool if v.speaker_id not in chapter_voices_used]
+                    picked = (
+                        rng.choice(candidates) if candidates else pick_mob_voice(bank, gender, "adult", rng=rng)
+                    )
+                    anon_voices[key] = picked.speaker_id if picked else narrator
+                    chapter_voices_used.add(anon_voices[key])
+                voice = anon_voices[key]
+                label = "Unknown speaker"
+                report.anonymous_lines += 1
+                report.unattributed_lines += 1
             else:
                 voice = narrator
                 report.narrator_lines += 1
-                if span.span_type is SpanType.DIALOGUE:
-                    report.unattributed_lines += 1
 
             emotion, intensity = emotions.get(span.id, ("neutral", 1))
             settings = settings_for(
@@ -494,49 +518,104 @@ def render_novel(
             line.reference_clip = str(clip or "")
             if synthesize:
                 path = out_dir / f"ch{chapter:g}" / f"{span.id.replace(':', '_')}.wav"
-                engine.synthesize(
-                    SynthesisRequest(
-                        text=text,
-                        out_path=path,
-                        reference_clip=clip,
-                        exaggeration=settings.exaggeration,
-                        cfg_weight=settings.cfg_weight,
-                    )
-                )
-                if settings.pitch_semitones:
-                    shift_pitch(path, settings.pitch_semitones)
-                    if not ffmpeg_available() and not report.pitch_shift_unavailable_warned:
-                        print(
-                            "note: ffmpeg not found -- register-based pitch shifting "
-                            "(voice/pitch.py) is a no-op this run"
+                stamp_path = path.with_suffix(".json")
+                stamp = _line_fingerprint(engine, text, clip, settings)
+                if path.is_file() and stamp_path.is_file() and stamp_path.read_text(encoding="utf-8") == stamp:
+                    # Same text, voice, reference clip and settings as the run that wrote this file: a 90-chapter
+                    # render that died on chapter 60 re-synthesised everything (audit B6).
+                    report.reused_lines += 1
+                else:
+                    engine.synthesize(
+                        SynthesisRequest(
+                            text=text,
+                            out_path=path,
+                            reference_clip=clip,
+                            exaggeration=settings.exaggeration,
+                            cfg_weight=settings.cfg_weight,
                         )
-                        report.pitch_shift_unavailable_warned = True
+                    )
+                    if settings.pitch_semitones:
+                        shift_pitch(path, settings.pitch_semitones)
+                        if not ffmpeg_available() and not report.pitch_shift_unavailable_warned:
+                            print(
+                                "note: ffmpeg not found -- register-based pitch shifting "
+                                "(voice/pitch.py) is a no-op this run"
+                            )
+                            report.pitch_shift_unavailable_warned = True
+                    # Written last, so a file interrupted mid-synthesis has no stamp and is redone.
+                    stamp_path.write_text(stamp, encoding="utf-8")
                 line.audio_path = str(path)
 
             manifest.append(line)
             report.voices_used.add(voice)
             report.lines += 1
 
+        # Per chapter, not once at the end: the manifest and tracks were written only after every chapter, so an
+        # error late in a long book discarded the finished chapters' outputs too (audit B6).
+        _write_outputs(out_dir, manifest, casting)
+        if synthesize:
+            voiced = [m for m in manifest if m.chapter == chapter and m.audio_path]
+            if voiced:
+                report.chapter_tracks.append(
+                    str(chapter_track(
+                        [Path(v.audio_path) for v in voiced],
+                        out_dir / f"ch{chapter:g}" / "chapter.wav",
+                        gaps=gaps_for(voiced),
+                    ))
+                )
+
+    _write_outputs(out_dir, manifest, casting)
+    return report
+
+
+def _apply_voice_overrides(store: Store, assignments: dict, bank: VoiceBank) -> None:  # type: ignore[type-arg]
+    """Replace a cast voice with the one a reviewer picked in the Studio (`POST .../characters/<id>/voice`).
+
+    The override was stored as a persona attribute and shown in the UI, but casting never read it, so the chosen voice
+    was silently ignored in the audiobook (audit M3). An id the bank does not have is reported, not guessed."""
+    from dataclasses import replace
+
+    from echotales.core.enums import TargetKind
+    from echotales.pipeline.persona.build import persona_at
+
+    known = {v.speaker_id for v in bank.voices}
+    for target_id, assignment in list(assignments.items()):
+        try:
+            persona_id = persona_at(store, target_id)
+        except Exception:  # noqa: BLE001 - a character with no persona simply has no override
+            continue
+        chosen = next(
+            (a.value for a in store.get_attributes(TargetKind.PERSONA, persona_id)
+             if a.key == "voice_override" and a.is_standing),
+            None,
+        )
+        if chosen is None:
+            continue
+        if chosen not in known:
+            print(f"note: voice override {chosen!r} for {assignment.label} is not in this bank; keeping the cast voice")
+            continue
+        assignments[target_id] = replace(assignment, speaker_id=str(chosen), collides_with="")
+
+
+def _write_outputs(out_dir: Path, manifest: list, casting) -> None:  # type: ignore[no-untyped-def]
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "manifest.jsonl").write_text(
         "\n".join(json.dumps(asdict(line)) for line in manifest) + "\n",
         encoding="utf-8",
     )
     (out_dir / "casting.txt").write_text(casting.summary() + "\n", encoding="utf-8")
-    if synthesize:
-        by_chapter: dict[float, list[AudioLine]] = {}
-        for line in manifest:
-            if line.audio_path:
-                by_chapter.setdefault(line.chapter, []).append(line)
-        for chapter, voiced in by_chapter.items():
-            report.chapter_tracks.append(
-                str(chapter_track(
-                    [Path(v.audio_path) for v in voiced],
-                    out_dir / f"ch{chapter:g}" / "chapter.wav",
-                    gaps=gaps_for(voiced),
-                ))
-            )
-    return report
+
+
+def _line_fingerprint(engine: object, text: str, clip: object, settings: object) -> str:
+    """Everything that changes how a line sounds. Equal fingerprint, same WAV; the engine's name is included so a
+    stub render is never reused as speech."""
+    return hashlib.sha256(
+        json.dumps(
+            [getattr(engine, "name", type(engine).__name__), text, str(clip or ""), settings.exaggeration, settings.cfg_weight,  # type: ignore[attr-defined]
+             settings.pitch_semitones],  # type: ignore[attr-defined]
+            ensure_ascii=False,
+        ).encode("utf-8")
+    ).hexdigest()
 
 
 #: Pause between consecutive lines in the chapter track. The per-line clips

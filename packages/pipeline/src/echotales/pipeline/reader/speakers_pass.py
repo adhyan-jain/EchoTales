@@ -450,8 +450,11 @@ def _reconcile_roles(
         if entry is None:
             continue
         for span in spans:
+            # A role the chapter names is a named person, so it gets the model-answer confidence. At the role-slot
+            # 0.5 the voice stage called every one of these lines "unconfirmed" and gave it a random voice, which
+            # undid the whole reconcile pass (audit M1).
             store.set_span_speaker(
-                chapter.novel_id, span.id, entry.self_id, AttributionMethod.CONTEXTUAL_LLM.value, ROLE_CONFIDENCE
+                chapter.novel_id, span.id, entry.self_id, AttributionMethod.CONTEXTUAL_LLM.value, MODEL_CONFIDENCE
             )
         report.role_resolved += len(spans)
         resolved.add(role)
