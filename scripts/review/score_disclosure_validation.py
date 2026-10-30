@@ -169,7 +169,8 @@ def main() -> None:
     # template (case -> q1, q3); its labels replace the first author's on those cases and the adjudicated results are recomputed.
     # adjudication_third.json: a human third author (not yet received). adjudication_model_passages_only.json: MODEL-GENERATED,
     # a coding-assistant session reading only the passages.
-    for fname, rkey in (("adjudication_third.json", "third_author"), ("adjudication_model_passages_only.json", "model_passages_only")):
+    for fname, rkey in (("adjudication_third.json", "third_author"), ("adjudication_model_passages_only.json", "model_passages_only"),
+                         ("adjudication_model_llama31_8b.json", "model_llama31_8b"), ("adjudication_model_qwen25_7b.json", "model_qwen25_7b")):
         f = LAB / fname
         if not f.exists():
             continue

@@ -457,6 +457,180 @@
    }
   }
  },
+ "model_llama31_8b": {
+  "cases": [
+   "C005",
+   "C014",
+   "C015",
+   "C016",
+   "C017",
+   "C018",
+   "C021",
+   "C028",
+   "C036",
+   "C038",
+   "C041"
+  ],
+  "changed_q1": [
+   "C005",
+   "C015",
+   "C016",
+   "C018",
+   "C021",
+   "C038",
+   "C041"
+  ],
+  "changed_q3": [
+   "C005",
+   "C016",
+   "C017",
+   "C018",
+   "C021",
+   "C038",
+   "C041"
+  ],
+  "s1_not_supported": {
+   "k": 7,
+   "n": 10,
+   "pct": 70.0,
+   "wilson95": [
+    39.7,
+    89.2
+   ]
+  },
+  "served_not_supported": {
+   "k": 9,
+   "n": 35,
+   "pct": 25.7,
+   "wilson95": [
+    14.2,
+    42.1
+   ]
+  },
+  "vs_model": {
+   "claude_annotator1": {
+    "agree": {
+     "k": 17,
+     "n": 18,
+     "pct": 94.4,
+     "wilson95": [
+      74.2,
+      99.0
+     ]
+    }
+   },
+   "luna_strict": {
+    "agree": {
+     "k": 36,
+     "n": 48,
+     "pct": 75.0,
+     "wilson95": [
+      61.2,
+      85.1
+     ]
+    }
+   },
+   "luna_permissive": {
+    "agree": {
+     "k": 27,
+     "n": 33,
+     "pct": 81.8,
+     "wilson95": [
+      65.6,
+      91.4
+     ]
+    }
+   }
+  }
+ },
+ "model_qwen25_7b": {
+  "cases": [
+   "C005",
+   "C014",
+   "C015",
+   "C016",
+   "C017",
+   "C018",
+   "C021",
+   "C028",
+   "C036",
+   "C038",
+   "C041"
+  ],
+  "changed_q1": [
+   "C005",
+   "C014",
+   "C015",
+   "C016",
+   "C017",
+   "C018",
+   "C021",
+   "C028",
+   "C038",
+   "C041"
+  ],
+  "changed_q3": [
+   "C014",
+   "C017",
+   "C018",
+   "C021",
+   "C028",
+   "C041"
+  ],
+  "s1_not_supported": {
+   "k": 5,
+   "n": 10,
+   "pct": 50.0,
+   "wilson95": [
+    23.7,
+    76.3
+   ]
+  },
+  "served_not_supported": {
+   "k": 8,
+   "n": 35,
+   "pct": 22.9,
+   "wilson95": [
+    12.1,
+    39.0
+   ]
+  },
+  "vs_model": {
+   "claude_annotator1": {
+    "agree": {
+     "k": 15,
+     "n": 18,
+     "pct": 83.3,
+     "wilson95": [
+      60.8,
+      94.2
+     ]
+    }
+   },
+   "luna_strict": {
+    "agree": {
+     "k": 32,
+     "n": 48,
+     "pct": 66.7,
+     "wilson95": [
+      52.5,
+      78.3
+     ]
+    }
+   },
+   "luna_permissive": {
+    "agree": {
+     "k": 22,
+     "n": 33,
+     "pct": 66.7,
+     "wilson95": [
+      49.6,
+      80.2
+     ]
+    }
+   }
+  }
+ },
  "adjudication_basis": {
   "agreement": 37,
   "adhyan_ruling_not_an_annotator": 4,

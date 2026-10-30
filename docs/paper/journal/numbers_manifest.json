@@ -648,6 +648,11 @@
   "source": "validation/disclosure_human_v1.json",
   "note": ""
  },
+ "dh_local_readers": {
+  "value": "llama s1 7 of 10; qwen s1 5 of 10; gender match 7 and 4 of 11",
+  "source": "validation/disclosure_human_v1.json",
+  "note": ""
+ },
  "dh_self_consistency": {
   "value": "gender 8/8; support 7/8",
   "source": "validation/disclosure_human_v1.json",

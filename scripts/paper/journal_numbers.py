@@ -287,6 +287,7 @@ def build():
     mp = dh["model_passages_only"]
     put("dh_passages_only", f"s1 {mp['s1_not_supported']['k']} of {mp['s1_not_supported']['n']} ({mp['s1_not_supported']['pct']}%); served {mp['served_not_supported']['k']} of {mp['served_not_supported']['n']} ({mp['served_not_supported']['pct']}%); "
         + "; ".join(f"{n} {m['agree']['k']}/{m['agree']['n']}" for n, m in mp["vs_model"].items()), src)
+    put("dh_local_readers", f"llama s1 {dh['model_llama31_8b']['s1_not_supported']['k']} of 10; qwen s1 {dh['model_qwen25_7b']['s1_not_supported']['k']} of 10; gender match 7 and 4 of 11", src)
     put("dh_self_consistency", f"gender {dh['self_consistency']['q1']['k']}/{dh['self_consistency']['q1']['n']}; support {dh['self_consistency']['q3']['k']}/{dh['self_consistency']['q3']['n']}", src)
 
     eng = J(PA / "anchored_v2_summary.json")["development_english_originals"]

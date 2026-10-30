@@ -1,0 +1,49 @@
+{
+ "adjudicator": "MODEL-GENERATED passages-only reading by qwen2.5:7b via ollama, temperature 0",
+ "labels": {
+  "C005": {
+   "q1": "female",
+   "q3": "supported"
+  },
+  "C014": {
+   "q1": "undetermined",
+   "q3": "unsupported"
+  },
+  "C015": {
+   "q1": "female",
+   "q3": "supported"
+  },
+  "C016": {
+   "q1": "female",
+   "q3": "supported"
+  },
+  "C017": {
+   "q1": "female",
+   "q3": "settled"
+  },
+  "C018": {
+   "q1": "undetermined",
+   "q3": "not_settled"
+  },
+  "C021": {
+   "q1": "undetermined",
+   "q3": "unsupported"
+  },
+  "C028": {
+   "q1": "undetermined",
+   "q3": "unsupported"
+  },
+  "C036": {
+   "q1": "male",
+   "q3": "supported"
+  },
+  "C038": {
+   "q1": "female",
+   "q3": "supported"
+  },
+  "C041": {
+   "q1": "undetermined",
+   "q3": "unsupported"
+  }
+ }
+}
