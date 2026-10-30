@@ -35,6 +35,10 @@ def _reason(speaker_id: str | None, method: str, confidence: float) -> str | Non
     """Why a line is worth a person's time, or None when it is settled (an explicit "X said")."""
     if not speaker_id:
         return "unnamed"
+    if method == "HUMAN":
+        # A reviewer already decided this line (including an anonymous slot); queueing it again meant the "short
+        # queue" never drained.
+        return None
     if ":title:" in speaker_id or ":anon:" in speaker_id:
         return "role_slot"
     if method == "EXPLICIT":

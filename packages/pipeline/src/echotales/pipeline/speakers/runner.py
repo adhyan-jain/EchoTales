@@ -646,6 +646,19 @@ def attribute_novel(
         # content) doesn't leave orphaned stale spans behind. See
         # `delete_spans_for_chapter`'s docstring; this is where Section 4.32's
         # phantom "Daoist Gu" speaker survived a re-ingest.
+        # The rewrite below re-derives every span, which discarded reviewer decisions (corrections are marked
+        # applied once, never replayed). Carry HUMAN speakers across by span id.
+        human = {
+            s.id: s
+            for s in store.get_spans(novel_id, chapter.number)
+            if s.attribution_method is AttributionMethod.HUMAN
+        }
+        for s in spans:
+            kept = human.get(s.id)
+            if kept is not None:
+                s.speaker_self_id = kept.speaker_self_id
+                s.attribution_method = kept.attribution_method
+                s.confidence = kept.confidence
         store.delete_spans_for_chapter(novel_id, chapter.number)
         store.add_spans(spans)
 

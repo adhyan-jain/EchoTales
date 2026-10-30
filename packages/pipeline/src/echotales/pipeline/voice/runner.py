@@ -367,7 +367,10 @@ def render_novel(
                 voice = assignments[speaker_id].speaker_id
                 label = assignments[speaker_id].label
                 report.character_lines += 1
-            elif span.attribution_method in _SLOT_METHODS:
+            elif span.attribution_method in _SLOT_METHODS or (
+                span.attribution_method is AttributionMethod.HUMAN and ":anon:" in speaker_id
+            ):
+                # The second clause is a reviewer's anonymous-slot pick, which `corrections.py` now marks HUMAN.
                 if speaker_id not in anon_voices:
                     # A genuinely unresolved gender is coin-flipped, not
                     # left to the bank's raw population. VCTK is 63 female

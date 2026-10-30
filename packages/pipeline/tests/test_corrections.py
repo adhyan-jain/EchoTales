@@ -64,7 +64,8 @@ class TestAnonSlotReassignment:
 
         span = store.get_spans("t", 1.0)[0]
         assert span.speaker_self_id == "t:anon:1:2"
-        assert span.attribution_method is AttributionMethod.ANONYMOUS_SLOT
+        assert span.attribution_method is AttributionMethod.HUMAN
+        assert span.confidence == 1.0
 
     def test_anon_slot_beats_stale_null_speaker_id(self, tmp_path) -> None:
         """anon_slot takes the branch even though speaker_id is absent/null,
@@ -87,7 +88,7 @@ class TestAnonSlotReassignment:
         apply_pending(store, log)
         span = store.get_spans("t", 1.0)[0]
         assert span.speaker_self_id == "t:anon:1:1"
-        assert span.attribution_method is AttributionMethod.ANONYMOUS_SLOT
+        assert span.attribution_method is AttributionMethod.HUMAN
 
 
 class TestCreateMention:

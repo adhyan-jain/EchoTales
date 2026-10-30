@@ -296,6 +296,10 @@ class AttributionMethod(StrEnum):
     #: UNRESOLVED so a consumer can tell "genuinely nobody" from "some
     #: consistent nobody in particular."
     ANONYMOUS_SLOT = "ANONYMOUS_SLOT"
+    #: A person assigned this speaker in the review queue (`corrections.py::_apply_reassign_speaker`). Not EXPLICIT:
+    #: the regex ladder writes EXPLICIT at confidence 1.0 too, so neither field could tell a reviewer's decision
+    #: from a regex hit, and a reader or speakers re-run overwrote the decision and re-queued the line.
+    HUMAN = "HUMAN"
     #: The line names its own speaker ("I am Gu Yue Sou", "You can call me
     #: Scarter") -- `speakers/runner.py::_self_named`. Never overrides EXPLICIT.
     SELF_NAMING = "SELF_NAMING"

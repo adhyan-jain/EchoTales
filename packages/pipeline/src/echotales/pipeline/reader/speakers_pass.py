@@ -79,6 +79,7 @@ class SpeakerReport:
     role_rejected: int = 0
     cleared: int = 0
     retyped: int = 0
+    human_kept: int = 0
 
 
 #: Korean/Japanese honorific suffixes attached to a name. "Yoo Sangah-ssi" is Yoo Sangah, but without this the matcher saw a
@@ -330,6 +331,11 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
         span = _span_at(spans, block_index, starts[q])
         if span is None:
             report.no_span += 1
+            continue
+        if span.attribution_method is AttributionMethod.HUMAN:
+            # A reviewer's decision outranks the model; the re-run used to overwrite it and the correction was
+            # already marked applied, so it was never replayed.
+            report.human_kept += 1
             continue
         key = _norm(speaker)
         if key.startswith(UNKNOWN) and key != UNKNOWN:

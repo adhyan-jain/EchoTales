@@ -461,12 +461,10 @@ def _apply_reassign_speaker(store: Store, correction: Correction, *, seq: int) -
 
     old_speaker = span.speaker_self_id
     span.speaker_self_id = final_speaker
-    if anon_slot and final_speaker:
-        span.attribution_method = AttributionMethod.ANONYMOUS_SLOT
-    else:
-        span.attribution_method = (
-            AttributionMethod.EXPLICIT if final_speaker else AttributionMethod.UNRESOLVED
-        )
+    # HUMAN, not EXPLICIT/ANONYMOUS_SLOT, and confidence 1.0: the old EXPLICIT write left the reader's 0.0 in place,
+    # so `voice/runner.py` voiced a reviewed line as "unconfirmed" and `review_gate._reason` queued it again.
+    span.attribution_method = AttributionMethod.HUMAN if final_speaker else AttributionMethod.UNRESOLVED
+    span.confidence = 1.0 if final_speaker else 0.0
     store.add_spans([span])
 
     store.append_event(
