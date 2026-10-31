@@ -297,7 +297,23 @@ def build():
     put("dh_passages_only", f"s1 {mp['s1_not_supported']['k']} of {mp['s1_not_supported']['n']} ({mp['s1_not_supported']['pct']}%); served {mp['served_not_supported']['k']} of {mp['served_not_supported']['n']} ({mp['served_not_supported']['pct']}%); "
         + "; ".join(f"{n} {m['agree']['k']}/{m['agree']['n']}" for n, m in mp["vs_model"].items()), src)
     put("dh_local_readers", f"llama s1 {dh['model_llama31_8b']['s1_not_supported']['k']} of 10; qwen s1 {dh['model_qwen25_7b']['s1_not_supported']['k']} of 10; gender match 7 and 4 of 11", src)
-    put("dh_self_consistency", f"gender {dh['self_consistency']['q1']['k']}/{dh['self_consistency']['q1']['n']}; support {dh['self_consistency']['q3']['k']}/{dh['self_consistency']['q3']['n']}", src)
+    w = lambda m: f"{m['k']} of {m['n']} ({m['pct']}%) [{m['wilson95'][0]}, {m['wilson95'][1]}]"
+    put("dh_revised", f"s1 {w(dh['s1_model_disclosures_confirmed'])}; s2 supported {w(dh['s2_model_supported_confirmed'])}; "
+        f"controls not supported {w(dh['s6_controls_not_supported'])}; served not supported {w(dh['served_value']['not_supported'])}; "
+        f"book-correct among them {dh['served_value']['cells']['correct|not_supported']}", src)
+    fa = dh["first_author_adjudication"]
+    put("dh_first_author_rule", f"s1 {w(fa['s1_not_supported'])}; s2 supported {w(fa['s2_supported'])}; controls {w(fa['s6_not_supported'])}; "
+        f"served {w(fa['served_not_supported'])}; " + "; ".join(f"{n} {m['agree']['k']}/{m['agree']['n']} kappa {m['cohen_kappa']:.2f}" for n, m in fa["vs_model"].items()), src)
+    ap_ = dh["annotator_profile"]
+    pa_ = ap_["per_annotator"]
+    put("dh_name_evidence", f"undetermined first author {pa_['Adhyan']['undetermined']} of {pa_['Adhyan']['cases']}, others {pa_['Aryan']['undetermined']} and "
+        f"{pa_['Atharva']['undetermined']} of {pa_['Aryan']['cases']}; knew plot {pa_['Adhyan']['knew_plot']}, {pa_['Aryan']['knew_plot']}, {pa_['Atharva']['knew_plot']} of "
+        f"{pa_['Adhyan']['cases']}; splits {ap_['first_author_splits_gender_vs_undetermined']} of {ap_['first_author_splits']}; "
+        f"s1 lone dissent {ap_['s1_lone_dissent_first_author_supporter']} of 7", src)
+    ab, ch = dh["adjudication_basis"], dh["changed_by_revision"]
+    put("dh_revision_scope", f"gender changed {len(ch['q1'])}; support changed {len(ch['q3'])}; third-reader slots: gender {ab['q1'].get('model_passages_only', 0)}, "
+        f"support {ab['q3'].get('model_passages_only', 0)}, excluded {len(dh['unresolved_excluded'])}", src)
+    put("dh_self_consistency",f"gender {dh['self_consistency']['q1']['k']}/{dh['self_consistency']['q1']['n']}; support {dh['self_consistency']['q3']['k']}/{dh['self_consistency']['q3']['n']}", src)
 
     eng = J(PA / "anchored_v2_summary.json")["development_english_originals"]
     v1 = eng["setting_1_0.8"]["v1"]

@@ -2,9 +2,13 @@
 
 Status: ANNOTATION RAN (finished by 2026-10-30; 3 annotators: Adhyan, Aryan, Atharva; 48 cases + 4 repeats, two per case).
 Results: `data/eval/validation/disclosure_human_v1.json`, labels in `data/eval/validation/disclosure_labels/`.
-Deviation from this protocol: adjudication was done by the FIRST author (10 disagreements, plus C005 where the pair
-agreed on "undetermined" and the ruling was male), not by a third author, and not from prefix passages only. The paper
-states this. Third-author adjudication of those 11 rulings, from passages alone, is still open.
+Deviation from this protocol: no third author adjudicated. The FIRST author ruled first (10 disagreements, plus C005 where the pair
+agreed on "undetermined" and the ruling was male). 2026-10-31: those rulings were withdrawn as the primary rule because the first
+author's labels were partly name-based (0 'undetermined' in 32 cases against 7 and 8; all 7 splits with a partner a gender against
+'undetermined'; knew the plot in 22 of 32). Primary adjudication now: pair agreement, else the other annotator, else (two other
+annotators split: 3 on gender, 3 on support) `adjudication_third.json` from a human third reader if present, else the model
+passages-only reading, else excluded. The original rule is kept as `first_author_adjudication` in the results. The rule was set
+after the label distributions were seen, and the paper says so. Open: the third reader's labels for those four cases.
 Original status follows: PROPOSAL for review.
 Written 2026-10-27. Sampler: `scripts/paper/build_validation_sample.py` (seed 20261101).
 

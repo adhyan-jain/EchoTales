@@ -8,11 +8,14 @@ Design notes the numbers depend on:
   * 48 sampled cases are the analysis set; the 4 repeats (R001-R004) only measure self-consistency.
   * Each case has two of the three annotators in rotation, so agreement is Fleiss' kappa with two raters per case, not
     Cohen's kappa (the two raters are not the same people across cases), as in score_reveal_validation.py.
-  * Adjudication: where the pair agreed that is the label; otherwise the first author ruled (data/eval/validation/
-    disclosure_labels/adjudicated.json, `basis`). The first author is also an annotator and had read the books, so
-    the adjudicated label is not independent of the humans it is compared against. book_truth is the character's gender in
-    the novel; q1 is what the passages up to the cut establish. They differ only where the pair agreed the prefix does not
-    settle it.
+  * Adjudication (revised 2026-10-31): per question, where the pair agreed that is the label; where they split and the
+    first author was one of the pair, the other annotator's label stands; where two non-first-author annotators split, the
+    case is resolved by a third human reader if adjudication_third.json exists, else provisionally by the model
+    passages-only reading, else left out of the denominators. The first author's own labels were partly name-based: they
+    never answered "undetermined" (0 of 32 primary cases, against 7 and 8 of 32 for the other two) and all 7 of their splits
+    with a partner were a gender against "undetermined", while the guideline says a name is not a signal. The earlier rule (first
+    author rules on splits, and overrode one pair that agreed on "undetermined") is kept as `first_author_adjudication`
+    so both are reported. book_truth is the character's gender in the novel; q1 is what the shown passages establish.
 
 Inputs : scripts/review/disclosure_validation_app/cases.json (gitignored), data/eval/validation/pipeline_disclosure_sample*.json,
          data/eval/validation/disclosure_labels/{labels_*.json, adjudicated.json}
@@ -74,8 +77,31 @@ def main() -> None:
     man = {c["case"]: c for c in json.load(open(VAL / "pipeline_disclosure_sample.json"))["cases"]}
     key = json.load(open(VAL / "pipeline_disclosure_sample_key.json"))
     lab = {n: json.load(open(LAB / f"labels_{n}.json"))["labels"] for n in ("Adhyan", "Aryan", "Atharva")}
-    adj = json.load(open(LAB / "adjudicated.json"))["adjudicated"]
+    adj_first_author = json.load(open(LAB / "adjudicated.json"))["adjudicated"]
     prim = [k for k in cases if not k.startswith("R")]
+    fb_files = {n: json.load(open(LAB / n))["labels"] for n in ("adjudication_third.json", "adjudication_model_passages_only.json")
+                if (LAB / n).exists()}
+
+    def fallback(k, f):
+        for n in ("adjudication_third.json", "adjudication_model_passages_only.json"):  # a human third reader outranks the model
+            v = fb_files.get(n, {}).get(k, {}).get(f)
+            if v:
+                return v, n.removesuffix(".json").removeprefix("adjudication_")
+        return None, "unresolved"
+
+    # The first author's labels are the one set that was partly name-based, so on any split they lose to the other annotator.
+    adj = {}
+    for k in prim:
+        a, b = cases[k]["annotators"]
+        adj[k] = dict(book_truth=adj_first_author[k]["book_truth"], basis={})
+        for f in ("q1", "q3"):
+            x, y = lab[a][k].get(f), lab[b][k].get(f)
+            if x == y:
+                adj[k][f], adj[k]["basis"][f] = x, "agreement"
+            elif "Adhyan" in (a, b):
+                adj[k][f], adj[k]["basis"][f] = (y if a == "Adhyan" else x), "non_first_author"
+            else:
+                adj[k][f], adj[k]["basis"][f] = fallback(k, f)
     rep = {k: man[k]["repeat_of"] for k in cases if k.startswith("R")}
     assert len(prim) == 48 and len(rep) == 4, (len(prim), len(rep))
 
@@ -123,7 +149,8 @@ def main() -> None:
     res["human_vs_model_q1_agreed_pairs_only"] = ag_only
 
     # 3. correct versus backed by the passages, on the cases where a value was served
-    served = [k for k in prim if cases[k]["served"] in ("male", "female")]
+    served = [k for k in prim if cases[k]["served"] in ("male", "female") and adj[k]["q3"] is not None]
+    res["unresolved_excluded"] = sorted(k for k in prim if cases[k]["served"] in ("male", "female") and adj[k]["q3"] is None)
     cell = Counter()
     for k in served:
         correct = cases[k]["served"] == adj[k]["book_truth"]
@@ -175,7 +202,7 @@ def main() -> None:
         if not f.exists():
             continue
         tl = json.load(open(f))["labels"]
-        alt = {k: dict(v) for k, v in adj.items()}
+        alt = {k: dict(v) for k, v in adj_first_author.items()}  # these probe the first-author rulings, so they start from them
         for k, v in tl.items():
             if v.get("q1"):
                 alt[k]["q1"] = v["q1"]
@@ -190,7 +217,38 @@ def main() -> None:
             vs_model={n: dict(agree=pct(sum(alt[k]["q1"] == key[k][f_] for k in prim if key[k].get(f_) is not None),
                                          sum(key[k].get(f_) is not None for k in prim)))
                       for n, f_ in (("claude_annotator1", "annotator1"), ("luna_strict", "annotator2_strict"), ("luna_permissive", "annotator2_permissive"))})
-    res["adjudication_basis"] = dict(Counter(adj[k]["basis"] for k in prim))
+    res["adjudication_basis"] = {f: dict(Counter(adj[k]["basis"][f] for k in prim)) for f in ("q1", "q3")}
+    res["changed_by_revision"] = dict(q1=sorted(k for k in prim if adj[k]["q1"] != adj_first_author[k]["q1"]),
+                                      q3=sorted(k for k in prim if adj[k]["q3"] != adj_first_author[k].get("q3")))
+    # why the first author's labels lose splits: no "undetermined" at all, and every split with a partner had them committing
+    # to a gender where the partner declined. Over the 48 primary cases only; repeats are self-consistency data.
+    prof = {}
+    for n in ("Adhyan", "Aryan", "Atharva"):
+        ks = [k for k in prim if n in cases[k]["annotators"]]
+        prof[n] = dict(cases=len(ks), undetermined=sum(lab[n][k]["q1"] == "undetermined" for k in ks),
+                       knew_plot=sum(lab[n][k].get("q0") == "yes" for k in ks))
+    splits = [(k, [x for x in cases[k]["annotators"] if x != "Adhyan"][0]) for k in prim
+              if "Adhyan" in cases[k]["annotators"] and pair(k)[0]["q1"] != pair(k)[1]["q1"]]
+    res["annotator_profile"] = dict(per_annotator=prof, first_author_splits=len(splits),
+                                    first_author_splits_gender_vs_undetermined=sum(
+                                        lab["Adhyan"][k]["q1"] in ("male", "female") and lab[o][k]["q1"] == "undetermined" for k, o in splits),
+                                    s1_lone_dissent_first_author_supporter=sum(
+                                        1 for k in prim if man[k]["stratum"] == "S1" and cases[k]["served"] in ("male", "female")
+                                        and sum(x.get("q3") in ("unsupported", "contradicted") for x in pair(k)) == 1
+                                        and "Adhyan" in cases[k]["annotators"] and lab["Adhyan"][k].get("q3") == "supported"))
+    # the earlier rule, reported on the same quantities so the effect of the revision is visible and nothing is hidden
+    fa = adj_first_author
+    fa_served = [k for k in prim if cases[k]["served"] in ("male", "female")]
+    ns = lambda ks: pct(sum(fa[k]["q3"] != "supported" for k in ks), len(ks))
+    res["first_author_adjudication"] = dict(
+        s1_not_supported=ns([k for k in fa_served if man[k]["stratum"] == "S1"]),
+        s2_supported=pct(sum(fa[k]["q3"] == "supported" for k in fa_served if man[k]["stratum"] == "S2"),
+                         len([k for k in fa_served if man[k]["stratum"] == "S2"])),
+        s6_not_supported=ns([k for k in fa_served if man[k]["stratum"] == "S6"]), served_not_supported=ns(fa_served),
+        vs_model={n: dict(agree=pct(sum(fa[k]["q1"] == key[k][f_] for k in prim if key[k].get(f_) is not None),
+                                    sum(key[k].get(f_) is not None for k in prim)),
+                          cohen_kappa=cohen([(fa[k]["q1"], key[k][f_]) for k in prim if key[k].get(f_) is not None], CATS["q1"]))
+                  for n, f_ in (("claude_annotator1", "annotator1"), ("luna_strict", "annotator2_strict"), ("luna_permissive", "annotator2_permissive"))})
     OUT.write_text(json.dumps(res, indent=1, ensure_ascii=False))
     print(json.dumps(res, indent=1, ensure_ascii=False))
 

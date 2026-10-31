@@ -122,39 +122,40 @@
  "human_vs_model_q1": {
   "claude_annotator1": {
    "agree": {
-    "k": 14,
+    "k": 17,
     "n": 18,
-    "pct": 77.8,
+    "pct": 94.4,
     "wilson95": [
-     54.8,
-     91.0
+     74.2,
+     99.0
     ]
    },
-   "cohen_kappa": 0.613,
+   "cohen_kappa": 0.909,
    "confusion": {
     "female->female": 4,
     "male->male": 9,
-    "male->undetermined": 4,
-    "undetermined->undetermined": 1
+    "male->undetermined": 1,
+    "undetermined->undetermined": 4
    }
   },
   "luna_strict": {
    "agree": {
-    "k": 31,
+    "k": 37,
     "n": 48,
-    "pct": 64.6,
+    "pct": 77.1,
     "wilson95": [
-     50.4,
-     76.6
+     63.5,
+     86.7
     ]
    },
-   "cohen_kappa": 0.466,
+   "cohen_kappa": 0.652,
    "confusion": {
     "female->female": 11,
     "female->undetermined": 2,
-    "male->male": 18,
-    "male->undetermined": 15,
-    "undetermined->undetermined": 2
+    "male->male": 16,
+    "male->undetermined": 7,
+    "undetermined->male": 2,
+    "undetermined->undetermined": 10
    }
   },
   "luna_permissive": {
@@ -167,13 +168,14 @@
      87.2
     ]
    },
-   "cohen_kappa": 0.581,
+   "cohen_kappa": 0.615,
    "confusion": {
     "female->female": 6,
     "female->undetermined": 2,
-    "male->male": 17,
-    "male->undetermined": 6,
-    "undetermined->undetermined": 2
+    "male->male": 13,
+    "male->undetermined": 2,
+    "undetermined->male": 4,
+    "undetermined->undetermined": 6
    }
   }
  },
@@ -215,69 +217,80 @@
    "cohen_kappa": 0.748
   }
  },
+ "unresolved_excluded": [
+  "C020"
+ ],
  "served_value": {
-  "n": 35,
+  "n": 34,
   "cells": {
-   "correct|not_supported": 2,
-   "correct|supported": 31,
-   "wrong|not_supported": 2
+   "correct|not_supported": 10,
+   "correct|supported": 22,
+   "wrong|not_supported": 1,
+   "wrong|supported": 1
   },
   "not_supported": {
-   "k": 4,
-   "n": 35,
-   "pct": 11.4,
+   "k": 11,
+   "n": 34,
+   "pct": 32.4,
    "wilson95": [
-    4.5,
-    26.0
+    19.1,
+    49.2
    ]
   },
   "correct_but_not_supported": [
+   "C005",
+   "C014",
+   "C015",
+   "C016",
+   "C021",
+   "C028",
    "C029",
-   "C040"
+   "C036",
+   "C040",
+   "C041"
   ]
  },
  "q3_by_stratum": {
   "S1": {
-   "supported": 8,
-   "unsupported": 2
+   "unsupported": 9,
+   "supported": 1
   },
   "S2": {
-   "contradicted": 1,
-   "supported": 7
+   "unsupported": 2,
+   "supported": 6
   },
   "S3": {
-   "supported": 7,
-   "contradicted": 1
+   "supported": 8
   },
   "S6": {
-   "supported": 9
+   "supported": 8
   }
  },
  "s1_model_disclosures_confirmed": {
-  "k": 2,
+  "k": 9,
   "n": 10,
-  "pct": 20.0,
+  "pct": 90.0,
   "wilson95": [
-   5.7,
-   51.0
+   59.6,
+   98.2
   ]
  },
  "s2_model_supported_confirmed": {
-  "k": 7,
+  "k": 6,
   "n": 8,
-  "pct": 87.5,
+  "pct": 75.0,
   "wilson95": [
-   52.9,
-   97.8
+   40.9,
+   92.9
   ]
  },
  "s6_controls_not_supported": {
   "k": 0,
-  "n": 9,
+  "n": 8,
   "pct": 0.0,
   "wilson95": [
    0.0,
-   29.9
+   32.4
   ]
  },
  "q3_sensitivity_by_stratum": {
@@ -286,26 +299,26 @@
    "both_say_not_supported": 3,
    "one_says_not_supported": 7,
    "neither": 0,
-   "adjudicated_not_supported": 2
+   "adjudicated_not_supported": 9
   },
   "S2": {
    "n": 8,
    "both_say_not_supported": 1,
    "one_says_not_supported": 1,
    "neither": 6,
-   "adjudicated_not_supported": 1
+   "adjudicated_not_supported": 2
   },
   "S3": {
    "n": 8,
    "both_say_not_supported": 0,
    "one_says_not_supported": 1,
    "neither": 7,
-   "adjudicated_not_supported": 1
+   "adjudicated_not_supported": 0
   },
   "S6": {
-   "n": 9,
+   "n": 8,
    "both_say_not_supported": 0,
-   "one_says_not_supported": 1,
+   "one_says_not_supported": 0,
    "neither": 8,
    "adjudicated_not_supported": 0
   }
@@ -330,12 +343,12 @@
    ]
   },
   "adjudicated": {
-   "k": 2,
+   "k": 9,
    "n": 10,
-   "pct": 20.0,
+   "pct": 90.0,
    "wilson95": [
-    5.7,
-    51.0
+    59.6,
+    98.2
    ]
   }
  },
@@ -383,25 +396,10 @@
    "C041"
   ],
   "changed_q1": [
-   "C005",
-   "C014",
-   "C015",
-   "C016",
-   "C017",
-   "C018",
-   "C021",
-   "C036",
-   "C041"
+   "C028"
   ],
   "changed_q3": [
-   "C005",
-   "C014",
-   "C015",
-   "C016",
-   "C018",
-   "C021",
-   "C036",
-   "C041"
+   "C028"
   ],
   "s1_not_supported": {
    "k": 9,
@@ -414,11 +412,11 @@
   },
   "served_not_supported": {
    "k": 11,
-   "n": 35,
-   "pct": 31.4,
+   "n": 34,
+   "pct": 32.4,
    "wilson95": [
-    18.6,
-    48.0
+    19.1,
+    49.2
    ]
   },
   "vs_model": {
@@ -472,22 +470,19 @@
    "C041"
   ],
   "changed_q1": [
-   "C005",
-   "C015",
-   "C016",
-   "C018",
-   "C021",
-   "C038",
-   "C041"
+   "C014",
+   "C017",
+   "C028",
+   "C036",
+   "C038"
   ],
   "changed_q3": [
-   "C005",
-   "C016",
+   "C014",
+   "C015",
    "C017",
-   "C018",
-   "C021",
-   "C038",
-   "C041"
+   "C028",
+   "C036",
+   "C038"
   ],
   "s1_not_supported": {
    "k": 7,
@@ -500,11 +495,11 @@
   },
   "served_not_supported": {
    "k": 9,
-   "n": 35,
-   "pct": 25.7,
+   "n": 34,
+   "pct": 26.5,
    "wilson95": [
-    14.2,
-    42.1
+    14.6,
+    43.1
    ]
   },
   "vs_model": {
@@ -559,23 +554,18 @@
   ],
   "changed_q1": [
    "C005",
-   "C014",
    "C015",
    "C016",
    "C017",
-   "C018",
-   "C021",
-   "C028",
-   "C038",
-   "C041"
+   "C036",
+   "C038"
   ],
   "changed_q3": [
-   "C014",
+   "C005",
+   "C015",
+   "C016",
    "C017",
-   "C018",
-   "C021",
-   "C028",
-   "C041"
+   "C036"
   ],
   "s1_not_supported": {
    "k": 5,
@@ -588,11 +578,11 @@
   },
   "served_not_supported": {
    "k": 8,
-   "n": 35,
-   "pct": 22.9,
+   "n": 34,
+   "pct": 23.5,
    "wilson95": [
-    12.1,
-    39.0
+    12.4,
+    40.0
    ]
   },
   "vs_model": {
@@ -632,8 +622,143 @@
   }
  },
  "adjudication_basis": {
-  "agreement": 37,
-  "adhyan_ruling_not_an_annotator": 4,
-  "adhyan_on_conflict": 7
+  "q1": {
+   "agreement": 38,
+   "model_passages_only": 3,
+   "non_first_author": 7
+  },
+  "q3": {
+   "agreement": 34,
+   "non_first_author": 11,
+   "unresolved": 1,
+   "model_passages_only": 2
+  }
+ },
+ "changed_by_revision": {
+  "q1": [
+   "C005",
+   "C014",
+   "C015",
+   "C016",
+   "C017",
+   "C018",
+   "C021",
+   "C028",
+   "C036",
+   "C041"
+  ],
+  "q3": [
+   "C001",
+   "C005",
+   "C012",
+   "C014",
+   "C015",
+   "C016",
+   "C018",
+   "C020",
+   "C021",
+   "C028",
+   "C036",
+   "C041",
+   "C043"
+  ]
+ },
+ "annotator_profile": {
+  "per_annotator": {
+   "Adhyan": {
+    "cases": 32,
+    "undetermined": 0,
+    "knew_plot": 22
+   },
+   "Aryan": {
+    "cases": 32,
+    "undetermined": 7,
+    "knew_plot": 0
+   },
+   "Atharva": {
+    "cases": 32,
+    "undetermined": 8,
+    "knew_plot": 5
+   }
+  },
+  "first_author_splits": 7,
+  "first_author_splits_gender_vs_undetermined": 7,
+  "s1_lone_dissent_first_author_supporter": 5
+ },
+ "first_author_adjudication": {
+  "s1_not_supported": {
+   "k": 2,
+   "n": 10,
+   "pct": 20.0,
+   "wilson95": [
+    5.7,
+    51.0
+   ]
+  },
+  "s2_supported": {
+   "k": 7,
+   "n": 8,
+   "pct": 87.5,
+   "wilson95": [
+    52.9,
+    97.8
+   ]
+  },
+  "s6_not_supported": {
+   "k": 0,
+   "n": 9,
+   "pct": 0.0,
+   "wilson95": [
+    0.0,
+    29.9
+   ]
+  },
+  "served_not_supported": {
+   "k": 4,
+   "n": 35,
+   "pct": 11.4,
+   "wilson95": [
+    4.5,
+    26.0
+   ]
+  },
+  "vs_model": {
+   "claude_annotator1": {
+    "agree": {
+     "k": 14,
+     "n": 18,
+     "pct": 77.8,
+     "wilson95": [
+      54.8,
+      91.0
+     ]
+    },
+    "cohen_kappa": 0.613
+   },
+   "luna_strict": {
+    "agree": {
+     "k": 31,
+     "n": 48,
+     "pct": 64.6,
+     "wilson95": [
+      50.4,
+      76.6
+     ]
+    },
+    "cohen_kappa": 0.466
+   },
+   "luna_permissive": {
+    "agree": {
+     "k": 25,
+     "n": 33,
+     "pct": 75.8,
+     "wilson95": [
+      59.0,
+      87.2
+     ]
+    },
+    "cohen_kappa": 0.581
+   }
+  }
  }
 }
