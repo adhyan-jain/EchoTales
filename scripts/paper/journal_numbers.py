@@ -321,8 +321,19 @@ def build():
         f"{pa_['Adhyan']['cases']}; splits {ap_['first_author_splits_gender_vs_undetermined']} of {ap_['first_author_splits']}; "
         f"s1 lone dissent {ap_['s1_lone_dissent_first_author_supporter']} of 7", src)
     ab, ch = dh["adjudication_basis"], dh["changed_by_revision"]
-    put("dh_revision_scope", f"gender changed {len(ch['q1'])}; support changed {len(ch['q3'])}; third-reader slots: gender {ab['q1'].get('model_passages_only', 0)}, "
-        f"support {ab['q3'].get('model_passages_only', 0)}, excluded {len(dh['unresolved_excluded'])}", src)
+    put("dh_revision_scope", f"gender changed {len(ch['q1'])}; support changed {len(ch['q3'])}; third-reader slots: gender {ab['q1'].get('third', 0)}, "
+        f"support {ab['q3'].get('third', 0)}, excluded {len(dh['unresolved_excluded'])}", src)
+    # The independent third reader (not an author, had read none of the books) labelled the earlier-ruled cases from the passages alone.
+    th = J(Path("data/eval/validation/disclosure_labels/adjudication_third.json"))["labels"]
+    mo = J(Path("data/eval/validation/disclosure_labels/adjudication_model_passages_only.json"))["labels"]
+    both = sorted(set(th) & set(mo))
+    both3 = [k for k in both if mo[k].get("q3") and th[k].get("q3")]
+    tp = dh["third_author"]
+    put("dh_third_reader", f"cases {len(th)}, knew the book {sum(v.get('q0') == 'yes' for v in th.values())}; differs from adjudicated gender {len(tp['changed_q1'])}, support {len(tp['changed_q3'])}; "
+        f"s1 {tp['s1_not_supported']['k']} of {tp['s1_not_supported']['n']}; served {tp['served_not_supported']['k']} of {tp['served_not_supported']['n']}; "
+        f"model reading matches third reader on gender {sum(th[k]['q1'] == mo[k]['q1'] for k in both)} of {len(both)}, support "
+        f"{sum(th[k]['q3'] == mo[k]['q3'] for k in both3)} of {len(both3)}; "
+        + "; ".join(f"{n} {m['agree']['k']}/{m['agree']['n']}" for n, m in tp["vs_model"].items()), src)
     put("dh_self_consistency",f"gender {dh['self_consistency']['q1']['k']}/{dh['self_consistency']['q1']['n']}; support {dh['self_consistency']['q3']['k']}/{dh['self_consistency']['q3']['n']}", src)
 
     eng = J(PA / "anchored_v2_summary.json")["development_english_originals"]

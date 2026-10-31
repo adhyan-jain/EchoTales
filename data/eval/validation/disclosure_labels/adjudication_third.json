@@ -1,0 +1,82 @@
+{
+ "adjudicator": "independent reader, not an author, who had not read the books",
+ "labels": {
+  "C017": {
+   "q0": "no",
+   "q1": "undetermined",
+   "q3": "not_settled",
+   "q4": null,
+   "note": ""
+  },
+  "C014": {
+   "q0": "no",
+   "q1": "undetermined",
+   "q3": "unsupported",
+   "q4": "no",
+   "note": ""
+  },
+  "C005": {
+   "q0": "no",
+   "q1": "undetermined",
+   "q3": "unsupported",
+   "q4": "no",
+   "note": ""
+  },
+  "C038": {
+   "q0": "no",
+   "q1": "male",
+   "q3": "supported",
+   "q4": "yes",
+   "note": ""
+  },
+  "C021": {
+   "q0": "no",
+   "q1": "undetermined",
+   "q3": "unsupported",
+   "q4": "no",
+   "note": ""
+  },
+  "C028": {
+   "q0": "no",
+   "q1": "male",
+   "q3": "supported",
+   "q4": "yes",
+   "note": ""
+  },
+  "C041": {
+   "q0": "no",
+   "q1": "undetermined",
+   "q3": "unsupported",
+   "q4": "no",
+   "note": ""
+  },
+  "C016": {
+   "q0": "no",
+   "q1": "undetermined",
+   "q3": "unsupported",
+   "q4": "no",
+   "note": ""
+  },
+  "C036": {
+   "q0": "no",
+   "q1": "undetermined",
+   "q3": "unsupported",
+   "q4": "no",
+   "note": ""
+  },
+  "C018": {
+   "q0": "no",
+   "q1": "undetermined",
+   "q3": "not_settled",
+   "q4": null,
+   "note": ""
+  },
+  "C015": {
+   "q0": "no",
+   "q1": "undetermined",
+   "q3": "unsupported",
+   "q4": "no",
+   "note": ""
+  }
+ }
+}
