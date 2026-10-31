@@ -183,6 +183,35 @@ cue control 8, pipeline 9, repair 10, cards 11, canaries 12, synthesis 13).
 | 8 Limitations | Done | Event ambiguity might affect the between-arm difference (the arms-equal argument is plausible, not guaranteed); disclosure rates are provisional and the human check does not extend to the pipeline audit; nested cuts scope the audit to these serials. |
 | 9 Conclusion | Done | RQ1-RQ3 answered explicitly; the final lesson keeps "markers and timestamp filters are insufficient when upstream processing has already used future information" and "does not establish universal spoiler-free behaviour". The future-work human item is stated as a larger independent sample recording both explicitness and prefix inferability, with human-validated disclosure labels on shareable or synthetic text. |
 
+## Review round 3 (third review comments)
+Status key: **Text** = addressed by wording or restructuring in `main.tex`; **Pending** = needs new evidence or an owner action (see the open list below).
+
+| Comment | Status | Where / what changed |
+|---|---|---|
+| Abstract: zero-leakage sentence names the tested controls | Text | "Prefix-built representations and physically truncated inputs produced zero observed leakage in the reported tests." |
+| Abstract: 34/36 is an explicitness check only | Text | Limitations sentence says it is not validation of the whole corpus and not proof the identity was unknowable. |
+| Abstract: keep four findings, move secondary percentages | Text | Kept confirmatory null, +26.0 exploratory, 41/685, and one selection result (19.4% vs 1.4%); card range removed. |
+| Keywords | Text | Added Non-interference and Information-flow control; dropped "Information leakage" and "Large language models" to stay at six. |
+| Sec 1: project mention to one sentence | Text | Done. |
+| Sec 2.3 critical comparison; 2.4 vendor docs not evidence | Text | Added the story-time/belief/consistency versus enforced evidence-horizon distinction; product documentation stated not to be evidence of effectiveness. No tools subsection added. |
+| Sec 3: fixed configuration versus book-derived state | Text | Definition rewritten as configuration plus state-construction process; all book-derived state is rebuilt for $B'$; the held-fixed entity assignment in truncate-and-rebuild is named as a deliberate departure. |
+| Sec 3: stochastic systems | Text | Temperature 0 and seeds give operational reproducibility, not distributional equality; tests are sampled operational checks, not verification. |
+| Sec 4.1 rubric and examples | Text, partly Pending | Rubric summary and the explicit example added; event-level examples of implied, invalid and already-inferable events still to be picked (open list). |
+| Sec 4.2 pseudonym caveat | Text | One sentence added. |
+| Sec 4.3 evaluator bias; raw pairs primary; adjudication as sensitivity | Text | Stated; the 36-event and 48-cut checks are kept distinct in 4.3 and 8. |
+| Sec 5 Table 4 / model reproducibility / identifier | Text | Model name stated as sent to the API, reasoning effort none (verified in `scripts/chimera/pd_v2_luna.py`, `pd_v3_luna.py`, `l1_llm_leakage.py`, `scripts/prefix_audit/luna_labels.py`), no snapshot or returned model string recorded; runs not described as exactly reproducible. |
+| Sec 5 nested cuts | Text, partly Pending | Statistical unit stated; intervals described as descriptive; a serial-level sensitivity analysis is still open. |
+| Sec 5 independence of replications | Text | Card, canary and selection experiments described as complementary tests. |
+| Sec 5 repository tag | Pending | Needs a new tag after all edits; Declarations still carry the old disclaimer. |
+| Sec 6.1 disagreement table | Text | Table added (raw agreement and events with a disagreement per question). |
+| Sec 6.2 familiarity | Text | Group sizes, estimate, interval and inconclusive status reported together; not a moderator. |
+| Sec 6.3 anchored cue | Text | Non-transfer made explicit as a limit on generality. |
+| Sec 6.4 judge validation, versioned cards, Fig. 10, negative controls | Text, partly Pending | Judge-rule result called not fully model-independent; cards described as tested configurations; Fig. 10 caption states the metrics differ. The known-truth judge test is still open. |
+| Sec 6.5 runtime | Text | Timings described as indicative; per-run values left to the supplement. |
+| Sec 7, 8, 9 repetition | Text | Numbers removed from the Discussion; Limitations rewritten by effect on conclusions with the two human checks separated; Conclusion shortened to RQ1-RQ3. |
+| Evidence-strength labels, terminology, faithfulness versus utility | Text | Four labels defined in Sec 5; terminology paragraph in Sec 3; utility stated as an evaluation principle in Sec 3. |
+| Independent human annotation round; model-judge known-truth test | Pending | See open list. |
+
 ## Open after this revision
 1. **Human annotation:** partly done on 2026-10-30. The supplement now gives the reveal-check rubric, an example and four disagreement categories, and a 48-case human check of the disclosure labels was run and reported (main text and supplement). Still open: a human third-author adjudication of the 11 first-author rulings, and human-validated labels on shareable or synthetic text.
 2. **Not recorded, so not claimable:** vLLM checkpoint revisions, the commercial-model snapshot, and ollama IDs at run time. Sect. 5 says so; recording them in the next run would remove the caveat.

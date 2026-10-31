@@ -298,7 +298,9 @@ def build():
 # Values shown only in a figure or deliberately left to the supplement; everything else must be quoted in the text.
 NUM = r"[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?"  # commas only as thousands separators
 NOT_QUOTED = {"pool_gap_v2", "pool_ci_v2", "pool_gap_v3", "pool_ci_v3", "pa_certified_safe", "pa_cf_compared",
-              "pre_items_by_dataset", "ref_gap_reconstructed", "conf_mistral24_closed", "conf_olmo32b_closed"}
+              "pre_items_by_dataset", "ref_gap_reconstructed", "conf_mistral24_closed", "conf_olmo32b_closed",
+              # review round 3: per-run timings moved to the supplement; the main text gives only an indicative cost.
+              "pa_time"}
 
 
 def check(tex_path: str):
