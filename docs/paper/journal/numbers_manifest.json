@@ -639,17 +639,17 @@
   "note": ""
  },
  "dh_s1_by_rule": {
-  "value": "both 3 of 10; at least one 10; adjudicated 2",
+  "value": "both 3 of 10; at least one 10; adjudicated 9",
   "source": "validation/disclosure_human_v1.json",
   "note": ""
  },
  "dh_served_not_supported": {
-  "value": "4 of 35 (11.4%)",
+  "value": "11 of 34 (32.4%)",
   "source": "validation/disclosure_human_v1.json",
   "note": ""
  },
  "dh_vs_models": {
-  "value": "claude_annotator1 14/18 kappa 0.61; luna_strict 31/48 kappa 0.47; luna_permissive 25/33 kappa 0.58",
+  "value": "claude_annotator1 17/18 kappa 0.91; luna_strict 37/48 kappa 0.65; luna_permissive 25/33 kappa 0.61",
   "source": "validation/disclosure_human_v1.json",
   "note": ""
  },
@@ -659,12 +659,32 @@
   "note": ""
  },
  "dh_passages_only": {
-  "value": "s1 9 of 10 (90.0%); served 11 of 35 (31.4%); claude_annotator1 17/18; luna_strict 38/48; luna_permissive 26/33",
+  "value": "s1 9 of 10 (90.0%); served 11 of 34 (32.4%); claude_annotator1 17/18; luna_strict 38/48; luna_permissive 26/33",
   "source": "validation/disclosure_human_v1.json",
   "note": ""
  },
  "dh_local_readers": {
   "value": "llama s1 7 of 10; qwen s1 5 of 10; gender match 7 and 4 of 11",
+  "source": "validation/disclosure_human_v1.json",
+  "note": ""
+ },
+ "dh_revised": {
+  "value": "s1 9 of 10 (90.0%) [59.6, 98.2]; s2 supported 6 of 8 (75.0%) [40.9, 92.9]; controls not supported 0 of 8 (0.0%) [0.0, 32.4]; served not supported 11 of 34 (32.4%) [19.1, 49.2]; book-correct among them 10",
+  "source": "validation/disclosure_human_v1.json",
+  "note": ""
+ },
+ "dh_first_author_rule": {
+  "value": "s1 2 of 10 (20.0%) [5.7, 51.0]; s2 supported 7 of 8 (87.5%) [52.9, 97.8]; controls 0 of 9 (0.0%) [0.0, 29.9]; served 4 of 35 (11.4%) [4.5, 26.0]; claude_annotator1 14/18 kappa 0.61; luna_strict 31/48 kappa 0.47; luna_permissive 25/33 kappa 0.58",
+  "source": "validation/disclosure_human_v1.json",
+  "note": ""
+ },
+ "dh_name_evidence": {
+  "value": "undetermined first author 0 of 32, others 7 and 8 of 32; knew plot 22, 0, 5 of 32; splits 7 of 7; s1 lone dissent 5 of 7",
+  "source": "validation/disclosure_human_v1.json",
+  "note": ""
+ },
+ "dh_revision_scope": {
+  "value": "gender changed 10; support changed 13; third-reader slots: gender 3, support 2, excluded 1",
   "source": "validation/disclosure_human_v1.json",
   "note": ""
  },
