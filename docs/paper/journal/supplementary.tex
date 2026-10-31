@@ -393,6 +393,22 @@ E33 & John Caldigate & Smith & conf. low & Ad: expl/remin/yes; Ar: expl/revel/ye
 
 \paragraph{Rubric, examples and disagreement categories for the reveal check.} Annotators answered five questions, in this order, and saw model labels for none. Q0 asked whether they already knew the plot. Q1 asked whether the highlighted reveal passage says the alias is the identity: \emph{explicit} (a reader of that passage alone learns they are the same person, for example ``the Opera ghost \dots{} his real name is Erik''), \emph{implied only}, or \emph{no}. Q2 asked whether the passage reads as a \emph{revelation} (the moment the truth comes out) or a \emph{reminder} of something the reader was already told. Q3 asked, from the earlier passages only, whether a careful first-time reader could name the hidden identity: \emph{no}, \emph{suspect} (hints, not settled) or \emph{confident}. Q4 asked whether the item is valid, meaning a real reference to a hidden person whose identity is a specific named character and not a description. The disagreements fall into four kinds. (i)~Explicitness: both annotators judged the reveal explicit in 34 of 36 events, and in the other 2 at least one called it implied. (ii)~Inferability: at least one annotator suspected the identity from the earlier passages in 17 events and both did in 8, and none judged it confidently inferable. (iii)~Revelation against reminder: at least one annotator read the reveal as a reminder in 9 events. (iv)~Validity: at least one annotator marked an item invalid in 6 events, all confirmatory and each accepted by the other annotator (\texttt{C10150\_1}, \texttt{C1848\_1}, \texttt{C35443\_1}, \texttt{C39858\_1}, \texttt{C4537\_1}, \texttt{C7497\_1}); the event-level labels are in the repository next to the scoring script.
 
+\begin{table}[!ht]
+\caption{Representative events from the 36-event reveal check, one per category in the rubric. ``Annotator labels'' give the two annotators' answers to Q1 (explicitness), Q3 (inferability from the earlier passages) and Q4 (validity). Books are Project Gutenberg texts.}\label{tab:reveal_examples}
+\footnotesize
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}p{1.9cm}p{4.0cm}p{2.0cm}p{3.8cm}}
+\toprule
+Category & Event (book; alias $\to$ identity) & Event id & Annotator labels \\
+\midrule
+Explicit & \emph{Oliver Twist}; Monks $\to$ Edward Leeford & \texttt{OT} & both: explicit; not inferable; valid \\
+Implied only & \emph{The Red-Headed League}; Vincent Spaulding $\to$ John Clay & \texttt{RH} & both: implied; one suspected the identity earlier; valid \\
+Already inferable & \emph{King Solomon's Mines}; Umbopa $\to$ Ignosi & \texttt{KM} & both: explicit; both suspected the identity from earlier passages; valid \\
+Invalid & \emph{Further Adventures of Quincy Adams Sawyer}; ``I'' (first-person narrator) $\to$ Alessandro Nondra & \texttt{C7497\_1} & one annotator: valid; the other: invalid (no reason recorded; the alias is the first-person pronoun) \\
+Invalid & \emph{Dracula's Guest}; ``a fisherman'' $\to$ Saft Tammie & \texttt{C10150\_1} & flagged invalid by one annotator and accepted by the other \\
+\botrule
+\end{tabular*}
+\end{table}
+
 \section{Human check of the disclosure labels}
 The check follows the protocol file in the repository. It has 48 sampled character-cuts and 4 repeats, drawn by stratum with a fixed seed whose manifest hash was recorded before annotation. Three annotators labelled the cases in rotation, two per case. They saw at most eight passages up to the cut, answered the gender and confidence questions first, and then saw the served value. Table~\ref{tab:s-disclosure} gives the strata. Gender agreement is raw agreement between the two annotators of a case. The last four columns count served values that the annotators judged not supported by the passages, among the cases of the stratum that had a served value.
 
