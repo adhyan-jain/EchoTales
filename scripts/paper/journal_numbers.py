@@ -189,7 +189,17 @@ def build():
         put(lab, f"{pc(can[k]['estimate'])}% {ci(*can[k]['ci'], signed=False)} of {can[k]['events']}; control {pc(can[k]['rate_y'])}%",
             "rf_e2e/canary_analysis.json")
     sel = J(C / "rf_e2e/selection_analysis.json")["H13_1_resolver_merged"]
-    put("selection", f"{pc(sel['M_rate'])}% vs {pc(sel['P_rate'])}%; diff {pts(sel['estimate'])} {ci(*sel['ci'])}; {sel['events']} events",
+    kt = J(Path("data/eval/judge_known_truth.json"))["metrics"]
+    kw = lambda m: f"{m['k']}/{m['n']} ({m['pct']}%) [{m['wilson'][0]}, {m['wilson'][1]}]"
+    ag = J(Path("data/eval/judge_known_truth.json"))["agreement_between_judges"]
+    q, g = kt["qwen3:8b"], kt["gemma2:9b"]
+    put("judge_kt_main", f"qwen explicit {kw(q['sens_explicit'])}; implied {kw(q['sens_implied'])}; negatives {kw(q['specificity'])}; hard negatives "
+        f"{q['spec_hard']['k']}/{q['spec_hard']['n']}; other family positives {g['sensitivity']['k']}/{g['sensitivity']['n']}, negatives "
+        f"{g['specificity']['k']}/{g['specificity']['n']}; judges agree {ag['k']}/{ag['n']}", "judge_known_truth.json",
+        "synthetic template cards with invented names; truth fixed by construction")
+    put("judge_kt_supp", "; ".join(f"{n} {kw(m['sensitivity'])} {kw(m['specificity'])} {kw(m['accuracy'])}" for n, m in kt.items()), "judge_known_truth.json",
+        "full table is in the supplement only")
+    put("selection",f"{pc(sel['M_rate'])}% vs {pc(sel['P_rate'])}%; diff {pts(sel['estimate'])} {ci(*sel['ci'])}; {sel['events']} events",
         "rf_e2e/selection_analysis.json", "CI is for the paired event-level difference")
     put("selection_per_model", " / ".join(pc(sel["per_model"][m]["M_rate"]) for m in ("llama3.1:8b", "mistral:7b-instruct", "qwen2.5:7b")),
         "rf_e2e/selection_analysis.json")
@@ -322,7 +332,7 @@ def build():
 
 # Values shown only in a figure or deliberately left to the supplement; everything else must be quoted in the text.
 NUM = r"[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?"  # commas only as thousands separators
-NOT_QUOTED = {"pool_gap_v2", "pool_ci_v2", "pool_gap_v3", "pool_ci_v3", "pa_certified_safe", "pa_cf_compared",
+NOT_QUOTED = {"judge_kt_supp", "pool_gap_v2", "pool_ci_v2", "pool_gap_v3", "pool_ci_v3", "pa_certified_safe", "pa_cf_compared",
               "pre_items_by_dataset", "ref_gap_reconstructed", "conf_mistral24_closed", "conf_olmo32b_closed",
               # review round 3: per-run timings moved to the supplement; the main text gives only an indicative cost.
               "pa_time"}

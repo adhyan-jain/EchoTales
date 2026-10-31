@@ -431,6 +431,27 @@ S6 & 12 & 11 of 12 & 9 & 0 & 1 & 0 & 0 \\
 
 \noindent Gender agreement over the 48 cases was 38 (79.2\%, Fleiss $\kappa=0.64$); confidence agreed in 38 ($\kappa=0.27$), support of the served value in 34 of 48 ($\kappa=0.54$) and plausibility to a first-time reader in 26 of 35 ($\kappa=0.15$). The low kappas on the last two reflect skewed marginals, since most answers were the same category, and should not be read as the annotators disagreeing more often than the raw agreement shows. Where one annotator wrote ``undetermined'' and the other a gender, the case is a disagreement; nine of the ten disagreements were of that kind and one was male against female.
 
+\section{Known-truth test of the card judge}
+The judge of Section~6.4 asks whether a character card ``states or clearly implies'' that an alias and an identity are the same person. We tested it on 120 short cards written from templates with invented names (seed 20261031), so the truth label holds by construction and the set can be shared. Four strata of 30: explicit identification (``$A$ is in fact $B$ living under a false name''), implied identification (``$A$ used to go by the name $B$''), hard negatives in which both names appear but belong to different people (a rival, a sibling, a partner, a look-alike), and easy negatives in which only one name appears. The prompt, model (\texttt{qwen3:8b}), temperature 0, seed and JSON-schema output are those of the main experiments; the second judge (\texttt{gemma2:9b}) is from another model family. The implied templates are our own judgement of what ``implies'' means, and some are weaker than others, so the implied rate is a property of this set and not a general recall figure.
+
+\begin{table}[h]
+\caption{Judge against known truth (120 synthetic cards). Wilson 95\% intervals.}\label{tab:s-judge-kt}
+\footnotesize
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lcc}
+\toprule
+Stratum (cases) & \texttt{qwen3:8b} (paper's judge) & \texttt{gemma2:9b} \\
+\midrule
+Explicit identification, called yes (30) & 30 (100\%) [88.6, 100] & 30 (100\%) [88.6, 100] \\
+Implied identification, called yes (30) & 19 (63.3\%) [45.5, 78.1] & 24 (80.0\%) [62.7, 90.5] \\
+Hard negative, called no (30) & 29 (96.7\%) [83.3, 99.4] & 30 (100\%) [88.6, 100] \\
+Easy negative, called no (30) & 30 (100\%) [88.6, 100] & 30 (100\%) [88.6, 100] \\
+All positives (60) & 49 (81.7\%) [70.1, 89.4] & 54 (90.0\%) [79.9, 95.3] \\
+All negatives (60) & 59 (98.3\%) [91.1, 99.7] & 60 (100\%) [94.0, 100] \\
+Accuracy (120) & 108 (90.0\%) [83.3, 94.2] & 114 (95.0\%) [89.5, 97.7] \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
 \section{Run times and costs}
 \begin{table}[!ht]
 \centering

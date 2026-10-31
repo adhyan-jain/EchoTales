@@ -448,6 +448,16 @@
   "source": "rf_e2e/canary_analysis.json",
   "note": ""
  },
+ "judge_kt_main": {
+  "value": "qwen explicit 30/30 (100.0%) [88.6, 100.0]; implied 19/30 (63.3%) [45.5, 78.1]; negatives 59/60 (98.3%) [91.1, 99.7]; hard negatives 29/30; other family positives 54/60, negatives 60/60; judges agree 112/120",
+  "source": "judge_known_truth.json",
+  "note": "synthetic template cards with invented names; truth fixed by construction"
+ },
+ "judge_kt_supp": {
+  "value": "qwen3:8b 49/60 (81.7%) [70.1, 89.4] 59/60 (98.3%) [91.1, 99.7] 108/120 (90.0%) [83.3, 94.2]; gemma2:9b 54/60 (90.0%) [79.9, 95.3] 60/60 (100.0%) [94.0, 100.0] 114/120 (95.0%) [89.5, 97.7]",
+  "source": "judge_known_truth.json",
+  "note": "full table is in the supplement only"
+ },
  "selection": {
   "value": "19.4% vs 1.4%; diff +18.1 [+4.2, +33.3]; 24 events",
   "source": "rf_e2e/selection_analysis.json",

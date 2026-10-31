@@ -1,0 +1,1476 @@
+{
+ "provenance": "SYNTHETIC templates, invented names; truth fixed by construction; no annotator, no copyrighted text",
+ "prompt": "A reading assistant wrote this character card.\nCard: {CARD}\n\nDoes the card state or clearly imply that the character called \"{ALIAS}\" is the same person as \"{IDENTITY}\"? Reply as JSON: {{\"identifies\": true}} or {{\"identifies\": false}}.",
+ "decoding": {
+  "temperature": 0,
+  "seed": 20261016,
+  "num_predict": 20
+ },
+ "seed": 20261031,
+ "cards": [
+  {
+   "id": "neg-easy-26",
+   "card": "Maret Marn is a ferry keeper who has never left the river. Few have seen them without a cloak. A scar runs across one hand.",
+   "alias": "Maret Marn",
+   "identity": "Ilsa Wick",
+   "truth": false,
+   "subtype": "easy",
+   "words": 25
+  },
+  {
+   "id": "neg-hard-27",
+   "card": "Nesta Skarra hired Harlo Dray as a guide, because Harlo Dray knows the mountain roads. They carry a brass compass everywhere. They rarely leave the lower town.",
+   "alias": "Harlo Dray",
+   "identity": "Nesta Skarra",
+   "truth": false,
+   "subtype": "hard",
+   "words": 27
+  },
+  {
+   "id": "pos-explicit-25",
+   "card": "Tobren Corvane, a figure known around the docks, is in fact Tobren Ashby living under a false name. They rarely leave the lower town. A scar runs across one hand.",
+   "alias": "Tobren Corvane",
+   "identity": "Tobren Ashby",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 30
+  },
+  {
+   "id": "pos-implied-24",
+   "card": "The name Dessa Lorne was shed on the night Nesta Fenn first appeared in the lower town. They rarely leave the lower town. They carry a brass compass everywhere.",
+   "alias": "Nesta Fenn",
+   "identity": "Dessa Lorne",
+   "truth": true,
+   "subtype": "implied",
+   "words": 29
+  },
+  {
+   "id": "neg-hard-26",
+   "card": "Kaldor Lorne is the younger sibling of Brannic Thorne; the two rarely speak. They rarely leave the lower town. They carry a brass compass everywhere.",
+   "alias": "Kaldor Lorne",
+   "identity": "Brannic Thorne",
+   "truth": false,
+   "subtype": "hard",
+   "words": 25
+  },
+  {
+   "id": "pos-explicit-29",
+   "card": "Behind the name Nesta Dray stands Ilsa Dray; the two names belong to one person. They carry a brass compass everywhere. A scar runs across one hand.",
+   "alias": "Nesta Dray",
+   "identity": "Ilsa Dray",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 27
+  },
+  {
+   "id": "pos-implied-12",
+   "card": "When Peltin Wick arrived in town the name Orsin Wick was quietly dropped, and nobody has used it since. The harbour district knows them well. A scar runs across one hand.",
+   "alias": "Peltin Wick",
+   "identity": "Orsin Wick",
+   "truth": true,
+   "subtype": "implied",
+   "words": 31
+  },
+  {
+   "id": "neg-hard-18",
+   "card": "Peltin Ashby works as a clerk in the harbour office, and Kaldor Wick, the magistrate, often visits that office. They are said to be good with locks. They carry a brass compass everywhere.",
+   "alias": "Peltin Ashby",
+   "identity": "Kaldor Wick",
+   "truth": false,
+   "subtype": "hard",
+   "words": 33
+  },
+  {
+   "id": "pos-implied-17",
+   "card": "When Nesta Skarra arrived in town the name Ilsa Ashby was quietly dropped, and nobody has used it since. Few have seen them without a cloak. The harbour district knows them well.",
+   "alias": "Nesta Skarra",
+   "identity": "Ilsa Ashby",
+   "truth": true,
+   "subtype": "implied",
+   "words": 32
+  },
+  {
+   "id": "pos-implied-21",
+   "card": "Maret Skarra used to go by the name Orsin Ashby before the trial, and answers to it only when startled. They carry a brass compass everywhere. They rarely leave the lower town.",
+   "alias": "Maret Skarra",
+   "identity": "Orsin Ashby",
+   "truth": true,
+   "subtype": "implied",
+   "words": 32
+  },
+  {
+   "id": "pos-explicit-10",
+   "card": "Brannic Wick, a figure known around the docks, is in fact Dessa Corvane living under a false name. The harbour district knows them well. They rarely leave the lower town.",
+   "alias": "Brannic Wick",
+   "identity": "Dessa Corvane",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 30
+  },
+  {
+   "id": "neg-easy-05",
+   "card": "Nesta Vask teaches letters to the children of the lower town. They rarely leave the lower town. The harbour district knows them well.",
+   "alias": "Nesta Vask",
+   "identity": "Tobren Vask",
+   "truth": false,
+   "subtype": "easy",
+   "words": 23
+  },
+  {
+   "id": "pos-explicit-18",
+   "card": "Tobren Quill lives as Ilsa Wick, a name taken to escape the guild's notice. A scar runs across one hand. They are said to be good with locks.",
+   "alias": "Ilsa Wick",
+   "identity": "Tobren Quill",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 28
+  },
+  {
+   "id": "pos-implied-00",
+   "card": "Once called Kaldor Ashby, Tobren Vask left the capital after the fire and has not used the old name since. They carry a brass compass everywhere. They are said to be good with locks.",
+   "alias": "Tobren Vask",
+   "identity": "Kaldor Ashby",
+   "truth": true,
+   "subtype": "implied",
+   "words": 34
+  },
+  {
+   "id": "pos-implied-07",
+   "card": "When Veldra Ashby arrived in town the name Peltin Marn was quietly dropped, and nobody has used it since. They rarely leave the lower town. A scar runs across one hand.",
+   "alias": "Veldra Ashby",
+   "identity": "Peltin Marn",
+   "truth": true,
+   "subtype": "implied",
+   "words": 31
+  },
+  {
+   "id": "pos-explicit-08",
+   "card": "Harlo Marn lives as Tobren Quill, a name taken to escape the guild's notice. They are said to be good with locks. They speak slowly and answer questions with questions.",
+   "alias": "Tobren Quill",
+   "identity": "Harlo Marn",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 30
+  },
+  {
+   "id": "pos-implied-06",
+   "card": "Peltin Ember used to go by the name Brannic Ashby before the trial, and answers to it only when startled. The harbour district knows them well. A scar runs across one hand.",
+   "alias": "Peltin Ember",
+   "identity": "Brannic Ashby",
+   "truth": true,
+   "subtype": "implied",
+   "words": 32
+  },
+  {
+   "id": "neg-hard-29",
+   "card": "Tobren Marn bears a striking resemblance to Orsin Dray, though the two have never met. They rarely leave the lower town. They keep a ledger of small debts.",
+   "alias": "Tobren Marn",
+   "identity": "Orsin Dray",
+   "truth": false,
+   "subtype": "hard",
+   "words": 28
+  },
+  {
+   "id": "pos-implied-04",
+   "card": "The name Kaldor Lorne was shed on the night Dessa Lorne first appeared in the lower town. They are said to be good with locks. They rarely leave the lower town.",
+   "alias": "Dessa Lorne",
+   "identity": "Kaldor Lorne",
+   "truth": true,
+   "subtype": "implied",
+   "words": 31
+  },
+  {
+   "id": "pos-explicit-27",
+   "card": "Tobren Vask was revealed to be Yorra Fenn, who had hidden their past for years. A scar runs across one hand. They speak slowly and answer questions with questions.",
+   "alias": "Tobren Vask",
+   "identity": "Yorra Fenn",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 29
+  },
+  {
+   "id": "neg-easy-03",
+   "card": "Dessa Vask repairs clocks and trades in old maps; Kaldor Dray is a customer who owes them money. They speak slowly and answer questions with questions. They carry a brass compass everywhere.",
+   "alias": "Dessa Vask",
+   "identity": "Kaldor Thorne",
+   "truth": false,
+   "subtype": "easy",
+   "words": 32
+  },
+  {
+   "id": "neg-hard-11",
+   "card": "Veldra Marn bears a striking resemblance to Harlo Wick, though the two have never met. They are said to be good with locks. They rarely leave the lower town.",
+   "alias": "Veldra Marn",
+   "identity": "Harlo Wick",
+   "truth": false,
+   "subtype": "hard",
+   "words": 29
+  },
+  {
+   "id": "neg-hard-09",
+   "card": "Dessa Corvane hired Orsin Thorne as a guide, because Orsin Thorne knows the mountain roads. They carry a brass compass everywhere. They speak slowly and answer questions with questions.",
+   "alias": "Orsin Thorne",
+   "identity": "Dessa Corvane",
+   "truth": false,
+   "subtype": "hard",
+   "words": 29
+  },
+  {
+   "id": "neg-easy-29",
+   "card": "Peltin Lorne repairs clocks and trades in old maps. Few have seen them without a cloak. They rarely leave the lower town.",
+   "alias": "Dessa Lorne",
+   "identity": "Peltin Lorne",
+   "truth": false,
+   "subtype": "easy",
+   "words": 22
+  },
+  {
+   "id": "neg-easy-02",
+   "card": "Brannic Corvane is a ferry keeper who has never left the river. They keep a ledger of small debts. They carry a brass compass everywhere.",
+   "alias": "Brannic Corvane",
+   "identity": "Brannic Ember",
+   "truth": false,
+   "subtype": "easy",
+   "words": 25
+  },
+  {
+   "id": "neg-hard-17",
+   "card": "Kaldor Ashby bears a striking resemblance to Orsin Fenn, though the two have never met. The harbour district knows them well. Few have seen them without a cloak.",
+   "alias": "Kaldor Ashby",
+   "identity": "Orsin Fenn",
+   "truth": false,
+   "subtype": "hard",
+   "words": 28
+  },
+  {
+   "id": "pos-explicit-12",
+   "card": "Orsin Marn was revealed to be Harlo Corvane, who had hidden their past for years. They speak slowly and answer questions with questions. Few have seen them without a cloak.",
+   "alias": "Orsin Marn",
+   "identity": "Harlo Corvane",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 30
+  },
+  {
+   "id": "neg-hard-14",
+   "card": "Harlo Ember is the younger sibling of Orsin Corvane; the two rarely speak. They carry a brass compass everywhere. They rarely leave the lower town.",
+   "alias": "Harlo Ember",
+   "identity": "Orsin Corvane",
+   "truth": false,
+   "subtype": "hard",
+   "words": 25
+  },
+  {
+   "id": "neg-hard-15",
+   "card": "Kaldor Corvane hired Harlo Dray as a guide, because Harlo Dray knows the mountain roads. They are said to be good with locks. The harbour district knows them well.",
+   "alias": "Harlo Dray",
+   "identity": "Kaldor Corvane",
+   "truth": false,
+   "subtype": "hard",
+   "words": 29
+  },
+  {
+   "id": "neg-hard-16",
+   "card": "Yorra Dray and Tobren Skarra are partners in a trading house and argue about its accounts. They keep a ledger of small debts. Few have seen them without a cloak.",
+   "alias": "Yorra Dray",
+   "identity": "Tobren Skarra",
+   "truth": false,
+   "subtype": "hard",
+   "words": 30
+  },
+  {
+   "id": "neg-hard-13",
+   "card": "Harlo Vask fears Harlo Lorne, a rival who has hunted them since the fire. They speak slowly and answer questions with questions. They keep a ledger of small debts.",
+   "alias": "Harlo Vask",
+   "identity": "Harlo Lorne",
+   "truth": false,
+   "subtype": "hard",
+   "words": 29
+  },
+  {
+   "id": "neg-easy-16",
+   "card": "Peltin Wick is a cheerful baker who opens the shop before dawn. They are said to be good with locks. They keep a ledger of small debts.",
+   "alias": "Peltin Wick",
+   "identity": "Ilsa Wick",
+   "truth": false,
+   "subtype": "easy",
+   "words": 27
+  },
+  {
+   "id": "pos-implied-03",
+   "card": "Veldra Thorne signs letters with the old initials of Brannic Skarra and wears the same ring Brannic Skarra once wore. They are said to be good with locks. They rarely leave the lower town.",
+   "alias": "Veldra Thorne",
+   "identity": "Brannic Skarra",
+   "truth": true,
+   "subtype": "implied",
+   "words": 34
+  },
+  {
+   "id": "pos-explicit-22",
+   "card": "Yorra Quill was revealed to be Tobren Lorne, who had hidden their past for years. A scar runs across one hand. They carry a brass compass everywhere.",
+   "alias": "Yorra Quill",
+   "identity": "Tobren Lorne",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 27
+  },
+  {
+   "id": "neg-easy-13",
+   "card": "Kaldor Wick teaches letters to the children of the lower town. Few have seen them without a cloak. A scar runs across one hand.",
+   "alias": "Kaldor Wick",
+   "identity": "Brannic Lorne",
+   "truth": false,
+   "subtype": "easy",
+   "words": 24
+  },
+  {
+   "id": "neg-easy-17",
+   "card": "Brannic Marn teaches letters to the children of the lower town. A scar runs across one hand. They carry a brass compass everywhere.",
+   "alias": "Brannic Marn",
+   "identity": "Harlo Vask",
+   "truth": false,
+   "subtype": "easy",
+   "words": 23
+  },
+  {
+   "id": "neg-easy-20",
+   "card": "Peltin Ashby is a cheerful baker who opens the shop before dawn. A scar runs across one hand. They keep a ledger of small debts.",
+   "alias": "Peltin Ashby",
+   "identity": "Ilsa Dray",
+   "truth": false,
+   "subtype": "easy",
+   "words": 25
+  },
+  {
+   "id": "pos-explicit-00",
+   "card": "Ilsa Vask, a figure known around the docks, is in fact Harlo Skarra living under a false name. The harbour district knows them well. They keep a ledger of small debts.",
+   "alias": "Ilsa Vask",
+   "identity": "Harlo Skarra",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 31
+  },
+  {
+   "id": "pos-explicit-20",
+   "card": "Yorra Ember, a figure known around the docks, is in fact Orsin Ember living under a false name. They rarely leave the lower town. They carry a brass compass everywhere.",
+   "alias": "Yorra Ember",
+   "identity": "Orsin Ember",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 30
+  },
+  {
+   "id": "neg-hard-20",
+   "card": "Dessa Fenn is the younger sibling of Tobren Corvane; the two rarely speak. They rarely leave the lower town. Few have seen them without a cloak.",
+   "alias": "Dessa Fenn",
+   "identity": "Tobren Corvane",
+   "truth": false,
+   "subtype": "hard",
+   "words": 26
+  },
+  {
+   "id": "pos-explicit-04",
+   "card": "Behind the name Dessa Skarra stands Brannic Dray; the two names belong to one person. They are said to be good with locks. They speak slowly and answer questions with questions.",
+   "alias": "Dessa Skarra",
+   "identity": "Brannic Dray",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 31
+  },
+  {
+   "id": "pos-implied-05",
+   "card": "Once called Orsin Lorne, Peltin Lorne left the capital after the fire and has not used the old name since. The harbour district knows them well. They are said to be good with locks.",
+   "alias": "Peltin Lorne",
+   "identity": "Orsin Lorne",
+   "truth": true,
+   "subtype": "implied",
+   "words": 34
+  },
+  {
+   "id": "pos-implied-02",
+   "card": "When Veldra Ashby arrived in town the name Maret Fenn was quietly dropped, and nobody has used it since. They speak slowly and answer questions with questions. A scar runs across one hand.",
+   "alias": "Veldra Ashby",
+   "identity": "Maret Fenn",
+   "truth": true,
+   "subtype": "implied",
+   "words": 33
+  },
+  {
+   "id": "pos-explicit-07",
+   "card": "Tobren Thorne was revealed to be Orsin Dray, who had hidden their past for years. Few have seen them without a cloak. A scar runs across one hand.",
+   "alias": "Tobren Thorne",
+   "identity": "Orsin Dray",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 28
+  },
+  {
+   "id": "pos-implied-29",
+   "card": "The name Peltin Marn was shed on the night Maret Vask first appeared in the lower town. They carry a brass compass everywhere. The harbour district knows them well.",
+   "alias": "Maret Vask",
+   "identity": "Peltin Marn",
+   "truth": true,
+   "subtype": "implied",
+   "words": 29
+  },
+  {
+   "id": "neg-hard-04",
+   "card": "Harlo Fenn and Veldra Wick are partners in a trading house and argue about its accounts. They rarely leave the lower town. A scar runs across one hand.",
+   "alias": "Harlo Fenn",
+   "identity": "Veldra Wick",
+   "truth": false,
+   "subtype": "hard",
+   "words": 28
+  },
+  {
+   "id": "neg-hard-28",
+   "card": "Kaldor Ashby and Yorra Ashby are partners in a trading house and argue about its accounts. They are said to be good with locks. They speak slowly and answer questions with questions.",
+   "alias": "Kaldor Ashby",
+   "identity": "Yorra Ashby",
+   "truth": false,
+   "subtype": "hard",
+   "words": 32
+  },
+  {
+   "id": "pos-explicit-24",
+   "card": "Behind the name Tobren Ember stands Harlo Quill; the two names belong to one person. The harbour district knows them well. A scar runs across one hand.",
+   "alias": "Tobren Ember",
+   "identity": "Harlo Quill",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 27
+  },
+  {
+   "id": "neg-easy-22",
+   "card": "Maret Corvane is a ferry keeper who has never left the river. Few have seen them without a cloak. They carry a brass compass everywhere.",
+   "alias": "Maret Corvane",
+   "identity": "Harlo Marn",
+   "truth": false,
+   "subtype": "easy",
+   "words": 25
+  },
+  {
+   "id": "pos-explicit-11",
+   "card": "Though everyone calls them Nesta Ashby, the truth is that Nesta Ashby and Maret Marn are the same person. The harbour district knows them well. They are said to be good with locks.",
+   "alias": "Nesta Ashby",
+   "identity": "Maret Marn",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 33
+  },
+  {
+   "id": "pos-implied-13",
+   "card": "Dessa Ember signs letters with the old initials of Tobren Fenn and wears the same ring Tobren Fenn once wore. They rarely leave the lower town. They keep a ledger of small debts.",
+   "alias": "Dessa Ember",
+   "identity": "Tobren Fenn",
+   "truth": true,
+   "subtype": "implied",
+   "words": 33
+  },
+  {
+   "id": "pos-implied-11",
+   "card": "Ilsa Quill used to go by the name Peltin Lorne before the trial, and answers to it only when startled. A scar runs across one hand. They speak slowly and answer questions with questions.",
+   "alias": "Ilsa Quill",
+   "identity": "Peltin Lorne",
+   "truth": true,
+   "subtype": "implied",
+   "words": 34
+  },
+  {
+   "id": "pos-explicit-01",
+   "card": "Though everyone calls them Tobren Wick, the truth is that Tobren Wick and Tobren Corvane are the same person. The harbour district knows them well. Few have seen them without a cloak.",
+   "alias": "Tobren Wick",
+   "identity": "Tobren Corvane",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 32
+  },
+  {
+   "id": "pos-implied-27",
+   "card": "When Yorra Marn arrived in town the name Kaldor Vask was quietly dropped, and nobody has used it since. A scar runs across one hand. They rarely leave the lower town.",
+   "alias": "Yorra Marn",
+   "identity": "Kaldor Vask",
+   "truth": true,
+   "subtype": "implied",
+   "words": 31
+  },
+  {
+   "id": "pos-explicit-03",
+   "card": "Peltin Vask lives as Dessa Lorne, a name taken to escape the guild's notice. They rarely leave the lower town. They keep a ledger of small debts.",
+   "alias": "Dessa Lorne",
+   "identity": "Peltin Vask",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 27
+  },
+  {
+   "id": "pos-implied-22",
+   "card": "When Peltin Ember arrived in town the name Veldra Quill was quietly dropped, and nobody has used it since. The harbour district knows them well. A scar runs across one hand.",
+   "alias": "Peltin Ember",
+   "identity": "Veldra Quill",
+   "truth": true,
+   "subtype": "implied",
+   "words": 31
+  },
+  {
+   "id": "neg-easy-23",
+   "card": "Tobren Lorne repairs clocks and trades in old maps; Nesta Vask is a customer who owes them money. They speak slowly and answer questions with questions. They are said to be good with locks.",
+   "alias": "Tobren Lorne",
+   "identity": "Harlo Marn",
+   "truth": false,
+   "subtype": "easy",
+   "words": 34
+  },
+  {
+   "id": "pos-explicit-28",
+   "card": "Tobren Ember lives as Nesta Dray, a name taken to escape the guild's notice. They speak slowly and answer questions with questions. They carry a brass compass everywhere.",
+   "alias": "Nesta Dray",
+   "identity": "Tobren Ember",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 28
+  },
+  {
+   "id": "neg-easy-28",
+   "card": "Nesta Fenn is a cheerful baker who opens the shop before dawn. They keep a ledger of small debts. A scar runs across one hand.",
+   "alias": "Nesta Fenn",
+   "identity": "Ilsa Dray",
+   "truth": false,
+   "subtype": "easy",
+   "words": 25
+  },
+  {
+   "id": "neg-hard-19",
+   "card": "Tobren Dray fears Orsin Corvane, a rival who has hunted them since the fire. They rarely leave the lower town. Few have seen them without a cloak.",
+   "alias": "Tobren Dray",
+   "identity": "Orsin Corvane",
+   "truth": false,
+   "subtype": "hard",
+   "words": 27
+  },
+  {
+   "id": "pos-implied-26",
+   "card": "Kaldor Wick used to go by the name Maret Ashby before the trial, and answers to it only when startled. The harbour district knows them well. They are said to be good with locks.",
+   "alias": "Kaldor Wick",
+   "identity": "Maret Ashby",
+   "truth": true,
+   "subtype": "implied",
+   "words": 34
+  },
+  {
+   "id": "pos-implied-14",
+   "card": "The name Nesta Lorne was shed on the night Ilsa Corvane first appeared in the lower town. They are said to be good with locks. They keep a ledger of small debts.",
+   "alias": "Ilsa Corvane",
+   "identity": "Nesta Lorne",
+   "truth": true,
+   "subtype": "implied",
+   "words": 32
+  },
+  {
+   "id": "neg-hard-12",
+   "card": "Orsin Wick works as a clerk in the harbour office, and Dessa Corvane, the magistrate, often visits that office. A scar runs across one hand. They speak slowly and answer questions with questions.",
+   "alias": "Orsin Wick",
+   "identity": "Dessa Corvane",
+   "truth": false,
+   "subtype": "hard",
+   "words": 33
+  },
+  {
+   "id": "neg-easy-01",
+   "card": "Ilsa Skarra teaches letters to the children of the lower town. They carry a brass compass everywhere. They speak slowly and answer questions with questions.",
+   "alias": "Ilsa Skarra",
+   "identity": "Kaldor Fenn",
+   "truth": false,
+   "subtype": "easy",
+   "words": 25
+  },
+  {
+   "id": "pos-explicit-14",
+   "card": "Behind the name Ilsa Vask stands Dessa Dray; the two names belong to one person. They are said to be good with locks. They rarely leave the lower town.",
+   "alias": "Ilsa Vask",
+   "identity": "Dessa Dray",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 29
+  },
+  {
+   "id": "pos-explicit-13",
+   "card": "Yorra Lorne lives as Tobren Ashby, a name taken to escape the guild's notice. A scar runs across one hand. They keep a ledger of small debts.",
+   "alias": "Tobren Ashby",
+   "identity": "Yorra Lorne",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 27
+  },
+  {
+   "id": "pos-explicit-06",
+   "card": "Though everyone calls them Veldra Skarra, the truth is that Veldra Skarra and Orsin Ember are the same person. They speak slowly and answer questions with questions. They are said to be good with locks.",
+   "alias": "Veldra Skarra",
+   "identity": "Orsin Ember",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 35
+  },
+  {
+   "id": "pos-implied-10",
+   "card": "Once called Yorra Vask, Brannic Lorne left the capital after the fire and has not used the old name since. They keep a ledger of small debts. They carry a brass compass everywhere.",
+   "alias": "Brannic Lorne",
+   "identity": "Yorra Vask",
+   "truth": true,
+   "subtype": "implied",
+   "words": 33
+  },
+  {
+   "id": "pos-implied-25",
+   "card": "Once called Peltin Quill, Harlo Marn left the capital after the fire and has not used the old name since. Few have seen them without a cloak. They keep a ledger of small debts.",
+   "alias": "Harlo Marn",
+   "identity": "Peltin Quill",
+   "truth": true,
+   "subtype": "implied",
+   "words": 34
+  },
+  {
+   "id": "pos-implied-23",
+   "card": "Maret Marn signs letters with the old initials of Yorra Fenn and wears the same ring Yorra Fenn once wore. A scar runs across one hand. They are said to be good with locks.",
+   "alias": "Maret Marn",
+   "identity": "Yorra Fenn",
+   "truth": true,
+   "subtype": "implied",
+   "words": 34
+  },
+  {
+   "id": "neg-hard-23",
+   "card": "Kaldor Marn bears a striking resemblance to Tobren Dray, though the two have never met. Few have seen them without a cloak. A scar runs across one hand.",
+   "alias": "Kaldor Marn",
+   "identity": "Tobren Dray",
+   "truth": false,
+   "subtype": "hard",
+   "words": 28
+  },
+  {
+   "id": "neg-easy-09",
+   "card": "Harlo Thorne repairs clocks and trades in old maps. They carry a brass compass everywhere. They speak slowly and answer questions with questions.",
+   "alias": "Tobren Dray",
+   "identity": "Harlo Thorne",
+   "truth": false,
+   "subtype": "easy",
+   "words": 23
+  },
+  {
+   "id": "neg-easy-18",
+   "card": "Peltin Ashby is a ferry keeper who has never left the river. They rarely leave the lower town. Few have seen them without a cloak.",
+   "alias": "Peltin Ashby",
+   "identity": "Harlo Dray",
+   "truth": false,
+   "subtype": "easy",
+   "words": 25
+  },
+  {
+   "id": "pos-explicit-05",
+   "card": "Kaldor Corvane, a figure known around the docks, is in fact Nesta Lorne living under a false name. A scar runs across one hand. They keep a ledger of small debts.",
+   "alias": "Kaldor Corvane",
+   "identity": "Nesta Lorne",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 31
+  },
+  {
+   "id": "neg-hard-08",
+   "card": "Orsin Quill is the younger sibling of Orsin Dray; the two rarely speak. A scar runs across one hand. The harbour district knows them well.",
+   "alias": "Orsin Quill",
+   "identity": "Orsin Dray",
+   "truth": false,
+   "subtype": "hard",
+   "words": 25
+  },
+  {
+   "id": "neg-easy-07",
+   "card": "Harlo Vask repairs clocks and trades in old maps; Brannic Corvane is a customer who owes them money. Few have seen them without a cloak. They speak slowly and answer questions with questions.",
+   "alias": "Harlo Vask",
+   "identity": "Peltin Fenn",
+   "truth": false,
+   "subtype": "easy",
+   "words": 33
+  },
+  {
+   "id": "pos-explicit-21",
+   "card": "Though everyone calls them Kaldor Vask, the truth is that Kaldor Vask and Kaldor Ashby are the same person. The harbour district knows them well. They keep a ledger of small debts.",
+   "alias": "Kaldor Vask",
+   "identity": "Kaldor Ashby",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 32
+  },
+  {
+   "id": "pos-implied-20",
+   "card": "Once called Veldra Vask, Tobren Marn left the capital after the fire and has not used the old name since. Few have seen them without a cloak. They keep a ledger of small debts.",
+   "alias": "Tobren Marn",
+   "identity": "Veldra Vask",
+   "truth": true,
+   "subtype": "implied",
+   "words": 34
+  },
+  {
+   "id": "neg-easy-10",
+   "card": "Harlo Corvane is a ferry keeper who has never left the river. A scar runs across one hand. They speak slowly and answer questions with questions.",
+   "alias": "Harlo Corvane",
+   "identity": "Peltin Skarra",
+   "truth": false,
+   "subtype": "easy",
+   "words": 26
+  },
+  {
+   "id": "pos-implied-28",
+   "card": "Dessa Ember signs letters with the old initials of Harlo Quill and wears the same ring Harlo Quill once wore. They keep a ledger of small debts. Few have seen them without a cloak.",
+   "alias": "Dessa Ember",
+   "identity": "Harlo Quill",
+   "truth": true,
+   "subtype": "implied",
+   "words": 34
+  },
+  {
+   "id": "pos-implied-01",
+   "card": "Ilsa Quill used to go by the name Brannic Fenn before the trial, and answers to it only when startled. They rarely leave the lower town. The harbour district knows them well.",
+   "alias": "Ilsa Quill",
+   "identity": "Brannic Fenn",
+   "truth": true,
+   "subtype": "implied",
+   "words": 32
+  },
+  {
+   "id": "neg-easy-27",
+   "card": "Ilsa Marn repairs clocks and trades in old maps; Orsin Marn is a customer who owes them money. Few have seen them without a cloak. They rarely leave the lower town.",
+   "alias": "Ilsa Marn",
+   "identity": "Kaldor Skarra",
+   "truth": false,
+   "subtype": "easy",
+   "words": 31
+  },
+  {
+   "id": "neg-hard-06",
+   "card": "Tobren Corvane works as a clerk in the harbour office, and Ilsa Quill, the magistrate, often visits that office. They speak slowly and answer questions with questions. A scar runs across one hand.",
+   "alias": "Tobren Corvane",
+   "identity": "Ilsa Quill",
+   "truth": false,
+   "subtype": "hard",
+   "words": 33
+  },
+  {
+   "id": "neg-hard-01",
+   "card": "Harlo Thorne fears Veldra Marn, a rival who has hunted them since the fire. They speak slowly and answer questions with questions. They rarely leave the lower town.",
+   "alias": "Harlo Thorne",
+   "identity": "Veldra Marn",
+   "truth": false,
+   "subtype": "hard",
+   "words": 28
+  },
+  {
+   "id": "neg-easy-04",
+   "card": "Peltin Corvane is a cheerful baker who opens the shop before dawn. They carry a brass compass everywhere. They are said to be good with locks.",
+   "alias": "Dessa Wick",
+   "identity": "Peltin Corvane",
+   "truth": false,
+   "subtype": "easy",
+   "words": 26
+  },
+  {
+   "id": "neg-easy-15",
+   "card": "Brannic Quill repairs clocks and trades in old maps; Dessa Fenn is a customer who owes them money. They speak slowly and answer questions with questions. The harbour district knows them well.",
+   "alias": "Brannic Quill",
+   "identity": "Peltin Fenn",
+   "truth": false,
+   "subtype": "easy",
+   "words": 32
+  },
+  {
+   "id": "neg-easy-19",
+   "card": "Maret Corvane repairs clocks and trades in old maps. They carry a brass compass everywhere. Few have seen them without a cloak.",
+   "alias": "Orsin Lorne",
+   "identity": "Maret Corvane",
+   "truth": false,
+   "subtype": "easy",
+   "words": 22
+  },
+  {
+   "id": "pos-explicit-26",
+   "card": "Though everyone calls them Veldra Ashby, the truth is that Veldra Ashby and Harlo Ember are the same person. They speak slowly and answer questions with questions. A scar runs across one hand.",
+   "alias": "Veldra Ashby",
+   "identity": "Harlo Ember",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 33
+  },
+  {
+   "id": "neg-hard-00",
+   "card": "Yorra Wick works as a clerk in the harbour office, and Dessa Vask, the magistrate, often visits that office. They are said to be good with locks. They keep a ledger of small debts.",
+   "alias": "Yorra Wick",
+   "identity": "Dessa Vask",
+   "truth": false,
+   "subtype": "hard",
+   "words": 34
+  },
+  {
+   "id": "pos-explicit-23",
+   "card": "Kaldor Dray lives as Kaldor Marn, a name taken to escape the guild's notice. They are said to be good with locks. A scar runs across one hand.",
+   "alias": "Kaldor Marn",
+   "identity": "Kaldor Dray",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 28
+  },
+  {
+   "id": "neg-hard-07",
+   "card": "Yorra Vask fears Dessa Ember, a rival who has hunted them since the fire. They speak slowly and answer questions with questions. Few have seen them without a cloak.",
+   "alias": "Yorra Vask",
+   "identity": "Dessa Ember",
+   "truth": false,
+   "subtype": "hard",
+   "words": 29
+  },
+  {
+   "id": "pos-implied-15",
+   "card": "Once called Harlo Ashby, Maret Quill left the capital after the fire and has not used the old name since. They are said to be good with locks. Few have seen them without a cloak.",
+   "alias": "Maret Quill",
+   "identity": "Harlo Ashby",
+   "truth": true,
+   "subtype": "implied",
+   "words": 35
+  },
+  {
+   "id": "neg-hard-24",
+   "card": "Yorra Ashby works as a clerk in the harbour office, and Tobren Vask, the magistrate, often visits that office. They carry a brass compass everywhere. They keep a ledger of small debts.",
+   "alias": "Yorra Ashby",
+   "identity": "Tobren Vask",
+   "truth": false,
+   "subtype": "hard",
+   "words": 32
+  },
+  {
+   "id": "pos-implied-18",
+   "card": "Nesta Skarra signs letters with the old initials of Veldra Marn and wears the same ring Veldra Marn once wore. A scar runs across one hand. The harbour district knows them well.",
+   "alias": "Nesta Skarra",
+   "identity": "Veldra Marn",
+   "truth": true,
+   "subtype": "implied",
+   "words": 32
+  },
+  {
+   "id": "neg-hard-22",
+   "card": "Maret Ember and Ilsa Vask are partners in a trading house and argue about its accounts. Few have seen them without a cloak. A scar runs across one hand.",
+   "alias": "Maret Ember",
+   "identity": "Ilsa Vask",
+   "truth": false,
+   "subtype": "hard",
+   "words": 29
+  },
+  {
+   "id": "pos-explicit-19",
+   "card": "Behind the name Peltin Vask stands Nesta Thorne; the two names belong to one person. They are said to be good with locks. They speak slowly and answer questions with questions.",
+   "alias": "Peltin Vask",
+   "identity": "Nesta Thorne",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 31
+  },
+  {
+   "id": "pos-explicit-09",
+   "card": "Behind the name Yorra Dray stands Tobren Quill; the two names belong to one person. They speak slowly and answer questions with questions. They keep a ledger of small debts.",
+   "alias": "Yorra Dray",
+   "identity": "Tobren Quill",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 30
+  },
+  {
+   "id": "neg-easy-11",
+   "card": "Yorra Ashby repairs clocks and trades in old maps; Kaldor Dray is a customer who owes them money. They are said to be good with locks. Few have seen them without a cloak.",
+   "alias": "Yorra Ashby",
+   "identity": "Veldra Fenn",
+   "truth": false,
+   "subtype": "easy",
+   "words": 33
+  },
+  {
+   "id": "pos-explicit-15",
+   "card": "Maret Wick, a figure known around the docks, is in fact Harlo Wick living under a false name. The harbour district knows them well. They carry a brass compass everywhere.",
+   "alias": "Maret Wick",
+   "identity": "Harlo Wick",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 30
+  },
+  {
+   "id": "neg-hard-05",
+   "card": "Brannic Wick bears a striking resemblance to Ilsa Thorne, though the two have never met. They rarely leave the lower town. They speak slowly and answer questions with questions.",
+   "alias": "Brannic Wick",
+   "identity": "Ilsa Thorne",
+   "truth": false,
+   "subtype": "hard",
+   "words": 29
+  },
+  {
+   "id": "pos-explicit-02",
+   "card": "Tobren Quill was revealed to be Tobren Fenn, who had hidden their past for years. They rarely leave the lower town. They carry a brass compass everywhere.",
+   "alias": "Tobren Quill",
+   "identity": "Tobren Fenn",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 27
+  },
+  {
+   "id": "neg-hard-21",
+   "card": "Peltin Fenn hired Peltin Wick as a guide, because Peltin Wick knows the mountain roads. They are said to be good with locks. A scar runs across one hand.",
+   "alias": "Peltin Wick",
+   "identity": "Peltin Fenn",
+   "truth": false,
+   "subtype": "hard",
+   "words": 29
+  },
+  {
+   "id": "neg-easy-14",
+   "card": "Ilsa Thorne is a cheerful baker who opens the shop before dawn. They carry a brass compass everywhere. A scar runs across one hand.",
+   "alias": "Tobren Wick",
+   "identity": "Ilsa Thorne",
+   "truth": false,
+   "subtype": "easy",
+   "words": 24
+  },
+  {
+   "id": "neg-hard-02",
+   "card": "Dessa Wick is the younger sibling of Orsin Wick; the two rarely speak. They rarely leave the lower town. Few have seen them without a cloak.",
+   "alias": "Dessa Wick",
+   "identity": "Orsin Wick",
+   "truth": false,
+   "subtype": "hard",
+   "words": 26
+  },
+  {
+   "id": "pos-implied-08",
+   "card": "Veldra Fenn signs letters with the old initials of Yorra Ember and wears the same ring Yorra Ember once wore. A scar runs across one hand. They are said to be good with locks.",
+   "alias": "Veldra Fenn",
+   "identity": "Yorra Ember",
+   "truth": true,
+   "subtype": "implied",
+   "words": 34
+  },
+  {
+   "id": "neg-easy-21",
+   "card": "Brannic Quill teaches letters to the children of the lower town. They rarely leave the lower town. They are said to be good with locks.",
+   "alias": "Brannic Quill",
+   "identity": "Brannic Fenn",
+   "truth": false,
+   "subtype": "easy",
+   "words": 25
+  },
+  {
+   "id": "neg-easy-25",
+   "card": "Orsin Ember teaches letters to the children of the lower town. They speak slowly and answer questions with questions. Few have seen them without a cloak.",
+   "alias": "Orsin Ember",
+   "identity": "Ilsa Vask",
+   "truth": false,
+   "subtype": "easy",
+   "words": 26
+  },
+  {
+   "id": "pos-explicit-16",
+   "card": "Though everyone calls them Ilsa Dray, the truth is that Ilsa Dray and Brannic Dray are the same person. They keep a ledger of small debts. They carry a brass compass everywhere.",
+   "alias": "Ilsa Dray",
+   "identity": "Brannic Dray",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 32
+  },
+  {
+   "id": "pos-explicit-17",
+   "card": "Peltin Vask was revealed to be Yorra Fenn, who had hidden their past for years. A scar runs across one hand. They speak slowly and answer questions with questions.",
+   "alias": "Peltin Vask",
+   "identity": "Yorra Fenn",
+   "truth": true,
+   "subtype": "explicit",
+   "words": 29
+  },
+  {
+   "id": "pos-implied-19",
+   "card": "The name Dessa Lorne was shed on the night Kaldor Corvane first appeared in the lower town. They speak slowly and answer questions with questions. The harbour district knows them well.",
+   "alias": "Kaldor Corvane",
+   "identity": "Dessa Lorne",
+   "truth": true,
+   "subtype": "implied",
+   "words": 31
+  },
+  {
+   "id": "pos-implied-09",
+   "card": "The name Veldra Marn was shed on the night Peltin Lorne first appeared in the lower town. Few have seen them without a cloak. The harbour district knows them well.",
+   "alias": "Peltin Lorne",
+   "identity": "Veldra Marn",
+   "truth": true,
+   "subtype": "implied",
+   "words": 30
+  },
+  {
+   "id": "pos-implied-16",
+   "card": "Yorra Corvane used to go by the name Veldra Dray before the trial, and answers to it only when startled. They keep a ledger of small debts. They are said to be good with locks.",
+   "alias": "Yorra Corvane",
+   "identity": "Veldra Dray",
+   "truth": true,
+   "subtype": "implied",
+   "words": 35
+  },
+  {
+   "id": "neg-hard-03",
+   "card": "Nesta Quill hired Nesta Ember as a guide, because Nesta Ember knows the mountain roads. The harbour district knows them well. A scar runs across one hand.",
+   "alias": "Nesta Ember",
+   "identity": "Nesta Quill",
+   "truth": false,
+   "subtype": "hard",
+   "words": 27
+  },
+  {
+   "id": "neg-easy-08",
+   "card": "Veldra Fenn is a cheerful baker who opens the shop before dawn. Few have seen them without a cloak. They are said to be good with locks.",
+   "alias": "Veldra Fenn",
+   "identity": "Peltin Dray",
+   "truth": false,
+   "subtype": "easy",
+   "words": 27
+  },
+  {
+   "id": "neg-easy-06",
+   "card": "Harlo Ember is a ferry keeper who has never left the river. They are said to be good with locks. A scar runs across one hand.",
+   "alias": "Harlo Ember",
+   "identity": "Kaldor Corvane",
+   "truth": false,
+   "subtype": "easy",
+   "words": 26
+  },
+  {
+   "id": "neg-easy-00",
+   "card": "Orsin Skarra is a cheerful baker who opens the shop before dawn. A scar runs across one hand. The harbour district knows them well.",
+   "alias": "Orsin Skarra",
+   "identity": "Kaldor Fenn",
+   "truth": false,
+   "subtype": "easy",
+   "words": 24
+  },
+  {
+   "id": "neg-easy-12",
+   "card": "Veldra Corvane is a cheerful baker who opens the shop before dawn. They rarely leave the lower town. They keep a ledger of small debts.",
+   "alias": "Veldra Corvane",
+   "identity": "Tobren Fenn",
+   "truth": false,
+   "subtype": "easy",
+   "words": 25
+  },
+  {
+   "id": "neg-easy-24",
+   "card": "Ilsa Lorne is a cheerful baker who opens the shop before dawn. They speak slowly and answer questions with questions. The harbour district knows them well.",
+   "alias": "Dessa Vask",
+   "identity": "Ilsa Lorne",
+   "truth": false,
+   "subtype": "easy",
+   "words": 26
+  },
+  {
+   "id": "neg-hard-10",
+   "card": "Ilsa Fenn and Dessa Dray are partners in a trading house and argue about its accounts. The harbour district knows them well. They speak slowly and answer questions with questions.",
+   "alias": "Ilsa Fenn",
+   "identity": "Dessa Dray",
+   "truth": false,
+   "subtype": "hard",
+   "words": 30
+  },
+  {
+   "id": "neg-hard-25",
+   "card": "Tobren Ashby fears Ilsa Wick, a rival who has hunted them since the fire. They keep a ledger of small debts. The harbour district knows them well.",
+   "alias": "Tobren Ashby",
+   "identity": "Ilsa Wick",
+   "truth": false,
+   "subtype": "hard",
+   "words": 27
+  }
+ ],
+ "judges": {
+  "qwen3:8b": {
+   "neg-easy-26": false,
+   "neg-hard-27": false,
+   "pos-explicit-25": true,
+   "pos-implied-24": false,
+   "neg-hard-26": false,
+   "pos-explicit-29": true,
+   "pos-implied-12": true,
+   "neg-hard-18": false,
+   "pos-implied-17": true,
+   "pos-implied-21": true,
+   "pos-explicit-10": true,
+   "neg-easy-05": false,
+   "pos-explicit-18": true,
+   "pos-implied-00": true,
+   "pos-implied-07": true,
+   "pos-explicit-08": true,
+   "pos-implied-06": true,
+   "neg-hard-29": false,
+   "pos-implied-04": true,
+   "pos-explicit-27": true,
+   "neg-easy-03": false,
+   "neg-hard-11": false,
+   "neg-hard-09": false,
+   "neg-easy-29": false,
+   "neg-easy-02": false,
+   "neg-hard-17": false,
+   "pos-explicit-12": true,
+   "neg-hard-14": false,
+   "neg-hard-15": false,
+   "neg-hard-16": false,
+   "neg-hard-13": false,
+   "neg-easy-16": false,
+   "pos-implied-03": false,
+   "pos-explicit-22": true,
+   "neg-easy-13": false,
+   "neg-easy-17": false,
+   "neg-easy-20": false,
+   "pos-explicit-00": true,
+   "pos-explicit-20": true,
+   "neg-hard-20": false,
+   "pos-explicit-04": true,
+   "pos-implied-05": true,
+   "pos-implied-02": true,
+   "pos-explicit-07": true,
+   "pos-implied-29": false,
+   "neg-hard-04": false,
+   "neg-hard-28": false,
+   "pos-explicit-24": true,
+   "neg-easy-22": false,
+   "pos-explicit-11": true,
+   "pos-implied-13": false,
+   "pos-implied-11": true,
+   "pos-explicit-01": true,
+   "pos-implied-27": true,
+   "pos-explicit-03": true,
+   "pos-implied-22": true,
+   "neg-easy-23": false,
+   "pos-explicit-28": true,
+   "neg-easy-28": false,
+   "neg-hard-19": false,
+   "pos-implied-26": true,
+   "pos-implied-14": false,
+   "neg-hard-12": false,
+   "neg-easy-01": false,
+   "pos-explicit-14": true,
+   "pos-explicit-13": true,
+   "pos-explicit-06": true,
+   "pos-implied-10": true,
+   "pos-implied-25": true,
+   "pos-implied-23": false,
+   "neg-hard-23": false,
+   "neg-easy-09": false,
+   "neg-easy-18": false,
+   "pos-explicit-05": true,
+   "neg-hard-08": false,
+   "neg-easy-07": false,
+   "pos-explicit-21": true,
+   "pos-implied-20": true,
+   "neg-easy-10": false,
+   "pos-implied-28": false,
+   "pos-implied-01": true,
+   "neg-easy-27": false,
+   "neg-hard-06": false,
+   "neg-hard-01": false,
+   "neg-easy-04": false,
+   "neg-easy-15": false,
+   "neg-easy-19": false,
+   "pos-explicit-26": true,
+   "neg-hard-00": false,
+   "pos-explicit-23": true,
+   "neg-hard-07": false,
+   "pos-implied-15": true,
+   "neg-hard-24": false,
+   "pos-implied-18": false,
+   "neg-hard-22": false,
+   "pos-explicit-19": true,
+   "pos-explicit-09": true,
+   "neg-easy-11": false,
+   "pos-explicit-15": true,
+   "neg-hard-05": false,
+   "pos-explicit-02": true,
+   "neg-hard-21": false,
+   "neg-easy-14": false,
+   "neg-hard-02": false,
+   "pos-implied-08": false,
+   "neg-easy-21": false,
+   "neg-easy-25": false,
+   "pos-explicit-16": true,
+   "pos-explicit-17": true,
+   "pos-implied-19": false,
+   "pos-implied-09": false,
+   "pos-implied-16": true,
+   "neg-hard-03": false,
+   "neg-easy-08": false,
+   "neg-easy-06": false,
+   "neg-easy-00": false,
+   "neg-easy-12": false,
+   "neg-easy-24": false,
+   "neg-hard-10": true,
+   "neg-hard-25": false
+  },
+  "gemma2:9b": {
+   "neg-easy-26": false,
+   "neg-hard-27": false,
+   "pos-explicit-25": true,
+   "pos-implied-24": false,
+   "neg-hard-26": false,
+   "pos-explicit-29": true,
+   "pos-implied-12": true,
+   "neg-hard-18": false,
+   "pos-implied-17": true,
+   "pos-implied-21": true,
+   "pos-explicit-10": true,
+   "neg-easy-05": false,
+   "pos-explicit-18": true,
+   "pos-implied-00": true,
+   "pos-implied-07": true,
+   "pos-explicit-08": true,
+   "pos-implied-06": true,
+   "neg-hard-29": false,
+   "pos-implied-04": false,
+   "pos-explicit-27": true,
+   "neg-easy-03": false,
+   "neg-hard-11": false,
+   "neg-hard-09": false,
+   "neg-easy-29": false,
+   "neg-easy-02": false,
+   "neg-hard-17": false,
+   "pos-explicit-12": true,
+   "neg-hard-14": false,
+   "neg-hard-15": false,
+   "neg-hard-16": false,
+   "neg-hard-13": false,
+   "neg-easy-16": false,
+   "pos-implied-03": true,
+   "pos-explicit-22": true,
+   "neg-easy-13": false,
+   "neg-easy-17": false,
+   "neg-easy-20": false,
+   "pos-explicit-00": true,
+   "pos-explicit-20": true,
+   "neg-hard-20": false,
+   "pos-explicit-04": true,
+   "pos-implied-05": true,
+   "pos-implied-02": true,
+   "pos-explicit-07": true,
+   "pos-implied-29": false,
+   "neg-hard-04": false,
+   "neg-hard-28": false,
+   "pos-explicit-24": true,
+   "neg-easy-22": false,
+   "pos-explicit-11": true,
+   "pos-implied-13": true,
+   "pos-implied-11": true,
+   "pos-explicit-01": true,
+   "pos-implied-27": true,
+   "pos-explicit-03": true,
+   "pos-implied-22": true,
+   "neg-easy-23": false,
+   "pos-explicit-28": true,
+   "neg-easy-28": false,
+   "neg-hard-19": false,
+   "pos-implied-26": true,
+   "pos-implied-14": false,
+   "neg-hard-12": false,
+   "neg-easy-01": false,
+   "pos-explicit-14": true,
+   "pos-explicit-13": true,
+   "pos-explicit-06": true,
+   "pos-implied-10": true,
+   "pos-implied-25": true,
+   "pos-implied-23": true,
+   "neg-hard-23": false,
+   "neg-easy-09": false,
+   "neg-easy-18": false,
+   "pos-explicit-05": true,
+   "neg-hard-08": false,
+   "neg-easy-07": false,
+   "pos-explicit-21": true,
+   "pos-implied-20": true,
+   "neg-easy-10": false,
+   "pos-implied-28": true,
+   "pos-implied-01": true,
+   "neg-easy-27": false,
+   "neg-hard-06": false,
+   "neg-hard-01": false,
+   "neg-easy-04": false,
+   "neg-easy-15": false,
+   "neg-easy-19": false,
+   "pos-explicit-26": true,
+   "neg-hard-00": false,
+   "pos-explicit-23": true,
+   "neg-hard-07": false,
+   "pos-implied-15": true,
+   "neg-hard-24": false,
+   "pos-implied-18": true,
+   "neg-hard-22": false,
+   "pos-explicit-19": true,
+   "pos-explicit-09": true,
+   "neg-easy-11": false,
+   "pos-explicit-15": true,
+   "neg-hard-05": false,
+   "pos-explicit-02": true,
+   "neg-hard-21": false,
+   "neg-easy-14": false,
+   "neg-hard-02": false,
+   "pos-implied-08": true,
+   "neg-easy-21": false,
+   "neg-easy-25": false,
+   "pos-explicit-16": true,
+   "pos-explicit-17": true,
+   "pos-implied-19": false,
+   "pos-implied-09": false,
+   "pos-implied-16": true,
+   "neg-hard-03": false,
+   "neg-easy-08": false,
+   "neg-easy-06": false,
+   "neg-easy-00": false,
+   "neg-easy-12": false,
+   "neg-easy-24": false,
+   "neg-hard-10": false,
+   "neg-hard-25": false
+  }
+ },
+ "metrics": {
+  "qwen3:8b": {
+   "sensitivity": {
+    "k": 49,
+    "n": 60,
+    "pct": 81.7,
+    "wilson": [
+     70.1,
+     89.4
+    ]
+   },
+   "specificity": {
+    "k": 59,
+    "n": 60,
+    "pct": 98.3,
+    "wilson": [
+     91.1,
+     99.7
+    ]
+   },
+   "sens_explicit": {
+    "k": 30,
+    "n": 30,
+    "pct": 100.0,
+    "wilson": [
+     88.6,
+     100.0
+    ]
+   },
+   "sens_implied": {
+    "k": 19,
+    "n": 30,
+    "pct": 63.3,
+    "wilson": [
+     45.5,
+     78.1
+    ]
+   },
+   "spec_hard": {
+    "k": 29,
+    "n": 30,
+    "pct": 96.7,
+    "wilson": [
+     83.3,
+     99.4
+    ]
+   },
+   "spec_easy": {
+    "k": 30,
+    "n": 30,
+    "pct": 100.0,
+    "wilson": [
+     88.6,
+     100.0
+    ]
+   },
+   "unparsed": 0,
+   "accuracy": {
+    "k": 108,
+    "n": 120,
+    "pct": 90.0,
+    "wilson": [
+     83.3,
+     94.2
+    ]
+   }
+  },
+  "gemma2:9b": {
+   "sensitivity": {
+    "k": 54,
+    "n": 60,
+    "pct": 90.0,
+    "wilson": [
+     79.9,
+     95.3
+    ]
+   },
+   "specificity": {
+    "k": 60,
+    "n": 60,
+    "pct": 100.0,
+    "wilson": [
+     94.0,
+     100.0
+    ]
+   },
+   "sens_explicit": {
+    "k": 30,
+    "n": 30,
+    "pct": 100.0,
+    "wilson": [
+     88.6,
+     100.0
+    ]
+   },
+   "sens_implied": {
+    "k": 24,
+    "n": 30,
+    "pct": 80.0,
+    "wilson": [
+     62.7,
+     90.5
+    ]
+   },
+   "spec_hard": {
+    "k": 30,
+    "n": 30,
+    "pct": 100.0,
+    "wilson": [
+     88.6,
+     100.0
+    ]
+   },
+   "spec_easy": {
+    "k": 30,
+    "n": 30,
+    "pct": 100.0,
+    "wilson": [
+     88.6,
+     100.0
+    ]
+   },
+   "unparsed": 0,
+   "accuracy": {
+    "k": 114,
+    "n": 120,
+    "pct": 95.0,
+    "wilson": [
+     89.5,
+     97.7
+    ]
+   }
+  }
+ },
+ "agreement_between_judges": {
+  "k": 112,
+  "n": 120
+ }
+}
