@@ -1,0 +1,81 @@
+{
+ "note": "descriptive only; serial is the unit; three units cannot support population inference",
+ "trait": "gender (the only trait that diverged on the original cuts; archetype is derived from it)",
+ "per_serial": {
+  "lord-of-the-mysteries": {
+   "original": {
+    "diverge": 8,
+    "cuts": 88
+   },
+   "added": {
+    "diverge": 2,
+    "cuts": 91
+   },
+   "all": {
+    "diverge": 10,
+    "cuts": 179,
+    "rate": 0.055865921787709494
+   },
+   "with_versioning_diverge": 0
+  },
+  "omniscient-readers-viewpoint": {
+   "original": {
+    "diverge": 5,
+    "cuts": 61
+   },
+   "added": {
+    "diverge": 2,
+    "cuts": 61
+   },
+   "all": {
+    "diverge": 7,
+    "cuts": 122,
+    "rate": 0.05737704918032787
+   },
+   "with_versioning_diverge": 0
+  },
+  "reverend-insanity": {
+   "original": {
+    "diverge": 10,
+    "cuts": 140
+   },
+   "added": {
+    "diverge": 14,
+    "cuts": 244
+   },
+   "all": {
+    "diverge": 24,
+    "cuts": 384,
+    "rate": 0.0625
+   },
+   "with_versioning_diverge": 0
+  }
+ },
+ "pooled": {
+  "diverge": 41,
+  "cuts": 685,
+  "rate": 0.059854014598540145
+ },
+ "serial_rate_min": 0.055865921787709494,
+ "serial_rate_max": 0.0625,
+ "serial_rate_mean": 0.058580990322679126,
+ "leave_one_serial_out": {
+  "lord-of-the-mysteries": {
+   "diverge": 31,
+   "cuts": 506,
+   "rate": 0.06126482213438735
+  },
+  "omniscient-readers-viewpoint": {
+   "diverge": 34,
+   "cuts": 563,
+   "rate": 0.06039076376554174
+  },
+  "reverend-insanity": {
+   "diverge": 17,
+   "cuts": 301,
+   "rate": 0.05647840531561462
+  }
+ },
+ "every_serial_positive": true,
+ "versioning_diverge_all_serials": 0
+}

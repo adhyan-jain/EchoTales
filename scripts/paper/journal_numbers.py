@@ -130,6 +130,15 @@ def build():
     put("pa_time", f"{co['off']['persona_stage_seconds']:.1f} s to {co['on']['persona_stage_seconds']:.1f} s",
         "prefix_audit/summary.json cost", "single wall-clock run; the course report's 'about 50%' used an older 9.1 s timing")
     put("pa_rows", f"{co['off']['attribute_rows']:,} to {co['on']['attribute_rows']:,}", "prefix_audit/summary.json cost")
+    # Review round 3: serial as the unit; descriptive only (scripts/paper/serial_level_sensitivity.py).
+    sl = J(Path("data/eval/serial_level_sensitivity.json"))
+    put("pa_serial_rates", " / ".join(f"{p['all']['diverge']}/{p['all']['cuts']}" for p in sl["per_serial"].values()),
+        "data/eval/serial_level_sensitivity.json per_serial", "LOTM / ORV / RI, all 24 cuts, gender")
+    put("pa_serial_range", f"{pc(sl['serial_rate_min'])}% to {pc(sl['serial_rate_max'])}%",
+        "data/eval/serial_level_sensitivity.json", "descriptive; three serials")
+    put("pa_loso_range", f"{pc(min(v['rate'] for v in sl['leave_one_serial_out'].values()))}% to "
+        f"{pc(max(v['rate'] for v in sl['leave_one_serial_out'].values()))}%",
+        "data/eval/serial_level_sensitivity.json leave_one_serial_out")
     put("pa_unknown", f"{pc(co['off']['unknown_served'] / co['off']['n'])}% to {pc(co['on']['unknown_served'] / co['on']['n'])}%",
         "prefix_audit/summary.json cost")
     lp = J(PA / "labels_summary_permissive.json")
