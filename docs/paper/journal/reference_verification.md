@@ -1,4 +1,4 @@
-# Reference verification (2026-10-31)
+# Reference verification (2026-11-01)
 
 Each entry of `references.bib` checked against its live record by `scripts/paper/verify_references.py`.
 Publisher DOIs were resolved through Crossref and doi.org; arXiv DOIs through the arXiv API (the version listed

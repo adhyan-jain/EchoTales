@@ -184,7 +184,7 @@ cue control 8, pipeline 9, repair 10, cards 11, canaries 12, synthesis 13).
 | 9 Conclusion | Done | RQ1-RQ3 answered explicitly; the final lesson keeps "markers and timestamp filters are insufficient when upstream processing has already used future information" and "does not establish universal spoiler-free behaviour". The future-work human item is stated as a larger independent sample recording both explicitness and prefix inferability, with human-validated disclosure labels on shareable or synthetic text. |
 
 ## Review round 3 (third review comments)
-Status key: **Text** = addressed by wording or restructuring in `main.tex`; **Pending** = needs new evidence or an owner action (see the open list below).
+Status key: **Text** = addressed by wording or restructuring in `main.tex`; **Pending** = needs new evidence or an owner action (see the open list below); none remain except the Overleaf layout compile.
 
 | Comment | Status | Where / what changed |
 |---|---|---|
@@ -202,11 +202,11 @@ Status key: **Text** = addressed by wording or restructuring in `main.tex`; **Pe
 | Sec 5 Table 4 / model reproducibility / identifier | Text | Model name stated as sent to the API, reasoning effort none (verified in `scripts/chimera/pd_v2_luna.py`, `pd_v3_luna.py`, `l1_llm_leakage.py`, `scripts/prefix_audit/luna_labels.py`), no snapshot or returned model string recorded; runs not described as exactly reproducible. |
 | Sec 5 nested cuts | Text, new analysis | Statistical unit stated; intervals descriptive; `scripts/paper/serial_level_sensitivity.py` gives per-serial divergence (10/179, 7/122, 24/384; 5.6 to 6.2%) and leave-one-serial-out (5.6 to 6.1%); three serials support no population inference. |
 | Sec 5 independence of replications | Text | Card, canary and selection experiments described as complementary tests. |
-| Sec 5 repository tag | Pending | Needs a new tag after all edits; Declarations still carry the old disclaimer. |
+| Sec 5 repository tag | Done | Tag `journal-rev3-2026-10-31` (commit 77dd0e9) pushed; the availability statement names it and lists the 48-cut labels, the third reader's labels, the scoring script, the event manifests and the number registry; the old disclaimer is removed. |
 | Sec 6.1 disagreement table | Text | Table added (raw agreement and events with a disagreement per question). |
 | Sec 6.2 familiarity | Text | Group sizes, estimate, interval and inconclusive status reported together; not a moderator. |
 | Sec 6.3 anchored cue | Text | Non-transfer made explicit as a limit on generality. |
-| Sec 6.4 judge validation, versioned cards, Fig. 10, negative controls | Text, partly Pending | Judge-rule result called not fully model-independent; cards described as tested configurations; Fig. 10 caption states the metrics differ. The known-truth judge test is done: 120 synthetic cards, paper's judge finds 30/30 explicit and 19/30 implied identifications and rejects 59/60 negatives, so it is conservative and judge-rule leak rates are more likely understated (supplement table; `scripts/paper/judge_known_truth.py`). |
+| Sec 6.4 judge validation, versioned cards, Fig. 10, negative controls | Text, new evidence | Judge-rule result called not fully model-independent; cards described as tested configurations; Fig. 10 caption states the metrics differ. The known-truth judge test is done: 120 synthetic cards, paper's judge finds 30/30 explicit and 19/30 implied identifications and rejects 59/60 negatives, so it is conservative and judge-rule leak rates are more likely understated (supplement table; `scripts/paper/judge_known_truth.py`). |
 | Sec 6.5 runtime | Text | Timings described as indicative; per-run values left to the supplement. |
 | Sec 7, 8, 9 repetition | Text | Numbers removed from the Discussion; Limitations rewritten by effect on conclusions with the two human checks separated; Conclusion shortened to RQ1-RQ3. |
 | Evidence-strength labels, terminology, faithfulness versus utility | Text | Four labels defined in Sec 5; terminology paragraph in Sec 3; utility stated as an evaluation principle in Sec 3. |
