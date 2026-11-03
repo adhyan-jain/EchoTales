@@ -1,0 +1,169 @@
+{
+ "label": "v12-session-2026-10-31",
+ "commit": "1583fdb",
+ "chapters": {
+  "lord-of-the-mysteries:1": {
+   "held_out": false,
+   "speakers": [
+    0,
+    0
+   ],
+   "false_dialogue": 4,
+   "appearance": [
+    4,
+    5
+   ],
+   "persona_links": [
+    1,
+    1
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    4,
+    4
+   ],
+   "speaker_misses": []
+  },
+  "lord-of-the-mysteries:3": {
+   "held_out": false,
+   "speakers": [
+    9,
+    9
+   ],
+   "false_dialogue": 3,
+   "appearance": [
+    1,
+    3
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    5,
+    5
+   ],
+   "speaker_misses": []
+  },
+  "lord-of-the-mysteries:7": {
+   "held_out": false,
+   "speakers": [
+    40,
+    43
+   ],
+   "false_dialogue": 8,
+   "appearance": [
+    0,
+    0
+   ],
+   "persona_links": [
+    3,
+    4
+   ],
+   "ages": [
+    1,
+    1
+   ],
+   "kinds": [
+    6,
+    6
+   ],
+   "speaker_misses": [
+    "block 10 quote 0: expected alger, got lord-of-the-mysteries:self:4afd3a0760",
+    "block 11 quote 0: expected alger, got lord-of-the-mysteries:self:4afd3a0760",
+    "block 41 quote 0: expected alger, got lord-of-the-mysteries:self:8f906ddc75"
+   ]
+  },
+  "lord-of-the-mysteries:12": {
+   "held_out": false,
+   "speakers": [
+    31,
+    31
+   ],
+   "false_dialogue": 4,
+   "appearance": [
+    1,
+    2
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    5,
+    5
+   ],
+   "speaker_misses": []
+  },
+  "lord-of-the-mysteries:14": {
+   "held_out": false,
+   "speakers": [
+    49,
+    53
+   ],
+   "false_dialogue": 7,
+   "appearance": [
+    1,
+    4
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    5,
+    5
+   ],
+   "speaker_misses": [
+    "block 14 quote 0: expected daly, got lord-of-the-mysteries:anon:14:nighthawk",
+    "block 24 quote 0: expected dunn, got lord-of-the-mysteries:self:87983bcab4",
+    "block 58 quote 0: expected daly, got lord-of-the-mysteries:self:3c31a94ca3",
+    "block 84 quote 0: expected dunn, got None"
+   ]
+  },
+  "lord-of-the-mysteries:21": {
+   "held_out": true,
+   "speakers": [
+    35,
+    37
+   ],
+   "false_dialogue": 5,
+   "appearance": [
+    0,
+    3
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    3,
+    3
+   ],
+   "speaker_misses": [
+    "block 25 quote 0: expected klein, got lord-of-the-mysteries:self:b605799aab",
+    "block 66 quote 0: expected leonard, got lord-of-the-mysteries:self:c8e03c86a3"
+   ]
+  }
+ },
+ "seconds": 1815
+}

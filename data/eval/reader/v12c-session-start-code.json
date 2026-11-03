@@ -1,0 +1,60 @@
+{
+ "label": "v12c-session-start-code",
+ "commit": "1583fdb",
+ "chapters": {
+  "lord-of-the-mysteries:1": {
+   "held_out": false,
+   "speakers": [
+    0,
+    0
+   ],
+   "false_dialogue": 4,
+   "appearance": [
+    4,
+    5
+   ],
+   "persona_links": [
+    1,
+    1
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    4,
+    4
+   ],
+   "speaker_misses": []
+  },
+  "lord-of-the-mysteries:14": {
+   "held_out": false,
+   "speakers": [
+    51,
+    53
+   ],
+   "false_dialogue": 7,
+   "appearance": [
+    1,
+    4
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    5,
+    5
+   ],
+   "speaker_misses": [
+    "block 58 quote 0: expected daly, got lord-of-the-mysteries:self:efc85087c4",
+    "block 84 quote 0: expected dunn, got None"
+   ]
+  }
+ },
+ "seconds": 645
+}

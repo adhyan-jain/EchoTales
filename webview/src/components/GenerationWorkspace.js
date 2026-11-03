@@ -32,7 +32,7 @@ import { describeError } from '../lib/errors';
 // What each engine is called. Which of them are offered, and why one is disabled, comes from the server
 // (`/api/compute`, pipeline/compute.py): the compute mode and the provider variables decide, not this list.
 const ENGINE_LABELS = {
-  stub: 'Placeholder (stub, no model)',
+  stub: 'Flat test image (stub, no model)',
   noobai: 'NoobAI XL (local GPU)',
   illustrious: 'Illustrious (local GPU)',
   sdxl: 'SDXL (local GPU)',
@@ -54,10 +54,13 @@ function minutes(seconds) {
 }
 
 export default function GenerationWorkspace({ novelId, hideHeader = false }) {
-  const [engine, setEngine] = useState('stub');
+  const [chosenEngine, setChosenEngine] = useState('');
   const [tier, setTier] = useState(null);
   const [density, setDensity] = useState('beat');
   const [compute, setCompute] = useState(null);
+  // Starts on the server's configured engine (NoobAI locally), never on the flat placeholder: a render that makes
+  // solid-colour panels by default looks broken (owner, 2026-10-31). The placeholder stays selectable for testing.
+  const engine = chosenEngine || (compute && compute.default_engine) || 'stub';
   const [chapters, setChapters] = useState([]);
   const [selected, setSelected] = useState('');
   const [jobs, setJobs] = useState([]);
@@ -205,7 +208,7 @@ export default function GenerationWorkspace({ novelId, hideHeader = false }) {
                 id="gen-engine"
                 value={engine}
                 onFocus={loadCompute}
-                onChange={(e) => setEngine(e.target.value)}
+                onChange={(e) => setChosenEngine(e.target.value)}
                 className="h-10 rounded-xl border border-border bg-transparent px-3 font-sans text-text"
               >
                 {(compute ? compute.engines : ['stub']).map((e) => {

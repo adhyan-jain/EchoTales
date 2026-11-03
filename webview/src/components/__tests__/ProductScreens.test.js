@@ -267,7 +267,7 @@ describe('GenerationWorkspace', () => {
     await screen.findByRole('option', { name: 'Chapter 1' });
     fireEvent.change(screen.getByLabelText('Engine'), { target: { value: 'stub' } });
     await waitFor(() => expect(screen.getByRole('option', { name: /NoobAI XL/ })).toBeDisabled());
-    expect(screen.getByRole('option', { name: /Placeholder/ })).not.toBeDisabled();
+    expect(screen.getByRole('option', { name: /Flat test image/ })).not.toBeDisabled();
   });
 
   test('cloud mode offers the hosted engine and no local ones', async () => {
