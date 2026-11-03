@@ -219,16 +219,30 @@ def _generate_stub_mp4_b64(duration_s: float = 3.0) -> str:
 
 
 def run_image_worker(req: ImageWorkerRequest) -> ImageWorkerResponse:
-    """Image worker: the deterministic offline stub, or a real local model when `ECHOTALES_IMAGE_WORKER` names one.
+    """Image worker: NoobAI XL on the local GPU, or the deterministic stub that tests and CI use.
 
-    `noobai` runs NoobAI XL on the local GPU without CPU offload (`workers_local.py`). Anything else, including unset,
-    is the stub, so CI, tests and every default path stay GPU-free."""
-    if os.environ.get("ECHOTALES_IMAGE_WORKER", "").strip().lower() == "noobai":
+    A solid-colour image must never come out of a real run (owner, 2026-10-31). It used to be the default whenever
+    `ECHOTALES_IMAGE_WORKER` was not `noobai`, so the Studio's character and location sheets were flat grey unless the
+    operator knew the variable. Now: an explicit value wins ("noobai" or "stub", anything else is an error, not a
+    silent stub); unset means the stub only in the project's stub mode (`ECHOTALES_LLM_MODE=stub`, the CI default)
+    and NoobAI otherwise, which raises if the GPU or model is missing instead of returning a placeholder."""
+    if _image_worker_choice() == "noobai":
         from echotales.pipeline.workers_local import run_local_image_worker
 
         return run_local_image_worker(req)
     b64 = _generate_solid_png_b64(req.width, req.height)
     return ImageWorkerResponse(image_b64=b64, seed=req.seed, duration_s=1.2, status="COMPLETED")
+
+
+def _image_worker_choice() -> str:
+    explicit = os.environ.get("ECHOTALES_IMAGE_WORKER", "").strip().lower()
+    if explicit in ("noobai", "stub"):
+        return explicit
+    if explicit:
+        raise ValueError(f"ECHOTALES_IMAGE_WORKER={explicit!r} is not a worker; use 'noobai' or 'stub'")
+    from echotales.pipeline.config import LLMMode, get_settings
+
+    return "stub" if get_settings().llm_mode is LLMMode.STUB else "noobai"
 
 
 def run_video_worker(req: VideoWorkerRequest) -> VideoWorkerResponse:

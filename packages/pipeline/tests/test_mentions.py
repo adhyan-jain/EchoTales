@@ -451,3 +451,73 @@ class TestAbbreviatedHonorifics:
     def test_descriptors_and_fragments_still_do_not(self, surface: str) -> None:
         alias_type, _ = classify_alias_type(surface)
         assert not alias_type.enters_graph
+
+
+class TestHonorificInsideAName:
+    """A gazetteer hit on the bare honorific must not hide the full name that contains it.
+
+    The lexicon seeds the gazetteer with "Mr.", "Mrs.", "Miss", "Sir", "Lady". It matched the "Mr" in "Mr. Bingley"
+    first, the full-name NER span was skipped as overlapping, and the bare hit was dropped as a common noun: in Pride
+    and Prejudice ch2 the model returned Mr. Bennet, Mrs. Bennet and Mr. Bingley and none became a mention."""
+
+    @staticmethod
+    def _run(text: str, surfaces: dict[str, str]):
+        from echotales.pipeline.mentions import load_or_seed
+        from echotales.pipeline.mentions.chapter_ner import VocabularyDetector
+        from echotales.pipeline.mentions.gazetteer import Gazetteer, seed_from_lexicon
+        from echotales.pipeline.mentions.runner import detect_mentions_in_chapter
+
+        lexicon = load_or_seed(None)
+        gazetteer = Gazetteer()
+        seed_from_lexicon(gazetteer, lexicon)
+        gazetteer.build()
+        chapter = Chapter(novel_id="n", number=1.0, title="T", source_href="a.html",
+                          blocks=[Block(index=0, block_type=BlockType.PROSE, text=text)])
+        return detect_mentions_in_chapter(chapter, gazetteer=gazetteer, lexicon=lexicon,
+                                          detector=VocabularyDetector(surfaces))[0]
+
+    def test_a_titled_name_becomes_one_mention_not_a_bare_honorific(self) -> None:
+        mentions = self._run("Mr. Bingley arrived. Mrs. Bennet smiled at Mr. Bingley.",
+                             {"Mr. Bingley": "character", "Mrs. Bennet": "character"})
+        assert sorted(m.text for m in mentions) == ["Mr. Bingley", "Mr. Bingley", "Mrs. Bennet"]
+
+    def test_miss_bingley_is_not_split_into_miss_and_a_name(self) -> None:
+        mentions = self._run("Miss Bingley laughed.", {"Miss Bingley": "character"})
+        assert [m.text for m in mentions] == ["Miss Bingley"]
+
+    def test_a_bare_honorific_in_address_is_still_found(self) -> None:
+        mentions = self._run('"Sir, I beg your pardon," he said.', {})
+        assert [m.text for m in mentions] == ["Sir"]
+
+    def test_mention_ids_stay_unique_when_a_hit_is_replaced(self) -> None:
+        """Ids are `m{index}`; reusing an index after a replacement would overwrite a mention on insert."""
+        mentions = self._run("Miss Bingley met Miss Lucas. Sir William bowed.",
+                             {"Miss Bingley": "character", "Miss Lucas": "character", "Sir William": "character"})
+        ids = [m.id for m in mentions]
+        assert len(ids) == len(set(ids)) == 3
+
+    def test_a_replacement_never_reaches_into_another_block(self) -> None:
+        """Offsets are block-relative. The first version of the replacement compared ranges without the block, so an
+        NER name in block 61 deleted any earlier gazetteer mention in the chapter that shared its offsets: on Lord of
+        the Mysteries it cost 313 mentions, 156 of them "Klein" (found by holding the model's answers fixed and
+        bisecting the changed files)."""
+        from echotales.pipeline.mentions import load_or_seed
+        from echotales.pipeline.mentions.chapter_ner import VocabularyDetector
+        from echotales.pipeline.mentions.gazetteer import Gazetteer, seed_from_lexicon
+        from echotales.pipeline.mentions.runner import detect_mentions_in_chapter
+
+        lexicon = load_or_seed(None)
+        gazetteer = Gazetteer()
+        seed_from_lexicon(gazetteer, lexicon)
+        gazetteer.build()
+        chapter = Chapter(
+            novel_id="n", number=1.0, title="T", source_href="a.html",
+            blocks=[
+                Block(index=0, block_type=BlockType.PROSE, text='Sir, said the guard.'),
+                Block(index=1, block_type=BlockType.PROSE, text="Miss Bingley laughed."),
+            ],
+        )
+        mentions, _ = detect_mentions_in_chapter(
+            chapter, gazetteer=gazetteer, lexicon=lexicon, detector=VocabularyDetector({"Miss Bingley": "character"})
+        )
+        assert sorted((m.block_index, m.text) for m in mentions) == [(0, "Sir"), (1, "Miss Bingley")]

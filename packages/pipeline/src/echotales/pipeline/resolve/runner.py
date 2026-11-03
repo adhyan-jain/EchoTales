@@ -860,6 +860,11 @@ def resolve_novel(
     produces tens of thousands of rows, and a production resolve should not
     pay for an evaluation artifact nobody asked for.
     """
+    # Whether a title tells people apart depends on whether the name is a family name; the book's own mentions say
+    # which, and every stage must compare names the same way (decision of 2026-10-31).
+    from echotales.pipeline.ingest.normalize import refresh_family_tokens
+
+    refresh_family_tokens(store, novel_id)
     existing_entities = store.conn.execute(
         "SELECT COUNT(*) AS n FROM self_entity WHERE novel_id=?", (novel_id,)
     ).fetchone()["n"]

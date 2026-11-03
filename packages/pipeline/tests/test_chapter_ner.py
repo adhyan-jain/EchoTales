@@ -425,3 +425,15 @@ class TestHonorificAbbreviations:
         from echotales.pipeline.mentions.chapter_ner import plausible_name
 
         assert not plausible_name(surface)
+
+
+class TestNameCacheKey:
+    def test_the_key_changes_when_the_plausibility_filter_changes(self, tmp_path, monkeypatch) -> None:
+        """The cache holds names that survived `plausible_name`; without the filter version in the key, fixing the
+        filter changed nothing on already-cached chapters (three identical Pride and Prejudice reruns)."""
+        from echotales.pipeline.mentions import chapter_ner as cn
+
+        cache = cn.NameCache(tmp_path / "c.json", model="m")
+        before = cache._key("some chapter text")
+        monkeypatch.setattr(cn, "PLAUSIBILITY_VERSION", "next-version")
+        assert cache._key("some chapter text") != before

@@ -64,6 +64,10 @@ _KEEP_LABELS = frozenset({"character", "location", "organization", "item"})
 #: the model's commonest overreach is returning an apposition it copied whole
 #: ("Fang Yuan, the demon") rather than the name inside it.
 _SENTENCE_MARK = re.compile(r"[.!?;:,]")
+#: The cache stores what survived `plausible_name`, so a change to that filter must change the cache key or it is
+#: invisible on every chapter already cached: the honorific-period fix produced identical results on three reruns of
+#: Pride and Prejudice because run 1's filtered answers were reused (2026-10-31). Bump this with any filter change.
+PLAUSIBILITY_VERSION = "2-honorific-period"
 _HONORIFIC_PERIOD = re.compile(r"\b(Mr|Mrs|Ms|Dr|St|Jr|Sr|Mt|Mme|Mlle|Capt|Col|Gen|Prof|Rev|Hon|Lt|Sgt|Messrs)\.(?=\s+[A-Z])")
 
 
@@ -174,7 +178,7 @@ class NameCache:
 
     def _key(self, text: str) -> str:
         digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
-        return f"{self.model}:{ner_pass_fingerprint()}:{digest}"
+        return f"{self.model}:{ner_pass_fingerprint()}:{PLAUSIBILITY_VERSION}:{digest}"
 
     def get(self, text: str) -> dict[str, str] | None:
         return self._data.get(self._key(text))

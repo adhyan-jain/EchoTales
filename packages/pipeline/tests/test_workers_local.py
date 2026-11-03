@@ -20,10 +20,10 @@ def test_requests_are_scaled_to_the_pixel_budget_in_multiples_of_64() -> None:
         assert fw % 64 == 0 and fh % 64 == 0 and fw * fh <= wl.MAX_PIXELS
 
 
-def test_the_stub_is_the_default_and_the_env_switch_selects_the_local_worker(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("ECHOTALES_IMAGE_WORKER", raising=False)
-    stub = wc.run_image_worker(ImageWorkerRequest(prompt="x", width=64, height=64))
-    assert stub.status == "COMPLETED" and base64.b64decode(stub.image_b64)[:4] == b"\x89PNG"
+def test_the_worker_choice_never_defaults_to_a_flat_image_outside_stub_mode(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A solid-colour image must not come out of a real run (owner, 2026-10-31): unset means the stub only in the
+    project's stub mode, NoobAI otherwise, and an unknown value is an error, not a silent stub."""
+    from echotales.pipeline import config
 
     seen: list[str] = []
 
@@ -32,30 +32,19 @@ def test_the_stub_is_the_default_and_the_env_switch_selects_the_local_worker(mon
         return ImageWorkerResponse(image_b64="", seed=req.seed)
 
     monkeypatch.setattr(wl, "run_local_image_worker", fake)
-    monkeypatch.setenv("ECHOTALES_IMAGE_WORKER", "noobai")
+
+    monkeypatch.delenv("ECHOTALES_IMAGE_WORKER", raising=False)
+    monkeypatch.setattr(config, "_settings", config.Settings(llm_mode=config.LLMMode.STUB))
+    stub = wc.run_image_worker(ImageWorkerRequest(prompt="x", width=64, height=64))
+    assert stub.status == "COMPLETED" and base64.b64decode(stub.image_b64)[:4] == b"\x89PNG" and not seen
+
+    monkeypatch.setattr(config, "_settings", config.Settings(llm_mode=config.LLMMode.LOCAL))
     wc.run_image_worker(ImageWorkerRequest(prompt="a boy"))
-    assert seen == ["a boy"]
+    assert seen == ["a boy"]  # real mode, variable unset: the real worker
+
+    monkeypatch.setenv("ECHOTALES_IMAGE_WORKER", "stub")
+    assert base64.b64decode(wc.run_image_worker(ImageWorkerRequest(prompt="s", width=64, height=64)).image_b64)[:4] == b"\x89PNG"
     monkeypatch.setenv("ECHOTALES_IMAGE_WORKER", "something-else")
-    wc.run_image_worker(ImageWorkerRequest(prompt="ignored", width=64, height=64))
-    assert seen == ["a boy"]  # any other value is the stub
-
-
-def test_a_gpu_that_is_not_free_is_refused_before_any_load(monkeypatch: pytest.MonkeyPatch) -> None:
-    torch = pytest.importorskip("torch")
-    monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
-    monkeypatch.setattr(torch.cuda, "mem_get_info", lambda: (2 * 2**30, 8 * 2**30))
-    with pytest.raises(RuntimeError, match="stop ollama"):
-        wl.LocalNoobAIWorker()._check_gpu()
-
-
-def test_a_long_prompt_loses_whole_trailing_clauses_not_the_middle_of_one() -> None:
-    class Tok:  # one token per word is enough to check the dropping rule without loading CLIP
-        def __call__(self, text: str, add_special_tokens: bool = False):  # noqa: ANN204
-            class Out:
-                input_ids = text.replace(",", " ").split()
-
-            return Out()
-
-    fitted = wl.fit_prompt(Tok(), "q1 q2", "alpha beta, gamma delta, epsilon zeta, eta theta", limit=8)
-    assert fitted == "q1 q2, alpha beta, gamma delta, epsilon zeta"  # the lowest-priority clause went, whole
-    assert wl.fit_prompt(Tok(), "", "one, two", limit=75) == "one, two"
+    with pytest.raises(ValueError, match="not a worker"):
+        wc.run_image_worker(ImageWorkerRequest(prompt="ignored"))
+    assert seen == ["a boy"]

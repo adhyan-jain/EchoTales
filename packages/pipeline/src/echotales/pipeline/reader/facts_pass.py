@@ -91,6 +91,8 @@ class FactsReport:
     genders: int = 0
     duplicates: int = 0
     repaired: int = 0
+    #: Default traits stamped back to the character's first appearance (stated later than they begin to hold).
+    retroactive: int = 0
     age_stages: int = 0
 
 
@@ -415,17 +417,51 @@ def _resolve(index: NameIndex, name: str, report: FactsReport) -> CastEntry | No
     return entry
 
 
+#: Traits that are true of a character from their first appearance unless the text says they changed.
+_INTRINSIC_KEYS = frozenset({"hair_color", "eye_color", "skin_tone", "height_build"})
+#: A sentence that reports something happening to the look, not describing it. A false hit only costs the retroactive
+#: reading (the fact keeps the old stamp: true from the chapter that states it); a miss would back-date a change to
+#: chapter 1, so the list leans wide.
+_CHANGE_CUES = re.compile(
+    r"\b(burn(?:ed|t)|scorch\w*|scarr?ed|disfigur\w*|mutilat\w*|lost|cut off|shav(?:ed|en)|dyed|bleached|"
+    r"turn(?:ed|s)\s+(?:white|gr[ae]y|black|red|pale|silver|gold\w*)|became|become|now|no longer|wounded|bandag\w*|"
+    r"stitched|aged|grew|changed|transformed|after the|since the|used to|once)\b",
+    re.IGNORECASE,
+)
+
+
+def fact_scope(attribute: str, quote: str) -> str:
+    """"baseline" (a default trait: true from the character's first appearance, however late the text says it),
+    "change" (something happened to the look: a new version from the chapter it is stated), or "state" (clothes, a
+    hairstyle, a mark: time-bound, kept as before).
+
+    Owner, 2026-10-31: "had blue eyes" a dozen chapters in is not a change in appearance, so chapter 1's picture needs
+    it; "half his face was burned" is. Until now every fact started at the chapter that stated it."""
+    if _CHANGE_CUES.search(quote):
+        return "change"
+    return "baseline" if attribute in _INTRINSIC_KEYS else "state"
+
+
+def story_start(scope: str, *, stated: int, first_attested: int) -> int:
+    """The story chapter a fact starts holding: a default trait from the character's first appearance (never later
+    than the statement), anything else from the chapter that states it. The reading clock (`learned_at_pos`) is left
+    alone, so the reader view still shows only what has been read."""
+    return min(first_attested, stated) if scope == "baseline" else stated
+
+
 def _attribute(
-    target_kind: TargetKind, target_id: str, key: str, value: str, quote: str, number: float, pos: DiscoursePosition
+    target_kind: TargetKind, target_id: str, key: str, value: str, quote: str, number: float, pos: DiscoursePosition,
+    story_from: int | None = None,
 ) -> Attribute:
     return Attribute(
         target_kind=target_kind,
         target_id=target_id,
         key=key,
         value=value,
-        # Open-ended from the chapter that states it: a later contradicting attestation lands as its own row
-        # rather than replacing this one (same rule as `appearance_extract._write_appearance`).
-        interval=FuzzyInterval.open_ended(int(number), last_evidence=int(number)),
+        # Open-ended from `story_from` (the stating chapter unless this is a default trait): a later contradicting
+        # attestation lands as its own row rather than replacing this one (same rule as
+        # `appearance_extract._write_appearance`).
+        interval=FuzzyInterval.open_ended(int(number) if story_from is None else story_from, last_evidence=int(number)),
         learned_at_pos=pos,
         observer_id=OBSERVER_READER,
         asserted_by=AssertedBy.INFERENCE,
@@ -440,6 +476,12 @@ def _known(store: Store, target_id: str, key: str, value: str) -> bool:
         a.key == key and a.value.strip().lower() == value.strip().lower() and a.is_standing
         for a in store.get_attributes(TargetKind.PERSONA, target_id)
     )
+
+
+def _first_chapter(store: Store, self_id: str, default: float) -> int:
+    """The chapter a character first appears in, or the stating chapter when it is not recorded."""
+    entity = store.get_self(self_id)
+    return int(entity.first_attested_pos.chapter) if entity is not None else int(default)
 
 
 def _store_appearance(
@@ -479,7 +521,19 @@ def _store_appearance(
     if _known(store, persona_id, attribute, value):
         report.duplicates += 1
         return
-    store.add_attribute(novel_id, _attribute(TargetKind.PERSONA, persona_id, attribute, value, quote, number, pos))
+    scope = fact_scope(attribute, quote)
+    story_from = story_start(scope, stated=int(number), first_attested=_first_chapter(store, entry.self_id, number))
+    if scope == "baseline":
+        # A default trait holds from the character's first appearance, but not before this body existed (a rebirth
+        # starts a new body: it does not inherit the old one's eye colour).
+        from echotales.pipeline.persona.split import bodies_of
+
+        body_from = next((iv.from_lb for pid, iv in bodies_of(store, entry.self_id) if pid == persona_id), 0)
+        story_from = max(story_from, int(body_from))
+        report.retroactive += 1 if story_from < int(number) else 0
+    store.add_attribute(
+        novel_id, _attribute(TargetKind.PERSONA, persona_id, attribute, value, quote, number, pos, story_from)
+    )
     report.appearance += 1
 
 

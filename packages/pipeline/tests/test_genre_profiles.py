@@ -8,6 +8,8 @@ LotM identical, ORV loses only the sleeve clause and the xianxia culture negativ
 
 from __future__ import annotations
 
+from _requires import requires_clip
+
 import pytest
 
 from echotales.core.enums import BlockType, SpanType
@@ -77,6 +79,9 @@ def test_re_adding_a_novel_keeps_its_chosen_genre(tmp_path) -> None:
     assert store.get_novel("keep")["visual_genre"] == "western_fantasy"
 
 
+@requires_clip
+
+
 def test_the_reference_negative_follows_a_genre_change_without_a_restart(tmp_path) -> None:
     # Cached on the novel id it kept the first genre's culture line until the server restarted (code review).
     store = _book(tmp_path, "switch", "x", "xianxia")
@@ -85,6 +90,9 @@ def test_the_reference_negative_follows_a_genre_change_without_a_restart(tmp_pat
     store.set_visual_genre("switch", "modern_apocalypse")
     genre.use_store_genre(store, "switch")
     assert "school uniform" not in reference_negative("switch") and "xianxia" in reference_negative("switch")
+
+
+@requires_clip
 
 
 def test_every_profiles_culture_negative_survives_the_reference_budget() -> None:

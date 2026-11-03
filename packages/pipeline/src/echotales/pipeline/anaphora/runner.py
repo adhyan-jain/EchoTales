@@ -91,6 +91,11 @@ def resolve_anaphora_for_novel(
     the idea (a "he said" becomes attributable once the pronoun has an
     antecedent) is right and the failure is in `resolve_pronoun`'s choice.
     """
+    # Whether a title tells people apart depends on whether the name is a family name; the book's own mentions say
+    # which, and every stage must compare names the same way (decision of 2026-10-31).
+    from echotales.pipeline.ingest.normalize import refresh_family_tokens
+
+    refresh_family_tokens(store, novel_id)
     report = AnaphoraReport(novel_id=novel_id)
 
     for i, chapter in enumerate(store.iter_chapters(novel_id), start=1):

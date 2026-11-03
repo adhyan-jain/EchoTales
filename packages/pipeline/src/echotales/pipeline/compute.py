@@ -274,6 +274,14 @@ DEFAULT_DENSITY = "beat"
 DENSITY_IMAGES_PER_SCENE = {"beat": 3.3, "dense": 3.3 * 4}
 
 
+def default_image_engine() -> str:
+    """The image engine a request that names none gets: the configured real engine (NoobAI locally), never a flat
+    placeholder. Every default used to say "stub", so the Studio, the reference sheets and a bare `render` drew solid
+    colours unless the caller knew to name an engine (owner, 2026-10-31). The stub is still chosen explicitly, and is
+    what the preset resolves to in `ECHOTALES_LLM_MODE=stub`, the deterministic CI mode."""
+    return policy().default_engine
+
+
 def density_error(density: str) -> str | None:
     """A message when `density` is not one of the known values, else None."""
     if density in DENSITY_BLOCKS_PER_PANEL:

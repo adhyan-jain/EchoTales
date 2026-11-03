@@ -26,3 +26,17 @@ def _eval_artifacts_to_tmp(tmp_path_factory):  # type: ignore[no-untyped-def]
         os.environ.pop("ECHOTALES_EVAL_ROOT", None)
     else:
         os.environ["ECHOTALES_EVAL_ROOT"] = previous
+
+
+@pytest.fixture(autouse=True, scope="session")
+def _image_worker_is_the_stub_in_tests():  # type: ignore[no-untyped-def]
+    """The image worker defaults to NoobAI outside stub mode (never a flat image on a real run), so a developer whose
+    `.env` says `ECHOTALES_LLM_MODE=local` would otherwise load the GPU model from any test that draws an image."""
+    import os
+
+    previous = os.environ.get("ECHOTALES_IMAGE_WORKER")
+    if previous is None:
+        os.environ["ECHOTALES_IMAGE_WORKER"] = "stub"
+    yield
+    if previous is None:
+        os.environ.pop("ECHOTALES_IMAGE_WORKER", None)

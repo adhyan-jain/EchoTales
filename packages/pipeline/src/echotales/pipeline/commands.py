@@ -910,7 +910,7 @@ def cmd_webview_server(args: argparse.Namespace) -> int:
     from echotales.pipeline.webview_server import serve
 
     sources: list[NovelSource] = []
-    for raw in args.source:
+    for raw in args.source or []:
         parts = raw.split(":", 2)
         if len(parts) < 2:
             print(f"error: --source must be DB_PATH:NOVEL_ID[:LABEL], got {raw!r}", file=sys.stderr)
@@ -1079,9 +1079,10 @@ def cmd_render(args: argparse.Namespace) -> int:
     from echotales.pipeline.compute import resource_refusal as _resource_refusal
 
     pol = _compute_policy()
-    # No `--image-engine`: the stub for the local provider (a bare render never loads a model, as before), the
-    # configured provider's engine when a hosted one was chosen in `.env` -- that choice is the opt-in.
-    image_engine_name = args.image_engine or ("stub" if pol.image_provider in ("local", "stub") else pol.image_provider)
+    # No `--image-engine`: the configured engine (NoobAI locally, or the hosted provider chosen in `.env`). A bare
+    # render used to draw flat placeholder images; a flat image must not come out of a real run (owner, 2026-10-31).
+    # The stub is still there, named explicitly with `--image-engine stub`.
+    image_engine_name = args.image_engine or pol.default_engine
     max_panels = args.max_panels if args.max_panels is not None else pol.scenes_for(getattr(args, "tier", None))
     print(f"compute: {pol.mode}; images: {image_engine_name}; language: {pol.llm_provider}; scenes per chapter: {max_panels}")
     if not get_settings().enable_image_gen and image_engine_name != "stub":
@@ -1426,6 +1427,7 @@ def unload_ollama_models(*, prefix: str = "") -> None:
 
 def cmd_persona(args: argparse.Namespace) -> int:
     """Persona-level operations: reference sheets, wiki canon import."""
+    from echotales.pipeline.compute import default_image_engine
     from echotales.pipeline.persona.reference_gen import generate_references
     from echotales.pipeline.render.panels import get_engine
 
@@ -1447,7 +1449,8 @@ def cmd_persona(args: argparse.Namespace) -> int:
     report = generate_references(
         args.novel,
         store,
-        engine=get_engine(args.engine),
+        # `--engine` defaults to the configured real engine; reference sheets used to come out as placeholders.
+        engine=get_engine(args.engine or default_image_engine()),
         out_dir=args.out,
         top=args.top,
         include_recurring=not args.principals_only,

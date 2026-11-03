@@ -262,17 +262,26 @@ def test_the_render_cli_refuses_a_local_engine_when_memory_is_short_and_says_why
     assert not (tmp_path / "p").exists()  # nothing was loaded or written
 
 
-def test_a_bare_render_stays_on_the_stub_and_renders_the_tiers_scene_count(tmp_path, monkeypatch, capsys) -> None:
+def test_a_render_renders_the_tiers_scene_count(tmp_path, monkeypatch, capsys) -> None:
     from echotales.pipeline.cli import main
     from test_render_runner import _seeded_store
 
     _seeded_store(tmp_path).close()
     monkeypatch.setattr(compute, "policy", lambda settings=None: _p())
     out = tmp_path / "out"
-    code = main(["--db", str(tmp_path / "t.db"), "render", "--novel", "t", "--no-director", "--skip-motion",
-                 "--skip-compose", "--panel-dir", str(out / "p"), "--motion-dir", str(out / "m"),
+    # The stub is named: a bare render now uses the configured real engine (owner, 2026-10-31), so this test of the
+    # scene count would otherwise try to load the image model.
+    code = main(["--db", str(tmp_path / "t.db"), "render", "--novel", "t", "--image-engine", "stub", "--no-director",
+                 "--skip-motion", "--skip-compose", "--panel-dir", str(out / "p"), "--motion-dir", str(out / "m"),
                  "--voice-dir", str(out / "a"), "--out", str(out / "v"), "--version-suffix", "tier test"])
     text = capsys.readouterr().out
     assert code == 0
     assert "compute: local-low; images: stub; language: stub; scenes per chapter: 3" in text
     assert "output version: v1_tier-test" in text
+
+
+def test_a_request_that_names_no_engine_gets_the_real_one_never_the_flat_placeholder(monkeypatch) -> None:
+    """Every default used to say "stub", so the Studio, reference sheets and a bare render drew solid colours."""
+    monkeypatch.setattr(compute, "policy", lambda settings=None: _p())
+    assert compute.default_image_engine() == _p().default_engine
+    assert compute.default_image_engine() != "stub"

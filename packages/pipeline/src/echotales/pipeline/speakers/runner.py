@@ -508,6 +508,11 @@ def attribute_novel(
     default, so every existing caller (including every test) keeps the
     deterministic-only behaviour unless it opts in.
     """
+    # Whether a title tells people apart depends on whether the name is a family name; the book's own mentions say
+    # which, and every stage must compare names the same way (decision of 2026-10-31).
+    from echotales.pipeline.ingest.normalize import refresh_family_tokens
+
+    refresh_family_tokens(store, novel_id)
     report = AttributionReport(novel_id=novel_id)
 
     # Accumulated across the novel rather than rebuilt per chapter: a character

@@ -66,6 +66,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 from echotales.core.models import Job, StageStatus
 from echotales.core.store import Store
 from echotales.pipeline import paths, research_demo
+from echotales.pipeline.compute import default_image_engine
 from echotales.pipeline._multipart import MultipartError, parse_single_file
 from echotales.pipeline.corrections import (
     Correction,
@@ -634,6 +635,8 @@ def _compute_status() -> dict:  # type: ignore[type-arg]
         "llm_provider": pol.llm_provider,
         "image_provider": pol.image_provider,
         "default_tier": pol.default_tier,
+        # What the engine picker starts on: the real engine, never the flat placeholder (owner, 2026-10-31).
+        "default_engine": pol.default_engine,
         "scenes": {"preview": pol.preview_scenes, "full": pol.full_scenes},
         "images_per_scene": IMAGES_PER_SCENE,
         # What the density selector offers, with the images each tier makes per scene. "dense" is an estimate until a
@@ -2023,9 +2026,8 @@ def make_handler(
                     if kind in ("render", "reference_gen"):
                         # The same guard and digest as the dedicated generate routes: this route used to accept a
                         # real engine on a busy GPU and ignore a changed genre.
-                        refusal = _gpu_refusal(str(params.get("engine", "stub"))) or _stale_build_refusal(
-                            handle, parts[2], str(params.get("engine", "stub"))
-                        )
+                        requested = str(params.get("engine") or default_image_engine())
+                        refusal = _gpu_refusal(requested) or _stale_build_refusal(handle, parts[2], requested)
                         if refusal:
                             return self._json(409, {"error": refusal})
                         params = _with_genre(handle, params)
@@ -2038,7 +2040,7 @@ def make_handler(
                         # it wrote; both come from the project, never the client (audit B5).
                         params.pop("bank", None)
                         params.pop("out_dir", None)
-                        voice_engine = str(params.get("engine", "stub"))
+                        voice_engine = str(params.get("engine") or "chatterbox")
                         if voice_engine not in ("stub", "chatterbox"):
                             return self._json(400, {"error": f"voice engine {voice_engine!r} is not allowed; use stub or chatterbox"})
                         from echotales.pipeline.review_gate import voice_refusal
@@ -2075,7 +2077,7 @@ def make_handler(
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
                     body = self._read_json()
-                    engine_name = str(body.get("engine", "stub"))
+                    engine_name = str(body.get("engine") or default_image_engine())
                     if not http_engine_known(engine_name):
                         return self._json(
                             400,
@@ -2101,7 +2103,7 @@ def make_handler(
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
                     body = self._read_json()
-                    engine_name = str(body.get("engine", "stub"))
+                    engine_name = str(body.get("engine") or default_image_engine())
                     if not http_engine_known(engine_name):
                         return self._json(
                             400,

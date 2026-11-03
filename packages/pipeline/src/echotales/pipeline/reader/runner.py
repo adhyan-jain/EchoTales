@@ -50,6 +50,11 @@ def read_novel(
 
     `passes` selects a subset, so the delivery pass can be added to a book already read without re-running the
     speaker pass and moving its measured numbers."""
+    # Whether a title tells people apart depends on whether the name is a family name; the book's own mentions say
+    # which, and every stage must compare names the same way (decision of 2026-10-31).
+    from echotales.pipeline.ingest.normalize import refresh_family_tokens
+
+    refresh_family_tokens(store, novel_id)
     report = ReaderReport()
     for number in chapters if chapters is not None else store.chapter_numbers(novel_id):
         chapter = store.get_chapter(novel_id, number)

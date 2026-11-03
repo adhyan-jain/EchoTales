@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from _requires import requires_torch
+
 import random
 
 from echotales.core.enums import Prominence, SpanType
@@ -175,6 +177,8 @@ class TestEngine:
         assert out.exists()
         with wave.open(str(out)) as fh:
             assert fh.getnframes() > 0
+
+    @requires_torch
 
     def test_chatterbox_writes_pcm16_not_torchaudios_float_default(self, tmp_path) -> None:
         """Measured on a real chapter: `model.generate` returns a float32

@@ -213,3 +213,121 @@ def test_only_offices_become_persistent_title_entities() -> None:
     assert sp._title_entity(store, "n", 3.0, "dokkaebi") == "n:anon:3:dokkaebi"
     assert sp._title_entity(store, "n", 3.0, "old_man") == "n:anon:3:old_man"
     assert store.get_self("n:title:dokkaebi") is None and store.get_self("n:title:academy_elder") is not None
+
+
+class TestSpeakerIsNotTheAddressee:
+    """A line that opens by calling a name is spoken to that person, not by them.
+
+    Pride and Prejudice ch1: the model attributed all 6 lines to Mr. Bennet, including his wife's "My dear Mr.
+    Bennet,"; she is only "his lady" there and is first named in ch2, so he was the one name on the cast list."""
+
+    def test_the_helper_recognises_an_opening_vocative_only(self) -> None:
+        assert sp.addresses("My dear Mr. Bennet,” said his lady", "Mr. Bennet")
+        assert sp.addresses("Alice, come here!", "Alice")
+        assert sp.addresses("Dear Alice? Is it you", "Alice")
+        assert not sp.addresses("I told Alice yesterday, and she agreed.", "Alice")
+        assert not sp.addresses("Mr. Bennet replied that he had not.", "Mr. Bennet")
+        assert not sp.addresses("Alicia, come here", "Alice")
+
+    def test_a_named_addressee_is_not_credited_with_the_line(self) -> None:
+        store = Store(":memory:")
+        store.add_novel("n", "N", "x", "epub")
+        text = "“My dear Alice,” said his lady to him."
+        chapter = Chapter(novel_id="n", number=1.0, title="T", source_href="a",
+                          blocks=[Block(index=0, block_type=BlockType.PROSE, text=text)])
+        store.add_chapter(chapter)
+        store.add_self(Self(id="n:self:alice", novel_id="n", canonical_label="Alice",
+                            first_attested_pos=DiscoursePosition(chapter=1, offset=0), prominence=Prominence.RECURRING))
+        store.add_spans([Span(id="n:1:0:0", novel_id="n", chapter=1.0, block_index=0, start=0, end=17,
+                              span_type=SpanType.DIALOGUE, text=text, attribution_method=AttributionMethod.PROXIMAL)])
+        stub = StubProvider()
+        stub.register_response("reader", {"lines": [{"tag": "0.0", "speaker": "Alice"}]})
+
+        report = sp.read_chapter_speakers(store, ModelClient(provider_override=stub), chapter)
+
+        span = store.get_spans("n", 1.0)[0]
+        assert span.speaker_self_id is None
+        assert report.addressee_rejected == 1 and report.attributed == 0
+
+
+class TestTagGenderMustMatchTheSpeaker:
+    """"returned she" / "cried his wife" name a woman; a candidate called Mr. is a man.
+
+    Pride and Prejudice ch1: after the addressee check the wife's later lines were still credited to Mr. Bennet, the one
+    name on the cast list, although every tag says she."""
+
+    @staticmethod
+    def _run(text: str, answer: str, label: str = "Mr. Bennet"):
+        # The reader's cast holds names that appear in the chapter, so the candidate has to be mentioned after the line.
+        text = f"{text} {label} looked on."
+        store = Store(":memory:")
+        store.add_novel("n", "N", "x", "epub")
+        chapter = Chapter(novel_id="n", number=1.0, title="T", source_href="a",
+                          blocks=[Block(index=0, block_type=BlockType.PROSE, text=text)])
+        store.add_chapter(chapter)
+        store.add_self(Self(id="n:self:b", novel_id="n", canonical_label=label,
+                            first_attested_pos=DiscoursePosition(chapter=1, offset=0), prominence=Prominence.RECURRING))
+        store.add_spans([Span(id="n:1:0:0", novel_id="n", chapter=1.0, block_index=0, start=0, end=20,
+                              span_type=SpanType.DIALOGUE, text=text, attribution_method=AttributionMethod.PROXIMAL)])
+        stub = StubProvider()
+        stub.register_response("reader", {"lines": [{"tag": "0.0", "speaker": answer}]})
+        report = sp.read_chapter_speakers(store, ModelClient(provider_override=stub), chapter)
+        return store.get_spans("n", 1.0)[0], report
+
+    def test_a_woman_tag_rejects_a_mr(self) -> None:
+        for tag in ("returned she;", "cried his wife, impatiently.", "said his lady to him."):
+            span, report = self._run(f"“But it is,” {tag}", "Mr. Bennet")
+            assert span.speaker_self_id is None and report.gender_rejected == 1, tag
+
+    def test_a_matching_or_unmarked_tag_keeps_the_attribution(self) -> None:
+        for text in ("“Yes,” said Mr. Bennet.", "“Yes,” said he.", "“Yes,” replied her husband.", "“Yes.”"):
+            span, report = self._run(text, "Mr. Bennet")
+            assert span.speaker_self_id == "n:self:b" and report.gender_rejected == 0, text
+
+    def test_a_mrs_is_rejected_by_a_man_tag_and_kept_by_a_woman_tag(self) -> None:
+        assert self._run("“No,” said he.", "Mrs. Bennet", "Mrs. Bennet")[0].speaker_self_id is None
+        assert self._run("“No,” said she.", "Mrs. Bennet", "Mrs. Bennet")[0].speaker_self_id == "n:self:b"
+
+
+class TestASplitQuoteKeepsItsSpeaker:
+    """“Come in,” said Alice to him, “and sit down.” is one speaker's sentence cut by a tag.
+
+    Pride and Prejudice ch1: the tagged halves were left unknown after the addressee and gender checks, but the second
+    half of each ("have you heard that Netherfield Park is let at last?") was still credited to Mr. Bennet."""
+
+    @staticmethod
+    def _run(text: str, answers: dict[str, str]):
+        store = Store(":memory:")
+        store.add_novel("n", "N", "x", "epub")
+        chapter = Chapter(novel_id="n", number=1.0, title="T", source_href="a",
+                          blocks=[Block(index=0, block_type=BlockType.PROSE, text=text)])
+        store.add_chapter(chapter)
+        for sid, name in (("n:self:alice", "Alice"), ("n:self:bob", "Bob")):
+            store.add_self(Self(id=sid, novel_id="n", canonical_label=name,
+                                first_attested_pos=DiscoursePosition(chapter=1, offset=0), prominence=Prominence.RECURRING))
+        starts = sp.quote_starts(text)
+        store.add_spans([
+            Span(id=f"n:1:0:{i}", novel_id="n", chapter=1.0, block_index=0, start=s, end=s + 6,
+                 span_type=SpanType.DIALOGUE, text=text[s:], attribution_method=AttributionMethod.PROXIMAL)
+            for i, s in enumerate(starts)
+        ])
+        stub = StubProvider()
+        stub.register_response("reader", {"lines": [{"tag": t, "speaker": s} for t, s in answers.items()]})
+        sp.read_chapter_speakers(store, ModelClient(provider_override=stub), chapter)
+        return [s.speaker_self_id for s in sorted(store.get_spans("n", 1.0), key=lambda s: s.start)]
+
+    def test_the_second_half_takes_the_first_halfs_speaker(self) -> None:
+        text = "“Come in,” said Alice to him, “and sit down.” Bob looked on."
+        assert self._run(text, {"0.0": "Alice", "0.1": "Bob"}) == ["n:self:alice", "n:self:alice"]
+
+    def test_an_unknown_first_half_leaves_the_second_unknown(self) -> None:
+        text = "“Come in,” said his lady to him, “and sit down.” Bob looked on."
+        assert self._run(text, {"0.0": "UNKNOWN", "0.1": "Bob"}) == [None, None]
+
+    def test_two_sentences_with_their_own_tags_stay_separate(self) -> None:
+        text = "“Come in,” said Alice. “Go away,” said Bob."
+        assert self._run(text, {"0.0": "Alice", "0.1": "Bob"}) == ["n:self:alice", "n:self:bob"]
+
+    def test_a_semicolon_tag_also_continues_the_sentence(self) -> None:
+        text = "“But it is,” returned she; “for Mrs. Long told me.” Bob looked on."
+        assert self._run(text, {"0.0": "UNKNOWN", "0.1": "Bob"}) == [None, None]

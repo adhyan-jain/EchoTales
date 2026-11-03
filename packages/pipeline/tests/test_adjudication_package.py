@@ -8,6 +8,10 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
+from _requires import requires_adjudication_data
+
+pytestmark = requires_adjudication_data
+
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_DIR = REPO_ROOT / "scripts" / "review"

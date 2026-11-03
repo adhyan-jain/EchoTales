@@ -228,9 +228,66 @@ def comparison_key(name: str) -> str:
     routinely written "The X", "Mr. X", "Miss X", "X's" and bare "X" — treating
     those as five entities is a large and silent source of over-splitting.
     """
-    return normalize_romanization(
-        strip_morphology(strip_honorifics(name, strip_articles=True))
-    )
+    base = normalize_romanization(strip_morphology(strip_honorifics(name, strip_articles=True)))
+    if base in _family_tokens and (title := _family_title(name)):
+        return f"{title}:{base}"
+    return base
+
+
+#: Titles that, after a family name, tell members of one family apart (Mr., Mrs., Miss and Lady Bennet are four
+#: people). Not the ranks of a cultivation hierarchy ("Elder", "Senior Brother"), which never are.
+_FAMILY_TITLES = frozenset({"mr", "mrs", "miss", "ms", "master", "madam", "lady", "lord", "sir"})
+
+#: Name tokens this book uses as family names, set per novel by `refresh_family_tokens` (a process-wide value because
+#: `comparison_key` is called from a dozen modules that have no novel in hand; the job queue runs one job at a time).
+_family_tokens: frozenset[str] = frozenset()
+
+
+def _title_and_token(surface: str) -> tuple[str, str] | None:
+    """("mr", "Bennet") for "Mr. Bennet" / "Mr Bennet's"; None unless it is exactly one title and one word."""
+    words = _ARTICLE_RE.sub("", surface.strip()).replace(".", " ").split()
+    if len(words) == 2 and words[0].casefold() in _FAMILY_TITLES:
+        return words[0].casefold(), words[1]
+    return None
+
+
+def _family_title(surface: str) -> str:
+    parsed = _title_and_token(surface)
+    return parsed[0] if parsed else ""
+
+
+def set_family_tokens(tokens: Iterable[str]) -> None:
+    global _family_tokens
+    _family_tokens = frozenset(tokens)
+
+
+def derive_family_tokens(surfaces: Iterable[str]) -> frozenset[str]:
+    """Which name tokens are family names, from the surfaces the book itself uses.
+
+    After a surname the title says who: "Mr. Bennet", "Mrs. Bennet" and "Miss Bennet" are a husband, a wife and a
+    daughter, and stripping the title merged them (Pride and Prejudice: Mrs. Bennet voiced as Mr. Bennet). After a
+    first name or a codename it says nothing: "Mr. Fool" and "Fool" are one person (Lord of the Mysteries). The text
+    tells the two apart: a token that appears under two different titles is a family name, and "Fool" never does."""
+    titles: dict[str, set[str]] = {}
+    for surface in surfaces:
+        parsed = _title_and_token(surface)
+        if parsed is not None:
+            token = normalize_romanization(strip_morphology(strip_honorifics(parsed[1])))
+            titles.setdefault(token, set()).add(parsed[0])
+    return frozenset(token for token, seen in titles.items() if token and len(seen) >= 2)
+
+
+def refresh_family_tokens(store: object, novel_id: str) -> frozenset[str]:
+    """Derive this novel's family tokens from its detected mentions and make `comparison_key` use them.
+
+    Called at the start of every stage that compares names. A database with no mentions yet (before detection) has no
+    family tokens, so keys are exactly what they were."""
+    rows = store.conn.execute(  # type: ignore[attr-defined]
+        "SELECT DISTINCT text FROM mention WHERE novel_id=?", (novel_id,)
+    ).fetchall()
+    tokens = derive_family_tokens(r[0] for r in rows)
+    set_family_tokens(tokens)
+    return tokens
 
 
 def name_containment(

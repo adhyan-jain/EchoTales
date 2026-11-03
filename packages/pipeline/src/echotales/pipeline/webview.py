@@ -93,6 +93,9 @@ def _entity_colour(rank: int) -> str:
 
 def build_novel_payload(store: Store, novel_id: str, label: str) -> dict:
     """Everything the viewer needs for one novel, JSON-serialisable."""
+    from echotales.pipeline.ingest.normalize import refresh_family_tokens
+
+    refresh_family_tokens(store, novel_id)  # same name-comparison rule as the stages (2026-10-31)
     mentions = store.get_mentions(novel_id)
     by_target: dict[str, list] = {}
     for m in mentions:
@@ -328,6 +331,9 @@ def build_reader_cast(store: Store, novel_id: str, chapter: float) -> dict:
     (`Settings.persona_prefix_causal`, on by default). `tests/test_reader_cast.py` checks the whole payload against a
     store truncated at `chapter`.
     """
+    from echotales.pipeline.ingest.normalize import refresh_family_tokens
+
+    refresh_family_tokens(store, novel_id)  # same name-comparison rule as the stages (2026-10-31)
     from echotales.core.enums import AliasType
     from echotales.core.models import DiscoursePosition
     from echotales.pipeline.persona.split import persona_at, standing_values
@@ -419,6 +425,9 @@ def build_character_dashboard(store: Store, novel_id: str) -> dict:
     surfaces it to a reviewer instead of leaving it queryable only from a
     Python shell.
     """
+    from echotales.pipeline.ingest.normalize import refresh_family_tokens
+
+    refresh_family_tokens(store, novel_id)  # same name-comparison rule as the stages (2026-10-31)
     from echotales.core.enums import TargetKind
     from echotales.pipeline.persona.build import persona_at
 

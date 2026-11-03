@@ -143,6 +143,7 @@ def detect_mentions_in_chapter(
         "common_noun": 0, "credit": 0,
     }
     credits = credits or set()
+    superseded = 0
 
     def rejected(surface: str, *, label: str = "character") -> str | None:
         """Why a surface must not become an entity, or None.
@@ -196,13 +197,13 @@ def detect_mentions_in_chapter(
                     target_id=hit.target_id,
                     confidence=0.95,
                     segment_id=segment_id,
-                    index=len(mentions),
+                    index=len(mentions) + superseded,
                 )
             )
 
         # Layer 1: statistical spans, minus anything the gazetteer already has.
         for ner_span in detector.detect(text):
-            if _overlaps(ner_span, taken):
+            if _blocked_by_gazetteer(ner_span, taken):
                 continue
             alias_type, confidence = classify_alias_type(ner_span.text, lexicon=lexicon)
             if not alias_type.enters_graph:
@@ -213,6 +214,21 @@ def detect_mentions_in_chapter(
                 stats[reason] += 1
                 continue
             stats["ner"] += 1
+            # The longer name replaces any accepted gazetteer mention inside it ("Miss" in "Miss Bingley"), or the
+            # same words would be two overlapping mentions.
+            lo, hi = span.start + ner_span.start, span.start + ner_span.end
+            # Offsets are block-relative, so the block has to match: comparing ranges alone deleted any earlier
+            # gazetteer mention in the chapter that shared these offsets (313 lost on LotM, 156 of them "Klein").
+            inside = [
+                m for m in mentions
+                if m.block_index == span.block_index
+                and m.method is ResolutionMethod.GAZETTEER_EXACT and lo <= m.offset and m.offset + len(m.text) <= hi
+                and len(m.text) < hi - lo
+            ]
+            for m in inside:
+                mentions.remove(m)
+                stats["gazetteer"] -= 1
+                superseded += 1  # keeps `index` unique: mention ids are `m{index}`, so a reused index would overwrite
             taken.append((ner_span.start, ner_span.end))
             mentions.append(
                 _make_mention(
@@ -226,7 +242,7 @@ def detect_mentions_in_chapter(
                     target_id=None,
                     confidence=min(confidence, ner_span.score),
                     segment_id=segment_id,
-                    index=len(mentions),
+                    index=len(mentions) + superseded,
                     entity_label=ner_span.label.strip().lower() or None,
                 )
             )
@@ -236,6 +252,23 @@ def detect_mentions_in_chapter(
             stats[f"paren_{paren.kind.value}"] = stats.get(f"paren_{paren.kind.value}", 0) + 1
 
     return mentions, stats
+
+
+def _blocked_by_gazetteer(span: NerSpan, taken: list[tuple[int, int]]) -> bool:
+    """Whether a gazetteer hit already owns this NER span's text.
+
+    A hit that lies strictly *inside* the NER span does not own it: the gazetteer is seeded with honorific prefixes
+    (Mr., Mrs., Miss, Sir, Lady), so it matched the bare "Mr" in "Mr. Bingley" first, and the full-name span was then
+    skipped as overlapping. The bare hit is itself dropped as a common noun, so the whole name vanished: in Pride and
+    Prejudice ch2 the model returned Mr. Bennet, Mrs. Bennet and Mr. Bingley and none became a mention (25 candidate
+    spans, 20 dropped as the bare honorific). The longer span supersedes the shorter hit."""
+    for start, end in taken:
+        if end <= span.start or start >= span.end:
+            continue
+        if span.start <= start and end <= span.end and (end - start) < (span.end - span.start):
+            continue
+        return True
+    return False
 
 
 def _overlaps(span: NerSpan, taken: list[tuple[int, int]]) -> bool:

@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Install
+        run: uv sync --all-packages --group dev
+      # "generation pipelines do not need to understand the novel" is a structural claim (README, CLAUDE.md):
+      # packages/core must never import the pipeline.
+      - name: core does not import pipeline
+        run: |
+          if grep -rn "echotales.pipeline" packages/core/src; then
+            echo "packages/core imports echotales.pipeline"; exit 1
+          fi
+      # Stub mode: deterministic, no GPU, no network, no source books (they are never committed).
+      - name: Tests
+        env:
+          ECHOTALES_LLM_MODE: stub
+        run: uv run python -m pytest packages/core/tests packages/pipeline/tests -o addopts="" -q
+
+  webview:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: webview
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: webview/package-lock.json
+      - run: npm ci
+      - run: CI=true npm test -- --watchAll=false
+      - run: npm run build

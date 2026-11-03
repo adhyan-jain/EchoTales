@@ -980,7 +980,7 @@ def standing_values(
     a reader-position caller passes the reader's discourse position. `position` keeps `reference_gen`'s existing
     story-time filter on the interval start.
     """
-    best: dict[str, tuple[DiscoursePosition, str]] = {}
+    best: dict[str, tuple[float, DiscoursePosition, str]] = {}
     for a in store.get_attributes(TargetKind.PERSONA, persona_id):
         if not a.is_standing:
             continue
@@ -988,10 +988,12 @@ def standing_values(
             continue
         if position is not None and a.interval.from_lb > position:
             continue
+        # Story start first, learned time second (see `reference_gen.appearance_of`): a default trait learned late must
+        # not beat a change that started earlier in the story. Equal story starts keep the learned-latest rule.
         prev = best.get(a.key)
-        if prev is None or a.learned_at_pos >= prev[0]:
-            best[a.key] = (a.learned_at_pos, a.value)
-    return {k: v for k, (_pos, v) in best.items()}
+        if prev is None or (a.interval.from_lb, a.learned_at_pos) >= (prev[0], prev[1]):
+            best[a.key] = (a.interval.from_lb, a.learned_at_pos, a.value)
+    return {k: v for k, (_from, _pos, v) in best.items()}
 
 
 def bodies_of(store: Store, self_id: str) -> list[tuple[str, FuzzyInterval]]:

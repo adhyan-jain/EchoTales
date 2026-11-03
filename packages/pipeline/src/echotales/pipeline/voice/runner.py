@@ -176,6 +176,9 @@ def _narrator_voice(bank: VoiceBank, preferred: str = "") -> str:
     """
     if preferred and any(v.speaker_id == preferred for v in bank.voices):
         return preferred
+    if preferred:
+        # A typo or a voice from another bank silently changed the narrator, the one voice heard in every chapter.
+        print(f"WARNING: narrator {preferred!r} (config.json voice.narrator) is not in this voice bank; using the default")
     adults = sorted(
         (v for v in bank.voices if v.age_band == "adult"), key=lambda v: v.speaker_id
     )
@@ -209,6 +212,11 @@ def render_novel(
     `synthesize=False` writes the manifest without touching a model, which is
     how casting decisions are reviewed before spending GPU time on them.
     """
+    # Whether a title tells people apart depends on whether the name is a family name; the book's own mentions say
+    # which, and every stage must compare names the same way (decision of 2026-10-31).
+    from echotales.pipeline.ingest.normalize import refresh_family_tokens
+
+    refresh_family_tokens(store, novel_id)
     engine = engine or get_engine("stub")
     out_dir = Path(out_dir) if out_dir is not None else paths.asset_dir(novel_id, "audio")
     report = VoiceReport(novel_id=novel_id, engine=engine.name)

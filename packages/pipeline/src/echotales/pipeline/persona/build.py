@@ -319,6 +319,11 @@ def build_personas(
     when the paragraph rule cannot call a gender (PREREG_ANCHORED.md). Off by default. It uses the same
     first-`EVIDENCE_CHAPTERS` window as every other trait, so it is prefix-causal under `prefix_causal=True`.
     """
+    # Whether a title tells people apart depends on whether the name is a family name; the book's own mentions say
+    # which, and every stage must compare names the same way (decision of 2026-10-31).
+    from echotales.pipeline.ingest.normalize import refresh_family_tokens
+
+    refresh_family_tokens(store, novel_id)
     report = PersonaReport(novel_id=novel_id)
     report.split = SplitReport(novel_id=novel_id)
     profiles: dict[str, TraitProfile] = {}

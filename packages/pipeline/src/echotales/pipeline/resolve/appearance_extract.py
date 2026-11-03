@@ -1208,6 +1208,16 @@ def _write_appearance(
         if at is None:
             continue
         pos = DiscoursePosition(chapter=at, offset=0)
+        # A default trait ("blue eyes", stated in chapter 12) is true from the character's first appearance; a change
+        # ("burned", "turned white") starts where it is stated. Decided by the sentence that states the value; when
+        # that sentence cannot be found the old stamp (the stating chapter) stays (owner, 2026-10-31).
+        from echotales.pipeline.reader.facts_pass import fact_scope, story_start
+
+        sentence = next(
+            (s for c, t in evidence if c == at for s in re.split(r"(?<=[.!?])\s+", t) if value.lower() in s.lower()), ""
+        )
+        first = getattr(getattr(entity, "first_attested_pos", None), "chapter", at)
+        story_from = story_start(fact_scope(key, sentence), stated=int(at), first_attested=int(first)) if sentence else int(at)
         store.add_attribute(
             novel_id,
             Attribute(
@@ -1219,7 +1229,7 @@ def _write_appearance(
                 # holds from where the novel states it, and a later
                 # contradicting attestation lands as its own row rather
                 # than silently replacing this one.
-                interval=FuzzyInterval.open_ended(at, last_evidence=at),
+                interval=FuzzyInterval.open_ended(story_from, last_evidence=at),
                 learned_at_pos=pos,
                 observer_id=OBSERVER_READER,
                 # A model's reading of the prose, not the prose's own

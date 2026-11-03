@@ -12,6 +12,8 @@ with scenery is the same bug wearing a smaller number.
 
 from __future__ import annotations
 
+from _requires import requires_clip
+
 from echotales.pipeline.persona.attire import style_anchor
 from echotales.pipeline.persona.prompt import (
     STYLE_CLOSEUP,
@@ -227,6 +229,8 @@ class TestOrdering:
         assert prompt.startswith("1boy")
         assert prompt.index(style_anchor("")) < prompt.index("Fang Yuan")
 
+    @requires_clip
+
     def test_two_characters_both_survive(self) -> None:
         prompt = build_image_prompt(
             _cast("Fang Yuan", "Bai Ning Bing"),
@@ -265,6 +269,7 @@ class TestNegativePrompts:
 
 
 class TestCondenseClause:
+    @requires_clip
     def test_it_keeps_what_identifies_over_what_comes_first(self) -> None:
         """Clause order is the *reference sheet's* order, and the sheet has
         room for everything. A panel does not: hair and robe colour are the
@@ -273,6 +278,8 @@ class TestCondenseClause:
         out = condense_clause(_APPEARANCE)
         assert "midnight black" in out
         assert "wearing" in out  # robe colour must always survive
+
+    @requires_clip
 
     def test_surviving_parts_keep_their_original_order(self) -> None:
         """Ranking decides what survives, not how it reads."""

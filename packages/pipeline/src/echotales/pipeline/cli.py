@@ -520,8 +520,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="limit to the N most-mentioned eligible characters",
     )
     pe_ref.add_argument(
-        "--engine", default="stub", choices=["stub", "sdxl", "manga", "illustrious", "noobai", "refined", "gemini", "openrouter"],
-        help="manga is the intended backend; stub writes placeholders",
+        "--engine", default=None, choices=["stub", "sdxl", "manga", "illustrious", "noobai", "refined", "gemini", "openrouter"],
+        help="default: the configured engine (NoobAI locally); stub writes flat placeholders and is for tests only",
     )
     pe_ref.add_argument("--principals-only", action="store_true")
     pe_ref.add_argument("--seed", type=int, default=20260812)
@@ -669,7 +669,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_webserver.add_argument(
         "--source",
         action="append",
-        required=True,
+        # Optional: a fresh install has no books yet, and projects created or uploaded in the app are discovered
+        # from `data/projects/`. It used to be required, so the app could not be started until a book had been
+        # built from the command line.
+        required=False,
         metavar="DB_PATH:NOVEL_ID[:LABEL]",
         help="one novel's data; repeat for each novel the backend serves",
     )

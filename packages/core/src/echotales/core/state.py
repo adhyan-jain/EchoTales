@@ -285,20 +285,23 @@ class StateResolver:
             accepted.append(cert)
 
         # ---- attributes -----------------------------------------------
-        # Later-learned facts win on key collision: a character described as
-        # "black-haired" in ch 3 and "white-haired" in ch 150 should render
-        # white-haired when queried at 150.
+        # The fact whose story interval began latest wins on key collision, learned time only breaking a tie: a
+        # character described as "black-haired" in ch 3 and "white-haired" in ch 150 should render white-haired when
+        # queried at 150. Story time first because the two clocks can disagree: a default trait stated late ("blue
+        # eyes" in ch 12, true from ch 1) must not beat a change that happened earlier in the story and was learned
+        # earlier (owner, 2026-10-31). Every fact so far began in the chapter it was learned, so the order was the same.
         attributes: dict[str, str] = {}
-        attr_learned: dict[str, DiscoursePosition] = {}
+        attr_rank: dict[str, tuple[float, DiscoursePosition]] = {}
         for attr in self._attribute_candidates(target_kind, target_id):
             cert = keep(attr)
             if cert is None:
                 continue
             rec.record(observable_ref(attr))
-            prev = attr_learned.get(attr.key)
-            if prev is None or attr.learned_at_pos >= prev:
+            rank = (attr.interval.from_lb, attr.learned_at_pos)
+            prev = attr_rank.get(attr.key)
+            if prev is None or rank >= prev:
                 attributes[attr.key] = attr.value
-                attr_learned[attr.key] = attr.learned_at_pos
+                attr_rank[attr.key] = rank
             accepted.append(cert)
 
         # ---- relationships ---------------------------------------------
@@ -404,16 +407,17 @@ class StateResolver:
             return cert
 
         winning: dict[str, Attribute] = {}
-        attr_learned: dict[str, DiscoursePosition] = {}
+        attr_rank: dict[str, tuple[float, DiscoursePosition]] = {}
         for attr in self._attribute_candidates(target_kind, target_id):
             cert = keep(attr)
             if cert is None:
                 continue
             rec.record(observable_ref(attr))
-            prev = attr_learned.get(attr.key)
-            if prev is None or attr.learned_at_pos >= prev:
+            rank = (attr.interval.from_lb, attr.learned_at_pos)  # same rule as `state_of` above
+            prev = attr_rank.get(attr.key)
+            if prev is None or rank >= prev:
                 winning[attr.key] = attr
-                attr_learned[attr.key] = attr.learned_at_pos
+                attr_rank[attr.key] = rank
 
         return sorted(winning.values(), key=lambda a: a.key)
 

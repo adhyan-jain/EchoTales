@@ -334,3 +334,13 @@ def test_a_dry_run_writes_no_chapter_track(tmp_path: Path) -> None:
     report = render_novel("t", _store(tmp_path), _bank(), out_dir=out, synthesize=False)
     assert report.chapter_tracks == []
     assert not (out / "ch1" / "chapter.wav").exists()
+
+
+def test_an_unknown_configured_narrator_is_reported_not_silently_replaced(capsys) -> None:
+    from echotales.pipeline.voice.runner import _narrator_voice
+
+    assert _narrator_voice(_bank(), "p226") == "p226"
+    assert "WARNING" not in capsys.readouterr().out
+    fallback = _narrator_voice(_bank(), "p999")
+    assert fallback == _narrator_voice(_bank(), "")  # the deterministic default
+    assert "p999" in capsys.readouterr().out

@@ -343,9 +343,10 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         )
     elif job.kind == "render":
         from echotales.pipeline import paths
+        from echotales.pipeline.compute import default_image_engine
         from echotales.pipeline.render.panels import get_engine, render_panels
 
-        engine_name = params.get("engine", "stub")
+        engine_name = params.get("engine") or default_image_engine()
         if not http_engine_known(engine_name):
             raise ValueError(
                 f"engine {engine_name!r} is not enabled over HTTP. Local: {sorted(ALLOWED_HTTP_ENGINES)}; a hosted engine only if ECHOTALES_IMAGE_PROVIDER selects it"
@@ -393,7 +394,8 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         from echotales.pipeline.voice import get_engine as get_voice_engine
         from echotales.pipeline.voice import load_vctk, render_novel
 
-        engine_name = params.get("engine", "stub")
+        # Speech unless told otherwise, like the CLI: the stub writes silent files (decision D29).
+        engine_name = params.get("engine") or "chatterbox"
         # Same bank selection as `cmd_voice`; the HTTP job path hardcoded VCTK
         # and so could never use an emotion-capable bank.
         from echotales.pipeline.voice.bank import load_cremad, load_ears
@@ -462,9 +464,10 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         )
     elif job.kind == "reference_gen":
         from echotales.pipeline.persona.reference_gen import generate_references
+        from echotales.pipeline.compute import default_image_engine
         from echotales.pipeline.render.panels import get_engine
 
-        engine_name = params.get("engine", "stub")
+        engine_name = params.get("engine") or default_image_engine()
         if not http_engine_known(engine_name):
             raise ValueError(
                 f"engine {engine_name!r} is not enabled over HTTP. Local: {sorted(ALLOWED_HTTP_ENGINES)}; a hosted engine only if ECHOTALES_IMAGE_PROVIDER selects it"

@@ -227,14 +227,20 @@ def appearance_of(
     if standing_only:
         allowed -= set(TRANSIENT_KEYS)
 
-    out: dict[str, str] = {}
+    # The row whose story interval began latest wins; learned time only breaks a tie. Learned-latest alone made a
+    # default trait stated late (blue eyes, chapter 12, true from chapter 1) override a change that happened earlier in
+    # the story (hair gone white in chapter 8). Rows that share a story start (the prefix-causal revisions) still go to
+    # the latest learned, as before.
+    best: dict[str, tuple[float, object, str]] = {}
     for attr in store.get_attributes(TargetKind.PERSONA, persona_id):
         if attr.key not in allowed or not attr.is_standing or not attr.value:
             continue
         if position is not None and attr.interval.from_lb > position:
             continue
-        out[attr.key] = attr.value
-    return out
+        prev = best.get(attr.key)
+        if prev is None or (attr.interval.from_lb, attr.learned_at_pos) >= (prev[0], prev[1]):
+            best[attr.key] = (attr.interval.from_lb, attr.learned_at_pos, attr.value)
+    return {key: value for key, (_from, _learned, value) in best.items()}
 
 
 def _demographics(

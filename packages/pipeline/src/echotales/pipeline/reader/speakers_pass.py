@@ -80,6 +80,9 @@ class SpeakerReport:
     cleared: int = 0
     retyped: int = 0
     human_kept: int = 0
+    addressee_rejected: int = 0
+    gender_rejected: int = 0
+    split_quote: int = 0
 
 
 #: Korean/Japanese honorific suffixes attached to a name. "Yoo Sangah-ssi" is Yoo Sangah, but without this the matcher saw a
@@ -302,6 +305,53 @@ def ask_window(
     return answers
 
 
+def addresses(quote: str, name: str) -> bool:
+    """True when the quote opens by calling `name` ("My dear Mr. Bennet,", "Alice, come here!"): a vocative at the very
+    start, ended by a comma, "!" or "?", so a name later in the sentence or narration is not one."""
+    pattern = r"^[\W_]*(?:my\s+)?(?:dear\s+)?" + re.escape(name) + r"\s*[,!?]"
+    return re.match(pattern, quote, re.IGNORECASE) is not None
+
+
+_SPEECH_VERBS = r"(?:said|cried|replied|returned|asked|answered|exclaimed|added|continued|observed|whispered|muttered|shouted)"
+_TAG_SUBJECT = re.compile(
+    rf"\b{_SPEECH_VERBS}\s+(she|he|his\s+(?:wife|lady)|her\s+husband)\b|\b(she|he)\s+{_SPEECH_VERBS}\b", re.IGNORECASE
+)
+_FEMALE_TITLES = frozenset({"mrs", "miss", "ms", "lady", "madam", "dame"})
+_MALE_TITLES = frozenset({"mr", "sir", "lord", "master"})
+
+
+def tag_gender(quote: str) -> str:
+    """"female" or "male" when the speech tag after the quote names its speaker by pronoun or relation ("returned she",
+    "cried his wife", "said he"), else "". `quote` starts just after the opening quotation mark."""
+    close = min((i for i in (quote.find("”"), quote.find('"')) if i >= 0), default=-1)
+    if close < 0:
+        return ""
+    found = _TAG_SUBJECT.search(quote[close + 1:close + 90])
+    if not found:
+        return ""
+    subject = (found.group(1) or found.group(2)).lower()
+    return "female" if subject in ("she",) or subject.startswith("his ") else "male"
+
+
+def continues_after_tag(text: str, starts: list[int], q: int) -> bool:
+    """Whether quote `q` resumes the previous quote's sentence after a short speech tag ending in a comma:
+    “Come in,” said Alice to him, “and sit down.” One speaker's sentence cut by its tag. A tag that ends a sentence
+    ("said Alice.") starts a new turn and does not count."""
+    if q < 1 or q >= len(starts):
+        return False
+    closes = [i for i in (text.find("”", starts[q - 1] + 1), text.find('"', starts[q - 1] + 1)) if i >= 0]
+    if not closes:
+        return False
+    gap = text[min(closes) + 1:starts[q]]
+    return 0 < len(gap.strip()) <= 80 and gap.rstrip().endswith((",", ";", ":")) and re.search(_SPEECH_VERBS, gap, re.IGNORECASE) is not None
+
+
+def title_gender(name: str) -> str:
+    """The gender a name's honorific states ("Mr. Bennet" -> male, "Miss Bingley" -> female), else ""."""
+    first = name.strip().split(" ", 1)[0].rstrip(".").casefold()
+    return "female" if first in _FEMALE_TITLES else "male" if first in _MALE_TITLES else ""
+
+
 def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -> SpeakerReport:
     """Attribute every quoted line of one chapter and write the result onto the matching dialogue spans."""
     report = SpeakerReport()
@@ -337,6 +387,22 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             # already marked applied, so it was never replayed.
             report.human_kept += 1
             continue
+        if continues_after_tag(blocks.get(block_index, ""), starts, q):
+            # The second half of a quote cut by its tag has the first half's speaker, whatever the model answered for
+            # it: with the first half left unknown (addressee or gender check) the model still credited the second to
+            # the one name it knew (Pride and Prejudice ch1, Mr. Bennet).
+            previous = _span_at(spans, block_index, starts[q - 1])
+            if previous is not None:
+                row = store.conn.execute(
+                    "SELECT speaker_self_id FROM span WHERE novel_id=? AND id=?", (novel_id, previous.id)
+                ).fetchone()
+                report.split_quote += 1
+                if row and row[0]:
+                    store.set_span_speaker(novel_id, span.id, row[0], AttributionMethod.CONTEXTUAL_LLM.value, MODEL_CONFIDENCE)
+                    report.attributed += 1
+                elif span.attribution_method is not AttributionMethod.EXPLICIT and span.speaker_self_id:
+                    store.set_span_speaker(novel_id, span.id, None, AttributionMethod.UNRESOLVED.value, 0.0)
+                continue
         key = _norm(speaker)
         if key.startswith(UNKNOWN) and key != UNKNOWN:
             # The model often writes a known person after UNKNOWN ("UNKNOWN: Dunn Smith", LotM ch14): the format
@@ -379,6 +445,26 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
         if entry is None:
             report.unmapped += 1
             continue
+        if addresses(quote_text, entry.name):
+            # The line opens by calling this person, so they are who is spoken to, not who speaks. Left unknown, not
+            # guessed: the real speaker is often named only later (Pride and Prejudice ch1: "My dear Mr. Bennet,"
+            # was credited to Mr. Bennet; his wife is "his lady" there and first named in ch2).
+            report.addressee_rejected += 1
+            if span.attribution_method is not AttributionMethod.EXPLICIT and span.speaker_self_id:
+                store.set_span_speaker(novel_id, span.id, None, AttributionMethod.UNRESOLVED.value, 0.0)
+            continue
+        side = tag_gender(quote_text)
+        if side:
+            from echotales.pipeline.reader.facts_pass import _recorded_gender
+
+            known = title_gender(entry.name) or _recorded_gender(store, entry.self_id)
+            if known in ("male", "female") and known != side:
+                # "returned she" cannot be Mr. Bennet. The wife is "his lady" in ch1 and first named in ch2, so he was
+                # the only name on the list and the model credited every line to him.
+                report.gender_rejected += 1
+                if span.attribution_method is not AttributionMethod.EXPLICIT and span.speaker_self_id:
+                    store.set_span_speaker(novel_id, span.id, None, AttributionMethod.UNRESOLVED.value, 0.0)
+                continue
         store.set_span_speaker(novel_id, span.id, entry.self_id, AttributionMethod.CONTEXTUAL_LLM.value, MODEL_CONFIDENCE)
         if span.span_type is SpanType.CROWD_REACTION:
             # A named person's line is not a crowd reaction; the classifier mistyped it (LotM ch7 block 39).
