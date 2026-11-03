@@ -87,7 +87,7 @@ source .venv/bin/activate      # uv-managed venv already present at repo root
 python3 -m pytest packages/core/tests packages/pipeline/tests   # no GPU needed
 ```
 
-core+pipeline suite exits 0 after the 2026-10-24 honesty pass (it was 1,553 passed on 2026-10-22; the exact count dropped with the deleted tests and was not re-recorded); webview jest: 129; research: 29 is as of 2026-10-19 and was not re-run). Root `pyproject` testpaths lists only
+core+pipeline suite: 1,612 passed (2026-10-31, run with `-o addopts=""`); webview jest: 136 (18 suites); research: 29 is as of 2026-10-19 and was not re-run). Root `pyproject` testpaths lists only
 core and pipeline; pass `packages/research/tests` explicitly (and `-o addopts=""`) to include research.
 
 Everything is stub-first: `ECHOTALES_LLM_MODE=stub` and `--image-engine
@@ -171,6 +171,8 @@ real data without touching the canonical `data/db/<novel-id>.db`.
 
 ## Current known issues
 
+Product track (2026-10-31, EVOLUTION 4.131, decisions D29-D32): reviewer speaker decisions are stored as attribution method `HUMAN` and final everywhere; `voice` defaults to engine `chatterbox` (`--allow-unlocked`, `--allow-stub-m4b`; stub warns and `--m4b` refuses it); `render --density beat|dense`; `webview-server --source` is optional; job kinds `pipeline` (whole build, resumable) and `export_m4b` added. `scripts/setup.sh` and `.github/workflows/ci.yml` exist but CI has never run on GitHub. Title rule decided: `comparison_key` keeps a title only after a family name (`derive_family_tokens`), bare surname separate. Real runs default to the NoobAI image worker (`compute.default_image_engine()`; stub only under `ECHOTALES_LLM_MODE=stub`). OPEN (HANDOFF "Pick up here - 2026-10-31"): Lizzy/Elizabeth split, no blind listen (real Chatterbox speech and an M4B were produced and checked by tool on P&P ch1, 2026-10-31), narrator `p227` is a placeholder (LibriTTS bank wanted), reference images ignored by the local worker and identity QA is a colour histogram, three novels not re-scored, no LICENSE. Nothing committed since 1583fdb.
+
 Research track: `docs/research/DECISION_LOG.md` is the state of record (EVOLUTION 4.101).
 
 Current work (2026-10-22): Phase A reader (default `gemma2:9b`) and Phase B
@@ -181,7 +183,7 @@ renders need a current bible lock; `data/db/` DBs are unstamped (409). See docs/
 
 See docs/HANDOFF.md's "Pick up here" section for the actual current state — it
 changes every session (the numbered session log itself moved to
-docs/EVOLUTION.md, latest section 4.130). The NER-windowing re-run (EVOLUTION
+docs/EVOLUTION.md, latest section 4.131). The NER-windowing re-run (EVOLUTION
 4.76) that an earlier session left unmeasured did run (4.84): the
 "`ollama` unreachable" blocker was a misdiagnosis — the daemon was simply
 not started — and the fix is now measured on real data (CEAF-e recall

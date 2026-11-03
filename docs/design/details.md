@@ -299,7 +299,7 @@ a bare checkout; the heavy import happens inside `main()`.
 
 `webview` takes `--format {static,react}` (default `static`) and repeated
 `--source DB_PATH:NOVEL_ID[:LABEL]`. `webview-server` takes the same
-`--source` shape plus `--host`/`--port` (default `127.0.0.1:8787`) and has
+`--source` shape (optional since 2026-10-31; projects are discovered from `data/projects/`) plus `--host`/`--port` (default `127.0.0.1:8787`) and has
 no format flag — it only ever serves the live, correctable payload.
 
 `render` (EVOLUTION 4.106): `--image-engine` and `--max-panels` default to
@@ -1996,9 +1996,11 @@ browse output over HTTP"; that is no longer true):
   parser; validates by actually opening the file with `ingest/epub.py`'s
   `Epub()` before accepting, so a bad upload 400s immediately instead of
   surfacing as an ingest-job failure minutes later; writes a per-project
-  `sources.toml`.
-- `POST /api/projects/<id>/{ingest,resolve,appearance,persona,render,voice,
-  refimg_search,reference_gen}` -- job triggers, `jobs.py::JOB_KINDS`.
+  `sources.toml` (escaped strings). Defaults to the `generic` adapter and `given_first`
+  names (query parameters `adapter`, `name_order`); project id must match
+  `^[a-z0-9][a-z0-9_-]{0,63}$`; bodies capped at 2 MB JSON / 200 MB EPUB (413).
+- `POST /api/projects/<id>/{pipeline,ingest,resolve,appearance,persona,render,voice,
+  export_m4b,refimg_search,reference_gen}` -- job triggers, `jobs.py::JOB_KINDS`.
 - `GET /api/projects/<id>/jobs`, `.../jobs/<job_id>` -- status/progress,
   the latter including nested `StageRun` detail
   (`store.list_stage_runs(job.run_id)`) for a "what actually happened"

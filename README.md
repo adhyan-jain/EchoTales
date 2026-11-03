@@ -25,6 +25,18 @@ See [`docs/HANDOFF.md`](docs/HANDOFF.md) for current status and open defects,
 [`docs/design/architecture.md`](docs/design/architecture.md) for the model, [`docs/design/details.md`](docs/design/details.md)
 for per-file detail, and [`docs/design/plans.md`](docs/design/plans.md) for the full specification.
 
+## Quick start
+
+```bash
+scripts/setup.sh
+uv run echotales webview-server --static-dir webview/build
+```
+
+Open http://127.0.0.1:8787, create a project, upload an EPUB, then use the
+five-step "Make the audiobook" panel. Language models run locally through
+ollama; speech and image generation need a GPU. The stub modes
+(`ECHOTALES_LLM_MODE=stub`) run everything without one.
+
 ## Why this is hard
 
 The target content is translated Chinese and Korean web fiction, where naming

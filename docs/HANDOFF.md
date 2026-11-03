@@ -22,7 +22,39 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-30 (EVOLUTION 4.130).
+**Last updated:** 2026-10-31 (EVOLUTION 4.132).
+
+## Pick up here - 2026-10-31 (journal: review round 3, disclosure adjudication revised; EVOLUTION 4.132, decision D34)
+
+Research track, commits 7d6d258, c10c394, 5eee80f, 53affa2, 257bfdc, 87e8d7a, 85ceb50. Supersedes the first-author-rulings state of the 2026-10-30 section below. Numbers were produced by running the scripts named; nothing is pushed or tagged.
+- **Adjudication changed (OWNER DECISION 2026-10-31).** The first author's disclosure labels were partly name-based, against the guideline: 0 "undetermined" in 32 primary cases versus 7 (Aryan) and 8 (Atharva); all 7 first-author splits were a gender against "undetermined"; he knew the plot in 22 of 32 versus 0 and 5. The owner trusts Aryan's and Atharva's labels over his. Primary rule in `scripts/review/score_disclosure_validation.py`: pair agreement, else the other annotator, else (3 gender and 3 support splits between Aryan and Atharva) the third human reader's `adjudication_third.json` if present, else the model passages-only reading, else excluded (C020 support). The original rule is kept as `first_author_adjudication`. The rule was chosen after seeing the label distributions and the paper says so.
+- **Effect (verified, scorer run).** Sampled model-judged disclosures not backed by the passages 9 of 10 (was 2 of 10); served values not backed 11 of 34 (was 4 of 35), 10 of 11 of them match the book; Claude annotator agreement 17/18, kappa 0.91. Annotators see at most 8 passages, models up to 24, so "not supported" means not backed by what was shown. Rates remain model-labelled and provisional.
+- **DONE 2026-10-31: third reader.** `labels_Friend.json` (11 earlier-ruled cases, none of the books known, name treated as no evidence) imported with `import_third_reader.py` and rescored. It settled the 3 gender and 2 support splits, headline unchanged (S1 9 of 10, served 11 of 34), the model passages-only reading matched it 11 of 11. C020 was never in that reader's set (the page used was the older 11-case one) and stays excluded. Main text, caption, limitations and response doc updated; commits 47beaae, 6885360.
+- **Known-truth test of the card judge (verified).** `scripts/paper/judge_known_truth.py`, `data/eval/judge_known_truth.json`: 120 synthetic template cards with invented names. The paper's qwen3:8b judge: explicit 30/30, implied 19/30, negatives 59/60 (hard 29/30), accuracy 90.0%; gemma2:9b 95.0%; the two agree on 112/120. The judge is conservative, so judge-rule leak rates are more likely understated. First run hung 2 hours: `name()` looped forever (144 name combinations, 360 needed); fixed by allowing repeats across cards.
+- **Serial-level sensitivity (verified).** `scripts/paper/serial_level_sensitivity.py`: 10/179, 7/122, 24/384 per serial; leave-one-serial-out 5.6 to 6.1%. Descriptive only.
+- **Supplement build.** `supplementary.tex` used `\botrule` (journal class only) and did not compile standalone; now `\bottomrule`. Compile with `pdflatex -output-directory=local_build/supp`, `TEXINPUTS=local_build//`.
+- **Still open before submission.** Only an Overleaf compile with the professor's class file (layout check; the local `sn-jnl.cls` in `local_build` already compiles). Tag `journal-rev3-2026-10-31` is pushed (77dd0e9) and the Declarations point to it. Optional: a known-truth test of the disclosure labeller (needs paid cloud annotators).
+
+## Pick up here - 2026-10-31 (product track: audio loop, upload, Studio build; decisions D29-D32, EVOLUTION 4.131)
+
+Done (tests, not a real audio run): `HUMAN` attribution method keeps reviewer decisions (queue, reader and speakers re-runs, voice); unknown dialogue gets a per-gender "Unknown speaker" voice; voice is resumable per line and refuses unlocked/stale canon; `export_m4b` and `pipeline` job kinds; `render --density beat|dense`; upload defaults to the `generic` adapter and `given_first`; P&P ingest slicing, name display and "Mr./Mrs." mention fixes. Core+pipeline 1,627 passed (updated below), webview jest 136 (18 suites). `scripts/setup.sh` and `.github/workflows/ci.yml` are written but the workflow has never run on GitHub.
+
+Changed after that sync (verified in code, not re-measured on the three novels):
+- Title rule: `comparison_key` keeps a title only when it precedes a family name (`derive_family_tokens`, `refresh_family_tokens` in `ingest/normalize.py`, called at stage starts and in `webview.py`); a bare surname stays separate. The earlier "Mr./Mrs./Miss Bennet will merge, needs an owner decision" item is decided and implemented.
+- Reader: three deterministic speaker checks in `reader/speakers_pass.py` (`addresses`, `tag_gender`/`title_gender`, `continues_after_tag`).
+- Image defaults: no flat placeholder on a real run. `compute.default_image_engine()`; `workers_contract._image_worker_choice` (unset = NoobAI unless `ECHOTALES_LLM_MODE=stub`; unknown `ECHOTALES_IMAGE_WORKER` raises); Studio picker starts on `/api/compute.default_engine`; `render`, `persona reference`, job and route defaults use it; tests pin the stub in conftest.
+- Narrator: `config.json` `voice.narrator` = `p227` is a placeholder; an unknown id warns. Owner wants a more famous/diverse voice set (suggest LibriTTS, CC BY 4.0), not implemented. EARS, NoobAI and Illustrious are non-commercial; this is a portfolio project, not for sale.
+- Nothing is committed since 1583fdb; owner will run an ultrareview on the local changes. Core+pipeline now 1,627 passed.
+
+OPEN:
+1. Lizzy and Elizabeth are separate entities (nickname resolution); later P&P chapters not run through the real reader.
+2. A colophon line ("CHISWICK PRESS...") ends P&P's last chapter.
+3. No blind listen; narrator choice by ear; LibriTTS bank not built. Real Chatterbox speech and the ffmpeg M4B were produced and checked by tool on P&P ch1 (46 s, -20.7 dB mean, chapter marker; D29), not by ear.
+4. Three measured novels not re-scored after the mention-gazetteer-overlap fix and the title rule.
+5. Visual: the local worker ignores reference images; identity QA is a colour histogram; Studio screenplay routes use placeholder text. Stack A vs B undecided.
+6. Packaging: LICENSE choice, README product page, CI never run on GitHub.
+7. RunPod: owner will make a pod once the pipeline is satisfactory.
+Latent: `apply_pending` seeds event numbers from the millisecond clock; two applies in one ms collide.
 
 ## Pick up here — 2026-10-30 (journal: human disclosure check done and in the paper; EVOLUTION 4.130)
 
@@ -105,10 +137,10 @@ Order (each step verified on real local output):
    Deferred: `bible/delta.py` hard-coded names (step 2); merge
    `voice/attribution.py` into `speakers/` (step 3; `eval/run_benchmark.py`
    and 2 tests import it).
-   **Open defect (fix in step 4):** `pipeline/workers_contract.py` still
-   returns a solid-colour PNG for any image worker other than
-   `ECHOTALES_IMAGE_WORKER=noobai`; the default must be the real local
-   worker or an explicit error.
+   **Fixed 2026-10-31 (D31):** `pipeline/workers_contract.py` used to return a
+   solid-colour PNG for any image worker other than
+   `ECHOTALES_IMAGE_WORKER=noobai`; unset now means NoobAI outside
+   `ECHOTALES_LLM_MODE=stub`, and an unknown value is an error.
 2. **Generalise to unseen books**: remove novel-keyed tables; acceptance =
    a Gutenberg EPUB end to end with no code change.
 3. **Audiobook end to end** (core): upload -> reader -> review -> lock ->
@@ -1413,7 +1445,8 @@ all open, all Phase A targets):**
     `docs/ops/` and the README found no invocation of `echotales render` that
     relies on the old default (the one `max_panels=40` in
     `scripts/eval/a7_cache_ablation.py` is explicit).
-27. ~~**Character identity drift across panels**~~ **RESOLVED (EVOLUTION 4.111, 4.112).**
+27. **REOPENED 2026-10-31 (EVOLUTION 4.131): character identity drift across panels.** Previously marked RESOLVED (4.111, 4.112) on the unwired Stack B; the keyframes QA is a colour histogram, not a face match, and the local image worker ignores reference images.
+    Original note:
     Replaced prompt-only panels with Asset Studio turnaround/expression generation
     (`assets/turnaround.py`) and Keyframe Engine multi-candidate conditioning (`keyframes/engine.py`)
     with automated 4-Check QA gate (`keyframes/qa.py`: face match cosine similarity >= 0.85).
@@ -1421,13 +1454,13 @@ all open, all Phase A targets):**
     When a beat has no explicit name ("He took out the brass revolver"), the director
     does not inherit the character from the preceding beat in the same scene. Needs scene-level
     cast carry-forward (`render/beat_canon.py`, `render/director.py`, `render/panels.py`).
-29. ~~**WORLD_CONTEXT string eats ~22 tokens atomically.**~~ **RESOLVED (EVOLUTION 4.112).**
+29. **REOPENED 2026-10-31: WORLD_CONTEXT string eats ~22 tokens atomically.** Marked RESOLVED (4.112) only on the unwired Keyframe Engine (Stack B).
     Superseded by Keyframe Engine prompt assembly (`keyframes/engine.py::build_shot_prompt`),
     compiling structured prompts directly from Story Bible snapshots and shot specifications.
-30. ~~**3-scene preview is too sparse.**~~ **RESOLVED (EVOLUTION 4.110, 4.112).** Screenplay
+30. **REOPENED 2026-10-31: 3-scene preview is too sparse.** Marked RESOLVED (4.110, 4.112) on the unwired Stack B; `--density` (D30) is the product-path control. Screenplay
     compiler (`screenplay/compiler.py`) and Keyframe Engine generate full-episode multi-shot
     timelines complying with pacing targets (10-25 cuts/min) and continuous chapter narrative coverage.
-31. ~~**77-token CLIP limit with no verified long-prompt encoder.**~~ **RESOLVED (EVOLUTION 4.112).**
+31. **REOPENED 2026-10-31: 77-token CLIP limit with no verified long-prompt encoder.** Marked RESOLVED (4.112) on the unwired Stack B only.
     Keyframe prompt compilation uses structured priority slotting (framing, camera, character
     expressions/poses, action) ensuring prompts fit within conditioning token limits without silent truncation.
 32. **Location facts are never extracted (`world/extract.py::extract_world` unwired).**
