@@ -14,6 +14,9 @@ The 48-cut table recomputes the revised adjudication exactly as score_disclosure
 reproduces the counts the manuscript reports (S1 9 of 10 and 11 of 34 served values revised; 2 of 10 and 4 of 35 under the
 original first-author rule), so the table cannot drift from the scorer.
 
+Note (2026-11-04): the prose inside the rev4 blocks of supplementary.tex was edited by hand afterwards (humanising pass), so this script
+should not be re-run over supplementary.tex without re-applying those edits.
+
 Run: python scripts/paper/supp_rev4_tables.py   (reads ~/.ollama manifests for the local-model digests)
 """
 from __future__ import annotations
