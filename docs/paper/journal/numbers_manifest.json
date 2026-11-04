@@ -458,6 +458,11 @@
   "source": "judge_known_truth.json",
   "note": "full table is in the supplement only"
  },
+ "judge_kt_selection": {
+  "value": "false positives 0 of 60, Wilson upper 6.0; explicit 30/30; implied missed 16/30; judges agree 111/120",
+  "source": "judge_known_truth_selection.json",
+  "note": "false-positive upper bound = 100 minus the specificity Wilson lower bound"
+ },
  "selection": {
   "value": "19.4% vs 1.4%; diff +18.1 [+4.2, +33.3]; 24 events",
   "source": "rf_e2e/selection_analysis.json",
