@@ -199,6 +199,15 @@ def build():
         "synthetic template cards with invented names; truth fixed by construction")
     put("judge_kt_supp", "; ".join(f"{n} {kw(m['sensitivity'])} {kw(m['specificity'])} {kw(m['accuracy'])}" for n, m in kt.items()), "judge_known_truth.json",
         "full table is in the supplement only")
+    # Review round 4: the selection result is the judge's least-validated case (merged retrieval puts both names in a
+    # card), so its two-name false-positive rate is quoted in Sect. 6.4 as the bound on the 19.4%.
+    ks = J(Path("data/eval/judge_known_truth_selection.json"))
+    qs = ks["metrics"]["qwen3:8b"]
+    fp = qs["specificity"]["n"] - qs["specificity"]["k"]
+    put("judge_kt_selection", f"false positives {fp} of {qs['specificity']['n']}, Wilson upper {round(100 - qs['specificity']['wilson'][0], 1)}; "
+        f"explicit {qs['sens_explicit']['k']}/{qs['sens_explicit']['n']}; implied missed {qs['sens_implied']['n'] - qs['sens_implied']['k']}"
+        f"/{qs['sens_implied']['n']}; judges agree {ks['agreement_between_judges']['k']}/{ks['agreement_between_judges']['n']}",
+        "judge_known_truth_selection.json", "false-positive upper bound = 100 minus the specificity Wilson lower bound")
     put("selection",f"{pc(sel['M_rate'])}% vs {pc(sel['P_rate'])}%; diff {pts(sel['estimate'])} {ci(*sel['ci'])}; {sel['events']} events",
         "rf_e2e/selection_analysis.json", "CI is for the paired event-level difference")
     put("selection_per_model", " / ".join(pc(sel["per_model"][m]["M_rate"]) for m in ("llama3.1:8b", "mistral:7b-instruct", "qwen2.5:7b")),
@@ -346,7 +355,11 @@ NUM = r"[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?"  # commas only as thousands s
 NOT_QUOTED = {"judge_kt_supp", "pool_gap_v2", "pool_ci_v2", "pool_gap_v3", "pool_ci_v3", "pa_certified_safe", "pa_cf_compared",
               "pre_items_by_dataset", "ref_gap_reconstructed", "conf_mistral24_closed", "conf_olmo32b_closed",
               # review round 3: per-run timings moved to the supplement; the main text gives only an indicative cost.
-              "pa_time"}
+              "pa_time",
+              # review round 4 ("move low-level details to the supplement"): the 48-cut check's agreement on unadjudicated
+              # pairs and the model-reader consistency checks are reported in the supplement; the main text keeps the
+              # adjudicated counts, both rules and the raw pairs.
+              "dh_vs_models_agreed_only", "dh_passages_only", "dh_third_reader", "dh_local_readers"}
 
 
 def check(tex_path: str):

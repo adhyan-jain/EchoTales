@@ -255,31 +255,45 @@ def fig_cards():
     rf = J(C / "rf_e2e/analysis.json")
     nm = {"llama3.1:8b": "Llama-3.1-8B", "mistral:7b-instruct": "Mistral-7B", "qwen2.5:7b": "Qwen2.5-7B",
           "mistral24": "Mistral-Small-24B", "qwen32b": "Qwen2.5-32B"}
+    # Review round 4 found the 7 pt, 25-degree-rotated generator names hard to read once the 6.6 in figure was scaled down
+    # to \textwidth, and the 7-8B / 24-32B separator unlabelled. Drawn at the final width (6.3 in) so the 8.5-9 pt text is
+    # the printed size; the panels are stacked (shared x axis) so each generator name has about 1.2 in and needs no
+    # rotation (side by side, two-line names still collided at 8 pt). Plotted values are unchanged.
+    tick = {"llama3.1:8b": "Llama-3.1-8B", "mistral:7b-instruct": "Mistral-7B", "qwen2.5:7b": "Qwen2.5-7B",
+            "mistral24": "Mistral-Small-24B", "qwen32b": "Qwen2.5-32B"}
     small, large = ["llama3.1:8b", "mistral:7b-instruct", "qwen2.5:7b"], ["mistral24", "qwen32b"]
-    fig, axes = plt.subplots(1, 2, figsize=(6.6, 2.9), sharey=True)
-    for ax, key, title in ((axes[0], "B_EXPLICIT_IMPLIED", "Judge rule (model judge), 54 events"),
-                           (axes[1], "A_primary_EXPLICIT_IMPLIED", "Text rule (string match), 19 events")):
+    fig, axes = plt.subplots(2, 1, figsize=(6.3, 4.6), sharex=True)
+    for ax, key, title in ((axes[0], "B_EXPLICIT_IMPLIED", "(a) Judge rule, 54 events"),
+                           (axes[1], "A_primary_EXPLICIT_IMPLIED", "(b) Text rule, 19 events")):
         cols = [(m, rf[key]["per_model"][m]) for m in small]
         lg = (rf.get("larger") or {}).get(key, {}).get("per_model", {})
         cols += [(m, lg[m]) for m in large if m in lg]
         for i, (m, r) in enumerate(cols):
-            ax.plot([i, i], [100 * r["P_ren"], 100 * r["W_ren"]], color=OI["grey"], lw=0.8, zorder=1)
-            ax.plot(i, 100 * r["W_ren"], "o", color=OI["vermillion"], ms=6, mec="black", mew=0.4, zorder=3)
-            ax.plot(i, 100 * r["P_ren"], "s", color=OI["blue"], ms=5.5, mec="black", mew=0.4, zorder=3)
+            ax.plot([i, i], [100 * r["P_ren"], 100 * r["W_ren"]], color=OI["grey"], lw=0.9, zorder=1)
+            ax.plot(i, 100 * r["W_ren"], "o", color=OI["vermillion"], ms=7, mec="black", mew=0.5, zorder=3)
+            ax.plot(i, 100 * r["P_ren"], "s", color=OI["blue"], ms=6.5, mec="black", mew=0.5, zorder=3)
         rob = rf["robust"]["ruleB" if key.startswith("B") else "ruleA"]["rates"]
         qi = [m for m, _ in cols].index("qwen2.5:7b")
-        ax.plot(qi + 0.25, 100 * rob["W_ren_nospoil"], "^", color=OI["orange"], ms=6, mec="black", mew=0.4, zorder=3)
+        ax.plot(qi + 0.3, 100 * rob["W_ren_nospoil"], "^", color=OI["orange"], ms=7, mec="black", mew=0.5, zorder=3)
         ax.set_xticks(range(len(cols)))
-        ax.set_xticklabels([nm[m] for m, _ in cols], rotation=25, ha="right", fontsize=7)
+        ax.set_xticklabels([tick[m] for m, _ in cols], fontsize=8.5)
+        ax.tick_params(axis="y", labelsize=8.5)
+        ax.set_ylabel("% of events", fontsize=8.5)
+        ax.set_xlim(-0.5, len(cols) - 0.5)
+        ax.set_ylim(-2, 37)
         if len(cols) > 3:
-            ax.axvline(2.5, color=OI["grey"], lw=0.6, ls="--")
-        ax.set_title(title)
-    axes[0].set_ylabel("Cards naming the hidden identity\nbefore the reveal (% of events)")
-    axes[0].plot([], [], "o", color=OI["vermillion"], mec="black", mew=0.4, label="Whole-volume card (W)")
-    axes[0].plot([], [], "s", color=OI["blue"], mec="black", mew=0.4, label="Versioned, prefix-built card (P)")
-    axes[0].plot([], [], "^", color=OI["orange"], mec="black", mew=0.4, label="W with an 'avoid spoilers' instruction")
-    fig.legend(loc="upper center", ncol=3, frameon=False, bbox_to_anchor=(0.5, 1.09))
-    save(fig, "fig9_cards")
+            ax.axvline(2.5, color=OI["grey"], lw=0.7, ls="--")
+            ax.text(1.0, 36, "7-8B", ha="center", va="top", fontsize=8, color=OI["ink"])
+            ax.text(3.5, 36, "24-32B", ha="center", va="top", fontsize=8, color=OI["ink"])
+        ax.set_title(title, fontsize=9, loc="left")
+    axes[0].plot([], [], "o", color=OI["vermillion"], ms=7, mec="black", mew=0.5, label="Whole-volume card (W)")
+    axes[0].plot([], [], "s", color=OI["blue"], ms=6.5, mec="black", mew=0.5, label="Prefix-built card (P)")
+    axes[0].plot([], [], "^", color=OI["orange"], ms=7, mec="black", mew=0.5, label="W, 'avoid spoilers' instruction")
+    fig.legend(loc="upper center", ncol=3, frameon=False, bbox_to_anchor=(0.5, 1.05), fontsize=8.5, handletextpad=0.3,
+               columnspacing=1.2)
+    # Review round 4: the outer label repeated each panel's "% of events"; the caption already names the quantity.
+    fig.tight_layout()
+    save(fig, "fig8_cards")
 
 
 LBL = dict(fc="white", ec="none", pad=0.5, alpha=0.9)
@@ -414,27 +428,38 @@ def fig_leaks():
     sel = J(C / "rf_e2e/selection_analysis.json")["H13_1_resolver_merged"]
     A, B = rf["A_primary_EXPLICIT_IMPLIED"]["pooled"], rf["B_EXPLICIT_IMPLIED"]["pooled"]
     # Interval bars are on the leaking design: the 95% interval of the paired difference, shifted by the faithful rate.
-    rows = [("Character card,\ntext rule (19 ev.)", A["rates"]["W_ren"], A["rates"]["P_ren"], A["RF1_input_channel"]["ci"], "deterministic"),
-            ("Character card,\njudge rule (54 ev.)", B["rates"]["W_ren"], B["rates"]["P_ren"], B["RF1_input_channel"]["ci"], "model judge"),
-            ("Card, suffix canary\n(54 ev.)", can["H12_1_W_card"]["rate_x"], can["H12_1_W_card"]["rate_y"], can["H12_1_W_card"]["ci"], "deterministic"),
-            ("Long context, suffix\ncanary (46 ev.)", can["H12_2_long_context"]["rate_x"], can["H12_2_long_context"]["rate_y"],
+    rows = [("Card,\ntext rule\n(19 ev.)", A["rates"]["W_ren"], A["rates"]["P_ren"], A["RF1_input_channel"]["ci"], "deterministic"),
+            ("Card,\njudge rule\n(54 ev.)", B["rates"]["W_ren"], B["rates"]["P_ren"], B["RF1_input_channel"]["ci"], "model judge"),
+            ("Card,\nsuffix canary\n(54 ev.)", can["H12_1_W_card"]["rate_x"], can["H12_1_W_card"]["rate_y"], can["H12_1_W_card"]["ci"], "deterministic"),
+            ("Long context,\nsuffix canary\n(46 ev.)", can["H12_2_long_context"]["rate_x"], can["H12_2_long_context"]["rate_y"],
              can["H12_2_long_context"]["ci"], "deterministic"),
-            ("Retrieval, selection\nleak (24 ev.)", sel["M_rate"], sel["P_rate"], sel["ci"], "model judge")]
-    fig, ax = plt.subplots(figsize=(6.6, 3.0))
+            ("Retrieval,\nselection leak\n(24 ev.)", sel["M_rate"], sel["P_rate"], sel["ci"], "model judge")]
+    # Review round 4: the evidence labels used to sit in data space at y = -9.5, which forced a "-10" tick; the zero-height
+    # legend proxies drew a long flat line under the first group; and the legend touched the long-context interval. Labels
+    # now sit below the tick labels in axis coordinates, the legend sits above the axes, and each faithful bar carries its
+    # value so a 0.0 rate is visible. Plotted values are unchanged.
+    from matplotlib.patches import Patch
+
+    fig, ax = plt.subplots(figsize=(6.3, 3.4))
     for x, (lab, naive, fixed, cint, kind) in enumerate(rows):
         ax.bar(x - 0.18, 100 * naive, width=0.34, color=OI["vermillion"], edgecolor="black", lw=0.5, hatch="///")
         ax.bar(x + 0.18, 100 * fixed, width=0.34, color=OI["blue"], edgecolor="black", lw=0.5)
         ax.plot([x - 0.18] * 2, [100 * (fixed + cint[0]), 100 * (fixed + cint[1])], color="black", lw=0.9)
-        ax.text(x, -9.5, kind, ha="center", fontsize=6.2, style="italic", color=OI["ink"])
+        ax.text(x + 0.18, 100 * fixed + 0.8, f"{100 * fixed:.1f}", ha="center", va="bottom", fontsize=7.5, color=OI["blue"])
+        ax.text(x, -0.255, kind, transform=ax.get_xaxis_transform(), ha="center", va="top", fontsize=7.5, style="italic",
+                color=OI["ink"])
     ax.set_xticks(range(len(rows)))
-    ax.set_xticklabels([r[0] for r in rows], fontsize=6.8)
-    ax.set_ylabel("Events with the hidden identity\nor planted text disclosed (%)")
-    ax.set_ylim(-12, 58)
-    ax.axhline(0, color="black", lw=0.6)
-    ax.bar([0], [0], color=OI["vermillion"], edgecolor="black", hatch="///", label="leaking design: whole-volume card, position marker, merged index")
-    ax.bar([0], [0], color=OI["blue"], edgecolor="black", label="reader-faithful design: prefix-built card, truncation, prefix index")
-    ax.legend(frameon=False, loc="upper left", fontsize=6.6)
-    save(fig, "fig10_leak_by_design")
+    ax.set_xticklabels([r[0] for r in rows], fontsize=7.8)
+    ax.tick_params(axis="y", labelsize=8)
+    ax.set_ylabel("Events with the hidden identity\nor planted text disclosed (%)", fontsize=8)
+    ax.set_xlim(-0.6, len(rows) - 0.4)
+    ax.set_ylim(0, 55)
+    ax.legend(handles=[Patch(facecolor=OI["vermillion"], edgecolor="black", hatch="///",
+                             label="leaking design: whole-volume card, position marker, merged index"),
+                       Patch(facecolor=OI["blue"], edgecolor="black",
+                             label="reader-faithful design: prefix-built card, truncation, prefix index")],
+              frameon=False, loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=1, fontsize=7.8)
+    save(fig, "fig9_leak_by_design")
 
 
 if __name__ == "__main__":
@@ -445,6 +470,7 @@ if __name__ == "__main__":
     fig_cue()
     fig_dose()
     fig_pipeline()
-    fig_repair()
+    # Review round 4: the repair-outcome figure duplicated Table 12 and was dropped from the paper; fig_repair()
+    # is kept for the record but no longer written into the manuscript's figure set.
     fig_cards()
     fig_leaks()

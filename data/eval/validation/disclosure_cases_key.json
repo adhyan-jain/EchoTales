@@ -1,0 +1,636 @@
+{
+ "provenance": "Passage-free export of scripts/review/disclosure_validation_app/cases.json (gitignored: it holds copyrighted serial excerpts). Fields kept: case, book, cut, mentions, served, annotators; n_passages is the number of passages shown. Character names, aliases and passage text removed.",
+ "version": "disclosure-validation-v1",
+ "manifest_seed": 20261101,
+ "annotators": [
+  "Adhyan",
+  "Atharva",
+  "Aryan"
+ ],
+ "cases": [
+  {
+   "case": "C002",
+   "book": "Oliver Twist",
+   "cut": 30.0,
+   "mentions": 75,
+   "served": null,
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 8
+  },
+  {
+   "case": "C044",
+   "book": "Reverend Insanity",
+   "cut": 60.0,
+   "mentions": 14,
+   "served": "male",
+   "annotators": [
+    "Atharva",
+    "Aryan"
+   ],
+   "n_passages": 4
+  },
+  {
+   "case": "C043",
+   "book": "Oliver Twist",
+   "cut": 5.0,
+   "mentions": 5,
+   "served": "male",
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 2
+  },
+  {
+   "case": "C027",
+   "book": "Oliver Twist",
+   "cut": 30.0,
+   "mentions": 73,
+   "served": "male",
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 6
+  },
+  {
+   "case": "C017",
+   "book": "Omniscient Reader's Viewpoint",
+   "cut": 15.0,
+   "mentions": 17,
+   "served": null,
+   "annotators": [
+    "Atharva",
+    "Aryan"
+   ],
+   "n_passages": 6
+  },
+  {
+   "case": "C034",
+   "book": "Lord of the Mysteries",
+   "cut": 5.0,
+   "mentions": 2,
+   "served": null,
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 2
+  },
+  {
+   "case": "C012",
+   "book": "Lord of the Mysteries",
+   "cut": 10.0,
+   "mentions": 20,
+   "served": null,
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 3
+  },
+  {
+   "case": "C020",
+   "book": "Lord of the Mysteries",
+   "cut": 25.0,
+   "mentions": 141,
+   "served": "male",
+   "annotators": [
+    "Atharva",
+    "Aryan"
+   ],
+   "n_passages": 8
+  },
+  {
+   "case": "C014",
+   "book": "Oliver Twist",
+   "cut": 10.0,
+   "mentions": 5,
+   "served": "male",
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 2
+  },
+  {
+   "case": "C019",
+   "book": "Lord of the Mysteries",
+   "cut": 25.0,
+   "mentions": 18,
+   "served": "male",
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 8
+  },
+  {
+   "case": "C005",
+   "book": "Reverend Insanity",
+   "cut": 120.0,
+   "mentions": 1,
+   "served": "male",
+   "annotators": [
+    "Atharva",
+    "Aryan"
+   ],
+   "n_passages": 1
+  },
+  {
+   "case": "C007",
+   "book": "Omniscient Reader's Viewpoint",
+   "cut": 20.0,
+   "mentions": 12,
+   "served": null,
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 7
+  },
+  {
+   "case": "C037",
+   "book": "Oliver Twist",
+   "cut": 30.0,
+   "mentions": 37,
+   "served": "male",
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 2
+  },
+  {
+   "case": "C038",
+   "book": "Oliver Twist",
+   "cut": 20.0,
+   "mentions": 6,
+   "served": "male",
+   "annotators": [
+    "Atharva",
+    "Aryan"
+   ],
+   "n_passages": 1
+  },
+  {
+   "case": "C046",
+   "book": "Reverend Insanity",
+   "cut": 80.0,
+   "mentions": 13,
+   "served": "male",
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 3
+  },
+  {
+   "case": "R001",
+   "book": "Lord of the Mysteries",
+   "cut": 10.0,
+   "mentions": 20,
+   "served": null,
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 3
+  },
+  {
+   "case": "C024",
+   "book": "Reverend Insanity",
+   "cut": 60.0,
+   "mentions": 96,
+   "served": null,
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 8
+  },
+  {
+   "case": "C039",
+   "book": "Omniscient Reader's Viewpoint",
+   "cut": 35.0,
+   "mentions": 60,
+   "served": "female",
+   "annotators": [
+    "Atharva",
+    "Aryan"
+   ],
+   "n_passages": 8
+  },
+  {
+   "case": "C025",
+   "book": "Reverend Insanity",
+   "cut": 10.0,
+   "mentions": 5,
+   "served": "male",
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 2
+  },
+  {
+   "case": "R002",
+   "book": "Omniscient Reader's Viewpoint",
+   "cut": 20.0,
+   "mentions": 12,
+   "served": null,
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 7
+  },
+  {
+   "case": "C011",
+   "book": "Reverend Insanity",
+   "cut": 20.0,
+   "mentions": 6,
+   "served": "male",
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 2
+  },
+  {
+   "case": "C021",
+   "book": "Reverend Insanity",
+   "cut": 160.0,
+   "mentions": 2,
+   "served": "male",
+   "annotators": [
+    "Atharva",
+    "Aryan"
+   ],
+   "n_passages": 1
+  },
+  {
+   "case": "C028",
+   "book": "Lord of the Mysteries",
+   "cut": 25.0,
+   "mentions": 2,
+   "served": "male",
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 1
+  },
+  {
+   "case": "C041",
+   "book": "Omniscient Reader's Viewpoint",
+   "cut": 5.0,
+   "mentions": 7,
+   "served": "male",
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 1
+  },
+  {
+   "case": "C035",
+   "book": "The Three Musketeers",
+   "cut": 30.0,
+   "mentions": 21,
+   "served": null,
+   "annotators": [
+    "Atharva",
+    "Aryan"
+   ],
+   "n_passages": 8
+  },
+  {
+   "case": "C031",
+   "book": "Reverend Insanity",
+   "cut": 60.0,
+   "mentions": 7,
+   "served": "female",
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 2
+  },
+  {
+   "case": "C030",
+   "book": "Omniscient Reader's Viewpoint",
+   "cut": 5.0,
+   "mentions": 11,
+   "served": "male",
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 2
+  },
+  {
+   "case": "C047",
+   "book": "The Three Musketeers",
+   "cut": 10.0,
+   "mentions": 4,
+   "served": "male",
+   "annotators": [
+    "Atharva",
+    "Aryan"
+   ],
+   "n_passages": 2
+  },
+  {
+   "case": "C013",
+   "book": "Lord of the Mysteries",
+   "cut": 25.0,
+   "mentions": 27,
+   "served": null,
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 3
+  },
+  {
+   "case": "C016",
+   "book": "Omniscient Reader's Viewpoint",
+   "cut": 5.0,
+   "mentions": 14,
+   "served": "male",
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 3
+  },
+  {
+   "case": "C033",
+   "book": "Lord of the Mysteries",
+   "cut": 5.0,
+   "mentions": 1,
+   "served": "male",
+   "annotators": [
+    "Atharva",
+    "Aryan"
+   ],
+   "n_passages": 1
+  },
+  {
+   "case": "C023",
+   "book": "The Three Musketeers",
+   "cut": 40.0,
+   "mentions": 21,
+   "served": null,
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 8
+  },
+  {
+   "case": "C001",
+   "book": "Lord of the Mysteries",
+   "cut": 30.0,
+   "mentions": 13,
+   "served": "male",
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 6
+  },
+  {
+   "case": "C040",
+   "book": "Reverend Insanity",
+   "cut": 100.0,
+   "mentions": 2,
+   "served": "male",
+   "annotators": [
+    "Atharva",
+    "Aryan"
+   ],
+   "n_passages": 1
+  },
+  {
+   "case": "R003",
+   "book": "Omniscient Reader's Viewpoint",
+   "cut": 5.0,
+   "mentions": 7,
+   "served": "male",
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 1
+  },
+  {
+   "case": "C032",
+   "book": "Omniscient Reader's Viewpoint",
+   "cut": 10.0,
+   "mentions": 11,
+   "served": "male",
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 4
+  },
+  {
+   "case": "C036",
+   "book": "Oliver Twist",
+   "cut": 15.0,
+   "mentions": 6,
+   "served": "male",
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 1
+  },
+  {
+   "case": "C029",
+   "book": "Omniscient Reader's Viewpoint",
+   "cut": 10.0,
+   "mentions": 32,
+   "served": "male",
+   "annotators": [
+    "Atharva",
+    "Aryan"
+   ],
+   "n_passages": 7
+  },
+  {
+   "case": "C010",
+   "book": "Lord of the Mysteries",
+   "cut": 5.0,
+   "mentions": 2,
+   "served": "female",
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 1
+  },
+  {
+   "case": "C009",
+   "book": "The Three Musketeers",
+   "cut": 50.0,
+   "mentions": 52,
+   "served": "male",
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 8
+  },
+  {
+   "case": "C022",
+   "book": "The Three Musketeers",
+   "cut": 10.0,
+   "mentions": 6,
+   "served": "male",
+   "annotators": [
+    "Atharva",
+    "Aryan"
+   ],
+   "n_passages": 3
+  },
+  {
+   "case": "C018",
+   "book": "Omniscient Reader's Viewpoint",
+   "cut": 15.0,
+   "mentions": 9,
+   "served": null,
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 5
+  },
+  {
+   "case": "C015",
+   "book": "Omniscient Reader's Viewpoint",
+   "cut": 15.0,
+   "mentions": 32,
+   "served": "male",
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 7
+  },
+  {
+   "case": "C042",
+   "book": "Reverend Insanity",
+   "cut": 40.0,
+   "mentions": 4,
+   "served": "male",
+   "annotators": [
+    "Atharva",
+    "Aryan"
+   ],
+   "n_passages": 1
+  },
+  {
+   "case": "R004",
+   "book": "The Three Musketeers",
+   "cut": 40.0,
+   "mentions": 21,
+   "served": null,
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 8
+  },
+  {
+   "case": "C003",
+   "book": "Oliver Twist",
+   "cut": 30.0,
+   "mentions": 59,
+   "served": null,
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 3
+  },
+  {
+   "case": "C045",
+   "book": "Reverend Insanity",
+   "cut": 20.0,
+   "mentions": 5,
+   "served": "male",
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 2
+  },
+  {
+   "case": "C004",
+   "book": "Lord of the Mysteries",
+   "cut": 15.0,
+   "mentions": 67,
+   "served": "male",
+   "annotators": [
+    "Atharva",
+    "Aryan"
+   ],
+   "n_passages": 4
+  },
+  {
+   "case": "C026",
+   "book": "Oliver Twist",
+   "cut": 30.0,
+   "mentions": 13,
+   "served": "female",
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 2
+  },
+  {
+   "case": "C008",
+   "book": "Omniscient Reader's Viewpoint",
+   "cut": 10.0,
+   "mentions": 82,
+   "served": "male",
+   "annotators": [
+    "Adhyan",
+    "Atharva"
+   ],
+   "n_passages": 5
+  },
+  {
+   "case": "C006",
+   "book": "Oliver Twist",
+   "cut": 10.0,
+   "mentions": 1,
+   "served": null,
+   "annotators": [
+    "Atharva",
+    "Aryan"
+   ],
+   "n_passages": 1
+  },
+  {
+   "case": "C048",
+   "book": "Lord of the Mysteries",
+   "cut": 5.0,
+   "mentions": 18,
+   "served": null,
+   "annotators": [
+    "Aryan",
+    "Adhyan"
+   ],
+   "n_passages": 2
+  }
+ ]
+}

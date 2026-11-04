@@ -17,7 +17,8 @@ Design notes the numbers depend on:
     author rules on splits, and overrode one pair that agreed on "undetermined") is kept as `first_author_adjudication`
     so both are reported. book_truth is the character's gender in the novel; q1 is what the shown passages establish.
 
-Inputs : scripts/review/disclosure_validation_app/cases.json (gitignored), data/eval/validation/pipeline_disclosure_sample*.json,
+Inputs : data/eval/validation/disclosure_cases_key.json (passage-free; falls back to the gitignored
+         scripts/review/disclosure_validation_app/cases.json), data/eval/validation/pipeline_disclosure_sample*.json,
          data/eval/validation/disclosure_labels/{labels_*.json, adjudicated.json}
 Output : data/eval/validation/disclosure_human_v1.json
 Run    : python scripts/review/score_disclosure_validation.py
@@ -32,6 +33,9 @@ from pathlib import Path
 VAL = Path("data/eval/validation")
 LAB = VAL / "disclosure_labels"
 CASES = Path("scripts/review/disclosure_validation_app/cases.json")
+# cases.json is gitignored (copyrighted excerpts), so from the release tag the scorer reads the passage-free key, which
+# carries every field it uses (annotators, served); review round 4 asked that the tag reproduce the 48-cut numbers.
+CASES_KEY = VAL / "disclosure_cases_key.json"
 OUT = VAL / "disclosure_human_v1.json"
 CATS = {"q1": ["male", "female", "undetermined"], "q2": ["clear", "suspect", "none"],
         "q3": ["supported", "unsupported", "contradicted", "settled", "not_settled"], "q4": ["yes", "no"]}
@@ -73,7 +77,7 @@ def cohen(pairs: list[tuple[str, str]], cats: list[str]):
 
 
 def main() -> None:
-    cases = {c["case"]: c for c in json.load(open(CASES))["cases"]}
+    cases = {c["case"]: c for c in json.load(open(CASES_KEY if CASES_KEY.exists() else CASES))["cases"]}
     man = {c["case"]: c for c in json.load(open(VAL / "pipeline_disclosure_sample.json"))["cases"]}
     key = json.load(open(VAL / "pipeline_disclosure_sample_key.json"))
     lab = {n: json.load(open(LAB / f"labels_{n}.json"))["labels"] for n in ("Adhyan", "Aryan", "Atharva")}
