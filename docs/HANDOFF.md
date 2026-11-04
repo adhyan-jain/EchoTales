@@ -22,7 +22,14 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-10-31 (EVOLUTION 4.132).
+**Last updated:** 2026-11-04 (EVOLUTION 4.133).
+
+## Pick up here - 2026-11-04 (journal: review round 4 (final) addressed, ready to submit; EVOLUTION 4.133)
+
+Research track, commits 525f18f, e0e20ba, 2698322; tag `journal-rev4-2026-11-04` at e0e20ba. Supersedes the "Still open before submission" line of the 2026-10-31 journal section below. Point-by-point: `docs/paper/journal/RESPONSE_TO_REVISION.md`, "Response to Review Round 4". Measured numbers are in 4.133.
+- **Status.** Round 4 is done and the manuscript (`docs/paper/journal/main.tex`) is ready to submit. The tag points at e0e20ba, but master carries one later commit, 2698322 (supplement opening names the sections holding human labels, S9 to S12), so the tag is one supplement wording fix behind master. Retag or note it when submitting.
+- **Open.** (1) Target journal and template: the reviewer mentioned Elsevier, but the manuscript is Springer Nature `sn-jnl` (owner decision 2026-10-30 was generic Springer Nature, no named journal); reformat only if a journal is chosen. (2) Abstract is 231 words against a journal limit (not checked against a named journal). (3) No human labels on the real selection cards; the selection-style known-truth test uses synthetic cards only. (4) Overleaf layout compile with the professor's class file, still not done.
+- **New scripts and data.** `scripts/paper/judge_known_truth_selection.py` writes `data/eval/judge_known_truth_selection.json`; `scripts/paper/supp_rev4_tables.py` builds the supplement tables (model and request manifest, text checksums, event- and case-level human labels, reproducibility map); `data/eval/validation/disclosure_cases_key.json` lets `scripts/review/score_disclosure_validation.py` run without the gitignored `cases.json` (output byte-identical); `journal_numbers.py` registers `judge_kt_selection`. Figures renamed `fig8_cards` and `fig9_leak_by_design`; `fig8_repair_outcomes` dropped.
 
 ## Pick up here - 2026-10-31 (journal: review round 3, disclosure adjudication revised; EVOLUTION 4.132, decision D34)
 
