@@ -111,7 +111,7 @@
 
 \abstract{When an AI reading assistant summarizes a story, it must avoid spoiling plot points the book has not yet revealed. Existing work focuses on whether models memorize books; this study asks whether models leak character identities before their reveal, or let future chapters influence earlier output. We define reader-faithfulness as non-interference from the unread text and evaluate two leakage channels. In a pre-registered confirmatory study, three open models showed no original-name gap in premature naming (+0.1 points, 95\% CI \textminus5.0 to +5.2), and the exploratory gap of a commercial reference model (+26.0 points) was not reproduced. A component-level audit of a persona stage found that its output diverged from a prefix-only build in 41 of 685 character-cuts; evidence-horizon versioning produced zero observed divergence in the tested configurations. In generic-assistant experiments, whole-volume processing caused content leakage, and future-informed entity merging produced a 19.4\% model-judged disclosure rate against 1.4\% for a prefix-causal index. A long-context assistant told the reader's position repeated a planted suffix token in 40.6\% of events, whereas physical truncation produced zero observed suffix-canary hits in the tested configuration. Events were model-selected, disclosure labels are model-judged with limited independent human validation, and three nested serials cannot support population-level estimates.}
 
-\keywords{Reader-faithfulness, Non-interference, Information-flow control, Spoilers, Parametric memory, Narrative understanding}
+\keywords{Reader-Faithfulness, Large Language Models (LLMs), Information Leakage, Parametric Memory Leakage, Information-Flow Control, Temporal Non-Interference}
 
 \maketitle
 
