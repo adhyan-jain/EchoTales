@@ -971,6 +971,16 @@ def cmd_voice(args: argparse.Namespace) -> int:
         print("error: voice bank is empty", file=sys.stderr)
         return 2
 
+    if kind == "ears":
+        print("WARNING: EARS voice bank is CC BY-NC 4.0 (non-commercial); use --bank-kind vctk (CC BY 4.0) for anything you distribute")
+    from echotales.pipeline.voice.bank import noncommercial_refusal
+
+    if reason := noncommercial_refusal(
+        kind, m4b=getattr(args, "m4b", False), allowed=getattr(args, "allow_noncommercial", False)
+    ):
+        print(f"error: {reason}", file=sys.stderr)
+        return 2
+
     # Filter the novel's real chapter numbers rather than generating a range:
     # `ChapterRange` is float-valued so split chapters (45.1) fall inside it
     # naturally, and enumerating integers would silently drop them.

@@ -227,14 +227,14 @@ def render_novel(
     # consume; compiling one per chapter changed no output (a first attempt did
     # exactly that). Revisit only if a body change should re-cast a voice.
     profiles = load_trait_profiles(novel_id, store)
-    assignments, casting = cast_voices(
-        novel_id, profiles, bank, store=store, seed=seed
-    )
-    _apply_voice_overrides(store, assignments, bank)
-    labels = speaker_index(store, novel_id)
     from echotales.pipeline.config import get_settings
 
     narrator = _narrator_voice(bank, get_settings().voice_narrator)
+    assignments, casting = cast_voices(
+        novel_id, profiles, bank, store=store, seed=seed, exclude=frozenset({narrator})
+    )
+    _apply_voice_overrides(store, assignments, bank)
+    labels = speaker_index(store, novel_id)
     rng = random.Random(seed)
     #: Anonymous slots keep one voice for the whole run rather than being
     #: re-rolled per line -- the slot exists precisely so two unnamed

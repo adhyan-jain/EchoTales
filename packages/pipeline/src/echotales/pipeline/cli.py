@@ -343,6 +343,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="let --m4b package the silent stub output (it otherwise refuses: the result is an empty audiobook)",
     )
     p_voice.add_argument(
+        "--allow-noncommercial", action="store_true",
+        help="let --m4b package voices from a non-commercial bank (EARS, CC BY-NC 4.0)",
+    )
+    p_voice.add_argument(
         "--dry-run",
         action="store_true",
         help="write the manifest and casting decisions without synthesising",

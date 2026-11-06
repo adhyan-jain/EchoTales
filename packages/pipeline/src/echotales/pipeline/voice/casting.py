@@ -105,8 +105,13 @@ def cast_voices(
     *,
     store: Store | None = None,
     seed: int = DEFAULT_SEED,
+    exclude: frozenset[str] = frozenset(),
 ) -> tuple[dict[str, VoiceAssignment], CastingReport]:
-    """Colour the cast within buckets and return one assignment per character."""
+    """Colour the cast within buckets and return one assignment per character.
+
+    `exclude` holds voices no character may take (the narrator: a character cast with the narrator's voice is
+    indistinguishable from narration, the one voice heard in every chapter).
+    """
     report = CastingReport(novel_id=novel_id)
     rng = random.Random(seed)
     adjacency = co_occurrence(store, novel_id) if store is not None else {}
@@ -123,6 +128,8 @@ def cast_voices(
 
     for profile in ordered:
         candidates = bank.nearest_bucket(profile.gender, profile.age_band)
+        # Fall back to the full bucket only when excluding would leave nobody, so a small bank still casts.
+        candidates = [v for v in candidates if v.speaker_id not in exclude] or candidates
         if not candidates:
             continue
         bucket = f"{profile.gender}:{profile.age_band}"

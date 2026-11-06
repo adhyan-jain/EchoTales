@@ -10,6 +10,7 @@ from echotales.core.enums import Prominence, SpanType
 from echotales.pipeline.persona.traits import TraitProfile
 from echotales.pipeline.spans.delivery import DeliveryPolarity
 from echotales.pipeline.voice.bank import (
+    BankVoice,
     VoiceBank,
     age_band_for,
     parse_speaker_info,
@@ -96,6 +97,22 @@ class TestCasting:
         assignments, report = cast_voices("t", self._profiles(3), _bank())
         assert len(assignments) == 3
         assert report.assigned == 3
+
+    def test_excluded_narrator_voice_is_never_cast(self) -> None:
+        voices = [
+            BankVoice(speaker_id=f"m{i}", gender="male", age=30)
+            for i in range(3)
+        ]
+        assignments, _ = cast_voices(
+            "t", self._profiles(6), VoiceBank(voices=voices), exclude=frozenset({"m0"})
+        )
+        assert len(assignments) == 6 and "m0" not in {a.speaker_id for a in assignments.values()}
+
+    def test_exclusion_yields_when_it_would_leave_nobody(self) -> None:
+        assignments, _ = cast_voices(
+            "t", self._profiles(1), _bank(), exclude=frozenset({"p227"})
+        )
+        assert len(assignments) == 1
 
     def test_is_deterministic_for_a_seed(self) -> None:
         a, _ = cast_voices("t", self._profiles(3), _bank(), seed=5)

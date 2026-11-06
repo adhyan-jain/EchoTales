@@ -477,3 +477,17 @@ def load_ears(
             )
         )
     return VoiceBank(voices)
+
+
+#: Banks whose licence forbids distributing audio made from them commercially.
+NONCOMMERCIAL_BANKS = {"ears": "CC BY-NC 4.0"}
+
+
+def noncommercial_refusal(kind: str, *, m4b: bool, allowed: bool) -> str | None:
+    """Reason to refuse packaging an M4B from a non-commercial bank, or None.
+
+    Per-line WAV synthesis for listening is not blocked; the M4B is the distributable artefact, so it is the gate.
+    """
+    if kind in NONCOMMERCIAL_BANKS and m4b and not allowed:
+        return f"--m4b with the {kind.upper()} bank ({NONCOMMERCIAL_BANKS[kind]}) needs --allow-noncommercial"
+    return None
