@@ -9232,3 +9232,13 @@ Commits 525f18f, e0e20ba, 2698322; tag `journal-rev4-2026-11-04` at e0e20ba (mas
 - **Supplement.** `scripts/paper/supp_rev4_tables.py` adds the model and request manifest, text checksums, event- and case-level human labels and a reproducibility map. `disclosure_cases_key.json` lets the disclosure scorer run without the gitignored `cases.json`; output verified byte-identical.
 - **Housekeeping.** `journal_numbers.py` registers `judge_kt_selection`; figures renamed (`fig8_cards`, `fig9_leak_by_design`), `fig8_repair_outcomes` dropped.
 - **Open.** Target journal and template (reviewer said Elsevier, manuscript is Springer Nature `sn-jnl`), abstract 231 words against a journal limit, tag one commit behind master.
+
+### 4.134 Voice: chunked Chatterbox synthesis, narrator excluded from casting, EARS licence gate *(2026-11-07)*
+
+Commits 436776c, ffec748 (local, unpushed). Current state is in HANDOFF "Pick up here - 2026-11-07".
+
+- **Chunking.** Long lines were synthesised in one Chatterbox call. `voice/delivery.py::strip_enclosing_quotes` removes wrapping quotes and `split_for_tts` splits at 300 characters on sentence boundaries; `ChatterboxEngine.synthesize` joins the chunks with 0.25 s silence. Run on GPU: a 480-char two-chunk line gave 25.6 s of whole audio.
+- **Narrator.** `cast_voices(exclude=)`; `render_novel` picks the narrator first and excludes it from character casting, so no character shares the narrator's voice (falls back to the full bucket if nobody would be left).
+- **Licence.** `voice --allow-noncommercial` and `bank.py::noncommercial_refusal`: an EARS bank (CC BY-NC 4.0) with `--m4b` is refused without the flag; a warning prints on any EARS run. Decision (owner): ship on VCTK (CC BY 4.0) first, LibriTTS bank deferred.
+- **Verified.** Core+pipeline 1,656 passed. Not verified by ear.
+- **Open.** Blind listen; narrator `p227` is a placeholder; no pluggable hosted TTS engine; the Studio job path (`jobs.py` `bank_kind`) is not licence-gated.

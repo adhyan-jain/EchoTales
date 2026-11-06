@@ -1352,7 +1352,7 @@ played.
 
 **`runner.py`** — `render_novel()`. Three speaker categories get three
 treatments: resolved characters get their cast voice, anonymous slots get a
-gender-matched bank voice stable per run, everything else gets the narrator.
+gender-matched bank voice stable per run, everything else gets the narrator. The narrator is picked first and excluded from character casting (`cast_voices(exclude=)`, 4.134). `ChatterboxEngine` strips wrapping quotes and speaks 300-char sentence chunks joined by 0.25 s silence (`delivery.py::split_for_tts`). An EARS bank with `--m4b` needs `--allow-noncommercial` (`bank.py::noncommercial_refusal`).
 Unresolved *dialogue* is counted separately so the number is visible rather
 than hidden inside plausible-sounding audio. `speaker_index()` exists
 because **`Span.speaker_self_id` does not hold a `Self` id despite the

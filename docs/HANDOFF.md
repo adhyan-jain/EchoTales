@@ -22,7 +22,16 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
 
-**Last updated:** 2026-11-04 (EVOLUTION 4.133).
+**Last updated:** 2026-11-07 (EVOLUTION 4.134).
+
+## Pick up here - 2026-11-07 (voice: chunked synthesis, narrator excluded from casting, EARS licence gate; EVOLUTION 4.134)
+
+Product track, commits 436776c and ffec748 (local, NOT pushed: GitHub unreachable, `gh` token invalid). Core+pipeline 1,656 passed (`-o addopts=""`). Supersedes open item 3 of the 2026-10-31 product section only where stated below.
+- **Chunked synthesis (436776c).** `voice/delivery.py` gained `strip_enclosing_quotes` and `split_for_tts` (300-char chunks); `ChatterboxEngine.synthesize` strips wrapping quotes and speaks sentence-sized chunks joined by 0.25 s of silence. Verified on GPU: a 480-char two-chunk line gave 25.6 s of whole audio.
+- **Narrator excluded from casting (ffec748).** `cast_voices(exclude=)`; `render_novel` picks the narrator first and excludes it from character casting (falls back to the full bucket if exclusion would leave nobody).
+- **Licence gate (ffec748).** `voice --allow-noncommercial`; `voice/bank.py::noncommercial_refusal` refuses an EARS (CC BY-NC 4.0) bank with `--m4b` unless the flag is given; a warning prints on any EARS run. The Studio job path (`jobs.py` `bank_kind`) is NOT gated yet.
+- **OWNER DECISION 2026-11-07.** Ship the product on VCTK (CC BY 4.0) first; the LibriTTS bank is deferred.
+- **OPEN.** Blind listen by the owner; narrator `p227` still a placeholder; no pluggable hosted TTS engine (only `stub`, `chatterbox`); `jobs.py` EARS gate; commits unpushed.
 
 ## Pick up here - 2026-11-04 (journal: review round 4 (final) addressed, ready to submit; EVOLUTION 4.133)
 
