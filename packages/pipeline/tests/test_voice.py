@@ -16,7 +16,7 @@ from echotales.pipeline.voice.bank import (
     pick_mob_voice,
 )
 from echotales.pipeline.voice.casting import cast_voices
-from echotales.pipeline.voice.delivery import pace_text, settings_for
+from echotales.pipeline.voice.delivery import pace_text, settings_for, split_for_tts, strip_enclosing_quotes
 from echotales.pipeline.voice.engine import SynthesisRequest, get_engine
 
 SPEAKER_INFO = """ID  AGE  GENDER  ACCENTS  REGION
@@ -163,6 +163,28 @@ class TestDelivery:
     def test_em_dash_interruption_gets_room(self) -> None:
         text = "He raised his hand and said—" + "the words came fast and hard, " * 3
         assert " — " in pace_text(text)
+
+
+class TestTtsPrep:
+    def test_wrapping_quotes_are_removed_inner_kept(self) -> None:
+        assert strip_enclosing_quotes("\u201cRun, he said.\u201d") == "Run, he said."
+        assert strip_enclosing_quotes("\u201cShe called it \u2018fine\u2019 again.\u201d") == "She called it \u2018fine\u2019 again."
+        assert strip_enclosing_quotes("'Tis a pity") == "'Tis a pity"
+
+    def test_short_text_is_one_chunk(self) -> None:
+        assert split_for_tts("Hello there.") == ["Hello there."]
+        assert split_for_tts("  ") == []
+
+    def test_long_text_splits_under_limit_without_losing_words(self) -> None:
+        text = " ".join(f"Sentence number {i} goes here, and it keeps going a little." for i in range(30))
+        chunks = split_for_tts(text, 300)
+        assert len(chunks) > 1 and all(len(c) <= 300 for c in chunks)
+        assert " ".join(chunks).split() == text.split()
+        assert all(c.endswith(".") for c in chunks)
+
+    def test_unbroken_run_still_splits(self) -> None:
+        chunks = split_for_tts("word " * 200, 100)
+        assert all(len(c) <= 100 for c in chunks) and " ".join(chunks).split() == ["word"] * 200
 
 
 class TestEngine:

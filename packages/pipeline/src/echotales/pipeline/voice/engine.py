@@ -115,15 +115,29 @@ class ChatterboxEngine:
     def synthesize(self, request: SynthesisRequest) -> Path:
         import torchaudio  # type: ignore[import-not-found]
 
+        import torch  # type: ignore[import-not-found]
+
+        from echotales.pipeline.voice.delivery import split_for_tts, strip_enclosing_quotes
+
         model = self._ensure_model()
-        wav = model.generate(  # type: ignore[attr-defined]
-            request.text,
-            audio_prompt_path=(
-                str(request.reference_clip) if request.reference_clip else None
-            ),
-            exaggeration=request.exaggeration,
-            cfg_weight=request.cfg_weight,
-        )
+        # A literal quote mark makes the model shift register, and inputs past ~300 characters drop trailing
+        # words; so the line is unquoted and spoken in sentence-sized pieces joined with a short breath.
+        chunks = split_for_tts(strip_enclosing_quotes(request.text)) or [request.text]
+        gap = torch.zeros(1, int(self.sample_rate * 0.25))
+        parts = []
+        for i, chunk in enumerate(chunks):
+            piece = model.generate(  # type: ignore[attr-defined]
+                chunk,
+                audio_prompt_path=(
+                    str(request.reference_clip) if request.reference_clip else None
+                ),
+                exaggeration=request.exaggeration,
+                cfg_weight=request.cfg_weight,
+            )
+            if i:
+                parts.append(gap.to(piece.device, piece.dtype))
+            parts.append(piece)
+        wav = torch.cat(parts, dim=-1)
         request.out_path.parent.mkdir(parents=True, exist_ok=True)
         # **Explicit PCM16, not torchaudio's default.** `model.generate`
         # returns a float32 tensor, and `torchaudio.save` given one with no

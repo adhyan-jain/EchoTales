@@ -268,3 +268,55 @@ def pace_text(text: str, *, span_type: SpanType = SpanType.DIALOGUE) -> str:
     ):
         out = _TIGHT_SENTENCE.sub(r"\1  ", out)
     return out
+
+
+#: Chatterbox degrades on long inputs (trailing words dropped, pace drift); ~300 characters is the
+#: practical ceiling, so longer spans are synthesised in pieces and joined (Phase 4 of the 2026-10-31 audio plan).
+TTS_CHUNK_CHARS = 300
+_OPEN_QUOTES = "\"“‘'«"
+_CLOSE_QUOTES = "\"”’'»"
+_SENTENCE_END = re.compile(r"(?<=[.!?…])[\"”’')]*\s+")
+_CLAUSE_END = re.compile(r"(?<=[,;:—])\s+")
+
+
+def strip_enclosing_quotes(text: str) -> str:
+    """Drop the quote marks that wrap a whole dialogue span.
+
+    The model reads a literal quote mark as a cue to change register or hesitate, so a spoken line must reach it
+    bare. Inner quotes (a quoted phrase inside the speech) are kept, and an apostrophe-led word is not touched
+    unless the span also ends in a closing quote.
+    """
+    t = text.strip()
+    if len(t) >= 2 and t[0] in _OPEN_QUOTES and t[-1] in _CLOSE_QUOTES:
+        return t[1:-1].strip()
+    return t
+
+
+def split_for_tts(text: str, limit: int = TTS_CHUNK_CHARS) -> list[str]:
+    """Split at sentence ends (then clause ends, then spaces) into pieces of at most `limit` characters.
+
+    Greedy packing keeps sentences together so the prosody of short runs is unchanged; only text that cannot fit
+    in one piece is cut, and always at the weakest boundary available.
+    """
+    text = text.strip()
+    if len(text) <= limit:
+        return [text] if text else []
+
+    def pieces(s: str) -> list[str]:
+        if len(s) <= limit:
+            return [s]
+        for splitter in (_SENTENCE_END, _CLAUSE_END):
+            parts = [p for p in splitter.split(s) if p]
+            if len(parts) > 1:
+                return [q for p in parts for q in pieces(p)]
+        cut = s.rfind(" ", 0, limit)
+        cut = cut if cut > 0 else limit
+        return [s[:cut], *pieces(s[cut:].strip())]
+
+    out: list[str] = []
+    for piece in pieces(text):
+        if out and len(out[-1]) + 1 + len(piece) <= limit:
+            out[-1] = f"{out[-1]} {piece}"
+        else:
+            out.append(piece)
+    return out
