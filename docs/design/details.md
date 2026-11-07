@@ -373,6 +373,13 @@ in the RI ch1 measurement. `IMAGES_PER_SCENE` (3.3) and `SECONDS_PER_PANEL`
 network in `test_compute_policy.py`; the hosted branches never made a real
 request.
 
+`ComputePolicy.context_scale` (EVOLUTION 4.134) widens text windows where the
+model has the room: 1 unless the provider is RunPod, then
+`max(1, min(cloud_context_scale, runpod_llm_context // llm_local_num_ctx))`
+(defaults 4, 32768). Only the reader's speaker windows use it. Beat and scene
+limits are deliberately unscaled: they define how much text becomes one image,
+not a token budget.
+
 ### `src/echotales/pipeline/llm/client.py`, `gateway.py`, `tasks.py`
 `ModelClient.backend` consults `compute.policy().llm_provider` first and falls
 back to `ECHOTALES_MODEL_BACKEND` (EVOLUTION 4.106). OpenAI, Gemini and RunPod
@@ -2137,7 +2144,7 @@ copy showing every change.
 The chapter reader pass: a model reads each chapter with the cast list in view and returns facts that carry their own evidence. It exists because the older stages link names to identities but never *read* facts, so LotM had 0 appearance attributes and speaker accuracy of 34.6%. Runs as `echotales reader` or stage `6b reader` of `echotales run` (`--skip-reader` opts out), and as the `reader` job kind. Model: `Task.READER`, local `gemma2:9b` by default since 2026-10-22 (`ECHOTALES_READER_MODEL`; `ECHOTALES_READER_RECONCILE=0` disables the role pass; EVOLUTION 4.124).
 
 - `quotes.py` -- the one definition of a quoted line (`QUOTE`, `quote_starts`, `tag_block`). A line is addressed `block.q`; curly and straight quotes both count, and a multi-paragraph speech runs to the end of the block. Shared with `eval/reader_gold.py` so the scorer and the stage can never disagree on what "quote 3 of block 10" is.
-- `speakers_pass.py` -- windows of ~2,600 characters with every quote tagged; builds the chapter cast (people already attested whose name occurs in the text); asks for exactly one answer per tag and shows a slot for every pending tag in the answer template (a single-entry example made the model answer one tag per call); re-asks for omissions; names resolve through `NameIndex`. Writes the speaker onto the covering span, retypes a mistyped crowd reaction to dialogue, mints a person the cast lacks but never a place, clears the old ladder's non-explicit guess when the model says UNKNOWN, gives an unnamed speaker with a role one stable slot (`UNKNOWN: academy elder`), treats dated written entries and NONE answers as narration, and tells the model who the first-person narrator is (the character addressed in quotes but rarely named in narration).
+- `speakers_pass.py` -- windows of ~2,600 characters (times `policy().context_scale`: 10,400 on RunPod defaults, unmeasured for accuracy) with every quote tagged; builds the chapter cast (people already attested whose name occurs in the text); asks for exactly one answer per tag and shows a slot for every pending tag in the answer template (a single-entry example made the model answer one tag per call); re-asks for omissions; names resolve through `NameIndex`. Writes the speaker onto the covering span, retypes a mistyped crowd reaction to dialogue, mints a person the cast lacks but never a place, clears the old ladder's non-explicit guess when the model says UNKNOWN, gives an unnamed speaker with a role one stable slot (`UNKNOWN: academy elder`), treats dated written entries and NONE answers as narration, and tells the model who the first-person narrator is (the character addressed in quotes but rarely named in narration).
 - `facts_pass.py` -- appearance (own focused call over body/clothing cue sentences, one worked example), ages and new names. A claim is stored only if its evidence quote is real passage text (a paraphrase is repaired to the passage sentence that states the value, never kept as the model's words) and the value fits its key (makeup is a mark not an eye colour; `height_build` needs a build word; an age must be written in the quote). Appearance lands as dated `PERSONA` attributes open-ended from the stating chapter; a new name as an alias binding on the character.
 - `runner.py` -- chapters in order, speakers then facts (a minted speaker is in the cast for the facts pass), totalled in `ReaderReport`.
 
