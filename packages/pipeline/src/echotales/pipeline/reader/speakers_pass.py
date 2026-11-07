@@ -210,12 +210,17 @@ def windows(chapter: Chapter, *, tagged: bool = True, require_quote: bool | None
     the tags but also the quote-free windows (the delivery pass reads the mood of narration-only passages)."""
     if require_quote is None:
         require_quote = tagged
+    # Local windows were sized for a 4-8k context; a hosted model with a longer one reads proportionally more per
+    # call (fewer cuts through a conversation, so more speaker evidence per window). 1 locally: results unchanged.
+    from echotales.pipeline.compute import policy
+
+    limit = WINDOW_CHARS * policy().context_scale
     out: list[list[str]] = []
     current: list[str] = []
     size = 0
     for block in sorted(chapter.blocks, key=lambda b: b.index):
         text = tag_block(block.index, block.text) if tagged else block.text
-        if size + len(text) > WINDOW_CHARS and current:
+        if size + len(text) > limit and current:
             out.append(current)
             current, size = [], 0
         current.append(f"#{block.index}: {text}")

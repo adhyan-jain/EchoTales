@@ -179,6 +179,10 @@ class Settings(BaseSettings):
     runpod_api_key: str = ""
     runpod_llm_base_url: str = ""
     runpod_llm_model: str = ""
+    #: Context length the served RunPod model really accepts (tokens), and the most the reader's input windows may
+    #: grow relative to the local ones. The scale actually used is capped by `runpod_llm_context // llm_local_num_ctx`.
+    runpod_llm_context: int = 32768
+    cloud_context_scale: int = 4
     runpod_image_endpoint: str = ""
     openai_api_key: str = ""
     openai_model: str = ""

@@ -119,6 +119,9 @@ class ComputePolicy:
     openai_model: str
     gemini_api_key: str
     gemini_model: str
+    #: How many times larger the reader's input windows may be than the local ones: 1 unless the language model is
+    #: the RunPod one, whose context is much larger than the 4096/8192 the local windows were sized for.
+    context_scale: int = 1
 
     @property
     def cloud(self) -> bool:
@@ -205,7 +208,11 @@ def policy(settings: object | None = None) -> ComputePolicy:
         llm = "runpod" if mode == CLOUD else str(getattr(s.model_backend, "value", s.model_backend))
     if not image:
         image = "runpod" if mode == CLOUD else "local"
+    scale = 1
+    if llm == "runpod":
+        scale = max(1, min(int(s.cloud_context_scale), int(s.runpod_llm_context) // max(1, int(s.llm_local_num_ctx))))
     return ComputePolicy(
+        context_scale=scale,
         mode=mode, llm_provider=llm, image_provider=image,
         local_image_engine=_norm(getattr(s, "local_image_engine", "noobai")) or "noobai",
         preview_scenes=int(s.preview_scenes), full_scenes=int(s.full_scenes),

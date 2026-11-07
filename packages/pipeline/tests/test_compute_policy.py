@@ -285,3 +285,35 @@ def test_a_request_that_names_no_engine_gets_the_real_one_never_the_flat_placeho
     monkeypatch.setattr(compute, "policy", lambda settings=None: _p())
     assert compute.default_image_engine() == _p().default_engine
     assert compute.default_image_engine() != "stub"
+
+
+def test_context_scale_is_one_locally_and_grows_only_for_runpod_capped_by_its_context() -> None:
+    assert _p().context_scale == 1 and _p(compute="local-high", llm_provider="ollama").context_scale == 1
+    assert _p(compute="cloud").context_scale == 4  # 32768 // 8192 = 4, equal to the default scale cap
+    # The served model's real context caps the growth: 16384 // 8192 = 2 even though 4 was allowed.
+    assert _p(compute="cloud", runpod_llm_context=16384).context_scale == 2
+    assert _p(compute="cloud", runpod_llm_context=4096).context_scale == 1  # never below the local window
+    assert _p(llm_provider="openai").context_scale == 1  # only RunPod is a supported higher tier for now
+
+
+def test_reader_windows_hold_more_on_runpod_and_are_unchanged_locally(monkeypatch) -> None:
+    from echotales.core.enums import BlockType
+    from echotales.core.models import Block, Chapter
+    from echotales.pipeline.reader.speakers_pass import WINDOW_CHARS, windows
+
+    blocks = [Block(index=i, block_type=BlockType.DIALOGUE, text=f'"Line {i}," she said. ' + "x" * 600) for i in range(12)]
+    chapter = Chapter(novel_id="n", number=1, title="t", source_href="x", blocks=blocks)
+    monkeypatch.setenv("ECHOTALES_COMPUTE", "local-low")
+    monkeypatch.setenv("ECHOTALES_LLM_PROVIDER", "stub")
+    from echotales.pipeline.config import get_settings
+
+    get_settings(reload=True)
+    local = windows(chapter)
+    monkeypatch.setenv("ECHOTALES_COMPUTE", "cloud")
+    monkeypatch.setenv("ECHOTALES_LLM_PROVIDER", "runpod")
+    get_settings(reload=True)
+    hosted = windows(chapter)
+    monkeypatch.undo()
+    get_settings(reload=True)  # leave the cached settings as the rest of the suite expects
+    assert all(len(w) <= WINDOW_CHARS + 700 for w in local)
+    assert len(hosted) < len(local) and "#11:" in hosted[-1]
