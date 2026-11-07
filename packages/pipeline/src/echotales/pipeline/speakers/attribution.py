@@ -60,6 +60,18 @@ _SPEECH_VERBS = (
 
 _NAME = r"[A-Z][\w’'\-]*(?:\s+[A-Z][\w’'\-]*){0,3}"
 
+#: A speech tag in the narration right after a quote. "returned she" is only counted here, not in `_SPEECH_VERBS`:
+#: as a verb for `_NAME_THEN_VERB` it would turn "Li Wei returned home" into a speaker.
+_OWN_TAG = re.compile(rf"\b(?:{_SPEECH_VERBS})\b|\breturned\s+(?:she|he)\b", re.IGNORECASE)
+
+
+def has_own_speech_tag(narration: str) -> bool:
+    """Whether narration directly after a quote already tags it ("said his lady to him one day,", "returned she;").
+
+    A tag with no name is still this line's tag, so the next block's "Mr. Bennet replied" belongs to the next line and
+    must not be borrowed (P&P ch1: four of Mrs. Bennet's lines were voiced as Mr. Bennet that way)."""
+    return _OWN_TAG.search(narration) is not None
+
 # "Li Wei said" / "Li Wei said coldly"
 _NAME_THEN_VERB = re.compile(
     rf"\b(?P<name>{_NAME})\s+(?:\w+\s+){{0,2}}?(?:{_SPEECH_VERBS})\b"

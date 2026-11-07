@@ -578,3 +578,42 @@ def test_delivery_markers_ignore_words_inside_the_quote() -> None:
     # Bare narration is unaffected.
     narration = "He answered quietly, lowering his head."
     assert [m.polarity.value for m in extract_delivery_markers(narration)] == ["HUSHED"]
+
+
+class TestOwnTagIsNotBorrowedFromTheNextBlock:
+    """P&P ch1: "My dear Mr. Bennet," said his lady ... was voiced as Mr. Bennet, because the next paragraph's tag
+    ("Mr. Bennet replied that he had not.") was read as this quote's tag."""
+
+    def _spans(self) -> list[Span]:
+        def sp(i, start, end, text, kind=SpanType.DIALOGUE):
+            return Span(id=f"n:1:{i}:{start}", novel_id="n", chapter=1.0, block_index=i, start=start, end=end,
+                        span_type=kind, text=text)
+        return [
+            sp(2, 0, 21, "“My dear Mr. Bennet,”"),
+            sp(2, 21, 51, " said his lady to him one day, ", SpanType.NARRATION_ACTION),
+            sp(2, 51, 90, "“have you heard that Netherfield Park is let?”"),
+        ]
+
+    def test_a_nameless_own_tag_blocks_the_next_block_window(self) -> None:
+        from echotales.pipeline.speakers.runner import _windows
+
+        spans = self._spans()
+        assert "Bennet replied" not in _windows(spans, 0, "", "Mr. Bennet replied that he had not.")[1]
+
+    def test_a_tag_before_the_quote_blocks_the_previous_block_and_the_next(self) -> None:
+        from echotales.pipeline.speakers.runner import _windows
+
+        pre, post = _windows(self._spans(), 2, "Mr. Bennet replied that he had not.", "Mr. Bennet made no answer.")
+        assert "Bennet replied" not in pre and "no answer" not in post
+
+    def test_without_a_tag_the_next_block_still_supplies_it(self) -> None:
+        from echotales.pipeline.speakers.runner import _windows
+
+        spans = [self._spans()[0]]
+        assert "Bennet replied" in _windows(spans, 0, "", "Mr. Bennet replied that he had not.")[1]
+
+    def test_returned_she_counts_as_a_tag_but_returned_home_does_not(self) -> None:
+        from echotales.pipeline.speakers.attribution import has_own_speech_tag
+
+        assert has_own_speech_tag("returned she;") and has_own_speech_tag("cried his wife, impatiently.")
+        assert not has_own_speech_tag("Li Wei returned home.")

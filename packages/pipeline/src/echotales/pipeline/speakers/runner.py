@@ -20,11 +20,50 @@ from echotales.pipeline.speakers.attribution import (
     attribute_span,
     detect_pov_holder,
     epithet_mentioned,
+    has_own_speech_tag,
 )
 from echotales.pipeline.speakers.contextual import attribute_contextual
 
 #: Characters of narration either side of a line that the tiers may consult.
 _WINDOW = 220
+
+
+def _windows(block_spans: list[Span], i: int, prev_block: str, next_block: str) -> tuple[str, str]:
+    """(preceding, following) narration for span `i`.
+
+    The neighbouring blocks are added only when no speech tag sits directly beside the quote in its own block. A tag
+    with no name ("said his lady to him one day,", "returned she;") is still this line's tag, and the adjacent
+    paragraphs' tags ("Mr. Bennet replied that he had not.") belong to other lines: borrowing them voiced four of
+    Mrs. Bennet's first lines as Mr. Bennet in P&P ch1. A quote that ends its paragraph has its tag in the next
+    block, so with no in-block tag the old behaviour stands."""
+    quote_kinds = (SpanType.DIALOGUE, SpanType.INNER_MONOLOGUE, SpanType.CROWD_REACTION)
+
+    def adjacent(spans: list[Span]) -> str:
+        tag: list[str] = []
+        for s in spans:
+            if s.span_type in quote_kinds:
+                break
+            tag.append(s.text)
+        return " ".join(tag)
+
+    before_spans, after_spans = block_spans[:i], block_spans[i + 1 :]
+    in_block_before = " ".join(s.text for s in before_spans)
+    in_block_after = " ".join(s.text for s in after_spans)
+    own = has_own_speech_tag(adjacent(after_spans)) or has_own_speech_tag(_tail_narration(before_spans))
+    if own:
+        return in_block_before[-_WINDOW:], in_block_after[:_WINDOW]
+    return (prev_block + " " + in_block_before)[-_WINDOW:], (in_block_after + " " + next_block)[:_WINDOW]
+
+
+def _tail_narration(spans: list[Span]) -> str:
+    """The narration just before a quote: the spans after the last earlier quote."""
+    tail: list[str] = []
+    for s in reversed(spans):
+        if s.span_type in (SpanType.DIALOGUE, SpanType.INNER_MONOLOGUE, SpanType.CROWD_REACTION):
+            break
+        tail.append(s.text)
+    return " ".join(reversed(tail))
+
 
 #: Section 3.2: a second, looser candidate source for `_known()`'s gate,
 #: separate from the identity-grade `known_names` accumulator below.
@@ -233,13 +272,9 @@ def attribute_chapter(
             ):
                 continue
 
-            in_block_before = " ".join(s.text for s in block_spans[:i])
-            in_block_after = " ".join(s.text for s in block_spans[i + 1 :])
-
             # In-block narration is nearer the line and therefore stronger
             # evidence, so it is placed closest to the quote in each window.
-            preceding = (prev_block + " " + in_block_before)[-_WINDOW:]
-            following = (in_block_after + " " + next_block)[:_WINDOW]
+            preceding, following = _windows(block_spans, i, prev_block, next_block)
 
             attribution = attribute_span(
                 span,
@@ -345,10 +380,7 @@ def _attribute_contextual_pass(
             if span.speaker_self_id or span.attribution_method is not AttributionMethod.UNRESOLVED:
                 continue
 
-            in_block_before = " ".join(s.text for s in block_spans[:i])
-            in_block_after = " ".join(s.text for s in block_spans[i + 1 :])
-            preceding = (prev_block + " " + in_block_before)[-_WINDOW:]
-            following = (in_block_after + " " + next_block)[:_WINDOW]
+            preceding, following = _windows(block_spans, i, prev_block, next_block)
 
             attribution = attribute_contextual(
                 span,
