@@ -882,6 +882,17 @@ The name roster **accumulates across the novel** rather than being rebuilt per
 chapter — a character introduced in chapter 5 still speaks in chapter 12
 whether or not the detector re-fired on them there.
 
+**Own speech tag beats borrowing** (`_windows`, `attribution.has_own_speech_tag`).
+Borrowing the neighbouring block is wrong when the quote already carries its own
+tag: on P&P ch1 "Mr. Bennet replied that he had not." in the next paragraph was
+read as the tag of four Mrs. Bennet lines (EXPLICIT 0.95, wrong speaker). If the
+in-block narration directly before/after the quote holds a speech tag, even a
+nameless one ("said his lady to him one day,", "returned she;"), both windows use
+in-block text only. "returned she/he" is a separate check, not in `_SPEECH_VERBS`,
+because "Li Wei returned home" would make a speaker. Deterministic tiers vs silver
+references: LotM 91->100/173, RI 45->48/84, ORV 43/145 unchanged; full reader not
+re-scored. The freed lines are UNRESOLVED when the speaker is missing from the cast.
+
 `recent_speakers` resets at chapter boundaries **and scene breaks**, and only
 `EXPLICIT`/`JOINT` results seed it: seeding alternation from a guess makes the
 next guess worse.
