@@ -489,5 +489,5 @@ def noncommercial_refusal(kind: str, *, m4b: bool, allowed: bool) -> str | None:
     Per-line WAV synthesis for listening is not blocked; the M4B is the distributable artefact, so it is the gate.
     """
     if kind in NONCOMMERCIAL_BANKS and m4b and not allowed:
-        return f"--m4b with the {kind.upper()} bank ({NONCOMMERCIAL_BANKS[kind]}) needs --allow-noncommercial"
+        return f"the {kind.upper()} voice bank is non-commercial ({NONCOMMERCIAL_BANKS[kind]}); packaging it as an M4B needs allow-noncommercial (--allow-noncommercial / job param allow_noncommercial)"
     return None

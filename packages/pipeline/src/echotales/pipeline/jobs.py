@@ -402,6 +402,12 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
 
         bank_root = params.get("bank", "data/voice")
         bank_kind = params.get("bank_kind", "vctk")
+        # The Studio's voice output is what export_m4b later binds, and that job cannot see the bank, so the
+        # non-commercial licence (EARS, CC BY-NC 4.0) is enforced here, as `cmd_voice` does for `--m4b`.
+        from echotales.pipeline.voice.bank import noncommercial_refusal
+
+        if reason := noncommercial_refusal(bank_kind, m4b=True, allowed=bool(params.get("allow_noncommercial"))):
+            raise ValueError(reason)
         if bank_kind == "ears":
             bank = load_ears(bank_root)
         elif bank_kind == "cremad":

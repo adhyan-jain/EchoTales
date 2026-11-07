@@ -181,6 +181,18 @@ class TestRunJobIngest:
         assert updated.status == StageStatus.FAILED
         assert "bogus" in updated.error_summary
 
+    def test_voice_job_refuses_the_noncommercial_bank_unless_allowed(self, tmp_path: Path) -> None:
+        """EARS is CC BY-NC 4.0 and export_m4b cannot see the bank, so the voice job is where Studio enforces it."""
+        store = Store(str(tmp_path / "t.db"))
+        job = Job(job_id=new_job_id("n1", "voice"), novel_id="n1", kind="voice", created_at=time.time())
+        store.add_job(job)
+
+        run_job(store, job, {"bank_kind": "ears", "bank": str(tmp_path), "engine": "stub"})
+
+        updated = store.get_job(job.job_id)
+        assert updated.status == StageStatus.FAILED
+        assert "non-commercial" in updated.error_summary
+
 
 class TestJobQueue:
     def test_submits_and_runs_sequentially(self, tmp_path: Path) -> None:
