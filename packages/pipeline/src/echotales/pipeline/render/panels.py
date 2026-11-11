@@ -534,11 +534,12 @@ class IllustriousEngine:
     is: this card OOMs in `vae.decode` with an SDXL pipeline fully resident,
     and slicing does nothing at batch=1.
 
-    No IP-Adapter here yet. SD1.5 and SDXL take different adapter weights,
-    and wiring the SDXL one is only worth doing once the checkpoint has
-    earned its place on output quality -- so this engine is prompt-only, and
-    `render_panels` degrades to prompt-only for it exactly as it already
-    does for a character with no sheet.
+    The SDXL IP-Adapter is wired (`_load_ip_adapter`, attached at first load
+    when a request carries reference images), but nothing reaches it today:
+    `render_panels` sends every request with `reference_images=[]`, so this
+    engine runs prompt-only in practice. The docstring used to say "No
+    IP-Adapter here yet", which sent a reader looking for missing code when
+    the missing piece is the caller (HANDOFF open defect 34).
     """
 
     name: str = "illustrious"
