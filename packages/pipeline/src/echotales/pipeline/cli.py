@@ -193,7 +193,7 @@ def build_parser() -> argparse.ArgumentParser:
             "(reverend-insanity-hardcases.jsonl -- the only source of "
             "TRANSFERABLE_TITLE / EPITHET / RELATIONAL_DEICTIC records) was "
             "unreachable from the CLI, and every printed recall@k breakdown was "
-            "100% RIGID_NAME by construction."
+            "100%% RIGID_NAME by construction."
         ),
     )
     p_eval.add_argument(
