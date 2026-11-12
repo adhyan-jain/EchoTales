@@ -10,6 +10,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - name: Install
         run: uv sync --all-packages --group dev
       # "generation pipelines do not need to understand the novel" is a structural claim (README, CLAUDE.md):
