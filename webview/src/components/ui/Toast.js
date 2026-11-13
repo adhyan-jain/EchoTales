@@ -28,7 +28,7 @@ export function ToastProvider({ children }) {
           <div
             key={t.id}
             role={t.tone === 'danger' ? 'alert' : undefined}
-            className={`animate-toast-in max-w-sm break-words rounded-xl border px-4 py-3 font-sans text-sm text-text shadow-popover ${TONES[t.tone]}`}
+            className={`animate-toast-in max-w-sm break-words rounded-xl border px-4 py-3 font-sans text-sm text-text shadow-popover ${TONES[t.tone] || TONES.info}`}
           >
             {t.message}
           </div>

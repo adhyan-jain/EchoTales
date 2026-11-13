@@ -10,6 +10,7 @@ import '@testing-library/jest-dom';
 jest.mock('../../api', () => ({
   api: {
     listProjects: jest.fn(),
+    triggerStage: jest.fn(),
     listOutput: jest.fn(),
     listJobs: jest.fn(),
     renderGenerate: jest.fn(),
@@ -98,6 +99,57 @@ describe('ProjectHome', () => {
         jest.advanceTimersByTime(7000);
       });
       expect(api.listProjects.mock.calls.length).toBe(calls); // finished: it stops polling
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test('a refused Start ingestion is shown next to the button, and the card stays', async () => {
+    api.listProjects.mockResolvedValue([
+      { id: 'toy', content_type: 'novel', source_uploaded: true, ingested: false, chapter_count: 0, job_count: 0, last_job: null },
+    ]);
+    api.triggerStage.mockRejectedValueOnce(Object.assign(new Error('409'), { status: 409, serverMessage: 'A job is already running for this project' }));
+    render(<ProjectHome novelId="toy" onNewProject={jest.fn()} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Start ingestion' }));
+    expect(await screen.findByText(/already running for this project/i)).toBeInTheDocument();
+    expect(screen.getByText('Not yet')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Start ingestion' })).toBeEnabled();
+  });
+
+  test('one failed background poll keeps what is on screen', async () => {
+    jest.useFakeTimers();
+    try {
+      const running = { id: 'toy', content_type: 'novel', source_uploaded: true, ingested: false, chapter_count: 0, job_count: 1, last_job: { kind: 'ingest', status: 'RUNNING', error_summary: '' } };
+      api.listProjects.mockResolvedValueOnce([running]).mockRejectedValueOnce(Object.assign(new Error('x'), { status: 0 }));
+      render(<ProjectHome novelId="toy" onNewProject={jest.fn()} />);
+      expect(await screen.findByText('Not yet')).toBeInTheDocument();
+      await act(async () => {
+        jest.advanceTimersByTime(2100);
+      });
+      expect(screen.getByText('Not yet')).toBeInTheDocument();
+      expect(screen.queryByText(/reach the EchoTales server/i)).not.toBeInTheDocument();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test('after the polling cap it says it stopped watching and can check again', async () => {
+    jest.useFakeTimers();
+    try {
+      const running = { id: 'toy', content_type: 'novel', source_uploaded: true, ingested: false, chapter_count: 0, job_count: 1, last_job: { kind: 'ingest', status: 'RUNNING', error_summary: '' } };
+      api.listProjects.mockResolvedValue([running]);
+      render(<ProjectHome novelId="toy" onNewProject={jest.fn()} />);
+      expect(await screen.findByText('Not yet')).toBeInTheDocument();
+      await act(async () => {
+        jest.advanceTimersByTime(2000 * 152);
+      });
+      expect(screen.getByText(/stopped checking for updates/i)).toBeInTheDocument();
+      const before = api.listProjects.mock.calls.length;
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Check again' }));
+      });
+      expect(api.listProjects.mock.calls.length).toBeGreaterThan(before);
+      expect(screen.queryByText(/stopped checking for updates/i)).not.toBeInTheDocument();
     } finally {
       jest.useRealTimers();
     }

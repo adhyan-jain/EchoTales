@@ -19,6 +19,10 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false,
   const [errorMessage, setErrorMessage] = useState('');
   const [unreachable, setUnreachable] = useState(false);
   const [ingesting, setIngesting] = useState(false);
+  const [startError, setStartError] = useState('');
+  const [stalled, setStalled] = useState(false);
+  const [watchKey, setWatchKey] = useState(0);
+  const readyRef = useRef(false);
 
   // `quiet` is the poll: it refreshes this card only. The parent's project list (`onChanged`) is told once, when the
   // job ends, not on every tick -- two list requests per tick before.
@@ -28,10 +32,14 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false,
       .listProjects()
       .then((list) => {
         setProjects(list || []);
+        readyRef.current = true;
         setStatus('ready');
         if (onChanged && quiet !== true) onChanged();
       })
       .catch((err) => {
+        // A failed refresh (a poll, or the reload after Start) must not replace the card already on screen with
+        // the error view; only a failure with nothing to show yet does.
+        if (readyRef.current) return;
         setUnreachable(isNetworkError(err));
         setErrorMessage(describeError(err, 'Failed to load projects.'));
         setStatus('error');
@@ -57,10 +65,13 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false,
     if (inFlight) {
       // Capped at five minutes: a job left RUNNING by a server restart is not polled forever.
       let ticks = 0;
+      setStalled(false);
       pollRef.current = setInterval(() => {
         ticks += 1;
-        if (ticks > 150) clearInterval(pollRef.current);
-        else load(true);
+        if (ticks > 150) {
+          clearInterval(pollRef.current);
+          setStalled(true); // otherwise the badge keeps saying RUNNING as if it were still being watched
+        } else load(true);
       }, 2000);
     } else if (wasInFlight.current && onChanged) {
       onChanged();
@@ -68,14 +79,15 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false,
     wasInFlight.current = inFlight;
     return () => clearInterval(pollRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastStatus, load]);
+  }, [lastStatus, load, watchKey]);
 
   const startIngest = () => {
     setIngesting(true);
+    setStartError('');
     api
       .triggerStage(novelId, 'ingest')
       .then(load)
-      .catch((err) => setErrorMessage(describeError(err, 'Could not start ingestion.')))
+      .catch((err) => setStartError(describeError(err, 'Could not start ingestion.')))
       .finally(() => setIngesting(false));
   };
 
@@ -143,6 +155,11 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false,
               </Button>
             </div>
           )}
+          {startError && (
+            <div role="alert" className="mt-2 rounded-xl border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
+              {startError}
+            </div>
+          )}
 
           {current.last_job && (
             <div className="mt-6">
@@ -159,6 +176,22 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false,
                     {current.last_job.status}
                   </Label>
                 </CardBody>
+                {stalled && (inFlightNow(lastStatus)) && (
+                  <CardBody className="flex items-center justify-between gap-3 border-t border-border">
+                    <p className="text-sm text-muted">Stopped checking for updates. The job may still be running.</p>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        setStalled(false);
+                        setWatchKey((k) => k + 1);
+                        load(true);
+                      }}
+                    >
+                      Check again
+                    </Button>
+                  </CardBody>
+                )}
               </DepthCard>
             </div>
           )}
@@ -167,6 +200,8 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false,
     </div>
   );
 }
+
+const inFlightNow = (s) => s === 'PENDING' || s === 'RUNNING';
 
 function Stat({ label, value, tone = 'neutral' }) {
   const toneClass = { success: 'text-success', danger: 'text-danger', neutral: 'text-text' }[tone];

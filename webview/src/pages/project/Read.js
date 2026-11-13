@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { api } from '../../api';
@@ -162,9 +162,12 @@ export default function Read() {
     [chapterNumber]
   );
 
+  const applying = useRef(false);
   const applySpeaker = useCallback(
     (target) => {
-      if (!picker) return;
+      // A second click while the first request is in flight posted a second correction.
+      if (!picker || applying.current) return;
+      applying.current = true;
       api
         .reassignSpeaker(novelId, picker.spanId, picker.chapter, target)
         .then(() => {
@@ -173,7 +176,10 @@ export default function Read() {
           setCastAttempt((n) => n + 1);
           push('Speaker updated.', 'success');
         })
-        .catch(fail);
+        .catch(fail)
+        .finally(() => {
+          applying.current = false;
+        });
     },
     [picker, novelId, refetch, push, fail]
   );
@@ -285,17 +291,7 @@ export default function Read() {
           onSelect={applySpeaker}
           onCreateNew={(label) => applySpeaker({ new_label: label })}
           onClear={() => applySpeaker(null)}
-          onAnonSlot={(slot) =>
-            api
-              .reassignSpeaker(novelId, picker.spanId, picker.chapter, { anon_slot: slot })
-              .then(() => {
-                setPicker(null);
-                refetch();
-                setCastAttempt((n) => n + 1);
-                push('Speaker updated.', 'success');
-              })
-              .catch(fail)
-          }
+          onAnonSlot={(slot) => applySpeaker({ anon_slot: slot })}
           usedAnonSlots={usedAnonSlots}
           onCancel={() => setPicker(null)}
         />

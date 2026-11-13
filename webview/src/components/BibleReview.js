@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { api } from '../api';
 import Button from './ui/Button';
 import Badge from './ui/Badge';
@@ -15,6 +15,19 @@ const REASONS = {
 };
 
 const cardCls = 'rounded-2xl border border-border bg-surface p-4';
+// Same box NewProject and Login use for an inline failure.
+const errorCls = 'rounded-xl border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger';
+
+function LoadError({ message, onRetry }) {
+  return (
+    <div role="alert" className={errorCls + ' flex flex-wrap items-center justify-between gap-3'}>
+      <span>{message}</span>
+      <Button variant="secondary" size="sm" onClick={onRetry}>
+        Try again
+      </Button>
+    </div>
+  );
+}
 
 function truncate(text, n = 160) {
   const t = text || '';
@@ -30,15 +43,27 @@ function LinesToCheck({ novelId, entities }) {
   const [data, setData] = useState({ total: 0, items: [] });
   const [loading, setLoading] = useState(false);
   const [picking, setPicking] = useState(null);
+  const [loadError, setLoadError] = useState('');
+  // Typing in the chapter box fires a load per keystroke; without this an older, slower response overwrote the
+  // newest one. Only the latest request may touch state.
+  const latest = useRef(0);
 
   const load = useCallback(async () => {
+    const mine = ++latest.current;
     setLoading(true);
     try {
-      setData(await api.reviewLines(novelId, { chapter: chapter || undefined }));
+      const d = await api.reviewLines(novelId, { chapter: chapter || undefined });
+      if (mine !== latest.current) return;
+      setData(d);
+      setLoadError('');
     } catch (err) {
-      push(describeError(err, 'Failed to load lines to check.'), 'danger');
+      if (mine !== latest.current) return;
+      // `data` keeps its initial empty shape on a first-load failure, which read as "Nothing to check".
+      const message = describeError(err, 'Failed to load lines to check.');
+      setLoadError(message);
+      push(message, 'danger');
     } finally {
-      setLoading(false);
+      if (mine === latest.current) setLoading(false);
     }
   }, [novelId, chapter, push]);
 
@@ -70,13 +95,14 @@ function LinesToCheck({ novelId, entities }) {
           onChange={(e) => setChapter(e.target.value)}
           className="h-10 w-24 rounded-xl border border-border bg-surface px-3 text-sm text-text"
         />
-        <span className="text-sm text-muted">{data.total} line{data.total === 1 ? '' : 's'} to check</span>
+        {!loadError && <span className="text-sm text-muted">{data.total} line{data.total === 1 ? '' : 's'} to check</span>}
       </div>
-      {!loading && data.items.length === 0 && (
+      {loadError && <LoadError message={loadError} onRetry={load} />}
+      {!loadError && !loading && data.items.length === 0 && (
         <p className={cardCls + ' text-sm text-muted'}>Nothing to check{chapter ? ` in chapter ${chapter}` : ''}.</p>
       )}
       <ul className="space-y-3">
-        {data.items.map((it) => {
+        {(loadError ? [] : data.items).map((it) => {
           const r = REASONS[it.reason] || REASONS.low_confidence;
           return (
             <li key={it.span_id} className={cardCls} data-testid="review-line">
@@ -268,12 +294,16 @@ function LockPanel({ novelId }) {
   const [bible, setBible] = useState(null);
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   const load = useCallback(async () => {
     try {
       setBible(await api.getBible(novelId));
+      setLoadError('');
     } catch (err) {
-      push(describeError(err, 'Failed to load the canon state.'), 'danger');
+      const message = describeError(err, 'Failed to load the canon state.');
+      setLoadError(message);
+      push(message, 'danger');
     }
   }, [novelId, push]);
 
@@ -281,7 +311,9 @@ function LockPanel({ novelId }) {
     load();
   }, [load]);
 
-  if (!bible) return <p className="text-sm text-muted">Loading…</p>;
+  if (!bible) {
+    return loadError ? <LoadError message={loadError} onRetry={load} /> : <p className="text-sm text-muted">Loading…</p>;
+  }
   const { current, locks } = bible;
   const stale = !!current.stale_reason;
   const next = Math.max(0, ...locks.map((l) => l.version)) + 1;
@@ -357,6 +389,7 @@ const SUBTABS = [
 export default function BibleReview({ novelId }) {
   const [sub, setSub] = useState('lines');
   const [characters, setCharacters] = useState([]);
+  const push = useToast();
 
   useEffect(() => {
     let live = true;
@@ -371,11 +404,14 @@ export default function BibleReview({ novelId }) {
           })
         );
       })
-      .catch(() => {});
+      .catch((err) => {
+        // An empty list made every speaker picker look like it had no characters, with no hint why.
+        if (live) push(describeError(err, 'Could not load the character list; speaker choices will be incomplete.'), 'danger');
+      });
     return () => {
       live = false;
     };
-  }, [novelId]);
+  }, [novelId, push]);
 
   return (
     <div data-testid="bible-review" className="space-y-6">

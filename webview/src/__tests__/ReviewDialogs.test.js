@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 
@@ -20,6 +20,7 @@ jest.mock('../api', () => ({
     corrections: jest.fn(),
     flag: jest.fn(),
     createMention: jest.fn(),
+    reassignSpeaker: jest.fn(),
     outputFileUrl: jest.fn(),
   },
   SPAN_TYPES: ['DIALOGUE', 'NARRATION_ACTION'],
@@ -120,4 +121,22 @@ test('add mention: text not in the line is explained inline; valid text opens th
   fireEvent.click(screen.getByRole('button', { name: 'Choose character' }));
   expect(await screen.findByRole('dialog', { name: /choose a character/i })).toBeInTheDocument();
   expect(api.createMention).not.toHaveBeenCalled(); // nothing is sent until a character is chosen
+});
+
+test('a double click on a speaker choice posts one correction, and a failed count shows a dash, not 0', async () => {
+  api.novel.mockResolvedValue({
+    ...NOVEL,
+    entities: [...NOVEL.entities, { id: 'e2', label: 'Corin', count: 1, colour: '#22aa88', aliases: ['Corin'], first_chapter: 1, last_chapter: 1 }],
+    chapters: [{ number: 1, spans: [{ span_id: 's1', type: 'DIALOGUE', text: '"Hush."', marks: [], speaker: 'Hero', speaker_id: 'e1', method: 'CONTEXTUAL_LLM' }] }],
+  });
+  api.corrections.mockRejectedValue(Object.assign(new Error('x'), { status: 500 }));
+  api.reassignSpeaker.mockReturnValue(new Promise(() => {}));
+  await openReview();
+  expect(screen.getByRole('button', { name: /^Corrections/ })).toHaveTextContent('–');
+  fireEvent.click(screen.getByRole('button', { name: /Reassign speaker Hero/i }));
+  const dialog = await screen.findByRole('dialog', { name: /Choose a character/i });
+  const row = within(dialog).getByRole('button', { name: /Corin/ });
+  fireEvent.click(row);
+  fireEvent.click(row);
+  expect(api.reassignSpeaker).toHaveBeenCalledTimes(1);
 });

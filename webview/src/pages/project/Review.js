@@ -58,6 +58,9 @@ export default function Review() {
   const [applyResult, setApplyResult] = useState(null);
   const [applying, setApplying] = useState(false);
   const [items, setItems] = useState([]);
+  // The last corrections read failed: the zeros in `summary` are then the initial placeholder, not a count.
+  const [summaryFailed, setSummaryFailed] = useState(false);
+  const correctionInFlight = useRef(false);
   const [undoing, setUndoing] = useState(null);
   const [failedIds, setFailedIds] = useState(() => new Set());
   const [showEntities, setShowEntities] = useState(false);
@@ -92,10 +95,15 @@ export default function Review() {
       .then((r) => {
         setSummary(r.summary);
         setItems(r.items || []);
+        setSummaryFailed(false);
         return r;
       })
-      .catch(() => null);
-  }, [novelId]);
+      .catch((e) => {
+        setSummaryFailed(true);
+        push(describeError(e, 'Could not load the corrections count.'), 'danger');
+        return null;
+      });
+  }, [novelId, push]);
   useEffect(() => {
     refreshSummary();
   }, [refreshSummary]);
@@ -174,7 +182,9 @@ export default function Review() {
 
   const applyTarget = useCallback(
     (target) => {
-      if (!picker) return;
+      // A second click while the first request is in flight posted a second correction.
+      if (!picker || correctionInFlight.current) return;
+      correctionInFlight.current = true;
       const call =
         picker.kind === 'create_mention'
           ? api.createMention(novelId, picker.spanId, picker.chapter, picker.localStart, picker.localEnd, picker.text, target)
@@ -191,7 +201,10 @@ export default function Review() {
           if (queuedOnly) push('Mention queued. It shows in the text after you apply corrections.', 'success');
           after();
         })
-        .catch(fail);
+        .catch(fail)
+        .finally(() => {
+          correctionInFlight.current = false;
+        });
     },
     [picker, novelId, after, fail, push]
   );
@@ -350,7 +363,7 @@ export default function Review() {
           className="inline-flex h-9 items-center gap-2 rounded-xl bg-primary px-3.5 text-sm font-semibold text-white shadow-glow transition-colors hover:bg-primary-2"
         >
           Corrections
-          <span className="rounded-full bg-black/20 px-2 py-0.5 text-xs tabular-nums">{pending}</span>
+          <span className="rounded-full bg-black/20 px-2 py-0.5 text-xs tabular-nums">{summaryFailed ? '–' : pending}</span>
           {summary.flags_open > 0 && <span className="text-xs text-white">· {summary.flags_open} flags</span>}
         </button>
       </div>
@@ -437,7 +450,7 @@ export default function Review() {
           onClear={picker.kind === 'create_mention' ? undefined : () => applyTarget(null)}
           onAnonSlot={
             picker.kind === 'speaker'
-              ? (slot) => api.reassignSpeaker(novelId, picker.spanId, picker.chapter, { anon_slot: slot }).then(after).catch(fail)
+              ? (slot) => applyTarget({ anon_slot: slot })
               : undefined
           }
           usedAnonSlots={usedAnonSlots}

@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { api, UNAUTHORIZED_EVENT } from '../../api';
 import Login from '../Login';
 import { describeError } from '../../lib/errors';
 import { CenterMessage } from './Chrome';
+import Button from '../ui/Button';
 
 /**
  * Guards every app route (dashboard and project workspace); the landing
@@ -18,7 +19,7 @@ export default function AuthGate() {
   const [unreachable, setUnreachable] = useState(null);
   const [authed, setAuthed] = useState(api.hasToken());
 
-  useEffect(() => {
+  const check = useCallback(() => {
     api
       .authStatus()
       .then((r) => {
@@ -28,6 +29,10 @@ export default function AuthGate() {
       .catch((e) => setUnreachable(describeError(e, 'The server did not respond as expected.')))
       .finally(() => setChecked(true));
   }, []);
+
+  useEffect(() => {
+    check();
+  }, [check]);
 
   // A 401 mid-session (expired token) returns to the sign-in screen.
   useEffect(() => {
@@ -43,8 +48,11 @@ export default function AuthGate() {
       <CenterMessage title="Can’t reach the EchoTales server">
         <p>{unreachable}</p>
         <p className="mt-2">
-          Start it with <code className="rounded bg-surface2 px-1.5 py-0.5 font-mono text-xs">uv run echotales webview-server --source …</code> and reload.
+          Start it with <code className="rounded bg-surface2 px-1.5 py-0.5 font-mono text-xs">uv run echotales webview-server --source …</code> and try again.
         </p>
+        <Button className="mt-4" onClick={() => { setChecked(false); check(); }}>
+          Try again
+        </Button>
       </CenterMessage>
       </main>
     );

@@ -34,6 +34,7 @@ function mount(overrides = {}) {
   api.getBible.mockResolvedValue(overrides.bible || { current: { locked_version: null, dirty: true, stale_reason: null } });
   api.reviewLines.mockResolvedValue(overrides.queue || { total: 4, items: [] });
   api.listOutput.mockResolvedValue(overrides.output || { kinds: { audio: [] } });
+  (overrides.reject || []).forEach((name) => api[name].mockRejectedValueOnce(new Error('down')));
   api.triggerStage.mockResolvedValue({ job_id: 'x' });
   api.lockBible.mockResolvedValue({});
   // CRA's jest config resets mock implementations between tests, so this is set here and not in the factory.
@@ -85,6 +86,33 @@ describe('AudiobookPanel', () => {
       output: { kinds: { audio: [{ path: 'audio/b.m4b', mtime: 5, size: 10 }] } },
     });
     expect(await screen.findByRole('link', { name: /Download/i })).toHaveAttribute('href', expect.stringContaining('b.m4b'));
+  });
+
+  test('a failed jobs read does not re-enable the action buttons, and says so', async () => {
+    mount({ reject: ['listJobs'], bible: { current: { locked_version: 2, dirty: false, stale_reason: null } }, queue: { total: 0, items: [] } });
+    expect(await screen.findByText(/Could not check whether a job is running/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Rebuild' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Voice' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Lock' })).toBeDisabled();
+  });
+
+  test('a failed review-lines read is not "Checking the queue…" forever', async () => {
+    mount({ reject: ['reviewLines'] });
+    expect(await screen.findByText('Could not check the queue.')).toBeInTheDocument();
+    expect(screen.queryByText('Checking the queue…')).not.toBeInTheDocument();
+  });
+
+  test('a failed bible read is unknown, not "not locked" with Lock enabled', async () => {
+    mount({ reject: ['getBible'] });
+    expect(await screen.findByText('Could not read the canon state.')).toBeInTheDocument();
+    expect(screen.queryByText(/Freezes the reviewed cast/)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Lock' })).toBeDisabled();
+  });
+
+  test('Check again re-reads and clears the warning once the server answers', async () => {
+    mount({ reject: ['listJobs'] });
+    fireEvent.click(await screen.findByRole('button', { name: 'Check again' }));
+    await waitFor(() => expect(screen.queryByText(/Could not check/i)).not.toBeInTheDocument());
   });
 
   test('a failed job shows why', async () => {

@@ -157,6 +157,51 @@ describe('NewProject', () => {
     await waitFor(() => expect(api.uploadSource).toHaveBeenCalledWith('my-cool-story', file));
     await waitFor(() => expect(onCreated).toHaveBeenCalled());
   });
+
+  test('a failed upload stays on the page, offers retry and continue, and does not navigate away', async () => {
+    api.createProject.mockResolvedValueOnce({ id: 'my-book', title: 'My Book', content_type: 'novel' });
+    api.uploadSource
+      .mockRejectedValueOnce(Object.assign(new Error('x'), { status: 413, serverMessage: 'file too large' }))
+      .mockResolvedValueOnce({});
+    const onCreated = jest.fn();
+    render(<NewProject onCreated={onCreated} />);
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'My Book' } });
+    const file = new File(['x'], 'book.epub');
+    // eslint-disable-next-line testing-library/no-node-access -- a hidden file input has no accessible role
+    fireEvent.change(document.querySelector('input[type="file"]'), { target: { files: [file] } });
+    fireEvent.click(screen.getByRole('button', { name: /create project/i }));
+
+    expect(await screen.findByText(/the upload failed: file too large/i)).toBeInTheDocument();
+    expect(onCreated).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /create project/i })).toBeDisabled(); // no second createProject
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retry upload' }));
+    await waitFor(() => expect(api.uploadSource).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(onCreated).toHaveBeenCalledWith({ id: 'my-book', title: 'My Book', content_type: 'novel' }));
+    expect(api.createProject).toHaveBeenCalledTimes(1);
+  });
+
+  test('continuing without the book opens the already-created project', async () => {
+    const project = { id: 'my-book', title: 'My Book', content_type: 'novel' };
+    api.createProject.mockResolvedValueOnce(project);
+    api.uploadSource.mockRejectedValueOnce(new Error('boom'));
+    const onCreated = jest.fn();
+    render(<NewProject onCreated={onCreated} />);
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'My Book' } });
+    // eslint-disable-next-line testing-library/no-node-access -- a hidden file input has no accessible role
+    fireEvent.change(document.querySelector('input[type="file"]'), { target: { files: [new File(['x'], 'b.epub')] } });
+    fireEvent.click(screen.getByRole('button', { name: /create project/i }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Continue without the book' }));
+    expect(onCreated).toHaveBeenCalledWith(project);
+  });
+
+  test('a title that slugs to nothing says why instead of silently doing nothing', () => {
+    render(<NewProject onCreated={jest.fn()} />);
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: '魔道祖师' } });
+    fireEvent.click(screen.getByRole('button', { name: /create project/i }));
+    expect(screen.getByText(/no letters or numbers a project id can be made from/i)).toBeInTheDocument();
+    expect(api.createProject).not.toHaveBeenCalled();
+  });
 });
 
 describe('CharacterDashboard', () => {

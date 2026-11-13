@@ -7,12 +7,19 @@ const BARS = [3, 7, 5, 9, 4, 8, 6, 10, 5, 7, 3, 9, 6, 4, 8, 5, 7, 3, 6, 9, 4, 8,
 
 export default function AudioPlayer({ label, duration, src }) {
   const [playing, setPlaying] = useState(false);
+  const [failed, setFailed] = useState(false);
   const ref = useRef(null);
 
   const toggle = () => {
     if (!ref.current) return;
-    if (playing) ref.current.pause();
-    else ref.current.play();
+    if (playing) {
+      ref.current.pause();
+      return;
+    }
+    setFailed(false);
+    // play() rejects when the source cannot be loaded or is not allowed to start; unhandled, the button did nothing.
+    const started = ref.current.play();
+    if (started && typeof started.catch === 'function') started.catch(() => setFailed(true));
   };
 
   return (
@@ -35,8 +42,13 @@ export default function AudioPlayer({ label, duration, src }) {
         ))}
       </div>
       <div className="shrink-0 font-mono text-xs text-muted">{label} &middot; {duration}</div>
+      {failed && (
+        <div role="alert" className="shrink-0 font-mono text-xs text-danger">
+          Can’t play this clip
+        </div>
+      )}
       {src && (
-        <audio ref={ref} src={src} onEnded={() => setPlaying(false)} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} />
+        <audio ref={ref} src={src} onError={() => { setPlaying(false); setFailed(true); }} onEnded={() => setPlaying(false)} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} />
       )}
     </div>
   );

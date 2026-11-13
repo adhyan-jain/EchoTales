@@ -39,6 +39,9 @@ const CONTENT_TYPES = [
 // below the disabled upload control -- every chapter PENDING, nothing live.
 // See ManuscriptProgress.js: it renders honestly (no fake ticking) when fed
 // this, which is exactly what an unstarted ingestion actually looks like.
+const NO_ID_MESSAGE =
+  'This title has no letters or numbers a project id can be made from. Add some (a–z, 0–9) to the title.';
+
 const PREVIEW_CHAPTERS = [1, 2, 3, 4, 5].map((number) => ({ number, status: 'pending' }));
 
 // Lowercase, punctuation/whitespace to hyphens, strip anything left that
@@ -70,12 +73,19 @@ export default function NewProject({ onCreated }) {
   const [error, setError] = useState(null);
   const [uploadError, setUploadError] = useState(null);
   const [busy, setBusy] = useState(false);
+  // Set once the project exists but its upload failed: the page stays so the error can be read and acted on.
+  const [created, setCreated] = useState(null);
 
   const id = useMemo(() => slugify(title), [title]);
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (busy || !title.trim() || !id) return;
+    if (busy || created || !title.trim()) return;
+    if (!id) {
+      // A title with no a-z/0-9 (all CJK, say) slugs to nothing; the button was enabled and the submit did nothing.
+      setError(NO_ID_MESSAGE);
+      return;
+    }
     setError(null);
     setUploadError(null);
     setBusy(true);
@@ -90,11 +100,26 @@ export default function NewProject({ onCreated }) {
           // generic "could not create project" error that would be
           // misleading (the project *was* created).
           setUploadError(describeError(err, 'Could not upload the source file.'));
+          setCreated(result);
+          return;
         }
       }
       onCreated(result);
     } catch (err) {
       setError(describeError(err, 'Could not create project'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function retryUpload() {
+    if (busy || !created || !file) return;
+    setBusy(true);
+    try {
+      await api.uploadSource(created.id, file);
+      onCreated(created);
+    } catch (err) {
+      setUploadError(describeError(err, 'Could not upload the source file.'));
     } finally {
       setBusy(false);
     }
@@ -149,6 +174,9 @@ export default function NewProject({ onCreated }) {
         <section>
           <Divider label="Title" className="mb-4" />
           <div className="space-y-1.5">
+            <label htmlFor="np-title" className="sr-only">
+              Title
+            </label>
             <Input
               id="np-title"
               type="text"
@@ -200,12 +228,20 @@ export default function NewProject({ onCreated }) {
         )}
         {uploadError && (
           <div className="rounded-xl border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-warning">
-            Project created, but the upload failed: {uploadError}. You can retry it from the project’s Settings page.
+            <p>Project created, but the upload failed: {uploadError}. Retry the upload here, or continue to the project without the book.</p>
+            <div className="mt-2 flex gap-2">
+              <Button type="button" size="sm" variant="secondary" disabled={busy || !file} onClick={retryUpload}>
+                {busy ? 'Uploading…' : 'Retry upload'}
+              </Button>
+              <Button type="button" size="sm" variant="ghost" disabled={busy} onClick={() => onCreated(created)}>
+                Continue without the book
+              </Button>
+            </div>
           </div>
         )}
 
         <div className="flex items-center gap-4">
-          <Button type="submit" disabled={busy || !title.trim()}>
+          <Button type="submit" disabled={busy || !!created || !title.trim()}>
             {busy ? 'Creating…' : 'Create project'}
           </Button>
           <p className="text-sm text-muted">

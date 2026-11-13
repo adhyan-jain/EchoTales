@@ -25,15 +25,19 @@ export default function AudiobookPanel({ novelId, project }) {
   const [output, setOutput] = useState(null);
   const [engine, setEngine] = useState('chatterbox');
   const [busy, setBusy] = useState('');
+  // Which reads failed. A failed read is "unknown", never a definite state: an empty jobs list re-enabled every
+  // action button (double-queue), a null bible read as "not locked", a null queue said "Checking the queue…" forever.
+  const [failed, setFailed] = useState({ jobs: false, bible: false, queue: false, output: false });
   const push = useToast();
   const timer = useRef(null);
 
   const refresh = useCallback(() => {
     if (!novelId) return;
-    api.listJobs(novelId).then((j) => setJobs(j || [])).catch(() => {});
-    api.getBible(novelId).then(setBible).catch(() => setBible(null));
-    api.reviewLines(novelId, { limit: 1 }).then(setQueue).catch(() => setQueue(null));
-    api.listOutput(novelId).then(setOutput).catch(() => setOutput({ kinds: {} }));
+    const mark = (key, value) => setFailed((f) => (f[key] === value ? f : { ...f, [key]: value }));
+    api.listJobs(novelId).then((j) => { setJobs(j || []); mark('jobs', false); }).catch(() => mark('jobs', true));
+    api.getBible(novelId).then((b) => { setBible(b); mark('bible', false); }).catch(() => mark('bible', true));
+    api.reviewLines(novelId, { limit: 1 }).then((q) => { setQueue(q); mark('queue', false); }).catch(() => mark('queue', true));
+    api.listOutput(novelId).then((o) => { setOutput(o); mark('output', false); }).catch(() => mark('output', true));
   }, [novelId]);
 
   useEffect(() => {
@@ -75,13 +79,20 @@ export default function AudiobookPanel({ novelId, project }) {
   const buildJob = latest(jobs, 'pipeline');
   const voiceJob = latest(jobs, 'voice');
   const exportJob = latest(jobs, 'export_m4b');
-  const current = bible && bible.current;
+  const current = !failed.bible && bible ? bible.current : null;
   const locked = !!(current && current.locked_version != null && !current.dirty);
-  const waiting = queue ? queue.total : null;
+  const waiting = queue && !failed.queue ? queue.total : null;
   const audioFiles = (output && output.kinds && output.kinds.audio) || [];
   const book = audioFiles.filter((f) => /\.m4b$/i.test(f.path)).sort((a, b) => (b.mtime || 0) - (a.mtime || 0))[0];
   const voiced = voiceJob && voiceJob.status === 'SUCCEEDED';
-  const anyRunning = jobs.some(inFlight);
+  // With the jobs read failed, a job may be running that we cannot see: not safe to queue another.
+  const anyRunning = jobs.some(inFlight) || failed.jobs;
+  const unknown = [
+    failed.jobs && 'whether a job is running',
+    failed.bible && 'the canon state',
+    failed.queue && 'the review queue',
+    failed.output && 'the finished files',
+  ].filter(Boolean);
 
   return (
     <section aria-label="Audiobook" className="rounded-3xl border border-border bg-surface p-6">
@@ -89,6 +100,14 @@ export default function AudiobookPanel({ novelId, project }) {
       <p className="mt-1 text-sm text-muted">
         Five steps, in the order the server requires them. Each shows its real state.
       </p>
+      {unknown.length > 0 && (
+        <div role="alert" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
+          <span>Could not check {unknown.join(', ')}. The buttons that depend on it are off until it can be read.</span>
+          <Button variant="secondary" size="sm" onClick={refresh}>
+            Check again
+          </Button>
+        </div>
+      )}
       <ol className="mt-5 space-y-3">
         <StepRow
           n={1}
@@ -106,7 +125,7 @@ export default function AudiobookPanel({ novelId, project }) {
           n={2}
           done={built && waiting === 0}
           title="Review uncertain lines"
-          note={waiting == null ? 'Checking the queue…' : waiting === 0 ? 'Nothing left to review.' : `${waiting} lines have no confirmed speaker. Unreviewed lines are voiced as an unnamed speaker.`}
+          note={failed.queue ? 'Could not check the queue.' : waiting == null ? 'Checking the queue…' : waiting === 0 ? 'Nothing left to review.' : `${waiting} lines have no confirmed speaker. Unreviewed lines are voiced as an unnamed speaker.`}
           action={
             <Link to="review" className="inline-flex h-9 items-center rounded-xl border border-border px-3 text-sm font-semibold text-text hover:border-accent/60">
               Open review
@@ -118,7 +137,9 @@ export default function AudiobookPanel({ novelId, project }) {
           done={locked}
           title="Lock the canon"
           note={
-            locked
+            failed.bible
+              ? 'Could not read the canon state.'
+              : locked
               ? `Locked as version ${current.locked_version}.`
               : current && current.stale_reason
                 ? `Cannot lock yet: ${current.stale_reason}`
@@ -127,7 +148,7 @@ export default function AudiobookPanel({ novelId, project }) {
                   : 'Freezes the reviewed cast so the voice and images are made from a fixed version.'
           }
           action={
-            <Button size="sm" disabled={!built || locked || anyRunning || busy === 'lock' || !!(current && current.stale_reason)} onClick={lock}>
+            <Button size="sm" disabled={!built || failed.bible || locked || anyRunning || busy === 'lock' || !!(current && current.stale_reason)} onClick={lock}>
               Lock
             </Button>
           }
@@ -149,7 +170,7 @@ export default function AudiobookPanel({ novelId, project }) {
                 <option value="chatterbox">Chatterbox (speech)</option>
                 <option value="stub">Placeholder (silent)</option>
               </select>
-              <Button size="sm" disabled={!built || (engine !== 'stub' && !locked) || anyRunning || busy === 'voice'} onClick={() => start('voice', { engine }, 'Voicing')}>
+              <Button size="sm" disabled={!built || (engine !== 'stub' && (!locked || failed.bible)) || anyRunning || busy === 'voice'} onClick={() => start('voice', { engine }, 'Voicing')}>
                 Voice
               </Button>
             </span>
@@ -171,7 +192,7 @@ export default function AudiobookPanel({ novelId, project }) {
                 <Download className="h-4 w-4" aria-hidden="true" /> Download
               </a>
             ) : (
-              <Button size="sm" disabled={!voiced || anyRunning || busy === 'export_m4b'} onClick={() => start('export_m4b', {}, 'Export')}>
+              <Button size="sm" disabled={!voiced || failed.output || anyRunning || busy === 'export_m4b'} onClick={() => start('export_m4b', {}, 'Export')}>
                 Make M4B
               </Button>
             )

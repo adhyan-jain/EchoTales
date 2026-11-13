@@ -94,4 +94,49 @@ describe('BibleReview', () => {
     fireEvent.click(btn);
     await waitFor(() => expect(api.lockBible).toHaveBeenCalledWith('orv', 'after review'));
   });
+
+  test('a failed first load is an error with a retry, not "Nothing to check"', async () => {
+    api.reviewLines.mockRejectedValueOnce(Object.assign(new Error('x'), { status: 500 })).mockResolvedValue({ total: 0, items: [] });
+    renderIt();
+    expect(await screen.findAllByText(/server hit a problem/i)).not.toHaveLength(0);
+    expect(screen.queryByText(/Nothing to check/)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(await screen.findByText(/Nothing to check/)).toBeInTheDocument();
+  });
+
+  test('an older, slower response cannot overwrite the newest one', async () => {
+    let resolveSlow;
+    const item = (id) => ({ span_id: id, chapter: 1, block_index: 1, text: id, speaker_label: null, method: 'llm', confidence: 0.3, reason: 'unnamed', affected: 1 });
+    api.reviewLines
+      .mockResolvedValueOnce({ total: 0, items: [] }) // initial, chapter all
+      .mockImplementationOnce(() => new Promise((r) => { resolveSlow = r; })) // chapter 1: slow
+      .mockResolvedValueOnce({ total: 1, items: [item('fast-line')] }); // chapter 12: fast
+    renderIt();
+    await waitFor(() => expect(api.reviewLines).toHaveBeenCalledTimes(1));
+    fireEvent.change(screen.getByLabelText('Chapter'), { target: { value: '1' } });
+    fireEvent.change(screen.getByLabelText('Chapter'), { target: { value: '12' } });
+    expect(await screen.findByText('fast-line')).toBeInTheDocument();
+    resolveSlow({ total: 1, items: [item('slow-line')] });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(screen.queryByText('slow-line')).not.toBeInTheDocument();
+    expect(screen.getByText('fast-line')).toBeInTheDocument();
+  });
+
+  test('the lock panel shows an error with retry instead of Loading forever', async () => {
+    api.reviewLines.mockResolvedValue({ total: 0, items: [] });
+    api.getBible.mockRejectedValueOnce(Object.assign(new Error('x'), { status: 500 })).mockResolvedValue(bible({}));
+    renderIt();
+    fireEvent.click(screen.getByText('Lock'));
+    expect(await screen.findByRole('button', { name: 'Try again' })).toBeInTheDocument();
+    expect(screen.queryByText('Loading…')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(await screen.findByText(/Not locked yet/)).toBeInTheDocument();
+  });
+
+  test('a failed character fetch is reported', async () => {
+    api.reviewLines.mockResolvedValue({ total: 0, items: [] });
+    api.characters.mockRejectedValue(Object.assign(new Error('x'), { status: 0 }));
+    renderIt();
+    expect(await screen.findByText(/speaker choices will be incomplete|reach the EchoTales server/i)).toBeInTheDocument();
+  });
 });

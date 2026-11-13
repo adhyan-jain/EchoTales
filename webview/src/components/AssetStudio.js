@@ -117,7 +117,7 @@ export default function AssetStudio({ novelId }) {
   const handleRejectTurnaround = async (candidateId) => {
     try {
       await api.rejectTurnaround(novelId, selectedCharId, candidateId);
-      push('Turnaround rejected.', 'neutral');
+      push('Turnaround rejected.', 'info');
       loadTurnarounds(selectedCharId);
     } catch (err) {
       push(describeError(err, 'Failed to reject turnaround.'), 'danger');
@@ -150,7 +150,7 @@ export default function AssetStudio({ novelId }) {
   const handleRejectLocation = async (plateId) => {
     try {
       await api.rejectLocationPlate(novelId, selectedLocId, plateId);
-      push('Location plate rejected.', 'neutral');
+      push('Location plate rejected.', 'info');
       loadLocationPlates(selectedLocId);
     } catch (err) {
       push(describeError(err, 'Failed to reject plate.'), 'danger');

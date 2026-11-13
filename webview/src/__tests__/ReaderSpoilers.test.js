@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 
@@ -145,4 +145,16 @@ test('clicking a dialogue speaker in the reader opens EntityPicker and allows re
   fireEvent.click(speakerBtn);
   expect(await screen.findByRole('dialog', { name: /Choose a character/i })).toBeInTheDocument();
   expect(screen.getByPlaceholderText(/Search or type a new name/i)).toBeInTheDocument();
+});
+
+test('a double click on a speaker choice posts one correction, not two', async () => {
+  api.readerCast.mockResolvedValue({ entities: [GUEST_AT_1] });
+  api.reassignSpeaker.mockReturnValue(new Promise(() => {})); // stays in flight
+  mount('/p/toy/read/1');
+  fireEvent.click(await screen.findByRole('button', { name: /Reassign speaker The masked guest/i }));
+  const dialog = await screen.findByRole('dialog', { name: /Choose a character/i });
+  const row = within(dialog).getByRole('button', { name: /Corin/ });
+  fireEvent.click(row);
+  fireEvent.click(row);
+  expect(api.reassignSpeaker).toHaveBeenCalledTimes(1);
 });
