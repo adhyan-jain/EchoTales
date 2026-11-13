@@ -12,8 +12,10 @@ from echotales.core.models import StageStatus
 from echotales.core.store import Store
 from echotales.pipeline.errors import ErrorCode, Refusal
 
+#: "3" = span offsets describe the stored text, italic ranges sit on their own occurrence, and translator
+#: footnotes are kept (a build before this has mention offsets shifted by a span's leading whitespace).
 #: "2" = the reader-pass era (evidence-quoted deltas, text-only canon). "" and "1" are everything built before.
-PIPELINE_VERSION = "2"
+PIPELINE_VERSION = "3"
 
 
 def staleness_reason(store: Store, novel_id: str) -> str | None:
