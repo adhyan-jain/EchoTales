@@ -1,6 +1,9 @@
 """Local image worker: NoobAI XL on the GPU with no CPU offload (Phase C, decisions D25).
 
-Enabled with `ECHOTALES_IMAGE_WORKER=noobai`; the stub stays the default so CI and tests never touch a GPU.
+This is the default worker for a real run. `workers_contract._image_worker_choice` picks the stub only when
+`ECHOTALES_IMAGE_WORKER=stub` or the language-model mode is stub (so CI and tests never touch a GPU), and rejects any
+other value. This line used to say the stub was the default, which stopped being true with decisions D31(c): a flat
+colour image must never come out of a real run.
 
 Why it is built this way (measured on the RTX 4060 Laptop, 8 GB, 2026-10-22):
 - A fully resident SDXL pipeline runs out of memory in the VAE decode. SDXL's VAE is upcast to float32 to decode, which
