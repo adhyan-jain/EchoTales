@@ -387,6 +387,47 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Why**: the first author's labels were partly name-based (0 "undetermined" in 32 cases versus 7 and 8; knew the plot in 22 of 32 versus 0 and 5). Effect: disclosures not backed 9/10 (was 2/10), served values 11/34 (was 4/35). The rule was chosen after seeing the label distributions, and the paper states it.
 - **Done 2026-10-31 (later)**: the independent third reader's labels (none of the books known) arrived and settled the 3 gender and 2 support splits; headline unchanged (S1 9 of 10, served 11 of 34), model reading matched them 11 of 11. C020 was not in the set the reader got and stays excluded. Tag `journal-rev3-2026-10-31` pushed. Disclosure rates remain provisional. See HANDOFF 2026-10-31 journal section and EVOLUTION 4.132.
 
+### D35. Two tiers behind one interface: a local product and a cloud product (owner, 2026-11-13)
+- **Decision**: keep two versions of the product, one fully local that the laptop can handle and one that can use RunPod and other cloud compute with bigger models. Each engine kind (language model, image, speech, video) gets a local and a cloud implementation behind one protocol and one registry. A cloud job needs an explicit opt-in per project.
+- **Spending cap (owner)**: 10 US dollars in total for cloud use. Stop and report before exceeding it. A RunPod key must come from the owner; none is assumed.
+- **What changes**: supersedes the "RunPod/hosted workers" item in D27's Dropped list and the earlier local-only stance (the 2026-10-17 local-models-only note, and the 2026-11-07 "RunPod is the only hosted tier for now" reading). The local tier stays the default and must keep working with no network. D2's "only after asking" for a hosted reader and its $5-10 cloud budget are replaced by this opt-in and the 10 US dollar cap; each real hosted run still needs the key and the budget check.
+- **Why**: the laptop (RTX 4060 Laptop, 8,188 MiB VRAM, about 4 GB of 15 GB RAM free when measured on 2026-11-13) cannot run the models that would raise quality, and a local-only product cannot show them.
+- **Status**: decided, not built. As of this date the hosted paths (RunPod, OpenAI, Gemini) are mock-tested only (EVOLUTION 4.106); no registry exists yet.
+
+### D36. Anime from panels (owner, 2026-11-13)
+- **Decision**: turn adjacent manga panels into continuous anime-style clips with a video model, anchored on the approved reference images. Survey the literature, implement the best-suited published method, and try a method of our own.
+- **What changes**: reopens the AI video generation that D27 dropped. It also supplies the explicit yes that `docs/design/video_plan.md` asked for: "Any i2v model is a *second model writing pixels for the shot* ... Stage B needs an explicit yes". The 2026-08-20 "single model per panel, no repaint pass" rule is therefore relaxed for the video clip; the keyframe remains the panel image.
+- **Planned shape**: a shot planner that decides, per pair of adjacent panels, between interpolating them, animating one panel, holding with a camera move, or cutting, using scene, cast, location, action and the measured length of the voiced line; first-and-last-frame generation; a fail-closed gate (identity, flicker, morphing, duration) that falls back to a held still when a clip fails.
+- **Order constraint, and why**: panel relevance and identity come first. The owner's own watch-throughs (EVOLUTION 4.31 and 4.37) found the panels themselves were the problem; animating wrong or off-model pictures would spend the budget on the wrong defect.
+- **Prerequisites found in the code (EVOLUTION 4.140)**: panels record no scene id; the voice manifest records no duration or start time; reference images are not passed to generation; the director's structured output is dropped in the default two-pass render; every video worker is a stub.
+- **Status**: decided, not built. The local feasibility probe of candidate models had not produced results when this was written; the models named in EVOLUTION 4.140 are candidates, not choices.
+
+### D37. Model licences: best quality, labelled, with a commercial-safe switch (owner, 2026-11-13)
+- **Decision**: for this portfolio project the default is the best-quality model for each job. The Studio shows every model's licence. A switch restricts the choices to models whose licence allows commercial use.
+- **Relation to earlier decisions**: relaxes D7 (licence-clean stack for anything sold) from a default into an option, and makes D31(e) ("EARS and NoobAI/Illustrious are non-commercial; fine for a portfolio project, not for selling") the working rule with a visible switch. The existing gates stay as the behaviour of the switch: `voice --allow-noncommercial` and the Studio voice job's `noncommercial_refusal` (EVOLUTION 4.134) refuse an EARS M4B without consent.
+- **Why**: nothing here is sold today, and the owner prefers the better output while keeping the commercial path one click away.
+- **Status**: decided, not built (no per-model licence table or switch exists yet).
+
+### D38. Inputs: TXT, Markdown and PDF as well as EPUB (owner, 2026-11-13)
+- **Decision**: accept `.txt`, `.md` and `.pdf` uploads in addition to EPUB. PDF is best-effort and the app warns that formatting cues are lost.
+- **What changes**: reopens "EPUB only, never PDF" from the do-not-relitigate list in `docs/HANDOFF.md`. The original reason: "PDF loses italics, which is an independent inner-monologue signal. Measured: making emphasis a *span boundary* rather than an attribute moved `INNER_MONOLOGUE` from 2.7%->14.1% (RI), 2.1%->5.6% (LOTM)." That cost is real and stays; plain text and Markdown carry little or no emphasis information either (Markdown `*italic*` can be mapped), so inner-monologue detection will be weaker on these inputs and the warning says so.
+- **Status**: decided, not built; the warning wording and the Markdown emphasis mapping are not yet written.
+
+### D39. Nothing is lost between stages: a flow ledger and a sweep of every stage (owner, 2026-11-13)
+- **Decision**: the owner's instruction, closely: work on every part of the pipeline, because a small part may be the biggest blockage, and check after each file and function that the expected data is actually going through, since whole text was once not being parsed. Each stage boundary gets a conservation check, reported by an `echotales audit` command; a failed check fails the stage.
+- **Invariants to check**: ingest covers the source text; blocks are tiled by segments; spans tile their blocks; every dialogue span is attributed, queued for review, or marked unknown; every mention is linked, new, or deferred to review; every chapter is read; every block maps to a panel; every span is voiced exactly once; durations match.
+- **Why**: earlier defects were silent losses (a chapter ingested as the whole file, unparsed text, lines left "unconfirmed"), found only by reading outputs by hand. A count that must balance turns a silent loss into a failure at the stage that caused it.
+- **Status**: first three stages in progress, not merged. Nothing here is verified yet.
+
+### D40. Delivery while the owner is away: one local branch (owner, 2026-11-13)
+- **Decision**: all verified work goes to the local branch `product/finish`. Nothing is pushed and the main checkout is not touched until the owner says so. Commits still carry no co-author trailer.
+- **What changes**: narrows the standing rule to push each commit individually (owner, 2026-10-22) for the duration of this work.
+- **Status**: in force.
+
+### D41. Who does what (owner, 2026-11-13)
+- **Decision**: planning, briefing, review and verification by the lead model; implementation by Sonnet and Haiku subagents in isolated worktrees, tests first.
+- **Status**: in force. The first merged results are EVOLUTION 4.135 to 4.139.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs
@@ -398,7 +439,7 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Status**: done.
 
 ## 4. Open questions
-- Whether the local 7B model reaches Gate A, or the reader must move to a hosted model (needs your approval; see D2).
+- Whether the local 7B model reaches Gate A, or the reader must move to a hosted model (needs your approval; see D2). **Settled in principle 2026-11-13**: Gate A is not a blocker (D27) and a hosted tier is allowed behind an opt-in with a 10 US dollar cap (D35); each real hosted run still needs the owner's key.
 - Overwriting run-of-record databases in `data/db/` (rebuilds go to `data/scratch/reruns/` first).
 - Which model caches to delete, one by one.
 
