@@ -119,6 +119,18 @@ describe('AudiobookPanel', () => {
     mount({ jobs: [{ job_id: 'p', kind: 'pipeline', status: 'FAILED', created_at: 1, error_summary: 'ollama is not running' }] });
     expect(await screen.findByText(/ollama is not running/i)).toBeInTheDocument();
   });
+
+  test('an interrupted job shows why, so the user knows to run it again', async () => {
+    mount({ jobs: [{ job_id: 'i', kind: 'pipeline', status: 'INTERRUPTED', created_at: 1, error_summary: 'server restarted while queued' }] });
+    expect(await screen.findByText(/server restarted while queued/i)).toBeInTheDocument();
+  });
+
+  test('a cancelled job shows no failure text', async () => {
+    mount({ jobs: [{ job_id: 'c', kind: 'pipeline', status: 'CANCELLED', created_at: 1, error_summary: 'withdrawn by user' }] });
+    expect(await screen.findByText('CANCELLED')).toBeInTheDocument();
+    expect(screen.queryByText(/withdrawn by user/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/did not finish/i)).not.toBeInTheDocument();
+  });
 });
 
 describe('GenerationWorkspace detail option', () => {

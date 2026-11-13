@@ -5,7 +5,7 @@ import Divider from './ui/Divider';
 import DepthCard from './ui/DepthCard';
 import { CardBody } from './ui/Card';
 import InspectorSection from './ui/InspectorSection';
-import JobStatusBadge from './ui/JobStatusBadge';
+import JobStatusBadge, { jobEndedBadly } from './ui/JobStatusBadge';
 import JobFailure from './ui/JobFailure';
 import { EmptyState } from './ui/EmptyState';
 import { useToast } from './ui/Toast';
@@ -285,7 +285,7 @@ export default function GenerationWorkspace({ novelId, hideHeader = false }) {
                   <div className="font-mono text-sm text-text">{j.job_id}</div>
                   <JobStatusBadge status={j.status} />
                 </div>
-                {j.status === 'FAILED' && <JobFailure kind="render" summary={j.error_summary} />}
+                {jobEndedBadly(j.status) && <JobFailure kind="render" summary={j.error_summary} />}
               </div>
             ))}
           </div>

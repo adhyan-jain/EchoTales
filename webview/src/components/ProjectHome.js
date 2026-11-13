@@ -8,6 +8,7 @@ import Label from './ui/Label';
 import { EmptyState, LoadingState } from './ui/EmptyState';
 import { describeError, isNetworkError } from '../lib/errors';
 import JobFailure from './ui/JobFailure';
+import { jobEndedBadly } from './ui/JobStatusBadge';
 
 /* Production-desk overview, not a KPI dashboard (plan Section 9): what
    state this project is in and what to do next. Wires the real
@@ -168,11 +169,11 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false,
                 <CardBody className="flex items-center justify-between gap-3">
                   <div>
                     <div className="font-mono text-sm text-text">{current.last_job.kind}</div>
-                    {current.last_job.status === 'FAILED' && (
+                    {jobEndedBadly(current.last_job.status) && (
                       <JobFailure kind={current.last_job.kind} summary={current.last_job.error_summary} />
                     )}
                   </div>
-                  <Label tone={current.last_job.status === 'FAILED' ? 'danger' : 'neutral'}>
+                  <Label tone={LABEL_TONE_BY_STATUS[current.last_job.status] || 'neutral'}>
                     {current.last_job.status}
                   </Label>
                 </CardBody>
@@ -202,6 +203,9 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false,
 }
 
 const inFlightNow = (s) => s === 'PENDING' || s === 'RUNNING';
+
+// Danger is kept for a real defect; an interrupted job needs a re-run, so it is a warning.
+const LABEL_TONE_BY_STATUS = { FAILED: 'danger', INTERRUPTED: 'warning' };
 
 function Stat({ label, value, tone = 'neutral' }) {
   const toneClass = { success: 'text-success', danger: 'text-danger', neutral: 'text-text' }[tone];

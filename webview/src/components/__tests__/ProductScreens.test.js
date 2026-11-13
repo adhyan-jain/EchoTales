@@ -161,6 +161,25 @@ describe('ProjectHome', () => {
     expect(await screen.findByText(/No lifecycle data/i)).toBeInTheDocument();
   });
 
+  test('an interrupted last job shows its reason', async () => {
+    api.listProjects.mockResolvedValueOnce([
+      { id: 'toy', content_type: 'novel', source_uploaded: true, ingested: false, chapter_count: 0, job_count: 1,
+        last_job: { kind: 'render', status: 'INTERRUPTED', error_summary: 'server stopped mid-run' } },
+    ]);
+    render(<ProjectHome novelId="toy" onNewProject={jest.fn()} />);
+    expect(await screen.findByText('server stopped mid-run')).toBeInTheDocument();
+  });
+
+  test('a cancelled last job shows no failure text', async () => {
+    api.listProjects.mockResolvedValueOnce([
+      { id: 'toy', content_type: 'novel', source_uploaded: true, ingested: false, chapter_count: 0, job_count: 1,
+        last_job: { kind: 'render', status: 'CANCELLED', error_summary: 'withdrawn by user' } },
+    ]);
+    render(<ProjectHome novelId="toy" onNewProject={jest.fn()} />);
+    expect(await screen.findByText('CANCELLED')).toBeInTheDocument();
+    expect(screen.queryByText('withdrawn by user')).not.toBeInTheDocument();
+  });
+
   test('a real backend error is shown, not swallowed', async () => {
     api.listProjects.mockRejectedValueOnce(Object.assign(new Error('HTTP 500'), { status: 500 }));
     render(<ProjectHome novelId="toy" onNewProject={jest.fn()} />);
@@ -275,6 +294,12 @@ describe('GenerationWorkspace', () => {
     expect(api.novel).not.toHaveBeenCalled(); // the full ~9 MB payload is not needed for a chapter picker
     expect(await screen.findByRole('option', { name: 'Chapter 1' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /generate panels/i })).not.toBeDisabled();
+  });
+
+  test('an interrupted render job shows its reason', async () => {
+    api.listJobs.mockResolvedValue([{ job_id: 'toy:render:i', kind: 'render', status: 'INTERRUPTED', created_at: 1, error_summary: 'server stopped mid-run' }]);
+    withToast(<GenerationWorkspace novelId="toy" />);
+    expect(await screen.findByText('server stopped mid-run')).toBeInTheDocument();
   });
 
   test('queues a real stub-engine render job and shows its status', async () => {

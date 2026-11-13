@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { CircleCheck, CircleDashed, Download } from 'lucide-react';
 import { api } from '../api';
 import Button from './ui/Button';
-import JobStatusBadge from './ui/JobStatusBadge';
+import JobStatusBadge, { jobEndedBadly } from './ui/JobStatusBadge';
 import JobFailure from './ui/JobFailure';
 import { useToast } from './ui/Toast';
 import { describeError } from '../lib/errors';
@@ -217,7 +217,7 @@ function StepRow({ n, done, title, note, job, action }) {
         </div>
         {action}
       </div>
-      {job && job.status === 'FAILED' && <JobFailure kind={job.kind} summary={job.error_summary} />}
+      {job && jobEndedBadly(job.status) && <JobFailure kind={job.kind} summary={job.error_summary} />}
     </li>
   );
 }
