@@ -89,6 +89,9 @@ def extract_block(
 
         for child in node:
             walk(child, here)
+            if isinstance(child.tag, str) and etree.QName(child).localname.lower() == "br":
+                # "line one<br/>line two" came out "line oneline two" (found by the flow auditor).
+                parts.append(" ")
             if child.tail:
                 start = sum(len(p) for p in parts)
                 parts.append(child.tail)

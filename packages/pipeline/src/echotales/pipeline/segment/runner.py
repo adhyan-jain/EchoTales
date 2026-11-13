@@ -146,19 +146,31 @@ def _merge_llm_proposals(
     if not additions:
         return rule_segments
 
-    # Trim MAIN segments where a proposal now covers part of their range.
+    # Cut MAIN segments around each proposal. Dropping a MAIN segment that merely overlapped one left the blocks
+    # outside the proposal in no segment at all (found by the flow auditor's segment.tiling).
     kept = [s for s in rule_segments if s.segment_type is not SegmentType.MAIN]
     for segment in rule_segments:
         if segment.segment_type is not SegmentType.MAIN:
             continue
-        if any(
-            not (a.offset_to < segment.offset_from or a.offset_from > segment.offset_to)
-            for a in additions
-        ):
-            continue
-        kept.append(segment)
+        lo = segment.offset_from
+        for a in sorted(additions, key=lambda x: x.offset_from):
+            if a.offset_to < lo or a.offset_from > segment.offset_to:
+                continue
+            if a.offset_from > lo:
+                kept.append(_main_piece(segment, lo, a.offset_from - 1))
+            lo = a.offset_to + 1
+        if lo <= segment.offset_to:
+            kept.append(_main_piece(segment, lo, segment.offset_to))
 
     return sorted(kept + additions, key=lambda s: s.offset_from)
+
+
+def _main_piece(segment: NarrativeSegment, lo: int, hi: int) -> NarrativeSegment:
+    if lo == segment.offset_from and hi == segment.offset_to:
+        return segment
+    return segment.model_copy(
+        update={"id": f"{segment.novel_id}:{segment.chapter_from:g}:main{lo}", "offset_from": lo, "offset_to": hi}
+    )
 
 
 def _record_time_skips(store: Store, chapter: Chapter, skips: list[Marker]) -> None:

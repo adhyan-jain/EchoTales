@@ -1747,7 +1747,30 @@ def cmd_faithfulness(args: argparse.Namespace) -> int:
     return 0 if report.ok else 1
 
 
+def cmd_audit(args: argparse.Namespace) -> int:
+    from echotales.pipeline import flow
+
+    try:
+        store = flow.open_readonly(args.db)
+    except FileNotFoundError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    try:
+        if store.get_novel(args.novel) is None:
+            print(f"error: novel {args.novel!r} is not in {args.db}", file=sys.stderr)
+            return 2
+        stage = flow.Stage(args.stage) if args.stage else None
+        results, source_info = flow.audit_novel(
+            store, args.novel, stage=stage, source=args.source, sources_path=args.sources_path
+        )
+    finally:
+        store.close()
+    print(flow.render_json(args.novel, results, source_info) if args.json else flow.render_text(args.novel, results))
+    return 1 if any(r.status is flow.Status.FAIL for r in results) else 0
+
+
 _DISPATCH = {
+    "audit": cmd_audit,
     "faithfulness": cmd_faithfulness,
     "graph": cmd_graph,
     "relevance": cmd_relevance,
