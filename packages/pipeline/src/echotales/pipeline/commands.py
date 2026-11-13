@@ -1761,7 +1761,8 @@ def cmd_audit(args: argparse.Namespace) -> int:
             return 2
         stage = flow.Stage(args.stage) if args.stage else None
         results, source_info = flow.audit_novel(
-            store, args.novel, stage=stage, source=args.source, sources_path=args.sources_path
+            store, args.novel, stage=stage, source=args.source, sources_path=args.sources_path,
+            corrections=args.corrections,
         )
     finally:
         store.close()

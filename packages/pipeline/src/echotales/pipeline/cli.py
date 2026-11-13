@@ -210,11 +210,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="check that each early stage conserved its input text (read-only; exit 1 if a check fails)",
     )
     p_audit.add_argument("--novel", required=True)
-    p_audit.add_argument("--stage", default=None, choices=["ingest", "segment", "spans"], help="one stage only")
+    p_audit.add_argument("--stage", default=None, choices=["ingest", "segment", "spans", "mentions", "speakers", "resolve"], help="one stage only")
     p_audit.add_argument("--json", action="store_true", help="print one JSON document instead of text")
     p_audit.add_argument("--source", default=None, help="the source EPUB (default: the path stored with the novel)")
     p_audit.add_argument(
         "--sources-path", default=None, help="a sources.toml to take the EPUB, adapter and chapter range from"
+    )
+    p_audit.add_argument(
+        "--corrections", default=None, help="a corrections .jsonl to check applied human edits against (resolve.corrections_present)"
     )
 
     p_faith = sub.add_parser(

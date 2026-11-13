@@ -18,6 +18,7 @@ both sides.
 
 from __future__ import annotations
 
+import contextvars
 import itertools
 import json
 import re
@@ -48,6 +49,9 @@ class Stage(StrEnum):
     INGEST = "ingest"
     SEGMENT = "segment"
     SPANS = "spans"
+    MENTIONS = "mentions"
+    SPEAKERS = "speakers"
+    RESOLVE = "resolve"
 
 
 class Status(StrEnum):
@@ -1118,6 +1122,720 @@ def check_spans_profile(store: Store, novel_id: str, source: SourceContext | Non
 
 
 # ---------------------------------------------------------------------------
+# MENTIONS
+# ---------------------------------------------------------------------------
+
+#: The corrections log for r4, set by `audit_novel` (`--corrections`); None means the check is skipped.
+_corrections_path: contextvars.ContextVar[str | None] = contextvars.ContextVar("corrections_path", default=None)
+
+_QUOTED = (SpanType.DIALOGUE.value, SpanType.INNER_MONOLOGUE.value, SpanType.CROWD_REACTION.value)
+
+
+def _mention_rows(store: Store, novel_id: str) -> list[sqlite3.Row]:
+    # Plain SELECT, not `store.get_mentions`: that validates every row into a Mention, so one bad enum value would
+    # crash the audit instead of being reported.
+    return store.conn.execute(
+        "SELECT id, chapter, block_index, offset, text, alias_type, span_type, target_kind, target_id, method,"
+        " local_group_id, provenance, entity_label FROM mention WHERE novel_id=? ORDER BY chapter, block_index, offset",
+        (novel_id,),
+    ).fetchall()
+
+
+def _has_mentions(store: Store, novel_id: str) -> bool:
+    return store.conn.execute("SELECT 1 FROM mention WHERE novel_id=? LIMIT 1", (novel_id,)).fetchone() is not None
+
+
+def _nearest(block: str, text: str, offset: int) -> int | None:
+    """Start of the occurrence of `text` in `block` closest to `offset`, or None."""
+    best: int | None = None
+    pos = block.find(text)
+    while pos >= 0:
+        if best is None or abs(pos - offset) < abs(best - offset):
+            best = pos
+        pos = block.find(text, pos + 1)
+    return best
+
+
+@check(
+    Stage.MENTIONS,
+    "mentions.offsets",
+    "every stored mention lies inside its block and its (block_index, offset, length) selects exactly its text",
+)
+def check_mentions_offsets(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
+    chk = _find(Stage.MENTIONS, "mentions.offsets")
+    rows = _mention_rows(store, novel_id)
+    if not rows:
+        return _skipped(chk, "no mentions stored (the mentions stage has not run)")
+    blocks = {(c.number, b.index): b.text for c in _chapters(store, novel_id) for b in c.blocks}
+    shortfalls: list[Shortfall] = []
+    shifts: dict[int, int] = {}
+    ok = 0
+    for r in rows:
+        text = blocks.get((r["chapter"], r["block_index"]))
+        where = f"{r['id']}, block {r['block_index']}, offset {r['offset']}"
+        if text is None:
+            shortfalls.append(Shortfall(r["chapter"], where, "mention refers to a block the chapter does not have",
+                                        _excerpt(r["text"])))
+            continue
+        end = r["offset"] + len(r["text"])
+        if r["offset"] < 0 or end > len(text):
+            shortfalls.append(Shortfall(r["chapter"], where, f"range ends at {end} but the block has {len(text)} characters",
+                                        _excerpt(r["text"])))
+        elif text[r["offset"]:end] == r["text"]:
+            ok += 1
+            continue
+        else:
+            near = _nearest(text, r["text"], r["offset"])
+            shift = None if near is None else near - r["offset"]
+            if shift is not None:
+                shifts[shift] = shifts.get(shift, 0) + 1
+            shortfalls.append(
+                Shortfall(r["chapter"], where,
+                          f"offsets select {text[r['offset']:end]!r}, not the mention text; "
+                          + (f"the text sits {shift:+d} characters away" if shift is not None else "the text is not in the block"),
+                          _excerpt(r["text"]))
+            )
+    return _result(chk, shortfalls, count_in=len(rows), count_out=ok, unit="mentions",
+                   stats={"shift_histogram": dict(sorted(shifts.items(), key=lambda kv: -kv[1])[:10])})
+
+
+@check(
+    Stage.MENTIONS,
+    "mentions.no_overlap",
+    "no two mentions of one block overlap (the runner replaces a gazetteer hit by the longer name containing it, "
+    "so nesting is never intended)",
+)
+def check_mentions_overlap(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
+    chk = _find(Stage.MENTIONS, "mentions.no_overlap")
+    rows = _mention_rows(store, novel_id)
+    if not rows:
+        return _skipped(chk, "no mentions stored (the mentions stage has not run)")
+    shortfalls: list[Shortfall] = []
+    prev: sqlite3.Row | None = None
+    prev_end = 0
+    for r in rows:  # ordered by chapter, block, offset
+        same_block = prev is not None and (prev["chapter"], prev["block_index"]) == (r["chapter"], r["block_index"])
+        if same_block and prev is not None and r["offset"] < prev_end:
+            shortfalls.append(
+                Shortfall(r["chapter"], f"block {r['block_index']}, offset {r['offset']}",
+                          f"{r['text']!r} overlaps {prev['text']!r} ({prev['id']}) by {prev_end - r['offset']} characters",
+                          _excerpt(r["text"]))
+            )
+        end = r["offset"] + len(r["text"])
+        if not same_block or end > prev_end:
+            prev, prev_end = r, end
+    return _result(chk, shortfalls, count_in=len(rows), count_out=len(rows) - len(shortfalls), unit="mentions")
+
+
+_NAME_RUN = re.compile(r"\b[A-Z][a-z’'\-]+(?:\s+(?:of|the|de|van|von)\s+[A-Z][a-z’'\-]+|\s+[A-Z][a-z’'\-]+)+\b")
+
+
+@check(
+    Stage.MENTIONS,
+    "mentions.name_coverage",
+    "every capitalised multi-token name and every surface the detector learned occurs only where a mention covers it, "
+    "or in a counted exclusion (warning only: a heuristic cannot prove a missed name)",
+)
+def check_mentions_coverage(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
+    from echotales.pipeline.mentions.alias_type import classify_alias_type
+    from echotales.pipeline.mentions.commonness import build_profile, looks_like_credit
+    from echotales.pipeline.mentions.ner import _STOPWORDS
+
+    chk = _find(Stage.MENTIONS, "mentions.name_coverage")
+    rows = _mention_rows(store, novel_id)
+    if not rows:
+        return _skipped(chk, "no mentions stored (the mentions stage has not run)")
+    chapters = _chapters(store, novel_id)
+    covered: dict[tuple[float, int], list[tuple[int, int]]] = {}
+    first_chapter: dict[str, float] = {}
+    for r in rows:
+        covered.setdefault((r["chapter"], r["block_index"]), []).append((r["offset"], r["offset"] + len(r["text"])))
+        if r["alias_type"] == "RIGID_NAME" and r["text"] not in first_chapter:
+            first_chapter[r["text"]] = r["chapter"]
+    learned = sorted((t for t in first_chapter if len(t) >= 3), key=len, reverse=True)
+    learned_re = re.compile(r"(?<![\w’'])(?:" + "|".join(map(re.escape, learned[:3000])) + r")(?![\w’'])") if learned else None
+    # A mention whose offsets are shifted (mentions.offsets) still covers the text it names.
+    for r in rows:
+        text = next((b.text for c in chapters if c.number == r["chapter"] for b in c.blocks if b.index == r["block_index"]), None)
+        if text is not None and text[r["offset"]: r["offset"] + len(r["text"])] != r["text"]:
+            near = _nearest(text, r["text"], r["offset"])
+            if near is not None:
+                covered[(r["chapter"], r["block_index"])].append((near, near + len(r["text"])))
+    found: dict[str, list[tuple[float, int, str]]] = {}
+    for ch in chapters:
+        for b in ch.blocks:
+            if not b.block_type.is_story_content:
+                continue
+            spans = covered.get((ch.number, b.index), [])
+            cands = [(m.start(), m.end(), m.group(0)) for m in _NAME_RUN.finditer(b.text)]
+            if learned_re:
+                cands += [(m.start(), m.end(), m.group(0)) for m in learned_re.finditer(b.text)]
+            for lo, hi, surf in cands:
+                toks = [t for t in surf.split() if t not in _STOPWORDS]
+                if not toks or any(s < hi and lo < e for s, e in spans):
+                    continue
+                found.setdefault(" ".join(toks), []).append((ch.number, b.index, b.text[max(0, lo - 30): hi + 30]))
+    exclusions: dict[str, int] = {}
+    top = sorted(found.items(), key=lambda kv: -len(kv[1]))[:300]
+    profile = build_profile("\n".join(c.story_text for c in chapters), [s for s, _ in top]) if top else None
+    uncovered: list[tuple[str, int]] = []
+    for surf, occ in sorted(found.items(), key=lambda kv: -len(kv[1])):
+        reason = ""
+        if surf in first_chapter and all(n < first_chapter[surf] for n, _, _ in occ):
+            reason = "before_first_detection (the gazetteer learns forward only)"
+        elif not classify_alias_type(surf)[0].enters_graph:
+            reason = "generic_descriptor (non-negotiable 4)"
+        elif looks_like_credit(surf):
+            reason = "translation_credit"
+        elif profile is not None and surf in dict(top) and profile.is_common_noun(surf):
+            reason = "common_noun_filter"
+        elif len(surf.split()) == 1:
+            reason = "single_token_after_stopword_strip"
+        if reason:
+            exclusions[reason] = exclusions.get(reason, 0) + len(occ)
+        else:
+            uncovered.append((surf, len(occ)))
+    warnings = [f"{n}x {s!r} occurs uncovered (e.g. chapter {found[s][0][0]:g}: {_excerpt(found[s][0][2])!r})"
+                for s, n in uncovered[:10]]
+    if len(uncovered) > 10:
+        warnings.append(f"... {len(uncovered) - 10} more uncovered surfaces ({sum(n for _, n in uncovered)} occurrences)")
+    return _result(chk, [], count_in=sum(len(v) for v in found.values()),
+                   count_out=sum(n for _, n in uncovered), unit="uncovered occurrences (out) of candidates (in)",
+                   warnings=warnings,
+                   stats={"exclusions_occurrences": dict(sorted(exclusions.items())),
+                          "top_uncovered": uncovered[:15], "uncovered_surfaces": len(uncovered),
+                          "note": "rejected candidates (generic, common noun, credit) are counted only in the "
+                                  "stage's in-memory report, never stored; the exclusions above are re-derived"})
+
+
+@check(
+    Stage.MENTIONS,
+    "mentions.chapter_coverage",
+    "every chapter with story text has at least one mention (a chapter with none under 1500 story characters is "
+    "only a warning)",
+)
+def check_mentions_chapters(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
+    chk = _find(Stage.MENTIONS, "mentions.chapter_coverage")
+    if not _has_mentions(store, novel_id):
+        return _skipped(chk, "no mentions stored (the mentions stage has not run)")
+    have = {r[0] for r in store.conn.execute("SELECT DISTINCT chapter FROM mention WHERE novel_id=?", (novel_id,))}
+    shortfalls: list[Shortfall] = []
+    warnings: list[str] = []
+    with_text = 0
+    for ch in _chapters(store, novel_id):
+        chars = len(ch.story_text.strip())
+        if not chars:
+            continue
+        with_text += 1
+        if ch.number in have:
+            continue
+        found = Shortfall(ch.number, ch.source_href, f"no mention in a chapter with {chars:,} story characters",
+                          _excerpt(ch.story_text))
+        if chars >= 1500:
+            shortfalls.append(found)
+        else:
+            warnings.append(found.render())
+    return _result(chk, shortfalls, count_in=with_text, count_out=with_text - len(shortfalls) - len(warnings),
+                   unit="chapters", warnings=warnings)
+
+
+@check(
+    Stage.MENTIONS,
+    "mentions.ner_coverage",
+    "if the NER tier ran, every chapter was sent to it under the current window geometry and nothing failed "
+    "(evidence: llm_call rows for task 'ner', else the per-chapter name cache)",
+)
+def check_mentions_ner(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
+    from echotales.pipeline.config import get_settings
+    from echotales.pipeline.mentions.chapter_ner import (
+        CHUNK_CHARS,
+        PLAUSIBILITY_VERSION,
+        chunk_text,
+    )
+    from echotales.pipeline.mentions.ner import _windows, ner_pass_fingerprint
+
+    chk = _find(Stage.MENTIONS, "mentions.ner_coverage")
+    calls: dict[float, int] = {}
+    for r in store.conn.execute(
+        "SELECT chapter, COUNT(*) AS n FROM llm_call WHERE novel_id=? AND stage='ner' GROUP BY chapter", (novel_id,)
+    ):
+        calls[r["chapter"]] = r["n"]
+    cache: dict[str, Any] = {}
+    cache_path = Path(get_settings().lexicon_path) / f"{novel_id}-ner-cache.json"
+    try:
+        cache = json.loads(cache_path.read_text()) if cache_path.exists() else {}
+    except (OSError, ValueError):
+        cache = {}
+    if not calls and not cache:
+        return _skipped(chk, "the NER tier did not run: no llm_call rows for task 'ner' and no name cache at "
+                             f"{cache_path} (a deterministic or cache-less run records nothing else)")
+    import hashlib
+
+    current = f"{ner_pass_fingerprint()}:{PLAUSIBILITY_VERSION}"
+    keys = {k.rsplit(":", 1)[1]: k.rsplit(":", 1)[0] for k in cache}
+    shortfalls: list[Shortfall] = []
+    warnings: list[str] = []
+    chapters = _chapters(store, novel_id)
+    covered = stale = 0
+    for ch in chapters:
+        text = ch.story_text
+        expected = sum(len(_windows(c)) for c in chunk_text(text, CHUNK_CHARS))
+        if not expected:
+            continue
+        digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+        prefix = keys.get(digest)
+        n = calls.get(ch.number, 0)
+        if prefix is not None and not prefix.endswith(current):
+            stale += 1
+            warnings.append(f"chapter {ch.number:g}: name cache entry was made under another window geometry or filter")
+        if n and n < expected:
+            shortfalls.append(Shortfall(ch.number, "llm_call", f"{n} NER calls logged but {expected} windows were needed "
+                                                              f"for {len(text):,} characters"))
+        elif not n and prefix is None:
+            shortfalls.append(Shortfall(ch.number, "llm_call", f"no NER call and no cache entry for a chapter of "
+                                                              f"{len(text):,} characters ({expected} windows)"))
+        else:
+            covered += 1
+    warnings.append("a failed chunk is logged to the Python log only and its names are dropped; llm_call records "
+                    "successes only, so a chapter with some calls cannot be proven complete beyond the window count")
+    return _result(chk, shortfalls, count_in=len(chapters), count_out=covered, unit="chapters", warnings=warnings,
+                   stats={"chapters_with_llm_calls": len(calls), "cache_entries": len(cache),
+                          "stale_cache_chapters": stale})
+
+
+# ---------------------------------------------------------------------------
+# SPEAKERS (and anaphora)
+# ---------------------------------------------------------------------------
+
+#: Methods that assert an identity; with no speaker they are a lie (the runner writes the method and the speaker
+#: together, `speakers/runner.py::attribute_novel`).
+_NO_IDENTITY_METHODS = frozenset({"UNRESOLVED", "UNATTRIBUTED_CHORUS"})
+_SLOT_KINDS = ("anon", "epithet", "title")
+
+
+def _entity_ids(store: Store, novel_id: str) -> set[str]:
+    return {r[0] for r in store.conn.execute("SELECT id FROM self_entity WHERE novel_id=?", (novel_id,))}
+
+
+def _span_rows(store: Store, novel_id: str) -> list[sqlite3.Row]:
+    return store.conn.execute(
+        "SELECT id, chapter, block_index, start, span_type, text, speaker_self_id, attribution_method, confidence,"
+        " co_speaker_json FROM span WHERE novel_id=? ORDER BY chapter, block_index, start", (novel_id,)
+    ).fetchall()
+
+
+def _surface_keys(store: Store, novel_id: str) -> set[str]:
+    """Comparison keys of every entity label and mention text: what an attributed speaker surface can resolve to."""
+    from echotales.pipeline.ingest.normalize import comparison_key
+
+    texts = [r[0] for r in store.conn.execute("SELECT canonical_label FROM self_entity WHERE novel_id=?", (novel_id,))]
+    texts += [r[0] for r in store.conn.execute("SELECT DISTINCT text FROM mention WHERE novel_id=?", (novel_id,))]
+    keys = {comparison_key(t) for t in texts}
+    keys |= {comparison_key(w) for t in texts for w in t.split() if len(w) >= 3}  # "Alice" for "Alice Smith"
+    return keys - {""}
+
+
+def _speaker_kind(novel_id: str, speaker: str, entities: set[str], keys: set[str] | None = None) -> str:
+    """'entity', a slot kind ('anon'...), 'surface' (a name string: the ladder stores the attributed surface in
+    `speaker_self_id`, persona/build.py:136) or 'dangling' (a missing entity id, or a surface that no entity or mention
+    in the book carries)."""
+    from echotales.pipeline.ingest.normalize import comparison_key
+
+    if speaker in entities:
+        return "entity"
+    for kind in _SLOT_KINDS:
+        if speaker.startswith(f"{novel_id}:{kind}:"):
+            return kind
+    if speaker.startswith(f"{novel_id}:"):
+        return "dangling"
+    return "surface" if keys is not None and comparison_key(speaker) in keys else "dangling"
+
+
+def _no_spans(store: Store, novel_id: str) -> bool:
+    return store.conn.execute("SELECT 1 FROM span WHERE novel_id=? LIMIT 1", (novel_id,)).fetchone() is None
+
+
+@check(
+    Stage.SPEAKERS,
+    "speakers.dialogue_end_state",
+    "every quoted span (DIALOGUE, INNER_MONOLOGUE, CROWD_REACTION: the types the ladder attributes) ends in an existing "
+    "entity or a slot id with a method that names it, or an explicit UNRESOLVED / UNATTRIBUTED_CHORUS with no speaker; "
+    "never a method claiming an identity with no speaker, nor a speaker that is no entity (dangling or a surface string)",
+)
+def check_speakers_end_state(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
+    chk = _find(Stage.SPEAKERS, "speakers.dialogue_end_state")
+    if _no_spans(store, novel_id):
+        return _skipped(chk, "no span rows stored (speaker attribution has not run)")
+    entities = _entity_ids(store, novel_id)
+    keys = _surface_keys(store, novel_id)
+    resolved_ran = bool(entities)
+    shortfalls: list[Shortfall] = []
+    total = 0
+    kinds: dict[str, int] = {}
+    for r in _span_rows(store, novel_id):
+        if r["span_type"] not in _QUOTED:
+            continue
+        total += 1
+        sp, method = r["speaker_self_id"], r["attribution_method"]
+        where = f"span {r['id']}, block {r['block_index']}"
+        if sp:
+            kind = _speaker_kind(novel_id, sp, entities, keys)
+            kinds[kind] = kinds.get(kind, 0) + 1
+            if kind == "dangling":
+                if not resolved_ran:
+                    continue  # no entity table yet: a speaker cannot dangle before resolve has run
+                looks_like_id = sp.startswith(f"{novel_id}:")
+                shortfalls.append(Shortfall(r["chapter"], where,
+                                            (f"speaker id {sp!r} points at no entity (deleted by a re-resolve?)"
+                                             if looks_like_id else
+                                             f"speaker surface {sp!r} matches no entity label or mention text"),
+                                            _excerpt(r["text"])))
+            if method in _NO_IDENTITY_METHODS:
+                shortfalls.append(Shortfall(r["chapter"], where, f"method {method} but speaker {sp!r} is set", _excerpt(r["text"])))
+        elif method not in _NO_IDENTITY_METHODS:
+            shortfalls.append(Shortfall(r["chapter"], where, f"method {method} claims an attribution but there is no speaker",
+                                        _excerpt(r["text"])))
+        for co in json.loads(r["co_speaker_json"] or "[]"):
+            if resolved_ran and _speaker_kind(novel_id, co, entities, keys) == "dangling":
+                shortfalls.append(Shortfall(r["chapter"], where, f"co-speaker {co!r} points at no entity", _excerpt(r["text"])))
+    warnings = [] if resolved_ran else ["no entities stored yet (resolve has not run): dangling speaker ids cannot be judged"]
+    if kinds.get("surface"):
+        warnings.append(f"{kinds['surface']} quoted spans store a speaker name string, not an entity id (the documented "
+                        "model, persona/build.py:136); they resolve to an entity only by name comparison")
+    return _result(chk, shortfalls, count_in=total, count_out=total - len({s.location for s in shortfalls}), unit="quoted spans",
+                   warnings=warnings, stats={"speaker_kinds": kinds})
+
+
+@check(Stage.SPEAKERS, "speakers.narration_has_no_speaker",
+       "no span outside the quoted types carries a speaker or co-speaker")
+def check_speakers_narration(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
+    chk = _find(Stage.SPEAKERS, "speakers.narration_has_no_speaker")
+    if _no_spans(store, novel_id):
+        return _skipped(chk, "no span rows stored (speaker attribution has not run)")
+    shortfalls: list[Shortfall] = []
+    total = 0
+    for r in _span_rows(store, novel_id):
+        if r["span_type"] in _QUOTED:
+            continue
+        total += 1
+        if r["speaker_self_id"] or json.loads(r["co_speaker_json"] or "[]"):
+            shortfalls.append(Shortfall(r["chapter"], f"span {r['id']}, block {r['block_index']}",
+                                        f"{r['span_type']} span has speaker {r['speaker_self_id']!r}", _excerpt(r["text"])))
+    return _result(chk, shortfalls, count_in=total, count_out=total - len(shortfalls), unit="non-quoted spans")
+
+
+@check(Stage.SPEAKERS, "speakers.method_vocabulary",
+       "attribution method is an AttributionMethod member, confidence lies in [0, 1], and a HUMAN decision has "
+       "confidence 1.0 (a method per book is reported)")
+def check_speakers_vocabulary(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
+    from echotales.core.enums import AttributionMethod
+
+    chk = _find(Stage.SPEAKERS, "speakers.method_vocabulary")
+    if _no_spans(store, novel_id):
+        return _skipped(chk, "no span rows stored (speaker attribution has not run)")
+    valid = {m.value for m in AttributionMethod}
+    shortfalls: list[Shortfall] = []
+    methods: dict[str, int] = {}
+    total = 0
+    for r in _span_rows(store, novel_id):
+        if r["span_type"] not in _QUOTED:
+            continue
+        total += 1
+        m, c = r["attribution_method"], r["confidence"]
+        methods[m] = methods.get(m, 0) + 1
+        where = f"span {r['id']}"
+        if m not in valid:
+            shortfalls.append(Shortfall(r["chapter"], where, f"unknown attribution method {m!r}", _excerpt(r["text"])))
+        elif c is None or not 0.0 <= c <= 1.0:
+            shortfalls.append(Shortfall(r["chapter"], where, f"confidence {c!r} outside [0, 1]", _excerpt(r["text"])))
+        elif m == "HUMAN" and c != 1.0:
+            shortfalls.append(Shortfall(r["chapter"], where, f"HUMAN decision with confidence {c}", _excerpt(r["text"])))
+    warnings = [f"{methods['TURN_TAKING']} spans carry the legacy TURN_TAKING method (the tier was removed)"] \
+        if methods.get("TURN_TAKING") else []
+    return _result(chk, shortfalls, count_in=total, count_out=total - len(shortfalls), unit="quoted spans",
+                   warnings=warnings, stats={"methods": dict(sorted(methods.items()))})
+
+
+@check(Stage.SPEAKERS, "speakers.queue_visibility",
+       "every quoted span not confidently attributed to a real entity or slot is in the review queue "
+       "(review_gate.speaker_queue); nothing settled has a dangling speaker or a no-identity method")
+def check_speakers_queue(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
+    from echotales.pipeline.review_gate import _reason
+
+    chk = _find(Stage.SPEAKERS, "speakers.queue_visibility")
+    if _no_spans(store, novel_id):
+        return _skipped(chk, "no span rows stored (speaker attribution has not run)")
+    entities = _entity_ids(store, novel_id)
+    keys = _surface_keys(store, novel_id)
+    shortfalls: list[Shortfall] = []
+    reasons: dict[str, int] = {}
+    total = 0
+    for r in _span_rows(store, novel_id):
+        if r["span_type"] not in _QUOTED:
+            continue
+        total += 1
+        reason = _reason(r["speaker_self_id"], r["attribution_method"], r["confidence"])
+        reasons[reason or "settled"] = reasons.get(reason or "settled", 0) + 1
+        if reason is not None:
+            continue
+        sp, m = r["speaker_self_id"], r["attribution_method"]
+        bad = ""
+        if m in _NO_IDENTITY_METHODS or m == "ANONYMOUS_SLOT":
+            bad = f"settled with method {m}"
+        elif entities and _speaker_kind(novel_id, sp, entities, keys) == "dangling":
+            bad = f"settled but speaker {sp!r} is no entity and matches no name in the book"
+        if bad:
+            shortfalls.append(Shortfall(r["chapter"], f"span {r['id']}, block {r['block_index']}",
+                                        f"{bad}, so the queue never shows it", _excerpt(r["text"])))
+    hidden = reasons.get("model_guess", 0)
+    warnings = [f"{hidden} named model guesses at confidence >= 0.8 are hidden from the default queue "
+                "(include_guesses=False; deliberate, non-negotiable 7)"] if hidden else []
+    return _result(chk, shortfalls, count_in=total, count_out=total - len(shortfalls), unit="quoted spans",
+                   warnings=warnings, stats={"queue_reasons": dict(sorted(reasons.items()))})
+
+
+@check(Stage.SPEAKERS, "speakers.unresolved_profile",
+       "per-chapter share of quoted lines with no speaker; an extreme outlier is flagged (warning only)")
+def check_speakers_profile(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
+    chk = _find(Stage.SPEAKERS, "speakers.unresolved_profile")
+    if _no_spans(store, novel_id):
+        return _skipped(chk, "no span rows stored (speaker attribution has not run)")
+    per: dict[float, list[int]] = {}
+    for r in _span_rows(store, novel_id):
+        if r["span_type"] in _QUOTED:
+            n = per.setdefault(r["chapter"], [0, 0])
+            n[0] += 1
+            n[1] += 0 if r["speaker_self_id"] else 1
+    shares = {c: u / n for c, (n, u) in per.items() if n >= 5}
+    warnings: list[str] = []
+    if len(shares) >= 8:
+        med = statistics.median(shares.values())
+        mad = statistics.median(abs(v - med) for v in shares.values())
+        for c, v in sorted(shares.items()):
+            z = 0.6745 * (v - med) / max(mad, 0.03)
+            if abs(z) >= 4 and abs(v - med) >= 0.25:
+                warnings.append(f"chapter {c:g}: {v:.0%} of {per[c][0]} quoted lines have no speaker (book median {med:.0%})")
+    return _result(chk, [], count_in=len(per), count_out=len(per), unit="chapters", warnings=warnings,
+                   stats={"unresolved_share": {f"{c:g}": round(v, 3) for c, v in sorted(shares.items())}})
+
+
+# ---------------------------------------------------------------------------
+# RESOLVE
+# ---------------------------------------------------------------------------
+
+_NON_NAMING = ("RELATIONAL_DEICTIC", "TRANSFERABLE_TITLE")  # resolve/runner.py::_NON_FOUNDING_ALIAS_TYPES
+
+
+def _no_entities(store: Store, novel_id: str) -> bool:
+    return store.conn.execute("SELECT 1 FROM self_entity WHERE novel_id=? LIMIT 1", (novel_id,)).fetchone() is None
+
+
+@check(
+    Stage.RESOLVE,
+    "resolve.mention_outcome",
+    "every mention ends linked to an entity (new or existing); a group containing a naming mention that is still "
+    "unlinked was deferred or exhausted, and nothing a reviewer can see records it",
+)
+def check_resolve_outcome(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
+    chk = _find(Stage.RESOLVE, "resolve.mention_outcome")
+    if _no_entities(store, novel_id):
+        return _skipped(chk, "no entities stored (the resolve stage has not run)")
+    rows = _mention_rows(store, novel_id)
+    groups: dict[tuple[float, str], list[sqlite3.Row]] = {}
+    for r in rows:
+        groups.setdefault((r["chapter"], r["local_group_id"] or r["id"]), []).append(r)
+    # Older databases predate the review_item table; reading it must not crash the audit.
+    has_table = store.conn.execute("SELECT 1 FROM sqlite_master WHERE name='review_item'").fetchone() is not None
+    recorded = store.conn.execute("SELECT COUNT(*) FROM review_item WHERE novel_id=?", (novel_id,)).fetchone()[0] if has_table else 0
+    shortfalls: list[Shortfall] = []
+    linked = unlinked_mentions = 0
+    non_naming = 0
+    for (chapter, gid), ms in groups.items():
+        open_ms = [m for m in ms if not m["target_id"]]
+        linked += len(ms) - len(open_ms)
+        unlinked_mentions += len(open_ms)
+        if not open_ms:
+            continue
+        if all(m["alias_type"] in _NON_NAMING for m in ms):
+            non_naming += len(open_ms)  # deliberate: no naming mention to found an entity on
+            continue
+        shortfalls.append(Shortfall(chapter, f"group {gid}", f"{len(open_ms)} mention(s) of {open_ms[0]['text']!r} never linked "
+                                    "(deferred by the gate; the queue is in memory only)", _excerpt(open_ms[0]["text"])))
+    warnings = [f"{recorded} review_item rows exist for this novel; resolve writes none, so none of them records a deferral"] \
+        if recorded else []
+    return _result(chk, shortfalls, count_in=len(rows), count_out=linked, unit="mentions", warnings=warnings,
+                   stats={"unlinked_mentions": unlinked_mentions, "unlinked_non_naming_groups_mentions": non_naming,
+                          "deferred_groups_unrecorded": len(shortfalls)})
+
+
+@check(Stage.RESOLVE, "resolve.no_orphans",
+       "every mention target exists (self_entity, persona for PERSONA), and every entity has a mention or an alias "
+       "binding (manual entities are exempt)")
+def check_resolve_orphans(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
+    chk = _find(Stage.RESOLVE, "resolve.no_orphans")
+    if _no_entities(store, novel_id):
+        return _skipped(chk, "no entities stored (the resolve stage has not run)")
+    ents = {r["id"]: r["canonical_label"] for r in store.conn.execute(
+        "SELECT id, canonical_label FROM self_entity WHERE novel_id=?", (novel_id,))}
+    personas = {r[0] for r in store.conn.execute("SELECT id FROM persona WHERE novel_id=?", (novel_id,))}
+    used: set[str] = set()
+    shortfalls: list[Shortfall] = []
+    n_linked = 0
+    for r in _mention_rows(store, novel_id):
+        t = r["target_id"]
+        if not t:
+            continue
+        n_linked += 1
+        used.add(t)
+        if t not in ents and t not in personas:
+            shortfalls.append(Shortfall(r["chapter"], f"mention {r['id']}", f"target {t!r} does not exist", _excerpt(r["text"])))
+    for r in store.conn.execute("SELECT DISTINCT target_id FROM alias_binding WHERE novel_id=?", (novel_id,)):
+        used.add(r[0])
+    for eid, label in ents.items():
+        if eid not in used and ":manual:" not in eid:
+            shortfalls.append(Shortfall(None, f"entity {eid}", "entity has no mention and no alias binding", label))
+    return _result(chk, shortfalls, count_in=len(ents), count_out=len(ents) - sum("entity" in s.location for s in shortfalls),
+                   unit="entities", stats={"linked_mentions": n_linked})
+
+
+@check(Stage.RESOLVE, "resolve.bindings",
+       "alias bindings point at existing entities with well-formed intervals; a retracted fact carries truth_status "
+       "FALSE (retraction stamps it) and is not retracted before it was learned; applies to alias, attribute and "
+       "relation facts")
+def check_resolve_bindings(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
+    chk = _find(Stage.RESOLVE, "resolve.bindings")
+    if _no_entities(store, novel_id):
+        return _skipped(chk, "no entities stored (the resolve stage has not run)")
+    ents = _entity_ids(store, novel_id)
+    personas = {r[0] for r in store.conn.execute("SELECT id FROM persona WHERE novel_id=?", (novel_id,))}
+    shortfalls: list[Shortfall] = []
+    total = 0
+    for table, tgt in (("alias_binding", "target_id"), ("attribute", "target_id"), ("relation", None)):
+        cols = "id, truth_status, story_from_lb, story_from_ub, story_to_lb, story_to_ub, learned_chapter, " \
+               "retracted_chapter, " + (f"{tgt} AS tgt, target_kind" if tgt else "src_self, dst_self")
+        for r in store.conn.execute(f"SELECT {cols} FROM {table} WHERE novel_id=?", (novel_id,)):
+            total += 1
+            where = f"{table} {r['id']}"
+            ids = [(r["tgt"], r["target_kind"])] if tgt else [(r["src_self"], "SELF"), (r["dst_self"], "SELF")]
+            for i, kind in ids:
+                if i not in ents and i not in personas and kind != "MOB_GROUP":
+                    shortfalls.append(Shortfall(None, where, f"target {i!r} does not exist"))
+            a, b, c, d = (r[k] for k in ("story_from_lb", "story_from_ub", "story_to_lb", "story_to_ub"))
+            if any(x != x for x in (a, b, c, d)) or a > b or c > d or a > d:
+                shortfalls.append(Shortfall(None, where, f"malformed interval from [{a}, {b}] to [{c}, {d}]"))
+            ret = r["retracted_chapter"]
+            if ret is not None and r["truth_status"] != "FALSE":
+                shortfalls.append(Shortfall(float(ret), where, f"retracted at chapter {ret} but truth_status is {r['truth_status']}"))
+            if ret is not None and r["learned_chapter"] is not None and ret < r["learned_chapter"]:
+                shortfalls.append(Shortfall(float(ret), where, f"retracted at chapter {ret}, before it was learned at {r['learned_chapter']}"))
+    return _result(chk, shortfalls, count_in=total, count_out=total - len(shortfalls), unit="facts")
+
+
+@check(Stage.RESOLVE, "resolve.corrections_present",
+       "every applied correction in the corrections log (--corrections) is still reflected in the store: its manual "
+       "entity exists and the span or mention carries the decided target")
+def check_resolve_corrections(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
+    chk = _find(Stage.RESOLVE, "resolve.corrections_present")
+    path = _corrections_path.get()
+    if not path:
+        return _skipped(chk, "no corrections log given (--corrections)")
+    p = Path(path)
+    if not p.exists():
+        return _skipped(chk, f"corrections log not found: {p}")
+    items = []
+    for line in p.read_text().splitlines():
+        if line.strip():
+            try:
+                items.append(json.loads(line))
+            except ValueError:
+                items.append({"id": "?", "type": "unparsable", "applied": False, "novel_id": novel_id, "payload": {}})
+    ents = _entity_ids(store, novel_id)
+    mentions = {r["id"]: r["target_id"] for r in _mention_rows(store, novel_id)}
+    spans = {r["id"]: r["speaker_self_id"] for r in _span_rows(store, novel_id)}
+    shortfalls: list[Shortfall] = []
+    applied = 0
+    for c in items:
+        if c.get("novel_id") != novel_id or not c.get("applied") or c.get("type") == "flag":
+            continue
+        applied += 1
+        cid, kind, pl = c["id"], c["type"], c.get("payload", {})
+        where = f"correction {cid} ({kind})"
+        manual = f"{novel_id}:manual:{cid}"
+        if pl.get("new_label") and manual not in ents:
+            shortfalls.append(Shortfall(None, where, f"applied, but its entity {manual!r} ({pl['new_label']!r}) is gone"))
+        if kind == "reassign_speaker" and pl.get("span_id") in spans:
+            want = manual if pl.get("new_label") else (pl.get("speaker_id") or None)
+            if want and not pl.get("anon_slot") and spans[pl["span_id"]] != want:
+                shortfalls.append(Shortfall(float(pl.get("chapter", 0)), where, f"span {pl['span_id']} has speaker "
+                                            f"{spans[pl['span_id']]!r}, the log says {want!r}"))
+        elif kind == "reassign_speaker" and pl.get("span_id") not in spans:
+            shortfalls.append(Shortfall(float(pl.get("chapter", 0)), where, f"span {pl.get('span_id')} no longer exists"))
+        if kind == "reassign_mention" and pl.get("mention_id") in mentions:
+            want = manual if pl.get("new_label") else (pl.get("target_id") or None)
+            if mentions[pl["mention_id"]] != want:
+                shortfalls.append(Shortfall(None, where, f"mention {pl['mention_id']} targets {mentions[pl['mention_id']]!r}, "
+                                                          f"the log says {want!r}"))
+        elif kind == "reassign_mention":
+            shortfalls.append(Shortfall(None, where, f"mention {pl.get('mention_id')} no longer exists"))
+        if kind == "merge_entities" and any(t == pl.get("from_id") for t in mentions.values()):
+            shortfalls.append(Shortfall(None, where, f"mentions still target {pl.get('from_id')!r}, merged into {pl.get('into_id')!r}"))
+    return _result(chk, shortfalls, count_in=applied, count_out=applied - len(shortfalls), unit="applied corrections")
+
+
+@check(Stage.RESOLVE, "resolve.entity_profile",
+       "entity count, mentions per entity, singleton share and the most-mentioned entities with their surfaces; "
+       "hints (warnings) for possible splits and merges")
+def check_resolve_profile(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
+    from echotales.pipeline.ingest.normalize import comparison_key
+
+    chk = _find(Stage.RESOLVE, "resolve.entity_profile")
+    if _no_entities(store, novel_id):
+        return _skipped(chk, "no entities stored (the resolve stage has not run)")
+    labels = {r["id"]: r["canonical_label"] for r in store.conn.execute(
+        "SELECT id, canonical_label FROM self_entity WHERE novel_id=?", (novel_id,))}
+    surfaces: dict[str, dict[str, int]] = {e: {} for e in labels}
+    for r in _mention_rows(store, novel_id):
+        if r["target_id"] in surfaces:
+            d = surfaces[r["target_id"]]
+            d[r["text"]] = d.get(r["text"], 0) + 1
+    counts = {e: sum(d.values()) for e, d in surfaces.items()}
+    vals = sorted(counts.values())
+    singles = sum(v <= 1 for v in vals)
+    top = sorted(counts, key=lambda e: -counts[e])[:10]
+    warnings: list[str] = []
+    by_key: dict[str, list[str]] = {}
+    by_family: dict[str, list[str]] = {}
+    for e, label in labels.items():
+        if counts[e] < 3:
+            continue
+        key = comparison_key(label)
+        by_key.setdefault(key, []).append(e)
+        toks = key.split()
+        if len(toks) >= 2 and len(toks[-1]) >= 3:
+            by_family.setdefault(toks[-1], []).append(e)
+    for es in by_key.values():
+        if len(es) > 1:
+            warnings.append("possible split: " + " / ".join(f"{labels[e]!r} ({counts[e]})" for e in es))
+    for fam, es in by_family.items():
+        keys = {comparison_key(labels[e]) for e in es}
+        if len(keys) > 1 and len(es) <= 4:
+            warnings.append(f"shared family token {fam!r} (check for a merge or a split): "
+                            + " / ".join(f"{labels[e]!r} ({counts[e]})" for e in es))
+    shown = warnings[:MAX_LISTED]
+    if len(warnings) > MAX_LISTED:
+        shown.append(f"... {len(warnings) - MAX_LISTED} more hints")
+    return _result(
+        chk, [], count_in=len(labels), count_out=len(labels), unit="entities", warnings=shown,
+        stats={"entities": len(labels), "singleton_share": round(singles / len(labels), 3),
+               "mentions_per_entity": {"min": vals[0], "median": statistics.median(vals), "p90": vals[int(0.9 * (len(vals) - 1))],
+                                       "max": vals[-1]},
+               "top_entities": [{"id": e, "label": labels[e], "mentions": counts[e],
+                                 "surfaces": sorted(surfaces[e].items(), key=lambda kv: -kv[1])[:5]} for e in top],
+               "hints": len(warnings)},
+    )
+
+
+# ---------------------------------------------------------------------------
 # Running and reporting
 # ---------------------------------------------------------------------------
 
@@ -1138,11 +1856,14 @@ def audit_novel(
     stage: Stage | None = None,
     source: str | None = None,
     sources_path: str | None = None,
+    corrections: str | None = None,
 ) -> tuple[list[CheckResult], dict[str, Any]]:
     ctx, reason = resolve_source(store, novel_id, source=source, sources_path=sources_path)
+    token = _corrections_path.set(corrections)
     try:
         results = run_checks(store, novel_id, ctx, source_reason=reason, stages=[stage] if stage else None)
     finally:
+        _corrections_path.reset(token)
         if ctx is not None:
             ctx.close()
     info = {

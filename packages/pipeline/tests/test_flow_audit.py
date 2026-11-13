@@ -117,7 +117,10 @@ def test_clean_book_passes_every_implemented_check(book) -> None:
            if r.status not in (Status.PASS, Status.SKIPPED)]
     assert not bad
     skipped = {r.check_id for r in results if r.status is Status.SKIPPED}
-    assert skipped == {"spans.stored_rows"}
+    # Later stages have not run on an ingest-only book: each of their checks says so instead of passing.
+    assert skipped == {"spans.stored_rows"} | {
+        c.check_id for st in (Stage.MENTIONS, Stage.SPEAKERS, Stage.RESOLVE) for c in flow.CHECKS[st]
+    }
     coverage = next(r for r in results if r.check_id == "ingest.coverage")
     # The h2 heading of each chapter is the one named exclusion: 3 chapters x 4 words.
     assert coverage.stats["exclusions_words"] == {"chapter_heading_repeating_toc_label": 12}
@@ -421,7 +424,7 @@ def test_cli_exit_codes_json_and_read_only(book, tmp_path: Path, capsys: pytest.
     assert cli.main([*argv, "--json"]) == 0
     doc = json.loads(capsys.readouterr().out)
     assert doc["novel"] == NOVEL and doc["totals"]["fail"] == 0
-    assert doc["stages"] == ["ingest", "segment", "spans"]
+    assert doc["stages"] == ["ingest", "segment", "spans", "mentions", "speakers", "resolve"]
     assert {"check", "invariant", "status", "count_in", "count_out", "shortfalls", "total_shortfalls"} <= set(
         doc["checks"][0]
     )

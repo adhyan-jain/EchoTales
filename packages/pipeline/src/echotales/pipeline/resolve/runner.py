@@ -25,6 +25,7 @@ from echotales.core.enums import (
     AssertedBy,
     Decision,
     EventType,
+    Provenance,
     ResolutionMethod,
     TargetKind,
     TruthStatus,
@@ -878,12 +879,22 @@ def resolve_novel(
             " the accidental-destruction failure mode this guard exists to stop."
         )
 
+    # What a person made survives the rebuild below. The corrections log marks a correction applied once and never
+    # replays it, so a manual entity wiped here is gone while the log still says applied, and every HUMAN speaker or
+    # retargeted mention pointing at it dangles.
+    manual_entities = [e for e in store.all_selves(novel_id) if e.id.startswith(f"{novel_id}:manual:")]
+    human_mentions = [
+        m for m in store.get_mentions(novel_id) if m.provenance is Provenance.HUMAN_AUTHORED and m.target_id
+    ]
+
     # Prevent UNIQUE constraint violations by clearing existing resolution state for this novel
     store.conn.execute("DELETE FROM resolution_event WHERE id LIKE ?", (f"{novel_id}:%",))
     store.conn.execute("DELETE FROM alias_binding WHERE novel_id=?", (novel_id,))
     store.conn.execute("DELETE FROM self_entity WHERE novel_id=?", (novel_id,))
     store.conn.execute("DELETE FROM self_persona_binding WHERE self_id LIKE ?", (f"{novel_id}:%",))
     store.conn.execute("UPDATE mention SET target_kind=NULL, target_id=NULL, method=NULL WHERE novel_id=?", (novel_id,))
+    for entity in manual_entities:
+        store.add_self(entity)
     store.conn.commit()
 
     cfg = settings or get_settings()
@@ -1082,5 +1093,8 @@ def resolve_novel(
         log.warning(message)
         print(f"\n{'=' * 70}\n{message}\n{'=' * 70}\n")
 
+    # The machine linked these mentions again above; the person's decision wins (same rule as `corrections.py`).
+    kept = {e.id for e in store.all_selves(novel_id)}
+    store.add_mentions([m for m in human_mentions if m.target_id in kept])
     store.conn.commit()
     return resolver.report
