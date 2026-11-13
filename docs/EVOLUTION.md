@@ -9316,3 +9316,86 @@ Planned, not built. The decisions are D35 to D41 in `docs/design/decisions.md`; 
   - The video QA "identity" score is a colour histogram: `video/qa.py` computes it from `extract_default_image_features` (`keyframes/qa.py` line 72: 48-dim RGB histogram plus 16 luminance blocks, documented there as "not a face identity check"). The video gate itself fails closed on an unreadable file or unscorable frames. A fail-open path I did find is in the keyframe QA: `check_face_match` returns passed with score 1.0 when a shot lists no characters, and `check_background_match` does the same when no location plate is given (`keyframes/qa.py` lines 162 to 169 and 196 to 210). I could not tell which path the lead meant by "one path fails open"; these two are by design but pass without checking anything.
 - **Model survey and its limits (from published pages, nothing run).** Index-AniSora V3.2 (anime-trained, built on Wan 2.2, Apache 2.0, keyframe interpolation; smallest published build 12 GB and only for V3.1) and ToonComposer (on Wan 2.1 14B) cannot run on this laptop. Small general models are candidates still to be measured locally: LTX-Video 2B, Wan 2.2 TI2V-5B quantized, AnimateDiff with SparseCtrl. No published method was found that converts manga panels specifically into anime. The survey is a literature reading, not a measurement; none of the candidates has been run here.
 - **Existing plan.** `docs/design/video_plan.md` already lists SVD, LTX-Video 2B and Wan 2.2 TI2V-5B as the i2v spike (milestone M3) and says Stage B "needs an explicit yes"; D36 supplies it.
+
+### 4.141 Job, stage and run lifecycles made explicit *(2026-11-13)*
+
+Commits d79aacf (core, pipeline) and 91f4387 (webview). New `packages/core/src/echotales/core/lifecycle.py`.
+
+- **What it declares.** `JobStatus` (PENDING, RUNNING, SUCCEEDED, PARTIAL, FAILED, CANCELLED, INTERRUPTED), the allowed moves in `JOB_TRANSITIONS`, `STAGE_TRANSITIONS` and `RUN_TRANSITIONS`, and `check_transition`. It is a separate enum rather than new `StageStatus` members so that a stage can never be CANCELLED (a stage cannot be refused before it starts) and old rows keep their meaning: their stored text is a subset of the new values.
+- **One write path.** `Store.transition_job` is a single guarded UPDATE (compare-and-set) used by the worker claim, terminal writes, cancel and the startup sweep, so two writers cannot both move a job. `Store.interrupt_unfinished_work` replaces `fail_interrupted_jobs` and also closes the stage and run rows named by the interrupted jobs, so an interrupted build reads as "did not finish". This closes consequence (b) recorded in 4.137 (a killed build reading "still running").
+- **Smaller fixes in the same change.** A `BaseException` closes a stage; a non-pipeline job's run row is finalised; the payload cache is invalidated when a job finishes; deleting a novel is refused (409) while one of its jobs is queued or running; a job whose database is missing never creates one; `DELETE` of an applied correction answers 409 instead of 500 (closes the open item in 4.138).
+- **Studio.** Cancelled is shown with a neutral tone; interrupted is a warning and shows its reason.
+- **Verified.** Suite 1,706 passed at that commit; webview jest 164 passed in 20 suites.
+- **Limits, stated plainly.** Each defect has a passing test, but the old code was not run to watch each test fail. Orphan rows from a crashed command-line build are not closed: only rows tied to a server job are, so a live CLI build is never marked failed. Two jobs of one novel started in the same second share a run row. The Studio has no cancel button yet.
+
+### 4.142 A flow auditor, and what the first sweep of ingest, segment and spans found *(2026-11-13)*
+
+Commit 201f68f; implements the first three stages of D39. `echotales audit` (`packages/pipeline/src/echotales/pipeline/flow.py`).
+
+- **Shape.** Read-only (the database is opened with sqlite `mode=ro`), a registry of checks per stage, each PASS, FAIL or SKIPPED with counts in and out; a shortfall names the chapter and location with an excerpt; exit code 1 on any FAIL.
+- **Ingest coverage method.** An independent word-level read of each spine document is aligned against the stored blocks. What is not expected to be stored is excluded by name and counted: `outside_toc`, `unnumbered_toc_entry`, `back_matter_after_appendix_heading`, `outside_configured_range`, `chapter_heading_repeating_toc_label`, `licence_footer`.
+- **Books swept** (stub mode, scratch databases): the sample book, Pride and Prejudice, Lord of the Mysteries, Omniscient Reader's Viewpoint (chapters 1-188), Reverend Insanity (chapters 1-199).
+- **Findings, with counts.** ORV translator footnotes dropped: 572 words in 22 chapters (`<aside>` was not a block tag). Italic ranges misplaced by `text.find` in blocks with emphasis: RI 173 of 999, Pride and Prejudice 102 of 357, LotM 1 of 2,429. Span offsets not matching span text: RI 2,527 of 20,479 spans, LotM 3,919 of 23,284, ORV 1,648 of 32,194, Pride and Prejudice 649 of 3,304. Text directly inside a container beside block children is dropped (only front matter in these books).
+- **Fixed in this commit.** A `<br>` inside a paragraph glued two words; an LLM segment-boundary merge could leave blocks in no segment (a path the pipeline does not use). The italic, offset, footnote and container findings were fixed in 4.144.
+- **Other silent losses the auditor now reports.** Duplicate chapter numbers overwrite each other; unnumbered entries such as a prologue are dropped (none of 300 or more words in these books).
+- **Not reproduced.** Stale segments after a re-run with changed block counts.
+
+### 4.143 Server contract: ids, titles, error codes, job progress *(2026-11-13)*
+
+Commit 20419d9; `webview_server.py`, new `errors.py`, `jobs.py`.
+
+- **Ids.** Path segments are decoded once, centrally (`_split_path`: split, then decode). Confirmed defect: a voice override was filed under the percent-encoded id while the server answered 200. Unknown characters now answer 404 on voice, reference select, search and upload. Double-encoded ids are no longer tolerated.
+- **Titles.** Chapter titles are served from the store (`Store.chapter_titles`), closing defect 1 of 4.136; the demo now exits 0 and the strict expected-failure test is gone.
+- **Voice override.** The route now commits, closing defect 4 of 4.136. This was fixed from reading the code; the failure was not first observed against the old route.
+- **Error codes.** `packages/pipeline/src/echotales/pipeline/errors.py` adds `ErrorCode` and `Refusal` (a `str` subclass carrying a code), produced by `staleness_reason`, `unlocked_reason`, `voice_refusal`, `resource_refusal` and the licence refusal. Every error response carries `code`; the wording is unchanged.
+- **Job progress.** Job JSON carries `stage`, `stage_index`, `stage_count` and `elapsed_s` from one batched query; `PIPELINE_STAGES` (`jobs.py`) is the single stage list.
+- **Verified.** Suite 1,771 passed on the delivery branch.
+- **Open, found and not fixed.** Unhandled exceptions return `str(exc)` in a 500, which can carry filesystem paths. The stub render path loads the CLIP tokenizer online on first use (`persona/prompt.py` `count_tokens`, about 5 s); with no network and an empty cache it returns a degenerate tokenizer and miscounts silently. This answers defect 5 of 4.136; proposed fix: `local_files_only` plus a vocabulary-size check. The turnaround and plate generate routes mint a candidate for any id.
+
+### 4.144 Text fidelity fixes and pipeline version 3 *(2026-11-13, 2026-11-14)*
+
+Commits dd0379a (2026-11-13) and a1effab (2026-11-14).
+
+- **The four defects from 4.142.** Span start and end now describe the stored (stripped) text, and the auditor's `spans.tiling` requires exact equality. Italic ranges are carried through a raw-to-normalised index map. Footnote asides become `TRANSLATOR_NOTE` blocks after the chapter's last story block (ORV 26,470 to 26,499 blocks, coverage FAIL to PASS, 572 words recovered, no existing block index shifted on any book). Container text is kept inside the chapter's anchor window (no effect on the five books).
+- **Measured, chapters 1-20 of the three gold novels, stub tier, before versus after.** Span/slice mismatches: RI 331, LotM 727, ORV 476, all to 0. Mentions not selecting their surface: RI 164, LotM 429, ORV 158, all to 0. A probe of misplaced italic ranges: 0 on all books after. Evaluation output identical for RI and ORV; LotM matched gold mentions 715 to 716 of 6,756 (one neighbouring occurrence inside the 7-character tolerance), no metric changing at one decimal. I compared the before and after evaluation files directly.
+- **Finding about gold.** The records drafted by `gold-auto-builder` carry the old one-character shift: the offset does not select its surface in 770 of 7,879 RI records, 2,425 of 6,756 LotM, 310 of 4,836 ORV, because their offsets came from pipeline output. Independently drafted records select their true surface. Scoring is unaffected because matching tolerates under 8 characters. Gold was not edited (D44).
+- **Version.** `PIPELINE_VERSION` is now "3" (`version.py`), so every database built earlier is refused for real renders, voicing and locking until rebuilt (D43).
+- **Not done.** Whole-volume evaluation (chapters 1-20 only); speaker-attribution evaluation (needs a model); each fix measured in isolation. RI gained two "grandfather" mentions in chapter 4 that were located but not analysed.
+
+### 4.145 Sweep of mentions, speakers and resolve *(2026-11-14)*
+
+Commit 2f9deb2; `flow.py`, `resolve` runner.
+
+- **New auditor checks.** mentions.offsets (stored offset selects exactly the mention text); mentions.no_overlap (no two mentions in a block overlap); mentions.name_coverage (capitalised names occur only under a mention or a counted exclusion; warning only); mentions.chapter_coverage (every chapter with story text has a mention); mentions.ner_coverage (if the NER tier ran, every chapter was sent under the current window geometry and nothing failed). speakers.dialogue_end_state (every quoted span ends in an entity, slot or explicit unresolved); speakers.narration_has_no_speaker; speakers.method_vocabulary (method is a member, confidence in [0, 1], HUMAN is 1.0); speakers.queue_visibility (anything not confidently attributed is in the review queue); speakers.unresolved_profile (per-chapter unresolved share; warning only). resolve.mention_outcome (every mention linked, or a deferral a reviewer can see); resolve.no_orphans; resolve.bindings (alias bindings and retraction stamps); resolve.corrections_present (applied corrections still reflected in the store); resolve.entity_profile (entity and singleton counts, split and merge hints). New argument `echotales audit --corrections <file.jsonl>` feeds resolve.corrections_present.
+- **Tiers that ran.** Deterministic only: no NER model, no LLM speaker tier, no adjudication, no reader. The three canonical databases in `data/db` were audited read-only with checksums unchanged.
+- **Fixed.** A re-resolve deleted manual entities and cleared human mention targets while the corrections log still said applied. `resolve_novel` now saves and restores `{novel}:manual:*` entities and `HUMAN_AUTHORED` mention targets. Partial: a human retarget to a machine entity survives only if that entity id still exists after the rebuild, merges are not replayed, and it was not tested against a real corrections log.
+- **Findings, not fixed.**
+  1. Speaker surfaces that match no entity: Pride and Prejudice 50 of 1,992 quoted spans (the regex captures "Mr" from "Mr. Bennet"), LotM 14 ("I've"), ORV 33 ("I'd"), RI 37 on the scratch build and 239 of 5,192 on the canonical database ("Gu", "The Gu Yue"). The review queue treats these as settled when confidence is 0.8 or more.
+  2. Deferred resolution cases are never recorded for a reviewer: named groups left unlinked LotM 13, ORV 23, RI 12 on scratch builds and 2 on canonical RI, with no `review_item` written (resolve never writes one). This touches non-negotiable 7.
+  3. Junk entities from the heuristic tier: "I'm" is the second most-mentioned entity in the LotM scratch build (557 mentions).
+  4. 52 to 70 per cent of quoted spans end as anonymous role slots in the deterministic tier.
+  5. Studio builds run speakers with `llm_chapter_cutoff` 0.0 (`jobs.py`); the CLI default is 3.0.
+  6. A failed NER chunk is swallowed with a log warning and the stage still reports success.
+- **Caveats.** mentions.offsets failed on every database audited because those builds predate the 4.144 fix. mentions.ner_coverage on canonical LotM and ORV may be a false failure from older window geometry. The read-through of anaphora/validate, contradiction, title_holders and transmigration was not reached.
+- **Verified by me.** I re-ran the speakers audit on the Pride and Prejudice scratch build and saw the "Mr" cases.
+
+### 4.146 Local video feasibility on the owner's laptop *(2026-11-13 and 2026-11-14)*
+
+No repository change. Full report: `data/scratch/anime_probe/REPORT.md` (gitignored). Machine: RTX 4060 Laptop, 8 GB. Sample: two panels of one character (RI ch1 v54), so every conclusion below is from a narrow sample.
+
+- **What runs.** LTX-Video 2B 0.9.8 distilled, image-to-video and same-shot first-and-last-frame, at 512x768, 97 frames (4 s), with no CPU offload: about 12 s denoise plus 6 s decode; peak VRAM about 7.0 GB by torch and 7.4 to 7.7 GB by nvidia-smi.
+- **How it fits.** The T5 encoder is loaded NF4 and used once (49 to 54 s), prompt embeddings are cached to disk and the encoder freed; the pipeline runs with no text encoder; the transformer (3.85 GB) denoises, is freed, then the VAE decodes (decoding with the transformer resident runs out of memory at 512x768x97).
+- **Not resident between clips.** An in-process loop ran clip 1 and ran out of memory reloading the transformer for clip 2. Realistic cost is reload (about 9 s warm, 25 to 50 s cold) plus 12 s plus 6 s: about 27 to 70 s per 4 s clip. Reloading the VAE per clip is a possible fix, untested.
+- **What the contact sheets showed (I looked at them).** A mild prompt gives modest motion (head, eyes, hair) with identity and outfit kept; the background streaks. A same-shot pair (start frame and a synthetic 72 per cent crop of it as end frame) gives a steady push-in that reaches the end frame (SSIM 0.91). Two differently composed panels give a push-in, a run of garbled frames, then a snap to the end frame: not motion. A strong action prompt produces the action but identity drifts (wounds disappear, the face reads younger); on the full-body panel anatomy changed and the clip was unusable.
+- **Design consequences.** The local tier is for subtle motion and camera moves within one shot; action needs an anime-trained model on the cloud tier; the shot planner must interpolate only between panels that share scene and framing (D45).
+- **Not measured.** AnimateDiff with SparseCtrl (the download stalled; nothing downloaded); Wan 2.2 TI2V-5B (quantised builds exist, not run); FramePack and ToonCrafter, ruled out from their documentation (FramePack downloads over 30 GB and names no end-frame conditioning; ToonCrafter needs about 24 GB). The numeric checks (frame differences, SSIM) are weak proxies; the verdicts come from reading the sheets.
+- **Disk.** About 18.4 GB added to the Hugging Face cache, all for LTX.
+
+### 4.147 Two small docstring corrections on master *(2026-11-14)*
+
+Commits d56930f and 4cc43eb are on `origin/master` and merged into `product/finish` (merge commits b5afce4 and 83f2926).
+
+- d56930f: the `IllustriousEngine` docstring (`render/panels.py`) said the IP-Adapter was not wired when the caller sends no references; it now says the caller simply sent none. This closes open defect 34 in HANDOFF.
+- 4cc43eb: the local image worker docstring (`workers_local.py`) still called the stub the default worker.
+- **Dates, stated plainly.** At the owner's request their author and committer dates were set to 2026-11-11 and 2026-11-12 respectively. They were written on 2026-11-14.
+- These are the only commits pushed; `product/finish` itself remains local (D40).

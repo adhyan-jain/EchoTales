@@ -423,10 +423,35 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Decision**: all verified work goes to the local branch `product/finish`. Nothing is pushed and the main checkout is not touched until the owner says so. Commits still carry no co-author trailer.
 - **What changes**: narrows the standing rule to push each commit individually (owner, 2026-10-22) for the duration of this work.
 - **Status**: in force.
+- **Note (2026-11-14)**: two docstring-only commits (d56930f, 4cc43eb) were pushed to `master` at the owner's request (EVOLUTION 4.147). `product/finish` remains local.
 
 ### D41. Who does what (owner, 2026-11-13)
 - **Decision**: planning, briefing, review and verification by the lead model; implementation by Sonnet and Haiku subagents in isolated worktrees, tests first.
 - **Status**: in force. The first merged results are EVOLUTION 4.135 to 4.139.
+
+### D42. Scrap or rebuild whatever blocks the best product; best is measured (owner, 2026-11-13)
+- **Decision (owner)**: the end product must be complete end to end and the best version of itself, and the owner does not mind scrapping the majority of a part to optimise it.
+- **Ruling (lead model, under that instruction; not the owner's wording)**: keep the graph core, resolve, reader, corrections, review gate, ingest/segment/spans and the voice runner, fixing the defects the sweep finds. Rebuild: build orchestration as one stage registry and one build function with flow checks at each boundary; engine selection as one registry with local and cloud tiers; the HTTP server on a typed framework with a generated contract (FastAPI proposed; it adds dependencies the owner has not confirmed); the Studio build and data layer (Vite and TanStack Query proposed; components and visual design kept); the panel pipeline around a stored panel plan with reference conditioning; chapter video as a shot planner plus video workers. Scrap the unreachable video, keyframe and screenplay-compiler code and the cost meter, keeping the shot enums, camera maths and worker contract. The research arena, journal paper and gold sets are untouched.
+- **What "best" means**: tracked as measured per-stage targets. "Nothing can be more optimised" cannot be proven and is not claimed.
+- **Status**: decided; none of the rebuilds is started.
+
+### D43. Pipeline version 3 (2026-11-13)
+- **Decision**: `PIPELINE_VERSION` is "3" (commit a1effab).
+- **Why**: span offsets, italic ranges and footnote blocks changed stored output (EVOLUTION 4.144), so a database built under version 2 holds spans that do not describe their text.
+- **Consequence**: every earlier database is refused for real renders, voicing and a bible lock until rebuilt. The three canonical databases in `data/db` are in that state.
+
+### D44. Gold offsets drafted from pipeline output are left as they are (2026-11-13)
+- **Decision**: the 3,505 `gold-auto-builder` records whose offsets came from pipeline output (RI 770, LotM 2,425, ORV 310) keep the old one-character shift. Gold is not edited.
+- **Why**: scoring matches within a tolerance of under 8 characters, so the shift changes no metric (EVOLUTION 4.144), and research data is frozen.
+- **Future work**: re-aligning these records is possible but needs the owner's decision.
+
+### D45. Local video model and what each tier is for (2026-11-14)
+- **Decision**: LTX-Video 2B distilled is the local video model (evidence: EVOLUTION 4.146). The local tier does subtle single-panel motion and same-shot camera moves. Action and differently framed panels go to the cloud tier (an anime-trained model, not yet run) or are cut. The shot planner gates interpolation to panels that share scene and framing.
+- **Status**: measured for the local model on two panels of one character; nothing built.
+
+### D46. Stopping rule under limited usage (owner, 2026-11-13)
+- **Decision**: the owner asked that work stop at 95 per cent usage. The lead model cannot read the usage figure, so the working rule is to resume existing tasks rather than start many, and to start nothing new without the owner's word once in-flight tasks report.
+- **Status**: in force.
 
 ## 3. Documentation policy
 
