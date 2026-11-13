@@ -63,12 +63,14 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
-from echotales.core.models import Job, StageStatus
+from echotales.core.lifecycle import JobStatus
+from echotales.core.models import Job
 from echotales.core.store import Store
 from echotales.pipeline import paths, research_demo
 from echotales.pipeline.compute import default_image_engine
 from echotales.pipeline._multipart import MultipartError, parse_single_file
 from echotales.pipeline.corrections import (
+    AppliedCorrectionError,
     Correction,
     CorrectionLog,
     CorrectionType,
@@ -460,7 +462,7 @@ class Registry:
                 self.handles[novel_id] = NovelHandle(source, store, corrections)
         # The job queue lives in memory, so whatever was queued or running when the last server stopped is gone.
         for handle in self.handles.values():
-            handle.store.fail_interrupted_jobs("interrupted: the server stopped before this job finished; run it again")
+            handle.store.interrupt_unfinished_work("interrupted: the server stopped before this job finished; run it again")
 
     def manifest(self) -> list[dict[str, str]]:
         return [
@@ -517,6 +519,10 @@ class Registry:
             return False
         if handle.store.is_canonical:
             raise PermissionError(f"{novel_id!r} is a canonical database -- refusing to delete")
+        # The worker opens the database by path; unlinking it under a queued job made the worker recreate an
+        # empty file that the next start registered as a phantom project.
+        if handle.store.count_unfinished_jobs():
+            raise ProjectBusyError(f"{novel_id!r} has a queued or running job; cancel it or wait for it to finish")
         db_path = Path(handle.source.db_path)
         handle.store.close()
         del self.handles[novel_id]
@@ -527,6 +533,10 @@ class Registry:
                 child.unlink()
             asset_dir.rmdir()
         return True
+
+
+class ProjectBusyError(RuntimeError):
+    """The project has a PENDING or RUNNING job, so deleting it would pull the database from under the worker."""
 
 
 def _job_json(job: Job) -> dict:  # type: ignore[type-arg]
@@ -844,6 +854,13 @@ def make_handler(
 ) -> type[BaseHTTPRequestHandler]:
     password = os.environ.get(_AUTH_ENV_VAR)
     sessions = SessionStore()
+
+    def _job_finished(novel_id: str) -> None:
+        handle = registry.handles.get(novel_id)
+        if handle is not None:
+            handle.invalidate()
+
+    job_queue.on_finished = _job_finished
 
 
     class Handler(BaseHTTPRequestHandler):
@@ -1990,13 +2007,17 @@ def make_handler(
                     job = handle.store.get_job(parts[4])
                     if job is None:
                         return self._json(404, {"error": f"unknown job {parts[4]!r}"})
-                    if job.status.value != "PENDING":
-                        # A running stage is one call into a model or a long loop; stopping the thread mid-write
-                        # could leave a half-written database, so only a job still waiting can be cancelled.
-                        return self._json(409, {"error": f"job is {job.status.value}; only a queued job can be cancelled"})
-                    handle.store.update_job(
-                        parts[4], status=StageStatus.FAILED, finished_at=time.time(), error_summary="cancelled by user"
-                    )
+                    # A running stage is one call into a model or a long loop; stopping the thread mid-write
+                    # could leave a half-written database, so only a job still waiting can be cancelled. The
+                    # check and the write are one statement: a read-then-write let a cancel overwrite a job
+                    # the worker had just claimed.
+                    if not handle.store.transition_job(
+                        parts[4], [JobStatus.PENDING], JobStatus.CANCELLED,
+                        finished_at=time.time(), error_summary="cancelled by user",
+                    ):
+                        now = handle.store.get_job(parts[4])
+                        state = now.status.value if now is not None else "gone"
+                        return self._json(409, {"error": f"job is {state}; only a queued job can be cancelled"})
                     return self._json(200, _job_json(handle.store.get_job(parts[4])))
 
                 if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] in JOB_KINDS:
@@ -2192,7 +2213,13 @@ def make_handler(
                     handle = registry.handles.get(parts[2])
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
-                    removed = handle.corrections.remove(parts[4])
+                    try:
+                        removed = handle.corrections.remove(parts[4])
+                    except AppliedCorrectionError:
+                        return self._json(409, {
+                            "error": f"correction {parts[4]!r} has already been applied to the database; "
+                            "removing its record would leave a human edit with no provenance, so it is kept",
+                        })
                     if removed:
                         handle.invalidate()
                     return self._json(200, {"removed": removed})
@@ -2202,6 +2229,8 @@ def make_handler(
                         removed = registry.delete_project(parts[2])
                     except PermissionError as exc:
                         return self._json(403, {"error": str(exc)})
+                    except ProjectBusyError as exc:
+                        return self._json(409, {"error": str(exc)})
                     return self._json(200, {"removed": removed})
             except Exception as exc:
                 log.exception("DELETE %s failed", self.path)

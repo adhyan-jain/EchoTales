@@ -181,6 +181,11 @@ def stage(
     except Exception as exc:
         finish_stage(store, handle, status=StageStatus.FAILED, error_summary=str(exc))
         raise
+    except BaseException as exc:
+        # Ctrl-C or SystemExit skipped this bookkeeping and left the stage RUNNING, which a
+        # resume check reads as a live process.
+        finish_stage(store, handle, status=StageStatus.FAILED, error_summary=f"interrupted: {type(exc).__name__}")
+        raise
     else:
         finish_stage(store, handle, status=StageStatus.SUCCEEDED)
 

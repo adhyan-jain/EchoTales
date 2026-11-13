@@ -34,7 +34,7 @@ from make_sample_epub import write_sample_epub
 
 PROJECT_ID = "saltmere"
 JOB_TIMEOUT_S = 120.0
-_DONE = ("SUCCEEDED", "FAILED", "PARTIAL")
+_DONE = ("SUCCEEDED", "FAILED", "PARTIAL", "CANCELLED", "INTERRUPTED")
 
 
 @dataclass

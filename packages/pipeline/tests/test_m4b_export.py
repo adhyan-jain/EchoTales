@@ -9,7 +9,8 @@ import json
 import wave
 from pathlib import Path
 
-from echotales.core.models import Job, StageStatus
+from echotales.core.lifecycle import JobStatus
+from echotales.core.models import Job
 from echotales.core.store import Store
 from echotales.pipeline import jobs
 from echotales.pipeline.voice.export import _concat_escape, book_tracks, engine_of
@@ -53,15 +54,15 @@ def test_the_export_job_refuses_silent_stub_audio_and_an_empty_directory(tmp_pat
 
     def run(params: dict) -> Job:
         job = Job(job_id=f"n:export_m4b:{len(params)}{sorted(params)}", novel_id="n", kind="export_m4b",
-                  status=StageStatus.PENDING, created_at=1.0, params_json=json.dumps(params))
+                  status=JobStatus.PENDING, created_at=1.0, params_json=json.dumps(params))
         store.add_job(job)
         jobs.run_job(store, job, params)
         return store.get_job(job.job_id)
 
     empty = run({})
-    assert empty.status is StageStatus.FAILED and "no chapter audio" in empty.error_summary
+    assert empty.status is JobStatus.FAILED and "no chapter audio" in empty.error_summary
 
     _wav(audio / "ch1" / "chapter.wav")
     (audio / "run.json").write_text(json.dumps({"engine": "stub"}), encoding="utf-8")
     silent = run({"x": 1})
-    assert silent.status is StageStatus.FAILED and "stub" in silent.error_summary
+    assert silent.status is JobStatus.FAILED and "stub" in silent.error_summary

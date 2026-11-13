@@ -19,6 +19,7 @@ from http.server import HTTPServer
 from pathlib import Path
 
 import pytest
+from echotales.core.models import Job
 from echotales.pipeline.jobs import JobQueue
 from echotales.pipeline.webview_server import Registry, make_handler
 
@@ -160,7 +161,7 @@ class TestProjectLifecycleAndJobs:
             status, job_body = _request(port, "GET", f"/api/projects/toy/jobs/{job_id}")
             assert status == 200
             job_status = job_body["status"]
-            if job_status in ("SUCCEEDED", "FAILED", "PARTIAL"):
+            if job_status in ("SUCCEEDED", "FAILED", "PARTIAL", "CANCELLED", "INTERRUPTED"):
                 break
             time.sleep(0.1)
         assert job_status == "SUCCEEDED", job_body
@@ -191,7 +192,7 @@ class TestProjectLifecycleAndJobs:
         while time.time() < deadline:
             status, job2_body = _request(port, "GET", f"/api/projects/toy/jobs/{job2_id}")
             job2_status = job2_body["status"]
-            if job2_status in ("SUCCEEDED", "FAILED", "PARTIAL"):
+            if job2_status in ("SUCCEEDED", "FAILED", "PARTIAL", "CANCELLED", "INTERRUPTED"):
                 break
             time.sleep(0.05)
         assert job2_status == "SUCCEEDED", job2_body
@@ -390,7 +391,7 @@ class TestUploadSafety:
         deadline = time.time() + 10
         while time.time() < deadline:
             _, job = _request(live_server, "GET", f"/api/projects/quoted/jobs/{body['job_id']}")
-            if job["status"] in ("SUCCEEDED", "FAILED", "PARTIAL"):
+            if job["status"] in ("SUCCEEDED", "FAILED", "PARTIAL", "CANCELLED", "INTERRUPTED"):
                 break
             time.sleep(0.1)
         assert job["status"] == "SUCCEEDED", job
@@ -427,7 +428,7 @@ class TestPipelineJob:
         deadline = time.time() + 30
         while time.time() < deadline:
             _, job = _request(port, "GET", f"/api/projects/{project}/jobs/{job_id}")
-            if job["status"] in ("SUCCEEDED", "FAILED", "PARTIAL"):
+            if job["status"] in ("SUCCEEDED", "FAILED", "PARTIAL", "CANCELLED", "INTERRUPTED"):
                 return job
             time.sleep(0.1)
         raise AssertionError("pipeline job did not finish")
@@ -466,35 +467,35 @@ class TestPipelineJob:
 class TestJobRecovery:
     """The queue is in memory: jobs left PENDING or RUNNING by a stopped server must not spin forever."""
 
-    def test_interrupted_jobs_are_failed_when_a_server_starts(self, tmp_path: Path) -> None:
-        from echotales.core.models import Job, StageStatus
+    def test_interrupted_jobs_are_marked_interrupted_when_a_server_starts(self, tmp_path: Path) -> None:
+        from echotales.core.lifecycle import JobStatus
         from echotales.core.store import Store
 
         projects = tmp_path / "projects"
         projects.mkdir()
         store = Store(str(projects / "stuck.db"))
         store.add_novel("stuck", "Stuck", "x.epub", "generic")
-        for job_id, status in (("j1", StageStatus.RUNNING), ("j2", StageStatus.PENDING), ("j3", StageStatus.SUCCEEDED)):
+        for job_id, status in (("j1", JobStatus.RUNNING), ("j2", JobStatus.PENDING), ("j3", JobStatus.SUCCEEDED)):
             store.add_job(Job(job_id=job_id, novel_id="stuck", kind="ingest", status=status, created_at=1.0))
         store.close()
 
         registry = Registry([], corrections_dir=tmp_path / "corrections", projects_dir=projects)
         after = {j.job_id: j for j in registry.handles["stuck"].store.list_jobs("stuck")}
-        assert after["j1"].status is StageStatus.FAILED and "interrupted" in after["j1"].error_summary
-        assert after["j2"].status is StageStatus.FAILED
-        assert after["j3"].status is StageStatus.SUCCEEDED  # a finished job is left alone
+        assert after["j1"].status is JobStatus.INTERRUPTED and "interrupted" in after["j1"].error_summary
+        assert after["j2"].status is JobStatus.INTERRUPTED
+        assert after["j3"].status is JobStatus.SUCCEEDED  # a finished job is left alone
 
     def test_a_queued_job_can_be_cancelled_but_a_finished_one_cannot(self, live_server: LivePort) -> None:
-        from echotales.core.models import Job, StageStatus
+        from echotales.core.lifecycle import JobStatus
 
         port = live_server
         assert TestUploadSafety._create(port, "cx")[0] == 201
         store = live_server.registry.handles["cx"].store
-        store.add_job(Job(job_id="cx:ingest:queued", novel_id="cx", kind="ingest", status=StageStatus.PENDING, created_at=1.0))
-        store.add_job(Job(job_id="cx:ingest:done", novel_id="cx", kind="ingest", status=StageStatus.SUCCEEDED, created_at=2.0))
+        store.add_job(Job(job_id="cx:ingest:queued", novel_id="cx", kind="ingest", status=JobStatus.PENDING, created_at=1.0))
+        store.add_job(Job(job_id="cx:ingest:done", novel_id="cx", kind="ingest", status=JobStatus.SUCCEEDED, created_at=2.0))
 
         status, body = _request(port, "POST", "/api/projects/cx/jobs/cx:ingest:queued/cancel", body=b"{}")
-        assert status == 200 and body["status"] == "FAILED" and "cancelled" in body["error_summary"]
+        assert status == 200 and body["status"] == "CANCELLED" and "cancelled" in body["error_summary"]
         status, _ = _request(port, "POST", "/api/projects/cx/jobs/cx:ingest:done/cancel", body=b"{}")
         assert status == 409
 
@@ -539,7 +540,7 @@ class TestStaleBuildSurvivesJobs:
         deadline = time.time() + 10
         while time.time() < deadline:
             _, job = _request(port, "GET", f"/api/projects/toy4/jobs/{job_id}")
-            if job["status"] in ("SUCCEEDED", "FAILED", "PARTIAL"):
+            if job["status"] in ("SUCCEEDED", "FAILED", "PARTIAL", "CANCELLED", "INTERRUPTED"):
                 break
             time.sleep(0.1)
         assert job["status"] == "FAILED", job

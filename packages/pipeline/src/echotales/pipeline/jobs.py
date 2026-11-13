@@ -39,7 +39,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from echotales.core.models import Job, StageStatus
+from echotales.core.lifecycle import JobStatus, StageStatus
+from echotales.core.models import Job
 from echotales.core.pipeline_run import (
     PartialStageFailure,
     digest_text,
@@ -151,6 +152,10 @@ def run_stage(
         raise
     except Exception as exc:
         finish_stage(store, handle, status=StageStatus.FAILED, error_summary=str(exc))
+        raise
+    except BaseException as exc:
+        # Interrupts bypass `except Exception`; without this the stage stays RUNNING for good.
+        finish_stage(store, handle, status=StageStatus.FAILED, error_summary=f"interrupted: {type(exc).__name__}")
         raise
     finish_stage(store, handle, status=StageStatus.SUCCEEDED)
     return result
@@ -267,6 +272,9 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         store, novel_id=novel_id, source_digest=source_digest, pipeline_version=PIPELINE_VERSION
     )
     input_digest = digest_text(f"{source_digest}|{job.kind}|v{PIPELINE_VERSION}|{job.params_json}")
+    # Stored before any work: a job that fails keeps its run id, so the job detail still lists its stages,
+    # and a restart can find the run rows this job left RUNNING.
+    store.update_job(job.job_id, run_id=pipeline_run.run_id)
 
     #: A project created through `POST /api/projects` + `/source` (rather
     #: than one of the three research-canonical novels) is never added to
@@ -493,32 +501,56 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
     return pipeline_run.run_id
 
 
+def _finish_run(store: Store, job_id: str, status: StageStatus) -> None:
+    """Close the bookkeeping run a non-pipeline job opened. Left RUNNING it read as live work forever; only a
+    still-RUNNING row is touched, so a build run the pipeline job already finalised is left as it is."""
+    job = store.get_job(job_id)
+    if job is not None and job.run_id:
+        store.transition_pipeline_run(job.run_id, StageStatus.RUNNING, status)
+
+
 def run_job(store: Store, job: Job, params: dict[str, Any]) -> None:
     """Run one job to completion against an already-open `Store`, updating
     the `job` row throughout. Never raises -- a failure is recorded on the
     row (`FAILED`/`PARTIAL` + `error_summary`), matching `stage()`'s own
     "accurate record, not a quieter one" rule while still letting the
-    worker thread move on to the next queued job."""
-    store.update_job(job.job_id, status=StageStatus.RUNNING, started_at=time.time())
+    worker thread move on to the next queued job. An interrupt is recorded
+    INTERRUPTED and re-raised.
+
+    The PENDING -> RUNNING claim is the first write: a job cancelled while it waited loses the claim
+    and is not run."""
+    if not store.transition_job(job.job_id, [JobStatus.PENDING], JobStatus.RUNNING, started_at=time.time()):
+        log.info("job %s not run: it is no longer PENDING", job.job_id)
+        return
     try:
         run_id = _dispatch(store, job, params)
     except PartialStageFailure as exc:
-        store.update_job(
-            job.job_id, status=StageStatus.PARTIAL, finished_at=time.time(),
+        store.transition_job(
+            job.job_id, [JobStatus.RUNNING], JobStatus.PARTIAL, finished_at=time.time(),
             error_summary=f"{exc} (progress: {exc.progress})",
         )
+        _finish_run(store, job.job_id, StageStatus.PARTIAL)
         log.warning("job %s partial: %s", job.job_id, exc)
         return
     except Exception as exc:
-        store.update_job(
-            job.job_id, status=StageStatus.FAILED, finished_at=time.time(),
+        store.transition_job(
+            job.job_id, [JobStatus.RUNNING], JobStatus.FAILED, finished_at=time.time(),
             error_summary=str(exc),
         )
+        _finish_run(store, job.job_id, StageStatus.FAILED)
         log.exception("job %s failed", job.job_id)
         return
-    store.update_job(
-        job.job_id, status=StageStatus.SUCCEEDED, finished_at=time.time(), run_id=run_id,
+    except BaseException as exc:
+        store.transition_job(
+            job.job_id, [JobStatus.RUNNING], JobStatus.INTERRUPTED, finished_at=time.time(),
+            error_summary=f"interrupted: {type(exc).__name__}",
+        )
+        _finish_run(store, job.job_id, StageStatus.FAILED)
+        raise
+    store.transition_job(
+        job.job_id, [JobStatus.RUNNING], JobStatus.SUCCEEDED, finished_at=time.time(), run_id=run_id,
     )
+    _finish_run(store, job.job_id, StageStatus.SUCCEEDED)
 
 
 @dataclass(slots=True)
@@ -540,6 +572,9 @@ class JobQueue:
 
     def __init__(self, store_factory: Callable[[str], Store] = Store) -> None:
         self._store_factory = store_factory
+        #: Called with the novel id after every job, so the server can drop its cached payload: it was
+        #: invalidated at enqueue only, and a client then read the pre-job state until some other write.
+        self.on_finished: Callable[[str], None] | None = None
         self._q: queue.Queue[_QueueItem] = queue.Queue()
         self._thread: threading.Thread | None = None
 
@@ -556,20 +591,29 @@ class JobQueue:
         while True:
             item = self._q.get()
             try:
-                store = self._store_factory(item.db_path)
-                try:
-                    job = store.get_job(item.job_id)
-                    if job is None:
-                        log.error("queued job %s vanished from its own store", item.job_id)
-                        continue
-                    if job.status is not StageStatus.PENDING:
-                        # Cancelled while it waited (`POST .../jobs/<id>/cancel`); the row already says so.
-                        log.info("skipping job %s: status is %s", item.job_id, job.status.value)
-                        continue
-                    run_job(store, job, item.params)
-                finally:
-                    store.close()
+                self._run_item(item)
             except Exception:
                 log.exception("job worker crashed handling %s", item.job_id)
             finally:
                 self._q.task_done()
+                if self.on_finished is not None:
+                    try:
+                        self.on_finished(item.novel_id)
+                    except Exception:
+                        log.exception("on_finished failed for %s", item.job_id)
+
+    def _run_item(self, item: _QueueItem) -> None:
+        # `Store(path)` creates a database when none exists. A project deleted while its job waited would
+        # come back as an empty file that the next server start registers as a phantom project.
+        if item.db_path != ":memory:" and not Path(item.db_path).exists():
+            log.error("job %s dropped: its database %s no longer exists", item.job_id, item.db_path)
+            return
+        store = self._store_factory(item.db_path)
+        try:
+            job = store.get_job(item.job_id)
+            if job is None:
+                log.error("queued job %s vanished from its own store", item.job_id)
+                return
+            run_job(store, job, item.params)
+        finally:
+            store.close()

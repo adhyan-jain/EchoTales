@@ -18,7 +18,6 @@ contesting one persona is possession.
 
 from __future__ import annotations
 
-from enum import StrEnum
 from typing import Annotated, Any, Literal
 from typing import Self as SelfType
 
@@ -41,6 +40,7 @@ from echotales.core.enums import (
     TruthStatus,
 )
 from echotales.core.interval import FuzzyInterval, StoryPos
+from echotales.core.lifecycle import JobStatus, StageStatus
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 Confidence = Annotated[float, Field(ge=0.0, le=1.0)]
@@ -606,26 +606,6 @@ class RefImageSelectionEvent(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class StageStatus(StrEnum):
-    """Lifecycle of one `StageRun`.
-
-    `RUNNING` with no terminal transition is how a killed process is
-    detected on the next invocation: a `stage_run` row stuck at `RUNNING`
-    was never finalized, so a resume check must treat it as "needs rerun",
-    never as "already done" (a `SUCCEEDED`/`FAILED`/`PARTIAL` input-digest
-    match is the only thing allowed to short-circuit re-execution).
-    """
-
-    PENDING = "PENDING"
-    RUNNING = "RUNNING"
-    SUCCEEDED = "SUCCEEDED"
-    FAILED = "FAILED"
-    #: At least one commit-chunk succeeded before failure -- distinct from
-    #: FAILED so "12/40 chapters done" is visible instead of indistinguishable
-    #: from a run that made zero progress.
-    PARTIAL = "PARTIAL"
-
-
 class PipelineRun(BaseModel):
     """One `echotales run` invocation (or a manually-chained stage sequence
     sharing a `run_id`).
@@ -708,7 +688,7 @@ class Job(BaseModel):
     novel_id: str
     kind: str
     run_id: str = ""
-    status: StageStatus = StageStatus.PENDING
+    status: JobStatus = JobStatus.PENDING
     params_json: str = "{}"
     created_at: float = 0.0
     started_at: float | None = None

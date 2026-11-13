@@ -39,6 +39,14 @@ from echotales.core.enums import (
     TruthStatus,
 )
 from echotales.core.interval import POS_INF, FuzzyInterval
+from echotales.core.lifecycle import (
+    JOB_TRANSITIONS,
+    JOB_UNFINISHED,
+    RUN_TRANSITIONS,
+    STAGE_TRANSITIONS,
+    JobStatus,
+    check_transition,
+)
 from echotales.core.models import (
     AliasBinding,
     Attribute,
@@ -51,9 +59,9 @@ from echotales.core.models import (
     Mention,
     NarrativeSegment,
     Observation,
-    PipelineRun,
     Persona,
     PersonaVersion,
+    PipelineRun,
     RefImageCandidate,
     RefImageSelectionEvent,
     Relation,
@@ -2294,7 +2302,7 @@ class Store:
             novel_id=row["novel_id"],
             kind=row["kind"],
             run_id=row["run_id"],
-            status=StageStatus(row["status"]),
+            status=JobStatus(row["status"]),
             params_json=row["params_json"],
             created_at=row["created_at"],
             started_at=row["started_at"],
@@ -2326,22 +2334,21 @@ class Store:
         self,
         job_id: str,
         *,
-        status: StageStatus | None = None,
         run_id: str | None = None,
         started_at: float | None = None,
         finished_at: float | None = None,
         error_summary: str | None = None,
     ) -> None:
-        """Partial update -- `None` args leave the column unchanged, same
-        convention as `update_stage_run`."""
+        """Partial update of everything except status -- `None` args leave the column unchanged.
+
+        Status is deliberately not settable here: a read-then-write let a cancel and a worker
+        overwrite each other; status moves only through `transition_job`."""
         current = self.get_job(job_id)
         if current is None:
             raise KeyError(f"no job {job_id!r}")
         self.conn.execute(
-            "UPDATE job SET status=?, run_id=?, started_at=?, finished_at=?,"
-            " error_summary=? WHERE job_id=?",
+            "UPDATE job SET run_id=?, started_at=?, finished_at=?, error_summary=? WHERE job_id=?",
             (
-                status.value if status is not None else current.status.value,
                 run_id if run_id is not None else current.run_id,
                 started_at if started_at is not None else current.started_at,
                 finished_at if finished_at is not None else current.finished_at,
@@ -2351,17 +2358,91 @@ class Store:
         )
         self.conn.commit()
 
-    def fail_interrupted_jobs(self, reason: str) -> int:
-        """Mark every PENDING or RUNNING job failed. Call once at server start, before the queue accepts work.
+    def transition_job(
+        self,
+        job_id: str,
+        expected: Sequence[JobStatus],
+        new: JobStatus,
+        *,
+        started_at: float | None = None,
+        finished_at: float | None = None,
+        error_summary: str | None = None,
+        run_id: str | None = None,
+    ) -> bool:
+        """Move a job to `new` only if it is still in one of the `expected` states, in one statement.
 
-        The queue is in memory, so a job left PENDING or RUNNING when the process stopped is gone for good, yet its
-        row stayed that way forever and the Studio showed it spinning (audit)."""
+        Returns whether it moved. The guard lives in the UPDATE's WHERE clause, so a cancel and a
+        worker claim racing on two connections cannot both win; the loser sees False and must
+        leave the row alone. An `expected -> new` pair the lifecycle table forbids raises
+        `IllegalTransition` before touching the database."""
+        for old in expected:
+            check_transition(JOB_TRANSITIONS, old, new)
+        marks = ",".join("?" * len(expected))
         cur = self.conn.execute(
-            "UPDATE job SET status=?, finished_at=?, error_summary=? WHERE status IN (?, ?)",
-            (StageStatus.FAILED.value, time.time(), reason, StageStatus.PENDING.value, StageStatus.RUNNING.value),
+            "UPDATE job SET status=?,"
+            " started_at=COALESCE(?, started_at), finished_at=COALESCE(?, finished_at),"
+            " error_summary=COALESCE(?, error_summary), run_id=COALESCE(?, run_id)"
+            f" WHERE job_id=? AND status IN ({marks})",
+            (new.value, started_at, finished_at, error_summary, run_id, job_id, *(s.value for s in expected)),
         )
         self.conn.commit()
-        return cur.rowcount
+        return cur.rowcount == 1
+
+    def transition_pipeline_run(self, run_id: str, expected: StageStatus, new: StageStatus) -> bool:
+        """Same compare-and-set for a run row; used to finalise a run only if it is still RUNNING."""
+        check_transition(RUN_TRANSITIONS, expected, new)
+        cur = self.conn.execute(
+            "UPDATE pipeline_run SET status=? WHERE run_id=? AND status=?",
+            (new.value, run_id, expected.value),
+        )
+        self.conn.commit()
+        return cur.rowcount == 1
+
+    def count_unfinished_jobs(self) -> int:
+        marks = ",".join("?" * len(JOB_UNFINISHED))
+        return int(
+            self.conn.execute(
+                f"SELECT COUNT(*) FROM job WHERE status IN ({marks})", [s.value for s in JOB_UNFINISHED]
+            ).fetchone()[0]
+        )
+
+    def interrupt_unfinished_work(self, reason: str) -> int:
+        """Mark every PENDING or RUNNING job INTERRUPTED and close the runs and stages they left RUNNING.
+
+        Call once at server start, before the queue accepts work. The queue is in memory, so such a
+        job is gone for good, yet its row stayed live forever and the Studio showed it spinning. Its
+        RUNNING `stage_run` and `pipeline_run` rows stayed live too, and a RUNNING build row made
+        `staleness_reason` say a build "is still running" when it had died.
+
+        Only runs named by an interrupted job are closed. A CLI process legitimately building the
+        same database right now has RUNNING rows too, with no job row; closing every RUNNING row
+        would mark its live work failed. Orphans from a crashed CLI are left for its own resume check.
+        """
+        now = time.time()
+        marks = ",".join("?" * len(JOB_UNFINISHED))
+        rows = self.conn.execute(
+            f"SELECT job_id, status, run_id FROM job WHERE status IN ({marks})", [s.value for s in JOB_UNFINISHED]
+        ).fetchall()
+        moved = 0
+        check_transition(STAGE_TRANSITIONS, StageStatus.RUNNING, StageStatus.FAILED)
+        check_transition(RUN_TRANSITIONS, StageStatus.RUNNING, StageStatus.FAILED)
+        for row in rows:
+            if self.transition_job(
+                row["job_id"], [JobStatus(row["status"])], JobStatus.INTERRUPTED,
+                finished_at=now, error_summary=reason,
+            ):
+                moved += 1
+            if row["run_id"]:
+                self.conn.execute(
+                    "UPDATE stage_run SET status=?, finished_at=?, error_summary=? WHERE run_id=? AND status=?",
+                    (StageStatus.FAILED.value, now, reason, row["run_id"], StageStatus.RUNNING.value),
+                )
+                self.conn.execute(
+                    "UPDATE pipeline_run SET status=? WHERE run_id=? AND status=?",
+                    (StageStatus.FAILED.value, row["run_id"], StageStatus.RUNNING.value),
+                )
+        self.conn.commit()
+        return moved
 
     def get_job(self, job_id: str) -> Job | None:
         row = self.conn.execute("SELECT * FROM job WHERE job_id=?", (job_id,)).fetchone()
