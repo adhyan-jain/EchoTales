@@ -52,9 +52,13 @@ refers to.
 
 from __future__ import annotations
 
+import contextlib
 import json
+import os
+import threading
 import time
 import uuid
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
@@ -70,6 +74,26 @@ from echotales.core.enums import (
 )
 from echotales.core.models import DiscoursePosition, Mention, ResolutionEvent, Self
 from echotales.core.store import Store
+
+try:
+    import fcntl
+except ImportError:  # pragma: no cover - Windows: threads stay safe, other processes do not
+    fcntl = None  # type: ignore[assignment]
+
+# One re-entrant lock per log file in this process. flock alone would also
+# serialise threads (separate open files), but re-entrancy is what lets
+# `apply_pending` hold the lock across its own `mark_applied` calls.
+_PATH_LOCKS: dict[str, threading.RLock] = {}
+_HELD_DEPTH: dict[str, int] = {}  # guarded by the path's RLock
+_PATH_LOCKS_GUARD = threading.Lock()
+
+
+class AppliedCorrectionError(Exception):
+    """Removing a correction whose edit already landed in the store.
+
+    The store edit survives a removal, so deleting the record would leave a
+    human change with no human-provenance record behind it.
+    """
 
 
 class CorrectionType(StrEnum):
@@ -124,57 +148,109 @@ class Correction:
 
 
 class CorrectionLog:
-    """Append-only JSONL, one file per novel, rewritten atomically on change.
+    """JSONL, one file per novel, always re-read under a lock before a write.
 
-    Small and infrequent enough (an interactive reviewer clicking, not a bulk
-    writer) that "read all, mutate, write all" is the right amount of
-    engineering -- an actual database would be solving a problem this doesn't
-    have.
+    Several instances exist for one file at once (the server's long-lived
+    one, a pipeline job's, the CLI's). Each used to rewrite the file from its
+    own stale in-memory list, erasing the others' records and resetting
+    `applied` (so a correction was applied twice). Every mutation now takes an
+    advisory lock, reloads the file, changes it, and replaces it atomically.
     """
 
     def __init__(self, path: Path | str) -> None:
         self.path = Path(path)
         self._items: list[Correction] = []
-        if self.path.exists():
-            self._items = [
-                Correction.from_json(json.loads(line))
-                for line in self.path.read_text(encoding="utf-8").splitlines()
-                if line.strip()
-            ]
+        self._reload()
+
+    def _reload(self) -> None:
+        # Safe without the lock: writers `os.replace`, so a reader sees a whole file.
+        try:
+            text = self.path.read_text(encoding="utf-8")
+        except FileNotFoundError:
+            self._items = []
+            return
+        self._items = [
+            Correction.from_json(json.loads(line)) for line in text.splitlines() if line.strip()
+        ]
+
+    @contextlib.contextmanager
+    def locked(self) -> Iterator[None]:
+        """Exclusive across threads and processes; re-entrant within a thread."""
+        key = str(self.path.resolve())
+        with _PATH_LOCKS_GUARD:
+            thread_lock = _PATH_LOCKS.setdefault(key, threading.RLock())
+        with thread_lock:
+            # A nested acquire must not flock again: a second open file on the
+            # same path blocks on our own lock and deadlocks `apply_pending`.
+            if fcntl is None or _HELD_DEPTH.get(key, 0) > 0:
+                _HELD_DEPTH[key] = _HELD_DEPTH.get(key, 0) + 1
+                try:
+                    yield
+                finally:
+                    _HELD_DEPTH[key] -= 1
+                return
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            with open(self.path.with_name(self.path.name + ".lock"), "a") as lock_file:
+                fcntl.flock(lock_file, fcntl.LOCK_EX)
+                _HELD_DEPTH[key] = 1
+                try:
+                    yield
+                finally:
+                    _HELD_DEPTH[key] = 0
+                    fcntl.flock(lock_file, fcntl.LOCK_UN)
 
     def __iter__(self):  # type: ignore[no-untyped-def]
-        return iter(self._items)
+        self._reload()
+        return iter(list(self._items))
 
     def __len__(self) -> int:
+        self._reload()
         return len(self._items)
 
     def add(self, correction: Correction) -> None:
-        self._items.append(correction)
-        self._flush()
+        with self.locked():
+            self._reload()
+            self._items.append(correction)
+            self._flush()
 
     def remove(self, correction_id: str) -> bool:
-        before = len(self._items)
-        self._items = [c for c in self._items if c.id != correction_id]
-        if len(self._items) != before:
+        with self.locked():
+            self._reload()
+            target = next((c for c in self._items if c.id == correction_id), None)
+            if target is None:
+                return False
+            if target.applied:
+                raise AppliedCorrectionError(correction_id)
+            self._items = [c for c in self._items if c.id != correction_id]
             self._flush()
             return True
-        return False
 
     def mark_applied(self, correction_id: str) -> None:
-        for c in self._items:
-            if c.id == correction_id:
-                c.applied = True
-        self._flush()
+        with self.locked():
+            self._reload()
+            for c in self._items:
+                if c.id == correction_id:
+                    c.applied = True
+            self._flush()
 
     def _flush(self) -> None:
+        # Temp file + replace: a crash mid-write must not leave a truncated log.
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(
-            "\n".join(json.dumps(c.to_json(), ensure_ascii=False) for c in self._items)
-            + ("\n" if self._items else ""),
-            encoding="utf-8",
-        )
+        tmp = self.path.with_name(f"{self.path.name}.{os.getpid()}.{uuid.uuid4().hex[:8]}.tmp")
+        try:
+            with open(tmp, "w", encoding="utf-8") as fh:
+                fh.write(
+                    "\n".join(json.dumps(c.to_json(), ensure_ascii=False) for c in self._items)
+                    + ("\n" if self._items else "")
+                )
+                fh.flush()
+                os.fsync(fh.fileno())
+            os.replace(tmp, self.path)
+        finally:
+            tmp.unlink(missing_ok=True)
 
     def summary(self) -> dict[str, object]:
+        self._reload()
         by_type: dict[str, int] = {}
         for c in self._items:
             by_type[c.type.value] = by_type.get(c.type.value, 0) + 1
@@ -198,8 +274,14 @@ def apply_pending(store: Store, log: CorrectionLog) -> dict[str, object]:
     Returns a summary of what changed, since "nothing printed" is not
     distinguishable from "nothing happened" otherwise.
     """
+    # Held throughout so two concurrent applies cannot both pick the same
+    # pending correction and collide on its event id.
+    with log.locked():
+        return _apply_pending_locked(store, log)
+
+
+def _apply_pending_locked(store: Store, log: CorrectionLog) -> dict[str, object]:
     applied: list[dict[str, object]] = []
-    seq_base = int(time.time() * 1000)
 
     # `flag` is deliberately excluded: it changes nothing in the store, so
     # "apply pending corrections" sweeping it up would silently mark a note
@@ -209,20 +291,22 @@ def apply_pending(store: Store, log: CorrectionLog) -> dict[str, object]:
     # which is "I've looked at this" without needing a second endpoint.
     pending = [c for c in log if not c.applied and c.type is not CorrectionType.FLAG]
 
-    for i, correction in enumerate(pending):
+    for correction in pending:
+        # `seq` is UNIQUE: the millisecond clock collided for two applies in one ms.
+        seq = store.next_seq()
         try:
             if correction.type is CorrectionType.MERGE_ENTITIES:
-                result = _apply_merge(store, correction, seq=seq_base + i)
+                result = _apply_merge(store, correction, seq=seq)
             elif correction.type is CorrectionType.REASSIGN_MENTION:
-                result = _apply_reassign_mention(store, correction, seq=seq_base + i)
+                result = _apply_reassign_mention(store, correction, seq=seq)
             elif correction.type is CorrectionType.REASSIGN_SPEAKER:
-                result = _apply_reassign_speaker(store, correction, seq=seq_base + i)
+                result = _apply_reassign_speaker(store, correction, seq=seq)
             elif correction.type is CorrectionType.MERGE_LINES:
-                result = _apply_merge_lines(store, correction, seq=seq_base + i)
+                result = _apply_merge_lines(store, correction, seq=seq)
             elif correction.type is CorrectionType.REASSIGN_SPAN_TYPE:
-                result = _apply_reassign_span_type(store, correction, seq=seq_base + i)
+                result = _apply_reassign_span_type(store, correction, seq=seq)
             elif correction.type is CorrectionType.CREATE_MENTION:
-                result = _apply_create_mention(store, correction, seq=seq_base + i)
+                result = _apply_create_mention(store, correction, seq=seq)
             else:  # pragma: no cover - CorrectionType is closed, kept for safety
                 result = {"type": correction.type.value, "error": "unknown correction type"}
         except Exception as exc:
@@ -322,6 +406,8 @@ def _apply_reassign_mention(store: Store, correction: Correction, *, seq: int) -
 
     old_target = mention.target_id
     mention.target_id = final_target
+    mention.method = ResolutionMethod.MANUAL
+    mention.provenance = Provenance.HUMAN_AUTHORED
     store.add_mentions([mention])
 
     store.append_event(
@@ -403,7 +489,7 @@ def _apply_create_mention(store: Store, correction: Correction, *, seq: int) -> 
         target_kind=TargetKind.SELF,
         target_id=target_id,
         confidence=1.0,
-        method=ResolutionMethod.SCORED,
+        method=ResolutionMethod.MANUAL,
         provenance=Provenance.HUMAN_AUTHORED,
         block_index=span.block_index,
     )

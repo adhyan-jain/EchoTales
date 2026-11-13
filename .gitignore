@@ -40,6 +40,7 @@ data/eval/research/*/*/trials.jsonl
 
 # Correction logs (the review desk's JSONL; replayable onto a database).
 !data/corrections/
+data/corrections/*.lock
 
 # Reference sets. Only the files that can score the pipeline are tracked;
 # quarantined sets keep just the README that says why.
