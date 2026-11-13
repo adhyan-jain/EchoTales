@@ -515,3 +515,34 @@ class TestDensityOption:
             headers={"Content-Type": "application/json"},
         )
         assert status == 400 and "density" in body["error"]
+
+
+class TestStaleBuildSurvivesJobs:
+    def test_failing_export_m4b_job_does_not_clear_a_stale_build(self, live_server: int) -> None:
+        # Reported 2026-11: any job's bookkeeping row was stamped current, so a failed job made a stale build look
+        # rebuilt and let real renders / canon locks through.
+        from _builds import record_build
+
+        port = live_server
+        _request(
+            port, "POST", "/api/projects",
+            body=json.dumps({"id": "toy4", "title": "Toy Novel 4"}).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        record_build(port.registry.handles["toy4"].store, "toy4", version="1")
+        status, bible = _request(port, "GET", "/api/novels/toy4/bible")
+        assert status == 200 and "'1'" in bible["current"]["stale_reason"]
+
+        status, body = _request(port, "POST", "/api/projects/toy4/export_m4b", body=b"{}")
+        assert status == 202, body
+        job_id = body["job_id"]
+        deadline = time.time() + 10
+        while time.time() < deadline:
+            _, job = _request(port, "GET", f"/api/projects/toy4/jobs/{job_id}")
+            if job["status"] in ("SUCCEEDED", "FAILED", "PARTIAL"):
+                break
+            time.sleep(0.1)
+        assert job["status"] == "FAILED", job
+
+        status, bible = _request(port, "GET", "/api/novels/toy4/bible")
+        assert "'1'" in bible["current"]["stale_reason"]

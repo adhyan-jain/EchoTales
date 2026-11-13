@@ -141,7 +141,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     # "did any upstream input actually change".
     source_digest = source_digest_of(config.path)
     pipeline_run = ensure_pipeline_run(
-        store, novel_id=novel, source_digest=source_digest, pipeline_version=PIPELINE_VERSION
+        store, novel_id=novel, source_digest=source_digest, pipeline_version=PIPELINE_VERSION, is_build=True
     )
 
     def stage(name: str, fn):  # type: ignore[no-untyped-def]

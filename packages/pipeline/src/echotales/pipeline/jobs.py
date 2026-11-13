@@ -207,7 +207,7 @@ def _run_pipeline(store: Store, job_id: str, novel_id: str, params: dict[str, An
     client = _build_client(store, no_llm=bool(params.get("no_llm")))
     source_digest = source_digest_of(config.path)
     pipeline_run = ensure_pipeline_run(
-        store, novel_id=novel_id, source_digest=source_digest, pipeline_version=PIPELINE_VERSION
+        store, novel_id=novel_id, source_digest=source_digest, pipeline_version=PIPELINE_VERSION, is_build=True
     )
     # Stored now, not at the end: the job detail lists stage runs by this id, so a long build shows which stage it is
     # in instead of an empty list until it finishes.

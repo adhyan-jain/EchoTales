@@ -645,6 +645,8 @@ class PipelineRun(BaseModel):
     model_versions_json: str = "{}"
     created_at: float = 0.0
     status: StageStatus = StageStatus.PENDING
+    #: True only for a full build (`echotales run`, the `pipeline` job); every other job's row is bookkeeping.
+    is_build: bool = False
 
 
 class StageRun(BaseModel):

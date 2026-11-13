@@ -9,16 +9,15 @@ from http.server import HTTPServer
 from pathlib import Path
 
 import pytest
+from _builds import record_build
 from echotales.core.enums import (
     AliasType, AssertedBy, AttributionMethod, BlockType, Prominence, SpanType, TargetKind, TruthStatus,
 )
 from echotales.core.interval import FuzzyInterval
 from echotales.core.models import AliasBinding, Attribute, Block, Chapter, DiscoursePosition, Self, Span
-from echotales.core.pipeline_run import ensure_pipeline_run
 from echotales.core.store import Store
 from echotales.pipeline import review_gate as rg
 from echotales.pipeline.jobs import JobQueue
-from echotales.pipeline.version import PIPELINE_VERSION
 from echotales.pipeline.webview_server import NovelSource, Registry, make_handler
 
 NOVEL = "n"
@@ -40,7 +39,7 @@ def _world(stamped: bool = True) -> Store:
         store.add_self(Self(id=sid, novel_id=NOVEL, canonical_label=name, prominence=Prominence.RECURRING,
                             first_attested_pos=DiscoursePosition(chapter=1, offset=0)))
     if stamped:
-        ensure_pipeline_run(store, novel_id=NOVEL, source_digest="abcdef012345", pipeline_version=PIPELINE_VERSION)
+        record_build(store, NOVEL)
     return store
 
 
@@ -123,7 +122,7 @@ def gate_server(tmp_path: Path):
     db_path = tmp_path / "gate.db"
     store = Store(str(db_path))
     store.add_novel("gate", "Gate", "x", "epub")
-    ensure_pipeline_run(store, novel_id="gate", source_digest="abcdef012345", pipeline_version=PIPELINE_VERSION)
+    record_build(store, "gate")
     store.add_self(Self(id="gate:self:a", novel_id="gate", canonical_label="Alice", prominence=Prominence.RECURRING,
                         first_attested_pos=DiscoursePosition(chapter=1, offset=0)))
     store.add_spans([Span(id="gate:1:0:0", novel_id="gate", chapter=1.0, block_index=0, start=0, end=5,

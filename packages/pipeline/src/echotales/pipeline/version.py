@@ -8,6 +8,7 @@ validator); every database built by older code is then refused for real renders 
 
 from __future__ import annotations
 
+from echotales.core.models import StageStatus
 from echotales.core.store import Store
 
 #: "2" = the reader-pass era (evidence-quoted deltas, text-only canon). "" and "1" are everything built before.
@@ -15,14 +16,30 @@ PIPELINE_VERSION = "2"
 
 
 def staleness_reason(store: Store, novel_id: str) -> str | None:
-    """Why this database must not feed a real render, or None when it was built by the current code.
+    """Why this database must not feed a real render, or None when its newest full build succeeded under the
+    current code.
 
-    A database with no recorded run is stale too: it was filled by something that never stamped, which is
-    exactly the stale-build case this guards."""
-    stamp = store.latest_pipeline_version(novel_id)
+    Only a full build counts (`pipeline_run.is_build`): every job writes a pipeline_run row too, and a failed
+    `export_m4b` job once re-stamped a stale database current. The newest build decides even when an older one
+    succeeded, because a failed or running rebuild has already rewritten part of the graph. A database with no
+    recorded build is stale: it was filled by something that never stamped."""
+    build = store.latest_build(novel_id)
+    if build is None:
+        return (
+            f"{novel_id!r} has no recorded build; the current pipeline is version {PIPELINE_VERSION!r}. "
+            "Rebuild it (echotales run) before a real render."
+        )
+    if build.status == StageStatus.RUNNING:
+        return f"A build of {novel_id!r} is still running; wait for it to finish before a real render."
+    if build.status != StageStatus.SUCCEEDED:
+        return (
+            f"The last build of {novel_id!r} did not finish, so its contents are partly rewritten. "
+            "Rebuild it (echotales run) before a real render."
+        )
+    stamp = build.pipeline_version
     if stamp == PIPELINE_VERSION:
         return None
-    seen = "no recorded build" if stamp is None else (f"build stamp {stamp!r}" if stamp else "an unstamped build")
+    seen = f"build stamp {stamp!r}" if stamp else "an unstamped build"
     return (
         f"{novel_id!r} has {seen}; the current pipeline is version {PIPELINE_VERSION!r}. "
         "Rebuild it (echotales run) before a real render."

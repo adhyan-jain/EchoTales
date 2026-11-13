@@ -397,7 +397,8 @@ CREATE TABLE IF NOT EXISTS pipeline_run (
     config_json TEXT NOT NULL DEFAULT '{}',
     model_versions_json TEXT NOT NULL DEFAULT '{}',
     created_at REAL NOT NULL DEFAULT 0,
-    status TEXT NOT NULL DEFAULT 'PENDING'
+    status TEXT NOT NULL DEFAULT 'PENDING',
+    is_build INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS ix_pipeline_run_novel ON pipeline_run(novel_id);
 
@@ -697,6 +698,17 @@ class Store:
         existing = {row["name"] for row in self.conn.execute("PRAGMA table_info(ref_image_selection_log)")}
         if "persona_id" not in existing:
             self.conn.execute("ALTER TABLE ref_image_selection_log ADD COLUMN persona_id TEXT")
+
+        # Only a full build may stamp a database current; every job also writes a pipeline_run row, and a failing
+        # export_m4b job once cleared a stale-build refusal. Before the column existed, a run counts as a build only
+        # if its persona stage SUCCEEDED ("7 personas" is the full build's name; the single job says "persona").
+        existing = {row["name"] for row in self.conn.execute("PRAGMA table_info(pipeline_run)")}
+        if "is_build" not in existing:
+            self.conn.execute("ALTER TABLE pipeline_run ADD COLUMN is_build INTEGER NOT NULL DEFAULT 0")
+            self.conn.execute(
+                "UPDATE pipeline_run SET is_build=1 WHERE run_id IN"
+                " (SELECT run_id FROM stage_run WHERE stage_name='7 personas' AND status='SUCCEEDED')"
+            )
 
     def close(self) -> None:
         self.conn.close()
@@ -2041,8 +2053,8 @@ class Store:
     def add_pipeline_run(self, run: PipelineRun) -> None:
         self.conn.execute(
             "INSERT OR REPLACE INTO pipeline_run(run_id, novel_id, source_digest,"
-            " pipeline_version, config_json, model_versions_json, created_at, status)"
-            " VALUES (?,?,?,?,?,?,?,?)",
+            " pipeline_version, config_json, model_versions_json, created_at, status, is_build)"
+            " VALUES (?,?,?,?,?,?,?,?,?)",
             (
                 run.run_id,
                 run.novel_id,
@@ -2052,6 +2064,7 @@ class Store:
                 run.model_versions_json,
                 run.created_at,
                 run.status.value,
+                int(run.is_build),
             ),
         )
         self.conn.commit()
@@ -2069,15 +2082,19 @@ class Store:
         )
         self.conn.commit()
 
-    def latest_pipeline_version(self, novel_id: str) -> str | None:
-        """Stamp of the newest `pipeline_run` for the novel; None when the
-        database has never recorded a run, "" when it predates stamping."""
+    def set_pipeline_run_build(self, run_id: str) -> None:
+        self.conn.execute("UPDATE pipeline_run SET is_build=1 WHERE run_id=?", (run_id,))
+        self.conn.commit()
+
+    def latest_build(self, novel_id: str) -> PipelineRun | None:
+        """The newest full build for the novel (not a job's bookkeeping row), whatever its status; None when the
+        database never recorded one."""
         row = self.conn.execute(
-            "SELECT pipeline_version FROM pipeline_run WHERE novel_id=?"
+            "SELECT run_id FROM pipeline_run WHERE novel_id=? AND is_build=1"
             " ORDER BY created_at DESC, rowid DESC LIMIT 1",
             (novel_id,),
         ).fetchone()
-        return None if row is None else row["pipeline_version"]
+        return None if row is None else self.get_pipeline_run(row["run_id"])
 
     def get_pipeline_run(self, run_id: str) -> PipelineRun | None:
         row = self.conn.execute(
@@ -2094,6 +2111,7 @@ class Store:
             model_versions_json=row["model_versions_json"],
             created_at=row["created_at"],
             status=StageStatus(row["status"]),
+            is_build=bool(row["is_build"]),
         )
 
     def _stage_run_from_row(self, row: sqlite3.Row) -> StageRun:

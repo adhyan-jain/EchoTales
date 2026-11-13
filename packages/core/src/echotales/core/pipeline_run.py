@@ -192,6 +192,7 @@ def ensure_pipeline_run(
     source_digest: str,
     run_id: str | None = None,
     pipeline_version: str = "",
+    is_build: bool = False,
 ) -> PipelineRun:
     """Fetch an existing `pipeline_run` row or create one. Idempotent by
     `run_id` so re-entering the same run (e.g. resuming a chained stage
@@ -201,13 +202,22 @@ def ensure_pipeline_run(
     `data/db/` carried an empty stamp and a build made before the speaker-join
     fix was indistinguishable from a current one (audit: LotM personas built
     from "0 spoken lines"). A re-entered run is re-stamped to the version now
-    executing, so the stamp always names the newest code that touched it."""
+    executing, so the stamp always names the newest code that touched it.
+
+    `is_build` marks a full build; only those decide whether a database is current (`pipeline/version.py`).
+    Re-entering a run as a build resets it to RUNNING: a rebuild that reuses a finished run's id (same second, same
+    source) must not read as SUCCEEDED while it is still rewriting the graph."""
     rid = run_id or new_run_id(novel_id, source_digest)
     existing = store.get_pipeline_run(rid)
     if existing is not None:
         if pipeline_version and existing.pipeline_version != pipeline_version:
             store.set_pipeline_run_version(rid, pipeline_version)
             existing.pipeline_version = pipeline_version
+        if is_build:
+            store.set_pipeline_run_build(rid)
+            store.update_pipeline_run_status(rid, StageStatus.RUNNING)
+            existing.is_build = True
+            existing.status = StageStatus.RUNNING
         return existing
     run = PipelineRun(
         run_id=rid,
@@ -216,6 +226,7 @@ def ensure_pipeline_run(
         created_at=time.time(),
         status=StageStatus.RUNNING,
         pipeline_version=pipeline_version,
+        is_build=is_build,
     )
     store.add_pipeline_run(run)
     return run
