@@ -891,8 +891,8 @@ def _stored_spans(store: Store, chapter: Chapter) -> list[_SpanRow]:
 def _tile_chapter(chapter: Chapter, spans: list[_SpanRow]) -> tuple[list[Shortfall], int, int]:
     """Returns (shortfalls, characters in blocks, characters inside spans).
 
-    Allowed normalisation, and nothing else: a span's text is its [start:end) slice with surrounding whitespace
-    stripped, and whitespace between spans is not covered (`split_block` drops whitespace-only pieces)."""
+    A span's text is exactly its [start:end) slice (mention offsets are built from span.start); the only characters
+    left uncovered are whitespace between spans."""
     shortfalls: list[Shortfall] = []
     per_block: dict[int, list[_SpanRow]] = {}
     for s in spans:
@@ -930,7 +930,7 @@ def _tile_chapter(chapter: Chapter, spans: list[_SpanRow]) -> tuple[list[Shortfa
                               f"{len(text[cursor : r.start].strip())} characters reach no span",
                               _excerpt(text[cursor : r.start]))
                 )
-            if r.text != text[r.start : r.end].strip():
+            if r.text != text[r.start : r.end]:
                 shortfalls.append(
                     Shortfall(chapter.number, f"block {block.index}, span {r.id}",
                               "span text differs from the block slice it claims", _excerpt(r.text))
@@ -957,7 +957,7 @@ def _tile_chapter(chapter: Chapter, spans: list[_SpanRow]) -> tuple[list[Shortfa
     Stage.SPANS,
     "spans.tiling",
     "the spans of each block (as classify_chapter builds them from the stored blocks) tile its text with no gap and "
-    "no overlap; only whitespace between spans and a span's surrounding whitespace is dropped",
+    "no overlap; a span's text is exactly its [start:end) slice and only whitespace between spans is uncovered",
 )
 def check_spans_tiling(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
     chk = _find(Stage.SPANS, "spans.tiling")

@@ -370,16 +370,20 @@ def classify_block_spans(
             if span_type in (SpanType.DIALOGUE, SpanType.INNER_MONOLOGUE)
             else extract_delivery_markers(raw.text)
         )
+        # start/end must describe the stored (stripped) text: they were the unstripped bounds, so
+        # `span.start + hit.start` put 2,527 of 20,479 RI mentions (649/3,304 spans in P&P) off by the lead.
+        text = raw.text.strip()
+        start = raw.start + (len(raw.text) - len(raw.text.lstrip()))
         out.append(
             Span(
                 id=f"{novel_id}:{chapter:g}:{block.index}:{i}",
                 novel_id=novel_id,
                 chapter=chapter,
                 block_index=block.index,
-                start=raw.start,
-                end=raw.end,
+                start=start,
+                end=start + len(text),
                 span_type=span_type,
-                text=raw.text.strip(),
+                text=text,
                 delivery_markers=[m.text for m in markers],
             )
         )

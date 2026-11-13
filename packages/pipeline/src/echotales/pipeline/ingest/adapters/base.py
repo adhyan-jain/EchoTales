@@ -12,6 +12,7 @@ code change.
 
 from __future__ import annotations
 
+import copy
 import re
 from collections.abc import Iterator
 from dataclasses import dataclass, field, replace
@@ -103,18 +104,32 @@ def extract_block(
     raw = "".join(parts)
     text = _normalise_ws(raw)
 
-    # Re-map emphasis offsets onto the whitespace-normalised string. Doing this
-    # by re-walking is simpler and less error-prone than tracking a shifting
-    # delta through the walk above.
+    # Carry each range through a raw-to-normalised index map. `text.find(fragment)` put a range on the first
+    # occurrence of its words, which misplaced 173 of 999 RI emphasis blocks and 102 of 357 in P&P.
+    collapsed = _WS.sub(" ", raw)
+    lead = len(collapsed) - len(collapsed.lstrip())
+    pos: list[int] = []
+    n = 0
+    in_ws = False
+    for ch in raw:
+        if ch.isspace():
+            if not in_ws:
+                n += 1
+            in_ws = True
+            pos.append(n - 1)
+        else:
+            n += 1
+            in_ws = False
+            pos.append(n - 1)
     mapped: list[tuple[int, int]] = []
     if italics and text:
         for start, end in italics:
-            fragment = _normalise_ws(raw[start:end])
-            if not fragment:
-                continue
-            idx = text.find(fragment)
-            if idx >= 0:
-                mapped.append((idx, idx + len(fragment)))
+            while start < end and raw[start].isspace():
+                start += 1
+            while end > start and raw[end - 1].isspace():
+                end -= 1
+            if start < end:
+                mapped.append((pos[start] - lead, pos[end - 1] + 1 - lead))
 
     tag_name = etree.QName(element).localname.lower()
     classes = tuple((element.get("class") or "").split())
@@ -141,29 +156,102 @@ def _merge_ranges(ranges: list[tuple[int, int]]) -> list[tuple[int, int]]:
     return merged
 
 
+#: epub:type / role values that mark a translator's footnote or endnote.
+_NOTE_TYPES = frozenset({"footnote", "endnote", "rearnote", "doc-footnote", "doc-endnote"})
+
+
+def is_note_element(element: etree._Element) -> bool:
+    """A footnote `<aside>`: ORV's translator notes live in these, 572 words over 22 chapters that were dropped."""
+    if not isinstance(element.tag, str) or etree.QName(element).localname.lower() != "aside":
+        return False
+    kinds = f"{element.get('epub:type') or ''} {element.get('role') or ''}".lower().split()
+    return any(k in _NOTE_TYPES for k in kinds)
+
+
+def _is_block(element: etree._Element) -> bool:
+    if not isinstance(element.tag, str):
+        return False
+    return etree.QName(element).localname.lower() in BLOCK_TAGS or is_note_element(element)
+
+
+def _has_block_descendant(element: etree._Element) -> bool:
+    return any(_is_block(d) for d in element.iterdescendants())
+
+
+@dataclass(slots=True)
+class StrayText:
+    """Text a block container holds directly beside its block children, and where it sits in the document."""
+
+    element: etree._Element  # a synthetic <p> carrying the text and any inline markup
+    container: etree._Element
+    after: etree._Element | None  # the block child this text follows; None when it opens the container
+
+
+def _run_element(items: list[str | etree._Element]) -> etree._Element | None:
+    holder = etree.Element("p")
+    for item in items:
+        if isinstance(item, str):
+            if len(holder):
+                holder[-1].tail = (holder[-1].tail or "") + item
+            else:
+                holder.text = (holder.text or "") + item
+        else:
+            holder.append(copy.deepcopy(item))
+    return holder if "".join(holder.itertext()).strip() else None
+
+
+def iter_block_items(root: etree._Element) -> Iterator[etree._Element | StrayText]:
+    """`iter_block_elements` plus a container's own text and tails as `StrayText`, in document order.
+
+    `iter_block_elements` skipped a container in favour of its children and so dropped any text sitting directly
+    beside them."""
+
+    def walk(element: etree._Element) -> Iterator[etree._Element | StrayText]:
+        if not isinstance(element.tag, str):
+            return
+        tag = etree.QName(element).localname.lower()
+        if tag in BREAK_TAGS or is_note_element(element):
+            yield element
+            return
+        if tag not in BLOCK_TAGS:
+            for child in element:
+                yield from walk(child)
+            return
+        if not _has_block_descendant(element):
+            yield element
+            return
+        items: list[str | etree._Element] = [element.text] if element.text else []
+        after: etree._Element | None = None
+        for child in element:
+            if _is_block(child) or (isinstance(child.tag, str) and (
+                etree.QName(child).localname.lower() in BREAK_TAGS or _has_block_descendant(child)
+            )):
+                holder = _run_element(items)
+                if holder is not None:
+                    yield StrayText(holder, element, after)
+                yield from walk(child)
+                items = [child.tail] if child.tail else []
+                after = child
+            elif isinstance(child.tag, str):
+                items.append(child)
+            elif child.tail:
+                items.append(child.tail)
+        holder = _run_element(items)
+        if holder is not None:
+            yield StrayText(holder, element, after)
+
+    yield from walk(root)
+
+
 def iter_block_elements(root: etree._Element) -> Iterator[etree._Element]:
     """Yield leaf-ish block elements in document order.
 
     A container that holds other block elements is skipped in favour of its
     children, so a wrapper `<div>` does not swallow the paragraphs inside it.
     """
-    for element in root.iter():
-        if not isinstance(element.tag, str):
-            continue
-        tag = etree.QName(element).localname.lower()
-        if tag in BREAK_TAGS:
-            yield element
-            continue
-        if tag not in BLOCK_TAGS:
-            continue
-        if any(
-            isinstance(child.tag, str)
-            and etree.QName(child).localname.lower() in BLOCK_TAGS
-            for child in element.iter()
-            if child is not element
-        ):
-            continue
-        yield element
+    for item in iter_block_items(root):
+        if not isinstance(item, StrayText):
+            yield item
 
 
 #: "*** END OF THE PROJECT GUTENBERG EBOOK ... ***" and its older spellings; everything after it is licence text.
@@ -202,6 +290,16 @@ def _anchor_window(tree: etree._Element, entry: TocEntry):  # type: ignore[no-un
         before_end = end_i is None or (i < end_i and element not in end_ancestors)
         return after_start and before_end
 
+    def keep_stray(stray: StrayText) -> bool:
+        # A container's loose text has no element of its own: place it just after its container's start tag or
+        # after the block child it follows, so a title-page line before the first anchor is not pulled into chapter 1.
+        last = list(stray.after.iter())[-1] if stray.after is not None else stray.container
+        i = order.get(last)
+        if i is None:
+            return False
+        return i + 0.5 >= start_i and (end_i is None or i + 0.5 < end_i)
+
+    keep.stray = keep_stray  # type: ignore[attr-defined]
     return keep
 
 
@@ -306,9 +404,15 @@ class SourceAdapter:
         # sit on the far side of a second separator from the note label
         # itself and is still back matter.
         in_note = False
-        for element in iter_block_elements(root):
-            if window is not None and not window(element):
-                continue
+        for item in iter_block_items(root):
+            if isinstance(item, StrayText):
+                if window is not None and not window.stray(item):
+                    continue
+                element = item.element
+            else:
+                element = item
+                if window is not None and not window(element):
+                    continue
             raw_block = extract_block(element, italic_classes=italic_classes)
             if _GUTENBERG_END.match(raw_block.text or ""):
                 break  # the licence footer after the last chapter is not story
@@ -323,7 +427,7 @@ class SourceAdapter:
             if self.should_skip_block(raw_block, len(blocks)):
                 continue
 
-            if in_note:
+            if in_note or is_note_element(element):
                 classified = ClassifiedBlock(BlockType.TRANSLATOR_NOTE, raw_block.text.strip(), {})
             else:
                 classified = classify_block(
