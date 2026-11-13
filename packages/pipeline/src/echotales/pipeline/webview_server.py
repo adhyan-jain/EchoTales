@@ -68,6 +68,7 @@ from echotales.core.models import Job
 from echotales.core.store import Store
 from echotales.pipeline import paths, research_demo
 from echotales.pipeline.compute import default_image_engine
+from echotales.pipeline.errors import ErrorCode
 from echotales.pipeline._multipart import MultipartError, parse_single_file
 from echotales.pipeline.corrections import (
     AppliedCorrectionError,
@@ -83,6 +84,7 @@ from echotales.pipeline.jobs import (
     JobQueue,
     http_engine_known,
     new_job_id,
+    pipeline_stage_names,
 )
 from echotales.pipeline.webview import (
     NovelSource,
@@ -539,8 +541,65 @@ class ProjectBusyError(RuntimeError):
     """The project has a PENDING or RUNNING job, so deleting it would pull the database from under the worker."""
 
 
-def _job_json(job: Job) -> dict:  # type: ignore[type-arg]
+#: The kind a plain error status means when the site names none; refusals and the 409 cases carry their own.
+_STATUS_CODES = {
+    400: ErrorCode.BAD_REQUEST, 401: ErrorCode.UNAUTHORIZED, 403: ErrorCode.FORBIDDEN, 404: ErrorCode.NOT_FOUND,
+    409: ErrorCode.CONFLICT, 413: ErrorCode.PAYLOAD_TOO_LARGE, 500: ErrorCode.INTERNAL,
+    501: ErrorCode.NOT_IMPLEMENTED,
+}
+
+
+def _refusal_body(refusal: str) -> dict:  # type: ignore[type-arg]
+    """A refusal's message plus the kind it was produced with (`errors.Refusal`); a bare string is a plain conflict."""
+    return {"error": str(refusal), "code": getattr(refusal, "code", ErrorCode.CONFLICT)}
+
+
+def _split_path(path: str) -> list[str]:
+    """Split first, then decode each segment exactly once. The React client sends
+    `encodeURIComponent(id)`; decoding only some routes' segments filed a voice override under
+    the still-encoded id `x%3Aself%3Aab` (200, no character matched). Splitting before decoding
+    keeps an encoded `%2F` inside one segment. Double-encoded input is NOT tolerated: nothing in
+    webview/src/api.js double-encodes, and a second decode would corrupt an id with a literal `%`."""
+    return [unquote(seg) for seg in path.strip("/").split("/")]
+
+
+_RUNNING_OR_DONE = ("RUNNING", "SUCCEEDED", "PARTIAL", "FAILED", "INTERRUPTED")
+
+
+def _job_progress(job: Job, stages: list[tuple[str, str]]) -> dict:  # type: ignore[type-arg]
+    """Where a job is, from the stage rows it has already written (no polling or streaming).
+
+    `stage` is the RUNNING stage, else the last one finished. `stage_index` is 1-based and 0 before the job starts;
+    a SUCCEEDED job is `stage_count` of `stage_count`, so a build that skipped its optional model stages does not
+    read as stopped one short. A single-stage kind counts 1 of 1."""
+    count, names = 1, None
+    if job.kind == "pipeline":
+        try:
+            params = json.loads(job.params_json or "{}")
+        except ValueError:
+            params = {}
+        names = pipeline_stage_names(params if isinstance(params, dict) else {})
+        count = len(names)
+    running = [n for n, st in stages if st == "RUNNING"]
+    stage = running[-1] if running else (stages[-1][0] if stages else None)
+    started = job.status.value in _RUNNING_OR_DONE
+    if stage is None and started and names is None:
+        stage = job.kind
+    if names is not None:
+        index = names.index(stage) + 1 if stage in names else 0
+    else:
+        index = 1 if started else 0
+    if job.status.value == "SUCCEEDED":
+        index = count
+    elapsed = None
+    if job.started_at:
+        elapsed = round((job.finished_at or time.time()) - job.started_at, 1)
+    return {"stage": stage, "stage_index": index, "stage_count": count, "elapsed_s": elapsed}
+
+
+def _job_json(job: Job, stages: list[tuple[str, str]] | None = None) -> dict:  # type: ignore[type-arg]
     return {
+        **_job_progress(job, stages or []),
         "job_id": job.job_id,
         "novel_id": job.novel_id,
         "kind": job.kind,
@@ -680,7 +739,8 @@ def _project_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
         "ingested": bool(chapters),
         "chapter_count": len(chapters),
         "job_count": len(jobs),
-        "last_job": _job_json(jobs[0]) if jobs else None,
+        "last_job": _job_json(jobs[0], handle.store.stage_progress_by_run([jobs[0].run_id]).get(jobs[0].run_id))
+        if jobs else None,
         **_genre_status(handle),
     }
 
@@ -896,6 +956,8 @@ def make_handler(
             self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
         def _json(self, status: int, body: object) -> None:
+            if isinstance(body, dict) and "error" in body and "code" not in body and status in _STATUS_CODES:
+                body["code"] = _STATUS_CODES[status]  # additive: old clients read only `error`
             data = json.dumps(body, ensure_ascii=False).encode("utf-8")
             self.send_response(status)
             self._cors()
@@ -1017,7 +1079,7 @@ def make_handler(
             # server (React review, 2026-09-26). The query token is accepted on
             # the output-file route only -- never on the JSON API.
             url = urlparse(self.path)
-            parts = url.path.strip("/").split("/")
+            parts = _split_path(url.path)
             if self.command in ("GET", "HEAD") and len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3:] == ["output", "file"]:
                 return sessions.valid(parse_qs(url.query).get("access_token", [""])[0])
             return False
@@ -1031,7 +1093,7 @@ def make_handler(
             self.end_headers()
 
         def do_GET(self) -> None:
-            parts = urlparse(self.path).path.strip("/").split("/")
+            parts = _split_path(urlparse(self.path).path)
             try:
                 # The built frontend is served before the auth check: the
                 # login screen itself is part of it, so gating it behind a
@@ -1089,12 +1151,12 @@ def make_handler(
                     handle = registry.handles.get(parts[2])
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    # Titles come from the store, not `handle.payload()`: its chapter rows carry only `number` and
+                    # `spans`, so every title read empty (demo `titles` step), and building that payload just to
+                    # list titles is the 9.4 MB cost this route exists to avoid.
                     return self._json(
                         200,
-                        [
-                            {"number": c["number"], "title": c.get("title", "")}
-                            for c in handle.payload().get("chapters", [])
-                        ],
+                        [{"number": n, "title": t} for n, t in handle.store.chapter_titles(parts[2])],
                     )
                 if len(parts) == 4 and parts[:2] == ["api", "novels"] and parts[3] == "characters":
                     handle = registry.handles.get(parts[2])
@@ -1140,9 +1202,9 @@ def make_handler(
                     handle = registry.handles.get(parts[2])
                     if handle is None:
                         return self._json(404, {"error": f"unknown project {parts[2]!r}"})
-                    return self._json(
-                        200, [_job_json(j) for j in handle.store.list_jobs(parts[2])]
-                    )
+                    jobs = handle.store.list_jobs(parts[2])
+                    progress = handle.store.stage_progress_by_run([j.run_id for j in jobs])
+                    return self._json(200, [_job_json(j, progress.get(j.run_id)) for j in jobs])
 
                 if (
                     len(parts) == 5 and parts[:2] == ["api", "projects"] and parts[3] == "jobs"
@@ -1157,7 +1219,7 @@ def make_handler(
                     return self._json(
                         200,
                         {
-                            **_job_json(job),
+                            **_job_json(job, [(r.stage_name, r.status.value) for r in run_rows]),
                             "stage_runs": [
                                 {
                                     "stage_run_id": r.stage_run_id,
@@ -1203,7 +1265,7 @@ def make_handler(
                     and parts[3] == "characters" and parts[5] in ("sheets", "turnarounds")
                 ):
                     novel_id = parts[2]
-                    self_id = unquote(unquote(parts[4]))
+                    self_id = parts[4]
                     handle = registry.handles.get(novel_id)
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {novel_id!r}"})
@@ -1247,7 +1309,7 @@ def make_handler(
 
                 if len(parts) == 6 and parts[:2] == ["api", "novels"] and parts[3] == "locations" and parts[5] == "plates":
                     novel_id = parts[2]
-                    loc_id = unquote(unquote(parts[4]))
+                    loc_id = parts[4]
                     handle = registry.handles.get(novel_id)
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {novel_id!r}"})
@@ -1272,7 +1334,7 @@ def make_handler(
                     and parts[3] == "assets" and parts[4] == "candidate" and parts[6] == "image"
                 ):
                     novel_id = parts[2]
-                    cand_id = unquote(unquote(parts[5]))
+                    cand_id = parts[5]
                     handle = registry.handles.get(novel_id)
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {novel_id!r}"})
@@ -1306,7 +1368,7 @@ def make_handler(
                         return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
                     from echotales.pipeline.review_gate import character_timeline
 
-                    result = character_timeline(handle.store, parts[2], unquote(unquote(parts[4])))
+                    result = character_timeline(handle.store, parts[2], parts[4])
                     if result is None:
                         return self._json(404, {"error": "unknown character"})
                     return self._json(200, result)
@@ -1533,7 +1595,7 @@ def make_handler(
 
 
         def do_POST(self) -> None:
-            parts = urlparse(self.path).path.strip("/").split("/")
+            parts = _split_path(urlparse(self.path).path)
             if not self._origin_allowed():
                 return self._json(403, {"error": "cross-site request refused"})
             try:
@@ -1601,26 +1663,31 @@ def make_handler(
                     from echotales.core.models import Attribute, DiscoursePosition
                     from echotales.pipeline.persona.build import persona_at
 
+                    if handle.store.get_self(parts[4]) is None:
+                        return self._json(404, {"error": f"unknown character {parts[4]!r}"})
                     persona_id = persona_at(handle.store, parts[4])
                     # A user override is a standing fact from the moment it's
                     # made, with no attested story-time position of its own
                     # (it didn't come from narration) -- story position 0.0,
                     # open-ended, same convention `persona/build.py` uses for
                     # a trait attested from the character's first appearance.
-                    handle.store.add_attribute(
-                        parts[2],
-                        Attribute(
-                            target_kind=TargetKind.PERSONA,
-                            target_id=persona_id,
-                            key="voice_override",
-                            value=speaker_id,
-                            learned_at_pos=DiscoursePosition(chapter=0, offset=0),
-                            observer_id="reviewer",
-                            asserted_by=AssertedBy.NARRATOR,
-                            evidence=str(body.get("note", "user override via webview")),
-                            interval=FuzzyInterval.open_ended(0.0),
-                        ),
-                    )
+                    # `add_attribute` does not commit (bulk pipeline callers batch it); without this the row sat
+                    # in an open transaction: a second connection saw nothing and its writes hit "database is locked".
+                    with handle.store.transaction():
+                        handle.store.add_attribute(
+                            parts[2],
+                            Attribute(
+                                target_kind=TargetKind.PERSONA,
+                                target_id=persona_id,
+                                key="voice_override",
+                                value=speaker_id,
+                                learned_at_pos=DiscoursePosition(chapter=0, offset=0),
+                                observer_id="reviewer",
+                                asserted_by=AssertedBy.NARRATOR,
+                                evidence=str(body.get("note", "user override via webview")),
+                                interval=FuzzyInterval.open_ended(0.0),
+                            ),
+                        )
                     handle.invalidate()
                     return self._json(200, {"self_id": parts[4], "voice_override": speaker_id})
 
@@ -1639,6 +1706,8 @@ def make_handler(
                         return self._json(400, {"error": "candidate_id is required"})
                     from echotales.pipeline.persona import refimg
 
+                    if handle.store.get_self(parts[4]) is None:
+                        return self._json(404, {"error": f"unknown character {parts[4]!r}"})
                     candidate = refimg.select_candidate(
                         handle.store, parts[2], parts[4], candidate_id,
                         actor="reviewer", note=str(body.get("note", "")),
@@ -1715,8 +1784,8 @@ def make_handler(
                     and parts[7] in ("approve", "reject")
                 ):
                     novel_id = parts[2]
-                    loc_id = unquote(unquote(parts[4]))
-                    plate_id = unquote(unquote(parts[6]))
+                    loc_id = parts[4]
+                    plate_id = parts[6]
                     action = parts[7]
                     handle = registry.handles.get(novel_id)
                     if handle is None:
@@ -1738,8 +1807,8 @@ def make_handler(
                     and parts[7] in ("approve", "reject")
                 ):
                     novel_id = parts[2]
-                    self_id = unquote(unquote(parts[4]))
-                    candidate_id = unquote(unquote(parts[6]))
+                    self_id = parts[4]
+                    candidate_id = parts[6]
                     action = parts[7]
                     handle = registry.handles.get(novel_id)
                     if handle is None:
@@ -1765,7 +1834,7 @@ def make_handler(
                     try:
                         return self._json(200, lock_bible(handle.store, parts[2], str(body.get("note", "")) if isinstance(body, dict) else ""))
                     except StaleBuild as exc:
-                        return self._json(409, {"error": str(exc)})
+                        return self._json(409, {"error": str(exc), "code": ErrorCode.STALE_BUILD})
 
                 # POST /api/novels/<id>/review-items/<item_id>/resolve
                 if (
@@ -1842,7 +1911,7 @@ def make_handler(
                     and parts[3] == "characters" and parts[5] == "turnarounds" and parts[6] == "generate"
                 ):
                     novel_id = parts[2]
-                    self_id = unquote(unquote(parts[4]))
+                    self_id = parts[4]
                     handle = registry.handles.get(novel_id)
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {novel_id!r}"})
@@ -1876,7 +1945,7 @@ def make_handler(
                     and parts[3] == "locations" and parts[5] == "plates" and parts[6] == "generate"
                 ):
                     novel_id = parts[2]
-                    loc_id = unquote(unquote(parts[4]))
+                    loc_id = parts[4]
                     handle = registry.handles.get(novel_id)
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {novel_id!r}"})
@@ -2017,7 +2086,10 @@ def make_handler(
                     ):
                         now = handle.store.get_job(parts[4])
                         state = now.status.value if now is not None else "gone"
-                        return self._json(409, {"error": f"job is {state}; only a queued job can be cancelled"})
+                        return self._json(409, {
+                            "error": f"job is {state}; only a queued job can be cancelled",
+                            "code": ErrorCode.JOB_NOT_CANCELLABLE,
+                        })
                     return self._json(200, _job_json(handle.store.get_job(parts[4])))
 
                 if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] in JOB_KINDS:
@@ -2050,7 +2122,7 @@ def make_handler(
                         requested = str(params.get("engine") or default_image_engine())
                         refusal = _gpu_refusal(requested) or _stale_build_refusal(handle, parts[2], requested)
                         if refusal:
-                            return self._json(409, {"error": refusal})
+                            return self._json(409, _refusal_body(refusal))
                         params = _with_genre(handle, params)
                     if kind == "pipeline":
                         # The resolve stage reads the project's review decisions; the path comes from the server's
@@ -2068,7 +2140,7 @@ def make_handler(
 
                         refusal = voice_refusal(handle.store, parts[2], voice_engine, handle.corrections)
                         if refusal:
-                            return self._json(409, {"error": refusal})
+                            return self._json(409, _refusal_body(refusal))
                     if "sources_path" not in params:
                         default_sources = registry.project_asset_dir(parts[2]) / "sources.toml"
                         if default_sources.is_file():
@@ -2113,7 +2185,7 @@ def make_handler(
                         return self._json(400, {"error": bad_density})
                     refusal = _gpu_refusal(engine_name) or _stale_build_refusal(handle, parts[2], engine_name)
                     if refusal:
-                        return self._json(409, {"error": refusal})
+                        return self._json(409, _refusal_body(refusal))
                     return self._json(202, self._enqueue(handle, "render", _with_genre(handle, dict(body))))
 
                 if (
@@ -2135,7 +2207,7 @@ def make_handler(
                         )
                     refusal = _gpu_refusal(engine_name)
                     if refusal:
-                        return self._json(409, {"error": refusal})
+                        return self._json(409, _refusal_body(refusal))
                     return self._json(202, self._enqueue(handle, "reference_gen", _with_genre(handle, dict(body))))
 
                 if (
@@ -2157,6 +2229,8 @@ def make_handler(
                     handle = registry.handles.get(parts[2])
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    if handle.store.get_self(parts[4]) is None:
+                        return self._json(404, {"error": f"unknown character {parts[4]!r}"})
                     return self._json(
                         202, self._enqueue(handle, "refimg_search", {"self_ids": [parts[4]]})
                     )
@@ -2169,6 +2243,8 @@ def make_handler(
                     handle = registry.handles.get(parts[2])
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    if handle.store.get_self(parts[4]) is None:
+                        return self._json(404, {"error": f"unknown character {parts[4]!r}"})
                     content_type_header = self.headers.get("Content-Type", "")
                     if "multipart/form-data" not in content_type_header:
                         return self._json(400, {"error": "expected multipart/form-data upload"})
@@ -2199,7 +2275,7 @@ def make_handler(
             self._json(404, {"error": "not found"})
 
         def do_DELETE(self) -> None:
-            parts = urlparse(self.path).path.strip("/").split("/")
+            parts = _split_path(urlparse(self.path).path)
             if not self._origin_allowed():
                 return self._json(403, {"error": "cross-site request refused"})
             try:
@@ -2219,6 +2295,7 @@ def make_handler(
                         return self._json(409, {
                             "error": f"correction {parts[4]!r} has already been applied to the database; "
                             "removing its record would leave a human edit with no provenance, so it is kept",
+                            "code": ErrorCode.APPLIED_CORRECTION,
                         })
                     if removed:
                         handle.invalidate()
@@ -2230,7 +2307,7 @@ def make_handler(
                     except PermissionError as exc:
                         return self._json(403, {"error": str(exc)})
                     except ProjectBusyError as exc:
-                        return self._json(409, {"error": str(exc)})
+                        return self._json(409, {"error": str(exc), "code": ErrorCode.PROJECT_BUSY})
                     return self._json(200, {"removed": removed})
             except Exception as exc:
                 log.exception("DELETE %s failed", self.path)

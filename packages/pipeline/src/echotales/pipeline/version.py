@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from echotales.core.models import StageStatus
 from echotales.core.store import Store
+from echotales.pipeline.errors import ErrorCode, Refusal
 
 #: "2" = the reader-pass era (evidence-quoted deltas, text-only canon). "" and "1" are everything built before.
 PIPELINE_VERSION = "2"
@@ -25,22 +26,28 @@ def staleness_reason(store: Store, novel_id: str) -> str | None:
     recorded build is stale: it was filled by something that never stamped."""
     build = store.latest_build(novel_id)
     if build is None:
-        return (
+        return Refusal(
             f"{novel_id!r} has no recorded build; the current pipeline is version {PIPELINE_VERSION!r}. "
-            "Rebuild it (echotales run) before a real render."
+            "Rebuild it (echotales run) before a real render.",
+            ErrorCode.STALE_BUILD,
         )
     if build.status == StageStatus.RUNNING:
-        return f"A build of {novel_id!r} is still running; wait for it to finish before a real render."
+        return Refusal(
+            f"A build of {novel_id!r} is still running; wait for it to finish before a real render.",
+            ErrorCode.STALE_BUILD,
+        )
     if build.status != StageStatus.SUCCEEDED:
-        return (
+        return Refusal(
             f"The last build of {novel_id!r} did not finish, so its contents are partly rewritten. "
-            "Rebuild it (echotales run) before a real render."
+            "Rebuild it (echotales run) before a real render.",
+            ErrorCode.STALE_BUILD,
         )
     stamp = build.pipeline_version
     if stamp == PIPELINE_VERSION:
         return None
     seen = f"build stamp {stamp!r}" if stamp else "an unstamped build"
-    return (
+    return Refusal(
         f"{novel_id!r} has {seen}; the current pipeline is version {PIPELINE_VERSION!r}. "
-        "Rebuild it (echotales run) before a real render."
+        "Rebuild it (echotales run) before a real render.",
+        ErrorCode.STALE_BUILD,
     )

@@ -30,15 +30,8 @@ def test_demo_runs_every_step(steps: dict) -> None:
         "project", "upload", "build", "read", "titles", "correct", "lock", "voice", "m4b", "render",
     ]
     assert list(steps) == expected
-    failed = {n: s.detail for n, s in steps.items() if not s.ok and n != "titles"}
+    failed = {n: s.detail for n, s in steps.items() if not s.ok}
     assert not failed, failed
     # Stub audio is silent, so the server must refuse the M4B; that refusal is the correct outcome.
     assert steps["m4b"].expected_refusal
 
-
-# webview_server.py reads c.get("title") from payload chapters that webview.py builds without one.
-@pytest.mark.xfail(
-    strict=True, reason="GET /api/novels/<id>/chapters returns an empty title for every chapter"
-)
-def test_chapters_route_serves_titles(steps: dict) -> None:
-    assert steps["titles"].ok, steps["titles"].detail

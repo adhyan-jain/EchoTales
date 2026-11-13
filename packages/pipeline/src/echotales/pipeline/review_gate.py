@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 
 from echotales.core.enums import SpanType, TargetKind
 from echotales.core.store import Store
+from echotales.pipeline.errors import ErrorCode, Refusal
 from echotales.pipeline.version import PIPELINE_VERSION, staleness_reason
 
 #: Span types that carry a quoted line a person can have said.
@@ -234,7 +235,10 @@ def voice_refusal(store: Store, novel_id: str, engine_name: str, corrections: ob
         return reason
     pending = corrections.summary()["pending_actionable"] if corrections is not None else 0  # type: ignore[attr-defined]
     if pending:
-        return f"{novel_id!r} has {pending} review decision(s) not applied yet; apply them before voicing."
+        return Refusal(
+            f"{novel_id!r} has {pending} review decision(s) not applied yet; apply them before voicing.",
+            ErrorCode.PENDING_CORRECTIONS,
+        )
     return None
 
 
@@ -242,8 +246,14 @@ def unlocked_reason(store: Store, novel_id: str) -> str | None:
     """Why a real render must not read this bible, or None: no lock yet, or edits since the last lock."""
     status = bible_status(store, novel_id)["current"]
     if status["locked_version"] is None:
-        return f"{novel_id!r} has no locked canon; review it and lock a version before a real render."
+        return Refusal(
+            f"{novel_id!r} has no locked canon; review it and lock a version before a real render.",
+            ErrorCode.BIBLE_UNLOCKED,
+        )
     if status["dirty"]:
         chapters = ", ".join(str(c) for c in status["changed_chapters"][:10])
-        return f"{novel_id!r} has edits since canon v{status['locked_version']} (chapters {chapters}); lock a new version first."
+        return Refusal(
+            f"{novel_id!r} has edits since canon v{status['locked_version']} (chapters {chapters}); lock a new version first.",
+            ErrorCode.BIBLE_UNLOCKED,
+        )
     return None

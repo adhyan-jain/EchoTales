@@ -809,6 +809,13 @@ class Store:
                 blocks=json.loads(row["blocks_json"]),
             )
 
+    def chapter_titles(self, novel_id: str) -> list[tuple[float, str]]:
+        """(number, title) in order without parsing `blocks_json`, which is most of a chapter row."""
+        cur = self.conn.execute(
+            "SELECT number, title FROM chapter WHERE novel_id=? ORDER BY number", (novel_id,)
+        )
+        return [(r["number"], r["title"] or "") for r in cur]
+
     def chapter_count(self, novel_id: str) -> int:
         row = self.conn.execute(
             "SELECT COUNT(*) AS n FROM chapter WHERE novel_id=?", (novel_id,)
@@ -2209,6 +2216,22 @@ class Store:
             "SELECT * FROM stage_run WHERE run_id=? ORDER BY started_at", (run_id,)
         )
         return [self._stage_run_from_row(r) for r in cur.fetchall()]
+
+    def stage_progress_by_run(self, run_ids: Sequence[str]) -> dict[str, list[tuple[str, str]]]:
+        """(stage_name, status) per run in start order, for many runs in one query. The job list is polled every
+        2 s, so a `list_stage_runs` call per job would be a query per job per poll."""
+        out: dict[str, list[tuple[str, str]]] = {}
+        ids = [r for r in run_ids if r]
+        for i in range(0, len(ids), 500):  # SQLite caps bound variables
+            chunk = ids[i : i + 500]
+            cur = self.conn.execute(
+                "SELECT run_id, stage_name, status FROM stage_run"
+                f" WHERE run_id IN ({','.join('?' * len(chunk))}) ORDER BY started_at",
+                chunk,
+            )
+            for r in cur:
+                out.setdefault(r["run_id"], []).append((r["stage_name"], r["status"]))
+        return out
 
     # ---- scoring evidence (ablation cache) ---------------------------
 

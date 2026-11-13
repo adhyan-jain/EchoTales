@@ -101,6 +101,22 @@ JOB_KINDS = (
 )
 
 
+#: The `pipeline` job's stages in run order. `_run_pipeline` names its stages from here, and the job JSON counts
+#: progress against it, so the two cannot drift. The reader and appearance stages are skipped by params
+#: (`skip_reader`, `skip_appearance`) or when no model client is built, so the count is an upper bound for those.
+PIPELINE_STAGES = (
+    "0 ingest", "2 segment", "3 mentions", "4 speakers", "5 anaphora", "6 resolve",
+    "6b reader", "7 personas", "7b appearance",
+)
+
+
+def pipeline_stage_names(params: dict[str, Any]) -> tuple[str, ...]:
+    skipped = {"6b reader"} if params.get("skip_reader") else set()
+    if params.get("skip_appearance"):
+        skipped.add("7b appearance")
+    return tuple(n for n in PIPELINE_STAGES if n not in skipped)
+
+
 def new_job_id(novel_id: str, kind: str) -> str:
     return f"{novel_id}:{kind}:{uuid.uuid4().hex[:8]}"
 
@@ -220,6 +236,8 @@ def _run_pipeline(store: Store, job_id: str, novel_id: str, params: dict[str, An
     corrections_path = params.get("corrections_path")
     corrections_log = CorrectionLog(Path(corrections_path)) if corrections_path else None
     skip = not params.get("force", False)
+    (s_ingest, s_segment, s_mentions, s_speakers, s_anaphora, s_resolve,
+     s_reader, s_personas, s_appearance) = PIPELINE_STAGES
 
     def stage(name: str, fn: Callable[[], Any]) -> None:
         run_stage(
@@ -229,25 +247,25 @@ def _run_pipeline(store: Store, job_id: str, novel_id: str, params: dict[str, An
         )
 
     try:
-        stage("0 ingest", lambda: ingest_novel(novel_id, store, sources_path=sources_path, chapters=chapters))
-        stage("2 segment", lambda: segment_novel(novel_id, store))
-        stage("3 mentions", lambda: detect_mentions(novel_id, store, lexicon=lexicon, client=client))
-        stage("4 speakers", lambda: attribute_novel(novel_id, store, client=client, llm_chapter_cutoff=0.0))
-        stage("5 anaphora", lambda: anaphora_resolve(novel_id, store, recover_pronoun_speakers=False))
-        stage("6 resolve", lambda: global_resolve(
+        stage(s_ingest, lambda: ingest_novel(novel_id, store, sources_path=sources_path, chapters=chapters))
+        stage(s_segment, lambda: segment_novel(novel_id, store))
+        stage(s_mentions, lambda: detect_mentions(novel_id, store, lexicon=lexicon, client=client))
+        stage(s_speakers, lambda: attribute_novel(novel_id, store, client=client, llm_chapter_cutoff=0.0))
+        stage(s_anaphora, lambda: anaphora_resolve(novel_id, store, recover_pronoun_speakers=False))
+        stage(s_resolve, lambda: global_resolve(
             novel_id, store, lexicon=lexicon, corrections_log=corrections_log, force_rewipe=False
         ))
         if client is not None and not params.get("skip_reader"):
             from echotales.pipeline.reader.runner import read_novel
 
-            stage("6b reader", lambda: read_novel(novel_id, store, client))
-        stage("7 personas", lambda: build_personas(
+            stage(s_reader, lambda: read_novel(novel_id, store, client))
+        stage(s_personas, lambda: build_personas(
             novel_id, store, client=client, prefix_causal=get_settings().persona_prefix_causal
         ))
         if client is not None and not params.get("skip_appearance"):
             from echotales.pipeline.resolve.appearance_extract import extract_appearance
 
-            stage("7b appearance", lambda: extract_appearance(novel_id, store, client=client))
+            stage(s_appearance, lambda: extract_appearance(novel_id, store, client=client))
     except Exception:
         store.update_pipeline_run_status(pipeline_run.run_id, StageStatus.FAILED)
         raise

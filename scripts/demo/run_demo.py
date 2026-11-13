@@ -274,12 +274,12 @@ def run_demo(workdir: Path, on_step: Callable[[Step], None] | None = None) -> li
         return run
 
     try:
-        for name, fn, *soft in (
+        for name, fn in (
             ("project", create),
             ("upload", upload),
             ("build", build),
             ("read", reads),
-            ("titles", titles, True),
+            ("titles", titles),
             ("correct", correct),
             ("lock", lock),
             ("voice", job_step("voice", {"engine": "stub"}, made="audio:*.wav")),
@@ -291,8 +291,7 @@ def run_demo(workdir: Path, on_step: Callable[[Step], None] | None = None) -> li
             ),
             ("render", job_step("render", {"engine": "stub", "chapters": [1]}, made="panels:*.png")),
         ):
-            # A soft step reports a known defect without hiding the steps behind it.
-            if not step(name, fn) and not soft:
+            if not step(name, fn):
                 break
     finally:
         httpd.shutdown()

@@ -202,14 +202,20 @@ class TestChapterList:
         assert _get(port, "/api/novels/nope/chapters")[0] == 404
 
     def test_list_is_small_and_has_numbers(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Uses a registry handle with a stubbed payload: the route must return
-        only number/title, never the spans that make the full payload large."""
+        """The route returns only number/title from the store (never the spans that make the payload large, and
+        never building that payload: its chapter rows carry no title)."""
         monkeypatch.chdir(tmp_path)
         registry = Registry([], corrections_dir=tmp_path / "corrections", projects_dir=tmp_path / "projects")
 
+        class _Store:
+            def chapter_titles(self, novel_id: str):
+                return [(1.0, ""), (12.5, "Half")]
+
         class _Handle:
+            store = _Store()
+
             def payload(self):
-                return {"chapters": [{"number": 1.0, "spans": ["x" * 10000]}, {"number": 12.5, "title": "Half", "spans": []}]}
+                raise AssertionError("the chapter list must not build the full payload")
 
         registry.handles["toy"] = _Handle()  # type: ignore[assignment]
         queue = JobQueue()

@@ -152,7 +152,7 @@ def test_http_queue_timeline_and_lock(gate_server: int) -> None:
     port = gate_server
     status, queue = _call(port, "GET", "/api/novels/gate/review/lines?chapter=1")
     assert status == 200 and queue["total"] == 1 and queue["items"][0]["reason"] == "unnamed"
-    status, timeline = _call(port, "GET", "/api/novels/gate/characters/gate%253Aself%253Aa/timeline")
+    status, timeline = _call(port, "GET", "/api/novels/gate/characters/gate%3Aself%3Aa/timeline")
     assert status == 200 and timeline["label"] == "Alice"
     assert _call(port, "GET", "/api/novels/gate/characters/nobody/timeline")[0] == 404
     assert _call(port, "GET", "/api/novels/gate/review/lines?chapter=abc")[0] == 400

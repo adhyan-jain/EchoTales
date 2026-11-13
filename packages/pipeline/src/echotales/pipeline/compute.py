@@ -47,6 +47,7 @@ import re
 from dataclasses import dataclass
 
 from echotales.pipeline import gpu
+from echotales.pipeline.errors import ErrorCode, Refusal
 
 LOCAL_LOW = "local-low"
 LOCAL_HIGH = "local-high"
@@ -247,27 +248,41 @@ def resource_refusal(engine: str, pol: ComputePolicy | None = None, *, http: boo
     if engine == "stub":
         return None
     if http and engine not in pol.http_engines():
-        return (f"engine {engine!r} is not enabled on this server (ECHOTALES_IMAGE_PROVIDER={pol.image_provider}); "
-                f"enabled: {', '.join(pol.http_engines())}")
+        return Refusal(
+            f"engine {engine!r} is not enabled on this server (ECHOTALES_IMAGE_PROVIDER={pol.image_provider}); "
+            f"enabled: {', '.join(pol.http_engines())}",
+            ErrorCode.RESOURCE_REFUSED,
+        )
     if engine in HOSTED_ENGINES:
         missing = pol.image_missing(engine)
-        return f"the {engine} engine needs {', '.join(missing)}" if missing else None
+        return Refusal(f"the {engine} engine needs {', '.join(missing)}", ErrorCode.RESOURCE_REFUSED) if missing else None
     if engine not in LOCAL_ENGINES:
         return None
     if pol.image_provider != "local":
-        return (f"ECHOTALES_IMAGE_PROVIDER is {pol.image_provider}, so the local engine {engine!r} is off; "
-                "set it to local (or ECHOTALES_COMPUTE=local-low) to use the GPU")
+        return Refusal(
+            f"ECHOTALES_IMAGE_PROVIDER is {pol.image_provider}, so the local engine {engine!r} is off; "
+            "set it to local (or ECHOTALES_COMPUTE=local-low) to use the GPU",
+            ErrorCode.RESOURCE_REFUSED,
+        )
 
     status = gpu.gpu_status()
     if status is None:
-        return f"engine {engine!r} needs an NVIDIA GPU, and none was found on the server"
+        return Refusal(
+            f"engine {engine!r} needs an NVIDIA GPU, and none was found on the server", ErrorCode.RESOURCE_REFUSED
+        )
     if not status.free:
-        return f"the GPU is busy ({status.describe()}); stop what is using it, or queue the stub engine"
+        return Refusal(
+            f"the GPU is busy ({status.describe()}); stop what is using it, or queue the stub engine",
+            ErrorCode.GPU_BUSY,
+        )
     if pol.low:
         free = available_ram_mb()
         if free is not None and free < pol.min_free_ram_mb:
-            return (f"only {free} MiB of RAM is available (local-low needs {pol.min_free_ram_mb}); close other "
-                    "applications, or set ECHOTALES_COMPUTE=local-high to skip this check")
+            return Refusal(
+                f"only {free} MiB of RAM is available (local-low needs {pol.min_free_ram_mb}); close other "
+                "applications, or set ECHOTALES_COMPUTE=local-high to skip this check",
+                ErrorCode.RESOURCE_REFUSED,
+            )
     return None
 
 
