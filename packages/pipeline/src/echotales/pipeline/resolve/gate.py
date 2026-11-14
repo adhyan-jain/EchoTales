@@ -242,6 +242,8 @@ class DeferredCase:
     candidates: list[Candidate] = field(default_factory=list)
     reason: str = ""
     attempts: int = 0
+    #: What the LLM adjudicator said when it also could not decide; shown to the reviewer.
+    adjudication: str = ""
 
 
 class DeferredQueue:
@@ -253,11 +255,13 @@ class DeferredQueue:
     """
 
     def __init__(self, max_attempts: int = 3) -> None:
-        self._cases: dict[str, DeferredCase] = {}
+        self._cases: dict[tuple[float, str], DeferredCase] = {}
         self.max_attempts = max_attempts
 
     def add(self, case: DeferredCase) -> None:
-        self._cases[case.group_id] = case
+        # Keyed by chapter too: local group ids ("g19") restart in every chapter, and keying on the id alone let
+        # a later chapter silently overwrite an earlier deferred case (3 of 13 on Lord of the Mysteries).
+        self._cases[(case.chapter, case.group_id)] = case
 
     def pop_ready(self) -> list[DeferredCase]:
         """Take every case still worth retrying."""
@@ -270,8 +274,11 @@ class DeferredQueue:
         """Cases that have run out of retries and need escalation."""
         return [c for c in self._cases.values() if c.attempts >= self.max_attempts]
 
-    def remove(self, group_id: str) -> None:
-        self._cases.pop(group_id, None)
+    def cases(self) -> list[DeferredCase]:
+        return list(self._cases.values())
+
+    def remove(self, case: DeferredCase) -> None:
+        self._cases.pop((case.chapter, case.group_id), None)
 
     def __len__(self) -> int:
         return len(self._cases)

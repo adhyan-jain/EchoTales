@@ -78,6 +78,10 @@ _NON_FOUNDING_ALIAS_TYPES = frozenset({AliasType.RELATIONAL_DEICTIC, AliasType.T
 _KIND_UNKNOWN_WARN_THRESHOLD = 0.30
 
 
+def _can_found(mentions: list[Mention]) -> bool:
+    return any(m.alias_type.enters_graph and m.alias_type not in _NON_FOUNDING_ALIAS_TYPES for m in mentions)
+
+
 def _stable_entity_id(novel_id: str, label: str, position: DiscoursePosition) -> str:
     """Deterministic replacement for an in-process counter (Core Pipeline
     Hardening #9.1).
@@ -118,6 +122,13 @@ class ResolveReport:
     unresolved: int = 0
     #: Groups that never used a naming mention, so could not found an entity.
     deictic_only: int = 0
+    #: Deictic/title-only groups left unlinked on purpose (never review items): `deictic_only` plus queued
+    #: cases whose every mention is non-founding.
+    deliberately_deferred: int = 0
+    #: Named groups still undecided at the end, each recorded as a `resolve_deferred` review item
+    #: (non-negotiable 7: the escalation rate is a reported metric).
+    escalated: int = 0
+    review_items_closed: int = 0
     entities: int = 0
     contradictions: int = 0
     splits: int = 0
@@ -145,6 +156,10 @@ class ResolveReport:
     #: (mention, candidate) pairs written to `scoring_evidence`. Zero unless
     #: the run opted into `capture_evidence`.
     evidence_captured: int = 0
+
+    @property
+    def escalation_rate(self) -> float:
+        return self.escalated / self.groups if self.groups else 0.0
 
     @property
     def defer_rate(self) -> float:
@@ -190,12 +205,17 @@ class ResolveReport:
             f"{'-- SEE WARNING ABOVE' if self.kind_unknown_fraction > _KIND_UNKNOWN_WARN_THRESHOLD else ''}\n"
         )
         return (
-            f"{self.novel_id}: {self.groups:,} groups -> {self.entities:,} entities\n"
+            # First line is all `echotales run` prints without --verbose, so the escalation count lives here too.
+            f"{self.novel_id}: {self.groups:,} groups -> {self.entities:,} entities, "
+            f"{self.escalated:,} escalated to review ({self.escalation_rate:.2%})\n"
             f"  linked={self.linked:,}  created={self.created:,}  "
             f"deferred={self.deferred:,} ({self.defer_rate:.1%})  "
             f"recovered={self.recovered_from_deferral:,}  "
             f"regated-link-not-applied={self.regated_link_not_applied:,}  unresolved={self.unresolved:,}\n"
             f"  deictic-only groups (no entity created): {self.deictic_only:,}\n"
+            f"  escalation: {self.groups:,} groups seen, {self.linked:,} linked, {self.created:,} new, "
+            f"{self.deliberately_deferred:,} deliberately deferred, {self.escalated:,} escalated to review "
+            f"({self.escalation_rate:.2%}), {self.review_items_closed:,} stale item(s) closed\n"
             f"  non-person entities (not voice-cast): {non_person}\n"
             f"{kind_line}"
             f"  methods: {methods}\n"
@@ -572,8 +592,7 @@ class GlobalResolver:
         # it unresolved is the honest outcome — the sole-co-present-
         # candidate path above may still bind it; anaphora or a later
         # window may too.
-        if not any(m.alias_type.enters_graph and m.alias_type not in _NON_FOUNDING_ALIAS_TYPES
-                   for m in mentions):
+        if not _can_found(mentions):
             self.report.deictic_only += 1
             return ResolutionOutcome(
                 group_id=group_id,
@@ -700,7 +719,7 @@ class GlobalResolver:
                     group, best.target_id, case.context, ResolutionMethod.DEFERRED_RERESOLVED,
                     rationale=regated.rationale,
                 )
-                self.queue.remove(case.group_id)
+                self.queue.remove(case)
                 recovered += 1
                 self.report.recovered_from_deferral += 1
         return recovered
@@ -715,27 +734,84 @@ class GlobalResolver:
             return 0
         count = 0
         for case in self.queue.exhausted():
-            outcome = adjudicate(
-                AdjudicationRequest(
-                    group_id=case.group_id,
-                    surface=case.surface,
-                    context=case.context,
-                    chapter=case.chapter,
-                    candidates=case.candidates,
-                ),
-                self.router,
-                self.retriever.profiles,
-                self.model,
-                novel_id=self.novel_id,
-            )
+            if case.group_id.startswith("contradiction:"):
+                continue
+            try:
+                outcome = adjudicate(
+                    AdjudicationRequest(
+                        group_id=case.group_id,
+                        surface=case.surface,
+                        context=case.context,
+                        chapter=case.chapter,
+                        candidates=case.candidates,
+                    ),
+                    self.router,
+                    self.retriever.profiles,
+                    self.model,
+                    novel_id=self.novel_id,
+                )
+            except Exception as exc:  # a failed call must escalate the case, never abort the run
+                log.warning("adjudication failed for %r: %s", case.surface, exc)
+                case.adjudication = f"adjudicator failed: {exc}"
+                continue
             count += 1
             self.report.adjudicated += 1
-            if outcome.decision is not Decision.DEFER:
-                self.queue.remove(case.group_id)
-                self.report.by_method[ResolutionMethod.LLM_ADJUDICATED.value] = (
-                    self.report.by_method.get(ResolutionMethod.LLM_ADJUDICATED.value, 0) + 1
-                )
+            # The verdict was counted and the case dropped but never written: the mentions stayed unlinked and
+            # unrecorded. Apply it through the gate's own path, or leave the case for review.
+            if outcome.decision is Decision.DEFER or not self._apply_adjudicated(case, outcome):
+                case.adjudication = outcome.rationale or "adjudicator did not decide"
         return count
+
+    def _case_mentions(self, case: DeferredCase) -> list[Mention]:
+        return [
+            m for m in self.store.get_mentions(self.novel_id, case.chapter)
+            if (m.local_group_id or m.id) == case.group_id and m.target_id is None
+        ]
+
+    def _apply_adjudicated(self, case: DeferredCase, outcome: ResolutionOutcome) -> bool:
+        group = self._case_mentions(case)
+        if not group:
+            return False
+        context = case.context
+        if outcome.decision is Decision.LINK and outcome.target_id:
+            self._apply_link(
+                group, outcome.target_id, context, ResolutionMethod.LLM_ADJUDICATED, rationale=outcome.rationale
+            )
+        elif outcome.decision is Decision.NEW and _can_found(group):
+            label = display_label(m.text for m in group)
+            target_id = self._create_entity(group[0], label, self._entity_kind(group))
+            self._maybe_flag_non_character(target_id, label, group)
+            self._apply_link(
+                group, target_id, context, ResolutionMethod.LLM_ADJUDICATED, new=True, rationale=outcome.rationale
+            )
+        else:
+            return False
+        self.queue.remove(case)
+        return True
+
+    def record_deferrals(self) -> None:
+        """Turn every case still undecided at the end of the run into a review item (or a deliberate deferral)."""
+        from echotales.pipeline.resolve import review
+
+        live: set[str] = set()
+        for case in self.queue.cases():
+            if case.group_id.startswith("contradiction:"):
+                continue  # about a committed link, not an unlinked mention
+            open_ms = self._case_mentions(case)
+            if not open_ms:
+                continue  # linked since (title holders, transmigration, a human)
+            if not _can_found(open_ms):
+                self.report.deliberately_deferred += 1
+                continue
+            item = review.build_item(
+                self.novel_id, case, open_ms,
+                link_threshold=self.gate.link_threshold, new_threshold=self.gate.new_threshold,
+            )
+            live.add(item.id)
+            review.upsert(self.store, item, self.store.get_review_item(item.id))
+        self.report.deliberately_deferred += self.report.deictic_only
+        self.report.escalated = len(live)
+        self.report.review_items_closed = review.close_stale(self.store, self.novel_id, live)
 
     # ---- contradiction sweep -----------------------------------------------
 
@@ -1096,5 +1172,7 @@ def resolve_novel(
     # The machine linked these mentions again above; the person's decision wins (same rule as `corrections.py`).
     kept = {e.id for e in store.all_selves(novel_id)}
     store.add_mentions([m for m in human_mentions if m.target_id in kept])
+    # Last, so a group the title-holder or transmigration passes or a person linked is not reported as open.
+    resolver.record_deferrals()
     store.conn.commit()
     return resolver.report

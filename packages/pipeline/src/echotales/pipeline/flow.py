@@ -1634,7 +1634,7 @@ def _no_entities(store: Store, novel_id: str) -> bool:
     Stage.RESOLVE,
     "resolve.mention_outcome",
     "every mention ends linked to an entity (new or existing); a group containing a naming mention that is still "
-    "unlinked was deferred or exhausted, and nothing a reviewer can see records it",
+    "unlinked was deferred or exhausted and must be recorded as a resolve_deferred review item",
 )
 def check_resolve_outcome(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
     chk = _find(Stage.RESOLVE, "resolve.mention_outcome")
@@ -1646,10 +1646,18 @@ def check_resolve_outcome(store: Store, novel_id: str, source: SourceContext | N
         groups.setdefault((r["chapter"], r["local_group_id"] or r["id"]), []).append(r)
     # Older databases predate the review_item table; reading it must not crash the audit.
     has_table = store.conn.execute("SELECT 1 FROM sqlite_master WHERE name='review_item'").fetchone() is not None
-    recorded = store.conn.execute("SELECT COUNT(*) FROM review_item WHERE novel_id=?", (novel_id,)).fetchone()[0] if has_table else 0
+    # An item accounts for its mentions while open, or once a reviewer (not the machine's "auto:" close) settled it.
+    covered: set[str] = set()
+    recorded = 0
+    if has_table:
+        for it in store.list_review_items(novel_id):
+            if it.kind != "resolve_deferred" or (it.resolved and (it.resolution or "").startswith("auto:")):
+                continue
+            recorded += 1
+            covered.update(str(i) for c in it.candidates if c.get("role") == "group" for i in c.get("mention_ids", []))
     shortfalls: list[Shortfall] = []
     linked = unlinked_mentions = 0
-    non_naming = 0
+    non_naming = accounted = 0
     for (chapter, gid), ms in groups.items():
         open_ms = [m for m in ms if not m["target_id"]]
         linked += len(ms) - len(open_ms)
@@ -1659,13 +1667,15 @@ def check_resolve_outcome(store: Store, novel_id: str, source: SourceContext | N
         if all(m["alias_type"] in _NON_NAMING for m in ms):
             non_naming += len(open_ms)  # deliberate: no naming mention to found an entity on
             continue
+        if any(m["id"] in covered for m in open_ms):
+            accounted += 1  # deferred, and a review item records it
+            continue
         shortfalls.append(Shortfall(chapter, f"group {gid}", f"{len(open_ms)} mention(s) of {open_ms[0]['text']!r} never linked "
-                                    "(deferred by the gate; the queue is in memory only)", _excerpt(open_ms[0]["text"])))
-    warnings = [f"{recorded} review_item rows exist for this novel; resolve writes none, so none of them records a deferral"] \
-        if recorded else []
-    return _result(chk, shortfalls, count_in=len(rows), count_out=linked, unit="mentions", warnings=warnings,
+                                    "and no resolve_deferred review item records the deferral", _excerpt(open_ms[0]["text"])))
+    return _result(chk, shortfalls, count_in=len(rows), count_out=linked, unit="mentions",
                    stats={"unlinked_mentions": unlinked_mentions, "unlinked_non_naming_groups_mentions": non_naming,
-                          "deferred_groups_unrecorded": len(shortfalls)})
+                          "deferred_groups_recorded": accounted, "deferred_groups_unrecorded": len(shortfalls),
+                          "resolve_deferred_items": recorded})
 
 
 @check(Stage.RESOLVE, "resolve.no_orphans",
