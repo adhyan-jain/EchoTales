@@ -45,7 +45,7 @@ from echotales.core.readset import ReadSetRecorder, entity_ref
 from echotales.core.store import Store, normalize_alias
 from echotales.pipeline.config import Settings, get_settings
 from echotales.pipeline.corrections import Correction, CorrectionLog, CorrectionType
-from echotales.pipeline.ingest.normalize import display_label, name_tokens
+from echotales.pipeline.ingest.normalize import display_label
 from echotales.pipeline.llm import LLMRouter
 from echotales.pipeline.mentions.lexicon import Lexicon
 from echotales.pipeline.resolve.adjudicate import AdjudicationRequest, adjudicate
@@ -303,17 +303,10 @@ class GlobalResolver:
         `Dokja`/`Kim Dokja` gap): a token that only ever appears in one
         entity's aliases identifies that entity specifically (a given name);
         one that recurs across several is a bare surname or title and must
-        not merge unrelated people on its own (Section 4.5). Recomputed per call
-        rather than cached — `EntityProfile.aliases` grows as resolution
-        proceeds, and the corpus is small enough (a few hundred entities at
-        most) that this costs nothing next to retrieval/scoring.
+        not merge unrelated people on its own (Section 4.5). Maintained by the
+        retriever as aliases are added, not rebuilt per call.
         """
-        counts: dict[str, set[str]] = {}
-        for profile in self.retriever.profiles.values():
-            for alias in profile.aliases:
-                for token in name_tokens(alias):
-                    counts.setdefault(token, set()).add(profile.target_id)
-        return frozenset(token for token, ids in counts.items() if len(ids) > 1)
+        return self.retriever.ambiguous_tokens()
 
     # ---- entity lifecycle ---------------------------------------------
 

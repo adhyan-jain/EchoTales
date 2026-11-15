@@ -109,7 +109,9 @@ def merge_transmigrations(store: Store, novel_id: str, *, dry_run: bool = False)
     cue_blocks: Counter[str] = Counter()
     body: dict[str, Counter[str]] = defaultdict(Counter)
     first_cue: dict[str, float] = {}
-    patterns = {sid: re.compile(rf"\b{re.escape(lab)}\b") for sid, lab in labels.items() if len(lab) > 2}
+    patterns = {
+        sid: (lab, re.compile(rf"\b{re.escape(lab)}\b")) for sid, lab in labels.items() if len(lab) > 2
+    }
 
     for chapter in store.chapter_numbers(novel_id):
         ch = store.get_chapter(novel_id, chapter)
@@ -117,7 +119,9 @@ def merge_transmigrations(store: Store, novel_id: str, *, dry_run: bool = False)
             continue
         for block in ch.blocks:
             text = block.text
-            present = [sid for sid, pat in patterns.items() if pat.search(text)]
+            # A plain substring test first: the regex needs the label as a substring anyway, and
+            # running ~2,000 regexes over every block was 56 s of a 137 s profiled ORV resolve.
+            present = [sid for sid, (lab, pat) in patterns.items() if lab in text and pat.search(text)]
             if not present:
                 continue
             if _CUE.search(text):

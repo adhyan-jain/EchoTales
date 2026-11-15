@@ -26,6 +26,7 @@ import unicodedata
 from collections import Counter
 from collections.abc import Iterable
 from dataclasses import dataclass
+from functools import lru_cache
 
 from echotales.core.store import Store
 
@@ -144,6 +145,7 @@ def normalize_romanization(name: str) -> str:
     return text
 
 
+@lru_cache(maxsize=65536)
 def strip_honorifics(name: str, *, strip_articles: bool = False) -> str:
     """Remove leading rank prefixes and trailing honorific suffixes.
 
@@ -360,12 +362,21 @@ def name_containment(
 
 def name_tokens(name: str) -> list[str]:
     """Lowercase-comparable name components, for both `name_containment` and
-    corpus-wide token-ambiguity tables built from `EntityProfile.aliases`."""
-    return [
+    corpus-wide token-ambiguity tables built from `EntityProfile.aliases`.
+
+    Memoised (a fresh list per call): `name_containment` retokenised the same few thousand
+    aliases per candidate per group, 19 s of a 57 s ORV ch1-40 run. Depends only on module
+    constants, not on `_family_tokens` (unlike `comparison_key`, deliberately not cached)."""
+    return list(_name_tokens(name))
+
+
+@lru_cache(maxsize=65536)
+def _name_tokens(name: str) -> tuple[str, ...]:
+    return tuple(
         token.casefold()
         for raw in strip_morphology(strip_honorifics(name)).split()
         if (token := normalize_romanization(raw))
-    ]
+    )
 
 
 def are_variants(a: str, b: str) -> bool:

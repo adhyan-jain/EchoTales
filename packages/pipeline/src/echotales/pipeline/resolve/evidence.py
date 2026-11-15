@@ -365,7 +365,7 @@ def score_evidence(
         from echotales.pipeline.resolve.retrieve import _cosine
 
         vector.context_embedding_similarity = _cosine(
-            Counter(_terms(ctx.context)), profile.context_terms
+            Counter(_terms(ctx.context)), profile.context_terms, norm_b=profile.context_norm()
         )
 
     if ctx.speaker and profile is not None:

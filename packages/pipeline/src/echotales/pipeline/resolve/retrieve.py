@@ -29,7 +29,7 @@ from dataclasses import dataclass, field
 
 from echotales.core.enums import TargetKind
 from echotales.core.models import Candidate
-from echotales.pipeline.ingest.normalize import comparison_key, strip_honorifics
+from echotales.pipeline.ingest.normalize import comparison_key, name_tokens, strip_honorifics
 
 DEFAULT_K = 10
 
@@ -54,14 +54,23 @@ class EntityProfile:
     mention_count: int = 0
     #: Selves seen speaking with this entity; feeds speech-partner scoring.
     speech_partners: Counter[str] = field(default_factory=Counter)
+    #: Norm of `context_terms`, rebuilt only after `observe` changes it. Recomputed per
+    #: candidate per group it was 8.6 s of a 57 s ORV ch1-40 run and grows with the profile.
+    _context_norm: float | None = field(default=None, init=False, repr=False, compare=False)
 
     def observe(self, surface: str, context: str, chapter: float) -> None:
         self.aliases.add(surface)
         self.context_terms.update(_terms(context))
+        self._context_norm = None
         self.mention_count += 1
         if self.first_chapter == 0.0:
             self.first_chapter = chapter
         self.last_chapter = max(self.last_chapter, chapter)
+
+    def context_norm(self) -> float:
+        if self._context_norm is None:
+            self._context_norm = _norm(self.context_terms)
+        return self._context_norm
 
     @property
     def alias_keys(self) -> set[str]:
@@ -96,16 +105,29 @@ class BM25Index:
         self._docs: dict[str, list[str]] = {}
         self._df: Counter[str] = Counter()
         self._avg_len = 0.0
+        #: token -> docs containing it, so `search` visits only docs that can score > 0
+        #: (every doc was scored per query: 6.3 s of the ORV ch1-40 run, growing with entities).
+        self._postings: dict[str, set[str]] = {}
+        #: first-insertion rank, to return ties in the same order a full scan of `_docs` would.
+        self._rank: dict[str, int] = {}
+        self._total_len = 0
 
     def add(self, target_id: str, tokens: list[str]) -> None:
         if target_id in self._docs:
-            for token in set(self._docs[target_id]):
+            old = self._docs[target_id]
+            self._total_len -= len(old)
+            for token in set(old):
                 self._df[token] -= 1
+                self._postings[token].discard(target_id)
+        else:
+            self._rank[target_id] = len(self._rank)
         self._docs[target_id] = tokens
+        self._total_len += len(tokens)
         for token in set(tokens):
             self._df[token] += 1
+            self._postings.setdefault(token, set()).add(target_id)
         if self._docs:
-            self._avg_len = sum(len(d) for d in self._docs.values()) / len(self._docs)
+            self._avg_len = self._total_len / len(self._docs)
 
     def score(self, query: list[str], target_id: str) -> float:
         doc = self._docs.get(target_id)
@@ -127,16 +149,29 @@ class BM25Index:
         return total
 
     def search(self, query: list[str], k: int = DEFAULT_K) -> list[tuple[str, float]]:
+        reachable: set[str] = set()
+        for token in set(query):
+            reachable |= self._postings.get(token, set())
         scored = [
             (target_id, score)
-            for target_id in self._docs
+            for target_id in sorted(reachable, key=self._rank.__getitem__)
             if (score := self.score(query, target_id)) > 0
         ]
         scored.sort(key=lambda kv: kv[1], reverse=True)
         return scored[:k]
 
 
-def _cosine(a: Counter[str], b: Counter[str]) -> float:
+def _norm(c: Counter[str]) -> float:
+    return math.sqrt(sum(v * v for v in c.values()))
+
+
+def _cosine(
+    a: Counter[str],
+    b: Counter[str],
+    *,
+    norm_a: float | None = None,
+    norm_b: float | None = None,
+) -> float:
     """Cosine over term counts.
 
     The fallback when sentence-transformers is unavailable. Weaker than a
@@ -146,12 +181,15 @@ def _cosine(a: Counter[str], b: Counter[str]) -> float:
     """
     if not a or not b:
         return 0.0
-    shared = set(a) & set(b)
+    # Walk the smaller side: `set(b)` per candidate scaled with the profile's whole vocabulary.
+    # Integer counts, so the dot product does not depend on summation order.
+    small, large = (a, b) if len(a) <= len(b) else (b, a)
+    shared = [t for t in small if t in large]
     if not shared:
         return 0.0
     dot = sum(a[t] * b[t] for t in shared)
-    na = math.sqrt(sum(v * v for v in a.values()))
-    nb = math.sqrt(sum(v * v for v in b.values()))
+    na = _norm(a) if norm_a is None else norm_a
+    nb = _norm(b) if norm_b is None else norm_b
     return dot / (na * nb) if na and nb else 0.0
 
 
@@ -166,10 +204,47 @@ class CandidateRetriever:
         #: the profile count it was built at, so entity creation invalidates it.
         self._prominent_cache: list[EntityProfile] | None = None
         self._prominent_at = -1
+        #: name token -> entities whose aliases contain it; see `ambiguous_tokens`.
+        self._token_owners: dict[str, set[str]] = {}
+        self._ambiguous: frozenset[str] | None = None
 
     def add_entity(self, profile: EntityProfile) -> None:
+        replaced = profile.target_id in self.profiles
         self.profiles[profile.target_id] = profile
+        if replaced:
+            self._rebuild_token_owners()
+        else:
+            for alias in profile.aliases:
+                self._own_tokens(alias, profile.target_id)
         self._reindex(profile)
+
+    def _own_tokens(self, alias: str, target_id: str) -> None:
+        for token in name_tokens(alias):
+            owners = self._token_owners.setdefault(token, set())
+            if target_id not in owners:
+                owners.add(target_id)
+                if len(owners) > 1:
+                    self._ambiguous = None
+
+    def _rebuild_token_owners(self) -> None:
+        self._token_owners = {}
+        self._ambiguous = None
+        for profile in self.profiles.values():
+            for alias in profile.aliases:
+                self._own_tokens(alias, profile.target_id)
+
+    def ambiguous_tokens(self) -> frozenset[str]:
+        """Name components shared by two or more entities' aliases.
+
+        Kept incrementally: recomputing it from every alias per mention group was 20 s of a 57 s
+        ORV ch1-40 run (35%) and grows with the cast. Aliases enter only through `observe` and
+        `add_entity`, which are the two places that update it.
+        """
+        if self._ambiguous is None:
+            self._ambiguous = frozenset(
+                token for token, ids in self._token_owners.items() if len(ids) > 1
+            )
+        return self._ambiguous
 
     def observe(
         self,
@@ -191,7 +266,10 @@ class CandidateRetriever:
                 first_chapter=chapter,
             )
             self.profiles[target_id] = profile
+        is_new_alias = surface not in profile.aliases
         profile.observe(surface, context, chapter)
+        if is_new_alias:
+            self._own_tokens(surface, target_id)
         self._reindex(profile)
         return profile
 
@@ -264,6 +342,7 @@ class CandidateRetriever:
         max_lexical = max(lexical.values(), default=0.0)
 
         context_terms = Counter(_terms(context))
+        context_norm = _norm(context_terms)
 
         # Only consider the lexical shortlist plus the most prominent entities.
         #
@@ -283,7 +362,10 @@ class CandidateRetriever:
         scored: list[Candidate] = []
         for target_id, profile in considered.items():
             lex = lexical.get(target_id, 0.0) / max_lexical if max_lexical else 0.0
-            ctx = _cosine(context_terms, profile.context_terms)
+            ctx = _cosine(
+                context_terms, profile.context_terms,
+                norm_a=context_norm, norm_b=profile.context_norm(),
+            )
             # Neither signal is trusted alone: lexical alone misses disguise
             # identities entirely, contextual alone confuses everyone who
             # shares a setting.
