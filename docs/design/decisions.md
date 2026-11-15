@@ -424,6 +424,7 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **What changes**: narrows the standing rule to push each commit individually (owner, 2026-10-22) for the duration of this work.
 - **Status**: in force.
 - **Note (2026-11-14)**: two docstring-only commits (d56930f, 4cc43eb) were pushed to `master` at the owner's request (EVOLUTION 4.147). `product/finish` remains local.
+- **Superseded (2026-11-14)** by D47: verified commits are pushed to master again.
 
 ### D41. Who does what (owner, 2026-11-13)
 - **Decision**: planning, briefing, review and verification by the lead model; implementation by Sonnet and Haiku subagents in isolated worktrees, tests first.
@@ -448,10 +449,39 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 ### D45. Local video model and what each tier is for (2026-11-14)
 - **Decision**: LTX-Video 2B distilled is the local video model (evidence: EVOLUTION 4.146). The local tier does subtle single-panel motion and same-shot camera moves. Action and differently framed panels go to the cloud tier (an anime-trained model, not yet run) or are cut. The shot planner gates interpolation to panels that share scene and framing.
 - **Status**: measured for the local model on two panels of one character; nothing built.
+- **Note (2026-11-15)**: first real composed run, with a bad clip the gate missed, is in EVOLUTION 4.153.
 
 ### D46. Stopping rule under limited usage (owner, 2026-11-13)
 - **Decision**: the owner asked that work stop at 95 per cent usage. The lead model cannot read the usage figure, so the working rule is to resume existing tasks rather than start many, and to start nothing new without the owner's word once in-flight tasks report.
 - **Status**: in force.
+
+### D47. Verified commits are pushed to master again (owner, 2026-11-14)
+- **Decision**: the owner's words were to commit and push whatever was built; this supersedes D40. Work is done on the worktree branch `product/finish`, each verified commit is pushed to origin/master (individually where history allows), and the lead does not modify the main checkout's working tree.
+- **Constraint**: CI cannot run until the owner clears the GitHub billing lock (jobs are refused in one second with that reason).
+- **Status**: in force.
+
+### D48. The goal is a product to show: both pipeline and experience (owner, 2026-11-14)
+- **Decision (owner)**: the owner wants to show how good the pipeline is, and wants both a good user experience and a good pipeline, not one before the other. The deployed app must carry a showcase with a few projects run locally and a few run on RunPod, each labelled with tier, hardware, time and cost, and sample outputs for every mode. Showcase runs happen after the fixes, not before.
+- **Decided by the lead under that instruction**: output modes become first-class (full-cast audiobook; illustrated audio, the audio plus image-stack video; manga panels; anime from panels; reader and graph views). One list of modes should drive the Studio's choices, job kinds, the showcase and the README.
+- **Proposal, not confirmed by the owner**: delivery as a read-only static export of the app holding the samples.
+- **Status**: the single mode list is not built.
+
+### D49. Showcase books (owner, 2026-11-14)
+- **Decision (owner)**: Shadow Slave, Lord of the Mysteries, Reverend Insanity and Omniscient Reader's Viewpoint, plus public-domain additions of the lead's choosing if more are wanted (Pride and Prejudice and a Sherlock Holmes story proposed). Manga to video uses The Legend of the Northern Blade.
+- **Open**: source files for Shadow Slave and Northern Blade are not on disk and the owner will add them. Unanswered: whether Northern Blade means the published manhwa pages as input (a new input mode: image pages in, clips out) or the novel as input. The RunPod key will come later.
+- **Risk notice**: the owner was told once that publishing media derived from copyrighted novels and manhwa is their own risk, and decided to proceed.
+
+### D50. Shots are planned from what each engine was measured to do (2026-11-15)
+- **Decision**: the decision table and capability model of EVOLUTION 4.152. Interpolation between two independently generated panels is not attempted locally. A failed or rejected clip always falls back to a held still.
+- **Status**: built; interpolation and motion-cap paths tested by unit and property tests only. CLOUD_ANIME capability is assumed, not measured.
+
+### D51. The video model runs in its own process and environment (2026-11-15)
+- **Decision**: the local video model runs as a separate process in its own environment (`ECHOTALES_VIDEO_PYTHON`, `.venv-video` from `scripts/setup_video.sh`).
+- **Why** (EVOLUTION 4.153): it needs library versions the main environment lacks, and memory is only reliably returned when the process exits.
+
+### D52. A clip gate that fails closed, and its known hole (2026-11-15)
+- **Decision**: a clip is accepted only if it passes start-frame SSIM, end-frame SSIM (interpolation), stillness and spike-ratio checks at native resolution; anything else falls back to a held still. These scores measure frame fidelity and stability and are never to be called identity.
+- **Known hole**: it passed a clip showing content absent from the panel (EVOLUTION 4.153). A perceptual content-drift check is being added; its threshold must come from measured clips.
 
 ## 3. Documentation policy
 

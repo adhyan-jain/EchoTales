@@ -9399,3 +9399,79 @@ Commits d56930f and 4cc43eb are on `origin/master` and merged into `product/fini
 - 4cc43eb: the local image worker docstring (`workers_local.py`) still called the stub the default worker.
 - **Dates, stated plainly.** At the owner's request their author and committer dates were set to 2026-11-11 and 2026-11-12 respectively. They were written on 2026-11-14.
 - These are the only commits pushed; `product/finish` itself remains local (D40).
+
+### 4.148 Undecided identities reach a reviewer *(2026-11-14, 2026-11-15)*
+
+Commits b4cf73b (resolve) and 4ecb1a2 (Studio).
+
+- **What changed.** Resolve now writes every named mention group the gate leaves undecided as a `resolve_deferred` review item (new `resolve/review.py`). The id is stable: novel, first mention id and a hash of the surface. Payload entry 0 is the group (surfaces, mention ids, reason kind `tie_margin` / `below_link_above_new` / `other`, thresholds, evidence hash, excerpt), followed by the ranked candidates with probabilities. A re-run refreshes an open item, keeps a reviewer-resolved item resolved unless the evidence fingerprint changed, and closes an item with `auto:linked_on_rerun` when the group now links. Deictic or title-only groups are counted as deliberately deferred and are not items. `ResolveReport` gains `deliberately_deferred`, `escalated` and `escalation_rate`.
+- **Adjudication result applied.** The adjudication result that was counted and then discarded is now applied. Covered by a unit test with a fake adjudicator; the path is not enabled in production.
+- **Defect found on the way.** The deferred queue was keyed by a group id that restarts each chapter, so later chapters overwrote earlier cases (3 of Lord of the Mysteries' 13 never reached the queue). It is now keyed by chapter and group id.
+- **Measured (deterministic tier).** Lord of the Mysteries, whole book: 8,718 groups, 6,834 linked, 1,669 new, 202 deliberately deferred, 13 escalated (0.15 per cent). Pride and Prejudice: 2,076 groups, 0 escalated. Omniscient Reader's Viewpoint and Reverend Insanity on chapters 1 to 20 only: 4 and 2 escalated.
+- **Links unchanged.** The hash of every (mention id, target, method) row is identical before and after on the sample, Pride and Prejudice and Lord of the Mysteries.
+- **Studio (4ecb1a2).** A "Names to check" sub-tab in the Canon tab (`webview/src/components/NamesToCheck.js`) with candidate buttons showing label and percentage, "Another character", "New character" and "Not a character". The server's resolve route returns 404 for an unknown item and, for this kind, takes link / new / dismiss and writes pending `reassign_mention` corrections (a "new" decision puts all N mentions on one manual entity: the first correction mints it, the rest target it). A reopen route removes pending corrections and reopens. `decision_state` is computed from the item and the corrections log. GET returns `{items, total, open}` with parsed candidates. Asset Studio no longer prints "[object Object]".
+- **Tests.** At that commit: Python suite 1,881 passed, jest 175 passed in 21 suites.
+- **Limits.** Nothing was viewed in a browser. If a rebuild changes an item's evidence the item reopens, but its old pending corrections stay until undone or applied. A link to a candidate does not check that the entity still exists at apply time.
+
+### 4.149 The panel plan: what the renderer knows is kept *(2026-11-14)*
+
+Commit d9fe748.
+
+- **What changed.** New `render/plan.py`: one `PanelPlan` row per generated image in `panel_plan.jsonl` inside the version directory, appended as panels complete, with a versioned loader. Fields: panel id, scene index, segment id, scene-state id, slot kind, lead block and all block indexes, cast (self and persona ids, present or carried), location and its source, the director's full `PanelDirection` or null with a reason, prompt and negative prompt, token counts before and after the 77-token fit and the dropped clauses (director path), engine, size, seed, image path, cache key, provenance, and digests joining it to `render_artifact.jsonl`.
+- **Two-pass lost the direction.** The two-pass render kept only the prompt string, so the second pass ran with no direction. Measured on the old code with a fixed fake director: two-pass versus single-pass differed on 12 of 12 cache keys, 4 negative prompts and 1 prompt (the negative-prompt style bucket, the gender negative, the crowd-cut layout and the plan fields all depended on the lost direction). `prompt_cache.json` entries are now objects carrying the direction (old string entries still load), and a test asserts two-pass equals single-pass per panel.
+- **Scene state.** The row id carried the scene index but the lookup keyed on segment alone, so every later scene in a segment reused the first scene's location, crowd mood and severity. Ids are now `{novel}:{segment}:c{chapter}:s{index}` with a by-id lookup (`Store.get_scene_state_by_id`), and scenes with an empty segment id are stored. Old rows stay as inert orphans.
+- **Manifest.** The root manifest no longer drops chapters rendered by earlier runs.
+- **Compatibility.** A render with no director is byte-identical to before on prompt, negative prompt and cache key (snapshot test, with the scene-state lookup patched back, since the fix changes later scenes' locations on purpose). Real directed renders will differ from earlier ones and existing render caches are invalidated.
+- **Not done.** `cmd_render`'s single-phase branch writes unversioned; a failed director call records only "see log"; reference images are still not attached; no route serves the plan. Verified with the stub engine and a fake director only.
+
+### 4.150 Identity resolution made linear in book length *(2026-11-15)*
+
+Commit 7f67790.
+
+- **Profile before** (Omniscient Reader's Viewpoint chapters 1 to 40): `_ambiguous_tokens` recomputed per group from every alias (20 s of 57 s), BM25 scanning every document per query, cosine norms rebuilt per call. In the whole-book profile the transmigration pass ran one regex per entity label over every block (53.7 million `re.search` calls, 56 s of 137 s).
+- **Changes.** Token ownership kept incrementally in the retriever; BM25 with inverted postings and a running length total; cached norms; `lru_cache` on the pure name-token functions (not on `comparison_key`, which depends on family tokens); a substring test before the regex in transmigration.
+- **Timings.** Lord of the Mysteries about 237 s to about 55 to 62 s. Omniscient Reader's Viewpoint did not finish in 30 minutes before and takes about 59 s. Reverend Insanity about 44 s. Growth per 20 chapters on Lord of the Mysteries went from 9 s rising to 20 s, to a steady 3.5 to 4.5 s.
+- **Equality.** The lead re-ran the new code on Lord of the Mysteries independently: all 20,907 mention links, 1,669 entities and 20,703 alias rows are identical to the build made by the old code. The implementer's hashes also match for Reverend Insanity against the stored old build.
+- **Limits.** For Omniscient Reader's Viewpoint, old-versus-new equality exists only for chapters 1 to 40 because the old code never finished the book. The before timings were taken under profiling and heavier load.
+- **Remaining.** About 18 s of post-passes and candidate scoring. Separately observed and NOT fixed: mention detection is now the slow stage for a whole book (about 9 minutes for Reverend Insanity in the deterministic tier); not profiled.
+
+### 4.151 Phantom speakers and junk names *(2026-11-15)*
+
+Commit da1dcdf.
+
+- **Rules now in code.** A speech tag keeps a titled name whole ("said Mr. Bennet" gives "Mr. Bennet"; the title list is derived from the existing honorific prefixes). One shared predicate `non_name_reason` in `ingest/normalize.py` (pronoun and contractions, interjection and laughter, bare title, empty) is used by the speaker tier, the heuristic detector and the mention filters, with a recorded drop count. A captured speaker surface that matches no entity label or name mention ends unresolved and takes the anonymous-slot path (`real_name_keys`, `_drop_unreal_speakers` in `speakers/runner.py`). The review queue lists a speaker that matches nothing at any confidence (`unknown_speaker`), never a HUMAN decision. Added by the implementer beyond the brief: a heuristic-tier filter that drops a single word seen in lowercase elsewhere and never capitalised mid-sentence.
+- **Regression check (run by the lead).** Chapters 1 to 21 of the three reference novels, old code versus new, deterministic tier. Speaker lines right against the silver references: Lord of the Mysteries 68 to 71 of 173, Reverend Insanity 45 of 84 (unchanged), Omniscient Reader's Viewpoint 32 of 145 (unchanged). Coreference unchanged (Lord of the Mysteries 738 to 739 matched gold mentions). The two failing speaker audit checks (dialogue_end_state, queue_visibility) pass on all three after.
+- **Read these scores correctly.** They are low because no language model ran. They are not the product's accuracy, and they are not comparable with the deterministic figures recorded earlier in HANDOFF (LotM 100/173, RI 48/84, ORV 43/145), which came from a different build.
+- **Pride and Prejudice, whole book** (implementer's run, not repeated by the lead): the 50 lines attributed to "Mr" are gone, lines attributed to a real name 911 to 958, entities 313 to 190. Demo cast 21 to 12 for a four-person story.
+- **Version.** Folded into pipeline version 3 rather than bumping to 4, because no real database had been stamped 3.
+- **Not done.** The heuristic detector still stops at an abbreviation's period, so "Mrs" may remain an entity. Honorific suffixes such as "-ssi" are untouched. Consistency with `reader/speakers_pass.py` not checked.
+
+### 4.152 Shot planner and audio timing *(2026-11-15)*
+
+Commit 8c06f63.
+
+- **Timing.** New `voice/timing.py`: one `LineTiming` per voiced line with measured duration and start and end on both clocks (gapless, used by video; gapped, used by `chapter.wav`). The gapped clock is checked against the real chapter track to within one sample, including a non-sample-aligned case.
+- **Planner.** New `render/shots.py`: `VideoCapability` (STILLS; LOCAL_LTX from the measurements in 4.146; CLOUD_ANIME marked assumed, not measured), `ShotBudget`, and `plan_shots`. The decision is a nine-row table (`DECISION_TABLE`), first match wins, producing HOLD, ANIMATE or INTERPOLATE (to the next panel or to a derived push-in end frame) with a reason recorded per shot:
+  - R1_no_engine: engine cannot generate, hold
+  - R2_too_short: shorter than the minimum generate length, hold
+  - R3_crowd: crowd panel, no character motion, hold
+  - R4_no_characters: no characters and not establishing, hold
+  - R5_ambient_establishing: establishing and single-image capable, animate (ambient motion only)
+  - R6_interpolate_next_panel: characters, not establishing, next panel joinable, interpolate to the next panel
+  - R7_dialogue_push_in: characters, not establishing, first-last capable, dialogue exchange on one panel, interpolate to a derived end frame
+  - R8_animate_single: characters, not establishing, single-image capable, animate the one panel
+  - R9_hold_default: engine has no matching capability, hold
+- **Guarantees.** Pair difference between two panels is never below SAME_SHOT, so the local engine can never join two panels. Motion is capped to the engine's limit. Shots tile the gapless audio exactly (property-tested with hypothesis).
+- **Limits.** One shot per panel, so a shot can be minutes long (in the demo one panel carries 147 s of audio). The interpolation and motion-cap paths were exercised by unit and property tests only. The push-in scale and minimum generate length are guesses.
+
+### 4.153 A local video worker, a clip gate and a chapter composer; first real run *(2026-11-15)*
+
+Commit 57ae193.
+
+- **What changed.** `video/ltx_worker.py` (self-contained, run by file path in a separate interpreter named by `ECHOTALES_VIDEO_PYTHON`; `scripts/setup_video.sh` creates `.venv-video`); `video/local.py` (`LocalLTXEngine`); `video/clip_gate.py` (fail-closed: start-frame SSIM, end-frame SSIM for interpolation, stillness, spike ratio, computed at native resolution because at 128 or 256 px good and bad clips were indistinguishable; thresholds from a handful of probe clips); `render/anime.py` (`render_shots`: per-shot segments whose frame counts derive from rounded shot boundaries so picture and gapless audio stay in sync; clip cache keyed by image bytes, prompt, seed, frames, size, engine and model identity); CLI `echotales anime`.
+- **Measured on the laptop.** Denoising all clips before decoding: 114.0 s for 5 clips (22.8 s per clip) against 159.8 s (32 s per clip) with a reload per clip. One-time prompt encoding 32.8 s. Peak VRAM about 7.0 GB; lowest available RAM 5.82 GB.
+- **Real run.** Six existing Reverend Insanity panels (synthetic panel plan, silent stub audio): a 155.6 s chapter, 5 clips generated, all 5 passed the gate. Four are acceptable. One is a failure the gate did not catch: a silhouette panel zooms into a photographic human face absent from the panel, and the composer then holds that frame for about 12 s. The lead looked at the contact sheets and confirms both the bad clip and the good ones. A rerun regenerated nothing (all cached).
+- **Probable cause, not confirmed.** Every clip was sent only "slight breathing, hair and robe gently moving, calm, subtle movement", with no description of the picture and no style or static-camera anchor, unlike the probe prompts that held identity.
+- **Tests.** Suite 1,976 passed, 25 skipped.
+- **In progress at the time of writing, NOT in this commit.** A prompt builder that describes the panel and anchors style and camera; a CLIP-based content-drift check calibrated on the 15 real clips; forward-then-reverse looping of subtle clips to fill long shots; a re-run.
+- **Not done.** Dissolves play as cuts; no Studio job; nobody has watched the video end to end.
