@@ -13,7 +13,10 @@ from echotales.core.store import Store
 from echotales.pipeline.errors import ErrorCode, Refusal
 
 #: "3" = span offsets describe the stored text, italic ranges sit on their own occurrence, and translator
-#: footnotes are kept (a build before this has mention offsets shifted by a span's leading whitespace).
+#: footnotes are kept (a build before this has mention offsets shifted by a span's leading whitespace). Also in
+#: "3", landed before any database was stamped with it: speech tags keep a titled name whole ("Mr. Bennet", not
+#: "Mr"), pronoun contractions and interjections are never names, and a speaker that matches no character is
+#: left unresolved.
 #: "2" = the reader-pass era (evidence-quoted deltas, text-only canon). "" and "1" are everything built before.
 PIPELINE_VERSION = "3"
 

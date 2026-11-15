@@ -30,6 +30,7 @@ import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+from echotales.pipeline.ingest.normalize import non_name_reason
 from pydantic import BaseModel, Field
 
 DEFAULT_LABELS = ("character", "location", "organization", "item")
@@ -110,7 +111,9 @@ class HeuristicDetector(MentionDetector):
         for match in _CAPITALISED.finditer(text):
             surface = match.group(0).strip()
             tokens = surface.split()
-            while tokens and tokens[0] in _STOPWORDS:
+            # "I'm" matched the capitalised-word pattern and became an entity (LotM: 557 mentions); a leading
+            # pronoun, contraction or interjection is trimmed like any other sentence-initial word.
+            while tokens and (tokens[0] in _STOPWORDS or non_name_reason(tokens[0]) in ("pronoun", "interjection")):
                 tokens = tokens[1:]
             if not tokens:
                 continue

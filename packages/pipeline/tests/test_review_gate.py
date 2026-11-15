@@ -61,6 +61,17 @@ def test_queue_lists_unnamed_and_role_slots_but_not_settled_or_confident_guesses
     assert audit["total"] == 5 and any(i["reason"] == "model_guess" for i in audit["items"])
 
 
+def test_a_confident_speaker_that_is_no_entity_and_no_mention_is_queued_but_a_human_decision_is_not() -> None:
+    store = _world()
+    store.add_spans([
+        _span(0, 1.0, "Alice", AttributionMethod.EXPLICIT, 0.95),   # an entity label: settled
+        _span(1, 1.0, "Mr", AttributionMethod.EXPLICIT, 0.95),      # no entity, no mention
+        _span(2, 1.0, "Mr", AttributionMethod.HUMAN, 1.0),          # a reviewer's word is final
+    ])
+    reasons = {i["span_id"].split(":")[2]: i["reason"] for i in rg.speaker_queue(store, NOVEL)["items"]}
+    assert reasons == {"1": "unknown_speaker"}
+
+
 def test_queue_filters_by_chapter_and_limit() -> None:
     store = _world()
     store.add_spans([_span(i, 1.0, None, AttributionMethod.UNRESOLVED, 0.0) for i in range(3)]

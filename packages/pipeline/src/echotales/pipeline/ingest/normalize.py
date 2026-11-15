@@ -236,6 +236,48 @@ def comparison_key(name: str) -> str:
     return base
 
 
+#: Words that are never a person's name however they are capitalised: pronouns, their contractions and
+#: interjections. The heuristic detector made "I'm" LotM's second-most-mentioned entity (557 mentions) and "Hahaha" a
+#: mention, and the speaker regex stored "I've"/"I'd" as speakers (LotM 14, ORV 33).
+_PRONOUNS = frozenset({
+    "i", "me", "my", "mine", "myself", "you", "your", "yours", "he", "him", "his", "she", "her", "hers", "it", "its",
+    "we", "us", "our", "ours", "they", "them", "their", "theirs", "who", "whom", "what", "this", "that", "these",
+    "those",
+})
+_PRONOUN_CONTRACTION = re.compile(
+    r"^(?:i|you|he|she|it|we|they|that|there|here|who|what|let)['’](?:m|re|s|d|ve|ll)$", re.IGNORECASE
+)
+_INTERJECTIONS = frozenset({
+    "oh", "ah", "aha", "ahh", "ohh", "hmm", "hm", "hmph", "huh", "eh", "uh", "um", "ugh", "wow", "hey", "ha", "hah",
+    "oops", "alas", "yay", "tsk", "yes", "no", "okay", "ok",
+})
+_LAUGHTER = re.compile(r"^(?:h[aeo]h?){2,}$", re.IGNORECASE)
+
+
+def non_name_reason(surface: str) -> str | None:
+    """Why a surface can never be a person's name, or None. One predicate for mentions, entities and speakers.
+
+    A bare title ("Mr", "Mr.") is no name either: the speech-tag regex stopped at the abbreviation's period and stored
+    "Mr" for "said Mr. Bennet" (Pride and Prejudice: 50 of 1,992 quoted spans)."""
+    text = surface.strip().strip(".,;:!?\"“”")
+    folded = text.casefold()
+    if not folded:
+        return "empty"
+    if folded in _PRONOUNS or _PRONOUN_CONTRACTION.match(text):
+        return "pronoun"
+    if folded in _INTERJECTIONS or _LAUGHTER.match(text):
+        return "interjection"
+    if folded in {h.casefold() for h in _HONORIFIC_PREFIXES}:
+        return "bare_title"
+    return None
+
+
+def honorific_title_pattern() -> str:
+    """Regex alternation of the single-word titles, capitalised, for speech-tag patterns."""
+    words = sorted({h.title() for h in _HONORIFIC_PREFIXES if " " not in h}, key=len, reverse=True)
+    return "|".join(re.escape(w) for w in words)
+
+
 #: Titles that, after a family name, tell members of one family apart (Mr., Mrs., Miss and Lady Bennet are four
 #: people). Not the ranks of a cultivation hierarchy ("Elder", "Senior Brother"), which never are.
 _FAMILY_TITLES = frozenset({"mr", "mrs", "miss", "ms", "master", "madam", "lady", "lord", "sir"})

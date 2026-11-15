@@ -98,6 +98,27 @@ class CommonnessProfile:
     #: Layer 0 seed list never contained, and an unmeasured surface silently
     #: skips the filter entirely — which is how "Grandpa" became an entity.
     corpus: str = ""
+    #: The same text with its capitalisation, for `only_capitalised_at_sentence_start`.
+    cased_corpus: str = ""
+    _sentence_initial: dict[str, bool] = field(default_factory=dict)
+
+    def only_capitalised_at_sentence_start(self, surface: str) -> bool:
+        """A single word that is capitalised only because it opens a sentence, and also occurs in lowercase.
+
+        The heuristic detector reads "Somewhere", "Without", "Look", "Tell" and "Nobody" as characters (the
+        deterministic sample story: 10 of 21 entities). A name is capitalised mid-sentence somewhere ("said Mara");
+        a common word never is, and is written lowercase elsewhere. Needs both facts, so a name that merely always
+        opens its sentences is kept."""
+        word = surface.strip()
+        if not self.cased_corpus or not word.isalpha() or not word[:1].isupper():
+            return False
+        # Cached: this runs once per detected span, and two scans of a whole volume each time made a rebuild time out.
+        if word not in self._sentence_initial:
+            low = word.lower()
+            lower = re.search(rf"(?<![A-Za-z]){low}\b", self.cased_corpus) is not None
+            mid = re.search(rf"(?<=[a-z,;:] ){word}\b", self.cased_corpus) is not None
+            self._sentence_initial[word] = lower and not mid
+        return self._sentence_initial[word]
 
     def is_common_noun(self, surface: str) -> bool:
         """Whether a surface form names a class rather than an individual."""
@@ -148,7 +169,7 @@ def build_profile(text: str, candidates: list[str]) -> CommonnessProfile:
     this is bounded by the vocabulary size rather than by the text length.
     """
     lowered = text.casefold()
-    profile = CommonnessProfile(corpus=lowered)
+    profile = CommonnessProfile(corpus=lowered, cased_corpus=text)
 
     for surface in candidates:
         key = surface.casefold()

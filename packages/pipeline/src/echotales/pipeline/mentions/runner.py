@@ -25,6 +25,7 @@ from echotales.core.enums import (
 from echotales.core.models import Chapter, Mention
 from echotales.core.store import Store
 from echotales.pipeline.config import Settings, get_settings
+from echotales.pipeline.ingest.normalize import non_name_reason
 from echotales.pipeline.llm.tasks import Task
 from echotales.pipeline.mentions.alias_type import classify_alias_type
 from echotales.pipeline.mentions.chapter_ner import (
@@ -65,6 +66,8 @@ class MentionReport:
     gazetteer_hit_rate_by_window: list[tuple[int, float]] = field(default_factory=list)
     dropped_common_noun: int = 0
     dropped_credit: int = 0
+    #: Pronouns, contractions and interjections refused by `non_name_reason` (the detector trims them before this).
+    dropped_non_name: int = 0
     credit_surfaces: set[str] = field(default_factory=set)
     #: Layer 1 provenance. `llm_calls` is 0 on a deterministic run.
     detector_name: str = ""
@@ -140,7 +143,7 @@ def detect_mentions_in_chapter(
     mentions: list[Mention] = []
     stats: dict[str, int] = {
         "generic": 0, "gazetteer": 0, "ner": 0, "parenthetical": 0,
-        "common_noun": 0, "credit": 0,
+        "common_noun": 0, "credit": 0, "non_name": 0,
     }
     credits = credits or set()
     superseded = 0
@@ -159,6 +162,14 @@ def detect_mentions_in_chapter(
         classification, so this costs nothing extra to know -- it was already
         being computed and discarded at `_make_mention`.
         """
+        # The same predicate the speaker tier uses; also catches a model-returned "I'm" or "Hahaha".
+        if label == "character" and non_name_reason(surface) in ("pronoun", "interjection"):
+            return "non_name"
+        if (
+            label == "character" and profile is not None and type(detector).__name__ == "HeuristicDetector"
+            and profile.only_capitalised_at_sentence_start(surface)
+        ):
+            return "non_name"
         if label == "character" and profile is not None and profile.is_common_noun(surface):
             return "common_noun"
         if surface in credits or looks_like_credit(surface):
@@ -422,6 +433,7 @@ def detect_mentions(
         report.dropped_generic += stats.get("generic", 0)
         report.dropped_common_noun += stats.get("common_noun", 0)
         report.dropped_credit += stats.get("credit", 0)
+        report.dropped_non_name += stats.get("non_name", 0)
         window_gaz += stats.get("gazetteer", 0)
         window_total += stats.get("gazetteer", 0) + stats.get("ner", 0)
 

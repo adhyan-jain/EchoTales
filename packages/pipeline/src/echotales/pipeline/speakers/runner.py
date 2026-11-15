@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from echotales.core.enums import AliasType, AttributionMethod, SpanType
 from echotales.core.models import Chapter, Mention, Span
 from echotales.core.store import Store
-from echotales.pipeline.ingest.normalize import comparison_key
+from echotales.pipeline.ingest.normalize import comparison_key, non_name_reason
 from echotales.pipeline.mentions.ner import HeuristicDetector
 from echotales.pipeline.render.scenes import group_scenes
 from echotales.pipeline.spans import classify_chapter
@@ -96,6 +96,46 @@ _HISTORICAL_QUALIFIER = re.compile(
     r"\b(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|generation|"
     r"previous|former|late|old|next|future|deputy|vice|acting)\b"
 )
+
+
+def real_name_keys(store: Store, novel_id: str) -> frozenset[str]:
+    """Comparison keys of every name the book really has: entity labels and graph-entering name mentions.
+
+    Volume-wide, not per chapter, so "Fang Zheng" (missed by NER in ch2, a mention elsewhere) still counts. The
+    heuristic capitalised-word candidates that widen `_known` are deliberately not in here: they let "Gu", "Academy"
+    and "The Gu Yue" be stored as speakers (Reverend Insanity: 239 of 5,192 lines on the real-model database)."""
+    texts = [s.canonical_label for s in store.all_selves(novel_id)]
+    for m in store.get_mentions(novel_id):
+        if m.entity_label in ("location", "organization") or m.alias_type is AliasType.RELATIONAL_DEICTIC:
+            continue
+        if m.alias_type.enters_graph:
+            texts.append(m.text)
+    keys = {comparison_key(t) for t in texts}
+    keys |= {comparison_key(w) for t in texts for w in t.split() if len(w) >= 3}  # "Alice" for "Alice Smith"
+    return frozenset(keys - {""})
+
+
+def _is_real_name(surface: str, real_keys: frozenset[str]) -> bool:
+    return non_name_reason(surface) is None and (
+        surface in real_keys or comparison_key(surface) in real_keys
+    )
+
+
+def _drop_unreal_speakers(attributions: list, real_keys: frozenset[str]) -> None:  # type: ignore[type-arg]
+    """End a regex-captured speaker that is no character of the book as UNRESOLVED (anonymous-slot path next).
+
+    Only the tiers that store a captured surface (explicit, joint, proximal); an empty key set means the mention
+    stage has not run, which says nothing about the name."""
+    if not real_keys:
+        return
+    for a in attributions:
+        if a.method not in (AttributionMethod.EXPLICIT, AttributionMethod.JOINT, AttributionMethod.PROXIMAL):
+            continue
+        a.co_speakers = [c for c in a.co_speakers if _is_real_name(c, real_keys)]
+        if a.speaker and not _is_real_name(a.speaker, real_keys):
+            a.speaker, a.co_speakers = None, []
+            a.method, a.confidence = AttributionMethod.UNRESOLVED, 0.0
+            a.evidence = f"dropped: not a character of the book ({a.evidence})"
 
 
 @dataclass(slots=True)
@@ -546,6 +586,7 @@ def attribute_novel(
 
     refresh_family_tokens(store, novel_id)
     report = AttributionReport(novel_id=novel_id)
+    real_keys = real_name_keys(store, novel_id)
 
     # Accumulated across the novel rather than rebuilt per chapter: a character
     # introduced in chapter 5 still speaks in chapter 12 whether or not the
@@ -610,6 +651,7 @@ def attribute_novel(
         attributions = attribute_chapter(
             chapter, spans=spans, known_names=known, pov_holder=pov, person_names=person_names,
         )
+        _drop_unreal_speakers(attributions, real_keys)
         by_id = {a.span_id: a for a in attributions}
 
         for span in spans:

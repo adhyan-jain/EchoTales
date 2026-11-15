@@ -32,7 +32,7 @@ def _slot_label(speaker_id: str) -> str:
     return tail.replace("_", " ")
 
 
-def _reason(speaker_id: str | None, method: str, confidence: float) -> str | None:
+def _reason(speaker_id: str | None, method: str, confidence: float, unknown_name: bool = False) -> str | None:
     """Why a line is worth a person's time, or None when it is settled (an explicit "X said")."""
     if not speaker_id:
         return "unnamed"
@@ -42,6 +42,10 @@ def _reason(speaker_id: str | None, method: str, confidence: float) -> str | Non
         return None
     if ":title:" in speaker_id or ":anon:" in speaker_id:
         return "role_slot"
+    if unknown_name:
+        # "Mr" / "Gu" / "I've" were stored at 0.95 and read as settled; a name that is no entity and no mention is
+        # never settled, whatever the confidence.
+        return "unknown_speaker"
     if method == "EXPLICIT":
         return "low_confidence" if confidence < LOW_CONFIDENCE else None
     return "low_confidence" if confidence < LOW_CONFIDENCE else "model_guess"
@@ -72,8 +76,17 @@ def speaker_queue(
         share[key] = share.get(key, 0) + 1
     labels: dict[str, str] = {}
     items = []
+    from echotales.pipeline.ingest.normalize import comparison_key
+    from echotales.pipeline.speakers.runner import real_name_keys
+
+    keys = real_name_keys(store, novel_id)
+    prefix = f"{novel_id}:"
     for r in rows:
-        reason = _reason(r["speaker_self_id"], r["attribution_method"], r["confidence"])
+        sp = r["speaker_self_id"]
+        unknown = bool(
+            keys and sp and not sp.startswith(prefix) and sp not in keys and comparison_key(sp) not in keys
+        )
+        reason = _reason(sp, r["attribution_method"], r["confidence"], unknown)
         if reason is None or (reason == "model_guess" and not include_guesses):
             continue
         sid = r["speaker_self_id"]

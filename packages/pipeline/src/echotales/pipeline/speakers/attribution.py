@@ -38,7 +38,11 @@ from dataclasses import dataclass, field
 
 from echotales.core.enums import AttributionMethod, SpanType
 from echotales.core.models import Mention, Span
-from echotales.pipeline.ingest.normalize import comparison_key
+from echotales.pipeline.ingest.normalize import (
+    comparison_key,
+    honorific_title_pattern,
+    non_name_reason,
+)
 
 # Verbs that introduce or follow speech. Deliberately broad: in translated web
 # fiction the attribution verb carries the delivery marker too, and both are
@@ -58,7 +62,9 @@ _SPEECH_VERBS = (
     r"instructed|instructs"
 )
 
-_NAME = r"[A-Z][\w’'\-]*(?:\s+[A-Z][\w’'\-]*){0,3}"
+# The optional leading title consumes the abbreviation's period ("said Mr. Bennet"); without it the name stopped at
+# "Mr" (P&P: 50 of 1,992 quoted spans).
+_NAME = rf"(?:(?:{honorific_title_pattern()})\.?\s+)?[A-Z][\w’'\-]*(?:\s+[A-Z][\w’'\-]*){{0,3}}"
 
 #: A speech tag in the narration right after a quote. "returned she" is only counted here, not in `_SPEECH_VERBS`:
 #: as a verb for `_NAME_THEN_VERB` it would turn "Li Wei returned home" into a speaker.
@@ -166,6 +172,8 @@ def _known(name: str, names: frozenset[str]) -> bool:
     far, not one chapter: a character introduced in chapter 5 still speaks in
     chapter 12 whether or not the detector re-fired on them there.
     """
+    if non_name_reason(name):
+        return False
     if not names:
         return True
     if name in names:

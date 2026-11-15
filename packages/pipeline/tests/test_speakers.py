@@ -617,3 +617,55 @@ class TestOwnTagIsNotBorrowedFromTheNextBlock:
 
         assert has_own_speech_tag("returned she;") and has_own_speech_tag("cried his wife, impatiently.")
         assert not has_own_speech_tag("Li Wei returned home.")
+
+
+class TestTitledNamesAndNonNames:
+    """Flow audit: "said Mr. Bennet" was stored as "Mr" (P&P 50 of 1,992 quoted spans); "I've"/"I'd" and
+    capitalised non-names ("Academy", "Gu") were stored as speakers."""
+
+    @pytest.mark.parametrize(
+        ("tag", "expected"),
+        [
+            (" said Mr. Bennet.", "Mr. Bennet"),
+            (" cried Mrs. Long.", "Mrs. Long"),
+            (" Dr. Watson replied.", "Dr. Watson"),
+            (" Lady Catherine said.", "Lady Catherine"),
+        ],
+    )
+    def test_a_speech_tag_gives_the_full_titled_name(self, tag: str, expected: str) -> None:
+        out = attribute_explicit(span("“Speak.”"), preceding="", following=tag)
+        assert out and out.speaker == expected
+
+    def test_a_bare_title_is_not_a_speaker(self) -> None:
+        assert attribute_explicit(span("“Speak.”"), preceding="", following=" said Mr.") is None
+
+    @pytest.mark.parametrize("word", ["I", "I've", "I'd", "I'm", "He'd", "She's", "They’ve", "It's", "Hahaha", "Oh"])
+    def test_pronouns_contractions_and_interjections_are_never_speakers(self, word: str) -> None:
+        out = attribute_explicit(span("“Speak.”"), preceding="", following=f" {word} said.")
+        assert out is None
+
+    def test_the_heuristic_detector_never_emits_them(self) -> None:
+        from echotales.pipeline.mentions.ner import HeuristicDetector
+
+        found = {s.text for s in HeuristicDetector().detect("“I'm sure.” Hahaha! Oh, Klein smiled. I've gone.")}
+        assert found == {"Klein"}
+
+    def _book(self, *texts: str) -> Store:
+        s = Store(":memory:")
+        s.add_novel("t", "T", "x.epub", "generic")
+        s.add_chapter(chapter(*texts))
+        s.add_mentions([Mention(
+            id="t:1:m0", novel_id="t", segment_id="s", chapter=1.0, offset=0, text="Li Wei",
+            alias_type=AliasType.RIGID_NAME, span_type=SpanType.NARRATION_ACTION,
+            reference_mode=ReferenceMode.PRESENT, block_index=0,
+        )])
+        s.conn.commit()
+        return s
+
+    def test_a_captured_surface_that_is_no_character_ends_unresolved(self) -> None:
+        store = self._book("Li Wei said, “Hello.”", "Academy said, “No.”")
+        attribute_novel("t", store)
+        by_text = {s.text: s for s in store.get_spans("t", 1.0) if s.span_type is SpanType.DIALOGUE}
+        assert by_text["“Hello.”"].speaker_self_id == "Li Wei"
+        assert by_text["“No.”"].speaker_self_id != "Academy"
+        assert by_text["“No.”"].attribution_method is not AttributionMethod.EXPLICIT

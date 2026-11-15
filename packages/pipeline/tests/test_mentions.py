@@ -521,3 +521,12 @@ class TestHonorificInsideAName:
             chapter, gazetteer=gazetteer, lexicon=lexicon, detector=VocabularyDetector({"Miss Bingley": "character"})
         )
         assert sorted((m.block_index, m.text) for m in mentions) == [(0, "Sir"), (1, "Miss Bingley")]
+
+
+def test_a_word_capitalised_only_at_sentence_start_is_not_a_name_but_a_name_that_opens_sentences_is() -> None:
+    from echotales.pipeline.mentions.commonness import build_profile
+
+    text = "Somewhere a bell rang. He went somewhere else. Mara ran. Then Mara stopped. We saw Mara."
+    profile = build_profile(text, [])
+    assert profile.only_capitalised_at_sentence_start("Somewhere")
+    assert not profile.only_capitalised_at_sentence_start("Mara")
