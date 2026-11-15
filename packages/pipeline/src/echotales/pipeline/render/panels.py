@@ -69,6 +69,16 @@ from echotales.pipeline.render.contract import (
 from echotales.pipeline.render.direction import direct_beat, sanitize_prompt
 from echotales.pipeline.render.factions import qualify_role, scene_faction
 from echotales.pipeline.render.palette import Palette, PaletteSpec, apply_palette
+from echotales.pipeline.render.plan import (
+    PANEL_PLAN_FILE,
+    CachedPrompt,
+    PanelPlan,
+    PlanCastMember,
+    append_panel_plan,
+    dropped_clauses,
+    dump_prompt_cache,
+    load_prompt_cache,
+)
 from echotales.pipeline.render.plan_builder import build_render_plan, compile_render_state
 from echotales.pipeline.render.scene_refs import (
     curated_character_reference,
@@ -1688,13 +1698,14 @@ def render_panels(
     render_artifacts: list[RenderArtifact] = []
     _state_resolver = StateResolver(store, novel_id, default_observer=observer_id)
 
-    prompt_cache: dict[str, str] = {}
+    prompt_cache: dict[str, CachedPrompt] = {}
     cache_path = Path(prompt_cache_path) if prompt_cache_path is not None else None
     if cache_path is not None and cache_path.exists():
-        try:
-            prompt_cache = json.loads(cache_path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            prompt_cache = {}
+        prompt_cache = load_prompt_cache(cache_path)
+    # Each version dir's `panel_plan.jsonl` is truncated by this run's first row
+    # and appended to after, so a rerun into the same dir cannot double its rows.
+    _plan_started: set[Path] = set()
+    _rendered_chapters: set[float] = set()
 
     # **Cache keys carry a DB fingerprint so a promoted/changed database
     # can never silently serve a stale prompt.** Measured directly: after
@@ -1750,6 +1761,7 @@ def render_panels(
         if chapter is None:
             continue
         report.chapters += 1
+        _rendered_chapters.add(chapter_number)
         # Panel number within the chapter, in play order. Reset per chapter
         # so a filename is meaningful without knowing the whole run.
         _panel_seq = 0
@@ -1939,14 +1951,17 @@ def render_panels(
                 _scene_mobs,
                 len(story_scene_blocks),
                 DiscoursePosition(chapter=int(chapter_number), offset=scene.blocks[0]),
+                chapter_number=chapter_number,
             )
             scene_locale_text = _scene_state.location
+            _location_source = "scene"
             # **Unstated is not a different place.** For a scene with no place cue of its own, `scene_locale` rotates
             # through the book's locales by block number, so one bedroom scene was drawn in a study, on a street and on
             # a moor (LotM render review, 2026-10-18). These books inherit the chapter's own most-cued place instead,
             # and invent none when the chapter has none either.
             if setting_first(novel_id) and not scene_locale(novel_id, _scene_text, strict=True):
                 scene_locale_text = _chapter_locale
+                _location_source = "chapter"
 
             # **The crowd gets its own cut, not a corner of the hero's
             # panel.** Four rounds of prompt work could not put a crowd in
@@ -2394,6 +2409,10 @@ def render_panels(
                 )
                 cached_prompt = prompt_cache.get(cache_key)
                 directed = None  # may be set in the else branch below; None on cache hit
+                _cached_direction = None
+                _direction_reason: str | None = None
+                _fit_before: int | None = None
+                _fit_dropped: list[str] | None = None
 
                 if cached_prompt is not None:
                     # A direction pass already ran (`prompt_cache_path`) and
@@ -2401,7 +2420,15 @@ def render_panels(
                     # than re-calling the director or falling back to the
                     # mechanical assembler, which is the whole point of the
                     # two-phase split (this function's own docstring).
-                    prompt = cached_prompt
+                    prompt = cached_prompt.prompt
+                    # Phase 1's direction rides along with its prompt. Without it
+                    # phase 2 built its plan with empty shot/layout/mood and took
+                    # the mechanical style bucket, so its negative prompt and cache
+                    # key differed from a single-phase render of the same panel.
+                    _cached_direction = cached_prompt.direction
+                    _direction_reason = cached_prompt.direction_reason
+                    _fit_before = cached_prompt.tokens_before_fit
+                    _fit_dropped = cached_prompt.dropped
                     report.prompt_cache_hits += 1
                 else:
                     # **Ask a model what this panel should show**, and only
@@ -2497,28 +2524,6 @@ def render_panels(
                         )
 
                     if directed is not None:
-                        # **The negative prompt's style bucket must follow the
-                        # director's own shot choice, not the mechanical
-                        # slot%4 cycle above.** That cycle picks `style` (and
-                        # therefore `negative_for(style)`, below) purely by
-                        # this panel's position in its chunk, with no
-                        # knowledge of what the director actually asked for.
-                        # `NEGATIVE_HEAD_BY_STYLE[STYLE_CLOSEUP]` is `"full
-                        # body, wide shot, crowd, tiny face"` -- so a panel
-                        # the director marked `shot="wide"` (enemies ringing
-                        # the subject, a mountain stronghold) could still land
-                        # on the cycle's closeup slot and get "wide shot,
-                        # crowd" put in its own negative prompt: the prompt
-                        # fighting itself before the sampler ever runs.
-                        # Confirmed on RI ch1 block 1, whose wide-shot siege
-                        # prompt landed on exactly this slot. Override with
-                        # the real per-panel decision whenever one exists.
-                        style = {
-                            "wide": STYLE_ESTABLISHING,
-                            "medium": STYLE_SCENE,
-                            "close": STYLE_CLOSEUP,
-                        }.get(directed.direction.shot, style)
-                        closeup = style is STYLE_CLOSEUP
                         prompt_parts = directed.to_image_prompt_parts(
                             scene_locale=scene_locale_text,
                             world_context=_world_ctx,
@@ -2596,7 +2601,15 @@ def render_panels(
                             # positive and negative clauses now agree.
                             prompt_parts = [tags] + prompt_parts
                         prompt = fit_to_budget(prompt_parts, limit=_prompt_limit)
+                        _fit_before = count_tokens(", ".join(p for p in prompt_parts if p))
+                        _fit_dropped = dropped_clauses(prompt_parts, prompt)
                     else:
+                        _direction_reason = (
+                            "no director client"
+                            if client is None
+                            else "mechanical fallback after director error "
+                            "(call or validation failed; see log)"
+                        )
                         prompt = build_image_prompt(
                             cast,
                             beat=beat_prose,
@@ -2614,7 +2627,41 @@ def render_panels(
                             novel_id=novel_id,
                         )
                     prompt = sanitize_prompt(prompt)
-                    prompt_cache[cache_key] = prompt
+                    prompt_cache[cache_key] = CachedPrompt(
+                        prompt=prompt,
+                        direction=directed.direction if directed is not None else None,
+                        direction_reason=_direction_reason,
+                        tokens_before_fit=_fit_before,
+                        dropped=_fit_dropped,
+                    )
+
+                # What the director decided for this panel, whether it just ran or
+                # phase 1 saved it. Everything below that reads the decision uses
+                # this, so the two phases cannot disagree about it.
+                _direction = directed.direction if directed is not None else _cached_direction
+                if _direction is not None:
+                # **The negative prompt's style bucket must follow the
+                # director's own shot choice, not the mechanical
+                # slot%4 cycle above.** That cycle picks `style` (and
+                # therefore `negative_for(style)`, below) purely by
+                # this panel's position in its chunk, with no
+                # knowledge of what the director actually asked for.
+                # `NEGATIVE_HEAD_BY_STYLE[STYLE_CLOSEUP]` is `"full
+                # body, wide shot, crowd, tiny face"` -- so a panel
+                # the director marked `shot="wide"` (enemies ringing
+                # the subject, a mountain stronghold) could still land
+                # on the cycle's closeup slot and get "wide shot,
+                # crowd" put in its own negative prompt: the prompt
+                # fighting itself before the sampler ever runs.
+                # Confirmed on RI ch1 block 1, whose wide-shot siege
+                # prompt landed on exactly this slot. Override with
+                # the real per-panel decision whenever one exists.
+                    style = {
+                        "wide": STYLE_ESTABLISHING,
+                        "medium": STYLE_SCENE,
+                        "close": STYLE_CLOSEUP,
+                    }.get(_direction.shot, style)
+                    closeup = style is STYLE_CLOSEUP
 
                 if is_crowd_cut:
                     # No character clause and no reference sheet: those are
@@ -2673,11 +2720,7 @@ def render_panels(
                         if _hostility
                         else "crowd of chinese cultivators, multiple people, 6+boys"
                     )
-                    _director_layout = (
-                        directed.direction.layout
-                        if directed is not None and directed.direction.layout
-                        else ""
-                    )
+                    _director_layout = _direction.layout if _direction is not None else ""
                     # Section 6.2: this template was one of the three
                     # independent prompt-assembly bypasses that hand-ordered
                     # a single flat list instead of going through an
@@ -2690,18 +2733,19 @@ def render_panels(
                     # are the lowest-priority style/place content), so a
                     # future edit to any one tier's wording can no longer
                     # accidentally starve a higher tier by list position.
-                    prompt = fit_tiers_to_budget(
+                    _crowd_tiers = [
+                        ["ancient china, xianxia, wuxia, hanfu robes", _crowd_count],
                         [
-                            ["ancient china, xianxia, wuxia, hanfu robes", _crowd_count],
-                            [
-                                "large figures in the foreground, seen from behind",
-                                f"{_roles} standing close together, facing away",
-                                _director_layout,
-                            ],
-                            [scene_locale_text, "manhwa illustration, dramatic lighting, highly detailed"],
+                            "large figures in the foreground, seen from behind",
+                            f"{_roles} standing close together, facing away",
+                            _director_layout,
                         ],
-                        limit=_prompt_limit,
-                    )
+                        [scene_locale_text, "manhwa illustration, dramatic lighting, highly detailed"],
+                    ]
+                    prompt = fit_tiers_to_budget(_crowd_tiers, limit=_prompt_limit)
+                    _crowd_parts = [p for tier in _crowd_tiers for p in tier]
+                    _fit_before = count_tokens(", ".join(p for p in _crowd_parts if p))
+                    _fit_dropped = dropped_clauses(_crowd_parts, prompt)
                     references = []
                     conditioned = []
 
@@ -2716,8 +2760,8 @@ def render_panels(
                     genders,
                     beat=(
                         f"{beat_prose} "
-                        f"{directed.direction.action or '' if directed is not None else ''} "
-                        f"{directed.direction.layout or '' if directed is not None else ''}"
+                        f"{(_direction.action or '') if _direction is not None else ''} "
+                        f"{(_direction.layout or '') if _direction is not None else ''}"
                     ),
                 )
                 _base_neg = _form.filtered_negative(
@@ -2768,13 +2812,13 @@ def render_panels(
                     cast_self_ids=_cast_self_ids,
                     lead_self_id=_lead_self_id,
                     location=_scene_state.location,
-                    lighting=directed.direction.lighting if directed is not None else "",
-                    mood=directed.direction.mood if directed is not None else "",
-                    shot=directed.direction.shot if directed is not None else "",
-                    layout=directed.direction.layout if directed is not None else "",
+                    lighting=_direction.lighting if _direction is not None else "",
+                    mood=_direction.mood if _direction is not None else "",
+                    shot=_direction.shot if _direction is not None else "",
+                    layout=_direction.layout if _direction is not None else "",
                     is_crowd_cut=is_crowd_cut,
-                    pose_hint=directed.direction.action if directed is not None else "",
-                    expression_hint=directed.direction.expression if directed is not None else "",
+                    pose_hint=_direction.action if _direction is not None else "",
+                    expression_hint=_direction.expression if _direction is not None else "",
                     resolver=_state_resolver,
                     position=story_position,
                     gen_state=_beat_state,
@@ -2811,10 +2855,12 @@ def render_panels(
                 _cached_image = cache_index.get(render_cache_key)
                 if _cached_image and Path(_cached_image).exists():
                     report.skipped_cached += 1
+                    _provenance = "cached"
                 elif digest in generated_by_digest:
                     image_path.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copyfile(generated_by_digest[digest], image_path)
                     report.deduped_panels += 1
+                    _provenance = "deduped"
                     cache_index[render_cache_key] = str(image_path)
                 else:
                     # 0.65 (the default) is right for a close-up -- a face
@@ -2906,12 +2952,74 @@ def render_panels(
                     # generalise across novels. Appearance is constrained by
                     # prompt text (appearance clause + style anchor) instead.
                     engine.generate(_panel_request)
+                    _provenance = "generated"
                     generated_by_digest[digest] = image_path
                     cache_index[render_cache_key] = str(image_path)
                     if _honest_conditioned:
                         report.conditioned_panels += 1
                     else:
                         report.prompt_only_panels += 1
+
+                # One plan row per image, after it exists: an engine error on panel N
+                # leaves rows 1..N-1 on disk instead of nothing.
+                _plan_labels = _beat_entity_labels if _beat_bodies else _scene_last_present_entity_labels
+                _persona_of = {c.self_id: c.persona_id for c in _plan.characters}
+                _plan_path = chapter_dir / PANEL_PLAN_FILE
+                append_panel_plan(
+                    _plan_path,
+                    PanelPlan(
+                        novel_id=novel_id,
+                        chapter=chapter_number,
+                        panel_seq=_panel_seq,
+                        panel_id=_plan.beat_id,
+                        scene_index=scene.index,
+                        segment_id=scene.segment_id,
+                        scene_state_id=_scene_state.id,
+                        slot_kind=("establishing", "closeup", "scene", "crowd")[
+                            slot % _SLOTS_PER_CHUNK
+                        ],
+                        lead_block=lead,
+                        block_indexes=_slot_blocks,
+                        cast=[
+                            PlanCastMember(
+                                self_id=sid,
+                                persona_id=_persona_of.get(sid),
+                                label=_plan_labels.get(sid, ""),
+                            )
+                            for sid in _cast_self_ids
+                        ],
+                        cast_source=(
+                            "present" if _beat_bodies
+                            else "carried" if _scene_last_present_bodies
+                            else "none"
+                        ),
+                        location=scene_locale_text,
+                        location_source=_location_source,
+                        direction=_direction,
+                        direction_source=(
+                            "director" if directed is not None
+                            else "prompt_cache" if _direction is not None
+                            else None
+                        ),
+                        direction_reason=None if _direction is not None else _direction_reason,
+                        prompt=prompt,
+                        negative_prompt=neg_prompt,
+                        prompt_tokens=count_tokens(prompt),
+                        prompt_tokens_before_fit=_fit_before,
+                        dropped_clauses=_fit_dropped,
+                        engine=engine.name,
+                        width=width,
+                        height=height,
+                        seed=seed,
+                        image_path=image_path.relative_to(chapter_dir).as_posix(),
+                        cache_key=render_cache_key,
+                        plan_digest=_plan.plan_digest,
+                        state_digest=_plan.state_digest,
+                        provenance=_provenance,
+                    ),
+                    truncate=_plan_path not in _plan_started,
+                )
+                _plan_started.add(_plan_path)
 
                 slot_images[slot] = PanelImage(
                     chapter=chapter_number,
@@ -2957,8 +3065,21 @@ def render_panels(
     # version folder also gets its own, so a render stays self-describing after
     # a later run replaces the root copy -- until now an old version's record
     # survived only as a hand-renamed `manifest_vN.jsonl`, if at all.
-    (out_dir / "manifest.jsonl").write_text(
-        "\n".join(json.dumps(asdict(p)) for p in manifest) + "\n",
+    # Rows of chapters this run did not render are kept: rewriting the file from
+    # this run alone dropped every chapter rendered earlier. A chapter this run
+    # did render is replaced whole, so `render_videos` sees the same rows for it.
+    _kept: list[str] = []
+    _root_manifest = out_dir / "manifest.jsonl"
+    if _root_manifest.exists():
+        for _line in _root_manifest.read_text(encoding="utf-8").splitlines():
+            try:
+                _row = json.loads(_line)
+            except json.JSONDecodeError:
+                continue
+            if _row.get("chapter") not in _rendered_chapters:
+                _kept.append(_line)
+    _root_manifest.write_text(
+        "\n".join([*_kept, *(json.dumps(asdict(p)) for p in manifest)]) + "\n",
         encoding="utf-8",
     )
     by_run_dir: dict[Path, list[PanelImage]] = {}
@@ -2981,8 +3102,7 @@ def render_panels(
             encoding="utf-8",
         )
     if cache_path is not None:
-        cache_path.parent.mkdir(parents=True, exist_ok=True)
-        cache_path.write_text(json.dumps(prompt_cache, indent=2), encoding="utf-8")
+        dump_prompt_cache(cache_path, prompt_cache)
     # Visual Rendering Track Phase 1b: persist every chapter_dir's real
     # cache index so a later run (or a later phase of a two-phase render)
     # sees this run's cache-key -> image-path records, not just its files.

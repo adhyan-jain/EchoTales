@@ -52,6 +52,17 @@ def classify_transient_severity(text: str) -> str:
     return "unharmed"
 
 
+def scene_state_id(
+    novel_id: str, scene: Scene, position: DiscoursePosition, chapter_number: float | None = None
+) -> str:
+    """One id per scene. It used to be `{novel}:{segment}:{index}`, which
+    collides when a segment spans chapters (`Scene.index` restarts at 0 in
+    each) and, with an empty segment, across the whole book. `position.chapter`
+    is an int, so a fractional chapter passes its real number separately."""
+    chapter = position.chapter if chapter_number is None else chapter_number
+    return f"{novel_id}:{scene.segment_id}:c{chapter:g}:s{scene.index}"
+
+
 def derive_scene_state(
     store: Store,
     novel_id: str,
@@ -61,6 +72,7 @@ def derive_scene_state(
     mobs: list[MobDescriptor],
     story_scene_block_count: int,
     position: DiscoursePosition,
+    chapter_number: float | None = None,
 ) -> SceneState:
     """Compute a `SceneState` for one `Scene`. Does not persist it -- see
     `get_or_derive_scene_state` for the store-then-read wrapper callers
@@ -72,7 +84,7 @@ def derive_scene_state(
     default_severity = classify_transient_severity(scene_narration)
 
     return SceneState(
-        id=f"{novel_id}:{scene.segment_id}:{scene.index}",
+        id=scene_state_id(novel_id, scene, position, chapter_number),
         novel_id=novel_id,
         segment_id=scene.segment_id,
         location=location,
@@ -91,25 +103,20 @@ def get_or_derive_scene_state(
     mobs: list[MobDescriptor],
     story_scene_block_count: int,
     position: DiscoursePosition,
+    chapter_number: float | None = None,
 ) -> SceneState:
-    """Idempotent: a second render pass over the same chapter reuses the
-    stored row instead of re-deriving and drifting. `scene.segment_id`
-    empty (the `ActiveScene`-coverage gap `Scene.segment_id`'s own docstring
-    notes) falls through to deriving without a store round-trip, since
-    there is no segment key to store or look up against."""
-    if not scene.segment_id:
-        return derive_scene_state(
-            store, novel_id, scene, scene_text, scene_narration, mobs,
-            story_scene_block_count, position,
-        )
-
-    existing = store.get_scene_state(novel_id, scene.segment_id)
+    """Idempotent: a second render pass over the same scene reuses the stored
+    row instead of re-deriving and drifting. Looked up by the scene's own id,
+    not by segment: a segment holds several scenes, and every one after the
+    first was handed scene 0's location, crowd mood and severity."""
+    state_id = scene_state_id(novel_id, scene, position, chapter_number)
+    existing = store.get_scene_state_by_id(state_id)
     if existing is not None and not existing.closed:
         return existing
 
     state = derive_scene_state(
         store, novel_id, scene, scene_text, scene_narration, mobs,
-        story_scene_block_count, position,
+        story_scene_block_count, position, chapter_number,
     )
     store.add_scene_state(state)
     return state

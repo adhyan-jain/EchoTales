@@ -1056,6 +1056,27 @@ class Store:
     def close_scene_state(self, id: str) -> None:
         self.conn.execute("UPDATE scene_state SET closed=1 WHERE id=?", (id,))
 
+    def get_scene_state_by_id(self, id: str) -> SceneState | None:
+        """The one row with this id, closed or not. `get_scene_state` keys on
+        the segment, and a segment holds several scenes, so it cannot tell
+        them apart."""
+        r = self.conn.execute("SELECT * FROM scene_state WHERE id=?", (id,)).fetchone()
+        if r is None:
+            return None
+        return SceneState(
+            id=r["id"],
+            novel_id=r["novel_id"],
+            segment_id=r["segment_id"],
+            location=r["location"],
+            crowd_mood=r["crowd_mood"],
+            default_severity=r["default_severity"],
+            extra=json.loads(r["extra_json"]),
+            set_at_position=DiscoursePosition(
+                chapter=int(r["set_at_chapter"]), offset=r["set_at_offset"]
+            ),
+            closed=bool(r["closed"]),
+        )
+
     # ---- entities -----------------------------------------------------
 
     def add_self(self, entity: Self) -> None:

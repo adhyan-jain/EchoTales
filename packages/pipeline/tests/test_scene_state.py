@@ -116,10 +116,10 @@ def test_get_or_derive_scene_state_is_idempotent() -> None:
     assert second.default_severity == first.default_severity
 
 
-def test_get_or_derive_scene_state_without_segment_id_does_not_persist() -> None:
+def test_get_or_derive_scene_state_without_segment_id_still_returns_a_state() -> None:
     """`Scene.segment_id` empty (no `ActiveScene` covered these blocks) must
-    still return a usable `SceneState`, just without a store round-trip --
-    there's no segment key to store or look up against."""
+    still return a usable `SceneState`. It is stored too, keyed by its own id
+    (see `test_scene_without_segment_id_is_persisted_and_reused`)."""
     store = Store(":memory:")
     scene = _scene(segment_id="")
     state = get_or_derive_scene_state(
@@ -127,4 +127,57 @@ def test_get_or_derive_scene_state_without_segment_id_does_not_persist() -> None
         DiscoursePosition(chapter=1, offset=0),
     )
     assert state.segment_id == ""
-    assert store.get_scene_state("n", "") is None
+    assert store.get_scene_state_by_id(state.id) is not None
+
+
+def test_two_scenes_in_one_segment_each_get_their_own_state() -> None:
+    """Looked up by segment alone, every scene after the first reused scene 0's
+    location, crowd mood and severity (the row id carried the scene index but
+    the lookup did not)."""
+    store = Store(":memory:")
+    store.add_segments([_segment("seg1")])
+    pos = DiscoursePosition(chapter=1, offset=0)
+    crowd = [MobDescriptor(text="a crowd", role="crowd", offset=0, block_index=0)]
+    first = get_or_derive_scene_state(
+        store, "n", Scene(index=0, blocks=[0, 1, 2], segment_id="seg1"),
+        "his robes were torn", "his robes were torn", crowd, 3, pos,
+    )
+    second = get_or_derive_scene_state(
+        store, "n", Scene(index=1, blocks=[3, 4], segment_id="seg1"),
+        "a quiet courtyard", "a quiet courtyard", [], 2, pos,
+    )
+    assert first.crowd_mood == "crowd" and first.default_severity == "roughed_up"
+    assert second.id != first.id
+    assert second.crowd_mood is None
+    assert second.default_severity == "unharmed"
+
+
+def test_same_scene_index_in_two_chapters_of_one_segment_does_not_collide() -> None:
+    """A segment can span chapters, and `Scene.index` restarts at 0 per chapter."""
+    store = Store(":memory:")
+    store.add_segments([_segment("seg1")])
+    a = get_or_derive_scene_state(
+        store, "n", _scene(), "his robes were torn", "his robes were torn", [], 3,
+        DiscoursePosition(chapter=1, offset=0), chapter_number=1.0,
+    )
+    b = get_or_derive_scene_state(
+        store, "n", _scene(), "a quiet courtyard", "a quiet courtyard", [], 3,
+        DiscoursePosition(chapter=1, offset=0), chapter_number=1.5,
+    )
+    assert a.id != b.id
+    assert (a.default_severity, b.default_severity) == ("roughed_up", "unharmed")
+
+
+def test_scene_without_segment_id_is_persisted_and_reused() -> None:
+    """It used to be re-derived on every call, so a second pass could drift."""
+    store = Store(":memory:")
+    scene = _scene(segment_id="")
+    pos = DiscoursePosition(chapter=1, offset=0)
+    first = get_or_derive_scene_state(
+        store, "n", scene, "his robes were torn", "his robes were torn", [], 3, pos
+    )
+    second = get_or_derive_scene_state(
+        store, "n", scene, "a quiet courtyard", "a quiet courtyard", [], 3, pos
+    )
+    assert second.id == first.id
+    assert second.default_severity == "roughed_up"
