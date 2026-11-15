@@ -41,6 +41,7 @@ from echotales.pipeline.render.compose import (
 from echotales.pipeline.render.plan import PANEL_PLAN_FILE, PanelPlan, load_panel_plan
 from echotales.pipeline.render.shots import (
     DerivedEnd,
+    MotionLevel,
     ShotBudget,
     ShotMode,
     ShotSpec,
@@ -50,7 +51,7 @@ from echotales.pipeline.render.shots import (
 )
 from echotales.pipeline.render.timeline import TimedShot
 from echotales.pipeline.screenplay.schema import CameraMove, Transition
-from echotales.pipeline.video.clip_gate import GateReport, gate_clip
+from echotales.pipeline.video.clip_gate import ClipImageEmbedder, Embedder, GateReport, gate_clip
 from echotales.pipeline.video.local import ClipEngine, ClipRequest, ClipResult, VideoEnvError
 from echotales.pipeline.voice.timing import (
     TIMING_FILE,
@@ -79,6 +80,61 @@ _PAN = {
 def pan_direction(move: CameraMove) -> str:
     """`compose._zoompan_filter` has zoom and pan only; a static, tilt or shake move plays as a push-in."""
     return _PAN.get(move, "zoom_in")
+
+
+# --------------------------------------------------------------------------- video prompt
+
+#: What the probe's identity-stable clips were told about the picture (EVOLUTION 4.146): style, outfit and line
+#: art anchors. The first real run sent only motion words ("slight breathing, hair gently moving") for a wide
+#: silhouette panel and the model went looking for a face: a photographic woman's profile appeared mid-clip.
+STYLE_ANCHOR = "anime style illustration, clean line art, consistent character and outfit"
+#: Motion for a panel where a face must not be invented: light, mist, particles, cloth far away.
+AMBIENT_MOTION = "gentle ambient motion, drifting light and mist, floating particles, distant cloth swaying"
+#: Image-prompt clauses that describe the render, not the picture.
+_BOILERPLATE = re.compile(
+    r"^(score_\d.*|masterpiece|best quality|highly detailed|very aesthetic|absurdres|cinematic lighting|"
+    r"guofeng illustration|chinese ink painting|xianxia|wuxia|ancient china|solo|male focus|female focus|"
+    r"\d\+?(boy|girl)s?|(wide|medium|close|full|cowboy) (shot|up)|.*\bmood)$", re.I)
+
+
+def _detag(text: str) -> str:
+    return " ".join(text.replace("_", " ").split())
+
+
+def panel_description(panel: PanelPlan) -> str:
+    """What is in the panel, in a few words: the director's layout, setting and key objects when it gave
+    them, else the subject clauses of the image prompt with the render boilerplate dropped."""
+    parts: list[str] = []
+    d = panel.direction
+    if d is not None and (d.layout.strip() or d.setting.strip() or d.key_objects):
+        parts = [d.layout, d.setting, *d.key_objects]
+    else:
+        parts = [c for c in (x.strip() for x in panel.prompt.split(",")) if c and not _BOILERPLATE.match(c)][:6]
+    cast = [m.label or m.self_id for m in panel.cast]
+    text = ", ".join(x for x in (_detag(p) for p in parts) if x)
+    return ", ".join(x for x in (text, *(_detag(c) for c in cast)) if x)
+
+
+def is_ambient_only(shot: ShotSpec, panel: PanelPlan) -> bool:
+    """Wide, establishing or planner-marked ambient panels get no face, breath, blink or hair wording."""
+    wide = panel.direction is not None and panel.direction.shot.strip().lower() == "wide"
+    return wide or panel.slot_kind == "establishing" or any("ambient motion only" in r for r in shot.reasons)
+
+
+def build_video_prompt(shot: ShotSpec, panel: PanelPlan) -> str:
+    """The text the video engine gets: style anchor + what is in the panel + motion + a camera clause."""
+    if is_ambient_only(shot, panel):
+        motion = AMBIENT_MOTION
+    else:
+        clauses = [c.strip() for c in shot.motion_prompt.split(",") if c.strip() and c.strip() != "slow steady push-in"]
+        motion = ", ".join(clauses) or "subtle natural motion"
+    if shot.end_derived is not None:
+        camera = "slow steady push-in"
+    elif shot.end_panel_id:
+        camera = "smooth continuous camera movement"
+    else:
+        camera = "static camera"
+    return ", ".join(x for x in (STYLE_ANCHOR, panel_description(panel), motion, camera) if x)
 
 
 # --------------------------------------------------------------------------- images
@@ -161,6 +217,10 @@ class ShotOutcome:
     final: str
     reason: str = ""
     clip_key: str | None = None
+    #: What the engine was sent, so a bad clip can be read against its words.
+    prompt: str | None = None
+    #: A SUBTLE ANIMATE clip played forward then reversed to fill the shot, instead of freezing on its last frame.
+    looped: bool = False
     frames: int = 0
     clip_frames: int = 0
     hold_frames: int = 0
@@ -229,6 +289,8 @@ def render_shots(
     height: int = OUTPUT_HEIGHT,
     suffix: str | None = None,
     emotions: dict[str, tuple[str, int]] | None = None,
+    embedder: Embedder | None = None,
+    loop_subtle: bool = True,
 ) -> AnimeResult:
     """Plan, generate, gate and compose one chapter. `out_root` is `<novel>/video/ch<N>`."""
     panels_dir, audio_dir, out_root = Path(panels_dir), Path(audio_dir), Path(out_root)
@@ -290,8 +352,10 @@ def render_shots(
             elif s.end_derived:
                 end_img = render_derived_end(start_img, s.end_derived)
             frames = engine.snap_frames(s.frames)
+            prompt = build_video_prompt(s, by_id[s.panel_id])
+            o.prompt = prompt
             key = clip_key(
-                start=start_bytes, end=end_bytes, derived=s.end_derived, prompt=s.motion_prompt, seed=s.seed,
+                start=start_bytes, end=end_bytes, derived=s.end_derived, prompt=prompt, seed=s.seed,
                 frames=frames, fps=capability.fps, width=w, height=h, engine_id=engine.engine_id,
                 model_identity=engine.model_identity(),
             )
@@ -311,7 +375,7 @@ def render_shots(
             end_png = inputs_dir / f"{key}_end.png"
             end_img.save(end_png)
         pending.append(ClipRequest(
-            clip_id=key, start_image=start_png, end_image=end_png, prompt=s.motion_prompt, frames=frames,
+            clip_id=key, start_image=start_png, end_image=end_png, prompt=prompt, frames=frames,
             fps=capability.fps, width=w, height=h, seed=s.seed, output=work_dir / f"{key}.mp4",
         ))
 
@@ -363,14 +427,30 @@ def render_shots(
         segment_paths.append(p)
         measured.append(count_frames(p))
 
+    # One CLIP load for the whole gate run, freed before the ffmpeg work; a test injects a fake.
+    own_embedder = embedder is None and any(o.final in ("generated", "cached") for o in outcomes.values())
+    if own_embedder:
+        embedder = ClipImageEmbedder()
+    gate_reports: dict[int, GateReport] = {}
+    try:
+        for s in shots:
+            o = outcomes[s.shot_index]
+            if o.final in ("generated", "cached"):
+                start_img, end_img, clip_path, _ = prepared[s.shot_index]
+                gate_reports[s.shot_index] = gate_clip(
+                    clip_path, start_img, end_img, expected_frames=engine.snap_frames(s.frames),  # type: ignore[union-attr]
+                    width=w, height=h, embedder=embedder)
+    finally:
+        if own_embedder:
+            embedder.close()  # type: ignore[union-attr]
+
     for s in shots:
         o, n = outcomes[s.shot_index], budget_frames[s.shot_index]
         base = f"s{s.shot_index:04d}"
         generated_ok = False
         if o.final in ("generated", "cached"):
-            start_img, end_img, clip_path, key = prepared[s.shot_index]
-            expected = engine.snap_frames(s.frames)  # type: ignore[union-attr]
-            report: GateReport = gate_clip(clip_path, start_img, end_img, expected_frames=expected, width=w, height=h)
+            clip_path = prepared[s.shot_index][2]
+            report = gate_reports[s.shot_index]
             o.gate = report.to_dict()
             if report.passed:
                 generated_ok = True
@@ -406,6 +486,24 @@ def render_shots(
             still(panel_image(s.panel_id), "zoom_out", rest, f"{base}_head.mp4", s)
             segment_paths.append(clip_seg)
             measured.append(got)
+        elif rest > 0 and loop_subtle and s.mode is ShotMode.ANIMATE and s.motion is MotionLevel.SUBTLE:
+            # A 4 s clip opening a 30 s shot reads as a still that then freezes. Forward-then-reverse repeats
+            # with no jump at either turn (the reversed leg drops the turning frames so none is shown twice).
+            period = segs_dir / f"{base}_period.mp4"
+            fit = f"fps={OUTPUT_FPS},scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height}"
+            last_i = o.gate["frames"] - 1
+            _run_ffmpeg([
+                "-i", str(clip_path), "-an", "-filter_complex",
+                f"[0:v]split[f][r];[r]trim=start_frame=1:end_frame={last_i},setpts=PTS-STARTPTS,reverse[rr];"
+                f"[f][rr]concat=n=2:v=1:a=0,{fit}[o]",
+                "-map", "[o]", "-pix_fmt", "yuv420p", str(period),
+            ])
+            looped = segs_dir / f"{base}_loop.mp4"
+            _run_ffmpeg(["-stream_loop", "-1", "-i", str(period), "-frames:v", str(n), "-pix_fmt", "yuv420p", str(looped)])
+            clip_seg.unlink()
+            segment_paths.append(looped)
+            measured.append(count_frames(looped))
+            o.looped, o.hold_frames, o.frames = True, 0, measured[-1]
         else:
             segment_paths.append(clip_seg)
             measured.append(got)
@@ -458,6 +556,7 @@ def render_shots(
         "video_frames": final_frames, "segment_frames": video_frames, "expected_frames": total_target,
         "audio_seconds": round(audio_seconds, 3), "fps": OUTPUT_FPS,
         "dissolve_downgraded": sum(1 for o in outcomes.values() if o.dissolve_downgraded),
+        "looped_shots": sum(1 for o in outcomes.values() if o.looped),
         "run": run_info,
     }
     (out_dir / "summary.json").write_text(json.dumps(summary, indent=1), encoding="utf-8")

@@ -1372,7 +1372,7 @@ def cmd_anime(args: argparse.Namespace) -> int:
             panels_dir=panels_dir, audio_dir=args.audio_dir, out_root=out_root,
             capability=LOCAL_LTX if local else STILLS,
             engine=LocalLTXEngine(work_dir=out_root / "worker") if local else None,
-            budget=budget, captions=not args.no_captions,
+            budget=budget, captions=not args.no_captions, loop_subtle=not args.no_loop,
         )
     except (anime.AnimeRefusal, VideoEnvError) as exc:
         print(f"refusing: {exc}", file=sys.stderr)

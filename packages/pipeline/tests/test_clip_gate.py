@@ -6,7 +6,7 @@ import shutil
 
 import numpy as np
 import pytest
-from _anime_helpers import write_mp4
+from _anime_helpers import drifting_embedder, same_content_embedder, write_mp4
 from echotales.pipeline.video import clip_gate as g
 from PIL import Image
 
@@ -57,11 +57,11 @@ class TestSsim:
 
 @needs_ffmpeg
 class TestGateClip:
-    def _gate(self, frames, tmp_path, start, end=None, expected=None):
+    def _gate(self, frames, tmp_path, start, end=None, expected=None, embedder=None):
         clip = write_mp4(frames, tmp_path / "c.mp4")
         return g.gate_clip(
             clip, Image.fromarray(start), Image.fromarray(end) if end is not None else None,
-            expected_frames=expected or len(frames), width=64, height=96,
+            expected_frames=expected or len(frames), width=64, height=96, embedder=embedder or same_content_embedder,
         )
 
     def test_clean_motion_passes_with_its_scores_recorded(self, tmp_path) -> None:
@@ -107,3 +107,34 @@ class TestGateClip:
     def test_a_missing_file_fails_closed(self, tmp_path) -> None:
         r = g.gate_clip(tmp_path / "none.mp4", Image.fromarray(_texture(1)), None, expected_frames=9, width=64, height=96)
         assert not r.passed
+
+    def test_content_drift_is_rejected_with_its_scores(self, tmp_path) -> None:
+        a, b = _texture(1), _texture(2)
+        r = self._gate(_motion(a, b, 33), tmp_path, a, b, embedder=drifting_embedder)
+        assert not r.passed and any(x.startswith("content drift") for x in r.reasons)
+        assert r.drift_min == 0.0 and r.drift_last == 0.0
+
+    def test_no_drift_records_similarity_one(self, tmp_path) -> None:
+        a, b = _texture(1), _texture(2)
+        r = self._gate(_motion(a, b, 33), tmp_path, a, b)
+        assert r.passed and r.drift_min == pytest.approx(1.0, abs=1e-3)
+
+    def test_an_embedder_that_cannot_run_rejects_the_clip(self, tmp_path) -> None:
+        def broken(images):
+            raise RuntimeError("no CLIP weights")
+
+        a, b = _texture(1), _texture(2)
+        r = self._gate(_motion(a, b, 33), tmp_path, a, b, embedder=broken)
+        assert not r.passed and any(x.startswith("drift check cannot run") for x in r.reasons)
+        assert r.start_ssim > 0.9  # the other checks still ran and are recorded
+
+    def test_drift_frames_are_about_eight_and_include_first_and_last(self, tmp_path) -> None:
+        seen = []
+
+        def spy(images):
+            seen.append(len(images))
+            return same_content_embedder(images)
+
+        a, b = _texture(1), _texture(2)
+        self._gate(_motion(a, b, 33), tmp_path, a, b, embedder=spy)
+        assert seen == [1 + g.DRIFT_FRAMES]

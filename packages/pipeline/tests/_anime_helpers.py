@@ -163,3 +163,16 @@ class FakeEngine:
         if self.behaviour == "wrong_end" and end is not None:
             frames[-1] = np.asarray(Image.fromarray(255 - end))
         return frames
+
+
+def same_content_embedder(images):
+    """Every image embeds to the same direction: no drift anywhere (tests need no CLIP model)."""
+    return np.ones((len(images), 4), dtype=np.float32)
+
+
+def drifting_embedder(images):
+    """The first image (the start) points one way, every later one is orthogonal: maximal drift."""
+    out = np.zeros((len(images), 4), dtype=np.float32)
+    out[0, 0] = 1.0
+    out[1:, 1] = 1.0
+    return out

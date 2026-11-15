@@ -8,7 +8,15 @@ import subprocess
 
 import numpy as np
 import pytest
-from _anime_helpers import FAKE_CAP, OUT_H, OUT_W, FakeEngine, build_chapter
+from _anime_helpers import (
+    FAKE_CAP,
+    OUT_H,
+    OUT_W,
+    FakeEngine,
+    build_chapter,
+    drifting_embedder,
+    same_content_embedder,
+)
 from echotales.pipeline.cli import main
 from echotales.pipeline.render import anime
 from echotales.pipeline.render.plan import PANEL_PLAN_FILE, load_panel_plan
@@ -32,7 +40,8 @@ def _compose(tmp_path, engine, *, cap=FAKE_CAP, captions=False, panels=None, aud
         panels, audio = build_chapter(tmp_path)
     return anime.render_shots(
         panels_dir=panels, audio_dir=audio, out_root=tmp_path / "video" / "ch1", capability=cap,
-        budget=kw.pop("budget", ShotBudget()), engine=engine, captions=captions, width=OUT_W, height=OUT_H, **kw,
+        budget=kw.pop("budget", ShotBudget()), engine=engine, captions=captions, width=OUT_W, height=OUT_H,
+        embedder=kw.pop("embedder", same_content_embedder), **kw,
     )
 
 
@@ -95,10 +104,10 @@ class TestCompose:
         shots = plan_shots(load_panel_plan(panels), timing, FAKE_CAP, ShotBudget())
         for shot, o in zip(shots, result.outcomes, strict=True):
             assert o.frames == round(shot.end * 30) - round(shot.start * 30)
-            assert o.clip_frames + o.hold_frames == o.frames
+            assert o.looped or o.clip_frames + o.hold_frames == o.frames
 
     def test_each_mode_is_laid_out_as_designed(self, tmp_path) -> None:
-        result = _compose(tmp_path, FakeEngine())
+        result = _compose(tmp_path, FakeEngine(), loop_subtle=False)
         o = result.outcomes
         # INTERPOLATE to the next panel: a hold first, then the clip ends the shot.
         assert o[0].clip_frames > 0 and o[0].hold_frames > 0
@@ -198,6 +207,20 @@ class TestFailClosed:
         for o in rejected:
             assert o.clip_frames == 0 and o.hold_frames == o.frames
 
+    def test_content_drift_rejects_the_clip_and_the_chapter_still_composes(self, tmp_path) -> None:
+        result = _compose(tmp_path, FakeEngine(), embedder=drifting_embedder)
+        rejected = [o for o in result.outcomes if o.final == "fallback"]
+        assert len(rejected) == 3 and all("content drift" in o.reason for o in rejected)
+        assert result.summary["video_frames"] == result.summary["expected_frames"]
+
+    def test_an_embedder_that_cannot_load_rejects_every_clip(self, tmp_path) -> None:
+        def broken(images):
+            raise OSError("clip-vit-large-patch14 is not in the local cache")
+
+        result = _compose(tmp_path, FakeEngine(), embedder=broken)
+        assert result.summary["final"]["fallback"] == 3
+        assert all("drift check cannot run" in o.reason for o in result.outcomes[:3])
+
     def test_a_missing_panel_image_is_a_loud_error_not_a_blank_hold(self, tmp_path) -> None:
         panels, audio = build_chapter(tmp_path)
         (panels / "p2.png").unlink()
@@ -279,3 +302,35 @@ class TestCli:
         # unchanged and only the engine's interpreter check matters here.
         assert main(self._args(tmp_path, "--engine", "ltx-local", "--panels-version", "v1_test")) == 2
         assert "setup_video.sh" in capsys.readouterr().err
+
+
+class TestLooping:
+    def test_a_subtle_animate_shot_is_filled_by_the_looped_clip_not_a_frozen_tail(self, tmp_path) -> None:
+        result = _compose(tmp_path, FakeEngine())
+        o = result.outcomes[2]
+        assert o.looped and o.hold_frames == 0 and o.clip_frames < o.frames  # the clip repeats to fill the shot
+        names = sorted(p.name for p in (result.out_dir / "segments").glob("s0002_*.mp4"))
+        assert "s0002_loop.mp4" in names and "s0002_tail.mp4" not in names
+        # Derived-end push-ins and panel-to-panel clips keep their old layout.
+        assert not result.outcomes[0].looped and not result.outcomes[1].looped
+        assert result.summary["looped_shots"] == 1
+        assert result.summary["video_frames"] == result.summary["expected_frames"]
+
+    def test_the_loop_can_be_switched_off(self, tmp_path) -> None:
+        result = _compose(tmp_path, FakeEngine(), loop_subtle=False)
+        assert not result.outcomes[2].looped and result.outcomes[2].hold_frames > 0
+
+    def test_a_rejected_clip_is_never_looped(self, tmp_path) -> None:
+        result = _compose(tmp_path, FakeEngine("still"))
+        assert not any(o.looped for o in result.outcomes)
+
+    def test_the_turnaround_has_no_jump_and_no_repeated_frame(self, tmp_path) -> None:
+        from echotales.pipeline.video.clip_gate import decode_gray
+
+        result = _compose(tmp_path, FakeEngine())
+        o = result.outcomes[2]
+        frames = decode_gray(result.out_dir / "segments" / "s0002_loop.mp4", OUT_W, OUT_H)
+        d = np.abs(np.diff(frames, axis=0)).mean(axis=(1, 2))
+        assert len(frames) == o.frames and d.min() > 0  # nothing is shown twice in a row
+        turn = d[o.clip_frames - 3 : o.clip_frames + 3].max()
+        assert turn < 3 * np.median(d)

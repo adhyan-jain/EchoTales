@@ -523,6 +523,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_anime.add_argument("--max-clips", type=int, default=None, help="default: 30")
     p_anime.add_argument("--seed", type=int, default=0)
     p_anime.add_argument("--no-captions", action="store_true")
+    p_anime.add_argument(
+        "--no-loop", action="store_true",
+        help="hold the last frame after a clip instead of ping-pong looping subtle clips over the whole shot",
+    )
     p_anime.add_argument("--json", action="store_true", help="print the summary and per-shot outcomes as JSON")
     p_anime.add_argument("--panel-dir", default=None, help="default: data/novels/<CODE>/panels")
     p_anime.add_argument("--audio-dir", default=None, help="default: data/novels/<CODE>/audio")

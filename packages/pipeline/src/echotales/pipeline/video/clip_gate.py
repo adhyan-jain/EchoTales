@@ -18,6 +18,7 @@ indistinguishable from the good one (measured 2026-11-15 on the probe MP4s).
 from __future__ import annotations
 
 import subprocess
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
@@ -47,6 +48,95 @@ MIN_MOTION = 0.4
 MAX_SPIKE_RATIO = 3.5
 
 
+#: Content drift: CLIP image-embedding cosine similarity between the start image and DRIFT_FRAMES evenly
+#: spaced frames. Pixel SSIM cannot see a new subject (a photographic face grew out of a silhouette and scored
+#: SSIM 0.43 against a good clip's 0.31, because camera motion alone lowers it); an embedding can.
+#:
+#: Calibrated on 15 clips (10 probe MP4s + the 5 clips of the first real run), minimum over 8 frames:
+#: good 0.857-0.974 (lowest: a real ANIMATE clip, 0.857); bad: photographic face 0.634, cross-composition
+#: pair 0.713 and 0.575, strong-motion p005 0.793, strong-motion p006 (wounds vanish, face drifts) 0.842.
+#: 0.80 sits in the gap between 0.793 and 0.857 and catches five of the six known-bad clips. It does NOT
+#: separate the p006 strong-motion clip (0.842, inside the range of good clips), and the margin on the good
+#: side is 0.057 from one clip. A content check, not an identity score.
+DRIFT_FRAMES = 8
+CLIP_MODEL = "openai/clip-vit-large-patch14"
+MIN_DRIFT_SIM = 0.80
+
+Embedder = Callable[[list[Image.Image]], np.ndarray]
+
+
+class ClipImageEmbedder:
+    """CLIP ViT-L/14 image embeddings from the local Hugging Face cache, loaded on first use and freed by `close`.
+
+    GPU only when nothing else holds the card (`gpu.gpu_status()` under the owner's 500 MiB line; the gate runs
+    after the video worker process has exited), otherwise CPU. Never downloads.
+    """
+
+    def __init__(self) -> None:
+        self._model = None
+        self._proc = None
+        self.device = "cpu"
+
+    def _load(self) -> None:
+        import torch
+        from echotales.pipeline import gpu
+        from transformers import CLIPModel, CLIPProcessor
+
+        status = gpu.gpu_status()
+        self.device = "cuda" if status is not None and status.used_mb <= 500 and torch.cuda.is_available() else "cpu"
+        dtype = torch.float16 if self.device == "cuda" else torch.float32
+        self._proc = CLIPProcessor.from_pretrained(CLIP_MODEL, local_files_only=True)
+        self._model = CLIPModel.from_pretrained(CLIP_MODEL, local_files_only=True, torch_dtype=dtype).to(self.device).eval()
+
+    def __call__(self, images: list[Image.Image]) -> np.ndarray:
+        import torch
+
+        if self._model is None:
+            self._load()
+        inputs = self._proc(images=[i.convert("RGB") for i in images], return_tensors="pt").to(self.device)
+        with torch.no_grad():
+            feats = self._model.get_image_features(pixel_values=inputs["pixel_values"].to(self._model.dtype))
+        feats = feats.pooler_output if hasattr(feats, "pooler_output") else feats
+        return torch.nn.functional.normalize(feats.float(), dim=-1).cpu().numpy()
+
+    def close(self) -> None:
+        self._model = self._proc = None
+        try:
+            import gc
+
+            import torch
+
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except ImportError:
+            pass
+
+
+def decode_rgb_frames(path: str | Path, indices: list[int], width: int, height: int) -> list[Image.Image]:
+    """Just the frames at `indices`, in order, as RGB images."""
+    sel = "+".join(f"eq(n\\,{i})" for i in indices)
+    cmd = ["ffmpeg", "-v", "error", "-i", str(path), "-vf", f"select='{sel}',scale={width}:{height}",
+           "-fps_mode", "passthrough", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]
+    proc = subprocess.run(cmd, capture_output=True, timeout=120, check=False)
+    size = width * height * 3
+    if proc.returncode != 0 or len(proc.stdout) != size * len(indices):
+        raise ClipDecodeError(f"could not read frames {indices} of {path}: {proc.stderr.decode(errors='replace')[:200]}")
+    data = np.frombuffer(proc.stdout, dtype=np.uint8).reshape(len(indices), height, width, 3)
+    return [Image.fromarray(f) for f in data]
+
+
+def drift_scores(
+    clip: str | Path, start_image: Image.Image, n_frames: int, width: int, height: int, embedder: Embedder
+) -> tuple[float, float]:
+    """(minimum, last-frame) cosine similarity of DRIFT_FRAMES evenly spaced frames to the start image."""
+    idx = sorted({round(i * (n_frames - 1) / (DRIFT_FRAMES - 1)) for i in range(DRIFT_FRAMES)})
+    emb = np.asarray(embedder([start_image, *decode_rgb_frames(clip, idx, width, height)]), dtype=np.float32)
+    emb = emb / np.linalg.norm(emb, axis=1, keepdims=True)
+    sims = emb[1:] @ emb[0]
+    return float(sims.min()), float(sims[-1])
+
+
 class ClipDecodeError(RuntimeError):
     """The clip could not be read as video."""
 
@@ -61,6 +151,8 @@ class GateReport:
     end_ssim: float | None = None
     mean_diff: float | None = None
     spike_ratio: float | None = None
+    drift_min: float | None = None
+    drift_last: float | None = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -134,9 +226,11 @@ def gate_clip(
     expected_frames: int,
     width: int,
     height: int,
+    embedder: Embedder | None = None,
 ) -> GateReport:
     """Score one clip. `start_image` / `end_image` are the images the engine was given (already fitted to
-    width x height). Any error while scoring is a rejection."""
+    width x height). Any error while scoring is a rejection, including a drift check that cannot run: with no
+    `embedder` the gate loads CLIP itself, and if that fails the clip is rejected with the reason."""
     try:
         gw, gh = width, height
         frames = decode_gray(clip, gw, gh)
@@ -156,6 +250,19 @@ def gate_clip(
             report.reasons.append(f"still: mean frame difference {mean:.2f} < {MIN_MOTION}")
         if spike > MAX_SPIKE_RATIO:
             report.reasons.append(f"jump: spike ratio {spike:.2f} > {MAX_SPIKE_RATIO}")
+        try:
+            owned = embedder is None
+            emb = ClipImageEmbedder() if owned else embedder
+            try:
+                report.drift_min, report.drift_last = (round(v, 4) for v in drift_scores(
+                    clip, start_image, len(frames), gw, gh, emb))
+            finally:
+                if owned:
+                    emb.close()
+            if report.drift_min < MIN_DRIFT_SIM:
+                report.reasons.append(f"content drift: clip similarity {report.drift_min} < {MIN_DRIFT_SIM}")
+        except Exception as exc:
+            report.reasons.append(f"drift check cannot run: {type(exc).__name__}: {exc}")
         report.passed = not report.reasons
         return report
     except Exception as exc:
