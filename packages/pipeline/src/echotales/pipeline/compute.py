@@ -59,6 +59,15 @@ IMAGE_PROVIDERS = ("local", "runpod", "gemini", "openrouter", "stub")
 
 #: Engines that load a diffusion model onto the local GPU.
 LOCAL_ENGINES = frozenset({"sdxl", "illustrious", "noobai", "refined", "manga"})
+#: Video engines that load a model onto the local GPU. They share the card with nothing: the owner's rule is "under
+#: about 500 MB in use", far stricter than the 1500 MB the image engines tolerate, because a 7.0 GB peak on an 8 GB
+#: card leaves no room for another process (EVOLUTION 4.146 probe).
+VIDEO_ENGINES = frozenset({"ltx-local"})
+VIDEO_GPU_BUSY_MB = 500
+#: Available RAM needed to start one: the probe's T5 encode bottomed out at 4.0 GB available and loading peaks at 5-7 GB
+#: of mapped file pages, on a machine with 4.4-5 GB free; the worker itself aborts under 2 GB.
+VIDEO_MIN_FREE_RAM_MB = 3500
+
 #: Engines that run on someone else's hardware, by the image provider that selects them.
 HOSTED_ENGINES = frozenset({"runpod", "gemini", "openrouter"})
 
@@ -247,6 +256,8 @@ def resource_refusal(engine: str, pol: ComputePolicy | None = None, *, http: boo
     pol = pol or policy()
     if engine == "stub":
         return None
+    if engine in VIDEO_ENGINES:
+        return _video_refusal()
     if http and engine not in pol.http_engines():
         return Refusal(
             f"engine {engine!r} is not enabled on this server (ECHOTALES_IMAGE_PROVIDER={pol.image_provider}); "
@@ -283,6 +294,27 @@ def resource_refusal(engine: str, pol: ComputePolicy | None = None, *, http: boo
                 "applications, or set ECHOTALES_COMPUTE=local-high to skip this check",
                 ErrorCode.RESOURCE_REFUSED,
             )
+    return None
+
+
+def _video_refusal() -> str | None:
+    """Why a local video run should not start now. Applies in every compute mode: the limits are the card's."""
+    status = gpu.gpu_status()
+    if status is None:
+        return Refusal("the local video engine needs an NVIDIA GPU, and none was found", ErrorCode.RESOURCE_REFUSED)
+    if status.used_mb > VIDEO_GPU_BUSY_MB:
+        return Refusal(
+            f"the GPU is busy ({status.describe()}; the video model needs it under {VIDEO_GPU_BUSY_MB} MiB); "
+            "stop what is using it first",
+            ErrorCode.GPU_BUSY,
+        )
+    free = available_ram_mb()
+    if free is not None and free < VIDEO_MIN_FREE_RAM_MB:
+        return Refusal(
+            f"only {free} MiB of RAM is available (the video model needs {VIDEO_MIN_FREE_RAM_MB}); close other "
+            "applications first",
+            ErrorCode.RESOURCE_REFUSED,
+        )
     return None
 
 

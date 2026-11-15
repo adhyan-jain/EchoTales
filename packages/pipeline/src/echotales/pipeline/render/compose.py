@@ -198,8 +198,12 @@ def _render_segment(
     out_path: Path,
     width: int = OUTPUT_WIDTH,
     height: int = OUTPUT_HEIGHT,
+    frames: int | None = None,
 ) -> None:
-    num_frames = max(1, round(shot.duration * OUTPUT_FPS))
+    #: `frames` pins the exact count for a caller that has already budgeted frames across a chapter
+    #: (`render/anime.py`): `-t` alone is a timestamp cut, and a duration formatted to 3 decimals lands
+    #: one frame long for some counts (38 frames at 30 fps = 1.2667 s, written "1.267").
+    num_frames = frames if frames is not None else max(1, round(shot.duration * OUTPUT_FPS))
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     if shot.kind == "clip":
@@ -224,6 +228,7 @@ def _render_segment(
             "-i", shot.asset_path,
             "-vf", _zoompan_filter(shot, num_frames, width, height),
             "-t", f"{shot.duration:.3f}",
+            *(["-frames:v", str(frames)] if frames is not None else []),
             "-pix_fmt", "yuv420p",
             str(out_path),
         ]
@@ -279,6 +284,16 @@ class FfmpegComposeEngine:
             _render_segment(shot, segment_path, self.width, self.height)
             segment_paths.append(segment_path)
 
+        return self.assemble(segment_paths, audio_paths, out_path, work_dir)
+
+    def assemble(
+        self, segment_paths: list[Path], audio_paths: list[Path], out_path: Path, work_dir: Path
+    ) -> Path:
+        """Concatenate already-rendered segments, mux the voice track and burn captions.
+
+        Split out of `render` unchanged so `render/anime.py`, which renders its own segments (stills
+        and generated clips), reuses the same concat, audio and caption path instead of a second one.
+        """
         concat_list = work_dir / "concat.txt"
         concat_list.write_text(
             "\n".join(f"file '{p.resolve()}'" for p in segment_paths) + "\n", encoding="utf-8"

@@ -1347,6 +1347,47 @@ def _query_attributes(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_anime(args: argparse.Namespace) -> int:
+    """Compose one chapter from its panel plan and audio, animating what the shot plan asks for."""
+    from echotales.pipeline.render import anime
+    from echotales.pipeline.render.shots import LOCAL_LTX, STILLS, ShotBudget
+    from echotales.pipeline.video.local import LocalLTXEngine, VideoEnvError
+
+    chapter = float(args.chapter)
+    out_root = Path(args.out) / f"ch{chapter:g}"
+    default = ShotBudget()
+    budget = ShotBudget(
+        max_generated_seconds=args.max_generated_seconds
+        if args.max_generated_seconds is not None else default.max_generated_seconds,
+        max_clips=args.max_clips if args.max_clips is not None else default.max_clips,
+        base_seed=args.seed,
+    )
+    try:
+        if args.panels_version:
+            panels_dir = Path(args.panel_dir) / f"ch{chapter:g}" / args.panels_version
+        else:
+            panels_dir = anime.latest_panels_version(args.panel_dir, chapter, args.novel)
+        local = args.engine == "ltx-local"
+        result = anime.render_shots(
+            panels_dir=panels_dir, audio_dir=args.audio_dir, out_root=out_root,
+            capability=LOCAL_LTX if local else STILLS,
+            engine=LocalLTXEngine(work_dir=out_root / "worker") if local else None,
+            budget=budget, captions=not args.no_captions,
+        )
+    except (anime.AnimeRefusal, VideoEnvError) as exc:
+        print(f"refusing: {exc}", file=sys.stderr)
+        return 2
+    if args.json:
+        from dataclasses import asdict as _asdict
+
+        print(json.dumps({"summary": result.summary, "shots": [_asdict(o) for o in result.outcomes]}, indent=2))
+    else:
+        s = result.summary
+        print(f"{result.video}\n  {s['shots']} shots, final {s['final']}, {s['video_frames']} frames "
+              f"for {s['audio_seconds']} s of audio")
+    return 0
+
+
 def cmd_appearance(args: argparse.Namespace) -> int:
     """Phase 7b: extract physical appearance into PERSONA attributes."""
     from echotales.pipeline.resolve.appearance_extract import extract_appearance
@@ -1781,6 +1822,7 @@ _DISPATCH = {
     "persona": cmd_persona,
     "voice": cmd_voice,
     "render": cmd_render,
+    "anime": cmd_anime,
     "review": cmd_review,
     "ingest": cmd_ingest,
     "resolve": cmd_resolve,

@@ -118,3 +118,6 @@ scripts/review/disclosure_validation_app/cases.json
 
 # ---- Deploy tooling -------------------------------------------------------
 .vercel/
+
+# Local video worker environment (scripts/setup_video.sh)
+.venv-video/

@@ -502,6 +502,32 @@ def build_parser() -> argparse.ArgumentParser:
     p_render.add_argument("--skip-motion", action="store_true")
     p_render.add_argument("--skip-compose", action="store_true")
 
+    p_anime = sub.add_parser(
+        "anime",
+        help="compose a chapter video from a panel plan and the voiced audio, animating the shots the plan "
+        "asks for with a local video model (stills: held pictures only)",
+    )
+    p_anime.add_argument("--novel", required=True)
+    p_anime.add_argument("--chapter", type=float, required=True)
+    p_anime.add_argument(
+        "--panels-version", default=None,
+        help="a panel version directory name, e.g. v54_crowd-solo-scenestate-fix; default: the latest "
+        "that has a panel_plan.jsonl",
+    )
+    p_anime.add_argument(
+        "--engine", default="stills", choices=["stills", "ltx-local"],
+        help="stills holds every panel; ltx-local generates clips on the GPU with LTX-Video 2B (needs "
+        "ECHOTALES_VIDEO_PYTHON, see scripts/setup_video.sh)",
+    )
+    p_anime.add_argument("--max-generated-seconds", type=float, default=None, help="default: 120")
+    p_anime.add_argument("--max-clips", type=int, default=None, help="default: 30")
+    p_anime.add_argument("--seed", type=int, default=0)
+    p_anime.add_argument("--no-captions", action="store_true")
+    p_anime.add_argument("--json", action="store_true", help="print the summary and per-shot outcomes as JSON")
+    p_anime.add_argument("--panel-dir", default=None, help="default: data/novels/<CODE>/panels")
+    p_anime.add_argument("--audio-dir", default=None, help="default: data/novels/<CODE>/audio")
+    p_anime.add_argument("--out", default=None, help="default: data/novels/<CODE>/video")
+
     p_appearance = sub.add_parser(
         "appearance",
         help="extract physical appearance per character into PERSONA attributes "
@@ -719,6 +745,9 @@ _PER_NOVEL_OUTPUTS = {
     ("render", "voice_dir"): "audio",
     ("render", "out"): "video",
     ("persona", "out"): "references",
+    ("anime", "panel_dir"): "panels",
+    ("anime", "audio_dir"): "audio",
+    ("anime", "out"): "video",
 }
 
 
