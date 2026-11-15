@@ -382,14 +382,36 @@ export const api = {
   getArcAudit: (novelId, start = 1.0, end = 5.0) =>
     request(`/api/novels/${enc(novelId)}/arc/audit?start=${start}&end=${end}`),
 
-  listReviewItems: (novelId) =>
-    request(`/api/novels/${enc(novelId)}/review-items`),
+  // Returns { items, total, open }; `kind` / `open` narrow the list server-side.
+  listReviewItems: (novelId, { kind, open } = {}) => {
+    const q = new URLSearchParams();
+    if (kind) q.set('kind', kind);
+    if (open) q.set('open', '1');
+    const qs = q.toString();
+    return request(`/api/novels/${enc(novelId)}/review-items${qs ? `?${qs}` : ''}`);
+  },
 
   resolveReviewItem: (novelId, itemId, resolution = 'RESOLVED_MANUAL') =>
     request(`/api/novels/${enc(novelId)}/review-items/${enc(itemId)}/resolve`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ resolution }),
+    }),
+
+  // A resolve_deferred decision: { action: 'link', target_id } | { action: 'new', label } | { action: 'dismiss' }.
+  // It queues corrections; nothing reaches the database until Apply.
+  decideReviewItem: (novelId, itemId, decision) =>
+    request(`/api/novels/${enc(novelId)}/review-items/${enc(itemId)}/resolve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(decision),
+    }),
+
+  reopenReviewItem: (novelId, itemId) =>
+    request(`/api/novels/${enc(novelId)}/review-items/${enc(itemId)}/reopen`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}',
     }),
 
   listTurnarounds: (novelId, selfId) =>

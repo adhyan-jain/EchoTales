@@ -91,9 +91,11 @@ describe('AssetStudio', () => {
   test('switches to review queue and resolves ambiguous item', async () => {
     api.characters.mockResolvedValueOnce({ characters: [] });
     api.listTurnarounds.mockResolvedValueOnce([]);
-    api.listReviewItems.mockResolvedValueOnce([
-      { id: 'rev_1', chapter: 1.0, kind: 'Ambiguous Merge', message: 'Mortimer vs Doctor', resolved: false },
-    ]);
+    api.listReviewItems.mockResolvedValueOnce({
+      items: [{ id: 'rev_1', chapter: 1.0, kind: 'Ambiguous Merge', message: 'Mortimer vs Doctor', resolved: false }],
+      total: 1,
+      open: 1,
+    });
     api.resolveReviewItem.mockResolvedValueOnce({ id: 'rev_1', resolved: true });
 
     renderStudio({ novelId: 'hound' });
@@ -111,5 +113,36 @@ describe('AssetStudio', () => {
     await waitFor(() => {
       expect(api.resolveReviewItem).toHaveBeenCalledWith('hound', 'rev_1', 'RESOLVED_MANUAL');
     });
+  });
+
+  test('review items show candidate labels, never [object Object]', async () => {
+    api.characters.mockResolvedValueOnce({ characters: [] });
+    api.listTurnarounds.mockResolvedValueOnce([]);
+    api.listReviewItems.mockResolvedValueOnce({
+      items: [
+        {
+          id: 'rd_1',
+          chapter: 2.0,
+          kind: 'resolve_deferred',
+          message: "'Angelica' left unlinked",
+          resolved: false,
+          candidates: [
+            { role: 'group', surfaces: ['Angelica'], mention_ids: ['m1'] },
+            { role: 'candidate', target_id: 't:self:1', label: 'Madam Angelica', probability: 0.41 },
+            { role: 'candidate', target_id: 't:self:2', label: 'Angel', probability: 0.2 },
+          ],
+        },
+      ],
+      total: 1,
+      open: 1,
+    });
+
+    renderStudio({ novelId: 'hound' });
+    fireEvent.click(screen.getByText('Bible Review Queue'));
+
+    expect(await screen.findByText('Candidates: Madam Angelica, Angel')).toBeInTheDocument();
+    expect(screen.queryByText(/object Object/)).not.toBeInTheDocument();
+    // A plain resolve links nothing, so the unlinked-name kind points at the Canon tab instead.
+    expect(screen.queryByText('Resolve Contradiction')).not.toBeInTheDocument();
   });
 });

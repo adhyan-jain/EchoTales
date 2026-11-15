@@ -64,7 +64,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
 from echotales.core.lifecycle import JobStatus
-from echotales.core.models import Job
+from echotales.core.models import Job, ReviewItem
 from echotales.core.store import Store
 from echotales.pipeline import paths, research_demo
 from echotales.pipeline.compute import default_image_engine
@@ -547,6 +547,108 @@ _STATUS_CODES = {
     409: ErrorCode.CONFLICT, 413: ErrorCode.PAYLOAD_TOO_LARGE, 500: ErrorCode.INTERNAL,
     501: ErrorCode.NOT_IMPLEMENTED,
 }
+
+
+# --- Review items ---------------------------------------------------------
+
+_DEFERRED_KIND = "resolve_deferred"
+
+
+def _item_group(item: ReviewItem) -> dict:  # type: ignore[type-arg]
+    """The `role: group` entry of a resolve_deferred item; {} for kinds that have none."""
+    return next((c for c in item.candidates if isinstance(c, dict) and c.get("role") == "group"), {})
+
+
+def _decision_state(item: ReviewItem, log: CorrectionLog) -> str:
+    """open / decided_pending_apply / applied / dismissed / auto_closed, derived rather than stored.
+
+    A decision is only as real as its corrections: one deleted through DELETE .../corrections/<id> leaves the item
+    reading `resolved` with a mention group that no longer has its full set of corrections, so that is `open` again.
+    """
+    if not item.resolved:
+        return "open"
+    resolution = item.resolution or ""
+    if resolution.startswith("auto:"):
+        return "auto_closed"
+    if resolution.startswith(("human:link:", "human:new:")):
+        ids = _item_group(item).get("correction_ids") or []
+        by_id = {c.id: c for c in log}
+        found = [by_id.get(str(i)) for i in ids]
+        if not ids or any(c is None for c in found):
+            return "open"
+        return "applied" if all(c.applied for c in found if c is not None) else "decided_pending_apply"
+    return "dismissed"
+
+
+def _review_item_json(item: ReviewItem, log: CorrectionLog) -> dict:  # type: ignore[type-arg]
+    return {
+        "id": item.id,
+        "novel_id": item.novel_id,
+        "chapter": item.chapter,
+        "kind": item.kind,
+        "message": item.message,
+        "candidates": item.candidates if isinstance(item.candidates, list) else [],
+        "resolved": item.resolved,
+        "resolution": item.resolution,
+        "created_at": item.created_at,
+        "decision_state": _decision_state(item, log),
+    }
+
+
+def _decide_deferred(handle: NovelHandle, item: ReviewItem, body: dict) -> tuple[int, dict]:  # type: ignore[type-arg]
+    """Turn a reviewer's link / new / dismiss into pending corrections and mark the item decided.
+
+    The corrections are the only way the graph changes (they apply on the Apply button, like every other decision).
+    One new character for N mentions: the first correction mints it (`new_label`), the rest target its id, which
+    `apply_pending` has created by the time it reaches them because it applies in log order.
+    """
+    action = body.get("action")
+    group = _item_group(item)
+    mention_ids = [str(m) for m in group.get("mention_ids", [])]
+    novel_id = item.novel_id
+    corrections: list[Correction] = []
+    if action == "dismiss":
+        resolution = "human:dismiss"
+    elif action in ("link", "new"):
+        if not mention_ids:
+            return 400, {"error": "the item records no mentions to decide"}
+        if action == "link":
+            target = str(body.get("target_id") or "")
+            known = {str(c.get("target_id")) for c in item.candidates if c.get("role") == "candidate"}
+            if not target or (target not in known and handle.store.get_self(target) is None):
+                return 400, {"error": f"target_id {target!r} is neither a candidate of this item nor a character of the novel"}
+            corrections = [
+                Correction(novel_id=novel_id, type=CorrectionType.REASSIGN_MENTION, payload={"mention_id": m, "target_id": target})
+                for m in mention_ids
+            ]
+            resolution = f"human:link:{target}"
+        else:
+            label = str(body.get("label") or "").strip() or max((str(s) for s in group.get("surfaces", [])), key=len, default="")
+            if not label:
+                return 400, {"error": "a name is needed for the new character"}
+            first = Correction(
+                novel_id=novel_id, type=CorrectionType.REASSIGN_MENTION, payload={"mention_id": mention_ids[0], "new_label": label}
+            )
+            minted = new_manual_entity_id(novel_id, first.id)
+            corrections = [first] + [
+                Correction(novel_id=novel_id, type=CorrectionType.REASSIGN_MENTION, payload={"mention_id": m, "target_id": minted})
+                for m in mention_ids[1:]
+            ]
+            resolution = f"human:new:{label}"
+    else:
+        return 400, {"error": "action must be one of link, new, dismiss"}
+    note = str(body.get("note") or "").strip()
+    for c in corrections:
+        handle.corrections.add(c)
+    item.resolved = True
+    item.resolution = resolution
+    if group:
+        group["correction_ids"] = [c.id for c in corrections]
+        if note:
+            group["note"] = note
+    handle.store.add_review_item(item)
+    return 200, {"corrections": [c.id for c in corrections]}
+
 
 
 def _refusal_body(refusal: str) -> dict:  # type: ignore[type-arg]
@@ -1385,21 +1487,14 @@ def make_handler(
                     handle = registry.handles.get(novel_id)
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {novel_id!r}"})
-                    items = handle.store.list_review_items(novel_id)
-                    return self._json(200, [
-                        {
-                            "id": item.id,
-                            "novel_id": item.novel_id,
-                            "chapter": item.chapter,
-                            "kind": item.kind,
-                            "message": item.message,
-                            "candidates": item.candidates,
-                            "resolved": item.resolved,
-                            "resolution": item.resolution,
-                            "created_at": item.created_at,
-                        }
-                        for item in items
-                    ])
+                    query = parse_qs(urlparse(self.path).query)
+                    kind = query.get("kind", [""])[0]
+                    rows = [_review_item_json(i, handle.corrections) for i in handle.store.list_review_items(novel_id)]
+                    rows = [r for r in rows if not kind or r["kind"] == kind]
+                    total, open_n = len(rows), sum(1 for r in rows if r["decision_state"] == "open")
+                    if query.get("open", [""])[0] in ("1", "true"):
+                        rows = [r for r in rows if r["decision_state"] == "open"]
+                    return self._json(200, {"items": rows, "total": total, "open": open_n})
 
                 if len(parts) == 6 and parts[:2] == ["api", "novels"] and parts[3] == "episodes" and parts[5] == "cost":
                     novel_id = parts[2]
@@ -1846,11 +1941,61 @@ def make_handler(
                     handle = registry.handles.get(novel_id)
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    item = handle.store.get_review_item(item_id)
+                    if item is None or item.novel_id != novel_id:
+                        return self._json(404, {"error": f"unknown review item {item_id!r}"})
+                    if _decision_state(item, handle.corrections) != "open":
+                        return self._json(409, {"error": f"review item {item_id!r} is already resolved"})
                     body = self._read_json()
+                    if item.kind == _DEFERRED_KIND:
+                        status, result = _decide_deferred(handle, item, body)
+                        if status != 200:
+                            return self._json(status, result)
+                        handle.invalidate()
+                        return self._json(200, {
+                            "item": _review_item_json(item, handle.corrections),
+                            "correction_ids": result["corrections"],
+                            "summary": handle.corrections.summary(),
+                        })
                     resolution = str(body.get("resolution", "RESOLVED_MANUAL"))
                     handle.store.resolve_review_item(item_id, resolution)
                     handle.invalidate()
                     return self._json(200, {"id": item_id, "resolved": True, "resolution": resolution})
+
+                # POST /api/novels/<id>/review-items/<item_id>/reopen
+                if (
+                    len(parts) == 6 and parts[:2] == ["api", "novels"]
+                    and parts[3] == "review-items" and parts[5] == "reopen"
+                ):
+                    novel_id = parts[2]
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    item = handle.store.get_review_item(parts[4])
+                    if item is None or item.novel_id != novel_id:
+                        return self._json(404, {"error": f"unknown review item {parts[4]!r}"})
+                    if not item.resolved or (item.resolution or "").startswith("auto:"):
+                        return self._json(409, {"error": "only an item a reviewer decided can be reopened"})
+                    group = _item_group(item)
+                    by_id = {c.id: c for c in handle.corrections}
+                    mine = [by_id[str(i)] for i in group.get("correction_ids", []) if str(i) in by_id]
+                    if any(c.applied for c in mine):
+                        return self._json(409, {
+                            "error": "this decision was already applied to the database and cannot be undone here",
+                            "code": ErrorCode.APPLIED_CORRECTION,
+                        })
+                    for c in mine:
+                        handle.corrections.remove(c.id)
+                    group.pop("correction_ids", None)
+                    group.pop("note", None)
+                    item.resolved, item.resolution = False, None
+                    handle.store.add_review_item(item)
+                    handle.invalidate()
+                    return self._json(200, {
+                        "item": _review_item_json(item, handle.corrections),
+                        "removed": [c.id for c in mine],
+                        "summary": handle.corrections.summary(),
+                    })
 
                 # POST /api/novels/<id>/episodes/<ep_id>
                 if len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3] == "episodes":

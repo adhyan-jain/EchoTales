@@ -6,6 +6,15 @@ import { useToast } from './ui/Toast';
 import { describeError } from '../lib/errors';
 import { User, MapPin, Check, X, RefreshCw, AlertTriangle } from 'lucide-react';
 
+// Candidates are objects ({role, label, ...}); joining them printed "[object Object]". The group entry is the
+// item's own evidence, not a candidate.
+function candidateLabels(item) {
+  return (item.candidates || [])
+    .filter((c) => !(c && typeof c === 'object' && c.role === 'group'))
+    .map((c) => (c && typeof c === 'object' ? c.label || c.target_id || '' : String(c)))
+    .filter(Boolean);
+}
+
 export default function AssetStudio({ novelId }) {
   const push = useToast();
   const [subTab, setSubTab] = useState('characters'); // 'characters' | 'locations' | 'review_items'
@@ -81,8 +90,8 @@ export default function AssetStudio({ novelId }) {
   const loadReviewItems = useCallback(async () => {
     setLoading(true);
     try {
-      const items = await api.listReviewItems(novelId);
-      setReviewItems(items || []);
+      const res = await api.listReviewItems(novelId);
+      setReviewItems((res && res.items) || []);
     } catch (err) {
       push(describeError(err, 'Failed to load review items.'), 'danger');
     } finally {
@@ -473,12 +482,16 @@ export default function AssetStudio({ novelId }) {
                       <span className="text-xs font-semibold text-text">Chapter {item.chapter}</span>
                     </div>
                     <p className="mt-2 text-sm text-text">{item.message}</p>
-                    {item.candidates && item.candidates.length > 0 && (
-                      <p className="mt-1 text-xs text-muted">Candidates: {item.candidates.join(', ')}</p>
+                    {candidateLabels(item).length > 0 && (
+                      <p className="mt-1 text-xs text-muted">Candidates: {candidateLabels(item).join(', ')}</p>
                     )}
                   </div>
 
-                  {!item.resolved && (
+                  {/* A plain resolve links nothing; unlinked-name items are decided in Canon, "Names to check". */}
+                  {!item.resolved && item.kind === 'resolve_deferred' && (
+                    <span className="text-xs text-muted">Decide in Canon, Names to check</span>
+                  )}
+                  {!item.resolved && item.kind !== 'resolve_deferred' && (
                     <Button variant="secondary" size="sm" onClick={() => handleResolveReviewItem(item.id)}>
                       Resolve Contradiction
                     </Button>

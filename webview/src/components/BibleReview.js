@@ -3,6 +3,7 @@ import { api } from '../api';
 import Button from './ui/Button';
 import Badge from './ui/Badge';
 import EntityPicker from './EntityPicker';
+import NamesToCheck from './NamesToCheck';
 import { useToast } from './ui/Toast';
 import { describeError } from '../lib/errors';
 import { Lock, AlertTriangle } from 'lucide-react';
@@ -382,6 +383,7 @@ function LockPanel({ novelId }) {
 
 const SUBTABS = [
   { key: 'lines', label: 'Lines to check' },
+  { key: 'names', label: 'Names to check' },
   { key: 'timeline', label: 'Character timeline' },
   { key: 'lock', label: 'Lock' },
 ];
@@ -432,6 +434,7 @@ export default function BibleReview({ novelId }) {
         ))}
       </div>
       {sub === 'lines' && <LinesToCheck novelId={novelId} entities={characters} />}
+      {sub === 'names' && <NamesToCheck novelId={novelId} entities={characters} />}
       {sub === 'timeline' && <CharacterTimeline novelId={novelId} characters={characters} />}
       {sub === 'lock' && <LockPanel novelId={novelId} />}
     </div>
