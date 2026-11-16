@@ -515,7 +515,7 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Open, to be settled by one measured test on six effect panels, same seeds**: whether an effect panel is drawn by NoobAI alone, or composed by Z-Image and finished by NoobAI as an image-to-image pass at moderate strength. The second keeps Z-Image's layout and character but costs two passes; the first risks a visible change of face and drawing style between neighbouring panels. Z-Image alone with effect wording is the baseline both must beat.
 - **Constraints**: the two models never share the GPU; panels are batched per model (all scene panels, then all effect panels) because a model swap costs 30 to 50 seconds. If neither NoobAI variant beats the Z-Image baseline on the test, NoobAI is dropped from the default path and stays only as a selectable model.
 - **Relation to earlier rules**: the earlier "no multi-model per image" rule was about mixing models inside one picture on the SDXL stack; the image-to-image variant here reopens it for effect panels only, and only if the test shows it wins.
-- **Status**: decided as policy; nothing built or measured yet.
+- **Status**: provisional. The owner pointed out the same day that one or two panels are too little evidence to assign roles. The roles above are a hypothesis until a benchmark of 24 briefs in 12 scenario categories (close-up, two and three named characters, lead against a crowd, landscape, prop-heavy interior, physical action, supernatural attack, creature, ritual and horror, everyday moment, dramatic lighting) across four genres has been rendered by both models on the same seeds and scored per category. The decision is rewritten from that table; nothing is built or measured yet.
 
 ## 3. Documentation policy
 
