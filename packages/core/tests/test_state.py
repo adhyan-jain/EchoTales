@@ -886,3 +886,15 @@ class TestGenerationStateAndValidator:
         safe_result = validator.validate(gen_state, "A mysterious figure walks quietly into the room")
         assert safe_result.is_valid
 
+
+
+def test_reader_scope_covers_the_lower_case_stamp_the_reader_passes_write() -> None:
+    """The reader passes stamp facts "reader"; with an exact match against "READER" state_of(observer=READER) hid
+    every one of them. A character observer must still not inherit them."""
+    from echotales.core.enums import OBSERVER_READER, OBSERVER_SYSTEM
+    from echotales.core.state import observer_scope
+
+    assert observer_scope(OBSERVER_READER) == {"READER", "reader"}
+    assert observer_scope("reader") == {"READER", "reader"}
+    assert observer_scope("WU_CLAN") == {"WU_CLAN"}
+    assert observer_scope(OBSERVER_SYSTEM) is None

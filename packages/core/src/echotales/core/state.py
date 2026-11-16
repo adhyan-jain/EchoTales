@@ -76,6 +76,12 @@ def observer_scope(observer_id: str) -> set[str] | None:
     """
     if observer_id == OBSERVER_SYSTEM:
         return None
+    if observer_id.upper() == OBSERVER_READER:
+        # The reader passes (reader/facts_pass, reader/speakers_pass, bible/validator) have stamped their facts
+        # "reader" in lower case since 2026-10-22 while this constant is "READER", so an exact match hid every fact
+        # the reader pass wrote from state_of(observer=READER); only readers that skip the observer filter
+        # (appearance_of, standing_values) saw them. Both spellings are the reader; databases keep either.
+        return {OBSERVER_READER, OBSERVER_READER.lower()}
     return {observer_id}
 
 
@@ -110,7 +116,7 @@ def _visible_to_observer(
         # observation row, a character does not inherit the reader's
         # knowledge, which is the spoiler bug this whole model exists to
         # prevent.
-        if observations is None or fact.observer_id != OBSERVER_READER:
+        if observations is None or fact.observer_id.upper() != OBSERVER_READER:
             return False
         try:
             ref = observable_ref(fact)
