@@ -4,6 +4,41 @@ Written 2026-11-16 at the owner's request, as the plan to follow after that date
 person picks the work up. It is self-contained: read this, then `docs/HANDOFF.md`, then the last ten sections
 of `docs/EVOLUTION.md`.
 
+## 0. Pick up here (handoff written 2026-11-16, when the session was stopped)
+
+All background tasks were stopped on the owner's instruction. Nothing is running. `origin/master` is current
+with everything that was reviewed. Two pieces of work were cut off and are saved, unreviewed:
+
+| Work | Where it is | State | What to do |
+|---|---|---|---|
+| Voice quality check | Branch `audio-qa`, one local WIP commit (`df550c9`), worktree `.claude/worktrees/audio-qa`. Not pushed. Adds `voice/qa.py`, `voice/levels.py`, retries in `voice/runner.py`, a CLI entry, tests. | The agent had voiced Lord of the Mysteries chapter 7 before and after its fixes and was building the listening sample when stopped. Nobody has reviewed the diff or re-run the suite on it. | Read the diff; run the suite; read the QA summaries in `data/scratch/audio_qa/qa_before.txt` and `qa_after.txt` (skip the lines starting with `[transformers]` and the progress bars; grep for the check names); listen to `data/scratch/audio_qa/sample.m4a` (it is not known whether it was cut before or after the fixes); then merge or redo. |
+| Director rework | Branch `director-v2`, worktree `.claude/worktrees/director-v2`. | Stopped a few minutes in; no code written, no commits. | Start it again from the task description in M0 below. The full brief that was given to the agent is the eight stages listed there. |
+
+Finished and on master today (details in `docs/EVOLUTION.md` 4.154 to 4.165 and decisions D53 to D59):
+
+- Disguise looks are stored separately and never become a character's innate look; reader facts are visible to `state_of`.
+- A prompt compiler, long prompts encoded whole, monochrome manga as the default mode, colour as the second mode.
+- Z-Image Turbo as a local image worker (weights in `~/.cache/echotales/zimage`; `gguf` and `bitsandbytes` in the venv).
+- A 24-scene benchmark of both image models; decision D58: Z-Image draws every panel.
+- The first real director-to-image render, which showed the director is the weak link (4.164).
+
+How to produce the good-looking panels today (hand-written scene briefs, not the real director path):
+`data/scratch/panel_rework/benchmark.py` and `compare.py` show how to build a `PanelBrief`, compile it and
+render it through `LocalZImageWorker`. The real path is `echotales render` with
+`ECHOTALES_RENDER_PROMPT_COMPILER=true ECHOTALES_RENDER_IMAGE_MODEL=z-image-turbo`; it works but is not good yet.
+
+Still waiting on the owner: `reader/speakers_pass.py` and its test (uncommitted in the main checkout; the
+speaker fixes avoid them by design, see M0); the Shadow Slave and Northern Blade files; a RunPod key; GitHub
+billing for CI; whether paid closed-model APIs may be used for the cloud tier.
+
+The main checkout (`/home/adhyan/Desktop/EchoTales`) is still on an old commit with the owner's uncommitted
+files. `git pull` there after committing or stashing those files to get today's work.
+
+Scratch outputs worth keeping (all under `data/scratch/`, not in git): `panel_rework/bench_20261116_162505/`
+(benchmark sheets), `panel_rework/run_20261116_zimage/` (ten-panel comparison), `panel_rework/e2e_20261116_1528/`
+(the real-path baseline), `image_probe/` (first Z-Image probe), `audio_qa/`, `lead_check/` (real-model builds of
+three books, chapters 1 to 21, with speaker scores), `speaker_diag/REPORT.md` (why speaker lines are missed).
+
 ## 1. The goal, in the owner's words
 
 "As an anime/manga fan myself, I want to impress the community to be able to freely use this tool and visualise
@@ -35,12 +70,7 @@ What that means concretely:
 | Manga/manhwa as input | Not built | |
 | Cloud tier | Mock-tested only; needs a RunPod key | EVOLUTION 4.106 |
 
-Work in flight when this was written (finish or discard these first):
-
-- Worktree `.claude/worktrees/audio-qa` (branch `audio-qa`): voice quality check and fixes, uncommitted.
-- The image benchmark is finished and scored (EVOLUTION 4.165); its sheets are in
-  `data/scratch/panel_rework/bench_20261116_162505/`.
-- The local planning file `~/.claude/plans/distributed-imagining-dove.md` holds finer-grained checkpoints.
+Work that was in flight is described in section 0.
 
 ## 3. Rules that keep this from going wrong again
 
@@ -69,7 +99,9 @@ Order matters. Each milestone lists what to build, how to know it is done, and w
 
 The project has no showable output yet. Nothing below starts until this exists.
 
-- **Director v2.** For each panel the director must return: cast ids present; per character position, pose,
+- **Director v2** (eight stages: map the losses; output schema; shot variety; brief and compiler; a
+  conservation check; batching; a real run compared with the baseline in
+  `data/scratch/panel_rework/e2e_20261116_1528/`; a model bake-off). For each panel the director must return: cast ids present; per character position, pose,
   expression and condition (wounds, torn clothes); others present (who, how many, where relative to the lead);
   the location taken from the text with concrete background; time and weather; props; shot size and angle.
   Add a shot-variety rule (no two consecutive panels with the same shot size and subject). `brief_from_direction`
