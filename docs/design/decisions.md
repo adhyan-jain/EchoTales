@@ -503,6 +503,12 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Open, owner's decision**: whether paid closed-model APIs may be used.
 - **Status**: not adopted; nothing built.
 
+### D57. Z-Image Turbo is a selectable local scene model; the default stays until the real path is verified (2026-11-16)
+- **Decided**: `render.image_model=z-image-turbo` is available beside `noobai-xl-1.1`, behind `render.prompt_compiler`. This adopts the local half of D56. The cloud half of D56 is still only proposed.
+- **Why**: on the same ten briefs and seeds it drew the scene (lead, others, setting) where NoobAI split panels, lost the hero or blurred the scene (EVOLUTION 4.163), at 32 s and 5.78 GiB against 21.5 s and 5.41 GiB, and its licence is Apache 2.0 where NoobAI's is non-commercial.
+- **Not the default yet**: the comparison used hand-written briefs. The default changes only after a real render through the director and `render_panels` has been looked at.
+- **Consequence for identity (D53 stage B)**: the owner's spec named IP-Adapter, which exists for the SDXL family but was not found for Z-Image. For Z-Image the route to consistent faces is a fixed identity sentence now, and a LoRA per main character trained on a rented GPU, with pose or depth control from the ControlNet Union for layout. IP-Adapter remains the plan for the NoobAI route. None of this is built.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs
