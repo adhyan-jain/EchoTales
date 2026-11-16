@@ -94,6 +94,14 @@ class FactsReport:
     #: Default traits stamped back to the character's first appearance (stated later than they begin to hold).
     retroactive: int = 0
     age_stages: int = 0
+    #: How each stored appearance fact was scoped, so a reviewer can see what the reader treated as an innate look,
+    #: a permanent change, a time-bound state or a disguise; `scope_doubt` counts disguise facts written bounded
+    #: only because the cue sat in the previous sentence or the sentence names other cast members.
+    scope_baseline: int = 0
+    scope_change: int = 0
+    scope_state: int = 0
+    scope_disguise: int = 0
+    scope_doubt: int = 0
 
 
 _KEY_HELP = (
@@ -430,13 +438,102 @@ _CHANGE_CUES = re.compile(
 )
 
 
+#: A sentence that describes a look the character is only putting on. Without it "brown hair and blue eyes" written
+#: about a disguise went down as the character's default look and was stamped back to their first appearance, so every
+#: picture of them (LotM and xianxia face-changing techniques, wigs and makeup in modern fiction) took the costume's
+#: hair and eyes. Deliberately wide: a false hit only bounds a fact to one chapter, a miss corrupts the innate look.
+_DISGUISE_CUES = re.compile(
+    r"\b(disguis\w*|(?:in|under) the guise|guise of|in guise|"
+    r"(?:pos(?:ing|ed)|pretend(?:ing|ed)?|masquerad\w*|impersonat\w*) (?:as|to be|like)|"
+    r"pass(?:ing|ed)? (?:himself|herself|themselves|itself) off as|"
+    r"(?:wear(?:ing)?|wore|donn(?:ed|ing)|put(?:ting)? on|behind) (?:an? |the |his |her |their )?(?:[\w-]+ ){0,2}"
+    r"(?:mask|wig|false (?:beard|mustache|moustache|nose)|fake (?:beard|mustache|moustache|nose)|"
+    r"(?:colou?red |tinted )?contact lenses)|"
+    r"(?:false|fake|borrowed|stolen|assumed|different) (?:face|appearance|looks|features|identity)|"
+    r"(?:another|someone else's|somebody else's) (?:face|appearance|looks)|"
+    r"(?:chang(?:ed|ing|e)|alter(?:ed|ing)?|reshap(?:ed|ing)|modif(?:ied|ying)|morph(?:ed|ing)) "
+    r"(?:his|her|their|the|its) (?:own )?(?:appearance|face|looks|features|facial features|hair colou?r|eye colou?r|"
+    r"skin colou?r|body shape|build|voice)|"
+    r"face[- ]chang\w*|shape[- ]?shift\w*|transform(?:ed|ing|s)? (?:in)?to|took the (?:form|shape|appearance) of|"
+    r"assum(?:ed|ing) the (?:form|shape|appearance) of|illusion\w*|glamou?r(?!ous)\w*|"
+    r"(?:hid|hide|hiding|conceal(?:ed|ing)?|mask(?:ed|ing)) (?:his|her|their) (?:true |real )?"
+    r"(?:face|appearance|identity|looks)|"
+    r"temporar(?:y|ily) (?:dy\w*|chang\w*|alter\w*|transform\w*|colou?r\w*)|"
+    r"now (?:appeared|looked|seemed) (?:as|like)|"
+    r"to (?:others|outsiders|everyone|onlookers|the others|those watching),? (?:he|she|they|it) "
+    r"(?:looked|appeared|seemed))\b",
+    re.IGNORECASE,
+)
+#: The disguise is being taken off or the real look shown: the sentence describes the real look, not the costume.
+_DISGUISE_ENDS = re.compile(
+    r"\b(?:(?:remov\w*|took off|taken off|tore off|torn off|peel\w* off|pull\w* off|dropp\w*|shed|discard\w*|"
+    r"dispel\w*|lift\w*|abandon\w*|cast off) (?:the |his |her |their |a |an )?(?:\w+ )?"
+    r"(?:disguise|mask|wig|illusion|glamou?r|guise|false \w+)|"
+    r"(?:return\w*|revert\w*|chang\w*|turn\w*) (?:back )?(?:to|into) (?:his|her|their|its) (?:original|true|real|"
+    r"normal|usual) (?:appearance|form|face|looks|self)|"
+    r"(?:true|real|original) (?:appearance|face|form|features|looks)|"
+    r"disguise (?:was|had been|has been) (?:removed|dispelled|stripped|lifted))\b",
+    re.IGNORECASE,
+)
+#: A negator within a few words before a cue turns it round ("without any disguise, his black hair ...").
+_NEGATED = re.compile(r"\b(?:without|no|not|never|nor|neither|hardly|scarcely|lacked|\w+n['’]t)\b(?:\W+\w+){0,3}\W*$", re.I)
+
+
+#: A mask covers the face and changes neither hair nor eye colour: "the man in the silver mask had long black hair"
+#: and "behind the mask his eyes were blue" describe the real person. Counting the mask as a disguise for those two
+#: keys would hide the true hair and eyes of every character who is always masked.
+_MASK_KEEPS = frozenset({"hair_color", "eye_color"})
+_MASK_NOUN = re.compile(r"\bmask\b", re.IGNORECASE)
+
+
+def _disguise_in(text: str, attribute: str = "") -> bool:
+    """A disguise cue that is not negated, not in a sentence that takes the disguise off, and able to alter
+    `attribute` (a mask says nothing about hair or eye colour)."""
+    if _DISGUISE_ENDS.search(text):
+        return False
+    return any(
+        not _NEGATED.search(text[: m.start()][-40:])
+        and not (attribute in _MASK_KEEPS and _MASK_NOUN.search(m.group(0)))
+        for m in _DISGUISE_CUES.finditer(text)
+    )
+
+
+#: A disguise fact is stored under `disguise:<key>`, not under the innate key. The look readers that panels and
+#: reference sheets use (`appearance_of`, `standing_values`) rank rows of one key by story start and ignore an
+#: interval's end, so a closed disguise row under `hair_color` would keep shadowing the real hair in every chapter
+#: after the disguise. Under its own key it is invisible to them and cannot touch the innate look; `state_of` still
+#: returns it, and only inside its interval.
+DISGUISE_PREFIX = "disguise:"
+
+
+def classify_scope(attribute: str, quote: str, before: str = "", *, shared: bool = False) -> tuple[str, bool]:
+    """`fact_scope` plus whether a disguise reading was a doubtful one.
+
+    The disguise cue may sit in the stating sentence (`quote`) or in the sentence just before it (`before`): "He had
+    disguised himself as a merchant. His hair was brown and his eyes blue." Two sentences back is not looked at; a
+    chapter that merely mentions a disguise somewhere says nothing about this sentence. Doubt is when the cue is
+    only in `before` (it may be about someone else) or when the sentence names other cast members (`shared`), because
+    no sentence-level subject attribution exists here. A doubtful disguise is still bounded to its chapter and never
+    written as a default trait, which is the safe side: it can lose a real look for one chapter but cannot corrupt
+    the innate one."""
+    if _disguise_in(quote, attribute):
+        return "disguise", shared
+    if before and _disguise_in(before, attribute):
+        return "disguise", True
+    return fact_scope(attribute, quote), False
+
+
 def fact_scope(attribute: str, quote: str) -> str:
     """"baseline" (a default trait: true from the character's first appearance, however late the text says it),
-    "change" (something happened to the look: a new version from the chapter it is stated), or "state" (clothes, a
-    hairstyle, a mark: time-bound, kept as before).
+    "change" (something happened to the look: a new version from the chapter it is stated), "state" (clothes, a
+    hairstyle, a mark: time-bound, kept as before) or "disguise" (a look put on for a while: valid only in the
+    chapter that states it, never a default trait, and a disguise cue beats a change cue: "dyed his hair black as
+    part of the disguise" is not a permanent change).
 
     Owner, 2026-10-31: "had blue eyes" a dozen chapters in is not a change in appearance, so chapter 1's picture needs
     it; "half his face was burned" is. Until now every fact started at the chapter that stated it."""
+    if _disguise_in(quote, attribute):
+        return "disguise"
     if _CHANGE_CUES.search(quote):
         return "change"
     return "baseline" if attribute in _INTRINSIC_KEYS else "state"
@@ -451,7 +548,7 @@ def story_start(scope: str, *, stated: int, first_attested: int) -> int:
 
 def _attribute(
     target_kind: TargetKind, target_id: str, key: str, value: str, quote: str, number: float, pos: DiscoursePosition,
-    story_from: int | None = None,
+    story_from: int | None = None, story_to: int | None = None,
 ) -> Attribute:
     return Attribute(
         target_kind=target_kind,
@@ -461,7 +558,13 @@ def _attribute(
         # Open-ended from `story_from` (the stating chapter unless this is a default trait): a later contradicting
         # attestation lands as its own row rather than replacing this one (same rule as
         # `appearance_extract._write_appearance`).
-        interval=FuzzyInterval.open_ended(int(number) if story_from is None else story_from, last_evidence=int(number)),
+        interval=(
+            FuzzyInterval.open_ended(int(number) if story_from is None else story_from, last_evidence=int(number))
+            if story_to is None
+            # A disguise ends with its chapter by a closed interval, never by retraction (non-negotiable 5): the
+            # fact stays true of that chapter's history, and `state_of` stops returning it afterwards.
+            else FuzzyInterval.point_known(int(number) if story_from is None else story_from, story_to)
+        ),
         learned_at_pos=pos,
         observer_id=OBSERVER_READER,
         asserted_by=AssertedBy.INFERENCE,
@@ -471,9 +574,12 @@ def _attribute(
     )
 
 
-def _known(store: Store, target_id: str, key: str, value: str) -> bool:
+def _known(store: Store, target_id: str, key: str, value: str, *, disguise_chapter: int | None = None) -> bool:
+    """Whether the same value is already recorded. A disguise row only counts as known for the chapter it is bounded
+    to: the same costume in a later chapter is a new fact."""
     return any(
         a.key == key and a.value.strip().lower() == value.strip().lower() and a.is_standing
+        and (disguise_chapter is None or a.interval.from_lb == disguise_chapter)
         for a in store.get_attributes(TargetKind.PERSONA, target_id)
     )
 
@@ -518,10 +624,16 @@ def _store_appearance(
         report.rejected_value += 1
         return
     persona_id = persona_at(store, entry.self_id, number + 0.5)
-    if _known(store, persona_id, attribute, value):
+    sentences = _split(passage)
+    needle = _norm_text(quote).strip(" .,;:\"'…")
+    at = next((i for i, x in enumerate(sentences) if needle and needle in _norm_text(x)), None)
+    before = sentences[at - 1] if at else ""
+    shared = at is not None and bool(index.mentioned_in(sentences[at]) - {entry.self_id})
+    scope, doubt = classify_scope(attribute, quote, before, shared=shared)
+    key = DISGUISE_PREFIX + attribute if scope == "disguise" else attribute
+    if _known(store, persona_id, key, value, disguise_chapter=int(number) if scope == "disguise" else None):
         report.duplicates += 1
         return
-    scope = fact_scope(attribute, quote)
     story_from = story_start(scope, stated=int(number), first_attested=_first_chapter(store, entry.self_id, number))
     if scope == "baseline":
         # A default trait holds from the character's first appearance, but not before this body existed (a rebirth
@@ -532,9 +644,15 @@ def _store_appearance(
         story_from = max(story_from, int(body_from))
         report.retroactive += 1 if story_from < int(number) else 0
     store.add_attribute(
-        novel_id, _attribute(TargetKind.PERSONA, persona_id, attribute, value, quote, number, pos, story_from)
+        novel_id,
+        _attribute(
+            TargetKind.PERSONA, persona_id, key, value, quote, number, pos, story_from,
+            int(number) + 1 if scope == "disguise" else None,
+        ),
     )
     report.appearance += 1
+    setattr(report, f"scope_{scope}", getattr(report, f"scope_{scope}") + 1)
+    report.scope_doubt += 1 if doubt else 0
 
 
 def _store_age_stage(
