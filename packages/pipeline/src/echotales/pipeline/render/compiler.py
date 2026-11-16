@@ -469,6 +469,30 @@ def _face_words(tags: list[str]) -> str:
     return " and ".join(words) if words else "calm"
 
 
+_WARM = re.compile(r"smil|laugh|grin|chuckl|giggl|cheer|joy")
+
+
+def _cold_face(c: CharacterBrief) -> str:
+    """Wording for a cold, disagreeable lead (agreeableness <= 0.45, extraversion <= 0.5: the same test `derive_demeanour`
+    uses), or "" for anyone else.
+
+    Why: in the 2026-11-16 Z-Image run "cold" came out neutral in a close-up, a bare stated "light smile" drew a warm
+    smile on Fang Yuan, and a stated "laughing" drew a cheerful shonen hero. A language-model encoder takes the word it is
+    given, so a stated smile or laugh is rewritten as its cold form and the sentence names the absence of warmth. The
+    wording is generic to the trait profile, not to one novel."""
+    a, e = c.big_five.get("a"), c.big_five.get("e")
+    if a is None or a > 0.45 or (e is not None and e > 0.5):
+        return ""
+    stated = _plain(c.stated_expression).lower()
+    poss = {"male": "his", "female": "her"}.get(c.gender, "their")
+    base = "cold and unmoved, eyes half-lidded with contempt, no warmth in it"
+    if re.search(r"laugh|chuckl", stated):
+        return base + f", a cold mocking laugh that never reaches {poss} dead eyes"
+    if _WARM.search(stated):
+        return base + ", at most a thin mocking smirk, never a warm or cheerful smile"
+    return base
+
+
 def _headcount(crowd: CrowdBrief) -> str:
     if crowd.count > 0:
         return f"{crowd.count}"
@@ -495,7 +519,7 @@ def _compile_natural(b: PanelBrief, profile: ModelProfile, appearance: Appearanc
         written[lead.name] = appearance is not AppearanceInText.OFF
         d = derive_demeanour(lead, b.mood, b.tension)
         fields[lead.name] = d.fields_used
-        face = _face_words(d.tags)
+        face = _cold_face(lead) or _face_words(d.tags)
         extra = f" {lead.name}'s condition: {_plain(lead.condition)}." if lead.condition else ""
         s.append(PromptSection("demeanour", f"{lead.name}'s face is {face}.{extra}"))
     others = b.characters[1:]
@@ -537,13 +561,22 @@ def _style_sentence(b: PanelBrief) -> str:
     if b.mode is OutputMode.MANGA:
         text = ("A crisp black-and-white manga illustration: a single full-bleed image with clean black ink linework and "
                 "screentone shading, pure black and white only, no panel borders, no speech bubbles and no text")
+    elif b.manhua:
+        # The wording of the probe prompts the owner judged good (data/scratch/image_probe/prompts.py P1/P2, 2026-11-16): a
+        # guofeng donghua painting with a muted palette. The compiled colour style of the first run ("richly coloured
+        # painted illustration" plus a long culture clause) drew Japanese-anime faces and torii gates instead.
+        return ("A Chinese donghua illustration in the guofeng style: detailed, painterly xianxia art with ink-wash mountains, "
+                "mist, a muted cold palette and soft painterly backgrounds, a single full-bleed image with no panel borders, "
+                "no speech bubbles and no text, hanfu with wide sleeves and cross collars.")
     else:
         text = "A richly coloured painted illustration: a single full-bleed image with no panel borders, no speech bubbles and no text"
     if b.manhua:
-        # One sentence on purpose (the profile is 3-6 sentences); the exclusions are stated because a Japanese torii gate
-        # and short hair appeared in the NoobAI compiled-manga run of 2026-11-16.
-        text += ("; Chinese manhua and donghua style, an ancient-Chinese xianxia world with hanfu robes and traditional "
-                 "Chinese architecture, explicitly not Japanese, with no kimono, no katana and no torii gate")
+        # One sentence on purpose (the profile is 3-6 sentences). Culture is described positively: the first Z-Image run
+        # named "no torii gate" and drew a torii in about 6 of 10 colour panels and in manga p09, so naming the object
+        # primed it. Z-Image Turbo takes no negative prompt, so a positive description is the only lever.
+        text += ("; Chinese manhua and donghua style in an ancient-Chinese xianxia world of mountain pavilions with upturned "
+                 "eaves and stone paifang archways, hanfu with wide sleeves and cross collars and "
+                 "topknots with hairpins")
     return text + "."
 
 

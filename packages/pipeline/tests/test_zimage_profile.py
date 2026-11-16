@@ -85,14 +85,31 @@ def test_identity_sentence_is_identical_across_different_panels():
     assert sa == "Fang Yuan is a man with long black hair, dark brown eyes and scar on cheek, wearing deep green robes."
 
 
-def test_manga_and_colour_style_lines_and_xianxia_not_japanese():
+def test_manga_and_colour_style_lines_describe_chinese_culture_positively():
     manga = dict(compile_prompt(brief(), Z).section_texts())["style"]
     assert "black-and-white manga" in manga and "no panel borders" in manga and "no text" in manga
-    assert "hanfu" in manga and "not Japanese" in manga and "torii" in manga  # named only to exclude it
+    assert "paifang" in manga and "hanfu" in manga and "topknots" in manga
+    assert "jian" not in manga  # props belong to the scene: the global line put a sword on the lead in 13 of 13 panels
+    for named in ("torii", "kimono", "katana", "Japanese"):  # naming an excluded object primes the model to draw it
+        assert named not in manga
+    assert manga.count(". ") == 0
     colour = dict(compile_prompt(brief(mode=OutputMode.COLOUR), Z).section_texts())["style"]
     assert "black-and-white" not in colour and "no panel borders" in colour
-    plain = dict(compile_prompt(brief(manhua=False), Z).section_texts())["style"]
-    assert "hanfu" not in plain
+    assert "guofeng" in colour and "donghua" in colour and "muted" in colour and "torii" not in colour
+    assert "hanfu" not in dict(compile_prompt(brief(manhua=False), Z).section_texts())["style"]
+
+
+def test_cold_lead_demeanour_is_unmistakable_and_never_a_bare_smile_or_laugh():
+    plain = dict(compile_prompt(brief(), Z).section_texts())["demeanour"]
+    assert "cold and unmoved" in plain and "contempt" in plain and "no warmth" in plain
+    smile = CharacterBrief(**{**FANG, "stated_expression": "light_smile"})
+    laugh = CharacterBrief(**{**FANG, "stated_expression": "laughing"})
+    s = dict(compile_prompt(brief(characters=[smile]), Z).section_texts())["demeanour"]
+    g = dict(compile_prompt(brief(characters=[laugh]), Z).section_texts())["demeanour"]
+    assert "thin mocking smirk" in s and "never a warm or cheerful smile" in s and "no warmth" in s
+    assert "cold mocking laugh" in g and "dead eyes" in g
+    warm = CharacterBrief(**{**FANG, "big_five": {"a": 0.8, "e": 0.7}, "stated_expression": "light_smile"})
+    assert "cold" not in dict(compile_prompt(brief(characters=[warm]), Z).section_texts())["demeanour"]
 
 
 def test_extra_named_character_gets_their_own_fixed_sentence():
