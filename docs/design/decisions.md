@@ -509,6 +509,14 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Not the default yet**: the comparison used hand-written briefs. The default changes only after a real render through the director and `render_panels` has been looked at.
 - **Consequence for identity (D53 stage B)**: the owner's spec named IP-Adapter, which exists for the SDXL family but was not found for Z-Image. For Z-Image the route to consistent faces is a fixed identity sentence now, and a LoRA per main character trained on a rented GPU, with pose or depth control from the ControlNet Union for layout. IP-Adapter remains the plan for the NoobAI route. None of this is built.
 
+### D58. Two image models with one job each: Z-Image for the scene, NoobAI for supernatural effects (2026-11-16)
+- **Owner's observation**: after the same-panels comparison, Z-Image is better at story-telling images; NoobAI shows potential for powers, attacks and other supernatural effects. The owner left the choice to the planner.
+- **Decided**: Z-Image Turbo is the scene model for every panel by default. NoobAI is kept as an effects specialist, used only for panels the direction marks as supernatural action (an attack, a technique, an aura, a transformation), chosen automatically from the panel's direction, never by hand per panel. Colour and monochrome manga are both first-class modes (`render.panel_mode`); manga stays the default.
+- **Open, to be settled by one measured test on six effect panels, same seeds**: whether an effect panel is drawn by NoobAI alone, or composed by Z-Image and finished by NoobAI as an image-to-image pass at moderate strength. The second keeps Z-Image's layout and character but costs two passes; the first risks a visible change of face and drawing style between neighbouring panels. Z-Image alone with effect wording is the baseline both must beat.
+- **Constraints**: the two models never share the GPU; panels are batched per model (all scene panels, then all effect panels) because a model swap costs 30 to 50 seconds. If neither NoobAI variant beats the Z-Image baseline on the test, NoobAI is dropped from the default path and stays only as a selectable model.
+- **Relation to earlier rules**: the earlier "no multi-model per image" rule was about mixing models inside one picture on the SDXL stack; the image-to-image variant here reopens it for effect panels only, and only if the test shows it wins.
+- **Status**: decided as policy; nothing built or measured yet.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs
