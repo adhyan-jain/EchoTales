@@ -30,6 +30,9 @@ render = [
     "torch>=2.2",
     "diffusers>=0.30",
     "compel>=2.5",
+    # Z-Image Turbo worker: GGUF weights, 4-bit text encoder (workers_zimage.py)
+    "gguf>=0.17",
+    "bitsandbytes>=0.45",
 ]
 
 [tool.uv.sources]

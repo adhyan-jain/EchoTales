@@ -128,7 +128,7 @@ class Settings(BaseSettings):
     render_direction_first: bool = True
 
     #: Stage A panel rework (2026-11-15). `render.image_model` (config.json) / `ECHOTALES_RENDER_IMAGE_MODEL` picks a
-    #: profile in `render/compiler.py::PROFILES` (`noobai-xl-1.1`, `anima`), so two checkpoints compare on the same panels.
+    #: profile in `render/compiler.py::PROFILES` (`noobai-xl-1.1`, `anima`, `z-image-turbo`), so two checkpoints compare on the same panels.
     render_image_model: str = "noobai-xl-1.1"
     #: `manga` (monochrome, the default) or `colour`. Only the compiler path and the local worker read it; the legacy
     #: engines keep `--palette`.

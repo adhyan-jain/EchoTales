@@ -2979,7 +2979,16 @@ def render_panels(
                     # sheets caused color/composition contamination and cannot
                     # generalise across novels. Appearance is constrained by
                     # prompt text (appearance clause + style anchor) instead.
-                    engine.generate(_panel_request)
+                    if _prompt_sections is not None and not isinstance(engine, StubImageEngine):
+                        # Compiled prompts are whole; the legacy engines clip at 77 tokens, the workers do not.
+                        from echotales.pipeline.render.compiled_route import generate_compiled
+
+                        generate_compiled(
+                            _panel_request, _prompt_sections, get_settings().render_image_model,
+                            greyscale=get_settings().render_panel_mode == "manga",
+                        )
+                    else:
+                        engine.generate(_panel_request)
                     _provenance = "generated"
                     generated_by_digest[digest] = image_path
                     cache_index[render_cache_key] = str(image_path)

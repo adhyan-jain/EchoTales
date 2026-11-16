@@ -50,6 +50,8 @@ SHORT_ITEMS = 4
 class PromptFormat(StrEnum):
     SDXL_TAGS = "sdxl_tags"
     ANIMA = "anima"
+    #: Plain sentences for a text encoder that is a language model (Z-Image's Qwen3-4B): no tags, no negative prompt.
+    NATURAL = "natural"
 
 
 @dataclass(frozen=True, slots=True)
@@ -100,6 +102,17 @@ PROFILES: dict[str, ModelProfile] = {
         unavailable="",
     ),
 }
+PROFILES["z-image-turbo"] = ModelProfile(
+    key="z-image-turbo",
+    model_id="Tongyi-MAI/Z-Image-Turbo",
+    family=PromptFormat.NATURAL,
+    width=832, height=1216, steps=9, guidance=0.0, sampler="flow_match_euler",
+    quality_tags="",
+    # Turbo is distilled without CFG, so a negative prompt has no effect; every exclusion is written as a positive
+    # "no panel borders, no text" clause in the style sentence instead (probe 2026-11-16: no negative was ever passed).
+    negative_base="",
+    licence="Apache-2.0 (model card, https://huggingface.co/Tongyi-MAI/Z-Image-Turbo)",
+)
 DEFAULT_MODEL = "noobai-xl-1.1"
 
 
@@ -156,6 +169,9 @@ class CrowdBrief:
     size: str = "many"  # few | many
     gender: str = "male"  # male | female | mixed
     stance: str = ""  # a clause with a verb: "surround him, weapons drawn"
+    #: Exact headcount when the text gives one; 0 means "use `size`" ("a dozen or more" / "three or four"). Only the natural-
+    #: language profile writes a number; the tag profiles keep `size`.
+    count: int = 0
 
 
 @dataclass(slots=True)
@@ -403,7 +419,132 @@ def compile_prompt(
     profile = profile or model_profile()
     if profile.family is PromptFormat.ANIMA:
         return _compile_anima(brief, profile, appearance)
+    if profile.family is PromptFormat.NATURAL:
+        return _compile_natural(brief, profile, appearance)
     return _compile_sdxl(brief, profile, appearance)
+
+
+_NATURAL_SHOT = {"wide": "A wide establishing shot", "medium": "A medium shot", "close": "A close-up portrait"}
+_NOUN = {"male": "man", "female": "woman"}
+
+
+def _plain(text: str) -> str:
+    return re.sub(r"\s+", " ", (text or "").replace("_", " ")).strip().strip(",.")
+
+
+def identity_sentence(c: CharacterBrief, appearance: AppearanceInText = AppearanceInText.SHORT) -> str:
+    """The fixed one-sentence description of a character, built only from the graph's body facts (hair, eyes, marks, attire).
+
+    Identical wording in every panel of the same character is the stopgap for identity until reference-image conditioning
+    exists: the probe (2026-11-16) drew the same hero with a different face in three panels of one scene whenever the
+    description changed between prompts. Nothing scene-dependent (wounds, mood, action) goes in; those are separate
+    sentences. Facts are written in the order the model should weigh them: hair, eyes, marks, then clothes."""
+    noun = _NOUN.get(c.gender, "person")
+    age = c.age_band if c.age_band and c.age_band not in ("adult", "unknown") else ""
+    head = f"{c.name} is a{'n' if (age or noun)[0] in 'aeiou' else ''} {f'{age} ' if age else ''}{noun}"
+    if appearance is AppearanceInText.OFF:
+        return head + "."
+    facts = {k: v for k, v in c.appearance.items() if v and k not in _SKIP}
+    hair_bits = [v for k, v in facts.items() if _HAIR.search(k)]
+    feats = ([(" ".join(v.replace(" hair", "") for v in hair_bits) + " hair").strip()] if hair_bits else [])
+    feats += [f"{v} eyes" for k, v in facts.items() if _EYES.search(k)]
+    feats += [v for k, v in facts.items() if _MARK.search(k)]
+    if appearance is AppearanceInText.SHORT:
+        feats = feats[: SHORT_ITEMS - (1 if c.attire else 0)]
+    text = head
+    if feats:
+        text += " with " + (", ".join(feats[:-1]) + " and " + feats[-1] if len(feats) > 1 else feats[0])
+    if c.attire:
+        text += f", wearing {_plain(c.attire)}"
+    return _plain(text) + "."
+
+
+def _face_words(tags: list[str]) -> str:
+    """Demeanour tags as words after "face is": `calm expression` -> `calm`, `light smile` -> `a light smile`."""
+    words = []
+    for t in tags:
+        t = re.sub(r"\s*expression$", "", _plain(t)).strip()
+        if t:
+            words.append(f"a {t}" if re.search(r"(smile|stare|laugh|frown|grin)$", t) else t)
+    return " and ".join(words) if words else "calm"
+
+
+def _headcount(crowd: CrowdBrief) -> str:
+    if crowd.count > 0:
+        return f"{crowd.count}"
+    return "a dozen or more" if crowd.size == "many" else "three or four"
+
+
+def _compile_natural(b: PanelBrief, profile: ModelProfile, appearance: AppearanceInText) -> CompiledPrompt:
+    """3 to 6 plain sentences in the order a language-model encoder weighs them: composition, the lead (fixed identity
+    sentence, then demeanour), who else is there and where they stand, the setting with light and mood, one style sentence.
+
+    Why this order and shape: the probe's one-paragraph prompts put the hero, a cliff and a crowd of 12-20 in all 4 of 4
+    images, but the crowd stood beside the hero rather than ringing him, because "a crowd" gave no position; the stance
+    clause ("ringed around him on all sides") is mandatory whenever there are others. Never truncated."""
+    lead = b.characters[0] if b.characters else None
+    s: list[PromptSection] = []
+    shot = _NATURAL_SHOT.get(b.shot, "A medium shot") + (f", {_plain(b.camera)}" if b.camera else "")
+    action = _plain(b.action)
+    framing = f", framing {lead.name}" if lead else ""
+    s.append(PromptSection("composition", f"{shot}{framing}{': ' + action if action else ''}."))
+    written: dict[str, bool] = {}
+    fields: dict[str, list[str]] = {}
+    if lead is not None:
+        s.append(PromptSection(f"character:{lead.name}", identity_sentence(lead, appearance)))
+        written[lead.name] = appearance is not AppearanceInText.OFF
+        d = derive_demeanour(lead, b.mood, b.tension)
+        fields[lead.name] = d.fields_used
+        face = _face_words(d.tags)
+        extra = f" {lead.name}'s condition: {_plain(lead.condition)}." if lead.condition else ""
+        s.append(PromptSection("demeanour", f"{lead.name}'s face is {face}.{extra}"))
+    others = b.characters[1:]
+    for c in others:
+        written[c.name] = appearance is not AppearanceInText.OFF
+        fields[c.name] = derive_demeanour(c, b.mood, b.tension).fields_used
+    parts = []
+    if others:
+        parts.append(" ".join(identity_sentence(c, appearance) for c in others))
+    if b.crowd is not None:
+        who = lead.name if lead else "the center of the frame"
+        stance = _plain(b.crowd.stance) or f"stand close around {who}"
+        parts.append(f"In the scene with him are {_headcount(b.crowd)} {_plain(b.crowd.description)}; they {stance}.")
+    if parts:
+        s.append(PromptSection("others", " ".join(parts)))
+    place = _plain(_location_text(b))
+    detail = _plain(b.setting)
+    light = _plain(b.lighting)
+    mood = _plain(b.mood)
+    seen: list[str] = []
+    for x in [t.strip() for t in f"{place},{detail}".split(",")]:  # the location and the director's setting repeat each other
+        if x and x.lower() not in (y.lower() for y in seen):
+            seen.append(x)
+    where = ", ".join(seen)
+    tail = "; ".join(([f"the light is {light}"] if light else []) + ([f"the mood is {mood}"] if mood else []))
+    objs = f" Visible: {', '.join(_plain(o) for o in b.key_objects)}." if b.key_objects else ""
+    if where or tail:
+        sentence = (f"The setting is {where}" if where else "The scene is") + (f"; {tail}" if tail and where else f" {tail}" if tail else "")
+        s.append(PromptSection("setting", sentence + "." + objs))
+    s.append(PromptSection("style", _style_sentence(b)))
+    s = [x for x in s if x.text]
+    return CompiledPrompt(
+        positive=" ".join(x.text for x in s), negative="", sections=s, negative_sections=[], family=profile.family,
+        mode=b.mode, appearance_written=written, demeanour_fields=fields,
+    )
+
+
+def _style_sentence(b: PanelBrief) -> str:
+    if b.mode is OutputMode.MANGA:
+        text = ("A crisp black-and-white manga illustration: a single full-bleed image with clean black ink linework and "
+                "screentone shading, pure black and white only, no panel borders, no speech bubbles and no text")
+    else:
+        text = "A richly coloured painted illustration: a single full-bleed image with no panel borders, no speech bubbles and no text"
+    if b.manhua:
+        # One sentence on purpose (the profile is 3-6 sentences); the exclusions are stated because a Japanese torii gate
+        # and short hair appeared in the NoobAI compiled-manga run of 2026-11-16.
+        text += ("; Chinese manhua and donghua style, an ancient-Chinese xianxia world with hanfu robes and traditional "
+                 "Chinese architecture, explicitly not Japanese, with no kimono, no katana and no torii gate")
+    return text + "."
 
 
 def _characters(
