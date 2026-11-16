@@ -40,6 +40,9 @@ def _load_config_json() -> dict[str, object]:
     render = raw.get("render", {})
     if "direction_first" in render:
         out["render_direction_first"] = render["direction_first"]
+    for key in ("image_model", "panel_mode", "prompt_compiler"):
+        if key in render:
+            out[f"render_{key}"] = render[key]
     persona = raw.get("persona", {})
     if "prefix_causal" in persona:
         out["persona_prefix_causal"] = persona["prefix_causal"]
@@ -123,6 +126,15 @@ class Settings(BaseSettings):
     #: the local GPU (gateway/API backends), never with `ollama` alongside
     #: a local image engine (`docs/EVOLUTION.md` section 9's measured OOM).
     render_direction_first: bool = True
+
+    #: Stage A panel rework (2026-11-15). `render.image_model` (config.json) / `ECHOTALES_RENDER_IMAGE_MODEL` picks a
+    #: profile in `render/compiler.py::PROFILES` (`noobai-xl-1.1`, `anima`), so two checkpoints compare on the same panels.
+    render_image_model: str = "noobai-xl-1.1"
+    #: `manga` (monochrome, the default) or `colour`. Only the compiler path and the local worker read it; the legacy
+    #: engines keep `--palette`.
+    render_panel_mode: str = "manga"
+    #: Off in stage A: `render_panels` builds its prompt inline exactly as before. On: it goes through the compiler.
+    render_prompt_compiler: bool = False
 
     #: True: persona traits are written as revisions stamped by the chapter their evidence reaches
     #: (`build_personas(prefix_causal=True)`), so a reader-position query serves only what the reader could know.

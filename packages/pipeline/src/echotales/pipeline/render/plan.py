@@ -82,6 +82,9 @@ class PanelPlan(BaseModel):
     prompt_tokens_before_fit: int | None = None
     #: Whole clauses `fit_to_budget` left out. None means "not recorded", [] means none dropped.
     dropped_clauses: list[str] | None = None
+    #: `(label, text)` per compiler section (`render/compiler.py`), so a report shows which section carried the setting, the
+    #: cast, the action. None when the legacy assembly built the prompt (`render.prompt_compiler` off).
+    prompt_sections: list[tuple[str, str]] | None = None
 
     engine: str
     width: int

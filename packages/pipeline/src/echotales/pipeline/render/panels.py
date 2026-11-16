@@ -2793,6 +2793,34 @@ def render_panels(
                 )
                 neg_prompt = fit_to_budget(_neg_parts)
 
+                # Stage A (2026-11-15), off by default: with `render.prompt_compiler` on, the prompt and negative come from
+                # the graph's brief (cast state at this position, scene, crowd, shot) written in the model family's own
+                # format, not from the inline assembly above, which forced "solo" and lost the setting to a 77-token fit.
+                # The legacy path above still runs, so with the switch off nothing changes byte for byte.
+                _prompt_sections: list[tuple[str, str]] | None = None
+                from echotales.pipeline.config import get_settings
+
+                if get_settings().render_prompt_compiler:
+                    from echotales.pipeline.render.compiler import (
+                        OutputMode,
+                        brief_from_direction,
+                        compile_prompt,
+                        model_profile,
+                    )
+
+                    _compiled = compile_prompt(
+                        brief_from_direction(
+                            store, novel_id,
+                            list(_beat_bodies.keys()) or list(_scene_last_present_bodies.keys()),
+                            story_position, _direction, location=scene_locale_text,
+                            mode=OutputMode(get_settings().render_panel_mode), is_crowd=is_crowd_cut,
+                            gender_hint="male" if "male" in genders else "",
+                        ),
+                        model_profile(get_settings().render_image_model),
+                    )
+                    prompt, neg_prompt = _compiled.positive, _compiled.negative
+                    _prompt_sections = _compiled.section_texts()
+
                 # **Visual Rendering Track Phase 1b/1c: real cache identity.**
                 # `cast_self_ids` mirrors whichever cast this beat actually
                 # ended up with -- the fresh PRESENT scan when this beat had
@@ -3004,6 +3032,7 @@ def render_panels(
                         direction_reason=None if _direction is not None else _direction_reason,
                         prompt=prompt,
                         negative_prompt=neg_prompt,
+                        prompt_sections=_prompt_sections,
                         prompt_tokens=count_tokens(prompt),
                         prompt_tokens_before_fit=_fit_before,
                         dropped_clauses=_fit_dropped,

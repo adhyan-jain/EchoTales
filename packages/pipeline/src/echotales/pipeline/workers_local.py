@@ -15,6 +15,12 @@ Why it is built this way (measured on the RTX 4060 Laptop, 8 GB, 2026-10-22):
   Result: peak 5.36 GiB of VRAM, about 22 s per 28-step image at 832x1216 or 1024x1024, nothing offloaded.
 - Weights come from the local Hugging Face cache; nothing is downloaded here.
 
+Long prompts (stage A, 2026-11-15): the 77-token fit above silently dropped whole clauses (a recorded panel lost its layout,
+setting, lighting and location, 102 tokens cut to 73), so the encode step now chunks the whole prompt through `compel`
+(`CompelForSDXL`, both text encoders, 75-token chunks concatenated on the sequence axis, negative padded to the same length,
+pooled embedding from the first chunk) and logs per prompt the token count, the chunks, and which labelled compiler section
+falls in which chunk (`plan_chunks`). `fit_prompt` stays for callers that want a hard cap.
+
 NoobAI XL 1.1 carries a non-commercial licence (decisions D7): this worker is for development and review. The licence-clean
 replacement is a different `model_id` behind the same worker contract.
 """
@@ -24,10 +30,13 @@ from __future__ import annotations
 import base64
 import gc
 import io
+import logging
 import time
 from pathlib import Path
 
 from echotales.pipeline.workers_contract import ImageWorkerRequest, ImageWorkerResponse
+
+logger = logging.getLogger(__name__)
 
 MODEL_ID = "Laxhar/noobai-XL-1.1"
 #: NoobAI is trained on score tags; "masterpiece, best quality" is the wrong family of quality words for it
@@ -70,6 +79,30 @@ def fit_prompt(tokenizer: object, prefix: str, prompt: str, limit: int = CLIP_TO
     return head + ", ".join(clauses)
 
 
+def plan_chunks(
+    tokenizer: object, sections: list[tuple[str, str]], size: int = CLIP_TOKENS, sep: str = ", "
+) -> dict[str, object]:
+    """Token count, chunk count and the chunks each labelled section falls in, for a prompt joined as `sep.join(texts)`.
+
+    Tokens are counted on the cumulative text, so a section's span is where the running count says it is; a section that
+    straddles a boundary reports both chunks. This is the arithmetic the log needs ("the setting is in chunk 2 of 3"),
+    separate from the embedding so it runs with a tokenizer alone."""
+    count = lambda text: len(tokenizer(text, add_special_tokens=False).input_ids)  # type: ignore[operator]  # noqa: E731
+    spans: dict[str, list[int]] = {}
+    done, text = 0, ""
+    for label, part in sections:
+        text = f"{text}{sep}{part}" if text else part
+        end = count(text)
+        spans[label] = list(range(done // size, max(done, end - 1) // size + 1)) if end > done else []
+        done = end
+    return {"tokens": done, "chunks": max(1, -(-done // size)), "sections": spans}
+
+
+def _compel_safe(text: str) -> str:
+    """Compel reads parentheses and `+`/`-` as weights; prompt text must reach the encoder unchanged."""
+    return text.replace("(", "\\(").replace(")", "\\)")
+
+
 def _snapshot(model_id: str) -> str:
     org, _, name = model_id.partition("/")
     root = Path.home() / ".cache/huggingface/hub" / f"models--{org}--{name}" / "snapshots"
@@ -85,6 +118,8 @@ class LocalNoobAIWorker:
     def __init__(self, model_id: str = MODEL_ID) -> None:
         self.model_id = model_id
         self._pipe: object | None = None
+        #: One record per generated image: seconds, peak VRAM (GiB), tokens, chunks, section-to-chunk map.
+        self.stats: list[dict[str, object]] = []
 
     def _check_gpu(self) -> None:
         import torch  # type: ignore[import-not-found]
@@ -97,26 +132,41 @@ class LocalNoobAIWorker:
                 f"only {free_gib:.1f} GiB of GPU memory is free (need {MIN_FREE_GIB}); stop ollama or the other GPU job first"
             )
 
-    def _encode(self, requests: list[ImageWorkerRequest]) -> list[tuple]:  # type: ignore[type-arg]
-        """Stage 1: prompt embeddings from a text-encoder-only pipeline that is freed before denoising starts."""
+    def _encode(
+        self, requests: list[ImageWorkerRequest], sections: list[list[tuple[str, str]]] | None = None
+    ) -> tuple[list[tuple], list[dict[str, object]]]:  # type: ignore[type-arg]
+        """Stage 1: whole-prompt chunked embeddings from a text-encoder-only pipeline freed before denoising starts.
+
+        With `sections` the prompt is the compiler's finished text (its own quality tags), otherwise the legacy prompt gets
+        `QUALITY_PREFIX`. Nothing is dropped either way; length costs chunks, not clauses."""
         import torch  # type: ignore[import-not-found]
+        from compel import CompelForSDXL  # type: ignore[import-not-found]
         from diffusers import StableDiffusionXLPipeline  # type: ignore[import-not-found]
 
         enc = StableDiffusionXLPipeline.from_pretrained(
             _snapshot(self.model_id), unet=None, vae=None, torch_dtype=torch.float16, use_safetensors=True, device_map="cuda"
         )
-        out = []
-        for r in requests:
-            embeds = enc.encode_prompt(
-                fit_prompt(enc.tokenizer, QUALITY_PREFIX, r.prompt),
-                negative_prompt=fit_prompt(enc.tokenizer, "", f"{r.negative_prompt}, {DEFAULT_NEGATIVE}".strip(", ")),
-                device="cuda",
-            )
-            out.append(tuple(e.detach() for e in embeds))
-        del enc
+        compel = CompelForSDXL(enc)
+        out, plans = [], []
+        for i, r in enumerate(requests):
+            if sections is not None:
+                pos, neg = r.prompt, r.negative_prompt
+                labelled = sections[i]
+            else:
+                pos = f"{QUALITY_PREFIX}, {r.prompt}"
+                neg = f"{r.negative_prompt}, {DEFAULT_NEGATIVE}".strip(", ")
+                labelled = [("quality", QUALITY_PREFIX), ("prompt", r.prompt)]
+            plan = plan_chunks(enc.tokenizer, labelled)
+            plan["negative_tokens"] = plan_chunks(enc.tokenizer, [("negative", neg)])["tokens"]
+            cond = compel(main_prompt=_compel_safe(pos), negative_prompt=_compel_safe(neg))
+            out.append(tuple(e.detach() for e in (
+                cond.embeds, cond.negative_embeds, cond.pooled_embeds, cond.negative_pooled_embeds)))
+            plans.append(plan)
+            logger.info("prompt tokens=%s chunks=%s sections=%s", plan["tokens"], plan["chunks"], plan["sections"])
+        del enc, compel
         gc.collect()
         torch.cuda.empty_cache()
-        return out
+        return out, plans
 
     def _ensure_pipe(self) -> object:
         """Stage 2 pipeline: UNet and VAE only, tiled decode, resident until `close()`."""
@@ -134,16 +184,28 @@ class LocalNoobAIWorker:
             self._pipe = pipe
         return self._pipe
 
-    def generate_many(self, requests: list[ImageWorkerRequest]) -> list[ImageWorkerResponse]:
-        """Encode every prompt once, then denoise each; batching saves one text-encoder load per image."""
+    def generate_many(
+        self,
+        requests: list[ImageWorkerRequest],
+        sections: list[list[tuple[str, str]]] | None = None,
+        *,
+        greyscale: bool = False,
+    ) -> list[ImageWorkerResponse]:
+        """Encode every prompt once, then denoise each; batching saves one text-encoder load per image.
+
+        `greyscale` is manga mode's last step: the prompt asks for monochrome, but a checkpoint leaks colour (tinted paper,
+        a coloured robe), so every image is converted through `palette.apply_palette(INK)` and none can come out coloured."""
         import torch  # type: ignore[import-not-found]
 
         self._check_gpu()
-        embeds = self._encode(requests)
+        torch.cuda.reset_peak_memory_stats()
+        embeds, plans = self._encode(requests, sections)
+        encode_peak = torch.cuda.max_memory_allocated() / 2**30
         pipe = self._ensure_pipe()
         responses = []
-        for r, (pe, npe, pp, npp) in zip(requests, embeds, strict=True):
+        for r, plan, (pe, npe, pp, npp) in zip(requests, plans, embeds, strict=True):
             width, height = fit_size(r.width, r.height)
+            torch.cuda.reset_peak_memory_stats()
             started = time.time()
             image = pipe(  # type: ignore[operator]
                 prompt_embeds=pe, negative_prompt_embeds=npe, pooled_prompt_embeds=pp, negative_pooled_prompt_embeds=npp,
@@ -151,10 +213,20 @@ class LocalNoobAIWorker:
                 guidance_scale=GUIDANCE if r.guidance_scale == 6.0 else r.guidance_scale,
                 generator=torch.Generator("cpu").manual_seed(r.seed),
             ).images[0]
+            if greyscale:
+                from echotales.pipeline.render.palette import Palette, PaletteSpec, apply_palette
+
+                image = apply_palette(image, PaletteSpec(palette=Palette.INK))
+            duration = time.time() - started
+            self.stats.append({
+                **plan, "seed": r.seed, "seconds": round(duration, 2), "denoise_peak_gib": round(
+                    torch.cuda.max_memory_allocated() / 2**30, 3),
+                "encode_peak_gib": round(encode_peak, 3), "width": width, "height": height,
+            })
             buf = io.BytesIO()
-            image.save(buf, format="PNG")
+            image.save(buf, format="PNG")  # type: ignore[attr-defined]
             responses.append(ImageWorkerResponse(
-                image_b64=base64.b64encode(buf.getvalue()).decode("ascii"), seed=r.seed, duration_s=time.time() - started,
+                image_b64=base64.b64encode(buf.getvalue()).decode("ascii"), seed=r.seed, duration_s=duration,
             ))
         return responses
 
@@ -166,7 +238,7 @@ class LocalNoobAIWorker:
             import torch  # type: ignore[import-not-found]
 
             torch.cuda.empty_cache()
-        except Exception:  # noqa: BLE001 - nothing to free without torch
+        except Exception:
             pass
 
 

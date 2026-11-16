@@ -29,6 +29,7 @@ api = [
 render = [
     "torch>=2.2",
     "diffusers>=0.30",
+    "compel>=2.5",
 ]
 
 [tool.uv.sources]

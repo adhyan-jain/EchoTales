@@ -4,6 +4,9 @@
     "model": "coding-best"
   },
   "render": {
-    "direction_first": true
+    "direction_first": true,
+    "image_model": "noobai-xl-1.1",
+    "panel_mode": "manga",
+    "prompt_compiler": false
   }
 }
