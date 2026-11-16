@@ -25,6 +25,7 @@ from __future__ import annotations
 import hashlib
 import json
 import random
+import re
 import wave
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -45,6 +46,7 @@ from echotales.pipeline.voice.bank import VoiceBank, pick_mob_voice
 from echotales.pipeline.voice.casting import DEFAULT_SEED, cast_voices
 from echotales.pipeline.voice.delivery import pace_text, settings_for
 from echotales.pipeline.voice.engine import SynthesisRequest, TTSEngine, get_engine
+from echotales.pipeline.voice import levels
 from echotales.pipeline.voice.export import gaps_for
 from echotales.pipeline.voice.pitch import ffmpeg_available, shift_pitch
 
@@ -112,6 +114,10 @@ class VoiceReport:
     pitch_shift_unavailable_warned: bool = False
     #: Lines whose WAV from an earlier run matched this run's fingerprint and were not synthesised again.
     reused_lines: int = 0
+    #: Takes re-synthesised because their speech rate was outside the band (`voice/levels.py`), and lines still
+    #: outside it after the last retry.
+    retried_takes: int = 0
+    retry_gave_up: int = 0
 
     def summary(self) -> str:
         return (
@@ -123,6 +129,7 @@ class VoiceReport:
             f"  dialogue with no identity (voiced as an unknown speaker): "
             f"{self.unattributed_lines:,}\n"
             f"  reused from an earlier run: {self.reused_lines:,}\n"
+            f"  re-synthesised for pace: {self.retried_takes:,} takes ({self.retry_gave_up:,} lines still off)\n"
             f"  distinct reference voices used: {len(self.voices_used)}"
         )
 
@@ -337,7 +344,9 @@ def render_novel(
             return dominant_polarity(extract_delivery_markers(window))
 
         for span in chapter_spans:
-            if span.span_type not in _AUDIBLE or not span.text.strip():
+            # A span with no letter or digit ("...") is a pause the author wrote; voiced, the model made a "Hmm"
+            # out of it (LotM ch7, span 78:0).
+            if span.span_type not in _AUDIBLE or not re.search(r"\w", span.text):
                 continue
 
             raw_speaker = span.speaker_self_id or ""
@@ -533,15 +542,18 @@ def render_novel(
                     # render that died on chapter 60 re-synthesised everything (audit B6).
                     report.reused_lines += 1
                 else:
-                    engine.synthesize(
+                    take = levels.synthesize_checked(
+                        engine,
                         SynthesisRequest(
                             text=text,
                             out_path=path,
                             reference_clip=clip,
                             exaggeration=settings.exaggeration,
                             cfg_weight=settings.cfg_weight,
-                        )
+                        ),
                     )
+                    report.retried_takes += take.retries
+                    report.retry_gave_up += take.gave_up
                     if settings.pitch_semitones:
                         shift_pitch(path, settings.pitch_semitones)
                         if not ffmpeg_available() and not report.pitch_shift_unavailable_warned:
@@ -550,6 +562,9 @@ def render_novel(
                                 "(voice/pitch.py) is a no-op this run"
                             )
                             report.pitch_shift_unavailable_warned = True
+                    # After the pitch shift, which changes the level. One target for every line: the first measurement
+                    # had per-voice means 18 LU apart (voice/levels.py).
+                    levels.normalise_file(path)
                     # Written last, so a file interrupted mid-synthesis has no stamp and is redone.
                     stamp_path.write_text(stamp, encoding="utf-8")
                 line.audio_path = str(path)
@@ -622,7 +637,7 @@ def _line_fingerprint(engine: object, text: str, clip: object, settings: object)
     return hashlib.sha256(
         json.dumps(
             [getattr(engine, "name", type(engine).__name__), text, str(clip or ""), settings.exaggeration, settings.cfg_weight,  # type: ignore[attr-defined]
-             settings.pitch_semitones],  # type: ignore[attr-defined]
+             settings.pitch_semitones, levels.TARGET_LUFS, levels.MAX_RETRIES],  # type: ignore[attr-defined]
             ensure_ascii=False,
         ).encode("utf-8")
     ).hexdigest()

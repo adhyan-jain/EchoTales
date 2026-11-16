@@ -373,6 +373,19 @@ def build_parser() -> argparse.ArgumentParser:
              "(0 restores the old behaviour)",
     )
 
+    p_qa = sub.add_parser(
+        "audio-qa",
+        help="measure voiced chapters from the files alone (coverage, silence, pace, loudness, speech round trip, cast, pauses); no GPU",
+    )
+    p_qa.add_argument("--novel", required=True)
+    p_qa.add_argument("--audio-dir", default=None, help="default: data/novels/<CODE>/audio")
+    p_qa.add_argument("--chapters", help="range, e.g. 7 or 1-5; default: every chapter in the manifest")
+    p_qa.add_argument("--report", default=None, help="write the full JSON report here (default: <audio-dir>/qa.json)")
+    p_qa.add_argument("--asr", default="openai/whisper-base.en", help="speech-recogniser model id, or 'none' to skip the round trip")
+    p_qa.add_argument("--bank", default="data/voice", help="voice-bank root, for each voice's recorded gender and age")
+    p_qa.add_argument("--bank-kind", default="vctk", choices=["vctk", "cremad", "ears"])
+    p_qa.add_argument("--json", action="store_true", help="print the report as JSON instead of the summary")
+
     p_render = sub.add_parser(
         "render",
         help="Phase 9: render panel images, build the motion-clip library, "
@@ -744,6 +757,7 @@ def build_parser() -> argparse.ArgumentParser:
 #: `(command, attribute) -> asset kind` for outputs that belong to one novel.
 _PER_NOVEL_OUTPUTS = {
     ("voice", "out"): "audio",
+    ("audio-qa", "audio_dir"): "audio",
     ("render", "panel_dir"): "panels",
     ("render", "motion_dir"): "motion",
     ("render", "voice_dir"): "audio",

@@ -14,6 +14,8 @@ from __future__ import annotations
 
 import json
 import wave
+
+import pytest
 from pathlib import Path
 
 from echotales.core.enums import (
@@ -344,3 +346,36 @@ def test_an_unknown_configured_narrator_is_reported_not_silently_replaced(capsys
     fallback = _narrator_voice(_bank(), "p999")
     assert fallback == _narrator_voice(_bank(), "")  # the deterministic default
     assert "p999" in capsys.readouterr().out
+
+
+class _SineEngine:
+    """Real (non-silent) audio at a scripted level and length, so loudness and pace handling see something."""
+
+    name = "sine"
+    sample_rate = 16000
+
+    def __init__(self, seconds: float, amp: float) -> None:
+        self.seconds, self.amp, self.calls = seconds, amp, 0
+
+    def synthesize(self, request):  # type: ignore[no-untyped-def]
+        import numpy as np
+        import soundfile as sf
+
+        self.calls += 1
+        request.out_path.parent.mkdir(parents=True, exist_ok=True)
+        t = np.arange(int(self.sample_rate * self.seconds)) / self.sample_rate
+        sf.write(str(request.out_path), (self.amp * np.sin(2 * np.pi * 200 * t)).astype("float32"), self.sample_rate, subtype="PCM_16")
+        return request.out_path
+
+
+def test_every_line_lands_on_one_loudness_and_a_wrong_length_take_is_retried(tmp_path: Path) -> None:
+    import soundfile as sf
+    from echotales.pipeline.voice import qa
+
+    out, eng = tmp_path / "audio", _SineEngine(seconds=9.0, amp=0.03)  # 9 s for a short line: runaway at every take
+    report = render_novel("t", _store(tmp_path), _bank(), out_dir=out, engine=eng)
+
+    assert report.retried_takes == 2 * report.lines and report.retry_gave_up == report.lines
+    for line in _manifest(out):
+        x, sr = sf.read(line["audio_path"], dtype="float32")
+        assert qa.lufs(x, sr) == pytest.approx(-20.0, abs=1.0)

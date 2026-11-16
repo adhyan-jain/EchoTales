@@ -1811,7 +1811,63 @@ def cmd_audit(args: argparse.Namespace) -> int:
     return 1 if any(r.status is flow.Status.FAIL for r in results) else 0
 
 
+def cmd_audio_qa(args: argparse.Namespace) -> int:
+    """Measure voiced chapters from the manifest and WAVs (exit 1 when coverage fails)."""
+    import json as _json
+
+    from echotales.pipeline.persona.build import load_trait_profiles
+    from echotales.pipeline.voice import qa
+    from echotales.pipeline.voice.bank import load_cremad, load_ears, load_vctk
+    from echotales.pipeline.voice.runner import _AUDIBLE
+
+    audio_dir = Path(args.audio_dir)
+    manifest = audio_dir / "manifest.jsonl"
+    if not manifest.exists():
+        print(f"error: no manifest.jsonl in {audio_dir}; run `echotales voice` first", file=sys.stderr)
+        return 2
+    rows = [_json.loads(x) for x in manifest.read_text(encoding="utf-8").splitlines() if x.strip()]
+    chapters = sorted({r["chapter"] for r in rows if r.get("audio_path")})
+    if selected := _chapter_range(args.chapters):
+        chapters = [c for c in chapters if c in selected]
+
+    bank_meta: dict = {}
+    try:
+        root = Path(args.bank)
+        sub = {"ears": root / "ears", "cremad": root / "cremad" / "extract"}.get(args.bank_kind)
+        root = sub if sub is not None and sub.is_dir() else root
+        bank = {"cremad": load_cremad, "ears": load_ears}.get(args.bank_kind, load_vctk)(root)
+        bank_meta = {v.speaker_id: {"gender": v.gender, "age": v.age} for v in bank.voices}
+    except FileNotFoundError:
+        print("note: voice bank not found, so recorded gender and age are not checked", file=sys.stderr)
+
+    transcribe = None if args.asr == "none" else qa.whisper_transcriber(args.asr)
+    store = _open_store(args)
+    reports, failed = [], False
+    try:
+        graph_gender = {k: p.gender for k, p in load_trait_profiles(args.novel, store).items()}
+        for chapter in chapters:
+            expected = [s.id for s in store.get_spans(args.novel, chapter) if s.span_type in _AUDIBLE and re.search(r"\w", s.text)]
+            rep = qa.audit_chapter(
+                audio_dir, chapter, expected_span_ids=expected or None, transcribe=transcribe,
+                bank_meta=bank_meta, graph_gender=graph_gender,
+            )
+            reports.append(rep)
+            failed |= rep.checks["coverage"]["count"] > 0
+            if not args.json:
+                print(rep.summary())
+    finally:
+        store.close()
+    out = Path(args.report) if args.report else audio_dir / "qa.json"
+    out.write_text(_json.dumps([r.to_json() for r in reports], indent=1, ensure_ascii=False), encoding="utf-8")
+    if args.json:
+        print(out.read_text(encoding="utf-8"))
+    else:
+        print(f"report: {out}")
+    return 1 if failed else 0
+
+
 _DISPATCH = {
+    "audio-qa": cmd_audio_qa,
     "audit": cmd_audit,
     "faithfulness": cmd_faithfulness,
     "graph": cmd_graph,
