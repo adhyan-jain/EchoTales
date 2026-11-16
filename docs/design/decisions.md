@@ -483,6 +483,26 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Decision**: a clip is accepted only if it passes start-frame SSIM, end-frame SSIM (interpolation), stillness and spike-ratio checks at native resolution; anything else falls back to a held still. These scores measure frame fidelity and stability and are never to be called identity.
 - **Known hole**: it passed a clip showing content absent from the panel (EVOLUTION 4.153). A perceptual content-drift check is being added; its threshold must come from measured clips.
 
+### D53. Panel rework per the owner's 2026-11-15 spec (2026-11-15)
+- **Decision (owner's spec, adopted)**: a prompt compiler built from `state_of` plus the scene; identity from reference images, one reference set per character per time interval; whole-prompt chunked embeddings; regional conditioning and a layout control for panels with two or more characters; four candidates per panel checked by a local vision model, with up to two regenerations; monochrome manga as the default mode; the image model as a config option; a 6 GB VRAM budget.
+- **Reverses**: the earlier removal of IP-Adapter and the single fixed colour style.
+- **Status**: stage A is done (EVOLUTION 4.160). Stages B and C are not built.
+
+### D54. A disguised look is stored under its own key (2026-11-16)
+- **Decision**: a disguise sentence is stored under `disguise:<attribute>` for its chapter and is never written as the innate look (EVOLUTION 4.159).
+- **Why this key**: `appearance_of` and `standing_values` ignore an interval's end, so a closed interval under the innate key would still leak.
+- **Rejected**: a separate disguise identity, because it needs new identity extraction and a core model change.
+
+### D55. The reader observer accepts both spellings in core (2026-11-16)
+- **Decision**: core's reader scope accepts "READER" and "reader" (EVOLUTION 4.158), rather than rewriting stored rows or the writers.
+- **Why**: no database rebuild is needed, and the owner's uncommitted speaker pass is left untouched.
+
+### D56. Proposed, not adopted: other local and cloud image models (2026-11-16)
+- **Proposed, local**: Z-Image Turbo as the local scene model, with NoobAI as fallback (EVOLUTION 4.161). Pending a ten-panel comparison on the same briefs, and an answer on reference-image identity for that model.
+- **Proposed, cloud tier**: keyframes from a multi-reference image-editing model on RunPod. Candidates: Qwen-Image-Edit-2511 (Apache 2.0) and FLUX.2 dev (non-commercial). Neither has been tested. Character LoRAs as an optional upgrade.
+- **Open, owner's decision**: whether paid closed-model APIs may be used.
+- **Status**: not adopted; nothing built.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs

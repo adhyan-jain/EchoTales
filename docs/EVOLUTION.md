@@ -9475,3 +9475,78 @@ Commit 57ae193.
 - **Tests.** Suite 1,976 passed, 25 skipped.
 - **In progress at the time of writing, NOT in this commit.** A prompt builder that describes the panel and anchors style and camera; a CLIP-based content-drift check calibrated on the 15 real clips; forward-then-reverse looping of subtle clips to fill long shots; a re-run.
 - **Not done.** Dissolves play as cuts; no Studio job; nobody has watched the video end to end.
+
+### 4.154 Video follow-up: describe the panel, check the drift, loop the subtle clips *(2026-11-15)*
+
+Commit f2398a2.
+
+- **Cause.** The clip gate had passed a bad clip (4.153: a silhouette panel turned into a photographic woman's face). The video prompt carried no panel description, style or static-camera anchor.
+- **Fix.** `build_video_prompt` describes the panel and anchors style and camera. A CLIP drift check rejects clips whose content leaves the panel (`MIN_DRIFT_SIM = 0.80`). Subtle clips are ping-pong looped to fill long shots; `--no-loop` turns this off.
+- **Still open.** A zoom failure on a looped silhouette shot. The 0.80 threshold has thin margin. The wide-shot rule was not exercised.
+
+### 4.155 Owner's verdict on the first local video *(2026-11-15)*
+
+- **Verdict.** The slight animation is decent. The panels show about 1% of the scene: no mountain cliff, no surrounding righteous-path martial artists. Fang Yuan is drawn sad and plain-faced instead of a cold demon. The look is Japanese where a Chinese art look was wanted. One panel was an unrelated woman. Backgrounds are the biggest problem.
+- **Root cause, in the RI ch1 v54 prompts.** They said "solo", carried no setting (only one crowd cut named the mountain path), and gave the wrong demeanour.
+
+### 4.156 Speaker misses diagnosed (real-model v13) *(2026-11-15)*
+
+- **Scope.** 57 misses over Lord of the Mysteries, Reverend Insanity and Omniscient Reader's Viewpoint.
+- **Breakdown.** 14 exchange or narrator confusion; 13 crowd lines given a name; 7 unresolved; 6 unnamed speaker given a name; 5 addressee taken as speaker; 4 long-range; 3 scorer artefacts; 2 reference errors; 3 undetermined.
+- **Causes.** A chapter-wide cast list, no previous-speaker memory, 2,600-character windows without overlap, a flat 0.8 confidence, and the reader can overwrite a correct explicit tag.
+- **Status.** Fixes not started. They need `reader/speakers_pass.py`, which has uncommitted owner changes.
+
+### 4.157 Real-model run on committed code, chapters 1 to 21 *(2026-11-15 and 2026-11-16)*
+
+Model gemma2:9b. Scratch databases under `data/scratch/lead_check/`.
+
+- **Speakers.** Lord of the Mysteries 164/173 (94.8%); Omniscient Reader's Viewpoint 119/145 (82.1%); Reverend Insanity 58/84 (69.0%). Overall 341/402 (84.8%), against 345/402 for v13.
+- **Appearance.** LotM 10/17; ORV 2/3; RI 4/11.
+- **Build times.** 86, 121 and 74 minutes.
+- **Identity merge problem.** Several RI chapter 1 misses are the clan head's lines attributed to separate title or epithet entities ("head_of_gu", "clan-head", "The clan head") instead of one character.
+- **Audit.** RI failed two checks: `mentions.no_overlap` (2 overlapping mentions) and `resolve.no_orphans` (7 entities with no mention or alias binding, e.g. "Flower Wine Monk"). ORV and LotM had no audit failures.
+- **Reference caveat.** The references are model-drafted silver, not gold.
+
+### 4.158 Reader facts were invisible to `state_of` (commit a7b6ef4) *(2026-11-16)*
+
+- **Cause.** The reader passes (`reader/facts_pass.py`, `reader/speakers_pass.py`, `bible/validator.py`) stamp facts with observer "reader" in lower case, while core's `OBSERVER_READER` is "READER". `observer_scope` matched exactly, so `state_of(observer=READER)` returned none of them. Only `appearance_of` and `standing_values`, which skip the observer filter, saw them.
+- **Fix.** In `core/state.py` the reader scope covers both spellings, and the character-observer door accepts either. Existing databases need no rebuild. The writers still stamp lower case.
+
+### 4.159 Disguise scope for appearance facts (commit d5a1020) *(2026-11-16)*
+
+- **Cause.** `fact_scope` knew baseline, change and state. A disguise's "brown hair and blue eyes" was written as the innate look and back-dated to the character's first appearance.
+- **Fix.** A sentence with a disguise cue (disguise words, wig, false beard, contact lenses, face-changing, illusion, "transformed into", and others) is stored under the key `disguise:<attribute>` with a closed one-chapter interval, and is never retracted. Negation and "removed the wig / true appearance" are handled. The cue may sit in the stating sentence or the one before it. A mask is not a disguise for hair or eye colour. A disguise cue beats a change cue.
+- **Why its own key.** `appearance_of` and `standing_values` ignore an interval's end, so a closed interval under the innate key would still leak.
+- **Counters.** `scope_baseline`, `scope_change`, `scope_state`, `scope_disguise` and `scope_doubt` are in the reader report.
+- **Read-only check on stored quotes.** LotM 60 quoted facts and RI 239 (23 baseline). None reclassified as disguise: no false positive on stored data and no real positive either. The LotM disguise passages are untested.
+- **Limits.** Panels never draw a disguise; they show the innate look. A disguise lasting several chapters must be restated each chapter. Knowing from the story, rather than the sentence, that someone is disguised needs a language-model step.
+- **Tests.** 24 new tests; suite 2,022 at that commit.
+
+### 4.160 Panel rework, stage A: the prompt compiler and chunked encoding (commit 6575e81) *(2026-11-16)*
+
+- **What changed.** `render/compiler.py` compiles a panel brief plus graph data into the target model's prompt format. Section order: quality, count, character, expression, action, crowd, setting, composition, lighting, objects, mood, style. It never truncates. "solo" is used only for exactly one person and no crowd. Demeanour comes from the stated expression, then Big Five, then mood, so Fang Yuan comes out "cold eyes, contemptuous, calm expression".
+- **Encoding.** `workers_local.py` encodes whole prompts in chunks through compel and logs tokens, chunk count, and which section falls in which chunk.
+- **Settings.** `render.panel_mode` defaults to manga (monochrome). `render.image_model` selects `noobai-xl-1.1` or `anima`. The Anima worker has never been run and its weights are not downloaded. `render.prompt_compiler` is off by default; legacy output is unchanged when it is off.
+- **Measured on the GPU.** Ten RI ch1 briefs, same seeds. Old prompts: 68-72 tokens in 1 chunk. Compiled colour: 107-161 tokens in 2-3 chunks. Compiled manga: 132-186 tokens in 2-3 chunks. All three: 21.5 s per image and 5.41 GiB denoise peak; 1.6 GiB encode peak. Chunked encoding cost nothing measurable in time or memory.
+- **Looking at the sheets.** The old prompts give a lone figure on a blank ink background in every panel. Compiled manga shows crowd and mountains in most panels.
+- **Remaining flaws.** One panel split into a multi-panel strip; one lost the hero; a Japanese torii gate; murky greys; short hair.
+- **Known gap.** With the switch on, `render_panels` still uses the legacy engine, which clips at 77 tokens. Only `LocalNoobAIWorker` encodes the whole prompt.
+- **Tests.** Suite 2,039.
+
+### 4.161 Z-Image Turbo probe (scratch only) *(2026-11-16)*
+
+Output under `data/scratch/image_probe/`.
+
+- **Setup.** Z-Image Turbo (6.15B parameters, Apache-2.0, 8 steps) with a Q4_K_M GGUF transformer and a Qwen3-4B Q4_K_M GGUF text encoder, on the 8 GB laptop.
+- **Measured.** 32-34 s per 832x1216 image. Peak 5.77 GiB. Lowest available RAM 2.5 GB.
+- **Output.** All four images of the RI cliff scene show the cliff and a crowd of 12-20 with the hero. The monochrome one reads as a manga page.
+- **Failures.** In two images the crowd stands beside the hero instead of ringing him. The hero's face and style differ between panels. The close-up reads as Japanese anime.
+- **Evidence.** One seed per prompt, so thin evidence.
+
+### 4.162 How hosted products get their quality (owner question) *(2026-11-16)*
+
+From vendor pages, not independently tested.
+
+- **What OpenArt does.** It fronts closed frontier models: Nano Banana Pro, Seedream and GPT Image for images; Veo 3.1, Kling 3.0/Omni and Seedance for video.
+- **Workflow.** Lock a character from an approved reference sheet; generate reference-conditioned keyframes; then reference-to-video or first/last-frame video; with approval gates between steps.
+- **Left to the user.** The story bible. This project's graph produces that bible.
