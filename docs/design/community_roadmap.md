@@ -38,9 +38,8 @@ What that means concretely:
 Work in flight when this was written (finish or discard these first):
 
 - Worktree `.claude/worktrees/audio-qa` (branch `audio-qa`): voice quality check and fixes, uncommitted.
-- `data/scratch/panel_rework/benchmark.py` and `bench_<timestamp>/`: 24 scenes in 12 categories drawn by both
-  image models; the category sheets still need scoring against `benchmark_scenarios.md`, and decision D58
-  (which model draws what) rewritten from that table.
+- The image benchmark is finished and scored (EVOLUTION 4.165); its sheets are in
+  `data/scratch/panel_rework/bench_20261116_162505/`.
 - The local planning file `~/.claude/plans/distributed-imagining-dove.md` holds finer-grained checkpoints.
 
 ## 3. Rules that keep this from going wrong again
@@ -89,7 +88,10 @@ The project has no showable output yet. Nothing below starts until this exists.
   text); no child or teenager nouns; no creature or non-human entity; crowd wording assumes a lead is present;
   scenery-only panels still get people and wardrobe tags on the NoobAI profile; a "same face as" link between
   two characters (twins) does not exist. Each is a small, testable change.
-- **Model roles** settled from the benchmark, then routing by panel type if the table supports it.
+- **Model roles are settled** (decision D58, EVOLUTION 4.165): Z-Image Turbo draws every panel; no routing.
+  Fix the six compiler defects the benchmark exposed, listed at the end of EVOLUTION 4.165 (a gate in every
+  xianxia picture, people added to scenery, indoor drawn outdoors, the warm smile, bright pages for dark
+  scenes, weak creature anatomy).
 - **Audio:** the quality check passes on one multi-speaker chapter; a speaker verification pass as a new
   module after `reader/speakers_pass.py` raises the two weak books; the owner listens once.
 - **Done when:** one public-domain chapter (Pride and Prejudice 1 to 3, or a Sherlock Holmes story) runs from

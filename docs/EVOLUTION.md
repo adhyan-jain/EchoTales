@@ -9574,3 +9574,38 @@ From vendor pages, not independently tested.
 - **Speed.** Director 136 s in total (about 27 s per scene). Images 86 s each: 32 s of denoising plus 54 s reloading the encoder and transformer, because the route calls the worker once per panel and the worker frees its models each call. Batching per chapter is not built.
 - **Reading.** The ten-panel comparisons used hand-written briefs and so measured the image model alone. On the real path the image model is no longer the limit; the director's output and its conversion into a brief are.
 - **Suite.** 2,051 passed.
+
+### 4.165 Image model benchmark: 24 scenes in 12 categories, both models *(2026-11-16)*
+
+The owner pointed out that one or two panels cannot decide which model does what. This is the larger test.
+
+- **Setup.** `data/scratch/panel_rework/benchmark_scenarios.md` (12 categories, 2 briefs each, four genres) rendered by NoobAI XL 1.1 and Z-Image Turbo through the committed compiler and workers: manga mode on two seeds, colour on one, 832x1216. A third variant on the action, supernatural, creature and ritual categories: the Z-Image picture passed through NoobAI image-to-image at strength 0.45. 160 images, none failed. Script `data/scratch/panel_rework/benchmark.py`, output `bench_20261116_162505/` (24 category sheets, `results.json`, `summary.txt`).
+- **Cost.** NoobAI 21.7 s per image, peak 5.42 GiB. Z-Image 32.3 s, 5.78 GiB. The image-to-image pass 11.5 s, 5.42 GiB, plus a model swap.
+- **Scoring.** By the planner, by eye, from the category sheets (cells about 400 px wide), against the eight questions in the scenario file. No numeric means are claimed; the verdict per category is below.
+
+| Category | NoobAI | Z-Image Turbo | Better |
+|---|---|---|---|
+| A solo close-up | Split panels in 2 of 4; short hair; child-like face in one | Right person, props and pose; the cold lead still smiles warmly | Z-Image |
+| B two named characters | Wrong ages, merged poses, a child in place of a woman | Both present and distinct; twins told apart by robe; the indoor scene drawn outdoors | Z-Image |
+| C three named characters | Extra people, children, duplicated faces | All three present and clearly different in age, hair and dress, both seeds | Z-Image |
+| D lead against a crowd | A crowd, but no ring and no cliff in 3 of 4 | A counted ring around the lead on a cliff; kneeling rows before the elder | Z-Image |
+| E landscape | Dense and atmospheric; wrong details (snow, posts) | Terraces, stilt houses, waterfall, fog street as described; adds people to the xianxia one | Z-Image |
+| F prop-heavy interior | Near-abstract clutter, unreadable | Every listed prop findable; adds a person nobody asked for | Z-Image |
+| G physical action | Unreadable in all 4 | Duel and shove through the crowd both legible; the bridge sits at water level, not high | Z-Image |
+| H supernatural attack | Strong energy and mood in single images, but who does what is unclear; split panels | Crescent blade from the palm and the spiral of swords are exactly readable; calmer | Z-Image for reading, NoobAI for mood |
+| I creature | The centipede is menacing and anatomically right; the imp scene is chaos | The imp scene is right; the centipede comes out as a tidy eight-legged beetle | Split: NoobAI for the monster alone |
+| J ritual and horror | Dark and striking but not the scene | Table in fog with two shadow figures; smoke forming a horned shape above the kneeling man | Z-Image |
+| K everyday moment | Split into panel strips in 2 of 4 | Both couples and the market right | Z-Image |
+| L lighting and scale | Wrong subject in 2 of 4 | Tiny figure before the gate; man under the lamp with a long shadow | Z-Image |
+
+- **Colour.** On the supernatural sheet Z-Image's colour output (blue crescent, gold sword storm over ink-wash cliffs) is the strongest picture of the whole run. NoobAI's colour versions are painterly but again lose the scene.
+- **The image-to-image variant.** At 0.45 it barely changes a manga picture. In colour it adds a slightly more painterly finish and a little glow. Not worth a second pass and a model swap as a default.
+- **Reading.** The owner's hunch has something to it: NoobAI produces more menace and energy in individual supernatural and creature pictures. It does not keep a scene readable, and it lost every category on the scoring questions except the lone monster. Z-Image is the scene model for everything, including powers.
+- **Defects this exposed in the Z-Image path** (all in the compiler, not the model):
+  1. A paifang gate appears in nearly every xianxia picture, including a night forest, a cave and a room, because the culture sentence names architecture. Architecture must come only from the scene's setting; the culture sentence should describe dress and hair.
+  2. Scenery-only briefs still get a person drawn in.
+  3. A stated indoor setting was drawn outdoors (the twins in the bamboo house).
+  4. The cold lead smiles warmly in the manga close-up and wears white instead of his dark robe when the brief does not come from the graph.
+  5. Manga mode drifts to bright, clean pages; night and horror scenes need the heavy blacks NoobAI shows.
+  6. Creature anatomy is weak (the centipede).
+- **Compiler limits found while writing the briefs** are listed in `docs/design/community_roadmap.md` under M0.
