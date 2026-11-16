@@ -517,6 +517,14 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Relation to earlier rules**: the earlier "no multi-model per image" rule was about mixing models inside one picture on the SDXL stack; the image-to-image variant here reopens it for effect panels only, and only if the test shows it wins.
 - **Status**: provisional. The owner pointed out the same day that one or two panels are too little evidence to assign roles. The roles above are a hypothesis until a benchmark of 24 briefs in 12 scenario categories (close-up, two and three named characters, lead against a crowd, landscape, prop-heavy interior, physical action, supernatural attack, creature, ritual and horror, everyday moment, dramatic lighting) across four genres has been rendered by both models on the same seeds and scored per category. The decision is rewritten from that table; nothing is built or measured yet.
 
+### D59. Direction from 2026-11-16: a free community tool for adapting stories, built one finished mode at a time
+- **Owner's goal**: a free tool fans can run themselves to visualise novels that never got a manga or anime, and manhwa that never got an anime; the best product and repository in this field.
+- **Decided**: the plan of record is `docs/design/community_roadmap.md`. Four modes on one story graph (novel to audiobook, novel to manga, novel to anime, manga or manhwa to anime), in this order: M0 one good chapter end to end (director v2 first); M1 real manga pages with lettering done by code; M2 manga and manhwa as input, animated; M3 novel to anime; M4 adaptation packs and a spoiler-safe companion; M5 one-command install, engine plug-ins, a public benchmark.
+- **Why this order**: three months produced a strong graph and no showable output, because breadth outran looking at real results (EVOLUTION 4.164). Each milestone ends with a real run someone watches. Manhwa to anime comes before novel to anime because the art already exists, so it avoids the hardest step.
+- **Planner's reservation, recorded at the owner's request for an unbiased view**: five modes is a large scope for one person, and local output will not match products built on the largest closed models. The order is chosen so that stopping after any milestone leaves something finished.
+- **Constraint kept**: bring your own book; the project never ships text, pages or media made from works it has no right to. Adaptation packs carry no book text.
+- **Status**: plan written; M0 in progress.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs
