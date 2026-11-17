@@ -80,6 +80,9 @@ class DeliverySettings:
     #: positionally, and inserting a field mid-list silently shifted
     #: `pitch_semitones` into `rationale`.
     emotion: str = "neutral"
+    #: Speech tempo ratio (1.0 = baseline, >1.0 faster e.g. action/exclamation, <1.0 slower e.g. formal/solemn)
+    tempo_ratio: float = 1.0
+
 
 
 #: Polarity -> (exaggeration, cfg_weight). `cfg_weight` moves opposite to
@@ -137,16 +140,24 @@ def settings_for(
     # Independent of exaggeration/cfg_weight, so it applies under every
     # branch below, including the polarity override.
     pitch = -2.0 if (profile is not None and profile.register == "formal") else 0.0
+    base_tempo = 0.90 if (profile is not None and profile.register == "formal") else 1.0
 
     if polarity is not None and polarity in _BY_POLARITY:
         exaggeration, cfg = _BY_POLARITY[polarity]
+        tempo = 1.12 if polarity is DeliveryPolarity.HEIGHTENED else 0.90 if polarity in (DeliveryPolarity.COLD, DeliveryPolarity.HUSHED) else 1.0
+        tempo = round(tempo * base_tempo, 3)
+        if polarity is DeliveryPolarity.HEIGHTENED:
+            pitch += 1.5
         return DeliverySettings(
             exaggeration,
             cfg,
             pitch,
             f"delivery marker: {polarity.value}",
             EMOTION_FOR_POLARITY.get(polarity, "neutral"),
+            tempo,
         )
+
+
 
     exaggeration, cfg = NEUTRAL_EXAGGERATION, NEUTRAL_CFG
     reasons: list[str] = []
@@ -164,19 +175,26 @@ def settings_for(
         SpanType.NARRATION_EXPOSITION,
     ):
         exaggeration, cfg = 0.46, 0.52
+        tempo = 1.05 if span_type is SpanType.NARRATION_ACTION else 1.0
         reasons.append("narration: read, calmer than performed")
         mood = "neutral"
         if emotion and emotion not in _STYLES and emotion != "neutral" and intensity in _NARRATION_MOOD:
             exaggeration, cfg = _NARRATION_MOOD[intensity]
             mood = emotion
             reasons.append(f"passage mood: {emotion} {intensity}")
+            if emotion in ("anger", "fear", "distress"):
+                tempo = 1.08
+            elif emotion in ("sadness", "disappointment"):
+                tempo = 0.92
         if profile is not None and profile.register == "formal":
             cfg = _clamp(cfg - 0.08)
+            tempo = round(tempo * 0.92, 3)
             reasons.append("formal register: measured pace, pitched down 2 semitones")
         return DeliverySettings(
-            _clamp(exaggeration), _clamp(cfg), pitch, "; ".join(reasons), mood
+            _clamp(exaggeration), _clamp(cfg), pitch, "; ".join(reasons), mood, tempo
         )
 
+    tempo = 1.0
     performed = "neutral"
     if emotion and emotion != "neutral":
         level = max(1, min(3, intensity))
@@ -184,28 +202,40 @@ def settings_for(
         exaggeration, cfg = table[level]
         performed = emotion
         reasons.append(f"read as {emotion} {level}")
+        if emotion == "anger":
+            tempo = 1.10
+            pitch += 1.0
+        elif emotion in ("sadness", "sad"):
+            tempo = 0.90
+            pitch -= 1.0
         if span_type is SpanType.INNER_MONOLOGUE:
             # A thought is closer and quieter than speech, whatever it feels.
             exaggeration, cfg = min(exaggeration, 0.6), max(cfg, 0.5)
+            tempo = min(tempo, 0.92)
             reasons.append("inner monologue: closer")
         if profile is not None:
             exaggeration = _clamp(exaggeration + (profile.extraversion - 0.5) * 0.2)
             if profile.register == "formal":
                 cfg = _clamp(cfg - 0.08)
+                tempo = round(tempo * 0.90, 3)
                 reasons.append("formal register: measured pace, pitched down 2 semitones")
-        return DeliverySettings(_clamp(exaggeration), _clamp(cfg), pitch, "; ".join(reasons), performed)
+        return DeliverySettings(_clamp(exaggeration), _clamp(cfg), pitch, "; ".join(reasons), performed, tempo)
 
     if span_type is SpanType.INNER_MONOLOGUE:
         exaggeration, cfg = 0.45, 0.60
+        tempo = 0.92
         reasons.append("inner monologue: closer, slower")
 
     stripped = text.strip()
     if stripped.endswith("!") or stripped.endswith("!”") or stripped.endswith('!"'):
         exaggeration, cfg = 0.75, 0.40
-        reasons.append("exclamation")
+        tempo = 1.12
+        pitch += 1.5
+        reasons.append("exclamation: heightened intensity and pace")
     elif stripped.endswith("?") or stripped.endswith("?”") or stripped.endswith('?"'):
         exaggeration = max(exaggeration, 0.55)
-        reasons.append("question")
+        pitch += 0.8
+        reasons.append("question: slight upward pitch")
 
     # Baseline: bounded to ±0.10 on purpose. A character's disposition
     # colours every line they speak, so a large offset would make their
@@ -225,11 +255,13 @@ def settings_for(
         # differently from a young disciple's line in the same bucket.
         if profile.register == "formal":
             cfg = _clamp(cfg - 0.08)
+            tempo = round(tempo * 0.90, 3)
             reasons.append("formal register: measured pace, pitched down 2 semitones")
 
     return DeliverySettings(
-        _clamp(exaggeration), _clamp(cfg), pitch, "; ".join(reasons) or "neutral"
+        _clamp(exaggeration), _clamp(cfg), pitch, "; ".join(reasons) or "neutral", performed, tempo
     )
+
 
 
 def _clamp(value: float, low: float = 0.05, high: float = 1.0) -> float:

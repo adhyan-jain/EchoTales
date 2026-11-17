@@ -48,7 +48,7 @@ from echotales.pipeline.voice.delivery import pace_text, settings_for
 from echotales.pipeline.voice.engine import SynthesisRequest, TTSEngine, get_engine
 from echotales.pipeline.voice import levels
 from echotales.pipeline.voice.export import gaps_for
-from echotales.pipeline.voice.pitch import ffmpeg_available, shift_pitch
+from echotales.pipeline.voice.pitch import ffmpeg_available, modulate_prosody, shift_pitch
 
 #: Span types that reach audio. `NARRATION_EXPOSITION` is included (it is
 #: read aloud even though panels skip it -- `SpanType.is_renderable_visually`
@@ -554,14 +554,15 @@ def render_novel(
                     )
                     report.retried_takes += take.retries
                     report.retry_gave_up += take.gave_up
-                    if settings.pitch_semitones:
-                        shift_pitch(path, settings.pitch_semitones)
+                    if settings.pitch_semitones or abs(settings.tempo_ratio - 1.0) >= 0.01:
+                        modulate_prosody(path, settings.pitch_semitones, settings.tempo_ratio)
                         if not ffmpeg_available() and not report.pitch_shift_unavailable_warned:
                             print(
-                                "note: ffmpeg not found -- register-based pitch shifting "
+                                "note: ffmpeg not found -- register-based pitch/prosody modulation "
                                 "(voice/pitch.py) is a no-op this run"
                             )
                             report.pitch_shift_unavailable_warned = True
+
                     # After the pitch shift, which changes the level. One target for every line: the first measurement
                     # had per-voice means 18 LU apart (voice/levels.py).
                     levels.normalise_file(path)

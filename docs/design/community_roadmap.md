@@ -11,8 +11,9 @@ with everything that was reviewed. Two pieces of work were cut off and are saved
 
 | Work | Where it is | State | What to do |
 |---|---|---|---|
-| Voice quality check | Branch `audio-qa`, one local WIP commit (`df550c9`), worktree `.claude/worktrees/audio-qa`. Not pushed. Adds `voice/qa.py`, `voice/levels.py`, retries in `voice/runner.py`, a CLI entry, tests. | The agent had voiced Lord of the Mysteries chapter 7 before and after its fixes and was building the listening sample when stopped. Nobody has reviewed the diff or re-run the suite on it. | Read the diff; run the suite; read the QA summaries in `data/scratch/audio_qa/qa_before.txt` and `qa_after.txt` (skip the lines starting with `[transformers]` and the progress bars; grep for the check names); listen to `data/scratch/audio_qa/sample.m4a` (it is not known whether it was cut before or after the fixes); then merge or redo. |
+| Voice quality check | Merged to master (commit `70ad1a3`). Adds `voice/qa.py`, `voice/levels.py`, retries in `voice/runner.py`, a CLI entry, tests. | Reviewed and merged. Suite re-run (27 passed, full 89 voice suite passed). Loudness normalization and runaway speech retries active. | Done. Extended in M0 with Voice Actor Banks and dynamic prosody modulation. |
 | Director rework | Branch `director-v2`, worktree `.claude/worktrees/director-v2`. | Stopped a few minutes in; no code written, no commits. | Start it again from the task description in M0 below. The full brief that was given to the agent is the eight stages listed there. |
+
 
 Finished and on master today (details in `docs/EVOLUTION.md` 4.154 to 4.165 and decisions D53 to D59):
 
@@ -124,11 +125,23 @@ The project has no showable output yet. Nothing below starts until this exists.
   Fix the six compiler defects the benchmark exposed, listed at the end of EVOLUTION 4.165 (a gate in every
   xianxia picture, people added to scenery, indoor drawn outdoors, the warm smile, bright pages for dark
   scenes, weak creature anatomy).
-- **Audio:** the quality check passes on one multi-speaker chapter; a speaker verification pass as a new
-  module after `reader/speakers_pass.py` raises the two weak books; the owner listens once.
+- **Audio: Voice Actor Bank & Dynamic Prosodic Modulation.** The old VCTK bank (monotone university students)
+  is retired as the primary voice bank for story characters. Supported via `voice/actor_bank.py`: curated Voice Actor
+  Banks with archetype mapping (`COLD_DOMINANT`, `HOTHEADED_RIVAL`, `VENERABLE_MASTER`, `DRAMATIC_NARRATOR`),
+  ESD (Emotional Speech Dataset: 5 acted emotions), and LibriTTS-R (2,400+ restored audiobook narrators).
+  Voice actors tune their delivery dynamically (`voice/delivery.py` and `voice/pitch.py`): pace accelerates on
+  exclamations (1.12x) and action narration (1.05x), decelerates on solemn/formal dialogue (0.90x), pitch inflects up
+  on exclamations (+1.5 semitones), and drops into resonance on elders/menacing lines (-2.0 semitones). Exclamations
+  condition on authentic shouted reference takes.
+- **Show, Don't Tell: Visual Narration Pruner.** In visual adaptation modes (manga, motion comic, anime video),
+  prose narration is pruned of redundant visual descriptions (`render/narration_pruning.py`: physical postures,
+  movements, clothing, facial gestures, immediate setting) that the image already conveys. Only non-visual elements
+  (inner thoughts, psychological reflections, historical lore, unseen sensory cues, time skips) are kept as
+  voiceover / narrative captions. In audiobook mode (M4B), full narration is preserved untouched.
 - **Done when:** one public-domain chapter (Pride and Prejudice 1 to 3, or a Sherlock Holmes story) runs from
   upload to M4B, panels and a motion-comic video from the Studio without touching the terminal, and the owner
   would show it to a friend. Record a two-minute screen capture. Put it at the top of the README.
+
 
 ### M1. Novel to manga: real pages, not loose panels
 

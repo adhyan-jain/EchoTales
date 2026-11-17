@@ -30,32 +30,47 @@ def ffmpeg_available() -> bool:
     return _HAS_FFMPEG
 
 
-def shift_pitch(path: Path, semitones: float) -> None:
-    """Shift `path`'s pitch by `semitones` in place, duration preserved.
+def modulate_prosody(path: Path, semitones: float = 0.0, tempo: float = 1.0) -> None:
+    """Shift pitch and adjust tempo in place.
 
-    A no-op when `semitones` is ~0 or ffmpeg isn't on `PATH` -- callers
-    (`voice/runner.py`) are expected to check `ffmpeg_available()` once up
-    front and warn, not fail a whole render over a missing optional tool.
+    A no-op when both semitones ~0 and tempo ~1.0, or when ffmpeg isn't available.
+    Uses ffmpeg rubberband (or atempo fallback).
     """
-    if abs(semitones) < 0.01 or not ffmpeg_available():
+    if (abs(semitones) < 0.01 and abs(tempo - 1.0) < 0.01) or not ffmpeg_available():
         return
     ratio = 2 ** (semitones / 12.0)
-    tmp = path.with_suffix(".pitch_tmp.wav")
+    tmp = path.with_suffix(".prosody_tmp.wav")
+    filter_expr = f"rubberband=pitch={ratio}:tempo={tempo}"
     result = subprocess.run(
         [
             "ffmpeg", "-y", "-loglevel", "error",
             "-i", str(path),
-            "-af", f"rubberband=pitch={ratio}",
+            "-af", filter_expr,
             str(tmp),
         ],
         capture_output=True,
         text=True,
     )
     if result.returncode != 0 or not tmp.exists():
-        # Same "degraded, not fatal" posture as a failed direction call
-        # (render/direction.py): the unshifted line is still a real,
-        # audible line, just not pitched the way delivery.py asked for.
-        if tmp.exists():
-            tmp.unlink()
-        return
+        if abs(tempo - 1.0) >= 0.01:
+            result = subprocess.run(
+                [
+                    "ffmpeg", "-y", "-loglevel", "error",
+                    "-i", str(path),
+                    "-af", f"atempo={tempo}",
+                    str(tmp),
+                ],
+                capture_output=True,
+                text=True,
+            )
+        if result.returncode != 0 or not tmp.exists():
+            if tmp.exists():
+                tmp.unlink()
+            return
     tmp.replace(path)
+
+
+def shift_pitch(path: Path, semitones: float) -> None:
+    """Shift `path`'s pitch by `semitones` in place, duration preserved."""
+    modulate_prosody(path, semitones=semitones, tempo=1.0)
+
