@@ -916,7 +916,7 @@ class DirectionConservationAudit:
 
 
 _COMMON_PLACE_KEYWORDS = re.compile(
-    r"\b(cliff|mountain|peak|hall|room|cave|courtyard|pavilion|forest|lake|river|village|street|terrace|chamber|palace|path|gate|ruins)\b",
+    r"\b(cliff|mountain|peak|hall|room|cave|courtyard|pavilion|forest|lake|river|village|street|terrace|chamber|palace|path|gate|ruins|bridge|altar|shrine)\b",
     re.IGNORECASE,
 )
 _COMMON_PROP_KEYWORDS = re.compile(

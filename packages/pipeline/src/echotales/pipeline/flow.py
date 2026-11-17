@@ -1859,11 +1859,15 @@ def check_director_conservation(store: Store, novel_id: str, source: SourceConte
     from echotales.pipeline.render.direction import check_direction_conservation as _conserve_check
     from echotales.pipeline.render.direction import PanelDirection
 
-    plan_path = paths.asset_dir(novel_id, "panels") / "panel_plan.jsonl"
-    if not plan_path.exists():
+    panel_root = paths.asset_dir(novel_id, "panels")
+    plan_path = panel_root / "panel_plan.jsonl"
+    plan_files = [plan_path] if plan_path.exists() else list(panel_root.glob("**/panel_plan.jsonl"))
+    if not plan_files:
         return _skipped(chk, "no panel_plan.jsonl found on disk")
 
-    plans_raw = [json.loads(line) for line in plan_path.read_text(encoding="utf-8").splitlines() if line]
+    plans_raw = []
+    for pf in plan_files:
+        plans_raw.extend(json.loads(line) for line in pf.read_text(encoding="utf-8").splitlines() if line)
     if not plans_raw:
         return _skipped(chk, "panel_plan.jsonl is empty")
 

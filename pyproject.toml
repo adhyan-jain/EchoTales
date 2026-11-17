@@ -81,6 +81,7 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["packages/core/tests", "packages/pipeline/tests"]
+pythonpath = ["."]
 addopts = "-q --strict-markers"
 markers = [
     "slow: loads ML models or runs over many chapters",
