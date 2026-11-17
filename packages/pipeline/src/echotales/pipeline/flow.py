@@ -52,6 +52,7 @@ class Stage(StrEnum):
     MENTIONS = "mentions"
     SPEAKERS = "speakers"
     RESOLVE = "resolve"
+    DIRECTOR = "director"
 
 
 class Status(StrEnum):
@@ -1842,6 +1843,91 @@ def check_resolve_profile(store: Store, novel_id: str, source: SourceContext | N
                "top_entities": [{"id": e, "label": labels[e], "mentions": counts[e],
                                  "surfaces": sorted(surfaces[e].items(), key=lambda kv: -kv[1])[:5]} for e in top],
                "hints": len(warnings)},
+    )
+
+
+# ---------------------------------------------------------------------------
+# Stage 7: Director checks
+# ---------------------------------------------------------------------------
+
+
+@check(Stage.DIRECTOR, "director.conservation", "every person, place and prop in beat text is captured in panel direction or counted as dropped")
+def check_director_conservation(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
+    chk = _find(Stage.DIRECTOR, "director.conservation")
+    import json
+    from echotales.pipeline import paths
+    from echotales.pipeline.render.direction import check_direction_conservation as _conserve_check
+    from echotales.pipeline.render.direction import PanelDirection
+
+    plan_path = paths.asset_dir(novel_id, "panels") / "panel_plan.jsonl"
+    if not plan_path.exists():
+        return _skipped(chk, "no panel_plan.jsonl found on disk")
+
+    plans_raw = [json.loads(line) for line in plan_path.read_text(encoding="utf-8").splitlines() if line]
+    if not plans_raw:
+        return _skipped(chk, "panel_plan.jsonl is empty")
+
+    shortfalls: list[Shortfall] = []
+    total_in = 0
+    total_out = 0
+    warnings: list[str] = []
+
+    for row in plans_raw:
+        direction_data = row.get("direction")
+        if not direction_data:
+            continue
+        try:
+            direction = PanelDirection(**direction_data)
+        except Exception:
+            continue
+
+        chapter_num = row.get("chapter", 1.0)
+        block_indexes = row.get("block_indexes", [])
+        if not block_indexes and "lead_block" in row:
+            block_indexes = [row["lead_block"]]
+
+        chapter_obj = store.get_chapter(novel_id, chapter_num)
+        if not chapter_obj:
+            continue
+        blocks_by_idx = {b.index: b.text for b in chapter_obj.blocks}
+        beat_text = " ".join(blocks_by_idx.get(idx, "") for idx in block_indexes)
+        if not beat_text:
+            continue
+
+        cast_names = {c.get("label", "") for c in row.get("cast", []) if c.get("label")}
+        audit_res = _conserve_check(beat_text, direction, cast_names)
+
+        items_in = (
+            len(audit_res.captured_people) + len(audit_res.dropped_people) +
+            len(audit_res.captured_places) + len(audit_res.dropped_places) +
+            len(audit_res.captured_props) + len(audit_res.dropped_props)
+        )
+        items_out = (
+            len(audit_res.captured_people) +
+            len(audit_res.captured_places) +
+            len(audit_res.captured_props)
+        )
+        total_in += items_in
+        total_out += items_out
+
+        if audit_res.dropped_people or audit_res.dropped_places or audit_res.dropped_props:
+            dropped_desc = []
+            if audit_res.dropped_people:
+                dropped_desc.append(f"people: {', '.join(audit_res.dropped_people)}")
+            if audit_res.dropped_places:
+                dropped_desc.append(f"places: {', '.join(audit_res.dropped_places)}")
+            if audit_res.dropped_props:
+                dropped_desc.append(f"props: {', '.join(audit_res.dropped_props)}")
+            warnings.append(f"chapter {chapter_num:g} panel {row.get('panel_seq', 0)} dropped {'; '.join(dropped_desc)}")
+
+    return _result(
+        chk,
+        shortfalls,
+        count_in=total_in,
+        count_out=total_out,
+        unit="items",
+        warnings=warnings[:MAX_LISTED],
+        stats={"total_in": total_in, "total_out": total_out, "dropped": total_in - total_out},
     )
 
 

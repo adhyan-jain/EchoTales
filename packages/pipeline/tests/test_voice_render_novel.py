@@ -379,3 +379,19 @@ def test_every_line_lands_on_one_loudness_and_a_wrong_length_take_is_retried(tmp
     for line in _manifest(out):
         x, sr = sf.read(line["audio_path"], dtype="float32")
         assert qa.lufs(x, sr) == pytest.approx(-20.0, abs=1.0)
+
+
+def test_render_novel_with_visual_narration_pruning(tmp_path: Path) -> None:
+    store = _store(tmp_path)
+    out_all = tmp_path / "audio_all"
+    out_pruned = tmp_path / "audio_pruned"
+
+    report_all = render_novel("t", store, _bank(), out_dir=out_all, engine=get_engine("stub"))
+    assert report_all.lines == 4
+
+    report_pruned = render_novel("t", store, _bank(), out_dir=out_pruned, engine=get_engine("stub"), prune_visual_narration=True)
+    # The visual narration line (He walked north along the river) is pruned
+    assert report_pruned.lines == 3
+    spans_voiced = [line["span_id"] for line in _manifest(out_pruned)]
+    assert spans_voiced == ["sp0", "sp2", "sp3"]
+    assert "sp1" not in spans_voiced

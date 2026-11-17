@@ -1765,6 +1765,8 @@ def render_panels(
         # Panel number within the chapter, in play order. Reset per chapter
         # so a filename is meaningful without knowing the whole run.
         _panel_seq = 0
+        pending_batch: list[tuple[PanelImageRequest, list[tuple[str, str]]]] = []
+        pending_copies: list[tuple[Path, Path]] = []
 
         mentions = store.get_mentions(novel_id, chapter_number)
         segments = store.get_segments(novel_id, chapter_number)
@@ -1799,6 +1801,7 @@ def render_panels(
             if setting_first(novel_id)
             else ""
         )
+        _last_panel_direction = None
         for scene in scenes[:max_panels]:
             story_scene_blocks = [
                 b for b in scene.blocks
@@ -2640,6 +2643,10 @@ def render_panels(
                 # this, so the two phases cannot disagree about it.
                 _direction = directed.direction if directed is not None else _cached_direction
                 if _direction is not None:
+                    if _last_panel_direction is not None:
+                        from echotales.pipeline.render.direction import enforce_shot_variety
+                        _direction = enforce_shot_variety([_last_panel_direction, _direction])[1]
+                    _last_panel_direction = _direction
                 # **The negative prompt's style bucket must follow the
                 # director's own shot choice, not the mechanical
                 # slot%4 cycle above.** That cycle picks `style` (and
@@ -2815,6 +2822,7 @@ def render_panels(
                             story_position, _direction, location=scene_locale_text,
                             mode=OutputMode(get_settings().render_panel_mode), is_crowd=is_crowd_cut,
                             gender_hint="male" if "male" in genders else "",
+                            beat_text=beat_prose,
                         ),
                         model_profile(get_settings().render_image_model),
                     )
@@ -2886,7 +2894,11 @@ def render_panels(
                     _provenance = "cached"
                 elif digest in generated_by_digest:
                     image_path.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copyfile(generated_by_digest[digest], image_path)
+                    src_file = generated_by_digest[digest]
+                    if src_file.exists():
+                        shutil.copyfile(src_file, image_path)
+                    else:
+                        pending_copies.append((src_file, image_path))
                     report.deduped_panels += 1
                     _provenance = "deduped"
                     cache_index[render_cache_key] = str(image_path)
@@ -2980,13 +2992,8 @@ def render_panels(
                     # generalise across novels. Appearance is constrained by
                     # prompt text (appearance clause + style anchor) instead.
                     if _prompt_sections is not None and not isinstance(engine, StubImageEngine):
-                        # Compiled prompts are whole; the legacy engines clip at 77 tokens, the workers do not.
-                        from echotales.pipeline.render.compiled_route import generate_compiled
-
-                        generate_compiled(
-                            _panel_request, _prompt_sections, get_settings().render_image_model,
-                            greyscale=get_settings().render_panel_mode == "manga",
-                        )
+                        # Compiled prompts are whole; batch them across the chapter for single model load
+                        pending_batch.append((_panel_request, _prompt_sections))
                     else:
                         engine.generate(_panel_request)
                     _provenance = "generated"
@@ -3097,6 +3104,22 @@ def render_panels(
                         cache_key=image.cache_key,
                     )
                 )
+
+        if pending_batch:
+            from echotales.pipeline.render.compiled_route import generate_compiled_batch
+
+            generate_compiled_batch(
+                [req for req, _ in pending_batch],
+                [secs for _, secs in pending_batch],
+                get_settings().render_image_model,
+                greyscale=get_settings().render_panel_mode == "manga",
+            )
+            pending_batch.clear()
+        for src, dst in pending_copies:
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            if src.exists():
+                shutil.copyfile(src, dst)
+        pending_copies.clear()
 
     out_dir.mkdir(parents=True, exist_ok=True)
     # The root manifest is "the latest run" (what `render_videos` reads). Each

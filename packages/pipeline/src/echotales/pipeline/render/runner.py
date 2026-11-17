@@ -63,13 +63,15 @@ class VideoReport:
     chapters_rendered: int = 0
     chapters_skipped_no_audio: int = 0
     caption_cards: int = 0
+    pruned_visual_lines: int = 0
     engine: str = "stub"
 
     def summary(self) -> str:
+        pruned_msg = f"; {self.pruned_visual_lines} visual narration lines pruned" if self.pruned_visual_lines > 0 else ""
         return (
             f"{self.novel_id}: {self.chapters_rendered} chapter videos ({self.engine}); "
             f"{self.chapters_skipped_no_audio} skipped (no rendered audio); "
-            f"{self.caption_cards:,} caption cards"
+            f"{self.caption_cards:,} caption cards{pruned_msg}"
         )
 
 
@@ -91,6 +93,7 @@ def render_videos(
     chapters: list[float] | None = None,
     clips_per_chapter: int = 2,
     captions: bool = True,
+    prune_visual_narration: bool = False,
 ) -> VideoReport:
     """Composite one mp4 per chapter that has both rendered panels and
     rendered audio.
@@ -129,6 +132,24 @@ def render_videos(
             continue
 
         chapter_spans = store.get_spans(novel_id, chapter_number)
+
+        if prune_visual_narration:
+            from echotales.pipeline.render.narration_pruning import (
+                classify_span_visual_status,
+                NarrationVisualStatus,
+            )
+
+            span_map = {s.id: classify_span_visual_status(s) for s in chapter_spans}
+            kept_audio = []
+            for line in chapter_audio:
+                if line.span_id and span_map.get(line.span_id) is NarrationVisualStatus.CONVEYED_VISUALLY:
+                    report.pruned_visual_lines += 1
+                else:
+                    kept_audio.append(line)
+            chapter_audio = kept_audio
+            if not chapter_audio:
+                report.chapters_skipped_no_audio += 1
+                continue
         # Per-block audio length, so the director's pacing signal (a long
         # block goes stale under Ken Burns) sees real durations rather than
         # falling back to content cues alone.

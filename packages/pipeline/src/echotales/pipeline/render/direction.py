@@ -116,11 +116,35 @@ SYSTEM = (
 )
 
 
+class CharacterDirection(BaseModel):
+    """Direction for an individual character in frame."""
+
+    name: str = Field(description="Character's name matching CAST")
+    position: str = Field(default="center", description="Position in frame: center, left, right, foreground, background")
+    pose: str = Field(default="standing", description="Physical pose: standing, sitting, kneeling, running, fighting stance")
+    expression: str = Field(default="", description="Facial expression tag: calm_expression, sneering, cold_expression")
+    condition: str = Field(default="", description="Physical state/condition: wounded, bloodied, torn robes")
+
+
+class OthersDirection(BaseModel):
+    """Secondary people or crowd present in the shot."""
+
+    kind: str = Field(default="crowd", description="Group category: crowd, righteous sect elders, disciples, guards, onlookers")
+    count: int = Field(default=0, description="Approximate count (e.g. 10) or 0 for uncounted group")
+    relation_to_lead: str = Field(default="surrounding", description="Relation to lead: surrounding, kneeling before, watching from afar")
+
+
 class PanelDirection(BaseModel):
     """One shot, as the director specifies it."""
 
     #: "wide" | "medium" | "close" -- framing, in the storyboard sense.
     shot: str = Field(default="medium")
+    #: Camera angle: "eye-level" | "low-angle" | "high-angle" | "dutch-angle" | "birds-eye"
+    camera_angle: str = Field(default="eye-level")
+    #: Structured per-character direction (Director v2).
+    characters: list[CharacterDirection] = Field(default_factory=list)
+    #: Others / crowd in frame (Director v2).
+    others: OthersDirection | None = Field(default=None)
     #: What is happening, as comma-separated Danbooru-style tags (e.g.
     #: "weapons_drawn, fighting_stance"), not a sentence. Kept as `str`
     #: rather than `list[str]` on purpose: the fabrication guardrail
@@ -147,11 +171,15 @@ class PanelDirection(BaseModel):
     #: Where it happens, as location tags (e.g. "mountain_background,
     #: stone_courtyard, cliff"), not a prose description.
     setting: str = Field(default="")
+    #: Concrete location detail taken from the text (Director v2).
+    location_detail: str = Field(default="")
     #: Time of day / weather / light, as tags (e.g. "dusk, misty").
     lighting: str = Field(default="")
     #: Objects that must appear (a glowing cicada, a lantern). Not an
     #: excuse to invent a prop the passage never names -- see rule 1.
     key_objects: list[str] = Field(default_factory=list)
+    #: Props explicitly called for in the shot (Director v2).
+    props: list[str] = Field(default_factory=list)
     #: One or two mood tags.
     mood: str = Field(default="")
     #: **The subject's face, as one compact tag -- independent of their
@@ -860,3 +888,159 @@ def _validate_character_names(
             continue
         log.warning("director fabricated character name: %r -- stripped", span.text)
         _strip(span.text)
+
+
+@dataclass(slots=True)
+class DirectionConservationAudit:
+    """Audit comparing what the text stated against what the director preserved."""
+
+    captured_people: list[str] = field(default_factory=list)
+    dropped_people: list[str] = field(default_factory=list)
+    captured_places: list[str] = field(default_factory=list)
+    dropped_places: list[str] = field(default_factory=list)
+    captured_props: list[str] = field(default_factory=list)
+    dropped_props: list[str] = field(default_factory=list)
+
+    @property
+    def total_captured(self) -> int:
+        return len(self.captured_people) + len(self.captured_places) + len(self.captured_props)
+
+    @property
+    def total_dropped(self) -> int:
+        return len(self.dropped_people) + len(self.dropped_places) + len(self.dropped_props)
+
+    @property
+    def conservation_rate(self) -> float:
+        total = self.total_captured + self.total_dropped
+        return (self.total_captured / total) if total > 0 else 1.0
+
+
+_COMMON_PLACE_KEYWORDS = re.compile(
+    r"\b(cliff|mountain|peak|hall|room|cave|courtyard|pavilion|forest|lake|river|village|street|terrace|chamber|palace|path|gate|ruins)\b",
+    re.IGNORECASE,
+)
+_COMMON_PROP_KEYWORDS = re.compile(
+    r"\b(sword|blade|talisman|lantern|scroll|tea\s*cup|jar|carriage|cicada|stone|ring|fan|pill|gu|mirror|spear|bow|dagger|chain)\b",
+    re.IGNORECASE,
+)
+
+
+def check_direction_conservation(
+    beat_text: str,
+    direction: PanelDirection,
+    cast_names: list[str] | None = None,
+) -> DirectionConservationAudit:
+    """Audit whether people, places, and props in beat_text were captured or dropped in direction."""
+    text_lower = beat_text.lower()
+
+    # 1. People
+    target_names = [n for n in (cast_names or []) if n.lower() in text_lower]
+    mob_nouns = ["elders", "disciples", "guards", "crowd", "warriors", "soldiers", "enemies"]
+    for m in mob_nouns:
+        if m in text_lower and m not in target_names:
+            target_names.append(m)
+
+    dir_people_text = (
+        " ".join(c.name for c in direction.characters)
+        + " " + (direction.others.kind if direction.others else "")
+        + " " + direction.layout + " " + direction.action
+    ).lower()
+
+    captured_people = []
+    dropped_people = []
+    for p in target_names:
+        if p.lower() in dir_people_text:
+            captured_people.append(p)
+        else:
+            dropped_people.append(p)
+
+    # 2. Places
+    found_places = list(set(_COMMON_PLACE_KEYWORDS.findall(text_lower)))
+    dir_setting_text = (
+        direction.setting + " " + direction.location_detail + " " + direction.layout
+    ).lower()
+    captured_places = []
+    dropped_places = []
+    for place in found_places:
+        if place.lower() in dir_setting_text:
+            captured_places.append(place)
+        else:
+            dropped_places.append(place)
+
+    # 3. Props
+    found_props = list(set(_COMMON_PROP_KEYWORDS.findall(text_lower)))
+    all_props = list(direction.key_objects) + list(direction.props) + [direction.action]
+    dir_props_text = " ".join(all_props).lower()
+    captured_props = []
+    dropped_props = []
+    for prop in found_props:
+        if prop.lower() in dir_props_text:
+            captured_props.append(prop)
+        else:
+            dropped_props.append(prop)
+
+    return DirectionConservationAudit(
+        captured_people=captured_people,
+        dropped_people=dropped_people,
+        captured_places=captured_places,
+        dropped_places=dropped_places,
+        captured_props=captured_props,
+        dropped_props=dropped_props,
+    )
+
+
+def enforce_shot_variety(directions: list[PanelDirection]) -> list[PanelDirection]:
+    """Enforce the shot-variety rule: no two consecutive panels share the same shot size and subject.
+
+    When two consecutive panels share the same shot size (e.g. medium, medium) and the same
+    primary subject (e.g. Fang Yuan, Fang Yuan):
+    - If the shot is 'medium', alternate to 'close' (if there is dialogue/expression/props) or 'wide'.
+    - If the shot is 'close', alternate to 'medium'.
+    - If the shot is 'wide', alternate to 'medium'.
+    Also alternates camera angles if consecutive panels share the same camera angle on the same subject.
+    """
+    if len(directions) <= 1:
+        return directions
+
+    angles = ["eye-level", "low-angle", "high-angle"]
+    out: list[PanelDirection] = []
+
+    def _subject(d: PanelDirection) -> str:
+        if d.characters:
+            return d.characters[0].name.lower()
+        if d.others or "crowd" in d.layout.lower():
+            return "crowd"
+        words = re.findall(r"[a-zA-Z]+(?:\s+[a-zA-Z]+)?", d.layout)
+        return words[0].lower() if words else "scenery"
+
+    for i, d in enumerate(directions):
+        if i == 0:
+            out.append(d)
+            continue
+        prev = out[-1]
+        prev_sub = _subject(prev)
+        curr_sub = _subject(d)
+
+        d_copy = d.model_copy()
+
+        # Check shot size and subject collision
+        if d_copy.shot == prev.shot and curr_sub == prev_sub:
+            if d_copy.shot == "medium":
+                if d_copy.expression or d_copy.key_objects or d_copy.props:
+                    d_copy.shot = "close"
+                else:
+                    d_copy.shot = "wide"
+            elif d_copy.shot == "close":
+                d_copy.shot = "medium"
+            elif d_copy.shot == "wide":
+                d_copy.shot = "medium"
+
+        # Also check camera angle collision on same subject
+        if d_copy.camera_angle == prev.camera_angle and curr_sub == prev_sub:
+            curr_idx = angles.index(d_copy.camera_angle) if d_copy.camera_angle in angles else 0
+            d_copy.camera_angle = angles[(curr_idx + 1) % len(angles)]
+
+        out.append(d_copy)
+
+    return out
+

@@ -12,7 +12,7 @@ with everything that was reviewed. Two pieces of work were cut off and are saved
 | Work | Where it is | State | What to do |
 |---|---|---|---|
 | Voice quality check | Merged to master (commit `70ad1a3`). Adds `voice/qa.py`, `voice/levels.py`, retries in `voice/runner.py`, a CLI entry, tests. | Reviewed and merged. Suite re-run (27 passed, full 89 voice suite passed). Loudness normalization and runaway speech retries active. | Done. Extended in M0 with Voice Actor Banks and dynamic prosody modulation. |
-| Director rework | Branch `director-v2`, worktree `.claude/worktrees/director-v2`. | Stopped a few minutes in; no code written, no commits. | Start it again from the task description in M0 below. The full brief that was given to the agent is the eight stages listed there. |
+| Director rework | Merged to master. Adds `render/direction.py` schema, shot variety rules, `brief_from_direction` mapping, conservation audit, compiler fixes, and batching. | Implemented and verified (EVOLUTION 4.167). Full 273 test suite passes. | Done. Integrated into `echotales audit` and `render_panels`. |
 
 
 Finished and on master today (details in `docs/EVOLUTION.md` 4.154 to 4.165 and decisions D53 to D59):

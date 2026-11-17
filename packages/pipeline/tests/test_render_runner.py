@@ -80,7 +80,12 @@ def _write_voice_manifest(voice_dir: Path, panel_paths: dict[int, Path]) -> None
     for block_index in (0, 1):
         wav = voice_dir / f"ch1_block{block_index}.wav"
         _write_wav(wav, 1.0)
-        lines.append({"chapter": 1.0, "block_index": block_index, "audio_path": str(wav)})
+        lines.append({
+            "chapter": 1.0,
+            "block_index": block_index,
+            "audio_path": str(wav),
+            "span_id": f"sp{block_index}",
+        })
     out = voice_dir / "manifest.jsonl"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text("\n".join(json.dumps(line) for line in lines) + "\n", encoding="utf-8")
@@ -133,3 +138,30 @@ class TestRenderVideosEndToEnd:
         )
         assert report.chapters_rendered == 0
         assert report.chapters_skipped_no_audio == 1
+
+    def test_prune_visual_narration_reduces_redundant_audio_in_video(self, tmp_path) -> None:
+        store = _seeded_store(tmp_path)
+        panel_dir = tmp_path / "panels"
+        voice_dir = tmp_path / "audio"
+        out_dir = tmp_path / "video"
+
+        render_panels("t", store, out_dir=panel_dir, engine=get_panel_engine("stub"))
+        _write_voice_manifest(voice_dir, {})
+
+        report = render_videos(
+            "t", store,
+            panel_dir=panel_dir, motion_dir=tmp_path / "motion", voice_dir=voice_dir,
+            out_dir=out_dir, engine=get_compose_engine("stub"),
+            prune_visual_narration=True,
+        )
+        assert report.chapters_rendered == 1
+        assert report.pruned_visual_lines == 1
+
+        # ch1.wav should only contain block 0 (dialogue), block 1 (visual action) was pruned
+        wav = out_dir / "ch1.wav"
+        assert wav.exists()
+        with wave.open(str(wav)) as fh:
+            assert abs(fh.getnframes() / fh.getframerate() - 1.0) < 0.01
+
+        shots = json.loads((out_dir / "ch1.shots.json").read_text())
+        assert [s["block_index"] for s in shots] == [0]

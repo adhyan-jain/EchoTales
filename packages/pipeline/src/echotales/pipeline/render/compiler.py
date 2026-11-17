@@ -146,7 +146,7 @@ class CharacterBrief:
     """One person in frame, as the graph says they are at this story position."""
 
     name: str
-    gender: str = "unknown"  # male | female | unknown
+    gender: str = "unknown"  # male | female | unknown | creature
     age_band: str = ""
     #: Appearance facts valid at the panel's position, kind -> value (`appearance_of(..., position=...)`).
     appearance: dict[str, str] = field(default_factory=dict)
@@ -159,6 +159,14 @@ class CharacterBrief:
     #: The face as the text or director states it ("calm expression"); wins over any trait inference.
     stated_expression: str = ""
     lead: bool = False
+    #: Position in frame: "center", "left", "right", "foreground", "background", "kneeling in front".
+    position: str = "center"
+    #: Physical pose: "standing", "sitting", "kneeling", "fighting stance", "running".
+    pose: str = "standing"
+    #: Name of another character with identical face (twins: "same face as").
+    same_face_as: str = ""
+    #: True for monsters, spirit beasts, or non-human entities.
+    is_creature: bool = False
 
 
 @dataclass(slots=True)
@@ -185,7 +193,7 @@ class PanelBrief:
     setting: str = ""
     lighting: str = ""
     shot: str = "medium"  # wide | medium | close
-    camera: str = ""  # "low angle", "from above"
+    camera: str = ""  # "low angle", "from above", "eye-level"
     action: str = ""
     key_objects: list[str] = field(default_factory=list)
     mood: str = ""
@@ -196,6 +204,7 @@ class PanelBrief:
     art_direction: str = ""
     era_wardrobe: str = ""
     manhua: bool = False
+    is_indoor: bool = False
 
 
 def genre_direction(novel_id: str) -> tuple[str, str, bool]:
@@ -350,6 +359,8 @@ def _count_tags(b: PanelBrief) -> list[str]:
     mob in the failure that motivated this module."""
     word = {"male": "boy", "female": "girl"}
     people = b.characters
+    if not people and b.crowd is None:
+        return ["no_humans", "scenery"]
     genders = [word.get(c.gender) for c in people]
     tags: list[str] = []
     if b.crowd is None and len(people) == 1:
@@ -395,6 +406,9 @@ def _location_text(b: PanelBrief) -> str:
 def _mode_tags(b: PanelBrief) -> list[str]:
     if b.mode is OutputMode.MANGA:
         tags = ["monochrome", "greyscale", "screentone", "ink lineart", "high contrast", "manga"]
+        is_dark = any(w in f"{b.lighting} {b.mood} {b.setting}".lower() for w in ("night", "dark", "horror", "midnight", "shadow", "dungeon", "gloomy", "ominous"))
+        if is_dark:
+            tags += ["heavy shadows", "deep black shading", "dark atmosphere", "chiaroscuro"]
         if b.manhua:
             tags += ["chinese manhua", "ink wash"]
         return tags
@@ -426,6 +440,13 @@ def compile_prompt(
 
 _NATURAL_SHOT = {"wide": "A wide establishing shot", "medium": "A medium shot", "close": "A close-up portrait"}
 _NOUN = {"male": "man", "female": "woman"}
+_CHILD_NOUN = {"male": "boy", "female": "girl", "unknown": "child"}
+_TEEN_NOUN = {"male": "teenage boy", "female": "teenage girl", "unknown": "teenager"}
+_CREATURE_WORDS = re.compile(r"\b(beast|centipede|demon|spirit|dragon|monster|imp|wolf|chimera|creature|fiend)\b", re.IGNORECASE)
+_INDOOR_KEYWORDS = re.compile(
+    r"\b(room|hall|chamber|house|interior|bed|study|cabin|palace\s+interior|shop|dungeon|cell|pavilion\s+interior|bamboo\s+house)\b",
+    re.IGNORECASE,
+)
 
 
 def _plain(text: str) -> str:
@@ -439,9 +460,24 @@ def identity_sentence(c: CharacterBrief, appearance: AppearanceInText = Appearan
     exists: the probe (2026-11-16) drew the same hero with a different face in three panels of one scene whenever the
     description changed between prompts. Nothing scene-dependent (wounds, mood, action) goes in; those are separate
     sentences. Facts are written in the order the model should weigh them: hair, eyes, marks, then clothes."""
-    noun = _NOUN.get(c.gender, "person")
-    age = c.age_band if c.age_band and c.age_band not in ("adult", "unknown") else ""
-    head = f"{c.name} is a{'n' if (age or noun)[0] in 'aeiou' else ''} {f'{age} ' if age else ''}{noun}"
+    if c.same_face_as:
+        return f"{c.name} has the identical facial features and face as {c.same_face_as} (twin), but wears {_plain(c.attire) or 'distinct robes'}."
+    if c.is_creature or c.gender == "creature" or _CREATURE_WORDS.search(c.name):
+        cond = f", {_plain(c.condition)}" if c.condition else ""
+        return f"{c.name} is a monstrous {_plain(c.name).lower()}{cond}."
+
+    age_band = (c.age_band or "").lower()
+    if age_band == "child":
+        noun = _CHILD_NOUN.get(c.gender, "child")
+        head = f"{c.name} is a young {noun}"
+    elif age_band in ("teen", "teenager", "adolescent"):
+        noun = _TEEN_NOUN.get(c.gender, "teenager")
+        head = f"{c.name} is a {noun}"
+    else:
+        noun = _NOUN.get(c.gender, "person")
+        age = c.age_band if c.age_band and c.age_band not in ("adult", "unknown") else ""
+        head = f"{c.name} is a{'n' if (age or noun)[0] in 'aeiou' else ''} {f'{age} ' if age else ''}{noun}"
+
     if appearance is AppearanceInText.OFF:
         return head + "."
     facts = {k: v for k, v in c.appearance.items() if v and k not in _SKIP}
@@ -451,6 +487,20 @@ def identity_sentence(c: CharacterBrief, appearance: AppearanceInText = Appearan
     feats += [v for k, v in facts.items() if _MARK.search(k)]
     if appearance is AppearanceInText.SHORT:
         feats = feats[: SHORT_ITEMS - (1 if c.attire else 0)]
+    if not feats and not c.attire:
+        _ASSUMED_MARKERS = [
+            "hair tied in a high ponytail",
+            "short neatly combed hair",
+            "hair pinned with a wooden hairpin",
+            "shoulder-length dark hair",
+            "hair tied back with a cloth ribbon",
+            "parted straight hair",
+            "braided side hair",
+            "thick swept-back hair",
+        ]
+        import hashlib
+        h = int(hashlib.md5(c.name.encode("utf-8")).hexdigest(), 16)
+        feats = [_ASSUMED_MARKERS[h % len(_ASSUMED_MARKERS)]]
     text = head
     if feats:
         text += " with " + (", ".join(feats[:-1]) + " and " + feats[-1] if len(feats) > 1 else feats[0])
@@ -481,7 +531,12 @@ def _cold_face(c: CharacterBrief) -> str:
     given, so a stated smile or laugh is rewritten as its cold form and the sentence names the absence of warmth. The
     wording is generic to the trait profile, not to one novel."""
     a, e = c.big_five.get("a"), c.big_five.get("e")
-    if a is None or a > 0.45 or (e is not None and e > 0.5):
+    is_cold = (
+        (a is not None and a <= 0.45 and (e is None or e <= 0.5))
+        or "cold" in c.register.lower()
+        or (c.lead and "cold" in c.stated_expression.lower())
+    )
+    if not is_cold:
         return ""
     stated = _plain(c.stated_expression).lower()
     poss = {"male": "his", "female": "her"}.get(c.gender, "their")
@@ -510,8 +565,11 @@ def _compile_natural(b: PanelBrief, profile: ModelProfile, appearance: Appearanc
     s: list[PromptSection] = []
     shot = _NATURAL_SHOT.get(b.shot, "A medium shot") + (f", {_plain(b.camera)}" if b.camera else "")
     action = _plain(b.action)
-    framing = f", framing {lead.name}" if lead else ""
-    s.append(PromptSection("composition", f"{shot}{framing}{': ' + action if action else ''}."))
+    if lead is None and b.crowd is None:
+        s.append(PromptSection("composition", f"{shot}: pure scenery establishing shot of the environment, completely empty of people, no characters present{': ' + action if action else ''}."))
+    else:
+        framing = f", framing {lead.name}" if lead else ""
+        s.append(PromptSection("composition", f"{shot}{framing}{': ' + action if action else ''}."))
     written: dict[str, bool] = {}
     fields: dict[str, list[str]] = {}
     if lead is not None:
@@ -521,18 +579,40 @@ def _compile_natural(b: PanelBrief, profile: ModelProfile, appearance: Appearanc
         fields[lead.name] = d.fields_used
         face = _cold_face(lead) or _face_words(d.tags)
         extra = f" {lead.name}'s condition: {_plain(lead.condition)}." if lead.condition else ""
-        s.append(PromptSection("demeanour", f"{lead.name}'s face is {face}.{extra}"))
+        pos_str = f" {lead.name} is positioned {_plain(lead.position)}." if lead.position and lead.position != "center" else ""
+        s.append(PromptSection("demeanour", f"{lead.name}'s face is {face}.{extra}{pos_str}"))
     others = b.characters[1:]
     for c in others:
         written[c.name] = appearance is not AppearanceInText.OFF
         fields[c.name] = derive_demeanour(c, b.mood, b.tension).fields_used
     parts = []
     if others:
-        parts.append(" ".join(identity_sentence(c, appearance) for c in others))
+        other_sentences = []
+        for c in others:
+            ident = identity_sentence(c, appearance)
+            d = derive_demeanour(c, b.mood, b.tension)
+            c_face = _cold_face(c) or _face_words(d.tags)
+            clauses = []
+            if c.position and c.position != "center":
+                clauses.append(f"positioned {_plain(c.position)}")
+            if c.pose and c.pose != "standing":
+                clauses.append(f"in a {_plain(c.pose)} pose")
+            if c_face:
+                clauses.append(f"face is {c_face}")
+            if clauses:
+                other_sentences.append(f"{ident} {c.name} is {', '.join(clauses)}.")
+            else:
+                other_sentences.append(ident)
+        parts.append(" ".join(other_sentences))
     if b.crowd is not None:
         who = lead.name if lead else "the center of the frame"
         stance = _plain(b.crowd.stance) or f"stand close around {who}"
-        parts.append(f"In the scene with him are {_headcount(b.crowd)} {_plain(b.crowd.description)}; they {stance}.")
+        if lead is None:
+            parts.append(f"The scene is filled with {_headcount(b.crowd)} {_plain(b.crowd.description)}; they {stance}.")
+        elif lead.gender == "female":
+            parts.append(f"In the scene with her are {_headcount(b.crowd)} {_plain(b.crowd.description)}; they {stance}.")
+        else:
+            parts.append(f"In the scene with him are {_headcount(b.crowd)} {_plain(b.crowd.description)}; they {stance}.")
     if parts:
         s.append(PromptSection("others", " ".join(parts)))
     place = _plain(_location_text(b))
@@ -546,8 +626,12 @@ def _compile_natural(b: PanelBrief, profile: ModelProfile, appearance: Appearanc
     where = ", ".join(seen)
     tail = "; ".join(([f"the light is {light}"] if light else []) + ([f"the mood is {mood}"] if mood else []))
     objs = f" Visible: {', '.join(_plain(o) for o in b.key_objects)}." if b.key_objects else ""
-    if where or tail:
-        sentence = (f"The setting is {where}" if where else "The scene is") + (f"; {tail}" if tail and where else f" {tail}" if tail else "")
+
+    is_indoor = b.is_indoor or bool(_INDOOR_KEYWORDS.search(f"{where} {detail}"))
+    indoor_prefix = "inside an enclosed room, indoor interior, enclosed space with walls and ceiling, no outdoor landscape; " if is_indoor else ""
+
+    if where or tail or is_indoor:
+        sentence = (f"The setting is {indoor_prefix}{where}" if where else f"The setting is {indoor_prefix.rstrip('; ')}") + (f"; {tail}" if tail and where else f" {tail}" if tail else "")
         s.append(PromptSection("setting", sentence + "." + objs))
     s.append(PromptSection("style", _style_sentence(b)))
     s = [x for x in s if x.text]
@@ -559,24 +643,39 @@ def _compile_natural(b: PanelBrief, profile: ModelProfile, appearance: Appearanc
 
 def _style_sentence(b: PanelBrief) -> str:
     if b.mode is OutputMode.MANGA:
-        text = ("A crisp black-and-white manga illustration: a single full-bleed image with clean black ink linework and "
-                "screentone shading, pure black and white only, no panel borders, no speech bubbles and no text")
+        is_dark = any(w in f"{b.lighting} {b.mood} {b.setting}".lower() for w in ("night", "dark", "horror", "midnight", "shadow", "dungeon", "gloomy", "ominous"))
+        if is_dark:
+            text = ("A dark high-contrast black-and-white manga illustration: heavy black ink shading, deep deep shadows, "
+                    "dramatic chiaroscuro, dark atmospheric manga aesthetic, pure black and white only, no panel borders, "
+                    "no speech bubbles and no text")
+        else:
+            text = ("A crisp black-and-white manga illustration: a single full-bleed image with clean black ink linework and "
+                    "screentone shading, pure black and white only, no panel borders, no speech bubbles and no text")
     elif b.manhua:
-        # The wording of the probe prompts the owner judged good (data/scratch/image_probe/prompts.py P1/P2, 2026-11-16): a
-        # guofeng donghua painting with a muted palette. The compiled colour style of the first run ("richly coloured
-        # painted illustration" plus a long culture clause) drew Japanese-anime faces and torii gates instead.
         return ("A Chinese donghua illustration in the guofeng style: detailed, painterly xianxia art with ink-wash mountains, "
                 "mist, a muted cold palette and soft painterly backgrounds, a single full-bleed image with no panel borders, "
                 "no speech bubbles and no text, hanfu with wide sleeves and cross collars.")
     else:
         text = "A richly coloured painted illustration: a single full-bleed image with no panel borders, no speech bubbles and no text"
+
     if b.manhua:
-        # One sentence on purpose (the profile is 3-6 sentences). Culture is described positively: the first Z-Image run
-        # named "no torii gate" and drew a torii in about 6 of 10 colour panels and in manga p09, so naming the object
-        # primed it. Z-Image Turbo takes no negative prompt, so a positive description is the only lever.
-        text += ("; Chinese manhua and donghua style in an ancient-Chinese xianxia world of mountain pavilions with upturned "
-                 "eaves and stone paifang archways, hanfu with wide sleeves and cross collars and "
-                 "topknots with hairpins")
+        # Architecture removed from global style sentence per EVOLUTION 4.165 so paifang does not appear in rooms/forests
+        text += ("; Chinese manhua and donghua style in an ancient-Chinese xianxia world, hanfu with wide sleeves and cross collars, "
+                 "and topknots with hairpins")
+    else:
+        art_lower = b.art_direction.lower()
+        ward_lower = b.era_wardrobe.lower()
+        if "victorian" in art_lower or "gothic" in art_lower or "gaslamp" in ward_lower:
+            text += ("; Victorian gothic style, authentic Victorian era attire with frock coats, waistcoats, and dresses, detailed period background")
+        elif "modern" in art_lower or "contemporary" in art_lower:
+            text += ("; modern cinematic urban atmosphere, contemporary clothing and jackets")
+        elif "fantasy" in art_lower or "medieval" in ward_lower:
+            text += ("; western fantasy style, detailed medieval fantasy attire, leather and cloth textures")
+        elif "sci-fi" in art_lower or "science" in art_lower:
+            text += ("; futuristic sci-fi aesthetic, sleek textures, atmospheric cinematic lighting")
+        elif b.era_wardrobe and "hanfu" not in ward_lower:
+            text += f"; {b.art_direction or 'period drama'} aesthetic, authentic {b.era_wardrobe}"
+
     return text + "."
 
 
@@ -590,7 +689,16 @@ def _characters(
     for c in b.characters:
         items = appearance_phrases(c, appearance)
         written[c.name] = bool(items)
-        parts = [c.name] + ([c.age_band] if c.age_band and c.age_band != "adult" else []) + items
+        parts = [c.name]
+        if c.is_creature or c.gender == "creature" or _CREATURE_WORDS.search(c.name):
+            parts += ["monster", "creature", "non-human"]
+        elif c.age_band and c.age_band != "adult":
+            parts.append(c.age_band)
+        parts += items
+        if c.position and c.position != "center":
+            parts.append(c.position)
+        if c.pose and c.pose != "standing":
+            parts.append(c.pose)
         if c.condition:
             parts.append(c.condition)
         sections.append(PromptSection(f"character:{c.name}", ", ".join(_tags(parts, profile))))
@@ -604,10 +712,14 @@ def _negative(b: PanelBrief, profile: ModelProfile) -> list[PromptSection]:
     parts = [PromptSection("negative:base", profile.negative_base)]
     if b.mode is OutputMode.MANGA:
         parts.append(PromptSection("negative:colour", _COLOUR_NEG))
-    if b.crowd is None and len(b.characters) == 1:
+    if not b.characters and b.crowd is None:
+        parts.append(PromptSection("negative:people", "person, people, human, man, woman, 1boy, 1girl, crowd, face, figure"))
+    elif b.crowd is None and len(b.characters) == 1:
         parts.append(PromptSection("negative:crowd", "crowd, multiple people"))
     if b.characters and all(c.gender == "male" for c in b.characters) and (b.crowd is None or b.crowd.gender == "male"):
         parts.append(PromptSection("negative:gender", "girl, woman, female, 1girl"))
+    if b.is_indoor or bool(_INDOOR_KEYWORDS.search(f"{_location_text(b)} {b.setting}")):
+        parts.append(PromptSection("negative:indoor", "outdoor, open sky, mountains, exterior, outside, trees"))
     parts.append(PromptSection("negative:style", "chibi, moe, kawaii, childlike, cat ears, school uniform, modern clothing"))
     return parts
 
@@ -618,15 +730,18 @@ def _compile_sdxl(b: PanelBrief, profile: ModelProfile, appearance: AppearanceIn
         PromptSection("quality", profile.quality_tags),
         PromptSection("count", ", ".join(_tags(_count_tags(b), profile))),
     ]
-    s += char_sections
-    exp = [t for d in dems for t in d.tags]
-    if exp:
-        s.append(PromptSection("expression", ", ".join(_tags(exp, profile))))
+    if char_sections:
+        s += char_sections
+        exp = [t for d in dems for t in d.tags]
+        if exp:
+            s.append(PromptSection("expression", ", ".join(_tags(exp, profile))))
     if b.action:
         s.append(PromptSection("action", ", ".join(_tags([b.action], profile))))
     if b.crowd is not None:
         s.append(PromptSection("crowd", ", ".join(_tags([b.crowd.description, b.crowd.stance], profile))))
     setting = [_location_text(b), b.setting]
+    if b.is_indoor or bool(_INDOOR_KEYWORDS.search(f"{_location_text(b)} {b.setting}")):
+        setting.insert(0, "indoor interior, room")
     if any(setting):
         s.append(PromptSection("setting", ", ".join(_tags(setting, profile))))
     s.append(PromptSection("composition", ", ".join(_tags([_SHOT.get(b.shot, "medium shot"), b.camera], profile))))
@@ -734,7 +849,7 @@ def character_brief(
 
 def brief_from_direction(
     store: object, novel_id: str, self_ids: list[str], position: float, direction: object | None, *, location: str = "",
-    mode: OutputMode = OutputMode.MANGA, is_crowd: bool = False, gender_hint: str = "",
+    mode: OutputMode = OutputMode.MANGA, is_crowd: bool = False, gender_hint: str = "", beat_text: str = "",
 ) -> PanelBrief:
     """A `PanelBrief` from the panel's cast and the director's `PanelDirection` (setting, lighting, layout, action, mood).
 
@@ -744,20 +859,65 @@ def brief_from_direction(
     d = direction
     layout = (getattr(d, "layout", "") or "").lower()
     crowd = None
-    if is_crowd or any(w in layout for w in ("surround", "crowd", "ring", "outnumber", "multiple", "army")):
+    others_dir = getattr(d, "others", None)
+    if others_dir is not None and getattr(others_dir, "kind", ""):
+        raw_count = getattr(others_dir, "count", 0)
+        count = int(raw_count) if isinstance(raw_count, int) or (isinstance(raw_count, str) and raw_count.isdigit()) else 0
+        crowd = CrowdBrief(
+            description=others_dir.kind,
+            size="many" if count == 0 or count > 4 else "few",
+            gender="male" if gender_hint == "male" else "mixed",
+            stance=getattr(others_dir, "relation_to_lead", "") or "around the lead",
+            count=count,
+        )
+    elif is_crowd or any(w in layout for w in ("surround", "crowd", "ring", "outnumber", "multiple", "army")):
         crowd = CrowdBrief(description="many people", size="many", gender="male" if gender_hint == "male" else "mixed",
                            stance=(getattr(d, "layout", "") or "around the lead").replace("_", " "))
     mood = getattr(d, "mood", "") or ""
-    chars = [
-        character_brief(store, novel_id, sid, position, gender_hint=gender_hint, lead=i == 0,
-                        stated_expression=(getattr(d, "expression", "") or "") if i == 0 else "")
-        for i, sid in enumerate(self_ids)
-    ]
+
+    dir_chars = getattr(d, "characters", []) or []
+    chars: list[CharacterBrief] = []
+    if dir_chars:
+        for i, cd in enumerate(dir_chars):
+            sid = self_ids[i] if i < len(self_ids) else ""
+            expr = getattr(cd, "expression", "") or (getattr(d, "expression", "") if i == 0 else "")
+            if sid:
+                cb = character_brief(
+                    store, novel_id, sid, position, gender_hint=gender_hint, lead=i == 0,
+                    stated_expression=expr, beat_text=beat_text,
+                )
+            else:
+                cb = CharacterBrief(
+                    name=getattr(cd, "name", f"Character_{i}"),
+                    stated_expression=expr,
+                    lead=i == 0,
+                )
+            cb.position = getattr(cd, "position", "center") or "center"
+            cb.pose = getattr(cd, "pose", "standing") or "standing"
+            if getattr(cd, "condition", ""):
+                cb.condition = cd.condition
+            chars.append(cb)
+    else:
+        for i, sid in enumerate(self_ids):
+            cb = character_brief(
+                store, novel_id, sid, position, gender_hint=gender_hint, lead=i == 0,
+                stated_expression=(getattr(d, "expression", "") or "") if i == 0 else "",
+                beat_text=beat_text,
+            )
+            chars.append(cb)
+
+    camera = getattr(d, "camera_angle", "") or getattr(d, "camera", "") or ""
+    loc_detail = getattr(d, "location_detail", "") or ""
+    props = list(getattr(d, "props", []) or []) + list(getattr(d, "key_objects", []) or [])
+    is_indoor = bool(_INDOOR_KEYWORDS.search(f"{location} {getattr(d, 'setting', '')} {loc_detail}"))
+
     return PanelBrief(
         novel_id=novel_id, characters=chars, crowd=crowd, location=location,
+        location_description=loc_detail,
         setting=getattr(d, "setting", "") or "", lighting=getattr(d, "lighting", "") or "",
-        shot=getattr(d, "shot", "medium") or "medium", action=getattr(d, "action", "") or "",
-        key_objects=list(getattr(d, "key_objects", []) or []), mood=mood,
+        shot=getattr(d, "shot", "medium") or "medium", camera=camera,
+        action=getattr(d, "action", "") or "",
+        key_objects=props, mood=mood,
         tension=0.8 if any(w in mood.lower() for w in _TENSE) else 0.0, mode=mode, art_direction=art,
-        era_wardrobe=wardrobe, manhua=manhua,
+        era_wardrobe=wardrobe, manhua=manhua, is_indoor=is_indoor,
     )

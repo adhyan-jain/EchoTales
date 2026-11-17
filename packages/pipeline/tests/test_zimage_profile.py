@@ -88,7 +88,8 @@ def test_identity_sentence_is_identical_across_different_panels():
 def test_manga_and_colour_style_lines_describe_chinese_culture_positively():
     manga = dict(compile_prompt(brief(), Z).section_texts())["style"]
     assert "black-and-white manga" in manga and "no panel borders" in manga and "no text" in manga
-    assert "paifang" in manga and "hanfu" in manga and "topknots" in manga
+    # EVOLUTION 4.165: architecture removed from global style sentence so paifang does not appear in rooms/forests
+    assert "hanfu" in manga and "topknots" in manga and "paifang" not in manga
     assert "jian" not in manga  # props belong to the scene: the global line put a sword on the lead in 13 of 13 panels
     for named in ("torii", "kimono", "katana", "Japanese"):  # naming an excluded object primes the model to draw it
         assert named not in manga

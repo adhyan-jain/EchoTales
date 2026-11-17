@@ -119,7 +119,7 @@ def test_clean_book_passes_every_implemented_check(book) -> None:
     skipped = {r.check_id for r in results if r.status is Status.SKIPPED}
     # Later stages have not run on an ingest-only book: each of their checks says so instead of passing.
     assert skipped == {"spans.stored_rows"} | {
-        c.check_id for st in (Stage.MENTIONS, Stage.SPEAKERS, Stage.RESOLVE) for c in flow.CHECKS[st]
+        c.check_id for st in (Stage.MENTIONS, Stage.SPEAKERS, Stage.RESOLVE, Stage.DIRECTOR) for c in flow.CHECKS[st]
     }
     coverage = next(r for r in results if r.check_id == "ingest.coverage")
     # The h2 heading of each chapter is the one named exclusion: 3 chapters x 4 words.
@@ -424,7 +424,7 @@ def test_cli_exit_codes_json_and_read_only(book, tmp_path: Path, capsys: pytest.
     assert cli.main([*argv, "--json"]) == 0
     doc = json.loads(capsys.readouterr().out)
     assert doc["novel"] == NOVEL and doc["totals"]["fail"] == 0
-    assert doc["stages"] == ["ingest", "segment", "spans", "mentions", "speakers", "resolve"]
+    assert doc["stages"] == ["ingest", "segment", "spans", "mentions", "speakers", "resolve", "director"]
     assert {"check", "invariant", "status", "count_in", "count_out", "shortfalls", "total_shortfalls"} <= set(
         doc["checks"][0]
     )
@@ -488,5 +488,46 @@ def test_llm_boundary_never_leaves_blocks_without_a_segment(
     monkeypatch.setattr(runner, "propose_boundaries", lambda *_: Response())
     merged = runner._merge_llm_proposals(chapter, rules, None)  # type: ignore[arg-type]
     store.add_segments(merged)
-    store.conn.commit()
     assert flow._find(Stage.SEGMENT, "segment.tiling").fn(store, NOVEL, None).status is Status.PASS
+
+
+def test_director_conservation_audit(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import json
+    from echotales.pipeline import paths
+
+    store = Store(tmp_path / "d.db")
+    _synthetic(store, {1.0: ["Fang Yuan held the blade on the mountain cliff.", "He stepped into the courtyard."]})
+    chk = flow._find(Stage.DIRECTOR, "director.conservation")
+
+    # When no panel_plan.jsonl exists -> SKIPPED
+    res = chk.fn(store, NOVEL, None)
+    assert res.status is Status.SKIPPED
+
+    # When panel_plan.jsonl exists
+    panel_dir = tmp_path / "panels"
+    monkeypatch.setattr(paths, "asset_dir", lambda novel_id, kind: panel_dir if kind == "panels" else tmp_path / kind)
+    panel_dir.mkdir(parents=True, exist_ok=True)
+    plan_file = panel_dir / "panel_plan.jsonl"
+    plan_file.write_text(
+        json.dumps(
+            {
+                "novel_id": NOVEL,
+                "chapter": 1.0,
+                "panel_seq": 1,
+                "block_indexes": [0],
+                "cast": [{"self_id": "s1", "label": "Fang Yuan"}],
+                "direction": {
+                    "shot": "medium",
+                    "characters": [{"name": "Fang Yuan", "position": "center"}],
+                    "setting": "mountain_cliff",
+                    "props": ["blade"],
+                },
+            }
+        ) + "\n",
+        encoding="utf-8",
+    )
+
+    res2 = chk.fn(store, NOVEL, None)
+    assert res2.status is Status.PASS
+    assert res2.count_in >= 3
+    assert res2.count_out >= 3

@@ -226,3 +226,93 @@ class TestUntrackedFigurePromotedToTier1:
         )
         parts = d.to_image_prompt_parts()
         assert "a figure" not in parts
+
+
+class TestDirectorV2:
+    def test_schema_fields(self) -> None:
+        from echotales.pipeline.render.direction import CharacterDirection, OthersDirection
+
+        c = CharacterDirection(
+            name="Fang Yuan",
+            position="foreground_center",
+            pose="fighting_stance",
+            expression="cold_expression",
+            condition="bloodied_robes",
+        )
+        assert c.name == "Fang Yuan"
+        assert c.position == "foreground_center"
+        assert c.pose == "fighting_stance"
+
+        o = OthersDirection(kind="elders", count=12, relation_to_lead="surrounding")
+        assert o.kind == "elders"
+        assert o.count == 12
+
+        d = PanelDirection(
+            shot="medium",
+            camera_angle="low-angle",
+            characters=[c],
+            others=o,
+            location_detail="rainy mountain cliff edge",
+            props=["stone_stele"],
+        )
+        assert d.camera_angle == "low-angle"
+        assert len(d.characters) == 1
+        assert d.others is not None
+        assert d.location_detail == "rainy mountain cliff edge"
+        assert "stone_stele" in d.props
+
+    def test_shot_variety_breaks_consecutive_same_shots(self) -> None:
+        from echotales.pipeline.render.direction import CharacterDirection, enforce_shot_variety
+
+        c = CharacterDirection(name="Fang Yuan")
+        d1 = PanelDirection(shot="medium", camera_angle="eye-level", characters=[c])
+        d2 = PanelDirection(shot="medium", camera_angle="eye-level", characters=[c])
+        d3 = PanelDirection(shot="medium", camera_angle="eye-level", characters=[c])
+
+        varied = enforce_shot_variety([d1, d2, d3])
+        assert len(varied) == 3
+        # d1 should remain medium
+        assert varied[0].shot == "medium"
+        # d2 must not be medium
+        assert varied[1].shot != "medium"
+        # d3 should not repeat d2
+        assert varied[2].shot != varied[1].shot
+        # Camera angles should also alternate
+        assert varied[1].camera_angle != varied[0].camera_angle
+
+    def test_conservation_audit(self) -> None:
+        from echotales.pipeline.render.direction import CharacterDirection, check_direction_conservation
+
+        beat_text = "Fang Yuan stood on the cliff holding his sword as the elders surrounded him."
+        d = PanelDirection(
+            shot="wide",
+            characters=[CharacterDirection(name="Fang Yuan")],
+            setting="cliff",
+            props=["sword"],
+            layout="elders surround Fang Yuan",
+        )
+        audit = check_direction_conservation(beat_text, d, cast_names=["Fang Yuan", "Bai Ning Bing"])
+        assert "Fang Yuan" in audit.captured_people
+        assert "elders" in audit.captured_people
+        assert "cliff" in audit.captured_places
+        assert "sword" in audit.captured_props
+        assert audit.total_dropped == 0
+        assert audit.conservation_rate == 1.0
+
+    def test_conservation_audit_records_drops(self) -> None:
+        from echotales.pipeline.render.direction import check_direction_conservation
+
+        beat_text = "Fang Yuan dropped his lantern in the cave while disciples fled."
+        # Direction misses the cave and lantern
+        d = PanelDirection(
+            shot="close",
+            layout="Fang Yuan, solo",
+            setting="room",
+        )
+        audit = check_direction_conservation(beat_text, d, cast_names=["Fang Yuan"])
+        assert "cave" in audit.dropped_places
+        assert "lantern" in audit.dropped_props
+        assert "disciples" in audit.dropped_people
+        assert audit.total_dropped > 0
+        assert audit.conservation_rate < 1.0
+

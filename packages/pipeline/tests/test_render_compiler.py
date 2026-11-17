@@ -9,9 +9,11 @@ from echotales.pipeline.render.compiler import (
     CrowdBrief,
     OutputMode,
     PanelBrief,
+    brief_from_direction,
     compile_prompt,
     derive_demeanour,
     genre_direction,
+    identity_sentence,
     model_profile,
 )
 
@@ -118,3 +120,130 @@ def test_stated_expression_beats_traits_and_anxious_shows_only_when_undiscipline
 def test_unknown_model_raises() -> None:
     with pytest.raises(ValueError):
         model_profile("nope")
+
+
+def test_scenery_only_brief_excludes_humans() -> None:
+    brief = cliff(characters=[], crowd=None, setting="bamboo forest path, morning mist")
+    compiled_z = compile_prompt(brief, model_profile("z-image-turbo"))
+    comp_text = dict(compiled_z.section_texts())["composition"]
+    assert "pure scenery" in comp_text and "empty of people" in comp_text
+
+    compiled_sdxl = compile_prompt(brief, model_profile("noobai-xl-1.1"))
+    count_text = dict(compiled_sdxl.section_texts())["count"]
+    assert "no humans" in count_text or "no_humans" in count_text
+    assert "person, people, human" in compiled_sdxl.negative
+
+
+def test_indoor_setting_includes_indoor_cues_and_negates_outdoors() -> None:
+    brief = cliff(setting="bamboo house room, wooden study desk, warm candlelight")
+    compiled_z = compile_prompt(brief, model_profile("z-image-turbo"))
+    setting_text = dict(compiled_z.section_texts())["setting"]
+    assert "indoor interior" in setting_text and "enclosed space with walls and ceiling" in setting_text
+
+    compiled_sdxl = compile_prompt(brief, model_profile("noobai-xl-1.1"))
+    assert "outdoor" in compiled_sdxl.negative and "mountains" in compiled_sdxl.negative
+
+
+def test_all_characters_get_expression_position_and_pose() -> None:
+    c1 = CharacterBrief(**FANG, position="left", pose="standing", stated_expression="cold_expression")
+    c2 = CharacterBrief(
+        name="Bai Ning Bing", gender="male", age_band="adult",
+        appearance={"hair_color": "silver", "eye_color": "blue"},
+        attire="white robes", position="right", pose="fighting stance", stated_expression="sneering",
+    )
+    brief = cliff(characters=[c1, c2], crowd=None)
+    compiled_z = compile_prompt(brief, model_profile("z-image-turbo"))
+    others_text = dict(compiled_z.section_texts())["others"]
+    assert "Bai Ning Bing" in others_text
+    assert "positioned right" in others_text
+    assert "fighting stance" in others_text
+    assert "face is sneering" in others_text
+
+
+def test_child_and_teenager_nouns() -> None:
+    child_boy = CharacterBrief(name="Xiao Lin", gender="male", age_band="child")
+    child_girl = CharacterBrief(name="Xiao Mei", gender="female", age_band="child")
+    teen_boy = CharacterBrief(name="Lin Feng", gender="male", age_band="teenager")
+    assert "young boy" in identity_sentence(child_boy)
+    assert "young girl" in identity_sentence(child_girl)
+    assert "teenage boy" in identity_sentence(teen_boy)
+
+
+def test_creature_non_human_entity() -> None:
+    creature = CharacterBrief(name="Golden Centipede", gender="creature", is_creature=True, condition="glowing armor")
+    ident = identity_sentence(creature)
+    assert "monstrous golden centipede" in ident.lower()
+    assert "man" not in ident and "woman" not in ident
+
+
+def test_twins_same_face_as() -> None:
+    twin = CharacterBrief(name="Fang Zheng", gender="male", same_face_as="Fang Yuan", attire="white crane robes")
+    ident = identity_sentence(twin)
+    assert "identical facial features and face as Fang Yuan (twin)" in ident
+    assert "wears white crane robes" in ident
+
+
+def test_stable_assumed_appearance_marker() -> None:
+    # Character with no recorded appearance in the graph gets a deterministic, stable assumed marker
+    char_a = CharacterBrief(name="Gu Yue Mo Yan", gender="male")
+    char_b = CharacterBrief(name="Gu Yue Chi Lian", gender="male")
+    ident_a1 = identity_sentence(char_a)
+    ident_a2 = identity_sentence(char_a)
+    ident_b = identity_sentence(char_b)
+    # Stable across calls
+    assert ident_a1 == ident_a2
+    assert "hair" in ident_a1
+    # Different names get different markers
+    assert ident_a1 != ident_b
+
+
+def test_non_manhua_genre_styles_on_zimage() -> None:
+    vic_brief = cliff(manhua=False, art_direction="victorian gothic", era_wardrobe="frock coats and top hats")
+    compiled = compile_prompt(vic_brief, model_profile("z-image-turbo"))
+    style_text = dict(compiled.section_texts())["style"]
+    assert "Victorian gothic" in style_text
+    assert "frock coats" in style_text
+
+    mod_brief = cliff(manhua=False, art_direction="modern apocalypse", era_wardrobe="jackets and tactical gear")
+    compiled_mod = compile_prompt(mod_brief, model_profile("z-image-turbo"))
+    assert "modern cinematic" in dict(compiled_mod.section_texts())["style"]
+
+
+def test_brief_from_direction_passes_beat_text_and_director_v2_fields(tmp_path) -> None:
+    from echotales.core.enums import TargetKind
+    from echotales.core.models import DiscoursePosition, Self
+    from echotales.core.store import Store
+    from echotales.pipeline.render.direction import CharacterDirection, OthersDirection, PanelDirection
+
+    dir_obj = PanelDirection(
+        shot="close",
+        camera_angle="low-angle",
+        characters=[
+            CharacterDirection(name="Fang Yuan", position="center", pose="kneeling", expression="cold_expression", condition="bloodied"),
+            CharacterDirection(name="Bai Ning Bing", position="right", pose="standing", expression="smirking"),
+        ],
+        others=OthersDirection(kind="elders", count=5, relation_to_lead="surrounding"),
+        setting="bamboo room interior",
+        props=["gu_worm", "lantern"],
+    )
+
+    store = Store(str(tmp_path / "t.db"))
+    store.add_novel("reverend-insanity", "RI", "x.epub", "generic")
+    store.add_self(Self(id="s1", novel_id="reverend-insanity", canonical_label="Fang Yuan", first_attested_pos=DiscoursePosition(chapter=1.0, offset=0), kind=TargetKind.SELF))
+    store.add_self(Self(id="s2", novel_id="reverend-insanity", canonical_label="Bai Ning Bing", first_attested_pos=DiscoursePosition(chapter=1.0, offset=0), kind=TargetKind.SELF))
+    store.conn.commit()
+
+    brief = brief_from_direction(
+        store, "reverend-insanity", ["s1", "s2"], 1.0, dir_obj,
+        beat_text="Fang Yuan's robes were shredded and stained with blood as he knelt in the room.",
+    )
+    assert len(brief.characters) == 2
+    assert brief.characters[0].position == "center"
+    assert brief.characters[0].pose == "kneeling"
+    assert brief.characters[1].position == "right"
+    assert brief.characters[1].pose == "standing"
+    assert brief.camera == "low-angle"
+    assert "gu_worm" in brief.key_objects and "lantern" in brief.key_objects
+    assert brief.crowd is not None and brief.crowd.description == "elders" and brief.crowd.count == 5
+    assert brief.is_indoor is True
+

@@ -39,12 +39,35 @@ def worker_for(model_key: str) -> Any:
 
 def generate_compiled(request: Any, sections: list[tuple[str, str]], model_key: str, *, greyscale: bool) -> None:
     """Render one `PanelImageRequest` with the worker for `model_key`, writing `request.out_path`."""
+    generate_compiled_batch([request], [sections], model_key, greyscale=greyscale)
+
+
+def generate_compiled_batch(
+    requests: list[Any],
+    sections_list: list[list[tuple[str, str]]],
+    model_key: str,
+    *,
+    greyscale: bool,
+) -> None:
+    """Render a batch of `PanelImageRequest`s with the worker for `model_key`, writing each `request.out_path`."""
+    if not requests:
+        return
     from echotales.pipeline.workers_contract import ImageWorkerRequest
 
-    resp = worker_for(model_key).generate_many(
-        [ImageWorkerRequest(prompt=request.prompt, negative_prompt=request.negative_prompt, width=request.width,
-                            height=request.height, seed=request.seed)],
-        [sections], greyscale=greyscale,
-    )[0]
-    request.out_path.parent.mkdir(parents=True, exist_ok=True)
-    request.out_path.write_bytes(base64.b64decode(resp.image_b64))
+    reqs = [
+        ImageWorkerRequest(
+            prompt=r.prompt,
+            negative_prompt=r.negative_prompt,
+            width=r.width,
+            height=r.height,
+            seed=r.seed,
+        )
+        for r in requests
+    ]
+    responses = worker_for(model_key).generate_many(
+        reqs, sections_list, greyscale=greyscale,
+    )
+    for r, resp in zip(requests, responses, strict=True):
+        r.out_path.parent.mkdir(parents=True, exist_ok=True)
+        r.out_path.write_bytes(base64.b64decode(resp.image_b64))
+
