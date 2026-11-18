@@ -62,6 +62,87 @@ def _copy_baseline(novel: str, label: str) -> Path:
     return dst
 
 
+def _score_into(result: dict, store: Store, novel: str, golds: list, files: list[Path], chapters: list) -> None:  # type: ignore[type-arg]
+    for gold, f in zip(golds, files):
+        if gold.chapter not in chapters:
+            continue
+        sp = g.score_speakers(gold, store)
+        ap = g.score_appearance(gold, store)
+        pl = g.score_persona_links(gold, store)
+        ag = g.score_ages(gold, store)
+        kd = g.score_kinds(gold, store)
+        raw = json.loads(f.read_text(encoding="utf-8"))
+        result["chapters"][f"{novel}:{int(gold.chapter)}"] = {
+            "held_out": bool(raw.get("held_out", False)),
+            "speakers": [sp.correct, sp.total],
+            "false_dialogue": sp.false_dialogue if gold.lines_complete else None,
+            "appearance": [ap.correct, ap.total], "persona_links": [pl.correct, pl.total],
+            "ages": [ag.correct, ag.total], "kinds": [kd.correct, kd.total],
+            "speaker_misses": sp.misses,
+        }
+
+
+def verify(label: str, source: str, reject_unclear: bool) -> None:
+    """Run the verification pass over a kept run's databases (`source` is that run's tag) and score the result.
+
+    The reader is not re-run, so this isolates what the verifier adds to exactly that run's answers."""
+    from echotales.pipeline.reader import speakers_verify as sv
+
+    commit = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True).strip()
+    result: dict = {"label": label, "commit": commit, "source": source, "chapters": {}, "verifier": {}}
+    t0 = time.time()
+    trace: list[dict] = []  # type: ignore[type-arg]
+    for novel in NOVELS:
+        files = _gold_files(novel)
+        golds = [g.load_reader_gold(f) for f in files]
+        folder = _scratch_dir(label)
+        folder.mkdir(parents=True, exist_ok=True)
+        dst = folder / f"{novel}.db"
+        for suffix in ("", "-wal", "-shm"):
+            Path(str(dst) + suffix).unlink(missing_ok=True)
+        src = sqlite3.connect(_scratch_dir(source) / f"{novel}.db")
+        out = sqlite3.connect(dst)
+        src.backup(out)
+        out.close()
+        src.close()
+        store = Store(str(dst))
+        client = ModelClient(store=store)
+        sv.TRACE = rows = []
+        totals = {"asked": 0, "yes": 0, "no": 0, "unclear": 0, "rejected": 0, "skipped_tagged": 0}
+        for gold in golds:
+            chapter = store.get_chapter(novel, gold.chapter)
+            if chapter is None:
+                continue
+            rep = sv.verify_chapter(store, client, chapter, reject_unclear=reject_unclear)
+            for k in totals:
+                totals[k] += getattr(rep, k)
+        sv.TRACE = None
+        trace.extend({"novel": novel, **r} for r in rows)
+        result["verifier"][novel] = totals
+        _score_into(result, store, novel, golds, files, [x.chapter for x in golds])
+        store.close()
+    result["seconds"] = round(time.time() - t0)
+    OUT.mkdir(parents=True, exist_ok=True)
+    (_scratch_dir(label) / "trace.json").write_text(json.dumps(trace, indent=1, ensure_ascii=False), encoding="utf-8")
+    (OUT / f"{label}.json").write_text(json.dumps(result, indent=1, ensure_ascii=False), encoding="utf-8")
+    report(result)
+
+
+def rescore(label: str, source: str) -> None:
+    """Score a kept run's databases again with the current scorer, so a scorer fix is not mistaken for a model change."""
+    commit = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True).strip()
+    result: dict = {"label": label, "commit": commit, "source": source, "chapters": {}}
+    for novel in NOVELS:
+        files = _gold_files(novel)
+        golds = [g.load_reader_gold(f) for f in files]
+        store = Store(str(_scratch_dir(source) / f"{novel}.db"))
+        _score_into(result, store, novel, golds, files, [x.chapter for x in golds])
+        store.close()
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / f"{label}.json").write_text(json.dumps(result, indent=1, ensure_ascii=False), encoding="utf-8")
+    report(result)
+
+
 def run(label: str, novels: tuple[str, ...], only: set[int] | None, passes: tuple[str, ...] = ("speakers", "facts", "delivery")) -> None:
     commit = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True).strip()
     result: dict = {"label": label, "commit": commit, "chapters": {}}
@@ -77,23 +158,7 @@ def run(label: str, novels: tuple[str, ...], only: set[int] | None, passes: tupl
         read_novel(novel, store, ModelClient(store=store), chapters=chapters, passes=passes)
         sp_mod.TRACE = None
         all_trace.extend({"novel": novel, **t} for t in trace)
-        for gold, f in zip(golds, files):
-            if gold.chapter not in chapters:
-                continue
-            sp = g.score_speakers(gold, store)
-            ap = g.score_appearance(gold, store)
-            pl = g.score_persona_links(gold, store)
-            ag = g.score_ages(gold, store)
-            kd = g.score_kinds(gold, store)
-            raw = json.loads(f.read_text(encoding="utf-8"))
-            result["chapters"][f"{novel}:{int(gold.chapter)}"] = {
-                "held_out": bool(raw.get("held_out", False)),
-                "speakers": [sp.correct, sp.total],
-                "false_dialogue": sp.false_dialogue if gold.lines_complete else None,
-                "appearance": [ap.correct, ap.total], "persona_links": [pl.correct, pl.total],
-                "ages": [ag.correct, ag.total], "kinds": [kd.correct, kd.total],
-                "speaker_misses": sp.misses,
-            }
+        _score_into(result, store, novel, golds, files, chapters)
         store.close()
     result["seconds"] = round(time.time() - t0)
     result["passes"] = list(passes)
@@ -158,5 +223,9 @@ if __name__ == "__main__":
         chosen = {int(x) for x in sys.argv[sys.argv.index("--chapters") + 1].split(",")} if "--chapters" in sys.argv else None
         sel_passes = tuple(sys.argv[sys.argv.index("--passes") + 1].split(",")) if "--passes" in sys.argv else ("speakers", "facts", "delivery")
         run(sys.argv[2], sel, chosen, sel_passes)
+    elif cmd == "verify":
+        verify(sys.argv[2], sys.argv[3], "--reject-unclear" in sys.argv)
+    elif cmd == "rescore":
+        rescore(sys.argv[2], sys.argv[3])
     elif cmd == "compare":
         compare(sys.argv[2], sys.argv[3])
