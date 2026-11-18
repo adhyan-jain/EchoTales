@@ -443,6 +443,37 @@ def _windows(infos: list[EntryInfo], href: str, doc: DocText) -> list[EntryInfo]
     return here
 
 
+def _ownership(
+    spine: list[str], docs: dict[str, DocText], infos: list[EntryInfo]
+) -> list[tuple[str, int, int, EntryInfo | None, bool]]:
+    """(document, first word, end word, owning TOC entry, whether the entry points into this document) tiling every
+    spine document. Text before a document's first anchor, and a whole document no entry points at, belong to the entry
+    that precedes it in the book, provided another entry follows (after the last entry it is licence or colophon, which
+    has no chapter to belong to) and that entry is a chapter: an unnumbered entry or back matter keeps what follows it."""
+    has_entries = [any(i.entry.path == href for i in infos) for href in spine]
+    last_with = max((n for n, flag in enumerate(has_entries) if flag), default=-1)
+    out: list[tuple[str, int, int, EntryInfo | None, bool]] = []
+    carry: EntryInfo | None = None
+    for n, href in enumerate(spine):
+        doc = docs.get(href)
+        if doc is None:
+            continue
+        here = _windows(infos, href, doc)
+        first = min((i.lo for i in here), default=len(doc.words))
+        cuts = sorted({0, len(doc.words), *(p for i in here for p in (i.lo, i.hi))})
+        for p, q in itertools.pairwise(cuts):
+            owner = next((i for i in here if i.lo <= p < i.hi), None)
+            if owner is not None:
+                out.append((href, p, q, owner, True))
+            elif p < first and n < last_with:
+                out.append((href, p, q, carry, False))
+            else:
+                out.append((href, p, q, None, False))
+        if here:
+            carry = here[-1]
+    return out
+
+
 def _alnum(text: str) -> str:
     return re.sub(r"[\W_]+", "", text.casefold())
 
@@ -480,10 +511,6 @@ def check_ingest_coverage(store: Store, novel_id: str, source: SourceContext | N
     chapters = _chapters(store, novel_id)
     stored_numbers = {c.number for c in chapters}
     infos = classify_entries(source.toc(), source, stored_numbers)
-    by_href: dict[str, list[Chapter]] = {}
-    for ch in chapters:
-        by_href.setdefault(ch.source_href, []).append(ch)
-
     total_in = total_matched = total_added = 0
     exclusions: dict[str, int] = {}
     shortfalls: list[Shortfall] = []
@@ -493,47 +520,61 @@ def check_ingest_coverage(store: Store, novel_id: str, source: SourceContext | N
     def exclude(category: str, n: int) -> None:
         exclusions[category] = exclusions.get(category, 0) + n
 
-    for href in source.spine():
+    spine = source.spine()
+    docs: dict[str, DocText] = {}
+    for href in spine:
         doc = source.doc(href)
         if doc is None:
             shortfalls.append(Shortfall(None, href, "spine document is listed in the manifest but cannot be read"))
             continue
+        docs[href] = doc
         total_in += len(doc.words)
-        here = _windows(infos, href, doc)
-        chs = by_href.get(href, [])
-        order = {id(i.entry): n for n, i in enumerate(infos)}
-        number_order = {i.number: order[id(i.entry)] for i in here if i.number is not None}
-        chs = sorted(chs, key=lambda c: number_order.get(c.number, 10**9))
-        stored_words = [w for c in chs for w in _words(c)]
 
+    # Every source word gets exactly one owner. Text before a document's first anchor, and a document no entry points
+    # at, belong to the chapter that began before it, not to "outside the TOC": Pride and Prejudice breaks chapters
+    # across files, and those continuations were filed as front matter, so chapters cut short at a file boundary passed.
+    pieces = _ownership(spine, docs, infos)
+    source_of: dict[float, list[tuple[str, int, int]]] = {}
+    for href, lo, hi, owner, in_doc in pieces:
+        if owner is not None and owner.status == "stored" and owner.number is not None:
+            source_of.setdefault(owner.number, []).append((href, lo, hi))
+        else:
+            _classify_piece(docs[href], href, owner, in_doc, lo, hi, _licence_start(docs[href].words),
+                            exclude, shortfalls, unnumbered_words)
+
+    for chapter in chapters:
+        parts = source_of.get(chapter.number, [])
+        source_words = [w for href, lo, hi in parts for w in docs[href].words[lo:hi]]
+        stored_words = _words(chapter)
         vocab: dict[str, int] = {}
-        a = [vocab.setdefault(w, len(vocab)) for w in doc.words]
+        a = [vocab.setdefault(w, len(vocab)) for w in source_words]
         b = [vocab.setdefault(w, len(vocab)) for w in stored_words]
         sm = SequenceMatcher(None, a, b, autojunk=False)
-        unmatched: list[tuple[int, int]] = []
+        # chapter-relative word index -> (document, offset), to cut an unmatched run at the file boundaries
+        starts = list(itertools.accumulate((hi - lo for _, lo, hi in parts), initial=0))
         for tag, i1, i2, j1, j2 in sm.get_opcodes():
             if tag == "equal":
                 total_matched += i2 - i1
                 continue
             if i2 > i1:
-                unmatched.append((i1, i2))
+                for n, (href, plo, phi) in enumerate(parts):
+                    p, q = max(i1, starts[n]), min(i2, starts[n + 1])
+                    if p < q:
+                        owner = next(i for i in infos if i.number == chapter.number and i.status == "stored")
+                        _classify_piece(
+                            docs[href], href, owner, owner.entry.path == href,
+                            plo + p - starts[n], plo + q - starts[n], _licence_start(docs[href].words),
+                            exclude, shortfalls, unnumbered_words,
+                        )
             if j2 > j1:
                 total_added += j2 - j1
                 shortfalls.append(
                     Shortfall(
-                        chs[0].number if len(chs) == 1 else None,
-                        f"{href}, stored words {j1}-{j2}",
+                        chapter.number,
+                        f"chapter {chapter.number:g}, stored words {j1}-{j2}",
                         f"{j2 - j1} stored words are not in the source document",
                         _excerpt(" ".join(stored_words[j1:j2])),
                     )
-                )
-
-        licence = _licence_start(doc.words)
-        for lo, hi in unmatched:
-            cuts = sorted({lo, hi, *(p for i in here for p in (i.lo, i.hi) if lo < p < hi)})
-            for p, q in itertools.pairwise(cuts):
-                _classify_piece(
-                    doc, href, here, p, q, licence, exclude, shortfalls, unnumbered_words,
                 )
 
     for label, n in unnumbered_words.items():
@@ -561,7 +602,8 @@ def check_ingest_coverage(store: Store, novel_id: str, source: SourceContext | N
 def _classify_piece(
     doc: DocText,
     href: str,
-    here: list[EntryInfo],
+    owner: EntryInfo | None,
+    in_doc: bool,
     lo: int,
     hi: int,
     licence: int | None,
@@ -570,7 +612,6 @@ def _classify_piece(
     unnumbered_words: dict[str, int],
 ) -> None:
     n = hi - lo
-    owner = next((i for i in here if i.lo <= lo < i.hi), None)
     if owner is None:
         exclude("outside_toc (cover, title page, licence header, navigation)", n)
         return
@@ -587,7 +628,7 @@ def _classify_piece(
         return
     if owner.status == "stored":
         text = " ".join(doc.words[lo:hi])
-        if lo - owner.lo <= 40 and n <= 80 and _is_label_echo(text, label):
+        if in_doc and lo - owner.lo <= 40 and n <= 80 and _is_label_echo(text, label):
             exclude("chapter_heading_repeating_toc_label", n)
             return
         if licence is not None and lo >= licence:
