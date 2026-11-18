@@ -1,5 +1,7 @@
 # Plan: approved-reference identity and location consistency (no LoRA)
 
+> **SUPERSEDED (2026-11-19).** The only plan of record is [`docs/design/community_roadmap.md`](community_roadmap.md) (milestones M0-M5). This file is kept as history because `docs/EVOLUTION.md` cites it; do not plan work from it.
+
 ## Context
 
 The first real LotM chapter 1 render (NoobAI XL, 8 GB laptop) came out inconsistent: hair shade and face changed

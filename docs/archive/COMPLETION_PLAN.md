@@ -1,5 +1,7 @@
 # EchoTales — completion plan (pipeline repair, evidence, novelty, product)
 
+> **SUPERSEDED (2026-11-19).** The only plan of record is [`docs/design/community_roadmap.md`](../design/community_roadmap.md) (milestones M0-M5). This file is kept as history because `docs/EVOLUTION.md` cites it; do not plan work from it.
+
 **Written 2026-09-23.** Working plan across research publication, patent, and
 product. `docs/HANDOFF.md` stays "what do I pick up next"; `docs/EVOLUTION.md` stays the
 append-only history; `docs/design/plans.md` is the original pre-build spec. This file is

@@ -1,5 +1,7 @@
 # Motion video plan: from held panels to moving shots
 
+> **SUPERSEDED (2026-11-19).** The only plan of record is [`docs/design/community_roadmap.md`](community_roadmap.md) (milestones M0-M5). This file is kept as history because `docs/EVOLUTION.md` cites it; do not plan work from it.
+
 **Status: SUPERSEDED and BUILT (2026-10-19, EVOLUTION 4.114-4.115).** The legacy SVD motion-clip plan has been superseded by Path 1 (2.5D Layered Parallax Compositor, `compositor/`) and Path 2 (Wan 2.2 S2V / LTX-2.5 Video Engine with 8-frame QA gate and Path 1 fallback, `video/`). See `docs/HANDOFF.md` (EVOLUTION 4.118). The
 model figures in Section 3 are historical references.
 

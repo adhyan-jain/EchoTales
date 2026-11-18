@@ -1,5 +1,7 @@
 # EchoTales — Complete Architecture & Implementation Prompt
 
+> **SUPERSEDED (2026-11-19).** The only plan of record is [`docs/design/community_roadmap.md`](community_roadmap.md) (milestones M0-M5). This file is kept as history because `docs/EVOLUTION.md` cites it; do not plan work from it.
+
 **Paste this entire document as context for Claude Code. It contains every finalized decision from the design process.**
 
 > **2026-09-29: this is the founding prompt, not the current architecture

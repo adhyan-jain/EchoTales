@@ -17,8 +17,9 @@ alone — read the source doc for the thing you're touching:
   learn the project; Phase A (extraction rewrite) decisions D8/D10 live there.
 - [`docs/design/architecture.md`](docs/design/architecture.md) — the bitemporal model, `state_of()`,
   and Section 11's ten non-negotiables (below).
-- [`docs/design/plans.md`](docs/design/plans.md) — the full phase-by-phase specification.
-- [`docs/design/consistency_plan.md`](docs/design/consistency_plan.md) — approved-reference identity and location consistency plan.
+- [`docs/design/community_roadmap.md`](docs/design/community_roadmap.md) — **the only plan of record** (owner, 2026-11-19): M0-M5, a local test round, then deploy. Local-only until the local product is complete; cloud parts built last and not run.
+- [`docs/design/plans.md`](docs/design/plans.md) — the original phase-by-phase specification (superseded as a plan; architecture reference).
+- [`docs/design/consistency_plan.md`](docs/design/consistency_plan.md) — approved-reference identity plan (superseded by the roadmap's M1).
 - [`docs/design/details.md`](docs/design/details.md) — per-file design rationale.
 - [`docs/HANDOFF.md`](docs/HANDOFF.md) — **current open tasks only, ephemeral** (restructured
   2026-08-31). "Pick up here" + "Open defects" are the actual

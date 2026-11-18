@@ -17,10 +17,11 @@ conflated.
 | `docs/EVOLUTION.md` | *Why is it built this way?* The diff between the original spec and reality — which mechanisms were replaced and what evidence replaced them, plus the permanent, append-only session log. **Read before changing a design decision, or to find out what was already tried.** |
 | `docs/design/architecture.md` | The model: three axes of time, self vs persona, observers |
 | `docs/design/details.md` | Per-file detail |
-| `docs/design/plans.md` | The original spec. Amended three times; the amendments win and are marked *(revised)* |
+| `docs/design/community_roadmap.md` | **The only plan of record (owner, 2026-11-19): milestones M0-M5, then a local test round, then deploy.** Every file below named "plan" is superseded history. |
+| `docs/design/plans.md` | The original spec (superseded as a plan 2026-11-19; still the architecture reference). Amended three times; the amendments win and are marked *(revised)* |
 | `docs/design/video_plan.md` | Motion video plan (superseded and built 2026-10-19, EVOLUTION 4.114-4.118; Path 1 parallax compositor and Path 2 Wan 2.2 / LTX video engine). |
-| `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18, Phase 0 measurement gate to Phase 5). |
-| `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The forward multi-track plan (2026-09-23), including the `ner.py` 6,000-char truncation finding that reorders the work. **Read this before starting a new track.** |
+| `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18). Superseded 2026-11-19 by `community_roadmap.md` M1. |
+| `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The old multi-track plan (2026-09-23). Superseded 2026-11-19 by `community_roadmap.md`; history only. |
 
 **Last updated:** 2026-11-07 (EVOLUTION 4.134).
 
