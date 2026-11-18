@@ -15,6 +15,7 @@ reported on their own line because no change was tuned on them.
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import subprocess
 import sys
@@ -24,11 +25,15 @@ from pathlib import Path
 from echotales.core.store import Store
 from echotales.pipeline.eval import reader_gold as g
 from echotales.pipeline.llm.client import ModelClient
+from echotales.pipeline.reader import speakers_pass as sp_mod
 from echotales.pipeline.reader.runner import read_novel
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "data" / "eval" / "reader"
 SCRATCH = ROOT / "data" / "scratch" / "ablation"
+#: Canonical databases and the keep-everything scratch folder can live outside the checkout (a git worktree has no
+#: data/db): `ECHOTALES_ABLATION_DB_DIR` / `ECHOTALES_ABLATION_SCRATCH`.
+DB_DIR = Path(os.environ.get("ECHOTALES_ABLATION_DB_DIR", ROOT / "data" / "db"))
 NOVELS = ("lord-of-the-mysteries", "reverend-insanity", "omniscient-readers-viewpoint")
 
 
@@ -36,13 +41,20 @@ def _gold_files(novel: str) -> list[Path]:
     return sorted((ROOT / "data" / "gold" / "reader").glob(f"{novel}-ch*.json"))
 
 
-def _copy_baseline(novel: str) -> Path:
+def _scratch_dir(label: str) -> Path:
+    """One folder per tag, so a run's database survives for later diagnosis (REPORT 0: v13's was gone)."""
+    base = Path(os.environ.get("ECHOTALES_ABLATION_SCRATCH", SCRATCH))
+    return base / label
+
+
+def _copy_baseline(novel: str, label: str) -> Path:
     """A fresh copy of the run-of-record database, so no run starts from another run's output."""
-    SCRATCH.mkdir(parents=True, exist_ok=True)
-    dst = SCRATCH / f"{novel}.db"
+    folder = _scratch_dir(label)
+    folder.mkdir(parents=True, exist_ok=True)
+    dst = folder / f"{novel}.db"
     for suffix in ("", "-wal", "-shm"):
         Path(str(dst) + suffix).unlink(missing_ok=True)
-    src = sqlite3.connect(f"file:{ROOT / 'data' / 'db' / (novel + '.db')}?mode=ro", uri=True)
+    src = sqlite3.connect(f"file:{DB_DIR / (novel + '.db')}?mode=ro", uri=True)
     out = sqlite3.connect(dst)
     src.backup(out)
     out.close()
@@ -50,17 +62,21 @@ def _copy_baseline(novel: str) -> Path:
     return dst
 
 
-def run(label: str, novels: tuple[str, ...], only: set[int] | None) -> None:
+def run(label: str, novels: tuple[str, ...], only: set[int] | None, passes: tuple[str, ...] = ("speakers", "facts", "delivery")) -> None:
     commit = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True).strip()
     result: dict = {"label": label, "commit": commit, "chapters": {}}
     t0 = time.time()
+    all_trace: list[dict] = []  # type: ignore[type-arg]
     for novel in novels:
         files = _gold_files(novel)
         golds = [g.load_reader_gold(f) for f in files]
         chapters = [x.chapter for x in golds if only is None or int(x.chapter) in only]
-        db = _copy_baseline(novel)
+        db = _copy_baseline(novel, label)
         store = Store(str(db))
-        read_novel(novel, store, ModelClient(store=store), chapters=chapters)
+        sp_mod.TRACE = trace = []
+        read_novel(novel, store, ModelClient(store=store), chapters=chapters, passes=passes)
+        sp_mod.TRACE = None
+        all_trace.extend({"novel": novel, **t} for t in trace)
         for gold, f in zip(golds, files):
             if gold.chapter not in chapters:
                 continue
@@ -80,7 +96,10 @@ def run(label: str, novels: tuple[str, ...], only: set[int] | None) -> None:
             }
         store.close()
     result["seconds"] = round(time.time() - t0)
+    result["passes"] = list(passes)
     OUT.mkdir(parents=True, exist_ok=True)
+    # Per tag: the model's raw answer, what the post-checks did with it, and the baseline row it replaced.
+    (_scratch_dir(label) / "trace.json").write_text(json.dumps(all_trace, indent=1, ensure_ascii=False), encoding="utf-8")
     (OUT / f"{label}.json").write_text(json.dumps(result, indent=1, ensure_ascii=False), encoding="utf-8")
     report(result)
 
@@ -137,6 +156,7 @@ if __name__ == "__main__":
     if cmd == "run":
         sel = tuple(sys.argv[sys.argv.index("--novel") + 1].split(",")) if "--novel" in sys.argv else NOVELS
         chosen = {int(x) for x in sys.argv[sys.argv.index("--chapters") + 1].split(",")} if "--chapters" in sys.argv else None
-        run(sys.argv[2], sel, chosen)
+        sel_passes = tuple(sys.argv[sys.argv.index("--passes") + 1].split(",")) if "--passes" in sys.argv else ("speakers", "facts", "delivery")
+        run(sys.argv[2], sel, chosen, sel_passes)
     elif cmd == "compare":
         compare(sys.argv[2], sys.argv[3])

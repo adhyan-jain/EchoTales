@@ -40,6 +40,11 @@ ROLE_CONFIDENCE = 0.5
 #: Span types a quoted line can carry; the classifier mistypes dialogue as the last two.
 _QUOTE_SPANS = frozenset({SpanType.DIALOGUE, SpanType.INNER_MONOLOGUE, SpanType.CROWD_REACTION})
 
+#: When a list, `read_chapter_speakers` appends one dict per tag (raw model answer, the post-check outcome, the baseline
+#: row it replaced). The ablation sets it: v13's raw answers were never recorded, so its 57 misses had to be classified
+#: by reading text (speaker_diag REPORT 0).
+TRACE: list[dict] | None = None  # type: ignore[type-arg]
+
 UNKNOWN = "unknown"
 NOT_SPEECH = "none"
 
@@ -444,6 +449,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
         starts = quote_starts(blocks.get(block_index, ""))
         if q < len(starts):
             quote_of[tag] = blocks[block_index][starts[q]:].lstrip("“\"")
+    raw_answers = dict(answers)
     _second_chance(store, client, cast, index, narrator, answers, tag_window, quote_of, report, novel_id, number)
     chapter_words = set(_norm("\n".join(blocks.values())).split())
     role_spans: dict[str, list[Span]] = {}
@@ -463,10 +469,20 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
         if span is None:
             report.no_span += 1
             continue
+
+        def note(outcome: str, final: str | None = None, _tag: str = tag, _span: Span = span) -> None:
+            if TRACE is not None:
+                TRACE.append({
+                    "chapter": number, "tag": _tag, "raw": raw_answers.get(_tag), "answer": answers[_tag],
+                    "outcome": outcome, "final": final, "baseline_method": _span.attribution_method.value,
+                    "baseline_speaker": _span.speaker_self_id, "quote": quote_text[:160],
+                })
+
         if span.attribution_method is AttributionMethod.HUMAN:
             # A reviewer's decision outranks the model; the re-run used to overwrite it and the correction was
             # already marked applied, so it was never replayed.
             report.human_kept += 1
+            note("human_kept")
             continue
         if continues_after_tag(blocks.get(block_index, ""), starts, q):
             # The second half of a quote cut by its tag has the first half's speaker, whatever the model answered for
@@ -478,6 +494,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
                     "SELECT speaker_self_id FROM span WHERE novel_id=? AND id=?", (novel_id, previous.id)
                 ).fetchone()
                 report.split_quote += 1
+                note("split_quote", row[0] if row else None)
                 if row and row[0]:
                     store.set_span_speaker(novel_id, span.id, row[0], AttributionMethod.CONTEXTUAL_LLM.value, MODEL_CONFIDENCE)
                     report.attributed += 1
@@ -499,6 +516,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
                 report.role_rejected += 1
                 role = ""
             if role:
+                note("role_slot", role)
                 # Written after the chapter-wide pass below: a role the chapter later names is that person, and
                 # only a role nobody names becomes a title entity of its own.
                 report.role_slots += 1
@@ -506,6 +524,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
                 continue
             key = UNKNOWN
         if key in (UNKNOWN, ""):
+            note("unknown")
             report.unknown += 1
             # The regex ladder's proximity and pronoun guesses named a wrong speaker for crowd lines (RI ch1: the
             # attackers became "Bai Ning Bing"), so only its explicit "X said" survives the model's "unknown".
@@ -514,6 +533,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
                 report.cleared += 1
             continue
         if key == NOT_SPEECH:
+            note("not_speech")
             report.not_speech += 1
             store.set_span_speaker(novel_id, span.id, None, AttributionMethod.UNRESOLVED.value, 0.0)
             if span.span_type is SpanType.DIALOGUE:
@@ -524,6 +544,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             continue
         entry = index.resolve(speaker)
         if entry is None:
+            note("unmapped")
             report.unmapped += 1
             continue
         kind, _ = rejection(store, entry, quote_text)
@@ -531,6 +552,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             # "addressee": the line opens by calling this person, so they are who is spoken to, not who speaks.
             # "gender": "returned she" cannot be Mr. Bennet. Left unknown, not guessed (a second chance with this
             # person removed has already been tried above).
+            note(f"rejected_{kind}", entry.self_id)
             if kind == "addressee":
                 report.addressee_rejected += 1
             else:
@@ -538,6 +560,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             if span.attribution_method is not AttributionMethod.EXPLICIT and span.speaker_self_id:
                 store.set_span_speaker(novel_id, span.id, None, AttributionMethod.UNRESOLVED.value, 0.0)
             continue
+        note("named", entry.self_id)
         store.set_span_speaker(novel_id, span.id, entry.self_id, AttributionMethod.CONTEXTUAL_LLM.value, MODEL_CONFIDENCE)
         if span.span_type is SpanType.CROWD_REACTION:
             # A named person's line is not a crowd reaction; the classifier mistyped it (LotM ch7 block 39).
