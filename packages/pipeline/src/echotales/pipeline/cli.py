@@ -374,6 +374,21 @@ def build_parser() -> argparse.ArgumentParser:
              "(0 restores the old behaviour)",
     )
 
+    p_aud = sub.add_parser(
+        "voice-audition",
+        help="shortlist narrator candidates from the voice banks by a crude acoustic filter; with --synthesize, "
+        "voice three passages per candidate into data/scratch/audition/<timestamp>/ with an index.html to listen",
+    )
+    p_aud.add_argument("--bank", default="data/voice", help="voice-bank root (default: data/voice)")
+    p_aud.add_argument(
+        "--bank-kind", action="append", choices=["vctk", "cremad", "ears", "libritts_r", "hifitts"],
+        help="bank to draw candidates from; repeat for several (default: hifitts and libritts_r)",
+    )
+    p_aud.add_argument("--n", type=int, default=12, help="maximum candidates to shortlist (default 12)")
+    p_aud.add_argument("--out", default=None, help="default: data/scratch/audition/<timestamp>")
+    p_aud.add_argument("--synthesize", action="store_true", help="voice the passages (needs the GPU engine)")
+    p_aud.add_argument("--engine", default="chatterbox", choices=["stub", "chatterbox"])
+
     p_qa = sub.add_parser(
         "audio-qa",
         help="measure voiced chapters from the files alone (coverage, silence, pace, loudness, speech round trip, cast, pauses); no GPU",

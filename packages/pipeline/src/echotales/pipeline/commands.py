@@ -1856,7 +1856,37 @@ def cmd_audio_qa(args: argparse.Namespace) -> int:
     return 1 if failed else 0
 
 
+def cmd_voice_audition(args: argparse.Namespace) -> int:
+    """Shortlist narrator candidates; optionally voice the audition passages for a listener."""
+    import time
+
+    from echotales.pipeline import paths
+    from echotales.pipeline.voice import audition, get_engine
+    from echotales.pipeline.voice.bank import load_bank
+
+    banks = []
+    for kind in args.bank_kind or ["hifitts", "libritts_r"]:
+        try:
+            banks.append(load_bank(kind, args.bank))
+        except FileNotFoundError as exc:
+            print(f"note: skipping bank {kind!r}: {exc}", file=sys.stderr)
+    if not banks:
+        print("error: no voice bank could be loaded", file=sys.stderr)
+        return 2
+    picked, measured = audition.audition(banks, args.n)
+    out = Path(args.out) if args.out else paths.SCRATCH_DIR / "audition" / time.strftime("%Y%m%d-%H%M%S")
+    audition.write_stats(out / "shortlist.json", picked, measured)
+    print(f"{len(measured)} voices measured, {len(picked)} shortlisted: {out / 'shortlist.json'}")
+    for s in picked:
+        print(f"  {s.voice_id:<18} {s.gender:<6} F0 {s.f0_hz or 0:5.0f} Hz  SNR {s.snr_db:4.0f} dB  rate {s.rate_hz:.1f}/s  {s.licence}")
+    if args.synthesize:
+        page = audition.synthesize_audition(picked, banks, get_engine(args.engine), out)
+        print(f"listen: {page}")
+    return 0
+
+
 _DISPATCH = {
+    "voice-audition": cmd_voice_audition,
     "audio-qa": cmd_audio_qa,
     "audit": cmd_audit,
     "faithfulness": cmd_faithfulness,
