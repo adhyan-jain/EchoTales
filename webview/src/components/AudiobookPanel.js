@@ -24,6 +24,9 @@ export default function AudiobookPanel({ novelId, project }) {
   const [queue, setQueue] = useState(null);
   const [output, setOutput] = useState(null);
   const [engine, setEngine] = useState('chatterbox');
+  const [videoEngine, setVideoEngine] = useState('stills');
+  const [prune, setPrune] = useState(false);
+  const [videoChapters, setVideoChapters] = useState('1');
   const [busy, setBusy] = useState('');
   // Which reads failed. A failed read is "unknown", never a definite state: an empty jobs list re-enabled every
   // action button (double-queue), a null bible read as "not locked", a null queue said "Checking the queue…" forever.
@@ -79,11 +82,16 @@ export default function AudiobookPanel({ novelId, project }) {
   const buildJob = latest(jobs, 'pipeline');
   const voiceJob = latest(jobs, 'voice');
   const exportJob = latest(jobs, 'export_m4b');
+  const videoJob = latest(jobs, 'video');
   const current = !failed.bible && bible ? bible.current : null;
   const locked = !!(current && current.locked_version != null && !current.dirty);
   const waiting = queue && !failed.queue ? queue.total : null;
   const audioFiles = (output && output.kinds && output.kinds.audio) || [];
   const book = audioFiles.filter((f) => /\.m4b$/i.test(f.path)).sort((a, b) => (b.mtime || 0) - (a.mtime || 0))[0];
+  const chapterList = videoChapters.split(',').map((c) => c.trim()).filter(Boolean).map(Number);
+  const chaptersOk = chapterList.length > 0 && chapterList.every((c) => Number.isFinite(c) && c > 0);
+  const videoFiles = ((output && output.kinds && output.kinds.video) || []).filter((f) => /\.mp4$/i.test(f.path));
+  const film = videoFiles.sort((a, b) => (b.mtime || 0) - (a.mtime || 0))[0];
   const voiced = voiceJob && voiceJob.status === 'SUCCEEDED';
   // With the jobs read failed, a job may be running that we cannot see: not safe to queue another.
   const anyRunning = jobs.some(inFlight) || failed.jobs;
@@ -98,7 +106,7 @@ export default function AudiobookPanel({ novelId, project }) {
     <section aria-label="Audiobook" className="rounded-3xl border border-border bg-surface p-6">
       <h2 className="font-display text-lg font-bold tracking-tight">Make the audiobook</h2>
       <p className="mt-1 text-sm text-muted">
-        Five steps, in the order the server requires them. Each shows its real state.
+        Six steps, in the order the server requires them. Each shows its real state.
       </p>
       {unknown.length > 0 && (
         <div role="alert" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
@@ -198,7 +206,63 @@ export default function AudiobookPanel({ novelId, project }) {
             )
           }
         />
+        <StepRow
+          n={6}
+          done={!!film}
+          title="Make the video"
+          note={
+            videoJob && videoJob.status === 'FAILED' && videoJob.error_summary
+              ? `Could not make the video: ${videoJob.error_summary}`
+              : 'Needs the chapter panels and its voiced audio. Held pictures by default; the animated option needs a free GPU.'
+          }
+          job={videoJob}
+          action={
+            <span className="flex flex-wrap items-center gap-2">
+              <input
+                aria-label="Video chapters"
+                value={videoChapters}
+                onChange={(e) => setVideoChapters(e.target.value)}
+                placeholder="1, 2"
+                className="h-9 w-20 rounded-xl border border-border bg-transparent px-2 text-sm text-text"
+              />
+              <select
+                aria-label="Video engine"
+                value={videoEngine}
+                onChange={(e) => setVideoEngine(e.target.value)}
+                className="h-9 rounded-xl border border-border bg-transparent px-2 text-sm text-text"
+              >
+                <option value="stills">Held pictures</option>
+                <option value="ltx-local">Animated (GPU)</option>
+              </select>
+              <label className="flex items-center gap-1.5 text-xs text-muted">
+                <input
+                  type="checkbox"
+                  checked={prune}
+                  disabled={videoEngine !== 'stills'}
+                  onChange={(e) => setPrune(e.target.checked)}
+                />
+                Cut narration the picture shows
+              </label>
+              <Button
+                size="sm"
+                disabled={!voiced || !chaptersOk || anyRunning || busy === 'video'}
+                onClick={() => start('video', { chapters: chapterList, engine: videoEngine, prune_visual_narration: prune && videoEngine === 'stills' }, 'Video')}
+              >
+                Make video
+              </Button>
+            </span>
+          }
+        />
       </ol>
+      {film && (
+        <figure className="mt-4">
+          <video controls preload="none" className="w-full rounded-2xl border border-border" src={fileUrl(novelId, film.path)} aria-label="Latest chapter video" />
+          <figcaption className="mt-1 text-xs text-muted">
+            Latest video: {film.path}{' '}
+            <a href={fileUrl(novelId, film.path)} download className="underline underline-offset-4">Download</a>
+          </figcaption>
+        </figure>
+      )}
     </section>
   );
 }

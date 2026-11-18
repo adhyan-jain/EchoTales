@@ -133,6 +133,53 @@ describe('AudiobookPanel', () => {
   });
 });
 
+describe('AudiobookPanel video step', () => {
+  const voicedJobs = [{ job_id: 'v', kind: 'voice', status: 'SUCCEEDED', created_at: 2 }];
+  const locked = { current: { locked_version: 1, dirty: false, stale_reason: null } };
+
+  test('Make video is off until the book is voiced', async () => {
+    mount();
+    expect(await screen.findByRole('button', { name: 'Make video' })).toBeDisabled();
+  });
+
+  test('starts a video job with the chapters, engine and prune choice', async () => {
+    mount({ jobs: voicedJobs, bible: locked });
+    fireEvent.change(await screen.findByLabelText('Video chapters'), { target: { value: '1, 2' } });
+    fireEvent.change(screen.getByLabelText('Video engine'), { target: { value: 'stills' } });
+    fireEvent.click(screen.getByLabelText(/Cut narration the picture shows/i));
+    const button = screen.getByRole('button', { name: 'Make video' });
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
+    await waitFor(() =>
+      expect(api.triggerStage).toHaveBeenCalledWith('b', 'video', { chapters: [1, 2], engine: 'stills', prune_visual_narration: true })
+    );
+  });
+
+  test('the animated engine cannot be combined with pruning', async () => {
+    mount({ jobs: voicedJobs, bible: locked });
+    fireEvent.change(await screen.findByLabelText('Video engine'), { target: { value: 'ltx-local' } });
+    expect(screen.getByLabelText(/Cut narration the picture shows/i)).toBeDisabled();
+  });
+
+  test('a refused video job shows the server message, not a bare failure', async () => {
+    mount({
+      jobs: [...voicedJobs, { job_id: 'm', kind: 'video', status: 'FAILED', created_at: 3, error_summary: 'no panel version of chapter 1; render it first' }],
+      bible: locked,
+    });
+    expect(await screen.findByText(/Could not make the video: no panel version of chapter 1/i)).toBeInTheDocument();
+  });
+
+  test('a finished video is playable and downloadable', async () => {
+    mount({
+      jobs: voicedJobs,
+      bible: locked,
+      output: { kinds: { audio: [], video: [{ path: 'video/ch1/v1_x/chapter.mp4', mtime: 5, size: 10 }] } },
+    });
+    const player = await screen.findByLabelText('Latest chapter video');
+    expect(player).toHaveAttribute('src', expect.stringContaining('chapter.mp4'));
+  });
+});
+
 describe('GenerationWorkspace detail option', () => {
   test('the chosen detail level is sent with the render request', async () => {
     api.compute.mockResolvedValue({
