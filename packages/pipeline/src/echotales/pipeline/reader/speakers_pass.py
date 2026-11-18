@@ -161,6 +161,29 @@ def build_cast(store: Store, novel_id: str, chapter_text: str, chapter: float) -
     return [e for _r, _l, e in ordered[:MAX_CAST]]
 
 
+def scene_cast(cast: list[CastEntry], seen_text: str, narrator: CastEntry | None) -> list[CastEntry]:
+    """The cast members the chapter has introduced by the end of the current window.
+
+    The chapter-wide cast pulled unnamed lines onto people who had not appeared yet: ORV ch3's "a big man in a suit"
+    went to Han Myungoh, whom the text names only around b51-53 (speaker_diag REPORT 2 (f), 6.4). The first-person
+    narrator stays: narration seldom names him. An empty result falls back to the full cast rather than an empty list."""
+    haystack = _norm(seen_text)
+    keep = [
+        e for e in cast
+        if (narrator is not None and e.self_id == narrator.self_id)
+        or any(len(_norm(x)) >= 3 and _norm(x) in haystack for x in e.surfaces())
+    ]
+    return keep or cast
+
+
+def turn_note(recent: list[str]) -> str:
+    """One sentence on who spoke the last lines before this window ("Kim Dokja, unnamed, Yoo Sangah"), '' for the first."""
+    if not any(recent):
+        return ""
+    said = [("an unnamed speaker" if _norm(r).startswith((UNKNOWN, NOT_SPEECH)) or not r else r) for r in recent]
+    return f"The last lines before this passage were spoken by, oldest first: {', '.join(said)}. Two people talking alternate.\n\n"
+
+
 class NameIndex:
     """Maps a name the model wrote back to a cast entry, by full name first and then by a unique word."""
 
@@ -283,7 +306,15 @@ def _prompt(cast: list[CastEntry], text: str, tags: list[str], narrator: CastEnt
         "Use the cues in the text: said/asked, who is addressed, who just acted, and that two people talking to each "
         "other alternate lines. Use the character's name from the list above. A person who is only talked about in the "
         "passage is not the speaker. When unnamed people speak (a crowd, attackers, elders, onlookers) or the text "
-        "never says who it is, answer UNKNOWN; do not guess a name from the list. If an unnamed speaker is described by a role or title in the text, answer UNKNOWN: followed by those same words copied from the passage, for example UNKNOWN: old man; the same role must always be written the same way. If the speaker is a named person who is not in the list, write the name exactly as the text "
+        "never says who it is, answer UNKNOWN; do not guess a name from the list. "
+        + (
+            "A line with no speech tag, spoken by a group or by someone the passage only calls 'a man', 'a woman', 'a voice' "
+            "or 'someone', is UNKNOWN even when a listed person stands nearby. A person the line calls by a noun or by "
+            "a name ('Human,' 'Child,' 'Dokja-ssi.') is the one spoken TO, never the speaker. "
+            if CROWD_RULE
+            else ""
+        )
+        + "If an unnamed speaker is described by a role or title in the text, answer UNKNOWN: followed by those same words copied from the passage, for example UNKNOWN: old man; the same role must always be written the same way. If the speaker is a named person who is not in the list, write the name exactly as the text "
         "gives it. If the quote is not spoken or thought by a person (a sign, written text, a scare quote), "
         f"answer NONE.\n\n{text}\n\n"
         "Answer as JSON with one entry for every tag, like this (replace Name):\n"
@@ -530,10 +561,17 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
     narrator = first_person_narrator(store, novel_id, chapter, cast)
     answers: dict[str, str] = {}
     tag_window: dict[str, str] = {}
+    seen_text = ""
+    recent: list[str] = []
     for text in windows(chapter):
-        answers.update(ask_window(client, cast, text, report, novel_id, number, narrator))
-        for tag in re.findall(r"\[(\d+\.\d+)\]", text):
+        seen_text += "\n" + text
+        shown = scene_cast(cast, seen_text, narrator) if SCENE_CAST else cast
+        got = ask_window(client, shown, text, report, novel_id, number, narrator, note=turn_note(recent) if PREV_SPEAKERS else "")
+        answers.update(got)
+        tags = re.findall(r"\[(\d+\.\d+)\]", text)
+        for tag in tags:
             tag_window[tag] = text
+        recent = [got.get(t, "") for t in tags][-3:]
 
     blocks = {b.index: b.text for b in chapter.blocks}
     quote_of: dict[str, str] = {}
@@ -681,6 +719,15 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
     store.conn.commit()
     return report
 
+
+#: Prompt-context switches, each measurable on its own in the ablation (speaker_diag REPORT 6.3, 6.4).
+#: SCENE_CAST: a window shows only people the chapter has introduced by the end of that window, not the whole chapter's cast
+#: (ORV ch3 gave six lines to Han Myungoh before the text names him). PREV_SPEAKERS: the window's prompt says who spoke the
+#: last lines of the previous window (turn-taking across a cut). CROWD_RULE: untagged crowd/"a man" lines are UNKNOWN and
+#: a person called by a noun is the listener.
+SCENE_CAST = os.environ.get("ECHOTALES_READER_SCENE_CAST", "1") == "1"
+PREV_SPEAKERS = os.environ.get("ECHOTALES_READER_PREV_SPEAKERS", "1") == "1"
+CROWD_RULE = os.environ.get("ECHOTALES_READER_CROWD_RULE", "1") == "1"
 
 #: Switch for the re-ask of rejected answers (`_second_chance`), so an ablation can measure it on the reference chapters.
 SECOND_CHANCE = os.environ.get("ECHOTALES_READER_SECOND_CHANCE", "1") == "1"

@@ -111,6 +111,25 @@ def test_a_role_written_three_ways_is_one_slot() -> None:
     assert len(ids) == 1 and next(iter(ids)).startswith("n:title:")
 
 
+class TestPromptContext:
+    def test_a_window_shows_only_people_introduced_so_far_but_always_the_narrator(self) -> None:
+        cast = [sp.CastEntry("a", "Alice"), sp.CastEntry("h", "Han Myungoh", ["Han"]), sp.CastEntry("d", "Kim Dokja", ["Dokja"])]
+        shown = sp.scene_cast(cast, "#0: Alice walked in. “Hello.”", narrator=cast[2])
+        assert [e.name for e in shown] == ["Alice", "Kim Dokja"]
+        later = sp.scene_cast(cast, "#0: Alice walked in.\n#9: Han Myungoh stood up.", narrator=None)
+        assert [e.name for e in later] == ["Alice", "Han Myungoh"]
+        assert sp.scene_cast(cast, "nobody here", narrator=None) == cast  # never an empty list
+
+    def test_the_turn_note_names_the_last_speakers_and_is_empty_before_the_first_window(self) -> None:
+        assert sp.turn_note([]) == "" and sp.turn_note(["", ""]) == ""
+        note = sp.turn_note(["Kim Dokja", "UNKNOWN", "Yoo Sangah"])
+        assert "Kim Dokja, an unnamed speaker, Yoo Sangah" in note
+
+    def test_the_prompt_carries_the_crowd_and_listener_rules(self) -> None:
+        prompt = sp._prompt([sp.CastEntry("a", "Alice")], "#0: [0.0]“Hi.”", ["0.0"])
+        assert "UNKNOWN even when a listed person stands nearby" in prompt and "spoken TO" in prompt
+
+
 def test_two_different_ranks_are_not_merged() -> None:
     store, _ = _run(
         ["“One.” the first elder said.", "“Two.” the second elder said."],
