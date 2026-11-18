@@ -89,11 +89,15 @@ class SpeakerReport:
     gender_rejected: int = 0
     split_quote: int = 0
     second_chance: int = 0
+    explicit_kept: int = 0
+    first_person: int = 0
+    roles_merged: int = 0
 
 
 #: Korean/Japanese honorific suffixes attached to a name. "Yoo Sangah-ssi" is Yoo Sangah, but without this the matcher saw a
 #: new word, resolved nothing, and `_mint_new_speakers` created a duplicate entity that later chapters then answered with.
 _HONORIFIC = re.compile(r"[-\s](ssi|nim|sama|san|kun|chan|senpai|sunbae|hyung|noona|oppa|unni)\b", re.IGNORECASE)
+_HONORIFIC_TAIL = r"(?:[-\s](?:ssi|nim|sama|san|kun|chan|senpai|sunbae|hyung|noona|oppa|unni))?"
 
 
 def _norm(text: str) -> str:
@@ -322,8 +326,11 @@ def ask_window(
 
 def addresses(quote: str, name: str) -> bool:
     """True when the quote opens by calling `name` ("My dear Mr. Bennet,", "Alice, come here!"): a vocative at the very
-    start, ended by a comma, "!" or "?", so a name later in the sentence or narration is not one."""
-    pattern = r"^[\W_]*(?:my\s+)?(?:dear\s+)?" + re.escape(name) + r"\s*[,!?]"
+    start, ended by a comma, "!", "?" or a full stop, so a name later in the sentence or narration is not one.
+
+    An honorific suffix may follow the name: ORV ch3 b51 `"Yoo Sangah-ssi. Isn't that Department Head Han..."` is
+    spoken TO Sangah, and the old pattern (comma, "!" or "?" only) let it through as hers (speaker_diag REPORT 6.5)."""
+    pattern = r"^[\W_]*(?:my\s+)?(?:dear\s+)?" + re.escape(name) + _HONORIFIC_TAIL + r"\s*[,!?.]"
     return re.match(pattern, quote, re.IGNORECASE) is not None
 
 
@@ -372,7 +379,8 @@ def rejection(store: Store, entry: CastEntry, quote_text: str) -> tuple[str, str
 
     "addressee": the line opens by calling this person. "gender": the tag after the quote ("returned she") names the
     other gender than the entry's title or recorded gender."""
-    if addresses(quote_text, entry.name):
+    # Any name the person is called by, not only the display name: "Dokja-ssi," addresses Kim Dokja.
+    if any(addresses(quote_text, surface) for surface in entry.surfaces() if len(_norm(surface)) >= 3):
         return "addressee", ""
     side = tag_gender(quote_text)
     if side:
@@ -382,6 +390,91 @@ def rejection(store: Store, entry: CastEntry, quote_text: str) -> tuple[str, str
         if known in ("male", "female") and known != side:
             return "gender", known
     return "", ""
+
+
+_TAG_VERBS = (
+    r"(?:said|asked|replied|answered|responded|whispered|muttered|murmured|mumbled|shouted|yelled|cried|called|"
+    r"exclaimed|inquired|continued|added|returned|observed|retorted)"
+)
+_FP_AFTER = re.compile(rf"^\W{{0,3}}I\s+(?:\w+\s+){{0,3}}?{_TAG_VERBS}\b", re.IGNORECASE)
+_FP_BEFORE = re.compile(rf"(?<![A-Za-z])I\b[^.!?\"“”]{{0,90}}?\b{_TAG_VERBS}\b[^.!?\"“”]{{0,30}}$")
+
+
+def _around_quote(block_text: str, q: int) -> tuple[str, str]:
+    """(the clause just before quote `q`, the clause just after it), cut at the neighbouring quote or sentence end."""
+    matches = list(QUOTE.finditer(block_text))
+    if q >= len(matches):
+        return "", ""
+    m = matches[q]
+    before = block_text[max(0, m.start() - 140):m.start()]
+    cut = max(before.rfind(c) for c in '.!?”"')
+    before = before[cut + 1:] if cut >= 0 else before
+    after = block_text[m.end():m.end() + 140]
+    ends = [i for i in (after.find("“"), after.find('"')) if i >= 0]
+    after = after[:min(ends)] if ends else after
+    return before, after
+
+
+def first_person_tag(block_text: str, q: int) -> bool:
+    """Whether quote `q` carries a first-person speech tag in its own block: `"...?" I asked`, `I turned and asked, "..."`.
+    In a first-person chapter that line is the narrator's whatever the model said (ORV ch3 b15, speaker_diag 6.3)."""
+    before, after = _around_quote(block_text, q)
+    return bool(_FP_AFTER.match(after)) or bool(_FP_BEFORE.search(before))
+
+
+def _speaker_words(store: Store, self_id: str) -> list[str]:
+    entity = store.get_self(self_id)
+    names = [entity.canonical_label] if entity else [self_id]
+    names += [a.alias for a in store.get_aliases_for(TargetKind.SELF, self_id) if a.retracted_at is None]
+    words = [w for n in list(names) for w in _norm(n).split() if len(w) >= 4]
+    return [x for x in dict.fromkeys(_norm(n) for n in names + words) if len(x) >= 3]
+
+
+def own_explicit_tag(store: Store, self_id: str, block_text: str, q: int) -> bool:
+    """Whether the quote's own block tags `self_id` as its speaker: the name then a speech verb in the clause right after
+    (`"..." Yoo Sangah replied proudly`) or right before (`Han said, "..."`), the name being the subject.
+
+    The reader overwrote a correct EXPLICIT Yoo Sangah with Kim Dokja on ORV ch2 b27. An EXPLICIT row can also be a tag
+    borrowed from the neighbouring paragraph (ORV ch4 b34, b36), and then the model may still overrule it."""
+    before, after = _around_quote(block_text, q)
+    for name in _speaker_words(store, self_id):
+        n = re.escape(name)
+        after_rx = rf"^\W{{0,3}}(?:the\s+)?{n}\b[^.!?]{{0,40}}?\b{_TAG_VERBS}\b|^\W{{0,3}}{_TAG_VERBS}\s+(?:the\s+)?{n}\b"
+        before_rx = rf"\b{n}\b[^.!?]{{0,40}}?\b{_TAG_VERBS}\b[^.!?]{{0,25}}$"
+        if re.search(after_rx, _norm_keep(after), re.IGNORECASE) or re.search(before_rx, _norm_keep(before), re.IGNORECASE):
+            return True
+    return False
+
+
+def _norm_keep(text: str) -> str:
+    """Lower-cased text with honorific suffixes dropped and punctuation that ends clauses kept."""
+    return _HONORIFIC.sub("", text.replace("’", "'"))
+
+
+def _merge_roles(role_spans: dict[str, list[Span]]) -> int:
+    """One slot for a role the model wrote several ways in a chapter ("academy elder", "elder", "elder of the academy").
+
+    RI ch4: the academy elder spoke 9 lines; the model's wording varied, each wording became its own title entity or
+    anonymous slot, and he got a different voice per line (speaker_diag REPORT 2 (j), 6.2). A role merges into the
+    role whose words contain all of its own, provided that target is unique: "first elder" and "second elder" stay two."""
+    content = {r: frozenset(r.split("_")) - {"of", "the", ""} for r in role_spans}
+    target: dict[str, str] = {}
+    for r in role_spans:
+        cands = [o for o in role_spans if content[o] >= content[r]]
+        maximal = {content[o] for o in cands if not any(content[o] < content[p] for p in cands)}
+        if len(maximal) != 1:
+            continue
+        group = [o for o in role_spans if content[o] == next(iter(maximal))]
+        target[r] = max(group, key=lambda o: (len(role_spans[o]), len(o), o))
+    merged: dict[str, list[Span]] = {}
+    moved = 0
+    for r, spans in role_spans.items():
+        t = target.get(r, r)
+        moved += t != r
+        merged.setdefault(t, []).extend(spans)
+    role_spans.clear()
+    role_spans.update(merged)
+    return moved
 
 
 def _second_chance(
@@ -484,6 +577,16 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             report.human_kept += 1
             note("human_kept")
             continue
+        if span.attribution_method is AttributionMethod.EXPLICIT and span.speaker_self_id and own_explicit_tag(
+            store, span.speaker_self_id, blocks.get(block_index, ""), q
+        ):
+            report.explicit_kept += 1
+            note("explicit_kept", span.speaker_self_id)
+            continue
+        if narrator is not None and first_person_tag(blocks.get(block_index, ""), q):
+            if _norm(speaker) != _norm(narrator.name):
+                report.first_person += 1
+            speaker = narrator.name
         if continues_after_tag(blocks.get(block_index, ""), starts, q):
             # The second half of a quote cut by its tag has the first half's speaker, whatever the model answered for
             # it: with the first half left unknown (addressee or gender check) the model still credited the second to
@@ -567,6 +670,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             store.set_span_type(novel_id, span.id, SpanType.DIALOGUE.value)
             report.retyped += 1
         report.attributed += 1
+    report.roles_merged += _merge_roles(role_spans)
     resolved_roles = _reconcile_roles(store, client, chapter, cast, index, role_spans, report) if role_spans and RECONCILE_ROLES else set()
     for role, role_lines in role_spans.items():
         if role in resolved_roles:
