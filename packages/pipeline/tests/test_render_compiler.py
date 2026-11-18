@@ -197,6 +197,18 @@ def test_stable_assumed_appearance_marker() -> None:
     assert ident_a1 != ident_b
 
 
+def test_an_undescribed_character_gets_a_genre_neutral_marker_and_the_dark_style_has_no_typo() -> None:
+    # The stand-in hair marker for a character with no appearance facts was drawn from a list that included "wooden
+    # hairpin" and "cloth ribbon", which put cultivation-era hair on a Regency heroine.
+    markers = {
+        identity_sentence(CharacterBrief(name=f"Person {i}", gender="female")).split(" with ", 1)[1] for i in range(60)
+    }
+    assert len(markers) > 3
+    assert not any(w in m for m in markers for w in ("hairpin", "wooden", "cloth"))
+    dark = compile_prompt(cliff(OutputMode.MANGA, lighting="night", mood="dark"), model_profile("z-image-turbo"))
+    assert "deep deep" not in dark.positive
+
+
 def test_non_manhua_genre_styles_on_zimage() -> None:
     vic_brief = cliff(manhua=False, art_direction="victorian gothic", era_wardrobe="frock coats and top hats")
     compiled = compile_prompt(vic_brief, model_profile("z-image-turbo"))

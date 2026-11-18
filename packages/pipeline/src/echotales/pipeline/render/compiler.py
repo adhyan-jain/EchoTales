@@ -494,9 +494,9 @@ def identity_sentence(c: CharacterBrief, appearance: AppearanceInText = Appearan
         _ASSUMED_MARKERS = [
             "hair tied in a high ponytail",
             "short neatly combed hair",
-            "hair pinned with a wooden hairpin",
+            "hair pinned up at the back",
             "shoulder-length dark hair",
-            "hair tied back with a cloth ribbon",
+            "hair tied back with a ribbon",
             "parted straight hair",
             "braided side hair",
             "thick swept-back hair",
@@ -648,7 +648,7 @@ def _style_sentence(b: PanelBrief) -> str:
     if b.mode is OutputMode.MANGA:
         is_dark = any(w in f"{b.lighting} {b.mood} {b.setting}".lower() for w in ("night", "dark", "horror", "midnight", "shadow", "dungeon", "gloomy", "ominous"))
         if is_dark:
-            text = ("A dark high-contrast black-and-white manga illustration: heavy black ink shading, deep deep shadows, "
+            text = ("A dark high-contrast black-and-white manga illustration: heavy black ink shading, deep shadows, "
                     "dramatic chiaroscuro, dark atmospheric manga aesthetic, pure black and white only, no panel borders, "
                     "no speech bubbles and no text")
         else:
