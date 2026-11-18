@@ -132,6 +132,11 @@ class TestRulesAcrossWritingStyles:
         assert not self._own("Mr. Bennet", "“Do you not want to know?” cried his wife impatiently. Mr. Bennet made no answer.")
         assert not self._own("Alice", "“Come here,” he said. Alice sat down.")
         assert not self._own("Fang Yuan", "“Old bastard Fang, stop!” the attackers shouted at Fang Yuan.")
+        # LotM ch3/14/21: the name is the listener ("looked at X and said,"), the model was right and the rule was wrong
+        assert not self._own("Zhou Mingrui", "She looked at Zhou Mingrui and said, “Remember the bread.”")
+        assert not self._own("Klein", "Her emerald eyes smiled at Klein as she said, “Help me.”")
+        assert not self._own("Old Neil", "he handed it over to Old Neil and thoughtlessly asked, “Is that all?”")
+        assert self._own("Daly", "Seated across him, Daly laughed and said, “Fine.”")
 
     def test_first_person_tag_is_only_a_tag_outside_the_quote(self) -> None:
         assert sp.first_person_tag('"Do you know what that is?" I asked.', 0)
@@ -145,6 +150,24 @@ class TestRulesAcrossWritingStyles:
         assert not sp.addresses("Elizabeth.", "Elizabeth")
         assert sp.addresses("Elizabeth, my dear,", "Elizabeth")
         assert sp.addresses("Dokja-ssi. Are you there?", "Dokja")
+
+
+def test_a_first_person_narrator_is_carried_to_a_chapter_that_never_names_him() -> None:
+    # ORV ch3: Kim Dokja is not in the chapter's cast at all; ch2 identified him, and the "I" is the same person.
+    store = Store(":memory:")
+    first = Chapter(novel_id="carry", number=1.0, title="T", source_href="a", blocks=[Block(
+        index=0, block_type=BlockType.PROSE,
+        text=" ".join("I looked at Sangah and Sangah smiled." for _ in range(15)) + ' "Dokja-ssi, what do you read?" "Dokja-ssi, you are quiet."')])
+    second = Chapter(novel_id="carry", number=2.0, title="T", source_href="a", blocks=[Block(
+        index=0, block_type=BlockType.PROSE, text=" ".join("I walked home alone." for _ in range(15)))])
+    third = Chapter(novel_id="carry", number=3.0, title="T", source_href="a", blocks=[Block(
+        index=0, block_type=BlockType.PROSE, text="Sangah walked home. She did not speak.")])
+    cast = [sp.CastEntry("s", "Yoo Sangah", ["Sangah"]), sp.CastEntry("d", "Kim Dokja", ["Dokja"])]
+    assert sp.narrator_for(store, "carry", first, list(cast)).self_id == "d"  # type: ignore[union-attr]
+    later_cast = [cast[0]]
+    carried = sp.narrator_for(store, "carry", second, later_cast)
+    assert carried is not None and carried.self_id == "d" and any(e.self_id == "d" for e in later_cast)
+    assert sp.narrator_for(store, "carry", third, [cast[0]]) is None  # third person: no narrator, whatever was carried
 
 
 class TestPromptContext:

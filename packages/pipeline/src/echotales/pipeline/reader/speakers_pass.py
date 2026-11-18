@@ -288,6 +288,29 @@ def first_person_narrator(store: Store, novel_id: str, chapter: Chapter, cast: l
     return best[1] if best else None
 
 
+#: The first-person narrator last identified in each novel. A first-person book keeps its narrator: ORV's "I" is Kim
+#: Dokja in every chapter, but ch3 never names him (he is not even in that chapter's cast) and ch4 names him once, so
+#: per-chapter detection found him in 2 of 4 reference chapters and the prompt's narrator note was missing for the rest.
+_NARRATORS: dict[str, CastEntry] = {}
+NARRATOR_CARRY = os.environ.get("ECHOTALES_READER_NARRATOR_CARRY", "1") == "1"
+
+
+def narrator_for(store: Store, novel_id: str, chapter: Chapter, cast: list[CastEntry]) -> CastEntry | None:
+    """The narrator of a first-person chapter: found in this chapter, else the one the novel's earlier chapters found
+    (added to `cast` so the model can answer with the name). None for a chapter not narrated in the first person."""
+    found = first_person_narrator(store, novel_id, chapter, cast)
+    if found is not None:
+        _NARRATORS[novel_id] = found
+        return found
+    narration = " ".join(QUOTE.sub(" ", b.text) for b in chapter.blocks)
+    earlier = _NARRATORS.get(novel_id)
+    if not NARRATOR_CARRY or earlier is None or len(_FIRST_PERSON.findall(narration)) < FIRST_PERSON_MIN:
+        return None
+    if not any(e.self_id == earlier.self_id for e in cast):
+        cast.append(earlier)
+    return earlier
+
+
 def _prompt(cast: list[CastEntry], text: str, tags: list[str], narrator: CastEntry | None = None, note: str = "") -> str:
     people = "\n".join(
         f"- {e.name}" + (f" (also called: {', '.join(e.aliases[:6])})" if e.aliases else "") for e in cast
@@ -472,13 +495,31 @@ def own_explicit_tag(store: Store, self_id: str, block_text: str, q: int) -> boo
     The reader overwrote a correct EXPLICIT Yoo Sangah with Kim Dokja on ORV ch2 b27. An EXPLICIT row can also be a tag
     borrowed from the neighbouring paragraph (ORV ch4 b34, b36), and then the model may still overrule it."""
     before, after = _around_quote(block_text, q)
+    before, after = _norm_keep(before), _norm_keep(after)
     for name in _speaker_words(store, self_id):
         n = r"\.?\s+".join(re.escape(w) for w in name.split())  # "mr bennet" must match the text's "Mr. Bennet"
-        after_rx = rf"^\W{{0,3}}(?:the\s+)?{n}\b[^.!?]{{0,40}}?\b{_TAG_VERBS}\b|^\W{{0,3}}{_TAG_VERBS}\s+(?:the\s+)?{n}\b"
-        before_rx = rf"\b{n}\b[^.!?]{{0,40}}?\b{_TAG_VERBS}\b[^.!?]{{0,25}}$"
-        if re.search(after_rx, _norm_keep(after), re.IGNORECASE) or re.search(before_rx, _norm_keep(before), re.IGNORECASE):
+        if re.match(rf"^\W{{0,3}}{_TAG_VERBS}\s+(?:the\s+)?{n}\b", after, re.IGNORECASE):
             return True
+        for where, clause in (("after", after), ("before", before)):
+            for m in re.finditer(rf"\b{n}\b", clause, re.IGNORECASE):
+                if where == "after" and re.sub(r"(?i:the)|\W+", "", clause[:m.start()]):
+                    continue  # after the quote the tag opens with the name
+                # "she looked at Zhou Mingrui and said," names the listener: a name after a preposition is not the subject
+                lead = clause[:m.start()].split()
+                while lead and lead[-1][:1].isupper() and not lead[-1].endswith(","):
+                    lead.pop()  # the match may be one word of a longer name ("at Zhou [Mingrui]")
+                if lead and lead[-1].lower().strip(",") in _PREPOSITIONS:
+                    continue
+                found = re.match(rf"((?:\W+[\w'-]+){{0,3}}?)\W+{_TAG_VERBS}\b(.*)$", clause[m.end():], re.IGNORECASE | re.DOTALL)
+                if not found or any(w.lower() in _PREPOSITIONS for w in re.findall(r"[\w'-]+", found.group(1))):
+                    continue
+                if where == "before" and len(found.group(2)) > 25:
+                    continue  # the verb is not the one introducing this quote
+                return True
     return False
+
+
+_PREPOSITIONS = frozenset({"at", "to", "toward", "towards", "with", "from", "for", "of", "over", "by", "beside", "about", "upon", "on"})
 
 
 def _norm_keep(text: str) -> str:
@@ -561,8 +602,8 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
     report = SpeakerReport()
     novel_id, number = chapter.novel_id, chapter.number
     cast = build_cast(store, novel_id, "\n".join(b.text for b in chapter.blocks), number)
+    narrator = narrator_for(store, novel_id, chapter, cast)
     index = NameIndex(cast)
-    narrator = first_person_narrator(store, novel_id, chapter, cast)
     answers: dict[str, str] = {}
     tag_window: dict[str, str] = {}
     seen_text = ""
