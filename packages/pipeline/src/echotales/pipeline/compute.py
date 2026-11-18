@@ -132,6 +132,8 @@ class ComputePolicy:
     #: How many times larger the reader's input windows may be than the local ones: 1 unless the language model is
     #: the RunPod one, whose context is much larger than the 4096/8192 the local windows were sized for.
     context_scale: int = 1
+    #: `render.director_model` (config.json): beats both the task profile and `low_director_model`.
+    director_model_override: str = ""
 
     @property
     def cloud(self) -> bool:
@@ -164,7 +166,9 @@ class ComputePolicy:
         return min(configured, self.low_num_ctx) if self.low else configured
 
     def director_model(self, profile_model: str) -> str:
-        """The director's ollama model: the profile's, unless `local-low` was given a smaller one."""
+        """The director's ollama model: `render.director_model` if set, else the profile's, unless `local-low` was given a smaller one."""
+        if self.director_model_override:
+            return self.director_model_override
         return (self.low_director_model or profile_model) if self.low else profile_model
 
     def llm_missing(self) -> list[str]:
@@ -222,7 +226,7 @@ def policy(settings: object | None = None) -> ComputePolicy:
     if llm == "runpod":
         scale = max(1, min(int(s.cloud_context_scale), int(s.runpod_llm_context) // max(1, int(s.llm_local_num_ctx))))
     return ComputePolicy(
-        context_scale=scale,
+        context_scale=scale, director_model_override=str(getattr(s, "render_director_model", "") or ""),
         mode=mode, llm_provider=llm, image_provider=image,
         local_image_engine=_norm(getattr(s, "local_image_engine", "noobai")) or "noobai",
         preview_scenes=int(s.preview_scenes), full_scenes=int(s.full_scenes),

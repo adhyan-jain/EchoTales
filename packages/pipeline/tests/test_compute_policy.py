@@ -317,3 +317,14 @@ def test_reader_windows_hold_more_on_runpod_and_are_unchanged_locally(monkeypatc
     get_settings(reload=True)  # leave the cached settings as the rest of the suite expects
     assert all(len(w) <= WINDOW_CHARS + 700 for w in local)
     assert len(hosted) < len(local) and "#11:" in hosted[-1]
+
+
+def test_render_director_model_overrides_the_director_in_every_compute_mode_and_reaches_the_client() -> None:
+    # `render.director_model` in config.json: until now only `local-low` could swap the director's model, and only via
+    # a .env variable, so a non-low run could not try a different director without editing tasks.py.
+    for mode in ("local-low", "local-high"):
+        assert _p(compute=mode, render_director_model="qwen2.5:7b").director_model("gemma2:9b") == "qwen2.5:7b"
+    assert _p().director_model("gemma2:9b") == "gemma2:9b"
+    client = ModelClient(settings=_s(compute="local-high", model_backend=ModelBackend.OLLAMA, render_director_model="llama3.1:8b"))
+    assert client.model_for(Task.PANEL_DIRECTION) == "llama3.1:8b"
+    assert client.model_for(Task.NER) == "qwen2.5:7b"  # other tasks keep their own profile

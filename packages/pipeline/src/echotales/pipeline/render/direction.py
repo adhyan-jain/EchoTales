@@ -46,74 +46,99 @@ log = logging.getLogger(__name__)
 #: The director's output is prose the budget then has to carry, so a
 #: specification stated correctly here is free and the same specification
 #: enforced later is not -- at chapter scale that difference compounds.
-SYSTEM = (
-    "You are the art director for a Chinese xianxia web-novel adaptation. "
-    "Given a passage, decide the single most striking image to draw for it. "
-    "Think like a storyboard artist: one clear subject, one clear action, a "
-    "real setting, a definite time of day. Never describe several moments at "
-    "once.\n\n"
+def system_prompt(novel_id: str = "") -> str:
+    """The director's rules for this novel's world.
 
-    "STRICT RULES — violations produce unusable panels:\n\n"
+    Rule 4 and the examples used to be hardcoded Chinese xianxia ("hanfu ... Ancient China only"), so a Regency novel
+    (the Pride and Prejudice demo book) was told to draw hanfu. The world comes from the same genre profile every other
+    prompt reads (`persona/genre.py`); only an xianxia project (or no project, which `genre_of` treats as xianxia)
+    keeps the xianxia rule. Every other rule is about passages, not genres, and is unchanged.
+    """
+    from echotales.pipeline.persona.genre import genre_of
 
-    "1. ONLY describe what the passage explicitly shows. If clothing colour, "
-    "an object, or a character's expression is not stated in the passage, do "
-    "not invent it. The cast appearance block is reference only -- never put "
-    "appearance details into 'action' unless the passage itself mentions them.\n\n"
+    if genre_of(novel_id) == "xianxia":
+        world = (
+            "4. Ancient China only. Use concrete detail: hanfu, sashes, upturned tiled "
+            "roofs, stone courtyards. No kimono, obi, torii, paper screens, cherry "
+            "blossom.\n\n"
+        )
+        kind = "a Chinese xianxia web-novel adaptation"
+    else:
+        world = (
+            "4. Stay inside the novel's own world and period, given as 'Novel setting' in the request. "
+            "Use concrete detail the passage or that setting supports (clothes, rooms, furniture, vehicles of that "
+            "time and place); nothing anachronistic and nothing borrowed from another culture.\n\n"
+        )
+        kind = "a novel adaptation"
+    return (
+        f"You are the art director for {kind}. "
+        "Given a passage, decide the single most striking image to draw for it. "
+        "Think like a storyboard artist: one clear subject, one clear action, a "
+        "real setting, a definite time of day. Never describe several moments at "
+        "once.\n\n"
 
-    "2. EVERY person you name must have their sex stated. 'A man' or 'a woman' "
-    "or the character's name (if male, write it). Anything unstated is drawn "
-    "female by default. If the passage names no one, draw the setting only.\n\n"
+        "STRICT RULES — violations produce unusable panels:\n\n"
 
-    "3. NEVER invent people. No 'warriors', 'guards', 'warrior women', "
-    "'onlookers', 'soldiers', 'elders' unless those words appear in the "
-    "passage. Dialogue is one person addressing another -- not a crowd. "
-    "An empty or one-person scene is correct information, not a gap to fill.\n\n"
+        "1. ONLY describe what the passage explicitly shows. If clothing colour, "
+        "an object, or a character's expression is not stated in the passage, do "
+        "not invent it. The cast appearance block is reference only -- never put "
+        "appearance details into 'action' unless the passage itself mentions them.\n\n"
 
-    "4. Ancient China only. Use concrete detail: hanfu, sashes, upturned tiled "
-    "roofs, stone courtyards. No kimono, obi, torii, paper screens, cherry "
-    "blossom.\n\n"
+        "2. EVERY person you name must have their sex stated. 'A man' or 'a woman' "
+        "or the character's name (if male, write it). Anything unstated is drawn "
+        "female by default. If the passage names no one, draw the setting only.\n\n"
 
-    "5. You may only reference characters whose names appear in the CAST list below. "
-    "If CAST is empty, describe the scene without naming any character — use 'a figure', 'someone', 'the observer', or describe the environment alone. "
-    "Never invent character names. Never draw on external knowledge of the source novel. "
-    "Names outside CAST are forbidden even if they seem appropriate to the setting.\n\n"
+        "3. NEVER invent people. No 'warriors', 'guards', 'warrior women', "
+        "'onlookers', 'soldiers', 'elders' unless those words appear in the "
+        "passage. Dialogue is one person addressing another -- not a crowd. "
+        "An empty or one-person scene is correct information, not a gap to fill.\n\n"
 
-    "6. If a character's gender is unstated, do not draw them as a specific character; "
-    "render as a silhouette, back-turned figure, or environmental element.\n\n"
+        + world +
 
-    "7. One place per shot. One ground plane, one building, one horizon.\n\n"
+        "5. You may only reference characters whose names appear in the CAST list below. "
+        "If CAST is empty, describe the scene without naming any character — use 'a figure', 'someone', 'the observer', or describe the environment alone. "
+        "Never invent character names. Never draw on external knowledge of the source novel. "
+        "Names outside CAST are forbidden even if they seem appropriate to the setting.\n\n"
 
-    "8. No film vocabulary. No 'close-up on', 'the shot' pans', 'into the camera'.\n\n"
+        "6. If a character's gender is unstated, do not draw them as a specific character; "
+        "render as a silhouette, back-turned figure, or environmental element.\n\n"
 
-    "9. FACIAL EXPRESSION IS INDEPENDENT OF PHYSICAL CONDITION. A wounded, "
-    "bleeding, or exhausted character does not default to a pained "
-    "expression -- report the face only as the passage actually states it, "
-    "as one short tag ('calm_expression', 'blank_stare', 'pained_expression', "
-    "'unmoved'), separate from wounds/blood/torn clothes. If the passage "
-    "explicitly states the character's expression does NOT change, or stays "
-    "calm/blank/unreadable despite what is happening to them, that contrast "
-    "is exactly what to report -- it is real information, not a contradiction "
-    "to resolve. If the passage says nothing about the face, leave this "
-    "empty; do not infer one from the body's condition.\n\n"
+        "7. One place per shot. One ground plane, one building, one horizon.\n\n"
 
-    "10. OUTPUT TAGS, NOT SENTENCES. This checkpoint (NoobAI/Illustrious) is "
-    "trained on Danbooru-style tag captions, not narrative English -- a "
-    "controlled comparison on this novel measured tag-style prompts "
-    "rendering the actual described action (torn clothes, blood, a crowd "
-    "surrounding the subject) where narrative sentences describing the "
-    "identical content rendered an unrelated calm scene, every time. Every "
-    "field below is a short, comma-separated list of tags: lowercase, "
-    "underscores for multi-word concepts, no articles ('a', 'the'), no "
-    "conjugated verbs, no connecting words ('and', 'while', 'as'), no "
-    "periods. Example tags: surrounded, weapons_drawn, fighting_stance, "
-    "standing_alone, kneeling, running, torn_clothes, blood, disheveled, "
-    "wounded, bruised, exhausted, mountain_background, stone_courtyard, "
-    "siege, misty_hills, dusk, night. Do not include numeric headcount tags "
-    "('1boy', '2boys', 'male focus') -- those are added separately. A "
-    "character's name is the one exception to snake_case: write it exactly "
-    "as given in CAST, with its normal spacing and capitalization ('Fang "
-    "Yuan', not 'fang_yuan')."
-)
+        "8. No film vocabulary. No 'close-up on', 'the shot' pans', 'into the camera'.\n\n"
+
+        "9. FACIAL EXPRESSION IS INDEPENDENT OF PHYSICAL CONDITION. A wounded, "
+        "bleeding, or exhausted character does not default to a pained "
+        "expression -- report the face only as the passage actually states it, "
+        "as one short phrase ('calm', 'blank stare', 'pained', 'unmoved'), "
+        "separate from wounds/blood/torn clothes. If the passage "
+        "explicitly states the character's expression does NOT change, or stays "
+        "calm/blank/unreadable despite what is happening to them, that contrast "
+        "is exactly what to report -- it is real information, not a contradiction "
+        "to resolve. If the passage says nothing about the face, leave this "
+        "empty; do not infer one from the body's condition.\n\n"
+
+        "10. SHORT PLAIN PHRASES, NOT SENTENCES AND NOT DATABASE TAGS. The image "
+        "prompt is written afterwards from your fields, so each field is a short "
+        "plain-English phrase (or a few, comma-separated) saying what is visible: "
+        "lowercase, two to five words each, spaces not underscores, no articles, "
+        "no connecting words ('and', 'while', 'as'), no periods. Examples: "
+        "'standing alone', 'hands clasped', 'torn sleeve', 'by the window', "
+        "'candlelight', 'crowd watching'. Do not include numeric headcount tags "
+        "('1boy', '2boys', 'male focus') -- those are added separately. A "
+        "character's name is written exactly as given in CAST, with its normal "
+        "spacing and capitalization.\n\n"
+
+        "11. The structured fields ('characters', 'others', 'camera_angle', "
+        "'location_detail', 'props') follow the same rules: 'characters' lists "
+        "only people in CAST who are in the shot, 'others' is null unless the "
+        "passage itself names a group, and 'props' holds only objects the "
+        "passage names."
+    )
+
+
+#: Kept for callers that import the constant; an empty novel id is treated as xianxia by `genre_of`.
+SYSTEM = system_prompt("")
 
 
 class CharacterDirection(BaseModel):
@@ -238,46 +263,82 @@ def build_prompt(
         "Passage:",
         beat_text[:max_chars].strip(),
         "",
-        "Return JSON with these keys. EVERY field is a comma-separated list "
-        "of short tags -- lowercase, underscores for multi-word concepts, "
-        "no sentences, no articles, no conjugated verbs, no periods:",
+        "Return JSON with these keys. Text fields are short plain-English "
+        "phrases (comma-separated if several): lowercase, spaces not "
+        "underscores, no sentences, no articles, no periods:",
         '  shot          one of "wide", "medium", "close"',
-        "  action        pose/action tags for the single moment to draw, "
+        '  camera_angle  one of "eye-level", "low-angle", "high-angle", '
+        '"dutch-angle", "birds-eye"; "eye-level" unless the passage gives a reason',
+        "  action        what the single moment to draw looks like, "
         "using only what the passage states (do not add clothing colours "
         "or objects the passage does not mention; facial expression goes "
-        "in its own 'expression' field below, not here). Example: "
-        "\"weapons_drawn, fighting_stance\" or \"kneeling, exhausted\".",
+        "in its own field below, not here). Example: "
+        "\"weapons drawn, fighting stance\" or \"kneeling, exhausted\".",
         "  layout        the character's real name (exactly as written in "
         "CAST -- never the letter X or a placeholder), followed by "
-        "spatial/count tags. Example when surrounded: \"Fang Yuan, "
-        "surrounded\". Example when alone: \"Fang Yuan, solo, "
-        "standing_alone\". If CAST is empty, use \"a figure\" instead of a name.",
-        "  setting       location tags, concretely: the room or place and its "
-        "notable furniture or landmarks, taken from the passage or from the "
+        "spatial/count phrases. Example when surrounded: \"Fang Yuan, "
+        "surrounded\". Example when alone: \"Fang Yuan, alone, "
+        "standing\". If CAST is empty, use \"a figure\" instead of a name.",
+        "  characters    list with one object per CAST member who is in the shot "
+        '(empty list if none): {"name": exactly as in CAST, "position": '
+        '"center", "left", "right", "foreground" or "background", "pose": '
+        'e.g. "standing", "sitting", "kneeling", "walking", "expression": the '
+        'face as one short phrase, only if the passage states it, "condition": '
+        'visible state such as "wounded" or "torn sleeve", empty if none}. '
+        "Never a name outside CAST.",
+        "  others        null, unless the passage itself names other people in "
+        'the shot; then {"kind": the group as the passage names it, "count": '
+        'a number if stated else 0, "relation_to_lead": e.g. "surrounding", '
+        '"watching from afar"}',
+        "  setting       the room or place and its notable furniture or "
+        "landmarks, taken from the passage or from the "
         "scene setting given above. Leave it empty rather than invent a "
         "place; never reuse wording from these instructions.",
-        "  lighting      time of day / weather / light, as tags, ONLY if the "
+        "  location_detail  one short phrase of concrete place detail the "
+        "passage states (a window seat, a muddy lane); empty if none",
+        "  lighting      time of day / weather / light, ONLY if the "
         "passage or the scene setting states it (night, midnight, dawn, "
         "candlelight, rain). Leave it empty if it does not -- do not guess "
         "daylight.",
-        "  key_objects   list of object tags that must be visible",
-        "  mood          one or two mood tags",
-        "  expression    ONE compact face tag, only if the passage states "
-        "or clearly implies it, independent of physical condition -- a "
+        "  key_objects   list of objects that must be visible",
+        "  props         list of objects the characters handle or that the "
+        "passage singles out (a letter, a sword); only ones the passage names",
+        "  mood          one or two mood words",
+        "  expression    ONE short face phrase for the lead, only if the passage "
+        "states or clearly implies it, independent of physical condition -- a "
         "wounded character is not automatically pained. Example: "
-        "\"calm_expression\" or \"blank_stare\" for a passage that says the "
-        "expression did not change despite injury; \"pained_expression\" "
+        "\"calm\" or \"blank stare\" for a passage that says the "
+        "expression did not change despite injury; \"pained\" "
         "only if the passage actually describes pain on the face itself, "
         "not just an injury to the body. Leave empty if unstated.",
         "",
         "Only include characters the passage actually places in the scene. "
         "Do not include numeric headcount tags ('1boy', '2boys', 'male "
-        "focus') -- those are added separately from your output. 'solo' "
-        "and 'crowd' are fine as composition tags when the passage supports "
+        "focus') -- those are added separately from your output. 'alone' "
+        "and 'crowd' are fine as composition words when the passage supports "
         "them.",
         "Return only JSON.",
     ]
     return "\n".join(lines)
+
+
+def _as_tags(text: str, names: list[str]) -> str:
+    """Plain phrases back to the underscore tags the NoobAI/Illustrious path was tuned on.
+
+    The director now writes short plain phrases because the prompt compiler writes sentences from them; this legacy
+    path (compiler off, `render.prompt_compiler=false`) still wants Danbooru-style tags (HANDOFF 4.42/4.43: sentences
+    rendered an unrelated calm scene). A clause naming a cast member keeps its spacing, so the substring checks on
+    names below still match; clauses longer than four words are left as written, they are not tags."""
+    out = []
+    for clause in (c.strip() for c in text.split(",")):
+        if not clause:
+            continue
+        low = clause.lower()
+        if any(n.lower() in low for n in names) or len(clause.split()) > 4:
+            out.append(clause)
+        else:
+            out.append(re.sub(r"\s+", "_", clause))
+    return ", ".join(out)
 
 
 @dataclass(slots=True)
@@ -322,7 +383,11 @@ class Direction:
         self, *, scene_locale: str = "", world_context: str = ""
     ) -> list[str]:
         """Construct the prompt components, prioritizing what the panel shows."""
-        d = self.direction
+        names = [*self.cast, "a figure"]  # the unnamed-subject marker is matched verbatim below
+        d = self.direction.model_copy(update={
+            f: _as_tags(getattr(self.direction, f) or "", names)
+            for f in ("action", "layout", "setting", "lighting", "mood", "expression")
+        })
         shot = d.shot if d.shot in _SHOTS else "medium"
         # 2-3 tokens, not a full sentence: this used to read "wide
         # establishing shot, full scene, strong depth" etc, and giving it a
@@ -574,7 +639,7 @@ def direct_beat(
                 context_brief=context_brief,
             ),
             PanelDirection,
-            system=SYSTEM,
+            system=system_prompt(novel_id),
             novel_id=novel_id,
         )
     except Exception as exc:
@@ -785,6 +850,20 @@ def _validate_direction(
     if _has_hallucinated_group(d.layout or ""):
         log.warning("director hallucinated group in layout: %r -- blanked", d.layout)
         d = d.model_copy(update={"layout": ""})
+
+    # Director v2 lists: the same "cast-only names, never invent people" rules the prompt states for action/layout. A
+    # name outside CAST would otherwise reach `brief_from_direction` as an extra, unresolvable figure.
+    if d.characters:
+        cast_keys = {n.casefold() for n in cast}
+        kept = [c for c in d.characters if c.name.casefold() in cast_keys or any(
+            c.name.casefold() in k.split() for k in cast_keys)]
+        if len(kept) != len(d.characters):
+            log.warning("director listed characters outside CAST: %r -- dropped",
+                        [c.name for c in d.characters if c not in kept])
+            d = d.model_copy(update={"characters": kept})
+    if d.others is not None and _has_hallucinated_group(d.others.kind or ""):
+        log.warning("director hallucinated group in others: %r -- dropped", d.others.kind)
+        d = d.model_copy(update={"others": None})
 
     # Literal placeholder the model copies from the layout example -- either
     # the old sentence form ("X alone") or the tag form ("X, surrounded" /

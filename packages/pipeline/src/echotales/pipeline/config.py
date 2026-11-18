@@ -40,7 +40,7 @@ def _load_config_json() -> dict[str, object]:
     render = raw.get("render", {})
     if "direction_first" in render:
         out["render_direction_first"] = render["direction_first"]
-    for key in ("image_model", "panel_mode", "prompt_compiler"):
+    for key in ("image_model", "panel_mode", "prompt_compiler", "director_model"):
         if key in render:
             out[f"render_{key}"] = render[key]
     persona = raw.get("persona", {})
@@ -135,6 +135,10 @@ class Settings(BaseSettings):
     render_panel_mode: str = "manga"
     #: Off in stage A: `render_panels` builds its prompt inline exactly as before. On: it goes through the compiler.
     render_prompt_compiler: bool = False
+    #: The panel director's ollama model (`render.director_model` in config.json). Empty follows `llm/tasks.py` (gemma2:9b)
+    #: or, in `local-low`, `low_compute_director_model`; set, it wins in every compute mode so a different director can
+    #: be tried without editing the task table.
+    render_director_model: str = ""
 
     #: True: persona traits are written as revisions stamped by the chapter their evidence reaches
     #: (`build_personas(prefix_causal=True)`), so a reader-position query serves only what the reader could know.
