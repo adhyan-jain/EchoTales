@@ -489,10 +489,10 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         engine_name = params.get("engine") or "chatterbox"
         # Same bank selection as `cmd_voice`; the HTTP job path hardcoded VCTK
         # and so could never use an emotion-capable bank.
-        from echotales.pipeline.voice.bank import load_bank
+        from echotales.pipeline.voice.bank import DEFAULT_BANK_KIND, load_bank
 
         bank_root = params.get("bank", "data/voice")
-        bank_kind = params.get("bank_kind", "vctk")
+        bank_kind = params.get("bank_kind", DEFAULT_BANK_KIND)
         # The Studio's voice output is what export_m4b later binds, and that job cannot see the bank, so the
         # non-commercial licence (EARS, CC BY-NC 4.0) is enforced here, as `cmd_voice` does for `--m4b`.
         from echotales.pipeline.voice.bank import noncommercial_refusal

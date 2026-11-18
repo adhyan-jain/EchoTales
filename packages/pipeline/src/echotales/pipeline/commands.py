@@ -940,10 +940,10 @@ def cmd_voice(args: argparse.Namespace) -> int:
     """Phase 8: cast voices and render the script."""
     from echotales.pipeline import paths
     from echotales.pipeline.voice import get_engine, render_novel
-    from echotales.pipeline.voice.bank import load_bank
+    from echotales.pipeline.voice.bank import DEFAULT_BANK_KIND, load_bank
 
     store = _open_store(args)
-    kind = getattr(args, "bank_kind", "vctk")
+    kind = getattr(args, "bank_kind", DEFAULT_BANK_KIND)
     try:
         bank = load_bank(kind, args.bank)
     except FileNotFoundError as exc:
@@ -1795,7 +1795,7 @@ def cmd_audio_qa(args: argparse.Namespace) -> int:
 
     from echotales.pipeline.persona.build import load_trait_profiles
     from echotales.pipeline.voice import qa
-    from echotales.pipeline.voice.bank import load_bank
+    from echotales.pipeline.voice.bank import DEFAULT_BANK_KIND, load_bank
     from echotales.pipeline.voice.runner import _AUDIBLE
 
     audio_dir = Path(args.audio_dir)
@@ -1847,7 +1847,7 @@ def cmd_voice_audition(args: argparse.Namespace) -> int:
 
     from echotales.pipeline import paths
     from echotales.pipeline.voice import audition, get_engine
-    from echotales.pipeline.voice.bank import load_bank
+    from echotales.pipeline.voice.bank import DEFAULT_BANK_KIND, load_bank
 
     banks = []
     for kind in args.bank_kind or ["hifitts", "libritts_r"]:

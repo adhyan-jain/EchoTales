@@ -329,8 +329,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_voice.add_argument(
         "--bank-kind",
-        default="vctk",
-        choices=["vctk", "cremad", "ears", "libritts_r", "hifitts"],
+        default="audiobook",
+        choices=["audiobook", "vctk", "cremad", "ears", "libritts_r", "hifitts"],
         help=(
             "vctk is read speech (110 speakers, clean, lifeless); cremad is "
             "91 actors performing six emotions, which lets a shouted line be "
@@ -381,7 +381,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_aud.add_argument("--bank", default="data/voice", help="voice-bank root (default: data/voice)")
     p_aud.add_argument(
-        "--bank-kind", action="append", choices=["vctk", "cremad", "ears", "libritts_r", "hifitts"],
+        "--bank-kind", action="append", choices=["audiobook", "vctk", "cremad", "ears", "libritts_r", "hifitts"],
         help="bank to draw candidates from; repeat for several (default: hifitts and libritts_r)",
     )
     p_aud.add_argument("--n", type=int, default=12, help="maximum candidates to shortlist (default 12)")
@@ -399,7 +399,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_qa.add_argument("--report", default=None, help="write the full JSON report here (default: <audio-dir>/qa.json)")
     p_qa.add_argument("--asr", default="openai/whisper-base.en", help="speech-recogniser model id, or 'none' to skip the round trip")
     p_qa.add_argument("--bank", default="data/voice", help="voice-bank root, for each voice's recorded gender and age")
-    p_qa.add_argument("--bank-kind", default="vctk", choices=["vctk", "cremad", "ears", "libritts_r", "hifitts"])
+    p_qa.add_argument("--bank-kind", default="audiobook", choices=["audiobook", "vctk", "cremad", "ears", "libritts_r", "hifitts"])
     p_qa.add_argument("--json", action="store_true", help="print the report as JSON instead of the summary")
 
     p_render = sub.add_parser(
