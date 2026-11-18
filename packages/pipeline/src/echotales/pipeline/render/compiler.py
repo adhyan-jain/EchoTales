@@ -34,9 +34,12 @@ the persona's Big Five and register decide, damped by scene tension, so a ruthle
 
 from __future__ import annotations
 
+import logging
 import re
 from dataclasses import dataclass, field
 from enum import StrEnum
+
+log = logging.getLogger(__name__)
 
 #: Identity items written under `AppearanceInText.SHORT`: enough for the model to keep hair and clothes, few enough that
 #: reference images (stage B) carry the rest.
@@ -847,6 +850,40 @@ def character_brief(
     )
 
 
+def _match_director_characters(store: object, self_ids: list[str], dir_chars: list) -> list[tuple[object, str]]:
+    """Pair each director character with the cast self whose label or alias it names, in the director's order.
+
+    The pairing used to be by list index, so a director that listed the second cast member first (it lists whoever the
+    passage leads with, `self_ids` follow the cast order) gave each person the other's body, pose and expression.
+    A name matches a label or alias exactly, else when its words are all inside one label (`Fang` for `Fang Yuan`) and
+    that label is the only candidate; a self is used once. A director name that matches nobody is dropped with a log
+    line (it is not in CAST, see `direction._validate_direction`). Empty result means nothing matched, and the caller
+    then draws the cast as given rather than a panel with no people."""
+    from echotales.core.enums import TargetKind
+
+    names: dict[str, set[str]] = {}
+    for sid in self_ids:
+        entity = store.get_self(sid)  # type: ignore[attr-defined]
+        labels = {entity.canonical_label} if entity is not None and entity.canonical_label else set()
+        labels |= {a.alias for a in store.get_aliases_for(TargetKind.SELF, sid)}  # type: ignore[attr-defined]
+        names[sid] = {" ".join(x.casefold().split()) for x in labels if x}
+    pairs: list[tuple[object, str]] = []
+    used: set[str] = set()
+    for cd in dir_chars:
+        want = " ".join((getattr(cd, "name", "") or "").casefold().split())
+        free = [sid for sid in self_ids if sid not in used]
+        hit = [sid for sid in free if want in names[sid]]
+        if not hit and want:
+            hit = [sid for sid in free if any(set(want.split()) <= set(n.split()) for n in names[sid])]
+        if len(hit) == 1:
+            used.add(hit[0])
+            pairs.append((cd, hit[0]))
+        else:
+            log.info("director character %r matches no unused cast member (%s) -- dropped", getattr(cd, "name", ""),
+                     "ambiguous" if hit else "not in cast")
+    return pairs
+
+
 def brief_from_direction(
     store: object, novel_id: str, self_ids: list[str], position: float, direction: object | None, *, location: str = "",
     mode: OutputMode = OutputMode.MANGA, is_crowd: bool = False, gender_hint: str = "", beat_text: str = "",
@@ -876,22 +913,15 @@ def brief_from_direction(
     mood = getattr(d, "mood", "") or ""
 
     dir_chars = getattr(d, "characters", []) or []
+    matched = _match_director_characters(store, self_ids, dir_chars) if dir_chars else []
     chars: list[CharacterBrief] = []
-    if dir_chars:
-        for i, cd in enumerate(dir_chars):
-            sid = self_ids[i] if i < len(self_ids) else ""
+    if matched:
+        for i, (cd, sid) in enumerate(matched):
             expr = getattr(cd, "expression", "") or (getattr(d, "expression", "") if i == 0 else "")
-            if sid:
-                cb = character_brief(
-                    store, novel_id, sid, position, gender_hint=gender_hint, lead=i == 0,
-                    stated_expression=expr, beat_text=beat_text,
-                )
-            else:
-                cb = CharacterBrief(
-                    name=getattr(cd, "name", f"Character_{i}"),
-                    stated_expression=expr,
-                    lead=i == 0,
-                )
+            cb = character_brief(
+                store, novel_id, sid, position, gender_hint=gender_hint, lead=i == 0,
+                stated_expression=expr, beat_text=beat_text,
+            )
             cb.position = getattr(cd, "position", "center") or "center"
             cb.pose = getattr(cd, "pose", "standing") or "standing"
             if getattr(cd, "condition", ""):

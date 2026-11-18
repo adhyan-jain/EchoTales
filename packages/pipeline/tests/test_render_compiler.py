@@ -209,6 +209,53 @@ def test_non_manhua_genre_styles_on_zimage() -> None:
     assert "modern cinematic" in dict(compiled_mod.section_texts())["style"]
 
 
+def _two_person_store(tmp_path):
+    from echotales.core.enums import TargetKind
+    from echotales.core.models import DiscoursePosition, Self
+    from echotales.core.store import Store
+
+    store = Store(str(tmp_path / "t.db"))
+    store.add_novel("n", "N", "x.epub", "generic")
+    for sid, label in (("s1", "Fang Yuan"), ("s2", "Bai Ning Bing")):
+        store.add_self(Self(id=sid, novel_id="n", canonical_label=label,
+                            first_attested_pos=DiscoursePosition(chapter=1.0, offset=0), kind=TargetKind.SELF))
+    store.conn.commit()
+    return store
+
+
+def test_brief_from_direction_matches_director_characters_to_the_cast_by_name_not_index(tmp_path) -> None:
+    # A director listing Bai first while self_ids run [Fang, Bai] swapped their bodies and poses when matched by index.
+    from echotales.pipeline.render.direction import CharacterDirection, PanelDirection
+
+    d = PanelDirection(characters=[
+        CharacterDirection(name="Bai Ning Bing", position="right", pose="sitting"),
+        CharacterDirection(name="Fang Yuan", position="left", pose="kneeling"),
+    ])
+    brief = brief_from_direction(_two_person_store(tmp_path), "n", ["s1", "s2"], 1.0, d)
+    assert [(c.name, c.pose, c.position) for c in brief.characters] == [
+        ("Bai Ning Bing", "sitting", "right"), ("Fang Yuan", "kneeling", "left"),
+    ]
+    assert brief.characters[0].lead and not brief.characters[1].lead
+
+
+def test_brief_from_direction_drops_a_director_name_that_is_not_in_the_cast(tmp_path, caplog) -> None:
+    from echotales.pipeline.render.direction import CharacterDirection, PanelDirection
+
+    d = PanelDirection(characters=[CharacterDirection(name="Fang"), CharacterDirection(name="Lady Zed", pose="sitting")])
+    with caplog.at_level("INFO"):
+        brief = brief_from_direction(_two_person_store(tmp_path), "n", ["s1", "s2"], 1.0, d)
+    assert [c.name for c in brief.characters] == ["Fang Yuan"]  # "Fang" matched as a part of the label
+    assert "Lady Zed" in caplog.text
+
+
+def test_brief_from_direction_falls_back_to_the_cast_when_no_director_name_matches(tmp_path) -> None:
+    from echotales.pipeline.render.direction import CharacterDirection, PanelDirection
+
+    d = PanelDirection(characters=[CharacterDirection(name="Somebody Else")])
+    brief = brief_from_direction(_two_person_store(tmp_path), "n", ["s1", "s2"], 1.0, d)
+    assert [c.name for c in brief.characters] == ["Fang Yuan", "Bai Ning Bing"]
+
+
 def test_brief_from_direction_passes_beat_text_and_director_v2_fields(tmp_path) -> None:
     from echotales.core.enums import TargetKind
     from echotales.core.models import DiscoursePosition, Self
