@@ -359,6 +359,16 @@ class TestHeuristicDetector:
         spans = {s.text: s.score for s in HeuristicDetector().detect("Klein Moretti arrived.")}
         assert spans.get("Klein Moretti", 0) >= 0.8
 
+    def test_honorific_abbreviation_stays_with_its_name(self) -> None:
+        """The period of "Mrs." ended the capitalised run, leaving a bare "Bennet" for Mr., Mrs. and Miss alike.
+
+        Offline build of Pride and Prejudice ch1-3 (HANDOFF "Pick up here - 2026-11-07"): every Bennet mention read "Bennet", so the
+        cast held one Bennet and Mrs. Bennet was never a separate entity."""
+        text = "“My dear Mr. Bennet,” said his wife. Mrs. Bennet was angry. Dr. Watson and Mr. Bingley left."
+        spans = {s.text for s in HeuristicDetector().detect(text)}
+        assert {"Mr. Bennet", "Mrs. Bennet", "Dr. Watson", "Mr. Bingley"} <= spans
+        assert "Bennet" not in spans and "Mrs" not in spans
+
 
 # ---------------------------------------------------------------------------
 # Runner
