@@ -48,7 +48,7 @@ from echotales.pipeline.voice.delivery import pace_text, settings_for
 from echotales.pipeline.voice.engine import SynthesisRequest, TTSEngine, get_engine
 from echotales.pipeline.voice import levels
 from echotales.pipeline.voice.export import gaps_for
-from echotales.pipeline.voice.pitch import ffmpeg_available, modulate_prosody, shift_pitch
+from echotales.pipeline.voice.pitch import ffmpeg_available, modulate_prosody, rubberband_available, shift_pitch
 
 #: Span types that reach audio. `NARRATION_EXPOSITION` is included (it is
 #: read aloud even though panels skip it -- `SpanType.is_renderable_visually`
@@ -567,10 +567,10 @@ def render_novel(
                     report.retry_gave_up += take.gave_up
                     if settings.pitch_semitones or abs(settings.tempo_ratio - 1.0) >= 0.01:
                         modulate_prosody(path, settings.pitch_semitones, settings.tempo_ratio)
-                        if not ffmpeg_available() and not report.pitch_shift_unavailable_warned:
+                        if not rubberband_available() and not report.pitch_shift_unavailable_warned:
                             print(
-                                "note: ffmpeg not found -- register-based pitch/prosody modulation "
-                                "(voice/pitch.py) is a no-op this run"
+                                "note: ffmpeg or its rubberband filter is missing -- register-based pitch shifting "
+                                "(voice/pitch.py) is a no-op this run" + ("" if ffmpeg_available() else "; tempo too")
                             )
                             report.pitch_shift_unavailable_warned = True
 
@@ -649,7 +649,7 @@ def _line_fingerprint(engine: object, text: str, clip: object, settings: object)
     return hashlib.sha256(
         json.dumps(
             [getattr(engine, "name", type(engine).__name__), text, str(clip or ""), settings.exaggeration, settings.cfg_weight,  # type: ignore[attr-defined]
-             settings.pitch_semitones, levels.TARGET_LUFS, levels.MAX_RETRIES],  # type: ignore[attr-defined]
+             settings.pitch_semitones, settings.tempo_ratio, levels.TARGET_LUFS, levels.MAX_RETRIES],  # type: ignore[attr-defined]
             ensure_ascii=False,
         ).encode("utf-8")
     ).hexdigest()

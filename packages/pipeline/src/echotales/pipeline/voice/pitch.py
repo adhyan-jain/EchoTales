@@ -30,44 +30,51 @@ def ffmpeg_available() -> bool:
     return _HAS_FFMPEG
 
 
-def modulate_prosody(path: Path, semitones: float = 0.0, tempo: float = 1.0) -> None:
-    """Shift pitch and adjust tempo in place.
+_HAS_RUBBERBAND: bool | None = None
 
-    A no-op when both semitones ~0 and tempo ~1.0, or when ffmpeg isn't available.
-    Uses ffmpeg rubberband (or atempo fallback).
-    """
-    if (abs(semitones) < 0.01 and abs(tempo - 1.0) < 0.01) or not ffmpeg_available():
-        return
-    ratio = 2 ** (semitones / 12.0)
-    tmp = path.with_suffix(".prosody_tmp.wav")
-    filter_expr = f"rubberband=pitch={ratio}:tempo={tempo}"
+
+def rubberband_available() -> bool:
+    """Whether this ffmpeg build has the `rubberband` filter (needs --enable-librubberband). Checked, not assumed:
+    a build without it makes every rubberband call exit non-zero, which the old code read as 'try atempo' only when
+    a tempo was also requested and otherwise dropped the pitch shift without saying so."""
+    global _HAS_RUBBERBAND
+    if _HAS_RUBBERBAND is None:
+        if not ffmpeg_available():
+            return False
+        out = subprocess.run(["ffmpeg", "-hide_banner", "-filters"], capture_output=True, text=True)
+        _HAS_RUBBERBAND = " rubberband " in out.stdout
+    return _HAS_RUBBERBAND
+
+
+def _run_filter(path: Path, tmp: Path, expr: str) -> bool:
     result = subprocess.run(
-        [
-            "ffmpeg", "-y", "-loglevel", "error",
-            "-i", str(path),
-            "-af", filter_expr,
-            str(tmp),
-        ],
+        ["ffmpeg", "-y", "-loglevel", "error", "-i", str(path), "-af", expr, str(tmp)],
         capture_output=True,
         text=True,
     )
-    if result.returncode != 0 or not tmp.exists():
-        if abs(tempo - 1.0) >= 0.01:
-            result = subprocess.run(
-                [
-                    "ffmpeg", "-y", "-loglevel", "error",
-                    "-i", str(path),
-                    "-af", f"atempo={tempo}",
-                    str(tmp),
-                ],
-                capture_output=True,
-                text=True,
-            )
-        if result.returncode != 0 or not tmp.exists():
-            if tmp.exists():
-                tmp.unlink()
-            return
-    tmp.replace(path)
+    return result.returncode == 0 and tmp.exists()
+
+
+def modulate_prosody(path: Path, semitones: float = 0.0, tempo: float = 1.0) -> None:
+    """Shift pitch and adjust tempo in place (tempo changes the file's duration, so durations must be read after).
+
+    A no-op when both are ~neutral or ffmpeg is missing. With rubberband both are applied. Without it, only the
+    tempo is applied (`atempo`, which keeps pitch); a pitch-only request is left
+    unshifted, the same "degraded, not fatal" posture as a failed direction call.
+    """
+    wants_tempo = abs(tempo - 1.0) >= 0.01
+    if (abs(semitones) < 0.01 and not wants_tempo) or not ffmpeg_available():
+        return
+    tmp = path.with_suffix(".prosody_tmp.wav")
+    try:
+        if rubberband_available():
+            ok = _run_filter(path, tmp, f"rubberband=pitch={2 ** (semitones / 12.0)}:tempo={tempo}")
+        else:
+            ok = wants_tempo and _run_filter(path, tmp, f"atempo={tempo}")
+        if ok:
+            tmp.replace(path)
+    finally:
+        tmp.unlink(missing_ok=True)
 
 
 def shift_pitch(path: Path, semitones: float) -> None:
