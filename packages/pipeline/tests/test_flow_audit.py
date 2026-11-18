@@ -273,6 +273,88 @@ def test_gutenberg_footer_and_anchored_chapters(tmp_path: Path) -> None:
     assert r.stats["exclusions_words"]["licence_footer"] == 13
 
 
+def _split_chapter_book(tmp_path: Path) -> Path:
+    """Gutenberg-shaped layout: a title page before the first anchor, two chapters in one file, a chapter whose
+    text continues at the top of the next file (before that file's first anchor), and a chapter that also runs
+    through a whole spine file that has no TOC entry."""
+    files = {
+        "a.xhtml": (
+            f"<p>{_words('titlepage', 6)}</p>"
+            f'<h2><a id="c1"></a>CHAPTER I.</h2><p>{_words("one", 30)}</p>'
+            f'<h2><a id="c2"></a>CHAPTER II.</h2><p>{_words("twoa", 30)}</p>'
+        ),
+        "b.xhtml": (
+            f"<p>{_words('twob', 30)}</p>"
+            f'<h2><a id="c3"></a>CHAPTER III.</h2><p>{_words("threea", 30)}</p>'
+        ),
+        "c.xhtml": f"<p>{_words('threeb', 30)}</p>",
+        "d.xhtml": (
+            f'<h2><a id="c4"></a>CHAPTER IV.</h2><p>{_words("four", 30)}</p>'
+            "<p>*** END OF THE PROJECT GUTENBERG EBOOK TEST ***</p><p>Licence terms follow here.</p>"
+        ),
+    }
+    toc = [("CHAPTER I.", "a.xhtml#c1"), ("CHAPTER II.", "a.xhtml#c2"),
+           ("CHAPTER III.", "b.xhtml#c3"), ("CHAPTER IV.", "d.xhtml#c4")]
+    return make_epub(tmp_path / "split.epub", files, toc)
+
+
+def _chapter_text(store: Store, number: float) -> str:
+    ch = store.get_chapter(NOVEL, number)
+    assert ch is not None
+    return " ".join(b.text for b in ch.blocks)
+
+
+def test_chapter_text_continues_across_spine_files(tmp_path: Path) -> None:
+    """P&P chapter 1 came out 782 characters long: its second half sits at the top of the next spine file, before
+    that file's first anchor, and belonged to no chapter."""
+    store, ctx = build(tmp_path, _split_chapter_book(tmp_path))
+    try:
+        assert [c.number for c in store.iter_chapters(NOVEL)] == [1, 2, 3, 4]
+        one, two, three, four = (_chapter_text(store, n) for n in (1, 2, 3, 4))
+        assert "one29" in one and "twoa0" not in one and "titlepage0" not in one
+        assert "twoa0" in two and "twob29" in two and "threea0" not in two
+        assert "threea0" in three and "threeb29" in three and "four0" not in three
+        assert "four29" in four and "Licence" not in four
+        assert run(store, ctx, "ingest.coverage").status is Status.PASS
+    finally:
+        ctx.close()
+        store.close()
+
+
+def test_coverage_fails_when_a_continuation_is_not_stored(tmp_path: Path) -> None:
+    """The ledger used to file the orphaned top of a spine file under `outside_toc (cover, title page...)`, so a
+    chapter cut short at a file boundary passed. Only text with no chapter before it is front matter."""
+    store, ctx = build(tmp_path, _split_chapter_book(tmp_path))
+    try:
+        ch = store.get_chapter(NOVEL, 2.0)
+        assert ch is not None
+        cut = [b for b in ch.blocks if "twob" not in b.text]
+        assert len(cut) < len(ch.blocks)
+        rewrite(store, 2.0, reindexed(cut))
+        r = run(store, ctx, "ingest.coverage")
+        assert r.status is Status.FAIL
+        assert any(s.chapter == 2 and "twob0" in s.excerpt for s in r.shortfalls), [s.render() for s in r.shortfalls]
+        # the title page before any chapter is still a named exclusion, not a failure
+        assert r.stats["exclusions_words"]["outside_toc (cover, title page, licence header, navigation)"] == 6
+    finally:
+        ctx.close()
+        store.close()
+
+
+def test_coverage_fails_when_a_whole_unlisted_file_is_not_stored(tmp_path: Path) -> None:
+    store, ctx = build(tmp_path, _split_chapter_book(tmp_path))
+    try:
+        ch = store.get_chapter(NOVEL, 3.0)
+        assert ch is not None
+        rewrite(store, 3.0, reindexed([b for b in ch.blocks if "threeb" not in b.text]))
+        r = run(store, ctx, "ingest.coverage")
+        assert r.status is Status.FAIL
+        assert any(s.chapter == 3 and "threeb0" in s.excerpt for s in r.shortfalls)
+    finally:
+        ctx.close()
+        store.close()
+
+
 def test_line_break_does_not_glue_words(tmp_path: Path) -> None:
     doc = flow.read_doc_text(b"<html><body><p>one<br/>two <i>th</i>ree</p></body></html>")
     assert doc.words == ["one", "two", "three"]
