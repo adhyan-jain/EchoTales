@@ -1343,29 +1343,14 @@ def _query_attributes(args: argparse.Namespace) -> int:
 def cmd_anime(args: argparse.Namespace) -> int:
     """Compose one chapter from its panel plan and audio, animating what the shot plan asks for."""
     from echotales.pipeline.render import anime
-    from echotales.pipeline.render.shots import LOCAL_LTX, STILLS, ShotBudget
-    from echotales.pipeline.video.local import LocalLTXEngine, VideoEnvError
+    from echotales.pipeline.video.local import VideoEnvError
 
-    chapter = float(args.chapter)
-    out_root = Path(args.out) / f"ch{chapter:g}"
-    default = ShotBudget()
-    budget = ShotBudget(
-        max_generated_seconds=args.max_generated_seconds
-        if args.max_generated_seconds is not None else default.max_generated_seconds,
-        max_clips=args.max_clips if args.max_clips is not None else default.max_clips,
-        base_seed=args.seed,
-    )
     try:
-        if args.panels_version:
-            panels_dir = Path(args.panel_dir) / f"ch{chapter:g}" / args.panels_version
-        else:
-            panels_dir = anime.latest_panels_version(args.panel_dir, chapter, args.novel)
-        local = args.engine == "ltx-local"
-        result = anime.render_shots(
-            panels_dir=panels_dir, audio_dir=args.audio_dir, out_root=out_root,
-            capability=LOCAL_LTX if local else STILLS,
-            engine=LocalLTXEngine(work_dir=out_root / "worker") if local else None,
-            budget=budget, captions=not args.no_captions, loop_subtle=not args.no_loop,
+        result = anime.compose_chapter_video(
+            args.novel, float(args.chapter), engine=args.engine,
+            panel_dir=args.panel_dir, audio_dir=args.audio_dir, out_dir=args.out,
+            panels_version=args.panels_version, max_generated_seconds=args.max_generated_seconds,
+            max_clips=args.max_clips, seed=args.seed, captions=not args.no_captions, loop_subtle=not args.no_loop,
         )
     except (anime.AnimeRefusal, VideoEnvError) as exc:
         print(f"refusing: {exc}", file=sys.stderr)

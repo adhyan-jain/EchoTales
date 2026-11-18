@@ -547,3 +547,32 @@ class TestStaleBuildSurvivesJobs:
 
         status, bible = _request(port, "GET", "/api/novels/toy4/bible")
         assert "'1'" in bible["current"]["stale_reason"]
+
+
+class TestVideoJobRoute:
+    def test_an_unknown_video_engine_is_refused(self, live_server: int) -> None:
+        assert TestUploadSafety._create(live_server, "vid")[0] == 201
+        status, body = _request(
+            live_server, "POST", "/api/projects/vid/video",
+            body=json.dumps({"chapters": [1], "engine": "sora"}).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        assert status == 400 and "stills" in body["error"]
+
+    def test_a_busy_gpu_refuses_ltx_local_but_not_stills(self, live_server: int, monkeypatch) -> None:
+        monkeypatch.setattr(
+            "echotales.pipeline.webview_server._gpu_refusal", lambda e: "the GPU is busy" if e == "ltx-local" else None
+        )
+        assert TestUploadSafety._create(live_server, "vid2")[0] == 201
+        status, _ = _request(
+            live_server, "POST", "/api/projects/vid2/video",
+            body=json.dumps({"chapters": [1], "engine": "ltx-local"}).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        assert status == 409
+        status, body = _request(
+            live_server, "POST", "/api/projects/vid2/video",
+            body=json.dumps({"chapters": [1]}).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        assert status == 202, body
