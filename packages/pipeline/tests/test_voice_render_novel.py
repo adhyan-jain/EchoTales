@@ -386,3 +386,12 @@ def test_render_novel_has_no_pruning_switch() -> None:
     import inspect
 
     assert "prune_visual_narration" not in inspect.signature(render_novel).parameters
+
+
+def test_run_stamp_records_the_banks_licence(tmp_path: Path) -> None:
+    out = tmp_path / "audio"
+    bank = _bank()
+    bank.bank_id, bank.licence = "hifitts", "CC BY 4.0"
+    render_novel("t", _store(tmp_path), bank, out_dir=out, engine=get_engine("stub"))
+    stamp = json.loads((out / "run.json").read_text(encoding="utf-8"))
+    assert (stamp["bank"], stamp["licence"]) == ("hifitts", "CC BY 4.0")

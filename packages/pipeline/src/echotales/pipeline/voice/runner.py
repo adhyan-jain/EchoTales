@@ -576,7 +576,7 @@ def render_novel(
 
         # Per chapter, not once at the end: the manifest and tracks were written only after every chapter, so an
         # error late in a long book discarded the finished chapters' outputs too (audit B6).
-        _write_outputs(out_dir, manifest, casting, report.engine)
+        _write_outputs(out_dir, manifest, casting, report.engine, bank)
         if synthesize:
             voiced = [m for m in manifest if m.chapter == chapter and m.audio_path]
             if voiced:
@@ -588,7 +588,7 @@ def render_novel(
                     ))
                 )
 
-    _write_outputs(out_dir, manifest, casting, report.engine)
+    _write_outputs(out_dir, manifest, casting, report.engine, bank)
     return report
 
 
@@ -621,10 +621,13 @@ def _apply_voice_overrides(store: Store, assignments: dict, bank: VoiceBank) -> 
         assignments[target_id] = replace(assignment, speaker_id=str(chosen), collides_with="")
 
 
-def _write_outputs(out_dir: Path, manifest: list, casting, engine_name: str = "") -> None:  # type: ignore[no-untyped-def]
+def _write_outputs(out_dir: Path, manifest: list, casting, engine_name: str = "", bank: VoiceBank | None = None) -> None:  # type: ignore[no-untyped-def]
     out_dir.mkdir(parents=True, exist_ok=True)
     # Which engine made this audio, so the M4B export can refuse silent stub output without being told.
-    (out_dir / "run.json").write_text(json.dumps({"engine": engine_name}), encoding="utf-8")
+    # The bank's licence travels with the audio it made, so a later export can read it from the output directory
+    # instead of from whatever --bank-kind the caller remembers.
+    stamp = {"engine": engine_name, "bank": getattr(bank, "bank_id", ""), "licence": getattr(bank, "licence", "")}
+    (out_dir / "run.json").write_text(json.dumps(stamp), encoding="utf-8")
     (out_dir / "manifest.jsonl").write_text(
         "\n".join(json.dumps(asdict(line)) for line in manifest) + "\n",
         encoding="utf-8",

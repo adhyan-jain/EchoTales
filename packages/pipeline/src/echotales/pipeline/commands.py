@@ -939,29 +939,18 @@ def cmd_webview_server(args: argparse.Namespace) -> int:
 def cmd_voice(args: argparse.Namespace) -> int:
     """Phase 8: cast voices and render the script."""
     from echotales.pipeline import paths
-    from echotales.pipeline.voice import get_engine, load_vctk, render_novel
-    from echotales.pipeline.voice.bank import load_cremad, load_ears
+    from echotales.pipeline.voice import get_engine, render_novel
+    from echotales.pipeline.voice.bank import load_bank
 
     store = _open_store(args)
     kind = getattr(args, "bank_kind", "vctk")
-    # Each corpus is extracted in its own folder under the bank root; `--bank-kind ears` with the default root
-    # used to fail, because `load_ears` expects the speaker folders directly under the path it is given.
-    root = Path(args.bank)
-    sub = {"ears": root / "ears", "cremad": root / "cremad" / "extract"}.get(kind)
-    if sub is not None and sub.is_dir():
-        root = sub
     try:
-        if kind == "cremad":
-            bank = load_cremad(root)
-        elif kind == "ears":
-            bank = load_ears(root)
-        else:
-            bank = load_vctk(root)
+        bank = load_bank(kind, args.bank)
     except FileNotFoundError as exc:
         print(f"error: {exc}", file=sys.stderr)
         print(
-            "the voice bank is CSTR VCTK 0.92; download and extract it under "
-            f"{args.bank!r} (see HANDOFF Section 7)",
+            f"voice bank {kind!r} not found; download and extract it under "
+            f"{args.bank!r} (see HANDOFF Section 7; data/voice/<kind>/README.md for the audiobook banks)",
             file=sys.stderr,
         )
         return 2
@@ -971,8 +960,9 @@ def cmd_voice(args: argparse.Namespace) -> int:
         print("error: voice bank is empty", file=sys.stderr)
         return 2
 
+    print(f"voice bank {bank.bank_id}: licence {bank.licence}")
     if kind == "ears":
-        print("WARNING: EARS voice bank is CC BY-NC 4.0 (non-commercial); use --bank-kind vctk (CC BY 4.0) for anything you distribute")
+        print("WARNING: EARS voice bank is CC BY-NC 4.0 (non-commercial); use --bank-kind hifitts (CC BY 4.0) for anything you distribute")
     from echotales.pipeline.voice.bank import noncommercial_refusal
 
     if reason := noncommercial_refusal(
@@ -1820,7 +1810,7 @@ def cmd_audio_qa(args: argparse.Namespace) -> int:
 
     from echotales.pipeline.persona.build import load_trait_profiles
     from echotales.pipeline.voice import qa
-    from echotales.pipeline.voice.bank import load_cremad, load_ears, load_vctk
+    from echotales.pipeline.voice.bank import load_bank
     from echotales.pipeline.voice.runner import _AUDIBLE
 
     audio_dir = Path(args.audio_dir)
@@ -1835,10 +1825,7 @@ def cmd_audio_qa(args: argparse.Namespace) -> int:
 
     bank_meta: dict = {}
     try:
-        root = Path(args.bank)
-        sub = {"ears": root / "ears", "cremad": root / "cremad" / "extract"}.get(args.bank_kind)
-        root = sub if sub is not None and sub.is_dir() else root
-        bank = {"cremad": load_cremad, "ears": load_ears}.get(args.bank_kind, load_vctk)(root)
+        bank = load_bank(args.bank_kind, args.bank)
         bank_meta = {v.speaker_id: {"gender": v.gender, "age": v.age} for v in bank.voices}
     except FileNotFoundError:
         print("note: voice bank not found, so recorded gender and age are not checked", file=sys.stderr)

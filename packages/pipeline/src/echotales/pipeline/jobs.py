@@ -418,13 +418,13 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
     elif job.kind == "voice":
         from echotales.pipeline import paths
         from echotales.pipeline.voice import get_engine as get_voice_engine
-        from echotales.pipeline.voice import load_vctk, render_novel
+        from echotales.pipeline.voice import render_novel
 
         # Speech unless told otherwise, like the CLI: the stub writes silent files (decision D29).
         engine_name = params.get("engine") or "chatterbox"
         # Same bank selection as `cmd_voice`; the HTTP job path hardcoded VCTK
         # and so could never use an emotion-capable bank.
-        from echotales.pipeline.voice.bank import load_cremad, load_ears
+        from echotales.pipeline.voice.bank import load_bank
 
         bank_root = params.get("bank", "data/voice")
         bank_kind = params.get("bank_kind", "vctk")
@@ -434,12 +434,7 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
 
         if reason := noncommercial_refusal(bank_kind, m4b=True, allowed=bool(params.get("allow_noncommercial"))):
             raise ValueError(reason)
-        if bank_kind == "ears":
-            bank = load_ears(bank_root)
-        elif bank_kind == "cremad":
-            bank = load_cremad(bank_root)
-        else:
-            bank = load_vctk(bank_root)
+        bank = load_bank(bank_kind, bank_root)
         out_dir = params.get("out_dir") or str(paths.asset_dir(novel_id, "audio"))
         run_stage(
             store, run_id=pipeline_run.run_id, stage_name="voice",

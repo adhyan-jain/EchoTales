@@ -330,11 +330,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_voice.add_argument(
         "--bank-kind",
         default="vctk",
-        choices=["vctk", "cremad", "ears"],
+        choices=["vctk", "cremad", "ears", "libritts_r", "hifitts"],
         help=(
             "vctk is read speech (110 speakers, clean, lifeless); cremad is "
             "91 actors performing six emotions, which lets a shouted line be "
-            "prompted with an actually angry recording"
+            "prompted with an actually angry recording; hifitts (10) and libritts_r (2,400+) "
+            "are LibriVox audiobook narrators, CC BY 4.0, one neutral reading style each"
         ),
     )
     p_voice.add_argument("--out", default=None, help="default: data/novels/<CODE>/audio")
@@ -383,7 +384,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_qa.add_argument("--report", default=None, help="write the full JSON report here (default: <audio-dir>/qa.json)")
     p_qa.add_argument("--asr", default="openai/whisper-base.en", help="speech-recogniser model id, or 'none' to skip the round trip")
     p_qa.add_argument("--bank", default="data/voice", help="voice-bank root, for each voice's recorded gender and age")
-    p_qa.add_argument("--bank-kind", default="vctk", choices=["vctk", "cremad", "ears"])
+    p_qa.add_argument("--bank-kind", default="vctk", choices=["vctk", "cremad", "ears", "libritts_r", "hifitts"])
     p_qa.add_argument("--json", action="store_true", help="print the report as JSON instead of the summary")
 
     p_render = sub.add_parser(

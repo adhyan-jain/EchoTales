@@ -94,6 +94,8 @@ class BankVoice:
     #: that dial scales intensity around whatever the reference already
     #: sounds like, and a calm read-speech prompt has no anger to scale.
     emotion_clips: dict[str, Path] = field(default_factory=dict)
+    #: The reader's registered name where the corpus publishes one (LibriVox readers), for audition pages.
+    name: str = ""
 
     def clip_for(self, emotion: str) -> Path | None:
         """This speaker performing `emotion`, or the nearest thing they have.
@@ -127,6 +129,10 @@ class BankVoice:
 @dataclass(slots=True)
 class VoiceBank:
     voices: list[BankVoice] = field(default_factory=list)
+    #: Licence stamp: which corpus this is and under what terms, so the gate and the run's stamp read it from the
+    #: bank instead of from a kind string the caller must remember to pass.
+    bank_id: str = ""
+    licence: str = ""
 
     def by_bucket(self) -> dict[str, list[BankVoice]]:
         out: dict[str, list[BankVoice]] = {}
@@ -172,6 +178,21 @@ class VoiceBank:
         total = len(self.voices)
         body = ", ".join(f"{k}={v}" for k, v in counts.items()) or "empty"
         return f"{total} reference voices across {len(counts)} buckets: {body}"
+
+
+#: Licence of each corpus the loaders read. The non-commercial gate below is derived from this table, so adding a
+#: bank cannot forget to say whether its audio may be distributed.
+BANK_LICENCES: dict[str, str] = {
+    "vctk": "CC BY 4.0",
+    "cremad": "ODbL 1.0",
+    "ears": "CC BY-NC 4.0",
+    "libritts_r": "CC BY 4.0",
+    "hifitts": "CC BY 4.0",
+}
+
+
+def _stamp(bank_id: str) -> dict[str, str]:
+    return {"bank_id": bank_id, "licence": BANK_LICENCES[bank_id]}
 
 
 _SPEAKER_LINE = re.compile(
@@ -235,7 +256,7 @@ def load_vctk(root: str | Path, *, reference_utterance: int = 3) -> VoiceBank:
         None,
     )
     if audio_root is None:
-        return VoiceBank(voices=voices)
+        return VoiceBank(voices=voices, **_stamp("vctk"))
 
     kept: list[BankVoice] = []
     for voice in voices:
@@ -256,7 +277,7 @@ def load_vctk(root: str | Path, *, reference_utterance: int = 3) -> VoiceBank:
         voice.reference_clip = clips[min(reference_utterance, len(clips) - 1)]
         kept.append(voice)
 
-    return VoiceBank(voices=kept)
+    return VoiceBank(voices=kept, **_stamp("vctk"))
 
 
 def pick_mob_voice(
@@ -373,7 +394,7 @@ def load_cremad(
                 emotion_clips=clips,
             )
         )
-    return VoiceBank([v for v in voices if v.gender and v.age])
+    return VoiceBank([v for v in voices if v.gender and v.age], **_stamp("cremad"))
 
 
 #: EARS emotion recordings mapped onto the delivery layer's vocabulary
@@ -478,11 +499,156 @@ def load_ears(
                 emotion_clips=clips,
             )
         )
-    return VoiceBank(voices)
+    return VoiceBank(voices, **_stamp("ears"))
+
+
+#: Neither audiobook corpus publishes speaker age, and inventing a per-reader age from the sound is the
+#: classifier guess this module's docstring rules out. LibriVox readers are adults, so they are banded as adult;
+#: casting then reaches them through `nearest_bucket`'s outward age widening and decides on gender alone.
+ASSUMED_READER_AGE = 35
+
+#: Hi-Fi TTS (OpenSLR 109) speaker table, from Table 2 of Bakhturina et al. 2021 (arXiv 2104.01497): the corpus
+#: ships no metadata file, and the speaker id appears only in the audio folder name. Name is the LibriVox reader.
+HIFITTS_SPEAKERS: dict[str, tuple[str, str]] = {
+    "92": ("female", "Cori Samuel"),
+    "6097": ("male", "Phil Benson"),
+    "9017": ("male", "John Van Stan"),
+    "6670": ("male", "Mike Pelton"),
+    "6671": ("male", "Tony Oliva"),
+    "8051": ("female", "Maria Kasper"),
+    "9136": ("female", "Helen Taylor"),
+    "11614": ("female", "Sylviamb"),
+    "11697": ("female", "Celine Major"),
+    "12787": ("female", "LikeManyWaters"),
+}
+
+#: A cloning window wants a full sentence or two: Chatterbox needs a few seconds, and a 2 s fragment carries too
+#: little voice. Reference choice looks at header durations only, never decodes audio.
+_REF_SECONDS = (8.0, 20.0)
+
+
+def _pick_reference(clips: list[Path]) -> Path | None:
+    """First clip whose duration is in `_REF_SECONDS`, else the first clip (unreadable headers included)."""
+    if not clips:
+        return None
+    import soundfile as sf
+
+    for clip in clips[:40]:
+        try:
+            seconds = sf.info(str(clip)).duration
+        except Exception:  # noqa: BLE001 - an unreadable header just means "cannot judge this one"
+            continue
+        if _REF_SECONDS[0] <= seconds <= _REF_SECONDS[1]:
+            return clip
+    return clips[0]
+
+
+def load_libritts_r(root: str | Path, *, subsets: tuple[str, ...] | None = None) -> VoiceBank:
+    """Load LibriTTS-R (OpenSLR 141, CC BY 4.0): LibriVox audiobook readers, restored, 24 kHz.
+
+    Layout (README_libritts_r.txt, identical to LibriTTS): `<root>/speakers.tsv` plus
+    `<root>/<subset>/<speaker>/<chapter>/<speaker>_<chapter>_<utt>_<seg>.wav`. `speakers.tsv` is tab-separated
+    `READER, GENDER (F/M), SUBSET, NAME` -- the header's last two words are joined by a space, not a tab, so the
+    header is skipped by its non-numeric id rather than parsed. No age is published (see `ASSUMED_READER_AGE`).
+    A reader with no audio under `root` is skipped, which is what makes a sample of a few speakers load cleanly.
+    """
+    root = Path(root)
+    table = root / "speakers.tsv"
+    if not table.exists():
+        raise FileNotFoundError(f"no speakers.tsv under {root}")
+    voices: list[BankVoice] = []
+    for line in table.read_text(encoding="utf-8", errors="replace").splitlines():
+        cols = line.split("\t")
+        if len(cols) < 3 or not cols[0].strip().isdigit() or cols[1].strip() not in ("F", "M"):
+            continue
+        reader, gender, subset = cols[0].strip(), cols[1].strip(), cols[2].strip()
+        if subsets is not None and subset not in subsets:
+            continue
+        speaker_dir = root / subset / reader
+        if not speaker_dir.is_dir():
+            continue
+        if (ref := _pick_reference(sorted(speaker_dir.rglob("*.wav")))) is None:
+            continue
+        voices.append(
+            BankVoice(
+                speaker_id=f"libritts_r{reader}",
+                gender="female" if gender == "F" else "male",
+                age=ASSUMED_READER_AGE,
+                region=subset,
+                reference_clip=ref,
+                name=cols[3].strip() if len(cols) > 3 else "",
+            )
+        )
+    return VoiceBank(voices, **_stamp("libritts_r"))
+
+
+def load_hifitts(root: str | Path) -> VoiceBank:
+    """Load Hi-Fi TTS (OpenSLR 109, CC BY 4.0): ten LibriVox audiobook narrators (6 F, 4 M), 44.1 kHz.
+
+    Layout from the corpus manifests: `<root>/audio/<speaker>_<clean|other>/<book>/<name>.flac`. The suffix is the
+    corpus's own SNR split (its quality tier), kept as `region` so a clean narrator can be told from a noisier one.
+    Gender comes from `HIFITTS_SPEAKERS`; a folder for a speaker not in that table is skipped rather than guessed.
+    """
+    root = Path(root)
+    audio = root / "audio"
+    if not audio.is_dir():
+        nested = next(root.glob("*/audio"), None)
+        if nested is None:
+            raise FileNotFoundError(f"no audio/ directory under {root}")
+        audio = nested
+    voices: list[BankVoice] = []
+    for speaker_dir in sorted(p for p in audio.iterdir() if p.is_dir()):
+        speaker, _, tier = speaker_dir.name.partition("_")
+        if speaker not in HIFITTS_SPEAKERS:
+            continue
+        gender, name = HIFITTS_SPEAKERS[speaker]
+        if (ref := _pick_reference(sorted(speaker_dir.rglob("*.flac")))) is None:
+            continue
+        voices.append(
+            BankVoice(
+                speaker_id=f"hifitts{speaker}",
+                gender=gender,
+                age=ASSUMED_READER_AGE,
+                region=tier,
+                reference_clip=ref,
+                name=name,
+            )
+        )
+    return VoiceBank(voices, **_stamp("hifitts"))
+
+
+#: Bank kinds `echotales voice`, the Studio voice job and audio QA accept, and the folder each one lives in under
+#: the bank root. One table so the call sites cannot drift apart again.
+BANK_KINDS: tuple[str, ...] = ("vctk", "cremad", "ears", "libritts_r", "hifitts")
+_BANK_SUBDIR: dict[str, tuple[str, ...]] = {
+    "ears": ("ears",),
+    "cremad": ("cremad", "extract"),
+    "libritts_r": ("libritts_r",),
+    "hifitts": ("hifitts",),
+}
+
+
+def load_bank(kind: str, root: str | Path) -> VoiceBank:
+    """Load bank `kind` from the bank root (`data/voice`) or from the corpus folder itself.
+
+    Each corpus is extracted in its own folder under the bank root; a bare root used to fail for EARS because
+    its loader expects the speaker folders directly under the path it is given.
+    """
+    if kind not in BANK_KINDS:
+        raise ValueError(f"unknown bank kind {kind!r}; choose from {', '.join(BANK_KINDS)}")
+    root = Path(root)
+    sub = root.joinpath(*_BANK_SUBDIR.get(kind, ()))
+    if kind in _BANK_SUBDIR and sub.is_dir():
+        root = sub
+    loader = {
+        "vctk": load_vctk, "cremad": load_cremad, "ears": load_ears,
+        "libritts_r": load_libritts_r, "hifitts": load_hifitts,
+    }[kind]
+    return loader(root)
 
 
 #: Banks whose licence forbids distributing audio made from them commercially.
-NONCOMMERCIAL_BANKS = {"ears": "CC BY-NC 4.0"}
+NONCOMMERCIAL_BANKS = {k: v for k, v in BANK_LICENCES.items() if "-NC" in v}
 
 
 def noncommercial_refusal(kind: str, *, m4b: bool, allowed: bool) -> str | None:
