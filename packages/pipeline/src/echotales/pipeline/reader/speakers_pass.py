@@ -83,6 +83,7 @@ class SpeakerReport:
     addressee_rejected: int = 0
     gender_rejected: int = 0
     split_quote: int = 0
+    second_chance: int = 0
 
 
 #: Korean/Japanese honorific suffixes attached to a name. "Yoo Sangah-ssi" is Yoo Sangah, but without this the matcher saw a
@@ -255,7 +256,7 @@ def first_person_narrator(store: Store, novel_id: str, chapter: Chapter, cast: l
     return best[1] if best else None
 
 
-def _prompt(cast: list[CastEntry], text: str, tags: list[str], narrator: CastEntry | None = None) -> str:
+def _prompt(cast: list[CastEntry], text: str, tags: list[str], narrator: CastEntry | None = None, note: str = "") -> str:
     people = "\n".join(
         f"- {e.name}" + (f" (also called: {', '.join(e.aliases[:6])})" if e.aliases else "") for e in cast
     )
@@ -266,7 +267,7 @@ def _prompt(cast: list[CastEntry], text: str, tags: list[str], narrator: CastEnt
         else ""
     )
     return (
-        f"Known characters (a person may be called by any of their names):\n{people}\n\n{voice}"
+        f"Known characters (a person may be called by any of their names):\n{people}\n\n{voice}{note}"
         "Below is a passage of a novel. Every quoted utterance is tagged [block.number] just before its opening "
         "quote mark.\n"
         f"For EACH of these tags, name who says or thinks it: {', '.join(tags)}. Give exactly one answer per tag.\n"
@@ -289,9 +290,13 @@ def ask_window(
     novel_id: str,
     chapter: float,
     narrator: CastEntry | None = None,
+    only: list[str] | None = None,
+    note: str = "",
 ) -> dict[str, str]:
-    """Answers for every tag in one window, re-asking for omitted tags (the 58% -> 91% fix, decisions D11)."""
-    wanted = re.findall(r"\[(\d+\.\d+)\]", text)
+    """Answers for every tag in one window, re-asking for omitted tags (the 58% -> 91% fix, decisions D11).
+
+    `only` limits the question to those tags (the second chance for answers the checks rejected)."""
+    wanted = only if only is not None else re.findall(r"\[(\d+\.\d+)\]", text)
     answers: dict[str, str] = {}
     pending = list(wanted)
     for attempt in range(MAX_ATTEMPTS):
@@ -300,7 +305,7 @@ def ask_window(
         if attempt:
             report.retried_tags += len(pending)
         result = client.complete(
-            Task.READER, _prompt(cast, text, pending, narrator), SpeakerAnswers, novel_id=novel_id, chapter=chapter
+            Task.READER, _prompt(cast, text, pending, narrator, note), SpeakerAnswers, novel_id=novel_id, chapter=chapter
         )
         for entry in result.value.lines:
             if entry.tag in pending:
@@ -357,6 +362,67 @@ def title_gender(name: str) -> str:
     return "female" if first in _FEMALE_TITLES else "male" if first in _MALE_TITLES else ""
 
 
+def rejection(store: Store, entry: CastEntry, quote_text: str) -> tuple[str, str]:
+    """("addressee" | "gender" | "", the gender the tag names) when `entry` cannot be who speaks `quote_text`.
+
+    "addressee": the line opens by calling this person. "gender": the tag after the quote ("returned she") names the
+    other gender than the entry's title or recorded gender."""
+    if addresses(quote_text, entry.name):
+        return "addressee", ""
+    side = tag_gender(quote_text)
+    if side:
+        from echotales.pipeline.reader.facts_pass import _recorded_gender
+
+        known = title_gender(entry.name) or _recorded_gender(store, entry.self_id)
+        if known in ("male", "female") and known != side:
+            return "gender", known
+    return "", ""
+
+
+def _second_chance(
+    store: Store, client: ModelClient, cast: list[CastEntry], index: NameIndex, narrator: CastEntry | None,
+    answers: dict[str, str], tag_window: dict[str, str], quote_of: dict[str, str], report: SpeakerReport,
+    novel_id: str, chapter: float,
+) -> None:
+    """Re-ask once, with the impossible people removed, for answers the addressee/gender checks would reject.
+
+    Pride and Prejudice ch1: the model credits "My dear Mr. Bennet," and "returned she" to Mr. Bennet, the checks rightly
+    refuse, and the line stayed unknown even once Mrs. Bennet was in the cast. Telling the model who it cannot be
+    (not who it is) keeps the checks' precision and lets it find the wife."""
+    if not SECOND_CHANCE:
+        return
+    groups: dict[tuple[str, frozenset[str]], list[str]] = {}
+    for tag, speaker in answers.items():
+        entry = index.resolve(speaker) if speaker else None
+        if entry is None or tag not in quote_of:
+            continue
+        kind, known = rejection(store, entry, quote_of[tag])
+        if not kind:
+            continue
+        banned = {entry.self_id}
+        if kind == "gender":
+            banned |= {e.self_id for e in cast if title_gender(e.name) == known}
+        groups.setdefault((tag_window[tag], frozenset(banned)), []).append(tag)
+    for (text, banned), tags in groups.items():
+        smaller = [e for e in cast if e.self_id not in banned]
+        if not smaller:
+            continue
+        report.second_chance += len(tags)
+        gone = ", ".join(e.name for e in cast if e.self_id in banned)
+        # Without this the model took the next name on the list: with Mr. Bennet removed, P&P ch1's lines went to Mrs.
+        # Long, who is only talked about, because the chapter's cast cannot yet hold the wife ("his lady" until ch2).
+        note = (
+            f"A first reading of tags {', '.join(tags)} named {gone}, which cannot be right. The speaker may not be on this "
+            "list at all: a husband, wife or relative only called 'his wife', 'his lady' or 'her husband' in this "
+            "chapter is not listed yet. Pick a listed person only if the text clearly shows it; otherwise answer "
+            "UNKNOWN: followed by those words copied from the passage.\n\n"
+        )
+        again = ask_window(client, smaller, text, report, novel_id, chapter, narrator, only=tags, note=note)
+        for tag in tags:
+            if tag in again:
+                answers[tag] = again[tag]
+
+
 def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -> SpeakerReport:
     """Attribute every quoted line of one chapter and write the result onto the matching dialogue spans."""
     report = SpeakerReport()
@@ -365,10 +431,20 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
     index = NameIndex(cast)
     narrator = first_person_narrator(store, novel_id, chapter, cast)
     answers: dict[str, str] = {}
+    tag_window: dict[str, str] = {}
     for text in windows(chapter):
         answers.update(ask_window(client, cast, text, report, novel_id, number, narrator))
+        for tag in re.findall(r"\[(\d+\.\d+)\]", text):
+            tag_window[tag] = text
 
     blocks = {b.index: b.text for b in chapter.blocks}
+    quote_of: dict[str, str] = {}
+    for tag in answers:
+        block_index, q = (int(x) for x in tag.split("."))
+        starts = quote_starts(blocks.get(block_index, ""))
+        if q < len(starts):
+            quote_of[tag] = blocks[block_index][starts[q]:].lstrip("“\"")
+    _second_chance(store, client, cast, index, narrator, answers, tag_window, quote_of, report, novel_id, number)
     chapter_words = set(_norm("\n".join(blocks.values())).split())
     role_spans: dict[str, list[Span]] = {}
     spans = [s for s in store.get_spans(novel_id, number) if s.span_type in _QUOTE_SPANS]
@@ -450,26 +526,18 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
         if entry is None:
             report.unmapped += 1
             continue
-        if addresses(quote_text, entry.name):
-            # The line opens by calling this person, so they are who is spoken to, not who speaks. Left unknown, not
-            # guessed: the real speaker is often named only later (Pride and Prejudice ch1: "My dear Mr. Bennet,"
-            # was credited to Mr. Bennet; his wife is "his lady" there and first named in ch2).
-            report.addressee_rejected += 1
+        kind, _ = rejection(store, entry, quote_text)
+        if kind:
+            # "addressee": the line opens by calling this person, so they are who is spoken to, not who speaks.
+            # "gender": "returned she" cannot be Mr. Bennet. Left unknown, not guessed (a second chance with this
+            # person removed has already been tried above).
+            if kind == "addressee":
+                report.addressee_rejected += 1
+            else:
+                report.gender_rejected += 1
             if span.attribution_method is not AttributionMethod.EXPLICIT and span.speaker_self_id:
                 store.set_span_speaker(novel_id, span.id, None, AttributionMethod.UNRESOLVED.value, 0.0)
             continue
-        side = tag_gender(quote_text)
-        if side:
-            from echotales.pipeline.reader.facts_pass import _recorded_gender
-
-            known = title_gender(entry.name) or _recorded_gender(store, entry.self_id)
-            if known in ("male", "female") and known != side:
-                # "returned she" cannot be Mr. Bennet. The wife is "his lady" in ch1 and first named in ch2, so he was
-                # the only name on the list and the model credited every line to him.
-                report.gender_rejected += 1
-                if span.attribution_method is not AttributionMethod.EXPLICIT and span.speaker_self_id:
-                    store.set_span_speaker(novel_id, span.id, None, AttributionMethod.UNRESOLVED.value, 0.0)
-                continue
         store.set_span_speaker(novel_id, span.id, entry.self_id, AttributionMethod.CONTEXTUAL_LLM.value, MODEL_CONFIDENCE)
         if span.span_type is SpanType.CROWD_REACTION:
             # A named person's line is not a crowd reaction; the classifier mistyped it (LotM ch7 block 39).
@@ -486,6 +554,9 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
     store.conn.commit()
     return report
 
+
+#: Switch for the re-ask of rejected answers (`_second_chance`), so an ablation can measure it on the reference chapters.
+SECOND_CHANCE = os.environ.get("ECHOTALES_READER_SECOND_CHANCE", "1") == "1"
 
 #: Switch for the chapter-wide role -> name pass, so an ablation can turn it off.
 RECONCILE_ROLES = os.environ.get("ECHOTALES_READER_RECONCILE", "1") == "1"

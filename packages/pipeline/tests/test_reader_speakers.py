@@ -331,3 +331,55 @@ class TestASplitQuoteKeepsItsSpeaker:
     def test_a_semicolon_tag_also_continues_the_sentence(self) -> None:
         text = "“But it is,” returned she; “for Mrs. Long told me.” Bob looked on."
         assert self._run(text, {"0.0": "UNKNOWN", "0.1": "Bob"}) == [None, None]
+
+
+class TestRejectedAnswerGetsASecondChance:
+    """P&P ch1: the model names Mr. Bennet for his wife's lines, the checks refuse, and the line stayed unknown even
+    though Mrs. Bennet was on the cast. Re-asking with the impossible person removed lets it find her."""
+
+    class _Client:
+        """Answers Mr. Bennet while he is on the cast list, otherwise Mrs. Bennet."""
+
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def complete(self, task, prompt, schema, **_kw):
+            self.calls += 1
+            people = prompt.split("\n\n")[0]
+            who = "Mr. Bennet" if "Mr. Bennet" in people else "Mrs. Bennet"
+            tags = [t for t in ("0.0",) if f"{t}" in prompt]
+            from types import SimpleNamespace
+
+            return SimpleNamespace(value=schema.model_validate({"lines": [{"tag": t, "speaker": who} for t in tags]}))
+
+    @staticmethod
+    def _world(text: str) -> tuple[Store, Chapter]:
+        store = Store(":memory:")
+        store.add_novel("n", "N", "x", "epub")
+        chapter = Chapter(novel_id="n", number=1.0, title="T", source_href="a",
+                          blocks=[Block(index=0, block_type=BlockType.PROSE, text=text)])
+        store.add_chapter(chapter)
+        for sid, label in (("n:self:mr", "Mr. Bennet"), ("n:self:mrs", "Mrs. Bennet")):
+            store.add_self(Self(id=sid, novel_id="n", canonical_label=label,
+                                first_attested_pos=DiscoursePosition(chapter=1, offset=0), prominence=Prominence.RECURRING))
+        store.add_spans([Span(id="n:1:0:0", novel_id="n", chapter=1.0, block_index=0, start=0, end=22,
+                              span_type=SpanType.DIALOGUE, text=text, attribution_method=AttributionMethod.PROXIMAL)])
+        return store, chapter
+
+    def test_a_vocative_is_reassigned_to_the_other_person(self) -> None:
+        store, chapter = self._world("“My dear Mr. Bennet,” said his lady. Mr. Bennet and Mrs. Bennet sat down.")
+        client = self._Client()
+        report = sp.read_chapter_speakers(store, client, chapter)
+        assert store.get_spans("n", 1.0)[0].speaker_self_id == "n:self:mrs"
+        assert report.second_chance == 1 and report.addressee_rejected == 0 and client.calls == 2
+
+    def test_a_gender_mismatch_is_reassigned_too(self) -> None:
+        store, chapter = self._world("“But it is,” returned she; Mr. Bennet and Mrs. Bennet sat down.")
+        report = sp.read_chapter_speakers(store, self._Client(), chapter)
+        assert store.get_spans("n", 1.0)[0].speaker_self_id == "n:self:mrs" and report.second_chance == 1
+
+    def test_a_valid_first_answer_costs_no_second_call(self) -> None:
+        store, chapter = self._world("“Yes,” said Mr. Bennet. Mrs. Bennet sat down.")
+        client = self._Client()
+        report = sp.read_chapter_speakers(store, client, chapter)
+        assert store.get_spans("n", 1.0)[0].speaker_self_id == "n:self:mr" and client.calls == 1 and report.second_chance == 0
