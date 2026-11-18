@@ -44,7 +44,6 @@ class TestVocativeGuard:
         # ORV ch3 b51: "Yoo Sangah-ssi. Isn't that Department Head Han..." is spoken TO Sangah.
         assert sp.addresses("Yoo Sangah-ssi. Isn't that Department Head Han", "Yoo Sangah")
         assert sp.addresses("Sangah-nim, please", "Sangah")
-        assert sp.addresses("Alice. Come here.", "Alice")
 
     def test_a_name_inside_a_longer_first_sentence_is_not_a_vocative(self) -> None:
         assert not sp.addresses("Alice. is a name I like", "Alicia")
@@ -109,6 +108,43 @@ def test_a_role_written_three_ways_is_one_slot() -> None:
     )
     ids = {_speaker(store, i) for i in range(3)}
     assert len(ids) == 1 and next(iter(ids)).startswith("n:title:")
+
+
+class TestRulesAcrossWritingStyles:
+    """Owner rule 2026-11-19: a pattern rule decides only when sure; otherwise the model's answer stands. Each style
+    below is a place a strict pattern would backfire (19th-century English, translated Chinese, Korean, first person)."""
+
+    def _own(self, name: str, text: str, q: int = 0) -> bool:
+        store = Store(":memory:")
+        store.add_self(Self(id=f"n:{name}", novel_id="n", canonical_label=name,
+                            first_attested_pos=DiscoursePosition(chapter=1, offset=0)))
+        return sp.own_explicit_tag(store, f"n:{name}", text, q)
+
+    def test_own_tag_recognises_the_usual_shapes_in_every_style(self) -> None:
+        assert self._own("Mr. Bennet", "“What is his name?” said Mr. Bennet.")
+        assert self._own("Mr. Bennet", "“What is his name?” replied Mr. Bennet, coldly.")
+        assert self._own("Fang Yuan", "Fang Yuan said coldly, “I do not care.”")
+        assert self._own("Yoo Sangah", '"Thank you." Yoo Sangah replied proudly.')
+        assert self._own("Klein", "“Good evening,” Klein said, bowing.")
+
+    def test_own_tag_defers_when_the_name_is_not_the_subject_of_the_tag(self) -> None:
+        assert not self._own("Alice", "“Thanks,” Bob said to Alice.")
+        assert not self._own("Mr. Bennet", "“Do you not want to know?” cried his wife impatiently. Mr. Bennet made no answer.")
+        assert not self._own("Alice", "“Come here,” he said. Alice sat down.")
+        assert not self._own("Fang Yuan", "“Old bastard Fang, stop!” the attackers shouted at Fang Yuan.")
+
+    def test_first_person_tag_is_only_a_tag_outside_the_quote(self) -> None:
+        assert sp.first_person_tag('"Do you know what that is?" I asked.', 0)
+        assert sp.first_person_tag('I turned and asked, "Do you know what that is?"', 0)
+        assert not sp.first_person_tag('"I asked him already," Alice said.', 0)
+        assert not sp.first_person_tag('"Come in," he said. I asked, "Why?"', 0)
+        assert not sp.first_person_tag("“Mr. Bennet,” said she, “I have told you.”", 0)
+
+    def test_a_bare_name_with_a_full_stop_is_not_called_a_vocative(self) -> None:
+        assert not sp.addresses("Fang Yuan. That is who I am.", "Fang Yuan")
+        assert not sp.addresses("Elizabeth.", "Elizabeth")
+        assert sp.addresses("Elizabeth, my dear,", "Elizabeth")
+        assert sp.addresses("Dokja-ssi. Are you there?", "Dokja")
 
 
 class TestPromptContext:

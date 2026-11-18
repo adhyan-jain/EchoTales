@@ -97,7 +97,7 @@ class SpeakerReport:
 #: Korean/Japanese honorific suffixes attached to a name. "Yoo Sangah-ssi" is Yoo Sangah, but without this the matcher saw a
 #: new word, resolved nothing, and `_mint_new_speakers` created a duplicate entity that later chapters then answered with.
 _HONORIFIC = re.compile(r"[-\s](ssi|nim|sama|san|kun|chan|senpai|sunbae|hyung|noona|oppa|unni)\b", re.IGNORECASE)
-_HONORIFIC_TAIL = r"(?:[-\s](?:ssi|nim|sama|san|kun|chan|senpai|sunbae|hyung|noona|oppa|unni))?"
+_HONORIFIC_SUFFIX = r"[-\s](?:ssi|nim|sama|san|kun|chan|senpai|sunbae|hyung|noona|oppa|unni)"
 
 
 def _norm(text: str) -> str:
@@ -361,8 +361,12 @@ def addresses(quote: str, name: str) -> bool:
 
     An honorific suffix may follow the name: ORV ch3 b51 `"Yoo Sangah-ssi. Isn't that Department Head Han..."` is
     spoken TO Sangah, and the old pattern (comma, "!" or "?" only) let it through as hers (speaker_diag REPORT 6.5)."""
-    pattern = r"^[\W_]*(?:my\s+)?(?:dear\s+)?" + re.escape(name) + _HONORIFIC_TAIL + r"\s*[,!?.]"
-    return re.match(pattern, quote, re.IGNORECASE) is not None
+    head = r"^[\W_]*(?:my\s+)?(?:dear\s+)?" + re.escape(name)
+    if re.match(head + r"\s*[,!?]", quote, re.IGNORECASE):
+        return True
+    # A full stop counts only after an honorific ("Yoo Sangah-ssi."): a bare "Fang Yuan." is as often a speaker giving
+    # their own name as a call, and a rule that is unsure must leave the line to the model.
+    return re.match(head + _HONORIFIC_SUFFIX + r"\s*[,!?.]", quote, re.IGNORECASE) is not None
 
 
 _SPEECH_VERBS = r"(?:said|cried|replied|returned|asked|answered|exclaimed|added|continued|observed|whispered|muttered|shouted)"
@@ -469,7 +473,7 @@ def own_explicit_tag(store: Store, self_id: str, block_text: str, q: int) -> boo
     borrowed from the neighbouring paragraph (ORV ch4 b34, b36), and then the model may still overrule it."""
     before, after = _around_quote(block_text, q)
     for name in _speaker_words(store, self_id):
-        n = re.escape(name)
+        n = r"\.?\s+".join(re.escape(w) for w in name.split())  # "mr bennet" must match the text's "Mr. Bennet"
         after_rx = rf"^\W{{0,3}}(?:the\s+)?{n}\b[^.!?]{{0,40}}?\b{_TAG_VERBS}\b|^\W{{0,3}}{_TAG_VERBS}\s+(?:the\s+)?{n}\b"
         before_rx = rf"\b{n}\b[^.!?]{{0,40}}?\b{_TAG_VERBS}\b[^.!?]{{0,25}}$"
         if re.search(after_rx, _norm_keep(after), re.IGNORECASE) or re.search(before_rx, _norm_keep(before), re.IGNORECASE):
@@ -601,11 +605,13 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             report.no_span += 1
             continue
 
-        def note(outcome: str, final: str | None = None, _tag: str = tag, _span: Span = span) -> None:
+        fired: list[str] = []  # rule names that changed this line's outcome, for per-rule precision in the ablation
+
+        def note(outcome: str, final: str | None = None, _tag: str = tag, _span: Span = span, _fired: list[str] = fired) -> None:
             if TRACE is not None:
                 TRACE.append({
                     "chapter": number, "tag": _tag, "raw": raw_answers.get(_tag), "answer": answers[_tag],
-                    "outcome": outcome, "final": final, "baseline_method": _span.attribution_method.value,
+                    "outcome": outcome, "final": final, "rules": list(_fired), "baseline_method": _span.attribution_method.value,
                     "baseline_speaker": _span.speaker_self_id, "quote": quote_text[:160],
                 })
 
@@ -619,11 +625,13 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             store, span.speaker_self_id, blocks.get(block_index, ""), q
         ):
             report.explicit_kept += 1
+            fired.append("explicit_kept")
             note("explicit_kept", span.speaker_self_id)
             continue
         if narrator is not None and first_person_tag(blocks.get(block_index, ""), q):
             if _norm(speaker) != _norm(narrator.name):
                 report.first_person += 1
+                fired.append("first_person")
             speaker = narrator.name
         if continues_after_tag(blocks.get(block_index, ""), starts, q):
             # The second half of a quote cut by its tag has the first half's speaker, whatever the model answered for
@@ -693,6 +701,8 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             # "addressee": the line opens by calling this person, so they are who is spoken to, not who speaks.
             # "gender": "returned she" cannot be Mr. Bennet. Left unknown, not guessed (a second chance with this
             # person removed has already been tried above).
+            if kind == "addressee" and not addresses(quote_text, entry.name):
+                fired.append("vocative_ext")  # only the widened pattern or an alias caught it
             note(f"rejected_{kind}", entry.self_id)
             if kind == "addressee":
                 report.addressee_rejected += 1
