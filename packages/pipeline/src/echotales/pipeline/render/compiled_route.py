@@ -9,9 +9,12 @@ replaceable by tests through `set_worker`.
 from __future__ import annotations
 
 import base64
+import logging
 from typing import Any
 
 from echotales.pipeline.render.compiler import model_profile
+
+log = logging.getLogger(__name__)
 
 _WORKERS: dict[str, Any] = {}
 
@@ -48,26 +51,42 @@ def generate_compiled_batch(
     model_key: str,
     *,
     greyscale: bool,
-) -> None:
-    """Render a batch of `PanelImageRequest`s with the worker for `model_key`, writing each `request.out_path`."""
+) -> list[Any]:
+    """Render a batch of `PanelImageRequest`s with the worker for `model_key`, writing each `request.out_path`.
+
+    Returns the requests that produced no file. One call for the whole batch is the fast path (one model load); if it
+    raises, each request is retried alone, because a chapter-wide failure (an out-of-memory on the largest panel, one bad
+    prompt) used to lose every panel the worker could have drawn. A request that fails alone is logged by its path and
+    skipped, so the chapter finishes with the panels that worked rather than none."""
     if not requests:
-        return
+        return []
     from echotales.pipeline.workers_contract import ImageWorkerRequest
 
-    reqs = [
-        ImageWorkerRequest(
-            prompt=r.prompt,
-            negative_prompt=r.negative_prompt,
-            width=r.width,
-            height=r.height,
-            seed=r.seed,
+    def _one(r: Any) -> ImageWorkerRequest:
+        return ImageWorkerRequest(
+            prompt=r.prompt, negative_prompt=r.negative_prompt, width=r.width, height=r.height, seed=r.seed,
         )
-        for r in requests
-    ]
-    responses = worker_for(model_key).generate_many(
-        reqs, sections_list, greyscale=greyscale,
-    )
-    for r, resp in zip(requests, responses, strict=True):
+
+    def _write(r: Any, resp: Any) -> None:
         r.out_path.parent.mkdir(parents=True, exist_ok=True)
         r.out_path.write_bytes(base64.b64decode(resp.image_b64))
 
+    worker = worker_for(model_key)
+    try:
+        responses = worker.generate_many([_one(r) for r in requests], sections_list, greyscale=greyscale)
+        for r, resp in zip(requests, responses, strict=True):
+            _write(r, resp)
+        return []
+    except Exception as exc:
+        log.warning("batch of %d panels failed (%s: %s); generating them one by one", len(requests), type(exc).__name__, exc)
+
+    failed: list[Any] = []
+    for r, secs in zip(requests, sections_list, strict=True):
+        if r.out_path.exists():
+            continue  # written before the batch raised
+        try:
+            _write(r, worker.generate_many([_one(r)], [secs], greyscale=greyscale)[0])
+        except Exception as exc:
+            log.warning("panel %s failed alone (%s: %s); skipped", r.out_path, type(exc).__name__, exc)
+            failed.append(r)
+    return failed

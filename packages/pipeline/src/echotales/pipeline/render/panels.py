@@ -3108,12 +3108,19 @@ def render_panels(
         if pending_batch:
             from echotales.pipeline.render.compiled_route import generate_compiled_batch
 
-            generate_compiled_batch(
+            _failed = generate_compiled_batch(
                 [req for req, _ in pending_batch],
                 [secs for _, secs in pending_batch],
                 get_settings().render_image_model,
                 greyscale=get_settings().render_panel_mode == "manga",
             )
+            if _failed:
+                # The cache index and digest map were filled when each panel was queued, before the worker wrote
+                # anything; a panel that never got a file must not be served as a cache hit or a dedupe source later.
+                log.warning("%d panel(s) of chapter %s were not generated", len(_failed), chapter_number)
+                for _req in _failed:
+                    for _d in [d for d, src in generated_by_digest.items() if src == _req.out_path]:
+                        del generated_by_digest[_d]
             pending_batch.clear()
         for src, dst in pending_copies:
             dst.parent.mkdir(parents=True, exist_ok=True)
@@ -3168,6 +3175,10 @@ def render_panels(
     # cache index so a later run (or a later phase of a two-phase render)
     # sees this run's cache-key -> image-path records, not just its files.
     for _cache_dir, _index in cache_indexes.items():
+        # Entries are written when a panel is queued, so a panel the worker never produced would persist as a hit on a
+        # missing file; the read side re-checks existence, but the sidecar should not claim what is not on disk.
+        for _k in [k for k, v in _index.items() if not Path(v).exists()]:
+            del _index[_k]
         _cache_dir.mkdir(parents=True, exist_ok=True)
         (_cache_dir / "cache_index.json").write_text(
             json.dumps(_index, indent=2), encoding="utf-8"
