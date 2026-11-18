@@ -76,3 +76,25 @@ def test_place_typed_as_person_is_a_kind_error(tmp_path: Path) -> None:
 def test_missing_age_is_a_miss(tmp_path: Path) -> None:
     score = g.score_ages(_gold(tmp_path), _store({}))
     assert (score.correct, score.total) == (0, 1)
+
+
+def test_a_role_slot_entity_matches_the_reference_whose_alias_holds_its_role_words(tmp_path: Path) -> None:
+    """RI ch4: the reader's `reverend-insanity:title:elder` slot is the academy elder; the reference calls him "the
+    elder" / "academy elder". The id equals no alias, so three right answers scored as misses (speaker_diag REPORT 6.1)."""
+    store = _store({0: "n:title:elder", 1: "Tom"})
+    path = tmp_path / "gold.json"
+    path.write_text(json.dumps({
+        "novel_id": "n", "chapter": 1, "provenance": "model", "confirmed": False,
+        "characters": [
+            {"id": "tom", "name": "Tom", "kind": "person", "aliases": []},
+            {"id": "elder", "name": "academy elder", "kind": "person", "aliases": ["the elder", "the elder of the academy"]},
+        ],
+        "lines": [{"block": 0, "q": 0, "speaker": "elder"}, {"block": 1, "q": 0, "speaker": "tom"}],
+    }), encoding="utf-8")
+    assert g.score_speakers(g.load_reader_gold(path), store).correct == 2
+
+
+def test_a_role_slot_does_not_match_a_character_without_those_role_words(tmp_path: Path) -> None:
+    store = _store({0: "n:title:elder", 1: "Tom"})
+    score = g.score_speakers(_gold(tmp_path), store)
+    assert score.correct == 1  # Alice is not an elder
