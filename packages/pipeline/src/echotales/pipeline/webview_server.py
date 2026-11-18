@@ -2273,6 +2273,16 @@ def make_handler(
                         # The resolve stage reads the project's review decisions; the path comes from the server's
                         # registry, never the request.
                         params["corrections_path"] = str(handle.corrections.path)
+                    if kind == "video":
+                        # Folders come from the project, never the client (same rule as the voice job below).
+                        for key in ("panel_dir", "audio_dir", "out_dir"):
+                            params.pop(key, None)
+                        video_engine = str(params.get("engine") or "stills")
+                        if video_engine not in ("stills", "ltx-local"):
+                            return self._json(400, {"error": f"video engine {video_engine!r} is not allowed; use stills or ltx-local"})
+                        refusal = _gpu_refusal(video_engine)
+                        if refusal:
+                            return self._json(409, _refusal_body(refusal))
                     if kind == "voice":
                         # A path from the request chose which directory the server loads a voice bank from and where
                         # it wrote; both come from the project, never the client (audit B5).

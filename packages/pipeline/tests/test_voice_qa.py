@@ -181,6 +181,24 @@ def test_retries_are_bounded_and_the_least_bad_take_is_kept(tmp_path: Path) -> N
     assert qa.read_mono(tmp_path / "line.wav")[0].shape[0] / SR == pytest.approx(4.0, abs=0.05)
 
 
+def test_a_retry_that_raises_still_leaves_the_best_earlier_take_in_place(tmp_path: Path) -> None:
+    """A crash mid-retry left the half-written failed take at the output path while the better first take was deleted."""
+
+    class _Crashes(_ScriptedEngine):
+        def synthesize(self, request):  # type: ignore[no-untyped-def]
+            if self.calls >= 1:
+                sf.write(str(request.out_path), _sine(9.0), SR, subtype="PCM_16")  # the take that was being written
+                self.calls += 1
+                raise RuntimeError("out of memory")
+            return super().synthesize(request)
+
+    eng = _Crashes([6.0])
+    with pytest.raises(RuntimeError):
+        levels.synthesize_checked(eng, _req(tmp_path, "No problem at all, really."), max_retries=2)
+    assert qa.read_mono(tmp_path / "line.wav")[0].shape[0] / SR == pytest.approx(6.0, abs=0.05)
+    assert not (tmp_path / "line.best.wav").exists()
+
+
 def test_a_good_first_take_is_not_retried(tmp_path: Path) -> None:
     eng = _ScriptedEngine([1.5])
     result = levels.synthesize_checked(eng, _req(tmp_path, "No problem at all, really."), max_retries=2)

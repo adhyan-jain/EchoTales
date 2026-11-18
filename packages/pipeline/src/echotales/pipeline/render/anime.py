@@ -586,3 +586,46 @@ def _append_versions(out_root: Path, name: str, summary: dict, panels_version: s
     with path.open("a", encoding="utf-8") as fh:
         fh.write(entry)
 
+
+
+def compose_chapter_video(
+    novel_id: str,
+    chapter: float,
+    *,
+    engine: str = "stills",
+    panel_dir: str | Path | None = None,
+    audio_dir: str | Path | None = None,
+    out_dir: str | Path | None = None,
+    panels_version: str | None = None,
+    max_generated_seconds: float | None = None,
+    max_clips: int | None = None,
+    seed: int = 0,
+    captions: bool = True,
+    loop_subtle: bool = True,
+) -> AnimeResult:
+    """One chapter's video, resolved from a novel's default folders. `echotales anime` and the Studio `video` job both
+    call this, so the two cannot drift on which panel version is picked or how the budget is built. A missing panel
+    plan or voiced audio raises `AnimeRefusal` naming the command that fixes it."""
+    from echotales.pipeline.render.shots import LOCAL_LTX, STILLS, ShotBudget
+    from echotales.pipeline.video.local import LocalLTXEngine
+
+    panel_dir = panel_dir if panel_dir is not None else paths.asset_dir(novel_id, "panels")
+    audio_dir = audio_dir if audio_dir is not None else paths.asset_dir(novel_id, "audio")
+    out_root = Path(out_dir if out_dir is not None else paths.asset_dir(novel_id, "video")) / f"ch{chapter:g}"
+    default = ShotBudget()
+    budget = ShotBudget(
+        max_generated_seconds=max_generated_seconds if max_generated_seconds is not None else default.max_generated_seconds,
+        max_clips=max_clips if max_clips is not None else default.max_clips,
+        base_seed=seed,
+    )
+    if panels_version:
+        panels_dir = Path(panel_dir) / f"ch{chapter:g}" / panels_version
+    else:
+        panels_dir = latest_panels_version(panel_dir, chapter, novel_id)
+    local = engine == "ltx-local"
+    return render_shots(
+        panels_dir=panels_dir, audio_dir=audio_dir, out_root=out_root,
+        capability=LOCAL_LTX if local else STILLS,
+        engine=LocalLTXEngine(work_dir=out_root / "worker") if local else None,
+        budget=budget, captions=captions, loop_subtle=loop_subtle,
+    )

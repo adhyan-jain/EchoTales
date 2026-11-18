@@ -58,6 +58,11 @@ class TocEntry:
     #: The next TOC entry's anchor in the same file, set by `SourceAdapter.chapters`. Empty means "to the end of the
     #: file", which is right for one chapter per file and wrong for a book that packs many into one.
     end_fragment: str = ""
+    #: Where this entry's text carries on past the end of its own file, set by `SourceAdapter.chapters`: (path,
+    #: end anchor) for each following spine file, "" meaning the whole file. Project Gutenberg's Pride and Prejudice
+    #: breaks a chapter across files, so chapter 1 came out 782 characters with its second half orphaned at the top
+    #: of the next file, before that file's first anchor.
+    continues: tuple[tuple[str, str], ...] = ()
 
     @property
     def path(self) -> str:

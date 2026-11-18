@@ -85,8 +85,13 @@ class MentionDetector(ABC):
 # Heuristic fallback
 # ---------------------------------------------------------------------------
 
+#: An honorific abbreviation is part of the name it precedes. Its period ended the run, so "Mrs. Bennet" came out as
+#: "Mrs" and "Bennet" and Mr., Mrs. and Miss Bennet all read "Bennet" (Pride and Prejudice offline build, HANDOFF
+#: "Pick up here - 2026-11-07"). Same list as `chapter_ner._HONORIFIC_PERIOD`, and likewise only before a capitalised word.
+_HONORIFIC_ABBR = r"(?:(?:Mr|Mrs|Ms|Dr|Mme|Mlle|Messrs)\.\s+(?=[A-Z]))?"
+
 _CAPITALISED = re.compile(
-    r"\b[A-Z][a-z’'\-]+(?:\s+(?:of|the|de|van|von)\s+[A-Z][a-z’'\-]+|\s+[A-Z][a-z’'\-]+){0,3}\b"
+    r"\b" + _HONORIFIC_ABBR + r"[A-Z][a-z’'\-]+(?:\s+(?:of|the|de|van|von)\s+[A-Z][a-z’'\-]+|\s+[A-Z][a-z’'\-]+){0,3}\b"
 )
 
 _STOPWORDS = frozenset(

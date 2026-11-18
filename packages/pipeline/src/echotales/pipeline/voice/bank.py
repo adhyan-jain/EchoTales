@@ -188,6 +188,7 @@ BANK_LICENCES: dict[str, str] = {
     "ears": "CC BY-NC 4.0",
     "libritts_r": "CC BY 4.0",
     "hifitts": "CC BY 4.0",
+    "audiobook": "CC BY 4.0",
 }
 
 
@@ -619,7 +620,13 @@ def load_hifitts(root: str | Path) -> VoiceBank:
 
 #: Bank kinds `echotales voice`, the Studio voice job and audio QA accept, and the folder each one lives in under
 #: the bank root. One table so the call sites cannot drift apart again.
-BANK_KINDS: tuple[str, ...] = ("vctk", "cremad", "ears", "libritts_r", "hifitts")
+BANK_KINDS: tuple[str, ...] = ("audiobook", "vctk", "cremad", "ears", "libritts_r", "hifitts")
+#: The default bank: Hi-Fi TTS plus LibriTTS-R, both LibriVox audiobook readers under CC BY 4.0. The owner rejected
+#: VCTK for audiobooks on 2026-11-19 ("trash for an audiobook pov": students reading news prompts), and the narrator
+#: picked from the audition (`voice-audition`, 2026-11-19) is a LibriTTS-R reader, so one corpus alone cannot hold
+#: both the narrator and the cast.
+DEFAULT_BANK_KIND = "audiobook"
+_COMBINED: dict[str, tuple[str, ...]] = {"audiobook": ("hifitts", "libritts_r")}
 _BANK_SUBDIR: dict[str, tuple[str, ...]] = {
     "ears": ("ears",),
     "cremad": ("cremad", "extract"),
@@ -636,6 +643,9 @@ def load_bank(kind: str, root: str | Path) -> VoiceBank:
     """
     if kind not in BANK_KINDS:
         raise ValueError(f"unknown bank kind {kind!r}; choose from {', '.join(BANK_KINDS)}")
+    if kind in _COMBINED:
+        voices = [v for part in _COMBINED[kind] for v in load_bank(part, root).voices]
+        return VoiceBank(voices, **_stamp(kind))
     root = Path(root)
     sub = root.joinpath(*_BANK_SUBDIR.get(kind, ()))
     if kind in _BANK_SUBDIR and sub.is_dir():

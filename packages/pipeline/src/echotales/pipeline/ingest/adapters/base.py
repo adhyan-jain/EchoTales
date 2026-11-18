@@ -261,25 +261,28 @@ _GUTENBERG_END = re.compile(r"^\W*end of (the |this )?project gutenberg", re.IGN
 def _anchor_window(tree: etree._Element, entry: TocEntry):  # type: ignore[no-untyped-def]
     """A predicate keeping only the block elements between this entry's anchor and the next entry's anchor, or None
     when the entry points at a whole file (or at an anchor that is not in the document: then the whole file is the
-    safest reading, as before).
+    safest reading, as before). An entry with no start anchor but an end anchor is the head of a file that continues
+    the previous chapter: everything before the end anchor.
 
     The block holding an anchor counts as on its own side of it: the chapter heading `<h2><a id=.../>CHAPTER II.</h2>`
     belongs to the chapter it starts and not to the previous one."""
-    if not entry.fragment:
+    if not entry.fragment and not entry.end_fragment:
         return None
 
     def find(fragment: str):  # type: ignore[no-untyped-def]
         hits = tree.xpath("//*[@id=$f or @name=$f]", f=fragment)
         return hits[0] if hits else None
 
-    start = find(entry.fragment)
-    if start is None:
+    start = find(entry.fragment) if entry.fragment else None
+    if entry.fragment and start is None:
         return None
     end = find(entry.end_fragment) if entry.end_fragment else None
+    if start is None and end is None:
+        return None
     order = {element: i for i, element in enumerate(tree.iter())}
-    start_i = order[start]
+    start_i = order[start] if start is not None else -1
     end_i = order[end] if end is not None else None
-    start_ancestors = {start, *start.iterancestors()}
+    start_ancestors = {start, *start.iterancestors()} if start is not None else set()
     end_ancestors = {end, *end.iterancestors()} if end is not None else set()
 
     def keep(element: etree._Element) -> bool:
@@ -341,6 +344,7 @@ class SourceAdapter:
         in_appendix = False
         seen_a_chapter = False
         entries = self.toc_entries()
+        spine = self.epub.spine()
         for position, entry in enumerate(entries):
             # Where this chapter stops inside a shared file: at the next entry's anchor in the same file. Project
             # Gutenberg's Pride and Prejudice has 61 chapters in 15 files, and every chapter in a file was ingested
@@ -354,6 +358,7 @@ class SourceAdapter:
                     ),
                     "",
                 ))
+            entry = replace(entry, continues=_continuation(entries, position, spine))
             parsed = parse_chapter_label(entry.label)
 
             if parsed.number is None:
@@ -381,17 +386,14 @@ class SourceAdapter:
                 yield chapter
 
     def parse_chapter(self, entry: TocEntry, number: float, title: str) -> Chapter | None:
-        try:
-            raw = self.epub.read(entry.path)
-        except KeyError:
-            return None
-
-        tree = lxml_html.fromstring(raw)
-        root = self.content_root(tree)
+        # The entry's own file from its anchor, then each continuation file up to the next entry's anchor. A part is a
+        # TocEntry so `_anchor_window` cuts it the same way it cuts the first.
+        parts = [(entry.path, entry)] + [
+            (path, TocEntry(label=entry.label, href=path, play_order=entry.play_order, end_fragment=end))
+            for path, end in entry.continues
+        ]
         blocks: list[Block] = []
-
         italic_classes = self.epub.italic_classes()
-        window = _anchor_window(tree, entry)
         # Once a translator's/author's note starts, every remaining block in
         # the chapter is back matter too -- `classify_block` only recognises
         # the *labelled* block ("TL Note:"), and its own continuation
@@ -404,49 +406,62 @@ class SourceAdapter:
         # sit on the far side of a second separator from the note label
         # itself and is still back matter.
         in_note = False
-        for item in iter_block_items(root):
-            if isinstance(item, StrayText):
-                if window is not None and not window.stray(item):
+        for path, part in parts:
+            try:
+                raw = self.epub.read(path)
+            except KeyError:
+                if path == entry.path:
+                    return None
+                continue
+            tree = lxml_html.fromstring(raw)
+            root = self.content_root(tree)
+            window = _anchor_window(tree, part)
+            for item in iter_block_items(root):
+                if isinstance(item, StrayText):
+                    if window is not None and not window.stray(item):
+                        continue
+                    element = item.element
+                else:
+                    element = item
+                    if window is not None and not window(element):
+                        continue
+                raw_block = extract_block(element, italic_classes=italic_classes)
+                if _GUTENBERG_END.match(raw_block.text or ""):
+                    # the licence footer after the last chapter is not story, nor is anything after it
+                    return self._finish(entry, number, title, blocks)
+                if raw_block.is_break:
+                    # Scene break: zero-width marker that Phase 2 can key on.
+                    blocks.append(
+                        Block(index=len(blocks), block_type=BlockType.NON_DIEGETIC, text="* * *")
+                    )
                     continue
-                element = item.element
-            else:
-                element = item
-                if window is not None and not window(element):
+                if not raw_block.text:
                     continue
-            raw_block = extract_block(element, italic_classes=italic_classes)
-            if _GUTENBERG_END.match(raw_block.text or ""):
-                break  # the licence footer after the last chapter is not story
-            if raw_block.is_break:
-                # Scene break: zero-width marker that Phase 2 can key on.
+                if self.should_skip_block(raw_block, len(blocks)):
+                    continue
+
+                if in_note or is_note_element(element):
+                    classified = ClassifiedBlock(BlockType.TRANSLATOR_NOTE, raw_block.text.strip(), {})
+                else:
+                    classified = classify_block(
+                        raw_block.text,
+                        tag=raw_block.tag,
+                        css_classes=raw_block.css_classes,
+                    )
+                    if classified.block_type in (BlockType.TRANSLATOR_NOTE, BlockType.AUTHOR_NOTE):
+                        in_note = True
                 blocks.append(
-                    Block(index=len(blocks), block_type=BlockType.NON_DIEGETIC, text="* * *")
+                    Block(
+                        index=len(blocks),
+                        block_type=classified.block_type,
+                        text=classified.text,
+                        italic_ranges=raw_block.italic_ranges,
+                        system_fields=classified.system_fields,
+                    )
                 )
-                continue
-            if not raw_block.text:
-                continue
-            if self.should_skip_block(raw_block, len(blocks)):
-                continue
+        return self._finish(entry, number, title, blocks)
 
-            if in_note or is_note_element(element):
-                classified = ClassifiedBlock(BlockType.TRANSLATOR_NOTE, raw_block.text.strip(), {})
-            else:
-                classified = classify_block(
-                    raw_block.text,
-                    tag=raw_block.tag,
-                    css_classes=raw_block.css_classes,
-                )
-                if classified.block_type in (BlockType.TRANSLATOR_NOTE, BlockType.AUTHOR_NOTE):
-                    in_note = True
-            blocks.append(
-                Block(
-                    index=len(blocks),
-                    block_type=classified.block_type,
-                    text=classified.text,
-                    italic_ranges=raw_block.italic_ranges,
-                    system_fields=classified.system_fields,
-                )
-            )
-
+    def _finish(self, entry: TocEntry, number: float, title: str, blocks: list[Block]) -> Chapter | None:
         if not blocks:
             return None
         return Chapter(
@@ -456,6 +471,24 @@ class SourceAdapter:
             source_href=entry.path,
             blocks=blocks,
         )
+
+
+def _continuation(entries: list[TocEntry], position: int, spine: list[str]) -> tuple[tuple[str, str], ...]:
+    """The spine files this entry's text runs on into, as (path, end anchor): every file between its own and the next
+    entry's that no entry points at, then the next entry's file up to that entry's anchor. Text before a file's first
+    anchor belongs to the previous chapter. Nothing after the last entry: that is licence or colophon, not story."""
+    entry = entries[position]
+    nxt = next((e for e in entries[position + 1:] if (e.path, e.fragment) != (entry.path, entry.fragment)), None)
+    if nxt is None or nxt.path == entry.path or entry.path not in spine or nxt.path not in spine:
+        return ()
+    here, there = spine.index(entry.path), spine.index(nxt.path)
+    if there <= here:
+        return ()
+    listed = {e.path for e in entries}
+    parts = [(path, "") for path in spine[here + 1 : there] if path not in listed]
+    if nxt.fragment:
+        parts.append((nxt.path, nxt.fragment))
+    return tuple(parts)
 
 
 @dataclass(frozen=True, slots=True)

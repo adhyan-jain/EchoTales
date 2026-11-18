@@ -940,10 +940,10 @@ def cmd_voice(args: argparse.Namespace) -> int:
     """Phase 8: cast voices and render the script."""
     from echotales.pipeline import paths
     from echotales.pipeline.voice import get_engine, render_novel
-    from echotales.pipeline.voice.bank import load_bank
+    from echotales.pipeline.voice.bank import DEFAULT_BANK_KIND, load_bank
 
     store = _open_store(args)
-    kind = getattr(args, "bank_kind", "vctk")
+    kind = getattr(args, "bank_kind", DEFAULT_BANK_KIND)
     try:
         bank = load_bank(kind, args.bank)
     except FileNotFoundError as exc:
@@ -1343,29 +1343,14 @@ def _query_attributes(args: argparse.Namespace) -> int:
 def cmd_anime(args: argparse.Namespace) -> int:
     """Compose one chapter from its panel plan and audio, animating what the shot plan asks for."""
     from echotales.pipeline.render import anime
-    from echotales.pipeline.render.shots import LOCAL_LTX, STILLS, ShotBudget
-    from echotales.pipeline.video.local import LocalLTXEngine, VideoEnvError
+    from echotales.pipeline.video.local import VideoEnvError
 
-    chapter = float(args.chapter)
-    out_root = Path(args.out) / f"ch{chapter:g}"
-    default = ShotBudget()
-    budget = ShotBudget(
-        max_generated_seconds=args.max_generated_seconds
-        if args.max_generated_seconds is not None else default.max_generated_seconds,
-        max_clips=args.max_clips if args.max_clips is not None else default.max_clips,
-        base_seed=args.seed,
-    )
     try:
-        if args.panels_version:
-            panels_dir = Path(args.panel_dir) / f"ch{chapter:g}" / args.panels_version
-        else:
-            panels_dir = anime.latest_panels_version(args.panel_dir, chapter, args.novel)
-        local = args.engine == "ltx-local"
-        result = anime.render_shots(
-            panels_dir=panels_dir, audio_dir=args.audio_dir, out_root=out_root,
-            capability=LOCAL_LTX if local else STILLS,
-            engine=LocalLTXEngine(work_dir=out_root / "worker") if local else None,
-            budget=budget, captions=not args.no_captions, loop_subtle=not args.no_loop,
+        result = anime.compose_chapter_video(
+            args.novel, float(args.chapter), engine=args.engine,
+            panel_dir=args.panel_dir, audio_dir=args.audio_dir, out_dir=args.out,
+            panels_version=args.panels_version, max_generated_seconds=args.max_generated_seconds,
+            max_clips=args.max_clips, seed=args.seed, captions=not args.no_captions, loop_subtle=not args.no_loop,
         )
     except (anime.AnimeRefusal, VideoEnvError) as exc:
         print(f"refusing: {exc}", file=sys.stderr)
@@ -1810,7 +1795,7 @@ def cmd_audio_qa(args: argparse.Namespace) -> int:
 
     from echotales.pipeline.persona.build import load_trait_profiles
     from echotales.pipeline.voice import qa
-    from echotales.pipeline.voice.bank import load_bank
+    from echotales.pipeline.voice.bank import DEFAULT_BANK_KIND, load_bank
     from echotales.pipeline.voice.runner import _AUDIBLE
 
     audio_dir = Path(args.audio_dir)
@@ -1862,7 +1847,7 @@ def cmd_voice_audition(args: argparse.Namespace) -> int:
 
     from echotales.pipeline import paths
     from echotales.pipeline.voice import audition, get_engine
-    from echotales.pipeline.voice.bank import load_bank
+    from echotales.pipeline.voice.bank import DEFAULT_BANK_KIND, load_bank
 
     banks = []
     for kind in args.bank_kind or ["hifitts", "libritts_r"]:

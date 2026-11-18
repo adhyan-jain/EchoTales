@@ -96,6 +96,9 @@ JOB_KINDS = (
     # Binds the finished chapter tracks into one M4B with chapter markers; the CLI had `voice --m4b` and the Studio
     # had no way to produce or download the audiobook (audit B3).
     "export_m4b",
+    # One mp4 per chapter from the rendered panels and the voiced audio: `echotales anime` (stills / ltx-local) or,
+    # with narration pruning, the motion-comic `render` path. The CLI was the only way to make the video.
+    "video",
     "refimg_search",
     "reference_gen",
 )
@@ -198,6 +201,68 @@ def _record_studio_version(out_dir: Path, chapters: list[float], version: str, e
         if (chapter_dir / version).is_dir():
             with open(chapter_dir / "VERSIONS.md", "a", encoding="utf-8") as fh:
                 fh.write(line)
+
+
+VIDEO_ENGINES = ("stills", "ltx-local")
+
+
+def _run_video(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]:
+    """Chapter videos from the same code the CLI runs: `echotales anime` (`render.anime.compose_chapter_video`) for the
+    `stills` and `ltx-local` engines, `render_videos` (the motion-comic path behind `render --prune-visual-narration`)
+    when narration pruning is asked for, because only that path has the cut. Refuses, naming the fix, rather than
+    failing deep in ffmpeg: a Studio user cannot read a stack trace."""
+    from echotales.pipeline import paths
+    from echotales.pipeline.render import anime
+
+    engine = str(params.get("engine") or "stills")
+    if engine not in VIDEO_ENGINES:
+        raise ValueError(f"video engine {engine!r} is not one of {', '.join(VIDEO_ENGINES)}; pick stills or ltx-local")
+    prune = bool(params.get("prune_visual_narration"))
+    if not params.get("chapters"):
+        raise ValueError("no chapters chosen; pass chapters, e.g. [1], for the chapters to make a video of")
+    chapters = [float(c) for c in params["chapters"]]
+    if engine == "ltx-local":
+        if prune:
+            raise ValueError("prune_visual_narration is only available with the stills engine; turn prune off or pick stills")
+        from echotales.pipeline.compute import resource_refusal
+
+        # The same refusal the render route applies, checked again at run time: the card may have filled while queued.
+        if refusal := resource_refusal(engine, http=True):
+            raise ValueError(str(refusal))
+
+    panel_dir = params.get("panel_dir") or paths.asset_dir(novel_id, "panels")
+    audio_dir = params.get("audio_dir") or paths.asset_dir(novel_id, "audio")
+    out_dir = params.get("out_dir") or paths.asset_dir(novel_id, "video")
+
+    if prune:
+        from echotales.pipeline.render.compose import get_engine as get_compose_engine
+        from echotales.pipeline.render.runner import render_videos
+
+        for what, root, fix in (
+            ("panel", panel_dir, f"render the panels (`echotales render --novel {novel_id}`)"),
+            ("voice", audio_dir, f"voice the chapters (`echotales voice --novel {novel_id}`)"),
+        ):
+            if not (Path(root) / "manifest.jsonl").is_file():
+                raise ValueError(f"no {what} manifest.jsonl under {root}; {fix} first")
+        report = render_videos(
+            novel_id, store, panel_dir=panel_dir, voice_dir=audio_dir, out_dir=out_dir,
+            engine=get_compose_engine("ffmpeg"), chapters=chapters, prune_visual_narration=True,
+        )
+        if not report.chapters_rendered:
+            raise ValueError("no video was written; the chapters have no panels or voiced audio in the manifests")
+        return [report.summary()]
+
+    # Every chapter's panels are resolved before any is composed, so a missing render fails the job before a long
+    # first chapter, not after it.
+    for chapter in chapters:
+        anime.latest_panels_version(panel_dir, chapter, novel_id)
+    out: list[str] = []
+    for chapter in chapters:
+        result = anime.compose_chapter_video(
+            novel_id, chapter, engine=engine, panel_dir=panel_dir, audio_dir=audio_dir, out_dir=out_dir,
+        )
+        out.append(str(result.video) if result is not None else "")
+    return out
 
 
 def _run_pipeline(store: Store, job_id: str, novel_id: str, params: dict[str, Any], sources_path: str):  # type: ignore[no-untyped-def]
@@ -424,10 +489,10 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         engine_name = params.get("engine") or "chatterbox"
         # Same bank selection as `cmd_voice`; the HTTP job path hardcoded VCTK
         # and so could never use an emotion-capable bank.
-        from echotales.pipeline.voice.bank import load_bank
+        from echotales.pipeline.voice.bank import DEFAULT_BANK_KIND, load_bank
 
         bank_root = params.get("bank", "data/voice")
-        bank_kind = params.get("bank_kind", "vctk")
+        bank_kind = params.get("bank_kind", DEFAULT_BANK_KIND)
         # The Studio's voice output is what export_m4b later binds, and that job cannot see the bank, so the
         # non-commercial licence (EARS, CC BY-NC 4.0) is enforced here, as `cmd_voice` does for `--m4b`.
         from echotales.pipeline.voice.bank import noncommercial_refusal
@@ -475,6 +540,15 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             fn=lambda: export_m4b(
                 tracks, audio_dir / f"{novel_id}.m4b", titles=titles, title=novel_row.get("title", novel_id)
             ),
+        )
+    elif job.kind == "video":
+        # Not `run_stage`'s skip: its digest is the params, but what a video is made from (the newest panel version,
+        # the voiced audio) changes between runs with the same params, and a skipped rerun would show the old video.
+        run_stage(
+            store, run_id=pipeline_run.run_id, stage_name="video",
+            input_digest=f"{input_digest}|{time.time()}",
+            fn=lambda: _run_video(store, novel_id, params),
+            skip_if_succeeded=False,
         )
     elif job.kind == "refimg_search":
         from echotales.pipeline.persona import refimg

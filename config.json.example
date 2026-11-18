@@ -9,5 +9,8 @@
     "panel_mode": "manga",
     "prompt_compiler": false,
     "director_model": ""
+  },
+  "voice": {
+    "narrator": "libritts_r2803"
   }
 }

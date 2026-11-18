@@ -99,3 +99,19 @@ def test_audiobook_banks_are_commercial_and_ears_is_not() -> None:
     for kind in ("libritts_r", "hifitts", "vctk"):
         assert noncommercial_refusal(kind, m4b=True, allowed=False) is None
     assert noncommercial_refusal("ears", m4b=True, allowed=False).code is ErrorCode.LICENCE_REFUSED
+
+
+def test_audiobook_kind_merges_both_audiobook_corpora_and_is_the_default(monkeypatch, tmp_path):
+    # VCTK was rejected for audiobooks (2026-11-19) and the chosen narrator is a LibriTTS-R reader, so the default
+    # bank must hold Hi-Fi TTS and LibriTTS-R voices together under one CC BY 4.0 stamp.
+    from echotales.pipeline.voice import bank as bank_mod
+
+    def fake(part):
+        return lambda root: bank_mod.VoiceBank([bank_mod.BankVoice(speaker_id=f"{part}1", gender="male", age=35)])
+
+    monkeypatch.setattr(bank_mod, "load_hifitts", fake("hifitts"))
+    monkeypatch.setattr(bank_mod, "load_libritts_r", fake("libritts_r"))
+    merged = bank_mod.load_bank("audiobook", tmp_path)
+    assert {v.speaker_id for v in merged.voices} == {"hifitts1", "libritts_r1"}
+    assert (merged.bank_id, merged.licence) == ("audiobook", "CC BY 4.0")
+    assert bank_mod.DEFAULT_BANK_KIND == "audiobook"

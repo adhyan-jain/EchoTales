@@ -100,7 +100,9 @@ def synthesize_checked(engine: TTSEngine, request: SynthesisRequest, *, max_retr
                 break
         else:
             result.gave_up = True
-        shutil.copyfile(best, path)
     finally:
+        # Also on an exception from `engine.synthesize`: otherwise the output path kept the failed, possibly
+        # half-written retry while the better earlier take was deleted with the temp copy.
+        shutil.copyfile(best, path)
         best.unlink(missing_ok=True)
     return result
