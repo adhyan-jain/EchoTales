@@ -147,3 +147,39 @@ def test_flow_director_conservation_reports_dropped_items_as_warnings(tmp_path: 
     assert len(res.warnings) > 0
     # Lantern or altar should be reported in warnings
     assert any("dropped" in w for w in res.warnings)
+
+
+def _plan_row(props: list[str]) -> str:
+    return json.dumps({
+        "novel_id": "test", "chapter": 1.0, "panel_seq": 1, "block_indexes": [0],
+        "cast": [{"self_id": "s1", "label": "Fang Yuan"}],
+        "direction": {"shot": "medium", "characters": [{"name": "Fang Yuan"}], "setting": "cave", "props": props},
+    }) + "\n"
+
+
+def test_director_conservation_counts_only_the_latest_render_version_per_chapter(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # The audit globbed every panel_plan.jsonl, so a chapter re-rendered ten times counted its first, worse directions ten times.
+    from echotales.core.enums import BlockType
+    from echotales.pipeline import paths
+
+    store = Store(str(tmp_path / "t.db"))
+    store.add_novel("test", "T", "t.epub", "generic")
+    store.add_chapter(Chapter(novel_id="test", number=1.0, title="c", source_href="1.html",
+                              blocks=[Block(index=0, block_type=BlockType.PROSE, text="Fang Yuan lit a lantern in the cave.")]))
+    store.conn.commit()
+    panels = tmp_path / "panels"
+    for version, props in (("v2_old-bad", []), ("v10_new-good", ["lantern"]), ("v9_older", [])):
+        (panels / "ch1" / version).mkdir(parents=True)
+        (panels / "ch1" / version / "panel_plan.jsonl").write_text(_plan_row(props), encoding="utf-8")
+    monkeypatch.setattr(paths, "asset_dir", lambda novel_id, kind: panels if kind == "panels" else tmp_path / kind)
+
+    res = flow._find(flow.Stage.DIRECTOR, "director.conservation").fn(store, "test", None)
+    assert res.warnings == []  # v10 (numerically newest) captured the lantern; v2 and v9 would have warned
+    assert res.count_in == res.count_out > 0
+
+
+def test_conservation_keywords_cover_a_non_xianxia_scene() -> None:
+    text = "In the drawing room Elizabeth read a letter by the window while the fire burned."
+    audit = check_direction_conservation(text, PanelDirection(setting="drawing room", props=["letter"]))
+    assert "drawing room" in audit.captured_places and "letter" in audit.captured_props
+    assert "window" in audit.dropped_places and "fire" in audit.dropped_props

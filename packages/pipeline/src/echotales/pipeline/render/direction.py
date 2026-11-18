@@ -994,12 +994,17 @@ class DirectionConservationAudit:
         return (self.total_captured / total) if total > 0 else 1.0
 
 
+#: Genre-neutral nouns on top of the xianxia ones: the audit was written against RI, so a Regency drawing room or a
+#: letter on a table was never counted as captured or dropped and the conservation rate read 1.0 for P&P.
+#: Multi-word entries come first so "drawing room" is one place, not "room".
 _COMMON_PLACE_KEYWORDS = re.compile(
-    r"\b(cliff|mountain|peak|hall|room|cave|courtyard|pavilion|forest|lake|river|village|street|terrace|chamber|palace|path|gate|ruins|bridge|altar|shrine)\b",
+    r"\b(drawing\s*room|dining\s*room|cliff|mountain|peak|hall|room|cave|courtyard|pavilion|forest|lake|river|village|street|terrace|chamber|palace|path|gate|ruins|bridge|altar|shrine"
+    r"|parlou?r|ballroom|garden|library|study|kitchen|bedroom|staircase|corridor|church|inn|lane|road|park|field|house|cottage|window|doorway|balcony|shop|market|harbou?r|beach|city|town)\b",
     re.IGNORECASE,
 )
 _COMMON_PROP_KEYWORDS = re.compile(
-    r"\b(sword|blade|talisman|lantern|scroll|tea\s*cup|jar|carriage|cicada|stone|ring|fan|pill|gu|mirror|spear|bow|dagger|chain)\b",
+    r"\b(sword|blade|talisman|lantern|scroll|tea\s*cup|jar|carriage|cicada|stone|ring|fan|pill|gu|mirror|spear|bow|dagger|chain"
+    r"|letter|book|table|fire|horse|candle|chair|piano|umbrella|newspaper|bonnet|handkerchief|basket|pistol|revolver|key|lamp|cup|bottle|glass|coat|hat)\b",
     re.IGNORECASE,
 )
 

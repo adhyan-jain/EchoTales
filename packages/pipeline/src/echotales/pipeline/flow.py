@@ -1851,6 +1851,22 @@ def check_resolve_profile(store: Store, novel_id: str, source: SourceContext | N
 # ---------------------------------------------------------------------------
 
 
+def _latest_plan_files(panel_root: Path) -> list[Path]:
+    """Each chapter's newest `panel_plan.jsonl`: `panels/chN/vN_suffix/` keeps every render, and the audit used to glob
+    them all, so a chapter rendered ten times was judged on its first nine (worse) directions as well. The version
+    number is compared as an integer (v10 is newer than v9); a plan outside that layout counts as its own group."""
+    best: dict[Path, tuple[int, Path]] = {}
+    for pf in sorted(panel_root.glob("**/panel_plan.jsonl")):
+        head = pf.parent.name[1:].split("_")[0]
+        if pf.parent.name.startswith("v") and head.isdigit():
+            group, num = pf.parent.parent, int(head)
+        else:
+            group, num = pf.parent, -1
+        if group not in best or num > best[group][0]:
+            best[group] = (num, pf)
+    return [pf for _, pf in best.values()]
+
+
 @check(Stage.DIRECTOR, "director.conservation", "every person, place and prop in beat text is captured in panel direction or counted as dropped")
 def check_director_conservation(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
     chk = _find(Stage.DIRECTOR, "director.conservation")
@@ -1861,7 +1877,7 @@ def check_director_conservation(store: Store, novel_id: str, source: SourceConte
 
     panel_root = paths.asset_dir(novel_id, "panels")
     plan_path = panel_root / "panel_plan.jsonl"
-    plan_files = [plan_path] if plan_path.exists() else list(panel_root.glob("**/panel_plan.jsonl"))
+    plan_files = [plan_path] if plan_path.exists() else _latest_plan_files(panel_root)
     if not plan_files:
         return _skipped(chk, "no panel_plan.jsonl found on disk")
 
