@@ -448,6 +448,12 @@ def build_parser() -> argparse.ArgumentParser:
         "you want by default",
     )
     p_render.add_argument(
+        "--prune-visual-narration", action="store_true",
+        help="video only, off by default: drop narration lines the panel already shows (regex heuristic, "
+        "render/narration_pruning.py) from the video's audio and captions, and list every cut line in "
+        "pruned_narration.txt next to the videos. The audiobook is never pruned",
+    )
+    p_render.add_argument(
         "--speed", type=float, default=1.0,
         help="uniform playback speed on the finished video (default 1.0x). "
         "Natural narration pace produces a 15+ minute video per chapter, "

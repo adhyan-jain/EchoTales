@@ -213,7 +213,6 @@ def render_novel(
     seed: int = DEFAULT_SEED,
     synthesize: bool = True,
     min_character_confidence: float = MIN_CHARACTER_CONFIDENCE,
-    prune_visual_narration: bool = False,
 ) -> VoiceReport:
     """Cast the novel, build its script, and render it.
 
@@ -257,16 +256,6 @@ def render_novel(
     for chapter in wanted:
         report.chapters += 1
         chapter_spans = list(store.get_spans(novel_id, chapter))
-        if prune_visual_narration:
-            from echotales.pipeline.render.narration_pruning import (
-                classify_span_visual_status,
-                NarrationVisualStatus,
-            )
-
-            chapter_spans = [
-                s for s in chapter_spans
-                if classify_span_visual_status(s) is not NarrationVisualStatus.CONVEYED_VISUALLY
-            ]
         chapter_obj = store.get_chapter(novel_id, chapter)
         block_text = {b.index: b.text for b in chapter_obj.blocks} if chapter_obj else {}
         emotions = store.span_emotions(novel_id, chapter)

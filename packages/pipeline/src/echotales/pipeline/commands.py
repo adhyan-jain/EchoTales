@@ -1279,8 +1279,11 @@ def cmd_render(args: argparse.Namespace) -> int:
             captions=not args.no_captions,
             chapters=wanted,
             clips_per_chapter=args.clips_per_chapter,
+            prune_visual_narration=getattr(args, "prune_visual_narration", False),
         )
         print(report.summary())
+        if report.pruned_report:
+            print(f"pruned lines listed in: {report.pruned_report}")
         print(f"\nvideos written under: {args.out}")
 
     store.close()

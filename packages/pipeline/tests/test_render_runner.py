@@ -165,3 +165,19 @@ class TestRenderVideosEndToEnd:
 
         shots = json.loads((out_dir / "ch1.shots.json").read_text())
         assert [s["block_index"] for s in shots] == [0]
+
+        # A person can review what was cut: one line per pruned span, next to the video.
+        pruned = (out_dir / "pruned_narration.txt").read_text(encoding="utf-8")
+        assert "ch1" in pruned and len(pruned.strip().splitlines()) >= report.pruned_visual_lines
+        assert report.pruned_report == str(out_dir / "pruned_narration.txt")
+
+    def test_no_pruned_report_when_pruning_is_off(self, tmp_path) -> None:
+        store = _seeded_store(tmp_path)
+        render_panels("t", store, out_dir=tmp_path / "panels", engine=get_panel_engine("stub"))
+        _write_voice_manifest(tmp_path / "audio", {})
+        render_videos(
+            "t", store,
+            panel_dir=tmp_path / "panels", motion_dir=tmp_path / "motion", voice_dir=tmp_path / "audio",
+            out_dir=tmp_path / "video", engine=get_compose_engine("stub"),
+        )
+        assert not (tmp_path / "video" / "pruned_narration.txt").exists()

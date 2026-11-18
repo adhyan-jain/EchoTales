@@ -64,6 +64,8 @@ class VideoReport:
     chapters_skipped_no_audio: int = 0
     caption_cards: int = 0
     pruned_visual_lines: int = 0
+    #: Path of the plain-text list of cut lines, empty when nothing was pruned.
+    pruned_report: str = ""
     engine: str = "stub"
 
     def summary(self) -> str:
@@ -123,6 +125,7 @@ def render_videos(
         audio_by_chapter.setdefault(line.chapter, []).append(line)
 
     wanted = chapters if chapters is not None else sorted(panels_by_chapter)
+    pruned_log: list[str] = []
 
     for chapter_number in wanted:
         chapter_audio = audio_by_chapter.get(chapter_number)
@@ -140,10 +143,12 @@ def render_videos(
             )
 
             span_map = {s.id: classify_span_visual_status(s) for s in chapter_spans}
+            span_text = {s.id: s.text for s in chapter_spans}
             kept_audio = []
             for line in chapter_audio:
                 if line.span_id and span_map.get(line.span_id) is NarrationVisualStatus.CONVEYED_VISUALLY:
                     report.pruned_visual_lines += 1
+                    pruned_log.append(f"ch{chapter_number:g}\t{line.span_id}\t{' '.join(span_text[line.span_id].split())}")
                 else:
                     kept_audio.append(line)
             chapter_audio = kept_audio
@@ -211,5 +216,12 @@ def render_videos(
 
         engine.render(timeline, audio_paths, out_path)
         report.chapters_rendered += 1
+
+    if pruned_log:
+        # The heuristic is regex-based (narration_pruning.py), so what it cut has to be reviewable by a person.
+        out_dir.mkdir(parents=True, exist_ok=True)
+        report_path = out_dir / "pruned_narration.txt"
+        report_path.write_text("chapter\tspan\ttext\n" + "\n".join(pruned_log) + "\n", encoding="utf-8")
+        report.pruned_report = str(report_path)
 
     return report

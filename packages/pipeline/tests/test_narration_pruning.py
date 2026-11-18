@@ -80,3 +80,11 @@ def test_visual_mode_prunes_redundant_descriptions() -> None:
     assert report.visually_pruned == 2
     assert report.reduction_rate == pytest.approx(0.667, abs=0.01)
     assert "redundant visual spans pruned" in report.summary()
+
+
+def test_render_cli_pruning_flag_is_off_by_default() -> None:
+    from echotales.pipeline.cli import build_parser
+
+    parser = build_parser()
+    assert parser.parse_args(["render", "--novel", "x"]).prune_visual_narration is False
+    assert parser.parse_args(["render", "--novel", "x", "--prune-visual-narration"]).prune_visual_narration is True
