@@ -97,7 +97,8 @@ def _expect(cond: object, message: str) -> None:
 
 def _seed_voice_bank(root: Path) -> None:
     # The Studio voice job always loads `data/voice` (the server drops any client-supplied bank
-    # path), so a tiny VCTK-shaped roster stands in for the real corpus, which is not in git.
+    # path), so a tiny VCTK-shaped roster stands in for the real corpus, which is not in git. The
+    # voice step therefore names bank_kind="vctk": the default is now the audiobook bank (2026-11-19).
     bank = root / "data" / "voice"
     bank.mkdir(parents=True)
     rows = [("p001", 25, "F"), ("p002", 30, "M"), ("p003", 22, "F"), ("p004", 40, "M")]
@@ -282,7 +283,7 @@ def run_demo(workdir: Path, on_step: Callable[[Step], None] | None = None) -> li
             ("titles", titles),
             ("correct", correct),
             ("lock", lock),
-            ("voice", job_step("voice", {"engine": "stub"}, made="audio:*.wav")),
+            ("voice", job_step("voice", {"engine": "stub", "bank_kind": "vctk"}, made="audio:*.wav")),
             (
                 "m4b",
                 job_step(
