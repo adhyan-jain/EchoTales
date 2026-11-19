@@ -6,6 +6,7 @@ from __future__ import annotations
 from echotales.core.enums import AttributionMethod, BlockType, ReferenceMode, SpanType
 from echotales.core.models import Block, Chapter, DiscoursePosition, Self, Span
 from echotales.core.store import Store
+from echotales.pipeline.persona.gender import infer_missing_genders
 from echotales.pipeline.corrections import Correction, CorrectionLog, CorrectionType, apply_pending
 
 
@@ -167,3 +168,47 @@ class TestCreateMention:
         result = apply_pending(store, log)
         assert result["count"] == 0
         assert store.get_mentions("t", 1.0) == []
+
+
+def _gender_novel(tmp_path):
+    from test_persona_gender import TEXT, _novel
+
+    return _novel(tmp_path, TEXT)
+
+
+def _stored_gender(store) -> str:
+    from test_persona_gender import _gender
+
+    return _gender(store)
+
+
+class TestSetGender:
+    def test_set_gender_correction_beats_the_stored_value(self, tmp_path) -> None:
+        store = _gender_novel(tmp_path)
+        log = CorrectionLog(tmp_path / "t.jsonl")
+        log.add(Correction(novel_id="t", type=CorrectionType.SET_GENDER, payload={"self_id": "t:self1", "gender": "female"}))
+        result = apply_pending(store, log)
+        assert result["count"] == 1
+        assert _stored_gender(store) == "female"
+
+    def test_human_gender_is_not_overwritten_by_a_later_pass(self, tmp_path) -> None:
+        store = _gender_novel(tmp_path)
+        log = CorrectionLog(tmp_path / "t.jsonl")
+        log.add(Correction(novel_id="t", type=CorrectionType.SET_GENDER, payload={"self_id": "t:self1", "gender": "unknown"}))
+        apply_pending(store, log)
+        from test_persona_gender import ScriptedClient
+
+        client = ScriptedClient(lambda p: {"gender": "male", "quote": "He did not smile", "confident": True})
+        infer_missing_genders("t", store, client)
+        assert client.prompts == []
+        assert _stored_gender(store) == "unknown"
+
+    def test_bad_gender_value_is_an_error_not_a_write(self, tmp_path) -> None:
+        store = _gender_novel(tmp_path)
+        log = CorrectionLog(tmp_path / "t.jsonl")
+        log.add(Correction(novel_id="t", type=CorrectionType.SET_GENDER, payload={"self_id": "t:self1", "gender": "robot"}))
+        result = apply_pending(store, log)
+        assert result["count"] == 0
+        assert _stored_gender(store) == "unknown"
+
+
