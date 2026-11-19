@@ -567,6 +567,29 @@ def build_parser() -> argparse.ArgumentParser:
     p_anime.add_argument("--audio-dir", default=None, help="default: data/novels/<CODE>/audio")
     p_anime.add_argument("--out", default=None, help="default: data/novels/<CODE>/video")
 
+    p_episode = sub.add_parser(
+        "episode",
+        help="one chapter as an episode: previously card from the graph, cold open, title card, acts, next-episode card "
+        "(roadmap M3); needs rendered panels and voiced audio",
+    )
+    p_episode.add_argument("--novel", required=True)
+    p_episode.add_argument("--chapter", type=float, required=True)
+    p_episode.add_argument(
+        "--timing", default="voice", choices=["voice", "fixed"],
+        help="voice cuts where the voiced lines end; fixed cuts every few seconds whatever is said (the A/B baseline)",
+    )
+    p_episode.add_argument(
+        "--motion", default="stills", choices=["stills", "ltx-local"],
+        help="stills: camera moves chosen from each line's delivery; ltx-local: generated clips from the anime composer",
+    )
+    p_episode.add_argument("--panels-version", default=None, help="default: the latest with a panel_plan.jsonl")
+    p_episode.add_argument("--suffix", default=None, help="version directory suffix, e.g. v3_<suffix>")
+    p_episode.add_argument("--seed", type=int, default=0)
+    p_episode.add_argument("--panel-dir", default=None, help="default: data/novels/<CODE>/panels")
+    p_episode.add_argument("--audio-dir", default=None, help="default: data/novels/<CODE>/audio")
+    p_episode.add_argument("--out", default=None, help="default: data/novels/<CODE>/video")
+    p_episode.add_argument("--json", action="store_true", help="print the summary as JSON")
+
     p_pages = sub.add_parser(
         "pages",
         help="lay a chapter's latest rendered panels out as manga, comic or webtoon pages with lettering, "
@@ -872,6 +895,9 @@ _PER_NOVEL_OUTPUTS = {
     ("anime", "panel_dir"): "panels",
     ("anime", "audio_dir"): "audio",
     ("anime", "out"): "video",
+    ("episode", "panel_dir"): "panels",
+    ("episode", "audio_dir"): "audio",
+    ("episode", "out"): "video",
     ("pages", "panel_dir"): "panels",
     ("pages", "out"): "pages",
 }
