@@ -811,7 +811,9 @@ def _recorded_gender(store: Store, self_id: str) -> str:
     for target in (TargetKind.SELF, TargetKind.PERSONA):
         for tid in (self_id, f"{self_id}:body1"):
             for a in store.get_attributes(target, tid):
-                if a.key == "gender":
+                # The gender pass (persona/gender.py) supersedes an old "unknown" row rather than retracting it, so the
+                # first row can still say unknown while a later one is grounded; only a known value is a finding.
+                if a.key == "gender" and a.value.strip().lower() not in ("", "unknown"):
                     return a.value.strip().lower()
     return ""
 

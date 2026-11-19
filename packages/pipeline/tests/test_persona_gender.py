@@ -217,3 +217,14 @@ class TestModelReading:
 def test_response_defaults_mean_no_answer() -> None:
     r = GenderResponse()
     assert (r.gender, r.quote, r.confident) == ("unknown", "", False)
+
+
+def test_reader_gender_check_reads_past_a_superseded_unknown_row():
+    # The gender pass supersedes the old "unknown" row instead of retracting it; the reader's conflict check
+    # must see the grounded value, not the first row.
+    from echotales.pipeline.reader.facts_pass import _recorded_gender
+
+    rows = [SimpleNamespace(key="gender", value="unknown"), SimpleNamespace(key="gender", value="male")]
+    store = SimpleNamespace(get_attributes=lambda target, tid: rows if tid == "s1" else [])
+    assert _recorded_gender(store, "s1") == "male"
+    assert _recorded_gender(SimpleNamespace(get_attributes=lambda t, i: [rows[0]]), "s1") == ""
