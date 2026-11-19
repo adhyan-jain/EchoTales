@@ -1564,6 +1564,11 @@ class PanelReport:
         )
 
 
+def story_position_of(chapter_number: float, block_index: int, chapter_block_count: int) -> float:
+    """Where a block sits on the story axis: the chapter number plus its fraction of the whole chapter."""
+    return chapter_number + block_index / max(chapter_block_count, 1)
+
+
 def _speaker_label(span: Span, store: Store) -> str:
     """Who says this line, in words a director can use.
 
@@ -1798,6 +1803,10 @@ def render_panels(
         segments = store.get_segments(novel_id, chapter_number)
         spans = store.get_spans(novel_id, chapter_number)
 
+        # The story position of a block is its place in the WHOLE chapter; a `block_range` slice must not change it. A sliced
+        # block count put block 29 of 92 at 29/31 and drew RI ch1's self-detonation as the reborn 15-year-old (body 2 starts at
+        # block 82), only ever when previewing a range.
+        _chapter_block_count = len(chapter.blocks)
         if block_range is not None:
             lo, hi = block_range
             chapter = chapter.model_copy(
@@ -2173,7 +2182,7 @@ def render_panels(
                 # required, not cosmetic: see `character_looks`'s
                 # docstring for the mid-chapter body-selection bug this
                 # fixes.
-                story_position = chapter_number + lead / max(len(chapter.blocks), 1)
+                story_position = story_position_of(chapter_number, lead, _chapter_block_count)
                 from echotales.pipeline.persona.split import persona_at
 
                 _beat_bodies: dict[str, str] = {}
