@@ -1,0 +1,23 @@
+EchoTales
+Copyright 2026 adhyan-jain
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This repository does not contain or redistribute the models and datasets below. They are fetched or supplied by you and
+keep their own licences. See also THIRD_PARTY_LICENSES.md for non-commercial image models and other options.
+
+Models
+  Z-Image Turbo (Tongyi-MAI/Z-Image-Turbo)   Apache-2.0
+  Chatterbox TTS (Resemble AI)               MIT
+  gemma2:9b (Google)                         Gemma Terms of Use
+  qwen2.5:7b (Alibaba)                       Apache-2.0
+
+Voice banks (narrator reference voices)
+  LibriTTS-R                                 CC BY 4.0
+  Hi-Fi TTS                                  CC BY 4.0
+
+Test input
+  "Pepper&Carrot" by David Revoy, https://www.peppercarrot.com, CC BY 4.0
+  (https://creativecommons.org/licenses/by/4.0/). Used as the comic test input; credit to David Revoy and the
+  Pepper&Carrot contributors.
+
+Source novels are copyrighted works supplied by the user and are never part of this repository.
