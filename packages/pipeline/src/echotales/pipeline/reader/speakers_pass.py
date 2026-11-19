@@ -828,6 +828,21 @@ def _role_evidence(chapter: Chapter, role: str, cast: list[CastEntry], limit: in
     return " ".join(out)
 
 
+def _reconcile_prompt(people: str, role: str, examples: str, evidence: str) -> str:
+    """Which known character a role slot is. Strict on purpose: ORV ch3's "big man in a suit" (an unnamed passenger) was matched
+    to Han Myungoh, named in the same carriage, three lines wrong; ORV ch4's "sturdy man" really is Lee Hyunsung because the text
+    says so ("That 'Lee Hyunsung' was this man"). Only the second kind should pass."""
+    return (
+        f"Known characters: {people}\n\nIn this chapter some lines are spoken by a person only called by the role "
+        f"'{role.replace('_', ' ')}' (lines such as: {examples}).\nUsing the sentences below, which known "
+        "character is that person? Answer a name from the list only if a sentence says outright that this person is that "
+        "character (for example 'that man was X'). Someone who merely stands nearby, speaks next to them or is named "
+        "elsewhere is not the same person. Otherwise answer NONE.\n\n"
+        f"Sentences:\n{evidence}\n\n"
+        'Answer as JSON: {"character": "Name or NONE"}'
+    )
+
+
 def _reconcile_roles(
     store: Store, client: ModelClient, chapter: Chapter, cast: list[CastEntry], index: NameIndex,
     role_spans: dict[str, list[Span]], report: SpeakerReport,
@@ -840,13 +855,7 @@ def _reconcile_roles(
     for role, spans in role_spans.items():
         evidence = _role_evidence(chapter, role, cast)
         examples = " | ".join(s.text[:80] for s in spans[:3])
-        prompt = (
-            f"Known characters: {people}\n\nIn this chapter some lines are spoken by a person only called by the role "
-            f"'{role.replace('_', ' ')}' (lines such as: {examples}).\nUsing the sentences below, which known "
-            "character is that person? Answer a name from the list, or NONE if the text does not make it clear or the "
-            f"person is not on the list.\n\nSentences:\n{evidence}\n\n"
-            'Answer as JSON: {"character": "Name or NONE"}'
-        )
+        prompt = _reconcile_prompt(people, role, examples, evidence)
         try:
             answer = client.complete(Task.READER, prompt, RoleAnswer, novel_id=chapter.novel_id, chapter=chapter.number).value.character
         except Exception:  # noqa: BLE001 - one failed role must not stop the chapter
