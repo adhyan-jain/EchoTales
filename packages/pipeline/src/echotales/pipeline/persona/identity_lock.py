@@ -239,6 +239,44 @@ def scene_look(store: object, ctx: SceneContext | None, persona_id: str, name: s
     return look
 
 
+def resolve_look(store: object, ctx: SceneContext | None, persona_id: str, name: str) -> CharacterLook | None:
+    """This scene's look, completed from the neighbouring scenes of the same chapter and body.
+
+    One body in one continuous stretch of story is one outfit: RI ch1's first two scenes (the shouted ultimatum) state no
+    clothes and the third says deep green robes torn to shreds, so scenes 0 and 1 were drawn in a default charcoal robe
+    while scene 2 was green. Clothes and hair a scene does not state are taken from the nearest scene that states them
+    (the previous one first, else the next); a wound or tearing is a state that begins where it is stated, so it is only
+    carried forward."""
+    own = scene_look(store, ctx, persona_id, name)
+    if ctx is None or own is None:
+        return own
+    chapter, _, first = ctx.key.partition(":")
+    if not re.fullmatch(r"\d+", first):
+        return own
+    here = int(first)
+    prefix = f"identity_look:{persona_id}:{chapter}:"
+    others: list[tuple[int, CharacterLook]] = []
+    for row in store.conn.execute("SELECT id, payload_json FROM derived_artifact WHERE id LIKE ?", (prefix + "%",)):  # type: ignore[attr-defined]
+        tail = row["id"][len(prefix):]
+        if re.fullmatch(r"\d+", tail) and int(tail) != here:
+            others.append((int(tail), CharacterLook(**json.loads(row["payload_json"]))))
+    before = sorted((o for o in others if o[0] < here), key=lambda o: -o[0])
+    after = sorted((o for o in others if o[0] > here), key=lambda o: o[0])
+
+    def pick(field_name: str, pools: list[list[tuple[int, CharacterLook]]]) -> str:
+        for pool in pools:
+            for _b, look in pool:
+                if getattr(look, field_name):
+                    return str(getattr(look, field_name))
+        return ""
+
+    return CharacterLook(
+        outfit=own.outfit or pick("outfit", [before, after]),
+        hair=own.hair or pick("hair", [before, after]),
+        condition=own.condition or pick("condition", [before]),
+    )
+
+
 def approved_sheet_lock(store: object, novel_id: str, persona_id: str) -> LockedIdentity | None:
     """The identity an approved reference sheet of this persona was generated from (`identity_sheet:<candidate id>`)."""
     row = store.conn.execute(  # type: ignore[attr-defined]
@@ -257,7 +295,7 @@ def lock_for(
 ) -> LockedIdentity:
     """The locked identity of this character at this panel's position, in this scene."""
     defaults = stored_defaults(store, persona_id, self_id, gender, manhua)
-    look = scene_look(store, scene, persona_id, name)
+    look = resolve_look(store, scene, persona_id, name)
     return build_lock(
         persona_id, facts, defaults, young=young, gender=gender,
         scene_outfit=look.outfit if look else "", scene_hair=look.hair if look else "",

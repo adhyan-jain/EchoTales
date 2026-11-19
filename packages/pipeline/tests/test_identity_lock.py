@@ -6,6 +6,8 @@ default (brown hair) because the graph had no hair fact, in 16 of 16 panels."""
 
 from __future__ import annotations
 
+import json
+
 from echotales.core.store import Store
 from echotales.pipeline.persona import identity_lock as il
 from echotales.pipeline.render.compiler import (
@@ -118,6 +120,39 @@ def test_a_scene_look_is_asked_once_stored_and_read_without_a_client(tmp_path) -
     assert client.calls == 1
     assert first.outfit == again.outfit == image_pass.outfit == "deep green robes"
     assert "torn to shreds" in image_pass.state
+    store.close()
+
+
+def _put_look(store, persona, key, **look) -> None:
+    store.record_artifact(f"identity_look:{persona}:{key}", il.TIER, [], "", json.dumps(
+        {"outfit": "", "hair": "", "condition": "", **look}))
+    store.conn.commit()
+
+
+def test_clothes_stated_in_a_later_scene_dress_the_earlier_ones_and_wounds_only_carry_forward(tmp_path) -> None:
+    # RI ch1: scenes at blocks 0 and 1 (the shouted ultimatum) state no clothes; the scene at block 5 says deep green robes
+    # torn to shreds; the scene at block 27 states nothing. One body in one continuous hour is one outfit, so scene 0 is
+    # not drawn in a default charcoal robe while scene 5 is green; the tearing is a state that begins where it is stated.
+    store = _store(tmp_path)
+    p = "t:self:1:body1"
+    _put_look(store, p, "1:0")
+    _put_look(store, p, "1:5", outfit="deep green robes", condition="robes torn to shreds, blood on the body")
+    _put_look(store, p, "1:27")
+    for key, outfit, state in (("1:0", "deep green robes", ""), ("1:5", "deep green robes", "torn to shreds"),
+                               ("1:27", "deep green robes", "torn to shreds")):
+        lock = _lock(store, scene=il.SceneContext(key, SCENE, None, "t"))
+        assert lock.outfit == outfit, key
+        assert (state in lock.state) if state else lock.state == "", key
+    store.close()
+
+
+def test_another_chapter_or_another_body_does_not_lend_its_clothes(tmp_path) -> None:
+    store = _store(tmp_path)
+    _put_look(store, "t:self:1:body1", "2:0", outfit="a white nightgown")
+    _put_look(store, "t:self:1:body2", "1:3", outfit="a red cloak")
+    _put_look(store, "t:self:1:body1", "1:0")
+    lock = _lock(store, scene=il.SceneContext("1:0", SCENE, None, "t"))
+    assert "nightgown" not in lock.outfit and "cloak" not in lock.outfit and lock.source["outfit"] == "default"
     store.close()
 
 
