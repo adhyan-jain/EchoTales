@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("scipy")
+pytest.importorskip("cv2")
+
 import subprocess
 from pathlib import Path
 

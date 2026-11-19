@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("cv2")
+
 import numpy as np
 from PIL import Image
 

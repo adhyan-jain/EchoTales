@@ -1,15 +1,13 @@
 """Text recognition behind one small interface so the engine can be swapped by measurement.
 
 Engines import lazily: a missing package raises `OcrUnavailable` naming the install, so the rest of the comic path
-(panels, graph, video) works without any OCR package. Optional libraries installed outside the project venv (the
-bake-off kept easyocr/rapidocr off the shared venv because easyocr drags in a different torch) are found through
-`ECHOTALES_COMIC_LIBS`, an os.pathsep-separated list of extra site directories.
+(panels, graph, video) works without any OCR package. `rapidocr` ships in the `comic` extra and is the default;
+`easyocr` is an optional adapter (it pulls in its own torch, so it is not in the extra) that is simply unavailable
+when it is not importable.
 """
 
 from __future__ import annotations
 
-import os
-import sys
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -34,12 +32,6 @@ class OcrEngine(Protocol):
     def read(self, image: Image.Image) -> list[TextLine]: ...
 
 
-def _extra_paths() -> None:
-    for p in filter(None, os.environ.get("ECHOTALES_COMIC_LIBS", "").split(os.pathsep)):
-        if p not in sys.path:
-            sys.path.append(p)
-
-
 def _bbox(quad) -> tuple[int, int, int, int]:
     pts = np.asarray(quad, dtype=float).reshape(-1, 2)
     return int(pts[:, 0].min()), int(pts[:, 1].min()), int(pts[:, 0].max()), int(pts[:, 1].max())
@@ -51,11 +43,10 @@ class RapidOcr:
     name = "rapidocr"
 
     def __init__(self) -> None:
-        _extra_paths()
         try:
             from rapidocr_onnxruntime import RapidOCR
         except ImportError as exc:
-            raise OcrUnavailable("pip install rapidocr-onnxruntime (Apache-2.0)") from exc
+            raise OcrUnavailable("pip install 'echotales-pipeline[comic]' (rapidocr-onnxruntime, Apache-2.0)") from exc
         self._ocr = RapidOCR()
 
     def read(self, image: Image.Image) -> list[TextLine]:
@@ -69,7 +60,6 @@ class EasyOcr:
     name = "easyocr"
 
     def __init__(self, *, gpu: bool = False, langs: tuple[str, ...] = ("en",)) -> None:
-        _extra_paths()
         try:
             import easyocr
         except ImportError as exc:

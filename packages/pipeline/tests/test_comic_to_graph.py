@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("scipy")
+
 import json
 from pathlib import Path
 
