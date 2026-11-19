@@ -54,6 +54,9 @@ STAGING_SYSTEM = (
     "lakeshore of grey pebbles with reeds on the left and a low hill behind\"; blocking: \"the old fisherman sits on the "
     "left facing right; three children kneel in two rows on the right, all facing him, an arm's length of empty "
     "pebbles between them\"; light: \"overcast noon\". Name people exactly as the scene text does.\n"
+    "- If a PREVIOUS STAGING is given, this scene continues it: repeat its set, blocking and light word for word unless this "
+    "scene's text moves the characters, changes the place or changes the light. A memory, a thought, a laugh or a line of "
+    "speech does not move anyone: the set stays, and nothing the text does not mention is added to it.\n"
     "Return JSON with keys set, blocking, light, each one or two plain sentences."
 )
 
@@ -93,14 +96,19 @@ def validate_staging(
 
 
 def direct_staging(
-    scene_text: str, *, cast: dict[str, str], novel_style: str, client: object, novel_id: str = "", max_chars: int = 2600
+    scene_text: str, *, cast: dict[str, str], novel_style: str, client: object, novel_id: str = "", max_chars: int = 2600,
+    previous: str = "",
 ) -> SceneStaging | None:
-    """One director call per scene. None on any failure; panels then fall back to their own paragraph."""
+    """One director call per scene. None on any failure; panels then fall back to their own paragraph.
+
+    `previous` is the sheet of the scene before: RI ch1's memory scenes state no place and a fresh call invented a grassy hillside
+    and a hall beside the cliff scene they belong to."""
     from echotales.pipeline.llm.tasks import Task
 
     prompt = "\n".join([
         f"Novel setting: {novel_style}",
         f"CAST: {list(cast) if cast else '(none listed: use the names exactly as the scene text writes them)'}",
+        *([f"PREVIOUS STAGING (this scene continues it): {previous}"] if previous.strip() else []),
         "Scene text:", scene_text[:max_chars].strip(), "",
         "Return only JSON with keys set, blocking, light.",
     ])

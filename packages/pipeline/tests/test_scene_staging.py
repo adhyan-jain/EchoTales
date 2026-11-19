@@ -89,3 +89,27 @@ def test_a_close_shot_puts_its_own_paragraph_before_the_staging() -> None:
                    composition="Close-up of Fang Yuan, a cold mocking smile.", staging=s.text())
     labels = [x.label for x in compile_prompt(b, model_profile("z-image-turbo")).sections]
     assert labels[:3] == ["style", "composition", "staging"]
+
+
+def test_staging_is_asked_to_keep_the_previous_scenes_set_unless_the_text_moves_the_characters() -> None:
+    # RI ch1: the laugh scene says "the setting sun" and nothing else about place; a fresh staging call invented a grassy hillside
+    # next to the cliff scene. The previous sheet goes in the prompt so the model carries it instead of inventing.
+    from types import SimpleNamespace
+
+    from echotales.pipeline.render.staging import STAGING_SYSTEM, direct_staging
+
+    seen: dict = {}
+
+    class Client:
+        def complete(self, task, prompt, schema, **kw):
+            seen["prompt"] = prompt
+            return SimpleNamespace(value=SceneStaging(set="a bare rock cliff", blocking="Fang Yuan alone on the left", light="dusk"))
+
+    prev = "Set: a bare rock cliff edge above cloud. Blocking: Fang Yuan alone at the left edge. Light: dusk."
+    direct_staging("Looking at the setting sun, Fang Yuan lightly laughed.", cast={"Fang Yuan": ""}, novel_style="x",
+                   client=Client(), previous=prev)
+    assert prev in seen["prompt"]
+    assert "previous" in STAGING_SYSTEM.lower() and "unless" in STAGING_SYSTEM.lower()
+    seen.clear()
+    direct_staging("He sat down.", cast={"Fang Yuan": ""}, novel_style="x", client=Client())
+    assert "PREVIOUS" not in seen["prompt"]

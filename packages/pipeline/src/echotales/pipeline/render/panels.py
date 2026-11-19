@@ -2583,10 +2583,10 @@ def render_panels(
 
                             _st = direct_staging(
                                 _scene_text, cast=_director_cast,
-                                novel_style=_novel_style, client=client, novel_id=novel_id,
+                                novel_style=_novel_style, client=client, novel_id=novel_id, previous=_prev_staging_text,
                             )
                             _staging_text = _st.text() if _st is not None else ""
-                            _prev_staging_text = _staging_text
+                            _prev_staging_text = _staging_text or _prev_staging_text
                         directed = direct_beat(
                             directed_prose,
                             staging=_staging_text,
