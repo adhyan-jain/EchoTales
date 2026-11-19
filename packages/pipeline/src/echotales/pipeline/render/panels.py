@@ -1829,6 +1829,7 @@ def render_panels(
             scene_locale(novel_id, " ".join(by_index[b].text for b in sc.blocks if b in by_index), strict=True)
             for sc in scenes
         ])
+        _prev_staging_text = ""
         for _scene_i, scene in enumerate(scenes[:max_panels]):
             story_scene_blocks = [
                 b for b in scene.blocks
@@ -2182,7 +2183,11 @@ def render_panels(
                     )
                 )
                 if not _present_entities and not _scene_last_present:
-                    _present_entities = addressed_scene_cast(mentions, _chunk_blocks, list(scene.blocks))
+                    # The first scene of RI ch1 is the enemies' shouting (blocks 0-4); Fang Yuan is first PRESENT at block 5, in the
+                    # scene after it, so a scene-bounded scan left the ultimatum panels without him. Look 12 blocks ahead.
+                    _present_entities = addressed_scene_cast(
+                        mentions, _chunk_blocks, list(range(scene.blocks[0], scene.blocks[-1] + 13))
+                    )
                 # One compile per beat, at the fractional in-chapter position:
                 # the persona and appearance the prompt is built from below
                 # are read out of it, and the plan's cache-key digest is
@@ -2568,7 +2573,12 @@ def render_panels(
                             for lbl in (list(_beat_entity_labels.values()) or list(_scene_last_present_entity_labels.values()))
                         }
                         _director_cast.update({k: v for k, v in appearances.items() if v})
-                        if _staging_text is None:
+                        log.info("director cast for block %s: present=%s labels=%s", block.index if hasattr(block, 'index') else lead, _present_entities, list(_director_cast))
+                        if _staging_text is None and _location_source != "scene" and _prev_staging_text:
+                            # No place cue of its own: the previous scene's set and light carry (RI ch1: the laugh scene has no
+                            # setting words and the director drew a meadow beside a cliff scene).
+                            _staging_text = _prev_staging_text
+                        elif _staging_text is None:
                             from echotales.pipeline.render.staging import direct_staging
 
                             _st = direct_staging(
@@ -2576,6 +2586,7 @@ def render_panels(
                                 novel_style=_novel_style, client=client, novel_id=novel_id,
                             )
                             _staging_text = _st.text() if _st is not None else ""
+                            _prev_staging_text = _staging_text
                         directed = direct_beat(
                             directed_prose,
                             staging=_staging_text,

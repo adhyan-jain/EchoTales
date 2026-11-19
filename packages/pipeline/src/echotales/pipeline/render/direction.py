@@ -136,8 +136,9 @@ def system_prompt(novel_id: str = "") -> str:
         "explicitly states the character's expression does NOT change, or stays "
         "calm/blank/unreadable despite what is happening to them, that contrast "
         "is exactly what to report -- it is real information, not a contradiction "
-        "to resolve. If the passage says nothing about the face, leave this "
-        "empty; do not infer one from the body's condition.\n\n"
+        "to resolve. If the passage says nothing about the face, infer it from the "
+        "line spoken and the situation (an enemy's ultimatum is a furious glare, a victor's laugh is mocking), never from "
+        "the body's condition.\n\n"
 
         "10. SHORT PLAIN PHRASES, NOT SENTENCES AND NOT DATABASE TAGS. The image "
         "prompt is written afterwards from your fields, so each field is a short "
@@ -376,13 +377,11 @@ def build_prompt(
         "  composition   the paragraph of system rule 12, plain flowing English from this passage alone; "
         "never empty",
         '  visual_source "text" or "inferred" (system rule 13)',
-        "  expression    ONE short face phrase for the lead, only if the passage "
-        "states or clearly implies it, independent of physical condition -- a "
-        "wounded character is not automatically pained. Example: "
-        "\"calm\" or \"blank stare\" for a passage that says the "
-        "expression did not change despite injury; \"pained\" "
-        "only if the passage actually describes pain on the face itself, "
-        "not just an injury to the body. Leave empty if unstated.",
+        "  expression    ONE short anime-emotion face phrase for the lead, ALWAYS filled, drawn from this line AND the "
+        "situation around it (who is speaking to whom, who is winning), independent of physical condition -- a wounded "
+        "character is not automatically pained. Examples of the vocabulary: \"cold mocking smile, narrowed eyes\", "
+        "\"contemptuous sneer\", \"furious glare, clenched teeth\", \"wide shocked eyes\", \"calm unreadable stare\". "
+        "A man laughing at his enemies is mocking, never cheerful.",
         "",
         "Only include characters the passage actually places in the scene. "
         "Do not include numeric headcount tags ('1boy', '2boys', 'male "
