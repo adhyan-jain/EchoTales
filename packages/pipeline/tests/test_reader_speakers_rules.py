@@ -230,3 +230,18 @@ class TestAnswerThatIsADescriptionNotAName:
         store, _ = _run(["“It is lesser.” Many elders watched Alice in the dark."],
                         {"0.0": "Many elders watching Alice in the dark"})
         assert _speaker(store, 0) != "n:self:alice"
+
+
+class TestUnknownOverABorrowedExplicitTag:
+    """ORV ch4 b34/b36: the baseline's EXPLICIT Lee Hyunsung came from the neighbouring paragraph; the model said UNKNOWN and the
+    old code kept the borrowed name because EXPLICIT always survived an UNKNOWN."""
+
+    def test_the_model_unknown_clears_an_explicit_name_that_is_not_in_the_block(self) -> None:
+        store, _ = _run(["“Why are you taking control?”", "Alice explained."], {"0.0": "UNKNOWN"},
+                        baseline={0: ("n:self:alice", AttributionMethod.EXPLICIT)})
+        assert _speaker(store, 0) is None
+
+    def test_an_explicit_name_that_is_in_the_block_survives_unknown(self) -> None:
+        store, _ = _run(["“Why are you taking control?” Bob looked at Alice."], {"0.0": "UNKNOWN"},
+                        baseline={0: ("n:self:alice", AttributionMethod.EXPLICIT)})
+        assert _speaker(store, 0) == "n:self:alice"

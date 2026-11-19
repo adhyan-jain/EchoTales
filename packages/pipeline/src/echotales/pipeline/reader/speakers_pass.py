@@ -728,7 +728,15 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             report.unknown += 1
             # The regex ladder's proximity and pronoun guesses named a wrong speaker for crowd lines (RI ch1: the
             # attackers became "Bai Ning Bing"), so only its explicit "X said" survives the model's "unknown".
-            if span.attribution_method is not AttributionMethod.EXPLICIT and span.speaker_self_id:
+            if span.speaker_self_id and (
+                span.attribution_method is not AttributionMethod.EXPLICIT
+                # An EXPLICIT name that the line's own block never mentions was borrowed from a neighbouring paragraph
+                # (ORV ch4 b34/b36, Lee Hyunsung); the model's UNKNOWN is then the better reading. A name in the block
+                # still wins: that is a tag the rules may simply not have parsed.
+                or not any(re.search(rf"\b{re.escape(w)}\b", _norm(blocks.get(block_index, ""))) for w in _speaker_words(store, span.speaker_self_id))
+            ):
+                if span.attribution_method is AttributionMethod.EXPLICIT:
+                    fired.append("borrowed_explicit_cleared")
                 store.set_span_speaker(novel_id, span.id, None, AttributionMethod.UNRESOLVED.value, 0.0)
                 report.cleared += 1
             continue
