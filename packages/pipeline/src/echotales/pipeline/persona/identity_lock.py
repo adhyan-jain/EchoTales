@@ -117,11 +117,13 @@ def _plain(text: str) -> str:
 def build_lock(
     persona_id: str, facts: dict[str, str], defaults: dict[str, str], *, young: bool = False, gender: str = "male",
     scene_outfit: str = "", scene_hair: str = "", scene_state: str = "", sheet: LockedIdentity | None = None,
+    genre: dict[str, str] | None = None,
 ) -> LockedIdentity:
     """Merge, in this order of authority: an approved sheet, this scene's text (clothes, hair, state), the position-scoped
     graph facts, the stored defaults. Pure: the same inputs give the same words, which is the whole point."""
     src: dict[str, str] = {}
-    colour = _plain(facts.get("hair_color", ""))
+    genre = genre or {}
+    colour = _plain(facts.get("hair_color", "")) or _plain(genre.get("hair_color", ""))
     style = _plain(facts.get("hair_style", ""))
     if sheet is not None:
         hair, src["hair"] = sheet.hair, "sheet"
@@ -135,10 +137,10 @@ def build_lock(
     else:
         # Colour stated or not, the length and style are the character's own fixed pick, so they cannot re-roll per panel.
         hair = f"{defaults['hair_length']} {colour or 'black'} hair {defaults['hair_style']}"
-        src["hair"] = "text+default" if colour else "default"
-    eye = _plain(facts.get("eye_color", ""))
+        src["hair"] = "default" if not facts.get("hair_color") else "text+default"
+    eye = _plain(facts.get("eye_color", "")) or _plain(genre.get("eye_color", ""))
     eyes = sheet.eyes if sheet is not None else (f"{eye} eyes" if eye else "")
-    src["eyes"] = "sheet" if sheet is not None else ("text" if eye else "absent")
+    src["eyes"] = "sheet" if sheet is not None else ("text" if facts.get("eye_color") else "default" if eye else "absent")
     stated_build = _plain(facts.get("height_build", ""))
     if sheet is not None:
         build, src["build"] = sheet.build, "sheet"
@@ -251,7 +253,7 @@ def approved_sheet_lock(store: object, novel_id: str, persona_id: str) -> Locked
 
 def lock_for(
     store: object, novel_id: str, self_id: str, persona_id: str, *, facts: dict[str, str], gender: str, young: bool,
-    name: str, manhua: bool, scene: SceneContext | None = None,
+    name: str, manhua: bool, scene: SceneContext | None = None, genre: dict[str, str] | None = None,
 ) -> LockedIdentity:
     """The locked identity of this character at this panel's position, in this scene."""
     defaults = stored_defaults(store, persona_id, self_id, gender, manhua)
@@ -259,5 +261,5 @@ def lock_for(
     return build_lock(
         persona_id, facts, defaults, young=young, gender=gender,
         scene_outfit=look.outfit if look else "", scene_hair=look.hair if look else "",
-        scene_state=look.condition if look else "", sheet=approved_sheet_lock(store, novel_id, persona_id),
+        scene_state=look.condition if look else "", sheet=approved_sheet_lock(store, novel_id, persona_id), genre=genre,
     )

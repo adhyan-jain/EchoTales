@@ -384,3 +384,275 @@ class KeyframeQAGate:
             re_roll_count=re_roll_count,
             reasons=reasons,
         )
+
+
+# ---------------------------------------------------------------------------
+# Panel vision check (M1.6): a local VLM answers a short checklist about a generated panel; of N candidates the first
+# passing one is kept. The gate above is for screenplay keyframes; this is the same idea for the panel pipeline
+# (`render/panels.py`), with the checklist the identity lock makes answerable: how many people, the lead's hair colour and
+# outfit colour, and that the lead is there at all.
+# ---------------------------------------------------------------------------
+
+import base64
+import io
+import json
+import logging
+import re
+
+log = logging.getLogger(__name__)
+
+#: Ranked: the smallest model that answered the checklist well on 8 GB, measured in docs/EVOLUTION.md (M1.6), first.
+VISION_MODELS = ("qwen2.5vl:3b", "gemma3:4b", "minicpm-v", "llava:7b", "moondream")
+
+NO_VLM_MESSAGE = (
+    "vision check is OFF: no local vision model is installed. Install one that fits 8 GB, for example "
+    "`ollama pull qwen2.5vl:3b`, or set render.vision_model in config.json. Panels are generated one candidate each."
+)
+
+#: Colour word -> family. The last colour word of a phrase wins ("dark navy" is navy, "deep green" is green): the shade
+#: word before it only qualifies. Black, navy and ink read as one "dark" family because a small VLM cannot tell them
+#: apart and neither can a viewer at panel size; green and teal stay apart because RI's lead drifted from green to teal.
+_FAMILIES = {
+    "dark": ("black", "dark", "navy", "midnight", "ink", "ebony", "jet"),
+    "grey": ("grey", "gray", "silver", "ash", "charcoal", "slate"),
+    "white": ("white", "ivory", "cream", "snow"),
+    "brown": ("brown", "tan", "chestnut", "auburn", "chocolate", "bronze", "khaki", "beige"),
+    "blond": ("blond", "blonde", "yellow", "golden", "gold"),
+    "red": ("red", "crimson", "maroon", "burgundy", "scarlet"),
+    "green": ("green", "olive", "jade", "emerald"),
+    "teal": ("teal", "cyan", "turquoise", "aqua"),
+    "blue": ("blue", "azure", "indigo"),
+    "purple": ("purple", "violet", "lavender", "mauve"),
+    "orange": ("orange",),
+    "pink": ("pink", "rose"),
+}
+_WORD_FAMILY = {w: fam for fam, words in _FAMILIES.items() for w in words}
+
+
+def colour_family(text: str) -> str:
+    """The colour family of the last colour word in `text`, or ''."""
+    found = [_WORD_FAMILY[w] for w in re.findall(r"[a-z]+", (text or "").casefold()) if w in _WORD_FAMILY]
+    return found[-1] if found else ""
+
+
+@dataclass(slots=True)
+class PanelExpectation:
+    """What the panel's brief says must be visible. An empty colour or a `None` count is not checked."""
+
+    people: int | None = None
+    #: A crowd panel needs at least `people` figures, not exactly that many.
+    people_at_least: bool = False
+    hair_colour: str = ""
+    outfit_colour: str = ""
+    lead: str = ""
+
+
+@dataclass(slots=True)
+class VisionAnswer:
+    people: int = 0
+    lead_visible: bool = False
+    hair_colour: str = ""
+    outfit_colour: str = ""
+
+
+@dataclass(slots=True)
+class Verdict:
+    failed: list[str] = field(default_factory=list)
+
+    @property
+    def passed(self) -> bool:
+        return not self.failed
+
+
+def judge(answer: VisionAnswer, expect: PanelExpectation) -> Verdict:
+    """The checklist. A colour the VLM would not name is not held against the panel: no evidence is not a veto."""
+    failed: list[str] = []
+    if expect.people is not None:
+        ok = answer.people >= expect.people if expect.people_at_least else answer.people == expect.people
+        if not ok:
+            failed.append("people")
+    if expect.lead and not answer.lead_visible:
+        failed.append("presence")
+    for label, want, got in (
+        ("hair", expect.hair_colour, answer.hair_colour), ("outfit", expect.outfit_colour, answer.outfit_colour),
+    ):
+        fw, fg = colour_family(want), colour_family(got)
+        if fw and fg and fw != fg:
+            failed.append(label)
+    return Verdict(failed)
+
+
+@dataclass(slots=True)
+class Selection:
+    chosen: int
+    passed: bool
+    #: Whether candidate 0, the one drawn without a retry, passed: the first-try rate `audit` reports.
+    first_passed: bool
+    failed: list[str] = field(default_factory=list)
+    #: The VLM gave no answer for the first candidate, so nothing was checked and candidate 0 is kept.
+    unchecked: bool = False
+    checked: int = 0
+
+
+def select_candidate(paths: list[Path], expect: PanelExpectation, vlm: Any) -> Selection:
+    """Check candidates in order and keep the first that passes; if none does, keep the one with the fewest failures.
+
+    Stops at the first pass, so a panel that is right the first time costs one VLM call."""
+    best: tuple[int, int, list[str]] | None = None
+    first_passed = False
+    checked = 0
+    for i, path in enumerate(paths):
+        answer = vlm.look(path)
+        if answer is None:
+            if i == 0:
+                return Selection(0, False, False, unchecked=True)
+            continue
+        checked += 1
+        verdict = judge(answer, expect)
+        if i == 0:
+            first_passed = verdict.passed
+        if verdict.passed:
+            return Selection(i, True, first_passed, checked=checked)
+        if best is None or len(verdict.failed) < best[1]:
+            best = (i, len(verdict.failed), verdict.failed)
+    i, _n, failed = best if best is not None else (0, 0, [])
+    return Selection(i, False, first_passed, failed=failed, checked=checked)
+
+
+def pick_vision_model(installed: list[str], configured: str) -> str | None:
+    """The configured model if it is installed, else the best-ranked installed one, else None."""
+    if configured:
+        return configured if any(m == configured or m.split(":")[0] == configured for m in installed) else None
+    for want in VISION_MODELS:
+        for m in installed:
+            if m == want or m.split(":")[0] == want:
+                return m
+    return None
+
+
+_CHECKLIST_PROMPT = (
+    "Look at this illustration and answer as JSON with exactly these keys: "
+    "people (integer: how many people are visible, counting small distant figures), "
+    "main_person_visible (true or false: is there a clearly visible main person in the foreground), "
+    "hair_colour (one word: the hair colour of the most prominent person), "
+    "outfit_colour (one word: the colour of the main garment of the most prominent person)."
+)
+_CHECKLIST_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "people": {"type": "integer"}, "main_person_visible": {"type": "boolean"},
+        "hair_colour": {"type": "string"}, "outfit_colour": {"type": "string"},
+    },
+    "required": ["people", "main_person_visible", "hair_colour", "outfit_colour"],
+}
+
+
+class OllamaVLM:
+    """The checklist put to a local ollama vision model. `look` returns None on any failure (no veto without evidence)."""
+
+    def __init__(self, model: str, host: str | None = None, *, timeout: float = 120.0, max_side: int = 768) -> None:
+        import os
+
+        self.model = model
+        self.host = (host or os.environ.get("OLLAMA_HOST") or "http://localhost:11434").rstrip("/")
+        self.timeout, self.max_side = timeout, max_side
+
+    @staticmethod
+    def installed(host: str | None = None) -> list[str]:
+        import os
+
+        import httpx
+
+        base = (host or os.environ.get("OLLAMA_HOST") or "http://localhost:11434").rstrip("/")
+        try:
+            r = httpx.get(f"{base}/api/tags", timeout=3.0)
+            r.raise_for_status()
+            return [m.get("name", "") for m in r.json().get("models", [])]
+        except Exception:
+            return []
+
+    def _encode(self, path: Path) -> str:
+        from PIL import Image
+
+        with Image.open(path) as im:
+            im = im.convert("RGB")
+            im.thumbnail((self.max_side, self.max_side))
+            buf = io.BytesIO()
+            im.save(buf, "JPEG", quality=88)
+        return base64.b64encode(buf.getvalue()).decode()
+
+    def look(self, path: Path) -> VisionAnswer | None:
+        import httpx
+
+        try:
+            body = {
+                "model": self.model, "stream": False, "format": _CHECKLIST_SCHEMA, "keep_alive": "10m",
+                "messages": [{"role": "user", "content": _CHECKLIST_PROMPT, "images": [self._encode(Path(path))]}],
+                "options": {"temperature": 0, "num_predict": 120},
+            }
+            r = httpx.post(f"{self.host}/api/chat", json=body, timeout=self.timeout)
+            r.raise_for_status()
+            data = json.loads(r.json()["message"]["content"])
+            return VisionAnswer(
+                people=int(float(data.get("people", 0))), lead_visible=bool(data.get("main_person_visible", False)),
+                hair_colour=str(data.get("hair_colour", "")), outfit_colour=str(data.get("outfit_colour", "")),
+            )
+        except Exception as exc:
+            log.warning("vision check could not read %s (%s: %s)", path, type(exc).__name__, exc)
+            return None
+
+    def unload(self) -> None:
+        """Free the model's VRAM: the image worker needs the card next."""
+        import httpx
+
+        try:
+            httpx.post(f"{self.host}/api/generate", json={"model": self.model, "keep_alive": 0}, timeout=10.0)
+        except Exception:
+            pass
+
+
+def expectation_from_brief(brief: Any) -> PanelExpectation:
+    """The checklist for a panel, from its `PanelBrief`: the people named, and the lead's locked hair and outfit colours
+    (not asked in black and white, where there is no colour to read)."""
+    chars = list(getattr(brief, "characters", []) or [])
+    crowd = getattr(brief, "crowd", None)
+    if not chars and crowd is None:
+        return PanelExpectation(people=0)
+    lead = chars[0] if chars else None
+    locked = getattr(lead, "locked", None) if lead is not None else None
+    colour_mode = getattr(getattr(brief, "mode", None), "value", "colour") != "manga"
+    hair = colour_family(locked.hair) if (locked is not None and colour_mode) else ""
+    outfit = colour_family(locked.outfit) if (locked is not None and colour_mode) else ""
+    if crowd is not None:
+        people = max(len(chars), 1) if chars else 2
+    else:
+        people = len(chars)
+    return PanelExpectation(
+        people=people, people_at_least=crowd is not None, hair_colour=hair, outfit_colour=outfit,
+        lead=lead.name if lead else "",
+    )
+
+
+def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Pass rates and cost from the per-panel rows `render` writes to `vision_check.jsonl`."""
+    checked = [r for r in rows if not r.get("unchecked")]
+    n = len(checked)
+    reasons: dict[str, int] = {}
+    for r in checked:
+        if not r.get("passed"):
+            for f in r.get("failed", []):
+                reasons[f] = reasons.get(f, 0) + 1
+    return {
+        "panels_checked": n,
+        "unchecked": len(rows) - n,
+        "first_pass_rate": round(sum(bool(r.get("first_passed")) for r in checked) / n, 3) if n else 0.0,
+        "final_pass_rate": round(sum(bool(r.get("passed")) for r in checked) / n, 3) if n else 0.0,
+        "rescued": sum(bool(r.get("passed")) and not r.get("first_passed") for r in checked),
+        "extra_images": sum(max(int(r.get("candidates", 1)) - 1, 0) for r in rows),
+        "still_failing": reasons,
+    }
+
+
+def write_rows(path: Path, rows: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")

@@ -945,6 +945,7 @@ def character_brief(
     locked = lock_for(
         store, novel_id, self_id, persona_id, facts=graph_facts, gender=final_gender, young=young,
         name=entity.canonical_label, manhua=genre_direction(novel_id)[2], scene=scene,  # type: ignore[arg-type]
+        genre={k: v for k, v in appearance.items() if k in ("hair_color", "eye_color") and v and not graph_facts.get(k)},
     )
     return CharacterBrief(
         name=entity.canonical_label, gender=final_gender,

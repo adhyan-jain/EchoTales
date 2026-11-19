@@ -465,6 +465,12 @@ export const api = {
       method: 'POST',
     }),
 
+  // One sheet per body, drawn from the locked identity sentence (persona/identity_sheet.py).
+  generateIdentitySheet: (novelId, selfId) =>
+    request(`/api/novels/${enc(novelId)}/characters/${enc(selfId)}/identity-sheet/generate`, {
+      method: 'POST',
+    }),
+
   approveTurnaround: (novelId, selfId, candidateId, note = '') =>
     request(`/api/novels/${enc(novelId)}/characters/${enc(selfId)}/turnarounds/${enc(candidateId)}/approve`, {
       method: 'POST',

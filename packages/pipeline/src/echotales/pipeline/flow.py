@@ -1992,6 +1992,34 @@ def check_director_conservation(store: Store, novel_id: str, source: SourceConte
     )
 
 
+@check(Stage.DIRECTOR, "director.vision", "a local vision model checked each panel's person count, hair colour, outfit colour and presence")
+def check_vision(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
+    """Pass rate and regenerations of the render-time vision check (`render/vision_pass.py`), from the newest render of
+    each chapter. Skipped, with the install line, when no render was checked: the check is off without a vision model."""
+    chk = _find(Stage.DIRECTOR, "director.vision")
+    import json
+    from echotales.pipeline import paths
+    from echotales.pipeline.keyframes import qa
+
+    panel_root = paths.asset_dir(novel_id, "panels")
+    rows: list[dict] = []
+    for pf in _latest_plan_files(panel_root):
+        vf = pf.parent / "vision_check.jsonl"
+        if vf.exists():
+            rows.extend(json.loads(line) for line in vf.read_text(encoding="utf-8").splitlines() if line)
+    if not rows:
+        return _skipped(chk, qa.NO_VLM_MESSAGE)
+    s = qa.summarise(rows)
+    warnings = [
+        f"{r['panel']}: still fails {', '.join(r.get('failed', []))} after {r.get('candidates', 1)} candidate(s)"
+        for r in rows if not r.get("passed") and not r.get("unchecked")
+    ]
+    return _result(
+        chk, [], count_in=s["panels_checked"], count_out=sum(bool(r.get("passed")) for r in rows if not r.get("unchecked")),
+        unit="panels", warnings=warnings[:MAX_LISTED], stats=s,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Running and reporting
 # ---------------------------------------------------------------------------

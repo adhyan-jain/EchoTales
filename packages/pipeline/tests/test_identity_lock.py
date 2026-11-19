@@ -163,6 +163,43 @@ def test_the_identity_sentence_comes_straight_after_the_style_lead_before_stagin
     assert labels.index("character:Fang Yuan") < labels.index("staging") < labels.index("composition")
 
 
+def _graph_store(tmp_path, with_hair: bool):
+    from echotales.core.enums import AssertedBy, TruthStatus
+    from echotales.core.interval import FuzzyInterval
+    from echotales.core.models import Attribute, DiscoursePosition, Persona, Self
+
+    store = Store(str(tmp_path / "g.db"))
+    store.add_novel("lord-of-the-mysteries", "L", "x.epub", "generic")
+    store.add_self(Self(id="s1", novel_id="lord-of-the-mysteries", canonical_label="Zhou Mingrui",
+                        first_attested_pos=DiscoursePosition(chapter=1.0, offset=0), kind="SELF"))
+    store.add_persona(Persona(id="s1:body1", novel_id="lord-of-the-mysteries", body_label="b",
+                              first_attested_pos=DiscoursePosition(chapter=1.0, offset=0)))
+    if with_hair:
+        for key, value in (("hair_color", "black"), ("eye_color", "brown")):
+            store.add_attribute("lord-of-the-mysteries", Attribute(
+                target_kind="PERSONA", target_id="s1:body1", key=key, value=value,
+                interval=FuzzyInterval.open_ended(1.0, last_evidence=1.0), learned_at_pos=DiscoursePosition(chapter=1, offset=0),
+                observer_id="READER", asserted_by=AssertedBy.NARRATOR, truth_status=TruthStatus.TRUE))
+    store.conn.commit()
+    return store
+
+
+def test_a_graph_fact_beats_the_genre_default_and_the_default_is_the_fallback(tmp_path, monkeypatch) -> None:
+    # LotM: the text says "Black hair, brown eyes"; the genre default is brown hair and grey eyes.
+    from echotales.pipeline.persona import genre
+    from echotales.pipeline.render.compiler import character_brief
+
+    monkeypatch.setitem(genre._PROJECT_GENRE, "lord-of-the-mysteries", "victorian_gothic")
+
+    (tmp_path / "a").mkdir()
+    stated = character_brief(_graph_store(tmp_path / "a", True), "lord-of-the-mysteries", "s1", 1.5)
+    assert "black" in stated.locked.hair and stated.locked.eyes == "brown eyes"
+    assert stated.locked.source["hair"] == "text+default" and stated.locked.source["eyes"] == "text"
+    (tmp_path / "b").mkdir()
+    silent = character_brief(_graph_store(tmp_path / "b", False), "lord-of-the-mysteries", "s1", 1.5)
+    assert "brown" in silent.locked.hair and silent.locked.source["hair"] == "default"
+
+
 def test_a_character_without_a_lock_is_early_too() -> None:
     out = compile_prompt(_brief(None), model_profile("z-image-turbo"))
     assert [s.label for s in out.sections][:2] == ["style", "character:Fang Yuan"]

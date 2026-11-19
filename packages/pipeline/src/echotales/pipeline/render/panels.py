@@ -134,6 +134,35 @@ def _cached_snapshot(model_id: str) -> str | None:
     return None
 
 
+def _vision_check(pending_batch: list, pending_expect: dict, failed: list) -> list[dict]:
+    """The vision pass over a chapter's freshly drawn panels (`render/vision_pass.py`); `[]` when it is off.
+
+    Off means a single candidate was asked for, or no vision model is installed (said once in the log)."""
+    if not pending_expect:
+        return []
+    from echotales.pipeline.config import get_settings
+    from echotales.pipeline.config import ModelBackend
+    from echotales.pipeline.render import vision_pass
+
+    settings = get_settings()
+    # A stub run (CI, no GPU, no network) never reaches for a model that happens to be installed: only an explicit
+    # `render.candidates` turns the check on there.
+    if settings.model_backend is ModelBackend.STUB and settings.render_candidates == 0:
+        return []
+    vlm = vision_pass.choose_vlm(vision_model=settings.render_vision_model, candidates=settings.render_candidates)
+    if vlm is None:
+        return []
+    n = vision_pass.candidates_for(settings.render_candidates, vlm)
+    if n < 2:
+        return []
+    drawn = {f.out_path for f in failed}
+    items = [(req, secs) for req, secs in pending_batch if req.out_path not in drawn]
+    return vision_pass.run(
+        [r for r, _ in items], [s for _, s in items], pending_expect, vlm=vlm, candidates=n,
+        model_key=settings.render_image_model, greyscale=settings.render_panel_mode == "manga",
+    )
+
+
 @dataclass(slots=True)
 class PanelImageRequest:
     """One panel to render."""
@@ -1797,6 +1826,8 @@ def render_panels(
         # so a filename is meaningful without knowing the whole run.
         _panel_seq = 0
         pending_batch: list[tuple[PanelImageRequest, list[tuple[str, str]]]] = []
+        #: What the vision check should find in each queued panel, by image path (`keyframes/qa.py`).
+        pending_expect: dict[Path, object] = {}
         pending_copies: list[tuple[Path, Path]] = []
 
         mentions = store.get_mentions(novel_id, chapter_number)
@@ -2918,6 +2949,7 @@ def render_panels(
                 # format, not from the inline assembly above, which forced "solo" and lost the setting to a 77-token fit.
                 # The legacy path above still runs, so with the switch off nothing changes byte for byte.
                 _prompt_sections: list[tuple[str, str]] | None = None
+                _panel_expectation = None
                 from echotales.pipeline.config import get_settings
 
                 if get_settings().render_prompt_compiler:
@@ -2928,17 +2960,18 @@ def render_panels(
                         model_profile,
                     )
 
-                    _compiled = compile_prompt(
-                        brief_from_direction(
-                            store, novel_id,
-                            list(_beat_bodies.keys()) or list(_scene_last_present_bodies.keys()),
-                            story_position, _direction, location=scene_locale_text,
-                            mode=OutputMode(get_settings().render_panel_mode), is_crowd=is_crowd_cut,
-                            gender_hint="male" if "male" in genders else "",
-                            beat_text=beat_prose, scene=_scene_ctx,
-                        ),
-                        model_profile(get_settings().render_image_model),
+                    _brief = brief_from_direction(
+                        store, novel_id,
+                        list(_beat_bodies.keys()) or list(_scene_last_present_bodies.keys()),
+                        story_position, _direction, location=scene_locale_text,
+                        mode=OutputMode(get_settings().render_panel_mode), is_crowd=is_crowd_cut,
+                        gender_hint="male" if "male" in genders else "",
+                        beat_text=beat_prose, scene=_scene_ctx,
                     )
+                    _compiled = compile_prompt(_brief, model_profile(get_settings().render_image_model))
+                    from echotales.pipeline.keyframes.qa import expectation_from_brief
+
+                    _panel_expectation = expectation_from_brief(_brief)
                     prompt, neg_prompt = _compiled.positive, _compiled.negative
                     _prompt_sections = _compiled.section_texts()
 
@@ -3107,6 +3140,8 @@ def render_panels(
                     if _prompt_sections is not None and not isinstance(engine, StubImageEngine):
                         # Compiled prompts are whole; batch them across the chapter for single model load
                         pending_batch.append((_panel_request, _prompt_sections))
+                        if _panel_expectation is not None:
+                            pending_expect[image_path] = _panel_expectation
                     else:
                         engine.generate(_panel_request)
                     _provenance = "generated"
@@ -3234,7 +3269,14 @@ def render_panels(
                 for _req in _failed:
                     for _d in [d for d, src in generated_by_digest.items() if src == _req.out_path]:
                         del generated_by_digest[_d]
+            _rows = _vision_check(pending_batch, pending_expect, _failed)
+            if _rows:
+                from echotales.pipeline.keyframes.qa import summarise, write_rows
+
+                write_rows(Path(pending_batch[0][0].out_path).parent / "vision_check.jsonl", _rows)
+                log.info("vision check chapter %s: %s", chapter_number, summarise(_rows))
             pending_batch.clear()
+            pending_expect.clear()
         for src, dst in pending_copies:
             dst.parent.mkdir(parents=True, exist_ok=True)
             if src.exists():

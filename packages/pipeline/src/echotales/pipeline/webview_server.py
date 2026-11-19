@@ -1500,7 +1500,7 @@ def make_handler(
                     handle = registry.handles.get(novel_id)
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {novel_id!r}"})
-                    from echotales.pipeline.persona import refimg
+                    from echotales.pipeline.persona import identity_sheet, refimg
 
                     candidates = refimg.list_sheets(handle.store, novel_id, self_id)
                     if not candidates:
@@ -1535,6 +1535,8 @@ def make_handler(
                             "is_stale": is_stale or (c.selected and not file_exists),
                             "file_exists": file_exists,
                             "found_at": c.found_at,
+                            # The words this sheet was drawn from and, once approved, the words every panel repeats.
+                            "locked_description": identity_sheet.sheet_description(handle.store, c.id),
                         })
                     return self._json(200, result)
 
@@ -2178,6 +2180,31 @@ def make_handler(
                 # POST .../shots/<shot_idx>/reroll and .../lock
                 if len(parts) == 8 and parts[:2] == ["api", "novels"] and parts[3] == "episodes" and parts[5] == "shots" and parts[7] in ("reroll", "lock"):
                     return self._json(501, {"error": _SHOT_QA_UNWIRED})
+
+                # POST /api/novels/<id>/characters/<self_id>/identity-sheet/generate: one sheet per body, drawn from the locked
+                # identity sentence; approve it through the sheets endpoint to lock those words for every panel.
+                if (
+                    len(parts) == 7 and parts[:2] == ["api", "novels"]
+                    and parts[3] == "characters" and parts[5] == "identity-sheet" and parts[6] == "generate"
+                ):
+                    novel_id = parts[2]
+                    self_id = parts[4]
+                    handle = registry.handles.get(novel_id)
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown novel {novel_id!r}"})
+                    from echotales.pipeline.config import get_settings
+                    from echotales.pipeline.persona import identity_sheet
+                    from echotales.pipeline.render.compiled_route import generate_compiled_batch
+
+                    try:
+                        made = identity_sheet.generate_sheets(
+                            handle.store, novel_id, self_ids=[self_id], out_dir=paths.asset_dir(novel_id, "references") / "identity",
+                            draw=generate_compiled_batch, model_key=get_settings().render_image_model,
+                        )
+                    except Exception as exc:
+                        return self._json(500, {"error": f"{type(exc).__name__}: {exc}"})
+                    handle.invalidate()
+                    return self._json(200, {"generated": True, "candidate_ids": [c.id for c in made], "self_id": self_id})
 
                 # POST /api/novels/<id>/characters/<self_id>/turnarounds/generate
                 if (

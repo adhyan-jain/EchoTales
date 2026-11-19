@@ -9,6 +9,7 @@ jest.mock('../../api', () => ({
     approveTurnaround: jest.fn(),
     rejectTurnaround: jest.fn(),
     generateTurnaround: jest.fn(),
+    generateIdentitySheet: jest.fn(),
     listLocationPlates: jest.fn(),
     approveLocationPlate: jest.fn(),
     rejectLocationPlate: jest.fn(),
@@ -60,6 +61,18 @@ describe('AssetStudio', () => {
 
     await waitFor(() => {
       expect(api.approveTurnaround).toHaveBeenCalledWith('hound', 'char:holmes', 'cand_turnaround_1');
+    });
+  });
+
+  test('shows the locked description of a sheet and says approving locks it', async () => {
+    api.characters.mockResolvedValueOnce({ characters: [{ id: 'char:holmes', canonical_label: 'Sherlock Holmes' }] });
+    api.listTurnarounds.mockResolvedValueOnce([
+      { id: 'sheet_1', is_approved: false, locked_description: 'Fang Yuan is a man with long black hair, wearing a deep green robe.' },
+    ]);
+    renderStudio({ novelId: 'hound' });
+    await waitFor(() => {
+      expect(screen.getByTestId('locked-description')).toHaveTextContent('Approve to lock for every panel');
+      expect(screen.getByTestId('locked-description')).toHaveTextContent('long black hair');
     });
   });
 
