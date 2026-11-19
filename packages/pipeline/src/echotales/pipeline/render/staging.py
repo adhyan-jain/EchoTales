@@ -56,9 +56,11 @@ STAGING_SYSTEM = (
     "lakeshore of grey pebbles with reeds on the left and a low hill behind\"; blocking: \"the old fisherman sits on the "
     "left facing right; three children kneel in two rows on the right, all facing him, an arm's length of empty "
     "pebbles between them\"; light: \"overcast noon\". Name people exactly as the scene text does.\n"
-    "- If a PREVIOUS STAGING is given, this scene continues it: repeat its set, blocking and light word for word unless this "
-    "scene's text moves the characters, changes the place or changes the light. A memory, a thought, a laugh or a line of "
-    "speech does not move anyone: the set stays, and nothing the text does not mention is added to it.\n"
+    "- If a PREVIOUS STAGING is given, this scene continues it. A place or light that THIS scene's own text states replaces "
+    "the previous one; where the text states none, repeat the previous set, blocking and light word for word. A memory, a "
+    "thought, a laugh or a line of speech does not move anyone: the set stays, and nothing the text does not mention is added.\n"
+    "- If LATER TEXT is given, the scene itself states no place: take the place from it (it is the same place) and stage only "
+    "this scene's own people and lines.\n"
     "Return JSON with keys set, blocking, light, each one or two plain sentences."
 )
 
@@ -99,12 +101,13 @@ def validate_staging(
 
 def direct_staging(
     scene_text: str, *, cast: dict[str, str], novel_style: str, client: object, novel_id: str = "", max_chars: int = 2600,
-    previous: str = "",
+    previous: str = "", lookahead: str = "",
 ) -> SceneStaging | None:
     """One director call per scene. None on any failure; panels then fall back to their own paragraph.
 
     `previous` is the sheet of the scene before: RI ch1's memory scenes state no place and a fresh call invented a grassy hillside
-    and a hall beside the cliff scene they belong to."""
+    and a hall beside the cliff scene they belong to. `lookahead` is the next scenes' text for a scene that opens a chapter with
+    no place of its own (block 0 of RI ch1 is one shouted line; alone it was staged as a meadow, and every later scene carried that)."""
     from echotales.pipeline.llm.tasks import Task
 
     prompt = "\n".join([
@@ -112,6 +115,7 @@ def direct_staging(
         f"CAST: {list(cast) if cast else '(none listed: use the names exactly as the scene text writes them)'}",
         *([f"PREVIOUS STAGING (this scene continues it): {previous}"] if previous.strip() else []),
         "Scene text:", scene_text[:max_chars].strip(), "",
+        *(["LATER TEXT of the same chapter (the place only):", lookahead[:1200].strip(), ""] if lookahead.strip() else []),
         "Return only JSON with keys set, blocking, light.",
     ])
     try:

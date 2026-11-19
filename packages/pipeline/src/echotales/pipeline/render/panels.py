@@ -2606,6 +2606,10 @@ def render_panels(
                             _st = direct_staging(
                                 _scene_text, cast=_director_cast,
                                 novel_style=_novel_style, client=client, novel_id=novel_id, previous=_prev_staging_text,
+                                lookahead=(
+                                    " ".join(by_index[b].text for sc in scenes[_scene_i + 1:_scene_i + 3] for b in sc.blocks if b in by_index)
+                                    if _location_source != "scene" and not _prev_staging_text else ""
+                                ),
                             )
                             _staging_text = _st.text() if _st is not None else ""
                             _prev_staging_text = _staging_text or _prev_staging_text

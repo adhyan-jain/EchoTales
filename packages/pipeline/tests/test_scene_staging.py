@@ -109,10 +109,15 @@ def test_staging_is_asked_to_keep_the_previous_scenes_set_unless_the_text_moves_
     direct_staging("Looking at the setting sun, Fang Yuan lightly laughed.", cast={"Fang Yuan": ""}, novel_style="x",
                    client=Client(), previous=prev)
     assert prev in seen["prompt"]
-    assert "previous" in STAGING_SYSTEM.lower() and "unless" in STAGING_SYSTEM.lower()
+    assert "previous staging" in STAGING_SYSTEM.lower() and "states none" in STAGING_SYSTEM.lower()
     seen.clear()
     direct_staging("He sat down.", cast={"Fang Yuan": ""}, novel_style="x", client=Client())
-    assert "PREVIOUS" not in seen["prompt"]
+    assert "PREVIOUS" not in seen["prompt"] and "LATER TEXT" not in seen["prompt"]
+    # a chapter-opening scene with no place of its own is shown the text after it (RI ch1 block 0 alone was staged as a meadow)
+    seen.clear()
+    direct_staging("Fang Yuan, hand it over!", cast={"Fang Yuan": ""}, novel_style="x", client=Client(),
+                   lookahead="Fang Yuan stood on the mountain rock.")
+    assert "LATER TEXT" in seen["prompt"] and "mountain rock" in seen["prompt"]
 
 
 def test_staging_rules_keep_a_coloured_glow_on_its_source_not_in_the_scene_light() -> None:
