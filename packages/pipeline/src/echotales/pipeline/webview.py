@@ -430,6 +430,7 @@ def build_character_dashboard(store: Store, novel_id: str) -> dict:
     refresh_family_tokens(store, novel_id)  # same name-comparison rule as the stages (2026-10-31)
     from echotales.core.enums import TargetKind
     from echotales.pipeline.persona.build import persona_at
+    from echotales.pipeline.persona.gender import _current_gender
 
     voice_by_target = _voice_assignments_from_manifest(novel_id)
 
@@ -502,10 +503,14 @@ def build_character_dashboard(store: Store, novel_id: str) -> dict:
             }
 
         candidates = store.list_ref_image_candidates(novel_id, entity.id)
+        # The same reading voice casting and the automatic gender pass use, so the control shows what they will act on.
+        gender, gender_by_reviewer = _current_gender(store, entity.id)
         rows.append(
             {
                 "id": entity.id,
                 "self_id": entity.id,
+                "gender": gender,
+                "gender_by_reviewer": gender_by_reviewer,
                 "persona_id": persona_id,
                 "label": entity.canonical_label,
                 "canonical_label": entity.canonical_label,

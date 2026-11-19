@@ -275,6 +275,17 @@ export const api = {
   reassignSpanType: (novelId, spanId, chapter, newType) =>
     postCorrection(novelId, 'reassign_span_type', { span_id: spanId, chapter, new_type: newType }),
 
+  // A reviewer's gender for a character ('male' | 'female' | 'unknown'). Logged as a `set_gender` correction and applied
+  // at once: the automatic gender pass never overwrites a reviewer's value, and voice casting reads it on the next run.
+  setGender: (novelId, selfId, gender) =>
+    postCorrection(novelId, 'set_gender', { self_id: selfId, gender }).then((logged) =>
+      request(`/api/novels/${enc(novelId)}/apply`, { method: 'POST' }).then((applied) => {
+        const failed = ((applied && applied.applied) || []).find((r) => r.error && r.type === 'set_gender');
+        if (failed) throw new ApiError(400, failed.error);
+        return logged;
+      })
+    ),
+
   undoCorrection: (novelId, correctionId) =>
     request(`/api/novels/${enc(novelId)}/corrections/${enc(correctionId)}`, { method: 'DELETE' }),
   applyCorrections: (novelId) => request(`/api/novels/${enc(novelId)}/apply`, { method: 'POST' }),

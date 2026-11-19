@@ -218,6 +218,46 @@ def test_a_password_protected_server_opens_the_companion_page_with_the_session_t
     assert srv.call("GET", f"/api/projects/t/packs?access_token={login['token']}")[0] == 401  # JSON API: header only
 
 
+# --- gender -----------------------------------------------------------------------------------------------------------
+
+
+def _character(srv, self_id: str) -> dict:
+    _, body = srv.call("GET", "/api/novels/t/characters")
+    return next(c for c in body["characters"] if c["self_id"] == self_id)
+
+
+def test_the_character_list_carries_each_gender_and_whether_a_reviewer_set_it(srv) -> None:
+    mira = _character(srv, "t:mira")
+    assert mira["gender"] in ("male", "female", "unknown") and mira["gender_by_reviewer"] is False
+
+
+def test_a_reviewer_gender_round_trips_through_corrections_and_survives_the_automatic_pass(srv) -> None:
+    from echotales.pipeline.persona.gender import infer_missing_genders
+
+    before = _character(srv, "t:corin")["gender"]
+    new = "female" if before != "female" else "male"
+    status, logged = srv.call("POST", "/api/novels/t/corrections", {"type": "set_gender", "payload": {"self_id": "t:corin", "gender": new}})
+    assert status == 201 and logged["type"] == "set_gender"
+    status, applied = srv.call("POST", "/api/novels/t/apply", {})
+    assert status == 200 and applied["applied"][0].get("gender") == new, applied
+
+    corin = _character(srv, "t:corin")
+    assert corin["gender"] == new and corin["gender_by_reviewer"] is True
+
+    # The automatic gender pass (stage 7a) runs again on every rebuild; it must leave the reviewer's value alone.
+    report = infer_missing_genders("t", srv.registry.handles["t"].store, None)
+    assert report.skipped_human >= 1
+    srv.registry.handles["t"].invalidate()
+    assert _character(srv, "t:corin")["gender"] == new
+
+
+def test_a_gender_that_is_not_male_female_or_unknown_is_not_applied(srv) -> None:
+    srv.call("POST", "/api/novels/t/corrections", {"type": "set_gender", "payload": {"self_id": "t:corin", "gender": "robot"}})
+    _, applied = srv.call("POST", "/api/novels/t/apply", {})
+    assert "error" in applied["applied"][0]
+    assert _character(srv, "t:corin")["gender_by_reviewer"] is False
+
+
 def test_the_companion_route_serves_nothing_outside_the_built_site(srv) -> None:
     assert srv.run_job("companion", {"through": 3})["status"] == "SUCCEEDED"
     secret = srv.root / "data" / "novels" / "t" / "companion" / "secret.txt"
