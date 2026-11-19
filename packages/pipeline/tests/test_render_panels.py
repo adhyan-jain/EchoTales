@@ -478,6 +478,7 @@ class TestRenderPanels:
             conditions=None,
             crowd_mood=None,
             staging="",
+            spoken="",
             recent_shots=None,
         ):
             received_casts.append(dict(cast))
