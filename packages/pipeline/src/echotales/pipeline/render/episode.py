@@ -42,6 +42,7 @@ from echotales.pipeline.render.plan import PanelPlan, load_panel_plan
 from echotales.pipeline.render.shots import (
     MotionLevel,
     hold_camera_move,
+    panel_runs,
     requested_motion,
 )
 from echotales.pipeline.screenplay.schema import CameraMove
@@ -119,24 +120,6 @@ def _split_at_line(lines: list[LineTiming], max_hold: float) -> list[list[LineTi
     mid = (lines[0].start_gapless + lines[-1].end_gapless) / 2
     cut = min(range(1, len(lines)), key=lambda i: abs(lines[i].start_gapless - mid))
     return _split_at_line(lines[:cut], max_hold) + _split_at_line(lines[cut:], max_hold)
-
-
-def panel_runs(panels: list[PanelPlan], timing: Sequence[LineTiming]) -> list[tuple[PanelPlan, list[LineTiming]]]:
-    """The voiced lines grouped into runs that share a panel, in play order.
-
-    Not `shots.plan_shots`: that refuses panels whose blocks interleave, and a real render does produce them (RI ch1
-    v55: panel 2 holds blocks 1 and 3, panel 1 holds block 2) because an image is reused for a later block. Here a
-    panel simply returns to the screen as a cut-back. A voiced block no panel claims rides on the previous line's panel,
-    or on the first panel when it leads the chapter."""
-    owner = {b: p for p in panels for b in p.block_indexes}
-    runs: list[tuple[PanelPlan, list[LineTiming]]] = []
-    for t in timing:
-        panel = owner.get(t.block_index) or (runs[-1][0] if runs else panels[0])
-        if runs and runs[-1][0] is panel:
-            runs[-1][1].append(t)
-        else:
-            runs.append((panel, [t]))
-    return runs
 
 
 def plan_episode_shots(
