@@ -52,6 +52,25 @@ def _load_config_json() -> dict[str, object]:
     return out
 
 
+def set_voice_narrator(voice_id: str, path: Path | None = None) -> None:
+    """Write `voice.narrator` in config.json and nothing else in it, then re-read the settings so the running
+    server's next voice job uses it. The file is hand-edited, so every other key and section is kept as found; the
+    write goes through a temporary file so a crash never leaves a half-written config for the next start to ignore."""
+    target = path or _CONFIG_JSON
+    try:
+        raw = json.loads(target.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        raw = {}
+    if not isinstance(raw, dict):
+        raise ValueError(f"{target.name} is not a JSON object; not overwriting it")
+    voice = raw.get("voice")
+    raw["voice"] = {**(voice if isinstance(voice, dict) else {}), "narrator": voice_id}
+    tmp = target.with_name(target.name + ".tmp")
+    tmp.write_text(json.dumps(raw, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    tmp.replace(target)
+    get_settings(reload=True)
+
+
 class LLMMode(StrEnum):
     #: Deterministic canned responses. No GPU, no network. The CI default.
     STUB = "stub"

@@ -1445,10 +1445,49 @@ def make_handler(
                         "limits": {"min_seconds": project_voices.MIN_SECONDS, "max_seconds": project_voices.MAX_SECONDS,
                                    "max_bytes": _MAX_VOICE_BODY},
                         "voices": [
-                            {"voice_id": v.voice_id, "name": v.name, "gender": v.gender, "age": v.age, "consent_at": v.consent_at}
+                            {"voice_id": v.voice_id, "name": v.name, "gender": v.gender, "age": v.age,
+                             "consent_at": v.consent_at, "clip": v.clip}
                             for v in project_voices.list_project_voices(parts[2])
                         ],
                     })
+
+                # GET /api/projects/<id>/voices/audition: the narrator candidates the last audition shortlisted, each with
+                # the path of its sample (None until a sample is voiced), and the narrator config.json names now.
+                if len(parts) == 5 and parts[:2] == ["api", "projects"] and parts[3:] == ["voices", "audition"]:
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    from echotales.pipeline.config import get_settings
+                    from echotales.pipeline.voice import audition as voice_audition
+
+                    root = paths.asset_dir(parts[2], "audition")
+                    candidates = []
+                    for s in voice_audition.read_shortlist(root):
+                        sample = voice_audition.narrator_sample(root, s["voice_id"])
+                        candidates.append({
+                            "voice_id": s["voice_id"], "name": s.get("name") or s["voice_id"], "gender": s.get("gender", ""),
+                            "bank": s.get("bank", ""), "licence": s.get("licence", ""), "f0_hz": s.get("f0_hz"),
+                            "sample": str(sample.relative_to(paths.novel_root(parts[2]))) if sample.is_file() else None,
+                        })
+                    return self._json(200, {
+                        "narrator": get_settings().voice_narrator, "candidates": candidates,
+                        "passage": voice_audition.PASSAGES[voice_audition.STUDIO_PASSAGE],
+                    })
+
+                # GET /api/projects/<id>/voices/sample?voice_id=&emotion=&text=: where the finished sample of that line
+                # is (404 until the audition job has voiced it).
+                if len(parts) == 5 and parts[:2] == ["api", "projects"] and parts[3:] == ["voices", "sample"]:
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    from echotales.pipeline.voice import audition as voice_audition
+
+                    q = parse_qs(urlparse(self.path).query)
+                    one = lambda key, default="": q.get(key, [default])[0]  # noqa: E731
+                    sample = voice_audition.line_sample_path(
+                        paths.asset_dir(parts[2], "audition"), one("voice_id"), one("emotion", "neutral"), one("text").strip()
+                    )
+                    if not sample.is_file():
+                        return self._json(404, {"error": "that sample has not been voiced yet"})
+                    return self._json(200, {"path": str(sample.relative_to(paths.novel_root(parts[2])))})
 
                 if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "companions":
                     if parts[2] not in registry.handles:
@@ -2463,6 +2502,27 @@ def make_handler(
                     return self._json(201, {"voice_id": stored.voice_id, "name": stored.name, "gender": stored.gender,
                                             "age": stored.age, "consent_at": stored.consent_at})
 
+                # POST /api/projects/<id>/voices/narrator {"voice_id": ...}: the one config.json key this screen may
+                # change. Only a voice the audition shortlisted or this project uploaded can be chosen.
+                if len(parts) == 5 and parts[:2] == ["api", "projects"] and parts[3:] == ["voices", "narrator"]:
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    from echotales.pipeline import project_voices
+                    from echotales.pipeline.config import set_voice_narrator
+                    from echotales.pipeline.voice import audition as voice_audition
+
+                    body = self._read_json()
+                    voice_id = body.get("voice_id") if isinstance(body, dict) else None
+                    known = {s["voice_id"] for s in voice_audition.read_shortlist(paths.asset_dir(parts[2], "audition"))}
+                    known |= {v.voice_id for v in project_voices.list_project_voices(parts[2])}
+                    if not isinstance(voice_id, str) or voice_id not in known:
+                        return self._json(400, {"error": "voice_id must be one of the audition candidates or your own voices"})
+                    try:
+                        set_voice_narrator(voice_id)
+                    except (OSError, ValueError) as exc:
+                        return self._json(500, {"error": f"could not write config.json: {exc}"})
+                    return self._json(200, {"narrator": voice_id})
+
                 if (
                     len(parts) == 6 and parts[:2] == ["api", "projects"] and parts[3] == "jobs" and parts[5] == "cancel"
                 ):
@@ -2550,6 +2610,27 @@ def make_handler(
                         refusal = _gpu_refusal(video_engine)
                         if refusal:
                             return self._json(409, _refusal_body(refusal))
+                    if kind == "voice_audition":
+                        # Same rule as the voice job: the bank folder and the output folder are the server's choice.
+                        params.pop("bank", None)
+                        voice_engine = str(params.get("engine") or "chatterbox")
+                        if voice_engine not in engine_registry.names("tts"):
+                            return self._json(400, {"error": f"voice engine {voice_engine!r} is not allowed; use stub or chatterbox"})
+                        from echotales.pipeline.reader.delivery_pass import LABELS
+                        from echotales.pipeline.voice.audition import MAX_SAMPLE_CHARS
+
+                        target = params.get("target")
+                        if target not in ("narrator", "line"):
+                            return self._json(400, {"error": "target must be 'narrator' or 'line'"})
+                        if target == "line":
+                            text = params.get("text")
+                            if not isinstance(params.get("voice_id"), str) or not params["voice_id"]:
+                                return self._json(400, {"error": "voice_id is required"})
+                            if not isinstance(text, str) or not text.strip() or len(text.strip()) > MAX_SAMPLE_CHARS:
+                                return self._json(400, {"error": f"text must be 1 to {MAX_SAMPLE_CHARS} characters"})
+                            if params.get("emotion", "neutral") not in set(LABELS.values()):
+                                return self._json(400, {"error": f"unknown emotion {params.get('emotion')!r}"})
+                            params["text"] = text.strip()
                     if kind == "voice":
                         # A path from the request chose which directory the server loads a voice bank from and where
                         # it wrote; both come from the project, never the client (audit B5).

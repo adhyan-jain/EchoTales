@@ -18,6 +18,7 @@ Measures are computed from the reference clip alone, with numpy and librosa alre
 
 from __future__ import annotations
 
+import hashlib
 import html
 import json
 from dataclasses import asdict, dataclass
@@ -171,9 +172,18 @@ def write_stats(path: Path, picked: list[ClipStats], measured: list[ClipStats]) 
     )
 
 
-def synthesize_audition(picked: list[ClipStats], banks: list[VoiceBank], engine: TTSEngine, out_dir: Path) -> Path:
-    """Voice every passage for every candidate through `engine`, cloning from the candidate's own reference clip,
-    and write `index.html` listing name, bank, licence, stats and one player per passage."""
+def synthesize_audition(
+    picked: list[ClipStats],
+    banks: list[VoiceBank],
+    engine: TTSEngine,
+    out_dir: Path,
+    passages: tuple[str, ...] | None = None,
+) -> Path:
+    """Voice every passage (or just `passages`) for every candidate through `engine`, cloning from the candidate's
+    own reference clip, and write `index.html` listing name, bank, licence, stats and one player per passage.
+
+    `passages` exists for the Studio: three passages for twelve candidates is 36 syntheses on a laptop GPU, and a
+    person choosing a narrator starts from one dark-register sample each and asks for more only if two are close."""
     out_dir.mkdir(parents=True, exist_ok=True)
     voices = {v.speaker_id: v for bank in banks for v in bank.voices}
     rows: list[str] = []
@@ -181,6 +191,8 @@ def synthesize_audition(picked: list[ClipStats], banks: list[VoiceBank], engine:
         voice = voices[s.voice_id]
         players = []
         for key, text in PASSAGES.items():
+            if passages is not None and key not in passages:
+                continue
             exaggeration, cfg = _DELIVERY.get(key, _NEUTRAL_DELIVERY)
             target = out_dir / s.voice_id / f"{key}.wav"
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -206,3 +218,62 @@ def synthesize_audition(picked: list[ClipStats], banks: list[VoiceBank], engine:
         encoding="utf-8",
     )
     return page
+
+
+#: The one passage the Studio synthesizes per candidate (see `synthesize_audition`'s `passages`).
+STUDIO_PASSAGE = "p1_dark"
+#: Longest line a person may have voiced as an audition sample: the Studio asks for one sentence, not a chapter.
+MAX_SAMPLE_CHARS = 400
+SHORTLIST_FILE = "shortlist.json"
+
+
+def narrator_dir(root: Path) -> Path:
+    """Where a project's narrator audition lives, under its `audition/` folder."""
+    return root / "narrator"
+
+
+def narrator_sample(root: Path, voice_id: str) -> Path:
+    return narrator_dir(root) / voice_id / f"{STUDIO_PASSAGE}.wav"
+
+
+def read_shortlist(root: Path) -> list[dict]:  # type: ignore[type-arg]
+    """The shortlist the last narrator audition wrote, or [] when none was run (or its file is unreadable)."""
+    try:
+        data = json.loads((narrator_dir(root) / SHORTLIST_FILE).read_text(encoding="utf-8"))
+        return [s for s in data["shortlist"] if isinstance(s, dict) and s.get("voice_id")]
+    except (OSError, ValueError, KeyError):
+        return []
+
+
+def run_narrator_audition(banks: list[VoiceBank], engine: TTSEngine, root: Path, n: int = 12) -> list[ClipStats]:
+    """Measure the banks, keep the shortlist, voice one sample each. Same code as `echotales voice-audition
+    --synthesize`; only the folder and the passage count differ."""
+    picked, measured = audition(banks, n)
+    out = narrator_dir(root)
+    write_stats(out / SHORTLIST_FILE, picked, measured)
+    synthesize_audition(picked, banks, engine, out, passages=(STUDIO_PASSAGE,))
+    return picked
+
+
+def line_sample_path(root: Path, voice_id: str, emotion: str, text: str) -> Path:
+    """Deterministic file for one audition line, so the Studio can find a finished sample without a job result
+    channel, and asking again for the same voice, emotion and words re-uses the file instead of a second synthesis."""
+    key = hashlib.sha256(f"{voice_id}\x00{emotion}\x00{text}".encode()).hexdigest()[:20]
+    return root / "lines" / f"{key}.wav"
+
+
+def synthesize_line(voice: BankVoice, engine: TTSEngine, out_path: Path, text: str, emotion: str = "neutral") -> Path:
+    """One line in `voice`'s voice performing `emotion`, with the delivery settings and emotion recording the
+    audiobook run would choose for a spoken line (`delivery.settings_for`, `BankVoice.clip_for`). The register pitch
+    and tempo post-processing is not applied: a preview must be the engine's own output, not our edit of it."""
+    from echotales.core.enums import SpanType
+    from echotales.pipeline.voice.delivery import settings_for
+
+    settings = settings_for(
+        span_type=SpanType.DIALOGUE, text=text, emotion=emotion, intensity=2, voice_age_band=voice.age_band
+    )
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    return engine.synthesize(SynthesisRequest(
+        text=text, out_path=out_path, reference_clip=voice.clip_for(settings.emotion),
+        exaggeration=settings.exaggeration, cfg_weight=settings.cfg_weight,
+    ))

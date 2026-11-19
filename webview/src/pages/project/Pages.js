@@ -14,6 +14,7 @@ import PacksPanel from '../../components/PacksPanel';
 import ComicPanel from '../../components/ComicPanel';
 import CompanionPanel from '../../components/CompanionPanel';
 import ProjectVoicesPanel from '../../components/ProjectVoicesPanel';
+import NarratorAudition from '../../components/NarratorAudition';
 import { PageHeader, ThemeToggle } from '../../components/app/Chrome';
 import { useProject } from '../../lib/ProjectContext';
 
@@ -112,6 +113,7 @@ export function Settings() {
         <PacksPanel novelId={novelId} />
         <ComicPanel novelId={novelId} />
         <CompanionPanel novelId={novelId} project={project} />
+        <NarratorAudition novelId={novelId} />
         <ProjectVoicesPanel novelId={novelId} />
         <section className="flex items-center justify-between gap-4 rounded-3xl border border-border bg-surface p-6">
           <div>
