@@ -110,8 +110,14 @@ _LOW_AROUSAL = frozenset({
     "neutral", "serenity", "sadness", "guilt", "disappointment", "whisper", "interest", "realization", "relief",
 })
 #: Intensity (1-3) -> (exaggeration, cfg_weight), for the reader's per-line emotion (`reader/delivery_pass.py`).
-_BY_INTENSITY: dict[int, tuple[float, float]] = {1: (0.55, 0.50), 2: (0.70, 0.42), 3: (0.90, 0.32)}
-_BY_INTENSITY_LOW: dict[int, tuple[float, float]] = {1: (0.45, 0.55), 2: (0.55, 0.50), 3: (0.65, 0.45)}
+#: Raised 2026-11-19 by the emotion audition (data/scratch/emotion_tts/run1, 3 cast voices x 9 performed lines): the
+#: older table (0.55/0.70/0.90 and 0.45/0.55/0.65) read flat next to an anime dub. Pushing every band (+0.15 exag
+#: -0.12 cfg, quiet states +0.10/-0.10) widened the pitch span 9.6 -> 10.6 semitones and the loudness range 23.9 ->
+#: 24.4 dB while speaker similarity held (0.908 -> 0.900) and word error did not rise (1.1% -> 0.8%). Swapping the
+#: reference clip for a more expressive one went further (12.9 st) but drifted the timbre (similarity 0.84; a
+#: borrowed donor clip 0.68), so the reference stays the cast clip and only the dials move.
+_BY_INTENSITY: dict[int, tuple[float, float]] = {1: (0.70, 0.38), 2: (0.85, 0.30), 3: (1.00, 0.20)}
+_BY_INTENSITY_LOW: dict[int, tuple[float, float]] = {1: (0.55, 0.45), 2: (0.65, 0.40), 3: (0.75, 0.35)}
 #: Narration takes the passage's mood only when it is clear (intensity >= 2), and never as a performance: these caps
 #: keep the narrator below a performed line, the contrast the narration branch below exists to protect.
 _NARRATION_MOOD: dict[int, tuple[float, float]] = {2: (0.52, 0.50), 3: (0.58, 0.47)}
