@@ -29,7 +29,7 @@ class ScriptedClient:
         return SimpleNamespace(value=schema.model_validate(self.answer(prompt)))
 
 
-def _novel(tmp_path, text: str, *, label: str = "Fang Yuan", surface: str | None = None, repeats: int = 4):
+def _novel(tmp_path, text: str, *, label: str = "Fang Yuan", surface: str | None = None, repeats: int = 4, personas: bool = True):
     """One entity named `repeats` times, once per paragraph, in one chapter."""
     surface = surface or label
     paragraphs = [text] * repeats
@@ -69,7 +69,8 @@ def _novel(tmp_path, text: str, *, label: str = "Fang Yuan", surface: str | None
     store.conn.commit()
     from echotales.pipeline.persona import build_personas
 
-    build_personas("t", store)
+    if personas:
+        build_personas("t", store)
     return store
 
 
@@ -197,6 +198,14 @@ class TestModelReading:
         report = infer_missing_genders("t", store, client)
         assert client.prompts == []
         assert report.skipped_known == 1
+
+    def test_character_without_a_persona_is_skipped_not_written(self, tmp_path) -> None:
+        """ORV's database had no personas: a gender row on a body that does not exist is read by nothing."""
+        store = _novel(tmp_path, TEXT, personas=False)
+        client = ScriptedClient(lambda p: {"gender": "male", "quote": "He did not smile", "confident": True})
+        report = infer_missing_genders("t", store, client)
+        assert client.prompts == []
+        assert report.no_persona == 1
 
     def test_too_few_mentions_and_no_lines_is_left_alone(self, tmp_path) -> None:
         store = _novel(tmp_path, TEXT, repeats=2)

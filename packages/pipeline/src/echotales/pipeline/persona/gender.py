@@ -78,6 +78,7 @@ class GenderReport:
     examined: int = 0
     skipped_known: int = 0
     skipped_human: int = 0
+    no_persona: int = 0
     by_cue: int = 0
     by_model: int = 0
     no_evidence: int = 0
@@ -93,7 +94,7 @@ class GenderReport:
             f"gender pass {self.novel_id}: {self.examined} unknown characters examined, {self.by_cue} by title cue,"
             f" {self.by_model} by model reading; left unknown: {self.no_evidence} without gendered text,"
             f" {self.model_unknown} model unknown, {self.rejected_hedged} hedged, {self.rejected_quote} bad quote,"
-            f" {self.errors} errors; {self.skipped_known} already known, {self.skipped_human} set by a reviewer"
+            f" {self.errors} errors; {self.skipped_known} already known, {self.skipped_human} set by a reviewer, {self.no_persona} without a persona"
         )
 
 
@@ -250,6 +251,11 @@ def infer_missing_genders(
     todo = []
     for entity in store.all_selves(novel_id):
         if not entity.kind.is_person:
+            continue
+        # A gender row needs a body to sit on; without one the personas stage has not run, and a row on a body that
+        # does not exist would be read back by nothing (ORV's database had no personas at all).
+        if not bodies_of(store, entity.id):
+            report.no_persona += 1
             continue
         gender, human = _current_gender(store, entity.id)
         if human:
