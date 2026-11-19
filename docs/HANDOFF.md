@@ -25,6 +25,14 @@ conflated.
 
 **Last updated:** 2026-11-07 (EVOLUTION 4.134).
 
+## Pick up here - 2026-11-20 (panel quality round 2; EVOLUTION 4.140)
+
+Branch `worktree-agent-a72828ac5e4ad4e85`, local, not merged. Full detail and evidence in EVOLUTION 4.140; scratch renders in `data/scratch/panel_quality/out_r2_*` (not `data/novels`).
+- **Fixed and verified by re-render:** cliff scenes no longer become a timber hall (12 of 13 cliff panels on rock); the self-detonation is no longer a child (a `--block-range` preview artifact); LotM block 24 no longer has a red-glowing extra person; scene-break blocks end scenes; reborn Fang Yuan at blocks 83 and 85 is a 15-year-old with the same face.
+- **Fixed, only partly verified:** per-line speaker and addressee reach the director (unit-tested; on real renders the lead still often shows a mocking smile on enemy lines); crowd gap by depth framing (4 seeds each, encoded as staging guidance; gemma2:9b rarely chooses it, a crowd shows in 3 of 13 cliff panels).
+- **Director bake-off (item 7):** qwen3:8b download stalled (181 MB of 5.2 GB, about 0 KB/s). Z-Image-Engineer-V6 as `z-engineer` stage-two writer on 9 RI cliff panels: 4.5 s per panel, 0 blanked paragraphs, 7 of 9 polished (2 fell back to the facts), crowds in rows or silhouettes in 5 of 9 against 3 of 9 for the plain prompt, but a softer, greyer look (crowd turns into fog silhouettes, panel 6 muddy, one costume changed to white). Not adopted; `out_r2_bake/sheet.png`.
+- **OPEN:** persona epoch for Fang Yuan's rebirth starts at block 82; block 80 (already reborn) is drawn as the adult (`persona/split.py`). LotM: 6 of 16 panels show a daylight window for a night scene. The rain-night scene (RI b31) inherits the cliff's blood and a crowd from the carried staging. Gemma2:9b still writes swords, armour and "a figure" into compositions. RI blocks 36-61 (clan hall) were rendered once before the scene-break fix and not re-rendered.
+
 ## Pick up here - 2026-11-07 (voice: chunked synthesis, narrator excluded from casting, EARS licence gate; EVOLUTION 4.134)
 
 Product track, commits 436776c and ffec748 (local, NOT pushed: GitHub unreachable, `gh` token invalid). Core+pipeline 1,656 passed (`-o addopts=""`). Supersedes open item 3 of the 2026-10-31 product section only where stated below.

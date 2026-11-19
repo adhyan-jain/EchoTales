@@ -431,3 +431,6 @@ silhouette fallback entirely because *something* upstream resolved a
 "cast" from a place name. This is a persona/resolution bug (a location
 entity leaking into character casting), not a prompt-construction or
 crowd-contradiction issue -- see HANDOFF for the next-session pointer.
+
+## v_r2_ri-cliff-scene-staging (2026-11-20) - scratch render, not in this folder
+Panel-quality round 2 (EVOLUTION 4.140), written to `data/scratch/panel_quality/out_r2_ri_cliff/` (blocks 0-31, 13 panels), `out_r2_ri_full/` (blocks 0-90, 34 panels, made before the scene-break fix) and `out_r2_ri_reborn/` (blocks 79-85). Z-Image Turbo through the compiler, gemma2:9b director. Verdict from a viewer's side: the cliff scene no longer turns into a timber hall (12 of 13 cliff panels are on rock; panel 5 is a grassy slope), the cel style holds, faces are no longer a happy child. Still not donghua level: the crowd appears in only 3 of 13 cliff panels, the hero is mostly alone, gemma2:9b invents swords and armour, the rain night (b31) inherited the cliff's blood and a crowd.
