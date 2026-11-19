@@ -245,34 +245,3 @@ class TestUnknownOverABorrowedExplicitTag:
         store, _ = _run(["“Why are you taking control?” Bob looked at Alice."], {"0.0": "UNKNOWN"},
                         baseline={0: ("n:self:alice", AttributionMethod.EXPLICIT)})
         assert _speaker(store, 0) == "n:self:alice"
-
-
-class TestTwoReadingsMustAgree:
-    """Self-consistency: the chapter is read twice with the windows cut in different places; where the two readings name
-    different people the line is left UNKNOWN (precision over recall, non-negotiable 9)."""
-
-    def test_agreement_is_kept_and_a_disagreement_becomes_unknown(self) -> None:
-        first = {"0.0": "Alice", "1.0": "Alice", "2.0": "UNKNOWN: elder", "3.0": "Bob"}
-        second = {"0.0": "alice", "1.0": "Bob", "2.0": "UNKNOWN", "3.0": "UNKNOWN"}
-        merged = sp.combine_readings(first, second)
-        assert merged["0.0"] == "Alice"          # same person, case aside
-        assert merged["1.0"] == "UNKNOWN"        # two different people
-        assert merged["2.0"] == "UNKNOWN: elder" # both unknown: the first's role wording stands
-        assert merged["3.0"] == "UNKNOWN"        # a name against unknown
-
-    def test_a_tag_only_one_reading_answered_keeps_that_answer(self) -> None:
-        assert sp.combine_readings({"0.0": "Alice"}, {}) == {"0.0": "Alice"}
-
-    def test_the_offset_windows_cut_somewhere_else_but_cover_every_tag(self) -> None:
-        blocks = [f"“Line {i}.” said Alice." + " word" * 120 for i in range(12)]
-        chapter = Chapter(novel_id="n", number=1.0, title="T", source_href="a",
-                          blocks=[Block(index=i, block_type=BlockType.PROSE, text=t) for i, t in enumerate(blocks)])
-        plain, shifted = sp.windows(chapter), sp.windows(chapter, first_limit=sp.WINDOW_CHARS // 2)
-        tags = lambda ws: sorted(t for w in ws for t in sp.re.findall(r"\[(\d+\.\d+)\]", w))  # noqa: E731
-        assert tags(plain) == tags(shifted) and plain != shifted
-
-
-def test_a_second_reading_that_agrees_changes_nothing(monkeypatch) -> None:  # noqa: ANN001
-    monkeypatch.setattr(sp, "SECOND_READING", True)
-    store, report = _run(["“Hello.” Alice smiled.", "“Hi.” Bob nodded."], {"0.0": "Alice", "1.0": "Bob"})
-    assert (_speaker(store, 0), _speaker(store, 1)) == ("n:self:alice", "n:self:bob") and report.disagreed == 0

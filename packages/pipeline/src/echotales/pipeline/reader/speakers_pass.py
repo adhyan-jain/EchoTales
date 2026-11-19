@@ -92,7 +92,6 @@ class SpeakerReport:
     explicit_kept: int = 0
     first_person: int = 0
     roles_merged: int = 0
-    disagreed: int = 0
 
 
 #: Korean/Japanese honorific suffixes attached to a name. "Yoo Sangah-ssi" is Yoo Sangah, but without this the matcher saw a
@@ -240,12 +239,9 @@ class NameIndex:
         return next(iter(hits.values())) if len(hits) == 1 else None
 
 
-def windows(
-    chapter: Chapter, *, tagged: bool = True, require_quote: bool | None = None, first_limit: int | None = None
-) -> list[str]:
+def windows(chapter: Chapter, *, tagged: bool = True, require_quote: bool | None = None) -> list[str]:
     """Consecutive whole blocks up to `WINDOW_CHARS` per window.
 
-    `first_limit` cuts the first window shorter, which moves every later cut (the second reading of a chapter).
     `tagged=True` inserts `[block.q]` before every quote and drops windows with no quote (the speaker pass);
     `tagged=False` keeps every window as plain text (the facts pass reads narration too). `require_quote=False` keeps
     the tags but also the quote-free windows (the delivery pass reads the mood of narration-only passages)."""
@@ -256,15 +252,14 @@ def windows(
     from echotales.pipeline.compute import policy
 
     limit = WINDOW_CHARS * policy().context_scale
-    cut = first_limit if first_limit is not None else limit
     out: list[list[str]] = []
     current: list[str] = []
     size = 0
     for block in sorted(chapter.blocks, key=lambda b: b.index):
         text = tag_block(block.index, block.text) if tagged else block.text
-        if size + len(text) > cut and current:
+        if size + len(text) > limit and current:
             out.append(current)
-            current, size, cut = [], 0, limit
+            current, size = [], 0
         current.append(f"#{block.index}: {text}")
         size += len(text)
     if current:
@@ -385,22 +380,6 @@ def ask_window(
         pending = [t for t in pending if t not in answers]
     report.missing += len(pending)
     return answers
-
-
-def combine_readings(first: dict[str, str], second: dict[str, str]) -> dict[str, str]:
-    """Merge two readings of the same chapter: agreement stands, a disagreement is UNKNOWN.
-
-    Two cuts of the same text see different neighbours; a line whose answer depends on where the window ended is one the
-    model does not actually know, and an unnamed voice is a smaller error than a wrong name (non-negotiable 9)."""
-    merged = dict(second)
-    for tag, a in first.items():
-        b = second.get(tag)
-        ka, kb = _norm(a), _norm(b) if b is not None else None
-        if b is None or ka == kb or (ka.startswith(UNKNOWN) and kb.startswith(UNKNOWN)):
-            merged[tag] = a
-        else:
-            merged[tag] = "UNKNOWN"
-    return merged
 
 
 def addresses(quote: str, name: str) -> bool:
@@ -643,20 +622,6 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             tag_window[tag] = text
         recent = [got.get(t, "") for t in tags][-3:]
 
-    if SECOND_READING:
-        shifted: dict[str, str] = {}
-        seen_text, recent = "", []
-        for text in windows(chapter, first_limit=WINDOW_CHARS // 2):
-            seen_text += "\n" + text
-            shown = scene_cast(cast, seen_text, narrator) if SCENE_CAST else cast
-            got = ask_window(client, shown, text, report, novel_id, number, narrator, note=turn_note(recent) if PREV_SPEAKERS else "")
-            shifted.update(got)
-            recent = [got.get(t, "") for t in re.findall(r"\[(\d+\.\d+)\]", text)][-3:]
-        second_raw = shifted
-        report.disagreed += sum(1 for t, a in answers.items() if t in shifted and _norm(a) != _norm(shifted[t]) and not (_norm(a).startswith(UNKNOWN) and _norm(shifted[t]).startswith(UNKNOWN)))
-        answers = combine_readings(answers, shifted)
-    else:
-        second_raw = {}
     blocks = {b.index: b.text for b in chapter.blocks}
     quote_of: dict[str, str] = {}
     for tag in answers:
@@ -690,7 +655,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
         def note(outcome: str, final: str | None = None, _tag: str = tag, _span: Span = span, _fired: list[str] = fired) -> None:
             if TRACE is not None:
                 TRACE.append({
-                    "chapter": number, "tag": _tag, "raw": raw_answers.get(_tag), "raw2": second_raw.get(_tag), "answer": answers[_tag],
+                    "chapter": number, "tag": _tag, "raw": raw_answers.get(_tag), "answer": answers[_tag],
                     "outcome": outcome, "final": final, "rules": list(_fired), "baseline_method": _span.attribution_method.value,
                     "baseline_speaker": _span.speaker_self_id, "quote": quote_text[:160],
                 })
@@ -832,10 +797,6 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
 SCENE_CAST = os.environ.get("ECHOTALES_READER_SCENE_CAST", "1") == "1"
 PREV_SPEAKERS = os.environ.get("ECHOTALES_READER_PREV_SPEAKERS", "1") == "1"
 CROWD_RULE = os.environ.get("ECHOTALES_READER_CROWD_RULE", "1") == "1"
-
-#: SECOND_READING: read the chapter twice with the windows cut in different places and let a disagreement be UNKNOWN
-#: (`combine_readings`). Off by default until the ablation shows it helps; it doubles the model time of the pass.
-SECOND_READING = os.environ.get("ECHOTALES_READER_SECOND_READING", "0") == "1"
 
 #: Switch for the re-ask of rejected answers (`_second_chance`), so an ablation can measure it on the reference chapters.
 SECOND_CHANCE = os.environ.get("ECHOTALES_READER_SECOND_CHANCE", "1") == "1"
