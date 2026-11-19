@@ -401,12 +401,14 @@ import re
 
 log = logging.getLogger(__name__)
 
-#: Ranked: the smallest model that answered the checklist well on 8 GB, measured in docs/EVOLUTION.md (M1.6), first.
-VISION_MODELS = ("qwen2.5vl:3b", "gemma3:4b", "minicpm-v", "llava:7b", "moondream")
+#: Ranked, measured in docs/EVOLUTION.md 4.168 on 29 hand-labelled panels, 8 GB card, ollama 0.19: granite3.2-vision:2b
+#: (2.4 GB, Apache-2.0) and minicpm-v (4.7 GB) both count and name colours; qwen2.5vl:3b is rejected here because ollama sizes it
+#: at 10 GB and runs it 100% on the CPU; moondream is fast but answers "2 people" for every image, so it is not listed.
+VISION_MODELS = ("granite3.2-vision:2b", "minicpm-v", "llava:7b")
 
 NO_VLM_MESSAGE = (
     "vision check is OFF: no local vision model is installed. Install one that fits 8 GB, for example "
-    "`ollama pull qwen2.5vl:3b`, or set render.vision_model in config.json. Panels are generated one candidate each."
+    "`ollama pull granite3.2-vision:2b`, or set render.vision_model in config.json. Panels are generated one candidate each."
 )
 
 #: Colour word -> family. The last colour word of a phrase wins ("dark navy" is navy, "deep green" is green): the shade
@@ -427,6 +429,15 @@ _FAMILIES = {
     "pink": ("pink", "rose"),
 }
 _WORD_FAMILY = {w: fam for fam, words in _FAMILIES.items() for w in words}
+
+
+#: Families a viewer and a small VLM do not tell apart: a dark navy suit is called "blue" by minicpm-v on 13 of 13 LotM panels
+#: that a person sees as dark clothes (measured, EVOLUTION 4.168). Green and teal are deliberately not here.
+_COMPATIBLE = {frozenset({"dark", "blue"})}
+
+
+def same_colour(a: str, b: str) -> bool:
+    return a == b or frozenset({a, b}) in _COMPATIBLE
 
 
 def colour_family(text: str) -> str:
@@ -477,7 +488,7 @@ def judge(answer: VisionAnswer, expect: PanelExpectation) -> Verdict:
         ("hair", expect.hair_colour, answer.hair_colour), ("outfit", expect.outfit_colour, answer.outfit_colour),
     ):
         fw, fg = colour_family(want), colour_family(got)
-        if fw and fg and fw != fg:
+        if fw and fg and not same_colour(fw, fg):
             failed.append(label)
     return Verdict(failed)
 

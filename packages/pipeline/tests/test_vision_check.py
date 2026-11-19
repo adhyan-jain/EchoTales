@@ -35,6 +35,13 @@ def test_a_matching_answer_passes_and_each_mismatch_is_named() -> None:
     assert qa.judge(ans(lead_visible=False), EXPECT).failed == ["presence"]
 
 
+def test_a_dark_outfit_read_as_blue_passes_but_green_for_teal_does_not() -> None:
+    dark = qa.PanelExpectation(outfit_colour="dark navy")
+    assert qa.judge(ans(outfit_colour="blue"), dark).passed
+    green = qa.PanelExpectation(outfit_colour="deep green")
+    assert qa.judge(ans(outfit_colour="teal"), green).failed == ["outfit"]
+
+
 def test_a_crowd_panel_needs_at_least_the_named_people_and_colours_may_be_skipped() -> None:
     crowd = qa.PanelExpectation(people=1, people_at_least=True, hair_colour="", outfit_colour="", lead="Fang Yuan")
     assert qa.judge(ans(people=14, hair_colour="grey", outfit_colour="red"), crowd).passed
@@ -80,7 +87,7 @@ def test_a_vlm_that_cannot_answer_does_not_veto_the_candidate(tmp_path) -> None:
 
 
 def test_installed_model_choice_prefers_the_ranked_list_and_says_so_when_none(monkeypatch) -> None:
-    assert qa.pick_vision_model(["gemma2:9b", "qwen2.5vl:3b"], "") == "qwen2.5vl:3b"
+    assert qa.pick_vision_model(["gemma2:9b", "granite3.2-vision:2b"], "") == "granite3.2-vision:2b"
     assert qa.pick_vision_model(["gemma2:9b"], "") is None
     assert qa.pick_vision_model(["gemma2:9b", "llava:7b"], "llava:7b") == "llava:7b"
     assert qa.pick_vision_model(["gemma2:9b"], "llava:7b") is None

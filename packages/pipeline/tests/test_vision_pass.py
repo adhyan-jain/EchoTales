@@ -112,9 +112,9 @@ def test_a_stub_run_never_uses_an_installed_vision_model(monkeypatch) -> None:
 
 
 def test_choose_vlm_returns_the_model_and_default_two_candidates(monkeypatch) -> None:
-    monkeypatch.setattr(qa.OllamaVLM, "installed", staticmethod(lambda host=None: ["gemma2:9b", "qwen2.5vl:3b"]))
+    monkeypatch.setattr(qa.OllamaVLM, "installed", staticmethod(lambda host=None: ["gemma2:9b", "granite3.2-vision:2b"]))
     vlm = vp.choose_vlm(vision_model="", candidates=0)
-    assert vlm is not None and vlm.model == "qwen2.5vl:3b"
+    assert vlm is not None and vlm.model == "granite3.2-vision:2b"
     assert vp.candidates_for(0, vlm) == 2 and vp.candidates_for(3, vlm) == 3 and vp.candidates_for(0, None) == 1
 
 
