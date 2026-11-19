@@ -32,6 +32,7 @@ NOVEL_CODES = {
     "reverend-insanity": "RI",
     "lord-of-the-mysteries": "LOTM",
     "omniscient-readers-viewpoint": "ORV",
+    "pepper-carrot": "PC",
 }
 
 DATA_ROOT = Path("data")

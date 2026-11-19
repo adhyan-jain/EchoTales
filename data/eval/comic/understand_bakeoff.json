@@ -1,0 +1,210 @@
+{
+ "source": "Pepper&Carrot ep01 P01-P02, ep02 P01-P02 (David Revoy, CC BY 4.0)",
+ "results": [
+  {
+   "engine": "rapidocr",
+   "dialogue_char_accuracy": 1.0,
+   "dialogue_char_accuracy_with_spaces": 0.9902,
+   "reference_chars": 87,
+   "edit_distance": 0,
+   "false_spoken_bubbles": 0,
+   "panel_pages_correct": "4/4",
+   "seconds_per_page": 2.62,
+   "pages": [
+    {
+     "page": "ep01/en_E01P01.jpg",
+     "seconds": 3.36,
+     "panels": 3,
+     "panels_ok": true,
+     "spoken": [
+      "...and the last touch.",
+      "...mmm probablynot strong enough."
+     ],
+     "expected": [
+      "...and the last touch.",
+      "...mmm probably not strong enough."
+     ],
+     "extra_spoken": 0,
+     "kinds": [
+      "speech",
+      "sfx",
+      "speech",
+      "sfx"
+     ]
+    },
+    {
+     "page": "ep01/en_E01P02.jpg",
+     "seconds": 3.21,
+     "panels": 3,
+     "panels_ok": true,
+     "spoken": [
+      "ha... perfect.",
+      "NO! Don't even think about it."
+     ],
+     "expected": [
+      "ha... perfect.",
+      "NO! Don't even think about it."
+     ],
+     "extra_spoken": 0,
+     "kinds": [
+      "speech",
+      "speech",
+      "sfx"
+     ]
+    },
+    {
+     "page": "ep02/en_E02P01.jpg",
+     "seconds": 1.8,
+     "panels": 2,
+     "panels_ok": true,
+     "spoken": [],
+     "expected": [],
+     "extra_spoken": 0,
+     "kinds": [
+      "sfx",
+      "sfx",
+      "sfx"
+     ]
+    },
+    {
+     "page": "ep02/en_E02P02.jpg",
+     "seconds": 2.1,
+     "panels": 3,
+     "panels_ok": true,
+     "spoken": [],
+     "expected": [],
+     "extra_spoken": 0,
+     "kinds": [
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx"
+     ]
+    }
+   ]
+  },
+  {
+   "engine": "easyocr",
+   "dialogue_char_accuracy": 0.7701,
+   "dialogue_char_accuracy_with_spaces": 0.7745,
+   "reference_chars": 87,
+   "edit_distance": 20,
+   "false_spoken_bubbles": 3,
+   "panel_pages_correct": "4/4",
+   "seconds_per_page": 9.82,
+   "pages": [
+    {
+     "page": "ep01/en_E01P01.jpg",
+     "seconds": 12.14,
+     "panels": 3,
+     "panels_ok": true,
+     "spoken": [
+      "and the last touch:",
+      "mmm probably not strong enough:"
+     ],
+     "expected": [
+      "...and the last touch.",
+      "...mmm probably not strong enough."
+     ],
+     "extra_spoken": 0,
+     "kinds": [
+      "speech",
+      "sfx",
+      "speech",
+      "sfx",
+      "sfx"
+     ]
+    },
+    {
+     "page": "ep01/en_E01P02.jpg",
+     "seconds": 8.75,
+     "panels": 3,
+     "panels_ok": true,
+     "spoken": [
+      "ha: . _ perfect:",
+      "NO! Don't even think about it."
+     ],
+     "expected": [
+      "ha... perfect.",
+      "NO! Don't even think about it."
+     ],
+     "extra_spoken": 0,
+     "kinds": [
+      "speech",
+      "speech",
+      "sfx"
+     ]
+    },
+    {
+     "page": "ep02/en_E02P01.jpg",
+     "seconds": 9.25,
+     "panels": 2,
+     "panels_ok": true,
+     "spoken": [
+      "4"
+     ],
+     "expected": [],
+     "extra_spoken": 1,
+     "kinds": [
+      "speech",
+      "sfx",
+      "sfx",
+      "sfx"
+     ]
+    },
+    {
+     "page": "ep02/en_E02P02.jpg",
+     "seconds": 9.14,
+     "panels": 3,
+     "panels_ok": true,
+     "spoken": [
+      "Blues",
+      "335"
+     ],
+     "expected": [],
+     "extra_spoken": 2,
+     "kinds": [
+      "sfx",
+      "sfx",
+      "speech",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "sfx",
+      "speech"
+     ]
+    }
+   ]
+  }
+ ],
+ "skipped": {},
+ "speaker_clustering": {
+  "truth": "one speaker (Pepper) for all 4 spoken lines",
+  "speech_bubbles": 4,
+  "with_tail": 4,
+  "clusters": [
+   "Character A"
+  ],
+  "same_speaker_merged": true,
+  "not_measured": "splitting two different characters (no multi-speaker page in the test set)"
+ },
+ "magi_v2": "not run: model card README states unrestricted use only for personal, research and non-commercial endeavours (commercial use needs a separate arrangement), 2 GB pickled weights and trust_remote_code; manga-ocr not run: Japanese-trained recogniser, wrong script for these English pages"
+}
