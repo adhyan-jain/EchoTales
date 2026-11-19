@@ -1372,6 +1372,21 @@ def cmd_anime(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_estimate(args: argparse.Namespace) -> int:
+    from echotales.pipeline import long_series
+
+    store = _open_store(args)
+    try:
+        stages = tuple(s.strip() for s in args.stages.split(",")) if args.stages else long_series.DEFAULT_STAGES
+        est = long_series.estimate_run(
+            store, args.novel, args.chapters, stages=stages, gpu_hourly_usd=args.gpu_hourly_usd
+        )
+    finally:
+        store.close()
+    print(json.dumps(est, indent=2) if args.json else long_series.format_estimate(est))
+    return 0
+
+
 def cmd_pages(args: argparse.Namespace) -> int:
     """Manga, comic or webtoon pages from each chapter's latest rendered panels."""
     from echotales.pipeline.pages.build import build_pages, parse_exports
@@ -1934,6 +1949,7 @@ _DISPATCH = {
     "render": cmd_render,
     "anime": cmd_anime,
     "pages": cmd_pages,
+    "estimate": cmd_estimate,
     "review": cmd_review,
     "ingest": cmd_ingest,
     "resolve": cmd_resolve,

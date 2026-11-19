@@ -742,6 +742,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_graph.add_argument("--out", default="data/exports/webview/graph.html")
     p_graph.add_argument("--top", type=int, default=60)
 
+    p_est = sub.add_parser(
+        "estimate",
+        help="time and cost of a run before starting it, from this database's measured stage timings "
+        "(stages never run here use labelled default estimates)",
+    )
+    p_est.add_argument("--novel", required=True)
+    p_est.add_argument("--chapters", help="range, e.g. 1-10; default: every chapter")
+    p_est.add_argument("--stages", help="comma-separated stage names; default: every build and render stage")
+    p_est.add_argument("--gpu-hourly-usd", type=float, default=0.0, help="rented-GPU rate; default 0 (a local run)")
+    p_est.add_argument("--json", action="store_true")
+
     p_export = sub.add_parser("export", help="emit the annotation dataset")
     p_export.add_argument("--novel", required=True)
     p_export.add_argument("--out", default="data/gold")

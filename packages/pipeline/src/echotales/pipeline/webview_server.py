@@ -829,6 +829,18 @@ def _compute_status() -> dict:  # type: ignore[type-arg]
     }
 
 
+#: What the upload screen tells a person before they pick a book. The name gazetteer, the speaker rules and the
+#: dialogue-quote handling were built and measured on English text only; a book in another language would build
+#: without an error and be wrong without saying so.
+LANGUAGE_SUPPORT = {
+    "supported": ["en"],
+    "statement": (
+        "EchoTales reads English-language books only for now. Other source languages will be added in the order "
+        "people ask for them."
+    ),
+}
+
+
 def _project_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
     novel_row = handle.store.get_novel(handle.source.novel_id) or {}
     chapters = handle.store.chapter_numbers(handle.source.novel_id)
@@ -840,6 +852,7 @@ def _project_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
         "source_uploaded": bool(novel_row.get("source_path")),
         "ingested": bool(chapters),
         "chapter_count": len(chapters),
+        "language": LANGUAGE_SUPPORT,
         "job_count": len(jobs),
         "last_job": _job_json(jobs[0], handle.store.stage_progress_by_run([jobs[0].run_id]).get(jobs[0].run_id))
         if jobs else None,
@@ -2209,7 +2222,8 @@ def make_handler(
                     )
                     handle.invalidate()
                     return self._json(
-                        201, {"filename": filename, "path": str(epub_path), "bytes": len(data)}
+                        201,
+                        {"filename": filename, "path": str(epub_path), "bytes": len(data), "language": LANGUAGE_SUPPORT},
                     )
 
                 if (
@@ -2273,6 +2287,13 @@ def make_handler(
                         # The resolve stage reads the project's review decisions; the path comes from the server's
                         # registry, never the request.
                         params["corrections_path"] = str(handle.corrections.path)
+                        # Shown before the long run starts; kept in the job's params so the Studio can show it
+                        # again while the job runs. Measured where this project has timings, else labelled estimates.
+                        from echotales.pipeline.long_series import estimate_run
+
+                        params["estimate"] = estimate_run(
+                            handle.store, parts[2], params.get("chapters"), stages=pipeline_stage_names(params)
+                        )
                     if kind == "video":
                         # Folders come from the project, never the client (same rule as the voice job below).
                         for key in ("panel_dir", "audio_dir", "out_dir"):
@@ -2300,7 +2321,10 @@ def make_handler(
                         default_sources = registry.project_asset_dir(parts[2]) / "sources.toml"
                         if default_sources.is_file():
                             params["sources_path"] = str(default_sources)
-                    return self._json(202, self._enqueue(handle, kind, params))
+                    queued = self._enqueue(handle, kind, params)
+                    if "estimate" in params:
+                        queued["estimate"] = params["estimate"]
+                    return self._json(202, queued)
 
                 if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "genre":
                     handle = registry.handles.get(parts[2])

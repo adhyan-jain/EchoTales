@@ -294,6 +294,7 @@ def _run_pipeline(store: Store, job_id: str, novel_id: str, params: dict[str, An
     succeeded for this exact source is skipped unless `params["force"]` is set; a failure stops the chain and the
     next run picks up at the failed stage."""
     from echotales.core.pipeline_run import source_digest_of
+    from echotales.pipeline import long_series
     from echotales.pipeline.anaphora import resolve_anaphora_for_novel as anaphora_resolve
     from echotales.pipeline.commands import _build_client
     from echotales.pipeline.config import get_settings
@@ -334,6 +335,11 @@ def _run_pipeline(store: Store, job_id: str, novel_id: str, params: dict[str, An
 
     try:
         stage(s_ingest, lambda: ingest_novel(novel_id, store, sources_path=sources_path, chapters=chapters))
+        # A re-ingest of an edited book: name what the changed chapters invalidate before the later stages run, so
+        # the job log says why those stages cannot be skipped. The baseline is re-recorded once the build finishes.
+        stale = long_series.invalidate_changed(store, novel_id)
+        if stale.chapters:
+            log.info("chapters changed since the last build: %s; stale: %s", stale.chapters, stale.to_dict()["products"])
         stage(s_segment, lambda: segment_novel(novel_id, store))
         stage(s_mentions, lambda: detect_mentions(novel_id, store, lexicon=lexicon, client=client))
         stage(s_speakers, lambda: attribute_novel(novel_id, store, client=client, llm_chapter_cutoff=0.0))
@@ -359,6 +365,7 @@ def _run_pipeline(store: Store, job_id: str, novel_id: str, params: dict[str, An
         store.update_pipeline_run_status(pipeline_run.run_id, StageStatus.FAILED)
         raise
     store.update_pipeline_run_status(pipeline_run.run_id, StageStatus.SUCCEEDED)
+    long_series.record_baseline(store, novel_id)
     return pipeline_run
 
 
