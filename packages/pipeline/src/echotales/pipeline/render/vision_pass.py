@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from echotales.pipeline.keyframes import qa
-from echotales.pipeline.render.compiled_route import generate_compiled_batch
+from echotales.pipeline.render.compiled_route import generate_compiled_batch, release_worker
 
 log = logging.getLogger(__name__)
 
@@ -70,6 +70,7 @@ def run(
             if extra.out_path not in failed_paths and extra.out_path.exists():
                 extras[r.out_path].append(extra.out_path)
     rows: list[dict[str, Any]] = []
+    release_worker(model_key)  # the image model still holds the card; ollama cannot load the vision model beside it
     try:
         for r, _s in todo:
             paths = extras[r.out_path]

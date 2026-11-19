@@ -5,11 +5,19 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from echotales.pipeline.keyframes import qa
 from echotales.pipeline.render import vision_pass as vp
 from echotales.pipeline.render.panels import PanelImageRequest
 
 EXPECT = qa.PanelExpectation(people=1, hair_colour="dark", lead="X")
+
+
+@pytest.fixture(autouse=True)
+def _no_real_worker(monkeypatch) -> None:  # noqa: ANN001
+    """These tests name the model "m"; no real image worker exists to release."""
+    monkeypatch.setattr(vp, "release_worker", lambda key: None)
 
 
 class FakeVLM:
@@ -153,3 +161,18 @@ def test_audit_says_the_check_was_off_when_nothing_was_checked(tmp_path, monkeyp
     monkeypatch.setattr(paths, "asset_dir", lambda novel_id, kind: tmp_path / kind)
     res = flow._find(flow.Stage.DIRECTOR, "director.vision").fn(_audit_store(tmp_path), "test", None)
     assert res.status is flow.Status.SKIPPED and "ollama pull" in res.skipped_reason
+
+
+def test_the_image_worker_is_released_before_the_vision_model_looks(tmp_path, monkeypatch) -> None:
+    reqs, secs = _requests(tmp_path, 1)
+    events: list[str] = []
+    monkeypatch.setattr(vp, "generate_compiled_batch", fake_generate({1: "good"}))
+    monkeypatch.setattr(vp, "release_worker", lambda key: events.append("release"))
+
+    class Spy(FakeVLM):
+        def look(self, path):  # noqa: ANN001
+            events.append("look")
+            return super().look(path)
+
+    vp.run(reqs, secs, {reqs[0].out_path: EXPECT}, vlm=Spy(), candidates=2, model_key="m", greyscale=False)
+    assert events[0] == "release" and "look" in events
