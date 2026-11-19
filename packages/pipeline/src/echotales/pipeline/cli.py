@@ -742,6 +742,19 @@ def build_parser() -> argparse.ArgumentParser:
     p_graph.add_argument("--out", default="data/exports/webview/graph.html")
     p_graph.add_argument("--top", type=int, default=60)
 
+    p_pack = sub.add_parser(
+        "pack", help="adaptation packs (.etpack): share cast, descriptions, voices, direction and corrections, never the book"
+    )
+    pk_sub = p_pack.add_subparsers(dest="pack_command", required=True)
+    pk_export = pk_sub.add_parser("export", help="write a pack; refused if any text shares 8 words with the book")
+    pk_export.add_argument("--novel", required=True)
+    pk_export.add_argument("--out", default=None, help="default: data/novels/<CODE>/packs/<novel>.etpack")
+    pk_export.add_argument("--corrections", default=None, help="default: data/corrections/<db name>.jsonl")
+    pk_import = pk_sub.add_parser("import", help="apply a pack to a database holding the same book; reports what did not match")
+    pk_import.add_argument("--novel", required=True)
+    pk_import.add_argument("pack", help="path to the .etpack file")
+    pk_import.add_argument("--corrections", default=None, help="default: data/corrections/<db name>.jsonl")
+
     p_est = sub.add_parser(
         "estimate",
         help="time and cost of a run before starting it, from this database's measured stage timings "

@@ -2283,6 +2283,8 @@ def make_handler(
                         if refusal:
                             return self._json(409, _refusal_body(refusal))
                         params = _with_genre(handle, params)
+                    if kind in ("pack_export", "pack_import"):
+                        params["corrections_path"] = str(handle.corrections.path)
                     if kind == "pipeline":
                         # The resolve stage reads the project's review decisions; the path comes from the server's
                         # registry, never the request.

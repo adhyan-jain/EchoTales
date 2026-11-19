@@ -1393,6 +1393,32 @@ def cmd_anime(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_pack(args: argparse.Namespace) -> int:
+    from echotales.pipeline import packs, paths
+    from echotales.pipeline.corrections import CorrectionLog
+
+    store = _open_store(args)
+    log = CorrectionLog(Path(args.corrections or Path("data/corrections") / f"{Path(store.path).stem}.jsonl"))
+    try:
+        if args.pack_command == "export":
+            out = Path(args.out) if args.out else paths.asset_dir(args.novel, "packs") / f"{args.novel}{packs.PACK_SUFFIX}"
+            path = packs.export_pack(store, args.novel, out, corrections=log)
+            print(f"pack written: {path}")
+            return 0
+        report = packs.import_pack(store, args.novel, args.pack, corrections_log=log)
+    except packs.PackError as exc:
+        print(f"refusing: {exc}", file=sys.stderr)
+        return 2
+    finally:
+        store.close()
+    print(f"applied: {report.applied or 'nothing'}")
+    for s in report.skipped:
+        print(f"  not applied ({s['kind']}, chapter {s['chapter']}): {s['reason']} [{s['what']}]")
+    if report.direction_dir:
+        print(f"panel direction for a local render: {report.direction_dir}")
+    return 0
+
+
 def cmd_estimate(args: argparse.Namespace) -> int:
     from echotales.pipeline import long_series
 
@@ -1971,6 +1997,7 @@ _DISPATCH = {
     "anime": cmd_anime,
     "pages": cmd_pages,
     "estimate": cmd_estimate,
+    "pack": cmd_pack,
     "review": cmd_review,
     "ingest": cmd_ingest,
     "resolve": cmd_resolve,

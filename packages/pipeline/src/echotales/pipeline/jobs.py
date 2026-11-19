@@ -103,6 +103,10 @@ JOB_KINDS = (
     "pages",
     "refimg_search",
     "reference_gen",
+    # Adaptation packs (roadmap M4): the cast, descriptions, voices, direction and corrections as one .etpack file
+    # that carries no book text; the importer only applies what matches the chapter hashes of its own copy of the book.
+    "pack_export",
+    "pack_import",
 )
 
 
@@ -591,6 +595,30 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             fn=lambda: _run_pages(store, novel_id, params),
             skip_if_succeeded=False,
         )
+    elif job.kind in ("pack_export", "pack_import"):
+        from echotales.pipeline import packs, paths
+        from echotales.pipeline.corrections import CorrectionLog
+
+        pack_dir = Path(paths.asset_dir(novel_id, "packs"))
+        corrections_path = params.get("corrections_path")
+        corrections_log = CorrectionLog(Path(corrections_path)) if corrections_path else None
+        # A name, never a path: the server decides where packs live (same rule as the voice and video folders).
+        name = Path(str(params.get("name") or novel_id)).name
+        pack_file = pack_dir / (name if name.endswith(packs.PACK_SUFFIX) else name + packs.PACK_SUFFIX)
+        if job.kind == "pack_export":
+            run_stage(
+                store, run_id=pipeline_run.run_id, stage_name="pack_export",
+                input_digest=f"{input_digest}|{time.time()}", skip_if_succeeded=False,
+                fn=lambda: packs.export_pack(store, novel_id, pack_file, corrections=corrections_log),
+            )
+        else:
+            if not pack_file.is_file():
+                raise ValueError(f"no pack named {pack_file.name!r} in this project's packs folder")
+            run_stage(
+                store, run_id=pipeline_run.run_id, stage_name="pack_import",
+                input_digest=f"{input_digest}|{time.time()}", skip_if_succeeded=False,
+                fn=lambda: packs.import_pack(store, novel_id, pack_file, corrections_log=corrections_log),
+            )
     elif job.kind == "refimg_search":
         from echotales.pipeline.persona import refimg
 
