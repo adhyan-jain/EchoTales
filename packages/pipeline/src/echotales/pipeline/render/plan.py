@@ -66,7 +66,7 @@ class PanelPlan(BaseModel):
     #: "carried" is a pronoun-only beat reusing the previous beat's cast.
     cast_source: CastSource = "none"
     location: str = ""
-    location_source: Literal["scene", "chapter"] = "scene"
+    location_source: Literal["scene", "chapter", "carried"] = "scene"
 
     #: The director's full decision, or None with `direction_reason` saying why.
     direction: PanelDirection | None = None

@@ -33,7 +33,7 @@ def test_z_image_prompt_is_style_lead_then_composition_then_identity_then_settin
     labels = [s.label for s in out.sections]
     assert labels[0] == "style" and labels[1] == "composition"
     assert labels.index("character:Fang Yuan") == 2
-    assert out.positive.startswith("Chinese donghua style illustration, guofeng, detailed painterly xianxia art.")
+    assert out.positive.startswith(style_lead(""))
     # The 2026-11-16 tail ("no panel borders, no speech bubbles ... hanfu with wide sleeves") is gone.
     assert "panel borders" not in out.positive and "speech bubbles" not in out.positive
     assert len(out.positive) < 900

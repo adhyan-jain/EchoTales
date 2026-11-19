@@ -213,6 +213,8 @@ class PanelBrief:
     #: The director's composed paragraph (who stands where, what each does and shows on the face, wounds, setting detail,
     #: light, camera), written in the owner's probe style. The Z-Image profile builds the prompt around it.
     composition: str = ""
+    #: The scene's staging sheet text (set, blocking, light), identical on every panel of the scene.
+    staging: str = ""
     #: "text" when the panel's own text shows something; "inferred" when the director chose a visual from the text's
     #: referents because nothing visible was stated. Carried so `audit` can count them.
     visual_source: str = ""
@@ -680,14 +682,17 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     from echotales.pipeline.persona.genre import style_lead
 
     lead = _MANGA_LEAD if b.mode is OutputMode.MANGA else style_lead(b.novel_id)
-    s = [PromptSection("style", lead), PromptSection("composition", b.composition.strip())]
+    s = [PromptSection("style", lead)]
+    if b.staging:
+        s.append(PromptSection("staging", b.staging.strip()))
+    s.append(PromptSection("composition", b.composition.strip()))
     written: dict[str, bool] = {}
     fields: dict[str, list[str]] = {}
     for c in b.characters:
         s.append(PromptSection(f"character:{c.name}", identity_sentence(c, appearance)))
         written[c.name] = appearance is not AppearanceInText.OFF
         fields[c.name] = derive_demeanour(c, b.mood, b.tension).fields_used
-    said = b.composition.lower()
+    said = f"{b.composition} {b.staging}".lower()
     clauses: list[str] = []
     for x in [t.strip() for t in f"{_plain(_location_text(b))},{_plain(b.setting)}".split(",")]:
         if x and x.lower() not in said and x.lower() not in (y.lower() for y in clauses):
@@ -1020,5 +1025,6 @@ def brief_from_direction(
         key_objects=props, mood=mood,
         tension=0.8 if any(w in mood.lower() for w in _TENSE) else 0.0, mode=mode, art_direction=art,
         era_wardrobe=wardrobe, manhua=manhua, is_indoor=is_indoor,
-        composition=composition, visual_source=getattr(d, "visual_source", "") or "",
+        composition=composition, staging=(getattr(d, "staging", "") or "") if composition else "",
+        visual_source=getattr(d, "visual_source", "") or "",
     )

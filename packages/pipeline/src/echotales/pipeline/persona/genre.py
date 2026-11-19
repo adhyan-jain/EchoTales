@@ -143,9 +143,8 @@ GENRES: dict[str, GenreProfile] = {
         ),
         hands_clause="hands concealed in long draping sleeves",
         world_setting=(
-            "ancient Chinese cultivation world, stone courtyards, timber halls "
-            "with upturned tiled roofs, bamboo groves, terraced mountain "
-            "villages, mist over jagged peaks, stone steps, paper lanterns"
+            "ancient Chinese cultivation world with hanfu, wide sleeves and cross collars; "
+            "the place of each scene comes only from that scene's own text"
         ),
         world_context="",
         novel_style="xianxia web-novel illustration, Chinese fantasy",
@@ -406,17 +405,25 @@ def profile(novel_id: str) -> GenreProfile:
     return GENRES[genre_of(novel_id)]
 
 
-#: One short lead sentence per genre for a language-model image encoder (Z-Image). The owner's hand-written probe prompts
-#: that drew the panels he liked opened with exactly this and then went straight to the scene; the long style paragraph the
-#: compiler used to end with was never in them (2026-11-19). The wording for xianxia is the probes' own.
+#: One FIXED style lead per genre, used unchanged on every panel (owner, 2026-11-19: the probe sheet drifted between ink-wash,
+#: flat cel and Japanese faces because the lead was vague). The target level is the Lord of the Mysteries donghua: cel-shaded
+#: 2D, clean line art, painterly backgrounds, muted palette, not photoreal and not cartoony. Style only: any architecture
+#: here (the old xianxia block named pavilions and paifang) was drawn into every scene including a bare cliff.
 STYLE_LEADS: dict[str, str] = {
-    "xianxia": "Chinese donghua style illustration, guofeng, detailed painterly xianxia art.",
-    "victorian_gothic": "Victorian gothic illustration, detailed painterly gaslamp-era art with period costume.",
-    "modern_apocalypse": "Korean webtoon style illustration, detailed painterly modern urban art, cinematic light.",
-    "contemporary": "Detailed painterly contemporary anime-style illustration, cinematic light.",
-    "western_fantasy": "Detailed painterly western fantasy illustration with medieval costume and craft.",
-    "science_fiction": "Detailed painterly science fiction illustration, cinematic light.",
-    "generic": "Detailed painterly period book illustration, historically accurate costume and setting.",
+    "xianxia": ("Chinese xianxia donghua style, 2D cel-shaded anime illustration with clean line art, flat cel colour, "
+                "painterly guofeng backgrounds and a muted desaturated palette, no photorealism."),
+    "victorian_gothic": ("Victorian gothic donghua style, 2D cel-shaded anime illustration with clean line art, flat cel "
+                         "colour, painterly gaslamp-era backgrounds and a muted desaturated palette, no photorealism."),
+    "modern_apocalypse": ("Modern urban donghua style, 2D cel-shaded anime illustration with clean line art, flat cel "
+                          "colour, painterly backgrounds and a muted desaturated palette, no photorealism."),
+    "contemporary": ("Contemporary anime style, 2D cel-shaded illustration with clean line art, flat cel colour, painterly "
+                     "backgrounds and a muted desaturated palette, no photorealism."),
+    "western_fantasy": ("Western fantasy donghua style, 2D cel-shaded anime illustration with clean line art, flat cel "
+                        "colour, painterly backgrounds and a muted desaturated palette, no photorealism."),
+    "science_fiction": ("Science fiction anime style, 2D cel-shaded illustration with clean line art, flat cel colour, "
+                        "painterly backgrounds and a muted desaturated palette, no photorealism."),
+    "generic": ("Period drama anime style, 2D cel-shaded illustration with clean line art, flat cel colour, painterly "
+                "backgrounds and a muted desaturated palette, no photorealism."),
 }
 
 

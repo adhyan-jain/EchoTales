@@ -46,6 +46,27 @@ log = logging.getLogger(__name__)
 #: The director's output is prose the budget then has to carry, so a
 #: specification stated correctly here is free and the same specification
 #: enforced later is not -- at chapter scale that difference compounds.
+#: The owner's hand-written probe prompts (`data/scratch/image_probe/prompts.py`), with their style lead removed because the
+#: compiler writes the lead itself. They were themselves written by a language model and drew the panels he asked to match,
+#: so they are the director's few-shot STYLE: one composed scene, who stands where relative to whom, what each does and
+#: shows on the face, wounds and clothing state, the setting's concrete detail, the light and the camera. Structure only --
+#: the system prompt forbids reusing their people, places or objects.
+_PROBE_EXAMPLES: tuple[str, ...] = (
+    "A wide shot on a narrow mountain cliff edge at dusk, jagged rock, twisted pines, a sea of clouds far below. In the "
+    "centre stands a lone demonic cultivator, a tall lean young man with long black hair and torn dark green robes, "
+    "bleeding from many wounds, standing straight with an icy, contemptuous calm. Facing him from the right of the frame, "
+    "across a stretch of empty rock, stand dozens of martial artists of the righteous sects in white and blue robes with "
+    "drawn swords and spears, banners behind them, in rows that fan out along the path. Cold blue dusk light, mist, dramatic scale.",
+    "Close-up portrait of a cold, ruthless demonic cultivator, a young man with long black hair, pale skin, blood running "
+    "from his temple and the corner of his mouth, torn green robe collar. His expression is calm and merciless, a faint "
+    "mocking smile, eyes half-lidded and utterly unafraid. Behind him, out of focus, a mountain cliff at dusk and the "
+    "blurred shapes of many robed swordsmen.",
+    "A stern old sect elder in white robes at the front of a crowd of armed martial artists on a mountain ledge points his "
+    "sword forward and shouts an ultimatum; in the foreground, back to the viewer and slightly out of focus, the lone "
+    "wounded figure in torn green robes he is addressing. Dusk, mist, pines, cliffs.",
+)
+
+
 def system_prompt(novel_id: str = "") -> str:
     """The director's rules for this novel's world.
 
@@ -58,9 +79,9 @@ def system_prompt(novel_id: str = "") -> str:
 
     if genre_of(novel_id) == "xianxia":
         world = (
-            "4. Ancient China only. Use concrete detail: hanfu, sashes, upturned tiled "
-            "roofs, stone courtyards. No kimono, obi, torii, paper screens, cherry "
-            "blossom.\n\n"
+            "4. Ancient China only. Clothing is hanfu with sashes and wide sleeves. The place comes ONLY from the "
+            "passage and the scene staging: never add any building or ornament the text does not "
+            "name. No kimono, obi, torii, paper screens, cherry blossom.\n\n"
         )
         kind = "a Chinese xianxia web-novel adaptation"
     else:
@@ -133,7 +154,37 @@ def system_prompt(novel_id: str = "") -> str:
         "'location_detail', 'props') follow the same rules: 'characters' lists "
         "only people in CAST who are in the shot, 'others' is null unless the "
         "passage itself names a group, and 'props' holds only objects the "
-        "passage names."
+        "passage names.\n\n"
+
+        "12. 'composition' is the one field written as flowing English, not short phrases (rule 10 does not apply to it): "
+        "one paragraph of three to five sentences that composes the single picture, in the style of the examples below. "
+        "Say where the camera is, who stands where relative to whom (a crowd in rows on one side of the frame facing the lone hero, never a ring), what "
+        "each visible person is doing, the expression on each face, the state of clothing and body (blood, wounds, torn "
+        "cloth) exactly as the passage states them, the setting's concrete details, and the light. Do not write a style "
+        "line, quality words or the person's hair and eye colour; those are added separately. Name people exactly as in "
+        "CAST, never anyone else, and name no person, place or object that the passage does not contain. If the passage "
+        "has a crowd or a group, draw it and say how it stands around the others. If it describes someone's appearance or "
+        "age in this moment, say it plainly (a boy of fifteen, an old man). WRITE EACH FACE IN ANIME EMOTION WORDS taken from "
+        "this line AND the situation around it, not from the words alone: a cold mocking smile with narrowed eyes and a "
+        "raised chin, a contemptuous sneer, blood at the corner of the lips, a furious glare with clenched teeth, wide "
+        "shocked eyes, tears running down. A man who laughs at his enemies is contemptuous and mocking, never cheerful "
+        "and never childlike. If the request gives SCENE STAGING, the set, blocking and light are already fixed: do not "
+        "restate or change them, and keep every person on the side of the frame the staging gives; your paragraph adds "
+        "only the camera, this line's action and the faces.\n\n"
+
+        "13. THIN PASSAGES. When the passage shows nothing visible (inner monologue, exposition, backstory, a list of "
+        "names), still compose a picture, but only from the passage's own referents: an establishing shot of the place it "
+        "is set in, a symbolic close-up of an object it mentions, or the speaker's face reacting. Set 'visual_source' to "
+        "\"inferred\" in that case, and to \"text\" whenever the passage itself shows what you drew.\n\n"
+
+        "14. SHOT CHOICE follows the beat: close for an emotional peak, wide for a confrontation with a crowd, an "
+        "over-the-shoulder view (say so in the composition) for a face-off between two people, a wide establishing shot "
+        "when the place changes. Do not give the same 'shot' value as the previous two panels unless the passage demands "
+        "it.\n\n"
+
+        "EXAMPLES OF THE STYLE OF 'composition' (structure only: never reuse their people, places, objects or colours; "
+        "your paragraph comes from the passage below and nothing else):\n"
+        + "\n".join(f"  - {x}" for x in _PROBE_EXAMPLES)
     )
 
 
@@ -224,6 +275,18 @@ class PanelDirection(BaseModel):
     #: unstated expression is not "neutral", it is unknown, and inventing
     #: one violates rule 1 same as any other detail.
     expression: str = Field(default="")
+    #: The composed paragraph in the probe style (see `system_prompt` rule 12): spatial arrangement, each visible person's
+    #: action, face, wounds and clothing, setting detail, light and camera, all from this panel's own text. Empty means the
+    #: structured fields above are used as before. The Z-Image compiler builds its prompt around it.
+    composition: str = Field(default="")
+    #: The scene's staging sheet (`render/staging.py`), set by code and never by the model, repeated verbatim on every panel of
+    #: the scene so the set, light and blocking cannot drift between panels.
+    staging: str = Field(default="")
+    #: "text" when the panel's own text shows what is drawn, "inferred" when the passage showed nothing and the director
+    #: chose a visual from its referents (rule 13). Kept so `audit` can count how many panels were not text-grounded.
+    visual_source: str = Field(default="text")
+    #: What `_validate_direction` removed from the paragraph (names and groups the text does not contain), not a model field.
+    grounding_rejects: list[str] = Field(default_factory=list)
 
 
 _SHOTS = {"wide", "medium", "close"}
@@ -236,6 +299,8 @@ def build_prompt(
     novel_style: str,
     context_brief: str = "",
     max_chars: int = 2400,
+    recent_shots: list[str] | None = None,
+    staging: str = "",
 ) -> str:
     """Ask the director for one shot.
 
@@ -252,7 +317,11 @@ def build_prompt(
         lines += ["What the story knows at this point:", context_brief, ""]
     cast_list = list(cast.keys()) if cast else "EMPTY"
     lines.append(f"CAST for this beat: {cast_list}")
+    if recent_shots:
+        lines.append(f"Shots of the previous panels, oldest first: {', '.join(recent_shots)}")
     lines.append("")
+    if staging:
+        lines += ["SCENE STAGING (fixed for every panel of this scene; do not change it, do not restate it):", staging, ""]
 
     if cast:
         lines.append("Characters who may appear, with their fixed appearance:")
@@ -304,6 +373,9 @@ def build_prompt(
         "  props         list of objects the characters handle or that the "
         "passage singles out (a letter, a sword); only ones the passage names",
         "  mood          one or two mood words",
+        "  composition   the paragraph of system rule 12, plain flowing English from this passage alone; "
+        "never empty",
+        '  visual_source "text" or "inferred" (system rule 13)',
         "  expression    ONE short face phrase for the lead, only if the passage "
         "states or clearly implies it, independent of physical condition -- a "
         "wounded character is not automatically pained. Example: "
@@ -620,6 +692,8 @@ def direct_beat(
     store: Store | None = None,
     conditions: dict[str, str] | None = None,
     crowd_mood: str | None = None,
+    recent_shots: list[str] | None = None,
+    staging: str = "",
 ) -> Direction | None:
     """Get one shot from the director, or None if the call fails.
 
@@ -637,6 +711,8 @@ def direct_beat(
                 cast=cast,
                 novel_style=novel_style,
                 context_brief=context_brief,
+                recent_shots=recent_shots,
+                staging=staging,
             ),
             PanelDirection,
             system=system_prompt(novel_id),
@@ -647,6 +723,28 @@ def direct_beat(
         return None
 
     direction = result.value
+    direction.staging = staging
+    from echotales.pipeline.render.staging import expression_conflicts
+
+    face = f"{direction.expression}. {direction.composition}"
+    if reason := expression_conflicts(face, f"{beat_text} {context_brief}"):
+        # One retry with the contradiction named: a mocking laugh drawn as a happy grin (owner, 2026-11-19).
+        try:
+            retry = client.complete(  # type: ignore[attr-defined]
+                Task.PANEL_DIRECTION,
+                build_prompt(beat_text, cast=cast, novel_style=novel_style, context_brief=context_brief,
+                             recent_shots=recent_shots, staging=staging)
+                + "\nYour previous faces read as happy on a hostile line. Rewrite them as cold, mocking or contemptuous "
+                "as the situation requires.",
+                PanelDirection, system=system_prompt(novel_id), novel_id=novel_id,
+            )
+            retry.value.staging = staging
+            direction = retry.value
+            if expression_conflicts(f"{direction.expression}. {direction.composition}", f"{beat_text} {context_brief}"):
+                direction.grounding_rejects = [*direction.grounding_rejects, reason]
+        except Exception as exc:
+            log.warning("expression retry failed: %s", exc)
+            direction.grounding_rejects = [*direction.grounding_rejects, reason]
     direction = _validate_direction(
         direction,
         beat_text=beat_text,
@@ -865,6 +963,8 @@ def _validate_direction(
         log.warning("director hallucinated group in others: %r -- dropped", d.others.kind)
         d = d.model_copy(update={"others": None})
 
+    d = _validate_composition(d, beat_text=beat_text, cast=cast, novel_id=novel_id, store=store, crowd_mood=crowd_mood)
+
     # Literal placeholder the model copies from the layout example -- either
     # the old sentence form ("X alone") or the tag form ("X, surrounded" /
     # a bare "X" tag in the comma list).
@@ -897,6 +997,59 @@ def _validate_direction(
         )
 
     return d
+
+
+def _validate_composition(
+    d: PanelDirection, *, beat_text: str, cast: dict[str, str], novel_id: str, store: Store | None, crowd_mood: str | None,
+) -> PanelDirection:
+    """Ground the composed paragraph in the passage: no invented people, groups or names, and the crowd stays a crowd.
+
+    A paragraph is long enough that the field checks written for tag strings fire wrongly on it (every capitalised
+    sentence start looks like a name), so this works on the paragraph: a named person outside CAST becomes "a figure", a
+    capitalised name the passage never says is replaced the same way, and an invented group or a paragraph that empties a
+    confirmed crowd is blanked so the compiler falls back to the structured fields instead of drawing it."""
+    visual = d.visual_source.strip().lower()
+    updates: dict[str, object] = {"visual_source": visual if visual in ("text", "inferred") else "text"}
+    text = (d.composition or "").strip()
+    rejects: list[str] = []
+    if text:
+        source = beat_text.lower() + " " + " ".join(cast).lower()
+        group = _HALLUCINATED_GROUP_RE.search(text)
+        if group is not None and group.group(0).lower() not in source:
+            rejects.append(f"group:{group.group(0)}")
+            text = ""
+        elif crowd_mood and any(p in text.lower() for p in _SOLO_COLLAPSE_PHRASES):
+            rejects.append("crowd erased")
+            text = ""
+        else:
+            cast_names = {n.lower() for n in cast}
+            cast_words = {w for n in cast_names for w in n.split()}
+            known: dict[str, str | None] = {}
+            if store is not None and novel_id:
+                for entity in store.all_selves(novel_id):
+                    if entity.canonical_label:
+                        known[entity.canonical_label.lower()] = entity.id
+            for name in sorted(known, key=len, reverse=True):
+                if name in cast_names or not re.search(rf"\b{re.escape(name)}\b", text, re.IGNORECASE):
+                    continue
+                rejects.append(f"out of cast:{name}")
+                text = re.sub(rf"\b{re.escape(name)}\b", "a figure", text, flags=re.IGNORECASE)
+            from echotales.pipeline.mentions.ner import HeuristicDetector
+
+            for span in sorted(HeuristicDetector().detect(text), key=lambda s: -s.start):
+                bare = re.sub(r"[’']s$", "", span.text)
+                low = bare.lower()
+                words = low.split()
+                if low in cast_names or all(w in cast_words or w in source for w in words):
+                    continue
+                at_sentence_start = span.start == 0 or text[: span.start].rstrip().endswith((".", "!", "?"))
+                if len(words) == 1 and at_sentence_start:
+                    continue
+                rejects.append(f"fabricated:{bare}")
+                text = text[: span.start] + "a figure" + text[span.start + len(bare):]
+    updates["composition"] = text
+    updates["grounding_rejects"] = rejects
+    return d.model_copy(update=updates)
 
 
 def _validate_character_names(

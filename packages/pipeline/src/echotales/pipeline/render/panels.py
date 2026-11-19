@@ -85,7 +85,7 @@ from echotales.pipeline.render.scene_refs import (
     match_scene_references,
 )
 from echotales.pipeline.render.scene_state import get_or_derive_scene_state
-from echotales.pipeline.render.scenes import group_scenes
+from echotales.pipeline.render.scenes import carry_locales, group_scenes
 from echotales.pipeline.spans.scene import detect_mobs
 from echotales.pipeline.world.context import story_context
 from echotales.pipeline.world.lexicon import build_lexicon
@@ -1822,7 +1822,14 @@ def render_panels(
             else ""
         )
         _last_panel_direction = None
-        for scene in scenes[:max_panels]:
+        #: Shot sizes of the panels already directed, newest last, shown to the director so it varies the shot itself
+        #: (a flipped `shot` field would no longer match the camera its paragraph describes).
+        _recent_shots: list[str] = []
+        _carried_locales = carry_locales([
+            scene_locale(novel_id, " ".join(by_index[b].text for b in sc.blocks if b in by_index), strict=True)
+            for sc in scenes
+        ])
+        for _scene_i, scene in enumerate(scenes[:max_panels]):
             story_scene_blocks = [
                 b for b in scene.blocks
                 if (blk := by_index.get(b)) is not None
@@ -1978,6 +1985,9 @@ def render_panels(
             )
             scene_locale_text = _scene_state.location
             _location_source = "scene"
+            #: One staging sheet per scene (`render/staging.py`), filled by the first directed panel of the scene and
+            #: repeated verbatim on every later one so set, light and blocking cannot drift between panels.
+            _staging_text: str | None = None
             # **Unstated is not a different place.** For a scene with no place cue of its own, `scene_locale` rotates
             # through the book's locales by block number, so one bedroom scene was drawn in a study, on a street and on
             # a moor (LotM render review, 2026-10-18). These books inherit the chapter's own most-cued place instead,
@@ -1985,6 +1995,11 @@ def render_panels(
             if setting_first(novel_id) and not scene_locale(novel_id, _scene_text, strict=True):
                 scene_locale_text = _chapter_locale
                 _location_source = "chapter"
+            elif not setting_first(novel_id) and _carried_locales[_scene_i] and not scene_locale(
+                novel_id, _scene_text, strict=True
+            ):
+                scene_locale_text = _carried_locales[_scene_i]
+                _location_source = "carried"
 
             # **The crowd gets its own cut, not a corner of the hero's
             # panel.** Four rounds of prompt work could not put a crowd in
@@ -2503,7 +2518,7 @@ def render_panels(
                             )
                             directed_prose = (
                                 f"{directed_prose} "
-                                f"(many people present: {roles}, surrounding him)"
+                                f"(many people present: {roles}, standing in rows on one side of the frame, facing him)"
                             ).strip()
                         elif _chunk_mobs and not is_crowd_cut:
                             # A dedicated crowd cut exists elsewhere in this
@@ -2536,8 +2551,17 @@ def render_panels(
                             if _world_ctx
                             else world_setting(novel_id)
                         )
+                        if _staging_text is None:
+                            from echotales.pipeline.render.staging import direct_staging
+
+                            _st = direct_staging(
+                                _scene_text, cast={k: v for k, v in appearances.items() if v},
+                                novel_style=_novel_style, client=client, novel_id=novel_id,
+                            )
+                            _staging_text = _st.text() if _st is not None else ""
                         directed = direct_beat(
                             directed_prose,
+                            staging=_staging_text,
                             context_brief=brief,
                             cast={k: v for k, v in appearances.items() if v},
                             novel_style=_novel_style,
@@ -2546,6 +2570,7 @@ def render_panels(
                             store=store,
                             conditions=dict(conditions),
                             crowd_mood=_scene_state.crowd_mood,
+                            recent_shots=_recent_shots[-2:],
                         )
 
                     if directed is not None:
@@ -2665,10 +2690,13 @@ def render_panels(
                 # this, so the two phases cannot disagree about it.
                 _direction = directed.direction if directed is not None else _cached_direction
                 if _direction is not None:
-                    if _last_panel_direction is not None:
+                    # A composed paragraph already states its camera; rewriting `shot` afterwards would only make the
+                    # fields disagree with it, so the director is asked to vary shots itself (`_recent_shots`).
+                    if _last_panel_direction is not None and not _direction.composition:
                         from echotales.pipeline.render.direction import enforce_shot_variety
                         _direction = enforce_shot_variety([_last_panel_direction, _direction])[1]
                     _last_panel_direction = _direction
+                    _recent_shots.append(_direction.shot)
                 # **The negative prompt's style bucket must follow the
                 # director's own shot choice, not the mechanical
                 # slot%4 cycle above.** That cycle picks `style` (and
