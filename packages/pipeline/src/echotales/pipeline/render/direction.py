@@ -144,8 +144,8 @@ def system_prompt(novel_id: str = "") -> str:
         "plain-English phrase (or a few, comma-separated) saying what is visible: "
         "lowercase, two to five words each, spaces not underscores, no articles, "
         "no connecting words ('and', 'while', 'as'), no periods. Examples: "
-        "'standing alone', 'hands clasped', 'torn sleeve', 'by the window', "
-        "'candlelight', 'crowd watching'. Do not include numeric headcount tags "
+        "'standing alone', 'hands clasped', 'torn sleeve', 'facing left', "
+        "'crowd watching'. Do not include numeric headcount tags "
         "('1boy', '2boys', 'male focus') -- those are added separately. A "
         "character's name is written exactly as given in CAST, with its normal "
         "spacing and capitalization.\n\n"
@@ -364,14 +364,14 @@ def build_prompt(
         "scene setting given above. Leave it empty rather than invent a "
         "place; never reuse wording from these instructions.",
         "  location_detail  one short phrase of concrete place detail the "
-        "passage states (a window seat, a muddy lane); empty if none",
+        "passage states (a named piece of furniture, a named kind of ground); empty if none",
         "  lighting      time of day / weather / light, ONLY if the "
         "passage or the scene setting states it (night, midnight, dawn, "
-        "candlelight, rain). Leave it empty if it does not -- do not guess "
+        "named lights or weather). Leave it empty if it does not -- do not guess "
         "daylight.",
         "  key_objects   list of objects that must be visible",
         "  props         list of objects the characters handle or that the "
-        "passage singles out (a letter, a sword); only ones the passage names",
+        "passage singles out (only objects the text names); only ones the passage names",
         "  mood          one or two mood words",
         "  composition   the paragraph of system rule 12, plain flowing English from this passage alone; "
         "never empty",

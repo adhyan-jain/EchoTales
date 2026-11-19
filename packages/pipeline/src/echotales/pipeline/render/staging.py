@@ -49,11 +49,18 @@ STAGING_SYSTEM = (
     "forms a ring around anyone unless the text literally says they surround him. People who kneel to a master kneel in "
     "rows in front of him, facing him. Use only names from CAST.\n"
     "- light: time of day and light only if stated or implied.\n"
+    "Be specific: name the ground, the nearest and farthest features, the side of the frame each group occupies and the "
+    "distance between them. Example of the level of detail (structure only, never reuse its content): set: \"a flat "
+    "lakeshore of grey pebbles with reeds on the left and a low hill behind\"; blocking: \"the old fisherman sits on the "
+    "left facing right; three children kneel in two rows on the right, all facing him, an arm's length of empty "
+    "pebbles between them\"; light: \"overcast noon\". Name people exactly as the scene text does.\n"
     "Return JSON with keys set, blocking, light, each one or two plain sentences."
 )
 
 _RING = re.compile(r"\b(circle|ring(?:ed|s)?|surround\w*|encircl\w*|all sides|around (?:him|her|them))\b", re.I)
-_TEXT_RING = re.compile(r"\b(circle|surround\w*|encircl\w*|all sides|ring(?:ed)?\b|around him|around her)", re.I)
+# "surrounded" in the text is prose for outnumbered, not geometry (RI ch1: "enemies surrounded him" on a cliff edge with rock behind
+# him); only an explicit circle or ring is staged as one.
+_TEXT_RING = re.compile(r"\b(in a circle|a circle|ring of|encircl\w*|in a ring)", re.I)
 _NAME = re.compile(r"\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b")
 
 
@@ -93,7 +100,7 @@ def direct_staging(
 
     prompt = "\n".join([
         f"Novel setting: {novel_style}",
-        f"CAST: {list(cast) if cast else 'EMPTY'}",
+        f"CAST: {list(cast) if cast else '(none listed: use the names exactly as the scene text writes them)'}",
         "Scene text:", scene_text[:max_chars].strip(), "",
         "Return only JSON with keys set, blocking, light.",
     ])

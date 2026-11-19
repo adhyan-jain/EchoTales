@@ -2494,6 +2494,15 @@ def render_panels(
                         directed_prose = (
                             f"{directive} {beat_prose}".strip() if directive else beat_prose
                         )
+                        if _slot_dialogue and beat_prose == _slot_dialogue:
+                            # A pure-dialogue slot used to hand the director the quoted words alone, so the picture showed
+                            # nothing of the line (RI ch1 block 0: a lone figure holding a letter). The line is what is
+                            # drawn: who says it, to whom, with what face.
+                            directed_prose = (
+                                "A line is spoken aloud in the scene; draw the person saying it, in the posture and with the "
+                                "face the words and the scene imply, addressing the one it is said to. The spoken words: "
+                                f"{directed_prose}"
+                            )
                         # State the crowd to the director explicitly -- but
                         # only on the slot that actually needs to know.
                         # **Real bug, found by generating and looking at
