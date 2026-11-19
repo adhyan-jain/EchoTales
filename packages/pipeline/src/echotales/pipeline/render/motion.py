@@ -232,7 +232,11 @@ def get_engine(name: str = "stub", **kwargs: object) -> MotionClipEngine:
         return StubMotionEngine(**kwargs)  # type: ignore[arg-type]
     if name == "svd":
         return SVDEngine(**kwargs)  # type: ignore[arg-type]
-    raise ValueError(f"unknown motion engine {name!r}; expected 'stub' or 'svd'")
+    from echotales.pipeline.engines import registry
+
+    raise ValueError(
+        f"unknown motion engine {name!r}; expected {registry.expected(registry.names('video', surface='motion-clip'))}"
+    )
 
 
 @dataclass(slots=True)

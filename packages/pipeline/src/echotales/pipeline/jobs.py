@@ -50,6 +50,7 @@ from echotales.core.pipeline_run import (
     start_stage,
 )
 from echotales.core.store import Store
+from echotales.pipeline.engines import registry as engine_registry
 from echotales.pipeline.version import PIPELINE_VERSION
 
 log = logging.getLogger(__name__)
@@ -60,9 +61,7 @@ log = logging.getLogger(__name__)
 #: track: "Do not spend money"). Any other engine name a caller passes is a
 #: 400, not a silent downgrade to stub -- a wrong request should look wrong,
 #: not quietly succeed as something else.
-ALLOWED_HTTP_ENGINES = frozenset(
-    {"stub", "sdxl", "illustrious", "noobai", "refined", "manga"}
-)
+ALLOWED_HTTP_ENGINES = engine_registry.http_image_engines()
 
 
 def http_engine_known(name: str) -> bool:
@@ -216,7 +215,7 @@ def _record_studio_version(out_dir: Path, chapters: list[float], version: str, e
                 fh.write(line)
 
 
-VIDEO_ENGINES = ("stills", "ltx-local")
+VIDEO_ENGINES = engine_registry.names("video", surface="anime-video")
 
 
 def _run_video(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]:

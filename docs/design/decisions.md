@@ -518,6 +518,14 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Caveat**: scored by eye by one reviewer from reduced-size sheets, two seeds per scene. The sheets are in `data/scratch/panel_rework/bench_20261116_162505/` for anyone to re-judge.
 - **Default not switched yet**: `render.image_model` still defaults to NoobAI and `render.prompt_compiler` to off until the director rework makes the real path good (D57).
 
+### D59. One engine registry replaces the per-file engine lists (2026-11-20)
+- **Decided**: `pipeline/engines/registry.py` is the only place an engine is declared: name, kind, tier, licence, a `commercial_safe` flag (True checked and allowed, False checked and forbidden, None unchecked), VRAM and RAM need, and measured speed with its source. `compute.py`, `jobs.py`, `cli.py`, `voice/engine.py`, `render/motion.py` and `webview_server.py` derive their lists from it. `echotales engines [--commercial-safe] [--kind X]` prints it.
+- **Why**: the lists had drifted (`render` offered `runpod`, `persona reference` did not) and no list held a licence, so "which of these can ship commercially" had no answer.
+- **Honesty rule**: a speed with no source is rejected by a test; unknown values stay None and print as `?`. `--commercial-safe` leaves out every unchecked engine rather than guessing.
+- **Behaviour change**: none, except the order of the hosted names in the `--image-engine` help text (now runpod, gemini, openrouter, matching the `ECHOTALES_IMAGE_PROVIDER` message).
+- **Not moved**: `video/__init__.py::get_video_engine` (wan, ltx, stub; the workers are placeholders), `--compose-engine`, the `render.image_model` choice in `config.json` (compiler path), and `scripts/setup.sh`'s licence display, which cannot run Python; a test keeps its licences equal to the registry's.
+- **Status**: done.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs

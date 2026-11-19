@@ -9648,3 +9648,13 @@ Seven observed defects on the round-1 RI ch1 and LotM ch1 sheets (Z-Image Turbo 
 - **7. Director bake-off.** Network: `ollama pull qwen3:8b` stalled at 181 MB of 5.2 GB (about 0 KB/s over 45 s), so qwen3:8b was skipped. Z-Image-Engineer-V6 (Q4_K_M, delivered separately) was built as `z-engineer` in ollama and run as the stage-two writer (`render/final_writer.py`), not as a JSON director (it writes one paragraph, it cannot emit the director schema). Results are in the HANDOFF entry.
 
 Tests: core+pipeline 2,408 passed, 25 skipped (`-o addopts=""`). No test wrote `config.json.example` in this run (git status clean afterwards).
+
+
+### 4.168 Engine registry *(2026-11-20, roadmap M5)*
+
+- **Problem.** Engine names were hand-kept in at least seven places: `compute.py` (LOCAL_ENGINES, HOSTED_ENGINES, VIDEO_ENGINES, SECONDS_PER_PANEL, LLM_PROVIDERS, IMAGE_PROVIDERS, the Studio's local list), `jobs.py` (ALLOWED_HTTP_ENGINES, VIDEO_ENGINES), five `--image-engine` choice lists in `cli.py` (two of them differing by `runpod`), `voice/engine.py`, `render/motion.py`, the voice check in `webview_server.py`, and the comic `--ocr`, `--inpaint` choices. None carried a licence, memory need or speed.
+- **Change.** `pipeline/engines/registry.py` (data only, imports nothing from the pipeline) holds one `EngineSpec` per engine; each old list is a one-line derivation of it. New CLI `echotales engines [--commercial-safe] [--kind X]`. `test_engine_registry.py` pins every replaced list to its old value, rejects a speed with no source, and checks `scripts/setup.sh`'s displayed licences against the registry.
+- **Licences.** Only values already written in this repository are used (THIRD_PARTY_LICENSES.md, code comments, setup.sh). NoobAI and Illustrious are False (non-commercial, D7); Gemma, SDXL-family checkpoints, SVD, LTX and all hosted services are None (unchecked), so `--commercial-safe` leaves them out.
+- **Speeds.** The 45 and 60 s/image figures are the old SECONDS_PER_PANEL table (measured for NoobAI XL on the laptop, 2026-10-18; the same figure is applied to the other SDXL-family engines and is labelled so). `ltx-local` is 18 s per 4 s clip with the model warm, and 7.4 GB VRAM, from 4.146.
+- **Left for later.** `compiler.py`, `persona/*` and `keyframes/*` were being changed by another agent and were not touched; whatever engine choice lives there (Z-Image Turbo is registered as a `model` entry under surface `compiler`) should read the registry once that work lands.
+

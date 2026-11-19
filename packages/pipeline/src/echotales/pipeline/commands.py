@@ -2042,7 +2042,27 @@ def cmd_voice_audition(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_engines(args: argparse.Namespace) -> int:
+    """Print the engine registry as a table. Unknown values print as `?`, never as a guess."""
+    from echotales.pipeline.engines import registry
+
+    rows = registry.select(kind=args.kind, commercial_safe=args.commercial_safe)
+    safe = {True: "yes", False: "NO", None: "unchecked"}
+    print(f"{'kind':8} {'name':24} {'role':9} {'tier':10} {'where':7} {'commercial':11} {'vram':>6} {'ram':>6}  licence")
+    for e in rows:
+        vram = f"{e.vram_mb}" if e.vram_mb is not None else "?"
+        ram = f"{e.ram_mb}" if e.ram_mb is not None else "?"
+        print(f"{e.kind:8} {e.name:24} {e.role:9} {e.tier:10} {e.where:7} {safe[e.commercial_safe]:11} "
+              f"{vram:>6} {ram:>6}  {e.licence}")
+        if e.speed_seconds is not None:
+            print(f"{'':8} {'':24} speed: {e.speed_seconds:g} s per {e.speed_unit} ({e.speed_source})")
+    if not rows:
+        print("no engine matches")
+    return 0
+
+
 _DISPATCH = {
+    "engines": cmd_engines,
     "voice-audition": cmd_voice_audition,
     "audio-qa": cmd_audio_qa,
     "audit": cmd_audit,

@@ -47,6 +47,7 @@ import re
 from dataclasses import dataclass
 
 from echotales.pipeline import gpu
+from echotales.pipeline.engines import registry as engine_registry
 from echotales.pipeline.errors import ErrorCode, Refusal
 
 LOCAL_LOW = "local-low"
@@ -54,22 +55,23 @@ LOCAL_HIGH = "local-high"
 CLOUD = "cloud"
 MODES = (LOCAL_LOW, LOCAL_HIGH, CLOUD)
 
-LLM_PROVIDERS = ("ollama", "runpod", "openai", "gemini", "anthropic", "gateway", "stub")
-IMAGE_PROVIDERS = ("local", "runpod", "gemini", "openrouter", "stub")
+# The engine lists below come from `engines/registry.py`: one entry per engine instead of a list per file.
+LLM_PROVIDERS = engine_registry.llm_providers()
+IMAGE_PROVIDERS = engine_registry.image_providers()
 
 #: Engines that load a diffusion model onto the local GPU.
-LOCAL_ENGINES = frozenset({"sdxl", "illustrious", "noobai", "refined", "manga"})
+LOCAL_ENGINES = engine_registry.local_image_engines()
 #: Video engines that load a model onto the local GPU. They share the card with nothing: the owner's rule is "under
 #: about 500 MB in use", far stricter than the 1500 MB the image engines tolerate, because a 7.0 GB peak on an 8 GB
 #: card leaves no room for another process (EVOLUTION 4.146 probe).
-VIDEO_ENGINES = frozenset({"ltx-local"})
+VIDEO_ENGINES = frozenset(engine_registry.names("video", surface="anime-video", where="gpu"))
 VIDEO_GPU_BUSY_MB = 500
 #: Available RAM needed to start one: the probe's T5 encode bottomed out at 4.0 GB available and loading peaks at 5-7 GB
 #: of mapped file pages, on a machine with 4.4-5 GB free; the worker itself aborts under 2 GB.
 VIDEO_MIN_FREE_RAM_MB = 3500
 
 #: Engines that run on someone else's hardware, by the image provider that selects them.
-HOSTED_ENGINES = frozenset({"runpod", "gemini", "openrouter"})
+HOSTED_ENGINES = engine_registry.hosted_image_engines()
 
 #: Base URLs of the OpenAI-compatible language-model providers that have a fixed one (`runpod` takes its own).
 OPENAI_COMPATIBLE_BASE = {
@@ -83,9 +85,7 @@ IMAGES_PER_SCENE = 3.3
 
 #: Seconds per image on the development laptop (RTX 4060 Laptop 8 GB, NoobAI XL at 35 steps, ~1.1 s/step, 2026-10-18),
 #: image generation only (the director adds a few minutes). A guide for the Studio's "about N minutes", not a promise; None where nothing was measured.
-SECONDS_PER_PANEL: dict[str, float | None] = {
-    "stub": 0.3, "sdxl": 45.0, "illustrious": 45.0, "noobai": 45.0, "refined": 60.0, "manga": 60.0,
-}
+SECONDS_PER_PANEL: dict[str, float | None] = dict(engine_registry.seconds_per_image())
 
 
 def _norm(value: str | None) -> str:
@@ -199,7 +199,7 @@ class ComputePolicy:
         operator's opt-in to spend, and a request must not be able to pick a paid engine the operator never chose.
         """
         if self.image_provider == "local":
-            return ["stub", "noobai", "illustrious", "sdxl"]
+            return engine_registry.studio_local_engines()
         if self.image_provider == "stub":
             return ["stub"]
         return ["stub", self.image_provider]
