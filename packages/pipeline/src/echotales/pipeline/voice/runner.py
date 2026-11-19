@@ -118,6 +118,8 @@ class VoiceReport:
     #: outside it after the last retry.
     retried_takes: int = 0
     retry_gave_up: int = 0
+    #: Bank voices left out of casting because their measured pitch contradicts their recorded gender.
+    pitch_conflicts: list[str] = field(default_factory=list)
 
     def summary(self) -> str:
         return (
@@ -131,6 +133,7 @@ class VoiceReport:
             f"  reused from an earlier run: {self.reused_lines:,}\n"
             f"  re-synthesised for pace: {self.retried_takes:,} takes ({self.retry_gave_up:,} lines still off)\n"
             f"  distinct reference voices used: {len(self.voices_used)}"
+            + (f"\n  left out (pitch contradicts recorded gender): {', '.join(self.pitch_conflicts)}" if self.pitch_conflicts else "")
         )
 
 
@@ -213,6 +216,7 @@ def render_novel(
     seed: int = DEFAULT_SEED,
     synthesize: bool = True,
     min_character_confidence: float = MIN_CHARACTER_CONFIDENCE,
+    reference_f0: dict[str, float | None] | None = None,
 ) -> VoiceReport:
     """Cast the novel, build its script, and render it.
 
@@ -236,6 +240,15 @@ def render_novel(
     profiles = load_trait_profiles(novel_id, store)
     from echotales.pipeline.config import get_settings
 
+    if reference_f0 is not None:
+        # A voice whose clip is pitched against its recorded gender is not offered to anyone (casting audit
+        # 2026-11-19: two of the 48 audiobook voices); the narrator was chosen by ear and stays.
+        from echotales.pipeline.voice.qa import pitch_gender_conflicts, without_voices
+
+        conflicts = pitch_gender_conflicts(bank, reference_f0)
+        conflicts.pop(get_settings().voice_narrator, None)
+        bank = without_voices(bank, frozenset(conflicts))
+        report.pitch_conflicts = sorted(conflicts)
     narrator = _narrator_voice(bank, get_settings().voice_narrator)
     assignments, casting = cast_voices(
         novel_id, profiles, bank, store=store, seed=seed, exclude=frozenset({narrator})
@@ -500,8 +513,10 @@ def render_novel(
                 text=span.text,
                 emotion=emotion,
                 intensity=intensity,
+                voice_age_band=(next((v.age_band for v in bank.voices if v.speaker_id == voice), "adult")),
             )
             text = pace_text(span.text, span_type=span.span_type)
+            cast_voice = next((v for v in bank.voices if v.speaker_id == voice), None)
 
             line = AudioLine(
                 chapter=chapter,
@@ -524,9 +539,6 @@ def render_novel(
             # speaker's default clip, so a read-speech bank (VCTK) is
             # unaffected and this stays one code path. Chosen outside
             # `synthesize` so a dry run shows which recording each line gets.
-            cast_voice = next(
-                (v for v in bank.voices if v.speaker_id == voice), None
-            )
             clip = (
                 cast_voice.clip_for(settings.emotion)
                 if cast_voice is not None

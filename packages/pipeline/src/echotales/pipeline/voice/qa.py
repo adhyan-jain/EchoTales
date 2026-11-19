@@ -113,6 +113,85 @@ def median_f0(x: np.ndarray, sr: int) -> float | None:
     return float(np.median(f0)) if f0.size >= 10 else None
 
 
+# ---------------------------------------------------------------- bank gender labels vs measured pitch
+
+def pitch_gender_conflicts(bank: Any, f0_by_voice: dict[str, float | None]) -> dict[str, float]:
+    """Bank voices whose recorded gender contradicts their reference clip's measured pitch -> that F0.
+
+    Audit of the audiobook bank (2026-11-19): Hi-Fi TTS 6671 (male, 208 Hz) and LibriTTS-R 7976 (male, 232 Hz) are
+    labelled male by their corpora, but a male character cast with either is heard as a woman. The overlap band
+    (`F0_MALE_MAX`..`F0_FEMALE_MIN`) and unmeasured clips are not judged, the same bounds `cast_check` applies after
+    the fact; this applies them before casting.
+    """
+    out: dict[str, float] = {}
+    for v in bank.voices:
+        f = f0_by_voice.get(v.speaker_id)
+        if f is None:
+            continue
+        if (v.gender == "female" and f < F0_MALE_MAX) or (v.gender == "male" and f > F0_FEMALE_MIN):
+            out[v.speaker_id] = f
+    return out
+
+
+def without_voices(bank: Any, drop: set[str] | frozenset[str]) -> Any:
+    """A copy of `bank` minus `drop`, except that a gender is never emptied: with no voice left for a gender its
+    characters would be cast across gender, a worse error than a mislabelled-pitch voice."""
+    from echotales.pipeline.voice.bank import VoiceBank
+
+    kept = [v for v in bank.voices if v.speaker_id not in drop]
+    for gender in ("male", "female"):
+        if not any(v.gender == gender for v in kept):
+            kept += [v for v in bank.voices if v.gender == gender]
+    return VoiceBank(kept, bank_id=bank.bank_id, licence=bank.licence)
+
+
+def pitch_checked_bank(bank: Any, cache: Path | None = None, *, keep: frozenset[str] = frozenset()) -> tuple[Any, dict[str, float]]:
+    """`bank` without the voices whose measured pitch contradicts their recorded gender, and the conflicts found.
+
+    `keep` is never dropped (the configured narrator is a decision made by ear)."""
+    conflicts = pitch_gender_conflicts(bank, reference_f0s(bank, cache))
+    return without_voices(bank, frozenset(conflicts) - keep), conflicts
+
+
+def engine_reference_f0(bank: Any, engine_name: str) -> dict[str, float | None] | None:
+    """The gender-vs-pitch screen's input for `render_novel`, cached under `data/cache`.
+
+    None for the stub engine, whose test banks have no real audio to measure."""
+    if engine_name == "stub":
+        return None
+    from echotales.pipeline import paths
+
+    return reference_f0s(bank, paths.CACHE_DIR / "voice_f0.json")
+
+
+def reference_f0s(bank: Any, cache: Path | None = None) -> dict[str, float | None]:
+    """Median F0 of each bank voice's reference clip, cached by (voice, clip path, size) so only new clips are decoded."""
+    store: dict[str, Any] = {}
+    if cache is not None and cache.is_file():
+        try:
+            store = json.loads(cache.read_text(encoding="utf-8"))
+        except ValueError:
+            store = {}
+    out: dict[str, float | None] = {}
+    for v in bank.voices:
+        clip = v.reference_clip
+        if clip is None or not Path(clip).is_file():
+            out[v.speaker_id] = None
+            continue
+        key = f"{v.speaker_id}|{clip}|{Path(clip).stat().st_size}"
+        if key not in store:
+            try:
+                x, sr = read_mono(Path(clip))
+                store[key] = median_f0(x, sr)
+            except Exception:  # noqa: BLE001 - an unreadable clip is simply not judged
+                store[key] = None
+        out[v.speaker_id] = store[key]
+    if cache is not None:
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        cache.write_text(json.dumps(store, indent=1), encoding="utf-8")
+    return out
+
+
 # ---------------------------------------------------------------- text comparison
 
 _WORD = re.compile(r"[a-z0-9']+")

@@ -941,6 +941,7 @@ def cmd_voice(args: argparse.Namespace) -> int:
     from echotales.pipeline import paths
     from echotales.pipeline.voice import get_engine, render_novel
     from echotales.pipeline.voice.bank import DEFAULT_BANK_KIND, load_bank
+    from echotales.pipeline.voice.qa import engine_reference_f0
 
     store = _open_store(args)
     kind = getattr(args, "bank_kind", DEFAULT_BANK_KIND)
@@ -1023,6 +1024,7 @@ def cmd_voice(args: argparse.Namespace) -> int:
         seed=args.seed,
         synthesize=not args.dry_run,
         min_character_confidence=getattr(args, "min_character_confidence", 0.7),
+        reference_f0=engine_reference_f0(bank, engine_name),
     )
     print(report.summary())
     out_dir = Path(args.out) if args.out else paths.asset_dir(args.novel, "audio")

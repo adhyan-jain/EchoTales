@@ -55,6 +55,13 @@ EMOTION_FOR_POLARITY: dict[DeliveryPolarity, str] = {
     DeliveryPolarity.FLAT: "neutral",
 }
 
+#: Character age band -> (semitones, tempo factor) relative to an adult reader. Measured on LotM/RI casting
+#: (2026-11-19): 5 of 61 speaking characters are elders, and no old-sounding voice was available to them.
+_AGE_DELIVERY: dict[str, tuple[float, float]] = {
+    "child": (3.0, 1.0), "youth": (1.0, 1.0), "adult": (0.0, 1.0), "elder": (-1.5, 0.95),
+}
+_MAX_DOWN_SHIFT = 3.0
+
 #: Chatterbox's own documented neutral point.
 NEUTRAL_EXAGGERATION = 0.5
 NEUTRAL_CFG = 0.5
@@ -113,6 +120,33 @@ _STYLES = frozenset({"whisper", "loud"})
 
 
 def settings_for(
+    *,
+    span_type: SpanType,
+    polarity: DeliveryPolarity | None = None,
+    profile: TraitProfile | None = None,
+    text: str = "",
+    emotion: str | None = None,
+    intensity: int = 1,
+    voice_age_band: str = "adult",
+) -> DeliverySettings:
+    """`_settings_for` plus the character's age relative to the cast voice's own.
+
+    Neither audiobook corpus publishes age (`bank.ASSUMED_READER_AGE`), so an elder or a youth was always read by an
+    adult. The shift is by the gap between the character's band and the voice's, so a bank with real ages is not
+    shifted twice; the downward shift is capped so age plus a formal register is a weightier voice, not a cartoon.
+    """
+    s = _settings_for(
+        span_type=span_type, polarity=polarity, profile=profile, text=text, emotion=emotion, intensity=intensity
+    )
+    if profile is not None and profile.age_band != voice_age_band:
+        shift, slow = _AGE_DELIVERY.get(profile.age_band, (0.0, 1.0))
+        s.pitch_semitones = max(-_MAX_DOWN_SHIFT, s.pitch_semitones + shift)
+        s.tempo_ratio = round(s.tempo_ratio * slow, 3)
+        s.rationale = f"{s.rationale}; age {profile.age_band} read by {voice_age_band} voice".lstrip("; ")
+    return s
+
+
+def _settings_for(
     *,
     span_type: SpanType,
     polarity: DeliveryPolarity | None = None,

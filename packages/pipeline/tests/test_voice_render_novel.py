@@ -395,3 +395,14 @@ def test_run_stamp_records_the_banks_licence(tmp_path: Path) -> None:
     render_novel("t", _store(tmp_path), bank, out_dir=out, engine=get_engine("stub"))
     stamp = json.loads((out / "run.json").read_text(encoding="utf-8"))
     assert (stamp["bank"], stamp["licence"]) == ("hifitts", "CC BY 4.0")
+
+
+def test_a_voice_whose_pitch_contradicts_its_gender_is_never_cast(tmp_path: Path) -> None:
+    """Audit 2026-11-19: male-labelled 208/232 Hz readers were cast for men and heard as women."""
+    out = tmp_path / "audio"
+    # Two of the three male voices read as women by pitch; p227 is the only valid male pick left.
+    f0 = {"p226": 220.0, "p229": 230.0, "p227": 110.0}
+    report = render_novel("t", _store(tmp_path), _bank(), out_dir=out, engine=get_engine("stub"), reference_f0=f0)
+    assert report.pitch_conflicts == ["p226", "p229"]
+    used = {line["voice"] for line in _manifest(out)}
+    assert not used & {"p226", "p229"}

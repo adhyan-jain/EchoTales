@@ -484,6 +484,7 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         from echotales.pipeline import paths
         from echotales.pipeline.voice import get_engine as get_voice_engine
         from echotales.pipeline.voice import render_novel
+        from echotales.pipeline.voice.qa import engine_reference_f0
 
         # Speech unless told otherwise, like the CLI: the stub writes silent files (decision D29).
         engine_name = params.get("engine") or "chatterbox"
@@ -511,6 +512,7 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
                 chapters=params.get("chapters"),
                 seed=params.get("seed", 20260812),
                 synthesize=not params.get("dry_run", False),
+                reference_f0=engine_reference_f0(bank, engine_name),
             ),
         )
     elif job.kind == "export_m4b":
