@@ -36,8 +36,8 @@ def bank(srv):  # noqa: F811
     return srv
 
 
-def _narrator_job(srv, **extra):
-    return srv.run_job("voice_audition", {"target": "narrator", "engine": "stub", **extra})
+def _narrator_job(harness, **extra):
+    return harness.run_job("voice_audition", {"target": "narrator", "engine": "stub", **extra})
 
 
 def test_the_narrator_job_voices_one_sample_per_shortlisted_candidate(bank) -> None:
@@ -88,7 +88,7 @@ def test_a_voice_outside_the_audition_cannot_become_the_narrator(bank, tmp_path,
     monkeypatch.setattr(config_module, "_CONFIG_JSON", cfg)
     assert _narrator_job(bank)["status"] == "SUCCEEDED"
     for bad in ("", "../../etc/passwd", "vctk_p227", None, 7):
-        status, body = bank.call("POST", "/api/projects/t/voices/narrator", {"voice_id": bad})
+        status, _ = bank.call("POST", "/api/projects/t/voices/narrator", {"voice_id": bad})
         assert status == 400, bad
     assert not cfg.exists()
 
