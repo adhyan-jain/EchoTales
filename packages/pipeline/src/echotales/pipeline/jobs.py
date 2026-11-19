@@ -108,6 +108,8 @@ JOB_KINDS = (
     # that carries no book text; the importer only applies what matches the chapter hashes of its own copy of the book.
     "pack_export",
     "pack_import",
+    # The spoiler-safe "who is this again?" page for a reader who has finished chapter N (`echotales export companion`).
+    "companion",
 )
 
 
@@ -625,6 +627,19 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             if report is not None:
                 pack_file.with_name(pack_file.name + ".report.json").write_text(
                     json.dumps(report.to_dict(), ensure_ascii=False), encoding="utf-8")
+    elif job.kind == "companion":
+        from echotales.pipeline import paths
+        from echotales.pipeline.companion import build_companion, parse_through, site_dir_name, write_companion_site
+
+        through = parse_through(params.get("through"))
+        # The folder comes from the project and the chapter, never from the request.
+        out = Path(paths.asset_dir(novel_id, "companion")) / site_dir_name(through)
+        # Not skippable by digest: the book can have changed since an identical earlier request.
+        run_stage(
+            store, run_id=pipeline_run.run_id, stage_name="companion",
+            input_digest=f"{input_digest}|{time.time()}", skip_if_succeeded=False,
+            fn=lambda: write_companion_site(build_companion(store, novel_id, through), out),
+        )
     elif job.kind == "refimg_search":
         from echotales.pipeline.persona import refimg
 

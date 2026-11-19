@@ -326,6 +326,15 @@ export const api = {
     return request(`/api/projects/${enc(novelId)}/packs`, { method: 'POST', body: form });
   },
 
+  // The built reader companions, and the link that opens one in a new tab (which cannot send an Authorization header,
+  // so the session token rides in the query string of this one route, as `outputFileUrl` does).
+  listCompanions: (novelId) => request(`/api/projects/${enc(novelId)}/companions`),
+  companionUrl: (novelId, through) => {
+    const token = getAuthToken();
+    const auth = token ? `?access_token=${encodeURIComponent(token)}` : '';
+    return `${API_BASE}/api/novels/${enc(novelId)}/companion/through_${enc(through)}/index.html${auth}`;
+  },
+
   listJobs: (novelId) => request(`/api/projects/${enc(novelId)}/jobs`),
   getJob: (novelId, jobId) => request(`/api/projects/${enc(novelId)}/jobs/${enc(jobId)}`),
 

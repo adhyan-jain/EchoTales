@@ -948,6 +948,36 @@ def _list_packs(novel_id: str) -> list[dict]:  # type: ignore[type-arg]
     return out
 
 
+_COMPANION_DIR_RE = re.compile(r"through_(\d+(?:\.\d+)?)")
+#: The only files `companion.write_companion_site` writes; the route serves these and nothing else in the folder.
+_COMPANION_FILES = ("index.html", "style.css", "companion.json")
+
+
+def _list_companions(novel_id: str) -> list[dict]:  # type: ignore[type-arg]
+    """Companions already built for this project, by the chapter each was built through (never a path)."""
+    root = paths.asset_dir(novel_id, "companion")
+    out: list[dict] = []  # type: ignore[type-arg]
+    if root.is_dir():
+        for d in root.iterdir():
+            m = _COMPANION_DIR_RE.fullmatch(d.name)
+            if m and (d / "index.html").is_file():
+                value = float(m.group(1))
+                out.append({"through": int(value) if value.is_integer() else value, "built_at": (d / "index.html").stat().st_mtime})
+    return sorted(out, key=lambda c: c["through"])
+
+
+def _companion_file(novel_id: str, site: str, name: str) -> Path | None:
+    """One file of a built companion, or None. The folder name must match `through_<N>` and the file one of the three
+    the builder writes, then the resolved path must still sit inside the companion folder (a symlink cannot leave)."""
+    if not _COMPANION_DIR_RE.fullmatch(site) or name not in _COMPANION_FILES:
+        return None
+    root = paths.asset_dir(novel_id, "companion").resolve()
+    candidate = (root / site / name).resolve()
+    if root not in candidate.parents or not candidate.is_file():
+        return None
+    return candidate
+
+
 def _resolve_output_path(novel_id: str, rel: str) -> Path:
     """Resolve a caller-supplied relative path against this novel's output
     root, refusing anything that escapes it -- the one route in this track
@@ -1234,7 +1264,10 @@ def make_handler(
             # the output-file route only -- never on the JSON API.
             url = urlparse(self.path)
             parts = _split_path(url.path)
-            if self.command in ("GET", "HEAD") and len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3:] == ["output", "file"]:
+            # The companion page is opened as a plain link in a new tab, so it is the one other route that takes it.
+            is_media = len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3:] == ["output", "file"]
+            is_companion = len(parts) == 6 and parts[:2] == ["api", "novels"] and parts[3] == "companion"
+            if self.command in ("GET", "HEAD") and (is_media or is_companion):
                 return sessions.valid(parse_qs(url.query).get("access_token", [""])[0])
             return False
 
@@ -1356,6 +1389,21 @@ def make_handler(
                     if parts[2] not in registry.handles:
                         return self._json(404, {"error": f"unknown project {parts[2]!r}"})
                     return self._json(200, {"packs": _list_packs(parts[2])})
+
+                if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "companions":
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    return self._json(200, {"companions": _list_companions(parts[2])})
+
+                # GET /api/novels/<id>/companion/through_<N>/<index.html|style.css|companion.json>: the built site,
+                # served at its own relative paths so the page finds its stylesheet.
+                if len(parts) == 6 and parts[:2] == ["api", "novels"] and parts[3] == "companion":
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    site_file = _companion_file(parts[2], parts[4], parts[5])
+                    if site_file is None:
+                        return self._json(404, {"error": "no such companion file"})
+                    return self._serve_file(site_file)
 
                 if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "jobs":
                     handle = registry.handles.get(parts[2])
@@ -2364,6 +2412,13 @@ def make_handler(
                         params = _with_genre(handle, params)
                     if kind in ("pack_export", "pack_import"):
                         params["corrections_path"] = str(handle.corrections.path)
+                    if kind == "companion":
+                        from echotales.pipeline.companion import parse_through
+
+                        try:
+                            params = {"through": parse_through(params.get("through"))}
+                        except ValueError as exc:
+                            return self._json(400, {"error": str(exc)})
                     if kind == "pipeline":
                         # The resolve stage reads the project's review decisions; the path comes from the server's
                         # registry, never the request.

@@ -61,6 +61,16 @@ def multipart(filename: str, data: bytes) -> tuple[bytes, dict]:
 
 @pytest.fixture
 def srv(tmp_path, monkeypatch):
+    yield from _serve(tmp_path, monkeypatch)
+
+
+@pytest.fixture
+def srv_password(tmp_path, monkeypatch):
+    monkeypatch.setenv("ECHOTALES_WEBVIEW_PASSWORD", "hunter2")
+    yield from _serve(tmp_path, monkeypatch)
+
+
+def _serve(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     book = _book(tmp_path, 3, "t")
     registry = Registry([NovelSource(novel_id="t", label="T", db_path=book.path)], corrections_dir=tmp_path / "corrections")
@@ -164,3 +174,62 @@ def test_exporting_then_importing_leaves_a_report_beside_the_pack(srv) -> None:
     assert set(report) >= {"applied", "skipped"} and isinstance(report["applied"], dict)
     # The report file is not itself a pack.
     assert [p["name"] for p in listed["packs"]] == ["mine.etpack"]
+
+
+# --- companion --------------------------------------------------------------------------------------------------------
+
+
+def test_the_companion_job_builds_into_the_projects_companion_folder(srv) -> None:
+    done = srv.run_job("companion", {"through": 2})
+    assert done["status"] == "SUCCEEDED", done
+    site = srv.root / "data" / "novels" / "t" / "companion" / "through_2"
+    assert (site / "index.html").is_file() and (site / "style.css").is_file()
+    # Spoiler safety is companion.py's own tested rule; here only that chapter 3's name stays out of a through-2 page.
+    assert "Arthur Vane" not in (site / "index.html").read_text(encoding="utf-8")
+
+
+def test_a_companion_needs_a_positive_finite_chapter(srv) -> None:
+    for bad in ({}, {"through": 0}, {"through": -1}, {"through": "x"}, {"through": "nan"}, {"through": True}):
+        status, body = srv.call("POST", "/api/projects/t/companion", bad)
+        assert status == 400 and "through" in body["error"], bad
+
+
+def test_a_built_companion_is_listed_and_served_page_and_stylesheet(srv) -> None:
+    assert srv.call("GET", "/api/projects/t/companions") == (200, {"companions": []})
+    assert srv.run_job("companion", {"through": 3})["status"] == "SUCCEEDED"
+    status, listed = srv.call("GET", "/api/projects/t/companions")
+    assert status == 200 and [c["through"] for c in listed["companions"]] == [3]
+    status, page = srv.call("GET", "/api/novels/t/companion/through_3/index.html")
+    assert status == 200 and b"<h1>T</h1>" in page
+    status, css = srv.call("GET", "/api/novels/t/companion/through_3/style.css")
+    assert status == 200 and b"--bg" in css
+
+
+def test_a_password_protected_server_opens_the_companion_page_with_the_session_token_in_the_link(srv_password) -> None:
+    srv = srv_password
+    site = srv.root / "data" / "novels" / "t" / "companion" / "through_3"
+    site.mkdir(parents=True)
+    (site / "index.html").write_text("<h1>T</h1>", encoding="utf-8")
+    page = "/api/novels/t/companion/through_3/index.html"
+    assert srv.call("GET", page)[0] == 401  # a link opened in a new tab cannot send a header...
+    _, login = srv.call("POST", "/api/auth/login", {"password": "hunter2"})
+    assert srv.call("GET", f"{page}?access_token={login['token']}")[0] == 200  # ...so the link carries the token
+    assert srv.call("GET", f"{page}?access_token=wrong")[0] == 401
+    assert srv.call("GET", f"/api/projects/t/packs?access_token={login['token']}")[0] == 401  # JSON API: header only
+
+
+def test_the_companion_route_serves_nothing_outside_the_built_site(srv) -> None:
+    assert srv.run_job("companion", {"through": 3})["status"] == "SUCCEEDED"
+    secret = srv.root / "data" / "novels" / "t" / "companion" / "secret.txt"
+    secret.write_text("no", encoding="utf-8")
+    for path in (
+        "/api/novels/t/companion/through_3/..%2Fsecret.txt",
+        "/api/novels/t/companion/..%2Fsecret.txt/index.html",
+        "/api/novels/t/companion/through_3/%2e%2e/secret.txt",
+        "/api/novels/t/companion/through_3/other.txt",
+        "/api/novels/t/companion/through_9/index.html",
+        "/api/novels/t/companion/through_x/index.html",
+    ):
+        status, _ = srv.call("GET", path)
+        assert status in (400, 404), path
+    assert srv.call("GET", "/api/novels/nope/companion/through_3/index.html")[0] == 404
