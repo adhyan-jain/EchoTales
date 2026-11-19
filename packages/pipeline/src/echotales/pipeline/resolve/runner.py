@@ -1165,6 +1165,10 @@ def resolve_novel(
     # The machine linked these mentions again above; the person's decision wins (same rule as `corrections.py`).
     kept = {e.id for e in store.all_selves(novel_id)}
     store.add_mentions([m for m in human_mentions if m.target_id in kept])
+    if corrections_log is not None:
+        from echotales.pipeline.corrections import replay_applied_merges
+
+        replay_applied_merges(store, corrections_log, novel_id)
     # Last, so a group the title-holder or transmigration passes or a person linked is not reported as open.
     resolver.record_deferrals()
     store.conn.commit()

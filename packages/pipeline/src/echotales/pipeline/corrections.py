@@ -336,6 +336,25 @@ def _apply_pending_locked(store: Store, log: CorrectionLog) -> dict[str, object]
     return {"applied": applied, "count": sum(1 for r in applied if "error" not in r)}
 
 
+def replay_applied_merges(store: Store, log: CorrectionLog, novel_id: str) -> int:
+    """Re-apply the merges a person already made, after a resolve rebuilt every target.
+
+    The log marks a merge applied once and `apply_pending` never replays it, so a re-resolve (a new chapter, a fixed
+    stage) silently split "Fang Yuan" and "Wang Ju Chi" again while the log still read as merged. Entity ids are
+    content-derived, so an id from the log names the same entity on a rerun over the same text; a merge whose
+    entities are gone is skipped, not guessed at.
+    """
+    known = {e.id for e in store.all_selves(novel_id)}
+    n = 0
+    for c in log:
+        if c.novel_id != novel_id or not c.applied or c.type is not CorrectionType.MERGE_ENTITIES:
+            continue
+        if str(c.payload["from_id"]) in known and str(c.payload["into_id"]) in known:
+            _apply_merge(store, c, seq=store.next_seq())
+            n += 1
+    return n
+
+
 def _apply_merge(store: Store, correction: Correction, *, seq: int) -> dict[str, object]:
     from_id = str(correction.payload["from_id"])
     into_id = str(correction.payload["into_id"])
