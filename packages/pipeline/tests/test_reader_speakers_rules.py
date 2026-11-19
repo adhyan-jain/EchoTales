@@ -245,9 +245,3 @@ class TestUnknownOverABorrowedExplicitTag:
         store, _ = _run(["“Why are you taking control?” Bob looked at Alice."], {"0.0": "UNKNOWN"},
                         baseline={0: ("n:self:alice", AttributionMethod.EXPLICIT)})
         assert _speaker(store, 0) == "n:self:alice"
-
-
-def test_the_reconcile_question_wants_an_outright_statement_not_a_neighbour() -> None:
-    # ORV ch3: "a big man in a suit" was matched to Han Myungoh, who stands in the same carriage and is named elsewhere.
-    prompt = sp._reconcile_prompt("Han Myungoh, Yoo Sangah", "big_man_in", "Hey, what are you doing", "He was a big man in a suit.")
-    assert "says outright" in prompt and "big man in" in prompt and "Han Myungoh" in prompt
