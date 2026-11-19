@@ -131,6 +131,8 @@ class FakeDirector:
         self.calls = 0
 
     def complete(self, task, prompt, schema, **kwargs):
+        if schema is not PanelDirection:  # the scene staging call is not a panel and must not advance the shot cycle
+            return SimpleNamespace(value=None)
         shot = _SHOTS[self.calls % len(_SHOTS)]
         self.calls += 1
         return SimpleNamespace(

@@ -102,6 +102,8 @@ def direct_staging(
     except Exception as exc:
         log.warning("scene staging failed: %s", exc)
         return None
+    if not isinstance(result.value, SceneStaging):  # a client that answers every task with one canned object
+        return None
     cleaned, rejects = validate_staging(result.value, scene_text=scene_text, cast=list(cast))
     if rejects:
         log.info("scene staging cleaned: %s", rejects)
