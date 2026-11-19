@@ -1368,6 +1368,39 @@ def cmd_anime(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_pages(args: argparse.Namespace) -> int:
+    """Manga, comic or webtoon pages from each chapter's latest rendered panels."""
+    from echotales.pipeline.pages.build import build_pages, parse_exports
+    from echotales.pipeline.render.anime import AnimeRefusal
+
+    store = _open_store(args)
+    try:
+        exports = parse_exports(args.export)
+        numbers = store.chapter_numbers(args.novel)
+        if selected := _chapter_range(args.chapters):
+            chapters = [n for n in numbers if n in selected]
+        else:
+            chapters = [n for n in numbers if (Path(args.panel_dir) / f"ch{n:g}").is_dir()]
+        if not chapters:
+            print(f"refusing: no chapters to page under {args.panel_dir}; render panels first "
+                  f"(`echotales render --novel {args.novel}`)", file=sys.stderr)
+            return 2
+        built = build_pages(
+            store, args.novel, chapters, fmt=args.format, exports=exports,
+            panel_dir=args.panel_dir, out_root=args.out, suffix=args.suffix,
+        )
+    except (AnimeRefusal, ValueError, FileNotFoundError) as exc:
+        print(f"refusing: {exc}", file=sys.stderr)
+        return 2
+    finally:
+        store.close()
+    for b in built:
+        print(f"chapter {b.chapter:g}: {b.page_count} pages, {len(b.overflow)} lettering notes -> {b.out_dir}")
+        for f in b.files:
+            print(f"  {f}")
+    return 0
+
+
 def cmd_appearance(args: argparse.Namespace) -> int:
     """Phase 7b: extract physical appearance into PERSONA attributes."""
     from echotales.pipeline.resolve.appearance_extract import extract_appearance
@@ -1886,6 +1919,7 @@ _DISPATCH = {
     "voice": cmd_voice,
     "render": cmd_render,
     "anime": cmd_anime,
+    "pages": cmd_pages,
     "review": cmd_review,
     "ingest": cmd_ingest,
     "resolve": cmd_resolve,

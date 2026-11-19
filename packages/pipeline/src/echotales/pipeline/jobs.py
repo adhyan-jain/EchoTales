@@ -99,6 +99,8 @@ JOB_KINDS = (
     # One mp4 per chapter from the rendered panels and the voiced audio: `echotales anime` (stills / ltx-local) or,
     # with narration pruning, the motion-comic `render` path. The CLI was the only way to make the video.
     "video",
+    # Manga, comic or webtoon pages from a chapter's rendered panels (roadmap M1): `echotales pages`.
+    "pages",
     "refimg_search",
     "reference_gen",
 )
@@ -263,6 +265,25 @@ def _run_video(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]
         )
         out.append(str(result.video) if result is not None else "")
     return out
+
+
+def _run_pages(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]:
+    """Pages from the same code `echotales pages` runs. Returns each chapter's `pages.json`, which lists the
+    files written, so a UI can link them without scanning the folder."""
+    from echotales.pipeline.pages.build import build_pages, parse_exports
+    from echotales.pipeline.pages.composer import FORMATS
+
+    if not params.get("chapters"):
+        raise ValueError("no chapters chosen; pass chapters, e.g. [1], for the chapters to make pages of")
+    fmt = str(params.get("format") or "manga")
+    if fmt not in FORMATS:
+        raise ValueError(f"page format {fmt!r} is not one of {', '.join(FORMATS)}; pick one of them")
+    exports = parse_exports(params.get("export") or "png")
+    built = build_pages(
+        store, novel_id, [float(c) for c in params["chapters"]], fmt=fmt, exports=exports,
+        panel_dir=params.get("panel_dir"), out_root=params.get("out_dir"), suffix=params.get("suffix"),
+    )
+    return [str(b.manifest) for b in built]
 
 
 def _run_pipeline(store: Store, job_id: str, novel_id: str, params: dict[str, Any], sources_path: str):  # type: ignore[no-untyped-def]
@@ -550,6 +571,14 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             store, run_id=pipeline_run.run_id, stage_name="video",
             input_digest=f"{input_digest}|{time.time()}",
             fn=lambda: _run_video(store, novel_id, params),
+            skip_if_succeeded=False,
+        )
+    elif job.kind == "pages":
+        # Not skippable by digest: the newest panel version is an input that changes between identical params.
+        run_stage(
+            store, run_id=pipeline_run.run_id, stage_name="pages",
+            input_digest=f"{input_digest}|{time.time()}",
+            fn=lambda: _run_pages(store, novel_id, params),
             skip_if_succeeded=False,
         )
     elif job.kind == "refimg_search":

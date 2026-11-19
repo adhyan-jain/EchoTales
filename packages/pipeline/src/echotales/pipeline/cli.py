@@ -567,6 +567,19 @@ def build_parser() -> argparse.ArgumentParser:
     p_anime.add_argument("--audio-dir", default=None, help="default: data/novels/<CODE>/audio")
     p_anime.add_argument("--out", default=None, help="default: data/novels/<CODE>/video")
 
+    p_pages = sub.add_parser(
+        "pages",
+        help="lay a chapter's latest rendered panels out as manga, comic or webtoon pages with lettering, "
+        "and export PNG, PDF and CBZ (CPU only; no model)",
+    )
+    p_pages.add_argument("--novel", required=True)
+    p_pages.add_argument("--chapters", help="range, e.g. 1-3; default: every chapter that has rendered panels")
+    p_pages.add_argument("--format", default="manga", choices=["manga", "comic", "webtoon"])
+    p_pages.add_argument("--export", default="png", help="comma-separated: png,pdf,cbz (default: png)")
+    p_pages.add_argument("--suffix", default=None, help="version suffix, e.g. v1_<suffix>; default: the format")
+    p_pages.add_argument("--panel-dir", default=None, help="default: data/novels/<CODE>/panels")
+    p_pages.add_argument("--out", default=None, help="default: data/novels/<CODE>/pages")
+
     p_appearance = sub.add_parser(
         "appearance",
         help="extract physical appearance per character into PERSONA attributes "
@@ -788,6 +801,8 @@ _PER_NOVEL_OUTPUTS = {
     ("anime", "panel_dir"): "panels",
     ("anime", "audio_dir"): "audio",
     ("anime", "out"): "video",
+    ("pages", "panel_dir"): "panels",
+    ("pages", "out"): "pages",
 }
 
 
