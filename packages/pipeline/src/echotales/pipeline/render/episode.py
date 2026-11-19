@@ -40,11 +40,8 @@ from echotales.pipeline.render.anime import AnimeRefusal, _load_timing, latest_p
 from echotales.pipeline.render.director import _delivery_intensity
 from echotales.pipeline.render.plan import PanelPlan, load_panel_plan
 from echotales.pipeline.render.shots import (
-    STILLS,
     MotionLevel,
-    ShotBudget,
     hold_camera_move,
-    plan_shots,
     requested_motion,
 )
 from echotales.pipeline.screenplay.schema import CameraMove
@@ -124,6 +121,24 @@ def _split_at_line(lines: list[LineTiming], max_hold: float) -> list[list[LineTi
     return _split_at_line(lines[:cut], max_hold) + _split_at_line(lines[cut:], max_hold)
 
 
+def panel_runs(panels: list[PanelPlan], timing: Sequence[LineTiming]) -> list[tuple[PanelPlan, list[LineTiming]]]:
+    """The voiced lines grouped into runs that share a panel, in play order.
+
+    Not `shots.plan_shots`: that refuses panels whose blocks interleave, and a real render does produce them (RI ch1
+    v55: panel 2 holds blocks 1 and 3, panel 1 holds block 2) because an image is reused for a later block. Here a
+    panel simply returns to the screen as a cut-back. A voiced block no panel claims rides on the previous line's panel,
+    or on the first panel when it leads the chapter."""
+    owner = {b: p for p in panels for b in p.block_indexes}
+    runs: list[tuple[PanelPlan, list[LineTiming]]] = []
+    for t in timing:
+        panel = owner.get(t.block_index) or (runs[-1][0] if runs else panels[0])
+        if runs and runs[-1][0] is panel:
+            runs[-1][1].append(t)
+        else:
+            runs.append((panel, [t]))
+    return runs
+
+
 def plan_episode_shots(
     panels: list[PanelPlan],
     timing: list[LineTiming],
@@ -136,30 +151,26 @@ def plan_episode_shots(
     """Shots that tile the chapter's gapless audio exactly. `voice` and `fixed` differ only in where the cuts fall."""
     if mode not in TIMINGS:
         raise EpisodeRefusal(f"timing {mode!r} is not one of {', '.join(TIMINGS)}")
-    base = [s for s in plan_shots(panels, timing, STILLS, ShotBudget(), emotions=emotions) if s.duration > 1e-9]
-    by_id = {p.panel_id: p for p in panels}
+    runs = panel_runs(panels, timing)
     total = timing[-1].end_gapless if timing else 0.0
     shots: list[EpShot] = []
     if mode == "voice":
-        for spec in base:
-            lines = [t for t in timing if t.span_id in set(spec.span_ids)]
+        for panel, lines in runs:
+            base = hold_camera_move(lines, lines[0].block_index)
             for i, piece in enumerate(_split_at_line(lines, max_hold)):
-                calm = spec.camera_move
-                if i % 2 == 1 and calm is CameraMove.SLOW_PUSH_IN:
-                    calm = CameraMove.PULL_OUT  # a split panel re-aims instead of repeating the same push
-                start = spec.start if piece[0] is lines[0] else piece[0].start_gapless
-                end = spec.end if piece[-1] is lines[-1] else piece[-1].end_gapless
-                shots.append(_make_shot(by_id[spec.panel_id], piece, start, end, emotions, calm))
+                # a split panel re-aims instead of repeating the same push
+                calm = CameraMove.PULL_OUT if i % 2 == 1 and base is CameraMove.SLOW_PUSH_IN else base
+                shots.append(_make_shot(panel, piece, piece[0].start_gapless, piece[-1].end_gapless, emotions, calm))
         return shots
     edges = [k * fixed_seconds for k in range(int(total // fixed_seconds) + 1)] or [0.0]
     if total - edges[-1] > fixed_seconds / 2 or len(edges) == 1:
         edges.append(total)
     else:
         edges[-1] = total
-    starts = [s.start for s in base]
+    starts = [lines[0].start_gapless for _, lines in runs]
     for a, b in zip(edges, edges[1:]):
-        spec = base[max(bisect.bisect_right(starts, (a + b) / 2) - 1, 0)]
-        shots.append(_make_shot(by_id[spec.panel_id], _lines_in(timing, a, b), a, b, emotions, spec.camera_move))
+        panel, lines = runs[max(bisect.bisect_right(starts, (a + b) / 2) - 1, 0)]
+        shots.append(_make_shot(panel, _lines_in(timing, a, b), a, b, emotions, hold_camera_move(lines, lines[0].block_index)))
     return shots
 
 

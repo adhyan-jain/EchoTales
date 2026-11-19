@@ -36,6 +36,15 @@ def test_voice_timing_cuts_only_on_line_boundaries(tmp_path: Path) -> None:
         assert a.end == b.start  # gapless: the picture tiles the audio
 
 
+def test_interleaved_panels_come_back_as_cut_backs(tmp_path: Path) -> None:
+    """A real render reuses an image for a later block (RI ch1 v55: blocks [1, 3] on one panel, [2] on another)."""
+    _, _, panels, timing = _chapter(tmp_path)
+    panels[0].block_indexes, panels[1].block_indexes = [0, 2], [1]
+    shots = episode.plan_episode_shots(panels, timing, mode="voice")
+    assert [s.panel_id for s in shots[:3]] == [panels[0].panel_id, panels[1].panel_id, panels[0].panel_id]
+    assert shots[-1].end == pytest.approx(timing[-1].end_gapless)
+
+
 def test_fixed_timing_tiles_the_same_audio_with_equal_windows(tmp_path: Path) -> None:
     _, _, panels, timing = _chapter(tmp_path)
     shots = episode.plan_episode_shots(panels, timing, mode="fixed", fixed_seconds=2.0)
