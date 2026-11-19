@@ -16,7 +16,8 @@ TASKS = ("speaker", "identity", "scene")
 
 
 def load(path: Path | str) -> dict[str, Any]:
-    return json.loads(Path(path).read_text(encoding="utf-8"))
+    doc: dict[str, Any] = json.loads(Path(path).read_text(encoding="utf-8"))
+    return doc
 
 
 def save(path: Path | str, doc: dict[str, Any]) -> None:

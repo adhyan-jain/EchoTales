@@ -83,8 +83,8 @@ def run(args: argparse.Namespace) -> int:
         print(result["reference"]["banner"], file=sys.stderr)
         return 0
 
-    canonical = sources.canonical_text(source_id, args.sources_dir) if needs_text else None
-    n = check.walk(path, canonical, ask=input, say=print)
+    text_for_check: str | None = sources.canonical_text(source_id, args.sources_dir) if needs_text else None
+    n = check.walk(path, text_for_check, ask=input, say=print)
     print(f"recorded {n} checks; {refs.banner(refs.status(refs.load(path)))}")
     return 0
 

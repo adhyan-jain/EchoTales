@@ -40,7 +40,7 @@ def verify_slice(canonical: str, item: dict[str, Any]) -> bool:
     start, length = int(item["offset"]), int(item["length"])
     if start < 0 or start + length > len(canonical):
         return False
-    return slice_hash(canonical[start:start + length]) == item["text_sha256"]
+    return bool(slice_hash(canonical[start:start + length]) == item["text_sha256"])
 
 
 def locate(source_id: str, sources_dir: Path | str = "data/raw") -> Path:
@@ -51,7 +51,7 @@ def locate(source_id: str, sources_dir: Path | str = "data/raw") -> Path:
     tried = [root / c for c in spec["candidates"]]
     for p in tried:
         if p.exists():
-            return p
+            return Path(p)
     raise FileNotFoundError(
         f"{source_id}: not found under {root} (tried {', '.join(str(t) for t in tried)}). "
         f"Download it yourself ({spec['licence']}) and pass --sources-dir."
@@ -97,10 +97,10 @@ def canonical_epub(path: Path) -> str:
         base = opf_name.rsplit("/", 1)[0] + "/" if "/" in opf_name else ""
         hrefs: dict[str, str] = {}
         for tag in re.findall(r"<item\b[^>]*>", opf):
-            ident = re.search(r'\bid="([^"]+)"', tag)
-            href = re.search(r'\bhref="([^"]+)"', tag)
-            if ident and href:
-                hrefs[ident.group(1)] = href.group(1)
+            ident_m = re.search(r'\bid="([^"]+)"', tag)
+            href_m = re.search(r'\bhref="([^"]+)"', tag)
+            if ident_m and href_m:
+                hrefs[ident_m.group(1)] = href_m.group(1)
         paras: list[str] = []
         for idref in re.findall(r'<itemref\b[^>]*?idref="([^"]+)"', opf):
             href = hrefs.get(idref)
