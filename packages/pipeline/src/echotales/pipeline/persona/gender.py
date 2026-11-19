@@ -1,0 +1,315 @@
+"""Fill in the gender of characters whose pronoun count could not call it, and let a reviewer set it.
+
+Why this stage exists (casting audit 2026-11-19): voice casting offers every adult voice of both genders when a
+character's gender is `unknown`. On a copy of the RI database 65 of 98 persons were unknown, 20 of 44 speaking
+characters among them (Fang Yuan, 902 lines, was cast a female voice); on LotM Dunn Smith got one too. Two causes:
+
+1. `extract_traits` let the model's "unknown" overwrite a pronoun-derived gender (fixed there).
+2. Where the pronoun rule really has too little (`traits.gender_from_pronouns` needs six pronouns and a 70% share
+   from the paragraphs around the mentions) nothing looked at the text again.
+
+This pass reads only sentences that *name* the character, never the neighbourhood: a pronoun-near-the-name rule was
+measured as unreliable (Ruo Nan, Melissa, Daly and Xiong Jiang read as 80-97% male because the narration around them
+is about someone else). Precision over recall (non-negotiable 9): a model answer counts only when it is confident and
+its evidence quote is verbatim in what it was shown and actually says the claimed gender; everything else stays
+`unknown`, which casting reports rather than guesses.
+"""
+
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass, field
+
+from echotales.core.enums import OBSERVER_READER, AssertedBy, SpanType, TargetKind, TruthStatus
+from echotales.core.interval import FuzzyInterval
+from echotales.core.models import Attribute, DiscoursePosition, Span
+from echotales.core.store import Store
+from echotales.pipeline.persona.split import bodies_of, standing_values
+from pydantic import BaseModel, Field
+
+#: A reviewer's decision is stored with this evidence prefix so no later automatic pass overwrites it.
+HUMAN_PREFIX = "human:"
+
+#: Titles that state a gender when written directly before a name. Deliberately small and case-sensitive: translated
+#: xianxia uses "Master"/"Elder"/"Senior" for both genders, so those are not here, and a lower-case "miss" is a verb.
+#: "Lord" and "Sir" are left out on a measurement: on RI "Lord Yao Ji" is an old woman ("saw Lord Yao Ji casting her
+#: bid") with 14 title-cued mentions, and Lord Qing Shu a man; translated xianxia uses the word for both.
+_TITLE_GENDER = {
+    "Mr": "male", "Mister": "male",
+    "Mrs": "female", "Ms": "female", "Miss": "female", "Madam": "female", "Madame": "female", "Lady": "female",
+    "Dame": "female",
+}
+_TITLES = "|".join(sorted(_TITLE_GENDER, key=len, reverse=True))
+_TITLE_BEFORE = re.compile(rf"(?<![A-Za-z])({_TITLES})\.?\s+$")
+_TITLE_IN_MENTION = re.compile(rf"^({_TITLES})\.?\s+[A-Z]")
+#: One title mention proves little (a nickname, a quoted insult); two that agree and none that disagree is a cue.
+_MIN_TITLE_MENTIONS = 2
+
+_MALE_WORDS = frozenset(
+    "he him his himself man men gentleman boy father son brother husband king prince uncle nephew mr mister sir lord"
+    .split()
+)
+_FEMALE_WORDS = frozenset(
+    "she her hers herself woman women lady girl mother daughter sister wife queen princess aunt niece miss mrs ms"
+    " madam madame dame".split()
+)
+_WORD = re.compile(r"[A-Za-z]+")
+
+_SENTENCE = re.compile(r"[^.!?…]+(?:[.!?…]+[\"'”’]*|$)\s*")
+_MAX_WINDOW_CHARS = 400
+MAX_WINDOWS = 8
+MIN_QUOTE_CHARS = 6
+
+SYSTEM = (
+    "You decide the gender of one named character in a novel from short passages. Answer only from what the passages "
+    "state about THAT character. Unclear, or the passages are about someone else: answer unknown."
+)
+
+
+class GenderResponse(BaseModel):
+    gender: str = Field(default="unknown", description="male | female | unknown")
+    quote: str = Field(default="", description="the exact words from a passage that show it, copied verbatim")
+    confident: bool = Field(default=False, description="true only if the quote plainly refers to this character")
+
+
+@dataclass(slots=True)
+class GenderReport:
+    novel_id: str
+    examined: int = 0
+    skipped_known: int = 0
+    skipped_human: int = 0
+    by_cue: int = 0
+    by_model: int = 0
+    no_evidence: int = 0
+    rejected_hedged: int = 0
+    rejected_quote: int = 0
+    model_unknown: int = 0
+    errors: int = 0
+    #: label -> (gender, method, evidence) for each character this pass decided, so a reviewer can read them.
+    decided: dict[str, tuple[str, str, str]] = field(default_factory=dict)
+
+    def summary(self) -> str:
+        return (
+            f"gender pass {self.novel_id}: {self.examined} unknown characters examined, {self.by_cue} by title cue,"
+            f" {self.by_model} by model reading; left unknown: {self.no_evidence} without gendered text,"
+            f" {self.model_unknown} model unknown, {self.rejected_hedged} hedged, {self.rejected_quote} bad quote,"
+            f" {self.errors} errors; {self.skipped_known} already known, {self.skipped_human} set by a reviewer"
+        )
+
+
+def _norm(text: str) -> str:
+    text = text.replace("’", "'").replace("‘", "'").replace("“", '"').replace("”", '"')
+    return re.sub(r"\s+", " ", text).strip().casefold()
+
+
+def _side_counts(text: str) -> tuple[int, int]:
+    words = [w.casefold() for w in _WORD.findall(text)]
+    return sum(w in _MALE_WORDS for w in words), sum(w in _FEMALE_WORDS for w in words)
+
+
+def _title_gender(span: Span, offset: int, mention_text: str) -> str | None:
+    rel = offset - span.start
+    inside = _TITLE_IN_MENTION.match(mention_text)
+    if inside:
+        return _TITLE_GENDER[inside.group(1)]
+    before = _TITLE_BEFORE.search(span.text[max(0, rel - 12) : max(rel, 0)])
+    return _TITLE_GENDER[before.group(1)] if before else None
+
+
+def _window(span: Span, offset: int) -> str:
+    """The sentence naming the character plus the one after it, where a continuing pronoun usually sits."""
+    rel = offset - span.start
+    sentences = list(_SENTENCE.finditer(span.text))
+    for i, m in enumerate(sentences):
+        if m.start() <= rel < m.end():
+            return " ".join(s.group().strip() for s in sentences[i : i + 2])[:_MAX_WINDOW_CHARS]
+    return span.text[max(0, rel - 80) : rel + 200]
+
+
+def _current_gender(store: Store, self_id: str) -> tuple[str, bool]:
+    """(standing gender over the character's bodies, whether a reviewer set it)."""
+    value, human = "unknown", False
+    for persona_id, _interval in bodies_of(store, self_id) or [(f"{self_id}:body1", None)]:
+        value = standing_values(store, persona_id).get("gender", value)
+        human = human or any(
+            a.key == "gender" and a.evidence.startswith(HUMAN_PREFIX)
+            for a in store.get_attributes(TargetKind.PERSONA, persona_id)
+        )
+    return value, human
+
+
+def write_gender(
+    store: Store, novel_id: str, self_id: str, gender: str, evidence: str, *, confidence: float, at: DiscoursePosition,
+) -> int:
+    """Record `gender` on every body of `self_id` as a new row that supersedes the older gender rows.
+
+    Gender belongs to the consciousness, like the other traits (`build_personas`), so every body gets it. The row copies
+    the interval of the row it supersedes and is learned later than it, because `standing_values` picks by story start
+    first and learned time second; an older `unknown` row is superseded, not retracted: it never claimed anything
+    false (non-negotiable 5).
+    """
+    written = 0
+    entity = next((e for e in store.all_selves(novel_id) if e.id == self_id), None)
+    targets = bodies_of(store, self_id) or [(f"{self_id}:body1", None)]
+    for persona_id, _interval in targets:
+        rows = [a for a in store.get_attributes(TargetKind.PERSONA, persona_id) if a.key == "gender" and a.is_standing]
+        best = max(rows, key=lambda a: (a.interval.from_lb, a.learned_at_pos.chapter, a.learned_at_pos.offset), default=None)
+        if best is not None:
+            interval = best.interval
+            learned = at if at > best.learned_at_pos else DiscoursePosition(
+                chapter=best.learned_at_pos.chapter, offset=best.learned_at_pos.offset + 1
+            )
+        else:
+            start = int(entity.first_attested_pos.chapter) if entity is not None else at.chapter
+            interval = FuzzyInterval.open_ended(start, last_evidence=start)
+            learned = at
+        store.add_attribute(
+            novel_id,
+            Attribute(
+                target_kind=TargetKind.PERSONA, target_id=persona_id, key="gender", value=gender, interval=interval,
+                learned_at_pos=learned, observer_id=OBSERVER_READER, asserted_by=AssertedBy.INFERENCE,
+                truth_status=TruthStatus.TRUE, evidence=evidence[:300], confidence=confidence,
+            ),
+        )
+        written += 1
+    return written
+
+
+@dataclass(slots=True)
+class _Window:
+    chapter: float
+    offset: int
+    text: str
+
+
+def _gather(store: Store, novel_id: str, wanted: set[str]):
+    """One pass over the book: title cues, name-anchored windows and spoken-line counts for the wanted characters."""
+    cues: dict[str, list[str]] = {t: [] for t in wanted}
+    windows: dict[str, list[_Window]] = {t: [] for t in wanted}
+    mentions_n: dict[str, int] = {t: 0 for t in wanted}
+    labels = {e.id: e.canonical_label for e in store.all_selves(novel_id) if e.id in wanted}
+    lines: dict[str, int] = {t: 0 for t in wanted}
+    by_label = {label: t for t, label in labels.items()}
+    narrative = (SpanType.NARRATION_ACTION, SpanType.NARRATION_DESCRIPTION, SpanType.INNER_MONOLOGUE)
+    for chapter in store.chapter_numbers(novel_id):
+        spans = store.get_spans(novel_id, chapter)
+        for s in spans:
+            who = s.speaker_self_id
+            if who in wanted:
+                lines[who] += 1
+            elif who in by_label:
+                lines[by_label[who]] += 1
+        mentions = [m for m in store.get_mentions(novel_id, chapter) if m.target_id in wanted]
+        if not mentions:
+            continue
+        by_block: dict[int, list[Span]] = {}
+        for s in spans:
+            by_block.setdefault(s.block_index, []).append(s)
+        seen: set[tuple[str, str]] = set()
+        for m in mentions:
+            mentions_n[m.target_id] += 1
+            span = next((s for s in by_block.get(m.block_index, []) if s.start <= m.offset < s.end), None)
+            if span is None:
+                continue
+            cue = _title_gender(span, m.offset, m.text)
+            if cue:
+                cues[m.target_id].append(cue)
+            if span.span_type in narrative:
+                text = _window(span, m.offset)
+                if (m.target_id, text) not in seen:
+                    seen.add((m.target_id, text))
+                    windows[m.target_id].append(_Window(chapter, m.offset, text))
+    return cues, windows, mentions_n, lines
+
+
+def _pick(windows: list[_Window], k: int) -> list[_Window]:
+    """Up to `k` windows that carry a gendered word, spread over the book rather than taken from its start."""
+    gendered = [w for w in windows if sum(_side_counts(w.text)) > 0]
+    if len(gendered) <= k:
+        return gendered
+    step = len(gendered) / k
+    return [gendered[int(i * step)] for i in range(k)]
+
+
+def _prompt(label: str, picked: list[_Window]) -> str:
+    body = "\n".join(f"{i}. {w.text}" for i, w in enumerate(picked, 1))
+    return (
+        f"Character: {label}\n\nPassages that name this character:\n{body}\n\n"
+        "Is this character male or female? Quote the exact words from a passage that show it. If the passages do not "
+        "clearly say, answer unknown."
+    )
+
+
+def infer_missing_genders(
+    novel_id: str, store: Store, client: object | None, *, min_mentions: int = 3, max_windows: int = MAX_WINDOWS,
+) -> GenderReport:
+    """Decide gender for person characters that have none, cue first, then a name-anchored model reading."""
+    from echotales.pipeline.llm.tasks import Task
+
+    report = GenderReport(novel_id=novel_id)
+    todo = []
+    for entity in store.all_selves(novel_id):
+        if not entity.kind.is_person:
+            continue
+        gender, human = _current_gender(store, entity.id)
+        if human:
+            report.skipped_human += 1
+        elif gender in ("male", "female"):
+            report.skipped_known += 1
+        else:
+            todo.append(entity)
+    if not todo:
+        return report
+
+    cues, windows, mentions_n, lines = _gather(store, novel_id, {e.id for e in todo})
+    for entity in todo:
+        if mentions_n[entity.id] < min_mentions and not lines[entity.id]:
+            continue
+        report.examined += 1
+        found = set(cues[entity.id])
+        if len(found) == 1 and len(cues[entity.id]) >= _MIN_TITLE_MENTIONS:
+            gender = next(iter(found))
+            at = windows[entity.id][0] if windows[entity.id] else None
+            pos = DiscoursePosition(chapter=int(at.chapter), offset=at.offset) if at else entity.first_attested_pos
+            evidence = f"title before the name in {len(cues[entity.id])} mentions"
+            write_gender(store, novel_id, entity.id, gender, evidence, confidence=0.9, at=pos)
+            report.by_cue += 1
+            report.decided[entity.canonical_label] = (gender, "cue", evidence)
+            continue
+        if client is None:
+            report.no_evidence += 1
+            continue
+        picked = _pick(windows[entity.id], max_windows)
+        if not picked:
+            report.no_evidence += 1
+            continue
+        shown = _norm(" ".join(w.text for w in picked))
+        try:
+            result = client.complete(  # type: ignore[attr-defined]
+                Task.READER, _prompt(entity.canonical_label, picked), GenderResponse, system=SYSTEM, novel_id=novel_id
+            ).value
+        except Exception:
+            report.errors += 1
+            continue
+        if result.gender not in ("male", "female"):
+            report.model_unknown += 1
+            continue
+        quote = _norm(result.quote)
+        if not result.confident:
+            report.rejected_hedged += 1
+            continue
+        male, female = _side_counts(result.quote)
+        claimed, other = (male, female) if result.gender == "male" else (female, male)
+        if len(quote) < MIN_QUOTE_CHARS or quote not in shown or claimed == 0 or other > 0:
+            report.rejected_quote += 1
+            continue
+        home = next(w for w in picked if quote in _norm(w.text)) if any(quote in _norm(w.text) for w in picked) else picked[0]
+        evidence = f"model reading: {result.quote.strip()}"
+        write_gender(
+            store, novel_id, entity.id, result.gender, evidence, confidence=0.8,
+            at=DiscoursePosition(chapter=int(home.chapter), offset=home.offset),
+        )
+        report.by_model += 1
+        report.decided[entity.canonical_label] = (result.gender, "model", result.quote.strip())
+    store.conn.commit()
+    return report

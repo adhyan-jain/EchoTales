@@ -238,6 +238,10 @@ def cmd_run(args: argparse.Namespace) -> int:
         # resolved entities, their attributed dialogue, and the NER-derived kind
         # that says which of them are people at all.
         stage("7 personas", lambda: build_personas(novel, store, client=client, prefix_causal=get_settings().persona_prefix_causal))
+        # 7a fills gender for characters the pronoun rule left unknown, before appearance and voice casting read it.
+        from echotales.pipeline.persona.gender import infer_missing_genders
+
+        stage("7a gender", lambda: infer_missing_genders(novel, store, client))
         # 7b reads the personas 7 just minted and needs a model: appearance is
         # never stated by an honorific the way age is, so there is no
         # deterministic path to fall back to (see appearance_extract's docstring).
@@ -1498,6 +1502,16 @@ def cmd_persona(args: argparse.Namespace) -> int:
     sub = getattr(args, "persona_command", "")
     if sub == "wiki-canon":
         return _cmd_wiki_canon(args)
+    if sub == "gender":
+        from echotales.pipeline.persona.gender import infer_missing_genders
+
+        store = _open_store(args)
+        report = infer_missing_genders(args.novel, store, _build_client(store), min_mentions=args.min_mentions)
+        print(report.summary())
+        for label, (gender, method, evidence) in sorted(report.decided.items()):
+            print(f"  {label:<28} {gender:<7} {method:<6} {evidence[:90]}")
+        store.close()
+        return 0
     if sub in (
         "refimg-search", "refimg-list", "refimg-select", "refimg-register",
         "refimg-sheets", "refimg-approve", "refimg-reject",
