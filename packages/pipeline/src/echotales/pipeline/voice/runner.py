@@ -506,6 +506,7 @@ def render_novel(
                 report.narrator_lines += 1
 
             emotion, intensity = emotions.get(span.id, ("neutral", 1))
+            cast_voice = next((v for v in bank.voices if v.speaker_id == voice), None)
             settings = settings_for(
                 span_type=span.span_type,
                 polarity=line_polarity(span),
@@ -513,10 +514,9 @@ def render_novel(
                 text=span.text,
                 emotion=emotion,
                 intensity=intensity,
-                voice_age_band=(next((v.age_band for v in bank.voices if v.speaker_id == voice), "adult")),
+                voice_age_band=cast_voice.age_band if cast_voice is not None else "adult",
             )
             text = pace_text(span.text, span_type=span.span_type)
-            cast_voice = next((v for v in bank.voices if v.speaker_id == voice), None)
 
             line = AudioLine(
                 chapter=chapter,

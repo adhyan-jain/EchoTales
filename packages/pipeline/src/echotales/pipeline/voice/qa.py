@@ -145,14 +145,6 @@ def without_voices(bank: Any, drop: set[str] | frozenset[str]) -> Any:
     return VoiceBank(kept, bank_id=bank.bank_id, licence=bank.licence)
 
 
-def pitch_checked_bank(bank: Any, cache: Path | None = None, *, keep: frozenset[str] = frozenset()) -> tuple[Any, dict[str, float]]:
-    """`bank` without the voices whose measured pitch contradicts their recorded gender, and the conflicts found.
-
-    `keep` is never dropped (the configured narrator is a decision made by ear)."""
-    conflicts = pitch_gender_conflicts(bank, reference_f0s(bank, cache))
-    return without_voices(bank, frozenset(conflicts) - keep), conflicts
-
-
 def engine_reference_f0(bank: Any, engine_name: str) -> dict[str, float | None] | None:
     """The gender-vs-pitch screen's input for `render_novel`, cached under `data/cache`.
 
