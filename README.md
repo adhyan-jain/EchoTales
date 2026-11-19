@@ -136,6 +136,13 @@ register them in `data/sources.toml`.
 chapter text — the CoNLL/OntoNotes convention — so annotations can be shared
 with collaborators without redistributing the novels.
 
+## Languages
+
+EchoTales is English-only for now. The name gazetteer, the speaker rules and the dialogue-quote handling were
+built and measured on English text, and a book in another language would build without an error and be wrong
+without saying so. The Studio upload screen shows the same statement (the upload reply carries a `language` field).
+Other source languages will be added in the order people ask for them.
+
 ## Known limitations
 
 Stated here because they are load-bearing, not incidental.

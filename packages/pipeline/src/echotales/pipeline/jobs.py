@@ -103,6 +103,10 @@ JOB_KINDS = (
     "pages",
     "refimg_search",
     "reference_gen",
+    # Adaptation packs (roadmap M4): the cast, descriptions, voices, direction and corrections as one .etpack file
+    # that carries no book text; the importer only applies what matches the chapter hashes of its own copy of the book.
+    "pack_export",
+    "pack_import",
 )
 
 
@@ -294,6 +298,7 @@ def _run_pipeline(store: Store, job_id: str, novel_id: str, params: dict[str, An
     succeeded for this exact source is skipped unless `params["force"]` is set; a failure stops the chain and the
     next run picks up at the failed stage."""
     from echotales.core.pipeline_run import source_digest_of
+    from echotales.pipeline import long_series
     from echotales.pipeline.anaphora import resolve_anaphora_for_novel as anaphora_resolve
     from echotales.pipeline.commands import _build_client
     from echotales.pipeline.config import get_settings
@@ -334,6 +339,11 @@ def _run_pipeline(store: Store, job_id: str, novel_id: str, params: dict[str, An
 
     try:
         stage(s_ingest, lambda: ingest_novel(novel_id, store, sources_path=sources_path, chapters=chapters))
+        # A re-ingest of an edited book: name what the changed chapters invalidate before the later stages run, so
+        # the job log says why those stages cannot be skipped. The baseline is re-recorded once the build finishes.
+        stale = long_series.invalidate_changed(store, novel_id)
+        if stale.chapters:
+            log.info("chapters changed since the last build: %s; stale: %s", stale.chapters, stale.to_dict()["products"])
         stage(s_segment, lambda: segment_novel(novel_id, store))
         stage(s_mentions, lambda: detect_mentions(novel_id, store, lexicon=lexicon, client=client))
         stage(s_speakers, lambda: attribute_novel(novel_id, store, client=client, llm_chapter_cutoff=0.0))
@@ -359,6 +369,7 @@ def _run_pipeline(store: Store, job_id: str, novel_id: str, params: dict[str, An
         store.update_pipeline_run_status(pipeline_run.run_id, StageStatus.FAILED)
         raise
     store.update_pipeline_run_status(pipeline_run.run_id, StageStatus.SUCCEEDED)
+    long_series.record_baseline(store, novel_id)
     return pipeline_run
 
 
@@ -584,6 +595,30 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             fn=lambda: _run_pages(store, novel_id, params),
             skip_if_succeeded=False,
         )
+    elif job.kind in ("pack_export", "pack_import"):
+        from echotales.pipeline import packs, paths
+        from echotales.pipeline.corrections import CorrectionLog
+
+        pack_dir = Path(paths.asset_dir(novel_id, "packs"))
+        corrections_path = params.get("corrections_path")
+        corrections_log = CorrectionLog(Path(corrections_path)) if corrections_path else None
+        # A name, never a path: the server decides where packs live (same rule as the voice and video folders).
+        name = Path(str(params.get("name") or novel_id)).name
+        pack_file = pack_dir / (name if name.endswith(packs.PACK_SUFFIX) else name + packs.PACK_SUFFIX)
+        if job.kind == "pack_export":
+            run_stage(
+                store, run_id=pipeline_run.run_id, stage_name="pack_export",
+                input_digest=f"{input_digest}|{time.time()}", skip_if_succeeded=False,
+                fn=lambda: packs.export_pack(store, novel_id, pack_file, corrections=corrections_log),
+            )
+        else:
+            if not pack_file.is_file():
+                raise ValueError(f"no pack named {pack_file.name!r} in this project's packs folder")
+            run_stage(
+                store, run_id=pipeline_run.run_id, stage_name="pack_import",
+                input_digest=f"{input_digest}|{time.time()}", skip_if_succeeded=False,
+                fn=lambda: packs.import_pack(store, novel_id, pack_file, corrections_log=corrections_log),
+            )
     elif job.kind == "refimg_search":
         from echotales.pipeline.persona import refimg
 

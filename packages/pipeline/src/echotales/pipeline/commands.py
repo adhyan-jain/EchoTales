@@ -351,12 +351,33 @@ def cmd_query(args: argparse.Namespace) -> int:
 # ---------------------------------------------------------------------------
 
 
+def cmd_export_companion(args: argparse.Namespace) -> int:
+    from echotales.pipeline import paths
+    from echotales.pipeline.companion import build_companion, write_companion_site
+
+    if args.through is None:
+        print("refusing: export companion needs --through N, the last chapter the reader has finished", file=sys.stderr)
+        return 2
+    store = _open_store(args)
+    try:
+        data = build_companion(store, args.novel, args.through)
+    finally:
+        store.close()
+    out = Path(args.out) if args.out else paths.EXPORTS_DIR / "companion" / args.novel / f"through-{args.through:g}"
+    write_companion_site(data, out)
+    print(f"companion through chapter {args.through:g}: {len(data['cards'])} characters, "
+          f"{len(data['relationships'])} relationships, {len(data['glossary'])} glossary terms -> {out}")
+    return 0
+
+
 def cmd_export(args: argparse.Namespace) -> int:
+    if args.what == "companion":
+        return cmd_export_companion(args)
     from echotales.pipeline.review import build_review, write_jsonl
 
     store = _open_store(args)
     review = build_review(store, args.novel, top_n=10**6, samples=args.samples)
-    path = write_jsonl(review, Path(args.out) / f"{args.novel}-entities.jsonl")
+    path = write_jsonl(review, Path(args.out or "data/gold") / f"{args.novel}-entities.jsonl")
     print(f"exported {len(review.entities):,} entities to {path}")
     store.close()
     return 0
@@ -1372,6 +1393,47 @@ def cmd_anime(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_pack(args: argparse.Namespace) -> int:
+    from echotales.pipeline import packs, paths
+    from echotales.pipeline.corrections import CorrectionLog
+
+    store = _open_store(args)
+    log = CorrectionLog(Path(args.corrections or Path("data/corrections") / f"{Path(store.path).stem}.jsonl"))
+    try:
+        if args.pack_command == "export":
+            out = Path(args.out) if args.out else paths.asset_dir(args.novel, "packs") / f"{args.novel}{packs.PACK_SUFFIX}"
+            path = packs.export_pack(store, args.novel, out, corrections=log)
+            print(f"pack written: {path}")
+            return 0
+        report = packs.import_pack(store, args.novel, args.pack, corrections_log=log)
+    except packs.PackError as exc:
+        print(f"refusing: {exc}", file=sys.stderr)
+        return 2
+    finally:
+        store.close()
+    print(f"applied: {report.applied or 'nothing'}")
+    for s in report.skipped:
+        print(f"  not applied ({s['kind']}, chapter {s['chapter']}): {s['reason']} [{s['what']}]")
+    if report.direction_dir:
+        print(f"panel direction for a local render: {report.direction_dir}")
+    return 0
+
+
+def cmd_estimate(args: argparse.Namespace) -> int:
+    from echotales.pipeline import long_series
+
+    store = _open_store(args)
+    try:
+        stages = tuple(s.strip() for s in args.stages.split(",")) if args.stages else long_series.DEFAULT_STAGES
+        est = long_series.estimate_run(
+            store, args.novel, args.chapters, stages=stages, gpu_hourly_usd=args.gpu_hourly_usd
+        )
+    finally:
+        store.close()
+    print(json.dumps(est, indent=2) if args.json else long_series.format_estimate(est))
+    return 0
+
+
 def cmd_pages(args: argparse.Namespace) -> int:
     """Manga, comic or webtoon pages from each chapter's latest rendered panels."""
     from echotales.pipeline.pages.build import build_pages, parse_exports
@@ -1934,6 +1996,8 @@ _DISPATCH = {
     "render": cmd_render,
     "anime": cmd_anime,
     "pages": cmd_pages,
+    "estimate": cmd_estimate,
+    "pack": cmd_pack,
     "review": cmd_review,
     "ingest": cmd_ingest,
     "resolve": cmd_resolve,

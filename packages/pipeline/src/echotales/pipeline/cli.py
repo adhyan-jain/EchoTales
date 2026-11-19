@@ -742,9 +742,38 @@ def build_parser() -> argparse.ArgumentParser:
     p_graph.add_argument("--out", default="data/exports/webview/graph.html")
     p_graph.add_argument("--top", type=int, default=60)
 
-    p_export = sub.add_parser("export", help="emit the annotation dataset")
+    p_pack = sub.add_parser(
+        "pack", help="adaptation packs (.etpack): share cast, descriptions, voices, direction and corrections, never the book"
+    )
+    pk_sub = p_pack.add_subparsers(dest="pack_command", required=True)
+    pk_export = pk_sub.add_parser("export", help="write a pack; refused if any text shares 8 words with the book")
+    pk_export.add_argument("--novel", required=True)
+    pk_export.add_argument("--out", default=None, help="default: data/novels/<CODE>/packs/<novel>.etpack")
+    pk_export.add_argument("--corrections", default=None, help="default: data/corrections/<db name>.jsonl")
+    pk_import = pk_sub.add_parser("import", help="apply a pack to a database holding the same book; reports what did not match")
+    pk_import.add_argument("--novel", required=True)
+    pk_import.add_argument("pack", help="path to the .etpack file")
+    pk_import.add_argument("--corrections", default=None, help="default: data/corrections/<db name>.jsonl")
+
+    p_est = sub.add_parser(
+        "estimate",
+        help="time and cost of a run before starting it, from this database's measured stage timings "
+        "(stages never run here use labelled default estimates)",
+    )
+    p_est.add_argument("--novel", required=True)
+    p_est.add_argument("--chapters", help="range, e.g. 1-10; default: every chapter")
+    p_est.add_argument("--stages", help="comma-separated stage names; default: every build and render stage")
+    p_est.add_argument("--gpu-hourly-usd", type=float, default=0.0, help="rented-GPU rate; default 0 (a local run)")
+    p_est.add_argument("--json", action="store_true")
+
+    p_export = sub.add_parser("export", help="emit the annotation dataset, or `export companion` (a spoiler-safe site)")
+    p_export.add_argument(
+        "what", nargs="?", choices=["companion"], default=None,
+        help="companion: a static, offline site of characters, relationships, timeline and glossary through chapter N",
+    )
     p_export.add_argument("--novel", required=True)
-    p_export.add_argument("--out", default="data/gold")
+    p_export.add_argument("--through", type=float, default=None, help="companion: the last chapter the reader has finished")
+    p_export.add_argument("--out", default=None, help="default: data/gold, or data/exports/companion/<novel>/through-N")
     p_export.add_argument("--samples", type=int, default=3)
 
     p_webview = sub.add_parser(
