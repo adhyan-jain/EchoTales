@@ -86,6 +86,7 @@ from echotales.pipeline.render.scene_refs import (
 )
 from echotales.pipeline.render.scene_state import get_or_derive_scene_state
 from echotales.pipeline.render.scenes import carry_locales, group_scenes
+from echotales.pipeline.render.speech import spoken_lines
 from echotales.pipeline.spans.scene import detect_mobs
 from echotales.pipeline.world.context import story_context
 from echotales.pipeline.world.lexicon import build_lexicon
@@ -1571,11 +1572,16 @@ def _speaker_label(span: Span, store: Store) -> str:
     `ri:anon:1:s0:2` in a prompt would have the image model draw the
     string.
     """
+    return _speaker_name(span, store) or "Someone"
+
+
+def _speaker_name(span: Span, store: Store) -> str:
+    """The speaker's canonical label, or "" when the line has no resolved speaker."""
     speaker = span.speaker_self_id or ""
     if not speaker or ":anon:" in speaker:
-        return "Someone"
+        return ""
     entity = store.get_self(speaker)
-    return entity.canonical_label if entity is not None else "Someone"
+    return entity.canonical_label if entity is not None else ""
 
 
 def render_panels(
@@ -2445,8 +2451,14 @@ def render_panels(
                 # changed beat a different entry, so stale prompts fall out
                 # of use on their own while genuinely identical work is
                 # still reused across the two phases.
+                # Who says each line and to whom (`render/speech.py`), for the director's per-speaker faces; part of the digest so a
+                # changed attribution is a different beat.
+                _speech = spoken_lines(
+                    spans, _slot_blocks, label_of=lambda sp: _speaker_name(sp, store),
+                    cast=list(_beat_entity_labels.values()) or list(_scene_last_present_entity_labels.values()),
+                )
                 _beat_digest = hashlib.sha256(
-                    f"{beat_prose}|{directive}".encode()
+                    f"{beat_prose}|{directive}|{_speech}".encode()
                 ).hexdigest()[:12]
                 cache_key = (
                     f"{chapter_number:g}:{lead}:{_beat_digest}:{_db_fingerprint}"
@@ -2505,8 +2517,9 @@ def render_panels(
                             # drawn: who says it, to whom, with what face.
                             directed_prose = (
                                 "A line is spoken aloud in the scene; draw the person saying it, in the posture and with the "
-                                "face the words and the scene imply, addressing the one it is said to. The spoken words: "
-                                f"{directed_prose}"
+                                "face the words and the scene imply, addressing the one it is said to. "
+                                + ("The line, its speaker and its addressee are under SPOKEN LINES." if _speech
+                                   else f"The spoken words: {directed_prose}")
                             )
                         # State the crowd to the director explicitly -- but
                         # only on the slot that actually needs to know.
@@ -2590,6 +2603,7 @@ def render_panels(
                         directed = direct_beat(
                             directed_prose,
                             staging=_staging_text,
+                            spoken=_speech,
                             context_brief=brief,
                             cast=_director_cast,
                             novel_style=_novel_style,

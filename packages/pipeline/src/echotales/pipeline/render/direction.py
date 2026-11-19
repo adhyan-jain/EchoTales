@@ -183,6 +183,13 @@ def system_prompt(novel_id: str = "") -> str:
         "when the place changes. Do not give the same 'shot' value as the previous two panels unless the passage demands "
         "it.\n\n"
 
+        "15. SPOKEN LINES. When the request lists SPOKEN LINES, each line's emotion belongs to the face of the person who SAYS it, "
+        "not to whoever is the lead of the shot. If the lead is only addressed by a line, his face is his REACTION to it (a "
+        "threat at a man who does not fear it is cold and unmoved, not a smile), and the speaker's emotion goes on the speaker "
+        "among the others in 'composition'. The attribution is usually right but not always: if the words talk about the "
+        "supposed speaker in the third person ('the demon is going to attack', said of him) or call him by name, someone "
+        "else is speaking. A line marked as someone not in CAST is drawn as one of the others, never given a name.\n\n"
+
         "EXAMPLES OF THE STYLE OF 'composition' (structure only: never reuse their people, places, objects or colours; "
         "your paragraph comes from the passage below and nothing else):\n"
         + "\n".join(f"  - {x}" for x in _PROBE_EXAMPLES)
@@ -302,6 +309,7 @@ def build_prompt(
     max_chars: int = 2400,
     recent_shots: list[str] | None = None,
     staging: str = "",
+    spoken: str = "",
 ) -> str:
     """Ask the director for one shot.
 
@@ -329,6 +337,8 @@ def build_prompt(
         for name, look in cast.items():
             lines.append(f"  - {name}: {look}" if look else f"  - {name}")
         lines.append("")
+    if spoken:
+        lines += ["SPOKEN LINES in this passage (who says each one comes from the story graph):", spoken, ""]
     lines += [
         "Passage:",
         beat_text[:max_chars].strip(),
@@ -381,7 +391,8 @@ def build_prompt(
         "situation around it (who is speaking to whom, who is winning), independent of physical condition -- a wounded "
         "character is not automatically pained. Examples of the vocabulary: \"cold mocking smile, narrowed eyes\", "
         "\"contemptuous sneer\", \"furious glare, clenched teeth\", \"wide shocked eyes\", \"calm unreadable stare\". "
-        "A man laughing at his enemies is mocking, never cheerful.",
+        "A man laughing at his enemies is mocking, never cheerful. If SPOKEN LINES show someone else speaking to the lead, "
+        "this is the lead's reaction, not the speaker's emotion.",
         "",
         "Only include characters the passage actually places in the scene. "
         "Do not include numeric headcount tags ('1boy', '2boys', 'male "
@@ -693,6 +704,7 @@ def direct_beat(
     crowd_mood: str | None = None,
     recent_shots: list[str] | None = None,
     staging: str = "",
+    spoken: str = "",
 ) -> Direction | None:
     """Get one shot from the director, or None if the call fails.
 
@@ -712,6 +724,7 @@ def direct_beat(
                 context_brief=context_brief,
                 recent_shots=recent_shots,
                 staging=staging,
+                spoken=spoken,
             ),
             PanelDirection,
             system=system_prompt(novel_id),
@@ -729,7 +742,7 @@ def direct_beat(
             retry = client.complete(  # type: ignore[attr-defined]
                 Task.PANEL_DIRECTION,
                 build_prompt(beat_text, cast=cast, novel_style=novel_style, context_brief=context_brief,
-                             recent_shots=recent_shots, staging=staging) + "\n" + note,
+                             recent_shots=recent_shots, staging=staging, spoken=spoken) + "\n" + note,
                 PanelDirection, system=system_prompt(novel_id), novel_id=novel_id,
             )
         except Exception as exc:
