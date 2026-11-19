@@ -124,3 +124,9 @@ def test_staging_rules_keep_a_coloured_glow_on_its_source_not_in_the_scene_light
     from echotales.pipeline.render.staging import STAGING_SYSTEM
 
     assert "coloured glow belongs to what glows" in STAGING_SYSTEM
+
+
+def test_staging_gets_its_crowd_gap_from_depth_not_from_empty_space_instructions() -> None:
+    from echotales.pipeline.render.staging import STAGING_SYSTEM
+
+    assert "DEPTH" in STAGING_SYSTEM and "seen from behind" in STAGING_SYSTEM and "empty gap" not in STAGING_SYSTEM
