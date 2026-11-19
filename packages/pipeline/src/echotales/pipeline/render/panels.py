@@ -1143,6 +1143,26 @@ def present_beat_entities(mentions: list[Mention], blocks: list[int]) -> list[st
     return out
 
 
+def addressed_scene_cast(mentions: list[Mention], beat_blocks: list[int], scene_blocks: list[int]) -> list[str]:
+    """Entities this beat names in any mode who are PRESENT somewhere in its scene.
+
+    Why: RI ch1 blocks 0-3 are the sect fighters shouting at Fang Yuan; the text only names him (a dialogue reference), the
+    narration that places him comes at block 5, so a beat-local PRESENT scan left CAST empty and the 2026-11-16 render drew
+    the crowd panels with no Fang Yuan in them. Requiring both conditions keeps the earlier rule that one incidental mention
+    must not cast the protagonist in a scene he is not in."""
+    in_scene = set(scene_blocks)
+    present = {
+        m.target_id for m in mentions
+        if m.target_id and m.block_index in in_scene and m.reference_mode is ReferenceMode.PRESENT
+    }
+    in_beat = set(beat_blocks)
+    out: list[str] = []
+    for m in mentions:
+        if m.block_index in in_beat and m.target_id in present and m.target_id not in out:
+            out.append(m.target_id)
+    return out
+
+
 def present_beat_entities_with_reveals(
     mentions: list[Mention],
     blocks: list[int],
@@ -2146,6 +2166,8 @@ def render_panels(
                         chapter_number=chapter_number,
                     )
                 )
+                if not _present_entities and not _scene_last_present:
+                    _present_entities = addressed_scene_cast(mentions, _chunk_blocks, list(scene.blocks))
                 # One compile per beat, at the fractional in-chapter position:
                 # the persona and appearance the prompt is built from below
                 # are read out of it, and the plan's cache-key digest is

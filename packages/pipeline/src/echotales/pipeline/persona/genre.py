@@ -406,6 +406,24 @@ def profile(novel_id: str) -> GenreProfile:
     return GENRES[genre_of(novel_id)]
 
 
+#: One short lead sentence per genre for a language-model image encoder (Z-Image). The owner's hand-written probe prompts
+#: that drew the panels he liked opened with exactly this and then went straight to the scene; the long style paragraph the
+#: compiler used to end with was never in them (2026-11-19). The wording for xianxia is the probes' own.
+STYLE_LEADS: dict[str, str] = {
+    "xianxia": "Chinese donghua style illustration, guofeng, detailed painterly xianxia art.",
+    "victorian_gothic": "Victorian gothic illustration, detailed painterly gaslamp-era art with period costume.",
+    "modern_apocalypse": "Korean webtoon style illustration, detailed painterly modern urban art, cinematic light.",
+    "contemporary": "Detailed painterly contemporary anime-style illustration, cinematic light.",
+    "western_fantasy": "Detailed painterly western fantasy illustration with medieval costume and craft.",
+    "science_fiction": "Detailed painterly science fiction illustration, cinematic light.",
+    "generic": "Detailed painterly period book illustration, historically accurate costume and setting.",
+}
+
+
+def style_lead(novel_id: str) -> str:
+    return STYLE_LEADS.get(genre_of(novel_id), STYLE_LEADS["generic"])
+
+
 #: A genre needs this many lexicon hits per 10,000 words, and a lead over the runner-up, before it is proposed;
 #: below that the neutral profile is the honest default rather than a guess.
 MIN_HITS_PER_10K = 6.0

@@ -223,6 +223,17 @@ _AGE_BAND_WORDS = (
 )
 
 
+def age_years_from_text(passages: list[str]) -> int | None:
+    """The youngest age the passages state outright ("a fifteen year old teenager"), or None.
+
+    Youngest for the reason `age_band_from_text` gives: a rebirth body is compared to the previous life's span in
+    passages about the same chapter."""
+    ages: list[int] = []
+    for digits, word in _AGE_STATEMENT.findall(" ".join(passages)):
+        ages.append(int(digits) if digits else _AGE_WORDS[word.casefold()])
+    return min(ages) if ages else None
+
+
 def age_band_from_text(passages: list[str]) -> tuple[str | None, str]:
     """Infer a coarse age band from explicit statements in the narration.
 

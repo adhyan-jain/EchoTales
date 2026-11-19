@@ -313,6 +313,25 @@ def _demographics(
     return gender, age_band
 
 
+def body_age_years(
+    store: Store, persona_id: str, *, novel_id: str, entity_id: str, position: float | None = None,
+) -> int:
+    """The age in years this body is stated to have, or 0: a reader-stored `age` fact first, else the youngest age
+    stated in the passages of this body's own chapters (the scoping `_demographics` uses for the band).
+
+    Why a number and not only the band: "youth" cannot make an image model draw a boy of fifteen, "a 15-year-old boy" can
+    (RI's reborn body, owner review 2026-11-19)."""
+    from echotales.pipeline.persona.traits import age_years_from_text
+    from echotales.pipeline.resolve.appearance_extract import _chapters_by_body, gather_appearance_passages
+
+    stored = standing_values(store, persona_id, position=position).get("age", "")
+    if stored.strip().isdigit():
+        return int(stored)
+    scoped = dict(_chapters_by_body(store, novel_id, entity_id, None))
+    passages = gather_appearance_passages(store, novel_id, entity_id, allowed_chapters=scoped.get(persona_id))
+    return age_years_from_text(passages) or 0
+
+
 def build_reference_prompt(
     label: str,
     appearance: dict[str, str],
