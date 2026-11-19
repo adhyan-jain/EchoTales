@@ -1,0 +1,549 @@
+{
+ "label": "v20-verify-qwen",
+ "commit": "7df6d91",
+ "source": "v18-borrowed",
+ "chapters": {
+  "lord-of-the-mysteries:1": {
+   "held_out": false,
+   "speakers": [
+    0,
+    0
+   ],
+   "false_dialogue": 4,
+   "appearance": [
+    0,
+    5
+   ],
+   "persona_links": [
+    1,
+    1
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    4,
+    4
+   ],
+   "speaker_misses": []
+  },
+  "lord-of-the-mysteries:3": {
+   "held_out": false,
+   "speakers": [
+    6,
+    9
+   ],
+   "false_dialogue": 3,
+   "appearance": [
+    0,
+    3
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    5,
+    5
+   ],
+   "speaker_misses": [
+    "block 10 quote 0: expected klein, got None",
+    "block 34 quote 0: expected klein, got None",
+    "block 57 quote 0: expected klein, got None"
+   ]
+  },
+  "lord-of-the-mysteries:7": {
+   "held_out": false,
+   "speakers": [
+    28,
+    43
+   ],
+   "false_dialogue": 8,
+   "appearance": [
+    0,
+    0
+   ],
+   "persona_links": [
+    1,
+    4
+   ],
+   "ages": [
+    0,
+    1
+   ],
+   "kinds": [
+    6,
+    6
+   ],
+   "speaker_misses": [
+    "block 0 quote 0: expected klein, got None",
+    "block 5 quote 0: expected klein, got None",
+    "block 10 quote 0: expected alger, got None",
+    "block 11 quote 0: expected alger, got lord-of-the-mysteries:self:4afd3a0760",
+    "block 14 quote 0: expected audrey, got None",
+    "block 20 quote 0: expected audrey, got None",
+    "block 27 quote 0: expected klein, got None",
+    "block 28 quote 0: expected klein, got None",
+    "block 41 quote 0: expected alger, got lord-of-the-mysteries:self:8f906ddc75",
+    "block 43 quote 1: expected audrey, got None",
+    "block 45 quote 0: expected klein, got None",
+    "block 60 quote 0: expected alger, got None",
+    "block 61 quote 0: expected audrey, got None",
+    "block 77 quote 0: expected klein, got None",
+    "block 82 quote 0: expected klein, got None"
+   ]
+  },
+  "lord-of-the-mysteries:12": {
+   "held_out": false,
+   "speakers": [
+    22,
+    31
+   ],
+   "false_dialogue": 4,
+   "appearance": [
+    0,
+    2
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    5,
+    5
+   ],
+   "speaker_misses": [
+    "block 10 quote 0: expected klein, got None",
+    "block 12 quote 0: expected dunn, got None",
+    "block 16 quote 0: expected dunn, got None",
+    "block 31 quote 0: expected klein, got None",
+    "block 43 quote 0: expected dunn, got None",
+    "block 47 quote 0: expected dunn, got None",
+    "block 53 quote 0: expected klein, got None",
+    "block 68 quote 0: expected dunn, got None",
+    "block 72 quote 0: expected dunn, got None"
+   ]
+  },
+  "lord-of-the-mysteries:14": {
+   "held_out": false,
+   "speakers": [
+    45,
+    53
+   ],
+   "false_dialogue": 7,
+   "appearance": [
+    0,
+    4
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    5,
+    5
+   ],
+   "speaker_misses": [
+    "block 14 quote 0: expected daly, got None",
+    "block 24 quote 0: expected dunn, got None",
+    "block 38 quote 0: expected daly, got None",
+    "block 50 quote 0: expected daly, got None",
+    "block 51 quote 0: expected daly, got None",
+    "block 57 quote 0: expected daly, got None",
+    "block 58 quote 0: expected daly, got None",
+    "block 84 quote 0: expected dunn, got None"
+   ]
+  },
+  "lord-of-the-mysteries:21": {
+   "held_out": true,
+   "speakers": [
+    30,
+    37
+   ],
+   "false_dialogue": 5,
+   "appearance": [
+    0,
+    3
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    3,
+    3
+   ],
+   "speaker_misses": [
+    "block 16 quote 0: expected neil, got None",
+    "block 23 quote 0: expected neil, got None",
+    "block 29 quote 0: expected neil, got None",
+    "block 56 quote 0: expected leonard, got None",
+    "block 59 quote 0: expected klein, got None",
+    "block 63 quote 0: expected klein, got None",
+    "block 66 quote 0: expected leonard, got lord-of-the-mysteries:self:fc05128447"
+   ]
+  },
+  "reverend-insanity:1": {
+   "held_out": false,
+   "speakers": [
+    25,
+    29
+   ],
+   "false_dialogue": 0,
+   "appearance": [
+    0,
+    4
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    9,
+    9
+   ],
+   "speaker_misses": [
+    "block 37 quote 0: expected clan_head, got None",
+    "block 61 quote 0: expected clan_head, got None",
+    "block 68 quote 0: expected clan_head, got None",
+    "block 78 quote 0: expected clan_head, got None"
+   ]
+  },
+  "reverend-insanity:2": {
+   "held_out": false,
+   "speakers": [
+    9,
+    15
+   ],
+   "false_dialogue": 0,
+   "appearance": [
+    0,
+    1
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    4,
+    4
+   ],
+   "speaker_misses": [
+    "block 28 quote 0: expected fang_yuan, got None",
+    "block 30 quote 0: expected fang_zheng, got None",
+    "block 32 quote 0: expected fang_yuan, got None",
+    "block 33 quote 0: expected fang_zheng, got None",
+    "block 59 quote 1: expected fang_yuan, got None",
+    "block 62 quote 0: expected fang_zheng, got None"
+   ]
+  },
+  "reverend-insanity:3": {
+   "held_out": false,
+   "speakers": [
+    12,
+    13
+   ],
+   "false_dialogue": 3,
+   "appearance": [
+    0,
+    3
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    3,
+    3
+   ],
+   "speaker_misses": [
+    "block 18 quote 0: expected fang_zheng, got None"
+   ]
+  },
+  "reverend-insanity:4": {
+   "held_out": false,
+   "speakers": [
+    16,
+    17
+   ],
+   "false_dialogue": 1,
+   "appearance": [
+    1,
+    3
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    7,
+    7
+   ],
+   "speaker_misses": [
+    "block 42 quote 0: expected fang_yuan, got None"
+   ]
+  },
+  "reverend-insanity:5": {
+   "held_out": false,
+   "speakers": [
+    9,
+    10
+   ],
+   "false_dialogue": 0,
+   "appearance": [
+    0,
+    0
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    2,
+    2
+   ],
+   "speaker_misses": [
+    "block 25 quote 0: expected _anon, got reverend-insanity:title:many_elders_watching"
+   ]
+  },
+  "omniscient-readers-viewpoint:2": {
+   "held_out": false,
+   "speakers": [
+    25,
+    61
+   ],
+   "false_dialogue": 9,
+   "appearance": [
+    0,
+    0
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    1
+   ],
+   "kinds": [
+    2,
+    2
+   ],
+   "speaker_misses": [
+    "block 10 quote 0: expected sangah, got None",
+    "block 13 quote 0: expected sangah, got None",
+    "block 16 quote 0: expected dokja, got None",
+    "block 19 quote 0: expected dokja, got None",
+    "block 23 quote 0: expected sangah, got None",
+    "block 24 quote 0: expected dokja, got None",
+    "block 25 quote 0: expected sangah, got None",
+    "block 26 quote 0: expected dokja, got None",
+    "block 28 quote 0: expected dokja, got None",
+    "block 29 quote 0: expected sangah, got None",
+    "block 30 quote 0: expected dokja, got None",
+    "block 31 quote 0: expected sangah, got None",
+    "block 33 quote 0: expected sangah, got None",
+    "block 36 quote 0: expected dokja, got None",
+    "block 37 quote 0: expected sangah, got None",
+    "block 44 quote 0: expected dokja, got None",
+    "block 47 quote 0: expected dokja, got None",
+    "block 50 quote 0: expected dokja, got None",
+    "block 59 quote 0: expected sangah, got None",
+    "block 66 quote 0: expected sangah, got None",
+    "block 68 quote 0: expected sangah, got None",
+    "block 73 quote 0: expected dokja, got None",
+    "block 74 quote 0: expected sangah, got None",
+    "block 75 quote 0: expected dokja, got None",
+    "block 77 quote 0: expected dokja, got None",
+    "block 78 quote 0: expected sangah, got None",
+    "block 81 quote 0: expected sangah, got None",
+    "block 83 quote 0: expected sangah, got None",
+    "block 84 quote 0: expected dokja, got None",
+    "block 98 quote 0: expected _anon, got omniscient-readers-viewpoint:self2",
+    "block 99 quote 0: expected sangah, got None",
+    "block 101 quote 0: expected dokja, got None",
+    "block 102 quote 0: expected sangah, got None",
+    "block 103 quote 0: expected dokja, got None",
+    "block 105 quote 0: expected dokja, got None",
+    "block 109 quote 0: expected sangah, got None"
+   ]
+  },
+  "omniscient-readers-viewpoint:3": {
+   "held_out": false,
+   "speakers": [
+    15,
+    24
+   ],
+   "false_dialogue": 8,
+   "appearance": [
+    0,
+    0
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    2,
+    2
+   ],
+   "speaker_misses": [
+    "block 12 quote 0: expected _anon, got omniscient-readers-viewpoint:self1",
+    "block 16 quote 0: expected sangah, got None",
+    "block 31 quote 0: expected sangah, got None",
+    "block 49 quote 0: expected han, got None",
+    "block 51 quote 0: expected dokja, got None",
+    "block 52 quote 0: expected sangah, got omniscient-readers-viewpoint:self12",
+    "block 57 quote 0: expected han, got None",
+    "block 62 quote 0: expected han, got None",
+    "block 65 quote 0: expected han, got None"
+   ]
+  },
+  "omniscient-readers-viewpoint:4": {
+   "held_out": false,
+   "speakers": [
+    15,
+    25
+   ],
+   "false_dialogue": null,
+   "appearance": [
+    0,
+    1
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    3,
+    3
+   ],
+   "speaker_misses": [
+    "block 2 quote 1: expected dokja, got None",
+    "block 3 quote 0: expected sangah, got None",
+    "block 4 quote 0: expected dokja, got None",
+    "block 6 quote 0: expected dokja, got None",
+    "block 7 quote 0: expected sangah, got None",
+    "block 8 quote 0: expected dokja, got None",
+    "block 18 quote 0: expected hyunsung, got None",
+    "block 23 quote 0: expected hyunsung, got None",
+    "block 35 quote 0: expected hyunsung, got None",
+    "block 40 quote 0: expected sangah, got None"
+   ]
+  },
+  "omniscient-readers-viewpoint:5": {
+   "held_out": false,
+   "speakers": [
+    19,
+    35
+   ],
+   "false_dialogue": null,
+   "appearance": [
+    0,
+    2
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    4,
+    4
+   ],
+   "speaker_misses": [
+    "block 20 quote 0: expected sangah, got None",
+    "block 24 quote 0: expected namwoon, got None",
+    "block 29 quote 0: expected namwoon, got None",
+    "block 30 quote 0: expected myungoh, got None",
+    "block 32 quote 0: expected myungoh, got omniscient-readers-viewpoint:anon:5:man",
+    "block 39 quote 0: expected myungoh, got None",
+    "block 40 quote 0: expected namwoon, got None",
+    "block 40 quote 1: expected namwoon, got None",
+    "block 41 quote 0: expected myungoh, got None",
+    "block 42 quote 0: expected namwoon, got None",
+    "block 44 quote 0: expected namwoon, got None",
+    "block 64 quote 0: expected dokja, got None",
+    "block 66 quote 0: expected sangah, got None",
+    "block 69 quote 0: expected sangah, got None",
+    "block 81 quote 0: expected dokja, got None",
+    "block 87 quote 0: expected dokja, got None"
+   ]
+  }
+ },
+ "verifier": {
+  "lord-of-the-mysteries": {
+   "asked": 162,
+   "yes": 112,
+   "no": 44,
+   "unclear": 6,
+   "rejected": 44,
+   "skipped_tagged": 3
+  },
+  "reverend-insanity": {
+   "asked": 41,
+   "yes": 26,
+   "no": 15,
+   "unclear": 0,
+   "rejected": 15,
+   "skipped_tagged": 3
+  },
+  "omniscient-readers-viewpoint": {
+   "asked": 134,
+   "yes": 45,
+   "no": 78,
+   "unclear": 11,
+   "rejected": 78,
+   "skipped_tagged": 2
+  }
+ },
+ "seconds": 216
+}
