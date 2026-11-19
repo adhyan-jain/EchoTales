@@ -10,7 +10,6 @@ import re
 from pathlib import Path
 
 import pytest
-
 from echotales.pipeline import compute, jobs
 from echotales.pipeline.engines import registry as reg
 
@@ -32,9 +31,9 @@ def test_replaced_lists_are_reproduced() -> None:
     assert reg.names("image", surface="render-image") == (
         "stub", "sdxl", "manga", "illustrious", "noobai", "refined", "runpod", "gemini", "openrouter")
     assert reg.http_image_engines() == frozenset({"stub", "sdxl", "illustrious", "noobai", "refined", "manga"})
-    assert compute.LOCAL_ENGINES == frozenset({"sdxl", "illustrious", "noobai", "refined", "manga"})
-    assert compute.HOSTED_ENGINES == frozenset({"runpod", "gemini", "openrouter"})
-    assert compute.VIDEO_ENGINES == frozenset({"ltx-local"})
+    assert frozenset({"sdxl", "illustrious", "noobai", "refined", "manga"}) == compute.LOCAL_ENGINES
+    assert frozenset({"runpod", "gemini", "openrouter"}) == compute.HOSTED_ENGINES
+    assert frozenset({"ltx-local"}) == compute.VIDEO_ENGINES
     assert jobs.VIDEO_ENGINES == ("stills", "ltx-local")
     assert compute.LLM_PROVIDERS == ("ollama", "runpod", "openai", "gemini", "anthropic", "gateway", "stub")
     assert compute.IMAGE_PROVIDERS == ("local", "runpod", "gemini", "openrouter", "stub")
