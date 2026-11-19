@@ -154,3 +154,22 @@ def expression_conflicts(expression: str, context: str) -> str:
     if _HAPPY.search(expression) and _HOSTILE_CONTEXT.search(context) and not _HOSTILE_FACE.search(expression):
         return "positive expression on a hostile line"
     return ""
+
+
+# Ground and place nouns a paragraph invents. Used only to FLAG a paragraph for one retry, never to rewrite it, and only when the
+# staging sheet fixes the set: gemma2:9b wrote "grass", "a forest clearing", "a busy marketplace" and "cobblestone street" into panels
+# of a bare mountaintop (RI ch1, 2026-11-19, 7 of 16 panels), and the image model drew them.
+_PLACE_NOUNS = ("grass", "meadow", "field", "plain", "forest", "woods", "marketplace", "market", "street", "cobblestone", "courtyard",
+                "garden", "village", "hall", "temple", "pavilion", "desert", "beach", "river", "lake", "snow", "bamboo")
+
+
+def place_conflicts(composition: str, staging: str, source_text: str) -> list[str]:
+    """Place nouns the paragraph uses that neither the staging sheet nor the passage contains. [] when there is no sheet."""
+    if "Set:" not in staging:
+        return []
+    allowed_words = set(re.findall(r"[a-z]+", f"{staging} {source_text}".lower()))
+    words = set(re.findall(r"[a-z]+", composition.lower()))
+    return sorted(
+        n for n in _PLACE_NOUNS
+        if (n in words or n + "s" in words) and n not in allowed_words and n + "s" not in allowed_words
+    )

@@ -734,7 +734,7 @@ def direct_beat(
         log.warning("panel direction failed: %s", exc)
         return None
 
-    from echotales.pipeline.render.staging import expression_conflicts
+    from echotales.pipeline.render.staging import expression_conflicts, place_conflicts
 
     def _again(note: str) -> PanelDirection | None:
         """One corrective retry with the reason named; None when the call fails."""
@@ -781,6 +781,15 @@ def direct_beat(
             direction = fixed
         else:
             direction = direction.model_copy(update={"grounding_rejects": [*direction.grounding_rejects, reason]})
+    if direction.composition and (bad := place_conflicts(direction.composition, staging, f"{beat_text} {context_brief}")):
+        # The paragraph put the scene somewhere the staging sheet and the text do not: one retry naming the words, else flag.
+        fixed = _again(f"Your paragraph names places the scene does not have: {', '.join(bad)}. The place is only what the SCENE STAGING "
+                       "says; rewrite the paragraph without them.")
+        if fixed is not None and fixed.composition and not place_conflicts(fixed.composition, staging, f"{beat_text} {context_brief}"):
+            fixed.grounding_rejects = [*fixed.grounding_rejects, "place retried"]
+            direction = fixed
+        else:
+            direction = direction.model_copy(update={"grounding_rejects": [*direction.grounding_rejects, "place:" + ",".join(bad)]})
     return Direction(
         direction=direction, cast=cast, novel_style=novel_style, conditions=conditions or {},
         novel_id=novel_id,

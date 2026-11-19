@@ -130,3 +130,24 @@ def test_staging_gets_its_crowd_gap_from_depth_not_from_empty_space_instructions
     from echotales.pipeline.render.staging import STAGING_SYSTEM
 
     assert "DEPTH" in STAGING_SYSTEM and "seen from behind" in STAGING_SYSTEM and "empty gap" not in STAGING_SYSTEM
+
+
+def test_a_paragraph_that_invents_a_place_the_sheet_and_text_lack_is_flagged_and_retried() -> None:
+    from types import SimpleNamespace
+
+    from echotales.pipeline.render.direction import PanelDirection, direct_beat
+    from echotales.pipeline.render.staging import place_conflicts
+
+    sheet = "Set: a bare mountaintop of grey rock. Blocking: Fang Yuan alone. Light: dusk."
+    assert place_conflicts("He stands in a forest clearing on green grass.", sheet, "Fang Yuan stood.") == ["forest", "grass"]
+    assert place_conflicts("He stands on the rock.", sheet, "Fang Yuan stood.") == []
+    assert place_conflicts("He stands on grass.", sheet, "He stood on the grass.") == []  # the passage says it
+    assert place_conflicts("He stands in a forest.", "", "x") == []  # no sheet, no judgement
+    answers = iter(["Fang Yuan stands in a forest clearing, calm.", "Fang Yuan stands on the bare rock, calm."])
+
+    class Client:
+        def complete(self, task, prompt, schema, **kw):
+            return SimpleNamespace(value=PanelDirection(composition=next(answers), expression="calm"))
+
+    d = direct_beat("Fang Yuan stood.", cast={"Fang Yuan": ""}, novel_style="x", client=Client(), staging=sheet)
+    assert d is not None and "forest" not in d.direction.composition and "place retried" in d.direction.grounding_rejects
