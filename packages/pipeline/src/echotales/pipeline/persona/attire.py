@@ -123,6 +123,10 @@ _CUE_WEIGHT: dict[str, float] = {
 }
 
 
+#: Cues that name no place in any book ("inside his head"); the whole-word books already zero it in `_CUE_WEIGHT`.
+_NEVER_A_PLACE = frozenset({"inside"})
+
+
 def scene_locale(
     novel_id: str, beat: str, *, block_index: int = 0, strict: bool = False
 ) -> str:
@@ -164,16 +168,19 @@ def scene_locale(
     scores: dict[str, int] = {}
     # Whole-word cues for the non-xianxia books: a substring count read "wooden" in "a low wooden bed" as a forest cue
     # and stapled "a moonlit moor, low cloud" onto every panel of a night-time bedroom (LotM render review,
-    # 2026-10-18). Reverend Insanity keeps the substring count its locales were tuned with. A cue for a place this
+    # 2026-10-18). `whole_words` now only chooses the cue weights (RI counts each hit as 1, as tuned). A cue for a place this
     # book's table does not have is skipped rather than raising later on `locales[key]`.
     whole_words = setting_first(novel_id)
     for cue, key in _LOCALE_CUES.items():
         if key not in locales:
             continue
+        # Whole words for every book: the substring count read "shall" as "hall" and "deep inside the heart" as an interior, so RI
+        # ch1's cliff memories were filed under "a timber clan hall" and the self-detonation inherited it (2026-11-19, panels 9-15).
+        hits = len(re.findall(rf"\b{re.escape(cue)}(?:s|es)?\b", low))
         if whole_words:
-            hits = len(re.findall(rf"\b{re.escape(cue)}(?:s|es)?\b", low)) * _CUE_WEIGHT.get(cue, 1.0)
-        else:
-            hits = low.count(cue)
+            hits *= _CUE_WEIGHT.get(cue, 1.0)
+        elif cue in _NEVER_A_PLACE:
+            hits = 0
         if hits:
             scores[key] = scores.get(key, 0) + hits
     if whole_words:

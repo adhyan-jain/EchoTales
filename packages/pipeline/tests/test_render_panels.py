@@ -478,6 +478,7 @@ class TestRenderPanels:
             conditions=None,
             crowd_mood=None,
             staging="",
+            spoken="",
             recent_shots=None,
         ):
             received_casts.append(dict(cast))
@@ -645,3 +646,29 @@ class TestDensity:
 
         with pytest.raises(ValueError, match="density"):
             render_panels("d", self._store(tmp_path), out_dir=tmp_path / "x", density="everything")
+
+
+def test_a_block_range_does_not_move_a_block_across_a_body_change(tmp_path) -> None:
+    """RI ch1 preview of blocks 0-30: block 29 of 92 was placed at 29/31 of the chapter, past the rebirth boundary (block 82), so the
+    self-detonation was drawn as the reborn 15-year-old. A block's story position is its place in the whole chapter."""
+    import json
+
+    store = Store(str(tmp_path / "t.db"))
+    store.add_novel("t", "T", "x.epub", "generic")
+    store.add_chapter(Chapter(novel_id="t", number=1.0, title="T", source_href="a.html",
+                              blocks=[Block(index=i, block_type=BlockType.PROSE, text=f"Fang Yuan stood still {i}.") for i in range(10)]))
+    store.add_self(Self(id="t:self1", novel_id="t", canonical_label="Fang Yuan",
+                        first_attested_pos=DiscoursePosition(chapter=1.0, offset=0), kind=TargetKind.SELF))
+    store.add_mentions([Mention(id="m3", novel_id="t", segment_id="s", chapter=1.0, offset=0, block_index=3, text="Fang Yuan",
+                                alias_type=AliasType.RIGID_NAME, span_type=SpanType.NARRATION_ACTION,
+                                reference_mode=ReferenceMode.PRESENT, target_kind=TargetKind.SELF, target_id="t:self1")])
+    write_epochs(store, "t", store.get_self("t:self1"), [
+        BodyEpoch(index=0, persona_id="t:self1:body1", body_label="Fang Yuan", from_pos=1.0, to_pos=1.6, cause="death", evidence=""),
+        BodyEpoch(index=1, persona_id="t:self1:body2", body_label="Fang Yuan (body 2)", from_pos=1.6, to_pos=None, cause="rebirth",
+                  evidence=""),
+    ], observer_id=OBSERVER_READER)
+    store.conn.commit()
+    render_panels("t", store, out_dir=tmp_path / "panels", max_panels=5, block_range=(0, 4))
+    plans = [json.loads(line) for p in (tmp_path / "panels").rglob("panel_plan.jsonl") for line in p.read_text().splitlines()]
+    persona_ids = {c["persona_id"] for r in plans for c in r["cast"]}
+    assert persona_ids == {"t:self1:body1"}, persona_ids

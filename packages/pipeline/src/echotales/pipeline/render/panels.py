@@ -86,6 +86,7 @@ from echotales.pipeline.render.scene_refs import (
 )
 from echotales.pipeline.render.scene_state import get_or_derive_scene_state
 from echotales.pipeline.render.scenes import carry_locales, group_scenes
+from echotales.pipeline.render.speech import spoken_lines
 from echotales.pipeline.spans.scene import detect_mobs
 from echotales.pipeline.world.context import story_context
 from echotales.pipeline.world.lexicon import build_lexicon
@@ -1563,6 +1564,11 @@ class PanelReport:
         )
 
 
+def story_position_of(chapter_number: float, block_index: int, chapter_block_count: int) -> float:
+    """Where a block sits on the story axis: the chapter number plus its fraction of the whole chapter."""
+    return chapter_number + block_index / max(chapter_block_count, 1)
+
+
 def _speaker_label(span: Span, store: Store) -> str:
     """Who says this line, in words a director can use.
 
@@ -1571,11 +1577,16 @@ def _speaker_label(span: Span, store: Store) -> str:
     `ri:anon:1:s0:2` in a prompt would have the image model draw the
     string.
     """
+    return _speaker_name(span, store) or "Someone"
+
+
+def _speaker_name(span: Span, store: Store) -> str:
+    """The speaker's canonical label, or "" when the line has no resolved speaker."""
     speaker = span.speaker_self_id or ""
     if not speaker or ":anon:" in speaker:
-        return "Someone"
+        return ""
     entity = store.get_self(speaker)
-    return entity.canonical_label if entity is not None else "Someone"
+    return entity.canonical_label if entity is not None else ""
 
 
 def render_panels(
@@ -1792,6 +1803,10 @@ def render_panels(
         segments = store.get_segments(novel_id, chapter_number)
         spans = store.get_spans(novel_id, chapter_number)
 
+        # The story position of a block is its place in the WHOLE chapter; a `block_range` slice must not change it. A sliced
+        # block count put block 29 of 92 at 29/31 and drew RI ch1's self-detonation as the reborn 15-year-old (body 2 starts at
+        # block 82), only ever when previewing a range.
+        _chapter_block_count = len(chapter.blocks)
         if block_range is not None:
             lo, hi = block_range
             chapter = chapter.model_copy(
@@ -2167,7 +2182,7 @@ def render_panels(
                 # required, not cosmetic: see `character_looks`'s
                 # docstring for the mid-chapter body-selection bug this
                 # fixes.
-                story_position = chapter_number + lead / max(len(chapter.blocks), 1)
+                story_position = story_position_of(chapter_number, lead, _chapter_block_count)
                 from echotales.pipeline.persona.split import persona_at
 
                 _beat_bodies: dict[str, str] = {}
@@ -2445,8 +2460,14 @@ def render_panels(
                 # changed beat a different entry, so stale prompts fall out
                 # of use on their own while genuinely identical work is
                 # still reused across the two phases.
+                # Who says each line and to whom (`render/speech.py`), for the director's per-speaker faces; part of the digest so a
+                # changed attribution is a different beat.
+                _speech = spoken_lines(
+                    spans, _slot_blocks, label_of=lambda sp: _speaker_name(sp, store),
+                    cast=list(_beat_entity_labels.values()) or list(_scene_last_present_entity_labels.values()),
+                )
                 _beat_digest = hashlib.sha256(
-                    f"{beat_prose}|{directive}".encode()
+                    f"{beat_prose}|{directive}|{_speech}".encode()
                 ).hexdigest()[:12]
                 cache_key = (
                     f"{chapter_number:g}:{lead}:{_beat_digest}:{_db_fingerprint}"
@@ -2505,8 +2526,9 @@ def render_panels(
                             # drawn: who says it, to whom, with what face.
                             directed_prose = (
                                 "A line is spoken aloud in the scene; draw the person saying it, in the posture and with the "
-                                "face the words and the scene imply, addressing the one it is said to. The spoken words: "
-                                f"{directed_prose}"
+                                "face the words and the scene imply, addressing the one it is said to. "
+                                + ("The line, its speaker and its addressee are under SPOKEN LINES." if _speech
+                                   else f"The spoken words: {directed_prose}")
                             )
                         # State the crowd to the director explicitly -- but
                         # only on the slot that actually needs to know.
@@ -2583,13 +2605,18 @@ def render_panels(
 
                             _st = direct_staging(
                                 _scene_text, cast=_director_cast,
-                                novel_style=_novel_style, client=client, novel_id=novel_id,
+                                novel_style=_novel_style, client=client, novel_id=novel_id, previous=_prev_staging_text,
+                                lookahead=(
+                                    " ".join(by_index[b].text for sc in scenes[_scene_i + 1:_scene_i + 3] for b in sc.blocks if b in by_index)
+                                    if _location_source != "scene" and not _prev_staging_text else ""
+                                ),
                             )
                             _staging_text = _st.text() if _st is not None else ""
-                            _prev_staging_text = _staging_text
+                            _prev_staging_text = _staging_text or _prev_staging_text
                         directed = direct_beat(
                             directed_prose,
                             staging=_staging_text,
+                            spoken=_speech,
                             context_brief=brief,
                             cast=_director_cast,
                             novel_style=_novel_style,

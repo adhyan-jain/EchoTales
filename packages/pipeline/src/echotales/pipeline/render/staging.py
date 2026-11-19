@@ -45,15 +45,30 @@ STAGING_SYSTEM = (
     "gates, pavilions or ornaments the text does not name.\n"
     "- blocking: who stands where, facing whom, and on which side of the frame. Keep one axis: the lead on one side, the "
     "others on the opposite side facing the lead, so the camera never crosses the line between them. A crowd or group "
-    "faces its focus in rows or a shallow arc on ONE side of the frame, with an empty gap between it and the lead; it never "
+    "faces its focus in rows on ONE side of the frame; it never "
     "forms a ring around anyone unless the text literally says they surround him. People who kneel to a master kneel in "
     "rows in front of him, facing him. Use only names from CAST.\n"
-    "- light: time of day and light only if stated or implied.\n"
+    "- Distance between a crowd and a lone lead comes from DEPTH, never from an instruction to leave space empty (the image model "
+    "ignores \"twenty paces of empty ground\": 0 of 4 seeds). When a crowd faces a lone figure, stage it one of two ways and say "
+    "which: (a) the crowd in the foreground in tidy rows seen from behind, all facing away from the camera, and the lead small and "
+    "alone far ahead on the highest or farthest point, bare ground between; or (b) the camera behind the lead's shoulder looking "
+    "down, the crowd small in rows far below on a lower ledge. Choose (a) unless the lead is above the crowd in the text and the "
+    "scene is about him looking down at them. (Z-Image Turbo, 4 seeds each, 2026-11-19: (a) 4 of 4 a tiny lone figure on the summit with rows facing him, but 2 of 4 also "
+    "a green-robed lookalike in the foreground rows; (b) 4 of 4 a clear gap, the crowd a thin line; the side-by-side wording "
+    "separated only where the cliff happened to.)\n"
+    "- light: time of day and light only if stated or implied. A coloured glow belongs to what glows or to the window it falls "
+    "through: name that thing in set (\"a red moon in the window, its red light on the desk\") and keep light to the ambient "
+    "time and strength; a bare colour as the scene's light tinted a person red (LotM ch1 block 24).\n"
     "Be specific: name the ground, the nearest and farthest features, the side of the frame each group occupies and the "
     "distance between them. Example of the level of detail (structure only, never reuse its content): set: \"a flat "
     "lakeshore of grey pebbles with reeds on the left and a low hill behind\"; blocking: \"the old fisherman sits on the "
     "left facing right; three children kneel in two rows on the right, all facing him, an arm's length of empty "
     "pebbles between them\"; light: \"overcast noon\". Name people exactly as the scene text does.\n"
+    "- If a PREVIOUS STAGING is given, this scene continues it. A place or light that THIS scene's own text states replaces "
+    "the previous one; where the text states none, repeat the previous set, blocking and light word for word. A memory, a "
+    "thought, a laugh or a line of speech does not move anyone: the set stays, and nothing the text does not mention is added.\n"
+    "- If LATER TEXT is given, the scene itself states no place: take the place from it (it is the same place) and stage only "
+    "this scene's own people and lines.\n"
     "Return JSON with keys set, blocking, light, each one or two plain sentences."
 )
 
@@ -93,15 +108,22 @@ def validate_staging(
 
 
 def direct_staging(
-    scene_text: str, *, cast: dict[str, str], novel_style: str, client: object, novel_id: str = "", max_chars: int = 2600
+    scene_text: str, *, cast: dict[str, str], novel_style: str, client: object, novel_id: str = "", max_chars: int = 2600,
+    previous: str = "", lookahead: str = "",
 ) -> SceneStaging | None:
-    """One director call per scene. None on any failure; panels then fall back to their own paragraph."""
+    """One director call per scene. None on any failure; panels then fall back to their own paragraph.
+
+    `previous` is the sheet of the scene before: RI ch1's memory scenes state no place and a fresh call invented a grassy hillside
+    and a hall beside the cliff scene they belong to. `lookahead` is the next scenes' text for a scene that opens a chapter with
+    no place of its own (block 0 of RI ch1 is one shouted line; alone it was staged as a meadow, and every later scene carried that)."""
     from echotales.pipeline.llm.tasks import Task
 
     prompt = "\n".join([
         f"Novel setting: {novel_style}",
         f"CAST: {list(cast) if cast else '(none listed: use the names exactly as the scene text writes them)'}",
+        *([f"PREVIOUS STAGING (this scene continues it): {previous}"] if previous.strip() else []),
         "Scene text:", scene_text[:max_chars].strip(), "",
+        *(["LATER TEXT of the same chapter (the place only):", lookahead[:1200].strip(), ""] if lookahead.strip() else []),
         "Return only JSON with keys set, blocking, light.",
     ])
     try:
@@ -132,3 +154,22 @@ def expression_conflicts(expression: str, context: str) -> str:
     if _HAPPY.search(expression) and _HOSTILE_CONTEXT.search(context) and not _HOSTILE_FACE.search(expression):
         return "positive expression on a hostile line"
     return ""
+
+
+# Ground and place nouns a paragraph invents. Used only to FLAG a paragraph for one retry, never to rewrite it, and only when the
+# staging sheet fixes the set: gemma2:9b wrote "grass", "a forest clearing", "a busy marketplace" and "cobblestone street" into panels
+# of a bare mountaintop (RI ch1, 2026-11-19, 7 of 16 panels), and the image model drew them.
+_PLACE_NOUNS = ("grass", "meadow", "field", "plain", "forest", "woods", "marketplace", "market", "street", "cobblestone", "courtyard",
+                "garden", "village", "hall", "temple", "pavilion", "desert", "beach", "river", "lake", "snow", "bamboo")
+
+
+def place_conflicts(composition: str, staging: str, source_text: str) -> list[str]:
+    """Place nouns the paragraph uses that neither the staging sheet nor the passage contains. [] when there is no sheet."""
+    if "Set:" not in staging:
+        return []
+    allowed_words = set(re.findall(r"[a-z]+", f"{staging} {source_text}".lower()))
+    words = set(re.findall(r"[a-z]+", composition.lower()))
+    return sorted(
+        n for n in _PLACE_NOUNS
+        if (n in words or n + "s" in words) and n not in allowed_words and n + "s" not in allowed_words
+    )

@@ -89,3 +89,65 @@ def test_a_close_shot_puts_its_own_paragraph_before_the_staging() -> None:
                    composition="Close-up of Fang Yuan, a cold mocking smile.", staging=s.text())
     labels = [x.label for x in compile_prompt(b, model_profile("z-image-turbo")).sections]
     assert labels[:3] == ["style", "composition", "staging"]
+
+
+def test_staging_is_asked_to_keep_the_previous_scenes_set_unless_the_text_moves_the_characters() -> None:
+    # RI ch1: the laugh scene says "the setting sun" and nothing else about place; a fresh staging call invented a grassy hillside
+    # next to the cliff scene. The previous sheet goes in the prompt so the model carries it instead of inventing.
+    from types import SimpleNamespace
+
+    from echotales.pipeline.render.staging import STAGING_SYSTEM, direct_staging
+
+    seen: dict = {}
+
+    class Client:
+        def complete(self, task, prompt, schema, **kw):
+            seen["prompt"] = prompt
+            return SimpleNamespace(value=SceneStaging(set="a bare rock cliff", blocking="Fang Yuan alone on the left", light="dusk"))
+
+    prev = "Set: a bare rock cliff edge above cloud. Blocking: Fang Yuan alone at the left edge. Light: dusk."
+    direct_staging("Looking at the setting sun, Fang Yuan lightly laughed.", cast={"Fang Yuan": ""}, novel_style="x",
+                   client=Client(), previous=prev)
+    assert prev in seen["prompt"]
+    assert "previous staging" in STAGING_SYSTEM.lower() and "states none" in STAGING_SYSTEM.lower()
+    seen.clear()
+    direct_staging("He sat down.", cast={"Fang Yuan": ""}, novel_style="x", client=Client())
+    assert "PREVIOUS" not in seen["prompt"] and "LATER TEXT" not in seen["prompt"]
+    # a chapter-opening scene with no place of its own is shown the text after it (RI ch1 block 0 alone was staged as a meadow)
+    seen.clear()
+    direct_staging("Fang Yuan, hand it over!", cast={"Fang Yuan": ""}, novel_style="x", client=Client(),
+                   lookahead="Fang Yuan stood on the mountain rock.")
+    assert "LATER TEXT" in seen["prompt"] and "mountain rock" in seen["prompt"]
+
+
+def test_staging_rules_keep_a_coloured_glow_on_its_source_not_in_the_scene_light() -> None:
+    from echotales.pipeline.render.staging import STAGING_SYSTEM
+
+    assert "coloured glow belongs to what glows" in STAGING_SYSTEM
+
+
+def test_staging_gets_its_crowd_gap_from_depth_not_from_empty_space_instructions() -> None:
+    from echotales.pipeline.render.staging import STAGING_SYSTEM
+
+    assert "DEPTH" in STAGING_SYSTEM and "seen from behind" in STAGING_SYSTEM and "empty gap" not in STAGING_SYSTEM
+
+
+def test_a_paragraph_that_invents_a_place_the_sheet_and_text_lack_is_flagged_and_retried() -> None:
+    from types import SimpleNamespace
+
+    from echotales.pipeline.render.direction import PanelDirection, direct_beat
+    from echotales.pipeline.render.staging import place_conflicts
+
+    sheet = "Set: a bare mountaintop of grey rock. Blocking: Fang Yuan alone. Light: dusk."
+    assert place_conflicts("He stands in a forest clearing on green grass.", sheet, "Fang Yuan stood.") == ["forest", "grass"]
+    assert place_conflicts("He stands on the rock.", sheet, "Fang Yuan stood.") == []
+    assert place_conflicts("He stands on grass.", sheet, "He stood on the grass.") == []  # the passage says it
+    assert place_conflicts("He stands in a forest.", "", "x") == []  # no sheet, no judgement
+    answers = iter(["Fang Yuan stands in a forest clearing, calm.", "Fang Yuan stands on the bare rock, calm."])
+
+    class Client:
+        def complete(self, task, prompt, schema, **kw):
+            return SimpleNamespace(value=PanelDirection(composition=next(answers), expression="calm"))
+
+    d = direct_beat("Fang Yuan stood.", cast={"Fang Yuan": ""}, novel_style="x", client=Client(), staging=sheet)
+    assert d is not None and "forest" not in d.direction.composition and "place retried" in d.direction.grounding_rejects

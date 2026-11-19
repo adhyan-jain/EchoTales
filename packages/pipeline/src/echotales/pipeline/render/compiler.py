@@ -696,11 +696,17 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
         fields[c.name] = derive_demeanour(c, b.mood, b.tension).fields_used
     said = f"{b.composition} {b.staging}".lower()
     clauses: list[str] = []
-    for x in [t.strip() for t in f"{_plain(_location_text(b))},{_plain(b.setting)}".split(",")]:
-        if x and x.lower() not in said and x.lower() not in (y.lower() for y in clauses):
-            clauses.append(x)
+    # A staging sheet that names a Set is the one statement of the place (and "Light:" of the light): the genre locale and the
+    # director's own setting are guesses from cue words, and appended after it they drew a timber hall and an open field on
+    # a cliff scene (RI ch1, 2026-11-19, panels 9-15).
+    staged_set = bool(re.search(r"\bSet:", b.staging))
+    staged_light = bool(re.search(r"\bLight:", b.staging))
+    if not staged_set:
+        for x in [t.strip() for t in f"{_plain(_location_text(b))},{_plain(b.setting)}".split(",")]:
+            if x and x.lower() not in said and x.lower() not in (y.lower() for y in clauses):
+                clauses.append(x)
     light = _plain(b.lighting)
-    if light and light.lower() not in said:
+    if light and light.lower() not in said and not staged_light:
         clauses.append(f"the light is {light}")
     if clauses:
         s.append(PromptSection("setting", f"Setting: {'; '.join(clauses)}."))

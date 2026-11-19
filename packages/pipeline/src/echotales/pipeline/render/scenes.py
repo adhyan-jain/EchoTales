@@ -170,6 +170,14 @@ def group_scenes(
             )
 
     for block_index in story_blocks:
+        if not any(ch.isalnum() for ch in block_text.get(block_index, "")):
+            # A block of only punctuation ("......", "* * *") is the author's scene break. RI ch1 block 30 sat between the cliff
+            # self-detonation and the rainy night of the rebirth, which then shared one scene and one staging sheet.
+            flush()
+            current = []
+            current_selves = set()
+            scene_cast = set()
+            continue
         block_spans = by_block.get(block_index, [])
         # ANONYMOUS_SLOT speakers excluded from the cast-change signal --
         # a rotating anonymous slot represents an unidentified member of a

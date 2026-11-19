@@ -32,3 +32,6 @@ after block 40). Not a full chapter.
 ## Loose files in ch1/
 The p0*.png files, manifest.jsonl and cache_index.json directly under ch1/ are from a Studio stub render on 2026-10-18,
 before Studio renders got their own version directory. They are placeholders, not a render.
+
+## v_r2_lotm-no-red-figure (2026-11-20) - scratch render, not in this folder
+Panel-quality round 2, `data/scratch/panel_quality/out_r2_lotm/` (blocks 0-40, 16 panels). Block 24 no longer draws a red-glowing extra person (a misspelt name in a one-person cast is now that person). Same desk, lamp, pipes and costume in all 16 panels. Not yet right: 6 of 16 panels show a bright daylight window although the text says night.
