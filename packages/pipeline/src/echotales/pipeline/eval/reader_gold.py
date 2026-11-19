@@ -122,7 +122,15 @@ def _self_is(store: Store, self_id: str | None, character: dict) -> bool:  # typ
     independent of the pipeline's own inventory (`eval/gold.py`)."""
     if not self_id:
         return False
-    return bool(_names_of(store, self_id) & _gold_names(character))
+    if _names_of(store, self_id) & _gold_names(character):
+        return True
+    # A role-slot entity (`<novel>:title:elder`) is the reader saying "the elder" without a name. A reference character
+    # whose name or alias contains those role words ("the elder of the academy") is that same person; matching by id
+    # string scored three right RI ch4 answers as misses (speaker_diag REPORT 6.1). A scorer artefact, not a model gain.
+    if ":title:" in self_id:
+        role = set(self_id.rsplit(":title:", 1)[1].split("_")) - {"the", "a", "an", ""}
+        return bool(role) and any(role <= set(name.split()) for name in _gold_names(character))
+    return False
 
 
 def _find_self(store: Store, novel_id: str, character: dict) -> str | None:  # type: ignore[type-arg]

@@ -62,14 +62,16 @@ def test_named_answer_sets_speaker_and_retypes_crowd_reaction() -> None:
     assert report.attributed == 1 and report.retyped == 1
 
 
-def test_unknown_clears_a_proximity_guess_but_keeps_an_explicit_one() -> None:
+def test_unknown_clears_a_proximity_guess_and_an_explicit_name_the_block_never_mentions() -> None:
     store, report = _run({"0.0": "Alice", "1.0": "UNKNOWN", "2.0": "UNKNOWN"})
     assert _span(store, 2).speaker_self_id is None  # proximity guess "Bob" cleared
     assert report.cleared == 1
 
     store, report = _run({"0.0": "Alice", "1.0": "UNKNOWN", "2.0": "UNKNOWN"}, first_attribution=AttributionMethod.EXPLICIT)
-    assert _span(store, 2).speaker_self_id == "n:self:bob"  # an explicit "X said" survives
-    assert report.cleared == 0
+    # TEXT2 never mentions Bob, so this EXPLICIT row was borrowed from elsewhere (ORV ch4); one whose block names the person
+    # survives UNKNOWN, see test_reader_speakers_rules.TestUnknownOverABorrowedExplicitTag.
+    assert _span(store, 2).speaker_self_id is None
+    assert report.cleared == 1
 
 
 def test_a_named_person_the_cast_lacks_is_minted_but_a_place_is_not() -> None:

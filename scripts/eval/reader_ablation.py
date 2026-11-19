@@ -15,6 +15,7 @@ reported on their own line because no change was tuned on them.
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import subprocess
 import sys
@@ -24,11 +25,15 @@ from pathlib import Path
 from echotales.core.store import Store
 from echotales.pipeline.eval import reader_gold as g
 from echotales.pipeline.llm.client import ModelClient
+from echotales.pipeline.reader import speakers_pass as sp_mod
 from echotales.pipeline.reader.runner import read_novel
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "data" / "eval" / "reader"
 SCRATCH = ROOT / "data" / "scratch" / "ablation"
+#: Canonical databases and the keep-everything scratch folder can live outside the checkout (a git worktree has no
+#: data/db): `ECHOTALES_ABLATION_DB_DIR` / `ECHOTALES_ABLATION_SCRATCH`.
+DB_DIR = Path(os.environ.get("ECHOTALES_ABLATION_DB_DIR", ROOT / "data" / "db"))
 NOVELS = ("lord-of-the-mysteries", "reverend-insanity", "omniscient-readers-viewpoint")
 
 
@@ -36,13 +41,20 @@ def _gold_files(novel: str) -> list[Path]:
     return sorted((ROOT / "data" / "gold" / "reader").glob(f"{novel}-ch*.json"))
 
 
-def _copy_baseline(novel: str) -> Path:
+def _scratch_dir(label: str) -> Path:
+    """One folder per tag, so a run's database survives for later diagnosis (REPORT 0: v13's was gone)."""
+    base = Path(os.environ.get("ECHOTALES_ABLATION_SCRATCH", SCRATCH))
+    return base / label
+
+
+def _copy_baseline(novel: str, label: str) -> Path:
     """A fresh copy of the run-of-record database, so no run starts from another run's output."""
-    SCRATCH.mkdir(parents=True, exist_ok=True)
-    dst = SCRATCH / f"{novel}.db"
+    folder = _scratch_dir(label)
+    folder.mkdir(parents=True, exist_ok=True)
+    dst = folder / f"{novel}.db"
     for suffix in ("", "-wal", "-shm"):
         Path(str(dst) + suffix).unlink(missing_ok=True)
-    src = sqlite3.connect(f"file:{ROOT / 'data' / 'db' / (novel + '.db')}?mode=ro", uri=True)
+    src = sqlite3.connect(f"file:{DB_DIR / (novel + '.db')}?mode=ro", uri=True)
     out = sqlite3.connect(dst)
     src.backup(out)
     out.close()
@@ -50,37 +62,159 @@ def _copy_baseline(novel: str) -> Path:
     return dst
 
 
-def run(label: str, novels: tuple[str, ...], only: set[int] | None) -> None:
+def _score_into(result: dict, store: Store, novel: str, golds: list, files: list[Path], chapters: list) -> None:  # type: ignore[type-arg]
+    for gold, f in zip(golds, files):
+        if gold.chapter not in chapters:
+            continue
+        sp = g.score_speakers(gold, store)
+        ap = g.score_appearance(gold, store)
+        pl = g.score_persona_links(gold, store)
+        ag = g.score_ages(gold, store)
+        kd = g.score_kinds(gold, store)
+        raw = json.loads(f.read_text(encoding="utf-8"))
+        result["chapters"][f"{novel}:{int(gold.chapter)}"] = {
+            "held_out": bool(raw.get("held_out", False)),
+            "speakers": [sp.correct, sp.total],
+            "false_dialogue": sp.false_dialogue if gold.lines_complete else None,
+            "appearance": [ap.correct, ap.total], "persona_links": [pl.correct, pl.total],
+            "ages": [ag.correct, ag.total], "kinds": [kd.correct, kd.total],
+            "speaker_misses": sp.misses,
+        }
+
+
+def verify(label: str, source: str, reject_unclear: bool) -> None:
+    """Run the verification pass over a kept run's databases (`source` is that run's tag) and score the result.
+
+    The reader is not re-run, so this isolates what the verifier adds to exactly that run's answers."""
+    from echotales.pipeline.reader import speakers_verify as sv
+
+    commit = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True).strip()
+    result: dict = {"label": label, "commit": commit, "source": source, "chapters": {}, "verifier": {}}
+    t0 = time.time()
+    trace: list[dict] = []  # type: ignore[type-arg]
+    for novel in NOVELS:
+        files = _gold_files(novel)
+        golds = [g.load_reader_gold(f) for f in files]
+        folder = _scratch_dir(label)
+        folder.mkdir(parents=True, exist_ok=True)
+        dst = folder / f"{novel}.db"
+        for suffix in ("", "-wal", "-shm"):
+            Path(str(dst) + suffix).unlink(missing_ok=True)
+        src = sqlite3.connect(_scratch_dir(source) / f"{novel}.db")
+        out = sqlite3.connect(dst)
+        src.backup(out)
+        out.close()
+        src.close()
+        store = Store(str(dst))
+        client = ModelClient(store=store)
+        sv.TRACE = rows = []
+        totals = {"asked": 0, "yes": 0, "no": 0, "unclear": 0, "rejected": 0, "skipped_tagged": 0}
+        for gold in golds:
+            chapter = store.get_chapter(novel, gold.chapter)
+            if chapter is None:
+                continue
+            rep = sv.verify_chapter(store, client, chapter, reject_unclear=reject_unclear)
+            for k in totals:
+                totals[k] += getattr(rep, k)
+        sv.TRACE = None
+        trace.extend({"novel": novel, **r} for r in rows)
+        result["verifier"][novel] = totals
+        _score_into(result, store, novel, golds, files, [x.chapter for x in golds])
+        store.close()
+    result["seconds"] = round(time.time() - t0)
+    OUT.mkdir(parents=True, exist_ok=True)
+    (_scratch_dir(label) / "trace.json").write_text(json.dumps(trace, indent=1, ensure_ascii=False), encoding="utf-8")
+    (OUT / f"{label}.json").write_text(json.dumps(result, indent=1, ensure_ascii=False), encoding="utf-8")
+    report(result)
+
+
+def rescore(label: str, source: str) -> None:
+    """Score a kept run's databases again with the current scorer, so a scorer fix is not mistaken for a model change."""
+    commit = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True).strip()
+    result: dict = {"label": label, "commit": commit, "source": source, "chapters": {}}
+    for novel in NOVELS:
+        files = _gold_files(novel)
+        golds = [g.load_reader_gold(f) for f in files]
+        store = Store(str(_scratch_dir(source) / f"{novel}.db"))
+        _score_into(result, store, novel, golds, files, [x.chapter for x in golds])
+        store.close()
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / f"{label}.json").write_text(json.dumps(result, indent=1, ensure_ascii=False), encoding="utf-8")
+    report(result)
+
+
+def replay(label: str, source: str) -> None:
+    """Run the current post-processing over a kept run's recorded raw model answers, with no model call.
+
+    Why: a deterministic rule change must be judged on the same answers (an 8-hour re-run differs by model noise and
+    cannot say which rule moved a line). The role-to-name reconcile pass is model-made and not recorded, so here it
+    resolves nothing; compare two replays, never a replay with a live run."""
+    commit = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True).strip()
+    trace = json.loads((_scratch_dir(source) / "trace.json").read_text(encoding="utf-8"))
+    result: dict = {"label": label, "commit": commit, "source": source, "chapters": {}, "replay": True}
+    all_trace: list[dict] = []  # type: ignore[type-arg]
+    real_ask = sp_mod.ask_window
+
+    class _NoModel:
+        def complete(self, *a, **k):  # noqa: ANN002, ANN003 - any call fails, the caller's except skips it
+            raise RuntimeError("replay has no model")
+
+    for novel in NOVELS:
+        files = _gold_files(novel)
+        golds = [g.load_reader_gold(f) for f in files]
+        rows = [r for r in trace if r["novel"] == novel]
+        db = _copy_baseline(novel, label)
+        store = Store(str(db))
+        sp_mod.TRACE = tr = []
+
+        def ask(client, cast, text, report, novel_id, chapter, narrator=None, only=None, note="", _rows=rows):  # noqa: ANN001
+            tags = only if only is not None else sp_mod.re.findall(r"\[(\d+\.\d+)\]", text)
+            key = "answer" if only is not None else "raw"
+            by_tag = {r["tag"]: r for r in _rows if float(r["chapter"]) == float(chapter)}
+            out = {}
+            for t in tags:
+                hit = by_tag.get(t)
+                if hit is not None and hit[key] is not None:
+                    out[t] = hit[key]
+            return out
+
+        sp_mod.ask_window = ask
+        try:
+            read_novel(novel, store, _NoModel(), chapters=[x.chapter for x in golds], passes=("speakers",))  # type: ignore[arg-type]
+        finally:
+            sp_mod.ask_window = real_ask
+            sp_mod.TRACE = None
+        all_trace.extend({"novel": novel, **t} for t in tr)
+        _score_into(result, store, novel, golds, files, [x.chapter for x in golds])
+        store.close()
+    OUT.mkdir(parents=True, exist_ok=True)
+    (_scratch_dir(label) / "trace.json").write_text(json.dumps(all_trace, indent=1, ensure_ascii=False), encoding="utf-8")
+    (OUT / f"{label}.json").write_text(json.dumps(result, indent=1, ensure_ascii=False), encoding="utf-8")
+    report(result)
+
+
+def run(label: str, novels: tuple[str, ...], only: set[int] | None, passes: tuple[str, ...] = ("speakers", "facts", "delivery")) -> None:
     commit = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True).strip()
     result: dict = {"label": label, "commit": commit, "chapters": {}}
     t0 = time.time()
+    all_trace: list[dict] = []  # type: ignore[type-arg]
     for novel in novels:
         files = _gold_files(novel)
         golds = [g.load_reader_gold(f) for f in files]
         chapters = [x.chapter for x in golds if only is None or int(x.chapter) in only]
-        db = _copy_baseline(novel)
+        db = _copy_baseline(novel, label)
         store = Store(str(db))
-        read_novel(novel, store, ModelClient(store=store), chapters=chapters)
-        for gold, f in zip(golds, files):
-            if gold.chapter not in chapters:
-                continue
-            sp = g.score_speakers(gold, store)
-            ap = g.score_appearance(gold, store)
-            pl = g.score_persona_links(gold, store)
-            ag = g.score_ages(gold, store)
-            kd = g.score_kinds(gold, store)
-            raw = json.loads(f.read_text(encoding="utf-8"))
-            result["chapters"][f"{novel}:{int(gold.chapter)}"] = {
-                "held_out": bool(raw.get("held_out", False)),
-                "speakers": [sp.correct, sp.total],
-                "false_dialogue": sp.false_dialogue if gold.lines_complete else None,
-                "appearance": [ap.correct, ap.total], "persona_links": [pl.correct, pl.total],
-                "ages": [ag.correct, ag.total], "kinds": [kd.correct, kd.total],
-                "speaker_misses": sp.misses,
-            }
+        sp_mod.TRACE = trace = []
+        read_novel(novel, store, ModelClient(store=store), chapters=chapters, passes=passes)
+        sp_mod.TRACE = None
+        all_trace.extend({"novel": novel, **t} for t in trace)
+        _score_into(result, store, novel, golds, files, chapters)
         store.close()
     result["seconds"] = round(time.time() - t0)
+    result["passes"] = list(passes)
     OUT.mkdir(parents=True, exist_ok=True)
+    # Per tag: the model's raw answer, what the post-checks did with it, and the baseline row it replaced.
+    (_scratch_dir(label) / "trace.json").write_text(json.dumps(all_trace, indent=1, ensure_ascii=False), encoding="utf-8")
     (OUT / f"{label}.json").write_text(json.dumps(result, indent=1, ensure_ascii=False), encoding="utf-8")
     report(result)
 
@@ -137,6 +271,13 @@ if __name__ == "__main__":
     if cmd == "run":
         sel = tuple(sys.argv[sys.argv.index("--novel") + 1].split(",")) if "--novel" in sys.argv else NOVELS
         chosen = {int(x) for x in sys.argv[sys.argv.index("--chapters") + 1].split(",")} if "--chapters" in sys.argv else None
-        run(sys.argv[2], sel, chosen)
+        sel_passes = tuple(sys.argv[sys.argv.index("--passes") + 1].split(",")) if "--passes" in sys.argv else ("speakers", "facts", "delivery")
+        run(sys.argv[2], sel, chosen, sel_passes)
+    elif cmd == "verify":
+        verify(sys.argv[2], sys.argv[3], "--reject-unclear" in sys.argv)
+    elif cmd == "replay":
+        replay(sys.argv[2], sys.argv[3])
+    elif cmd == "rescore":
+        rescore(sys.argv[2], sys.argv[3])
     elif cmd == "compare":
         compare(sys.argv[2], sys.argv[3])

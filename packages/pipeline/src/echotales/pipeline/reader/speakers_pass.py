@@ -40,6 +40,11 @@ ROLE_CONFIDENCE = 0.5
 #: Span types a quoted line can carry; the classifier mistypes dialogue as the last two.
 _QUOTE_SPANS = frozenset({SpanType.DIALOGUE, SpanType.INNER_MONOLOGUE, SpanType.CROWD_REACTION})
 
+#: When a list, `read_chapter_speakers` appends one dict per tag (raw model answer, the post-check outcome, the baseline
+#: row it replaced). The ablation sets it: v13's raw answers were never recorded, so its 57 misses had to be classified
+#: by reading text (speaker_diag REPORT 0).
+TRACE: list[dict] | None = None  # type: ignore[type-arg]
+
 UNKNOWN = "unknown"
 NOT_SPEECH = "none"
 
@@ -84,11 +89,15 @@ class SpeakerReport:
     gender_rejected: int = 0
     split_quote: int = 0
     second_chance: int = 0
+    explicit_kept: int = 0
+    first_person: int = 0
+    roles_merged: int = 0
 
 
 #: Korean/Japanese honorific suffixes attached to a name. "Yoo Sangah-ssi" is Yoo Sangah, but without this the matcher saw a
 #: new word, resolved nothing, and `_mint_new_speakers` created a duplicate entity that later chapters then answered with.
 _HONORIFIC = re.compile(r"[-\s](ssi|nim|sama|san|kun|chan|senpai|sunbae|hyung|noona|oppa|unni)\b", re.IGNORECASE)
+_HONORIFIC_SUFFIX = r"[-\s](?:ssi|nim|sama|san|kun|chan|senpai|sunbae|hyung|noona|oppa|unni)"
 
 
 def _norm(text: str) -> str:
@@ -152,6 +161,29 @@ def build_cast(store: Store, novel_id: str, chapter_text: str, chapter: float) -
     return [e for _r, _l, e in ordered[:MAX_CAST]]
 
 
+def scene_cast(cast: list[CastEntry], seen_text: str, narrator: CastEntry | None) -> list[CastEntry]:
+    """The cast members the chapter has introduced by the end of the current window.
+
+    The chapter-wide cast pulled unnamed lines onto people who had not appeared yet: ORV ch3's "a big man in a suit"
+    went to Han Myungoh, whom the text names only around b51-53 (speaker_diag REPORT 2 (f), 6.4). The first-person
+    narrator stays: narration seldom names him. An empty result falls back to the full cast rather than an empty list."""
+    haystack = _norm(seen_text)
+    keep = [
+        e for e in cast
+        if (narrator is not None and e.self_id == narrator.self_id)
+        or any(len(_norm(x)) >= 3 and _norm(x) in haystack for x in e.surfaces())
+    ]
+    return keep or cast
+
+
+def turn_note(recent: list[str]) -> str:
+    """One sentence on who spoke the last lines before this window ("Kim Dokja, unnamed, Yoo Sangah"), '' for the first."""
+    if not any(recent):
+        return ""
+    said = [("an unnamed speaker" if _norm(r).startswith((UNKNOWN, NOT_SPEECH)) or not r else r) for r in recent]
+    return f"The last lines before this passage were spoken by, oldest first: {', '.join(said)}. Two people talking alternate.\n\n"
+
+
 class NameIndex:
     """Maps a name the model wrote back to a cast entry, by full name first and then by a unique word."""
 
@@ -199,6 +231,10 @@ class NameIndex:
         parts = key.split()
         if parts and self._full.get(" ".join(parts[1:])):
             return self._full[" ".join(parts[1:])]
+        # A name word inside a long phrase is not the person ("Many elders watching Fang Yuan in the dark", RI ch5 b25, went to
+        # Fang Yuan): the word fallback is for "Mr. Fool" / "Klein-san" shaped answers only.
+        if len(parts) > 3:
+            return None
         hits = {self._unique_word[w].self_id: self._unique_word[w] for w in parts if w in self._unique_word}
         return next(iter(hits.values())) if len(hits) == 1 else None
 
@@ -256,6 +292,29 @@ def first_person_narrator(store: Store, novel_id: str, chapter: Chapter, cast: l
     return best[1] if best else None
 
 
+#: The first-person narrator last identified in each novel. A first-person book keeps its narrator: ORV's "I" is Kim
+#: Dokja in every chapter, but ch3 never names him (he is not even in that chapter's cast) and ch4 names him once, so
+#: per-chapter detection found him in 2 of 4 reference chapters and the prompt's narrator note was missing for the rest.
+_NARRATORS: dict[str, CastEntry] = {}
+NARRATOR_CARRY = os.environ.get("ECHOTALES_READER_NARRATOR_CARRY", "1") == "1"
+
+
+def narrator_for(store: Store, novel_id: str, chapter: Chapter, cast: list[CastEntry]) -> CastEntry | None:
+    """The narrator of a first-person chapter: found in this chapter, else the one the novel's earlier chapters found
+    (added to `cast` so the model can answer with the name). None for a chapter not narrated in the first person."""
+    found = first_person_narrator(store, novel_id, chapter, cast)
+    if found is not None:
+        _NARRATORS[novel_id] = found
+        return found
+    narration = " ".join(QUOTE.sub(" ", b.text) for b in chapter.blocks)
+    earlier = _NARRATORS.get(novel_id)
+    if not NARRATOR_CARRY or earlier is None or len(_FIRST_PERSON.findall(narration)) < FIRST_PERSON_MIN:
+        return None
+    if not any(e.self_id == earlier.self_id for e in cast):
+        cast.append(earlier)
+    return earlier
+
+
 def _prompt(cast: list[CastEntry], text: str, tags: list[str], narrator: CastEntry | None = None, note: str = "") -> str:
     people = "\n".join(
         f"- {e.name}" + (f" (also called: {', '.join(e.aliases[:6])})" if e.aliases else "") for e in cast
@@ -274,7 +333,15 @@ def _prompt(cast: list[CastEntry], text: str, tags: list[str], narrator: CastEnt
         "Use the cues in the text: said/asked, who is addressed, who just acted, and that two people talking to each "
         "other alternate lines. Use the character's name from the list above. A person who is only talked about in the "
         "passage is not the speaker. When unnamed people speak (a crowd, attackers, elders, onlookers) or the text "
-        "never says who it is, answer UNKNOWN; do not guess a name from the list. If an unnamed speaker is described by a role or title in the text, answer UNKNOWN: followed by those same words copied from the passage, for example UNKNOWN: old man; the same role must always be written the same way. If the speaker is a named person who is not in the list, write the name exactly as the text "
+        "never says who it is, answer UNKNOWN; do not guess a name from the list. "
+        + (
+            "A line with no speech tag, spoken by a group or by someone the passage only calls 'a man', 'a woman', 'a voice' "
+            "or 'someone', is UNKNOWN even when a listed person stands nearby. A person the line calls by a noun or by "
+            "a name ('Human,' 'Child,' 'Dokja-ssi.') is the one spoken TO, never the speaker. "
+            if CROWD_RULE
+            else ""
+        )
+        + "If an unnamed speaker is described by a role or title in the text, answer UNKNOWN: followed by those same words copied from the passage, for example UNKNOWN: old man; the same role must always be written the same way. If the speaker is a named person who is not in the list, write the name exactly as the text "
         "gives it. If the quote is not spoken or thought by a person (a sign, written text, a scare quote), "
         f"answer NONE.\n\n{text}\n\n"
         "Answer as JSON with one entry for every tag, like this (replace Name):\n"
@@ -317,9 +384,16 @@ def ask_window(
 
 def addresses(quote: str, name: str) -> bool:
     """True when the quote opens by calling `name` ("My dear Mr. Bennet,", "Alice, come here!"): a vocative at the very
-    start, ended by a comma, "!" or "?", so a name later in the sentence or narration is not one."""
-    pattern = r"^[\W_]*(?:my\s+)?(?:dear\s+)?" + re.escape(name) + r"\s*[,!?]"
-    return re.match(pattern, quote, re.IGNORECASE) is not None
+    start, ended by a comma, "!", "?" or a full stop, so a name later in the sentence or narration is not one.
+
+    An honorific suffix may follow the name: ORV ch3 b51 `"Yoo Sangah-ssi. Isn't that Department Head Han..."` is
+    spoken TO Sangah, and the old pattern (comma, "!" or "?" only) let it through as hers (speaker_diag REPORT 6.5)."""
+    head = r"^[\W_]*(?:my\s+)?(?:dear\s+)?" + re.escape(name)
+    if re.match(head + r"\s*[,!?]", quote, re.IGNORECASE):
+        return True
+    # A full stop counts only after an honorific ("Yoo Sangah-ssi."): a bare "Fang Yuan." is as often a speaker giving
+    # their own name as a call, and a rule that is unsure must leave the line to the model.
+    return re.match(head + _HONORIFIC_SUFFIX + r"\s*[,!?.]", quote, re.IGNORECASE) is not None
 
 
 _SPEECH_VERBS = r"(?:said|cried|replied|returned|asked|answered|exclaimed|added|continued|observed|whispered|muttered|shouted)"
@@ -367,7 +441,8 @@ def rejection(store: Store, entry: CastEntry, quote_text: str) -> tuple[str, str
 
     "addressee": the line opens by calling this person. "gender": the tag after the quote ("returned she") names the
     other gender than the entry's title or recorded gender."""
-    if addresses(quote_text, entry.name):
+    # Any name the person is called by, not only the display name: "Dokja-ssi," addresses Kim Dokja.
+    if any(addresses(quote_text, surface) for surface in entry.surfaces() if len(_norm(surface)) >= 3):
         return "addressee", ""
     side = tag_gender(quote_text)
     if side:
@@ -377,6 +452,109 @@ def rejection(store: Store, entry: CastEntry, quote_text: str) -> tuple[str, str
         if known in ("male", "female") and known != side:
             return "gender", known
     return "", ""
+
+
+_TAG_VERBS = (
+    r"(?:said|asked|replied|answered|responded|whispered|muttered|murmured|mumbled|shouted|yelled|cried|called|"
+    r"exclaimed|inquired|continued|added|returned|observed|retorted)"
+)
+_FP_AFTER = re.compile(rf"^\W{{0,3}}I\s+(?:\w+\s+){{0,3}}?{_TAG_VERBS}\b", re.IGNORECASE)
+_FP_BEFORE = re.compile(rf"(?<![A-Za-z])I\b[^.!?\"“”]{{0,90}}?\b{_TAG_VERBS}\b[^.!?\"“”]{{0,30}}$")
+
+
+def _around_quote(block_text: str, q: int) -> tuple[str, str]:
+    """(the clause just before quote `q`, the clause just after it), cut at the neighbouring quote or sentence end."""
+    matches = list(QUOTE.finditer(block_text))
+    if q >= len(matches):
+        return "", ""
+    m = matches[q]
+    before = block_text[max(0, m.start() - 140):m.start()]
+    cut = max(before.rfind(c) for c in '.!?”"')
+    before = before[cut + 1:] if cut >= 0 else before
+    after = block_text[m.end():m.end() + 140]
+    ends = [i for i in (after.find("“"), after.find('"')) if i >= 0]
+    after = after[:min(ends)] if ends else after
+    return before, after
+
+
+def first_person_tag(block_text: str, q: int) -> bool:
+    """Whether quote `q` carries a first-person speech tag in its own block: `"...?" I asked`, `I turned and asked, "..."`.
+    In a first-person chapter that line is the narrator's whatever the model said (ORV ch3 b15, speaker_diag 6.3)."""
+    before, after = _around_quote(block_text, q)
+    return bool(_FP_AFTER.match(after)) or bool(_FP_BEFORE.search(before))
+
+
+def _speaker_words(store: Store, self_id: str) -> list[str]:
+    entity = store.get_self(self_id)
+    names = [entity.canonical_label] if entity else [self_id]
+    names += [a.alias for a in store.get_aliases_for(TargetKind.SELF, self_id) if a.retracted_at is None]
+    words = [w for n in list(names) for w in _norm(n).split() if len(w) >= 4]
+    return [x for x in dict.fromkeys(_norm(n) for n in names + words) if len(x) >= 3]
+
+
+def own_explicit_tag(store: Store, self_id: str, block_text: str, q: int) -> bool:
+    """Whether the quote's own block tags `self_id` as its speaker: the name then a speech verb in the clause right after
+    (`"..." Yoo Sangah replied proudly`) or right before (`Han said, "..."`), the name being the subject.
+
+    The reader overwrote a correct EXPLICIT Yoo Sangah with Kim Dokja on ORV ch2 b27. An EXPLICIT row can also be a tag
+    borrowed from the neighbouring paragraph (ORV ch4 b34, b36), and then the model may still overrule it."""
+    before, after = _around_quote(block_text, q)
+    before, after = _norm_keep(before), _norm_keep(after)
+    for name in _speaker_words(store, self_id):
+        n = r"\.?\s+".join(re.escape(w) for w in name.split())  # "mr bennet" must match the text's "Mr. Bennet"
+        if re.match(rf"^\W{{0,3}}{_TAG_VERBS}\s+(?:the\s+)?{n}\b", after, re.IGNORECASE):
+            return True
+        for where, clause in (("after", after), ("before", before)):
+            for m in re.finditer(rf"\b{n}\b", clause, re.IGNORECASE):
+                if where == "after" and re.sub(r"(?i:the)|\W+", "", clause[:m.start()]):
+                    continue  # after the quote the tag opens with the name
+                # "she looked at Zhou Mingrui and said," names the listener: a name after a preposition is not the subject
+                lead = clause[:m.start()].split()
+                while lead and lead[-1][:1].isupper() and not lead[-1].endswith(","):
+                    lead.pop()  # the match may be one word of a longer name ("at Zhou [Mingrui]")
+                if lead and lead[-1].lower().strip(",") in _PREPOSITIONS:
+                    continue
+                found = re.match(rf"((?:\W+[\w'-]+){{0,3}}?)\W+{_TAG_VERBS}\b(.*)$", clause[m.end():], re.IGNORECASE | re.DOTALL)
+                if not found or any(w.lower() in _PREPOSITIONS for w in re.findall(r"[\w'-]+", found.group(1))):
+                    continue
+                if where == "before" and len(found.group(2)) > 25:
+                    continue  # the verb is not the one introducing this quote
+                return True
+    return False
+
+
+_PREPOSITIONS = frozenset({"at", "to", "toward", "towards", "with", "from", "for", "of", "over", "by", "beside", "about", "upon", "on"})
+
+
+def _norm_keep(text: str) -> str:
+    """Lower-cased text with honorific suffixes dropped and punctuation that ends clauses kept."""
+    return _HONORIFIC.sub("", text.replace("’", "'"))
+
+
+def _merge_roles(role_spans: dict[str, list[Span]]) -> int:
+    """One slot for a role the model wrote several ways in a chapter ("academy elder", "elder", "elder of the academy").
+
+    RI ch4: the academy elder spoke 9 lines; the model's wording varied, each wording became its own title entity or
+    anonymous slot, and he got a different voice per line (speaker_diag REPORT 2 (j), 6.2). A role merges into the
+    role whose words contain all of its own, provided that target is unique: "first elder" and "second elder" stay two."""
+    content = {r: frozenset(r.split("_")) - {"of", "the", ""} for r in role_spans}
+    target: dict[str, str] = {}
+    for r in role_spans:
+        cands = [o for o in role_spans if content[o] >= content[r]]
+        maximal = {content[o] for o in cands if not any(content[o] < content[p] for p in cands)}
+        if len(maximal) != 1:
+            continue
+        group = [o for o in role_spans if content[o] == next(iter(maximal))]
+        target[r] = max(group, key=lambda o: (len(role_spans[o]), len(o), o))
+    merged: dict[str, list[Span]] = {}
+    moved = 0
+    for r, spans in role_spans.items():
+        t = target.get(r, r)
+        moved += t != r
+        merged.setdefault(t, []).extend(spans)
+    role_spans.clear()
+    role_spans.update(merged)
+    return moved
 
 
 def _second_chance(
@@ -428,14 +606,21 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
     report = SpeakerReport()
     novel_id, number = chapter.novel_id, chapter.number
     cast = build_cast(store, novel_id, "\n".join(b.text for b in chapter.blocks), number)
+    narrator = narrator_for(store, novel_id, chapter, cast)
     index = NameIndex(cast)
-    narrator = first_person_narrator(store, novel_id, chapter, cast)
     answers: dict[str, str] = {}
     tag_window: dict[str, str] = {}
+    seen_text = ""
+    recent: list[str] = []
     for text in windows(chapter):
-        answers.update(ask_window(client, cast, text, report, novel_id, number, narrator))
-        for tag in re.findall(r"\[(\d+\.\d+)\]", text):
+        seen_text += "\n" + text
+        shown = scene_cast(cast, seen_text, narrator) if SCENE_CAST else cast
+        got = ask_window(client, shown, text, report, novel_id, number, narrator, note=turn_note(recent) if PREV_SPEAKERS else "")
+        answers.update(got)
+        tags = re.findall(r"\[(\d+\.\d+)\]", text)
+        for tag in tags:
             tag_window[tag] = text
+        recent = [got.get(t, "") for t in tags][-3:]
 
     blocks = {b.index: b.text for b in chapter.blocks}
     quote_of: dict[str, str] = {}
@@ -444,6 +629,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
         starts = quote_starts(blocks.get(block_index, ""))
         if q < len(starts):
             quote_of[tag] = blocks[block_index][starts[q]:].lstrip("“\"")
+    raw_answers = dict(answers)
     _second_chance(store, client, cast, index, narrator, answers, tag_window, quote_of, report, novel_id, number)
     chapter_words = set(_norm("\n".join(blocks.values())).split())
     role_spans: dict[str, list[Span]] = {}
@@ -463,11 +649,35 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
         if span is None:
             report.no_span += 1
             continue
+
+        fired: list[str] = []  # rule names that changed this line's outcome, for per-rule precision in the ablation
+
+        def note(outcome: str, final: str | None = None, _tag: str = tag, _span: Span = span, _fired: list[str] = fired) -> None:
+            if TRACE is not None:
+                TRACE.append({
+                    "chapter": number, "tag": _tag, "raw": raw_answers.get(_tag), "answer": answers[_tag],
+                    "outcome": outcome, "final": final, "rules": list(_fired), "baseline_method": _span.attribution_method.value,
+                    "baseline_speaker": _span.speaker_self_id, "quote": quote_text[:160],
+                })
+
         if span.attribution_method is AttributionMethod.HUMAN:
             # A reviewer's decision outranks the model; the re-run used to overwrite it and the correction was
             # already marked applied, so it was never replayed.
             report.human_kept += 1
+            note("human_kept")
             continue
+        if span.attribution_method is AttributionMethod.EXPLICIT and span.speaker_self_id and own_explicit_tag(
+            store, span.speaker_self_id, blocks.get(block_index, ""), q
+        ):
+            report.explicit_kept += 1
+            fired.append("explicit_kept")
+            note("explicit_kept", span.speaker_self_id)
+            continue
+        if narrator is not None and first_person_tag(blocks.get(block_index, ""), q):
+            if _norm(speaker) != _norm(narrator.name):
+                report.first_person += 1
+                fired.append("first_person")
+            speaker = narrator.name
         if continues_after_tag(blocks.get(block_index, ""), starts, q):
             # The second half of a quote cut by its tag has the first half's speaker, whatever the model answered for
             # it: with the first half left unknown (addressee or gender check) the model still credited the second to
@@ -478,6 +688,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
                     "SELECT speaker_self_id FROM span WHERE novel_id=? AND id=?", (novel_id, previous.id)
                 ).fetchone()
                 report.split_quote += 1
+                note("split_quote", row[0] if row else None)
                 if row and row[0]:
                     store.set_span_speaker(novel_id, span.id, row[0], AttributionMethod.CONTEXTUAL_LLM.value, MODEL_CONFIDENCE)
                     report.attributed += 1
@@ -485,6 +696,12 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
                     store.set_span_speaker(novel_id, span.id, None, AttributionMethod.UNRESOLVED.value, 0.0)
                 continue
         key = _norm(speaker)
+        if not key.startswith((UNKNOWN, NOT_SPEECH)) and key and index.resolve(speaker) is None:
+            kind = describes_a_speaker(speaker)
+            if kind:
+                fired.append("described_speaker")
+                speaker = f"UNKNOWN: {speaker}" if kind == "role" else UNKNOWN
+                key = _norm(speaker)
         if key.startswith(UNKNOWN) and key != UNKNOWN:
             # The model often writes a known person after UNKNOWN ("UNKNOWN: Dunn Smith", LotM ch14): the format
             # example invited a hybrid. If what follows is a cast member, that is the answer, not a role.
@@ -499,6 +716,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
                 report.role_rejected += 1
                 role = ""
             if role:
+                note("role_slot", role)
                 # Written after the chapter-wide pass below: a role the chapter later names is that person, and
                 # only a role nobody names becomes a title entity of its own.
                 report.role_slots += 1
@@ -509,11 +727,21 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             report.unknown += 1
             # The regex ladder's proximity and pronoun guesses named a wrong speaker for crowd lines (RI ch1: the
             # attackers became "Bai Ning Bing"), so only its explicit "X said" survives the model's "unknown".
-            if span.attribution_method is not AttributionMethod.EXPLICIT and span.speaker_self_id:
+            if span.speaker_self_id and (
+                span.attribution_method is not AttributionMethod.EXPLICIT
+                # An EXPLICIT name that the line's own block never mentions was borrowed from a neighbouring paragraph
+                # (ORV ch4 b34/b36, Lee Hyunsung); the model's UNKNOWN is then the better reading. A name in the block
+                # still wins: that is a tag the rules may simply not have parsed.
+                or not any(re.search(rf"\b{re.escape(w)}\b", _norm(blocks.get(block_index, ""))) for w in _speaker_words(store, span.speaker_self_id))
+            ):
+                if span.attribution_method is AttributionMethod.EXPLICIT:
+                    fired.append("borrowed_explicit_cleared")
                 store.set_span_speaker(novel_id, span.id, None, AttributionMethod.UNRESOLVED.value, 0.0)
                 report.cleared += 1
+            note("unknown")
             continue
         if key == NOT_SPEECH:
+            note("not_speech")
             report.not_speech += 1
             store.set_span_speaker(novel_id, span.id, None, AttributionMethod.UNRESOLVED.value, 0.0)
             if span.span_type is SpanType.DIALOGUE:
@@ -524,6 +752,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             continue
         entry = index.resolve(speaker)
         if entry is None:
+            note("unmapped")
             report.unmapped += 1
             continue
         kind, _ = rejection(store, entry, quote_text)
@@ -531,6 +760,9 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             # "addressee": the line opens by calling this person, so they are who is spoken to, not who speaks.
             # "gender": "returned she" cannot be Mr. Bennet. Left unknown, not guessed (a second chance with this
             # person removed has already been tried above).
+            if kind == "addressee" and not addresses(quote_text, entry.name):
+                fired.append("vocative_ext")  # only the widened pattern or an alias caught it
+            note(f"rejected_{kind}", entry.self_id)
             if kind == "addressee":
                 report.addressee_rejected += 1
             else:
@@ -538,12 +770,14 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
             if span.attribution_method is not AttributionMethod.EXPLICIT and span.speaker_self_id:
                 store.set_span_speaker(novel_id, span.id, None, AttributionMethod.UNRESOLVED.value, 0.0)
             continue
+        note("named", entry.self_id)
         store.set_span_speaker(novel_id, span.id, entry.self_id, AttributionMethod.CONTEXTUAL_LLM.value, MODEL_CONFIDENCE)
         if span.span_type is SpanType.CROWD_REACTION:
             # A named person's line is not a crowd reaction; the classifier mistyped it (LotM ch7 block 39).
             store.set_span_type(novel_id, span.id, SpanType.DIALOGUE.value)
             report.retyped += 1
         report.attributed += 1
+    report.roles_merged += _merge_roles(role_spans)
     resolved_roles = _reconcile_roles(store, client, chapter, cast, index, role_spans, report) if role_spans and RECONCILE_ROLES else set()
     for role, role_lines in role_spans.items():
         if role in resolved_roles:
@@ -554,6 +788,15 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
     store.conn.commit()
     return report
 
+
+#: Prompt-context switches, each measurable on its own in the ablation (speaker_diag REPORT 6.3, 6.4).
+#: SCENE_CAST: a window shows only people the chapter has introduced by the end of that window, not the whole chapter's cast
+#: (ORV ch3 gave six lines to Han Myungoh before the text names him). PREV_SPEAKERS: the window's prompt says who spoke the
+#: last lines of the previous window (turn-taking across a cut). CROWD_RULE: untagged crowd/"a man" lines are UNKNOWN and
+#: a person called by a noun is the listener.
+SCENE_CAST = os.environ.get("ECHOTALES_READER_SCENE_CAST", "1") == "1"
+PREV_SPEAKERS = os.environ.get("ECHOTALES_READER_PREV_SPEAKERS", "1") == "1"
+CROWD_RULE = os.environ.get("ECHOTALES_READER_CROWD_RULE", "1") == "1"
 
 #: Switch for the re-ask of rejected answers (`_second_chance`), so an ablation can measure it on the reference chapters.
 SECOND_CHANCE = os.environ.get("ECHOTALES_READER_SECOND_CHANCE", "1") == "1"
@@ -700,6 +943,23 @@ def _role_slug(answer: str) -> str:
 
 
 _GENERIC = frozenset({"the", "a", "an", "he", "she", "they", "someone", "voice", "man", "woman", "boy", "girl"})
+#: One-word answers that name nobody and describe nobody: left to the baseline, as before.
+_PRONOUNS = frozenset({"he", "she", "they", "it", "i", "you", "we", "him", "her", "them", "someone", "everyone", "anyone", "nobody"})
+
+
+def describes_a_speaker(answer: str) -> str:
+    """"role" or "phrase" when the model's answer is words describing the speaker rather than a name, else "".
+
+    RI ch4 (v16 trace): "The elder", "the academy elder", "third Gu" came back without the UNKNOWN: prefix the prompt asks for;
+    they matched no cast entry, the line stayed "unmapped" and kept its baseline guess (a wrong named person for two of seven
+    elder lines). Sure only when the answer starts with an article or a lower-case word (a name is capitalised), so
+    "Kim Dokja", "Mr. Fool" and a new "Daly" never qualify; a long phrase is no name or role at all ("phrase")."""
+    words = answer.split()
+    if not words or (len(words) == 1 and words[0].lower().strip(".") in _PRONOUNS):
+        return ""
+    if len(words) > 4:
+        return "phrase"
+    return "role" if words[0].lower() in {"the", "a", "an"} or words[0][:1].islower() else ""
 
 
 def _mint_new_speakers(
