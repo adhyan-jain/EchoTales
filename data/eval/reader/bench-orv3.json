@@ -1,0 +1,48 @@
+{
+ "label": "bench-orv3",
+ "commit": "fb42dd2",
+ "chapters": {
+  "omniscient-readers-viewpoint:3": {
+   "held_out": false,
+   "speakers": [
+    12,
+    24
+   ],
+   "false_dialogue": 8,
+   "appearance": [
+    0,
+    0
+   ],
+   "persona_links": [
+    0,
+    0
+   ],
+   "ages": [
+    0,
+    0
+   ],
+   "kinds": [
+    2,
+    2
+   ],
+   "speaker_misses": [
+    "block 12 quote 0: expected _anon, got omniscient-readers-viewpoint:self12",
+    "block 13 quote 0: expected _anon, got omniscient-readers-viewpoint:self12",
+    "block 15 quote 0: expected dokja, got omniscient-readers-viewpoint:anon:3:3",
+    "block 18 quote 0: expected _anon, got omniscient-readers-viewpoint:self12",
+    "block 20 quote 0: expected _anon, got omniscient-readers-viewpoint:self12",
+    "block 22 quote 0: expected _anon, got omniscient-readers-viewpoint:self12",
+    "block 30 quote 0: expected dokja, got omniscient-readers-viewpoint:anon:3:2",
+    "block 49 quote 0: expected han, got None",
+    "block 51 quote 0: expected dokja, got None",
+    "block 52 quote 0: expected sangah, got omniscient-readers-viewpoint:self12",
+    "block 57 quote 0: expected han, got None",
+    "block 65 quote 0: expected han, got omniscient-readers-viewpoint:self2"
+   ]
+  }
+ },
+ "seconds": 51,
+ "passes": [
+  "speakers"
+ ]
+}
