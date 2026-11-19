@@ -628,7 +628,7 @@ def build_parser() -> argparse.ArgumentParser:
     c_build.add_argument("--engine", default="stub", help="voice engine (stub writes silent audio)")
     c_build.add_argument("--bank", default="data/voice")
     c_build.add_argument("--bank-kind", default=None)
-    c_build.add_argument("--inpaint", default="cv", choices=["cv", "lama", "none"])
+    c_build.add_argument("--inpaint", default="auto", choices=["auto", "cv", "lama", "none"], help="clean plate: auto = LaMa when its weights and a GPU are there, else OpenCV")
     c_build.add_argument("--depth", action="store_true",
                          help="depth parallax with Depth Anything V2 Small (GPU; run under the GPU lock)")
     c_build.add_argument("--suffix", default="motion-comic", help="version suffix, e.g. v1_<suffix>")

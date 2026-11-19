@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("scipy")
+
 import numpy as np
 from PIL import Image, ImageDraw
 
@@ -55,3 +59,23 @@ def test_text_mask_covers_bubbles_and_is_written(tmp_path):
     mask = np.asarray(Image.open(tmp_path / und.pages[0].mask_file))
     assert mask[100, 400] > 0 and mask[400, 100] > 0  # inside both bubbles
     assert mask[250, 100] == 0  # open art is untouched
+
+
+def test_sound_effects_stay_in_the_clean_plate_by_default(tmp_path):
+    """An effect is painted into the art and is neither voiced nor subtitled; a rectangle over it only destroys art
+    (Pepper&Carrot SPLASH lost its spray). `mask_sfx=True` removes them, all of them."""
+    sfx = TextLine((60, 600, 200, 640), "SPLASH", 0.99)  # on open art: no bubble fill, so it is an effect
+    und = understand_pages([PageImage(0, "p1.png", _page())], FakeOcr([*LINES, sfx]), out_dir=tmp_path)
+    assert [b.kind for b in und.bubbles()] == ["speech", "narration", "sfx"]
+    mask = np.asarray(Image.open(tmp_path / und.pages[0].mask_file))
+    assert mask[620, 100] == 0 and mask[100, 400] > 0
+    und = understand_pages([PageImage(0, "p1.png", _page())], FakeOcr([*LINES, sfx]), out_dir=tmp_path, mask_sfx=True)
+    assert np.asarray(Image.open(tmp_path / und.pages[0].mask_file))[620, 100] > 0
+
+
+def test_a_bubble_that_leaked_into_same_coloured_art_does_not_mask_the_art(tmp_path):
+    img = _page()
+    ImageDraw.Draw(img).rectangle([300, 156, 420, 300], fill=(250, 250, 250))  # a pale window under the bubble
+    und = understand_pages([PageImage(0, "p1.png", img)], FakeOcr(LINES), out_dir=tmp_path)
+    mask = np.asarray(Image.open(tmp_path / und.pages[0].mask_file))
+    assert mask[100, 400] > 0 and mask[290, 350] == 0

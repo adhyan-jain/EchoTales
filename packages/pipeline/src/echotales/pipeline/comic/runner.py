@@ -81,7 +81,7 @@ def build_stage(
     engine: str = "stub",
     bank_kind: str | None = None,
     bank_root: str | Path = "data/voice",
-    inpaint: str = "cv",
+    inpaint: str = "auto",
     depth: bool = False,
     suffix: str = "motion-comic",
     note: str = "",
@@ -110,14 +110,15 @@ def build_stage(
     base = (video_root or paths.asset_dir(novel_id, "video")) / f"ch{chapter:g}"
     version = f"{paths.next_version(base)}_{suffix}"
     out_dir = base / version
+    inpainter = get_inpainter(inpaint) if inpaint != "none" else None
     video = build_episode(
         und, saved_pages(root), timings, out_dir, title=title, credit=credit,
-        inpainter=get_inpainter(inpaint) if inpaint != "none" else None, masks_dir=root, size=size, fps=fps,
+        inpainter=inpainter, masks_dir=root, size=size, fps=fps,
         depth=_depth() if depth else None,
     )
     # Marks this folder as a motion comic for the Studio's comic panel, which lists only these videos.
     (out_dir / "comic.json").write_text(json.dumps({"shots": video.shots, "duration": video.duration}), encoding="utf-8")
-    _append_version(base, version, engine, inpaint, video, note, depth)
+    _append_version(base, version, engine, inpainter.name if inpainter else "none", video, note, depth)
     return ComicBuild(graph, video, version, out_dir)
 
 

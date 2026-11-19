@@ -349,7 +349,7 @@ def _run_comic(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]
     built = runner.build_stage(
         store, novel_id, title=str(params.get("title") or novel_id), chapter=float(params.get("chapter") or 1.0),
         credit=str(params.get("credit") or runner.DEFAULT_CREDIT), engine=str(params.get("engine") or "stub"),
-        inpaint=str(params.get("inpaint") or "cv"), suffix=str(params.get("suffix") or "motion-comic"),
+        inpaint=str(params.get("inpaint") or "auto"), suffix=str(params.get("suffix") or "motion-comic"),
         trust_speakers=bool(params.get("trust_speakers")),
     )
     return [str(built.video.video)]
