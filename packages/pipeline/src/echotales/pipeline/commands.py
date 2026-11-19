@@ -2061,7 +2061,22 @@ def cmd_engines(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_benchmark(args: argparse.Namespace) -> int:
+    """Hand the rest of the line to the public benchmark. `eval/` sits at the repository root, outside the installed
+    packages, so the root is put on the path the same way `eval/run_benchmark.py` does it for itself."""
+    try:
+        from eval.public.cli import main as public_main
+    except ModuleNotFoundError:
+        import sys as _sys
+        from pathlib import Path as _Path
+
+        _sys.path.insert(0, str(_Path(__file__).resolve().parents[5]))
+        from eval.public.cli import main as public_main
+    return public_main(['--bench-dir', args.bench_dir, '--sources-dir', args.sources_dir, *args.rest])
+
+
 _DISPATCH = {
+    "benchmark": cmd_benchmark,
     "engines": cmd_engines,
     "voice-audition": cmd_voice_audition,
     "audio-qa": cmd_audio_qa,

@@ -1,0 +1,536 @@
+{
+  "schema": 1,
+  "task": "speaker",
+  "source": {
+    "id": "sherlock-holmes-adventures",
+    "licence": "Public domain (Project Gutenberg #1661)",
+    "canonical": "see eval/public/sources.py",
+    "canonical_length": 562202
+  },
+  "drafted_by": "claude-sonnet-5-5, reading the local text directly; not the pipeline's output",
+  "status": "MODEL DRAFT. No item has been checked by a person (checked_by_human is false everywhere).",
+  "scope_note": "The opening conversation of 'A Scandal in Bohemia' (first 6,500 characters from 'Wedlock suits you'), speech only: the letter read aloud and two quoted letters inside it are left out.",
+  "items": [
+    {
+      "id": "sh-4347",
+      "offset": 4347,
+      "length": 20,
+      "text_sha256": "3cd096b434f30a1fa216890a34a04e668301ce92a874d77f81de5c7517052ed3",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-4381",
+      "offset": 4381,
+      "length": 80,
+      "text_sha256": "47ddc4cb6ecb2b5d5fec2d1af21b26be73afe485d92aa9af3acdb413a1da6b2b",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-4463",
+      "offset": 4463,
+      "length": 8,
+      "text_sha256": "24940926497ed8022e8a9ff50581572091f9e96c784e4007edb563da5130ef48",
+      "speaker": "Dr. Watson",
+      "aliases": [
+        "Watson",
+        "John Watson",
+        "Dr Watson"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-4485",
+      "offset": 4485,
+      "length": 175,
+      "text_sha256": "b97018a984054537645bd9439d65d1a13aef1c8a0b4139b95eeccf507413d65b",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-4662",
+      "offset": 4662,
+      "length": 24,
+      "text_sha256": "c75790f97ca29f1856569d86d09e7871eda584483264abc79e748ef8ec362b26",
+      "speaker": "Dr. Watson",
+      "aliases": [
+        "Watson",
+        "John Watson",
+        "Dr Watson"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-4688",
+      "offset": 4688,
+      "length": 150,
+      "text_sha256": "185a994bd8cdf9aa727f22cf4a3ceddc7118d48f51cb38195b5f211bd9db2605",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-4840",
+      "offset": 4840,
+      "length": 17,
+      "text_sha256": "9e23d59950b99c170767427836088ad2b6161f10bfda8343b3782048ec358aa5",
+      "speaker": "Dr. Watson",
+      "aliases": [
+        "Watson",
+        "John Watson",
+        "Dr Watson"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-4866",
+      "offset": 4866,
+      "length": 368,
+      "text_sha256": "9ce49f1d3ca272268955ecc593442bfe1153b9a6ebd6846df55f1f591e67d750",
+      "speaker": "Dr. Watson",
+      "aliases": [
+        "Watson",
+        "John Watson",
+        "Dr Watson"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-5305",
+      "offset": 5305,
+      "length": 26,
+      "text_sha256": "6fe9f4f9d151dc255da4ace9acf5da54391cd90b538476b7ea168654a6608d04",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-5341",
+      "offset": 5341,
+      "length": 784,
+      "text_sha256": "f1d41126952cb4bd73c2baf325efe2605083ef80335fef72a376e727d170374b",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-6215",
+      "offset": 6215,
+      "length": 36,
+      "text_sha256": "e390b14c8ebc83ec92f92f3e51dc93ff7f37ec8c80b34b8bfbe6881803de4083",
+      "speaker": "Dr. Watson",
+      "aliases": [
+        "Watson",
+        "John Watson",
+        "Dr Watson"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-6264",
+      "offset": 6264,
+      "length": 246,
+      "text_sha256": "97c3c83ee27d898bb811e32cd5f636c4e707f1c6e196ea54b5258bbf132956df",
+      "speaker": "Dr. Watson",
+      "aliases": [
+        "Watson",
+        "John Watson",
+        "Dr Watson"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-6512",
+      "offset": 6512,
+      "length": 11,
+      "text_sha256": "42d6a4e86782f09d93371f890ae9a08025321fba51a44486ac19f11559d07bd4",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-6603",
+      "offset": 6603,
+      "length": 150,
+      "text_sha256": "5853fa624b3870ca4b22cec9ea5229fb79375bf55800d344d93cfa4d905be043",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-6755",
+      "offset": 6755,
+      "length": 13,
+      "text_sha256": "13bd35cefb7a4d8411a7d4bae93183676f0f783834fd7062ed24b381b173b8e4",
+      "speaker": "Dr. Watson",
+      "aliases": [
+        "Watson",
+        "John Watson",
+        "Dr Watson"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-6770",
+      "offset": 6770,
+      "length": 12,
+      "text_sha256": "8fa49b05fba77323be7a3237dd3e11a816056dee97fb4e76379cbe9b870022ab",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-6784",
+      "offset": 6784,
+      "length": 31,
+      "text_sha256": "715899c1965d70dd026f2b0e2b28007be2625d8a4e8b32a07cbd2dc0cf44bb03",
+      "speaker": "Dr. Watson",
+      "aliases": [
+        "Watson",
+        "John Watson",
+        "Dr Watson"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-6817",
+      "offset": 6817,
+      "length": 26,
+      "text_sha256": "c18348a688e88f5edfcf757433bb2c4a1eb875fa0b162cacc8ef2aa522002485",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-6845",
+      "offset": 6845,
+      "length": 25,
+      "text_sha256": "bdd2bff2b8d0b39e8c94d1542f724c2342c4fec39c955202b1f18581dcc37f9c",
+      "speaker": "Dr. Watson",
+      "aliases": [
+        "Watson",
+        "John Watson",
+        "Dr Watson"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-6872",
+      "offset": 6872,
+      "length": 339,
+      "text_sha256": "c846b57fa9bcdc1175f640c063f8bc70434dcfc57e15cf8cc48251fb97472660",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-7308",
+      "offset": 7308,
+      "length": 27,
+      "text_sha256": "5dcfaaa3eb48f1d258c177e16933b701f8e5f16368a1e21034c668b72e64377b",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-7345",
+      "offset": 7345,
+      "length": 16,
+      "text_sha256": "4b2efb9427fded108bac5dd66006794dc0cf2f581c0baaee3d5a003c561cf635",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-7921",
+      "offset": 7921,
+      "length": 27,
+      "text_sha256": "d2f4a101b126fe2ce76592e5d20fcbe481f1022bfe62a3004876565b9ba2c82f",
+      "speaker": "Dr. Watson",
+      "aliases": [
+        "Watson",
+        "John Watson",
+        "Dr Watson"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-7961",
+      "offset": 7961,
+      "length": 36,
+      "text_sha256": "6576458b70db7125ecf42979fc1d3befb0683605fbd2a7d1ee61f3df69c88ae3",
+      "speaker": "Dr. Watson",
+      "aliases": [
+        "Watson",
+        "John Watson",
+        "Dr Watson"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-7999",
+      "offset": 7999,
+      "length": 217,
+      "text_sha256": "4dc922c714f21ef7e3fa28b5596ab3d1a875d9a056c160137540d8a4f5b485d6",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-8294",
+      "offset": 8294,
+      "length": 49,
+      "text_sha256": "ea2503d8ba678722cda2c5b26dddee05d14d486587b3b25e95c48f6a842028f5",
+      "speaker": "Dr. Watson",
+      "aliases": [
+        "Watson",
+        "John Watson",
+        "Dr Watson"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-8406",
+      "offset": 8406,
+      "length": 96,
+      "text_sha256": "7159e892a570e6f3237193a1aec43bd773606e4d1774203e41bada58cde23044",
+      "speaker": "Dr. Watson",
+      "aliases": [
+        "Watson",
+        "John Watson",
+        "Dr Watson"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-8504",
+      "offset": 8504,
+      "length": 33,
+      "text_sha256": "90d93afa87a04cdff762e825d125f5b4cbb999928c1c5bd77dbc648695def2cf",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-8551",
+      "offset": 8551,
+      "length": 61,
+      "text_sha256": "adaf15b85e89863cf0b930668f78702a497845896d38376d72d8bf266de016ee",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-8740",
+      "offset": 8740,
+      "length": 27,
+      "text_sha256": "31d3065dee93b7311a55e2cd4a91453576ab114dd54eb22fbc5dbae550509078",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-8783",
+      "offset": 8783,
+      "length": 59,
+      "text_sha256": "d835c74160f7a4c78f407cea7514493661e1bf8cd722dd4188f1b6b993e0e8a5",
+      "speaker": "Dr. Watson",
+      "aliases": [
+        "Watson",
+        "John Watson",
+        "Dr Watson"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-8844",
+      "offset": 8844,
+      "length": 246,
+      "text_sha256": "3e027a6f799e74610eadea93150dccc43558bc16bd17cfdd651fcfd67af7f30e",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-9143",
+      "offset": 9143,
+      "length": 264,
+      "text_sha256": "a82a1ef914ed17831d3d18c1e190fe6ce3d73647e609494cf3f47de3b9176223",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-9493",
+      "offset": 9493,
+      "length": 32,
+      "text_sha256": "468f0cb0ccb6ba3fd4ae838a009668083f0c7620c02e22a93550738ecb9109ac",
+      "speaker": "Dr. Watson",
+      "aliases": [
+        "Watson",
+        "John Watson",
+        "Dr Watson"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-9535",
+      "offset": 9535,
+      "length": 490,
+      "text_sha256": "a94fec622e0a948004eb0a71f2c237d0bdf4d7bc2954bec7445fcb47676ea26e",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-10175",
+      "offset": 10175,
+      "length": 23,
+      "text_sha256": "437558e935b616ba783d50c754260170899af94c1e34f97caa11d13f94f3ac8e",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-10208",
+      "offset": 10208,
+      "length": 6,
+      "text_sha256": "962de7fb6fae75af56fade68f4c6749cef2bb0359757cabcea0e02437a368c4b",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-10257",
+      "offset": 10257,
+      "length": 146,
+      "text_sha256": "080ade9bca935b7f707ea03bf19f3a63731a19815669018062df4ce65e80a454",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-10405",
+      "offset": 10405,
+      "length": 39,
+      "text_sha256": "ac61762fea9b3fa7df9d12c2ae60cff2c54571a1b6255b2fe1a2eba5f21b7953",
+      "speaker": "Dr. Watson",
+      "aliases": [
+        "Watson",
+        "John Watson",
+        "Dr Watson"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-10446",
+      "offset": 10446,
+      "length": 138,
+      "text_sha256": "74f6378e3830244b06f24e2491d0b7767e2d52dce67f069b57450951b8392985",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-10586",
+      "offset": 10586,
+      "length": 18,
+      "text_sha256": "86dcf4a33ed86fc29e164f7164f0d09665de25b6dd5228df86124f7a65360c0f",
+      "speaker": "Dr. Watson",
+      "aliases": [
+        "Watson",
+        "John Watson",
+        "Dr Watson"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "sh-10606",
+      "offset": 10606,
+      "length": 137,
+      "text_sha256": "98b13370fc1a01058353c40ef59443e904a43e007b038b53c75a59a1fd844d7c",
+      "speaker": "Sherlock Holmes",
+      "aliases": [
+        "Holmes",
+        "Mr. Sherlock Holmes"
+      ],
+      "checked_by_human": false
+    }
+  ]
+}

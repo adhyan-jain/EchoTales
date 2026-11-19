@@ -1,0 +1,757 @@
+{
+  "schema": 1,
+  "task": "speaker",
+  "source": {
+    "id": "pride-and-prejudice",
+    "licence": "Public domain (Project Gutenberg #1342)",
+    "canonical": "see eval/public/sources.py",
+    "canonical_length": 713562
+  },
+  "drafted_by": "claude-sonnet-5-5, reading the local text directly; not the pipeline's output",
+  "status": "MODEL DRAFT. No item has been checked by a person (checked_by_human is false everywhere).",
+  "scope_note": "Chapters 1 and 2 of the Gutenberg #1342 edition, every quoted span except two illustration captions. Fragments of one utterance split by a speech tag are separate items.",
+  "items": [
+    {
+      "id": "pnp-26553",
+      "offset": 26553,
+      "length": 21,
+      "text_sha256": "2ef5b43c8e7eae9e682b9cb0567c44b8bdab0c7968f6a7bb618085c0d54f9a7d",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-26605",
+      "offset": 26605,
+      "length": 54,
+      "text_sha256": "02321a10f1325047e9a1802c9f04f610737858fb4062cf87c05abeb96b9797fe",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-26698",
+      "offset": 26698,
+      "length": 12,
+      "text_sha256": "d035936001eac3c105d5a9580825e5eebe62f11de783c0d21d9d7120e078b3b5",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-26725",
+      "offset": 26725,
+      "length": 65,
+      "text_sha256": "975b104ce2f7b2bbc81e9b9bee1217f01ea1d9f9b6d8e2c447d7bcf5a66ca2b1",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-26820",
+      "offset": 26820,
+      "length": 43,
+      "text_sha256": "d12083400093d86968a22ca9a94d97f1cb856fceb4b7f3d476878a71333bdf5f",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-26894",
+      "offset": 26894,
+      "length": 61,
+      "text_sha256": "5a2fa97133c8bfeb313ebd4c565cd344204f464e79cca3354c47f14796f9dcad",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-27054",
+      "offset": 27054,
+      "length": 397,
+      "text_sha256": "6ee56c1d519fc1acb02a087a3673ae9709784c80b78457d35262b14fffcd2ced",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-27453",
+      "offset": 27453,
+      "length": 19,
+      "text_sha256": "940d2bb9a7d2417e00e5f3b0ddb6b182756942f6b73ec069bec9037d5e41960d",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-27474",
+      "offset": 27474,
+      "length": 10,
+      "text_sha256": "c880947afe7c1f02959b9843b7fff254fdfbaca7dea1729432ba423d27f9b927",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-27486",
+      "offset": 27486,
+      "length": 26,
+      "text_sha256": "2601d764ae833c5d4c08e11d9648c537a4a03ac96bca9735714b37098afaf2ea",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-27514",
+      "offset": 27514,
+      "length": 128,
+      "text_sha256": "43d3b963c897a023cce726634cd5b7b177400824e87c3d2fd25bbc23ec356d1b",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-27644",
+      "offset": 27644,
+      "length": 33,
+      "text_sha256": "09b2304d4740cbff810c5c9918ff16862a3a3cccdfbef8fbd6d737dfbcd80d25",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-27679",
+      "offset": 27679,
+      "length": 21,
+      "text_sha256": "2ef5b43c8e7eae9e682b9cb0567c44b8bdab0c7968f6a7bb618085c0d54f9a7d",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-27719",
+      "offset": 27719,
+      "length": 91,
+      "text_sha256": "b214ba2aefc8c69fd7a8cd635d86b3f1f576af8a829ce27d67d955a3673d2f03",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-27812",
+      "offset": 27812,
+      "length": 38,
+      "text_sha256": "d8447cbd9b7c0dd8a2b1687a432031b4d1c32ee15f31f5671a80ffd41a005a9b",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-27852",
+      "offset": 27852,
+      "length": 159,
+      "text_sha256": "4d8e56f3e07162da137ee7394e6ec0ee81ed8ab7de213431e3e6856d5f67be42",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-28013",
+      "offset": 28013,
+      "length": 219,
+      "text_sha256": "e280fef213038160b852ce4d58c68b0dc5f0aa506e888da617b289453c006ca6",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-28234",
+      "offset": 28234,
+      "length": 215,
+      "text_sha256": "08be1ad70146b5faf5bd545589022e15d57c254051ee955b9f1f5240c0ea52e6",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-28451",
+      "offset": 28451,
+      "length": 63,
+      "text_sha256": "883a8ecdb2e3bd988f6d9a462f29f589137a3efa473167e964a89ac01f075630",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-28516",
+      "offset": 28516,
+      "length": 92,
+      "text_sha256": "b7347b5bfc7238dc90ea5978581fd1ceb4720d5b03d2a098403e6edf947158af",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-28610",
+      "offset": 28610,
+      "length": 45,
+      "text_sha256": "a49d007faae5566b7806c69c0ca98bb744029cc6cfd4315d025b3ac828504714",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-28657",
+      "offset": 28657,
+      "length": 299,
+      "text_sha256": "0f5094278b3e89123bf69fbea41ce9aff4ae85774134350bfed6f5619bfaaf30",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-28958",
+      "offset": 28958,
+      "length": 263,
+      "text_sha256": "b94baa865f225a22c01380ae1b3bfce7d4c923b8959594b4ed3b1962d637fa76",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-29223",
+      "offset": 29223,
+      "length": 213,
+      "text_sha256": "86fbe39b3bd3582d30ae67414e307eaf3dc0149b875aa8d573a9c9e7d1dd8378",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-29438",
+      "offset": 29438,
+      "length": 48,
+      "text_sha256": "ebf97c87e45f2278079f6cd75058fe5389f29c5a8f58639b31c9e0f679d95b42",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-29499",
+      "offset": 29499,
+      "length": 111,
+      "text_sha256": "39ab06e169a83e0f9414bf3300c7e7892c0dbfc4be1b267583c15ecc7a3205a1",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-29612",
+      "offset": 29612,
+      "length": 137,
+      "text_sha256": "a917e740ed6f4176da622628f026c98d949ff042a8224215eb1149c7cf0a69a5",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-29751",
+      "offset": 29751,
+      "length": 168,
+      "text_sha256": "2250ab0a5659bb6a5db9c4815fcb6a225e86b626c2ca932deb5f4f5535072150",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-29921",
+      "offset": 29921,
+      "length": 36,
+      "text_sha256": "1b81c830b5156a50e3a9b877ce9d793503ca42aa48ae62c8627ad05f719f9544",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-29959",
+      "offset": 29959,
+      "length": 118,
+      "text_sha256": "8b34bd57ffd6dec86f9c531e1250721d44e46b0373b79f2df46393a27c0e8b83",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-30079",
+      "offset": 30079,
+      "length": 85,
+      "text_sha256": "b01d9d2da0c1bf6b6c6c8ac82fdb9205a669601ed4cbcac7afe1938481591a01",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-30166",
+      "offset": 30166,
+      "length": 77,
+      "text_sha256": "6f52ff66cc92ae5c9f4a3c7565147d5b3a4b1a677f42a08ea77e8e6115dbed57",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-31203",
+      "offset": 31203,
+      "length": 41,
+      "text_sha256": "0b80531b9d02ada1f0e339f826963efd0e955b0d330f88c98905c31eeb962f39",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-31246",
+      "offset": 31246,
+      "length": 53,
+      "text_sha256": "766abba3499376d225d7733473687358949535f5e18cc400e74816720e53c440",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-31330",
+      "offset": 31330,
+      "length": 28,
+      "text_sha256": "846ba18c92e853f66f3e11ddf829674a2259c900eaf7aa6b7b3cc6c2d62071a6",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-31360",
+      "offset": 31360,
+      "length": 24,
+      "text_sha256": "b2046fef4c916971bdaf7b04f047e02f4ca9f406fcfbdd4b4bd657e1307c9a5e",
+      "speaker": "Elizabeth Bennet",
+      "aliases": [
+        "Elizabeth",
+        "Lizzy",
+        "Eliza Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-31401",
+      "offset": 31401,
+      "length": 93,
+      "text_sha256": "1f0138b8b6badb714bdaf9bb21c3873b0acfe89cfed0189646cf049d66e501a8",
+      "speaker": "Elizabeth Bennet",
+      "aliases": [
+        "Elizabeth",
+        "Lizzy",
+        "Eliza Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-31496",
+      "offset": 31496,
+      "length": 151,
+      "text_sha256": "ee2139b51acce971084217de61518785f9cb6a99017afc3f608aa57d10f4108b",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-31649",
+      "offset": 31649,
+      "length": 17,
+      "text_sha256": "2f4f9b2f024c4284c32a0bb7ad0cadc71498c707232f410d2317a6a7fabe8d49",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-31684",
+      "offset": 31684,
+      "length": 66,
+      "text_sha256": "d0e411dba60b8470f779ecf71383806e3e283547516b71b9f70a34e661956169",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-31865",
+      "offset": 31865,
+      "length": 115,
+      "text_sha256": "0d37750732156a5731fa4934d56591f78683939ce7f22ce24f35660e308f2870",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-31982",
+      "offset": 31982,
+      "length": 40,
+      "text_sha256": "7273c39c4514dc5b6f63a209a47990aabadb46cf598247cf1edd8b8137a827df",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-32040",
+      "offset": 32040,
+      "length": 21,
+      "text_sha256": "7d5a14d4cf7661432d216ea7bb966029c4e11b7dad05925930c2d03ad3cd1212",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-32063",
+      "offset": 32063,
+      "length": 38,
+      "text_sha256": "fd26b1f3b2ce7a7bafed6383dc7de5d225c85c6e855902507e8218db2163584d",
+      "speaker": "Kitty Bennet",
+      "aliases": [
+        "Kitty",
+        "Catherine Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-32128",
+      "offset": 32128,
+      "length": 38,
+      "text_sha256": "0a59734e160461940b1275543c15d3f28b280bb512e311452c3b16d3cdb2e1c8",
+      "speaker": "Kitty Bennet",
+      "aliases": [
+        "Kitty",
+        "Catherine Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-32168",
+      "offset": 32168,
+      "length": 22,
+      "text_sha256": "f0b9fe0b633e1014ec2e939b9854c0c7336dfb5c1e89f6c0932e155352c72662",
+      "speaker": "Elizabeth Bennet",
+      "aliases": [
+        "Elizabeth",
+        "Lizzy",
+        "Eliza Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-32192",
+      "offset": 32192,
+      "length": 15,
+      "text_sha256": "835e991e3ef755789dc5b21fc0dba1c679e70efb40afcc5340ca91959ad3fa5d",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-32226",
+      "offset": 32226,
+      "length": 142,
+      "text_sha256": "70734b883cf180612767ff6448c2214b525fcddcca87004a0133cfa637adfc2e",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-32370",
+      "offset": 32370,
+      "length": 93,
+      "text_sha256": "340b7ed4aab45027cf00ef07fc1dac68c0aee9e2bf52c120a4ce22a7e067df7f",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-32465",
+      "offset": 32465,
+      "length": 106,
+      "text_sha256": "81a1b652841b41b99a6a931f39bd630e52df0f55844fe96e7fe5d3d4aae877c5",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-32573",
+      "offset": 32573,
+      "length": 369,
+      "text_sha256": "42916ce233a48d651b4297742ba006993f04eac68b6d5c45b687d6b1eb0e4d47",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-33001",
+      "offset": 33001,
+      "length": 21,
+      "text_sha256": "a1259cad99b63f7adbdeb91af0d266c043d4a449f8207746262eeb8762b731e3",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-33024",
+      "offset": 33024,
+      "length": 55,
+      "text_sha256": "c8237e095aef56c8269aaca6cb511176f46d6caff52b154e78d95045148ef10a",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-33090",
+      "offset": 33090,
+      "length": 245,
+      "text_sha256": "67e578d0718b3b8c56b14c6f047c843dfe58f1fc250c41ad64c12574dac5c3cd",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-33400",
+      "offset": 33400,
+      "length": 36,
+      "text_sha256": "ea1a0074ccffadd88735e5b89eb589d0b84182640cd1bd17d24f0cc71d3fa19f",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-33451",
+      "offset": 33451,
+      "length": 31,
+      "text_sha256": "6cffdae80507ea62fdcc005ea162f684ec521f07b986a6d35ffc47f733ea740a",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-33484",
+      "offset": 33484,
+      "length": 27,
+      "text_sha256": "3a49b0e0d6c674df145a0a1ca2167506f7c3e3b010fc328596bc7f0fb1e05ccd",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-33529",
+      "offset": 33529,
+      "length": 242,
+      "text_sha256": "f6ffd9bdb62079659a7f848da8681346ab600d812d39e09d7e0be22f2fe8f242",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-33994",
+      "offset": 33994,
+      "length": 299,
+      "text_sha256": "096049743ecff321e99500d55df7fb4613474eeb3c577d3e38d30c54943ecfcf",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-34295",
+      "offset": 34295,
+      "length": 50,
+      "text_sha256": "3301b30476a37c0747a3d84991fa5ce33da84fa75ba0496cd9c6603af0a9d4d2",
+      "speaker": "Mr. Bennet",
+      "aliases": [
+        "Mr Bennet"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-34440",
+      "offset": 34440,
+      "length": 43,
+      "text_sha256": "650caa1231072b03f8283c9e7c33141e0d7adc0ab81b8fdf37a4d0182efa0541",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-34518",
+      "offset": 34518,
+      "length": 347,
+      "text_sha256": "2f7ff44bff9fff55e620ae7944520f488d769786e3199091a26e6c76e93d8427",
+      "speaker": "Mrs. Bennet",
+      "aliases": [
+        "Mrs Bennet",
+        "Mrs. B"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-34867",
+      "offset": 34867,
+      "length": 5,
+      "text_sha256": "1cc7fd896649c007398af4262d9a6f32645d0c4c6699343c08125e00ec4c9cf2",
+      "speaker": "Lydia Bennet",
+      "aliases": [
+        "Lydia"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-34894",
+      "offset": 34894,
+      "length": 65,
+      "text_sha256": "940d666cc75f14d4b82cd138221033206949990a496c8683eba4de541b635231",
+      "speaker": "Lydia Bennet",
+      "aliases": [
+        "Lydia"
+      ],
+      "checked_by_human": false
+    }
+  ]
+}

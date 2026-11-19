@@ -219,6 +219,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="only engines whose licence was checked and allows commercial use (unchecked ones are left out)",
     )
 
+    p_bench = sub.add_parser(
+        "benchmark",
+        help="public benchmark: status | lines | score | check (arguments after it go to eval/public/cli.py)",
+    )
+    p_bench.add_argument("--sources-dir", default="data/raw", help="where your own copies of the public-domain texts are")
+    p_bench.add_argument("--bench-dir", default="data/eval/benchmark", help="where the reference files live")
+    p_bench.add_argument("rest", nargs=argparse.REMAINDER, help="e.g. check --reference data/eval/benchmark/speaker__x.json")
+
     p_audit = sub.add_parser(
         "audit",
         help="check that each early stage conserved its input text (read-only; exit 1 if a check fails)",

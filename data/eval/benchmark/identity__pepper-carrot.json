@@ -1,0 +1,140 @@
+{
+  "schema": 1,
+  "task": "identity",
+  "source": {
+    "id": "pepper-carrot",
+    "licence": "CC BY 4.0 (David Revoy, peppercarrot.com)"
+  },
+  "drafted_by": "claude-sonnet-5-5, from looking at the page images directly; not the pipeline's output",
+  "status": "MODEL DRAFT. No item has been checked by a person (checked_by_human is false everywhere).",
+  "scope_note": "Two characters across 11 panels of the first two English pages of episodes 1 and 2. A character counts as present when any part of them is drawn (Pepper seen from behind in E01P02.3, Carrot tiny in the background of E02P02.1). The task is who appears where; it is a regression check for cross-panel identity, small by design.",
+  "items": [
+    {
+      "id": "E01P01.1",
+      "panel": "E01P01.1",
+      "image": "ep01/en_E01P01.jpg",
+      "image_sha256": "f1de30872ce216b4ea57f6d99110867ba44396211119ffd20bce6277332f64d3",
+      "panel_index_top_to_bottom": 1,
+      "characters": [
+        "Pepper",
+        "Carrot"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "E01P01.2",
+      "panel": "E01P01.2",
+      "image": "ep01/en_E01P01.jpg",
+      "image_sha256": "f1de30872ce216b4ea57f6d99110867ba44396211119ffd20bce6277332f64d3",
+      "panel_index_top_to_bottom": 2,
+      "characters": [
+        "Pepper",
+        "Carrot"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "E01P01.3",
+      "panel": "E01P01.3",
+      "image": "ep01/en_E01P01.jpg",
+      "image_sha256": "f1de30872ce216b4ea57f6d99110867ba44396211119ffd20bce6277332f64d3",
+      "panel_index_top_to_bottom": 3,
+      "characters": [
+        "Pepper",
+        "Carrot"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "E01P02.1",
+      "panel": "E01P02.1",
+      "image": "ep01/en_E01P02.jpg",
+      "image_sha256": "7696832a48b3cd75a2c8faef7827e0abe69cce987b28aea6a60865955f0ed803",
+      "panel_index_top_to_bottom": 1,
+      "characters": [
+        "Pepper",
+        "Carrot"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "E01P02.2",
+      "panel": "E01P02.2",
+      "image": "ep01/en_E01P02.jpg",
+      "image_sha256": "7696832a48b3cd75a2c8faef7827e0abe69cce987b28aea6a60865955f0ed803",
+      "panel_index_top_to_bottom": 2,
+      "characters": [
+        "Pepper",
+        "Carrot"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "E01P02.3",
+      "panel": "E01P02.3",
+      "image": "ep01/en_E01P02.jpg",
+      "image_sha256": "7696832a48b3cd75a2c8faef7827e0abe69cce987b28aea6a60865955f0ed803",
+      "panel_index_top_to_bottom": 3,
+      "characters": [
+        "Pepper",
+        "Carrot"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "E02P01.1",
+      "panel": "E02P01.1",
+      "image": "ep02/en_E02P01.jpg",
+      "image_sha256": "9b011d958fdf514c7e8c152760cb8635fefc915f7a47b5b8dfa2628e4d15337c",
+      "panel_index_top_to_bottom": 1,
+      "characters": [],
+      "checked_by_human": false
+    },
+    {
+      "id": "E02P01.2",
+      "panel": "E02P01.2",
+      "image": "ep02/en_E02P01.jpg",
+      "image_sha256": "9b011d958fdf514c7e8c152760cb8635fefc915f7a47b5b8dfa2628e4d15337c",
+      "panel_index_top_to_bottom": 2,
+      "characters": [
+        "Pepper",
+        "Carrot"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "E02P02.1",
+      "panel": "E02P02.1",
+      "image": "ep02/en_E02P02.jpg",
+      "image_sha256": "48da4890d7b1a2cac3a8fde8ba6ba67c8fe295ee8f2cc2dfc03c0c7e97b6f41a",
+      "panel_index_top_to_bottom": 1,
+      "characters": [
+        "Pepper",
+        "Carrot"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "E02P02.2",
+      "panel": "E02P02.2",
+      "image": "ep02/en_E02P02.jpg",
+      "image_sha256": "48da4890d7b1a2cac3a8fde8ba6ba67c8fe295ee8f2cc2dfc03c0c7e97b6f41a",
+      "panel_index_top_to_bottom": 2,
+      "characters": [
+        "Carrot"
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "E02P02.3",
+      "panel": "E02P02.3",
+      "image": "ep02/en_E02P02.jpg",
+      "image_sha256": "48da4890d7b1a2cac3a8fde8ba6ba67c8fe295ee8f2cc2dfc03c0c7e97b6f41a",
+      "panel_index_top_to_bottom": 3,
+      "characters": [
+        "Carrot"
+      ],
+      "checked_by_human": false
+    }
+  ]
+}

@@ -526,6 +526,13 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Not moved**: `video/__init__.py::get_video_engine` (wan, ltx, stub; the workers are placeholders), `--compose-engine`, the `render.image_model` choice in `config.json` (compiler path), and `scripts/setup.sh`'s licence display, which cannot run Python; a test keeps its licences equal to the registry's.
 - **Status**: done.
 
+### D60. The public benchmark ships with model-drafted references, labelled as such (2026-11-20)
+- **Decided**: `eval/public/` (reached by `python -m eval.run_benchmark public ...` and `echotales benchmark ...`) scores speaker attribution, cross-panel identity and scene fidelity on Pride and Prejudice, Sherlock Holmes and Pepper&Carrot. References are in `data/eval/benchmark/`, hold offsets and hashes only, and every item carries `checked_by_human: false` until the owner runs `echotales benchmark check`.
+- **Why**: the roadmap asks for hand-checked references; the owner has not yet had the time, and a benchmark with no references helps nobody. Shipping drafts that say so keeps the work usable as a regression check without claiming accuracy.
+- **Rule**: any number computed on a file with an unchecked item is printed with the banner "NOT human-verified"; the `score` command does this itself.
+- **Size**: 64 and 42 speaker lines, 11 panels, 14 scenes. Small on purpose; growing it is a labelling job, not a code job.
+- **Status**: scorers done and tested; references drafted; human check not done.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs

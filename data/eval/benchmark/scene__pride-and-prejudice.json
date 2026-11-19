@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "task": "scene",
+  "source": {
+    "id": "pride-and-prejudice",
+    "licence": "Public domain (Project Gutenberg #1342)",
+    "canonical": "see eval/public/sources.py"
+  },
+  "drafted_by": "claude-sonnet-5-5, reading the local text directly; not the pipeline's output",
+  "status": "MODEL DRAFT. No item has been checked by a person (checked_by_human is false everywhere).",
+  "scope_note": "Chapters 1 and 2: what a scene summary must name. The chapters never describe the room, so the elements are people and plot facts only; no setting is required.",
+  "items": [
+    {
+      "id": "pnp-ch1",
+      "offset": 26173,
+      "length": 4630,
+      "text_sha256": "9baaf350f2885524af07014ee6a7ea2339c39726656ac8aa0aaedb2b5ffb0818",
+      "required": [
+        {
+          "element": "Mr. Bennet",
+          "any_of": [
+            "bennet",
+            "mr. bennet"
+          ]
+        },
+        {
+          "element": "Mrs. Bennet",
+          "any_of": [
+            "mrs. bennet",
+            "his wife",
+            "his lady"
+          ]
+        },
+        {
+          "element": "Bingley, the new tenant",
+          "any_of": [
+            "bingley"
+          ]
+        },
+        {
+          "element": "Netherfield",
+          "any_of": [
+            "netherfield"
+          ]
+        },
+        {
+          "element": "marriage as the motive",
+          "any_of": [
+            "marry",
+            "marrying",
+            "marriage",
+            "husband",
+            "wife",
+            "daughters"
+          ]
+        }
+      ],
+      "forbidden": [],
+      "checked_by_human": false
+    },
+    {
+      "id": "pnp-ch2",
+      "offset": 30803,
+      "length": 4348,
+      "text_sha256": "d9260ff5821d7001d92bdc7e0bd1d4d6593331a3df3eaa54950ab03e10ca57e0",
+      "required": [
+        {
+          "element": "Mr. Bennet",
+          "any_of": [
+            "bennet",
+            "mr. bennet"
+          ]
+        },
+        {
+          "element": "Mrs. Bennet",
+          "any_of": [
+            "mrs. bennet",
+            "his wife"
+          ]
+        },
+        {
+          "element": "the daughters",
+          "any_of": [
+            "daughters",
+            "girls",
+            "lizzy",
+            "elizabeth",
+            "kitty",
+            "lydia",
+            "mary"
+          ]
+        },
+        {
+          "element": "the visit to Bingley",
+          "any_of": [
+            "visit",
+            "visited",
+            "called",
+            "waited on",
+            "bingley"
+          ]
+        },
+        {
+          "element": "the assembly ball",
+          "any_of": [
+            "ball",
+            "assembly",
+            "assemblies"
+          ]
+        }
+      ],
+      "forbidden": [],
+      "checked_by_human": false
+    }
+  ]
+}
