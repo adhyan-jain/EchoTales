@@ -98,6 +98,15 @@ class TestCasting:
         assert len(assignments) == 3
         assert report.assigned == 3
 
+    def test_characters_cast_without_a_known_gender_are_reported(self) -> None:
+        """RI audit 2026-11-19: 20 of 44 speaking characters (Fang Yuan, 902 lines, included) had no graph gender and
+        were cast from every adult voice, so the lead of the book was voiced by a woman. It must be visible."""
+        profiles = self._profiles(2, gender="unknown")
+        profiles["e9"] = TraitProfile(target_id="e9", label="Known", gender="male", age_band="adult")
+        _, report = cast_voices("t", profiles, _bank())
+        assert sorted(report.unknown_gender) == ["Char0", "Char1"]
+        assert "no known gender" in report.summary()
+
     def test_excluded_narrator_voice_is_never_cast(self) -> None:
         voices = [
             BankVoice(speaker_id=f"m{i}", gender="male", age=30)

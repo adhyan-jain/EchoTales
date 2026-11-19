@@ -57,6 +57,9 @@ class CastingReport:
     assigned: int = 0
     collisions: list[tuple[str, str]] = field(default_factory=list)
     bucket_pressure: dict[str, tuple[int, int]] = field(default_factory=dict)
+    #: Characters whose graph gender is unknown, so `nearest_bucket` offered every adult voice of both genders. On
+    #: RI this was 20 of 44 speaking characters, the protagonist among them (casting audit 2026-11-19).
+    unknown_gender: list[str] = field(default_factory=list)
 
     def summary(self) -> str:
         pressure = ", ".join(
@@ -69,6 +72,11 @@ class CastingReport:
             f"  co-occurring same-voice collisions: {len(self.collisions)}"
             " (accepted by design -- docs/design/architecture.md Section 8b)",
         ]
+        if self.unknown_gender:
+            lines.append(
+                f"  {len(self.unknown_gender)} characters have no known gender and were cast gender-blind"
+                f" (set it in the bible review): {', '.join(self.unknown_gender[:8])}"
+            )
         for a, b in self.collisions[:5]:
             lines.append(f"    {a} shares a voice with {b}")
         return "\n".join(lines)
@@ -134,6 +142,8 @@ def cast_voices(
             continue
         bucket = f"{profile.gender}:{profile.age_band}"
         taken = used_in_bucket.setdefault(bucket, {})
+        if profile.gender not in ("male", "female"):
+            report.unknown_gender.append(profile.label)
 
         neighbours = adjacency.get(profile.target_id, set())
         neighbour_voices = {
