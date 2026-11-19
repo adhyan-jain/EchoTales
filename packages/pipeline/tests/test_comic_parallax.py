@@ -36,3 +36,15 @@ def test_near_half_moves_further_than_far_half() -> None:
 
     far, near = best_shift(slice(15, 45)), best_shift(slice(75, 105))
     assert abs(near) > abs(far) and near != far
+
+
+def test_depth_input_is_a_multiple_of_14_with_the_aspect_kept_and_needs_no_torchvision() -> None:
+    """transformers' AutoImageProcessor demands torchvision, which the venv does not have; the preprocessing is
+    ten lines of numpy, so it is done here (DPT rule: keep aspect, the scale nearer 1, sides multiples of 14)."""
+    from echotales.pipeline.comic.parallax import prepare_depth_input
+
+    arr = prepare_depth_input(Image.new("RGB", (1200, 1660), (255, 255, 255)))
+    assert arr.shape[0] == 3 and arr.shape[1] % 14 == 0 and arr.shape[2] % 14 == 0
+    assert abs(arr.shape[1] / arr.shape[2] - 1660 / 1200) < 0.03
+    assert min(arr.shape[1:]) >= 518 - 14
+    assert abs(arr[0, 0, 0] - (1 - 0.485) / 0.229) < 1e-4  # ImageNet normalisation of white
