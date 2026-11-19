@@ -61,14 +61,18 @@ MAX_WINDOWS = 8
 MIN_QUOTE_CHARS = 6
 
 SYSTEM = (
-    "You decide the gender of one named character in a novel from short passages. Answer only from what the passages "
-    "state about THAT character. Unclear, or the passages are about someone else: answer unknown."
+    "You decide the gender of one named character in a novel from short passages. In narration a character is "
+    "followed by he/his/him or she/her, or called a man, woman, father, sister and so on. Use only words that refer to "
+    "THAT character; if the passages are about other people or never show it, answer unknown."
 )
 
 
 class GenderResponse(BaseModel):
+    #: `quote` comes first on purpose: ollama decodes the fields in order, and asked for the gender first gemma2:9b
+    #: answered "unknown" with an empty quote for Fang Yuan and Gu Yue Bo, whose passages say "his hair", "his eyes".
+    #: Having to find the words first makes the verdict follow from them.
+    quote: str = Field(default="", description="the exact words from a passage where a pronoun or word shows it, verbatim")
     gender: str = Field(default="unknown", description="male | female | unknown")
-    quote: str = Field(default="", description="the exact words from a passage that show it, copied verbatim")
     confident: bool = Field(default=False, description="true only if the quote plainly refers to this character")
 
 
@@ -236,8 +240,9 @@ def _prompt(label: str, picked: list[_Window]) -> str:
     body = "\n".join(f"{i}. {w.text}" for i, w in enumerate(picked, 1))
     return (
         f"Character: {label}\n\nPassages that name this character:\n{body}\n\n"
-        "Is this character male or female? Quote the exact words from a passage that show it. If the passages do not "
-        "clearly say, answer unknown."
+        "Find the clearest passage where a pronoun or word refers to this character, and copy those exact words as the "
+        "quote. Then say whether the character is male or female. If no passage shows it, leave the quote empty and "
+        "answer unknown."
     )
 
 
