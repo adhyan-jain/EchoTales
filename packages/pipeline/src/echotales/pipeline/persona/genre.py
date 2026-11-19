@@ -143,9 +143,8 @@ GENRES: dict[str, GenreProfile] = {
         ),
         hands_clause="hands concealed in long draping sleeves",
         world_setting=(
-            "ancient Chinese cultivation world, stone courtyards, timber halls "
-            "with upturned tiled roofs, bamboo groves, terraced mountain "
-            "villages, mist over jagged peaks, stone steps, paper lanterns"
+            "ancient Chinese cultivation world with hanfu, wide sleeves and cross collars; "
+            "the place of each scene comes only from that scene's own text"
         ),
         world_context="",
         novel_style="xianxia web-novel illustration, Chinese fantasy",
@@ -404,6 +403,32 @@ def genre_of(novel_id: str) -> str:
 
 def profile(novel_id: str) -> GenreProfile:
     return GENRES[genre_of(novel_id)]
+
+
+#: One FIXED style lead per genre, used unchanged on every panel (owner, 2026-11-19: the probe sheet drifted between ink-wash,
+#: flat cel and Japanese faces because the lead was vague). The target level is the Lord of the Mysteries donghua: cel-shaded
+#: 2D, clean line art, painterly backgrounds, muted palette, not photoreal and not cartoony. Style only: any architecture
+#: here (the old xianxia block named pavilions and paifang) was drawn into every scene including a bare cliff.
+STYLE_LEADS: dict[str, str] = {
+    "xianxia": ("Chinese xianxia donghua style, 2D cel-shaded anime illustration with clean line art, flat cel colour, "
+                "painterly guofeng backgrounds and a muted desaturated palette, no photorealism."),
+    "victorian_gothic": ("Victorian gothic donghua style, 2D cel-shaded anime illustration with clean line art, flat cel "
+                         "colour, painterly gaslamp-era backgrounds and a muted desaturated palette, no photorealism."),
+    "modern_apocalypse": ("Modern urban donghua style, 2D cel-shaded anime illustration with clean line art, flat cel "
+                          "colour, painterly backgrounds and a muted desaturated palette, no photorealism."),
+    "contemporary": ("Contemporary anime style, 2D cel-shaded illustration with clean line art, flat cel colour, painterly "
+                     "backgrounds and a muted desaturated palette, no photorealism."),
+    "western_fantasy": ("Western fantasy donghua style, 2D cel-shaded anime illustration with clean line art, flat cel "
+                        "colour, painterly backgrounds and a muted desaturated palette, no photorealism."),
+    "science_fiction": ("Science fiction anime style, 2D cel-shaded illustration with clean line art, flat cel colour, "
+                        "painterly backgrounds and a muted desaturated palette, no photorealism."),
+    "generic": ("Period drama anime style, 2D cel-shaded illustration with clean line art, flat cel colour, painterly "
+                "backgrounds and a muted desaturated palette, no photorealism."),
+}
+
+
+def style_lead(novel_id: str) -> str:
+    return STYLE_LEADS.get(genre_of(novel_id), STYLE_LEADS["generic"])
 
 
 #: A genre needs this many lexicon hits per 10,000 words, and a lead over the runner-up, before it is proposed;

@@ -85,7 +85,7 @@ from echotales.pipeline.render.scene_refs import (
     match_scene_references,
 )
 from echotales.pipeline.render.scene_state import get_or_derive_scene_state
-from echotales.pipeline.render.scenes import group_scenes
+from echotales.pipeline.render.scenes import carry_locales, group_scenes
 from echotales.pipeline.spans.scene import detect_mobs
 from echotales.pipeline.world.context import story_context
 from echotales.pipeline.world.lexicon import build_lexicon
@@ -1143,6 +1143,26 @@ def present_beat_entities(mentions: list[Mention], blocks: list[int]) -> list[st
     return out
 
 
+def addressed_scene_cast(mentions: list[Mention], beat_blocks: list[int], scene_blocks: list[int]) -> list[str]:
+    """Entities this beat names in any mode who are PRESENT somewhere in its scene.
+
+    Why: RI ch1 blocks 0-3 are the sect fighters shouting at Fang Yuan; the text only names him (a dialogue reference), the
+    narration that places him comes at block 5, so a beat-local PRESENT scan left CAST empty and the 2026-11-16 render drew
+    the crowd panels with no Fang Yuan in them. Requiring both conditions keeps the earlier rule that one incidental mention
+    must not cast the protagonist in a scene he is not in."""
+    in_scene = set(scene_blocks)
+    present = {
+        m.target_id for m in mentions
+        if m.target_id and m.block_index in in_scene and m.reference_mode is ReferenceMode.PRESENT
+    }
+    in_beat = set(beat_blocks)
+    out: list[str] = []
+    for m in mentions:
+        if m.block_index in in_beat and m.target_id in present and m.target_id not in out:
+            out.append(m.target_id)
+    return out
+
+
 def present_beat_entities_with_reveals(
     mentions: list[Mention],
     blocks: list[int],
@@ -1802,7 +1822,15 @@ def render_panels(
             else ""
         )
         _last_panel_direction = None
-        for scene in scenes[:max_panels]:
+        #: Shot sizes of the panels already directed, newest last, shown to the director so it varies the shot itself
+        #: (a flipped `shot` field would no longer match the camera its paragraph describes).
+        _recent_shots: list[str] = []
+        _carried_locales = carry_locales([
+            scene_locale(novel_id, " ".join(by_index[b].text for b in sc.blocks if b in by_index), strict=True)
+            for sc in scenes
+        ])
+        _prev_staging_text = ""
+        for _scene_i, scene in enumerate(scenes[:max_panels]):
             story_scene_blocks = [
                 b for b in scene.blocks
                 if (blk := by_index.get(b)) is not None
@@ -1958,6 +1986,9 @@ def render_panels(
             )
             scene_locale_text = _scene_state.location
             _location_source = "scene"
+            #: One staging sheet per scene (`render/staging.py`), filled by the first directed panel of the scene and
+            #: repeated verbatim on every later one so set, light and blocking cannot drift between panels.
+            _staging_text: str | None = None
             # **Unstated is not a different place.** For a scene with no place cue of its own, `scene_locale` rotates
             # through the book's locales by block number, so one bedroom scene was drawn in a study, on a street and on
             # a moor (LotM render review, 2026-10-18). These books inherit the chapter's own most-cued place instead,
@@ -1965,6 +1996,11 @@ def render_panels(
             if setting_first(novel_id) and not scene_locale(novel_id, _scene_text, strict=True):
                 scene_locale_text = _chapter_locale
                 _location_source = "chapter"
+            elif not setting_first(novel_id) and _carried_locales[_scene_i] and not scene_locale(
+                novel_id, _scene_text, strict=True
+            ):
+                scene_locale_text = _carried_locales[_scene_i]
+                _location_source = "carried"
 
             # **The crowd gets its own cut, not a corner of the hero's
             # panel.** Four rounds of prompt work could not put a crowd in
@@ -2146,6 +2182,12 @@ def render_panels(
                         chapter_number=chapter_number,
                     )
                 )
+                if not _present_entities and not _scene_last_present:
+                    # The first scene of RI ch1 is the enemies' shouting (blocks 0-4); Fang Yuan is first PRESENT at block 5, in the
+                    # scene after it, so a scene-bounded scan left the ultimatum panels without him. Look 12 blocks ahead.
+                    _present_entities = addressed_scene_cast(
+                        mentions, _chunk_blocks, list(range(scene.blocks[0], scene.blocks[-1] + 13))
+                    )
                 # One compile per beat, at the fractional in-chapter position:
                 # the persona and appearance the prompt is built from below
                 # are read out of it, and the plan's cache-key digest is
@@ -2201,7 +2243,7 @@ def render_panels(
                     _beat_entity_labels[entity_id] = label
                     _beat_entity_genders[entity_id] = gender
 
-                if appearances:
+                if appearances or _beat_entity_labels:
                     # A real PRESENT cast for this beat -- becomes what the
                     # next empty beat in this scene (if any) carries forward.
                     _scene_last_present = dict(appearances)
@@ -2457,6 +2499,15 @@ def render_panels(
                         directed_prose = (
                             f"{directive} {beat_prose}".strip() if directive else beat_prose
                         )
+                        if _slot_dialogue and beat_prose == _slot_dialogue:
+                            # A pure-dialogue slot used to hand the director the quoted words alone, so the picture showed
+                            # nothing of the line (RI ch1 block 0: a lone figure holding a letter). The line is what is
+                            # drawn: who says it, to whom, with what face.
+                            directed_prose = (
+                                "A line is spoken aloud in the scene; draw the person saying it, in the posture and with the "
+                                "face the words and the scene imply, addressing the one it is said to. The spoken words: "
+                                f"{directed_prose}"
+                            )
                         # State the crowd to the director explicitly -- but
                         # only on the slot that actually needs to know.
                         # **Real bug, found by generating and looking at
@@ -2481,7 +2532,7 @@ def render_panels(
                             )
                             directed_prose = (
                                 f"{directed_prose} "
-                                f"(many people present: {roles}, surrounding him)"
+                                f"(many people present: {roles}, standing in rows on one side of the frame, facing him)"
                             ).strip()
                         elif _chunk_mobs and not is_crowd_cut:
                             # A dedicated crowd cut exists elsewhere in this
@@ -2514,16 +2565,40 @@ def render_panels(
                             if _world_ctx
                             else world_setting(novel_id)
                         )
+                        # Who the director may name. An empty appearance clause (the Z-Image path writes identity in the
+                        # compiler) used to drop the person from CAST, so the validator rewrote his name to "a figure" (RI
+                        # ch1 block 0: the lone cliff figure holding a scroll). A name with no look is still a name.
+                        _director_cast = {
+                            lbl: appearances.get(lbl, "")
+                            for lbl in (list(_beat_entity_labels.values()) or list(_scene_last_present_entity_labels.values()))
+                        }
+                        _director_cast.update({k: v for k, v in appearances.items() if v})
+                        log.info("director cast for block %s: present=%s labels=%s", block.index if hasattr(block, 'index') else lead, _present_entities, list(_director_cast))
+                        if _staging_text is None and _location_source != "scene" and _prev_staging_text:
+                            # No place cue of its own: the previous scene's set and light carry (RI ch1: the laugh scene has no
+                            # setting words and the director drew a meadow beside a cliff scene).
+                            _staging_text = _prev_staging_text
+                        elif _staging_text is None:
+                            from echotales.pipeline.render.staging import direct_staging
+
+                            _st = direct_staging(
+                                _scene_text, cast=_director_cast,
+                                novel_style=_novel_style, client=client, novel_id=novel_id,
+                            )
+                            _staging_text = _st.text() if _st is not None else ""
+                            _prev_staging_text = _staging_text
                         directed = direct_beat(
                             directed_prose,
+                            staging=_staging_text,
                             context_brief=brief,
-                            cast={k: v for k, v in appearances.items() if v},
+                            cast=_director_cast,
                             novel_style=_novel_style,
                             client=client,
                             novel_id=novel_id,
                             store=store,
                             conditions=dict(conditions),
                             crowd_mood=_scene_state.crowd_mood,
+                            recent_shots=_recent_shots[-2:],
                         )
 
                     if directed is not None:
@@ -2643,10 +2718,13 @@ def render_panels(
                 # this, so the two phases cannot disagree about it.
                 _direction = directed.direction if directed is not None else _cached_direction
                 if _direction is not None:
-                    if _last_panel_direction is not None:
+                    # A composed paragraph already states its camera; rewriting `shot` afterwards would only make the
+                    # fields disagree with it, so the director is asked to vary shots itself (`_recent_shots`).
+                    if _last_panel_direction is not None and not _direction.composition:
                         from echotales.pipeline.render.direction import enforce_shot_variety
                         _direction = enforce_shot_variety([_last_panel_direction, _direction])[1]
                     _last_panel_direction = _direction
+                    _recent_shots.append(_direction.shot)
                 # **The negative prompt's style bucket must follow the
                 # director's own shot choice, not the mechanical
                 # slot%4 cycle above.** That cycle picks `style` (and

@@ -122,6 +122,22 @@ def quote_in_passage(quote: str, passage: str) -> bool:
     return len(q) >= 8 and q in _norm_text(passage)
 
 
+def story_pos(passage: str, quote: str, number: float, n_blocks: int) -> float:
+    """The story position of the block that states `quote`: `chapter + block_index / n_blocks`, the clock
+    `persona/split.py::write_epochs` cuts bodies on.
+
+    Why: facts were bound at `chapter + 0.5` and started at the bare chapter, so in RI ch1 the post-rebirth line "his
+    young and soft, pale palms" (block 83 of 92) became a fact of the whole chapter and the 500-year-old on the cliff
+    was drawn "young and soft" (EVOLUTION 4.164). Windows are `#<block>: <text>` lines (`speakers_pass.windows`); a
+    quote that cannot be placed falls back to the old mid-chapter position."""
+    q = _norm_text(quote).strip(" .,;:\"'…")
+    for line in passage.split("\n"):
+        m = re.match(r"#(\d+): ", line)
+        if m and q and q in _norm_text(line) and n_blocks > 0:
+            return number + int(m.group(1)) / n_blocks
+    return number + 0.5
+
+
 def grounded(value: str, quote: str) -> bool:
     """At least one content word of the value shares a four-letter stem with the quote ("thin" in "thinly built")."""
     q = _norm_text(quote)
@@ -383,6 +399,7 @@ def read_chapter_facts(store: Store, client: ModelClient, chapter: Chapter) -> F
     cast = build_cast(store, novel_id, "\n".join(b.text for b in chapter.blocks), number)
     index = NameIndex(cast)
     pos = DiscoursePosition(chapter=int(number), offset=0)
+    n_blocks = len(chapter.blocks)
     # First, so this chapter's own pronoun checks already know who is a "he".
     infer_genders(store, novel_id, "\n".join(b.text for b in chapter.blocks), index, number, report)
     for text in windows(chapter, tagged=False):
@@ -405,11 +422,11 @@ def read_chapter_facts(store: Store, client: ModelClient, chapter: Chapter) -> F
         except Exception:  # noqa: BLE001
             continue
         for claim in appearance.appearance:
-            _store_appearance(store, novel_id, number, pos, claim, text, index, report)
+            _store_appearance(store, novel_id, number, pos, claim, text, index, report, n_blocks)
         for age in names.ages:
-            _store_age(store, novel_id, number, pos, age, text, index, report)
+            _store_age(store, novel_id, number, pos, age, text, index, report, n_blocks)
         for stage in names.age_stages:
-            _store_age_stage(store, novel_id, number, pos, stage, text, index, report)
+            _store_age_stage(store, novel_id, number, pos, stage, text, index, report, n_blocks)
         for status in names.statuses:
             _store_status(store, novel_id, number, pos, status, text, index, report)
         for identity in names.identities:
@@ -559,7 +576,10 @@ def _attribute(
         # attestation lands as its own row rather than replacing this one (same rule as
         # `appearance_extract._write_appearance`).
         interval=(
-            FuzzyInterval.open_ended(int(number) if story_from is None else story_from, last_evidence=int(number))
+            FuzzyInterval.open_ended(
+                int(number) if story_from is None else story_from,
+                last_evidence=max(int(number), story_from or 0),
+            )
             if story_to is None
             # A disguise ends with its chapter by a closed interval, never by retraction (non-negotiable 5): the
             # fact stays true of that chapter's history, and `state_of` stops returning it afterwards.
@@ -592,7 +612,7 @@ def _first_chapter(store: Store, self_id: str, default: float) -> int:
 
 def _store_appearance(
     store: Store, novel_id: str, number: float, pos: DiscoursePosition, claim: AppearanceClaim, passage: str,
-    index: NameIndex, report: FactsReport,
+    index: NameIndex, report: FactsReport, n_blocks: int = 0,
 ) -> None:
     if claim.attribute not in APPEARANCE_KEYS:
         report.rejected_key += 1
@@ -623,7 +643,8 @@ def _store_appearance(
     if gender_conflict(_recorded_gender(store, entry.self_id), quote):
         report.rejected_value += 1
         return
-    persona_id = persona_at(store, entry.self_id, number + 0.5)
+    where = story_pos(passage, quote, number, n_blocks)
+    persona_id = persona_at(store, entry.self_id, where)
     sentences = _split(passage)
     needle = _norm_text(quote).strip(" .,;:\"'…")
     at = next((i for i, x in enumerate(sentences) if needle and needle in _norm_text(x)), None)
@@ -634,7 +655,9 @@ def _store_appearance(
     if _known(store, persona_id, key, value, disguise_chapter=int(number) if scope == "disguise" else None):
         report.duplicates += 1
         return
-    story_from = story_start(scope, stated=int(number), first_attested=_first_chapter(store, entry.self_id, number))
+    story_from: float = story_start(scope, stated=int(number), first_attested=_first_chapter(store, entry.self_id, number))
+    if scope != "baseline" and n_blocks:
+        story_from = max(story_from, where)  # holds from the stating block, not from the top of the chapter
     if scope == "baseline":
         # A default trait holds from the character's first appearance, but not before this body existed (a rebirth
         # starts a new body: it does not inherit the old one's eye colour).
@@ -657,7 +680,7 @@ def _store_appearance(
 
 def _store_age_stage(
     store: Store, novel_id: str, number: float, pos: DiscoursePosition, claim: AgeStageClaim, passage: str,
-    index: NameIndex, report: FactsReport,
+    index: NameIndex, report: FactsReport, n_blocks: int = 0,
 ) -> None:
     stage = claim.stage.strip().lower().replace("-", "_").replace(" ", "_")
     quote = claim.quote
@@ -672,14 +695,16 @@ def _store_age_stage(
     if gender_conflict(_recorded_gender(store, entry.self_id), quote) or not about_character(entry, quote, passage, index, lambda sid: _recorded_gender(store, sid)):
         report.rejected_value += 1
         return
-    persona_id = persona_at(store, entry.self_id, number + 0.5)
+    at = story_pos(passage, quote, number, n_blocks)
+    persona_id = persona_at(store, entry.self_id, at)
     if _known(store, persona_id, "age_stage", stage):
         report.duplicates += 1
         return
-    store.add_attribute(novel_id, _attribute(TargetKind.PERSONA, persona_id, "age_stage", stage, quote, number, pos))
+    sf = at if n_blocks else None
+    store.add_attribute(novel_id, _attribute(TargetKind.PERSONA, persona_id, "age_stage", stage, quote, number, pos, sf))
     if claim.approx_years and 0 < claim.approx_years < 120 and stage_of_years(claim.approx_years) == stage:
         store.add_attribute(novel_id, _attribute(
-            TargetKind.PERSONA, persona_id, "age_estimate", f"about {claim.approx_years}", quote, number, pos))
+            TargetKind.PERSONA, persona_id, "age_estimate", f"about {claim.approx_years}", quote, number, pos, sf))
     report.age_stages += 1
 
 
@@ -750,7 +775,7 @@ def infer_genders(store: Store, novel_id: str, text: str, index: NameIndex, numb
 
 def _store_age(
     store: Store, novel_id: str, number: float, pos: DiscoursePosition, claim: AgeClaim, passage: str,
-    index: NameIndex, report: FactsReport,
+    index: NameIndex, report: FactsReport, n_blocks: int = 0,
 ) -> None:
     if not 0 < claim.age < 130 or not quote_in_passage(claim.quote, passage):
         report.rejected_quote += 1
@@ -761,13 +786,15 @@ def _store_age(
     entry = _resolve(index, claim.character, report)
     if entry is None:
         return
-    persona_id = persona_at(store, entry.self_id, number + 0.5)
+    at = story_pos(passage, claim.quote, number, n_blocks)
+    persona_id = persona_at(store, entry.self_id, at)
     if _known(store, persona_id, "age", str(claim.age)):
         report.duplicates += 1
         return
-    store.add_attribute(novel_id, _attribute(TargetKind.PERSONA, persona_id, "age", str(claim.age), claim.quote, number, pos))
+    sf = at if n_blocks else None
+    store.add_attribute(novel_id, _attribute(TargetKind.PERSONA, persona_id, "age", str(claim.age), claim.quote, number, pos, sf))
     store.add_attribute(novel_id, _attribute(
-        TargetKind.PERSONA, persona_id, "age_stage", stage_of_years(claim.age), claim.quote, number, pos))
+        TargetKind.PERSONA, persona_id, "age_stage", stage_of_years(claim.age), claim.quote, number, pos, sf))
     report.ages += 1
 
 

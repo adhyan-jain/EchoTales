@@ -170,6 +170,8 @@ class CharacterBrief:
     same_face_as: str = ""
     #: True for monsters, spirit beasts, or non-human entities.
     is_creature: bool = False
+    #: The body's stated age in years when the text gives one ("a fifteen year old"); 0 when it does not.
+    age_years: int = 0
 
 
 @dataclass(slots=True)
@@ -208,6 +210,14 @@ class PanelBrief:
     era_wardrobe: str = ""
     manhua: bool = False
     is_indoor: bool = False
+    #: The director's composed paragraph (who stands where, what each does and shows on the face, wounds, setting detail,
+    #: light, camera), written in the owner's probe style. The Z-Image profile builds the prompt around it.
+    composition: str = ""
+    #: The scene's staging sheet text (set, blocking, light), identical on every panel of the scene.
+    staging: str = ""
+    #: "text" when the panel's own text shows something; "inferred" when the director chose a visual from the text's
+    #: referents because nothing visible was stated. Carried so `audit` can count them.
+    visual_source: str = ""
 
 
 def genre_direction(novel_id: str) -> tuple[str, str, bool]:
@@ -470,10 +480,19 @@ def identity_sentence(c: CharacterBrief, appearance: AppearanceInText = Appearan
         return f"{c.name} is a monstrous {_plain(c.name).lower()}{cond}."
 
     age_band = (c.age_band or "").lower()
-    if age_band == "child":
+    young = age_band in ("child", "teen", "teenager", "adolescent", "youth")
+    if young and c.age_years:
+        # RI's reborn fifteen-year-old was drawn as the grown man because "youth" had no wording and no number; a stated
+        # age in plain words is what lets Z-Image draw a younger version of the same face.
+        if age_band == "child" or c.age_years < 13:
+            noun = _CHILD_NOUN.get(c.gender, "child")
+        else:
+            noun = {"male": "boy", "female": "girl"}.get(c.gender, "teenager")
+        head = f"{c.name} is a {c.age_years}-year-old {noun}"
+    elif age_band == "child":
         noun = _CHILD_NOUN.get(c.gender, "child")
         head = f"{c.name} is a young {noun}"
-    elif age_band in ("teen", "teenager", "adolescent"):
+    elif age_band in ("teen", "teenager", "adolescent", "youth"):
         noun = _TEEN_NOUN.get(c.gender, "teenager")
         head = f"{c.name} is a {noun}"
     else:
@@ -507,6 +526,8 @@ def identity_sentence(c: CharacterBrief, appearance: AppearanceInText = Appearan
     text = head
     if feats:
         text += " with " + (", ".join(feats[:-1]) + " and " + feats[-1] if len(feats) > 1 else feats[0])
+    if young:
+        text += ", a smooth youthful face and a " + ("slight build" if c.gender == "female" else "slim boyish build")
     if c.attire:
         text += f", wearing {_plain(c.attire)}"
     return _plain(text) + "."
@@ -564,6 +585,8 @@ def _compile_natural(b: PanelBrief, profile: ModelProfile, appearance: Appearanc
     Why this order and shape: the probe's one-paragraph prompts put the hero, a cliff and a crowd of 12-20 in all 4 of 4
     images, but the crowd stood beside the hero rather than ringing him, because "a crowd" gave no position; the stance
     clause ("ringed around him on all sides") is mandatory whenever there are others. Never truncated."""
+    if b.composition:
+        return _compile_composed(b, profile, appearance)
     lead = b.characters[0] if b.characters else None
     s: list[PromptSection] = []
     shot = _NATURAL_SHOT.get(b.shot, "A medium shot") + (f", {_plain(b.camera)}" if b.camera else "")
@@ -638,6 +661,49 @@ def _compile_natural(b: PanelBrief, profile: ModelProfile, appearance: Appearanc
         s.append(PromptSection("setting", sentence + "." + objs))
     s.append(PromptSection("style", _style_sentence(b)))
     s = [x for x in s if x.text]
+    return CompiledPrompt(
+        positive=" ".join(x.text for x in s), negative="", sections=s, negative_sections=[], family=profile.family,
+        mode=b.mode, appearance_written=written, demeanour_fields=fields,
+    )
+
+
+_MANGA_LEAD = "Black and white manga panel, screentone shading, bold ink linework."
+
+
+def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: AppearanceInText) -> CompiledPrompt:
+    """Z-Image prompt in the order of the probe prompts the owner liked: a short style lead, the director's composed
+    paragraph, one fixed identity sentence per visible character, then setting and light.
+
+    Why: the 2026-11-16 real render opened with a composition fragment and closed with a 60-word style paragraph, and
+    drew the same standing man in 10 of 18 panels; the hand-written probes were a lead plus one composed scene and drew the
+    crowd ringing the hero. The identity sentences are identical on every panel of an interval (looks stay consistent) and
+    nothing scene-dependent is in them; wounds and clothing state live in the paragraph, which comes from the panel's text.
+    Setting clauses the paragraph already says are not repeated."""
+    from echotales.pipeline.persona.genre import style_lead
+
+    lead = _MANGA_LEAD if b.mode is OutputMode.MANGA else style_lead(b.novel_id)
+    s = [PromptSection("style", lead)]
+    stage = PromptSection("staging", b.staging.strip()) if b.staging else None
+    comp = PromptSection("composition", b.composition.strip())
+    # A close shot leads with its own paragraph: staging first drew a second small hero at the cliff edge behind the
+    # foreground one (2 of 2 seeds, 2026-11-19); paragraph first drew one (2 of 2).
+    s += [comp, stage] if (stage and b.shot == "close") else [x for x in (stage, comp) if x]
+    written: dict[str, bool] = {}
+    fields: dict[str, list[str]] = {}
+    for c in b.characters:
+        s.append(PromptSection(f"character:{c.name}", identity_sentence(c, appearance)))
+        written[c.name] = appearance is not AppearanceInText.OFF
+        fields[c.name] = derive_demeanour(c, b.mood, b.tension).fields_used
+    said = f"{b.composition} {b.staging}".lower()
+    clauses: list[str] = []
+    for x in [t.strip() for t in f"{_plain(_location_text(b))},{_plain(b.setting)}".split(",")]:
+        if x and x.lower() not in said and x.lower() not in (y.lower() for y in clauses):
+            clauses.append(x)
+    light = _plain(b.lighting)
+    if light and light.lower() not in said:
+        clauses.append(f"the light is {light}")
+    if clauses:
+        s.append(PromptSection("setting", f"Setting: {'; '.join(clauses)}."))
     return CompiledPrompt(
         positive=" ".join(x.text for x in s), negative="", sections=s, negative_sections=[], family=profile.family,
         mode=b.mode, appearance_written=written, demeanour_fields=fields,
@@ -842,9 +908,14 @@ def character_brief(
     condition = appearance.pop("current_condition", "")
     gender, age = _demographics(store, persona_id, novel_id=novel_id, entity_id=self_id, position=position)  # type: ignore[arg-type]
     values = standing_values(store, persona_id, position=position)  # type: ignore[arg-type]
+    years = 0
+    if age in ("child", "youth", "teen", "teenager", "adolescent"):
+        from echotales.pipeline.persona.reference_gen import body_age_years
+
+        years = body_age_years(store, persona_id, novel_id=novel_id, entity_id=self_id, position=position)  # type: ignore[arg-type]
     return CharacterBrief(
         name=entity.canonical_label, gender=gender if gender in ("male", "female") else (gender_hint or "unknown"),
-        age_band=age, appearance=appearance, attire=attire, condition=condition,
+        age_band=age, age_years=years, appearance=appearance, attire=attire, condition=condition,
         big_five=_big_five(values.get("big_five", "")), register=values.get("register", ""),
         stated_expression=stated_expression, lead=lead,
     )
@@ -911,6 +982,12 @@ def brief_from_direction(
         crowd = CrowdBrief(description="many people", size="many", gender="male" if gender_hint == "male" else "mixed",
                            stance=(getattr(d, "layout", "") or "around the lead").replace("_", " "))
     mood = getattr(d, "mood", "") or ""
+    composition = (getattr(d, "composition", "") or "").strip()
+    if composition:
+        # The paragraph carries the beat's clothing and wounds; the identity sentence must stay the interval's fixed
+        # wording, so beat prose is not allowed to rewrite attire or condition (it put "deep green robes" on the reborn
+        # boy and "young and soft" on the cliff, EVOLUTION 4.164).
+        beat_text = ""
 
     dir_chars = getattr(d, "characters", []) or []
     matched = _match_director_characters(store, self_ids, dir_chars) if dir_chars else []
@@ -924,7 +1001,7 @@ def brief_from_direction(
             )
             cb.position = getattr(cd, "position", "center") or "center"
             cb.pose = getattr(cd, "pose", "standing") or "standing"
-            if getattr(cd, "condition", ""):
+            if getattr(cd, "condition", "") and not composition:
                 cb.condition = cd.condition
             chars.append(cb)
     else:
@@ -950,4 +1027,6 @@ def brief_from_direction(
         key_objects=props, mood=mood,
         tension=0.8 if any(w in mood.lower() for w in _TENSE) else 0.0, mode=mode, art_direction=art,
         era_wardrobe=wardrobe, manhua=manhua, is_indoor=is_indoor,
+        composition=composition, staging=(getattr(d, "staging", "") or "") if composition else "",
+        visual_source=getattr(d, "visual_source", "") or "",
     )

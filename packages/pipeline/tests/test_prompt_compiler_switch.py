@@ -24,6 +24,12 @@ def test_the_compiler_and_z_image_are_the_default():
     assert s.render_prompt_compiler is True and s.render_image_model == "z-image-turbo"
 
 
+def test_panels_are_colour_by_default_and_manga_stays_an_option():
+    # Owner, 2026-11-19: the video product is colour. Monochrome manga is chosen with render.panel_mode=manga.
+    assert config.Settings().render_panel_mode == "colour"
+    assert config.Settings(render_panel_mode="manga").render_panel_mode == "manga"
+
+
 def test_off_leaves_prompts_unchanged(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "_settings", config.Settings(render_prompt_compiler=False))
     rows, _ = _render(tmp_path, "off")
@@ -31,7 +37,7 @@ def test_off_leaves_prompts_unchanged(tmp_path, monkeypatch):
 
 
 def test_on_records_sections_that_join_to_the_prompt_and_never_say_solo_for_a_crowd(tmp_path, monkeypatch):
-    monkeypatch.setattr(config, "_settings", config.Settings(render_prompt_compiler=True, render_image_model="noobai-xl-1.1"))
+    monkeypatch.setattr(config, "_settings", config.Settings(render_prompt_compiler=True, render_image_model="noobai-xl-1.1", render_panel_mode="manga"))
     rows, manifest = _render(tmp_path, "on")
     assert rows and all(r.prompt_sections for r in rows)
     for r in rows:

@@ -98,6 +98,22 @@ def _containing_segment(
     return None
 
 
+def carry_locales(stated: list[str]) -> list[str]:
+    """Each scene's place, where a scene whose text states none keeps the previous scene's, and leading ones take the first
+    stated place after them; "" only when the whole chapter states none.
+
+    Why: `scene_locale` rotates through the book's locales by block number for a scene with no cue, so RI ch1's cliff
+    memories (blocks 21-29) were drawn in "a timber clan hall" and its opening ultimatum (block 0) in "a damp stone cave"
+    (2026-11-16 render). Unstated is not a different place."""
+    out: list[str] = []
+    last = ""
+    for place in stated:
+        last = place or last
+        out.append(last)
+    first = next((p for p in stated if p), "")
+    return [p or first for p in out]
+
+
 def group_scenes(
     novel_id: str,
     chapter: Chapter,

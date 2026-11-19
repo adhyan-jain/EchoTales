@@ -477,6 +477,8 @@ class TestRenderPanels:
             store=None,
             conditions=None,
             crowd_mood=None,
+            staging="",
+            recent_shots=None,
         ):
             received_casts.append(dict(cast))
             return Direction(

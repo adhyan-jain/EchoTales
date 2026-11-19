@@ -132,9 +132,9 @@ class Settings(BaseSettings):
     #: Z-Image Turbo since 2026-11-19: the owner judged the NoobAI panels unusable next to the Z-Image ones (D58), and
     #: NoobAI's licence kept it off a public default anyway. NoobAI stays selectable for comparison.
     render_image_model: str = "z-image-turbo"
-    #: `manga` (monochrome, the default) or `colour`. Only the compiler path and the local worker read it; the legacy
+    #: `colour` (the default since 2026-11-19: the video product is colour) or `manga` (monochrome). Only the compiler path and the local worker read it; the legacy
     #: engines keep `--palette`.
-    render_panel_mode: str = "manga"
+    render_panel_mode: str = "colour"
     #: On since 2026-11-19 with Z-Image the default: Z-Image reads the compiler's plain-sentence brief, not tags. Off is the
     #: legacy inline tag prompt, kept for the NoobAI comparison.
     render_prompt_compiler: bool = True
