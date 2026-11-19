@@ -1,5 +1,6 @@
 import React from 'react';
 import { SPAN_TYPES } from '../api';
+import { DELIVERY_EMOTIONS } from '../lib/delivery';
 
 /**
  * One span, rendered with its mentions as inline <mark> elements.
@@ -36,6 +37,7 @@ export default function ScriptLine({
   canMergeUp,
   onRetype,
   onCreateMention,
+  onSetDelivery,
 }) {
   const isDialogue = span.type === 'DIALOGUE';
   // Whose thought this is matters as much as who's speaking -- the pipeline
@@ -184,6 +186,9 @@ export default function ScriptLine({
                 + Mention
               </button>
             )}
+            {onSetDelivery && (isDialogue || isInnerMonologue) && (
+              <DeliveryControl span={span} onSetDelivery={onSetDelivery} />
+            )}
             <button type="button" aria-label={`Flag this line: ${lineHint}`} onClick={() => onFlagLine(span)}>Flag</button>
             {canMergeUp && (
               <button type="button" aria-label={`Merge this line into the one above: ${lineHint}`} onClick={onMergeUp}>Merge&nbsp;&uarr;</button>
@@ -192,5 +197,42 @@ export default function ScriptLine({
         )}
       </div>
     </div>
+  );
+}
+
+// How this line will be voiced. "Not set" is the delivery pass's own guess (or neutral); picking an emotion makes it the
+// reviewer's, which the delivery pass never rewrites. Intensity is meaningless without an emotion, so it waits for one.
+function DeliveryControl({ span, onSetDelivery }) {
+  const current = span.delivery || null;
+  const emotion = current ? current.emotion : '';
+  const intensity = current ? current.intensity : 2;
+  return (
+    <span className="delivery-control">
+      <select
+        className="tag-select"
+        aria-label="Line emotion"
+        title="How this line is performed when the book is voiced"
+        value={emotion}
+        onChange={(e) => e.target.value && onSetDelivery(span, e.target.value, intensity)}
+      >
+        <option value="">Not set (the reader’s guess)</option>
+        {DELIVERY_EMOTIONS.map((o) => (
+          <option key={o.value} value={o.value}>{o.label}</option>
+        ))}
+      </select>
+      <select
+        className="tag-select"
+        aria-label="Line intensity"
+        title="1 is restrained, 3 is full"
+        value={String(intensity)}
+        disabled={!emotion}
+        onChange={(e) => onSetDelivery(span, emotion, Number(e.target.value))}
+      >
+        {[1, 2, 3].map((n) => (
+          <option key={n} value={n}>{n}</option>
+        ))}
+      </select>
+      {current && current.pending && <span className="method">Not applied yet</span>}
+    </span>
   );
 }

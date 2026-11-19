@@ -180,6 +180,7 @@ def _overlay_corrections(payload: dict, corrections: CorrectionLog) -> dict:  # 
     flags_by_mention: dict[str, list[dict]] = {}  # type: ignore[type-arg]
     flags_by_span: dict[str, list[dict]] = {}  # type: ignore[type-arg]
     span_type_override: dict[str, str] = {}
+    delivery_override: dict[str, dict] = {}  # type: ignore[type-arg]
 
     novel_id = payload["novel_id"]
 
@@ -228,10 +229,14 @@ def _overlay_corrections(payload: dict, corrections: CorrectionLog) -> dict:  # 
                 speaker_override[span_id] = str(speaker_id) if speaker_id else None
         elif c.type is CorrectionType.REASSIGN_SPAN_TYPE:
             span_type_override[str(c.payload["span_id"])] = str(c.payload["new_type"])
+        elif c.type is CorrectionType.SET_DELIVERY:
+            delivery_override[str(c.payload.get("span_id"))] = {
+                "emotion": c.payload.get("emotion"), "intensity": c.payload.get("intensity"), "pending": not c.applied,
+            }
 
     if not (
         merge_redirect or mention_override or speaker_override
-        or flags_by_mention or flags_by_span or span_type_override
+        or flags_by_mention or flags_by_span or span_type_override or delivery_override
     ):
         return payload
 
@@ -304,6 +309,8 @@ def _overlay_corrections(payload: dict, corrections: CorrectionLog) -> dict:  # 
                 new_marks.append(m)
 
             span_id = span.get("span_id")
+            if span_id in delivery_override and span.get("type") in ("DIALOGUE", "INNER_MONOLOGUE", "CROWD_REACTION"):
+                span = {**span, "delivery": delivery_override[span_id]}
             if span_id in span_type_override:
                 new_type = span_type_override[span_id]
                 span = {**span, "type": new_type}

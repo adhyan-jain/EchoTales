@@ -286,6 +286,11 @@ export const api = {
       })
     ),
 
+  // How one quoted line is performed: an emotion (a value of `DELIVERY_EMOTIONS` in lib/delivery.js) and an intensity 1-3. Queued like every
+  // other correction; the next voice run reads it once it is applied.
+  setDelivery: (novelId, spanId, emotion, intensity) =>
+    postCorrection(novelId, 'set_delivery', { span_id: spanId, emotion, intensity }),
+
   undoCorrection: (novelId, correctionId) =>
     request(`/api/novels/${enc(novelId)}/corrections/${enc(correctionId)}`, { method: 'DELETE' }),
   applyCorrections: (novelId) => request(`/api/novels/${enc(novelId)}/apply`, { method: 'POST' }),

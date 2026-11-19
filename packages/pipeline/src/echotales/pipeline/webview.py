@@ -160,6 +160,8 @@ def build_novel_payload(store: Store, novel_id: str, label: str) -> dict:
                 speaker_label_cache[self_id] = e.canonical_label if e else self_id
         return speaker_label_cache[self_id]
 
+    # How each quoted line will be voiced (the delivery pass's value, or a reviewer's correction over it).
+    line_emotion = store.span_emotions(novel_id)
     chapters_out = []
     for chapter in store.iter_chapters(novel_id):
         n = chapter.number
@@ -245,6 +247,10 @@ def build_novel_payload(store: Store, novel_id: str, label: str) -> dict:
                     "anonymous_speaker": is_anon_speaker,
                     "speaker_colour": (
                         _anon_slot_colour(span.speaker_self_id) if is_anon_speaker else None
+                    ),
+                    **(
+                        {"delivery": {"emotion": line_emotion[span.id][0], "intensity": line_emotion[span.id][1], "pending": False}}
+                        if span.id in line_emotion else {}
                     ),
                 }
             )

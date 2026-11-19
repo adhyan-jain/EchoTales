@@ -258,6 +258,95 @@ def test_a_gender_that_is_not_male_female_or_unknown_is_not_applied(srv) -> None
     assert _character(srv, "t:corin")["gender_by_reviewer"] is False
 
 
+# --- per-line delivery ------------------------------------------------------------------------------------------------
+
+
+def _set_delivery(srv, **payload) -> dict:
+    srv.call("POST", "/api/novels/t/corrections", {"type": "set_delivery", "payload": {"span_id": "sp3d", **payload}})
+    _, applied = srv.call("POST", "/api/novels/t/apply", {})
+    return applied["applied"][-1]
+
+
+def test_a_delivery_correction_is_what_the_voice_stage_reads_for_that_line(srv) -> None:
+    store = srv.registry.handles["t"].store
+    # What the reader's delivery pass wrote for the chapter before the reviewer looked at it.
+    store.set_span_emotions("t", 3.0, {"sp3d": ("serenity", 1)})
+    assert store.span_emotions("t", 3.0)["sp3d"] == ("serenity", 1)
+
+    result = _set_delivery(srv, emotion="anger", intensity=3)
+    assert "error" not in result, result
+    # `voice/runner.py` reads exactly this call; no engine code was touched to make the override reach it.
+    assert store.span_emotions("t", 3.0)["sp3d"] == ("anger", 3)
+    assert store.span_emotions("t")["sp3d"] == ("anger", 3)
+
+    # The delivery pass rewrites a whole chapter on every rerun; the reviewer's line must still win.
+    store.set_span_emotions("t", 3.0, {"sp3d": ("fear", 2)})
+    assert store.span_emotions("t", 3.0)["sp3d"] == ("anger", 3)
+
+
+def test_a_delivery_correction_for_a_line_the_pass_never_scored_still_applies(srv) -> None:
+    store = srv.registry.handles["t"].store
+    assert "sp3d" not in store.span_emotions("t", 3.0)
+    assert "error" not in _set_delivery(srv, emotion="whisper", intensity=2)
+    assert store.span_emotions("t", 3.0)["sp3d"] == ("whisper", 2)
+
+
+def test_a_second_delivery_correction_for_the_same_line_replaces_the_first(srv) -> None:
+    store = srv.registry.handles["t"].store
+    _set_delivery(srv, emotion="anger", intensity=3)
+    _set_delivery(srv, emotion="sadness", intensity=1)
+    assert store.span_emotions("t", 3.0)["sp3d"] == ("sadness", 1)
+
+
+@pytest.mark.parametrize("payload", [
+    {"emotion": "rage", "intensity": 2},          # not an emotion the voice bank knows
+    {"emotion": "anger", "intensity": 0},
+    {"emotion": "anger", "intensity": 4},
+    {"emotion": "anger", "intensity": True},
+    {"emotion": "anger", "intensity": "loud"},
+    {"emotion": "anger", "span_id": "nope"},      # no such line
+    {"emotion": "anger", "span_id": "sp1"},       # narration is read in a mood, not given a line emotion
+])
+def test_a_bad_delivery_correction_is_refused_and_changes_nothing(srv, payload) -> None:
+    store = srv.registry.handles["t"].store
+    result = _set_delivery(srv, **({"intensity": 2} | payload))
+    assert "error" in result, result
+    assert store.span_emotions("t") == {}
+
+
+def test_a_delivery_correction_is_a_known_correction_type_with_its_payload_kept(srv) -> None:
+    status, logged = srv.call("POST", "/api/novels/t/corrections",
+                              {"type": "set_delivery", "payload": {"span_id": "sp3d", "emotion": "anger", "intensity": 2}})
+    assert status == 201 and logged["payload"]["emotion"] == "anger"
+    _, listed = srv.call("GET", "/api/novels/t/corrections")
+    assert listed["summary"]["by_type"]["set_delivery"] == 1
+
+
+def _line(srv, span_id: str = "sp3d") -> dict:
+    _, payload = srv.call("GET", "/api/novels/t")
+    return next(s for c in payload["chapters"] for s in c["spans"] if s["span_id"] == span_id)
+
+
+def test_the_review_payload_shows_a_lines_delivery_pending_then_applied(srv) -> None:
+    assert "delivery" not in _line(srv)
+    srv.call("POST", "/api/novels/t/corrections", {"type": "set_delivery", "payload": {"span_id": "sp3d", "emotion": "anger", "intensity": 3}})
+    assert _line(srv)["delivery"] == {"emotion": "anger", "intensity": 3, "pending": True}
+    srv.call("POST", "/api/novels/t/apply", {})
+    assert _line(srv)["delivery"] == {"emotion": "anger", "intensity": 3, "pending": False}
+    # Narration carries none.
+    assert "delivery" not in _line(srv, "sp1")
+
+
+def test_the_dropdown_offers_exactly_the_emotions_the_server_accepts() -> None:
+    import re
+
+    from echotales.pipeline.reader.delivery_pass import LABELS
+
+    js = (Path(__file__).resolve().parents[3] / "webview" / "src" / "lib" / "delivery.js").read_text(encoding="utf-8")
+    offered = re.findall(r"value: '([a-z]+)'", js)
+    assert sorted(offered) == sorted(set(LABELS.values()))
+
+
 def test_the_companion_route_serves_nothing_outside_the_built_site(srv) -> None:
     assert srv.run_job("companion", {"through": 3})["status"] == "SUCCEEDED"
     secret = srv.root / "data" / "novels" / "t" / "companion" / "secret.txt"

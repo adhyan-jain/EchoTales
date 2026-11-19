@@ -246,6 +246,13 @@ export default function Review() {
     },
     [novelId, after, fail]
   );
+  // Queued like every other correction: the line shows "Not applied yet" until Apply, and the next voice run reads it.
+  const onSetDelivery = useCallback(
+    (span, emotion, intensity) => {
+      api.setDelivery(novelId, span.span_id, emotion, intensity).then(after).catch(fail);
+    },
+    [novelId, after, fail]
+  );
   const onConfirmMerge = useCallback(
     (targetId) => {
       if (!mergeSourceId) return;
@@ -383,6 +390,7 @@ export default function Review() {
             onFlagLine={onFlagLine}
             onMergeLines={onMergeLines}
             onRetype={onRetype}
+            onSetDelivery={onSetDelivery}
             onCreateMention={onCreateMention}
           />
         </div>

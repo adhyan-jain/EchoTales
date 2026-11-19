@@ -547,6 +547,18 @@ CREATE TABLE IF NOT EXISTS span_emotion (
     PRIMARY KEY (novel_id, span_id)
 );
 
+-- A reviewer's emotion for one line (correction `set_delivery`). Separate from `span_emotion` because the delivery pass
+-- deletes and rewrites a whole chapter of that table on every rerun, which would silently drop a human's decision;
+-- `span_emotions()` reads the two together with this one winning.
+CREATE TABLE IF NOT EXISTS span_emotion_override (
+    novel_id TEXT NOT NULL,
+    span_id TEXT NOT NULL,
+    chapter REAL NOT NULL,
+    emotion TEXT NOT NULL,
+    intensity INTEGER NOT NULL,
+    PRIMARY KEY (novel_id, span_id)
+);
+
 CREATE TABLE IF NOT EXISTS persona_version (
     id TEXT PRIMARY KEY,
     novel_id TEXT NOT NULL,
@@ -2772,10 +2784,25 @@ class Store:
         self.conn.commit()
 
     def span_emotions(self, novel_id: str, chapter: float | None = None) -> dict[str, tuple[str, int]]:
-        sql, args = "SELECT span_id, emotion, intensity FROM span_emotion WHERE novel_id=?", [novel_id]
-        if chapter is not None:
-            sql, args = sql + " AND chapter=?", [novel_id, chapter]
-        return {r["span_id"]: (r["emotion"], int(r["intensity"])) for r in self.conn.execute(sql, args)}
+        """Each line's emotion and intensity as it will be voiced: the delivery pass's, with a reviewer's winning."""
+        out: dict[str, tuple[str, int]] = {}
+        for table in ("span_emotion", "span_emotion_override"):  # later rows overwrite earlier ones
+            sql, args = f"SELECT span_id, emotion, intensity FROM {table} WHERE novel_id=?", [novel_id]
+            if chapter is not None:
+                sql, args = sql + " AND chapter=?", [novel_id, chapter]
+            out.update({r["span_id"]: (r["emotion"], int(r["intensity"])) for r in self.conn.execute(sql, args)})
+        return out
+
+    def span_chapter_and_type(self, novel_id: str, span_id: str) -> tuple[float, str] | None:
+        row = self.conn.execute("SELECT chapter, span_type FROM span WHERE novel_id=? AND id=?", (novel_id, span_id)).fetchone()
+        return (float(row["chapter"]), str(row["span_type"])) if row else None
+
+    def set_span_emotion_override(self, novel_id: str, span_id: str, chapter: float, emotion: str, intensity: int) -> None:
+        self.conn.execute(
+            "INSERT OR REPLACE INTO span_emotion_override(novel_id, span_id, chapter, emotion, intensity) VALUES (?,?,?,?,?)",
+            (novel_id, span_id, chapter, emotion, intensity),
+        )
+        self.conn.commit()
 
     def list_bible_locks(self, novel_id: str) -> list[dict]:  # type: ignore[type-arg]
         rows = self.conn.execute(
