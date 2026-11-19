@@ -24,6 +24,15 @@ from echotales.pipeline.render.plan import (
 SNAPSHOT = Path(__file__).with_name("_panel_fixture_nodirector_snapshot.json")
 
 
+@pytest.fixture(autouse=True)
+def _legacy_inline_prompts(monkeypatch):
+    """These tests pin the inline NoobAI prompt path byte for byte; Z-Image through the compiler became the default
+    on 2026-11-19, so they name the legacy path explicitly."""
+    from echotales.pipeline import config
+
+    monkeypatch.setattr(config, "_settings", config.Settings(render_prompt_compiler=False, render_image_model="noobai-xl-1.1"))
+
+
 def _single(tmp_path: Path, name: str = "single", *, client=None):
     store = build_store(tmp_path / "t.db")
     render_panels("t", store, out_dir=tmp_path / name, version="v1", max_panels=20, client=client)

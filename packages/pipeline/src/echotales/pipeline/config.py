@@ -129,12 +129,15 @@ class Settings(BaseSettings):
 
     #: Stage A panel rework (2026-11-15). `render.image_model` (config.json) / `ECHOTALES_RENDER_IMAGE_MODEL` picks a
     #: profile in `render/compiler.py::PROFILES` (`noobai-xl-1.1`, `anima`, `z-image-turbo`), so two checkpoints compare on the same panels.
-    render_image_model: str = "noobai-xl-1.1"
+    #: Z-Image Turbo since 2026-11-19: the owner judged the NoobAI panels unusable next to the Z-Image ones (D58), and
+    #: NoobAI's licence kept it off a public default anyway. NoobAI stays selectable for comparison.
+    render_image_model: str = "z-image-turbo"
     #: `manga` (monochrome, the default) or `colour`. Only the compiler path and the local worker read it; the legacy
     #: engines keep `--palette`.
     render_panel_mode: str = "manga"
-    #: Off in stage A: `render_panels` builds its prompt inline exactly as before. On: it goes through the compiler.
-    render_prompt_compiler: bool = False
+    #: On since 2026-11-19 with Z-Image the default: Z-Image reads the compiler's plain-sentence brief, not tags. Off is the
+    #: legacy inline tag prompt, kept for the NoobAI comparison.
+    render_prompt_compiler: bool = True
     #: The panel director's ollama model (`render.director_model` in config.json). Empty follows `llm/tasks.py` (gemma2:9b)
     #: or, in `local-low`, `low_compute_director_model`; set, it wins in every compute mode so a different director can
     #: be tried without editing the task table.

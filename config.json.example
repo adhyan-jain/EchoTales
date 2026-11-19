@@ -5,9 +5,9 @@
   },
   "render": {
     "direction_first": true,
-    "image_model": "noobai-xl-1.1",
+    "image_model": "z-image-turbo",
     "panel_mode": "manga",
-    "prompt_compiler": false,
+    "prompt_compiler": true,
     "director_model": ""
   },
   "voice": {

@@ -18,15 +18,20 @@ def _render(tmp_path: Path, name: str):
     return load_panel_plan(vdir), (vdir / "manifest.jsonl").read_text()
 
 
-def test_off_is_the_default_and_leaves_prompts_unchanged(tmp_path, monkeypatch):
-    monkeypatch.setattr(config, "_settings", config.Settings())
-    assert config.get_settings().render_prompt_compiler is False
+def test_the_compiler_and_z_image_are_the_default():
+    # Owner, 2026-11-19: the Z-Image panels are the product; NoobAI is kept only for comparison.
+    s = config.Settings()
+    assert s.render_prompt_compiler is True and s.render_image_model == "z-image-turbo"
+
+
+def test_off_leaves_prompts_unchanged(tmp_path, monkeypatch):
+    monkeypatch.setattr(config, "_settings", config.Settings(render_prompt_compiler=False))
     rows, _ = _render(tmp_path, "off")
     assert all(r.prompt_sections is None for r in rows)
 
 
 def test_on_records_sections_that_join_to_the_prompt_and_never_say_solo_for_a_crowd(tmp_path, monkeypatch):
-    monkeypatch.setattr(config, "_settings", config.Settings(render_prompt_compiler=True))
+    monkeypatch.setattr(config, "_settings", config.Settings(render_prompt_compiler=True, render_image_model="noobai-xl-1.1"))
     rows, manifest = _render(tmp_path, "on")
     assert rows and all(r.prompt_sections for r in rows)
     for r in rows:
