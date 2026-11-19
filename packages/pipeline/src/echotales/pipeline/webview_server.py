@@ -926,6 +926,28 @@ def _list_output(novel_id: str) -> dict:  # type: ignore[type-arg]
     return {"novel_id": novel_id, "root": str(root), "kinds": kinds}
 
 
+def _list_packs(novel_id: str) -> list[dict]:  # type: ignore[type-arg]
+    """The `.etpack` files in this project's packs folder, by name only: a path from the server's disk is never sent
+    to the browser. `report` is what the last import of that pack applied and skipped (jobs.py writes it), or None."""
+    pack_dir = paths.asset_dir(novel_id, "packs")
+    out: list[dict] = []  # type: ignore[type-arg]
+    if not pack_dir.is_dir():
+        return out
+    for f in sorted(pack_dir.glob("*.etpack")):
+        if not f.is_file():
+            continue
+        report = None
+        try:
+            report = json.loads(f.with_name(f.name + ".report.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            pass
+        if isinstance(report, dict):
+            # `direction_dir` is a server path; the browser gets counts and reasons only.
+            report = {"applied": report.get("applied", {}), "skipped": report.get("skipped", [])}
+        out.append({"name": f.name, "bytes": f.stat().st_size, "report": report})
+    return out
+
+
 def _resolve_output_path(novel_id: str, rel: str) -> Path:
     """Resolve a caller-supplied relative path against this novel's output
     root, refusing anything that escapes it -- the one route in this track
@@ -981,6 +1003,8 @@ _PROJECT_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 #: `_read_body_bytes` read whatever Content-Length said, so one request could exhaust memory.
 _MAX_JSON_BODY = 2 * 1024 * 1024
 _MAX_UPLOAD_BODY = 200 * 1024 * 1024
+#: A pack is JSON in a zip and carries no book text; the largest real one is a few hundred KB.
+_MAX_PACK_BODY = 25 * 1024 * 1024
 _MAX_IMAGE_BODY = 20 * 1024 * 1024
 _NAME_ORDERS = ("given_first", "family_first")
 
@@ -1327,6 +1351,11 @@ def make_handler(
 
                 if parts == ["api", "projects"]:
                     return self._json(200, [_project_status(h) for h in registry.handles.values()])
+
+                if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "packs":
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    return self._json(200, {"packs": _list_packs(parts[2])})
 
                 if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "jobs":
                     handle = registry.handles.get(parts[2])
@@ -2240,6 +2269,41 @@ def make_handler(
                         201,
                         {"filename": filename, "path": str(epub_path), "bytes": len(data), "language": LANGUAGE_SUPPORT},
                     )
+
+                if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "packs":
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    content_type_header = self.headers.get("Content-Type", "")
+                    if "multipart/form-data" not in content_type_header:
+                        return self._json(400, {"error": "expected multipart/form-data upload"})
+                    try:
+                        filename, data = parse_single_file(content_type_header, self._read_body_bytes(_MAX_PACK_BODY))
+                    except MultipartError as exc:
+                        return self._json(400, {"error": str(exc)})
+                    from echotales.pipeline import packs
+
+                    # Base name only, characters restricted: the client's filename never reaches a server path
+                    # unsanitised (same rule as the reference-image upload).
+                    safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", Path(filename.replace("\\", "/")).name)
+                    if not safe_name.lower().endswith(packs.PACK_SUFFIX) or safe_name.lower() == packs.PACK_SUFFIX:
+                        return self._json(400, {"error": f"only {packs.PACK_SUFFIX} pack files are accepted"})
+                    pack_dir = paths.asset_dir(parts[2], "packs")
+                    pack_dir.mkdir(parents=True, exist_ok=True)
+                    target = pack_dir / safe_name
+                    # Written beside the target and checked there, so a file that is not a pack never lands under a
+                    # pack's name (the list would offer it and the import job would fail on it).
+                    probe = target.with_name(target.name + ".upload")
+                    probe.write_bytes(data)
+                    try:
+                        packs.read_pack(probe)
+                    except packs.PackError as exc:
+                        probe.unlink(missing_ok=True)
+                        return self._json(400, {"error": str(exc)})
+                    probe.replace(target)
+                    # A fresh upload under an old name must not show the old import's report.
+                    target.with_name(target.name + ".report.json").unlink(missing_ok=True)
+                    return self._json(201, {"name": safe_name, "bytes": len(data)})
 
                 if (
                     len(parts) == 6 and parts[:2] == ["api", "projects"] and parts[3] == "jobs" and parts[5] == "cancel"

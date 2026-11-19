@@ -29,6 +29,7 @@ which both `cmd_run` and this module's `run_job` call).
 
 from __future__ import annotations
 
+import json
 import logging
 import queue
 import threading
@@ -614,11 +615,16 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         else:
             if not pack_file.is_file():
                 raise ValueError(f"no pack named {pack_file.name!r} in this project's packs folder")
-            run_stage(
+            report = run_stage(
                 store, run_id=pipeline_run.run_id, stage_name="pack_import",
                 input_digest=f"{input_digest}|{time.time()}", skip_if_succeeded=False,
                 fn=lambda: packs.import_pack(store, novel_id, pack_file, corrections_log=corrections_log),
             )
+            # A Job row has no result column, and the Studio shows what an import applied and skipped. Kept beside the
+            # pack (`GET .../packs` reads it), so the answer outlives the job card and a reload.
+            if report is not None:
+                pack_file.with_name(pack_file.name + ".report.json").write_text(
+                    json.dumps(report.to_dict(), ensure_ascii=False), encoding="utf-8")
     elif job.kind == "refimg_search":
         from echotales.pipeline.persona import refimg
 

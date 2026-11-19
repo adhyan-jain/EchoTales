@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import threading
+import time
 from http.client import HTTPConnection
 from http.server import HTTPServer
 from pathlib import Path
@@ -19,8 +20,21 @@ from test_reader_cast import _book
 
 
 class Server:
-    def __init__(self, port: int, registry: Registry, root: Path) -> None:
-        self.port, self.registry, self.root = port, registry, root
+    def __init__(self, port: int, registry: Registry, root: Path, queue: JobQueue) -> None:
+        self.port, self.registry, self.root, self.queue = port, registry, root, queue
+
+    def run_job(self, kind: str, params: dict | None = None) -> dict:
+        """Queue `kind` over HTTP, start the worker, and wait for the job to end."""
+        status, queued = self.call("POST", f"/api/projects/t/{kind}", params or {})
+        assert status == 202, queued
+        self.queue.start()
+        deadline = time.time() + 20
+        while time.time() < deadline:
+            _, job = self.call("GET", f"/api/projects/t/jobs/{queued['job_id']}")
+            if job["status"] not in ("PENDING", "RUNNING"):
+                return job
+            time.sleep(0.05)
+        raise AssertionError("job did not finish")
 
     def call(self, method: str, path: str, body: object = None, *, raw: bytes | None = None, headers: dict | None = None):
         conn = HTTPConnection("127.0.0.1", self.port, timeout=10)
@@ -55,7 +69,7 @@ def srv(tmp_path, monkeypatch):
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
     try:
-        yield Server(httpd.server_address[1], registry, tmp_path)
+        yield Server(httpd.server_address[1], registry, tmp_path, queue)
     finally:
         httpd.shutdown()
         httpd.server_close()
@@ -86,3 +100,67 @@ def test_other_job_kinds_carry_no_estimate(srv) -> None:
     assert status == 202
     _, jobs = srv.call("GET", "/api/projects/t/jobs")
     assert "estimate" not in next(j for j in jobs if j["job_id"] == queued["job_id"])
+
+
+# --- packs ------------------------------------------------------------------------------------------------------------
+
+
+def _pack_bytes(srv) -> bytes:
+    from echotales.pipeline import packs
+
+    out = srv.root / "made.etpack"
+    packs.export_pack(srv.registry.handles["t"].store, "t", out)
+    return out.read_bytes()
+
+
+def test_packs_list_is_names_only_and_empty_at_first(srv) -> None:
+    status, body = srv.call("GET", "/api/projects/t/packs")
+    assert status == 200 and body == {"packs": []}
+    assert srv.call("GET", "/api/projects/nope/packs")[0] == 404
+
+
+def test_an_uploaded_pack_is_listed_by_name_and_never_by_path(srv) -> None:
+    raw, headers = multipart("../../sneaky name.etpack", _pack_bytes(srv))
+    status, body = srv.call("POST", "/api/projects/t/packs", raw=raw, headers=headers)
+    assert status == 201, body
+    assert body["name"] == "sneaky_name.etpack"
+    stored = srv.root / "data" / "novels" / "t" / "packs" / "sneaky_name.etpack"
+    assert stored.is_file() and not (srv.root / "sneaky name.etpack").exists()
+    status, listed = srv.call("GET", "/api/projects/t/packs")
+    assert [p["name"] for p in listed["packs"]] == ["sneaky_name.etpack"]
+    assert listed["packs"][0]["bytes"] > 0 and listed["packs"][0]["report"] is None
+    assert str(srv.root) not in json.dumps(listed)
+
+
+def test_a_pack_upload_must_be_a_readable_etpack(srv) -> None:
+    raw, headers = multipart("notes.txt", b"hello")
+    status, body = srv.call("POST", "/api/projects/t/packs", raw=raw, headers=headers)
+    assert status == 400 and ".etpack" in body["error"]
+    raw, headers = multipart("fake.etpack", b"this is not a zip")
+    status, body = srv.call("POST", "/api/projects/t/packs", raw=raw, headers=headers)
+    assert status == 400
+    assert not (srv.root / "data" / "novels" / "t" / "packs" / "fake.etpack").exists()
+    assert srv.call("POST", "/api/projects/t/packs", {"x": 1})[0] == 400  # not multipart
+
+
+def test_a_pack_upload_over_the_cap_is_refused(srv, monkeypatch) -> None:
+    from echotales.pipeline import webview_server
+
+    monkeypatch.setattr(webview_server, "_MAX_PACK_BODY", 1000)
+    raw, headers = multipart("big.etpack", b"x" * 5000)
+    status, _ = srv.call("POST", "/api/projects/t/packs", raw=raw, headers=headers)
+    assert status == 413
+
+
+def test_exporting_then_importing_leaves_a_report_beside_the_pack(srv) -> None:
+    done = srv.run_job("pack_export", {"name": "mine"})
+    assert done["status"] == "SUCCEEDED", done
+    _, listed = srv.call("GET", "/api/projects/t/packs")
+    assert [p["name"] for p in listed["packs"]] == ["mine.etpack"]
+    done = srv.run_job("pack_import", {"name": "mine"})
+    assert done["status"] == "SUCCEEDED", done
+    _, listed = srv.call("GET", "/api/projects/t/packs")
+    report = listed["packs"][0]["report"]
+    assert set(report) >= {"applied", "skipped"} and isinstance(report["applied"], dict)
+    # The report file is not itself a pack.
+    assert [p["name"] for p in listed["packs"]] == ["mine.etpack"]

@@ -318,6 +318,14 @@ export const api = {
       body: JSON.stringify(params),
     }),
 
+  // Adaptation packs in the project's packs folder: names, sizes and the last import's report -- never server paths.
+  listPacks: (novelId) => request(`/api/projects/${enc(novelId)}/packs`),
+  uploadPack: (novelId, file) => {
+    const form = new FormData();
+    form.append('file', file);
+    return request(`/api/projects/${enc(novelId)}/packs`, { method: 'POST', body: form });
+  },
+
   listJobs: (novelId) => request(`/api/projects/${enc(novelId)}/jobs`),
   getJob: (novelId, jobId) => request(`/api/projects/${enc(novelId)}/jobs/${enc(jobId)}`),
 
