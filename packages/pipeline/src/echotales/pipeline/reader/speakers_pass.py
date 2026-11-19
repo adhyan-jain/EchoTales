@@ -231,6 +231,10 @@ class NameIndex:
         parts = key.split()
         if parts and self._full.get(" ".join(parts[1:])):
             return self._full[" ".join(parts[1:])]
+        # A name word inside a long phrase is not the person ("Many elders watching Fang Yuan in the dark", RI ch5 b25, went to
+        # Fang Yuan): the word fallback is for "Mr. Fool" / "Klein-san" shaped answers only.
+        if len(parts) > 3:
+            return None
         hits = {self._unique_word[w].self_id: self._unique_word[w] for w in parts if w in self._unique_word}
         return next(iter(hits.values())) if len(hits) == 1 else None
 
@@ -692,6 +696,12 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
                     store.set_span_speaker(novel_id, span.id, None, AttributionMethod.UNRESOLVED.value, 0.0)
                 continue
         key = _norm(speaker)
+        if not key.startswith((UNKNOWN, NOT_SPEECH)) and key and index.resolve(speaker) is None:
+            kind = describes_a_speaker(speaker)
+            if kind:
+                fired.append("described_speaker")
+                speaker = f"UNKNOWN: {speaker}" if kind == "role" else UNKNOWN
+                key = _norm(speaker)
         if key.startswith(UNKNOWN) and key != UNKNOWN:
             # The model often writes a known person after UNKNOWN ("UNKNOWN: Dunn Smith", LotM ch14): the format
             # example invited a hybrid. If what follows is a cast member, that is the answer, not a role.
@@ -925,6 +935,23 @@ def _role_slug(answer: str) -> str:
 
 
 _GENERIC = frozenset({"the", "a", "an", "he", "she", "they", "someone", "voice", "man", "woman", "boy", "girl"})
+#: One-word answers that name nobody and describe nobody: left to the baseline, as before.
+_PRONOUNS = frozenset({"he", "she", "they", "it", "i", "you", "we", "him", "her", "them", "someone", "everyone", "anyone", "nobody"})
+
+
+def describes_a_speaker(answer: str) -> str:
+    """"role" or "phrase" when the model's answer is words describing the speaker rather than a name, else "".
+
+    RI ch4 (v16 trace): "The elder", "the academy elder", "third Gu" came back without the UNKNOWN: prefix the prompt asks for;
+    they matched no cast entry, the line stayed "unmapped" and kept its baseline guess (a wrong named person for two of seven
+    elder lines). Sure only when the answer starts with an article or a lower-case word (a name is capitalised), so
+    "Kim Dokja", "Mr. Fool" and a new "Daly" never qualify; a long phrase is no name or role at all ("phrase")."""
+    words = answer.split()
+    if not words or (len(words) == 1 and words[0].lower().strip(".") in _PRONOUNS):
+        return ""
+    if len(words) > 4:
+        return "phrase"
+    return "role" if words[0].lower() in {"the", "a", "an"} or words[0][:1].islower() else ""
 
 
 def _mint_new_speakers(

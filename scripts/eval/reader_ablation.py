@@ -143,6 +143,56 @@ def rescore(label: str, source: str) -> None:
     report(result)
 
 
+def replay(label: str, source: str) -> None:
+    """Run the current post-processing over a kept run's recorded raw model answers, with no model call.
+
+    Why: a deterministic rule change must be judged on the same answers (an 8-hour re-run differs by model noise and
+    cannot say which rule moved a line). The role-to-name reconcile pass is model-made and not recorded, so here it
+    resolves nothing; compare two replays, never a replay with a live run."""
+    commit = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True).strip()
+    trace = json.loads((_scratch_dir(source) / "trace.json").read_text(encoding="utf-8"))
+    result: dict = {"label": label, "commit": commit, "source": source, "chapters": {}, "replay": True}
+    all_trace: list[dict] = []  # type: ignore[type-arg]
+    real_ask = sp_mod.ask_window
+
+    class _NoModel:
+        def complete(self, *a, **k):  # noqa: ANN002, ANN003 - any call fails, the caller's except skips it
+            raise RuntimeError("replay has no model")
+
+    for novel in NOVELS:
+        files = _gold_files(novel)
+        golds = [g.load_reader_gold(f) for f in files]
+        rows = [r for r in trace if r["novel"] == novel]
+        db = _copy_baseline(novel, label)
+        store = Store(str(db))
+        sp_mod.TRACE = tr = []
+
+        def ask(client, cast, text, report, novel_id, chapter, narrator=None, only=None, note="", _rows=rows):  # noqa: ANN001
+            tags = only if only is not None else sp_mod.re.findall(r"\[(\d+\.\d+)\]", text)
+            key = "answer" if only is not None else "raw"
+            by_tag = {r["tag"]: r for r in _rows if float(r["chapter"]) == float(chapter)}
+            out = {}
+            for t in tags:
+                hit = by_tag.get(t)
+                if hit is not None and hit[key] is not None:
+                    out[t] = hit[key]
+            return out
+
+        sp_mod.ask_window = ask
+        try:
+            read_novel(novel, store, _NoModel(), chapters=[x.chapter for x in golds], passes=("speakers",))  # type: ignore[arg-type]
+        finally:
+            sp_mod.ask_window = real_ask
+            sp_mod.TRACE = None
+        all_trace.extend({"novel": novel, **t} for t in tr)
+        _score_into(result, store, novel, golds, files, [x.chapter for x in golds])
+        store.close()
+    OUT.mkdir(parents=True, exist_ok=True)
+    (_scratch_dir(label) / "trace.json").write_text(json.dumps(all_trace, indent=1, ensure_ascii=False), encoding="utf-8")
+    (OUT / f"{label}.json").write_text(json.dumps(result, indent=1, ensure_ascii=False), encoding="utf-8")
+    report(result)
+
+
 def run(label: str, novels: tuple[str, ...], only: set[int] | None, passes: tuple[str, ...] = ("speakers", "facts", "delivery")) -> None:
     commit = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True).strip()
     result: dict = {"label": label, "commit": commit, "chapters": {}}
@@ -225,6 +275,8 @@ if __name__ == "__main__":
         run(sys.argv[2], sel, chosen, sel_passes)
     elif cmd == "verify":
         verify(sys.argv[2], sys.argv[3], "--reject-unclear" in sys.argv)
+    elif cmd == "replay":
+        replay(sys.argv[2], sys.argv[3])
     elif cmd == "rescore":
         rescore(sys.argv[2], sys.argv[3])
     elif cmd == "compare":

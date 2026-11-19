@@ -195,3 +195,38 @@ def test_two_different_ranks_are_not_merged() -> None:
         {"0.0": "UNKNOWN: first elder", "1.0": "UNKNOWN: second elder"},
     )
     assert _speaker(store, 0) != _speaker(store, 1)
+
+
+class TestAnswerThatIsADescriptionNotAName:
+    """RI ch4/ch5 (v16 trace): the model wrote "The elder", "the academy elder", "third Gu" with no UNKNOWN: prefix. Not a name
+    in the cast, so the line was left "unmapped" with its baseline guess (a named wrong person for 2 of 7 elder lines)."""
+
+    def test_a_described_office_becomes_the_role_slot(self) -> None:
+        store, report = _run(
+            ["“Come here.” The academy elder waved.", "“Next.” The elder frowned."],
+            {"0.0": "the academy elder", "1.0": "The elder"},
+            baseline={0: ("n:self:bob", AttributionMethod.PROXIMAL)},
+        )
+        assert _speaker(store, 0) == "n:title:academy_elder"
+        assert _speaker(store, 1) == "n:title:academy_elder"  # merged with the longer wording of the same role
+        assert report.role_slots == 2
+
+    def test_a_described_non_office_is_an_anonymous_slot(self) -> None:
+        store, _ = _run(["“Take me up.” The third Gu spoke."], {"0.0": "third Gu"})
+        assert _speaker(store, 0) == "n:anon:1:third_gu"
+
+    def test_a_description_that_is_not_in_the_chapter_is_not_trusted(self) -> None:
+        store, report = _run(["“Hello.” Alice smiled."], {"0.0": "the wise old sage"},
+                             baseline={0: ("n:self:bob", AttributionMethod.PROXIMAL)})
+        assert _speaker(store, 0) is None and report.role_rejected == 1
+
+    def test_a_bare_pronoun_is_left_to_the_baseline(self) -> None:
+        store, _ = _run(["“Hello.” Alice smiled."], {"0.0": "she"},
+                        baseline={0: ("n:self:alice", AttributionMethod.EXPLICIT)})
+        assert _speaker(store, 0) == "n:self:alice"
+
+    def test_a_long_phrase_is_not_a_name_because_it_contains_one(self) -> None:
+        # RI ch5 b25: "Many elders watching Fang Yuan in the dark" resolved to Fang Yuan by the unique-word fallback.
+        store, _ = _run(["“It is lesser.” Many elders watched Alice in the dark."],
+                        {"0.0": "Many elders watching Alice in the dark"})
+        assert _speaker(store, 0) != "n:self:alice"
