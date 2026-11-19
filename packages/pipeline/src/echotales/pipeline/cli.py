@@ -606,6 +606,8 @@ def build_parser() -> argparse.ArgumentParser:
     c_build.add_argument("--bank", default="data/voice")
     c_build.add_argument("--bank-kind", default=None)
     c_build.add_argument("--inpaint", default="cv", choices=["cv", "lama", "none"])
+    c_build.add_argument("--depth", action="store_true",
+                         help="depth parallax with Depth Anything V2 Small (GPU; run under the GPU lock)")
     c_build.add_argument("--suffix", default="motion-comic", help="version suffix, e.g. v1_<suffix>")
     c_build.add_argument("--note", default="", help="the one-line verdict recorded in VERSIONS.md")
     c_build.add_argument("--trust-speakers", action="store_true",

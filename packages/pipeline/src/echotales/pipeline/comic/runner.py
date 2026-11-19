@@ -82,6 +82,7 @@ def build_stage(
     bank_kind: str | None = None,
     bank_root: str | Path = "data/voice",
     inpaint: str = "cv",
+    depth: bool = False,
     suffix: str = "motion-comic",
     note: str = "",
     trust_speakers: bool = False,
@@ -112,19 +113,27 @@ def build_stage(
     video = build_episode(
         und, saved_pages(root), timings, out_dir, title=title, credit=credit,
         inpainter=get_inpainter(inpaint) if inpaint != "none" else None, masks_dir=root, size=size, fps=fps,
+        depth=_depth() if depth else None,
     )
-    _append_version(base, version, engine, inpaint, video, note)
+    _append_version(base, version, engine, inpaint, video, note, depth)
     return ComicBuild(graph, video, version, out_dir)
 
 
-def _append_version(base: Path, version: str, engine: str, inpaint: str, video: BuildResult, note: str) -> None:
+def _depth():
+    from echotales.pipeline.comic.parallax import DepthAnythingSmall
+
+    return DepthAnythingSmall()
+
+
+def _append_version(base: Path, version: str, engine: str, inpaint: str, video: BuildResult, note: str,
+                    depth: bool = False) -> None:
     index = base / "VERSIONS.md"
     if not index.exists():
         index.write_text("# Video versions\n\nOne line per version: what was tried and an honest verdict.\n\n", encoding="utf-8")
     verdict = note or "unreviewed"
     line = (
         f"## {version} ({datetime.date.today().isoformat()})\n"
-        f"- motion comic, {video.shots} panel shots, {video.duration:.1f}s; voice engine `{engine}`, inpainting `{inpaint}`. "
+        f"- motion comic, {video.shots} panel shots, {video.duration:.1f}s; voice engine `{engine}`, inpainting `{inpaint}`{', depth parallax' if depth else ''}. "
         f"Verdict: {verdict}\n\n"
     )
     with index.open("a", encoding="utf-8") as fh:

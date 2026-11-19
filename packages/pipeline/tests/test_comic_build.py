@@ -79,3 +79,26 @@ def test_build_episode_renders_a_video_with_credit_and_subtitles(tmp_path: Path)
     assert abs(duration - result.duration) < 0.5
     assert "CC BY 4.0" in probe
     assert "Hello there" in result.srt.read_text()
+
+
+class _FakeDepth:
+    name = "fake"
+
+    def depth(self, image):
+        d = np.zeros((image.height, image.width), dtype=np.float32)
+        d[:, image.width // 2:] = 1.0
+        return d
+
+
+def test_depth_parallax_changes_the_frames_but_not_the_timeline(tmp_path: Path) -> None:
+    und = _und()
+    store = Store(str(tmp_path / "c.db"))
+    comic_to_store(store, und, "pc", "T", trust_speakers=True)
+    audio = tmp_path / "audio"
+    render_novel("pc", store, VoiceBank(voices=parse_speaker_info(INFO)), out_dir=audio, engine=get_engine("stub"))
+    timings = build_timing(audio, 1.0, write=True)
+    kw = dict(title="T", credit="c", size=(160, 90), fps=8)
+    flat = build_episode(und, [PageImage(0, "p.png", _page())], timings, tmp_path / "a", **kw)
+    deep = build_episode(und, [PageImage(0, "p.png", _page())], timings, tmp_path / "b", depth=_FakeDepth(), **kw)
+    assert deep.duration == flat.duration and deep.video.is_file()
+    assert deep.video.read_bytes() != flat.video.read_bytes()

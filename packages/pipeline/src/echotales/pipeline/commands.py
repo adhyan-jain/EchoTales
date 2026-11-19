@@ -1490,7 +1490,7 @@ def cmd_comic(args: argparse.Namespace) -> int:
             built = runner.build_stage(
                 store, args.novel, title=args.title or args.novel, chapter=args.chapter,
                 credit=(args.credit or runner.DEFAULT_CREDIT).replace("\\n", "\n"), engine=args.engine,
-                bank_kind=args.bank_kind, bank_root=args.bank, inpaint=args.inpaint, suffix=args.suffix,
+                bank_kind=args.bank_kind, bank_root=args.bank, inpaint=args.inpaint, depth=args.depth, suffix=args.suffix,
                 note=args.note, trust_speakers=args.trust_speakers, fps=args.fps,
                 video_root=Path(args.video_root) if args.video_root else None,
             )

@@ -19,6 +19,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from echotales.pipeline.comic.ingest import PageImage
 from echotales.pipeline.comic.inpaint import Inpainter, srt_text
+from echotales.pipeline.comic.parallax import DepthEstimator, parallax_warp
 from echotales.pipeline.comic.to_graph import story_bubbles
 from echotales.pipeline.comic.understand import ComicUnderstanding
 from echotales.pipeline.compositor.camera import compute_camera_trajectory
@@ -125,12 +126,21 @@ def _pan_value(move: CameraMove, kf) -> float:
     return 0.0
 
 
-def _shot_frames(plate: Image.Image, shot: Shot, size: tuple[int, int], fps: int):
+def _shot_frames(plate: Image.Image, shot: Shot, size: tuple[int, int], fps: int,
+                 depth: np.ndarray | None = None, parallax_px: float = 0.0):
+    """Frames of one shot. With a depth map (relative to the full page) near pixels also slide sideways across the
+    shot, so a still gains layers; without one this is the plain camera move."""
     traj = compute_camera_trajectory(shot.move, shot.duration, fps)
     aspect = size[0] / size[1]
-    for kf in traj.keyframes:
+    last = max(1, len(traj.keyframes) - 1)
+    depth_img = Image.fromarray(depth) if depth is not None else None
+    for i, kf in enumerate(traj.keyframes):
         win = camera_window(shot.box, aspect, kf.zoom, _pan_value(shot.move, kf))
-        yield plate.resize(size, Image.Resampling.BICUBIC, box=win)
+        frame = plate.resize(size, Image.Resampling.BICUBIC, box=win)
+        if depth_img is not None:
+            d = np.asarray(depth_img.resize(size, Image.Resampling.BILINEAR, box=win))
+            frame = parallax_warp(frame, d, parallax_px * (2.0 * i / last - 1.0))
+        yield frame
 
 
 @dataclass(slots=True)
@@ -174,6 +184,8 @@ def build_episode(
     size: tuple[int, int] = (1280, 720),
     fps: int = 24,
     video_name: str = "episode.mp4",
+    depth: DepthEstimator | None = None,
+    parallax_px: float = 14.0,
 ) -> BuildResult:
     """Render the motion comic to `out_dir/<video_name>` with a sidecar `.srt` of the original lettering."""
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -183,6 +195,7 @@ def build_episode(
         if inpainter is not None and pg.mask_file and masks_dir is not None:
             img = inpainter.inpaint(img, Image.open(masks_dir / pg.mask_file))
         plates[pg.page_index] = img
+    depth_maps = {i: depth.depth(img) for i, img in plates.items()} if depth is not None else {}
     shots = plan_shots(und, timings)
     title_card = _card(size, [title])
     end_card = _card(size, ["Credits", *credit.split("\n")])
@@ -216,7 +229,7 @@ def build_episode(
             proc.stdin.write(title_card.tobytes())
         for shot in shots:
             plate = plates[shot.page_index]
-            for frame in _shot_frames(plate, shot, size, fps):
+            for frame in _shot_frames(plate, shot, size, fps, depth_maps.get(shot.page_index), parallax_px):
                 proc.stdin.write(frame.tobytes())
         for _ in range(int(CREDIT_SECONDS * fps)):
             proc.stdin.write(end_card.tobytes())
