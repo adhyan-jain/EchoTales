@@ -234,3 +234,18 @@ def test_dropped_clauses_replays_the_fit_output():
     assert dropped_clauses(parts, "a, b, c, d") == ["dropped one"]
     assert dropped_clauses(parts, "a, b, c") == ["dropped one", "d"]
     assert dropped_clauses(["x"], "x") == []
+
+
+def test_a_scene_of_the_same_segment_that_names_nobody_starts_from_the_previous_scene_cast(tmp_path, monkeypatch):
+    """RI ch1: the cliff fight is several scenes (the splitter cuts on cue words) and two of them name no one, so their
+    panels drew an unnamed figure in clothes the locked identity never saw. The cave scene here names nobody at all."""
+    import _panel_fixture
+
+    texts = list(_panel_fixture.TEXTS)
+    texts[12] = (texts[12][0], "He drew a slow breath in the dark cave.")
+    monkeypatch.setattr(_panel_fixture, "TEXTS", texts)
+    _, vdir = _single(tmp_path, client=FakeDirector())
+    rows = load_panel_plan(vdir)
+    cave = [r for r in rows if r.scene_index == 2]
+    assert cave and all(r.cast_source == "carried" and [m.label for m in r.cast] == ["Fang Yuan"] for r in cave)
+    assert [r.cast_source for r in rows if r.scene_index == 1][0] == "present", "a scene that names someone keeps its own cast"

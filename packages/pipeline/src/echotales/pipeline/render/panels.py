@@ -1876,6 +1876,9 @@ def render_panels(
             for sc in scenes
         ])
         _prev_staging_text = ""
+        # The last scene's carry-forward cast (below), kept so a scene of the same segment that names nobody can start from it.
+        _prev_scene_cast: tuple | None = None
+        _prev_scene_segment = ""
         for _scene_i, scene in enumerate(scenes[:max_panels]):
             story_scene_blocks = [
                 b for b in scene.blocks
@@ -1911,11 +1914,19 @@ def render_panels(
             # has no business surviving into this one. Populated the first
             # time a beat's own PRESENT-mode pass finds someone, then reused
             # by any later beat in this scene whose own pass comes up empty.
-            _scene_last_present: dict[str, str] = {}
-            _scene_last_present_genders: list[str] = []
-            _scene_last_present_refs: list[Path] = []
-            _scene_last_present_conditioned: list[str] = []
-            _scene_last_present_conditions: dict[str, str] = {}
+            #
+            # A scene whose segment continues the previous scene's starts from that scene's cast instead of from nobody:
+            # the scene splitter cuts on cue words, so RI ch1's one cliff fight is six scenes, and the beats "Looking at the
+            # setting sun, he lightly laughed" (block 26) and "The spring rain quietly rained down" (block 31) name no
+            # one. With no cast they drew an unnamed figure in whatever clothes the model liked (a purple robe, a white
+            # robe) beside panels of the same man in torn green (M1.5 render, EVOLUTION 4.169). The body-transition check
+            # at the reuse site still re-resolves a carried person whose body changed.
+            _carry_in = _prev_scene_cast if (_prev_scene_cast and scene.segment_id and scene.segment_id == _prev_scene_segment) else None
+            _scene_last_present: dict[str, str] = dict(_carry_in[0]) if _carry_in else {}
+            _scene_last_present_genders: list[str] = list(_carry_in[1]) if _carry_in else []
+            _scene_last_present_refs: list[Path] = list(_carry_in[2]) if _carry_in else []
+            _scene_last_present_conditioned: list[str] = list(_carry_in[3]) if _carry_in else []
+            _scene_last_present_conditions: dict[str, str] = dict(_carry_in[4]) if _carry_in else {}
             # **Which body each carried-forward entity was resolved from.**
             # `entity_id -> persona_id`, captured at the same moment as the
             # appearance strings above. A carried string is only honest for
@@ -1927,9 +1938,9 @@ def render_panels(
             # from block 80/81 while `character_looks` called fresh at 84
             # already correctly returns body2's `white_robes`. See the
             # invalidation check at the carry-forward reuse site below.
-            _scene_last_present_bodies: dict[str, str] = {}
-            _scene_last_present_entity_labels: dict[str, str] = {}
-            _scene_last_present_entity_genders: dict[str, str] = {}
+            _scene_last_present_bodies: dict[str, str] = dict(_carry_in[5]) if _carry_in else {}
+            _scene_last_present_entity_labels: dict[str, str] = dict(_carry_in[6]) if _carry_in else {}
+            _scene_last_present_entity_genders: dict[str, str] = dict(_carry_in[7]) if _carry_in else {}
 
             budget = scene.image_budget
             # Which slot (0=establishing, 1=close-up, 2=wide/secondary)
@@ -2505,6 +2516,13 @@ def render_panels(
                     spans, _slot_blocks, label_of=lambda sp: _speaker_name(sp, store),
                     cast=list(_beat_entity_labels.values()) or list(_scene_last_present_entity_labels.values()),
                 )
+                _prev_scene_cast = (
+                    dict(_scene_last_present), list(_scene_last_present_genders), list(_scene_last_present_refs),
+                    list(_scene_last_present_conditioned), dict(_scene_last_present_conditions),
+                    dict(_scene_last_present_bodies), dict(_scene_last_present_entity_labels),
+                    dict(_scene_last_present_entity_genders),
+                ) if _scene_last_present_bodies else None
+                _prev_scene_segment = scene.segment_id
                 _beat_digest = hashlib.sha256(
                     f"{beat_prose}|{directive}|{_speech}".encode()
                 ).hexdigest()[:12]
