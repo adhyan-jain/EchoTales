@@ -266,14 +266,14 @@ def synthesize_line(voice: BankVoice, engine: TTSEngine, out_path: Path, text: s
     """One line in `voice`'s voice performing `emotion`, with the delivery settings and emotion recording the
     audiobook run would choose for a spoken line (`delivery.settings_for`, `BankVoice.clip_for`). The register pitch
     and tempo post-processing is not applied: a preview must be the engine's own output, not our edit of it."""
-    from echotales.core.enums import SpanType
-    from echotales.pipeline.voice.delivery import settings_for
+    from echotales.core.enums import SpanType  # type: ignore[import-untyped]
+    from echotales.pipeline.voice.delivery import settings_for  # type: ignore[import-untyped]
 
     settings = settings_for(
         span_type=SpanType.DIALOGUE, text=text, emotion=emotion, intensity=2, voice_age_band=voice.age_band
     )
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    return engine.synthesize(SynthesisRequest(
+    return Path(engine.synthesize(SynthesisRequest(
         text=text, out_path=out_path, reference_clip=voice.clip_for(settings.emotion),
         exaggeration=settings.exaggeration, cfg_weight=settings.cfg_weight,
-    ))
+    )))

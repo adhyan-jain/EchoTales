@@ -1456,8 +1456,12 @@ def make_handler(
                 if len(parts) == 5 and parts[:2] == ["api", "projects"] and parts[3:] == ["voices", "audition"]:
                     if parts[2] not in registry.handles:
                         return self._json(404, {"error": f"unknown project {parts[2]!r}"})
-                    from echotales.pipeline.config import get_settings
-                    from echotales.pipeline.voice import audition as voice_audition
+                    from echotales.pipeline.config import (  # type: ignore[import-untyped]
+                        get_settings,
+                    )
+                    from echotales.pipeline.voice import (  # type: ignore[import-untyped]
+                        audition as voice_audition,
+                    )
 
                     root = paths.asset_dir(parts[2], "audition")
                     candidates = []
@@ -1481,7 +1485,9 @@ def make_handler(
                     from echotales.pipeline.voice import audition as voice_audition
 
                     q = parse_qs(urlparse(self.path).query)
-                    one = lambda key, default="": q.get(key, [default])[0]  # noqa: E731
+                    def one(key: str, default: str = "") -> str:
+                        return q.get(key, [default])[0]
+
                     sample = voice_audition.line_sample_path(
                         paths.asset_dir(parts[2], "audition"), one("voice_id"), one("emotion", "neutral"), one("text").strip()
                     )
@@ -2616,8 +2622,12 @@ def make_handler(
                         voice_engine = str(params.get("engine") or "chatterbox")
                         if voice_engine not in engine_registry.names("tts"):
                             return self._json(400, {"error": f"voice engine {voice_engine!r} is not allowed; use stub or chatterbox"})
-                        from echotales.pipeline.reader.delivery_pass import LABELS
-                        from echotales.pipeline.voice.audition import MAX_SAMPLE_CHARS
+                        from echotales.pipeline.reader.delivery_pass import (  # type: ignore[import-untyped]
+                            LABELS,
+                        )
+                        from echotales.pipeline.voice.audition import (  # type: ignore[import-untyped]
+                            MAX_SAMPLE_CHARS,
+                        )
 
                         target = params.get("target")
                         if target not in ("narrator", "line"):
