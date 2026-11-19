@@ -224,6 +224,13 @@ class LocalZImageWorker:
             vae.enable_tiling()
             scheduler = FlowMatchEulerDiscreteScheduler.from_pretrained(base, subfolder="scheduler")
             self._pipe = ZImagePipeline(scheduler=scheduler, vae=vae, text_encoder=None, tokenizer=None, transformer=transformer)
+            # Optional style LoRA (`ECHOTALES_ZIMAGE_LORA=<file>`, strength `ECHOTALES_ZIMAGE_LORA_SCALE`, default 0.6). Off by
+            # default: it exists to hold one cel-shaded look if prompt wording alone cannot (owner, 2026-11-19).
+            import os
+
+            if lora := os.environ.get("ECHOTALES_ZIMAGE_LORA"):
+                self._pipe.load_lora_weights(lora, adapter_name="style")
+                self._pipe.set_adapters(["style"], adapter_weights=[float(os.environ.get("ECHOTALES_ZIMAGE_LORA_SCALE", "0.6"))])
             self._pipe_seconds = round(time.time() - started, 1)
         return self._pipe
 
