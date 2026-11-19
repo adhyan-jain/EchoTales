@@ -683,9 +683,11 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
 
     lead = _MANGA_LEAD if b.mode is OutputMode.MANGA else style_lead(b.novel_id)
     s = [PromptSection("style", lead)]
-    if b.staging:
-        s.append(PromptSection("staging", b.staging.strip()))
-    s.append(PromptSection("composition", b.composition.strip()))
+    stage = PromptSection("staging", b.staging.strip()) if b.staging else None
+    comp = PromptSection("composition", b.composition.strip())
+    # A close shot leads with its own paragraph: staging first drew a second small hero at the cliff edge behind the
+    # foreground one (2 of 2 seeds, 2026-11-19); paragraph first drew one (2 of 2).
+    s += [comp, stage] if (stage and b.shot == "close") else [x for x in (stage, comp) if x]
     written: dict[str, bool] = {}
     fields: dict[str, list[str]] = {}
     for c in b.characters:

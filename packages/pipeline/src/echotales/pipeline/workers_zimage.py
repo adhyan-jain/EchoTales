@@ -229,7 +229,10 @@ class LocalZImageWorker:
             import os
 
             if lora := os.environ.get("ECHOTALES_ZIMAGE_LORA"):
-                self._pipe.load_lora_weights(lora, adapter_name="style")
+                from pathlib import Path
+
+                # a bare file path is read as a hub repo id, which offline mode refuses: give folder and file name apart
+                self._pipe.load_lora_weights(str(Path(lora).parent), weight_name=Path(lora).name, adapter_name="style")
                 self._pipe.set_adapters(["style"], adapter_weights=[float(os.environ.get("ECHOTALES_ZIMAGE_LORA_SCALE", "0.6"))])
             self._pipe_seconds = round(time.time() - started, 1)
         return self._pipe

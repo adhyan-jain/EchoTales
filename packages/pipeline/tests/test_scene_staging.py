@@ -79,3 +79,13 @@ def test_a_cheerful_face_on_a_contemptuous_line_is_flagged() -> None:
     assert expression_conflicts("laughing happily, a bright cheerful smile", ctx)
     assert not expression_conflicts("cold mocking smile, narrowed eyes, contemptuous", ctx)
     assert not expression_conflicts("a warm cheerful smile", "She smiled warmly and greeted her sister.")
+
+
+def test_a_close_shot_puts_its_own_paragraph_before_the_staging() -> None:
+    # Measured 2026-11-19: with the staging first, a close-up drew a second, tiny Fang Yuan standing at the cliff edge behind
+    # the foreground one (2 of 2 seeds); paragraph first drew one (2 of 2).
+    s = SceneStaging(set="bare rock cliff", blocking="Fang Yuan alone at left, fighters in rows at right", light="dusk")
+    b = PanelBrief(novel_id="", characters=[CharacterBrief(**OLD)], mode=OutputMode.COLOUR, shot="close",
+                   composition="Close-up of Fang Yuan, a cold mocking smile.", staging=s.text())
+    labels = [x.label for x in compile_prompt(b, model_profile("z-image-turbo")).sections]
+    assert labels[:3] == ["style", "composition", "staging"]
