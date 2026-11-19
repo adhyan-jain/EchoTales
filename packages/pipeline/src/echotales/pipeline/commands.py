@@ -351,12 +351,33 @@ def cmd_query(args: argparse.Namespace) -> int:
 # ---------------------------------------------------------------------------
 
 
+def cmd_export_companion(args: argparse.Namespace) -> int:
+    from echotales.pipeline import paths
+    from echotales.pipeline.companion import build_companion, write_companion_site
+
+    if args.through is None:
+        print("refusing: export companion needs --through N, the last chapter the reader has finished", file=sys.stderr)
+        return 2
+    store = _open_store(args)
+    try:
+        data = build_companion(store, args.novel, args.through)
+    finally:
+        store.close()
+    out = Path(args.out) if args.out else paths.EXPORTS_DIR / "companion" / args.novel / f"through-{args.through:g}"
+    write_companion_site(data, out)
+    print(f"companion through chapter {args.through:g}: {len(data['cards'])} characters, "
+          f"{len(data['relationships'])} relationships, {len(data['glossary'])} glossary terms -> {out}")
+    return 0
+
+
 def cmd_export(args: argparse.Namespace) -> int:
+    if args.what == "companion":
+        return cmd_export_companion(args)
     from echotales.pipeline.review import build_review, write_jsonl
 
     store = _open_store(args)
     review = build_review(store, args.novel, top_n=10**6, samples=args.samples)
-    path = write_jsonl(review, Path(args.out) / f"{args.novel}-entities.jsonl")
+    path = write_jsonl(review, Path(args.out or "data/gold") / f"{args.novel}-entities.jsonl")
     print(f"exported {len(review.entities):,} entities to {path}")
     store.close()
     return 0

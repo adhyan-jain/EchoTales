@@ -753,9 +753,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_est.add_argument("--gpu-hourly-usd", type=float, default=0.0, help="rented-GPU rate; default 0 (a local run)")
     p_est.add_argument("--json", action="store_true")
 
-    p_export = sub.add_parser("export", help="emit the annotation dataset")
+    p_export = sub.add_parser("export", help="emit the annotation dataset, or `export companion` (a spoiler-safe site)")
+    p_export.add_argument(
+        "what", nargs="?", choices=["companion"], default=None,
+        help="companion: a static, offline site of characters, relationships, timeline and glossary through chapter N",
+    )
     p_export.add_argument("--novel", required=True)
-    p_export.add_argument("--out", default="data/gold")
+    p_export.add_argument("--through", type=float, default=None, help="companion: the last chapter the reader has finished")
+    p_export.add_argument("--out", default=None, help="default: data/gold, or data/exports/companion/<novel>/through-N")
     p_export.add_argument("--samples", type=int, default=3)
 
     p_webview = sub.add_parser(
