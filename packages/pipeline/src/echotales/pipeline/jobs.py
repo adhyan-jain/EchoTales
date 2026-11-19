@@ -538,7 +538,10 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
 
         if reason := noncommercial_refusal(bank_kind, m4b=True, allowed=bool(params.get("allow_noncommercial"))):
             raise ValueError(reason)
-        bank = load_bank(bank_kind, bank_root)
+        from echotales.pipeline.project_voices import with_project_voices
+
+        # Voices the person uploaded to this project (with their consent record) are cast alongside the bank's.
+        bank = with_project_voices(load_bank(bank_kind, bank_root), novel_id)
         out_dir = params.get("out_dir") or str(paths.asset_dir(novel_id, "audio"))
         run_stage(
             store, run_id=pipeline_run.run_id, stage_name="voice",

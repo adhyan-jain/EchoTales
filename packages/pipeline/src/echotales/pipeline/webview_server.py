@@ -1042,6 +1042,8 @@ _MAX_JSON_BODY = 2 * 1024 * 1024
 _MAX_UPLOAD_BODY = 200 * 1024 * 1024
 #: A pack is JSON in a zip and carries no book text; the largest real one is a few hundred KB.
 _MAX_PACK_BODY = 25 * 1024 * 1024
+#: A minute of 24-bit stereo 48 kHz is ~17 MB; nothing a voice clone uses needs more.
+_MAX_VOICE_BODY = 20 * 1024 * 1024
 _MAX_IMAGE_BODY = 20 * 1024 * 1024
 _NAME_ORDERS = ("given_first", "family_first")
 
@@ -1396,6 +1398,21 @@ def make_handler(
                     if parts[2] not in registry.handles:
                         return self._json(404, {"error": f"unknown project {parts[2]!r}"})
                     return self._json(200, {"packs": _list_packs(parts[2])})
+
+                if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "voices":
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    from echotales.pipeline import project_voices
+
+                    return self._json(200, {
+                        "statement": project_voices.CONSENT_STATEMENT,
+                        "limits": {"min_seconds": project_voices.MIN_SECONDS, "max_seconds": project_voices.MAX_SECONDS,
+                                   "max_bytes": _MAX_VOICE_BODY},
+                        "voices": [
+                            {"voice_id": v.voice_id, "name": v.name, "gender": v.gender, "age": v.age, "consent_at": v.consent_at}
+                            for v in project_voices.list_project_voices(parts[2])
+                        ],
+                    })
 
                 if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "companions":
                     if parts[2] not in registry.handles:
@@ -2359,6 +2376,36 @@ def make_handler(
                     # A fresh upload under an old name must not show the old import's report.
                     target.with_name(target.name + ".report.json").unlink(missing_ok=True)
                     return self._json(201, {"name": safe_name, "bytes": len(data)})
+
+                # POST /api/projects/<id>/voices?name=&gender=&age=&consent=true  (multipart, one .wav/.flac)
+                # The consent travels in the query string because the multipart reader here takes one file part and
+                # nothing else; the server records its own fixed statement, never text from the request.
+                if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "voices":
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    from echotales.pipeline import project_voices
+
+                    query = parse_qs(urlparse(self.path).query)
+                    one = lambda key: query.get(key, [""])[0]  # noqa: E731
+                    if one("consent") != "true":
+                        return self._json(400, {"error": f"Tick the box first: \"{project_voices.CONSENT_STATEMENT}\" Nothing was uploaded."})
+                    content_type_header = self.headers.get("Content-Type", "")
+                    if "multipart/form-data" not in content_type_header:
+                        return self._json(400, {"error": "expected multipart/form-data upload"})
+                    try:
+                        filename, data = parse_single_file(content_type_header, self._read_body_bytes(_MAX_VOICE_BODY))
+                        stored = project_voices.save_voice(
+                            parts[2], filename=filename, data=data, name=one("name"), gender=one("gender").lower(),
+                            age=int(one("age") or "0"), consent=True,
+                        )
+                    except MultipartError as exc:
+                        return self._json(400, {"error": str(exc)})
+                    except ValueError as exc:  # VoiceUploadError, or an age that is not a number
+                        taken = "already exists" in str(exc)
+                        return self._json(409 if taken else 400, {"error": str(exc) if isinstance(exc, project_voices.VoiceUploadError) else "age must be a whole number"})
+                    return self._json(201, {"voice_id": stored.voice_id, "name": stored.name, "gender": stored.gender,
+                                            "age": stored.age, "consent_at": stored.consent_at})
 
                 if (
                     len(parts) == 6 and parts[:2] == ["api", "projects"] and parts[3] == "jobs" and parts[5] == "cancel"

@@ -351,6 +351,16 @@ export const api = {
     return `${API_BASE}/api/novels/${enc(novelId)}/companion/through_${enc(through)}/index.html${auth}`;
   },
 
+  // The project's own voices (a person's recording plus a consent record), and the upload. The consent and the details
+  // ride in the query string because the upload body is one file part and nothing else.
+  listProjectVoices: (novelId) => request(`/api/projects/${enc(novelId)}/voices`),
+  uploadProjectVoice: (novelId, file, { name, gender, age, consent }) => {
+    const form = new FormData();
+    form.append('file', file);
+    const q = new URLSearchParams({ name, gender, age: String(age), consent: consent ? 'true' : 'false' });
+    return request(`/api/projects/${enc(novelId)}/voices?${q}`, { method: 'POST', body: form });
+  },
+
   listJobs: (novelId) => request(`/api/projects/${enc(novelId)}/jobs`),
   getJob: (novelId, jobId) => request(`/api/projects/${enc(novelId)}/jobs/${enc(jobId)}`),
 

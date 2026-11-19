@@ -347,6 +347,102 @@ def test_the_dropdown_offers_exactly_the_emotions_the_server_accepts() -> None:
     assert sorted(offered) == sorted(set(LABELS.values()))
 
 
+# --- own-voice upload -------------------------------------------------------------------------------------------------
+
+
+def _wav(seconds: float, rate: int = 16000) -> bytes:
+    import io
+    import wave
+
+    buf = io.BytesIO()
+    with wave.open(buf, "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(b"\x00\x00" * int(rate * seconds))
+    return buf.getvalue()
+
+
+def _flac_header(seconds: float, rate: int = 16000) -> bytes:
+    """The bytes of a FLAC stream's marker and STREAMINFO block: all the duration check reads."""
+    total = int(seconds * rate)
+    packed = (rate << 44) | (0 << 41) | (15 << 36) | total  # 20 bits rate, 3 channels-1, 5 bits per sample-1, 36 samples
+    return b"fLaC" + b"\x80\x00\x00\x22" + b"\x10\x00\x10\x00" + b"\x00\x00\x00\x00\x00\x00" + packed.to_bytes(8, "big") + b"\x00" * 16
+
+
+VOICE = "/api/projects/t/voices"
+Q = "?name=My%20Voice&gender=female&age=34&consent=true"
+
+
+def _upload_voice(srv, data: bytes, filename: str = "me.wav", query: str = Q):
+    raw, headers = multipart(filename, data)
+    return srv.call("POST", VOICE + query, raw=raw, headers=headers)
+
+
+def test_a_voice_is_refused_without_consent_and_nothing_is_stored(srv) -> None:
+    for query in ("?name=me&gender=female&age=30", "?name=me&gender=female&age=30&consent=false", "?name=me&gender=female&age=30&consent=yes"):
+        status, body = _upload_voice(srv, _wav(5), query=query)
+        assert status == 400 and "permission" in body["error"], query
+    assert not (srv.root / "data" / "novels" / "t" / "voices").exists()
+    status, listed = srv.call("GET", VOICE)
+    assert status == 200 and listed["voices"] == []
+    assert listed["statement"] == "This is my voice or I have the speaker's permission."
+    assert listed["limits"]["max_seconds"] == 60.0
+
+
+def test_a_consented_voice_is_stored_with_a_consent_record(srv) -> None:
+    status, body = _upload_voice(srv, _wav(5))
+    assert status == 201, body
+    assert body["voice_id"] == "project:my-voice" and body["gender"] == "female" and body["age"] == 34
+    folder = srv.root / "data" / "novels" / "t" / "voices"
+    assert (folder / "my-voice.wav").is_file()
+    record = json.loads((folder / "my-voice.consent.json").read_text(encoding="utf-8"))
+    assert record["statement"] == "This is my voice or I have the speaker's permission."
+    assert record["voice_id"] == "project:my-voice" and record["timestamp"] and len(record["sha256"]) == 64
+    status, listed = srv.call("GET", VOICE)
+    assert [v["voice_id"] for v in listed["voices"]] == ["project:my-voice"]
+    assert listed["voices"][0]["consent_at"] == record["timestamp"]
+    assert str(srv.root) not in json.dumps(listed)
+
+
+def test_only_wav_and_flac_of_a_sensible_length_and_size_are_accepted(srv, monkeypatch) -> None:
+    assert _upload_voice(srv, _wav(5), "me.mp3")[0] == 400
+    assert _upload_voice(srv, b"RIFF not really a wav", "me.wav")[0] == 400
+    assert _upload_voice(srv, b"fLaC garbage", "me.flac")[0] == 400
+    assert _upload_voice(srv, _wav(1), "short.wav", "?name=short&gender=male&age=30&consent=true")[0] == 400
+    assert _upload_voice(srv, _wav(120), "long.wav", "?name=long&gender=male&age=30&consent=true")[0] == 400
+    assert _upload_voice(srv, _wav(5), "me.wav", "?name=a&gender=robot&age=30&consent=true")[0] == 400
+    assert _upload_voice(srv, _wav(5), "me.wav", "?name=a&gender=male&age=1&consent=true")[0] == 400
+    assert _upload_voice(srv, _wav(5), "me.wav", "?name=%2E%2E%2F&gender=male&age=30&consent=true")[0] == 400
+    assert _upload_voice(srv, _flac_header(5), "me.flac", "?name=ok-flac&gender=male&age=30&consent=true")[0] == 201
+
+    from echotales.pipeline import webview_server
+
+    monkeypatch.setattr(webview_server, "_MAX_VOICE_BODY", 1000)
+    assert _upload_voice(srv, _wav(5), "big.wav", "?name=big&gender=male&age=30&consent=true")[0] == 413
+
+
+def test_a_voice_name_cannot_be_reused_or_escape_the_voices_folder(srv) -> None:
+    assert _upload_voice(srv, _wav(5), "../../x.wav", "?name=a%2Fb%2F..%2Fc&gender=male&age=30&consent=true")[0] == 201
+    folder = srv.root / "data" / "novels" / "t" / "voices"
+    assert sorted(p.name for p in folder.iterdir()) == ["a-b-c.consent.json", "a-b-c.wav"]
+    assert _upload_voice(srv, _wav(5), "again.wav", "?name=a-b-c&gender=male&age=30&consent=true")[0] == 409
+
+
+def test_project_voices_join_the_bank_the_voice_job_casts_from(srv) -> None:
+    from echotales.pipeline.project_voices import load_project_voices
+    from echotales.pipeline.voice.bank import VoiceBank
+
+    assert _upload_voice(srv, _wav(5))[0] == 201
+    voices = load_project_voices("t")
+    assert [(v.speaker_id, v.gender, v.age) for v in voices] == [("project:my-voice", "female", 34)]
+    assert voices[0].reference_clip.is_file() and voices[0].clip_for("anger") == voices[0].reference_clip
+    from echotales.pipeline.project_voices import with_project_voices
+
+    bank = with_project_voices(VoiceBank([], bank_id="audiobook", licence="CC BY 4.0"), "t")
+    assert [v.speaker_id for v in bank.voices] == ["project:my-voice"] and bank.bank_id == "audiobook"
+
+
 def test_the_companion_route_serves_nothing_outside_the_built_site(srv) -> None:
     assert srv.run_job("companion", {"through": 3})["status"] == "SUCCEEDED"
     secret = srv.root / "data" / "novels" / "t" / "companion" / "secret.txt"
