@@ -118,7 +118,7 @@ def test_job_progress_for_pipeline_and_single_stage_jobs(seeded) -> None:
     assert (by["q1"]["stage"], by["q1"]["stage_index"], by["q1"]["elapsed_s"]) == (None, 0, None)
 
     status, detail = _call(seeded, "GET", f"/api/projects/{NOVEL}/jobs/p1")
-    assert (detail["stage"], detail["stage_index"], detail["stage_count"]) == ("3 mentions", 3, 9)
+    assert (detail["stage"], detail["stage_index"], detail["stage_count"]) == ("3 mentions", 3, 10)
     assert len(detail["stage_runs"]) == 3
 
 

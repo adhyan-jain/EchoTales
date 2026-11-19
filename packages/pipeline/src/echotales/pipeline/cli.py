@@ -607,6 +607,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_persona = sub.add_parser("persona", help="persona-level operations")
     pe_sub = p_persona.add_subparsers(dest="persona_command", required=True)
+    pe_gender = pe_sub.add_parser(
+        "gender",
+        help="decide the gender of characters the pronoun rule left unknown (title cue, else a name-anchored model "
+        "reading with a verbatim evidence quote); voice casting needs it",
+    )
+    pe_gender.add_argument("--novel", required=True)
+    pe_gender.add_argument("--min-mentions", type=int, default=3, help="skip characters named fewer times (unless they speak)")
     pe_ref = pe_sub.add_parser(
         "reference", help="generate one cached reference sheet per prominent character"
     )

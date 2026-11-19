@@ -12,7 +12,7 @@ resolver fed its own answer key stops being measurable. Instead:
    log. This does not change how the resolver decides anything -- it patches
    *this run's* output, the same way a human copy-editor patches a draft.
 
-Seven correction types:
+Eight correction types:
 
 - `merge_entities` -- two entities are the same person; fold one into the other.
 - `reassign_mention` -- one specific occurrence of a name was linked to the
@@ -41,6 +41,10 @@ Seven correction types:
   plus a span-local character range; the alias type is inferred the same way
   the pipeline infers it for a detected surface (`classify_alias_type`),
   since a human picking the text supplies the surface, not its category.
+
+- `set_gender` -- a character's gender is wrong or unknown (`male`, `female` or `unknown`). Addressed by `self_id`.
+  Stored as a new gender row marked as a reviewer's, which the automatic gender pass never overwrites; voice casting
+  reads it on the next run.
 
 `reassign_mention` and `reassign_speaker` can target an existing entity *or*
 mint a new one (`new_label` set instead of `target_id`/`speaker_id`) -- the
@@ -104,6 +108,7 @@ class CorrectionType(StrEnum):
     FLAG = "flag"
     REASSIGN_SPAN_TYPE = "reassign_span_type"
     CREATE_MENTION = "create_mention"
+    SET_GENDER = "set_gender"
 
 
 def new_manual_entity_id(novel_id: str, correction_id: str) -> str:
@@ -307,6 +312,8 @@ def _apply_pending_locked(store: Store, log: CorrectionLog) -> dict[str, object]
                 result = _apply_reassign_span_type(store, correction, seq=seq)
             elif correction.type is CorrectionType.CREATE_MENTION:
                 result = _apply_create_mention(store, correction, seq=seq)
+            elif correction.type is CorrectionType.SET_GENDER:
+                result = _apply_set_gender(store, correction, seq=seq)
             else:  # pragma: no cover - CorrectionType is closed, kept for safety
                 result = {"type": correction.type.value, "error": "unknown correction type"}
         except Exception as exc:
@@ -672,3 +679,30 @@ def _apply_reassign_span_type(store: Store, correction: Correction, *, seq: int)
         "old_type": old_type.value,
         "new_type": new_type.value,
     }
+
+
+def _apply_set_gender(store: Store, correction: Correction, *, seq: int) -> dict[str, object]:
+    from echotales.pipeline.persona.gender import HUMAN_PREFIX, write_gender
+
+    self_id = str(correction.payload["self_id"])
+    gender = str(correction.payload.get("gender", "")).strip().lower()
+    if gender not in ("male", "female", "unknown"):
+        return {"type": "set_gender", "self_id": self_id, "error": f"gender must be male, female or unknown, got {gender!r}"}
+    entity = next((e for e in store.all_selves(correction.novel_id) if e.id == self_id), None)
+    if entity is None or not entity.kind.is_person:
+        return {"type": "set_gender", "self_id": self_id, "error": "character not found"}
+    written = write_gender(
+        store, correction.novel_id, self_id, gender, f"{HUMAN_PREFIX} reviewer set gender", confidence=1.0,
+        at=entity.first_attested_pos,
+    )
+    store.append_event(
+        ResolutionEvent(
+            id=f"{correction.novel_id}:correction:{correction.id}",
+            seq=seq,
+            type=EventType.ATTRIBUTE_UPDATE,
+            payload={"self_id": self_id, "key": "gender", "value": gender, "source": "human_correction",
+                     "correction_id": correction.id},
+            cause_pos=entity.first_attested_pos,
+        )
+    )
+    return {"type": "set_gender", "self_id": self_id, "gender": gender, "bodies": written}

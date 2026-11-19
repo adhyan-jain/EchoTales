@@ -111,7 +111,7 @@ JOB_KINDS = (
 #: (`skip_reader`, `skip_appearance`) or when no model client is built, so the count is an upper bound for those.
 PIPELINE_STAGES = (
     "0 ingest", "2 segment", "3 mentions", "4 speakers", "5 anaphora", "6 resolve",
-    "6b reader", "7 personas", "7b appearance",
+    "6b reader", "7 personas", "7a gender", "7b appearance",
 )
 
 
@@ -323,7 +323,7 @@ def _run_pipeline(store: Store, job_id: str, novel_id: str, params: dict[str, An
     corrections_log = CorrectionLog(Path(corrections_path)) if corrections_path else None
     skip = not params.get("force", False)
     (s_ingest, s_segment, s_mentions, s_speakers, s_anaphora, s_resolve,
-     s_reader, s_personas, s_appearance) = PIPELINE_STAGES
+     s_reader, s_personas, s_gender, s_appearance) = PIPELINE_STAGES
 
     def stage(name: str, fn: Callable[[], Any]) -> None:
         run_stage(
@@ -348,6 +348,9 @@ def _run_pipeline(store: Store, job_id: str, novel_id: str, params: dict[str, An
         stage(s_personas, lambda: build_personas(
             novel_id, store, client=client, prefix_causal=get_settings().persona_prefix_causal
         ))
+        from echotales.pipeline.persona.gender import infer_missing_genders
+
+        stage(s_gender, lambda: infer_missing_genders(novel_id, store, client))
         if client is not None and not params.get("skip_appearance"):
             from echotales.pipeline.resolve.appearance_extract import extract_appearance
 
