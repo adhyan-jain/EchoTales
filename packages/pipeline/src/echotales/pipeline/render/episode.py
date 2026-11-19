@@ -576,3 +576,32 @@ def _append_version(out_root: Path, name: str, s: dict) -> None:
             f"{'recap of ' + str(len(s['recap'])) + ' facts' if s['recap'] else 'no recap'}.\n\n"
             "**Verdict:** not yet watched by a person.\n"
         )
+
+
+def compose_chapter_episode(
+    store: Store,
+    novel_id: str,
+    chapter: float,
+    *,
+    timing: str = "voice",
+    motion: str = "stills",
+    panel_dir: str | Path | None = None,
+    audio_dir: str | Path | None = None,
+    out_dir: str | Path | None = None,
+    panels_version: str | None = None,
+    suffix: str | None = None,
+    size: tuple[int, int] = DEFAULT_SIZE,
+    fps: int = 30,
+    seed: int = 0,
+) -> EpisodeResult:
+    """One chapter's episode from a novel's default folders. `echotales episode` and the Studio `episode` job both call
+    this, so the two cannot disagree on which panel version is used or where the output goes."""
+    panel_dir = Path(panel_dir if panel_dir is not None else paths.asset_dir(novel_id, "panels"))
+    audio_dir = Path(audio_dir if audio_dir is not None else paths.asset_dir(novel_id, "audio"))
+    out_root = Path(out_dir if out_dir is not None else paths.asset_dir(novel_id, "video")) / f"ch{chapter:g}"
+    panels_dir = (panel_dir / f"ch{chapter:g}" / panels_version if panels_version
+                  else latest_panels_version(panel_dir, chapter, novel_id))
+    return compose_episode(
+        store, novel_id, chapter, panels_dir=panels_dir, audio_dir=audio_dir, out_root=out_root, timing=timing,
+        motion=motion, size=size, fps=fps, suffix=suffix, seed=seed,
+    )

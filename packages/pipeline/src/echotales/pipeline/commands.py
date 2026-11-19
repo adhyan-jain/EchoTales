@@ -1393,6 +1393,31 @@ def cmd_anime(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_episode(args: argparse.Namespace) -> int:
+    """Compose one chapter as an episode (roadmap M3)."""
+    from echotales.pipeline.render import anime, episode
+    from echotales.pipeline.video.local import VideoEnvError
+
+    store = _open_store(args)
+    try:
+        result = episode.compose_chapter_episode(
+            store, args.novel, float(args.chapter), timing=args.timing, motion=args.motion, panel_dir=args.panel_dir,
+            audio_dir=args.audio_dir, out_dir=args.out, panels_version=args.panels_version, suffix=args.suffix,
+            seed=args.seed,
+        )
+    except (anime.AnimeRefusal, episode.EpisodeRefusal, VideoEnvError) as exc:
+        print(f"refusing: {exc}", file=sys.stderr)
+        return 2
+    if args.json:
+        print(json.dumps(result.summary, indent=2))
+    else:
+        s = result.summary
+        st = s["stats"]
+        print(f"{result.video}\n  {s['duration']} s, {st['shots']} shots, {st['cuts_per_minute']} cuts/min, "
+              f"{st['mid_line_cuts']} cuts inside a line; tile: {s['tile']}")
+    return 0
+
+
 def cmd_pack(args: argparse.Namespace) -> int:
     from echotales.pipeline import packs, paths
     from echotales.pipeline.corrections import CorrectionLog
@@ -2031,6 +2056,7 @@ _DISPATCH = {
     "voice": cmd_voice,
     "render": cmd_render,
     "anime": cmd_anime,
+    "episode": cmd_episode,
     "pages": cmd_pages,
     "comic": cmd_comic,
     "estimate": cmd_estimate,

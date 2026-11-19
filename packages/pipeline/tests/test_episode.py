@@ -157,3 +157,54 @@ def test_compose_episode_end_to_end_stills(tmp_path: Path) -> None:
     assert res.summary["duration"] == pytest.approx(
         res.summary["body_seconds"] + 3.0 + 4.0 + (res.summary["cold_open"]["end"] - res.summary["cold_open"]["start"]), abs=0.3)
     assert res.summary["body_seconds"] == pytest.approx(timing[-1].end_gapless, abs=0.01)
+
+
+class TestCliAndJob:
+    def _db(self, tmp_path: Path) -> Path:
+        db = tmp_path / "x.db"
+        Store(str(db)).add_novel(NOVEL, "Test Book", "x.epub", "t")
+        return db
+
+    def test_cli_makes_an_episode_into_a_versioned_folder(self, tmp_path: Path, capsys) -> None:
+        from echotales.pipeline.cli import main
+
+        build_chapter(tmp_path)
+        args = ["--db", str(self._db(tmp_path)), "episode", "--novel", NOVEL, "--chapter", "1",
+                "--panel-dir", str(tmp_path / "panels"), "--audio-dir", str(tmp_path / "audio"),
+                "--out", str(tmp_path / "video"), "--timing", "fixed", "--suffix", "ab", "--json"]
+        assert main(args) == 0
+        import json
+
+        data = json.loads(capsys.readouterr().out)
+        assert data["timing"] == "fixed" and Path(data["video"]).is_file()
+        assert Path(data["video"]).parent.parent.name == "ch1" and Path(data["video"]).parent.name == "v1_ab"
+
+    def test_cli_refuses_without_panels_naming_the_fix(self, tmp_path: Path, capsys) -> None:
+        from echotales.pipeline.cli import main
+
+        args = ["--db", str(self._db(tmp_path)), "episode", "--novel", NOVEL, "--chapter", "1",
+                "--panel-dir", str(tmp_path / "panels"), "--audio-dir", str(tmp_path / "audio"), "--out", str(tmp_path)]
+        assert main(args) == 2
+        assert "echotales render --novel t --chapters 1" in capsys.readouterr().err
+
+    def test_ltx_with_fixed_timing_is_refused(self, tmp_path: Path) -> None:
+        panels_dir, audio, _, _ = _chapter(tmp_path)
+        with pytest.raises(episode.EpisodeRefusal, match="--timing voice"):
+            episode.compose_episode(Store(":memory:"), NOVEL, 1.0, panels_dir=panels_dir, audio_dir=audio,
+                                    out_root=tmp_path / "v", timing="fixed", motion="ltx-local")
+
+    def test_job_kind_and_refusals(self) -> None:
+        import json
+
+        from echotales.core.models import Job, JobStatus
+        from echotales.pipeline import jobs
+
+        assert "episode" in jobs.JOB_KINDS
+        store = Store(":memory:")
+        store.add_novel("n", "N", "x.epub", "generic")
+        job = Job(job_id="n:episode:1", novel_id="n", kind="episode", status=JobStatus.PENDING, created_at=1.0,
+                  params_json=json.dumps({}))
+        store.add_job(job)
+        jobs.run_job(store, job, {})
+        done = store.get_job("n:episode:1")
+        assert done.status == JobStatus.FAILED and "chapters" in done.error_summary

@@ -100,6 +100,8 @@ JOB_KINDS = (
     # One mp4 per chapter from the rendered panels and the voiced audio: `echotales anime` (stills / ltx-local) or,
     # with narration pruning, the motion-comic `render` path. The CLI was the only way to make the video.
     "video",
+    # One chapter as an episode: recap, cold open, title card, acts, next-episode card (roadmap M3): `echotales episode`.
+    "episode",
     # Manga, comic or webtoon pages from a chapter's rendered panels (roadmap M1): `echotales pages`.
     "pages",
     # Comic, manga or webtoon pages into the graph and a voiced motion-comic video (roadmap M2): `echotales comic`.
@@ -273,6 +275,33 @@ def _run_video(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]
             novel_id, chapter, engine=engine, panel_dir=panel_dir, audio_dir=audio_dir, out_dir=out_dir,
         )
         out.append(str(result.video) if result is not None else "")
+    return out
+
+
+def _run_episode(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]:
+    """`echotales episode` from the same function. Refuses with the fix named, as `video` does."""
+    from echotales.pipeline.render import anime, episode
+
+    if not params.get("chapters"):
+        raise ValueError("no chapters chosen; pass chapters, e.g. [1], for the chapters to make an episode of")
+    timing, motion = str(params.get("timing") or "voice"), str(params.get("motion") or "stills")
+    if timing not in episode.TIMINGS or motion not in episode.MOTIONS:
+        raise ValueError(f"timing must be one of {', '.join(episode.TIMINGS)} and motion one of {', '.join(episode.MOTIONS)}")
+    if motion == "ltx-local":
+        from echotales.pipeline.compute import resource_refusal
+
+        if refusal := resource_refusal(motion, http=True):
+            raise ValueError(str(refusal))
+    out: list[str] = []
+    try:
+        for c in params["chapters"]:
+            res = episode.compose_chapter_episode(
+                store, novel_id, float(c), timing=timing, motion=motion, panel_dir=params.get("panel_dir"),
+                audio_dir=params.get("audio_dir"), out_dir=params.get("out_dir"), suffix=params.get("suffix"),
+            )
+            out.append(str(res.video))
+    except (anime.AnimeRefusal, episode.EpisodeRefusal) as exc:
+        raise ValueError(str(exc)) from exc
     return out
 
 
@@ -625,6 +654,13 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             input_digest=f"{input_digest}|{time.time()}",
             fn=lambda: _run_video(store, novel_id, params),
             skip_if_succeeded=False,
+        )
+    elif job.kind == "episode":
+        # Not skippable by digest, for the same reason as `video`: the newest panel version and the audio are inputs.
+        run_stage(
+            store, run_id=pipeline_run.run_id, stage_name="episode",
+            input_digest=f"{input_digest}|{time.time()}", skip_if_succeeded=False,
+            fn=lambda: _run_episode(store, novel_id, params),
         )
     elif job.kind == "pages":
         # Not skippable by digest: the newest panel version is an input that changes between identical params.
