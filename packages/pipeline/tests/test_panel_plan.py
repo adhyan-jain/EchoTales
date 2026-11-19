@@ -62,13 +62,13 @@ def test_single_phase_writes_one_row_per_image_with_scene_blocks_cast_and_direct
     assert [r.panel_seq for r in rows] == [1, 2, 3, 4, 5, 6, 7]
     assert {r.panel_id for r in rows} == {f"t:1:{n}" for n in range(1, 8)}
     assert all(r.schema_version == PLAN_SCHEMA_VERSION and r.segment_id == "s1" for r in rows)
-    assert [r.scene_index for r in rows] == [0, 0, 0, 1, 1, 2, 3]
+    assert [r.scene_index for r in rows] == [0, 0, 0, 1, 1, 1, 2]  # "clansmen" is no longer a village cue (whole-word cues)
     assert rows[4].slot_kind == "crowd" and rows[4].block_indexes == [8]
     assert rows[1].slot_kind == "closeup" and rows[1].block_indexes == [2]
     assert rows[0].block_indexes == [1, 3, 4] and rows[0].lead_block == 1
     # Each scene has its own state row and its own place, though they share a segment.
-    assert len({r.scene_state_id for r in rows}) == 4
-    assert len({r.location for r in rows}) == 4
+    assert len({r.scene_state_id for r in rows}) == 3
+    assert len({r.location for r in rows}) == 3  # the clansmen scene keeps the temple hall instead of a false village
     assert all(r.direction is not None and r.direction_source == "director" for r in rows)
     assert rows[0].direction.shot == "wide" and rows[0].direction.expression == "calm_expression"
     assert rows[0].direction.key_objects == ["lantern"]
