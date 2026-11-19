@@ -2,6 +2,7 @@
 
 Usage:
     python3 -m eval.run_benchmark --novel showcase --chapter 1 --tier path1
+    python3 -m eval.run_benchmark public status      # the public benchmark: see eval/public/cli.py
 
 Evaluates:
 1. Speaker attribution accuracy against human-labelled ground truth (target >= 90%).
@@ -268,6 +269,11 @@ def run_benchmark(
 
 
 def main() -> None:
+    if sys.argv[1:2] == ["public"]:
+        # The public benchmark (speaker, identity, scene fidelity on public-domain sources) shares this entry point.
+        from eval.public.cli import main as public_main
+
+        sys.exit(public_main(sys.argv[2:]))
     parser = argparse.ArgumentParser(description="EchoTales Golden Evaluation Benchmark")
     parser.add_argument("--novel", default="showcase", help="Novel ID to benchmark")
     parser.add_argument("--chapter", default="1.0", help="Chapter number, comma-separated list (e.g. 1,2,3), or 'all'")

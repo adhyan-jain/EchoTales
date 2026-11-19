@@ -78,6 +78,7 @@ from echotales.pipeline.corrections import (
     apply_pending,
     new_manual_entity_id,
 )
+from echotales.pipeline.engines import registry as engine_registry
 from echotales.pipeline.jobs import (
     ALLOWED_HTTP_ENGINES,
     JOB_KINDS,
@@ -2555,7 +2556,7 @@ def make_handler(
                         params.pop("bank", None)
                         params.pop("out_dir", None)
                         voice_engine = str(params.get("engine") or "chatterbox")
-                        if voice_engine not in ("stub", "chatterbox"):
+                        if voice_engine not in engine_registry.names("tts"):
                             return self._json(400, {"error": f"voice engine {voice_engine!r} is not allowed; use stub or chatterbox"})
                         from echotales.pipeline.review_gate import voice_refusal
 

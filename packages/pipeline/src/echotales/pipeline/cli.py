@@ -12,6 +12,11 @@ import os
 import sys
 from collections.abc import Sequence
 
+from echotales.pipeline.engines import registry as engine_registry
+
+#: `--image-engine` / `--engine` choices for the image commands, from the engine registry (it was five hand-kept copies).
+_IMAGE_ENGINES = list(engine_registry.names("image", surface="render-image"))
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -205,6 +210,23 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    p_engines = sub.add_parser(
+        "engines", help="list every engine with its licence, memory need and measured speed (engines/registry.py)"
+    )
+    p_engines.add_argument("--kind", default=None, choices=list(engine_registry.KINDS), help="only this kind of engine")
+    p_engines.add_argument(
+        "--commercial-safe", action="store_true",
+        help="only engines whose licence was checked and allows commercial use (unchecked ones are left out)",
+    )
+
+    p_bench = sub.add_parser(
+        "benchmark",
+        help="public benchmark: status | lines | score | check (arguments after it go to eval/public/cli.py)",
+    )
+    p_bench.add_argument("--sources-dir", default="data/raw", help="where your own copies of the public-domain texts are")
+    p_bench.add_argument("--bench-dir", default="data/eval/benchmark", help="where the reference files live")
+    p_bench.add_argument("rest", nargs=argparse.REMAINDER, help="e.g. check --reference data/eval/benchmark/speaker__x.json")
+
     p_audit = sub.add_parser(
         "audit",
         help="check that each early stage conserved its input text (read-only; exit 1 if a check fails)",
@@ -347,7 +369,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_voice.add_argument(
         "--engine",
         default="chatterbox",
-        choices=["stub", "chatterbox"],
+        choices=list(engine_registry.names("tts")),
         help="chatterbox (default) needs a GPU; stub writes silent WAVs of realistic duration for tests and previews",
     )
     p_voice.add_argument(
@@ -387,7 +409,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_aud.add_argument("--n", type=int, default=12, help="maximum candidates to shortlist (default 12)")
     p_aud.add_argument("--out", default=None, help="default: data/scratch/audition/<timestamp>")
     p_aud.add_argument("--synthesize", action="store_true", help="voice the passages (needs the GPU engine)")
-    p_aud.add_argument("--engine", default="chatterbox", choices=["stub", "chatterbox"])
+    p_aud.add_argument("--engine", default="chatterbox", choices=list(engine_registry.names("tts")))
 
     p_qa = sub.add_parser(
         "audio-qa",
@@ -417,14 +439,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_render.add_argument("--out", default=None, help="default: data/novels/<CODE>/video")
     p_render.add_argument(
-        "--image-engine", default=None, choices=["stub", "sdxl", "manga", "illustrious", "noobai", "refined", "gemini", "openrouter", "runpod"],
+        "--image-engine", default=None, choices=_IMAGE_ENGINES,
         help="stub writes solid-colour placeholder panels; sdxl and manga need "
         "a GPU. manga is the one that produces the intended look: an "
         "anime/manga checkpoint plus IP-Adapter reference conditioning so a "
         "character keeps their face between panels",
     )
     p_render.add_argument(
-        "--motion-engine", default="stub", choices=["stub", "svd"],
+        "--motion-engine", default="stub", choices=list(engine_registry.names("video", surface="motion-clip")),
         help="stub writes placeholder frame sequences; svd needs a GPU",
     )
     p_render.add_argument(
@@ -550,7 +572,7 @@ def build_parser() -> argparse.ArgumentParser:
         "that has a panel_plan.jsonl",
     )
     p_anime.add_argument(
-        "--engine", default="stills", choices=["stills", "ltx-local"],
+        "--engine", default="stills", choices=list(engine_registry.names("video", surface="anime-video")),
         help="stills holds every panel; ltx-local generates clips on the GPU with LTX-Video 2B (needs "
         "ECHOTALES_VIDEO_PYTHON, see scripts/setup_video.sh)",
     )
@@ -579,7 +601,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="voice cuts where the voiced lines end; fixed cuts every few seconds whatever is said (the A/B baseline)",
     )
     p_episode.add_argument(
-        "--motion", default="stills", choices=["stills", "ltx-local"],
+        "--motion", default="stills", choices=list(engine_registry.names("video", surface="anime-video")),
         help="stills: camera moves chosen from each line's delivery; ltx-local: generated clips from the anime composer",
     )
     p_episode.add_argument("--panels-version", default=None, help="default: the latest with a panel_plan.jsonl")
@@ -614,21 +636,21 @@ def build_parser() -> argparse.ArgumentParser:
     c_ingest.add_argument("--webtoon", action="store_true", help="slice tall strips at blank gutters")
     c_understand = c_sub.add_parser("understand", help="panels, bubbles, text and speaker clusters")
     c_understand.add_argument("--novel", required=True)
-    c_understand.add_argument("--ocr", default="rapidocr", choices=["rapidocr", "easyocr"])
+    c_understand.add_argument("--ocr", default="rapidocr", choices=list(engine_registry.names("ocr")))
     c_understand.add_argument("--rtl", action="store_true", help="manga reading order (right to left)")
     c_build = c_sub.add_parser("build", help="graph, voice and a motion-comic video; ingests and understands first with --input")
     c_build.add_argument("--novel", required=True)
     c_build.add_argument("--input", default=None, help="run ingest and understand on this first")
     c_build.add_argument("--webtoon", action="store_true")
     c_build.add_argument("--rtl", action="store_true")
-    c_build.add_argument("--ocr", default="rapidocr", choices=["rapidocr", "easyocr"])
+    c_build.add_argument("--ocr", default="rapidocr", choices=list(engine_registry.names("ocr")))
     c_build.add_argument("--title", default=None)
     c_build.add_argument("--chapter", type=float, default=1.0)
     c_build.add_argument("--credit", default=None, help="end-card credit text; use \\n for a new line")
     c_build.add_argument("--engine", default="stub", help="voice engine (stub writes silent audio)")
     c_build.add_argument("--bank", default="data/voice")
     c_build.add_argument("--bank-kind", default=None)
-    c_build.add_argument("--inpaint", default="auto", choices=["auto", "cv", "lama", "none"], help="clean plate: auto = LaMa when its weights and a GPU are there, else OpenCV")
+    c_build.add_argument("--inpaint", default="auto", choices=["auto", *engine_registry.names("inpaint"), "none"], help="clean plate: auto = LaMa when its weights and a GPU are there, else OpenCV")
     c_build.add_argument("--depth", action="store_true",
                          help="depth parallax with Depth Anything V2 Small (GPU; run under the GPU lock)")
     c_build.add_argument("--suffix", default="motion-comic", help="version suffix, e.g. v1_<suffix>")
@@ -682,7 +704,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="limit to the N most-mentioned eligible characters",
     )
     pe_ref.add_argument(
-        "--engine", default=None, choices=["stub", "sdxl", "manga", "illustrious", "noobai", "refined", "gemini", "openrouter"],
+        "--engine", default=None, choices=[n for n in _IMAGE_ENGINES if n != "runpod"],
         help="default: the configured engine (NoobAI locally); stub writes flat placeholders and is for tests only",
     )
     pe_ref.add_argument("--principals-only", action="store_true")
