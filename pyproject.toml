@@ -10,6 +10,9 @@ dependencies = [
 
 [tool.uv]
 package = false
+# rapidocr-onnxruntime depends on opencv-python, the GUI build; the `comic` extra installs opencv-python-headless
+# and the two ship the same `cv2` module, so the GUI wheel is dropped from resolution.
+override-dependencies = ["opencv-python; python_version < '0'"]
 
 [tool.uv.workspace]
 members = ["packages/*"]

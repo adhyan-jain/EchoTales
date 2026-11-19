@@ -244,9 +244,15 @@ def test_uncovered_voiced_block_rides_on_previous_panel():
     assert any("carried" in r for r in s[0].reasons)
 
 
-def test_interleaved_panels_rejected():
-    with pytest.raises(ValueError):
-        one([panel(0, [1, 5]), panel(1, [2])], timing([(1, 1, DLG, "x")]))
+def test_interleaved_panels_come_back_as_cut_backs():
+    """RI ch1 v55: one image holds blocks 1 and 3, another block 2. The planner used to refuse this."""
+    ps = [panel(0, [1, 3]), panel(1, [2])]
+    ls = timing([(1, 2, DLG, "x"), (2, 2, DLG, "y"), (3, 2, DLG, "x")])
+    s = one(ps, ls, STILLS)
+    assert [x.panel_id for x in s] == ["n:1:0", "n:1:1", "n:1:0"]
+    assert [x.shot_index for x in s] == [0, 1, 2]
+    assert s[0].end == s[1].start and s[1].end == s[2].start and s[-1].end == ls[-1].end_gapless
+    assert [x.block_indexes for x in s] == [[1], [2], [3]]
 
 
 # ----------------------------------------------------------------- io
@@ -342,6 +348,9 @@ def test_properties_capability_conservation_budget_determinism(ch, cap, budget):
 
     # b: tiling and block coverage
     total = sum(t.duration for t in lines)
+    if not lines:
+        assert shots == []  # no audio, no shot: a panel nobody speaks over is not a zero-length shot
+        return
     assert shots[0].start == 0.0
     for x, y in itertools.pairwise(shots):
         assert x.end == y.start
@@ -350,7 +359,8 @@ def test_properties_capability_conservation_budget_determinism(ch, cap, budget):
     assert sorted(i for s in shots for i in s.span_ids) == sorted(t.span_id for t in lines)
     covered = [b for s in shots for b in s.block_indexes]
     assert len(covered) == len(set(covered))
-    assert set(covered) >= {b for p in panels for b in p.block_indexes} | {t.block_index for t in lines}
+    shown = {s.panel_id for s in shots}
+    assert set(covered) >= {b for p in panels if p.panel_id in shown for b in p.block_indexes} | {t.block_index for t in lines}
 
     # e: budget
     clips = [s for s in shots if s.mode is not ShotMode.HOLD]

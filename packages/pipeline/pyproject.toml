@@ -37,6 +37,15 @@ render = [
     "bitsandbytes>=0.45",
 ]
 
+comic = [
+    # Comic -> motion comic (`echotales comic`): page decoding, text recognition, clean plates, depth parallax warp.
+    # LaMa and Depth Anything need only torch/transformers from the `render` extra plus weights under data/models/.
+    "opencv-python-headless>=4.9",
+    "pypdfium2>=4.30",
+    "rapidocr-onnxruntime>=1.3",
+    "scipy>=1.11",
+]
+
 [tool.uv.sources]
 echotales-core = { workspace = true }
 

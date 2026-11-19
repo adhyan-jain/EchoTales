@@ -16,6 +16,22 @@ from PIL import Image
 DEPTH_WEIGHTS = Path("data/models/depth-anything-v2-small")
 
 
+_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
+_STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+
+
+def prepare_depth_input(image: Image.Image, target: int = 518, multiple: int = 14) -> np.ndarray:
+    """What `DPTImageProcessor` does for this model (preprocessor_config.json), without torchvision: resize keeping the
+    aspect with the scale nearer 1, both sides rounded to a multiple of 14, scale to [0, 1], ImageNet-normalise.
+    Returns (3, H, W) float32."""
+    w, h = image.size
+    sh, sw = target / h, target / w
+    scale = sw if abs(1 - sw) < abs(1 - sh) else sh
+    nh, nw = (max(multiple, round(v * scale / multiple) * multiple) for v in (h, w))
+    arr = np.asarray(image.convert("RGB").resize((nw, nh), Image.Resampling.BICUBIC), dtype=np.float32) / 255.0
+    return ((arr - _MEAN) / _STD).transpose(2, 0, 1)
+
+
 class DepthEstimator(Protocol):
     name: str
 
@@ -27,19 +43,18 @@ class DepthAnythingSmall:
 
     def __init__(self, weights: Path | str = DEPTH_WEIGHTS, device: str = "cuda") -> None:
         import torch
-        from transformers import AutoImageProcessor, AutoModelForDepthEstimation
+        from transformers import AutoModelForDepthEstimation
 
         if not Path(weights).is_dir():
             raise FileNotFoundError(f"Depth Anything V2 Small weights not found at {weights}")
         self._torch, self.device = torch, device
-        self.processor = AutoImageProcessor.from_pretrained(str(weights))
         self.model = AutoModelForDepthEstimation.from_pretrained(str(weights)).to(device).eval()
 
     def depth(self, image: Image.Image) -> np.ndarray:
         torch = self._torch
-        inputs = self.processor(images=image.convert("RGB"), return_tensors="pt").to(self.device)
+        pixels = torch.from_numpy(prepare_depth_input(image))[None].to(self.device)
         with torch.no_grad():
-            pred = self.model(**inputs).predicted_depth
+            pred = self.model(pixel_values=pixels).predicted_depth
         pred = torch.nn.functional.interpolate(pred[None], size=image.size[::-1], mode="bicubic", align_corners=False)[0, 0]
         d = pred.float().cpu().numpy()
         return ((d - d.min()) / max(float(d.max() - d.min()), 1e-6)).astype(np.float32)

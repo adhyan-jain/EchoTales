@@ -14,7 +14,6 @@ it would invent a second keyframe the engine cannot draw consistently.
 
 from __future__ import annotations
 
-import bisect
 import hashlib
 import itertools
 import json
@@ -392,18 +391,27 @@ def _seed(base: int, novel: str, chapter: float, panel_id: str) -> int:
 # --------------------------------------------------------------------------- planner
 
 
-def _group_lines(panels: list[PanelPlan], timing: Sequence[LineTiming]) -> list[list[LineTiming]]:
-    starts = [min(p.block_indexes) for p in panels]
-    groups: list[list[LineTiming]] = [[] for _ in panels]
+def panel_runs(panels: list[PanelPlan], timing: Sequence[LineTiming]) -> list[tuple[PanelPlan, list[LineTiming]]]:
+    """The voiced lines grouped into runs that share a panel, in play order. Shared by `plan_shots` and the episode
+    composer so the two never disagree about which picture a line plays over.
+
+    A real render interleaves blocks (RI ch1 v55: panel 2 holds blocks 1 and 3, panel 1 holds block 2) because an image
+    is reused for a later block; the panel then simply returns to the screen as a cut-back, one run per visit. A voiced
+    block no panel claims (a heading, a skipped block) rides on the previous line's panel, or on the first panel when it
+    leads the chapter. A panel with no voiced line has no run: it would be a zero-length shot."""
+    owner = {b: p for p in panels for b in p.block_indexes}
+    runs: list[tuple[PanelPlan, list[LineTiming]]] = []
     prev = -1
     for t in timing:
         if t.block_index < prev:
             raise ValueError(f"timing is not in block order at span {t.span_id!r}")
         prev = t.block_index
-        # A voiced block no panel claims (a heading, a skipped block) rides on the previous panel, as
-        # `timeline.build_timeline` carries a shot forward; before the first panel it joins the first.
-        groups[max(bisect.bisect_right(starts, t.block_index) - 1, 0)].append(t)
-    return groups
+        panel = owner.get(t.block_index) or (runs[-1][0] if runs else panels[0])
+        if runs and runs[-1][0] is panel:
+            runs[-1][1].append(t)
+        else:
+            runs.append((panel, [t]))
+    return runs
 
 
 def plan_shots(
@@ -414,23 +422,21 @@ def plan_shots(
     *,
     emotions: dict[str, tuple[str, int]] | None = None,
 ) -> list[ShotSpec]:
-    """One `ShotSpec` per panel, tiling the chapter's gapless audio exactly."""
+    """One `ShotSpec` per panel visit (a run of lines over one panel), tiling the chapter's gapless audio exactly."""
     if not panels:
         if timing:
             raise ValueError(f"{len(timing)} voiced lines but no panels to show them over")
         return []
     panels = sorted(panels, key=lambda p: (min(p.block_indexes), p.panel_seq))
-    for a, b in itertools.pairwise(panels):
-        if max(a.block_indexes) >= min(b.block_indexes):
-            raise ValueError(f"panels {a.panel_id} and {b.panel_id} share or interleave blocks")
-    groups = _group_lines(panels, timing)
+    runs = panel_runs(panels, timing)
+    voiced = {t.block_index for t in timing}
 
     shots: list[ShotSpec] = []
     cursor = 0.0
-    for i, (panel, lines) in enumerate(zip(panels, groups, strict=True)):
-        nxt = panels[i + 1] if i + 1 < len(panels) else None
+    for i, (panel, lines) in enumerate(runs):
+        nxt = runs[i + 1][0] if i + 1 < len(runs) else None
         start = cursor
-        end = lines[-1].end_gapless if lines else start
+        end = lines[-1].end_gapless
         cursor = end
         duration = end - start
         pair = pair_difference(panel, nxt) if nxt else None
@@ -485,11 +491,13 @@ def plan_shots(
         folded = sorted({t.block_index for t in lines} - set(panel.block_indexes))
         if folded:
             reasons.append(f"blocks without a panel carried: {folded}")
+        # A block this panel owns but another visit voices belongs to that visit, not this one.
+        mine = sorted({t.block_index for t in lines} | (set(panel.block_indexes) - voiced))
 
         shots.append(ShotSpec(
             novel_id=panel.novel_id, chapter=panel.chapter, shot_index=i, panel_id=panel.panel_id,
             engine_id=capability.engine_id,
-            block_indexes=sorted(set(panel.block_indexes) | set(folded)),
+            block_indexes=mine,
             span_ids=[t.span_id for t in lines], start=start, end=end, duration=duration,
             mode=mode, camera_move=camera,
             end_panel_id=nxt.panel_id if row.end == "panel" and nxt else None,

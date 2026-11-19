@@ -4,7 +4,7 @@ Compares OCR engines through the real understanding path: dialogue character acc
 transcription, false speech bubbles (in-art text and sound effects that must NOT be voiced), panel-count
 correctness, and seconds per page. Writes data/eval/comic/understand_bakeoff.json.
 
-    ECHOTALES_COMIC_LIBS=... python scripts/eval/comic_understand_bakeoff.py --engines rapidocr easyocr
+    python scripts/eval/comic_understand_bakeoff.py --engines rapidocr easyocr
 """
 
 from __future__ import annotations

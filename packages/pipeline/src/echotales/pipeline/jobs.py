@@ -328,7 +328,7 @@ def _run_comic(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]
     """`echotales comic ingest|understand|build` from the same functions. The pages are read from
     `data/novels/<CODE>/comic/source/<name>`, a name and never a path: the server decides where uploads live (same
     rule as the pack and voice folders), so a request cannot point the reader at any file on the machine."""
-    from echotales.pipeline.comic import runner
+    from echotales.pipeline.comic import runner, upload
 
     stage = str(params.get("stage") or "build")
     if stage not in ("ingest", "understand", "build"):
@@ -339,7 +339,7 @@ def _run_comic(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]
         source = root / "source" / name
         if not name or not source.exists():
             raise ValueError(f"no comic source named {name!r} in this project's comic/source folder; upload it first")
-        runner.ingest_stage(source, novel_id, webtoon=bool(params.get("webtoon")))
+        runner.ingest_stage(upload.source_input(source), novel_id, webtoon=bool(params.get("webtoon")))
         if stage == "ingest":
             return [str(root / "pages.json")]
     if stage in ("understand", "build") and (stage == "understand" or params.get("source")):
@@ -349,7 +349,7 @@ def _run_comic(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]
     built = runner.build_stage(
         store, novel_id, title=str(params.get("title") or novel_id), chapter=float(params.get("chapter") or 1.0),
         credit=str(params.get("credit") or runner.DEFAULT_CREDIT), engine=str(params.get("engine") or "stub"),
-        inpaint=str(params.get("inpaint") or "cv"), suffix=str(params.get("suffix") or "motion-comic"),
+        inpaint=str(params.get("inpaint") or "auto"), suffix=str(params.get("suffix") or "motion-comic"),
         trust_speakers=bool(params.get("trust_speakers")),
     )
     return [str(built.video.video)]

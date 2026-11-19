@@ -955,6 +955,34 @@ def _list_packs(novel_id: str) -> list[dict]:  # type: ignore[type-arg]
     return out
 
 
+def _list_comic(novel_id: str) -> dict:  # type: ignore[type-arg]
+    """Uploaded comic sources by name and the motion-comic videos built from them, as paths the output route serves
+    (relative to the project's folder). A built version is marked by the `comic.json` the comic build writes beside
+    `episode.mp4`, which keeps an episode-composer or anime video out of this list."""
+    from echotales.pipeline.comic.ingest import IMAGE_SUFFIXES
+    from echotales.pipeline.comic.upload import PDF_NAME
+
+    sources: list[dict] = []  # type: ignore[type-arg]
+    src_root = paths.asset_dir(novel_id, "comic") / "source"
+    if src_root.is_dir():
+        for d in sorted(src_root.iterdir()):
+            if not d.is_dir() or d.name.startswith("."):
+                continue
+            pages = sum(1 for f in d.iterdir() if f.suffix.lower() in IMAGE_SUFFIXES)
+            sources.append({"name": d.name, "pages": pages, "kind": "pdf" if (d / PDF_NAME).is_file() else "images"})
+    videos: list[dict] = []  # type: ignore[type-arg]
+    root = paths.novel_root(novel_id)
+    video_dir = root / "video"
+    if video_dir.is_dir():
+        for marker in video_dir.glob("ch*/v*/comic.json"):
+            mp4 = marker.with_name("episode.mp4")
+            if mp4.is_file():
+                videos.append({"path": str(mp4.relative_to(root)), "version": marker.parent.name,
+                               "mtime": mp4.stat().st_mtime, "bytes": mp4.stat().st_size})
+    videos.sort(key=lambda v: -v["mtime"])
+    return {"sources": sources, "videos": videos}
+
+
 _COMPANION_DIR_RE = re.compile(r"through_(\d+(?:\.\d+)?)")
 #: The only files `companion.write_companion_site` writes; the route serves these and nothing else in the folder.
 _COMPANION_FILES = ("index.html", "style.css", "companion.json")
@@ -1045,6 +1073,8 @@ _MAX_PACK_BODY = 25 * 1024 * 1024
 #: A minute of 24-bit stereo 48 kHz is ~17 MB; nothing a voice clone uses needs more.
 _MAX_VOICE_BODY = 20 * 1024 * 1024
 _MAX_IMAGE_BODY = 20 * 1024 * 1024
+#: A comic is dozens of full-resolution pages; `comic/upload.py` caps what an archive may unpack to separately.
+_MAX_COMIC_BODY = 200 * 1024 * 1024
 _NAME_ORDERS = ("given_first", "family_first")
 
 
@@ -1398,6 +1428,11 @@ def make_handler(
                     if parts[2] not in registry.handles:
                         return self._json(404, {"error": f"unknown project {parts[2]!r}"})
                     return self._json(200, {"packs": _list_packs(parts[2])})
+
+                if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "comic":
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    return self._json(200, _list_comic(parts[2]))
 
                 if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "voices":
                     if parts[2] not in registry.handles:
@@ -2376,6 +2411,26 @@ def make_handler(
                     # A fresh upload under an old name must not show the old import's report.
                     target.with_name(target.name + ".report.json").unlink(missing_ok=True)
                     return self._json(201, {"name": safe_name, "bytes": len(data)})
+
+                # POST /api/projects/<id>/comic as multipart is an upload; the same path with JSON queues the `comic` job.
+                if (
+                    len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "comic"
+                    and "multipart/form-data" in self.headers.get("Content-Type", "")
+                ):
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    from echotales.pipeline.comic import upload as comic_upload
+
+                    try:
+                        filename, data = parse_single_file(
+                            self.headers.get("Content-Type", ""), self._read_body_bytes(_MAX_COMIC_BODY)
+                        )
+                        stored = comic_upload.store_comic_upload(
+                            filename, data, paths.asset_dir(parts[2], "comic") / "source"
+                        )
+                    except (MultipartError, comic_upload.ComicUploadError) as exc:
+                        return self._json(400, {"error": str(exc)})
+                    return self._json(201, stored)
 
                 # POST /api/projects/<id>/voices?name=&gender=&age=&consent=true  (multipart, one .wav/.flac)
                 # The consent travels in the query string because the multipart reader here takes one file part and
