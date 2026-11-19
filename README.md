@@ -25,6 +25,18 @@ See [`docs/HANDOFF.md`](docs/HANDOFF.md) for current status and open defects,
 [`docs/design/architecture.md`](docs/design/architecture.md) for the model, [`docs/design/details.md`](docs/design/details.md)
 for per-file detail, and [`docs/design/plans.md`](docs/design/plans.md) for the full specification.
 
+## Install
+
+```bash
+scripts/setup.sh                 # detects your GPU, lists each model and its licence, asks before downloading
+make demo                        # stub-mode demo on a sample book, no GPU
+make serve                       # the studio, at http://127.0.0.1:8787
+```
+
+`scripts/setup.sh --dry-run` shows the hardware preset it would pick
+(`laptop-8gb`, `desktop-24gb` or `cloud`) and changes nothing. A CUDA Docker
+image is available through `docker compose up`.
+
 ## Quick start
 
 ```bash
@@ -189,6 +201,5 @@ Stated here because they are load-bearing, not incidental.
   accepted and logged.
 - **Visual pipeline is a 3-chapter showcase**, not a volume-scale system.
 - **Phase 6 thresholds are untuned.** See `docs/HANDOFF.md` Section 4.1.
-- **Copyright.** For internal coursework only. Not for distribution. Source
-  texts are not redistributed by this repository and must be supplied by the
-  user.
+- **Copyright.** Code is Apache-2.0 (see `LICENSE`, `NOTICE`). Source texts are
+  not redistributed by this repository and must be supplied by the user.

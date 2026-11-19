@@ -1,0 +1,24 @@
+# Books, databases, media and weights never go into an image (copyright, size, privacy).
+data/
+data/raw
+data/db
+*.epub
+*.pdf
+*.mobi
+*.azw3
+*.safetensors
+*.gguf
+*.ckpt
+*.pt
+*.pth
+*.bin
+.venv
+**/node_modules
+webview/build
+.git
+.env
+config.json
+__pycache__
+*.pyc
+.pytest_cache
+.claude

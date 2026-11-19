@@ -1,0 +1,21 @@
+# docker compose up  ->  http://127.0.0.1:8787
+services:
+  echotales:
+    build: .
+    image: echotales:local
+    ports:
+      - "127.0.0.1:8787:8787"
+    environment:
+      ECHOTALES_COMPUTE: ${ECHOTALES_COMPUTE:-local-low}
+      ECHOTALES_LLM_LOCAL_HOST: ${ECHOTALES_LLM_LOCAL_HOST:-http://host.docker.internal:11434}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./data:/app/data
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
