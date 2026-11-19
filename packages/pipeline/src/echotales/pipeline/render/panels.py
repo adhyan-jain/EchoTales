@@ -1971,6 +1971,14 @@ def render_panels(
             _scene_text = " ".join(
                 by_index[b].text for b in story_scene_blocks if b in by_index
             )
+            # What this scene's own text says about each character's clothes and condition, asked once per character by the
+            # director pass (`client` set) and stored, so the image pass (`client=None`) reads the same words
+            # (`persona/identity_lock.py`).
+            from echotales.pipeline.persona.identity_lock import SceneContext
+
+            _scene_ctx = SceneContext(
+                key=f"{chapter_number:g}:{scene.blocks[0]}", text=_scene_text, client=client, novel_id=novel_id
+            )
             # Moved above locale resolution so `SceneState` derivation can
             # see the mob signal in the same pass -- a reordering, not new
             # logic (`_scene_mobs` used to be computed just below, right
@@ -2927,7 +2935,7 @@ def render_panels(
                             story_position, _direction, location=scene_locale_text,
                             mode=OutputMode(get_settings().render_panel_mode), is_crowd=is_crowd_cut,
                             gender_hint="male" if "male" in genders else "",
-                            beat_text=beat_prose,
+                            beat_text=beat_prose, scene=_scene_ctx,
                         ),
                         model_profile(get_settings().render_image_model),
                     )

@@ -68,7 +68,7 @@ def test_compiled_prompt_puts_the_staging_between_the_style_lead_and_the_panel_p
                    composition="Close-up of Fang Yuan, a cold mocking smile.", staging=s.text())
     out = compile_prompt(b, model_profile("z-image-turbo"))
     labels = [x.label for x in out.sections]
-    assert labels[:3] == ["style", "staging", "composition"]
+    assert labels[:4] == ["style", "character:Fang Yuan", "staging", "composition"]  # identity first (M1.5)
     assert s.text() in out.positive
     # the staging already says the light and set: they are not repeated in the setting clause
     assert "Setting:" not in out.positive
@@ -88,7 +88,7 @@ def test_a_close_shot_puts_its_own_paragraph_before_the_staging() -> None:
     b = PanelBrief(novel_id="", characters=[CharacterBrief(**OLD)], mode=OutputMode.COLOUR, shot="close",
                    composition="Close-up of Fang Yuan, a cold mocking smile.", staging=s.text())
     labels = [x.label for x in compile_prompt(b, model_profile("z-image-turbo")).sections]
-    assert labels[:3] == ["style", "composition", "staging"]
+    assert labels[:4] == ["style", "character:Fang Yuan", "composition", "staging"]
 
 
 def test_staging_is_asked_to_keep_the_previous_scenes_set_unless_the_text_moves_the_characters() -> None:

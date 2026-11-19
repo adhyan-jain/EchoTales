@@ -172,6 +172,9 @@ class CharacterBrief:
     is_creature: bool = False
     #: The body's stated age in years when the text gives one ("a fifteen year old"); 0 when it does not.
     age_years: int = 0
+    #: The interval's locked hair, eyes, build and outfit plus the scene-stated state (`persona/identity_lock.py`). When
+    #: set, `identity_sentence` is built from it, so every panel of the interval repeats the same words.
+    locked: object | None = None
 
 
 @dataclass(slots=True)
@@ -466,19 +469,8 @@ def _plain(text: str) -> str:
     return re.sub(r"\s+", " ", (text or "").replace("_", " ")).strip().strip(",.")
 
 
-def identity_sentence(c: CharacterBrief, appearance: AppearanceInText = AppearanceInText.SHORT) -> str:
-    """The fixed one-sentence description of a character, built only from the graph's body facts (hair, eyes, marks, attire).
-
-    Identical wording in every panel of the same character is the stopgap for identity until reference-image conditioning
-    exists: the probe (2026-11-16) drew the same hero with a different face in three panels of one scene whenever the
-    description changed between prompts. Nothing scene-dependent (wounds, mood, action) goes in; those are separate
-    sentences. Facts are written in the order the model should weigh them: hair, eyes, marks, then clothes."""
-    if c.same_face_as:
-        return f"{c.name} has the identical facial features and face as {c.same_face_as} (twin), but wears {_plain(c.attire) or 'distinct robes'}."
-    if c.is_creature or c.gender == "creature" or _CREATURE_WORDS.search(c.name):
-        cond = f", {_plain(c.condition)}" if c.condition else ""
-        return f"{c.name} is a monstrous {_plain(c.name).lower()}{cond}."
-
+def _identity_head(c: CharacterBrief) -> tuple[str, bool]:
+    """`("Name is a 15-year-old boy", young)`: who the person is before any look."""
     age_band = (c.age_band or "").lower()
     young = age_band in ("child", "teen", "teenager", "adolescent", "youth")
     if young and c.age_years:
@@ -499,9 +491,31 @@ def identity_sentence(c: CharacterBrief, appearance: AppearanceInText = Appearan
         noun = _NOUN.get(c.gender, "person")
         age = c.age_band if c.age_band and c.age_band not in ("adult", "unknown") else ""
         head = f"{c.name} is a{'n' if (age or noun)[0] in 'aeiou' else ''} {f'{age} ' if age else ''}{noun}"
+    return head, young
+
+
+def identity_sentence(c: CharacterBrief, appearance: AppearanceInText = AppearanceInText.SHORT) -> str:
+    """The fixed one-sentence description of a character, built only from the graph's body facts (hair, eyes, marks, attire).
+
+    Identical wording in every panel of the same character is the stopgap for identity until reference-image conditioning
+    exists: the probe (2026-11-16) drew the same hero with a different face in three panels of one scene whenever the
+    description changed between prompts. Nothing scene-dependent (wounds, mood, action) goes in; those are separate
+    sentences. Facts are written in the order the model should weigh them: hair, eyes, marks, then clothes."""
+    if c.same_face_as:
+        return f"{c.name} has the identical facial features and face as {c.same_face_as} (twin), but wears {_plain(c.attire) or 'distinct robes'}."
+    if c.is_creature or c.gender == "creature" or _CREATURE_WORDS.search(c.name):
+        cond = f", {_plain(c.condition)}" if c.condition else ""
+        return f"{c.name} is a monstrous {_plain(c.name).lower()}{cond}."
+
+    head, young = _identity_head(c)
 
     if appearance is AppearanceInText.OFF:
         return head + "."
+    if c.locked is not None:
+        # The interval's locked words (`persona/identity_lock.py`): hair style, build and clothes included, so the model has
+        # nothing left to choose per panel. A young body keeps its youthful face, which the lock does not carry.
+        face = ", a smooth youthful face" if young else ""
+        return _plain(f"{head} with {c.locked.description()}{face}") + "."  # type: ignore[attr-defined]
     facts = {k: v for k, v in c.appearance.items() if v and k not in _SKIP}
     hair_bits = [v for k, v in facts.items() if _HAIR.search(k)]
     feats = ([(" ".join(v.replace(" hair", "") for v in hair_bits) + " hair").strip()] if hair_bits else [])
@@ -685,15 +699,18 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     s = [PromptSection("style", lead)]
     stage = PromptSection("staging", b.staging.strip()) if b.staging else None
     comp = PromptSection("composition", b.composition.strip())
-    # A close shot leads with its own paragraph: staging first drew a second small hero at the cliff edge behind the
-    # foreground one (2 of 2 seeds, 2026-11-19); paragraph first drew one (2 of 2).
-    s += [comp, stage] if (stage and b.shot == "close") else [x for x in (stage, comp) if x]
     written: dict[str, bool] = {}
     fields: dict[str, list[str]] = {}
+    # Identity right after the style lead, before the scene: Z-Image has no CFG, so what the prompt says first and fixedly is
+    # what holds (RI cliff scene 2026-11-20: with the identity last, the robe changed colour and the hair style changed in
+    # 13 panels of one scene; staging and the paragraph carried the scene and said nothing of clothes).
     for c in b.characters:
         s.append(PromptSection(f"character:{c.name}", identity_sentence(c, appearance)))
         written[c.name] = appearance is not AppearanceInText.OFF
         fields[c.name] = derive_demeanour(c, b.mood, b.tension).fields_used
+    # A close shot leads with its own paragraph: staging first drew a second small hero at the cliff edge behind the
+    # foreground one (2 of 2 seeds, 2026-11-19); paragraph first drew one (2 of 2).
+    s += [comp, stage] if (stage and b.shot == "close") else [x for x in (stage, comp) if x]
     said = f"{b.composition} {b.staging}".lower()
     clauses: list[str] = []
     # A staging sheet that names a Set is the one statement of the place (and "Light:" of the light): the genre locale and the
@@ -889,7 +906,7 @@ def _big_five(raw: str) -> dict[str, float]:
 
 def character_brief(
     store: object, novel_id: str, self_id: str, position: float, *, stated_expression: str = "",
-    gender_hint: str = "", lead: bool = False, beat_text: str = "",
+    gender_hint: str = "", lead: bool = False, beat_text: str = "", scene: object | None = None,
 ) -> CharacterBrief:
     """One character's state at story `position`: persona body, position-scoped appearance, genre defaults, traits.
 
@@ -912,6 +929,8 @@ def character_brief(
         appearance = apply_transient_overrides(appearance, beat_text)
     attire = appearance.pop("typical_attire", "")
     condition = appearance.pop("current_condition", "")
+    # The graph's own appearance facts, before the genre default fills any gap: the lock chooses its defaults itself, once.
+    graph_facts = {k: v for k, v in stated.items() if v}
     gender, age = _demographics(store, persona_id, novel_id=novel_id, entity_id=self_id, position=position)  # type: ignore[arg-type]
     values = standing_values(store, persona_id, position=position)  # type: ignore[arg-type]
     years = 0
@@ -919,11 +938,19 @@ def character_brief(
         from echotales.pipeline.persona.reference_gen import body_age_years
 
         years = body_age_years(store, persona_id, novel_id=novel_id, entity_id=self_id, position=position)  # type: ignore[arg-type]
+    final_gender = gender if gender in ("male", "female") else (gender_hint or "unknown")
+    young = age in ("child", "youth", "teen", "teenager", "adolescent")
+    from echotales.pipeline.persona.identity_lock import lock_for
+
+    locked = lock_for(
+        store, novel_id, self_id, persona_id, facts=graph_facts, gender=final_gender, young=young,
+        name=entity.canonical_label, manhua=genre_direction(novel_id)[2], scene=scene,  # type: ignore[arg-type]
+    )
     return CharacterBrief(
-        name=entity.canonical_label, gender=gender if gender in ("male", "female") else (gender_hint or "unknown"),
+        name=entity.canonical_label, gender=final_gender,
         age_band=age, age_years=years, appearance=appearance, attire=attire, condition=condition,
         big_five=_big_five(values.get("big_five", "")), register=values.get("register", ""),
-        stated_expression=stated_expression, lead=lead,
+        stated_expression=stated_expression, lead=lead, locked=locked,
     )
 
 
@@ -964,6 +991,7 @@ def _match_director_characters(store: object, self_ids: list[str], dir_chars: li
 def brief_from_direction(
     store: object, novel_id: str, self_ids: list[str], position: float, direction: object | None, *, location: str = "",
     mode: OutputMode = OutputMode.MANGA, is_crowd: bool = False, gender_hint: str = "", beat_text: str = "",
+    scene: object | None = None,
 ) -> PanelBrief:
     """A `PanelBrief` from the panel's cast and the director's `PanelDirection` (setting, lighting, layout, action, mood).
 
@@ -1003,7 +1031,7 @@ def brief_from_direction(
             expr = getattr(cd, "expression", "") or (getattr(d, "expression", "") if i == 0 else "")
             cb = character_brief(
                 store, novel_id, sid, position, gender_hint=gender_hint, lead=i == 0,
-                stated_expression=expr, beat_text=beat_text,
+                stated_expression=expr, beat_text=beat_text, scene=scene,
             )
             cb.position = getattr(cd, "position", "center") or "center"
             cb.pose = getattr(cd, "pose", "standing") or "standing"
@@ -1015,7 +1043,7 @@ def brief_from_direction(
             cb = character_brief(
                 store, novel_id, sid, position, gender_hint=gender_hint, lead=i == 0,
                 stated_expression=(getattr(d, "expression", "") or "") if i == 0 else "",
-                beat_text=beat_text,
+                beat_text=beat_text, scene=scene,
             )
             chars.append(cb)
 
