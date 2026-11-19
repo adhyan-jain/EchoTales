@@ -724,7 +724,6 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
                 continue
             key = UNKNOWN
         if key in (UNKNOWN, ""):
-            note("unknown")
             report.unknown += 1
             # The regex ladder's proximity and pronoun guesses named a wrong speaker for crowd lines (RI ch1: the
             # attackers became "Bai Ning Bing"), so only its explicit "X said" survives the model's "unknown".
@@ -739,6 +738,7 @@ def read_chapter_speakers(store: Store, client: ModelClient, chapter: Chapter) -
                     fired.append("borrowed_explicit_cleared")
                 store.set_span_speaker(novel_id, span.id, None, AttributionMethod.UNRESOLVED.value, 0.0)
                 report.cleared += 1
+            note("unknown")
             continue
         if key == NOT_SPEECH:
             note("not_speech")
