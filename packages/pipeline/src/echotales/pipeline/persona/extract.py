@@ -116,7 +116,10 @@ def extract_traits(
         out.age_band = value.age_band
     else:
         out.notes.append(f"llm age_band {value.age_band!r} off-vocabulary, kept {base.age_band!r}")
-    if value.gender in GENDERS:
+    # "unknown" is the model saying it saw nothing, not a finding. It sees only `_MAX_NARRATION` samples while the
+    # deterministic read counted pronouns over all of them, and letting it win erased a grounded gender: on RI, 19
+    # persons (Fang Yuan, 32/32 male pronouns, among them) were stored `unknown` while the pronoun rule alone says male.
+    if value.gender in GENDERS and not (value.gender == "unknown" and base.gender != "unknown"):
         out.gender = value.gender
     if value.speech_register in REGISTERS:
         out.register = value.speech_register

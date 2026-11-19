@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from echotales.core.enums import TargetKind
 from echotales.pipeline.persona.traits import (
+    TraitProfile,
     gender_from_pronouns,
     infer_traits_deterministic,
     self_reference_gender,
@@ -122,6 +123,42 @@ class TestDeterministicTraits:
         deliberately does not partition the bank (`docs/design/architecture.md Section 8b`)."""
         p = infer_traits_deterministic("e1", "Granny Ma", surfaces=["Granny Ma"])
         assert p.archetype == "female:elder:formal"
+
+
+class _Answer:
+    """A model client that always answers with one fixed profile response."""
+
+    def __init__(self, fields: dict) -> None:
+        self.fields = fields
+
+    def complete(self, task, prompt, schema, *, system="", novel_id=""):
+        from types import SimpleNamespace
+
+        return SimpleNamespace(value=schema.model_validate(self.fields))
+
+
+class TestLlmUnknownDoesNotEraseGender:
+    def test_model_unknown_keeps_the_pronoun_derived_gender(self) -> None:
+        """RI: the model answered 'unknown' from six narration samples and that overwrote the 32/32 male pronoun
+        reading of Fang Yuan, because 'unknown' is in GENDERS."""
+        from echotales.pipeline.persona.extract import extract_traits
+
+        base = TraitProfile(target_id="e", label="Fang Yuan", gender="male")
+        out = extract_traits(
+            base, dialogue=[], narration=["Fang Yuan rose. He left."],
+            client=_Answer({"gender": "unknown"}),
+        )
+        assert out.gender == "male"
+        assert out.provenance == "llm"
+
+    def test_model_gender_still_fills_an_unknown_base(self) -> None:
+        from echotales.pipeline.persona.extract import extract_traits
+
+        base = TraitProfile(target_id="e", label="Ana", gender="unknown")
+        out = extract_traits(
+            base, dialogue=[], narration=["Ana rose."], client=_Answer({"gender": "female"})
+        )
+        assert out.gender == "female"
 
 
 class TestBuildPersonas:
