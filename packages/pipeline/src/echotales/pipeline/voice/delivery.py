@@ -339,8 +339,10 @@ def pace_text(text: str, *, span_type: SpanType = SpanType.DIALOGUE) -> str:
 #: Chatterbox degrades on long inputs (trailing words dropped, pace drift); ~300 characters is the
 #: practical ceiling, so longer spans are synthesised in pieces and joined (Phase 4 of the 2026-10-31 audio plan).
 TTS_CHUNK_CHARS = 300
-_OPEN_QUOTES = "\"“‘'«"
-_CLOSE_QUOTES = "\"”’'»"
+# Web-novel text closes with the opening mark as often as not (Reverend Insanity ch1: “...sins!“), so either curly
+# double quote counts at either end; the single marks stay one-way so an apostrophe-led word is not cut.
+_OPEN_QUOTES = "\"“”‘'«"
+_CLOSE_QUOTES = "\"”“’'»"
 _SENTENCE_END = re.compile(r"(?<=[.!?…])[\"”’')]*\s+")
 _CLAUSE_END = re.compile(r"(?<=[,;:—])\s+")
 
