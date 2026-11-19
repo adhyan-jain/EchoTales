@@ -217,3 +217,35 @@ class TestCliAndJob:
         jobs.run_job(store, job, {})
         done = store.get_job("n:episode:1")
         assert done.status == JobStatus.FAILED and "chapters" in done.error_summary
+
+
+def test_ltx_local_body_comes_from_the_anime_composer(tmp_path: Path, monkeypatch) -> None:
+    """The ltx-local body is the anime composer's video, decoded into the episode; a fake engine stands in for the GPU."""
+    from _anime_helpers import FAKE_CAP, FakeEngine
+    from echotales.pipeline.render import shots as shots_mod
+    from echotales.pipeline.video import local as local_mod
+
+    panels_dir, audio, _, timing = _chapter(tmp_path)
+    monkeypatch.setattr(shots_mod, "LOCAL_LTX", FAKE_CAP)
+    monkeypatch.setattr(local_mod, "LocalLTXEngine", lambda work_dir=None: FakeEngine())
+    from echotales.pipeline.render import anime
+
+    monkeypatch.setattr(anime, "ClipImageEmbedder", _FakeEmbedder)
+    store = Store(":memory:")
+    store.add_novel(NOVEL, "Test Book", "x.epub", "t")
+    res = episode.compose_episode(
+        store, NOVEL, 1.0, panels_dir=panels_dir, audio_dir=audio, out_root=tmp_path / "video" / "ch1",
+        timing="voice", motion="ltx-local", size=(108, 192), fps=8, suffix="ltx", chapter_titles=[(1.0, "One")],
+    )
+    assert res.video.is_file() and Path(res.summary["body_video"]).is_file()
+    assert res.summary["body_seconds"] == pytest.approx(timing[-1].end_gapless, abs=0.01)
+
+
+class _FakeEmbedder:
+    def __call__(self, images):
+        import numpy as np
+
+        return np.ones((len(images), 4), dtype="float32")
+
+    def close(self) -> None:
+        pass
