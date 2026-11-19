@@ -326,7 +326,7 @@ def build_prompt(
     if cast:
         lines.append("Characters who may appear, with their fixed appearance:")
         for name, look in cast.items():
-            lines.append(f"  - {name}: {look}")
+            lines.append(f"  - {name}: {look}" if look else f"  - {name}")
         lines.append("")
     lines += [
         "Passage:",
@@ -722,37 +722,53 @@ def direct_beat(
         log.warning("panel direction failed: %s", exc)
         return None
 
-    direction = result.value
-    direction.staging = staging
     from echotales.pipeline.render.staging import expression_conflicts
 
-    face = f"{direction.expression}. {direction.composition}"
-    if reason := expression_conflicts(face, f"{beat_text} {context_brief}"):
-        # One retry with the contradiction named: a mocking laugh drawn as a happy grin (owner, 2026-11-19).
+    def _again(note: str) -> PanelDirection | None:
+        """One corrective retry with the reason named; None when the call fails."""
         try:
             retry = client.complete(  # type: ignore[attr-defined]
                 Task.PANEL_DIRECTION,
                 build_prompt(beat_text, cast=cast, novel_style=novel_style, context_brief=context_brief,
-                             recent_shots=recent_shots, staging=staging)
-                + "\nYour previous faces read as happy on a hostile line. Rewrite them as cold, mocking or contemptuous "
-                "as the situation requires.",
+                             recent_shots=recent_shots, staging=staging) + "\n" + note,
                 PanelDirection, system=system_prompt(novel_id), novel_id=novel_id,
             )
-            retry.value.staging = staging
-            direction = retry.value
-            if expression_conflicts(f"{direction.expression}. {direction.composition}", f"{beat_text} {context_brief}"):
-                direction.grounding_rejects = [*direction.grounding_rejects, reason]
         except Exception as exc:
-            log.warning("expression retry failed: %s", exc)
-            direction.grounding_rejects = [*direction.grounding_rejects, reason]
+            log.warning("director retry failed: %s", exc)
+            return None
+        retry.value.staging = staging
+        return _validate_direction(retry.value, beat_text=beat_text, cast=cast, novel_id=novel_id, store=store,
+                                   crowd_mood=crowd_mood)
+
+    direction = result.value
+    direction.staging = staging
     direction = _validate_direction(
-        direction,
-        beat_text=beat_text,
-        cast=cast,
-        novel_id=novel_id,
-        store=store,
-        crowd_mood=crowd_mood,
+        direction, beat_text=beat_text, cast=cast, novel_id=novel_id, store=store, crowd_mood=crowd_mood,
     )
+    if not direction.composition and direction.grounding_rejects:
+        # A blanked paragraph drops the panel to the structured-tag fallback, which drew nothing of the line (gemma2:9b on RI
+        # ch1: 7 of 9 paragraphs blanked, mostly for "a lone figure" in a scene with a crowd). Name the fault and ask once more.
+        fixed = _again(
+            "Your previous paragraph was rejected: " + "; ".join(direction.grounding_rejects) + ". Rewrite it. Never write "
+            "'alone' or 'a lone figure' while others are in the scene (put them in rows on their side of the frame, or just "
+            "outside it), and name only people in CAST exactly as written."
+        )
+        if fixed is not None and fixed.composition:
+            fixed.grounding_rejects = [*direction.grounding_rejects, "retried"]
+            direction = fixed
+    if direction.composition and (
+        reason := expression_conflicts(f"{direction.expression}. {direction.composition}", f"{beat_text} {context_brief}")
+    ):
+        # A mocking laugh drawn as a happy grin (owner, 2026-11-19): one retry with the contradiction named, then flag.
+        fixed = _again("Your previous faces read as happy on a hostile line. Rewrite them as cold, mocking or contemptuous "
+                       "as the situation requires.")
+        if fixed is not None and fixed.composition and not expression_conflicts(
+            f"{fixed.expression}. {fixed.composition}", f"{beat_text} {context_brief}"
+        ):
+            fixed.grounding_rejects = [*fixed.grounding_rejects, "expression retried"]
+            direction = fixed
+        else:
+            direction = direction.model_copy(update={"grounding_rejects": [*direction.grounding_rejects, reason]})
     return Direction(
         direction=direction, cast=cast, novel_style=novel_style, conditions=conditions or {},
         novel_id=novel_id,

@@ -2238,7 +2238,7 @@ def render_panels(
                     _beat_entity_labels[entity_id] = label
                     _beat_entity_genders[entity_id] = gender
 
-                if appearances:
+                if appearances or _beat_entity_labels:
                     # A real PRESENT cast for this beat -- becomes what the
                     # next empty beat in this scene (if any) carries forward.
                     _scene_last_present = dict(appearances)
@@ -2560,11 +2560,19 @@ def render_panels(
                             if _world_ctx
                             else world_setting(novel_id)
                         )
+                        # Who the director may name. An empty appearance clause (the Z-Image path writes identity in the
+                        # compiler) used to drop the person from CAST, so the validator rewrote his name to "a figure" (RI
+                        # ch1 block 0: the lone cliff figure holding a scroll). A name with no look is still a name.
+                        _director_cast = {
+                            lbl: appearances.get(lbl, "")
+                            for lbl in (list(_beat_entity_labels.values()) or list(_scene_last_present_entity_labels.values()))
+                        }
+                        _director_cast.update({k: v for k, v in appearances.items() if v})
                         if _staging_text is None:
                             from echotales.pipeline.render.staging import direct_staging
 
                             _st = direct_staging(
-                                _scene_text, cast={k: v for k, v in appearances.items() if v},
+                                _scene_text, cast=_director_cast,
                                 novel_style=_novel_style, client=client, novel_id=novel_id,
                             )
                             _staging_text = _st.text() if _st is not None else ""
@@ -2572,7 +2580,7 @@ def render_panels(
                             directed_prose,
                             staging=_staging_text,
                             context_brief=brief,
-                            cast={k: v for k, v in appearances.items() if v},
+                            cast=_director_cast,
                             novel_style=_novel_style,
                             client=client,
                             novel_id=novel_id,
