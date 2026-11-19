@@ -65,3 +65,15 @@ def test_noobai_profile_ignores_the_composition() -> None:
     plain = compile_prompt(brief(composition=""), model_profile("noobai-xl-1.1"))
     composed = compile_prompt(brief(), model_profile("noobai-xl-1.1"))
     assert plain.positive == composed.positive and plain.negative == composed.negative
+
+
+def test_a_staging_sheet_with_a_set_is_the_only_statement_of_the_place() -> None:
+    # RI ch1 2026-11-19 panels 10-15: the staging said a cliff, the genre locale ("inside a timber clan hall") and the director's own
+    # "an open field" were both appended after it as Setting:, and the model drew the hall and the field.
+    stage = "Set: a bare rock cliff edge above a sea of cloud. Blocking: Fang Yuan stands alone on the left. Light: dusk."
+    out = compile_prompt(
+        brief(staging=stage, location="inside a timber clan hall, carved pillars", setting="an open field", lighting="sunlight"),
+        model_profile("z-image-turbo"))
+    assert "timber clan hall" not in out.positive and "open field" not in out.positive and "sunlight" not in out.positive
+    # with no staging sheet the genre place still reaches the prompt
+    assert "mountain cliff" in compile_prompt(brief(), model_profile("z-image-turbo")).positive
