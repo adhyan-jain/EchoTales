@@ -53,6 +53,11 @@ MOTIONS = ("stills", "ltx-local")
 #: Fixed-length baseline, and the longest a voice-timed shot may hold one camera move before it is split.
 FIXED_SECONDS = 4.0
 MAX_HOLD = 10.0
+#: One picture held past this many seconds (consecutive shots over the same panel add up) is reported and gets a camera
+#: that keeps changing; a single unsplittable line is the usual cause (a 30 s monologue is one voiced line).
+LONG_HOLD = 20.0
+#: Roughly how long one camera move lasts inside a long hold before the next, opposite one takes over.
+MOVE_SECONDS = 8.0
 COLD_OPEN_SECONDS = 12.0
 RECAP_SECONDS, TITLE_SECONDS, NEXT_SECONDS = 6.0, 3.0, 4.0
 #: A cut closer than this to a line edge counts as on the line boundary (the line files are cut back to back).
@@ -83,6 +88,8 @@ class EpShot:
     move: CameraMove
     #: Multiplies the camera move's zoom amplitude; > 1 reads as a faster move over the same time.
     gain: float = 1.0
+    #: Successive camera moves for a long hold, first one equal to `move`; empty means the single `move`.
+    moves: list[CameraMove] = field(default_factory=list)
 
     @property
     def duration(self) -> float:
@@ -122,6 +129,55 @@ def _split_at_line(lines: list[LineTiming], max_hold: float) -> list[list[LineTi
     return _split_at_line(lines[:cut], max_hold) + _split_at_line(lines[cut:], max_hold)
 
 
+_OPPOSITE = {
+    CameraMove.SLOW_PUSH_IN: CameraMove.PULL_OUT, CameraMove.PULL_OUT: CameraMove.SLOW_PUSH_IN,
+    CameraMove.PAN_LEFT: CameraMove.PAN_RIGHT, CameraMove.PAN_RIGHT: CameraMove.PAN_LEFT,
+    CameraMove.TILT_UP: CameraMove.TILT_DOWN, CameraMove.TILT_DOWN: CameraMove.TILT_UP,
+}
+
+
+def _hold_groups(shots: Sequence[EpShot]) -> list[list[EpShot]]:
+    """Consecutive shots over the same panel: to the viewer one held picture, however many camera moves it took."""
+    groups: list[list[EpShot]] = []
+    for s in shots:
+        if groups and groups[-1][-1].panel_id == s.panel_id:
+            groups[-1].append(s)
+        else:
+            groups.append([s])
+    return groups
+
+
+def long_hold_warnings(shots: Sequence[EpShot], long_hold: float = LONG_HOLD) -> list[dict]:
+    return [
+        {"panel_id": g[0].panel_id, "start": round(g[0].start, 3), "seconds": round(g[-1].end - g[0].start, 3)}
+        for g in _hold_groups(shots) if g[-1].end - g[0].start > long_hold
+    ]
+
+
+def _vary_long_holds(shots: list[EpShot], long_hold: float) -> list[EpShot]:
+    """Give each shot inside an over-long hold successive opposite moves (push-in then pull-out, pan right then left):
+    those pairs share a zoom and pan at the join (compute_camera_trajectory: 1.12 -> 1.12, +0.05 -> +0.05), so the
+    picture keeps drifting without a visible jump. A shake is a one-off impact and is left alone."""
+    for g in _hold_groups(shots):
+        if g[-1].end - g[0].start <= long_hold:
+            continue
+        for s in g:
+            k = round(s.duration / MOVE_SECONDS)
+            if k < 2 or s.move not in _OPPOSITE:
+                continue
+            s.moves = [s.move]
+            for _ in range(k - 1):
+                s.moves.append(_OPPOSITE[s.moves[-1]])
+    return shots
+
+
+def block_coverage(panels: Sequence[PanelPlan], chapter_blocks: set[int]) -> dict:
+    """How much of the chapter the panel plan draws: a plan from a short render covers fewer blocks than the audio."""
+    plan_blocks = {b for p in panels for b in p.block_indexes}
+    missing = sorted(chapter_blocks - plan_blocks)
+    return {"covered": len(chapter_blocks) - len(missing), "total": len(chapter_blocks), "missing": missing}
+
+
 def plan_episode_shots(
     panels: list[PanelPlan],
     timing: list[LineTiming],
@@ -130,6 +186,7 @@ def plan_episode_shots(
     emotions: dict[str, tuple[str, int]] | None = None,
     fixed_seconds: float = FIXED_SECONDS,
     max_hold: float = MAX_HOLD,
+    long_hold: float = LONG_HOLD,
 ) -> list[EpShot]:
     """Shots that tile the chapter's gapless audio exactly. `voice` and `fixed` differ only in where the cuts fall."""
     if mode not in TIMINGS:
@@ -144,7 +201,7 @@ def plan_episode_shots(
                 # a split panel re-aims instead of repeating the same push
                 calm = CameraMove.PULL_OUT if i % 2 == 1 and base is CameraMove.SLOW_PUSH_IN else base
                 shots.append(_make_shot(panel, piece, piece[0].start_gapless, piece[-1].end_gapless, emotions, calm))
-        return shots
+        return _vary_long_holds(shots, long_hold)
     edges = [k * fixed_seconds for k in range(int(total // fixed_seconds) + 1)] or [0.0]
     if total - edges[-1] > fixed_seconds / 2 or len(edges) == 1:
         edges.append(total)
@@ -154,7 +211,7 @@ def plan_episode_shots(
     for a, b in zip(edges, edges[1:]):
         panel, lines = runs[max(bisect.bisect_right(starts, (a + b) / 2) - 1, 0)]
         shots.append(_make_shot(panel, _lines_in(timing, a, b), a, b, emotions, hold_camera_move(lines, lines[0].block_index)))
-    return shots
+    return _vary_long_holds(shots, long_hold)
 
 
 def timing_stats(shots: Sequence[EpShot], timing: Sequence[LineTiming]) -> dict:
@@ -303,18 +360,23 @@ def _shift(win: tuple[float, float, float, float], dx: float, dy: float, bounds:
 
 
 def shot_frames(plate: Image.Image, shot: EpShot, n: int, size: tuple[int, int], fps: int) -> Iterator[bytes]:
-    """`n` frames of one shot: the planner's move with the zoom amplitude scaled by `gain`, shake as a window offset."""
-    traj = compute_camera_trajectory(shot.move, n / fps, fps)
+    """`n` frames of one shot: the planner's move with the zoom amplitude scaled by `gain`, shake as a window offset.
+    A long hold's successive moves share the frames equally."""
     box = (0, 0, plate.width, plate.height)
     aspect = size[0] / size[1]
-    kfs = traj.keyframes
-    for i in range(n):
-        kf = kfs[min(i, len(kfs) - 1)]
-        zoom = 1.0 + (kf.zoom - 1.0) * shot.gain
-        win = camera_window(box, aspect, zoom, _pan_value(shot.move, kf))
-        if shot.move is CameraMove.IMPACT_SHAKE:
-            win = _shift(win, kf.pan_x * (win[2] - win[0]), kf.pan_y * (win[3] - win[1]), plate.size)
-        yield plate.resize(size, Image.Resampling.BICUBIC, box=win).tobytes()
+    moves = shot.moves or [shot.move]
+    for j, move in enumerate(moves):
+        seg = n // len(moves) + (1 if j < n % len(moves) else 0)
+        if seg <= 0:
+            continue
+        kfs = compute_camera_trajectory(move, seg / fps, fps).keyframes
+        for i in range(seg):
+            kf = kfs[min(i, len(kfs) - 1)]
+            zoom = 1.0 + (kf.zoom - 1.0) * shot.gain
+            win = camera_window(box, aspect, zoom, _pan_value(move, kf))
+            if move is CameraMove.IMPACT_SHAKE:
+                win = _shift(win, kf.pan_x * (win[2] - win[0]), kf.pan_y * (win[3] - win[1]), plate.size)
+            yield plate.resize(size, Image.Resampling.BICUBIC, box=win).tobytes()
 
 
 def _decode_frames(video: Path, size: tuple[int, int], fps: int, ss: float, n: int) -> Iterator[bytes]:
@@ -419,6 +481,10 @@ def compose_episode(
 
     shots = plan_episode_shots(panels, lines, mode=timing, emotions=emotions, fixed_seconds=fixed_seconds)
     stats = timing_stats(shots, lines)
+    long_holds = long_hold_warnings(shots)
+    # The chapter's blocks come from its spans; a store without them (a stub) falls back to the voiced blocks.
+    chapter_blocks = {sp.block_index for sp in store.get_spans(novel_id, chapter)} or {t.block_index for t in lines}
+    coverage = block_coverage(panels, chapter_blocks)
     acts = plan_acts(shots, panels, n_acts)
     cold = pick_cold_open(shots, panels, lines, emotions, max_seconds=cold_open_seconds)
     recap = recap_lines(store, novel_id, chapter)
@@ -546,11 +612,13 @@ def compose_episode(
         "stats": stats, "acts": [asdict(a) for a in acts], "cold_open": asdict(cold) if cold else None,
         "recap": recap, "next_card": nxt, "title_card": ep_title, "video": str(video), "tile": str(tile),
         "body_video": str(body_video) if body_video else None,
+        "long_holds": long_holds, "block_coverage": coverage,
     }
     (out_dir / "summary.json").write_text(json.dumps(summary, indent=1), encoding="utf-8")
     with (out_dir / "shots.jsonl").open("w", encoding="utf-8") as fh:
         for s in shots:
-            fh.write(json.dumps({**asdict(s), "level": s.level.value, "move": s.move.value}) + "\n")
+            fh.write(json.dumps({**asdict(s), "level": s.level.value, "move": s.move.value,
+                                "moves": [m.value for m in s.moves]}) + "\n")
     _append_version(out_root, out_dir.name, summary)
     return EpisodeResult(out_dir, video, summary)
 
@@ -568,7 +636,11 @@ def _append_version(out_root: Path, name: str, s: dict) -> None:
             f"`{s['panels_version']}`: {s['duration']:.1f} s, {st['shots']} shots ({st['cuts_per_minute']} cuts/min, mean shot "
             f"{st['asl_mean']} s, {st['mid_line_cuts']} cuts inside a spoken line), {len(s['acts'])} acts, {cold}, "
             f"{'recap of ' + str(len(s['recap'])) + ' facts' if s['recap'] else 'no recap'}.\n\n"
-            "**Verdict:** not yet watched by a person.\n"
+            + "".join(f"\n**Warning:** panel `{w['panel_id']}` is held {w['seconds']:.0f} s from {w['start']:.0f} s "
+                      f"(one picture for that long; the camera moves on alternating directions).\n" for w in s["long_holds"])
+            + (f"\n**Warning:** the panel plan draws {c['covered']} of the chapter's {c['total']} blocks; the rest are "
+               f"voiced over the nearest panel.\n" if (c := s["block_coverage"])["covered"] < c["total"] else "")
+            + "\n**Verdict:** not yet watched by a person.\n"
         )
 
 

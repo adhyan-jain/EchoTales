@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from PIL import Image
 from _anime_helpers import build_chapter
 from echotales.core.enums import OBSERVER_READER, TargetKind
 from echotales.core.interval import FuzzyInterval
@@ -60,6 +61,37 @@ def test_long_panel_is_split_at_a_line_boundary(tmp_path: Path) -> None:
     shots = episode.plan_episode_shots(panels, timing, mode="voice", max_hold=8.0)
     assert len(shots) >= 2 and all(s.duration <= 10.0 + 1e-6 for s in shots)
     assert episode.timing_stats(shots, timing)["mid_line_cuts"] == 0
+
+
+def test_a_panel_held_past_the_cap_warns_and_keeps_the_camera_moving(tmp_path: Path) -> None:
+    """One 30 s line cannot be split at a line boundary, so one static push-in would sit on one picture for 30 s."""
+    spec = [dict(scene=0, cast=["a"], slot="scene", lines=[(0, "DIALOGUE", "a", 30.0)])]
+    _, _, panels, timing = _chapter(tmp_path, spec)
+    shots = episode.plan_episode_shots(panels, timing, mode="voice", long_hold=20.0)
+    assert len(shots) == 1 and len(shots[0].moves) >= 3
+    assert shots[0].moves[0] is shots[0].move and shots[0].moves[1] is not shots[0].moves[0]
+    assert all(a is not b for a, b in zip(shots[0].moves, shots[0].moves[1:]))  # successive moves differ
+    warn = episode.long_hold_warnings(shots, 20.0)
+    assert len(warn) == 1 and warn[0]["seconds"] == pytest.approx(30.0) and warn[0]["panel_id"] == shots[0].panel_id
+    n = 90
+    plate = Image.new("RGB", (64, 64), (9, 9, 9))
+    assert len(list(episode.shot_frames(plate, shots[0], n, (36, 64), 30))) == n
+
+
+def test_short_holds_are_neither_warned_nor_varied(tmp_path: Path) -> None:
+    _, _, panels, timing = _chapter(tmp_path)
+    shots = episode.plan_episode_shots(panels, timing, mode="voice", long_hold=20.0)
+    assert episode.long_hold_warnings(shots, 20.0) == [] and all(not s.moves for s in shots)
+
+
+def test_block_coverage_reports_blocks_the_panel_plan_misses(tmp_path: Path) -> None:
+    _, _, panels, _ = _chapter(tmp_path)
+    plan_blocks = {b for p in panels for b in p.block_indexes}
+    full = episode.block_coverage(panels, plan_blocks)
+    assert full == {"covered": len(plan_blocks), "total": len(plan_blocks), "missing": []}
+    partial = episode.block_coverage(panels, plan_blocks | {97, 98})
+    assert partial["covered"] == len(plan_blocks) and partial["total"] == len(plan_blocks) + 2
+    assert partial["missing"] == [97, 98]
 
 
 def test_motion_follows_delivery(tmp_path: Path) -> None:
