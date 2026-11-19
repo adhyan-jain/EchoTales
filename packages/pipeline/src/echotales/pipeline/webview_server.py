@@ -699,8 +699,23 @@ def _job_progress(job: Job, stages: list[tuple[str, str]]) -> dict:  # type: ign
     return {"stage": stage, "stage_index": index, "stage_count": count, "elapsed_s": elapsed}
 
 
+def _job_estimate(job: Job) -> dict | None:  # type: ignore[type-arg]
+    """The pre-run estimate a pipeline job stored in its params (`POST .../pipeline`). The 202 reply carried it once;
+    the Studio's job card reads it again on every poll, so it has to come back from the job list too."""
+    if job.kind != "pipeline":
+        return None
+    try:
+        params = json.loads(job.params_json or "{}")
+    except ValueError:
+        return None
+    estimate = params.get("estimate") if isinstance(params, dict) else None
+    return estimate if isinstance(estimate, dict) else None
+
+
 def _job_json(job: Job, stages: list[tuple[str, str]] | None = None) -> dict:  # type: ignore[type-arg]
+    estimate = _job_estimate(job)
     return {
+        **({"estimate": estimate} if estimate else {}),
         **_job_progress(job, stages or []),
         "job_id": job.job_id,
         "novel_id": job.novel_id,

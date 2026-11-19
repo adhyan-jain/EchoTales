@@ -67,3 +67,22 @@ def test_project_status_carries_the_language_statement(srv) -> None:
     assert status == 200
     assert projects[0]["language"]["statement"] == LANGUAGE_SUPPORT["statement"]
     assert projects[0]["language"]["supported"] == ["en"]
+
+
+def test_a_queued_pipeline_job_keeps_its_estimate_in_the_job_list(srv) -> None:
+    status, queued = srv.call("POST", "/api/projects/t/pipeline", {})
+    assert status == 202
+    assert queued["estimate"]["stages"] and queued["estimate"]["seconds"] > 0
+    status, jobs = srv.call("GET", "/api/projects/t/jobs")
+    assert status == 200
+    listed = next(j for j in jobs if j["job_id"] == queued["job_id"])
+    # The Studio reads this while the job runs, so it must survive past the 202 reply.
+    assert listed["estimate"] == queued["estimate"]
+    assert {r["basis"] for r in listed["estimate"]["stages"]} <= {"measured", "estimate"}
+
+
+def test_other_job_kinds_carry_no_estimate(srv) -> None:
+    status, queued = srv.call("POST", "/api/projects/t/pack_export", {})
+    assert status == 202
+    _, jobs = srv.call("GET", "/api/projects/t/jobs")
+    assert "estimate" not in next(j for j in jobs if j["job_id"] == queued["job_id"])
