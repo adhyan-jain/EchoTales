@@ -115,6 +115,8 @@ def build_stage(
         inpainter=get_inpainter(inpaint) if inpaint != "none" else None, masks_dir=root, size=size, fps=fps,
         depth=_depth() if depth else None,
     )
+    # Marks this folder as a motion comic for the Studio's comic panel, which lists only these videos.
+    (out_dir / "comic.json").write_text(json.dumps({"shots": video.shots, "duration": video.duration}), encoding="utf-8")
     _append_version(base, version, engine, inpaint, video, note, depth)
     return ComicBuild(graph, video, version, out_dir)
 

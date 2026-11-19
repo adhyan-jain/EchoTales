@@ -342,6 +342,14 @@ export const api = {
     return request(`/api/projects/${enc(novelId)}/packs`, { method: 'POST', body: form });
   },
 
+  // Comic sources uploaded to the project and the motion-comic videos built from them (paths for `outputFileUrl`).
+  listComic: (novelId) => request(`/api/projects/${enc(novelId)}/comic`),
+  uploadComic: (novelId, file) => {
+    const form = new FormData();
+    form.append('file', file);
+    return request(`/api/projects/${enc(novelId)}/comic`, { method: 'POST', body: form });
+  },
+
   // The built reader companions, and the link that opens one in a new tab (which cannot send an Authorization header,
   // so the session token rides in the query string of this one route, as `outputFileUrl` does).
   listCompanions: (novelId) => request(`/api/projects/${enc(novelId)}/companions`),

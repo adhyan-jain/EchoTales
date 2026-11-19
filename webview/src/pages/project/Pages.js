@@ -11,6 +11,7 @@ import BibleReview from '../../components/BibleReview';
 import ProjectHome from '../../components/ProjectHome';
 import VisualStyleSetting from '../../components/VisualStyleSetting';
 import PacksPanel from '../../components/PacksPanel';
+import ComicPanel from '../../components/ComicPanel';
 import CompanionPanel from '../../components/CompanionPanel';
 import ProjectVoicesPanel from '../../components/ProjectVoicesPanel';
 import { PageHeader, ThemeToggle } from '../../components/app/Chrome';
@@ -109,6 +110,7 @@ export function Settings() {
         </section>
         <VisualStyleSetting novelId={novelId} project={project} onChanged={refreshProjects} />
         <PacksPanel novelId={novelId} />
+        <ComicPanel novelId={novelId} />
         <CompanionPanel novelId={novelId} project={project} />
         <ProjectVoicesPanel novelId={novelId} />
         <section className="flex items-center justify-between gap-4 rounded-3xl border border-border bg-surface p-6">
