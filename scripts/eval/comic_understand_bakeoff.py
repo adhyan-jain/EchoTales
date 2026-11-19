@@ -84,6 +84,24 @@ def run(engine_name: str) -> dict:
     }
 
 
+def speaker_check(engine_name: str) -> dict:
+    """ep01 has one speaker (Pepper says all four lines). This measures only that her bubbles merge into one cluster;
+    it cannot show that two different characters split, because no page here has two speakers. Reported as such."""
+    ocr = get_ocr(engine_name)
+    pages = [PageImage(i, rel, Image.open(ROOT / rel).convert("RGB"))
+             for i, rel in enumerate(["ep01/en_E01P01.jpg", "ep01/en_E01P02.jpg"])]
+    und = understand_pages(pages, ocr)
+    speech = [b for b in und.bubbles() if b.kind == "speech"]
+    return {
+        "truth": "one speaker (Pepper) for all 4 spoken lines",
+        "speech_bubbles": len(speech),
+        "with_tail": sum(b.tail is not None for b in speech),
+        "clusters": sorted({b.speaker for b in speech if b.speaker}),
+        "same_speaker_merged": len({b.speaker for b in speech if b.speaker}) == 1,
+        "not_measured": "splitting two different characters (no multi-speaker page in the test set)",
+    }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--engines", nargs="+", default=["rapidocr", "easyocr"])
@@ -99,7 +117,12 @@ def main() -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     existing = json.loads(out.read_text()) if out.exists() else {}
     existing.update({"source": "Pepper&Carrot ep01 P01-P02, ep02 P01-P02 (David Revoy, CC BY 4.0)",
-                     "results": results, "skipped": skipped})
+                     "results": results, "skipped": skipped,
+                     "speaker_clustering": speaker_check(args.engines[0]),
+                     "magi_v2": "not run: model card README states unrestricted use only for personal, research and "
+                                "non-commercial endeavours (commercial use needs a separate arrangement), 2 GB pickled "
+                                "weights and trust_remote_code; manga-ocr not run: Japanese-trained recogniser, wrong "
+                                "script for these English pages"})
     out.write_text(json.dumps(existing, indent=1, ensure_ascii=False))
     for r in results:
         print({k: v for k, v in r.items() if k != "pages"})
