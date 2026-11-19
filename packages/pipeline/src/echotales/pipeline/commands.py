@@ -1467,6 +1467,42 @@ def cmd_pages(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_comic(args: argparse.Namespace) -> int:
+    """`echotales comic ingest|understand|build`: the same functions the `comic` job runs."""
+    from echotales.pipeline.comic import runner
+    from echotales.pipeline.comic.ingest import ComicInputError
+    from echotales.pipeline.comic.ocr import OcrUnavailable
+
+    try:
+        if args.comic_command == "ingest":
+            n = runner.ingest_stage(args.input, args.novel, webtoon=args.webtoon)
+            print(f"{n} pages -> {runner.comic_root(args.novel) / 'pages'}")
+            return 0
+        if args.comic_command == "understand":
+            und = runner.understand_stage(args.novel, ocr=args.ocr, rtl=args.rtl)
+            print(f"{len(und.pages)} pages, {len(und.bubbles())} bubbles, speakers: {', '.join(und.speakers) or 'none'}")
+            return 0
+        if args.input:
+            runner.ingest_stage(args.input, args.novel, webtoon=args.webtoon)
+            runner.understand_stage(args.novel, ocr=args.ocr, rtl=args.rtl)
+        store = _open_store(args)
+        try:
+            built = runner.build_stage(
+                store, args.novel, title=args.title or args.novel, chapter=args.chapter,
+                credit=(args.credit or runner.DEFAULT_CREDIT).replace("\\n", "\n"), engine=args.engine,
+                bank_kind=args.bank_kind, bank_root=args.bank, inpaint=args.inpaint, suffix=args.suffix,
+                note=args.note, trust_speakers=args.trust_speakers, fps=args.fps,
+                video_root=Path(args.video_root) if args.video_root else None,
+            )
+        finally:
+            store.close()
+        print(f"{built.version}: {built.video.shots} shots, {built.video.duration:.1f}s -> {built.video.video}")
+        return 0
+    except (ComicInputError, OcrUnavailable, FileNotFoundError, ValueError) as exc:
+        print(f"refusing: {exc}", file=sys.stderr)
+        return 2
+
+
 def cmd_appearance(args: argparse.Namespace) -> int:
     """Phase 7b: extract physical appearance into PERSONA attributes."""
     from echotales.pipeline.resolve.appearance_extract import extract_appearance
@@ -1996,6 +2032,7 @@ _DISPATCH = {
     "render": cmd_render,
     "anime": cmd_anime,
     "pages": cmd_pages,
+    "comic": cmd_comic,
     "estimate": cmd_estimate,
     "pack": cmd_pack,
     "review": cmd_review,

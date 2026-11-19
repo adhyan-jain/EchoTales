@@ -102,6 +102,8 @@ JOB_KINDS = (
     "video",
     # Manga, comic or webtoon pages from a chapter's rendered panels (roadmap M1): `echotales pages`.
     "pages",
+    # Comic, manga or webtoon pages into the graph and a voiced motion-comic video (roadmap M2): `echotales comic`.
+    "comic",
     "refimg_search",
     "reference_gen",
     # Adaptation packs (roadmap M4): the cast, descriptions, voices, direction and corrections as one .etpack file
@@ -291,6 +293,37 @@ def _run_pages(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]
         panel_dir=params.get("panel_dir"), out_root=params.get("out_dir"), suffix=params.get("suffix"),
     )
     return [str(b.manifest) for b in built]
+
+
+def _run_comic(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]:
+    """`echotales comic ingest|understand|build` from the same functions. The pages are read from
+    `data/novels/<CODE>/comic/source/<name>`, a name and never a path: the server decides where uploads live (same
+    rule as the pack and voice folders), so a request cannot point the reader at any file on the machine."""
+    from echotales.pipeline.comic import runner
+
+    stage = str(params.get("stage") or "build")
+    if stage not in ("ingest", "understand", "build"):
+        raise ValueError(f"comic stage {stage!r} is not one of ingest, understand, build")
+    root = runner.comic_root(novel_id)
+    if stage == "ingest" or (stage == "build" and params.get("source")):
+        name = Path(str(params.get("source") or "")).name
+        source = root / "source" / name
+        if not name or not source.exists():
+            raise ValueError(f"no comic source named {name!r} in this project's comic/source folder; upload it first")
+        runner.ingest_stage(source, novel_id, webtoon=bool(params.get("webtoon")))
+        if stage == "ingest":
+            return [str(root / "pages.json")]
+    if stage in ("understand", "build") and (stage == "understand" or params.get("source")):
+        runner.understand_stage(novel_id, ocr=str(params.get("ocr") or "rapidocr"), rtl=bool(params.get("rtl")))
+        if stage == "understand":
+            return [str(root / "understanding.json")]
+    built = runner.build_stage(
+        store, novel_id, title=str(params.get("title") or novel_id), chapter=float(params.get("chapter") or 1.0),
+        credit=str(params.get("credit") or runner.DEFAULT_CREDIT), engine=str(params.get("engine") or "stub"),
+        inpaint=str(params.get("inpaint") or "cv"), suffix=str(params.get("suffix") or "motion-comic"),
+        trust_speakers=bool(params.get("trust_speakers")),
+    )
+    return [str(built.video.video)]
 
 
 def _run_pipeline(store: Store, job_id: str, novel_id: str, params: dict[str, Any], sources_path: str):  # type: ignore[no-untyped-def]
@@ -600,6 +633,13 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             input_digest=f"{input_digest}|{time.time()}",
             fn=lambda: _run_pages(store, novel_id, params),
             skip_if_succeeded=False,
+        )
+    elif job.kind == "comic":
+        # Not skippable by digest: the pages under comic/source can change between identical params.
+        run_stage(
+            store, run_id=pipeline_run.run_id, stage_name="comic",
+            input_digest=f"{input_digest}|{time.time()}", skip_if_succeeded=False,
+            fn=lambda: _run_comic(store, novel_id, params),
         )
     elif job.kind in ("pack_export", "pack_import"):
         from echotales.pipeline import packs, paths

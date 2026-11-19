@@ -580,6 +580,39 @@ def build_parser() -> argparse.ArgumentParser:
     p_pages.add_argument("--panel-dir", default=None, help="default: data/novels/<CODE>/panels")
     p_pages.add_argument("--out", default=None, help="default: data/novels/<CODE>/pages")
 
+    p_comic = sub.add_parser(
+        "comic",
+        help="comic, manga or webtoon pages into the story graph and a voiced motion-comic video (roadmap M2)",
+    )
+    c_sub = p_comic.add_subparsers(dest="comic_command", required=True)
+    c_ingest = c_sub.add_parser("ingest", help="pages from a folder, .cbz or .pdf, in natural order")
+    c_ingest.add_argument("--novel", required=True)
+    c_ingest.add_argument("--input", required=True, help="folder of images, .cbz or .pdf")
+    c_ingest.add_argument("--webtoon", action="store_true", help="slice tall strips at blank gutters")
+    c_understand = c_sub.add_parser("understand", help="panels, bubbles, text and speaker clusters")
+    c_understand.add_argument("--novel", required=True)
+    c_understand.add_argument("--ocr", default="rapidocr", choices=["rapidocr", "easyocr"])
+    c_understand.add_argument("--rtl", action="store_true", help="manga reading order (right to left)")
+    c_build = c_sub.add_parser("build", help="graph, voice and a motion-comic video; ingests and understands first with --input")
+    c_build.add_argument("--novel", required=True)
+    c_build.add_argument("--input", default=None, help="run ingest and understand on this first")
+    c_build.add_argument("--webtoon", action="store_true")
+    c_build.add_argument("--rtl", action="store_true")
+    c_build.add_argument("--ocr", default="rapidocr", choices=["rapidocr", "easyocr"])
+    c_build.add_argument("--title", default=None)
+    c_build.add_argument("--chapter", type=float, default=1.0)
+    c_build.add_argument("--credit", default=None, help="end-card credit text; use \\n for a new line")
+    c_build.add_argument("--engine", default="stub", help="voice engine (stub writes silent audio)")
+    c_build.add_argument("--bank", default="data/voice")
+    c_build.add_argument("--bank-kind", default=None)
+    c_build.add_argument("--inpaint", default="cv", choices=["cv", "lama", "none"])
+    c_build.add_argument("--suffix", default="motion-comic", help="version suffix, e.g. v1_<suffix>")
+    c_build.add_argument("--note", default="", help="the one-line verdict recorded in VERSIONS.md")
+    c_build.add_argument("--trust-speakers", action="store_true",
+                         help="write speaker clusters at PROXIMAL confidence so characters get their own voice")
+    c_build.add_argument("--fps", type=int, default=24)
+    c_build.add_argument("--video-root", default=None, help="default: data/novels/<CODE>/video")
+
     p_appearance = sub.add_parser(
         "appearance",
         help="extract physical appearance per character into PERSONA attributes "
