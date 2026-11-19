@@ -275,6 +275,22 @@ export const api = {
   reassignSpanType: (novelId, spanId, chapter, newType) =>
     postCorrection(novelId, 'reassign_span_type', { span_id: spanId, chapter, new_type: newType }),
 
+  // A reviewer's gender for a character ('male' | 'female' | 'unknown'). Logged as a `set_gender` correction and applied
+  // at once: the automatic gender pass never overwrites a reviewer's value, and voice casting reads it on the next run.
+  setGender: (novelId, selfId, gender) =>
+    postCorrection(novelId, 'set_gender', { self_id: selfId, gender }).then((logged) =>
+      request(`/api/novels/${enc(novelId)}/apply`, { method: 'POST' }).then((applied) => {
+        const failed = ((applied && applied.applied) || []).find((r) => r.error && r.type === 'set_gender');
+        if (failed) throw new ApiError(400, failed.error);
+        return logged;
+      })
+    ),
+
+  // How one quoted line is performed: an emotion (a value of `DELIVERY_EMOTIONS` in lib/delivery.js) and an intensity 1-3. Queued like every
+  // other correction; the next voice run reads it once it is applied.
+  setDelivery: (novelId, spanId, emotion, intensity) =>
+    postCorrection(novelId, 'set_delivery', { span_id: spanId, emotion, intensity }),
+
   undoCorrection: (novelId, correctionId) =>
     request(`/api/novels/${enc(novelId)}/corrections/${enc(correctionId)}`, { method: 'DELETE' }),
   applyCorrections: (novelId) => request(`/api/novels/${enc(novelId)}/apply`, { method: 'POST' }),
@@ -317,6 +333,33 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(params),
     }),
+
+  // Adaptation packs in the project's packs folder: names, sizes and the last import's report -- never server paths.
+  listPacks: (novelId) => request(`/api/projects/${enc(novelId)}/packs`),
+  uploadPack: (novelId, file) => {
+    const form = new FormData();
+    form.append('file', file);
+    return request(`/api/projects/${enc(novelId)}/packs`, { method: 'POST', body: form });
+  },
+
+  // The built reader companions, and the link that opens one in a new tab (which cannot send an Authorization header,
+  // so the session token rides in the query string of this one route, as `outputFileUrl` does).
+  listCompanions: (novelId) => request(`/api/projects/${enc(novelId)}/companions`),
+  companionUrl: (novelId, through) => {
+    const token = getAuthToken();
+    const auth = token ? `?access_token=${encodeURIComponent(token)}` : '';
+    return `${API_BASE}/api/novels/${enc(novelId)}/companion/through_${enc(through)}/index.html${auth}`;
+  },
+
+  // The project's own voices (a person's recording plus a consent record), and the upload. The consent and the details
+  // ride in the query string because the upload body is one file part and nothing else.
+  listProjectVoices: (novelId) => request(`/api/projects/${enc(novelId)}/voices`),
+  uploadProjectVoice: (novelId, file, { name, gender, age, consent }) => {
+    const form = new FormData();
+    form.append('file', file);
+    const q = new URLSearchParams({ name, gender, age: String(age), consent: consent ? 'true' : 'false' });
+    return request(`/api/projects/${enc(novelId)}/voices?${q}`, { method: 'POST', body: form });
+  },
 
   listJobs: (novelId) => request(`/api/projects/${enc(novelId)}/jobs`),
   getJob: (novelId, jobId) => request(`/api/projects/${enc(novelId)}/jobs/${enc(jobId)}`),

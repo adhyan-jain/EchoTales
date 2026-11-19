@@ -180,6 +180,7 @@ def _overlay_corrections(payload: dict, corrections: CorrectionLog) -> dict:  # 
     flags_by_mention: dict[str, list[dict]] = {}  # type: ignore[type-arg]
     flags_by_span: dict[str, list[dict]] = {}  # type: ignore[type-arg]
     span_type_override: dict[str, str] = {}
+    delivery_override: dict[str, dict] = {}  # type: ignore[type-arg]
 
     novel_id = payload["novel_id"]
 
@@ -228,10 +229,14 @@ def _overlay_corrections(payload: dict, corrections: CorrectionLog) -> dict:  # 
                 speaker_override[span_id] = str(speaker_id) if speaker_id else None
         elif c.type is CorrectionType.REASSIGN_SPAN_TYPE:
             span_type_override[str(c.payload["span_id"])] = str(c.payload["new_type"])
+        elif c.type is CorrectionType.SET_DELIVERY:
+            delivery_override[str(c.payload.get("span_id"))] = {
+                "emotion": c.payload.get("emotion"), "intensity": c.payload.get("intensity"), "pending": not c.applied,
+            }
 
     if not (
         merge_redirect or mention_override or speaker_override
-        or flags_by_mention or flags_by_span or span_type_override
+        or flags_by_mention or flags_by_span or span_type_override or delivery_override
     ):
         return payload
 
@@ -304,6 +309,8 @@ def _overlay_corrections(payload: dict, corrections: CorrectionLog) -> dict:  # 
                 new_marks.append(m)
 
             span_id = span.get("span_id")
+            if span_id in delivery_override and span.get("type") in ("DIALOGUE", "INNER_MONOLOGUE", "CROWD_REACTION"):
+                span = {**span, "delivery": delivery_override[span_id]}
             if span_id in span_type_override:
                 new_type = span_type_override[span_id]
                 span = {**span, "type": new_type}
@@ -699,8 +706,23 @@ def _job_progress(job: Job, stages: list[tuple[str, str]]) -> dict:  # type: ign
     return {"stage": stage, "stage_index": index, "stage_count": count, "elapsed_s": elapsed}
 
 
+def _job_estimate(job: Job) -> dict | None:  # type: ignore[type-arg]
+    """The pre-run estimate a pipeline job stored in its params (`POST .../pipeline`). The 202 reply carried it once;
+    the Studio's job card reads it again on every poll, so it has to come back from the job list too."""
+    if job.kind != "pipeline":
+        return None
+    try:
+        params = json.loads(job.params_json or "{}")
+    except ValueError:
+        return None
+    estimate = params.get("estimate") if isinstance(params, dict) else None
+    return estimate if isinstance(estimate, dict) else None
+
+
 def _job_json(job: Job, stages: list[tuple[str, str]] | None = None) -> dict:  # type: ignore[type-arg]
+    estimate = _job_estimate(job)
     return {
+        **({"estimate": estimate} if estimate else {}),
         **_job_progress(job, stages or []),
         "job_id": job.job_id,
         "novel_id": job.novel_id,
@@ -911,6 +933,58 @@ def _list_output(novel_id: str) -> dict:  # type: ignore[type-arg]
     return {"novel_id": novel_id, "root": str(root), "kinds": kinds}
 
 
+def _list_packs(novel_id: str) -> list[dict]:  # type: ignore[type-arg]
+    """The `.etpack` files in this project's packs folder, by name only: a path from the server's disk is never sent
+    to the browser. `report` is what the last import of that pack applied and skipped (jobs.py writes it), or None."""
+    pack_dir = paths.asset_dir(novel_id, "packs")
+    out: list[dict] = []  # type: ignore[type-arg]
+    if not pack_dir.is_dir():
+        return out
+    for f in sorted(pack_dir.glob("*.etpack")):
+        if not f.is_file():
+            continue
+        report = None
+        try:
+            report = json.loads(f.with_name(f.name + ".report.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            pass
+        if isinstance(report, dict):
+            # `direction_dir` is a server path; the browser gets counts and reasons only.
+            report = {"applied": report.get("applied", {}), "skipped": report.get("skipped", [])}
+        out.append({"name": f.name, "bytes": f.stat().st_size, "report": report})
+    return out
+
+
+_COMPANION_DIR_RE = re.compile(r"through_(\d+(?:\.\d+)?)")
+#: The only files `companion.write_companion_site` writes; the route serves these and nothing else in the folder.
+_COMPANION_FILES = ("index.html", "style.css", "companion.json")
+
+
+def _list_companions(novel_id: str) -> list[dict]:  # type: ignore[type-arg]
+    """Companions already built for this project, by the chapter each was built through (never a path)."""
+    root = paths.asset_dir(novel_id, "companion")
+    out: list[dict] = []  # type: ignore[type-arg]
+    if root.is_dir():
+        for d in root.iterdir():
+            m = _COMPANION_DIR_RE.fullmatch(d.name)
+            if m and (d / "index.html").is_file():
+                value = float(m.group(1))
+                out.append({"through": int(value) if value.is_integer() else value, "built_at": (d / "index.html").stat().st_mtime})
+    return sorted(out, key=lambda c: c["through"])
+
+
+def _companion_file(novel_id: str, site: str, name: str) -> Path | None:
+    """One file of a built companion, or None. The folder name must match `through_<N>` and the file one of the three
+    the builder writes, then the resolved path must still sit inside the companion folder (a symlink cannot leave)."""
+    if not _COMPANION_DIR_RE.fullmatch(site) or name not in _COMPANION_FILES:
+        return None
+    root = paths.asset_dir(novel_id, "companion").resolve()
+    candidate = (root / site / name).resolve()
+    if root not in candidate.parents or not candidate.is_file():
+        return None
+    return candidate
+
+
 def _resolve_output_path(novel_id: str, rel: str) -> Path:
     """Resolve a caller-supplied relative path against this novel's output
     root, refusing anything that escapes it -- the one route in this track
@@ -966,6 +1040,10 @@ _PROJECT_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 #: `_read_body_bytes` read whatever Content-Length said, so one request could exhaust memory.
 _MAX_JSON_BODY = 2 * 1024 * 1024
 _MAX_UPLOAD_BODY = 200 * 1024 * 1024
+#: A pack is JSON in a zip and carries no book text; the largest real one is a few hundred KB.
+_MAX_PACK_BODY = 25 * 1024 * 1024
+#: A minute of 24-bit stereo 48 kHz is ~17 MB; nothing a voice clone uses needs more.
+_MAX_VOICE_BODY = 20 * 1024 * 1024
 _MAX_IMAGE_BODY = 20 * 1024 * 1024
 _NAME_ORDERS = ("given_first", "family_first")
 
@@ -1195,7 +1273,10 @@ def make_handler(
             # the output-file route only -- never on the JSON API.
             url = urlparse(self.path)
             parts = _split_path(url.path)
-            if self.command in ("GET", "HEAD") and len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3:] == ["output", "file"]:
+            # The companion page is opened as a plain link in a new tab, so it is the one other route that takes it.
+            is_media = len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3:] == ["output", "file"]
+            is_companion = len(parts) == 6 and parts[:2] == ["api", "novels"] and parts[3] == "companion"
+            if self.command in ("GET", "HEAD") and (is_media or is_companion):
                 return sessions.valid(parse_qs(url.query).get("access_token", [""])[0])
             return False
 
@@ -1312,6 +1393,41 @@ def make_handler(
 
                 if parts == ["api", "projects"]:
                     return self._json(200, [_project_status(h) for h in registry.handles.values()])
+
+                if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "packs":
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    return self._json(200, {"packs": _list_packs(parts[2])})
+
+                if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "voices":
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    from echotales.pipeline import project_voices
+
+                    return self._json(200, {
+                        "statement": project_voices.CONSENT_STATEMENT,
+                        "limits": {"min_seconds": project_voices.MIN_SECONDS, "max_seconds": project_voices.MAX_SECONDS,
+                                   "max_bytes": _MAX_VOICE_BODY},
+                        "voices": [
+                            {"voice_id": v.voice_id, "name": v.name, "gender": v.gender, "age": v.age, "consent_at": v.consent_at}
+                            for v in project_voices.list_project_voices(parts[2])
+                        ],
+                    })
+
+                if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "companions":
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    return self._json(200, {"companions": _list_companions(parts[2])})
+
+                # GET /api/novels/<id>/companion/through_<N>/<index.html|style.css|companion.json>: the built site,
+                # served at its own relative paths so the page finds its stylesheet.
+                if len(parts) == 6 and parts[:2] == ["api", "novels"] and parts[3] == "companion":
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    site_file = _companion_file(parts[2], parts[4], parts[5])
+                    if site_file is None:
+                        return self._json(404, {"error": "no such companion file"})
+                    return self._serve_file(site_file)
 
                 if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "jobs":
                     handle = registry.handles.get(parts[2])
@@ -2226,6 +2342,71 @@ def make_handler(
                         {"filename": filename, "path": str(epub_path), "bytes": len(data), "language": LANGUAGE_SUPPORT},
                     )
 
+                if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "packs":
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    content_type_header = self.headers.get("Content-Type", "")
+                    if "multipart/form-data" not in content_type_header:
+                        return self._json(400, {"error": "expected multipart/form-data upload"})
+                    try:
+                        filename, data = parse_single_file(content_type_header, self._read_body_bytes(_MAX_PACK_BODY))
+                    except MultipartError as exc:
+                        return self._json(400, {"error": str(exc)})
+                    from echotales.pipeline import packs
+
+                    # Base name only, characters restricted: the client's filename never reaches a server path
+                    # unsanitised (same rule as the reference-image upload).
+                    safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", Path(filename.replace("\\", "/")).name)
+                    if not safe_name.lower().endswith(packs.PACK_SUFFIX) or safe_name.lower() == packs.PACK_SUFFIX:
+                        return self._json(400, {"error": f"only {packs.PACK_SUFFIX} pack files are accepted"})
+                    pack_dir = paths.asset_dir(parts[2], "packs")
+                    pack_dir.mkdir(parents=True, exist_ok=True)
+                    target = pack_dir / safe_name
+                    # Written beside the target and checked there, so a file that is not a pack never lands under a
+                    # pack's name (the list would offer it and the import job would fail on it).
+                    probe = target.with_name(target.name + ".upload")
+                    probe.write_bytes(data)
+                    try:
+                        packs.read_pack(probe)
+                    except packs.PackError as exc:
+                        probe.unlink(missing_ok=True)
+                        return self._json(400, {"error": str(exc)})
+                    probe.replace(target)
+                    # A fresh upload under an old name must not show the old import's report.
+                    target.with_name(target.name + ".report.json").unlink(missing_ok=True)
+                    return self._json(201, {"name": safe_name, "bytes": len(data)})
+
+                # POST /api/projects/<id>/voices?name=&gender=&age=&consent=true  (multipart, one .wav/.flac)
+                # The consent travels in the query string because the multipart reader here takes one file part and
+                # nothing else; the server records its own fixed statement, never text from the request.
+                if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "voices":
+                    handle = registry.handles.get(parts[2])
+                    if handle is None:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    from echotales.pipeline import project_voices
+
+                    query = parse_qs(urlparse(self.path).query)
+                    one = lambda key: query.get(key, [""])[0]  # noqa: E731
+                    if one("consent") != "true":
+                        return self._json(400, {"error": f"Tick the box first: \"{project_voices.CONSENT_STATEMENT}\" Nothing was uploaded."})
+                    content_type_header = self.headers.get("Content-Type", "")
+                    if "multipart/form-data" not in content_type_header:
+                        return self._json(400, {"error": "expected multipart/form-data upload"})
+                    try:
+                        filename, data = parse_single_file(content_type_header, self._read_body_bytes(_MAX_VOICE_BODY))
+                        stored = project_voices.save_voice(
+                            parts[2], filename=filename, data=data, name=one("name"), gender=one("gender").lower(),
+                            age=int(one("age") or "0"), consent=True,
+                        )
+                    except MultipartError as exc:
+                        return self._json(400, {"error": str(exc)})
+                    except ValueError as exc:  # VoiceUploadError, or an age that is not a number
+                        taken = "already exists" in str(exc)
+                        return self._json(409 if taken else 400, {"error": str(exc) if isinstance(exc, project_voices.VoiceUploadError) else "age must be a whole number"})
+                    return self._json(201, {"voice_id": stored.voice_id, "name": stored.name, "gender": stored.gender,
+                                            "age": stored.age, "consent_at": stored.consent_at})
+
                 if (
                     len(parts) == 6 and parts[:2] == ["api", "projects"] and parts[3] == "jobs" and parts[5] == "cancel"
                 ):
@@ -2285,6 +2466,13 @@ def make_handler(
                         params = _with_genre(handle, params)
                     if kind in ("pack_export", "pack_import"):
                         params["corrections_path"] = str(handle.corrections.path)
+                    if kind == "companion":
+                        from echotales.pipeline.companion import parse_through
+
+                        try:
+                            params = {"through": parse_through(params.get("through"))}
+                        except ValueError as exc:
+                            return self._json(400, {"error": str(exc)})
                     if kind == "pipeline":
                         # The resolve stage reads the project's review decisions; the path comes from the server's
                         # registry, never the request.

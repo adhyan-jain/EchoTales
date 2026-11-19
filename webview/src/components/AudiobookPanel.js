@@ -5,6 +5,7 @@ import { api } from '../api';
 import Button from './ui/Button';
 import JobStatusBadge, { jobEndedBadly } from './ui/JobStatusBadge';
 import JobFailure from './ui/JobFailure';
+import RunEstimate from './ui/RunEstimate';
 import { useToast } from './ui/Toast';
 import { describeError } from '../lib/errors';
 import { fileUrl } from '../lib/media';
@@ -281,6 +282,7 @@ function StepRow({ n, done, title, note, job, action }) {
         </div>
         {action}
       </div>
+      {job && inFlight(job) && job.estimate && <RunEstimate estimate={job.estimate} />}
       {job && jobEndedBadly(job.status) && <JobFailure kind={job.kind} summary={job.error_summary} />}
     </li>
   );

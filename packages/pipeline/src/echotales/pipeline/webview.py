@@ -160,6 +160,8 @@ def build_novel_payload(store: Store, novel_id: str, label: str) -> dict:
                 speaker_label_cache[self_id] = e.canonical_label if e else self_id
         return speaker_label_cache[self_id]
 
+    # How each quoted line will be voiced (the delivery pass's value, or a reviewer's correction over it).
+    line_emotion = store.span_emotions(novel_id)
     chapters_out = []
     for chapter in store.iter_chapters(novel_id):
         n = chapter.number
@@ -245,6 +247,10 @@ def build_novel_payload(store: Store, novel_id: str, label: str) -> dict:
                     "anonymous_speaker": is_anon_speaker,
                     "speaker_colour": (
                         _anon_slot_colour(span.speaker_self_id) if is_anon_speaker else None
+                    ),
+                    **(
+                        {"delivery": {"emotion": line_emotion[span.id][0], "intensity": line_emotion[span.id][1], "pending": False}}
+                        if span.id in line_emotion else {}
                     ),
                 }
             )
@@ -430,6 +436,7 @@ def build_character_dashboard(store: Store, novel_id: str) -> dict:
     refresh_family_tokens(store, novel_id)  # same name-comparison rule as the stages (2026-10-31)
     from echotales.core.enums import TargetKind
     from echotales.pipeline.persona.build import persona_at
+    from echotales.pipeline.persona.gender import _current_gender
 
     voice_by_target = _voice_assignments_from_manifest(novel_id)
 
@@ -502,10 +509,14 @@ def build_character_dashboard(store: Store, novel_id: str) -> dict:
             }
 
         candidates = store.list_ref_image_candidates(novel_id, entity.id)
+        # The same reading voice casting and the automatic gender pass use, so the control shows what they will act on.
+        gender, gender_by_reviewer = _current_gender(store, entity.id)
         rows.append(
             {
                 "id": entity.id,
                 "self_id": entity.id,
+                "gender": gender,
+                "gender_by_reviewer": gender_by_reviewer,
                 "persona_id": persona_id,
                 "label": entity.canonical_label,
                 "canonical_label": entity.canonical_label,

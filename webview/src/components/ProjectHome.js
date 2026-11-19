@@ -147,6 +147,9 @@ export default function ProjectHome({ novelId, onNewProject, hideHeader = false,
               <Stat label="Jobs run" value={String(current.job_count)} />
             </CardBody>
           </DepthCard>
+          {current.language && current.language.statement && (
+            <p className="mt-2 text-xs text-muted" data-testid="language-note">{current.language.statement}</p>
+          )}
 
           {current.source_uploaded && !current.ingested && (
             <div className="mt-4 flex items-center justify-between gap-3 border border-border px-4 py-3">

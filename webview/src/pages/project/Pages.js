@@ -10,6 +10,9 @@ import ScreenplayEditor from '../../components/ScreenplayEditor';
 import BibleReview from '../../components/BibleReview';
 import ProjectHome from '../../components/ProjectHome';
 import VisualStyleSetting from '../../components/VisualStyleSetting';
+import PacksPanel from '../../components/PacksPanel';
+import CompanionPanel from '../../components/CompanionPanel';
+import ProjectVoicesPanel from '../../components/ProjectVoicesPanel';
 import { PageHeader, ThemeToggle } from '../../components/app/Chrome';
 import { useProject } from '../../lib/ProjectContext';
 
@@ -105,6 +108,9 @@ export function Settings() {
           <ProjectHome novelId={novelId} hideHeader onChanged={refreshProjects} onNewProject={() => navigate('/projects/new')} />
         </section>
         <VisualStyleSetting novelId={novelId} project={project} onChanged={refreshProjects} />
+        <PacksPanel novelId={novelId} />
+        <CompanionPanel novelId={novelId} project={project} />
+        <ProjectVoicesPanel novelId={novelId} />
         <section className="flex items-center justify-between gap-4 rounded-3xl border border-border bg-surface p-6">
           <div>
             <h2 className="font-display text-lg font-bold tracking-tight">Appearance</h2>

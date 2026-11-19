@@ -9,6 +9,7 @@ import EvidenceBlock from './ui/EvidenceBlock';
 import CharacterRow from './ui/CharacterRow';
 import AudioPlayer from './ui/AudioPlayer';
 import DossierHeader from './ui/DossierHeader';
+import GenderControl from './GenderControl';
 import TimelineRail from './ui/TimelineRail';
 import { EmptyState, LoadingState } from './ui/EmptyState';
 import { useToast } from './ui/Toast';
@@ -101,6 +102,21 @@ export default function CharacterDashboard({ novelId, readOnly = false, selected
     );
   };
 
+  const handleSetGender = (selfId, gender) => {
+    return withPending(selfId, () =>
+      api
+        .setGender(novelId, selfId, gender)
+        .then(() => {
+          push('Gender saved.', 'success');
+          load();
+        })
+        .catch((err) => {
+          push(describeError(err, 'Could not save the gender.'), 'danger');
+          throw err;
+        })
+    );
+  };
+
   const handleSelectReference = (selfId, candidateId) => {
     return withPending(selfId, () =>
       api
@@ -172,6 +188,7 @@ export default function CharacterDashboard({ novelId, readOnly = false, selected
         readOnly={readOnly}
         onBack={() => setSelectedId(null)}
         onSetVoice={readOnly ? undefined : (speakerId) => handleSetVoice(selected.self_id, speakerId)}
+        onSetGender={readOnly ? undefined : (gender) => handleSetGender(selected.self_id, gender)}
         onSelectReference={readOnly ? undefined : (candidateId) => handleSelectReference(selected.self_id, candidateId)}
         onSearchReferences={readOnly ? undefined : () => handleSearchReferences(selected.self_id)}
       />
@@ -274,7 +291,7 @@ export default function CharacterDashboard({ novelId, readOnly = false, selected
   );
 }
 
-function CharacterDetail({ character, busy, readOnly, onBack, onSetVoice, onSelectReference, onSearchReferences }) {
+function CharacterDetail({ character, busy, readOnly, onBack, onSetVoice, onSetGender, onSelectReference, onSearchReferences }) {
   const { label, prominence, voice, traits = [], reference_images: refs = [] } = character;
   const [voiceFormOpen, setVoiceFormOpen] = useState(false);
   const [voiceDraft, setVoiceDraft] = useState('');
@@ -299,6 +316,11 @@ function CharacterDetail({ character, busy, readOnly, onBack, onSetVoice, onSele
           tone={prominence === 'PRINCIPAL' ? 'accent' : 'neutral'}
           badge={prominence ? PROMINENCE_LABEL[prominence] || prominence : null}
         />
+        {onSetGender && (
+          <div className="mt-4">
+            <GenderControl gender={character.gender} byReviewer={!!character.gender_by_reviewer} disabled={busy} onChange={onSetGender} />
+          </div>
+        )}
       </div>
 
       <Divider label="Reference & voice" className="mb-6 mt-10" />

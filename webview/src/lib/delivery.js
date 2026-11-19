@@ -1,0 +1,26 @@
+// The emotions the voice stage can perform: the stored names of `reader/delivery_pass.py::LABELS` (EARS's recordings),
+// each with the plain word the reader's model is shown. A reviewer's choice is one of these or the server refuses it.
+export const DELIVERY_EMOTIONS = [
+  { value: 'neutral', label: 'neutral' },
+  { value: 'serenity', label: 'calm' },
+  { value: 'anger', label: 'angry' },
+  { value: 'fear', label: 'afraid' },
+  { value: 'distress', label: 'desperate' },
+  { value: 'pain', label: 'in pain' },
+  { value: 'sadness', label: 'sad' },
+  { value: 'disappointment', label: 'disappointed' },
+  { value: 'guilt', label: 'guilty' },
+  { value: 'embarassment', label: 'embarrassed' }, // sic: the EARS file name
+  { value: 'contentment', label: 'happy' },
+  { value: 'amusement', label: 'amused' },
+  { value: 'adoration', label: 'tender' },
+  { value: 'relief', label: 'relieved' },
+  { value: 'amazement', label: 'surprised' },
+  { value: 'realization', label: 'realizing' },
+  { value: 'confusion', label: 'confused' },
+  { value: 'interest', label: 'curious' },
+  { value: 'pride', label: 'proud' },
+  { value: 'disgust', label: 'disgusted' },
+  { value: 'whisper', label: 'whispering' },
+  { value: 'loud', label: 'shouting' },
+];

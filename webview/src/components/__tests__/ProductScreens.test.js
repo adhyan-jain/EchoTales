@@ -81,6 +81,26 @@ describe('ProjectHome', () => {
     expect(screen.getByText('ingest')).toBeInTheDocument();
   });
 
+  test('says which source languages are supported, from the project status', async () => {
+    api.listProjects.mockResolvedValueOnce([
+      {
+        id: 'toy', content_type: 'novel', source_uploaded: true, ingested: false, chapter_count: 0, job_count: 0, last_job: null,
+        language: { supported: ['en'], statement: 'EchoTales reads English-language books only for now.' },
+      },
+    ]);
+    render(<ProjectHome novelId="toy" onNewProject={jest.fn()} />);
+    expect(await screen.findByText('EchoTales reads English-language books only for now.')).toBeInTheDocument();
+  });
+
+  test('an older server with no language field shows no language note', async () => {
+    api.listProjects.mockResolvedValueOnce([
+      { id: 'toy', content_type: 'novel', source_uploaded: true, ingested: false, chapter_count: 0, job_count: 0, last_job: null },
+    ]);
+    render(<ProjectHome novelId="toy" onNewProject={jest.fn()} />);
+    expect(await screen.findByText('Not yet')).toBeInTheDocument();
+    expect(screen.queryByText(/English-language/)).toBeNull();
+  });
+
   test('follows a queued job to its end instead of freezing on PENDING', async () => {
     jest.useFakeTimers();
     try {

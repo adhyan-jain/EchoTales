@@ -12,7 +12,7 @@ resolver fed its own answer key stops being measurable. Instead:
    log. This does not change how the resolver decides anything -- it patches
    *this run's* output, the same way a human copy-editor patches a draft.
 
-Eight correction types:
+Nine correction types:
 
 - `merge_entities` -- two entities are the same person; fold one into the other.
 - `reassign_mention` -- one specific occurrence of a name was linked to the
@@ -45,6 +45,12 @@ Eight correction types:
 - `set_gender` -- a character's gender is wrong or unknown (`male`, `female` or `unknown`). Addressed by `self_id`.
   Stored as a new gender row marked as a reviewer's, which the automatic gender pass never overwrites; voice casting
   reads it on the next run.
+
+- `set_delivery` -- how one line is performed: an emotion (EARS's names, as the reader's delivery pass writes them) and
+  an intensity 1-3. Addressed by `span_id`. Stored in its own table that the delivery pass never rewrites, and read
+  back through `Store.span_emotions` -- the call `voice/runner.py` already makes -- so the next voice run uses it with
+  no change to the runner. An explicit delivery marker in the line ("said expressionlessly") still outranks it at
+  synthesis time (non-negotiable 10).
 
 `reassign_mention` and `reassign_speaker` can target an existing entity *or*
 mint a new one (`new_label` set instead of `target_id`/`speaker_id`) -- the
@@ -109,6 +115,7 @@ class CorrectionType(StrEnum):
     REASSIGN_SPAN_TYPE = "reassign_span_type"
     CREATE_MENTION = "create_mention"
     SET_GENDER = "set_gender"
+    SET_DELIVERY = "set_delivery"
 
 
 def new_manual_entity_id(novel_id: str, correction_id: str) -> str:
@@ -314,6 +321,8 @@ def _apply_pending_locked(store: Store, log: CorrectionLog) -> dict[str, object]
                 result = _apply_create_mention(store, correction, seq=seq)
             elif correction.type is CorrectionType.SET_GENDER:
                 result = _apply_set_gender(store, correction, seq=seq)
+            elif correction.type is CorrectionType.SET_DELIVERY:
+                result = _apply_set_delivery(store, correction, seq=seq)
             else:  # pragma: no cover - CorrectionType is closed, kept for safety
                 result = {"type": correction.type.value, "error": "unknown correction type"}
         except Exception as exc:
@@ -725,3 +734,39 @@ def _apply_set_gender(store: Store, correction: Correction, *, seq: int) -> dict
         )
     )
     return {"type": "set_gender", "self_id": self_id, "gender": gender, "bodies": written}
+
+
+def _apply_set_delivery(store: Store, correction: Correction, *, seq: int) -> dict[str, object]:
+    from echotales.pipeline.reader.delivery_pass import LABELS
+
+    span_id = str(correction.payload.get("span_id", ""))
+    emotion = str(correction.payload.get("emotion", "")).strip()
+    intensity = correction.payload.get("intensity")
+
+    def refuse(why: str) -> dict[str, object]:
+        return {"type": "set_delivery", "span_id": span_id, "error": why}
+
+    # The stored emotion is the corpus name the delivery pass writes ("anger", not "angry"), so a clip can be picked by it.
+    if emotion not in set(LABELS.values()):
+        return refuse(f"emotion must be one of {sorted(set(LABELS.values()))}, got {emotion!r}")
+    if isinstance(intensity, bool) or not isinstance(intensity, int) or not 1 <= intensity <= 3:
+        return refuse(f"intensity must be 1, 2 or 3, got {intensity!r}")
+    found = store.span_chapter_and_type(correction.novel_id, span_id)
+    if found is None:
+        return refuse("span not found")
+    chapter, span_type = found
+    # Narration has a mood per passage rather than a per-line emotion; giving it one here would be read by nothing.
+    if span_type not in (SpanType.DIALOGUE.value, SpanType.INNER_MONOLOGUE.value, SpanType.CROWD_REACTION.value):
+        return refuse("only a quoted line (dialogue, inner monologue or a crowd reaction) has a delivery")
+    store.set_span_emotion_override(correction.novel_id, span_id, chapter, emotion, intensity)
+    store.append_event(
+        ResolutionEvent(
+            id=f"{correction.novel_id}:correction:{correction.id}",
+            seq=seq,
+            type=EventType.ATTRIBUTE_UPDATE,
+            payload={"span_id": span_id, "key": "delivery", "value": f"{emotion}:{intensity}",
+                     "source": "human_correction", "correction_id": correction.id},
+            cause_pos=DiscoursePosition(chapter=int(chapter), offset=0),
+        )
+    )
+    return {"type": "set_delivery", "span_id": span_id, "emotion": emotion, "intensity": intensity}

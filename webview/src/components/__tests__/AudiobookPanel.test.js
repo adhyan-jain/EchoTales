@@ -125,6 +125,33 @@ describe('AudiobookPanel', () => {
     expect(await screen.findByText(/server restarted while queued/i)).toBeInTheDocument();
   });
 
+  const estimate = {
+    chapters: 3, seconds: 5400, cost_usd: 0, measured: false,
+    stages: [
+      { stage: '0 ingest', seconds: 60, seconds_per_chapter: 20, basis: 'measured' },
+      { stage: '6b reader', seconds: 5340, seconds_per_chapter: 1780, basis: 'estimate' },
+    ],
+  };
+
+  test('a running build shows its estimate per stage, labelled measured or estimate, with the total', async () => {
+    mount({ jobs: [{ job_id: 'p', kind: 'pipeline', status: 'RUNNING', created_at: 1, estimate }] });
+    const box = await screen.findByLabelText('Run estimate');
+    expect(box).toHaveTextContent('0 ingest');
+    expect(box).toHaveTextContent('1 min');
+    expect(box).toHaveTextContent('measured');
+    expect(box).toHaveTextContent('6b reader');
+    expect(box).toHaveTextContent('89 min');
+    expect(box).toHaveTextContent('estimate');
+    expect(box).toHaveTextContent(/Total about 90 min for 3 chapters/);
+    expect(box).toHaveTextContent(/includes estimates/);
+  });
+
+  test('a finished build no longer shows the estimate', async () => {
+    mount({ jobs: [{ job_id: 'p', kind: 'pipeline', status: 'SUCCEEDED', created_at: 1, estimate }] });
+    await screen.findByText('SUCCEEDED');
+    expect(screen.queryByLabelText('Run estimate')).not.toBeInTheDocument();
+  });
+
   test('a cancelled job shows no failure text', async () => {
     mount({ jobs: [{ job_id: 'c', kind: 'pipeline', status: 'CANCELLED', created_at: 1, error_summary: 'withdrawn by user' }] });
     expect(await screen.findByText('CANCELLED')).toBeInTheDocument();

@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import html
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -74,6 +75,28 @@ def build_companion(store: Store, novel_id: str, through: float) -> dict[str, An
 
 def _n(x: float) -> int | float:
     return int(x) if float(x).is_integer() else x
+
+
+def parse_through(value: object) -> float:
+    """The reading position from a request or job parameter: a finite number above zero, never a bool or "nan".
+
+    A companion built through a position that is not a real chapter would be an empty page, or with "inf" the whole
+    book (the spoiler this feature exists to avoid), so both the route and the job refuse it the same way.
+    """
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        raise ValueError("through must be the number of the last chapter the reader has finished")
+    try:
+        through = float(value)
+    except ValueError:
+        raise ValueError("through must be the number of the last chapter the reader has finished") from None
+    if not math.isfinite(through) or through <= 0:
+        raise ValueError("through must be a finite chapter number above zero")
+    return through
+
+
+def site_dir_name(through: float) -> str:
+    """`through_3`, `through_2.5`: the folder a companion built through that chapter lives in."""
+    return f"through_{_n(through)}"
 
 
 _CSS = """\

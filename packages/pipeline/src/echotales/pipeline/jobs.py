@@ -29,6 +29,7 @@ which both `cmd_run` and this module's `run_job` call).
 
 from __future__ import annotations
 
+import json
 import logging
 import queue
 import threading
@@ -107,6 +108,8 @@ JOB_KINDS = (
     # that carries no book text; the importer only applies what matches the chapter hashes of its own copy of the book.
     "pack_export",
     "pack_import",
+    # The spoiler-safe "who is this again?" page for a reader who has finished chapter N (`echotales export companion`).
+    "companion",
 )
 
 
@@ -535,7 +538,10 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
 
         if reason := noncommercial_refusal(bank_kind, m4b=True, allowed=bool(params.get("allow_noncommercial"))):
             raise ValueError(reason)
-        bank = load_bank(bank_kind, bank_root)
+        from echotales.pipeline.project_voices import with_project_voices
+
+        # Voices the person uploaded to this project (with their consent record) are cast alongside the bank's.
+        bank = with_project_voices(load_bank(bank_kind, bank_root), novel_id)
         out_dir = params.get("out_dir") or str(paths.asset_dir(novel_id, "audio"))
         run_stage(
             store, run_id=pipeline_run.run_id, stage_name="voice",
@@ -614,11 +620,29 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         else:
             if not pack_file.is_file():
                 raise ValueError(f"no pack named {pack_file.name!r} in this project's packs folder")
-            run_stage(
+            report = run_stage(
                 store, run_id=pipeline_run.run_id, stage_name="pack_import",
                 input_digest=f"{input_digest}|{time.time()}", skip_if_succeeded=False,
                 fn=lambda: packs.import_pack(store, novel_id, pack_file, corrections_log=corrections_log),
             )
+            # A Job row has no result column, and the Studio shows what an import applied and skipped. Kept beside the
+            # pack (`GET .../packs` reads it), so the answer outlives the job card and a reload.
+            if report is not None:
+                pack_file.with_name(pack_file.name + ".report.json").write_text(
+                    json.dumps(report.to_dict(), ensure_ascii=False), encoding="utf-8")
+    elif job.kind == "companion":
+        from echotales.pipeline import paths
+        from echotales.pipeline.companion import build_companion, parse_through, site_dir_name, write_companion_site
+
+        through = parse_through(params.get("through"))
+        # The folder comes from the project and the chapter, never from the request.
+        out = Path(paths.asset_dir(novel_id, "companion")) / site_dir_name(through)
+        # Not skippable by digest: the book can have changed since an identical earlier request.
+        run_stage(
+            store, run_id=pipeline_run.run_id, stage_name="companion",
+            input_digest=f"{input_digest}|{time.time()}", skip_if_succeeded=False,
+            fn=lambda: write_companion_site(build_companion(store, novel_id, through), out),
+        )
     elif job.kind == "refimg_search":
         from echotales.pipeline.persona import refimg
 

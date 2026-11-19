@@ -25,6 +25,7 @@ export default function ScriptView({
   onFlagLine,
   onMergeLines,
   onRetype,
+  onSetDelivery,
   onCreateMention,
 }) {
   // `chapter` can be undefined for a beat after a manifest refresh --
@@ -59,6 +60,7 @@ export default function ScriptView({
             canMergeUp={editMode && sameBlock(prev, span)}
             onMergeUp={() => onMergeLines(prev.span_id, span.span_id, chapter.number)}
             onRetype={(s, newType) => onRetype(s, newType, chapter.number)}
+            onSetDelivery={onSetDelivery}
             onCreateMention={onCreateMention ? (s, e) => onCreateMention(s, e, chapter.number) : undefined}
           />
         );
