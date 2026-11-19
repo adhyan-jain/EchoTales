@@ -113,3 +113,9 @@ def test_staging_is_asked_to_keep_the_previous_scenes_set_unless_the_text_moves_
     seen.clear()
     direct_staging("He sat down.", cast={"Fang Yuan": ""}, novel_style="x", client=Client())
     assert "PREVIOUS" not in seen["prompt"]
+
+
+def test_staging_rules_keep_a_coloured_glow_on_its_source_not_in_the_scene_light() -> None:
+    from echotales.pipeline.render.staging import STAGING_SYSTEM
+
+    assert "coloured glow belongs to what glows" in STAGING_SYSTEM

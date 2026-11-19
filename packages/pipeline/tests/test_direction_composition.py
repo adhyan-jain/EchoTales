@@ -60,6 +60,21 @@ def test_a_paragraph_that_empties_a_confirmed_crowd_is_blanked(tmp_path) -> None
     assert d.composition == ""
 
 
+def test_a_misspelt_name_in_a_one_person_cast_is_that_person_not_a_second_unnamed_figure() -> None:
+    # LotM ch1 block 24: the director wrote "Zhou Yuan" for Zhou Mingrui; the guard made it "a figure", the image then had a
+    # second, unnamed person beside the hero and the scene's crimson light made that figure glow red.
+    d = _validate_direction(
+        PanelDirection(composition="Zhou Yuan stands alone in a dim study, eyes wide, crimson light on the desk."),
+        beat_text="Zhou Mingrui stared at the crimson light on the desk.", cast={"Zhou Mingrui": "brown hair"})
+    assert d.composition.startswith("Zhou Mingrui stands alone") and "a figure" not in d.composition
+    assert any(r.startswith("fabricated:") for r in d.grounding_rejects)
+    # with two people in CAST the stranger stays an unnamed figure: we cannot know which one was meant
+    two = _validate_direction(
+        PanelDirection(composition="Zhang Wei stands beside Fang Yuan."), beat_text="Fang Yuan stood. Li Si stood.",
+        cast={"Fang Yuan": "", "Li Si": ""})
+    assert "a figure" in two.composition and "Zhang Wei" not in two.composition
+
+
 def test_visual_source_other_than_text_or_inferred_becomes_text() -> None:
     d = _validate_direction(PanelDirection(composition="", visual_source="guess"), beat_text=PASSAGE, cast=CAST)
     assert d.visual_source == "text"

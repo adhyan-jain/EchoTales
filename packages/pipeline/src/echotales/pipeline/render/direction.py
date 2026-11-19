@@ -1074,7 +1074,12 @@ def _validate_composition(
                 if len(words) == 1 and at_sentence_start:
                     continue
                 rejects.append(f"fabricated:{bare}")
-                text = text[: span.start] + "a figure" + text[span.start + len(bare):]
+                # With one person in CAST a name the story never says is almost always that person misspelt ("Zhou Yuan" for Zhou
+                # Mingrui, LotM ch1 block 24); "a figure" drew a second, unnamed person beside him, and the scene's crimson light
+                # made that figure glow red. Only when the paragraph does not already name him.
+                lone = next(iter(cast)) if len(cast) == 1 else ""
+                who = lone if lone and lone.lower() not in text.lower() else "a figure"
+                text = text[: span.start] + who + text[span.start + len(bare):]
     updates["composition"] = text
     updates["grounding_rejects"] = rejects
     return d.model_copy(update=updates)
