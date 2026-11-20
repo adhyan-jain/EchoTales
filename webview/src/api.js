@@ -558,21 +558,23 @@ export const api = {
       body: JSON.stringify(body),
     }),
 
-  listShotCandidates: (novelId, episodeId, shotIndex) =>
-    request(`/api/novels/${enc(novelId)}/episodes/${enc(episodeId)}/shots/${enc(shotIndex)}/candidates`),
-
-  rerollShotCandidates: (novelId, episodeId, shotIndex, body = {}) =>
-    request(`/api/novels/${enc(novelId)}/episodes/${enc(episodeId)}/shots/${enc(shotIndex)}/reroll`, {
+  // One panel redrawn (a render job with `panel_id`, `chapter`, optional `direction`/`candidates`), the candidates of every
+  // panel in a chapter's newest render, and the pick that pages and videos then use ("original" undoes it).
+  redrawPanel: (novelId, body) =>
+    request(`/api/projects/${enc(novelId)}/render`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     }),
 
-  lockShotCandidate: (novelId, episodeId, shotIndex, candidateId) =>
-    request(`/api/novels/${enc(novelId)}/episodes/${enc(episodeId)}/shots/${enc(shotIndex)}/lock`, {
+  listPanels: (novelId, chapter) =>
+    request(`/api/novels/${enc(novelId)}/panels?chapter=${enc(chapter)}`),
+
+  choosePanelCandidate: (novelId, body) =>
+    request(`/api/novels/${enc(novelId)}/panels/choose`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ candidate_id: candidateId }),
+      body: JSON.stringify(body),
     }),
 };
 

@@ -18,6 +18,8 @@ jest.mock('../../api', () => ({
     novel: jest.fn(),
     chapters: jest.fn(),
     outputFileUrl: jest.fn(),
+    listPanels: jest.fn(),
+    mediaUrl: jest.fn((u) => u),
   },
 }));
 
@@ -304,6 +306,7 @@ describe('GenerationWorkspace', () => {
   beforeEach(() => {
     api.chapters.mockResolvedValue([{ number: 1 }, { number: 2 }]);
     api.compute.mockResolvedValue(COMPUTE_STUB_ONLY);
+    api.listPanels.mockResolvedValue({ version: 'v1_stub', panels: [] });
   });
 
   test('fetches its own chapter list rather than trusting a stale prop', async () => {
@@ -382,10 +385,14 @@ describe('GenerationWorkspace', () => {
     expect(screen.getByTestId('engine-note')).toHaveTextContent(/still needs ECHOTALES_RUNPOD_API_KEY/);
   });
 
-  test('renders honest not-yet-available states for preview and QA', async () => {
+  test('shows the panels of the newest render for redrawing instead of a not-available notice', async () => {
     api.listJobs.mockResolvedValue([]);
+    api.listPanels.mockResolvedValue({
+      version: 'v1_stub',
+      panels: [{ panel_id: 'toy:1:0', panel_seq: 0, chosen: 'original', direction: '', candidates: [{ id: 'original', round: 0, direction: '', path: 'panels/ch1/v1_stub/a.png' }] }],
+    });
     withToast(<GenerationWorkspace novelId="toy" />);
-    expect((await screen.findAllByText(/not yet available/i)).length).toBeGreaterThanOrEqual(2);
-    await waitFor(() => expect(api.listJobs).toHaveBeenCalled());
+    expect(await screen.findByRole('button', { name: 'Redraw panel 0' })).toBeInTheDocument();
+    expect(screen.queryByText(/not yet available/i)).not.toBeInTheDocument();
   });
 });

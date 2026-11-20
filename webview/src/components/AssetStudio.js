@@ -308,7 +308,7 @@ export default function AssetStudio({ novelId }) {
                       <div className="relative flex h-48 items-center justify-center rounded-xl bg-bg/80 overflow-hidden border border-border/40">
                         {cand.image_url ? (
                           <img
-                            src={cand.image_url}
+                            src={api.mediaUrl(cand.image_url)}
                             alt={cand.title || `Turnaround ${cand.id}`}
                             className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
                             onError={(e) => {
@@ -418,7 +418,7 @@ export default function AssetStudio({ novelId }) {
                       <div className="relative flex h-48 items-center justify-center rounded-xl bg-bg/80 overflow-hidden border border-border/40">
                         {plate.image_url ? (
                           <img
-                            src={plate.image_url}
+                            src={api.mediaUrl(plate.image_url)}
                             alt={plate.title || `Master Plate ${plate.id}`}
                             className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
                             onError={(e) => {
