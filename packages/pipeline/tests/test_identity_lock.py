@@ -276,3 +276,13 @@ def test_a_garment_stated_late_in_a_long_scene_beats_the_genre_default(tmp_path)
     again = _lock(store, scene=il.SceneContext("1:0", long_scene, None, "t"), name="Klein", facts={"hair_color": "black"})
     assert again.outfit == "a linen shirt" and client.calls == calls, "the image pass reads the stored windows, asks nothing"
     store.close()
+
+
+def test_a_scene_hair_that_is_only_a_condition_keeps_the_locked_hair_and_joins_the_state() -> None:
+    d = il.choose_defaults("s", "male", True)
+    facts = {"hair_color": "black", "hair_style": "long hair tied up in a topknot"}
+    lock = il.build_lock("p", facts, d, scene_hair="disheveled", scene_state="robes torn to shreds")
+    assert "black" in lock.hair and "topknot" in lock.hair and "disheveled" not in lock.hair
+    assert "hair disheveled" in lock.state and "torn to shreds" in lock.state
+    kept = il.build_lock("p", facts, d, scene_hair="black hair in a bun")
+    assert "bun" in kept.hair and kept.source["hair"] == "scene"

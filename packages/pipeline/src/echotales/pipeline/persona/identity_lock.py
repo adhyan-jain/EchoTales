@@ -50,6 +50,12 @@ _GARMENT = {
 _BUILD = {"male": ("a lean build", "a lean build", "an average build"), "female": ("a slender build",)}
 
 
+_FIXED_HAIR = re.compile(
+    r"\b(black|white|silver|grey|gray|golden|gold|blond\w*|brown|auburn|red|ginger|chestnut|dark|light|pale|dyed|green|blue|pink|purple|"
+    r"long|short|medium|shoulder|cropped|shaved|bald|braid\w*|ponytail|topknot|bun|tied|bound|loose|curly|curls|wavy|straight|"
+    r"fringe|bangs|parted)\b", re.I)
+
+
 def _pick(seed: str, options: tuple[Any, ...], salt: str) -> Any:
     return options[int(hashlib.md5(f"{salt}:{seed}".encode()).hexdigest(), 16) % len(options)]
 
@@ -125,6 +131,11 @@ def build_lock(
     graph facts, the stored defaults. Pure: the same inputs give the same words, which is the whole point."""
     src: dict[str, str] = {}
     genre = genre or {}
+    if scene_hair and not _FIXED_HAIR.search(scene_hair):
+        # "disheveled" is how the hair is in one scene, not which hair it is: used as the hair it erased the colour and style ("a man
+        # with disheveled hair"), and the topknot came and went across the cliff scene (round 3). It joins the scene's state instead.
+        scene_state = f"{scene_state}, hair {scene_hair.strip()}".strip(", ")
+        scene_hair = ""
     colour = _plain(facts.get("hair_color", "")) or _plain(genre.get("hair_color", ""))
     style = _plain(facts.get("hair_style", ""))
     if sheet is not None:

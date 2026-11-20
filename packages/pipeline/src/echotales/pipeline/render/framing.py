@@ -212,14 +212,17 @@ def framing_sentence(f: Framing, lead: str, *, people: bool = True) -> str:
     if f.focus == "hands":
         return f"Close-up on {who}'s hands and what they hold, filling the frame, the face out of the picture{angle}."
     if f.focus == "over-shoulder":
-        other = f.subject if f.subject and f.subject != "the speaker" else "the other person"
-        return (f"Over-the-shoulder shot: the back of {other}'s head and shoulder at the edge of the frame in the foreground, "
-                f"{who}'s face turned toward the viewer beyond it.")
+        other = f.subject if f.subject and f.subject != "the speaker" else "one of the people around him"
+        return (f"Over-the-shoulder shot: the back of the head and shoulder of {other} at the edge of the frame in the foreground, "
+                f"{who} large in the middle of the frame, his face turned toward the viewer beyond it.")
     if f.focus == "establishing" or f.size == "wide":
         return (f"Wide establishing shot from far back{angle}: the whole place fills the frame and "
                 f"{'any people are small in it' if people else 'it is empty of people'}.")
     if f.size == "close":
-        return f"Close-up portrait of {who}, head and shoulders filling the frame, the face large and clearly drawn{angle}."
+        # "the face large" and "filling the frame" drew a chibi (huge head on a small full body) in 3 of 3 RI close-ups whose
+        # paragraph still described the whole scene; the crop is stated as a crop with natural proportions (round 3).
+        return (f"Close-up shot cropped at the chest, natural realistic proportions: only {who}'s head, neck and shoulders are in "
+                f"the picture and the place is a soft background{angle}.")
     return f"Medium shot of {who} from the waist up{angle}."
 
 
@@ -236,3 +239,20 @@ def apply_framing(direction: object, f: Framing, lead: str) -> object:
         "shot": f.size, "camera_angle": f.angle if f.angle != "over-the-shoulder" else "eye-level",
         "frame": framing_sentence(f, lead, people=f.focus != "prop"), "frame_focus": f.focus,
     })
+
+
+_FACE_SENTENCE = re.compile(
+    r"\b(face|eyes?|gaze|stares?|stared|looks?|looking|expression|smile[sd]?|smirk\w*|sneer\w*|brows?|lips?|mouth|teeth|jaw|cheeks?|"
+    r"tears?|blood|wounds?|hair|chin|glare\w*|grin\w*|laugh\w*|frown\w*)\b", re.I)
+
+
+def crop_composition(text: str, focus: str) -> str:
+    """The director's paragraph cut to what a close-up can show: the sentences about the face and the body's state, else the first
+    sentence. A close-up whose paragraph still said "stands amidst the carnage, the battlefield littered with corpses" drew a huge
+    head on a small full body (a chibi, 3 of 3 RI close-ups in the first round-3 render); an eye crop keeps only eye and gaze
+    sentences, or nothing."""
+    sentences = [s for s in re.split(r"(?<=[.!?])\s+", text.strip()) if s]
+    if focus == "eyes":
+        return " ".join(s for s in sentences if re.search(r"\b(eyes?|gaze|stares?|stared|glare\w*|brows?)\b", s, re.I))
+    keep = [s for s in sentences if _FACE_SENTENCE.search(s)]
+    return " ".join(keep or sentences[:1])

@@ -62,3 +62,9 @@ def test_validate_composition_applies_it_with_the_staging_as_allowed_text() -> N
     assert "lone figure" not in out.composition and "moon" not in out.composition.lower()
     assert "Fang Yuan gazes out" in out.composition
     assert any(r == "sky:moon" for r in out.grounding_rejects)
+
+
+def test_a_cut_clause_never_leaves_a_dangling_fragment() -> None:
+    text = "The mountaintop is bathed in the pale light of the moon. Fang Yuan stands alone against it."
+    out, rejects = scrub_unstated(text, allowed="Light: night.", lead="Fang Yuan")
+    assert out == "Fang Yuan stands alone against it." and "sky:moon" in rejects

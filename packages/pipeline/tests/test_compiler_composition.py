@@ -84,6 +84,14 @@ def test_a_close_up_drops_the_full_body_blocking_line_but_keeps_set_and_light() 
     assert "Blocking" in wide.positive
 
 
+def test_a_close_up_paragraph_is_cut_to_the_face_so_the_head_is_not_drawn_on_a_full_body() -> None:
+    para = "Fang Yuan stands amidst the carnage on the battlefield. His face is a cold mocking smile with narrowed eyes."
+    out = compile_prompt(brief(shot="close", composition=para, staging=STAGING, framing="Close-up."), model_profile("z-image-turbo"))
+    assert "carnage" not in out.positive and "narrowed eyes" in out.positive
+    wide = compile_prompt(brief(shot="wide", composition=para, staging=STAGING), model_profile("z-image-turbo"))
+    assert "carnage" in wide.positive
+
+
 def test_an_insert_has_nobody_in_it_and_only_the_set() -> None:
     out = compile_prompt(
         brief(characters=[], frame_focus="prop", shot="close", staging=STAGING,

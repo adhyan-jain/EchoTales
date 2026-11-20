@@ -96,6 +96,16 @@ def test_inserts_are_not_back_to_back() -> None:
 def test_the_sentence_names_the_shot_and_the_insert_has_nobody_in_it() -> None:
     insert = fr.Framing("close", focus="prop", subject="revolver")
     assert "revolver" in fr.framing_sentence(insert, "Zhou Mingrui") and "nobody" in fr.framing_sentence(insert, "Zhou Mingrui")
+    assert "natural realistic proportions" in fr.framing_sentence(fr.Framing("close"), "Ada")
     assert fr.framing_sentence(fr.Framing("close", focus="eyes"), "Ada").startswith("Extreme close-up on Ada's eyes")
     assert fr.framing_sentence(fr.Framing("wide", focus="establishing"), "Ada").startswith("Wide establishing")
     assert "low angle" in fr.framing_sentence(fr.Framing("medium", "low-angle"), "Ada")
+
+
+def test_a_close_up_keeps_the_face_sentences_and_drops_the_scene_they_sat_in() -> None:
+    para = ("Fang stands amidst the carnage. The battlefield is a gruesome sight, littered with corpses. "
+            "His face shows a cold mocking smile with narrowed eyes.")
+    assert fr.crop_composition(para, "") == "His face shows a cold mocking smile with narrowed eyes."
+    assert fr.crop_composition(para, "eyes") == "His face shows a cold mocking smile with narrowed eyes."
+    assert fr.crop_composition("The room is quiet. Dust drifts.", "") == "The room is quiet."
+    assert fr.crop_composition("The room is quiet.", "eyes") == ""

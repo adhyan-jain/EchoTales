@@ -1139,6 +1139,9 @@ def _drop_segments(sentence: str, cue: re.Pattern[str]) -> str:
     if not kept:
         return ""
     text = "".join(seg if j == 0 else delim + seg for j, (delim, seg) in enumerate(kept)).strip(" ,;")
+    # What is left must still be a sentence: "The mountaintop is" (its moon clause cut) or a 3-word stub is dropped whole.
+    if len(text.split()) < 5 or re.search(r"\b(?:is|are|was|were|be|been|being|in|on|by|with|of|the|a|an|and|as|while|at|to|from)$", text, re.I):
+        return ""
     if kept[0] != segs[0]:  # the opening segment went ("Under the pale moon, Fang smirks."): the next one opens the sentence
         text = text[:1].upper() + text[1:]
     return text + ("." if sentence.rstrip().endswith(".") and not text.endswith(".") else "")

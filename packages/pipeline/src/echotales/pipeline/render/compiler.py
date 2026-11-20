@@ -720,7 +720,12 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     insert = b.frame_focus == "prop"
     staging_text = trim_staging(b.staging.strip(), b.frame_focus, b.shot) if b.staging else ""
     stage = PromptSection("staging", staging_text) if staging_text else None
-    comp = None if insert else PromptSection("composition", b.composition.strip())
+    cropped = b.composition.strip()
+    if b.shot == "close" and b.frame_focus in ("", "eyes", "hands"):
+        from echotales.pipeline.render.framing import crop_composition
+
+        cropped = crop_composition(cropped, b.frame_focus) if b.frame_focus != "hands" else ""
+    comp = None if insert or not cropped else PromptSection("composition", cropped)
     written: dict[str, bool] = {}
     fields: dict[str, list[str]] = {}
     # Identity right after the style lead, before the scene: Z-Image has no CFG, so what the prompt says first and fixedly is
@@ -737,7 +742,7 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     # A close shot leads with its own paragraph: staging first drew a second small hero at the cliff edge behind the
     # foreground one (2 of 2 seeds, 2026-11-19); paragraph first drew one (2 of 2).
     s += [x for x in ((comp, stage) if (stage and b.shot == "close") else (stage, comp)) if x]
-    said = f"{b.composition} {staging_text}".lower()
+    said = f"{cropped} {staging_text}".lower()
     clauses: list[str] = []
     # A staging sheet that names a Set is the one statement of the place (and "Light:" of the light): the genre locale and the
     # director's own setting are guesses from cue words, and appended after it they drew a timber hall and an open field on

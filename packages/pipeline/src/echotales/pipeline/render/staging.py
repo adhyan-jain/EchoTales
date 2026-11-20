@@ -160,7 +160,8 @@ def expression_conflicts(expression: str, context: str) -> str:
 # staging sheet fixes the set: gemma2:9b wrote "grass", "a forest clearing", "a busy marketplace" and "cobblestone street" into panels
 # of a bare mountaintop (RI ch1, 2026-11-19, 7 of 16 panels), and the image model drew them.
 _PLACE_NOUNS = ("grass", "meadow", "field", "plain", "forest", "woods", "marketplace", "market", "street", "cobblestone", "courtyard",
-                "garden", "village", "hall", "temple", "pavilion", "desert", "beach", "river", "lake", "snow", "bamboo")
+                "garden", "village", "hall", "temple", "pavilion", "desert", "beach", "river", "lake", "snow", "bamboo", "cave", "cavern",
+                "dungeon", "mansion", "palace", "tavern", "shrine", "platform", "valley")
 
 
 def place_conflicts(composition: str, staging: str, source_text: str) -> list[str]:
