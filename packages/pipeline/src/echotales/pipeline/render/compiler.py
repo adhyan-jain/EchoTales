@@ -234,6 +234,9 @@ class PanelBrief:
     frame_focus: str = ""
     #: The lead's face as drawn parts (`render/face.py`), written right after the identity so it is not the paragraph's last words.
     face: str = ""
+    #: The light and mood grade written from the scene's stated time and light source (`render/lightgrade.py`), right after the
+    #: framing; empty when the text states no light.
+    grade: str = ""
     #: "text" when the panel's own text shows something; "inferred" when the director chose a visual from the text's
     #: referents because nothing visible was stated. Carried so `audit` can count them.
     visual_source: str = ""
@@ -472,6 +475,8 @@ def compile_prompt(
 
 _NATURAL_SHOT = {"wide": "A wide establishing shot", "medium": "A medium shot", "close": "A close-up portrait"}
 _NOUN = {"male": "man", "female": "woman"}
+#: Adults are drawn as adults: a face with a defined jaw and mature proportions, never the big-eyed round face of a child.
+_ADULT_FACE = ", an adult face with a defined jaw and mature proportions"
 _CHILD_NOUN = {"male": "boy", "female": "girl", "unknown": "child"}
 _TEEN_NOUN = {"male": "teenage boy", "female": "teenage girl", "unknown": "teenager"}
 _CREATURE_WORDS = re.compile(r"\b(beast|centipede|demon|spirit|dragon|monster|imp|wolf|chimera|creature|fiend)\b", re.IGNORECASE)
@@ -485,10 +490,20 @@ def _plain(text: str) -> str:
     return re.sub(r"\s+", " ", (text or "").replace("_", " ")).strip().strip(",.")
 
 
+def body_is_young(age_band: str, age_years: int = 0) -> bool:
+    """Whether a body is drawn as a child or a teenager. The graph's "youth" band covers 13 to about 25 and was always drawn as a
+    teenage boy, so LotM's 22-year-old Klein came out about twelve (round 3, 16 of 16 panels): "youth" is young only when a stated
+    age says under 18; with no age it is a young adult. Child, teen, teenager and adolescent stay young."""
+    band = (age_band or "").lower()
+    if band == "youth":
+        return 0 < age_years < 18
+    return band in ("child", "teen", "teenager", "adolescent")
+
+
 def _identity_head(c: CharacterBrief) -> tuple[str, bool]:
     """`("Name is a 15-year-old boy", young)`: who the person is before any look."""
     age_band = (c.age_band or "").lower()
-    young = age_band in ("child", "teen", "teenager", "adolescent", "youth")
+    young = body_is_young(age_band, c.age_years)
     if young and c.age_years:
         # RI's reborn fifteen-year-old was drawn as the grown man because "youth" had no wording and no number; a stated
         # age in plain words is what lets Z-Image draw a younger version of the same face.
@@ -500,12 +515,14 @@ def _identity_head(c: CharacterBrief) -> tuple[str, bool]:
     elif age_band == "child":
         noun = _CHILD_NOUN.get(c.gender, "child")
         head = f"{c.name} is a young {noun}"
-    elif age_band in ("teen", "teenager", "adolescent", "youth"):
+    elif young:
         noun = _TEEN_NOUN.get(c.gender, "teenager")
         head = f"{c.name} is a {noun}"
     else:
         noun = _NOUN.get(c.gender, "person")
-        age = c.age_band if c.age_band and c.age_band not in ("adult", "unknown") else ""
+        age = c.age_band if c.age_band and c.age_band not in ("adult", "unknown", "youth") else ""
+        if age_band == "youth":
+            age = "young"
         head = f"{c.name} is a{'n' if (age or noun)[0] in 'aeiou' else ''} {f'{age} ' if age else ''}{noun}"
     return head, young
 
@@ -530,7 +547,7 @@ def identity_sentence(c: CharacterBrief, appearance: AppearanceInText = Appearan
     if c.locked is not None:
         # The interval's locked words (`persona/identity_lock.py`): hair style, build and clothes included, so the model has
         # nothing left to choose per panel. A young body keeps its youthful face, which the lock does not carry.
-        face = ", a smooth youthful face" if young else ""
+        face = ", a smooth youthful face" if young else _ADULT_FACE if c.age_band != "elder" else ""
         return _plain(f"{head} with {c.locked.description()}{face}") + "."  # type: ignore[attr-defined]
     facts = {k: v for k, v in c.appearance.items() if v and k not in _SKIP}
     hair_bits = [v for k, v in facts.items() if _HAIR.search(k)]
@@ -558,6 +575,8 @@ def identity_sentence(c: CharacterBrief, appearance: AppearanceInText = Appearan
         text += " with " + (", ".join(feats[:-1]) + " and " + feats[-1] if len(feats) > 1 else feats[0])
     if young:
         text += ", a smooth youthful face and a " + ("slight build" if c.gender == "female" else "slim boyish build")
+    elif c.age_band != "elder":
+        text += _ADULT_FACE
     if c.attire:
         text += f", wearing {_plain(c.attire)}"
     return _plain(text) + "."
@@ -710,13 +729,14 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     nothing scene-dependent is in them; wounds and clothing state live in the paragraph, which comes from the panel's text.
     Setting clauses the paragraph already says are not repeated."""
     from echotales.pipeline.persona.genre import style_lead
-
     lead = _MANGA_LEAD if b.mode is OutputMode.MANGA else style_lead(b.novel_id)
     s = [PromptSection("style", lead)]
     # The framing comes straight after the style lead: Z-Image has no CFG, so the shot named first and plainly is the shot drawn.
     # Before this the compiled prompt never named a shot (16 of 16 LotM panels were one medium shot, EVOLUTION 4.171).
     if b.framing:
         s.append(PromptSection("framing", b.framing))
+    if b.grade:
+        s.append(PromptSection("grade", b.grade))
     insert = b.frame_focus == "prop"
     staging_text = trim_staging(b.staging.strip(), b.frame_focus, b.shot) if b.staging else ""
     stage = PromptSection("staging", staging_text) if staging_text else None
@@ -994,7 +1014,7 @@ def character_brief(
 
         years = body_age_years(store, persona_id, novel_id=novel_id, entity_id=self_id, position=position)
     final_gender = gender if gender in ("male", "female") else (gender_hint or "unknown")
-    young = age in ("child", "youth", "teen", "teenager", "adolescent")
+    young = body_is_young(age, years)
     from echotales.pipeline.persona.identity_lock import lock_for
 
     locked = lock_for(
@@ -1053,6 +1073,8 @@ def brief_from_direction(
 
     The crowd comes from the director's layout and the crowd-cut flag, never from the headcount tag: the old path wrote
     "solo" because nothing here knew a crowd existed."""
+    from echotales.pipeline.render.lightgrade import light_grade  # type: ignore[import-untyped]
+
     art, wardrobe, manhua = genre_direction(novel_id)
     d = direction
     layout = (getattr(d, "layout", "") or "").lower()
@@ -1135,6 +1157,10 @@ def brief_from_direction(
         composition=composition, staging=(getattr(d, "staging", "") or "") if composition else "",
         visual_source=getattr(d, "visual_source", "") or "",
         framing=getattr(d, "frame", "") or "", frame_focus=frame_focus, face=_drawn(lead_face),
+        grade=light_grade(
+            (getattr(d, "staging", "") or "") if composition else "", getattr(d, "lighting", "") or "", passage,
+            f"{location} {getattr(d, 'setting', '')} {loc_detail}", composition, mood=mood,
+        ),
     )
 
 

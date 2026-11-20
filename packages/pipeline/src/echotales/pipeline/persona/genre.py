@@ -405,26 +405,25 @@ def profile(novel_id: str) -> GenreProfile:
     return GENRES[genre_of(novel_id)]
 
 
-#: One FIXED style lead per genre, used unchanged on every panel (owner, 2026-11-19: the probe sheet drifted between ink-wash,
-#: flat cel and Japanese faces because the lead was vague). The target level is the Lord of the Mysteries donghua: cel-shaded
-#: 2D, clean line art, painterly backgrounds, muted palette, not photoreal and not cartoony. Style only: any architecture
-#: here (the old xianxia block named pavilions and paifang) was drawn into every scene including a bare cliff.
-STYLE_LEADS: dict[str, str] = {
-    "xianxia": ("Chinese xianxia donghua style, 2D cel-shaded anime illustration with clean line art, flat cel colour, "
-                "painterly guofeng backgrounds and a muted desaturated palette, no photorealism."),
-    "victorian_gothic": ("Victorian gothic donghua style, 2D cel-shaded anime illustration with clean line art, flat cel "
-                         "colour, painterly gaslamp-era backgrounds and a muted desaturated palette, no photorealism."),
-    "modern_apocalypse": ("Modern urban donghua style, 2D cel-shaded anime illustration with clean line art, flat cel "
-                          "colour, painterly backgrounds and a muted desaturated palette, no photorealism."),
-    "contemporary": ("Contemporary anime style, 2D cel-shaded illustration with clean line art, flat cel colour, painterly "
-                     "backgrounds and a muted desaturated palette, no photorealism."),
-    "western_fantasy": ("Western fantasy donghua style, 2D cel-shaded anime illustration with clean line art, flat cel "
-                        "colour, painterly backgrounds and a muted desaturated palette, no photorealism."),
-    "science_fiction": ("Science fiction anime style, 2D cel-shaded illustration with clean line art, flat cel colour, "
-                        "painterly backgrounds and a muted desaturated palette, no photorealism."),
-    "generic": ("Period drama anime style, 2D cel-shaded illustration with clean line art, flat cel colour, painterly "
-                "backgrounds and a muted desaturated palette, no photorealism."),
+#: One FIXED style lead for every novel, with only a "Set in ..." flavour per genre (owner, 2026-11-20: colour is the primary
+#: output, "realistic instead of the too cartoonic vibe", the model being typical Korean full-colour webtoons; and one look per
+#: novel, not RI- or LotM-specific). The round-3 leads said "2D cel-shaded anime illustration ... flat cel colour", which drew
+#: big-eyed Ghibli-like faces and a 22-year-old as a child (LotM ch1 16 of 16, RI cliff chibi close-ups). The hand-written RI
+#: briefs the owner liked said "richly coloured painted illustration" and never named flat cel colour. Style only: any
+#: architecture here (the old xianxia block named pavilions and paifang) was drawn into every scene including a bare cliff.
+_LOOK = ("Korean webtoon colour illustration, semi-realistic manhwa style: clean fine lineart, soft cel shading with airbrushed "
+         "gradients and rim light, realistic adult proportions and mature faces with natural eyes, richly detailed painterly "
+         "backgrounds, cinematic natural colour grading with deep shadows, an illustration and not a photograph.")
+_FLAVOUR: dict[str, str] = {
+    "xianxia": "Set in a Chinese xianxia world, hanfu robes, guofeng painted scenery.",
+    "victorian_gothic": "Set in a Victorian gothic city, gaslamp-era clothes and streets.",
+    "modern_apocalypse": "Set in a modern city under a supernatural disaster.",
+    "contemporary": "Set in the present day.",
+    "western_fantasy": "Set in a western fantasy world.",
+    "science_fiction": "Set in a science-fiction future.",
+    "generic": "Set in a period drama world.",
 }
+STYLE_LEADS: dict[str, str] = {k: f"{_LOOK} {v}" for k, v in _FLAVOUR.items()}
 
 
 def style_lead(novel_id: str) -> str:

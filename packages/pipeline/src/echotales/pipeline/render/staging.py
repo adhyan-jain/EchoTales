@@ -22,7 +22,7 @@ class SceneStaging(BaseModel):
 
     #: The place, concrete and taken only from the scene's own text ("bare rock cliff edge, twisted pines, sea of clouds").
     set: str = Field(default="")
-    #: Who stands where, facing whom, on which side of the frame; crowds in rows or a shallow arc on one side.
+    #: Who stands where, facing whom, on which side of the frame; a crowd as a dense uneven mass on one side.
     blocking: str = Field(default="")
     #: Time of day and light, only if the scene states or implies it.
     light: str = Field(default="")
@@ -45,14 +45,14 @@ STAGING_SYSTEM = (
     "gates, pavilions or ornaments the text does not name.\n"
     "- blocking: who stands where, facing whom, and on which side of the frame. Keep one axis: the lead on one side, the "
     "others on the opposite side facing the lead, so the camera never crosses the line between them. A crowd or group "
-    "faces its focus in rows on ONE side of the frame; it never "
+    "faces its focus on ONE side of the frame as a dense, uneven crowd (many different people packed close at different depths, never straight lines); it never "
     "forms a ring around anyone unless the text literally says they surround him. People who kneel to a master kneel in "
     "rows in front of him, facing him. Use only names from CAST.\n"
     "- Distance between a crowd and a lone lead comes from DEPTH, never from an instruction to leave space empty (the image model "
     "ignores \"twenty paces of empty ground\": 0 of 4 seeds). When a crowd faces a lone figure, stage it one of two ways and say "
-    "which: (a) the crowd in the foreground in tidy rows seen from behind, all facing away from the camera, and the lead small and "
+    "which: (a) the crowd in the foreground as a dense uneven mass of different figures seen from behind, all facing away from the camera, and the lead small and "
     "alone far ahead on the highest or farthest point, bare ground between; or (b) the camera behind the lead's shoulder looking "
-    "down, the crowd small in rows far below on a lower ledge. Choose (a) unless the lead is above the crowd in the text and the "
+    "down, the crowd a small dense mass far below on a lower ledge. Choose (a) unless the lead is above the crowd in the text and the "
     "scene is about him looking down at them. (Z-Image Turbo, 4 seeds each, 2026-11-19: (a) 4 of 4 a tiny lone figure on the summit with rows facing him, but 2 of 4 also "
     "a green-robed lookalike in the foreground rows; (b) 4 of 4 a clear gap, the crowd a thin line; the side-by-side wording "
     "separated only where the cliff happened to.)\n"
@@ -101,7 +101,7 @@ def validate_staging(
         kept = [c for c in re.split(r"(?<=[;,])\s+", blocking) if not _RING.search(c)]
         blocking = " ".join(kept).rstrip(",; ")
         lead = cast[0] if cast else "the lead"
-        blocking = (blocking + "; " if blocking else "") + f"the others stand in rows on one side of the frame, all facing {lead}"
+        blocking = (blocking + "; " if blocking else "") + f"the others stand packed close in a dense uneven crowd on one side of the frame, at different depths, all facing {lead}"
     if rejects:
         return SceneStaging(set=s.set, blocking=blocking, light=s.light), rejects
     return s, rejects

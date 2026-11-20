@@ -30,7 +30,7 @@ def test_style_leads_carry_style_only_and_no_architecture() -> None:
         assert not ARCH.search(g.world_setting)
     assert not ARCH.search(system_prompt(""))
     for lead in STYLE_LEADS.values():
-        assert "cel" in lead.lower()  # one fixed cel-shaded anime level for every novel
+        assert "soft cel shading" in lead.lower()  # one fixed semi-realistic webtoon level for every novel (round 4)
 
 
 def test_staging_text_is_one_verbatim_paragraph_of_set_blocking_and_light() -> None:

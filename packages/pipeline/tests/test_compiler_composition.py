@@ -30,7 +30,7 @@ def brief(**over) -> PanelBrief:
 
 def test_z_image_prompt_is_style_lead_then_identity_then_composition_then_setting_with_no_boilerplate_tail() -> None:
     out = compile_prompt(brief(), model_profile("z-image-turbo"))
-    labels = [s.label for s in out.sections]
+    labels = [s.label for s in out.sections if s.label != "grade"]  # the light grade is its own section (round 4)
     # Identity moved up (M1.5): Z-Image has no CFG, so the fixed look must come before the scene.
     assert labels[0] == "style" and labels[1] == "character:Fang Yuan"
     assert labels.index("composition") == 2
