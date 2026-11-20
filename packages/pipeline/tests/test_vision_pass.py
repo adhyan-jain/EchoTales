@@ -109,13 +109,25 @@ def test_choose_vlm_is_off_with_a_clear_message_when_nothing_is_installed(monkey
 
 
 def test_a_stub_run_never_uses_an_installed_vision_model(monkeypatch) -> None:
+    from echotales.pipeline.config import get_settings
     from echotales.pipeline.render import panels
 
     def boom(**kw):
         raise AssertionError("looked for a vision model in a stub run")
 
-    monkeypatch.setattr(vp, "choose_vlm", boom)
-    assert panels._vision_check([], {Path("x.png"): EXPECT}, []) == []
+    # The guard reads `model_backend`, not `llm_mode`: a developer's `.env` with ECHOTALES_MODEL_BACKEND=ollama would
+    # otherwise make this a real run. Pin both, plus the candidate count. The cached settings are reloaded after the
+    # env is restored, so nothing leaks into later tests.
+    monkeypatch.setenv("ECHOTALES_LLM_MODE", "stub")
+    monkeypatch.setenv("ECHOTALES_MODEL_BACKEND", "stub")
+    monkeypatch.setenv("ECHOTALES_RENDER_CANDIDATES", "0")
+    get_settings(reload=True)
+    try:
+        monkeypatch.setattr(vp, "choose_vlm", boom)
+        assert panels._vision_check([], {Path("x.png"): EXPECT}, []) == []
+    finally:
+        monkeypatch.undo()
+        get_settings(reload=True)
 
 
 def test_choose_vlm_returns_the_model_and_default_two_candidates(monkeypatch) -> None:
