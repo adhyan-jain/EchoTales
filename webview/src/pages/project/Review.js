@@ -469,6 +469,7 @@ export default function Review() {
         <AnalysisPanel
           summary={summary}
           items={items}
+          entities={novel.entities}
           failedIds={failedIds}
           undoing={undoing}
           onUndo={(id) => {

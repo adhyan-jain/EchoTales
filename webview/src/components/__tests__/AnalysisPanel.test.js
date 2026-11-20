@@ -37,3 +37,16 @@ test('an item that failed on the last Apply is called out, and the heading count
   expect(screen.getAllByText(/did not apply last time/i)).toHaveLength(1); // only item b, not the flag
   expect(screen.getByText(/0 applied, 1 could not be applied/i)).toBeInTheDocument();
 });
+
+test('a pending character merge names both characters', () => {
+  const items = [{ id: 'm', type: 'merge_entities', applied: false, payload: { from_id: 'n:self2', into_id: 'n:self1' } }];
+  const entities = [{ id: 'n:self1', label: 'Elizabeth' }, { id: 'n:self2', label: 'Lizzy' }];
+  render(<AnalysisPanel summary={{ ...SUMMARY, pending_actionable: 1 }} items={items} entities={entities} onUndo={jest.fn()} onApply={jest.fn()} onClose={jest.fn()} />);
+  expect(screen.getByText(/merge Lizzy into Elizabeth/i)).toBeInTheDocument();
+});
+
+test('a merge whose characters are not known still reads as a merge, never an undefined name', () => {
+  const items = [{ id: 'm', type: 'merge_entities', applied: false, payload: { from_id: 'n:self2', into_id: 'n:self1' } }];
+  render(<AnalysisPanel summary={{ ...SUMMARY, pending_actionable: 1 }} items={items} onUndo={jest.fn()} onApply={jest.fn()} onClose={jest.fn()} />);
+  expect(screen.getByText(/merge one character into another/i)).toBeInTheDocument();
+});

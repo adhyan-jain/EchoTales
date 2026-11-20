@@ -249,6 +249,29 @@ describe('CharacterDashboard', () => {
     expect(img.getAttribute('src')).toBe('/api/novels/n/assets/candidate/u1/image');
   });
 
+  test('a character merged into another is hidden from the cast but its dossier says where it went', async () => {
+    const data = baseCharacters();
+    data.characters.push({
+      self_id: 'm1', id: 'm1', label: 'Lizzy', prominence: 'RECURRING', traits: [], reference_images: [],
+      merged_into: { id: 'reverend-insanity:self1', label: 'Fang Yuan' },
+    });
+    api.characters.mockResolvedValueOnce(data);
+    renderDashboard({ novelId: 'reverend-insanity', selectedId: 'm1' });
+    expect(await screen.findByText(/merged into Fang Yuan/i)).toBeInTheDocument();
+  });
+
+  test('the merged-away character is not in the cast list', async () => {
+    const data = baseCharacters();
+    data.characters.push({
+      self_id: 'm1', id: 'm1', label: 'Lizzy', prominence: 'RECURRING', traits: [], reference_images: [],
+      merged_into: { id: 'reverend-insanity:self1', label: 'Fang Yuan' },
+    });
+    api.characters.mockResolvedValueOnce(data);
+    renderDashboard({ novelId: 'reverend-insanity' });
+    await screen.findByText('Fang Yuan');
+    expect(screen.queryByText('Lizzy')).not.toBeInTheDocument();
+  });
+
   test('lists the cast, then drills into a character to show voice, references, and evidence', async () => {
     api.characters.mockResolvedValueOnce(baseCharacters());
 
