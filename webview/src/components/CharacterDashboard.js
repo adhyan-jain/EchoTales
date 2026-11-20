@@ -347,7 +347,7 @@ function CharacterDetail({ novelId, character, busy, readOnly, onBack, onSetVoic
                 <Card key={r.id}>
                   <div className="aspect-[3/4] w-full overflow-hidden bg-surface2">
                     <img
-                      src={r.thumbnail_url || r.source_url}
+                      src={api.mediaUrl(r.image_url || r.thumbnail_url || r.source_url)}
                       alt={r.title || label}
                       className="h-full w-full object-cover"
                       loading="lazy"

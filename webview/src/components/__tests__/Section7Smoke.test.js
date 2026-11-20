@@ -11,6 +11,7 @@ import '@testing-library/jest-dom';
 
 jest.mock('../../api', () => ({
   api: {
+    mediaUrl: (u) => u,
     login: jest.fn(),
     authStatus: jest.fn(),
     createProject: jest.fn(),
@@ -234,6 +235,18 @@ describe('CharacterDashboard', () => {
         ],
       },
     ],
+  });
+
+  test('an uploaded reference shows through the server image route, never file://', async () => {
+    const data = baseCharacters();
+    data.characters[0].reference_images = [
+      { id: 'u1', source_url: '/api/novels/n/assets/candidate/u1/image', image_url: '/api/novels/n/assets/candidate/u1/image', thumbnail_url: null, title: 'Mine', selected: false, user_uploaded: true },
+    ];
+    api.characters.mockResolvedValueOnce(data);
+    renderDashboard({ novelId: 'reverend-insanity' });
+    fireEvent.click(await screen.findByText('Fang Yuan'));
+    const img = await screen.findByAltText('Mine');
+    expect(img.getAttribute('src')).toBe('/api/novels/n/assets/candidate/u1/image');
   });
 
   test('lists the cast, then drills into a character to show voice, references, and evidence', async () => {

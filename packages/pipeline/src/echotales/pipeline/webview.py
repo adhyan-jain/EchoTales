@@ -420,6 +420,18 @@ _DASHBOARD_TRAIT_KEYS: tuple[str, ...] = (
 _REVISED_TRAIT_KEYS: frozenset[str] = frozenset({"gender", "age_band", "register"})
 
 
+def candidate_urls(novel_id: str, cand) -> dict:  # type: ignore[no-untyped-def]
+    """The picture URLs a browser may load for a reference candidate.
+
+    A local upload is stored as `file://<path>`, which the browser refuses ("Not allowed to load local resource": the
+    character dossier showed broken images, 2026-11 walkthrough). So the API never returns a file:// address: a local
+    picture is answered by the server's own image route, a web result keeps its http(s) address.
+    """
+    own = f"/api/novels/{novel_id}/assets/candidate/{cand.id}/image"
+    web = cand.source_url if cand.source_url.startswith(("http://", "https://")) else None
+    return {"source_url": web or own, "image_url": own}
+
+
 def build_character_dashboard(store: Store, novel_id: str) -> dict:
     """One row per person-kind entity: assigned voice, reference images,
     and the source evidence behind every auto-assigned trait.
@@ -527,8 +539,8 @@ def build_character_dashboard(store: Store, novel_id: str) -> dict:
                 "reference_images": [
                     {
                         "id": c.id,
-                        "source_url": c.source_url,
-                        "thumbnail_url": c.thumbnail_url or c.source_url,
+                        **candidate_urls(novel_id, c),
+                        "thumbnail_url": c.thumbnail_url if c.thumbnail_url.startswith(("http://", "https://")) else None,
                         "title": c.title,
                         "selected": c.selected,
                         "user_uploaded": c.user_uploaded,

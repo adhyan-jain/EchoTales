@@ -95,6 +95,7 @@ from echotales.pipeline.webview import (
     build_character_dashboard,
     build_novel_payload,
     build_reader_cast,
+    candidate_urls,
 )
 
 #: Section 7.2: a real, minimal auth gate suited to a local, single-operator
@@ -1406,7 +1407,11 @@ def make_handler(
             # The companion page is opened as a plain link in a new tab, so it is the one other route that takes it.
             is_media = len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3:] == ["output", "file"]
             is_companion = len(parts) == 6 and parts[:2] == ["api", "novels"] and parts[3] == "companion"
-            if self.command in ("GET", "HEAD") and (is_media or is_companion):
+            # Reference pictures in <img> tags (character dossier, asset studio) for the same reason.
+            is_candidate_image = (
+                len(parts) == 7 and parts[:2] == ["api", "novels"] and parts[3:5] == ["assets", "candidate"] and parts[6] == "image"
+            )
+            if self.command in ("GET", "HEAD") and (is_media or is_companion or is_candidate_image):
                 return sessions.valid(parse_qs(url.query).get("access_token", [""])[0])
             return False
 
@@ -1665,7 +1670,7 @@ def make_handler(
                         [
                             {
                                 "id": c.id,
-                                "source_url": c.source_url,
+                                **candidate_urls(parts[2], c),
                                 "title": c.title,
                                 "selected": c.selected,
                                 "user_uploaded": c.user_uploaded,
@@ -1712,8 +1717,7 @@ def make_handler(
                             "self_id": c.self_id,
                             "character_label": getattr(c, "character_label", c.self_id),
                             "title": getattr(c, "title", "3-View Turnaround"),
-                            "source_url": c.source_url,
-                            "image_url": f"/api/novels/{novel_id}/assets/candidate/{c.id}/image",
+                            **candidate_urls(novel_id, c),
                             "selected": (c.selected and not is_stale and file_exists) or (c.selected and file_exists),
                             "is_approved": (c.selected and not is_stale and file_exists) or (c.selected and file_exists),
                             "is_stale": is_stale or (c.selected and not file_exists),
@@ -1737,8 +1741,7 @@ def make_handler(
                             "id": c.id,
                             "location_id": c.self_id,
                             "title": c.title,
-                            "source_url": c.source_url,
-                            "image_url": f"/api/novels/{novel_id}/assets/candidate/{c.id}/image",
+                            **candidate_urls(novel_id, c),
                             "selected": c.selected,
                             "is_approved": c.selected,
                             "found_at": c.found_at,
@@ -2128,7 +2131,7 @@ def make_handler(
                         actor="reviewer", note=str(body.get("note", "")),
                     )
                     handle.invalidate()
-                    return self._json(200, {"id": candidate.id, "source_url": candidate.source_url})
+                    return self._json(200, {"id": candidate.id, **candidate_urls(parts[2], candidate)})
 
                 # POST /api/novels/<id>/characters/<self_id>/sheets/<persona_id>/approve or reject
                 # POST /api/novels/<id>/sheets/<persona_id>/approve or reject
@@ -2187,7 +2190,7 @@ def make_handler(
                         "id": candidate.id,
                         "persona_id": candidate.persona_id,
                         "self_id": candidate.self_id,
-                        "source_url": candidate.source_url,
+                        **candidate_urls(novel_id, candidate),
                         "selected": candidate.selected,
                         "action": action,
                     })
@@ -2932,7 +2935,7 @@ def make_handler(
                         handle.store, parts[2], parts[4], str(image_path), actor="reviewer",
                     )
                     handle.invalidate()
-                    return self._json(201, {"id": candidate.id, "source_url": candidate.source_url})
+                    return self._json(201, {"id": candidate.id, **candidate_urls(parts[2], candidate)})
             except _BodyTooLarge as exc:
                 return self._json(413, {"error": str(exc)})
             except Exception as exc:

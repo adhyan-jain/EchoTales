@@ -440,6 +440,15 @@ export const api = {
     return `${API_BASE}/api/novels/${enc(novelId)}/output/file?path=${encodeURIComponent(path)}${auth}`;
   },
 
+  // A server-relative picture address (a reference candidate's `image_url`) made loadable by an <img>: the API base,
+  // and the session token for a password-protected server. Absolute http(s) addresses pass through untouched.
+  mediaUrl: (url) => {
+    if (!url || /^https?:\/\//i.test(url)) return url || '';
+    const token = getAuthToken();
+    const auth = token ? `${url.includes('?') ? '&' : '?'}access_token=${encodeURIComponent(token)}` : '';
+    return `${API_BASE}${url}${auth}`;
+  },
+
   // Series-Scale & Studio API Endpoints
   getEpisodeCost: (novelId, episodeId, tier = 'path1') =>
     request(`/api/novels/${enc(novelId)}/episodes/${enc(episodeId)}/cost?tier=${enc(tier)}`),
