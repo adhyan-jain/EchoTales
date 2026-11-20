@@ -82,6 +82,11 @@ class OllamaProvider(LLMProvider):
                 "num_predict": request.max_tokens,
             },
         }
+        if self._model.startswith("qwen3"):
+            # qwen3 thinks by default; a reasoning trace under a schema `format` and a 1500-token cap either
+            # truncates the JSON or leaks into it. Only this family gets the flag so every other model's request
+            # stays identical to the recorded reader runs.
+            body["think"] = False
         started = time.perf_counter()
         try:
             resp = self._client.post(f"{self.host}/api/generate", json=body)
