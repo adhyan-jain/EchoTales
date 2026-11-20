@@ -24,10 +24,22 @@ _STATED_CALM = re.compile(
 #: (family, passage cue, director-phrase cue, drawn description). Ordered: the first matching family wins.
 _FAMILIES: list[tuple[str, re.Pattern[str], re.Pattern[str], str]] = [
     ("mocking",
-     re.compile(r"\b(?:sneer\w*|mock\w*|scorn\w*|contempt\w*|smirk\w*|disdain\w*|derisi\w*|cold(?:ly)? (?:laugh|smile)\w*|lightly laughed)\b", re.I),
+     re.compile(r"\b(?:sneer\w*|mock\w*|scorn\w*|contempt\w*|smirk\w*|disdain\w*|derisi\w*|cold(?:ly)? (?:laugh|smile)\w*)\b", re.I),
      re.compile(r"\b(?:mock\w*|sneer\w*|smirk\w*|contempt\w*|scorn\w*|cold(?:,)? (?:mocking )?smile|disdain\w*)\b", re.I),
      "a cold mocking smirk: one corner of the mouth pulled up, eyelids half lowered, eyes narrowed with contempt, "
      "chin raised, looking down"),
+    ("faint smile",
+     re.compile(r"\b(?:lightly laughed|laughed lightly|smiled|smiling|slight(?:ly)? (?:smile|smiled)|faint(?:ly)? smil\w*|chuckled)\b", re.I),
+     re.compile(r"\b(?:faint smile|slight smile|small smile)\b", re.I),
+     "a faint smile: lips curved slightly, eyes soft and amused, brows relaxed"),
+    ("startle",
+     re.compile(r"(?:^|[.!?\"\u201d]\s+)\W*(?:pa|bang|crack|snap|thud|boom|bam|slam|clang|crash|smack|whack)\s*[!?]+", re.I),
+     re.compile(r"\b(?:startled flinch|flinch\w*)\b", re.I),
+     "a startled flinch: eyes snapped wide, brows jumping up, shoulders jerking back, mouth tight"),
+    ("bitter",
+     re.compile(r"\b(?:failed|failure|regret\w*|in the end|too late|sigh(?:ed|s)?|helpless\w*|bitter\w*|wry\w*|rueful\w*)\b", re.I),
+     re.compile(r"\b(?:bitter smile|bitter)\w*", re.I),
+     "a quiet bitter smile: one corner of the mouth lifted without joy, eyes lowered and tired, brows slightly drawn"),
     ("shock",
      re.compile(r"\b(?:shock\w*|stun\w*|startl\w*|astonish\w*|gasp\w*|gaped|dumbfound\w*|disbelief|incredul\w*|\?!|!\?)", re.I),
      re.compile(r"\b(?:shock\w*|wide|stun\w*|startl\w*|astonish\w*|surpris\w*|gasp\w*|disbelief)\b", re.I),
@@ -82,7 +94,17 @@ def _family(expression: str) -> str:
     return ""
 
 
-def infer_expression(director_expression: str, passage: str, *, quoted_only: str = "") -> str:
+#: The director's own mood words, read only when the line itself carries no cue and the face is still the neutral default
+#: (round 5, EVOLUTION 4.173: rebirth sheet, 8 of 9 faces a flat stare on a scene the director itself called "somber").
+_MOOD_FACES: list[tuple[re.Pattern[str], str]] = [
+    (re.compile(r"\b(?:somber|sombre|melanchol\w*|sad\w*|grie\w*|mourn\w*|wistful|bleak|despair\w*|regret\w*|nostalg\w*)\b", re.I),
+     "sorrowful, downcast"),
+    (re.compile(r"\b(?:tense|anxious|wary|uneasy|ominous|foreboding|expectant|alert)\b", re.I), "tense, wary"),
+    (re.compile(r"\b(?:joy\w*|cheerful|happy|playful|amus\w*|warm|hopeful)\b", re.I), "faint smile"),
+]
+
+
+def infer_expression(director_expression: str, passage: str, *, quoted_only: str = "", mood: str = "") -> str:
     """The director's face, upgraded when it is neutral and the passage carries emotion words; otherwise unchanged.
 
     `passage` is the beat's text. A passage that states a still face ("his expression did not change", "calm") is never given an
@@ -96,16 +118,43 @@ def infer_expression(director_expression: str, passage: str, *, quoted_only: str
         return director_expression
     if _STATED_CALM.search(passage):
         return director_expression
-    return _first_family(f"{passage} {quoted_only}") or director_expression
+    found = _first_family(f"{passage} {quoted_only}")
+    if found:
+        return found
+    # No cue in the line: the director's mood, a small map, not a sentiment model.
+    for cue, face_words in _MOOD_FACES:
+        if cue.search(mood or ""):
+            return face_words
+    return director_expression
 
 
 def _first_family(text: str, skip: tuple[str, ...] = ()) -> str:
     for name, text_cue, _phrase_cue, _drawn in _FAMILIES:
         if name not in skip and text_cue.search(text):
-            return {"mocking": "cold mocking smile", "shock": "wide shocked eyes", "fury": "furious glare", "fear": "frightened",
+            return {"mocking": "cold mocking smile", "faint smile": "faint smile", "startle": "startled flinch", "bitter": "quiet bitter smile", "shock": "wide shocked eyes", "fury": "furious glare", "fear": "frightened",
                     "pain": "painful grimace", "sorrow": "tears running down", "laughter": "laughing", "confusion": "confused",
                     "urgency": "urgent determined stare", "frown": "frowning", "thought": "thoughtful"}[name]
     return ""
+
+
+_CALM_CLAUSE = re.compile(r"\b(?:his|her|their)?\s*expression\s+(?:is|was|remains|stays)?\s*(?:calm|unreadable|neutral|blank|impassive)\b|"
+                          r"\bcalm but unreadable\b|\bunreadable expression\b", re.I)
+
+
+def drop_calm_clause(paragraph: str) -> str:
+    """The paragraph without the clause or sentence that says the face is calm or unreadable. A face sentence that says "a faint
+    smile" and a paragraph that ends "his expression calm but unreadable" drew the calm one (round 4 sheets: the paragraph is
+    the later, longer text and the model follows it). Cuts the clause after the last comma when that is all it is, else the
+    sentence."""
+    out: list[str] = []
+    for sent in re.split(r"(?<=[.!?])\s+", paragraph.strip()):
+        if not _CALM_CLAUSE.search(sent):
+            out.append(sent)
+            continue
+        head = re.split(r",\s*(?=[^,]*" + _CALM_CLAUSE.pattern + r")", sent, maxsplit=1)[0]
+        if head != sent and len(head.split()) >= 4:
+            out.append(head.rstrip(" ,") + ".")
+    return " ".join(out)
 
 
 def drawn_face(expression: str) -> str:

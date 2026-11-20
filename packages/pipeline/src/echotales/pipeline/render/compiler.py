@@ -232,6 +232,11 @@ class PanelBrief:
     #: nobody in it, "eyes" and "hands" are crops of the lead).
     framing: str = ""
     frame_focus: str = ""
+    #: The prop an insert is about ("lamp"): the staging Set is cut to the clauses that name it.
+    frame_subject: str = ""
+    #: True when the text names no weapon, no held thing and no seat for the lead: the compiler then states the hands, because the
+    #: model's prior for a robe is a sword (RI cliff r4, 5 of 13 panels).
+    empty_hands: bool = False
     #: The lead's face as drawn parts (`render/face.py`), written right after the identity so it is not the paragraph's last words.
     face: str = ""
     #: The light and mood grade written from the scene's stated time and light source (`render/lightgrade.py`), right after the
@@ -547,7 +552,9 @@ def identity_sentence(c: CharacterBrief, appearance: AppearanceInText = Appearan
     if c.locked is not None:
         # The interval's locked words (`persona/identity_lock.py`): hair style, build and clothes included, so the model has
         # nothing left to choose per panel. A young body keeps its youthful face, which the lock does not carry.
-        face = ", a smooth youthful face" if young else _ADULT_FACE if c.age_band != "elder" else ""
+        # A stated age and a youthful face still drew a tall grown man (RI rebirth r4): the build is stated for a young body too.
+        face = (", a smooth youthful face and a " + ("slight build" if c.gender == "female" else "slim boyish build")
+                + ", still growing, shorter than a grown adult") if young else _ADULT_FACE if c.age_band != "elder" else ""
         return _plain(f"{head} with {c.locked.description()}{face}") + "."  # type: ignore[attr-defined]
     facts = {k: v for k, v in c.appearance.items() if v and k not in _SKIP}
     hair_bits = [v for k, v in facts.items() if _HAIR.search(k)]
@@ -634,7 +641,10 @@ def _compile_natural(b: PanelBrief, profile: ModelProfile, appearance: Appearanc
     Why this order and shape: the probe's one-paragraph prompts put the hero, a cliff and a crowd of 12-20 in all 4 of 4
     images, but the crowd stood beside the hero rather than ringing him, because "a crowd" gave no position; the stance
     clause ("ringed around him on all sides") is mandatory whenever there are others. Never truncated."""
-    if b.composition:
+    if b.composition or b.framing:
+        # A blanked paragraph (director rejected for a crowd or a group) still has the planned framing and the staging sheet:
+        # the old sentence below ended in "ink-wash mountains, mist, painterly" and 4 of 4 such RI cliff panels came out as a
+        # white-ground ink-wash painting (round 5, EVOLUTION 4.173).
         return _compile_composed(b, profile, appearance)
     lead = b.characters[0] if b.characters else None
     s: list[PromptSection] = []
@@ -735,10 +745,14 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     # Before this the compiled prompt never named a shot (16 of 16 LotM panels were one medium shot, EVOLUTION 4.171).
     if b.framing:
         s.append(PromptSection("framing", b.framing))
-    if b.grade:
-        s.append(PromptSection("grade", b.grade))
     insert = b.frame_focus == "prop"
-    staging_text = trim_staging(b.staging.strip(), b.frame_focus, b.shot) if b.staging else ""
+    if b.grade:
+        # "the subject lit only by ..." read as a person in an insert and drew men beside the lamp (round 5 LotM p7, p13).
+        s.append(PromptSection("grade", b.grade.replace("the subject", "the object") if insert else b.grade))
+    # A view with no face in it (an insert, from behind, from above) has no paragraph and no face sentence: both describe a person
+    # facing the viewer.
+    faceless = insert or b.frame_focus in ("behind", "topdown")
+    staging_text = trim_staging(b.staging.strip(), b.frame_focus, b.shot, b.frame_subject) if b.staging else ""
     stage = PromptSection("staging", staging_text) if staging_text else None
     cropped = b.composition.strip()
     if b.shot == "close" and b.frame_focus in ("", "eyes", "hands"):
@@ -747,7 +761,7 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
         )
 
         cropped = crop_composition(cropped, b.frame_focus) if b.frame_focus != "hands" else ""
-    comp = None if insert or not cropped else PromptSection("composition", cropped)
+    comp = None if faceless or not cropped else PromptSection("composition", cropped)
     written: dict[str, bool] = {}
     fields: dict[str, list[str]] = {}
     # Identity right after the style lead, before the scene: Z-Image has no CFG, so what the prompt says first and fixedly is
@@ -759,8 +773,21 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
         fields[c.name] = derive_demeanour(c, b.mood, b.tension).fields_used
     # The lead's face as drawn parts, straight after the identity and before the scene: said once, last and in three words
     # ("cold mocking smile") it drew a mild smile; "mocking" must read as mocking (round 3, defect 7).
-    if b.face and b.characters and not insert:
+    if b.face and b.characters and not faceless:
         s.append(PromptSection("face", f"{b.characters[0].name}'s face: {b.face}."))
+    if b.empty_hands and b.characters and not faceless and b.shot != "close":
+        lead_c = b.characters[0]
+        s.append(PromptSection("hands", f"{lead_c.name}'s hands hang empty at {'her' if lead_c.gender == 'female' else 'his'} sides."))
+    if b.crowd is not None and not b.composition and not faceless:
+        # With the paragraph blanked nothing says where the others stand, and the fallback "they surrounding" drew them behind and
+        # around the lead facing the same way, so he read as their leader (RI cliff r4 p5). Opponents face the lead across a gap.
+        who = b.characters[0].name if b.characters else "the lead"
+        stance = b.crowd.stance.lower()
+        if re.search(r"\b(?:circle|ring|encircl\w*)\b", stance):
+            where = f"in a ring around {who}"
+        else:
+            where = f"on the far side of a gap from {who}, all of them facing {who}"
+        s.append(PromptSection("others", f"{_headcount(b.crowd)} {_plain(b.crowd.description)} stand packed close together {where}."))
     # A close shot leads with its own paragraph: staging first drew a second small hero at the cliff edge behind the
     # foreground one (2 of 2 seeds, 2026-11-19); paragraph first drew one (2 of 2).
     s += [x for x in ((comp, stage) if (stage and b.shot == "close") else (stage, comp)) if x]
@@ -789,20 +816,33 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
 _STAGE_PART = re.compile(r"\b(Set|Blocking|Light):\s*(.*?)(?=\s+(?:Set|Blocking|Light):|\Z)", re.S)
 
 
-def trim_staging(staging: str, focus: str, shot: str) -> str:
+def trim_staging(staging: str, focus: str, shot: str, subject: str = "") -> str:
     """The staging sheet cut to what the shot can see. The sheet's Blocking line ("stands alone facing right; the others stand in
     rows") is a full-body, wide arrangement: left in a close-up it drew the crowd and the whole body again, and in an insert it
-    drew the people. An insert keeps the Set (the room the object is in); an eye or hand crop keeps only the Light; a close-up
-    keeps Set and Light; every other shot keeps the whole sheet."""
+    drew the people. An insert keeps the Set clauses that name its prop (the whole Set drew the man again: "a desk in front of him",
+    round 4 LotM p7); an eye or hand crop keeps only the Light; a close-up keeps the Set's first clause (the place) and the Light,
+    because the furniture list pulled the picture back to a chest-up man at a desk; a view from behind or above keeps the whole Set
+    and the Light, no Blocking; every other shot keeps the whole sheet."""
     parts = {m.group(1): f"{m.group(1)}: {m.group(2).strip()}" for m in _STAGE_PART.finditer(staging)}
     if not parts:
         return staging
     if focus == "prop":
-        keep: tuple[str, ...] = ("Set",)
+        keep: tuple[str, ...] = ("Light",)
+        clauses = [c.strip() for c in re.split(r";\s*", parts.get("Set", "")[len("Set:"):]) if c.strip()]
+        named = [c for c in clauses if subject and re.search(rf"\b{re.escape(subject.split()[-1].lower())}", c.lower())
+                 and not re.search(r"\b(?:him|her|them|his|hers)\b", c, re.I)]
+        if named:
+            parts["Set"] = "Set: " + "; ".join(named).rstrip(".") + "."
+            keep = ("Set", "Light")
     elif focus in ("eyes", "hands"):
         keep = ("Light",)
+    elif focus in ("behind", "topdown"):
+        keep = ("Set", "Light")
     elif shot == "close":
         keep = ("Set", "Light")
+        first = re.split(r";\s*", parts.get("Set", "")[len("Set:"):].strip(), maxsplit=1)[0].strip().rstrip(".")
+        if first:
+            parts["Set"] = f"Set: {first}."
     else:
         return staging
     return " ".join(parts[k] for k in keep if k in parts)
@@ -819,8 +859,10 @@ def _style_sentence(b: PanelBrief) -> str:
             text = ("A crisp black-and-white manga illustration: a single full-bleed image with clean black ink linework and "
                     "screentone shading, pure black and white only, no panel borders, no speech bubbles and no text")
     elif b.manhua:
-        return ("A Chinese donghua illustration in the guofeng style: detailed, painterly xianxia art with ink-wash mountains, "
-                "mist, a muted cold palette and soft painterly backgrounds, a single full-bleed image with no panel borders, "
+        # "ink-wash mountains", "mist" and "painterly" drew a white-ground ink painting (round 5); the same cel-shaded colour look
+        # as the composed lead, with the xianxia clothing.
+        return ("A Chinese donghua illustration in the guofeng style: clean fine lineart, soft cel shading, a muted cold palette and "
+                "detailed cinematic backgrounds, a single full-bleed image with no panel borders, "
                 "no speech bubbles and no text, hanfu with wide sleeves and cross collars.")
     else:
         text = "A richly coloured painted illustration: a single full-bleed image with no panel borders, no speech bubbles and no text"
@@ -1132,13 +1174,19 @@ def brief_from_direction(
         chars, crowd = [], None
     lead_face = ""
     if chars and composition:
-        from echotales.pipeline.render.face import infer_expression  # type: ignore[import-untyped]
+        from echotales.pipeline.render.face import (  # type: ignore[import-untyped]
+            drop_calm_clause,
+            infer_expression,
+            is_neutral,
+        )
 
         lead_dir = dir_chars[0] if dir_chars else None
         said = (getattr(lead_dir, "expression", "") if lead_dir is not None else "") or (getattr(d, "expression", "") or "")
         # An over-the-shoulder panel's lead is the listener: the line's emotion belongs to the speaker, so only the director's
         # own reading of the reaction is used there (render/speech.py, rule 15).
-        lead_face = said if frame_focus == "over-shoulder" else infer_expression(said, passage)
+        lead_face = said if frame_focus == "over-shoulder" else infer_expression(said, passage, mood=mood)
+        if lead_face and not is_neutral(lead_face):
+            composition = drop_calm_clause(composition)
 
     camera = getattr(d, "camera_angle", "") or getattr(d, "camera", "") or ""
     loc_detail = getattr(d, "location_detail", "") or ""
@@ -1157,11 +1205,21 @@ def brief_from_direction(
         composition=composition, staging=(getattr(d, "staging", "") or "") if composition else "",
         visual_source=getattr(d, "visual_source", "") or "",
         framing=getattr(d, "frame", "") or "", frame_focus=frame_focus, face=_drawn(lead_face),
+        frame_subject=getattr(d, "frame_subject", "") or "",
+        empty_hands=bool(chars) and not props and not _HOLDS.search(f"{passage} {composition} {getattr(d, 'staging', '') or ''}"),
         grade=light_grade(
             (getattr(d, "staging", "") or "") if composition else "", getattr(d, "lighting", "") or "", passage,
             f"{location} {getattr(d, 'setting', '')} {loc_detail}", composition, mood=mood,
         ),
     )
+
+
+#: Anything that gives the lead's hands something to do, or a seat or surface to rest them on: the empty-hands sentence is only for a
+#: standing figure whose text names nothing held (a robe's prior is a sword; a desk scene's hands are on the desk).
+_HOLDS = re.compile(
+    r"\b(?:hold\w*|held|grip\w*|clutch\w*|carr(?:y|ies|ied|ying)|wield\w*|draw[sn]?|drew|raise[sd]?|lift\w*|pick\w*|took|take[sn]?|"
+    r"reach\w*|point\w*|clasp\w*|cross\w*|fold\w*|sit\w*|sat|seat\w*|kneel\w*|knelt|lying|lies|lay|desk|table|bed|chair|"
+    r"hands?|fists?|fingers?|palms?|sleeves?|pocket\w*)\b", re.I)
 
 
 def _drawn(expression: str) -> str:

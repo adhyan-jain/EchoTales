@@ -564,6 +564,12 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Not decided**: whether to repair the director's invented swords and contradicting paragraphs; the reborn 15-year-old is still drawn adult.
 - **Status**: built and measured on four novels' scenes; open items in 4.172.
 
+### D64. A view is a different picture, not a size; a weapon is held only if the text names it (2026-11-20, panel round 5)
+- **Decided**: framing rotates through views that read differently (person, from behind, face, place, from above, eyes) rather than sizes; an insert is a still life of the prop only; a crowd panel is staged from behind the lead with the crowd facing him; the style lead and fallback wording carry no ink-wash, mist or painterly words; a weapon in a paragraph or prop list is cut unless the passage names it, and a standing lead with nothing held has empty hands stated; the face follows the line's emotion (small cue map, then the director's mood) over the calm default.
+- **Why**: round-4 sheets (LotM, RI cliff, rebirth) showed the same chest-up shot in 12 of 16 panels, a white-ground ink painting in 4 of 13, swords in 5 of 13 and flat faces; each traced to a named cause in EVOLUTION 4.173.
+- **Evidence**: EVOLUTION 4.173, `data/scratch/panel_quality/out_r5_*`; judged by eye, one reviewer.
+- **Status**: built and measured (ink-wash 0 of 13, swords 0 of 13, shot runs at most 2, on two seeds); crowd facing is not fixed and inserts are partly clean; open items in 4.173.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs

@@ -18,7 +18,7 @@ from typing import Literal
 
 Size = Literal["wide", "medium", "close"]
 #: What the picture is about, finer than `size`: "" (the person), "eyes", "hands", "prop", "over-shoulder", "establishing".
-Focus = Literal["", "eyes", "hands", "prop", "over-shoulder", "establishing"]
+Focus = Literal["", "eyes", "hands", "prop", "over-shoulder", "establishing", "behind", "topdown"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -135,6 +135,15 @@ def _angle(text: str, expression: str) -> str:
     return "eye-level"
 
 
+#: The views a quiet run rotates through, in the order a viewer reads them as different pictures: person, over their shoulder from
+#: behind, face, place, from above, eyes.
+_CYCLE: list[tuple[str, str]] = [("medium", ""), ("medium", "behind"), ("close", ""), ("wide", ""), ("medium", "topdown"), ("close", "eyes")]
+
+
+def _key(f: Framing) -> tuple[str, str]:
+    return (f.size, f.focus)
+
+
 def plan_framing(
     beat_text: str,
     *,
@@ -182,15 +191,26 @@ def plan_framing(
     elif not _PERSON_WORDS.search(text) and not any(n.lower() in text.lower() for n in names) and _PLACE.search(text):
         chosen = Framing("wide", reason="a place described with nobody in it")
 
+    soft = chosen is None or chosen.reason in ("emotional peak", "a place described with nobody in it")
     if chosen is None:
-        # Nothing in the text asks for a size: rotate so a run of quiet panels still moves (medium, wide, close, medium ...).
-        order: list[Size] = ["medium", "wide", "close"]
-        chosen = Framing(order[(order.index(last.size) + 1) % 3] if last else "medium", reason="rotation")
-
-    if len(recent) >= 2 and recent[-1].size == recent[-2].size == chosen.size and chosen.focus == "":
-        instead: Size = "close" if chosen.size == "medium" else "medium"
-        chosen = Framing(instead, reason=f"{chosen.reason}; varied after two {chosen.size}")
-    angle = "over-the-shoulder" if chosen.focus == "over-shoulder" else _angle(text, expression)
+        chosen = Framing("medium", reason="rotation")
+    if soft:
+        # Round 5 (EVOLUTION 4.173): LotM r4 alternated medium and close over one desk, and the model drew both as the same chest-up
+        # man, so a size is not a different picture. A text-driven pick (a peak, a place, nothing) that repeats the last view is
+        # moved to the next view in `_CYCLE` that neither of the last two used.
+        used = {_key(f) for f in recent[-2:]}
+        if _key(chosen) in used and last is not None:
+            start = _CYCLE.index(_key(last)) + 1 if _key(last) in _CYCLE else 0
+            for i in range(len(_CYCLE)):
+                size, focus = _CYCLE[(start + i) % len(_CYCLE)]
+                if (size, focus) not in used:
+                    chosen = Framing(size, focus=focus, reason=f"{chosen.reason}; a different view after {last.size} {last.focus}".strip())  # type: ignore[arg-type]
+                    break
+    if crowd and chosen.size in ("medium", "wide") and chosen.focus in ("", "behind") and not (last and last.subject == "crowd"):
+        # The crowd and the lead both facing the viewer read as the lead among his own people (RI cliff r5, 6 of 13 panels): from
+        # behind the lead, with the crowd across a gap facing him, they read as opposed.
+        chosen = Framing(chosen.size, focus="behind", subject="crowd", reason=f"{chosen.reason}; crowd faces the lead")
+    angle = "birds-eye" if chosen.focus == "topdown" else "over-the-shoulder" if chosen.focus == "over-shoulder" else _angle(text, expression)
     chosen = Framing(chosen.size, angle, chosen.focus, chosen.subject, chosen.reason)
     state.recent.append(chosen)
     state.inserts_since = 0 if chosen.focus == "prop" else state.inserts_since + 1
@@ -211,11 +231,23 @@ def framing_sentence(f: Framing, lead: str, *, people: bool = True) -> str:
     who = lead or "the character"
     angle = _ANGLE_TEXT.get(f.angle, "")
     if f.focus == "prop":
-        return f"Insert shot: a close view of the {f.subject} alone, filling the frame, nobody in the picture{angle}."
+        # Round 5: with only "nobody in the picture" the lamp insert drew two men and the pipe insert a couple (2 of 2 LotM inserts);
+        # the object is stated as the whole subject, a still life, never as a person's belonging.
+        return (f"Still-life insert shot: a close view of the {f.subject} alone, an object study with the {f.subject} filling the "
+                f"frame and the room only a blurred backdrop, empty of people{angle}.")
     if f.focus == "eyes":
         return f"Extreme close-up on {who}'s eyes and brow, the eyes filling the frame, the rest of the face cropped{angle}."
     if f.focus == "hands":
         return f"Close-up on {who}'s hands and what they hold, filling the frame, the face out of the picture{angle}."
+    if f.focus == "behind" and f.subject == "crowd":
+        return (f"Seen from behind {who}: the back of his head and shoulders in the lower foreground, his back to the viewer; across "
+                f"a gap of bare ground the crowd stands packed close together, every one of them facing him{angle}.")
+    if f.focus == "behind":
+        return (f"Seen from directly behind {who}: the back of his head and shoulders large in the lower foreground, he is the only "
+                f"person in the picture and looks away from the viewer into the room ahead, his face hidden{angle}.")
+    if f.focus == "topdown":
+        return (f"High top-down view looking straight down from directly above: {who} small in the frame, the top of his head and "
+                "shoulders, the table or ground around him filling the picture.")
     if f.focus == "over-shoulder":
         other = f.subject if f.subject and f.subject != "the speaker" else "one of the people around him"
         return (f"Over-the-shoulder shot: the back of the head and shoulder of {other} at the edge of the frame in the foreground, "
@@ -243,6 +275,7 @@ def apply_framing(direction: object, f: Framing, lead: str) -> object:
     return direction.model_copy(update={  # type: ignore[attr-defined]
         "shot": f.size, "camera_angle": f.angle if f.angle != "over-the-shoulder" else "eye-level",
         "frame": framing_sentence(f, lead, people=f.focus != "prop"), "frame_focus": f.focus,
+        "frame_subject": f.subject if f.focus == "prop" else "",
     })
 
 
