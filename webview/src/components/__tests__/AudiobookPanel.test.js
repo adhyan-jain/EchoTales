@@ -1,6 +1,6 @@
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 jest.mock('../../api', () => ({
@@ -263,6 +263,32 @@ describe('AudiobookPanel M4B, pages and episode steps', () => {
     await waitFor(() => expect(button).toBeEnabled());
     fireEvent.click(button);
     await waitFor(() => expect(api.triggerStage).toHaveBeenCalledWith('b', 'episode', { chapters: [1] }));
+  });
+});
+
+describe('AudiobookPanel job completion', () => {
+  afterEach(() => jest.useRealTimers());
+
+  test('tells the page when a running job finishes, so counts that came from the build are re-read', async () => {
+    jest.useFakeTimers();
+    const onJobFinished = jest.fn();
+    api.listJobs
+      .mockResolvedValueOnce([{ job_id: 'p', kind: 'pipeline', status: 'RUNNING', created_at: 1 }])
+      .mockResolvedValue([{ job_id: 'p', kind: 'pipeline', status: 'SUCCEEDED', created_at: 1 }]);
+    api.getBible.mockResolvedValue({ current: { locked_version: null, dirty: true, stale_reason: null } });
+    api.reviewLines.mockResolvedValue({ total: 0, items: [] });
+    api.listOutput.mockResolvedValue({ kinds: { audio: [] } });
+    render(
+      <MemoryRouter>
+        <ToastProvider>
+          <AudiobookPanel novelId="b" project={project} onJobFinished={onJobFinished} />
+        </ToastProvider>
+      </MemoryRouter>
+    );
+    await act(async () => {});
+    expect(onJobFinished).not.toHaveBeenCalled();
+    await act(async () => { jest.advanceTimersByTime(2600); });
+    await waitFor(() => expect(onJobFinished).toHaveBeenCalledTimes(1));
   });
 });
 

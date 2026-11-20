@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
@@ -30,7 +30,7 @@ const num = (x) => (typeof x === 'number' ? new Intl.NumberFormat().format(x) : 
  * labelled that way.
  */
 export default function Overview() {
-  const { novelId, novel, error, errorStatus, refetch, projects } = useNovelData();
+  const { novelId, novel, error, errorStatus, refetch, projects, refreshProjects } = useNovelData();
   const [output, setOutput] = useState(null);
   const project = (projects || []).find((p) => p.id === novelId) || null;
 
@@ -45,6 +45,14 @@ export default function Overview() {
       alive = false;
     };
   }, [novelId]);
+
+  // The cast, chapter count and "built" state come from the novel payload and the project list, both read before a
+  // Build job ran; re-read them when a job finishes.
+  const onJobFinished = useCallback(() => {
+    refetch();
+    if (refreshProjects) refreshProjects();
+    api.listOutput(novelId).then(setOutput).catch(() => {});
+  }, [refetch, refreshProjects, novelId]);
 
   const panels = useMemo(() => pickPanels(output, 7), [output]);
   const cast = useMemo(
@@ -174,7 +182,7 @@ export default function Overview() {
           </section>
         </div>
 
-        <AudiobookPanel novelId={novelId} project={project} />
+        <AudiobookPanel novelId={novelId} project={project} onJobFinished={onJobFinished} />
 
         <section className="rounded-3xl border border-border bg-surface p-6">
           <h2 className="font-display text-lg font-bold tracking-tight">Pipeline</h2>

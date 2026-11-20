@@ -40,6 +40,8 @@ export default function CompanionPanel({ novelId, project }) {
   const n = Number(through);
   const valid = through.trim() !== '' && Number.isFinite(n) && n > 0;
   const total = project && project.chapter_count;
+  // Nothing to choose a chapter from until the book has been read; a max of 0 made every value invalid.
+  const built = !!project && project.ingested !== false && total !== 0;
 
   const build = async () => {
     setBusy(true);
@@ -74,13 +76,15 @@ export default function CompanionPanel({ novelId, project }) {
             id="companion-through"
             type="number"
             min="1"
-            max={total || undefined}
+            max={built && total ? total : undefined}
             step="1"
+            disabled={!built}
             value={through}
             onChange={(e) => setThrough(e.target.value)}
           />
+          {!built && <p className="mt-1 text-xs text-muted">Build the book first (step 1 above).</p>}
         </div>
-        <Button variant="secondary" disabled={!valid || busy} onClick={build}>
+        <Button variant="secondary" disabled={!built || !valid || busy} onClick={build}>
           {busy ? 'Building…' : `Build companion through chapter ${valid ? n : '…'}`}
         </Button>
       </div>

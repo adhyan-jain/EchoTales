@@ -64,3 +64,17 @@ test('a failed build says so and shows the reason', async () => {
   fireEvent.click(screen.getByRole('button', { name: /Build companion/ }));
   expect(await screen.findByText(/chapter 7 is not in this book/)).toBeInTheDocument();
 });
+
+test('before the book is built the chapter box is off, with a hint, and has no zero maximum', async () => {
+  render(
+    <ToastProvider>
+      <CompanionPanel novelId="b" project={{ id: 'b', ingested: false, chapter_count: 0 }} />
+    </ToastProvider>
+  );
+  await screen.findByText(/No companion built yet/i);
+  const input = screen.getByLabelText('Last chapter you have finished');
+  expect(input).toBeDisabled();
+  expect(input).not.toHaveAttribute('max');
+  expect(screen.getByText(/build the book first/i)).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /Build companion/ })).toBeDisabled();
+});

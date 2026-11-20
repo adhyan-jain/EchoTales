@@ -19,7 +19,7 @@ import { fileUrl } from '../lib/media';
 const inFlight = (job) => job && (job.status === 'PENDING' || job.status === 'RUNNING');
 const latest = (jobs, kind) => (jobs || []).filter((j) => j.kind === kind).sort((a, b) => (b.created_at || 0) - (a.created_at || 0))[0] || null;
 
-export default function AudiobookPanel({ novelId, project }) {
+export default function AudiobookPanel({ novelId, project, onJobFinished }) {
   const [jobs, setJobs] = useState([]);
   const [bible, setBible] = useState(null);
   const [queue, setQueue] = useState(null);
@@ -50,6 +50,18 @@ export default function AudiobookPanel({ novelId, project }) {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  // A job that was running and no longer is: the counts the page shows from the build (characters, chapters,
+  // "nothing left to review") were read before it finished and stayed stale until a reload (2026-11 walkthrough).
+  const wasRunning = useRef(false);
+  useEffect(() => {
+    const running = jobs.some(inFlight);
+    if (wasRunning.current && !running) {
+      refresh();
+      if (onJobFinished) onJobFinished();
+    }
+    wasRunning.current = running;
+  }, [jobs, refresh, onJobFinished]);
 
   // Poll only while something is running, so an idle page costs the server nothing.
   useEffect(() => {
