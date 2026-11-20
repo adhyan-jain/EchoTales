@@ -596,6 +596,28 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         refusal = _refusal(engine_name, http=True)
         if refusal:
             raise ValueError(refusal)
+        if params.get("panel_id"):
+            # One panel redrawn as numbered candidates inside its version folder; the whole-chapter path below
+            # would start a new version for every chapter (render/regen.py).
+            from echotales.pipeline.render import regen
+
+            if params.get("chapter") is None:
+                raise ValueError("a panel redraw needs the chapter the panel is in")
+            direction = str(params.get("direction") or "")
+            if not direction and params.get("episode_id") is not None and params.get("shot_index") is not None:
+                direction = regen.screenplay_direction(store, str(params["episode_id"]), int(params["shot_index"]))
+            run_stage(
+                store, run_id=pipeline_run.run_id, stage_name="render_panel",
+                input_digest=input_digest,
+                # Same params twice is a deliberate second redraw, not a rerun to skip.
+                skip_if_succeeded=False,
+                fn=lambda: regen.regenerate_panel(
+                    novel_id, chapter=float(params["chapter"]), panel_id=str(params["panel_id"]),
+                    engine=get_engine(engine_name), direction=direction, candidates=params.get("candidates"),
+                    version=params.get("version"), out_dir=params.get("panel_dir"), job_id=job.job_id,
+                ),
+            )
+            return str(pipeline_run.run_id)
         # The tier sets how many scenes (each one to three images): a preview by default in `local-low`, the whole chapter otherwise.
         max_panels = int(params.get("max_panels") or _policy().scenes_for(params.get("tier")))
         chapters = params.get("chapters")

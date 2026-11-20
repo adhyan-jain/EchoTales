@@ -16,6 +16,7 @@ jest.mock('../../api', () => ({
     generateLocationPlate: jest.fn(),
     listReviewItems: jest.fn(),
     resolveReviewItem: jest.fn(),
+    mediaUrl: jest.fn((u) => u),
   },
 }));
 

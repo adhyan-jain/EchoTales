@@ -111,7 +111,6 @@ _AUTH_ENV_VAR = "ECHOTALES_WEBVIEW_PASSWORD"
 # The shot routes used to return invented QA scores over recycled panels and a lock that stored nothing. They stay
 # refused until they call keyframes/engine.py with a real KeyframeQAGate (product plan step 4); a screen that shows
 # numbers nobody measured is worse than no screen.
-_SHOT_QA_UNWIRED = "per-shot candidates, re-roll and lock are not wired to the keyframe engine yet; no QA score is shown that was not measured"
 _SESSION_TTL_SECONDS = 12 * 3600
 #: Failed logins allowed per window before the server answers 429. The password is the only credential when the Studio
 #: is reachable beyond this machine, and a compare-digest login with no limit is a free online guessing oracle.
@@ -1931,8 +1930,21 @@ def make_handler(
                     )
                     return self._json(200, ep.to_dict())
 
-                if len(parts) == 8 and parts[:2] == ["api", "novels"] and parts[3] == "episodes" and parts[5] == "shots" and parts[7] == "candidates":
-                    return self._json(501, {"error": _SHOT_QA_UNWIRED})
+                # GET /api/novels/<id>/panels?chapter=1[&version=v3_x]: each panel of that render with its candidates.
+                # Pictures are paths under the project's output folder, served (and token-checked) by `output/file`.
+                if len(parts) == 4 and parts[:2] == ["api", "novels"] and parts[3] == "panels":
+                    if registry.handles.get(parts[2]) is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    query = parse_qs(urlparse(self.path).query)
+                    from echotales.pipeline.render import regen
+
+                    try:
+                        listing = regen.list_panels(
+                            parts[2], float(query.get("chapter", [""])[0]), version=query.get("version", [None])[0]
+                        )
+                    except ValueError as exc:  # PanelRegenError is a ValueError; so is a non-numeric chapter
+                        return self._json(400, {"error": str(exc)})
+                    return self._json(200, listing)
 
                 if len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3] == "render" and parts[4] == "preview":
                     handle = registry.handles.get(parts[2])
@@ -2374,9 +2386,23 @@ def make_handler(
                     handle.invalidate()
                     return self._json(200, ep.to_dict())
 
-                # POST .../shots/<shot_idx>/reroll and .../lock
-                if len(parts) == 8 and parts[:2] == ["api", "novels"] and parts[3] == "episodes" and parts[5] == "shots" and parts[7] in ("reroll", "lock"):
-                    return self._json(501, {"error": _SHOT_QA_UNWIRED})
+                # POST /api/novels/<id>/panels/choose {chapter, panel_id, candidate_id, version?}: the picture this panel uses
+                # in pages and videos from now on ("original" goes back to the render's own). Redrawing is a job:
+                # POST /api/projects/<id>/render with panel_id, chapter, direction, candidates.
+                if len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3:] == ["panels", "choose"]:
+                    if registry.handles.get(parts[2]) is None:
+                        return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
+                    body = self._read_json()
+                    from echotales.pipeline.render import regen
+
+                    try:
+                        picked = regen.choose_candidate(
+                            parts[2], chapter=float(body.get("chapter")), panel_id=str(body.get("panel_id") or ""),
+                            candidate_id=str(body.get("candidate_id") or ""), version=body.get("version") or None,
+                        )
+                    except (ValueError, TypeError) as exc:
+                        return self._json(400, {"error": str(exc)})
+                    return self._json(200, picked)
 
                 # POST /api/novels/<id>/characters/<self_id>/identity-sheet/generate: one sheet per body, drawn from the locked
                 # identity sentence; approve it through the sheets endpoint to lock those words for every panel.
@@ -2721,6 +2747,17 @@ def make_handler(
                                 f"HTTP; allowed: {_enabled_engines()}"
                             },
                         )
+                    if kind == "render" and params.get("panel_id"):
+                        try:
+                            params["chapter"] = float(params["chapter"])
+                            params["panel_id"] = str(params["panel_id"])
+                            n = params.get("candidates")
+                            if n is not None and not 1 <= int(n) <= 8:
+                                raise ValueError("candidates must be 1 to 8")
+                            if params.get("version") is not None and not _SAFE_SUFFIX.fullmatch(str(params["version"])):
+                                raise ValueError("version must be a version folder name")
+                        except (KeyError, TypeError, ValueError) as exc:
+                            return self._json(400, {"error": f"panel redraw: {exc or 'chapter is required'}"})
                     if kind == "render":
                         from echotales.pipeline.compute import density_error
 

@@ -4,7 +4,7 @@ import Button from './ui/Button';
 import Divider from './ui/Divider';
 import DepthCard from './ui/DepthCard';
 import { CardBody } from './ui/Card';
-import InspectorSection from './ui/InspectorSection';
+import PanelRedraw from './PanelRedraw';
 import JobStatusBadge, { jobEndedBadly } from './ui/JobStatusBadge';
 import JobFailure from './ui/JobFailure';
 import { EmptyState } from './ui/EmptyState';
@@ -19,9 +19,8 @@ import { describeError } from '../lib/errors';
    its real status. A finished or failed job raises a browser notification (when
    the person allowed them), so a render that takes minutes can be left alone. Per-beat render *preview* needs a `beat_id`/`cast_self_ids`
    the webview payload has no way to discover today (no "list beats for a
-   chapter" route exists) -- rather than build a form that can never
-   submit correctly, that panel is an honest "not yet available" state.
-   Regeneration/QA have no backend route at all and are the same.
+   chapter" route exists), so single panels are worked on from the chapter's
+   newest render instead (`PanelRedraw`: redraw with edited direction, pick a candidate).
 
    Chapters are fetched here directly (`api.chapters`, the light
    numbers-and-titles route), not read from a shared cache: right after a
@@ -292,19 +291,9 @@ export default function GenerationWorkspace({ novelId, hideHeader = false }) {
         )}
       </div>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
-        <InspectorSection title="Render preview" defaultOpen>
-          <EmptyState
-            title="Not yet available"
-            description="Previewing a single panel isn’t available in this screen yet."
-          />
-        </InspectorSection>
-        <InspectorSection title="QA &amp; regeneration" defaultOpen>
-          <EmptyState
-            title="Not yet available"
-            description="Quality checks and re-rendering a single panel aren’t available yet."
-          />
-        </InspectorSection>
+      <div className="mt-8">
+        <Divider label="Panels and redraws" className="mb-4" />
+        <PanelRedraw novelId={novelId} chapter={selected} engine={engine} jobs={jobs} onQueued={loadJobs} />
       </div>
     </div>
   );

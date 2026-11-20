@@ -14,6 +14,7 @@ jest.mock('../../api', () => ({
     renderGenerate: jest.fn(),
     compute: jest.fn(),
     chapters: jest.fn(),
+    listPanels: jest.fn(),
     outputFileUrl: jest.fn((novelId, path) => `/api/novels/${novelId}/output/file?path=${path}`),
   },
 }));
@@ -300,6 +301,7 @@ describe('GenerationWorkspace detail option', () => {
       gpu: { available: false },
     });
     api.chapters.mockResolvedValue([{ number: 1 }]);
+    api.listPanels.mockResolvedValue({ version: 'v1', panels: [] });
     api.listJobs.mockResolvedValue([]);
     api.renderGenerate.mockResolvedValue({ job_id: 'r' });
     render(

@@ -83,22 +83,6 @@ def test_episodes_get_and_post(studio_server) -> None:
     assert "scenes" in compiled
 
 
-def test_shot_routes_refuse_instead_of_inventing_qa(studio_server) -> None:
-    # They used to return 0.94 - i * 0.05 "scores" over recycled panels and a lock that stored nothing.
-    port, _ = studio_server
-    conn = HTTPConnection("127.0.0.1", port)
-    conn.request("GET", "/api/novels/test_novel/episodes/ep1/shots/0/candidates")
-    resp = conn.getresponse()
-    assert resp.status == 501
-    resp.read()
-    for action in ("reroll", "lock"):
-        conn.request("POST", f"/api/novels/test_novel/episodes/ep1/shots/0/{action}", body="{}",
-                     headers={"Content-Type": "application/json"})
-        resp = conn.getresponse()
-        assert resp.status == 501
-        resp.read()
-
-
 def test_cross_site_writes_are_refused_and_cors_is_not_a_wildcard(studio_server) -> None:
     port, _ = studio_server
     conn = HTTPConnection("127.0.0.1", port)

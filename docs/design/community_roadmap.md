@@ -217,7 +217,7 @@ subtitles. New work:
 - **Languages.** State plainly what is English-only today; add source-language support in the order the
   community asks.
 - **Casting and direction controls.** Voice auditions, clone your own voice for a character, per-line
-  delivery, regenerate one panel with edited direction, pick among candidates.
+  delivery. Done 2026-11-21 (EVOLUTION 4.179): regenerate one panel with edited direction, pick among candidates (stub-tested, not on a real engine; no vision check on candidates yet).
 
 ### M5. Make it the repository people point to
 
