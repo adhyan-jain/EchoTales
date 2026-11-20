@@ -3,10 +3,15 @@ import { api } from '../api';
 import Button from './ui/Button';
 import Input from './ui/Input';
 import { useToast } from './ui/Toast';
+import JobFailure from './ui/JobFailure';
 import { describeError } from '../lib/errors';
+import { fileUrl } from '../lib/media';
+import { voiceLineSample } from '../lib/voiceSample';
 
 // Shown until the server answers; the server's own statement replaces it, so the recorded wording and the label agree.
 const DEFAULT_STATEMENT = "This is my voice or I have the speaker's permission.";
+// A fixed sentence for the preview: the person is judging the voice, not the words.
+const PREVIEW_LINE = 'The lantern light did not reach the stairs, and he counted them anyway.';
 
 /* Add a voice of your own (or one you have permission to use) for this book. It is stored in this project only, with a
    record of the consent next to it, and then joins the voices characters are cast from the next time the book is
@@ -23,9 +28,30 @@ export default function ProjectVoicesPanel({ novelId }) {
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [previewing, setPreviewing] = useState('');
+  const [previews, setPreviews] = useState({});
+  const [previewError, setPreviewError] = useState(null);
   const gone = useRef(false);
 
   useEffect(() => () => { gone.current = true; }, []);
+
+  const preview = async (voiceId) => {
+    setPreviewing(voiceId);
+    setPreviewError(null);
+    try {
+      const path = await voiceLineSample(novelId, { voiceId, emotion: 'neutral', text: PREVIEW_LINE }, { cancelled: () => gone.current });
+      if (!gone.current && path) setPreviews((p) => ({ ...p, [voiceId]: path }));
+    } catch (err) {
+      if (gone.current) return;
+      setPreviewError(
+        typeof err.summary === 'string'
+          ? { voiceId, summary: err.summary }
+          : { voiceId, message: describeError(err, 'Could not make the sample.') }
+      );
+    } finally {
+      if (!gone.current) setPreviewing('');
+    }
+  };
 
   const load = useCallback(() => {
     return api
@@ -142,11 +168,36 @@ export default function ProjectVoicesPanel({ novelId }) {
       <ul className="mt-5 space-y-2">
         {info && info.voices.length === 0 && !loadError && <li className="text-sm text-muted">No voices of your own yet.</li>}
         {((info && info.voices) || []).map((v) => (
-          <li key={v.voice_id} className="rounded-2xl border border-border px-4 py-2 text-sm">
+          <li key={v.voice_id} className="rounded-2xl border border-border px-4 py-3 text-sm">
             <span className="text-text">{v.name}</span>
             <span className="ml-2 text-xs text-muted">
               {v.gender}, age {v.age}. Consent recorded {String(v.consent_at).slice(0, 10)}.
             </span>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              <div>
+                <span className="mb-1 block text-xs text-muted">Your recording</span>
+                {v.clip ? (
+                  <audio controls preload="none" aria-label={`Your recording of ${v.name}`} src={fileUrl(novelId, v.clip)} className="h-10 w-full" />
+                ) : (
+                  <span className="text-xs text-muted">The recording is not available.</span>
+                )}
+              </div>
+              <div>
+                <span className="mb-1 block text-xs text-muted">How it sounds reading a line</span>
+                {previews[v.voice_id] ? (
+                  <audio controls aria-label={`Synthesized sample of ${v.name}`} src={fileUrl(novelId, previews[v.voice_id])} className="h-10 w-full" />
+                ) : (
+                  <Button variant="secondary" size="sm" disabled={!!previewing} onClick={() => preview(v.voice_id)}>
+                    {previewing === v.voice_id ? 'Voicing…' : 'Hear a synthesized sample'}
+                  </Button>
+                )}
+              </div>
+            </div>
+            {previewError && previewError.voiceId === v.voice_id && (
+              previewError.message
+                ? <div role="alert" className="mt-2 text-sm text-danger">{previewError.message}</div>
+                : <JobFailure kind="sample" summary={previewError.summary} />
+            )}
           </li>
         ))}
       </ul>

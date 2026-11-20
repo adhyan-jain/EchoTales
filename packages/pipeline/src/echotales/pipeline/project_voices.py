@@ -44,6 +44,8 @@ class StoredVoice:
     gender: str
     age: int
     consent_at: str
+    #: The recording's path under the novel's folder, for the output-file route (never an absolute server path).
+    clip: str = ""
 
 
 def voices_dir(novel_id: str) -> Path:
@@ -104,7 +106,7 @@ def save_voice(novel_id: str, *, filename: str, data: bytes, name: str, gender: 
     # listed voice with no consent on file.
     target.write_bytes(data)
     (folder / f"{key}.consent.json").write_text(json.dumps(record, indent=2), encoding="utf-8")
-    return StoredVoice(record["voice_id"], record["name"], gender, age, record["timestamp"])
+    return StoredVoice(record["voice_id"], record["name"], gender, age, record["timestamp"], f"voices/{target.name}")
 
 
 def _records(novel_id: str) -> list[tuple[dict, Path]]:
@@ -125,7 +127,10 @@ def _records(novel_id: str) -> list[tuple[dict, Path]]:
 
 
 def list_project_voices(novel_id: str) -> list[StoredVoice]:
-    return [StoredVoice(r["voice_id"], r.get("name", r["voice_id"]), r["gender"], int(r["age"]), r["timestamp"]) for r, _ in _records(novel_id)]
+    return [
+        StoredVoice(r["voice_id"], r.get("name", r["voice_id"]), r["gender"], int(r["age"]), r["timestamp"], f"voices/{clip.name}")
+        for r, clip in _records(novel_id)
+    ]
 
 
 def load_project_voices(novel_id: str) -> list[BankVoice]:
