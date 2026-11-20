@@ -928,8 +928,7 @@ LANGUAGE_SUPPORT = {
 
 
 def _project_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
-    from echotales.pipeline import paths
-    from echotales.pipeline.voice.export import engine_of
+    from echotales.pipeline.voice.export import engine_of  # type: ignore[import-untyped]
 
     novel_row = handle.store.get_novel(handle.source.novel_id) or {}
     chapters = handle.store.chapter_numbers(handle.source.novel_id)

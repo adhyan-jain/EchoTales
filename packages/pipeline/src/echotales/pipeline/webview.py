@@ -25,6 +25,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
+from echotales.core.models import RefImageCandidate
 from echotales.core.store import Store
 
 #: Matches the id `speakers/runner.py::_assign_anonymous_slots` mints --
@@ -420,7 +421,7 @@ _DASHBOARD_TRAIT_KEYS: tuple[str, ...] = (
 _REVISED_TRAIT_KEYS: frozenset[str] = frozenset({"gender", "age_band", "register"})
 
 
-def candidate_urls(novel_id: str, cand) -> dict:  # type: ignore[no-untyped-def]
+def candidate_urls(novel_id: str, cand: RefImageCandidate) -> dict[str, str]:
     """The picture URLs a browser may load for a reference candidate.
 
     A local upload is stored as `file://<path>`, which the browser refuses ("Not allowed to load local resource": the
