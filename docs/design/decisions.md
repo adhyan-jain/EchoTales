@@ -557,6 +557,13 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Code kept**: `OllamaProvider` sends `think: false` for `qwen3*` models only (test `test_ollama_think.py`); qwen3 otherwise spends its token budget on a reasoning trace.
 - **Status**: measured; default unchanged.
 
+### D63. One semi-realistic webtoon colour look per novel, light from the text, adults as adults (2026-11-20, panel rounds 3 and 4)
+- **Decided**: colour is the primary output and its look is typical Korean full-colour webtoon colouring (semi-realistic, adult proportions, soft cel shading with airbrushed gradients and rim light, painterly backgrounds, natural cinematic grading), identical for every novel; the genre adds only a "Set in ..." flavour (`persona/genre.py::STYLE_LEADS`). A scene's light and mood are graded from the text it states (`render/lightgrade.py`); a staged light the scene text never states is dropped (`staging.validate_staging`). The "youth" age band is young only with a stated age under 18.
+- **Why**: the round-3 lead ("2D cel-shaded anime, flat cel colour") drew big-eyed Ghibli-like faces, a 22-year-old as a child and a lamp-lit night room bright (LotM 16 of 16); the owner asked for realistic colour that is not cartoonish and not tuned to one novel. Reverend Insanity keeps the hand-written briefs' structure (concrete setting, dense crowd) rather than a per-novel exception.
+- **Evidence**: EVOLUTION 4.172, sheets `data/scratch/panel_quality/out_r4_*`; judged by eye, one seed, one reviewer.
+- **Not decided**: whether to repair the director's invented swords and contradicting paragraphs; the reborn 15-year-old is still drawn adult.
+- **Status**: built and measured on four novels' scenes; open items in 4.172.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs

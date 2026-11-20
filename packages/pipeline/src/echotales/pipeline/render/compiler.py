@@ -742,8 +742,8 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     stage = PromptSection("staging", staging_text) if staging_text else None
     cropped = b.composition.strip()
     if b.shot == "close" and b.frame_focus in ("", "eyes", "hands"):
-        from echotales.pipeline.render.framing import (
-            crop_composition,  # type: ignore[import-untyped]
+        from echotales.pipeline.render.framing import (  # type: ignore[import-untyped]
+            crop_composition,
         )
 
         cropped = crop_composition(cropped, b.frame_focus) if b.frame_focus != "hands" else ""
