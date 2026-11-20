@@ -49,6 +49,7 @@ import logging
 import math
 import re
 from dataclasses import dataclass, field
+from typing import Any
 
 from echotales.core.enums import Prominence, ReferenceMode, SpanType, TargetKind
 from echotales.core.interval import Certainty, FuzzyInterval
@@ -288,7 +289,7 @@ def _blocks_present(store: Store, novel_id: str, target_id: str) -> dict[float, 
 
 
 def _others_present(
-    store: Store, novel_id: str, target_id: str, chapter: float, spans: list, people: set[str]
+    store: Store, novel_id: str, target_id: str, chapter: float, spans: list[Any], people: set[str]
 ) -> set[int]:
     """Blocks of one chapter that show another person (`people`, ids from `cast_labels`): a PRESENT mention, or a line
     they speak. An item or place does not end the target's run: RI ch1 block 81 names the Spring Autumn Cicada, an ITEM."""
@@ -306,7 +307,7 @@ def _others_present(
 
 
 def _onset_block(
-    spans: list, cue_block: int, mine: set[int], others: set[int], window: int = _PRESENCE_WINDOW
+    spans: list[Any], cue_block: int, mine: set[int], others: set[int], window: int = _PRESENCE_WINDOW
 ) -> int:
     """The block where the narrative first stays with the target in the new body, at or before the cue.
 

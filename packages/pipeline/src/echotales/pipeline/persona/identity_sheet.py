@@ -71,7 +71,7 @@ def generate_sheet(
         raise RuntimeError(f"the sheet for {brief.name} ({persona_id}) was not drawn")
     cand = refimg.register_sheet_candidate(store, novel_id, self_id, persona_id, out, brief.name)
     lock = brief.locked
-    store.record_artifact(f"identity_sheet:{cand.id}", il.TIER, [], "", lock.to_json())  # type: ignore[union-attr]
+    store.record_artifact(f"identity_sheet:{cand.id}", il.TIER, [], "", lock.to_json())
     store.record_artifact(f"identity_sheet_text:{cand.id}", il.TIER, [], "", json.dumps(sentence))
     store.conn.commit()
     return cand

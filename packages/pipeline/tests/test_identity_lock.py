@@ -102,7 +102,7 @@ class _Client:
     def __init__(self, look: il.CharacterLook) -> None:
         self.look, self.calls = look, 0
 
-    def complete(self, task, prompt, schema, **kw):  # noqa: ANN001
+    def complete(self, task, prompt, schema, **kw):
         self.calls += 1
         return type("R", (), {"value": self.look})()
 

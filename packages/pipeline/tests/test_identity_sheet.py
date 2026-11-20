@@ -25,7 +25,7 @@ def _store(tmp_path) -> Store:
 def _draw(tmp_path):
     seen = []
 
-    def draw(requests, sections, model_key, *, greyscale):  # noqa: ANN001
+    def draw(requests, sections, model_key, *, greyscale):
         (request,) = requests
         seen.append((request.prompt, sections, greyscale))
         request.out_path.parent.mkdir(parents=True, exist_ok=True)

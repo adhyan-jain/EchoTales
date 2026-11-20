@@ -22,6 +22,7 @@ import json
 import logging
 import re
 from dataclasses import asdict, dataclass, field
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -49,7 +50,7 @@ _GARMENT = {
 _BUILD = {"male": ("a lean build", "a lean build", "an average build"), "female": ("a slender build",)}
 
 
-def _pick(seed: str, options: tuple, salt: str):
+def _pick(seed: str, options: tuple[Any, ...], salt: str) -> Any:
     return options[int(hashlib.md5(f"{salt}:{seed}".encode()).hexdigest(), 16) % len(options)]
 
 
@@ -69,7 +70,8 @@ def stored_defaults(store: object, persona_id: str, self_id: str, gender: str, m
     aid = f"identity_default:{persona_id}"
     row = store.conn.execute("SELECT payload_json FROM derived_artifact WHERE id=?", (aid,)).fetchone()  # type: ignore[attr-defined]
     if row is not None:
-        return json.loads(row["payload_json"])
+        stored: dict[str, str] = json.loads(row["payload_json"])
+        return stored
     chosen = choose_defaults(self_id, gender, manhua)
     store.record_artifact(aid, TIER, [], "", json.dumps(chosen))  # type: ignore[attr-defined]
     store.conn.commit()  # type: ignore[attr-defined]
@@ -107,7 +109,7 @@ class LockedIdentity:
     @classmethod
     def from_json(cls, raw: str) -> LockedIdentity:
         d = json.loads(raw)
-        return cls(**{k: d.get(k, "" if k != "source" else {}) for k in cls.__dataclass_fields__})  # type: ignore[attr-defined]
+        return cls(**{k: d.get(k, "" if k != "source" else {}) for k in cls.__dataclass_fields__})
 
 
 def _plain(text: str) -> str:

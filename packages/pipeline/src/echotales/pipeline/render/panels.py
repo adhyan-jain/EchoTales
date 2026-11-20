@@ -28,7 +28,7 @@ import json
 import logging
 from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
 from echotales.core.enums import OBSERVER_READER, ReferenceMode, SpanType
 from echotales.core.models import Chapter, DiscoursePosition, Mention, Span
@@ -134,14 +134,13 @@ def _cached_snapshot(model_id: str) -> str | None:
     return None
 
 
-def _vision_check(pending_batch: list, pending_expect: dict, failed: list) -> list[dict]:
+def _vision_check(pending_batch: list[Any], pending_expect: dict[Any, Any], failed: list[Any]) -> list[dict[str, Any]]:
     """The vision pass over a chapter's freshly drawn panels (`render/vision_pass.py`); `[]` when it is off.
 
     Off means a single candidate was asked for, or no vision model is installed (said once in the log)."""
     if not pending_expect:
         return []
-    from echotales.pipeline.config import get_settings
-    from echotales.pipeline.config import ModelBackend
+    from echotales.pipeline.config import ModelBackend, get_settings
     from echotales.pipeline.render import vision_pass
 
     settings = get_settings()
@@ -157,10 +156,11 @@ def _vision_check(pending_batch: list, pending_expect: dict, failed: list) -> li
         return []
     drawn = {f.out_path for f in failed}
     items = [(req, secs) for req, secs in pending_batch if req.out_path not in drawn]
-    return vision_pass.run(
+    checked: list[dict[str, Any]] = vision_pass.run(
         [r for r, _ in items], [s for _, s in items], pending_expect, vlm=vlm, candidates=n,
         model_key=settings.render_image_model, greyscale=settings.render_panel_mode == "manga",
     )
+    return checked
 
 
 @dataclass(slots=True)
@@ -294,8 +294,8 @@ class SDXLEngine:
 
     def _ensure_pipe(self) -> object:
         if self._pipe is None:
-            import torch  # type: ignore[import-not-found]
-            from diffusers import StableDiffusionXLPipeline  # type: ignore[import-not-found]
+            import torch
+            from diffusers import StableDiffusionXLPipeline
 
             self._pipe = StableDiffusionXLPipeline.from_pretrained(
                 self.model_id, torch_dtype=torch.float16
@@ -316,7 +316,7 @@ class SDXLEngine:
         return self._pipe
 
     def generate(self, request: PanelImageRequest) -> Path:
-        import torch  # type: ignore[import-not-found]
+        import torch
 
         pipe = self._ensure_pipe()
         generator = torch.Generator(device=self.device).manual_seed(request.seed)
@@ -426,8 +426,8 @@ class MangaDiffusersEngine:
 
     def _ensure_pipe(self, want_ip: bool) -> object:
         if self._pipe is None:
-            import torch  # type: ignore[import-not-found]
-            from diffusers import StableDiffusionPipeline  # type: ignore[import-not-found]
+            import torch
+            from diffusers import StableDiffusionPipeline
 
             self._pipe = StableDiffusionPipeline.from_pretrained(
                 self.model_id, torch_dtype=torch.float16, safety_checker=None
@@ -452,8 +452,8 @@ class MangaDiffusersEngine:
         return self._pipe
 
     def generate(self, request: PanelImageRequest) -> Path:
-        import torch  # type: ignore[import-not-found]
-        from diffusers.utils import load_image  # type: ignore[import-not-found]
+        import torch
+        from diffusers.utils import load_image
 
         refs = [p for p in request.reference_images if Path(p).exists()][
             : self.max_references
@@ -635,7 +635,7 @@ class IllustriousEngine:
     _img2img_pipe: object | None = None
 
     def _ensure_img2img_pipe(self, want_ip: bool = False) -> object:
-        from diffusers import StableDiffusionXLImg2ImgPipeline  # type: ignore[import-not-found]
+        from diffusers import StableDiffusionXLImg2ImgPipeline
 
         base = self._ensure_pipe(want_ip=want_ip)
         if self._img2img_pipe is None:
@@ -661,7 +661,7 @@ class IllustriousEngine:
             # re-arming offload altogether (that leaves everything
             # GPU-resident and this 8 GB card OOMs instead, per
             # `SDXLEngine`'s own comment on the same card).
-            from accelerate.hooks import remove_hook_from_module  # type: ignore[import-not-found]
+            from accelerate.hooks import remove_hook_from_module
 
             for component in base.components.values():  # type: ignore[attr-defined]
                 if hasattr(component, "to"):
@@ -674,8 +674,8 @@ class IllustriousEngine:
 
     def _ensure_pipe(self, want_ip: bool = False) -> object:
         if self._pipe is None:
-            import torch  # type: ignore[import-not-found]
-            from diffusers import StableDiffusionXLPipeline  # type: ignore[import-not-found]
+            import torch
+            from diffusers import StableDiffusionXLPipeline
 
             # **A flaky network must not kill a multi-hour render.** The
             # weights are fully cached, but a transient "Connection reset by
@@ -706,14 +706,14 @@ class IllustriousEngine:
             pipe.enable_model_cpu_offload()
             self._pipe = pipe
         elif want_ip and not self._ip_loaded:
-            import torch  # type: ignore[import-not-found]
+            import torch
 
             self._load_ip_adapter(self._pipe, torch)
         return self._pipe
 
     def _load_ip_adapter(self, pipe: object, torch: object) -> None:
         try:
-            from transformers import CLIPVisionModelWithProjection  # type: ignore[import-not-found]
+            from transformers import CLIPVisionModelWithProjection
 
             pipe.image_encoder = CLIPVisionModelWithProjection.from_pretrained(  # type: ignore[attr-defined]
                 self.ip_adapter_repo,
@@ -736,8 +736,8 @@ class IllustriousEngine:
             )
 
     def generate(self, request: PanelImageRequest) -> Path:
-        import torch  # type: ignore[import-not-found]
-        from diffusers.utils import load_image  # type: ignore[import-not-found]
+        import torch
+        from diffusers.utils import load_image
 
         refs = [p for p in request.reference_images if Path(p).exists()][
             : self.max_references
@@ -904,8 +904,8 @@ class RefinedEngine:
 
     def _ensure_pipe(self) -> object:
         if self._pipe is None:
-            import torch  # type: ignore[import-not-found]
-            from diffusers import StableDiffusionImg2ImgPipeline  # type: ignore[import-not-found]
+            import torch
+            from diffusers import StableDiffusionImg2ImgPipeline
 
             try:
                 self._pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
@@ -928,8 +928,8 @@ class RefinedEngine:
         return self._pipe
 
     def generate(self, request: PanelImageRequest) -> Path:
-        import torch  # type: ignore[import-not-found]
-        from diffusers.utils import load_image  # type: ignore[import-not-found]
+        import torch
+        from diffusers.utils import load_image
 
         base_path = request.out_path.with_name(
             request.out_path.stem + ".base" + request.out_path.suffix
@@ -1048,15 +1048,15 @@ def get_engine(name: str = "stub", **kwargs: object) -> PanelImageEngine:
     if name == "gemini":
         from echotales.pipeline.render.gemini import GeminiImageEngine
 
-        return GeminiImageEngine(**kwargs)  # type: ignore[arg-type,return-value]
+        return GeminiImageEngine(**kwargs)
     if name == "openrouter":
         from echotales.pipeline.render.openrouter import OpenRouterImageEngine
 
-        return OpenRouterImageEngine(**kwargs)  # type: ignore[arg-type,return-value]
+        return OpenRouterImageEngine(**kwargs)
     if name == "runpod":
         from echotales.pipeline.render.runpod import RunPodImageEngine
 
-        return RunPodImageEngine(**kwargs)  # type: ignore[arg-type,return-value]
+        return RunPodImageEngine(**kwargs)
     raise ValueError(
         f"unknown image engine {name!r}; expected 'stub', 'sdxl', 'manga', "
         "'illustrious', 'noobai', 'refined', 'gemini', 'openrouter' or 'runpod'"
@@ -1877,7 +1877,7 @@ def render_panels(
         ])
         _prev_staging_text = ""
         # The last scene's carry-forward cast (below), kept so a scene of the same segment that names nobody can start from it.
-        _prev_scene_cast: tuple | None = None
+        _prev_scene_cast: tuple[Any, ...] | None = None
         _prev_scene_segment = ""
         for _scene_i, scene in enumerate(scenes[:max_panels]):
             story_scene_blocks = [

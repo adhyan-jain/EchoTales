@@ -1,11 +1,11 @@
 {
-  "mypy": 1628,
+  "mypy": 1616,
   "mypy_targets": [
     "packages/core/src",
     "packages/pipeline/src"
   ],
   "mypy_version": "mypy 2.3.0 (compiled: yes)",
-  "ruff": 545,
+  "ruff": 542,
   "ruff_targets": [
     "packages"
   ]

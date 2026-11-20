@@ -919,8 +919,8 @@ def character_brief(
     from echotales.pipeline.persona.split import persona_at, standing_values
 
     entity = store.get_self(self_id)  # type: ignore[attr-defined]
-    persona_id = persona_at(store, self_id, position)  # type: ignore[arg-type]
-    stated = appearance_of(store, persona_id, standing_only=False, position=position)  # type: ignore[arg-type]
+    persona_id = persona_at(store, self_id, position)
+    stated = appearance_of(store, persona_id, standing_only=False, position=position)
     appearance = resolve_appearance(novel_id, stated)
     if beat_text:
         from echotales.pipeline.render.panels import apply_transient_overrides
@@ -931,20 +931,20 @@ def character_brief(
     condition = appearance.pop("current_condition", "")
     # The graph's own appearance facts, before the genre default fills any gap: the lock chooses its defaults itself, once.
     graph_facts = {k: v for k, v in stated.items() if v}
-    gender, age = _demographics(store, persona_id, novel_id=novel_id, entity_id=self_id, position=position)  # type: ignore[arg-type]
-    values = standing_values(store, persona_id, position=position)  # type: ignore[arg-type]
+    gender, age = _demographics(store, persona_id, novel_id=novel_id, entity_id=self_id, position=position)
+    values = standing_values(store, persona_id, position=position)
     years = 0
     if age in ("child", "youth", "teen", "teenager", "adolescent"):
         from echotales.pipeline.persona.reference_gen import body_age_years
 
-        years = body_age_years(store, persona_id, novel_id=novel_id, entity_id=self_id, position=position)  # type: ignore[arg-type]
+        years = body_age_years(store, persona_id, novel_id=novel_id, entity_id=self_id, position=position)
     final_gender = gender if gender in ("male", "female") else (gender_hint or "unknown")
     young = age in ("child", "youth", "teen", "teenager", "adolescent")
     from echotales.pipeline.persona.identity_lock import lock_for
 
     locked = lock_for(
         store, novel_id, self_id, persona_id, facts=graph_facts, gender=final_gender, young=young,
-        name=entity.canonical_label, manhua=genre_direction(novel_id)[2], scene=scene,  # type: ignore[arg-type]
+        name=entity.canonical_label, manhua=genre_direction(novel_id)[2], scene=scene,
         genre={k: v for k, v in appearance.items() if k in ("hair_color", "eye_color") and v and not graph_facts.get(k)},
     )
     return CharacterBrief(

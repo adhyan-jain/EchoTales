@@ -2270,8 +2270,8 @@ def make_handler(
                 ):
                     novel_id = parts[2]
                     self_id = parts[4]
-                    handle = registry.handles.get(novel_id)
-                    if handle is None:
+                    sheet_handle = registry.handles.get(novel_id)
+                    if sheet_handle is None:
                         return self._json(404, {"error": f"unknown novel {novel_id!r}"})
                     from echotales.pipeline.config import get_settings
                     from echotales.pipeline.persona import identity_sheet
@@ -2279,12 +2279,12 @@ def make_handler(
 
                     try:
                         made = identity_sheet.generate_sheets(
-                            handle.store, novel_id, self_ids=[self_id], out_dir=paths.asset_dir(novel_id, "references") / "identity",
+                            sheet_handle.store, novel_id, self_ids=[self_id], out_dir=paths.asset_dir(novel_id, "references") / "identity",
                             draw=generate_compiled_batch, model_key=get_settings().render_image_model,
                         )
                     except Exception as exc:
                         return self._json(500, {"error": f"{type(exc).__name__}: {exc}"})
-                    handle.invalidate()
+                    sheet_handle.invalidate()
                     return self._json(200, {"generated": True, "candidate_ids": [c.id for c in made], "self_id": self_id})
 
                 # POST /api/novels/<id>/characters/<self_id>/turnarounds/generate

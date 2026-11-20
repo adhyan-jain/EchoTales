@@ -248,4 +248,4 @@ def test_a_scene_of_the_same_segment_that_names_nobody_starts_from_the_previous_
     rows = load_panel_plan(vdir)
     cave = [r for r in rows if r.scene_index == 2]
     assert cave and all(r.cast_source == "carried" and [m.label for m in r.cast] == ["Fang Yuan"] for r in cave)
-    assert [r.cast_source for r in rows if r.scene_index == 1][0] == "present", "a scene that names someone keeps its own cast"
+    assert next(r.cast_source for r in rows if r.scene_index == 1) == "present", "a scene that names someone keeps its own cast"

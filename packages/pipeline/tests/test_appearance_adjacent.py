@@ -9,7 +9,10 @@ from __future__ import annotations
 from echotales.core.enums import AliasType, BlockType, ReferenceMode, SpanType, TargetKind
 from echotales.core.models import Block, Chapter, DiscoursePosition, Mention, Self, Span
 from echotales.core.store import Store
-from echotales.pipeline.resolve.appearance_extract import find_adjacent_descriptive_blocks, gather_appearance_passages
+from echotales.pipeline.resolve.appearance_extract import (
+    find_adjacent_descriptive_blocks,
+    gather_appearance_passages,
+)
 
 TEXTS = [
     "The room was small.",                                                       # 0

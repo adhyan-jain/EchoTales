@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from echotales.pipeline.keyframes import qa
 from echotales.pipeline.render import vision_pass as vp
 from echotales.pipeline.render.panels import PanelImageRequest
@@ -15,7 +14,7 @@ EXPECT = qa.PanelExpectation(people=1, hair_colour="dark", lead="X")
 
 
 @pytest.fixture(autouse=True)
-def _no_real_worker(monkeypatch) -> None:  # noqa: ANN001
+def _no_real_worker(monkeypatch) -> None:
     """These tests name the model "m"; no real image worker exists to release."""
     monkeypatch.setattr(vp, "release_worker", lambda key: None)
 
@@ -25,7 +24,7 @@ class FakeVLM:
 
     model = "fake"
 
-    def look(self, path):  # noqa: ANN001
+    def look(self, path):
         good = Path(path).read_text() == "good"
         return qa.VisionAnswer(people=1, lead_visible=True, hair_colour="black" if good else "red")
 
@@ -47,7 +46,7 @@ def fake_generate(contents):
     """A stand-in for `generate_compiled_batch`: writes `contents[k]` for each candidate index parsed from its name."""
     calls = []
 
-    def gen(requests, sections, model_key, *, greyscale):  # noqa: ANN001
+    def gen(requests, sections, model_key, *, greyscale):
         calls.append([(r.out_path.name, r.seed) for r in requests])
         for r in requests:
             k = int(r.out_path.stem.rsplit(".cand", 1)[1])
@@ -112,7 +111,7 @@ def test_choose_vlm_is_off_with_a_clear_message_when_nothing_is_installed(monkey
 def test_a_stub_run_never_uses_an_installed_vision_model(monkeypatch) -> None:
     from echotales.pipeline.render import panels
 
-    def boom(**kw):  # noqa: ANN003
+    def boom(**kw):
         raise AssertionError("looked for a vision model in a stub run")
 
     monkeypatch.setattr(vp, "choose_vlm", boom)
@@ -170,7 +169,7 @@ def test_the_image_worker_is_released_before_the_vision_model_looks(tmp_path, mo
     monkeypatch.setattr(vp, "release_worker", lambda key: events.append("release"))
 
     class Spy(FakeVLM):
-        def look(self, path):  # noqa: ANN001
+        def look(self, path):
             events.append("look")
             return super().look(path)
 

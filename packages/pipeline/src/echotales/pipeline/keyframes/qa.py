@@ -9,10 +9,17 @@ Evaluates generated keyframe candidates against four mandatory criteria:
 
 from __future__ import annotations
 
+import base64
+import contextlib
+import io
+import json
+import logging
 import math
+import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from echotales.pipeline.screenplay.schema import ScreenplayShot
 
@@ -86,8 +93,8 @@ def extract_default_image_features(image: Path | str | Any) -> list[float]:
             return [0.0] * 64
 
     try:
-        from PIL import Image
         import numpy as np
+        from PIL import Image
 
         opened = Image.open(source) if isinstance(source, Path) else None
         try:
@@ -393,12 +400,6 @@ class KeyframeQAGate:
 # outfit colour, and that the lead is there at all.
 # ---------------------------------------------------------------------------
 
-import base64
-import io
-import json
-import logging
-import re
-
 log = logging.getLogger(__name__)
 
 #: Ranked, measured in docs/EVOLUTION.md 4.168 on 29 hand-labelled panels, 8 GB card, ollama 0.19: granite3.2-vision:2b
@@ -593,11 +594,11 @@ class OllamaVLM:
     def _encode(self, path: Path) -> str:
         from PIL import Image
 
-        with Image.open(path) as im:
-            im = im.convert("RGB")
-            im.thumbnail((self.max_side, self.max_side))
-            buf = io.BytesIO()
-            im.save(buf, "JPEG", quality=88)
+        with Image.open(path) as src:
+            im = src.convert("RGB")
+        im.thumbnail((self.max_side, self.max_side))
+        buf = io.BytesIO()
+        im.save(buf, "JPEG", quality=88)
         return base64.b64encode(buf.getvalue()).decode()
 
     def look(self, path: Path) -> VisionAnswer | None:
@@ -624,10 +625,8 @@ class OllamaVLM:
         """Free the model's VRAM: the image worker needs the card next."""
         import httpx
 
-        try:
+        with contextlib.suppress(Exception):
             httpx.post(f"{self.host}/api/generate", json={"model": self.model, "keep_alive": 0}, timeout=10.0)
-        except Exception:
-            pass
 
 
 def expectation_from_brief(brief: Any) -> PanelExpectation:
@@ -642,10 +641,7 @@ def expectation_from_brief(brief: Any) -> PanelExpectation:
     colour_mode = getattr(getattr(brief, "mode", None), "value", "colour") != "manga"
     hair = colour_family(locked.hair) if (locked is not None and colour_mode) else ""
     outfit = colour_family(locked.outfit) if (locked is not None and colour_mode) else ""
-    if crowd is not None:
-        people = max(len(chars), 1) if chars else 2
-    else:
-        people = len(chars)
+    people = (max(len(chars), 1) if chars else 2) if crowd is not None else len(chars)
     # The scene's staging sheet places "the others" in frame (RI ch1: "the others stand in rows on one side"). The first
     # cliff render failed 8 of 13 panels on an exact count of one that showed the lead and that crowd, so a staged
     # crowd turns the count into a floor, like a crowd cut.

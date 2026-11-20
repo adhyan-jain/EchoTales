@@ -1912,9 +1912,10 @@ def _latest_plan_files(panel_root: Path) -> list[Path]:
 def check_director_conservation(store: Store, novel_id: str, source: SourceContext | None) -> CheckResult:
     chk = _find(Stage.DIRECTOR, "director.conservation")
     import json
+
     from echotales.pipeline import paths
-    from echotales.pipeline.render.direction import check_direction_conservation as _conserve_check
     from echotales.pipeline.render.direction import PanelDirection
+    from echotales.pipeline.render.direction import check_direction_conservation as _conserve_check
 
     panel_root = paths.asset_dir(novel_id, "panels")
     plan_path = panel_root / "panel_plan.jsonl"
@@ -1998,11 +1999,12 @@ def check_vision(store: Store, novel_id: str, source: SourceContext | None) -> C
     each chapter. Skipped, with the install line, when no render was checked: the check is off without a vision model."""
     chk = _find(Stage.DIRECTOR, "director.vision")
     import json
+
     from echotales.pipeline import paths
     from echotales.pipeline.keyframes import qa
 
     panel_root = paths.asset_dir(novel_id, "panels")
-    rows: list[dict] = []
+    rows: list[dict[str, Any]] = []
     for pf in _latest_plan_files(panel_root):
         vf = pf.parent / "vision_check.jsonl"
         if vf.exists():

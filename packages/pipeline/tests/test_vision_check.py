@@ -61,7 +61,7 @@ class FakeVLM:
     def __init__(self, answers: list[qa.VisionAnswer]) -> None:
         self.answers, self.seen = list(answers), []
 
-    def look(self, path):  # noqa: ANN001
+    def look(self, path):
         self.seen.append(path)
         return self.answers.pop(0)
 
@@ -82,7 +82,7 @@ def test_when_none_pass_the_one_with_fewest_failures_is_kept(tmp_path) -> None:
 
 def test_a_vlm_that_cannot_answer_does_not_veto_the_candidate(tmp_path) -> None:
     class Broken:
-        def look(self, path):  # noqa: ANN001
+        def look(self, path):
             return None
 
     sel = qa.select_candidate([tmp_path / "a.png", tmp_path / "b.png"], EXPECT, Broken())
