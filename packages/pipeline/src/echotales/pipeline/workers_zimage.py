@@ -39,6 +39,7 @@ import io
 import logging
 import os
 import time
+from collections.abc import Mapping
 from pathlib import Path
 
 from echotales.pipeline.workers_contract import ImageWorkerRequest, ImageWorkerResponse
@@ -67,6 +68,19 @@ _GGUF_TO_HF = {
     "attn_norm": "input_layernorm", "ffn_norm": "post_attention_layernorm",
     "ffn_gate": "mlp.gate_proj", "ffn_up": "mlp.up_proj", "ffn_down": "mlp.down_proj",
 }
+
+
+def lora_args(env: Mapping[str, str]) -> tuple[str, str, float] | None:
+    """(folder, file name, scale) for the optional LoRA, or None when `ECHOTALES_ZIMAGE_LORA` is unset.
+
+    Strength is `ECHOTALES_ZIMAGE_LORA_SCALE`, default 0.6. A bare file path is read by diffusers as a hub repo id,
+    which offline mode refuses, so folder and file name are given apart. A character LoRA trained by `cloud_lora.py`
+    is loaded the same way. Unset means the pipeline is built exactly as before.
+    """
+    lora = env.get("ECHOTALES_ZIMAGE_LORA")
+    if not lora:
+        return None
+    return str(Path(lora).parent), Path(lora).name, float(env.get("ECHOTALES_ZIMAGE_LORA_SCALE", "0.6"))
 
 
 def model_dir() -> Path:
@@ -228,12 +242,10 @@ class LocalZImageWorker:
             # default: it exists to hold one cel-shaded look if prompt wording alone cannot (owner, 2026-11-19).
             import os
 
-            if lora := os.environ.get("ECHOTALES_ZIMAGE_LORA"):
-                from pathlib import Path
-
-                # a bare file path is read as a hub repo id, which offline mode refuses: give folder and file name apart
-                self._pipe.load_lora_weights(str(Path(lora).parent), weight_name=Path(lora).name, adapter_name="style")
-                self._pipe.set_adapters(["style"], adapter_weights=[float(os.environ.get("ECHOTALES_ZIMAGE_LORA_SCALE", "0.6"))])
+            if args := lora_args(os.environ):
+                folder, weight_name, scale = args
+                self._pipe.load_lora_weights(folder, weight_name=weight_name, adapter_name="style")
+                self._pipe.set_adapters(["style"], adapter_weights=[scale])
             self._pipe_seconds = round(time.time() - started, 1)
         return self._pipe
 

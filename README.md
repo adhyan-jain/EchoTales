@@ -173,6 +173,15 @@ Per-task model selection lives in `packages/pipeline/.../llm/tasks.py`. No call
 site names a model, so switching development (ollama) to production (API) is one
 config value.
 
+## Cloud (optional, off by default)
+
+Local stays the default; with no cloud settings nothing changes. Optional hosted engines (RunPod video and multi-reference
+keyframes, a character-LoRA job, ElevenLabs speech) are built and tested against mocks only, never run for real. They
+read their keys from `.env` (see `.env.example`), and every call is estimated and recorded in a spend ledger that
+refuses before sending past `ECHOTALES_CLOUD_BUDGET_USD` (default 9). `echotales cloud estimate --kind video` and
+`cloud lora --dry-run` print a cost and send nothing; `echotales cloud ledger` prints the total. ElevenLabs uses your own
+key and a library or your own uploaded voice; do not use it to clone a real person's voice without their consent.
+
 ## Source texts
 
 Source novels are **not** committed. Place your own copies in `data/raw/` and

@@ -574,6 +574,12 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Known cost**: relative links inside the locked preregistrations that point at a merged file are now stale; they are records, so they were not edited. Search `docs/research/README.md`'s table to find where a file went.
 - **Status**: done.
 
+### D65. Cloud is optional, budget-capped and mock-tested only (2026-11-21)
+
+- **Decision.** Hosted video (Wan 2.2 class on RunPod), multi-reference keyframes, a character LoRA job and ElevenLabs speech exist as registry entries behind their own env keys; every submit goes through a JSON spend ledger that refuses before sending past a $9 total (`ECHOTALES_CLOUD_BUDGET_USD`).
+- **Why.** The product target stays local-first and the owner's total cloud budget is $5-10; a refusal after the fact cannot honour a cap. Nothing may be run for real until the local product is done (owner rule), so the code is verified by mock transport only and is untested against a real endpoint.
+- **Effect.** No default changes; ElevenLabs is never the default and takes no reference clip (no cloning of real people). See EVOLUTION 4.174.
+
 ## 4. Open questions
 - Whether the local 7B model reaches Gate A, or the reader must move to a hosted model (needs your approval; see D2). **Settled in principle 2026-11-13**: Gate A is not a blocker (D27) and a hosted tier is allowed behind an opt-in with a 10 US dollar cap (D35); each real hosted run still needs the owner's key.
 - Overwriting run-of-record databases in `data/db/` (rebuilds go to `data/scratch/reruns/` first).

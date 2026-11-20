@@ -39,7 +39,7 @@ def test_replaced_lists_are_reproduced() -> None:
     assert compute.IMAGE_PROVIDERS == ("local", "runpod", "gemini", "openrouter", "stub")
     assert compute.SECONDS_PER_PANEL == {
         "stub": 0.3, "sdxl": 45.0, "illustrious": 45.0, "noobai": 45.0, "refined": 60.0, "manga": 60.0}
-    assert reg.names("tts") == ("stub", "chatterbox")
+    assert reg.names("tts") == ("stub", "chatterbox", "elevenlabs")  # elevenlabs: optional, never the default (4.174)
     assert reg.names("video", surface="motion-clip") == ("stub", "svd")
     assert reg.names("ocr") == ("rapidocr", "easyocr")
     assert reg.names("inpaint") == ("cv", "lama")

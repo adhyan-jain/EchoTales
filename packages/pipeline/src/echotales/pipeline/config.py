@@ -228,6 +228,17 @@ class Settings(BaseSettings):
     runpod_llm_context: int = 32768
     cloud_context_scale: int = 4
     runpod_image_endpoint: str = ""
+    #: Optional cloud engines (`cloud_ledger.py`, EVOLUTION 4.174). Every one is empty/off by default; mock-tested only.
+    runpod_video_endpoint: str = ""
+    runpod_edit_endpoint: str = ""
+    runpod_lora_endpoint: str = ""
+    #: Hard stop for the cloud spend ledger: a submit that would pass it is refused before it is sent.
+    cloud_budget_usd: float = 9.0
+    #: ASSUMPTION, not a measurement: used to estimate a RunPod job from seconds. Set the real rate of your GPU.
+    cloud_gpu_usd_per_hour: float = 0.8
+    #: The user's OWN ElevenLabs key and a voice id from their library or their own upload; never a real person's clone.
+    elevenlabs_api_key: str = ""
+    elevenlabs_voice_id: str = ""
     openai_api_key: str = ""
     openai_model: str = ""
     gemini_api_key: str = ""
