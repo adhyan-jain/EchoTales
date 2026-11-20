@@ -34,18 +34,14 @@ describe('CostMeterWidget', () => {
       episode_id: 'ep1',
       tier: 'path1',
       cost_per_finished_minute_usd: 0.28,
-      total_estimated_usd: 0.56,
+      total_cost_usd: 0.56,
       episode_duration_s: 120.0,
       num_shots: 24,
       breakdown: {
-        llm_screenplay_tokens: 3500,
-        llm_screenplay_cost_usd: 0.007,
-        image_generation_count: 24,
-        image_generation_cost_usd: 0.288,
-        audio_seconds: 120.0,
-        voice_synthesis_cost_usd: 0.096,
-        video_render_seconds: 120.0,
-        video_render_cost_usd: 0.036,
+        llm_adaptation: 0.007,
+        keyframe_diffusion: 0.288,
+        voice_synthesis: 0.096,
+        video_generation: 0.036,
       },
     });
 
@@ -58,6 +54,15 @@ describe('CostMeterWidget', () => {
     });
 
     expect(screen.getByText('Within Budget')).toBeInTheDocument();
+    expect(screen.getByText('$0.2880')).toBeInTheDocument(); // keyframe_diffusion row
+  });
+
+  test('tolerates a response with missing fields instead of crashing', async () => {
+    // 2026-11 walkthrough: the old field names made .toFixed run on undefined and took the whole Studio down.
+    api.getEpisodeCost.mockResolvedValueOnce({ tier: 'path1' });
+    renderWidget({ novelId: 'hound', episodeId: 'ep1' });
+    await waitFor(() => expect(screen.getByTestId('total-cost')).toHaveTextContent('$0.00'));
+    expect(screen.getByTestId('cost-per-minute')).toHaveTextContent('$0.00');
   });
 
   test('switches tier between Path 1 and Path 2', async () => {
@@ -67,7 +72,7 @@ describe('CostMeterWidget', () => {
         episode_id: 'ep1',
         tier: 'path1',
         cost_per_finished_minute_usd: 0.28,
-        total_estimated_usd: 0.56,
+        total_cost_usd: 0.56,
         episode_duration_s: 120.0,
         num_shots: 24,
         breakdown: {},
@@ -77,7 +82,7 @@ describe('CostMeterWidget', () => {
         episode_id: 'ep1',
         tier: 'path2',
         cost_per_finished_minute_usd: 0.64,
-        total_estimated_usd: 1.28,
+        total_cost_usd: 1.28,
         episode_duration_s: 120.0,
         num_shots: 24,
         breakdown: {},
@@ -106,7 +111,7 @@ describe('CostMeterWidget', () => {
       episode_id: 'ep1',
       tier: 'path1',
       cost_per_finished_minute_usd: 0.85, // Exceeds $0.50 target
-      total_estimated_usd: 1.70,
+      total_cost_usd: 1.70,
       episode_duration_s: 120.0,
       num_shots: 50,
       breakdown: {},

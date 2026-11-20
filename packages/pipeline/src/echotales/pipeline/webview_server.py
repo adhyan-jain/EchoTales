@@ -2753,9 +2753,15 @@ def make_handler(
                         video_engine = str(params.get("engine") or "stills")
                         if video_engine not in ("stills", "ltx-local"):
                             return self._json(400, {"error": f"video engine {video_engine!r} is not allowed; use stills or ltx-local"})
-                        refusal = _gpu_refusal(video_engine)
-                        if refusal:
-                            return self._json(409, _refusal_body(refusal))
+                        # Held pictures need no GPU. `_gpu_refusal` treats its argument as an image engine and refused
+                        # "stills" as not enabled (2026-11 walkthrough), so only the local video model is checked,
+                        # with the video check.
+                        if video_engine != "stills":
+                            from echotales.pipeline.compute import _video_refusal
+
+                            refusal = _video_refusal()
+                            if refusal:
+                                return self._json(409, _refusal_body(refusal))
                     if kind == "voice_audition":
                         # Same rule as the voice job: the bank folder and the output folder are the server's choice.
                         params.pop("bank", None)
