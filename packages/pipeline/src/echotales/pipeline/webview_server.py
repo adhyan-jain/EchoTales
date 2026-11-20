@@ -57,6 +57,7 @@ import math
 import os
 import re
 import secrets
+import shutil
 import time
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -592,14 +593,17 @@ class Registry:
         if handle.store.count_unfinished_jobs():
             raise ProjectBusyError(f"{novel_id!r} has a queued or running job; cancel it or wait for it to finish")
         db_path = Path(handle.source.db_path)
+        # Assets first: a failure here (a subfolder such as `reference_uploads/` made the old per-child `unlink()`
+        # raise) leaves the project intact and retryable, instead of a DB-less project that still owns files.
+        # `rmtree` unlinks a symlink inside the folder without descending into it, so nothing outside is touched.
+        asset_dir = self.project_asset_dir(novel_id)
+        if asset_dir.is_symlink():
+            asset_dir.unlink()
+        elif asset_dir.is_dir():
+            shutil.rmtree(asset_dir)
         handle.store.close()
         del self.handles[novel_id]
         db_path.unlink(missing_ok=True)
-        asset_dir = self.project_asset_dir(novel_id)
-        if asset_dir.is_dir():
-            for child in asset_dir.iterdir():
-                child.unlink()
-            asset_dir.rmdir()
         return True
 
 

@@ -225,10 +225,14 @@ def _run_voice_audition(novel_id: str, params: dict[str, Any]) -> None:
     """The audition job: `target` "narrator" shortlists the banks and voices one sample each; "line" voices one
     line in one voice (a bank voice or this project's own) performing an emotion."""
     from echotales.pipeline import paths
+    from echotales.pipeline.compute import voice_refusal
     from echotales.pipeline.project_voices import with_project_voices
     from echotales.pipeline.voice import audition, get_engine
     from echotales.pipeline.voice.bank import VoiceBank, load_bank
 
+    # Before the engine is built: the card may have filled while the job queued, and Chatterbox crashes on a busy one.
+    if refusal := voice_refusal(str(params.get("engine") or "chatterbox")):
+        raise ValueError(str(refusal))
     engine = get_engine(str(params.get("engine") or "chatterbox"))
     root = paths.asset_dir(novel_id, "audition")
     bank_root = params.get("bank", "data/voice")
@@ -630,6 +634,11 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
 
         # Speech unless told otherwise, like the CLI: the stub writes silent files (decision D29).
         engine_name = params.get("engine") or "chatterbox"
+        from echotales.pipeline.compute import voice_refusal
+
+        # Same run-time check as the render job: refuse before the model loads, not crash mid-chapter.
+        if refusal := voice_refusal(engine_name):
+            raise ValueError(str(refusal))
         # Same bank selection as `cmd_voice`; the HTTP job path hardcoded VCTK
         # and so could never use an emotion-capable bank.
         from echotales.pipeline.voice.bank import DEFAULT_BANK_KIND, load_bank

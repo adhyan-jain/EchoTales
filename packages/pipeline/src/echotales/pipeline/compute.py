@@ -301,6 +301,25 @@ def resource_refusal(engine: str, pol: ComputePolicy | None = None, *, http: boo
     return None
 
 
+def voice_refusal(engine: str) -> str | None:
+    """Why a voice job with this TTS engine should not start now, or None.
+
+    A local GPU engine (Chatterbox) loads its model onto the card, and an outside process holding it made the model
+    crash mid-chapter (security review). The stub and hosted engines never touch the GPU, so they are not checked.
+    """
+    if engine not in engine_registry.names("tts", where="gpu"):
+        return None
+    status = gpu.gpu_status()
+    why: str | None = None
+    code = ErrorCode.RESOURCE_REFUSED
+    if status is None:
+        why = f"engine {engine!r} needs an NVIDIA GPU, and none was found on the server"
+    elif not status.free:
+        why = f"the GPU is busy ({status.describe()}); stop what is using it, or use the stub voice engine"
+        code = ErrorCode.GPU_BUSY
+    return Refusal(why, code) if why else None
+
+
 def _video_refusal() -> str | None:
     """Why a local video run should not start now. Applies in every compute mode: the limits are the card's."""
     status = gpu.gpu_status()
