@@ -123,7 +123,6 @@ export default function ScriptLine({
           role: 'button',
           tabIndex: 0,
           'aria-haspopup': 'dialog',
-          'aria-label': span.speaker ? `Reassign speaker ${span.speaker}` : 'Assign a speaker',
           onKeyDown: keyActivate((e) => onSpeakerClick(span, e)),
         })}
         title={
@@ -151,6 +150,8 @@ export default function ScriptLine({
             <span className="method">thinking</span>
           </>
         )}
+        {/* Not an aria-label: the name must contain the visible text (speaker and method), 2026-11 audit. */}
+        {speakerEditable && <span className="sr-only">, {span.speaker ? 'reassign speaker' : 'assign a speaker'}</span>}
       </div>
       <div className="body">
         {editMode ? (
@@ -180,10 +181,9 @@ export default function ScriptLine({
               <button
                 type="button"
                 title="Create a mention for text in this line that detector missed"
-                aria-label={`Add a mention in this line: ${lineHint}`}
                 onClick={(e) => onCreateMention(span, e)}
               >
-                + Mention
+                <span aria-hidden="true">+ </span>Mention<span className="sr-only"> in this line: {lineHint}</span>
               </button>
             )}
             {onSetDelivery && (isDialogue || isInnerMonologue) && (
@@ -191,7 +191,9 @@ export default function ScriptLine({
             )}
             <button type="button" aria-label={`Flag this line: ${lineHint}`} onClick={() => onFlagLine(span)}>Flag</button>
             {canMergeUp && (
-              <button type="button" aria-label={`Merge this line into the one above: ${lineHint}`} onClick={onMergeUp}>Merge&nbsp;&uarr;</button>
+              <button type="button" onClick={onMergeUp}>
+                Merge<span aria-hidden="true">&nbsp;&uarr;</span><span className="sr-only"> this line into the one above: {lineHint}</span>
+              </button>
             )}
           </span>
         )}

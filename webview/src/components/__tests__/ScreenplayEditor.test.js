@@ -92,6 +92,15 @@ describe('ScreenplayEditor', () => {
     expect(screen.getByText(/Still hold > 6s/i)).toBeInTheDocument();
   });
 
+  test('every shot control has an accessible name that contains its visible label and names the shot', async () => {
+    api.getScreenplayEpisode.mockResolvedValueOnce(mockEpisode);
+    renderEditor({ novelId: 'hound', episodeId: 'ep1' });
+    await screen.findByText('Shot #2');
+    expect(screen.getAllByRole('textbox', { name: /^Action & Pose \(shot \d\)$/ })).toHaveLength(2);
+    expect(screen.getByRole('combobox', { name: 'Framing (shot 2)' })).toHaveValue('close');
+    expect(screen.getByRole('combobox', { name: 'Camera Movement (shot 1)' })).toHaveValue('static');
+  });
+
   test('edits shot action and saves screenplay', async () => {
     api.getScreenplayEpisode.mockResolvedValueOnce(mockEpisode);
     api.saveScreenplayEpisode.mockResolvedValueOnce({ saved: true });

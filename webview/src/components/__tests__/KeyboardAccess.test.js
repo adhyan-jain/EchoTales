@@ -143,3 +143,43 @@ describe('EntityPicker unknown-speaker slots', () => {
     expect(screen.getByRole('button', { name: /fang yuan/i })).toBeInTheDocument();
   });
 });
+
+// WCAG 2.5.3 (Lighthouse label-content-name-mismatch): an element's aria-label must contain its visible text, or a
+// voice-control user saying what they see cannot activate it. 25 elements on the review desk failed this
+// (2026-11 walkthrough): every cast row ("Fang Yuan 12" vs "Fang Yuan, 12 mentions"), "+ Mention", "Merge ^".
+describe('visible text is part of the accessible name', () => {
+  const visible = (el) => {
+    const clone = el.cloneNode(true);
+    clone.querySelectorAll('[aria-hidden="true"], .sr-only').forEach((n) => n.remove());
+    return clone.textContent.replace(/\s+/g, ' ').trim().toLowerCase();
+  };
+  const norm = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const expectNamesContainText = (container) => {
+    container.querySelectorAll('button[aria-label], [role="button"][aria-label]').forEach((el) => {
+      const text = norm(visible(el));
+      if (text) expect(norm(el.getAttribute('aria-label'))).toContain(text);
+    });
+  };
+
+  it('on the cast list', () => {
+    const { container } = render(
+      <EntitySidebar entities={ENTITIES} search="" onSearchChange={jest.fn()} focusId={null} onToggleFocus={jest.fn()}
+        editMode mergeSourceId={null} onStartMerge={jest.fn()} onConfirmMerge={jest.fn()} onCancelMerge={jest.fn()} />
+    );
+    expectNamesContainText(container);
+    expect(screen.getByRole('button', { name: /^Fang Yuan 12 mentions/ })).toBeInTheDocument();
+  });
+
+  it('on a line in edit mode', () => {
+    const span = { span_id: 's1', type: 'DIALOGUE', text: 'Fang Yuan smiled.', speaker: 'Fang Yuan', speaker_id: 'a', method: 'rule',
+      marks: [{ id: 'a', mention_id: 'm1', s: 0, e: 9, resolved: true, colour: '#b38a2e', label: 'Fang Yuan', conf: 1 }] };
+    const noop = () => {};
+    const { container } = render(
+      <ScriptLine span={span} editMode canMergeUp onMergeUp={noop} onCreateMention={noop} onMarkHover={noop} onMarkMove={noop}
+        onMarkLeave={noop} onMentionClick={noop} onSpeakerClick={noop} onFlagLine={noop} onRetype={noop} />
+    );
+    expectNamesContainText(container);
+    expect(screen.getByRole('button', { name: /^Merge this line into the one above/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Mention in this line/ })).toBeInTheDocument();
+  });
+});

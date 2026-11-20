@@ -62,7 +62,6 @@ export default function EntitySidebar({
               <button
                 type="button"
                 className="entity-row"
-                aria-label={`${ent.label}, ${ent.count} mentions${ent.is_person === false ? `, ${ent.kind}` : ''}`}
                 aria-pressed={picking ? undefined : ent.id === focusId}
                 disabled={picking && isSource}
                 title={`${ent.aliases.join(', ')}  ·  ch${ent.first_chapter}–${ent.last_chapter}`}
@@ -89,7 +88,7 @@ export default function EntitySidebar({
                     <span className="sr-only">speaks</span>
                   </span>
                 )}
-                <span className="count">{ent.count}</span>
+                <span className="count">{ent.count}<span className="sr-only"> mentions</span></span>
               </button>
               {editMode && !picking && (
                 <button
