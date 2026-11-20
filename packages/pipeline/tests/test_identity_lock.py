@@ -238,3 +238,32 @@ def test_a_graph_fact_beats_the_genre_default_and_the_default_is_the_fallback(tm
 def test_a_character_without_a_lock_is_early_too() -> None:
     out = compile_prompt(_brief(None), model_profile("z-image-turbo"))
     assert [s.label for s in out.sections][:2] == ["style", "character:Fang Yuan"]
+
+
+class _WindowClient:
+    """Answers each window like a model reading only that window's text: the outfit if a garment word is in it."""
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def complete(self, task, prompt, schema, **kw):
+        self.calls += 1
+        look = il.CharacterLook(outfit="a linen shirt") if "linen shirt" in prompt else il.CharacterLook()
+        return type("R", (), {"value": look})()
+
+
+def test_a_garment_stated_late_in_a_long_scene_beats_the_genre_default(tmp_path) -> None:
+    """LotM ch1 is one scene of about 40 blocks; block 36 says 'a linen shirt' but the look call read only the first 2,600
+    characters, found nothing and stored an empty look, so the lock drew the genre's dark green frock coat in 16 of 16 panels."""
+    store = _store(tmp_path)
+    long_scene = " ".join(f"Sentence number {i} of the long quiet scene goes by in the room." for i in range(120))
+    long_scene += " Black hair, brown eyes, a linen shirt, thinly built."
+    assert len(long_scene) > 2 * il.LOOK_WINDOW
+    client = _WindowClient()
+    ctx = il.SceneContext("1:0", long_scene, client, "t")
+    lock = _lock(store, scene=ctx, name="Klein", facts={"hair_color": "black"})
+    assert lock.outfit == "a linen shirt" and lock.source["outfit"] == "scene"
+    calls = client.calls
+    again = _lock(store, scene=il.SceneContext("1:0", long_scene, None, "t"), name="Klein", facts={"hair_color": "black"})
+    assert again.outfit == "a linen shirt" and client.calls == calls, "the image pass reads the stored windows, asks nothing"
+    store.close()
