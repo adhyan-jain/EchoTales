@@ -68,3 +68,24 @@ def test_a_cut_clause_never_leaves_a_dangling_fragment() -> None:
     text = "The mountaintop is bathed in the pale light of the moon. Fang Yuan stands alone against it."
     out, rejects = scrub_unstated(text, allowed="Light: night.", lead="Fang Yuan")
     assert out == "Fang Yuan stands alone against it." and "sky:moon" in rejects
+
+
+def _fabricated(text: str, cast=None):
+    d = PanelDirection(composition=text)
+    return _validate_composition(d, beat_text="He stood at the window.", cast=cast or {"Fang Yuan": ""}, novel_id="", store=None, crowd_mood=None)
+
+
+def test_an_invented_item_name_is_never_turned_into_the_lead() -> None:
+    """Round 3, RI rebirth: 'He holds a vial of Spring Water' became 'a vial of Fang Yuan' and 'holds his Spring Sword' became
+    'holds his Fang Yuan'."""
+    out = _fabricated("Fang Yuan stands by the window. He holds a vial of Spring Water, gazing out.")
+    assert "vial of Fang Yuan" not in out.composition and "Spring Water" not in out.composition
+    assert "holds a vial" in out.composition
+    out = _fabricated("Fang Yuan stands by the window. He holds his Spring Sword in one hand.")
+    assert "holds his Fang Yuan" not in out.composition and "Spring Sword" not in out.composition
+    assert "a small object in one hand" in out.composition
+
+
+def test_an_invented_person_name_in_a_one_person_cast_still_becomes_the_lead() -> None:
+    out = _fabricated("Zhou Yuan sits at his desk, frowning.", cast={"Zhou Mingrui": ""})
+    assert out.composition.startswith("Zhou Mingrui sits")

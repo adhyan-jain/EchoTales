@@ -1040,6 +1040,29 @@ def _validate_direction(
     return d
 
 
+_ITEM_OF = re.compile(r"\bof\s+$", re.I)
+_ITEM_HELD = re.compile(
+    r"\b(?:his|her|their|its|the|a|an|with|holds?|holding|wields?|wielding|draws?|raises?|grips?|gripping|carr(?:y|ies|ying)|"
+    r"clutch\w*)\s+$", re.I)
+
+
+def _replace_fabricated(text: str, start: int, length: int, who: str) -> str:
+    """Put `who` where a name the story never says stood, unless the name sits where an object goes.
+
+    A name after "of", "his", "a" or a holding verb is an item the model named (the Gu worm "Spring Autumn Cicada" became "a
+    vial of Fang Yuan" and "holds his Fang Yuan in one hand" in the RI rebirth panels, round 3): the lead's name there corrupted the
+    prompt, so "of <name>" is dropped and any other object position becomes "a small object"."""
+    before, after = text[:start], text[start + length:]
+    if _ITEM_OF.search(before):
+        return _ITEM_OF.sub("", before).rstrip() + after
+    held = _ITEM_HELD.search(before)
+    if held:
+        verb_like = held.group(0).strip().lower() in ("with", "a", "an", "the", "his", "her", "their", "its")
+        head = before[: held.start()] + (before[held.start():held.end()] if not verb_like or held.group(0).strip().lower() == "with" else "")
+        return head + "a small object" + after
+    return before + who + after
+
+
 def _validate_composition(
     d: PanelDirection, *, beat_text: str, cast: dict[str, str], novel_id: str, store: Store | None, crowd_mood: str | None,
 ) -> PanelDirection:
@@ -1053,6 +1076,12 @@ def _validate_composition(
     updates: dict[str, object] = {"visual_source": visual if visual in ("text", "inferred") else "text"}
     text = (d.composition or "").strip()
     rejects: list[str] = []
+    if text:
+        # The director's own "a lone figure" next to the one person it could be, before the name checks below put a "a figure" of
+        # their own (a real out-of-cast person) into the paragraph: that one must stay a second person.
+        text, figs = scrub_unstated(text, allowed=f"{beat_text} {d.staging} {' '.join(cast)}",
+                                    lead=next(iter(cast)) if len(cast) == 1 else "", sky=False)
+        rejects.extend(figs)
     if text:
         source = beat_text.lower() + " " + " ".join(cast).lower()
         group = _HALLUCINATED_GROUP_RE.search(text)
@@ -1092,10 +1121,9 @@ def _validate_composition(
                 # made that figure glow red. Only when the paragraph does not already name him.
                 lone = next(iter(cast)) if len(cast) == 1 else ""
                 who = lone if lone and lone.lower() not in text.lower() else "a figure"
-                text = text[: span.start] + who + text[span.start + len(bare):]
+                text = _replace_fabricated(text, span.start, len(bare), who)
     if text:
-        lead = next(iter(cast)) if cast else ""
-        text, scrubbed = scrub_unstated(text, allowed=f"{beat_text} {d.staging} {' '.join(cast)}", lead=lead)
+        text, scrubbed = scrub_unstated(text, allowed=f"{beat_text} {d.staging} {' '.join(cast)}", lead="")
         rejects.extend(scrubbed)
     updates["composition"] = text
     updates["grounding_rejects"] = rejects
@@ -1111,7 +1139,7 @@ _FIGURE_RE = re.compile(
 #: Sky and weather families: (name, how the paragraph words it, how the passage or staging may word it). A paragraph's sky that
 #: neither states is the model's own: the rebirth room was lit "by moonlight" while the sheet said rain (a full moon in heavy rain).
 _SKY: list[tuple[str, re.Pattern[str], re.Pattern[str]]] = [
-    ("sun", re.compile(r"\b(?:sun|sunset|sunrise|sunlight|sundown|dusk|dawn|twilight|golden hour|setting sun|rising sun)\b", re.I),
+    ("sun", re.compile(r"\b(?:sun|sunset|sunrise|sunlight|sundown|setting sun|rising sun)\b", re.I),
      re.compile(r"\b(?:sun\w*|dusk|dawn|twilight|evening|morning|noon|daylight|afternoon|day)\b", re.I)),
     ("moon", re.compile(r"\b(?:moon\w*|full moon|crescent)\b", re.I), re.compile(r"\bmoon\w*\b", re.I)),
     ("stars", re.compile(r"\b(?:stars?|starry|starlit|starlight)\b", re.I), re.compile(r"\b(?:stars?|starry|starlit|starlight)\b", re.I)),
@@ -1147,7 +1175,7 @@ def _drop_segments(sentence: str, cue: re.Pattern[str]) -> str:
     return text + ("." if sentence.rstrip().endswith(".") and not text.endswith(".") else "")
 
 
-def scrub_unstated(text: str, *, allowed: str, lead: str) -> tuple[str, list[str]]:
+def scrub_unstated(text: str, *, allowed: str, lead: str, sky: bool = True) -> tuple[str, list[str]]:
     """Remove from the director's paragraph an unnamed extra person and any sky or weather that neither the passage nor the
     staging sheet (`allowed`) states. Returns the new text and one reject label per fault.
 
@@ -1167,7 +1195,7 @@ def scrub_unstated(text: str, *, allowed: str, lead: str) -> tuple[str, list[str
         sentences = fixed
     out_sentences: list[str] = []
     for sent in sentences:
-        for name, in_text, in_allowed in _SKY:
+        for name, in_text, in_allowed in (_SKY if sky else []):
             if in_text.search(sent) and not in_allowed.search(allowed):
                 cleaned = _drop_segments(sent, in_text)
                 tag = f"sky:{name}"
