@@ -411,8 +411,8 @@ NO_VLM_MESSAGE = (
     "`ollama pull granite3.2-vision:2b`, or set render.vision_model in config.json. Panels are generated one candidate each."
 )
 
-#: Colour word -> family. The last colour word of a phrase wins ("dark navy" is navy, "deep green" is green): the shade
-#: word before it only qualifies. Black, navy and ink read as one "dark" family because a small VLM cannot tell them
+#: Colour word -> family. The last word of the first run of colour words wins ("dark navy" is navy, "deep green" is green):
+#: the shade word before it only qualifies, and a later garment ("over a white shirt") is not the outfit. Black, navy and ink read as one "dark" family because a small VLM cannot tell them
 #: apart and neither can a viewer at panel size; green and teal stay apart because RI's lead drifted from green to teal.
 _FAMILIES = {
     "dark": ("black", "dark", "navy", "midnight", "ink", "ebony", "jet"),
