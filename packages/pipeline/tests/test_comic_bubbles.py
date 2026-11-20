@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("scipy")
+
 import numpy as np
 from PIL import Image, ImageDraw
 
@@ -78,3 +82,36 @@ def test_coloured_lettering_in_a_bubble_coloured_area_is_an_effect_not_speech() 
         d.text((150 + dx, 81), "SHSH", fill=(220, 90, 10))
     got = detect_bubbles(img, [TextLine((148, 78, 200, 96), "SHSH", 0.9)], [Panel(0, (0, 0, 400, 200))])
     assert got[0].kind == "sfx"
+
+
+def _leaky_bubble():
+    """An ellipse bubble with a thin tail, flooded into a large same-coloured window it touches (Pepper&Carrot ep01:
+    the pale bubble sat on the bright window, so the colour flood returned the window too)."""
+    from scipy import ndimage
+
+    yy, xx = np.mgrid[0:300, 0:300]
+    bubble = ((xx - 100) / 60.0) ** 2 + ((yy - 80) / 40.0) ** 2 <= 1
+    tail = np.zeros_like(bubble)
+    for y in range(118, 150):  # a tail 10 px wide narrowing to a point
+        half = max(0, int(5 * (150 - y) / 32))
+        tail[y, 125 - half:126 + half] = True
+    window = np.zeros_like(bubble)
+    window[100:250, 40:112] = True
+    return ndimage.binary_fill_holes(bubble | tail | window), bubble, (60, 60, 140, 100)
+
+
+def test_trim_keeps_the_bubble_and_its_tail_but_not_the_art_the_flood_leaked_into() -> None:
+    from echotales.pipeline.comic.bubbles import trim_bubble_mask
+
+    flooded, bubble, text_box = _leaky_bubble()
+    trimmed = trim_bubble_mask(flooded, text_box)
+    assert not trimmed[200, 70] and not trimmed[160, 60]  # window interior is not lettering
+    assert trimmed[bubble].mean() > 0.97  # whole bubble, outline ring included
+    assert trimmed[140, 125]  # the tail, down to near its tip
+
+
+def test_trim_is_a_no_op_on_a_clean_bubble() -> None:
+    from echotales.pipeline.comic.bubbles import trim_bubble_mask
+
+    _, bubble, text_box = _leaky_bubble()
+    assert (trim_bubble_mask(bubble, text_box) == bubble).all()

@@ -1,0 +1,636 @@
+{
+  "schema": 1,
+  "task": "scene",
+  "source": {
+    "id": "pepper-carrot",
+    "licence": "CC BY 4.0 (David Revoy, peppercarrot.com)"
+  },
+  "drafted_by": "claude-sonnet-5-5, from looking at the page images directly; not the pipeline's output",
+  "status": "MODEL DRAFT. No item has been checked by a person (checked_by_human is false everywhere).",
+  "scope_note": "Per panel: what a description of the panel must contain (any listed word per element, whole words) and what it must not. Scores a system's panel brief or caption against the drawn page.",
+  "items": [
+    {
+      "id": "E01P01.1",
+      "panel": "E01P01.1",
+      "image": "ep01/en_E01P01.jpg",
+      "required": [
+        {
+          "element": "witch",
+          "any_of": [
+            "pepper",
+            "witch",
+            "girl"
+          ]
+        },
+        {
+          "element": "cauldron",
+          "any_of": [
+            "cauldron"
+          ]
+        },
+        {
+          "element": "cat",
+          "any_of": [
+            "cat",
+            "carrot"
+          ]
+        },
+        {
+          "element": "adding an ingredient",
+          "any_of": [
+            "pour",
+            "pours",
+            "pouring",
+            "sprinkle",
+            "sprinkles",
+            "adds",
+            "adding"
+          ]
+        },
+        {
+          "element": "interior",
+          "any_of": [
+            "kitchen",
+            "room",
+            "interior",
+            "indoors",
+            "hut",
+            "house"
+          ]
+        }
+      ],
+      "forbidden": [
+        {
+          "element": "drawn outdoors",
+          "any_of": [
+            "outdoors",
+            "outside",
+            "meadow",
+            "street",
+            "field"
+          ]
+        }
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "E01P01.2",
+      "panel": "E01P01.2",
+      "image": "ep01/en_E01P01.jpg",
+      "required": [
+        {
+          "element": "witch",
+          "any_of": [
+            "pepper",
+            "witch",
+            "girl"
+          ]
+        },
+        {
+          "element": "cauldron",
+          "any_of": [
+            "cauldron"
+          ]
+        },
+        {
+          "element": "cat",
+          "any_of": [
+            "cat",
+            "carrot"
+          ]
+        },
+        {
+          "element": "doubt",
+          "any_of": [
+            "doubt",
+            "doubtful",
+            "unsure",
+            "uncertain",
+            "thinking",
+            "thoughtful",
+            "frowns",
+            "frowning",
+            "pondering"
+          ]
+        },
+        {
+          "element": "interior",
+          "any_of": [
+            "kitchen",
+            "room",
+            "interior",
+            "indoors",
+            "hut",
+            "house"
+          ]
+        }
+      ],
+      "forbidden": [
+        {
+          "element": "drawn outdoors",
+          "any_of": [
+            "outdoors",
+            "outside",
+            "meadow",
+            "street",
+            "field"
+          ]
+        }
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "E01P01.3",
+      "panel": "E01P01.3",
+      "image": "ep01/en_E01P01.jpg",
+      "required": [
+        {
+          "element": "witch",
+          "any_of": [
+            "pepper",
+            "witch",
+            "girl"
+          ]
+        },
+        {
+          "element": "cauldron",
+          "any_of": [
+            "cauldron"
+          ]
+        },
+        {
+          "element": "cat",
+          "any_of": [
+            "cat",
+            "carrot"
+          ]
+        },
+        {
+          "element": "pouring everything in",
+          "any_of": [
+            "pour",
+            "pours",
+            "pouring",
+            "tips",
+            "empties",
+            "dumps"
+          ]
+        },
+        {
+          "element": "interior",
+          "any_of": [
+            "kitchen",
+            "room",
+            "interior",
+            "indoors",
+            "hut",
+            "house"
+          ]
+        }
+      ],
+      "forbidden": [
+        {
+          "element": "drawn outdoors",
+          "any_of": [
+            "outdoors",
+            "outside",
+            "meadow",
+            "street",
+            "field"
+          ]
+        }
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "E01P02.1",
+      "panel": "E01P02.1",
+      "image": "ep01/en_E01P02.jpg",
+      "required": [
+        {
+          "element": "witch",
+          "any_of": [
+            "pepper",
+            "witch",
+            "girl"
+          ]
+        },
+        {
+          "element": "cat",
+          "any_of": [
+            "cat",
+            "carrot"
+          ]
+        },
+        {
+          "element": "cauldron",
+          "any_of": [
+            "cauldron"
+          ]
+        },
+        {
+          "element": "magic glow",
+          "any_of": [
+            "glow",
+            "glowing",
+            "bright",
+            "sparkles",
+            "sparkling",
+            "light",
+            "luminous"
+          ]
+        },
+        {
+          "element": "pleased",
+          "any_of": [
+            "pleased",
+            "happy",
+            "delighted",
+            "satisfied",
+            "smiles",
+            "smiling"
+          ]
+        }
+      ],
+      "forbidden": [
+        {
+          "element": "drawn outdoors",
+          "any_of": [
+            "outdoors",
+            "outside",
+            "meadow",
+            "street",
+            "field"
+          ]
+        }
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "E01P02.2",
+      "panel": "E01P02.2",
+      "image": "ep01/en_E01P02.jpg",
+      "required": [
+        {
+          "element": "witch",
+          "any_of": [
+            "pepper",
+            "witch",
+            "girl"
+          ]
+        },
+        {
+          "element": "cat",
+          "any_of": [
+            "cat",
+            "carrot"
+          ]
+        },
+        {
+          "element": "cauldron",
+          "any_of": [
+            "cauldron"
+          ]
+        },
+        {
+          "element": "glowing broom",
+          "any_of": [
+            "broom",
+            "broomstick"
+          ]
+        },
+        {
+          "element": "warning",
+          "any_of": [
+            "warns",
+            "warning",
+            "stern",
+            "scolds",
+            "angry",
+            "forbids"
+          ]
+        }
+      ],
+      "forbidden": [
+        {
+          "element": "drawn outdoors",
+          "any_of": [
+            "outdoors",
+            "outside",
+            "meadow",
+            "street",
+            "field"
+          ]
+        }
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "E01P02.3",
+      "panel": "E01P02.3",
+      "image": "ep01/en_E01P02.jpg",
+      "required": [
+        {
+          "element": "cat",
+          "any_of": [
+            "cat",
+            "carrot"
+          ]
+        },
+        {
+          "element": "cauldron",
+          "any_of": [
+            "cauldron"
+          ]
+        },
+        {
+          "element": "splash",
+          "any_of": [
+            "splash",
+            "splashes",
+            "leaps",
+            "jumps",
+            "dives"
+          ]
+        },
+        {
+          "element": "witch seen from behind",
+          "any_of": [
+            "pepper",
+            "witch",
+            "girl"
+          ]
+        },
+        {
+          "element": "broom",
+          "any_of": [
+            "broom",
+            "broomstick"
+          ]
+        }
+      ],
+      "forbidden": [
+        {
+          "element": "drawn outdoors",
+          "any_of": [
+            "outdoors",
+            "outside",
+            "meadow",
+            "street",
+            "field"
+          ]
+        }
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "E02P01.1",
+      "panel": "E02P01.1",
+      "image": "ep02/en_E02P01.jpg",
+      "required": [
+        {
+          "element": "house",
+          "any_of": [
+            "house",
+            "cottage",
+            "home"
+          ]
+        },
+        {
+          "element": "hill",
+          "any_of": [
+            "hill",
+            "hilltop",
+            "mound"
+          ]
+        },
+        {
+          "element": "sign or mailbox",
+          "any_of": [
+            "sign",
+            "signpost",
+            "mailbox",
+            "letterbox"
+          ]
+        },
+        {
+          "element": "coloured smoke",
+          "any_of": [
+            "smoke",
+            "rainbow",
+            "coloured",
+            "colored"
+          ]
+        },
+        {
+          "element": "exterior",
+          "any_of": [
+            "outdoors",
+            "exterior",
+            "outside",
+            "landscape"
+          ]
+        }
+      ],
+      "forbidden": [
+        {
+          "element": "characters drawn",
+          "any_of": [
+            "pepper",
+            "carrot",
+            "cat",
+            "girl"
+          ]
+        }
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "E02P01.2",
+      "panel": "E02P01.2",
+      "image": "ep02/en_E02P01.jpg",
+      "required": [
+        {
+          "element": "witch",
+          "any_of": [
+            "pepper",
+            "witch",
+            "girl"
+          ]
+        },
+        {
+          "element": "pouring a potion",
+          "any_of": [
+            "pour",
+            "pours",
+            "pouring",
+            "fills",
+            "filling",
+            "funnel",
+            "bottle"
+          ]
+        },
+        {
+          "element": "cauldrons",
+          "any_of": [
+            "cauldron",
+            "cauldrons"
+          ]
+        },
+        {
+          "element": "cat",
+          "any_of": [
+            "cat",
+            "carrot"
+          ]
+        },
+        {
+          "element": "sunlight",
+          "any_of": [
+            "sunlight",
+            "sunbeam",
+            "sunny",
+            "light"
+          ]
+        }
+      ],
+      "forbidden": [],
+      "checked_by_human": false
+    },
+    {
+      "id": "E02P02.1",
+      "panel": "E02P02.1",
+      "image": "ep02/en_E02P02.jpg",
+      "required": [
+        {
+          "element": "witch",
+          "any_of": [
+            "pepper",
+            "witch",
+            "girl"
+          ]
+        },
+        {
+          "element": "potion bottles",
+          "any_of": [
+            "bottle",
+            "bottles",
+            "potions",
+            "shelf",
+            "shelves"
+          ]
+        },
+        {
+          "element": "crate",
+          "any_of": [
+            "crate",
+            "box",
+            "rack"
+          ]
+        },
+        {
+          "element": "stairs",
+          "any_of": [
+            "stairs",
+            "staircase",
+            "steps"
+          ]
+        },
+        {
+          "element": "cat in the distance",
+          "any_of": [
+            "cat",
+            "carrot"
+          ]
+        }
+      ],
+      "forbidden": [],
+      "checked_by_human": false
+    },
+    {
+      "id": "E02P02.2",
+      "panel": "E02P02.2",
+      "image": "ep02/en_E02P02.jpg",
+      "required": [
+        {
+          "element": "cat from behind",
+          "any_of": [
+            "cat",
+            "carrot"
+          ]
+        },
+        {
+          "element": "potion bottles",
+          "any_of": [
+            "bottle",
+            "bottles",
+            "potions",
+            "shelf",
+            "shelves"
+          ]
+        }
+      ],
+      "forbidden": [
+        {
+          "element": "witch drawn",
+          "any_of": [
+            "pepper",
+            "witch",
+            "girl"
+          ]
+        }
+      ],
+      "checked_by_human": false
+    },
+    {
+      "id": "E02P02.3",
+      "panel": "E02P02.3",
+      "image": "ep02/en_E02P02.jpg",
+      "required": [
+        {
+          "element": "cat",
+          "any_of": [
+            "cat",
+            "carrot"
+          ]
+        },
+        {
+          "element": "astonished",
+          "any_of": [
+            "astonished",
+            "amazed",
+            "surprised",
+            "startled",
+            "awe",
+            "wonder",
+            "shocked"
+          ]
+        },
+        {
+          "element": "rainbow light",
+          "any_of": [
+            "rainbow",
+            "colours",
+            "colors",
+            "coloured",
+            "colored",
+            "beams",
+            "rays",
+            "light"
+          ]
+        }
+      ],
+      "forbidden": [
+        {
+          "element": "witch drawn",
+          "any_of": [
+            "pepper",
+            "witch",
+            "girl"
+          ]
+        }
+      ],
+      "checked_by_human": false
+    }
+  ]
+}

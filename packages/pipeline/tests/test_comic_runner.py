@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("scipy")
+pytest.importorskip("cv2")
+
 from pathlib import Path
 
 import numpy as np
@@ -48,15 +53,16 @@ def test_ingest_understand_build_writes_versioned_video(tmp_path: Path, monkeypa
     store = Store(str(tmp_path / "c.db"))
     built = runner.build_stage(
         store, "pc", title="T", credit="Credit line", root=root, video_root=tmp_path / "video",
-        audio_dir=tmp_path / "audio", size=(320, 180), fps=8, suffix="unit-test", note="synthetic",
+        audio_dir=tmp_path / "audio", size=(320, 180), fps=8, suffix="unit-test", note="synthetic", inpaint="cv",
     )
     assert built.version == "v1_unit-test"
     assert (built.out_dir / "episode.mp4").is_file() and (built.out_dir / "episode.srt").is_file()
     versions = (tmp_path / "video" / "ch1" / "VERSIONS.md").read_text()
     assert "v1_unit-test" in versions and "synthetic" in versions
+    assert (built.out_dir / "comic.json").is_file()  # the Studio lists comic videos by this marker
     again = runner.build_stage(
         store, "pc", title="T", root=root, video_root=tmp_path / "video", audio_dir=tmp_path / "audio",
-        size=(320, 180), fps=8, suffix="second",
+        size=(320, 180), fps=8, suffix="second", inpaint="cv",
     )
     assert again.version == "v2_second"  # a rerun never overwrites the previous version
 

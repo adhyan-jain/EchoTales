@@ -342,6 +342,14 @@ export const api = {
     return request(`/api/projects/${enc(novelId)}/packs`, { method: 'POST', body: form });
   },
 
+  // Comic sources uploaded to the project and the motion-comic videos built from them (paths for `outputFileUrl`).
+  listComic: (novelId) => request(`/api/projects/${enc(novelId)}/comic`),
+  uploadComic: (novelId, file) => {
+    const form = new FormData();
+    form.append('file', file);
+    return request(`/api/projects/${enc(novelId)}/comic`, { method: 'POST', body: form });
+  },
+
   // The built reader companions, and the link that opens one in a new tab (which cannot send an Authorization header,
   // so the session token rides in the query string of this one route, as `outputFileUrl` does).
   listCompanions: (novelId) => request(`/api/projects/${enc(novelId)}/companions`),
@@ -360,6 +368,20 @@ export const api = {
     const q = new URLSearchParams({ name, gender, age: String(age), consent: consent ? 'true' : 'false' });
     return request(`/api/projects/${enc(novelId)}/voices?${q}`, { method: 'POST', body: form });
   },
+
+  // Voice audition. `voiceAudition`: the narrator candidates the last audition shortlisted, with their sample paths and the
+  // narrator config.json names now. `voiceSample`: where a finished one-line sample is (404 until its job has run).
+  // `setNarrator` writes the one config.json key (voice.narrator); a sample job is queued with
+  // `triggerStage(novelId, 'voice_audition', {...})`.
+  voiceAudition: (novelId) => request(`/api/projects/${enc(novelId)}/voices/audition`),
+  voiceSample: (novelId, { voiceId, emotion, text }) =>
+    request(`/api/projects/${enc(novelId)}/voices/sample?${new URLSearchParams({ voice_id: voiceId, emotion, text })}`),
+  setNarrator: (novelId, voiceId) =>
+    request(`/api/projects/${enc(novelId)}/voices/narrator`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ voice_id: voiceId }),
+    }),
 
   listJobs: (novelId) => request(`/api/projects/${enc(novelId)}/jobs`),
   getJob: (novelId, jobId) => request(`/api/projects/${enc(novelId)}/jobs/${enc(jobId)}`),

@@ -106,6 +106,21 @@ class TestCompose:
             assert o.frames == round(shot.end * 30) - round(shot.start * 30)
             assert o.looped or o.clip_frames + o.hold_frames == o.frames
 
+    def test_interleaved_panel_blocks_compose_as_cut_backs(self, tmp_path) -> None:
+        """RI v55: one image holds blocks 0 and 2, another block 1. The planner used to refuse the chapter."""
+        spec = [
+            dict(scene=0, cast=["a"], slot="scene", lines=[(0, "DIALOGUE", "a", 2.0), (2, "DIALOGUE", "a", 2.0)]),
+            dict(scene=0, cast=["a"], slot="scene", lines=[(1, "DIALOGUE", "b", 2.0)]),
+        ]
+        panels, audio = build_chapter(tmp_path, spec=spec)
+        manifest = audio / "manifest.jsonl"  # the fixture writes rows panel by panel; a real manifest is in block order
+        rows = sorted((json.loads(r) for r in manifest.read_text().splitlines()), key=lambda r: r["block_index"])
+        manifest.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+        result = _compose(tmp_path, FakeEngine(), panels=panels, audio=audio)
+        assert [o.panel_id for o in result.outcomes] == ["t:1:0", "t:1:1", "t:1:0"]
+        s = result.summary
+        assert s["expected_frames"] == s["segment_frames"] == s["video_frames"] == round(6.0 * 30)
+
     def test_each_mode_is_laid_out_as_designed(self, tmp_path) -> None:
         result = _compose(tmp_path, FakeEngine(), loop_subtle=False)
         o = result.outcomes

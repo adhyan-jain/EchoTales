@@ -50,6 +50,7 @@ from echotales.core.pipeline_run import (
     start_stage,
 )
 from echotales.core.store import Store
+from echotales.pipeline.engines import registry as engine_registry
 from echotales.pipeline.version import PIPELINE_VERSION
 
 log = logging.getLogger(__name__)
@@ -60,9 +61,7 @@ log = logging.getLogger(__name__)
 #: track: "Do not spend money"). Any other engine name a caller passes is a
 #: 400, not a silent downgrade to stub -- a wrong request should look wrong,
 #: not quietly succeed as something else.
-ALLOWED_HTTP_ENGINES = frozenset(
-    {"stub", "sdxl", "illustrious", "noobai", "refined", "manga"}
-)
+ALLOWED_HTTP_ENGINES = engine_registry.http_image_engines()
 
 
 def http_engine_known(name: str) -> bool:
@@ -94,6 +93,9 @@ JOB_KINDS = (
     "persona",
     "render",
     "voice",
+    # Listen before choosing: one sample for each shortlisted narrator, or one line in one voice with a delivery
+    # emotion (the Studio's audition screen; `echotales voice-audition` is the CLI twin).
+    "voice_audition",
     # Binds the finished chapter tracks into one M4B with chapter markers; the CLI had `voice --m4b` and the Studio
     # had no way to produce or download the audiobook (audit B3).
     "export_m4b",
@@ -216,7 +218,47 @@ def _record_studio_version(out_dir: Path, chapters: list[float], version: str, e
                 fh.write(line)
 
 
-VIDEO_ENGINES = ("stills", "ltx-local")
+VIDEO_ENGINES = engine_registry.names("video", surface="anime-video")
+
+
+def _run_voice_audition(novel_id: str, params: dict[str, Any]) -> None:
+    """The audition job: `target` "narrator" shortlists the banks and voices one sample each; "line" voices one
+    line in one voice (a bank voice or this project's own) performing an emotion."""
+    from echotales.pipeline import paths
+    from echotales.pipeline.project_voices import with_project_voices
+    from echotales.pipeline.voice import audition, get_engine
+    from echotales.pipeline.voice.bank import VoiceBank, load_bank
+
+    engine = get_engine(str(params.get("engine") or "chatterbox"))
+    root = paths.asset_dir(novel_id, "audition")
+    bank_root = params.get("bank", "data/voice")
+    target = params.get("target")
+    # Each audiobook corpus on its own: the combined "audiobook" bank refuses to load unless both are present, and
+    # a machine with only Hi-Fi TTS should still be able to audition it.
+    banks = []
+    for kind in ("hifitts", "libritts_r"):
+        try:
+            banks.append(load_bank(kind, bank_root))
+        except FileNotFoundError:
+            continue
+    if target == "narrator":
+        if not banks:
+            raise ValueError(f"no voice bank found under {bank_root}; see data/voice/README.md")
+        audition.run_narrator_audition(banks, engine, root, int(params.get("n") or 12))
+    elif target == "line":
+        voice_id, text = str(params.get("voice_id") or ""), str(params.get("text") or "").strip()
+        emotion = str(params.get("emotion") or "neutral")
+        if not text or len(text) > audition.MAX_SAMPLE_CHARS:
+            raise ValueError(f"the line must be between 1 and {audition.MAX_SAMPLE_CHARS} characters")
+        bank = VoiceBank([v for b in banks for v in b.voices], bank_id="audiobook", licence="CC BY 4.0")
+        voice = next((v for v in with_project_voices(bank, novel_id).voices if v.speaker_id == voice_id), None)
+        if voice is None:
+            raise ValueError(f"voice {voice_id!r} is not in the voice bank or this project's own voices")
+        out = audition.line_sample_path(root, voice_id, emotion, text)
+        if not out.is_file():
+            audition.synthesize_line(voice, engine, out, text, emotion)
+    else:
+        raise ValueError(f"voice_audition target must be 'narrator' or 'line', not {target!r}")
 
 
 def _run_video(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]:
@@ -328,7 +370,7 @@ def _run_comic(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]
     """`echotales comic ingest|understand|build` from the same functions. The pages are read from
     `data/novels/<CODE>/comic/source/<name>`, a name and never a path: the server decides where uploads live (same
     rule as the pack and voice folders), so a request cannot point the reader at any file on the machine."""
-    from echotales.pipeline.comic import runner
+    from echotales.pipeline.comic import runner, upload
 
     stage = str(params.get("stage") or "build")
     if stage not in ("ingest", "understand", "build"):
@@ -339,7 +381,7 @@ def _run_comic(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]
         source = root / "source" / name
         if not name or not source.exists():
             raise ValueError(f"no comic source named {name!r} in this project's comic/source folder; upload it first")
-        runner.ingest_stage(source, novel_id, webtoon=bool(params.get("webtoon")))
+        runner.ingest_stage(upload.source_input(source), novel_id, webtoon=bool(params.get("webtoon")))
         if stage == "ingest":
             return [str(root / "pages.json")]
     if stage in ("understand", "build") and (stage == "understand" or params.get("source")):
@@ -349,7 +391,7 @@ def _run_comic(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]
     built = runner.build_stage(
         store, novel_id, title=str(params.get("title") or novel_id), chapter=float(params.get("chapter") or 1.0),
         credit=str(params.get("credit") or runner.DEFAULT_CREDIT), engine=str(params.get("engine") or "stub"),
-        inpaint=str(params.get("inpaint") or "cv"), suffix=str(params.get("suffix") or "motion-comic"),
+        inpaint=str(params.get("inpaint") or "auto"), suffix=str(params.get("suffix") or "motion-comic"),
         trust_speakers=bool(params.get("trust_speakers")),
     )
     return [str(built.video.video)]
@@ -617,6 +659,15 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
                 synthesize=not params.get("dry_run", False),
                 reference_f0=engine_reference_f0(bank, engine_name),
             ),
+        )
+    elif job.kind == "voice_audition":
+        # Never skipped by digest: a rerun is how a person asks for a fresh take, and a finished line sample is
+        # already reused through its deterministic path.
+        run_stage(
+            store, run_id=pipeline_run.run_id, stage_name="voice_audition",
+            input_digest=f"{input_digest}|{time.time()}",
+            fn=lambda: _run_voice_audition(novel_id, params),
+            skip_if_succeeded=False,
         )
     elif job.kind == "export_m4b":
         from echotales.pipeline import paths

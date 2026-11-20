@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "task": "scene",
+  "source": {
+    "id": "sherlock-holmes-adventures",
+    "licence": "Public domain (Project Gutenberg #1661)",
+    "canonical": "see eval/public/sources.py"
+  },
+  "drafted_by": "claude-sonnet-5-5, reading the local text directly; not the pipeline's output",
+  "status": "MODEL DRAFT. No item has been checked by a person (checked_by_human is false everywhere).",
+  "scope_note": "The opening conversation of 'A Scandal in Bohemia': what a summary must name.",
+  "items": [
+    {
+      "id": "sh-scandal-baker-street",
+      "offset": 4347,
+      "length": 6500,
+      "text_sha256": "209aebb9a8242dc149f25957ef286b01b790142675b2bb93052d69b2a7685d9f",
+      "required": [
+        {
+          "element": "Holmes",
+          "any_of": [
+            "holmes",
+            "sherlock"
+          ]
+        },
+        {
+          "element": "Watson",
+          "any_of": [
+            "watson",
+            "doctor"
+          ]
+        },
+        {
+          "element": "the anonymous note",
+          "any_of": [
+            "note",
+            "letter",
+            "message"
+          ]
+        },
+        {
+          "element": "Bohemia as the paper's origin",
+          "any_of": [
+            "bohemia",
+            "bohemian",
+            "german"
+          ]
+        },
+        {
+          "element": "the coming visitor",
+          "any_of": [
+            "visitor",
+            "client",
+            "gentleman",
+            "caller"
+          ]
+        }
+      ],
+      "forbidden": [],
+      "checked_by_human": false
+    }
+  ]
+}

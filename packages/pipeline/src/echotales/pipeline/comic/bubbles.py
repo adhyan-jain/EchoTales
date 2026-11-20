@@ -218,3 +218,40 @@ def cluster_speakers(embeddings: list, *, threshold: float = 0.45) -> list[int |
             centroids[best] += (v - centroids[best]) / counts[best]
             labels.append(best)
     return labels
+
+
+#: How far past the lettering a bubble's body may reach, per side: a share of the text box width and height. A speech
+#: bubble is the text plus a margin, and an ellipse needs at least ~0.21 of each side to enclose the corners; measured
+#: on Pepper&Carrot ep01 bubbles the margin is 0.2-0.4 of the width and 0.4-0.9 of the height (short text, tall ellipse).
+BUBBLE_PAD_X, BUBBLE_PAD_Y = 0.45, 1.0
+#: A tail is thinner than this many pixels across (opening radius); a leak into same-coloured art is wider.
+TAIL_MAX_HALF_WIDTH = 7
+
+
+def trim_bubble_mask(comp: np.ndarray, text_box: tuple[int, int, int, int]) -> np.ndarray:
+    """The part of a flooded bubble region that is really the bubble: its body plus its tail.
+
+    The fill flood (`_fill_region`) follows any pixels of the bubble's colour, so a pale bubble sitting on a bright
+    window returns the window as well (Pepper&Carrot ep01 page 1: the first bubble's mask swallowed the window frame,
+    and inpainting it redrew the window without its bars). The body is the flood clipped to the text box grown by
+    `BUBBLE_PAD_*`; what lies outside is kept only if it is thin (narrower than a tail) and attached to the body
+    within one text-box length, so tails survive and the wide leak does not."""
+    x0, y0, x1, y1 = text_box
+    w, h = x1 - x0, y1 - y0
+    px, py = int(w * BUBBLE_PAD_X), int(h * BUBBLE_PAD_Y)
+    body = np.zeros_like(comp, dtype=bool)
+    body[max(0, y0 - py): y1 + py, max(0, x0 - px): x1 + px] = True
+    body &= comp
+    rest = comp & ~body
+    if not rest.any():
+        return body
+    r = TAIL_MAX_HALF_WIDTH
+    yy, xx = np.mgrid[-r: r + 1, -r: r + 1]
+    wide = ndimage.binary_opening(rest, structure=(xx**2 + yy**2) <= r * r)
+    thin = rest & ~ndimage.binary_dilation(wide, iterations=2)
+    near = ndimage.distance_transform_edt(~body) <= max(w, h)
+    labels, n = ndimage.label(thin & near, structure=np.ones((3, 3)))
+    if n == 0:
+        return body
+    touching = np.unique(labels[ndimage.binary_dilation(body, iterations=2) & (labels > 0)])
+    return body | np.isin(labels, touching[touching > 0])

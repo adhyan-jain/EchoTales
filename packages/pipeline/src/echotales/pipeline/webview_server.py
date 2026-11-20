@@ -78,6 +78,7 @@ from echotales.pipeline.corrections import (
     apply_pending,
     new_manual_entity_id,
 )
+from echotales.pipeline.engines import registry as engine_registry
 from echotales.pipeline.jobs import (
     ALLOWED_HTTP_ENGINES,
     JOB_KINDS,
@@ -955,6 +956,34 @@ def _list_packs(novel_id: str) -> list[dict]:  # type: ignore[type-arg]
     return out
 
 
+def _list_comic(novel_id: str) -> dict:  # type: ignore[type-arg]
+    """Uploaded comic sources by name and the motion-comic videos built from them, as paths the output route serves
+    (relative to the project's folder). A built version is marked by the `comic.json` the comic build writes beside
+    `episode.mp4`, which keeps an episode-composer or anime video out of this list."""
+    from echotales.pipeline.comic.ingest import IMAGE_SUFFIXES
+    from echotales.pipeline.comic.upload import PDF_NAME
+
+    sources: list[dict] = []  # type: ignore[type-arg]
+    src_root = paths.asset_dir(novel_id, "comic") / "source"
+    if src_root.is_dir():
+        for d in sorted(src_root.iterdir()):
+            if not d.is_dir() or d.name.startswith("."):
+                continue
+            pages = sum(1 for f in d.iterdir() if f.suffix.lower() in IMAGE_SUFFIXES)
+            sources.append({"name": d.name, "pages": pages, "kind": "pdf" if (d / PDF_NAME).is_file() else "images"})
+    videos: list[dict] = []  # type: ignore[type-arg]
+    root = paths.novel_root(novel_id)
+    video_dir = root / "video"
+    if video_dir.is_dir():
+        for marker in video_dir.glob("ch*/v*/comic.json"):
+            mp4 = marker.with_name("episode.mp4")
+            if mp4.is_file():
+                videos.append({"path": str(mp4.relative_to(root)), "version": marker.parent.name,
+                               "mtime": mp4.stat().st_mtime, "bytes": mp4.stat().st_size})
+    videos.sort(key=lambda v: -v["mtime"])
+    return {"sources": sources, "videos": videos}
+
+
 _COMPANION_DIR_RE = re.compile(r"through_(\d+(?:\.\d+)?)")
 #: The only files `companion.write_companion_site` writes; the route serves these and nothing else in the folder.
 _COMPANION_FILES = ("index.html", "style.css", "companion.json")
@@ -1045,6 +1074,8 @@ _MAX_PACK_BODY = 25 * 1024 * 1024
 #: A minute of 24-bit stereo 48 kHz is ~17 MB; nothing a voice clone uses needs more.
 _MAX_VOICE_BODY = 20 * 1024 * 1024
 _MAX_IMAGE_BODY = 20 * 1024 * 1024
+#: A comic is dozens of full-resolution pages; `comic/upload.py` caps what an archive may unpack to separately.
+_MAX_COMIC_BODY = 200 * 1024 * 1024
 _NAME_ORDERS = ("given_first", "family_first")
 
 
@@ -1399,6 +1430,11 @@ def make_handler(
                         return self._json(404, {"error": f"unknown project {parts[2]!r}"})
                     return self._json(200, {"packs": _list_packs(parts[2])})
 
+                if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "comic":
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    return self._json(200, _list_comic(parts[2]))
+
                 if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "voices":
                     if parts[2] not in registry.handles:
                         return self._json(404, {"error": f"unknown project {parts[2]!r}"})
@@ -1409,10 +1445,55 @@ def make_handler(
                         "limits": {"min_seconds": project_voices.MIN_SECONDS, "max_seconds": project_voices.MAX_SECONDS,
                                    "max_bytes": _MAX_VOICE_BODY},
                         "voices": [
-                            {"voice_id": v.voice_id, "name": v.name, "gender": v.gender, "age": v.age, "consent_at": v.consent_at}
+                            {"voice_id": v.voice_id, "name": v.name, "gender": v.gender, "age": v.age,
+                             "consent_at": v.consent_at, "clip": v.clip}
                             for v in project_voices.list_project_voices(parts[2])
                         ],
                     })
+
+                # GET /api/projects/<id>/voices/audition: the narrator candidates the last audition shortlisted, each with
+                # the path of its sample (None until a sample is voiced), and the narrator config.json names now.
+                if len(parts) == 5 and parts[:2] == ["api", "projects"] and parts[3:] == ["voices", "audition"]:
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    from echotales.pipeline.config import (  # type: ignore[import-untyped]
+                        get_settings,
+                    )
+                    from echotales.pipeline.voice import (  # type: ignore[import-untyped]
+                        audition as voice_audition,
+                    )
+
+                    root = paths.asset_dir(parts[2], "audition")
+                    candidates = []
+                    for s in voice_audition.read_shortlist(root):
+                        sample = voice_audition.narrator_sample(root, s["voice_id"])
+                        candidates.append({
+                            "voice_id": s["voice_id"], "name": s.get("name") or s["voice_id"], "gender": s.get("gender", ""),
+                            "bank": s.get("bank", ""), "licence": s.get("licence", ""), "f0_hz": s.get("f0_hz"),
+                            "sample": str(sample.relative_to(paths.novel_root(parts[2]))) if sample.is_file() else None,
+                        })
+                    return self._json(200, {
+                        "narrator": get_settings().voice_narrator, "candidates": candidates,
+                        "passage": voice_audition.PASSAGES[voice_audition.STUDIO_PASSAGE],
+                    })
+
+                # GET /api/projects/<id>/voices/sample?voice_id=&emotion=&text=: where the finished sample of that line
+                # is (404 until the audition job has voiced it).
+                if len(parts) == 5 and parts[:2] == ["api", "projects"] and parts[3:] == ["voices", "sample"]:
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    from echotales.pipeline.voice import audition as voice_audition
+
+                    q = parse_qs(urlparse(self.path).query)
+                    def one(key: str, default: str = "") -> str:
+                        return q.get(key, [default])[0]
+
+                    sample = voice_audition.line_sample_path(
+                        paths.asset_dir(parts[2], "audition"), one("voice_id"), one("emotion", "neutral"), one("text").strip()
+                    )
+                    if not sample.is_file():
+                        return self._json(404, {"error": "that sample has not been voiced yet"})
+                    return self._json(200, {"path": str(sample.relative_to(paths.novel_root(parts[2])))})
 
                 if len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "companions":
                     if parts[2] not in registry.handles:
@@ -2404,6 +2485,26 @@ def make_handler(
                     target.with_name(target.name + ".report.json").unlink(missing_ok=True)
                     return self._json(201, {"name": safe_name, "bytes": len(data)})
 
+                # POST /api/projects/<id>/comic as multipart is an upload; the same path with JSON queues the `comic` job.
+                if (
+                    len(parts) == 4 and parts[:2] == ["api", "projects"] and parts[3] == "comic"
+                    and "multipart/form-data" in self.headers.get("Content-Type", "")
+                ):
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    from echotales.pipeline.comic import upload as comic_upload
+
+                    try:
+                        filename, data = parse_single_file(
+                            self.headers.get("Content-Type", ""), self._read_body_bytes(_MAX_COMIC_BODY)
+                        )
+                        stored = comic_upload.store_comic_upload(
+                            filename, data, paths.asset_dir(parts[2], "comic") / "source"
+                        )
+                    except (MultipartError, comic_upload.ComicUploadError) as exc:
+                        return self._json(400, {"error": str(exc)})
+                    return self._json(201, stored)
+
                 # POST /api/projects/<id>/voices?name=&gender=&age=&consent=true  (multipart, one .wav/.flac)
                 # The consent travels in the query string because the multipart reader here takes one file part and
                 # nothing else; the server records its own fixed statement, never text from the request.
@@ -2433,6 +2534,27 @@ def make_handler(
                         return self._json(409 if taken else 400, {"error": str(exc) if isinstance(exc, project_voices.VoiceUploadError) else "age must be a whole number"})
                     return self._json(201, {"voice_id": stored.voice_id, "name": stored.name, "gender": stored.gender,
                                             "age": stored.age, "consent_at": stored.consent_at})
+
+                # POST /api/projects/<id>/voices/narrator {"voice_id": ...}: the one config.json key this screen may
+                # change. Only a voice the audition shortlisted or this project uploaded can be chosen.
+                if len(parts) == 5 and parts[:2] == ["api", "projects"] and parts[3:] == ["voices", "narrator"]:
+                    if parts[2] not in registry.handles:
+                        return self._json(404, {"error": f"unknown project {parts[2]!r}"})
+                    from echotales.pipeline import project_voices
+                    from echotales.pipeline.config import set_voice_narrator
+                    from echotales.pipeline.voice import audition as voice_audition
+
+                    body = self._read_json()
+                    voice_id = body.get("voice_id") if isinstance(body, dict) else None
+                    known = {s["voice_id"] for s in voice_audition.read_shortlist(paths.asset_dir(parts[2], "audition"))}
+                    known |= {v.voice_id for v in project_voices.list_project_voices(parts[2])}
+                    if not isinstance(voice_id, str) or voice_id not in known:
+                        return self._json(400, {"error": "voice_id must be one of the audition candidates or your own voices"})
+                    try:
+                        set_voice_narrator(voice_id)
+                    except (OSError, ValueError) as exc:
+                        return self._json(500, {"error": f"could not write config.json: {exc}"})
+                    return self._json(200, {"narrator": voice_id})
 
                 if (
                     len(parts) == 6 and parts[:2] == ["api", "projects"] and parts[3] == "jobs" and parts[5] == "cancel"
@@ -2521,13 +2643,38 @@ def make_handler(
                         refusal = _gpu_refusal(video_engine)
                         if refusal:
                             return self._json(409, _refusal_body(refusal))
+                    if kind == "voice_audition":
+                        # Same rule as the voice job: the bank folder and the output folder are the server's choice.
+                        params.pop("bank", None)
+                        voice_engine = str(params.get("engine") or "chatterbox")
+                        if voice_engine not in engine_registry.names("tts"):
+                            return self._json(400, {"error": f"voice engine {voice_engine!r} is not allowed; use stub or chatterbox"})
+                        from echotales.pipeline.reader.delivery_pass import (  # type: ignore[import-untyped]
+                            LABELS,
+                        )
+                        from echotales.pipeline.voice.audition import (  # type: ignore[import-untyped]
+                            MAX_SAMPLE_CHARS,
+                        )
+
+                        target = params.get("target")
+                        if target not in ("narrator", "line"):
+                            return self._json(400, {"error": "target must be 'narrator' or 'line'"})
+                        if target == "line":
+                            text = params.get("text")
+                            if not isinstance(params.get("voice_id"), str) or not params["voice_id"]:
+                                return self._json(400, {"error": "voice_id is required"})
+                            if not isinstance(text, str) or not text.strip() or len(text.strip()) > MAX_SAMPLE_CHARS:
+                                return self._json(400, {"error": f"text must be 1 to {MAX_SAMPLE_CHARS} characters"})
+                            if params.get("emotion", "neutral") not in set(LABELS.values()):
+                                return self._json(400, {"error": f"unknown emotion {params.get('emotion')!r}"})
+                            params["text"] = text.strip()
                     if kind == "voice":
                         # A path from the request chose which directory the server loads a voice bank from and where
                         # it wrote; both come from the project, never the client (audit B5).
                         params.pop("bank", None)
                         params.pop("out_dir", None)
                         voice_engine = str(params.get("engine") or "chatterbox")
-                        if voice_engine not in ("stub", "chatterbox"):
+                        if voice_engine not in engine_registry.names("tts"):
                             return self._json(400, {"error": f"voice engine {voice_engine!r} is not allowed; use stub or chatterbox"})
                         from echotales.pipeline.review_gate import voice_refusal
 

@@ -15,7 +15,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage
 
-from echotales.pipeline.comic.bubbles import Bubble, cluster_speakers, detect_bubbles
+from echotales.pipeline.comic.bubbles import Bubble, cluster_speakers, detect_bubbles, trim_bubble_mask
 from echotales.pipeline.comic.ingest import PageImage
 from echotales.pipeline.comic.ocr import OcrEngine
 from echotales.pipeline.comic.panels import detect_panels
@@ -93,12 +93,18 @@ def _letter(n: int) -> str:
     return f"Character {chr(ord('A') + n)}" if n < 26 else f"Character {n + 1}"
 
 
-def _text_mask(size: tuple[int, int], bubbles: list[Bubble]) -> np.ndarray:
+def _text_mask(size: tuple[int, int], bubbles: list[Bubble], *, mask_sfx: bool = False) -> np.ndarray:
+    """What the clean plate removes: speech bubbles and caption boxes whole (fill region plus its outline ring), cleaned
+    of colour-flood leaks. Sound effects are left in by default: they are painted into the art, are neither voiced nor
+    subtitled (`story_bubbles`), and their only mask is the OCR rectangle, which over busy art removes the art with
+    the lettering (Pepper&Carrot SPLASH lost its spray; SHH SHH sat in a window the flood had also swallowed)."""
     w, h = size
     mask = np.zeros((h, w), dtype=bool)
     for b in bubbles:
+        if b.kind == "sfx" and not mask_sfx:
+            continue
         if b.mask is not None:
-            mask |= b.mask
+            mask |= trim_bubble_mask(b.mask, b.text_box)
         else:
             x0, y0, x1, y1 = b.text_box
             mask[y0:y1, x0:x1] = True
@@ -112,6 +118,7 @@ def understand_pages(
     rtl: bool = False,
     speaker_threshold: float = SPEAKER_THRESHOLD,
     out_dir: Path | None = None,
+    mask_sfx: bool = False,
 ) -> ComicUnderstanding:
     result = ComicUnderstanding([], ocr_engine=ocr.name, rtl=rtl)
     embeddings: list = []
@@ -132,7 +139,7 @@ def understand_pages(
         if out_dir is not None:
             pu.mask_file = f"masks/p{page.index + 1:03d}.png"
             (out_dir / "masks").mkdir(parents=True, exist_ok=True)
-            Image.fromarray((_text_mask(page.image.size, bubbles) * 255).astype(np.uint8)).save(out_dir / pu.mask_file)
+            Image.fromarray((_text_mask(page.image.size, bubbles, mask_sfx=mask_sfx) * 255).astype(np.uint8)).save(out_dir / pu.mask_file)
         result.pages.append(pu)
     flat = result.bubbles()
     labels = cluster_speakers(embeddings, threshold=speaker_threshold)

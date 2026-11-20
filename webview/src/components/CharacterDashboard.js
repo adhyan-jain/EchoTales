@@ -10,6 +10,7 @@ import CharacterRow from './ui/CharacterRow';
 import AudioPlayer from './ui/AudioPlayer';
 import DossierHeader from './ui/DossierHeader';
 import GenderControl from './GenderControl';
+import LineAudition from './LineAudition';
 import TimelineRail from './ui/TimelineRail';
 import { EmptyState, LoadingState } from './ui/EmptyState';
 import { useToast } from './ui/Toast';
@@ -183,6 +184,7 @@ export default function CharacterDashboard({ novelId, readOnly = false, selected
   if (selected) {
     return (
       <CharacterDetail
+        novelId={novelId}
         character={selected}
         busy={pendingAction === selected.self_id}
         readOnly={readOnly}
@@ -291,10 +293,11 @@ export default function CharacterDashboard({ novelId, readOnly = false, selected
   );
 }
 
-function CharacterDetail({ character, busy, readOnly, onBack, onSetVoice, onSetGender, onSelectReference, onSearchReferences }) {
+function CharacterDetail({ novelId, character, busy, readOnly, onBack, onSetVoice, onSetGender, onSelectReference, onSearchReferences }) {
   const { label, prominence, voice, traits = [], reference_images: refs = [] } = character;
   const [voiceFormOpen, setVoiceFormOpen] = useState(false);
   const [voiceDraft, setVoiceDraft] = useState('');
+  const [auditionOpen, setAuditionOpen] = useState(false);
 
   const submitVoice = () => {
     onSetVoice(voiceDraft).then(() => {
@@ -438,9 +441,30 @@ function CharacterDetail({ character, busy, readOnly, onBack, onSetVoice, onSetG
                       </Button>
                     </div>
                   ) : (
-                    <Button variant="secondary" size="sm" disabled={busy} onClick={() => setVoiceFormOpen(true)}>
-                      Replace voice
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant="secondary" size="sm" disabled={busy} onClick={() => setVoiceFormOpen(true)}>
+                        Replace voice
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-expanded={auditionOpen}
+                        aria-controls="voice-audition"
+                        onClick={() => setAuditionOpen((o) => !o)}
+                      >
+                        {auditionOpen ? 'Close audition' : 'Audition voices'}
+                      </Button>
+                    </div>
+                  )}
+                  {auditionOpen && (
+                    <div id="voice-audition" className="mt-4">
+                      <LineAudition
+                        novelId={novelId}
+                        assignedVoiceId={voice ? voice.speaker_id || voice.voice || '' : ''}
+                        busy={busy}
+                        onUseVoice={(id) => onSetVoice(id).catch(() => {})}
+                      />
+                    </div>
                   )}
                 </>
               )}

@@ -1,8 +1,58 @@
 # EchoTales
 
-A pipeline that reads a volume of a web novel and builds a **bitemporal
-narrative knowledge graph**, then uses it to drive a full-cast audiobook and a
-manga-style visual adaptation.
+Turn a web-novel volume into a full-cast audiobook and a manga-style adaptation, driven by a
+**bitemporal narrative knowledge graph** that tracks who is who, and when, across the whole book.
+Everything runs on your own machine; the stub modes need no GPU and no network.
+
+## Demo
+
+A demo video is coming. None has been recorded yet, so there is no link here on purpose.
+
+## Install and run
+
+```bash
+scripts/setup.sh      # detects your GPU, lists each model and its licence, asks before downloading
+make demo             # stub-mode demo on a sample book, no GPU
+make serve            # the studio, at http://127.0.0.1:8787
+```
+
+`scripts/setup.sh --dry-run` shows the hardware preset it would pick (`laptop-8gb`, `desktop-24gb` or `cloud`)
+and changes nothing. A CUDA Docker image is available through `docker compose up`.
+`uv run echotales engines --commercial-safe` lists every engine whose licence has been checked as allowing
+commercial use; engines whose licence has not been checked are left out, not guessed.
+
+In the studio (http://127.0.0.1:8787): create a project, upload an EPUB, then use the five-step "Make the
+audiobook" panel. Language models run locally through ollama; speech and image generation need a GPU. The stub
+modes (`ECHOTALES_LLM_MODE=stub`) run everything without one.
+
+## Measured results
+
+Every number below comes from a committed record and names it. Where nothing was measured the cell says so.
+No other tool has been run on the same material, so this table compares EchoTales' own options, not competitors;
+that comparison needs the public benchmark (below) to be filled in by other people.
+
+| What | Result | Measured on | Source |
+|---|---|---|---|
+| Speaker attribution, reader on `gemma2:9b` | Lord of the Mysteries 95.4%, Omniscient Reader 77.9%, Reverend Insanity 76.2% | ch 1-3 (and held-out ch 21) of each volume, against **model-drafted** references | `docs/EVOLUTION.md` 4.124 |
+| Image model, Z-Image Turbo vs NoobAI XL | Z-Image better in 11 of 12 scene categories; 32.3 s vs 21.7 s per image, peak 5.78 vs 5.42 GiB | 24 briefs, 160 images, 8-GB laptop GPU; scored by one reviewer by eye | `docs/EVOLUTION.md` 4.165 |
+| Local video, LTX-Video 2B distilled | about 12 s denoise plus 6 s decode per 4 s clip, 7.0 GB peak (torch) with the model warm; 27-70 s per clip with reloads | 512x768, 97 frames, 8-GB laptop GPU | `docs/EVOLUTION.md` 4.146 |
+| Speaker attribution on the public benchmark | not measured yet | Pride and Prejudice, Sherlock Holmes | `data/eval/benchmark/` holds the references |
+| Audiobook listening quality | not measured: nobody has listened blind | | `docs/HANDOFF.md` "Pick up here" |
+
+The speaker references behind the first row were drafted by a model, not checked by a person, so those
+percentages are regression numbers, not accuracy claims (see "Known limitations").
+
+### Public benchmark
+
+`python -m eval.run_benchmark public status` (or `uv run echotales benchmark status`) lists the references in
+`data/eval/benchmark/`: speaker attribution and scene fidelity on Pride and Prejudice and Sherlock Holmes
+(public domain), cross-panel identity and scene fidelity on two Pepper&Carrot episodes (CC BY 4.0). They hold
+offsets and hashes only, never book text, and **every item is still a model's draft** (`checked_by_human: false`).
+`echotales benchmark check` walks a file so a person can accept or edit each item; `score` prints a banner saying
+NOT human-verified until that is done. Scoring is deterministic; run `lines` to get what to attribute from your own
+copy of the book.
+
+## How it works
 
 The graph answers one query:
 
@@ -21,33 +71,15 @@ Everything downstream — voice selection, prosody, reference images, panel
 casting — consumes that query. **The graph is the research contribution.** Audio
 and visual are demonstration surface.
 
+The pipeline, in order: EPUB to chapters and blocks, spans, mentions (name list plus NER), identity resolution
+(incremental, with evidence accumulation, no clustering), a reader pass for speakers and appearance facts, personas
+(a body or identity, kept apart from the self), panel direction and image generation, voice casting and synthesis,
+then a per-chapter video. Each engine in it is declared once, with its licence, memory need and measured speed, in
+`packages/pipeline/src/echotales/pipeline/engines/registry.py`; adding a model is one entry there.
+
 See [`docs/HANDOFF.md`](docs/HANDOFF.md) for current status and open defects,
 [`docs/design/architecture.md`](docs/design/architecture.md) for the model, [`docs/design/details.md`](docs/design/details.md)
 for per-file detail, and [`docs/design/plans.md`](docs/design/plans.md) for the full specification.
-
-## Install
-
-```bash
-scripts/setup.sh                 # detects your GPU, lists each model and its licence, asks before downloading
-make demo                        # stub-mode demo on a sample book, no GPU
-make serve                       # the studio, at http://127.0.0.1:8787
-```
-
-`scripts/setup.sh --dry-run` shows the hardware preset it would pick
-(`laptop-8gb`, `desktop-24gb` or `cloud`) and changes nothing. A CUDA Docker
-image is available through `docker compose up`.
-
-## Quick start
-
-```bash
-scripts/setup.sh
-uv run echotales webview-server --static-dir webview/build
-```
-
-Open http://127.0.0.1:8787, create a project, upload an EPUB, then use the
-five-step "Make the audiobook" panel. Language models run locally through
-ollama; speech and image generation need a GPU. The stub modes
-(`ECHOTALES_LLM_MODE=stub`) run everything without one.
 
 ## Why this is hard
 
@@ -102,7 +134,8 @@ packages/core/       models, store, state_of()  (imports nothing from pipeline)
 packages/pipeline/   ingest -> spans -> mentions -> resolve -> persona -> render -> voice -> eval;
                      webview_server.py is also the job / correction HTTP API
 webview/             React review and production UI
-scripts/             eval/, paper/, review/, maintenance/, reproduce_results.sh
+eval/                benchmark harness; eval/public/ is the public benchmark (python -m eval.run_benchmark public)
+scripts/             eval/, paper/, review/, maintenance/ (incl. the lint ratchet), reproduce_results.sh
 docs/                README.md is the index: HANDOFF (current state), EVOLUTION (history),
                      design/, results/, status/, paper/, archive/
 data/                README.md is the map. The parts you touch:
@@ -123,6 +156,7 @@ not need to understand the novel" is a claim the paper makes.
 ```bash
 uv sync --python 3.12          # 3.12 exactly: ML wheels lag newer
 uv run pytest
+make verify                    # tests, then the ruff and mypy ratchet (a count may fall, never rise)
 ```
 
 ## Configuration
