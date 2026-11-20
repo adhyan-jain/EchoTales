@@ -56,6 +56,8 @@ DEFAULT_DB = DB_DIR / "reverend-insanity.db"
 RESEARCH_DIR = EVAL_DIR / "research"
 RESEARCH_CACHE_DIR = CACHE_DIR / "research"
 RESEARCH_SCRATCH_DIR = SCRATCH_DIR / "research"
+#: The cloud spend ledger (`cloud_ledger.py`). Under the cache, not a new top-level folder: it is one small JSON file.
+CLOUD_LEDGER_PATH = CACHE_DIR / "cloud" / "ledger.json"
 
 
 def research_run_dir(hypothesis_id: str, run_id: str, *, data_root: Path | str = DATA_ROOT) -> Path:

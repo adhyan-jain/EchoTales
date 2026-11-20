@@ -219,6 +219,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="only engines whose licence was checked and allows commercial use (unchecked ones are left out)",
     )
 
+    p_cloud = sub.add_parser(
+        "cloud", help="optional cloud paths: spend ledger, dry-run cost estimate, character LoRA job (mock-tested only)"
+    )
+    cloud_sub = p_cloud.add_subparsers(dest="cloud_cmd", required=True)
+    cloud_sub.add_parser("ledger", help="print the cloud spend ledger summary as JSON")
+    p_cest = cloud_sub.add_parser("estimate", help="dry run: estimated cost of N jobs; submits nothing")
+    p_cest.add_argument("--kind", required=True, choices=["video", "edit", "lora"])
+    p_cest.add_argument("--units", type=int, default=1)
+    p_clora = cloud_sub.add_parser("lora", help="train a character LoRA from approved reference images")
+    p_clora.add_argument("--character", required=True)
+    p_clora.add_argument("--references", required=True, help="folder of the character's approved reference images")
+    p_clora.add_argument("--dry-run", action="store_true", help="print the estimated cost and submit nothing")
+
     p_bench = sub.add_parser(
         "benchmark",
         help="public benchmark: status | lines | score | check (arguments after it go to eval/public/cli.py)",

@@ -115,6 +115,21 @@ ENGINES: tuple[EngineSpec, ...] = (
     EngineSpec("stub", "tts", "local-low", _APACHE_REPO, True, "tts", note="silent placeholder audio"),
     EngineSpec("chatterbox", "tts", "local-low", "MIT", True, "tts", where="gpu", setup_label="Chatterbox TTS",
                note="Resemble AI; weights fetched by the package on first use"),
+    EngineSpec("elevenlabs", "tts", "cloud", "hosted service terms (ElevenLabs, the user's own account and key)", None, "tts",
+               where="hosted",
+               note="optional, never the default; library or the user's own uploaded voices only, no cloning of real "
+                    "people; text leaves the machine; mock-tested only (EVOLUTION 4.174)"),
+    # ---- optional hosted engines behind the cloud ledger (own surfaces: not in any local choice list) ----
+    EngineSpec("qwen-image-edit-runpod", "image", "cloud", "hosted service terms; model weights Apache-2.0 (Qwen-Image-Edit)",
+               None, "cloud-keyframe", where="hosted",
+               note="multi-reference keyframes from approved character sheets; RunPod worker; mock-tested only (4.174)"),
+    EngineSpec("wan-runpod", "video", "cloud", "hosted service terms; worker weights Apache-2.0 (Wan 2.2), unchecked here",
+               None, "cloud-video", where="hosted",
+               note="image to video on a RunPod worker (Wan 2.2 / AniSora class); mock-tested only (4.174)"),
+    EngineSpec("character-lora-runpod", "image", "cloud", "hosted service terms; the LoRA is yours (trained from your "
+               "approved references)", None, "cloud-lora", role="provider", where="hosted",
+               note="trains one character LoRA from approved references; loaded locally via ECHOTALES_ZIMAGE_LORA; "
+                    "mock-tested only (4.174)"),
     # ---- video: the chapter video (`echotales anime`, the `video` job) ----
     EngineSpec("stills", "video", "local-low", _APACHE_REPO, True, "anime-video", note="ffmpeg pans over the stills"),
     EngineSpec("ltx-local", "video", "local-low", _UNCHECKED, None, "anime-video", where="gpu", vram_mb=7400,

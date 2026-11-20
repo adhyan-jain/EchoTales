@@ -2075,7 +2075,28 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
     return public_main(['--bench-dir', args.bench_dir, '--sources-dir', args.sources_dir, *args.rest])
 
 
+def cmd_cloud(args: argparse.Namespace) -> int:
+    """Optional cloud paths (EVOLUTION 4.174): the spend ledger, a dry-run estimate, a LoRA job. Never runs unasked."""
+    from echotales.pipeline import cloud_ledger
+
+    if args.cloud_cmd == "ledger":
+        print(json.dumps(cloud_ledger.CloudLedger().summary(), indent=1))
+    elif args.cloud_cmd == "estimate":
+        print(json.dumps(cloud_ledger.dry_run_report(args.kind, args.units), indent=1))
+    elif args.cloud_cmd == "lora":
+        from echotales.pipeline import cloud_lora
+
+        spec = cloud_lora.build_spec(args.character, args.references)
+        try:
+            print(json.dumps(cloud_lora.submit(spec, dry_run=args.dry_run), indent=1))
+        except (cloud_ledger.BudgetExceeded, RuntimeError) as exc:
+            print(f"cloud: {exc}", file=sys.stderr)
+            return 2
+    return 0
+
+
 _DISPATCH = {
+    "cloud": cmd_cloud,
     "benchmark": cmd_benchmark,
     "engines": cmd_engines,
     "voice-audition": cmd_voice_audition,

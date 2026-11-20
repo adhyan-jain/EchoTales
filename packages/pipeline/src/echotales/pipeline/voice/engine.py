@@ -170,6 +170,10 @@ def get_engine(name: str = "stub", **kwargs: object) -> TTSEngine:
         return StubEngine(**kwargs)  # type: ignore[arg-type]
     if name == "chatterbox":
         return ChatterboxEngine(**kwargs)  # type: ignore[arg-type]
+    if name == "elevenlabs":
+        from echotales.pipeline.voice import elevenlabs  # type: ignore[import-untyped]
+
+        return elevenlabs.ElevenLabsEngine(**kwargs)  # type: ignore[no-any-return]
     from echotales.pipeline.engines import registry
 
     raise ValueError(f"unknown TTS engine {name!r}; expected {registry.expected(registry.names('tts'))}")
