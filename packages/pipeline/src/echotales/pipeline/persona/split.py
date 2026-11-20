@@ -49,6 +49,7 @@ import logging
 import math
 import re
 from dataclasses import dataclass, field
+from typing import Any
 
 from echotales.core.enums import Prominence, ReferenceMode, SpanType, TargetKind
 from echotales.core.interval import Certainty, FuzzyInterval
@@ -168,6 +169,9 @@ class BodyChange:
     #: Chapter whose text first satisfies the life-after rule in `find_change_candidates`, i.e. the earliest reading
     #: position at which the change is supported by what has been read. None: supported by its own chapter.
     confirmed_at: float | None = None
+    #: First block at which the narrative is already in the new body (`_onset_block`); `story_pos` is cut here, while
+    #: `block_index` stays the cue that states the change, for evidence. -1: not computed, the cue block is the onset.
+    onset_block: int = -1
 
     @property
     def evidence(self) -> str:
@@ -282,6 +286,61 @@ def _blocks_present(store: Store, novel_id: str, target_id: str) -> dict[float, 
         if ReferenceMode(row["reference_mode"]) is ReferenceMode.PRESENT:
             out.setdefault(float(row["chapter"]), set()).add(int(row["block_index"]))
     return out
+
+
+def _others_present(
+    store: Store, novel_id: str, target_id: str, chapter: float, spans: list[Any], people: set[str]
+) -> set[int]:
+    """Blocks of one chapter that show another person (`people`, ids from `cast_labels`): a PRESENT mention, or a line
+    they speak. An item or place does not end the target's run: RI ch1 block 81 names the Spring Autumn Cicada, an ITEM."""
+    out = {
+        int(r["block_index"])
+        for r in store.conn.execute(
+            "SELECT DISTINCT block_index, target_id, reference_mode FROM mention "
+            "WHERE novel_id=? AND chapter=? AND target_kind=? AND target_id!=?",
+            (novel_id, chapter, TargetKind.SELF.value, target_id),
+        )
+        if r["target_id"] in people and ReferenceMode(r["reference_mode"]) is ReferenceMode.PRESENT
+    }
+    out |= {s.block_index for s in spans if s.speaker_self_id and s.speaker_self_id != target_id and s.speaker_self_id in people}
+    return out
+
+
+def _onset_block(
+    spans: list[Any], cue_block: int, mine: set[int], others: set[int], window: int = _PRESENCE_WINDOW
+) -> int:
+    """The block where the narrative first stays with the target in the new body, at or before the cue.
+
+    **Why not the cue block.** The cue is the sentence that *states* the change ("it is the ability to be reborn"); the
+    body has changed where the text first follows the character in it. RI ch1: block 79 ("a pair of clear eyes") and 80
+    (Fang Yuan at the window, "this is 500 years ago?!") come before the exposition at 82, and a boundary at 82 drew
+    both as the 500-year-old man. Walk back from the cue while the target keeps being present (a run of `window` blocks
+    without them ends the chain, the reach `_near` allows a pronoun-only block), never across a scene break (a block
+    with no alphanumeric character, or a non-diegetic one) and never into a block that shows only another person. Then
+    take one mention-free story block directly before the first presence: the target's point of view before it is named
+    ("a pair of clear eyes"). Nobody present near the cue: the cue block, as before."""
+    story = {
+        s.block_index for s in spans
+        if s.block_index <= cue_block and s.span_type is not SpanType.NON_DIEGETIC and any(c.isalnum() for c in s.text)
+    }
+    first, gap = None, 0
+    for b in range(cue_block, -1, -1):
+        if b not in story:
+            break
+        if b in mine:
+            first, gap = b, 0
+        elif b in others:
+            break
+        else:
+            gap += 1
+        if gap >= window:
+            break
+    if first is None:
+        return cue_block
+    prev = first - 1
+    if first < cue_block and prev in story and prev not in mine and prev not in others:
+        return prev
+    return first
 
 
 def _near(blocks: set[int], index: int, window: int = _PRESENCE_WINDOW) -> bool:
@@ -446,6 +505,7 @@ def find_change_candidates(
             continue
         n_blocks = max(s.block_index for s in spans) + 1
         blocks = present[chapter]
+        others = _others_present(store, novel_id, target_id, chapter, spans, set(cast))
 
         strong: list[BodyChange] = []
         supporting: list[BodyChange] = []
@@ -468,10 +528,12 @@ def find_change_candidates(
                     report.rejected_other_character += 1
                 continue
             for kind, cue, is_strong in _cues(text):
+                onset = _onset_block(spans, span.block_index, blocks, others)
                 change = BodyChange(
                     chapter=chapter,
                     block_index=span.block_index,
-                    story_pos=chapter + span.block_index / max(n_blocks, 1),
+                    onset_block=onset,
+                    story_pos=chapter + onset / max(n_blocks, 1),
                     kind=kind,
                     cue=cue,
                     passage=_context_passage(spans, span.block_index),

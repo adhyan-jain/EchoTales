@@ -284,6 +284,9 @@ _DESC_POST = re.compile(
     rf"[\w\s]{{0,12}}?\b(?:{_D})\b",
     re.IGNORECASE,
 )
+#: A bare list fragment with no determiner: "Black hair, brown eyes, ..." (LotM ch1 b36, the lead's only description). The
+#: determiner-required patterns above scored it 0, so it was never ranked or admitted.
+_DESC_LIST = re.compile(rf"(?:^|[,;:\u2014\-]\s*)(?:{_D})\s+(?:{_N})\b", re.IGNORECASE)
 #: Possession/attire verbs: "wore green robes", "was in deep green robes".
 _DESC_HAS = re.compile(
     rf"\b(?:wore|wearing|dressed\s+in|clad\s+in|was\s+in|were\s+in)\b"
@@ -305,6 +308,7 @@ def descriptive_score(text: str) -> int:
     return (
         len(_DESC_PRE.findall(text)) * 2
         + len(_DESC_POST.findall(text)) * 2
+        + len(_DESC_LIST.findall(text)) * 2
         + len(_DESC_HAS.findall(text))
     )
 
@@ -368,6 +372,42 @@ def find_descriptive_blocks(
         params,
     ).fetchall()
     return [(float(r["chapter"]), int(r["block_index"])) for r in rows]
+
+
+def find_adjacent_descriptive_blocks(
+    store: Store, novel_id: str, target_id: str
+) -> list[tuple[float, int]]:
+    """Descriptive blocks that name nobody, sitting directly beside a block that names this entity and no one else.
+
+    **A mirror, a portrait or a first look is written as its own sentence or fragment.** LotM ch1: block 35 "Zhou Mingrui
+    noticed himself in the mirror", block 36 "Black hair, brown eyes, a linen shirt, thinly built ...", block 37 "Zhou
+    Mingrui immediately drew a gasp". `find_descriptive_blocks` needs a PRESENT mention inside the description's own block,
+    `find_reveal_blocks` needs a naming clause inside it, so neither saw block 36: the lead had no hair fact and a genre
+    default (brown) was drawn on him in 16 of 16 panels. The guard against attributing a neighbour's description is the
+    one `describes_target` states: the block itself names no person, and every block next to it that does names only this
+    entity. Two blocks away is not adjacent."""
+    people = {e.id for e in store.all_selves(novel_id) if e.kind.is_person}
+    named: dict[tuple[float, int], set[str]] = {}
+    for r in store.conn.execute(
+        "SELECT DISTINCT chapter, block_index, target_id FROM mention WHERE novel_id=? AND target_kind=? AND reference_mode=?",
+        (novel_id, TargetKind.SELF.value, ReferenceMode.PRESENT.value),
+    ):
+        if r["target_id"] in people:
+            named.setdefault((float(r["chapter"]), int(r["block_index"])), set()).add(r["target_id"])
+    out: set[tuple[float, int]] = set()
+    for row in store.conn.execute(
+        "SELECT chapter, block_index, text FROM span WHERE novel_id=? AND span_type IN ('NARRATION_DESCRIPTION','NARRATION_ACTION')",
+        (novel_id,),
+    ):
+        key = (float(row["chapter"]), int(row["block_index"]))
+        if key in named or not descriptive_score(str(row["text"])):
+            continue
+        # The block before must name him (the passage handed to the model is that sentence plus this block, so the citation
+        # check finds his name in the clause before the quote); the block after may name only him, or nobody.
+        before, after = named.get((key[0], key[1] - 1)), named.get((key[0], key[1] + 1))
+        if before == {target_id} and after in (None, {target_id}):
+            out.add(key)
+    return sorted(out)
 
 
 #: A *reveal*: an unnamed figure is described, then named. RI ch87 b40 is the
@@ -561,7 +601,8 @@ def _gather_pairs(
     # Delayed-identity reveals carry description that no resolved mention
     # points at -- see `find_reveal_blocks`. Merged rather than replacing,
     # and de-duplicated below by block.
-    wanted = sorted(set(wanted) | set(find_reveal_blocks(store, novel_id, target_id)))
+    adjacent = set(find_adjacent_descriptive_blocks(store, novel_id, target_id))
+    wanted = sorted(set(wanted) | set(find_reveal_blocks(store, novel_id, target_id)) | adjacent)
     if allowed_chapters is not None:
         wanted = [(c, b) for c, b in wanted if c in allowed_chapters]
     if not wanted:
@@ -585,10 +626,18 @@ def _gather_pairs(
     for chapter in sorted(by_chapter):
         blocks = set(by_chapter[chapter])
         taken = 0
-        for span in store.get_spans(novel_id, chapter):
+        chapter_spans = store.get_spans(novel_id, chapter)
+        for span in chapter_spans:
             if span.block_index not in blocks or span.span_type not in _DESCRIPTIVE:
                 continue
             text = span.text.strip()
+            if (chapter, span.block_index) in adjacent:
+                # The naming sentence just before the nameless description travels with it.
+                lead = " ".join(
+                    sp.text.strip() for sp in chapter_spans
+                    if sp.block_index == span.block_index - 1 and sp.span_type in _DESCRIPTIVE
+                )
+                text = f"{lead[:300]} {text}".strip()
             if not text or text in seen:
                 continue
             seen.add(text)
@@ -769,8 +818,30 @@ def is_grounded(
                 )
                 if word_lower in passage_lower[window_start:window_end]:
                     return True
+                if word_lower in _following_fragment(passage, idx + len(form_lower)):
+                    return True
                 start = idx + len(form_lower)
     return False
+
+
+_SENTENCE_END = re.compile(r"[.!?\u2014]\s+")
+_OTHER_NAME = re.compile(r"(?<![.!?\u2014]\s)(?<!^)\b[A-Z][a-z]+")
+
+
+def _following_fragment(passage: str, after: int) -> str:
+    """The sentence or fragment right after the one that names the target, lowercased, or "" when it names someone else.
+
+    LotM ch1: "Zhou Mingrui noticed himself in the mirror\u2014the present him. Black hair, brown eyes, a linen shirt ..." puts
+    the description 55 characters past the name, outside the 40-character window, so the lead's only description was
+    discarded as ungrounded and he got a genre default. The next sentence after a naming sentence is about the same person
+    unless it names another one."""
+    m = _SENTENCE_END.search(passage, after)
+    if m is None:
+        return ""
+    rest = passage[m.end():]
+    nxt = _SENTENCE_END.search(rest)
+    fragment = rest[: nxt.start()] if nxt else rest
+    return "" if _OTHER_NAME.search(fragment) else fragment.lower()
 
 
 def attesting_chapter(

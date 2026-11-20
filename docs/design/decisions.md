@@ -533,6 +533,13 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Size**: 64 and 42 speaker lines, 11 panels, 14 scenes. Small on purpose; growing it is a labelling job, not a code job.
 - **Status**: scorers done and tested; references drafted; human check not done.
 
+### D61. One locked identity per character body, checked by a local vision model (2026-11-20, roadmap M1.5 and M1.6)
+- **Decided**: hair, eyes, build and outfit are stored once per character and body interval (`persona/identity_lock.py`) and repeated in every panel prompt right after the style lead; what a scene's own text states (clothes, wounds) is added, and unstated clothes come from the nearest scene of the same body. A body change is dated where the narrative follows the new body, not where a sentence states it. A scene of the same segment that names nobody starts from the previous scene's cast. After drawing, a local vision model answers a four-item checklist and the first passing of `render.candidates` images is kept.
+- **Why**: the cliff scene drew the robe in four colours and LotM's lead the wrong hair colour in every panel; a lock only helps if something looks at the result.
+- **Vision model**: `granite3.2-vision:2b` first (fits 8 GB, Apache-2.0, 1.8-3.1 s per panel). Checked colours are compared by family (dark, navy and black are one; green and teal are not). No VLM installed means the check is off, said once, one candidate per panel.
+- **Honesty rule**: a colour the model cannot name is no veto; an unchecked panel is counted as unchecked, never as passed.
+- **Status**: done and measured on three novels (EVOLUTION 4.170); the default outfit for a text with none is still a genre default.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs
