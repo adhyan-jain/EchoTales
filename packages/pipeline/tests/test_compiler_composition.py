@@ -28,11 +28,12 @@ def brief(**over) -> PanelBrief:
     return PanelBrief(**fields)
 
 
-def test_z_image_prompt_is_style_lead_then_composition_then_identity_then_setting_with_no_boilerplate_tail() -> None:
+def test_z_image_prompt_is_style_lead_then_identity_then_composition_then_setting_with_no_boilerplate_tail() -> None:
     out = compile_prompt(brief(), model_profile("z-image-turbo"))
     labels = [s.label for s in out.sections]
-    assert labels[0] == "style" and labels[1] == "composition"
-    assert labels.index("character:Fang Yuan") == 2
+    # Identity moved up (M1.5): Z-Image has no CFG, so the fixed look must come before the scene.
+    assert labels[0] == "style" and labels[1] == "character:Fang Yuan"
+    assert labels.index("composition") == 2
     assert out.positive.startswith(style_lead(""))
     # The 2026-11-16 tail ("no panel borders, no speech bubbles ... hanfu with wide sleeves") is gone.
     assert "panel borders" not in out.positive and "speech bubbles" not in out.positive

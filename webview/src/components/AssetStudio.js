@@ -116,7 +116,7 @@ export default function AssetStudio({ novelId }) {
   const handleApproveTurnaround = async (candidateId) => {
     try {
       await api.approveTurnaround(novelId, selectedCharId, candidateId);
-      push('Turnaround approved and locked for keyframe rendering.', 'success');
+      push('Sheet approved: its description is now locked for every panel of this body.', 'success');
       loadTurnarounds(selectedCharId);
     } catch (err) {
       push(describeError(err, 'Failed to approve turnaround.'), 'danger');
@@ -136,11 +136,11 @@ export default function AssetStudio({ novelId }) {
   const handleGenerateTurnaround = async () => {
     setLoading(true);
     try {
-      await api.generateTurnaround(novelId, selectedCharId);
-      push('New 3-view turnaround generated.', 'success');
+      await api.generateIdentitySheet(novelId, selectedCharId);
+      push('New character sheet drawn from the locked description.', 'success');
       loadTurnarounds(selectedCharId);
     } catch (err) {
-      push(describeError(err, 'Failed to generate turnaround.'), 'danger');
+      push(describeError(err, 'Failed to draw the character sheet.'), 'danger');
     } finally {
       setLoading(false);
     }
@@ -289,10 +289,10 @@ export default function AssetStudio({ novelId }) {
               {turnarounds.length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-12 text-center">
                   <User className="h-10 w-10 text-muted/60" />
-                  <p className="mt-3 text-sm font-medium text-text">No reference turnarounds generated yet</p>
-                  <p className="mt-1 text-xs text-muted">Generate a 3-view turnaround with Qwen-Image-Edit Multiple Angles LoRA.</p>
+                  <p className="mt-3 text-sm font-medium text-text">No character sheet drawn yet</p>
+                  <p className="mt-1 text-xs text-muted">Draw a sheet from the character's locked description, then approve it to fix their hair, eyes, build and outfit in every panel.</p>
                   <Button variant="primary" size="sm" className="mt-4" onClick={handleGenerateTurnaround} disabled={loading}>
-                    Generate Turnaround
+                    Draw sheet
                   </Button>
                 </div>
               ) : (
@@ -329,6 +329,14 @@ export default function AssetStudio({ novelId }) {
                           <span className="mt-1 text-[11px] text-muted/70">Qwen-Image Angles LoRA</span>
                         </div>
                       </div>
+                      {cand.locked_description ? (
+                        <p className="mt-3 text-xs leading-relaxed text-muted" data-testid="locked-description">
+                          <span className="font-semibold text-text">
+                            {cand.is_approved ? 'Locked for every panel: ' : 'Approve to lock for every panel: '}
+                          </span>
+                          {cand.locked_description}
+                        </p>
+                      ) : null}
                       <div className="mt-4 flex gap-2">
                         <Button
                           variant={cand.is_approved ? 'secondary' : 'primary'}

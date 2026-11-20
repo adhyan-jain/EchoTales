@@ -28,7 +28,7 @@ import json
 import logging
 from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
 from echotales.core.enums import OBSERVER_READER, ReferenceMode, SpanType
 from echotales.core.models import Chapter, DiscoursePosition, Mention, Span
@@ -132,6 +132,35 @@ def _cached_snapshot(model_id: str) -> str | None:
         if (snapshot / "model_index.json").exists():
             return str(snapshot)
     return None
+
+
+def _vision_check(pending_batch: list[Any], pending_expect: dict[Any, Any], failed: list[Any]) -> list[dict[str, Any]]:
+    """The vision pass over a chapter's freshly drawn panels (`render/vision_pass.py`); `[]` when it is off.
+
+    Off means a single candidate was asked for, or no vision model is installed (said once in the log)."""
+    if not pending_expect:
+        return []
+    from echotales.pipeline.config import ModelBackend, get_settings
+    from echotales.pipeline.render import vision_pass
+
+    settings = get_settings()
+    # A stub run (CI, no GPU, no network) never reaches for a model that happens to be installed: only an explicit
+    # `render.candidates` turns the check on there.
+    if settings.model_backend is ModelBackend.STUB and settings.render_candidates == 0:
+        return []
+    vlm = vision_pass.choose_vlm(vision_model=settings.render_vision_model, candidates=settings.render_candidates)
+    if vlm is None:
+        return []
+    n = vision_pass.candidates_for(settings.render_candidates, vlm)
+    if n < 2:
+        return []
+    drawn = {f.out_path for f in failed}
+    items = [(req, secs) for req, secs in pending_batch if req.out_path not in drawn]
+    checked: list[dict[str, Any]] = vision_pass.run(
+        [r for r, _ in items], [s for _, s in items], pending_expect, vlm=vlm, candidates=n,
+        model_key=settings.render_image_model, greyscale=settings.render_panel_mode == "manga",
+    )
+    return checked
 
 
 @dataclass(slots=True)
@@ -265,8 +294,8 @@ class SDXLEngine:
 
     def _ensure_pipe(self) -> object:
         if self._pipe is None:
-            import torch  # type: ignore[import-not-found]
-            from diffusers import StableDiffusionXLPipeline  # type: ignore[import-not-found]
+            import torch
+            from diffusers import StableDiffusionXLPipeline
 
             self._pipe = StableDiffusionXLPipeline.from_pretrained(
                 self.model_id, torch_dtype=torch.float16
@@ -287,7 +316,7 @@ class SDXLEngine:
         return self._pipe
 
     def generate(self, request: PanelImageRequest) -> Path:
-        import torch  # type: ignore[import-not-found]
+        import torch
 
         pipe = self._ensure_pipe()
         generator = torch.Generator(device=self.device).manual_seed(request.seed)
@@ -397,8 +426,8 @@ class MangaDiffusersEngine:
 
     def _ensure_pipe(self, want_ip: bool) -> object:
         if self._pipe is None:
-            import torch  # type: ignore[import-not-found]
-            from diffusers import StableDiffusionPipeline  # type: ignore[import-not-found]
+            import torch
+            from diffusers import StableDiffusionPipeline
 
             self._pipe = StableDiffusionPipeline.from_pretrained(
                 self.model_id, torch_dtype=torch.float16, safety_checker=None
@@ -423,8 +452,8 @@ class MangaDiffusersEngine:
         return self._pipe
 
     def generate(self, request: PanelImageRequest) -> Path:
-        import torch  # type: ignore[import-not-found]
-        from diffusers.utils import load_image  # type: ignore[import-not-found]
+        import torch
+        from diffusers.utils import load_image
 
         refs = [p for p in request.reference_images if Path(p).exists()][
             : self.max_references
@@ -606,7 +635,7 @@ class IllustriousEngine:
     _img2img_pipe: object | None = None
 
     def _ensure_img2img_pipe(self, want_ip: bool = False) -> object:
-        from diffusers import StableDiffusionXLImg2ImgPipeline  # type: ignore[import-not-found]
+        from diffusers import StableDiffusionXLImg2ImgPipeline
 
         base = self._ensure_pipe(want_ip=want_ip)
         if self._img2img_pipe is None:
@@ -632,7 +661,7 @@ class IllustriousEngine:
             # re-arming offload altogether (that leaves everything
             # GPU-resident and this 8 GB card OOMs instead, per
             # `SDXLEngine`'s own comment on the same card).
-            from accelerate.hooks import remove_hook_from_module  # type: ignore[import-not-found]
+            from accelerate.hooks import remove_hook_from_module
 
             for component in base.components.values():  # type: ignore[attr-defined]
                 if hasattr(component, "to"):
@@ -645,8 +674,8 @@ class IllustriousEngine:
 
     def _ensure_pipe(self, want_ip: bool = False) -> object:
         if self._pipe is None:
-            import torch  # type: ignore[import-not-found]
-            from diffusers import StableDiffusionXLPipeline  # type: ignore[import-not-found]
+            import torch
+            from diffusers import StableDiffusionXLPipeline
 
             # **A flaky network must not kill a multi-hour render.** The
             # weights are fully cached, but a transient "Connection reset by
@@ -677,14 +706,14 @@ class IllustriousEngine:
             pipe.enable_model_cpu_offload()
             self._pipe = pipe
         elif want_ip and not self._ip_loaded:
-            import torch  # type: ignore[import-not-found]
+            import torch
 
             self._load_ip_adapter(self._pipe, torch)
         return self._pipe
 
     def _load_ip_adapter(self, pipe: object, torch: object) -> None:
         try:
-            from transformers import CLIPVisionModelWithProjection  # type: ignore[import-not-found]
+            from transformers import CLIPVisionModelWithProjection
 
             pipe.image_encoder = CLIPVisionModelWithProjection.from_pretrained(  # type: ignore[attr-defined]
                 self.ip_adapter_repo,
@@ -707,8 +736,8 @@ class IllustriousEngine:
             )
 
     def generate(self, request: PanelImageRequest) -> Path:
-        import torch  # type: ignore[import-not-found]
-        from diffusers.utils import load_image  # type: ignore[import-not-found]
+        import torch
+        from diffusers.utils import load_image
 
         refs = [p for p in request.reference_images if Path(p).exists()][
             : self.max_references
@@ -875,8 +904,8 @@ class RefinedEngine:
 
     def _ensure_pipe(self) -> object:
         if self._pipe is None:
-            import torch  # type: ignore[import-not-found]
-            from diffusers import StableDiffusionImg2ImgPipeline  # type: ignore[import-not-found]
+            import torch
+            from diffusers import StableDiffusionImg2ImgPipeline
 
             try:
                 self._pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
@@ -899,8 +928,8 @@ class RefinedEngine:
         return self._pipe
 
     def generate(self, request: PanelImageRequest) -> Path:
-        import torch  # type: ignore[import-not-found]
-        from diffusers.utils import load_image  # type: ignore[import-not-found]
+        import torch
+        from diffusers.utils import load_image
 
         base_path = request.out_path.with_name(
             request.out_path.stem + ".base" + request.out_path.suffix
@@ -1019,15 +1048,15 @@ def get_engine(name: str = "stub", **kwargs: object) -> PanelImageEngine:
     if name == "gemini":
         from echotales.pipeline.render.gemini import GeminiImageEngine
 
-        return GeminiImageEngine(**kwargs)  # type: ignore[arg-type,return-value]
+        return GeminiImageEngine(**kwargs)
     if name == "openrouter":
         from echotales.pipeline.render.openrouter import OpenRouterImageEngine
 
-        return OpenRouterImageEngine(**kwargs)  # type: ignore[arg-type,return-value]
+        return OpenRouterImageEngine(**kwargs)
     if name == "runpod":
         from echotales.pipeline.render.runpod import RunPodImageEngine
 
-        return RunPodImageEngine(**kwargs)  # type: ignore[arg-type,return-value]
+        return RunPodImageEngine(**kwargs)
     raise ValueError(
         f"unknown image engine {name!r}; expected 'stub', 'sdxl', 'manga', "
         "'illustrious', 'noobai', 'refined', 'gemini', 'openrouter' or 'runpod'"
@@ -1797,6 +1826,8 @@ def render_panels(
         # so a filename is meaningful without knowing the whole run.
         _panel_seq = 0
         pending_batch: list[tuple[PanelImageRequest, list[tuple[str, str]]]] = []
+        #: What the vision check should find in each queued panel, by image path (`keyframes/qa.py`).
+        pending_expect: dict[Path, object] = {}
         pending_copies: list[tuple[Path, Path]] = []
 
         mentions = store.get_mentions(novel_id, chapter_number)
@@ -1845,6 +1876,9 @@ def render_panels(
             for sc in scenes
         ])
         _prev_staging_text = ""
+        # The last scene's carry-forward cast (below), kept so a scene of the same segment that names nobody can start from it.
+        _prev_scene_cast: tuple[Any, ...] | None = None
+        _prev_scene_segment = ""
         for _scene_i, scene in enumerate(scenes[:max_panels]):
             story_scene_blocks = [
                 b for b in scene.blocks
@@ -1880,11 +1914,19 @@ def render_panels(
             # has no business surviving into this one. Populated the first
             # time a beat's own PRESENT-mode pass finds someone, then reused
             # by any later beat in this scene whose own pass comes up empty.
-            _scene_last_present: dict[str, str] = {}
-            _scene_last_present_genders: list[str] = []
-            _scene_last_present_refs: list[Path] = []
-            _scene_last_present_conditioned: list[str] = []
-            _scene_last_present_conditions: dict[str, str] = {}
+            #
+            # A scene whose segment continues the previous scene's starts from that scene's cast instead of from nobody:
+            # the scene splitter cuts on cue words, so RI ch1's one cliff fight is six scenes, and the beats "Looking at the
+            # setting sun, he lightly laughed" (block 26) and "The spring rain quietly rained down" (block 31) name no
+            # one. With no cast they drew an unnamed figure in whatever clothes the model liked (a purple robe, a white
+            # robe) beside panels of the same man in torn green (M1.5 render, EVOLUTION 4.169). The body-transition check
+            # at the reuse site still re-resolves a carried person whose body changed.
+            _carry_in = _prev_scene_cast if (_prev_scene_cast and scene.segment_id and scene.segment_id == _prev_scene_segment) else None
+            _scene_last_present: dict[str, str] = dict(_carry_in[0]) if _carry_in else {}
+            _scene_last_present_genders: list[str] = list(_carry_in[1]) if _carry_in else []
+            _scene_last_present_refs: list[Path] = list(_carry_in[2]) if _carry_in else []
+            _scene_last_present_conditioned: list[str] = list(_carry_in[3]) if _carry_in else []
+            _scene_last_present_conditions: dict[str, str] = dict(_carry_in[4]) if _carry_in else {}
             # **Which body each carried-forward entity was resolved from.**
             # `entity_id -> persona_id`, captured at the same moment as the
             # appearance strings above. A carried string is only honest for
@@ -1896,9 +1938,9 @@ def render_panels(
             # from block 80/81 while `character_looks` called fresh at 84
             # already correctly returns body2's `white_robes`. See the
             # invalidation check at the carry-forward reuse site below.
-            _scene_last_present_bodies: dict[str, str] = {}
-            _scene_last_present_entity_labels: dict[str, str] = {}
-            _scene_last_present_entity_genders: dict[str, str] = {}
+            _scene_last_present_bodies: dict[str, str] = dict(_carry_in[5]) if _carry_in else {}
+            _scene_last_present_entity_labels: dict[str, str] = dict(_carry_in[6]) if _carry_in else {}
+            _scene_last_present_entity_genders: dict[str, str] = dict(_carry_in[7]) if _carry_in else {}
 
             budget = scene.image_budget
             # Which slot (0=establishing, 1=close-up, 2=wide/secondary)
@@ -1970,6 +2012,14 @@ def render_panels(
             )
             _scene_text = " ".join(
                 by_index[b].text for b in story_scene_blocks if b in by_index
+            )
+            # What this scene's own text says about each character's clothes and condition, asked once per character by the
+            # director pass (`client` set) and stored, so the image pass (`client=None`) reads the same words
+            # (`persona/identity_lock.py`).
+            from echotales.pipeline.persona.identity_lock import SceneContext
+
+            _scene_ctx = SceneContext(
+                key=f"{chapter_number:g}:{scene.blocks[0]}", text=_scene_text, client=client, novel_id=novel_id
             )
             # Moved above locale resolution so `SceneState` derivation can
             # see the mob signal in the same pass -- a reordering, not new
@@ -2466,6 +2516,13 @@ def render_panels(
                     spans, _slot_blocks, label_of=lambda sp: _speaker_name(sp, store),
                     cast=list(_beat_entity_labels.values()) or list(_scene_last_present_entity_labels.values()),
                 )
+                _prev_scene_cast = (
+                    dict(_scene_last_present), list(_scene_last_present_genders), list(_scene_last_present_refs),
+                    list(_scene_last_present_conditioned), dict(_scene_last_present_conditions),
+                    dict(_scene_last_present_bodies), dict(_scene_last_present_entity_labels),
+                    dict(_scene_last_present_entity_genders),
+                ) if _scene_last_present_bodies else None
+                _prev_scene_segment = scene.segment_id
                 _beat_digest = hashlib.sha256(
                     f"{beat_prose}|{directive}|{_speech}".encode()
                 ).hexdigest()[:12]
@@ -2910,6 +2967,7 @@ def render_panels(
                 # format, not from the inline assembly above, which forced "solo" and lost the setting to a 77-token fit.
                 # The legacy path above still runs, so with the switch off nothing changes byte for byte.
                 _prompt_sections: list[tuple[str, str]] | None = None
+                _panel_expectation = None
                 from echotales.pipeline.config import get_settings
 
                 if get_settings().render_prompt_compiler:
@@ -2920,17 +2978,18 @@ def render_panels(
                         model_profile,
                     )
 
-                    _compiled = compile_prompt(
-                        brief_from_direction(
-                            store, novel_id,
-                            list(_beat_bodies.keys()) or list(_scene_last_present_bodies.keys()),
-                            story_position, _direction, location=scene_locale_text,
-                            mode=OutputMode(get_settings().render_panel_mode), is_crowd=is_crowd_cut,
-                            gender_hint="male" if "male" in genders else "",
-                            beat_text=beat_prose,
-                        ),
-                        model_profile(get_settings().render_image_model),
+                    _brief = brief_from_direction(
+                        store, novel_id,
+                        list(_beat_bodies.keys()) or list(_scene_last_present_bodies.keys()),
+                        story_position, _direction, location=scene_locale_text,
+                        mode=OutputMode(get_settings().render_panel_mode), is_crowd=is_crowd_cut,
+                        gender_hint="male" if "male" in genders else "",
+                        beat_text=beat_prose, scene=_scene_ctx,
                     )
+                    _compiled = compile_prompt(_brief, model_profile(get_settings().render_image_model))
+                    from echotales.pipeline.keyframes.qa import expectation_from_brief
+
+                    _panel_expectation = expectation_from_brief(_brief)
                     prompt, neg_prompt = _compiled.positive, _compiled.negative
                     _prompt_sections = _compiled.section_texts()
 
@@ -3099,6 +3158,8 @@ def render_panels(
                     if _prompt_sections is not None and not isinstance(engine, StubImageEngine):
                         # Compiled prompts are whole; batch them across the chapter for single model load
                         pending_batch.append((_panel_request, _prompt_sections))
+                        if _panel_expectation is not None:
+                            pending_expect[image_path] = _panel_expectation
                     else:
                         engine.generate(_panel_request)
                     _provenance = "generated"
@@ -3226,7 +3287,14 @@ def render_panels(
                 for _req in _failed:
                     for _d in [d for d, src in generated_by_digest.items() if src == _req.out_path]:
                         del generated_by_digest[_d]
+            _rows = _vision_check(pending_batch, pending_expect, _failed)
+            if _rows:
+                from echotales.pipeline.keyframes.qa import summarise, write_rows
+
+                write_rows(Path(pending_batch[0][0].out_path).parent / "vision_check.jsonl", _rows)
+                log.info("vision check chapter %s: %s", chapter_number, summarise(_rows))
             pending_batch.clear()
+            pending_expect.clear()
         for src, dst in pending_copies:
             dst.parent.mkdir(parents=True, exist_ok=True)
             if src.exists():

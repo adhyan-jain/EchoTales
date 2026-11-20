@@ -40,6 +40,18 @@ def worker_for(model_key: str) -> Any:
     return _WORKERS[profile.key]
 
 
+def release_worker(model_key: str) -> None:
+    """Free the card held by `model_key`'s worker (a no-op when it was never loaded or has nothing to free).
+
+    The Z-Image worker keeps its transformer resident between batches. The vision check (ollama) loads next and got a 500
+    from ollama on every panel of the first M1 render (EVOLUTION M1.6): all 13 panels came back unchecked. The worker
+    reloads itself on its next batch."""
+    worker = _WORKERS.get(model_profile(model_key).key)
+    close = getattr(worker, "close", None)
+    if close is not None:
+        close()
+
+
 def generate_compiled(request: Any, sections: list[tuple[str, str]], model_key: str, *, greyscale: bool) -> None:
     """Render one `PanelImageRequest` with the worker for `model_key`, writing `request.out_path`."""
     generate_compiled_batch([request], [sections], model_key, greyscale=greyscale)

@@ -40,7 +40,7 @@ def _load_config_json() -> dict[str, object]:
     render = raw.get("render", {})
     if "direction_first" in render:
         out["render_direction_first"] = render["direction_first"]
-    for key in ("image_model", "panel_mode", "prompt_compiler", "director_model"):
+    for key in ("image_model", "panel_mode", "prompt_compiler", "director_model", "candidates", "vision_model"):
         if key in render:
             out[f"render_{key}"] = render[key]
     persona = raw.get("persona", {})
@@ -161,6 +161,12 @@ class Settings(BaseSettings):
     #: or, in `local-low`, `low_compute_director_model`; set, it wins in every compute mode so a different director can
     #: be tried without editing the task table.
     render_director_model: str = ""
+    #: Candidates drawn per panel for the vision check (`render/vision_pass.py`). 0: two when a local vision model is
+    #: installed, one when not; 1: never check; N: N. Each extra candidate is one more image per panel.
+    render_candidates: int = 0
+    #: The ollama vision model for the check (`render.vision_model` in config.json). Empty: the best-ranked installed one
+    #: (`keyframes/qa.py::VISION_MODELS`); if none is installed the check is off and says so.
+    render_vision_model: str = ""
 
     #: True: persona traits are written as revisions stamped by the chapter their evidence reaches
     #: (`build_personas(prefix_causal=True)`), so a reader-position query serves only what the reader could know.

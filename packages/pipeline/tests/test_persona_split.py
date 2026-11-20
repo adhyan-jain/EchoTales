@@ -137,6 +137,62 @@ def _mention(
     )
 
 
+class TestOnsetBeforeTheCue:
+    """The cue is where the text *states* the change; the body has changed where the narrative first stays with it.
+
+    RI ch1: block 79 ("a pair of clear eyes") and 80 (Fang Yuan at the window, "this is 500 years ago?!") are already
+    the reborn boy, the exposition "it is the ability to be reborn" only comes at block 82. The boundary sat at the cue
+    block, so panels 79 and 80 drew the 500-year-old man (Opus review 2026-11-20)."""
+
+    def _scene(self, tmp_path, texts, present, other=(), cue_in=None):
+        store = _store(tmp_path)
+        _self(store)
+        _self(store, "t:self2", "Clan Head")
+        _chapter(store, 1.0, texts)
+        _spans(store, 1.0, texts)
+        for b in present:
+            _mention(store, 1.0, b)
+        for b in other:
+            _mention(store, 1.0, b, text="the clan head", target_id="t:self2")
+        for ch in (2.0, 3.0):
+            _chapter(store, ch, ["Later."])
+            _spans(store, ch, ["Later."])
+            _mention(store, ch, 0)
+        store.conn.commit()
+        return store
+
+    def test_boundary_moves_to_the_start_of_the_target_scene(self, tmp_path) -> None:
+        texts = [
+            "The elders left the hall.",             # 0
+            "The clan head sighed at the window.",   # 1 other person
+            "A pair of clear eyes watched the lights.",  # 2 nobody named: the target's point of view
+            "Fang Yuan stood by the window.",        # 3 target present, new body
+            "He thought of the ancient past.",       # 4
+            RI_CH1_CUE,                              # 5
+            "He looked at his small young hands.",   # 6
+        ]
+        store = self._scene(tmp_path, texts, present=[3], other=[1])
+        found = find_change_candidates(store, "t", "t:self1")
+        assert found[0].block_index == 5, "the cue block stays as evidence"
+        assert found[0].onset_block == 2
+        assert found[0].story_pos == 1.0 + 2 / len(texts)
+        store.close()
+
+    def test_a_named_other_person_stops_the_walk(self, tmp_path) -> None:
+        texts = ["The clan head sighed.", "Fang Yuan stood there.", "x", RI_CH1_CUE]
+        store = self._scene(tmp_path, texts, present=[1], other=[0])
+        found = find_change_candidates(store, "t", "t:self1")
+        assert found[0].onset_block == 1
+        store.close()
+
+    def test_a_scene_break_stops_the_walk(self, tmp_path) -> None:
+        texts = ["Fang Yuan fell.", "......", "Fang Yuan woke.", RI_CH1_CUE]
+        store = self._scene(tmp_path, texts, present=[0, 2])
+        found = find_change_candidates(store, "t", "t:self1")
+        assert found[0].onset_block == 2, "the old body in block 0 is across a break"
+        store.close()
+
+
 class TestCueDetection:
     def test_ri_chapter_one_rebirth_is_found(self, tmp_path) -> None:
         """The worked example. This is the case the module exists for."""
