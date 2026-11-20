@@ -240,6 +240,15 @@ def test_a_character_without_a_lock_is_early_too() -> None:
     assert [s.label for s in out.sections][:2] == ["style", "character:Fang Yuan"]
 
 
+def test_a_scene_hair_colour_alone_still_reads_as_hair() -> None:
+    """The scene look returned hair "Black" for LotM block 36 ("Black hair, brown eyes ..."), and the sentence read 'a teenage boy
+    with Black, brown eyes'."""
+    d = il.choose_defaults("s", "male", False)
+    lock = il.build_lock("p", {"eye_color": "brown"}, d, scene_hair="Black")
+    assert lock.hair == "black hair" and lock.source["hair"] == "scene"
+    assert il.build_lock("p", {}, d, scene_hair="long straight hair").hair == "long straight hair"
+
+
 class _WindowClient:
     """Answers each window like a model reading only that window's text: the outfit if a garment word is in it."""
 

@@ -131,6 +131,8 @@ def build_lock(
         hair, src["hair"] = sheet.hair, "sheet"
     elif scene_hair:
         hair, src["hair"] = _plain(scene_hair), "scene"
+        if "hair" not in hair.casefold():  # a bare colour or style ("Black") must still read as hair after "with"
+            hair = f"{hair.casefold()} hair"
     elif style:
         # A stated style is often a whole phrase ("very long straight hair down to the waist"): never "... waist hair".
         hair = f"{colour} {style}".strip()

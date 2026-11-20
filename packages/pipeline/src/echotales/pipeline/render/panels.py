@@ -2819,6 +2819,7 @@ def render_panels(
                     _framing = plan_framing(
                         beat_prose, expression=_direction.expression, names=_cast_labels,
                         director_props=[*_direction.props, *_direction.key_objects], spoken=_speech, crowd=is_crowd_cut,
+                        others_present=bool(_direction.others) or len(_cast_labels) > 1 or "others" in _direction.staging.lower(),
                         new_place=_scene_panel_n == 0 and bool(_set_now) and _set_now != _prev_panel_set,
                         state=_framing_state,
                     )

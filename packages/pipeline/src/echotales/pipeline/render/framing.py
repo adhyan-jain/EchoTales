@@ -47,6 +47,9 @@ _HANDS = re.compile(r"\b(hands?|fingers?|fists?|palms?|knuckles)\b", re.I)
 _OBJECTS = ["revolver", "pistol", "gun", "rifle", "musket", "sword", "blade", "dagger", "knife", "spear", "bow", "arrow", "axe", "staff", "wand", "sabre", "saber", "cannon", "bullet", "lamp", "lantern", "candle", "candlestick", "torch", "chandelier", "notebook", "book", "diary", "journal", "letter", "scroll", "map", "newspaper", "paper", "envelope", "contract", "ring", "necklace", "pendant", "amulet", "talisman", "bracelet", "crown", "mirror", "key", "lock", "box", "chest", "cup", "teacup", "goblet", "bottle", "vial", "flask", "jar", "pot", "bowl", "plate", "pen", "quill", "inkwell", "clock", "watch", "coin", "bag", "purse", "basket", "umbrella", "cane", "fan", "flute", "violin", "piano", "drum", "bell", "banner", "flag", "cloak", "mask", "pill", "medicine", "herb", "stone", "gem", "jewel", "orb", "cicada", "insect", "pipe", "portrait", "painting", "statue", "throne", "cage", "chain", "rope", "whip", "hammer", "shield", "armor", "armour", "helmet", "crystal", "feather", "flower", "rose"]
 _OBJECT_RE = re.compile(r"\b(" + "|".join(sorted(set(_OBJECTS), key=len, reverse=True)) + r")s?\b", re.I)
 
+#: A list of looks ("Black hair, brown eyes, a linen shirt, thinly built") names eyes without being about them: a portrait, not a crop.
+_LOOKS_LIST = re.compile(r"\b(hair|build|built|robes?|shirt|coat|dress|tall|height|features|skin|clothes|complexion)\b", re.I)
+
 _PERSON_WORDS = re.compile(r"\b(he|she|him|her|his|hers|they|them|their|i|me|my|we|us|our|you|your|himself|herself)\b", re.I)
 
 _PLACE = re.compile(
@@ -62,7 +65,7 @@ _PEAK_EXPRESSION = re.compile(
     r"\b(shock\w*|stun\w*|wide|furious|fury|glare|glaring|sneer\w*|mock\w*|contempt\w*|smirk\w*|scorn\w*|laugh\w*|"
     r"tears|cry\w*|terrif\w*|fear\w*|afraid|pain\w*|agony|rage|anger\w*|disbelief|horror|screaming|clenched)\b", re.I)
 
-_HIGH = re.compile(r"\b(knelt|kneel\w*|collaps\w*|fell|fallen|crouch\w*|cower\w*|beg\w*|crawl\w*|sank|slump\w*|defeat\w*|helpless)\b", re.I)
+_HIGH = re.compile(r"\b(knelt|kneel\w*|collaps\w*|fell|fallen|crouch\w*|cower\w*|begs|begged|begging|crawl\w*|sank|slump\w*|defeat\w*|helpless)\b", re.I)
 _LOW = re.compile(r"\b(towering|loom\w*|looked down|looking down|overlook\w*|domineering|contempt\w*|disdain\w*|sneer\w*|"
                   r"mock\w*|menac\w*|threat\w*|rose above)\b", re.I)
 
@@ -89,22 +92,27 @@ def _first_sentence(text: str) -> str:
 def prop_in(text: str, director_props: list[str], names: list[str]) -> str:
     """The object the passage centres, '' when it centres none.
 
-    A director-listed prop whose last word the passage names wins. Otherwise an object word in the passage's first sentence,
-    when that sentence has no person in it (no name, no pronoun): "The lamp had a classical Western style." and "A gun? A
-    revolver?" centre an object; "He sat at the desk." centres him."""
-    low = text.lower()
+    Only the passage's first sentence counts (two when the first is a fragment), and only when it has no person in it (no name, no
+    pronoun): "The lamp had a classical Western style." and "A gun? A revolver?" centre an object; "He sat at the desk." and
+    "Hey, putting it that way, I can read my books" centre a person (a first render drew an insert of 'books' for the latter). A
+    director-listed prop whose last word that sentence names is preferred to the object lexicon."""
+    first = _first_sentence(text)
+    if not first or _PERSON_WORDS.search(first) or any(n and n.lower() in first.lower() for n in names):
+        return ""
+    low = first.lower()
     for p in director_props:
         words = [w for w in re.findall(r"[a-z]+", p.lower()) if len(w) > 2]
         if words and re.search(rf"\b{re.escape(words[-1])}", low):
             return p.strip()
-    first = _first_sentence(text)
-    if not first or _PERSON_WORDS.search(first) or any(n and n.lower() in first.lower() for n in names):
-        return ""
     found = [m.group(1).lower() for m in _OBJECT_RE.finditer(first)]
     if not found:
         return ""
     # "A gun? A revolver?": the later, more specific word is the thing drawn.
     return found[-1] if found[0] == "gun" else found[0]
+
+
+#: A weapon the passage centres is a story beat and may follow another insert at once; other objects keep a panel between.
+_WEAPONS = {"revolver", "pistol", "gun", "rifle", "musket", "sword", "dagger", "knife", "blade", "spear", "axe", "cannon", "sabre", "saber"}
 
 
 def _other_speaker(spoken: str, lead: str) -> str:
@@ -135,13 +143,14 @@ def plan_framing(
     names: list[str] | None = None,
     spoken: str = "",
     crowd: bool = False,
+    others_present: bool = True,
     new_place: bool = False,
     state: FramingState | None = None,
 ) -> Framing:
     """Choose this panel's framing from its passage, then keep the sequence varied.
 
-    Priority: a place starting (wide) > a body-part line (eyes / hands close-up) > an object the passage centres (insert, at most
-    one in three) > an exchange with someone else speaking (over the shoulder) > an emotional peak (close) > a place described with
+    Priority: a place starting (wide) > a body-part line (eyes / hands close-up) > an object the passage centres (insert, never two in a row
+    unless a weapon) > an exchange with someone else speaking (over the shoulder) > an emotional peak (close) > a place described with
     nobody in it (wide) > the sequence's own rotation. Whatever was chosen, a size is never used a third time running."""
     state = state if state is not None else FramingState()
     names = names or []
@@ -155,13 +164,13 @@ def plan_framing(
     chosen: Framing | None = None
     if new_place or last is None:
         chosen = Framing("wide", focus="establishing", reason="a place starts" if new_place else "the chapter opens")
-    elif short and _EYES.search(narration) and not crowd:
+    elif short and _EYES.search(narration) and not crowd and not _LOOKS_LIST.search(_first_sentence(narration)):
         chosen = Framing("close", focus="eyes", reason="the line is about eyes")
     elif short and _HANDS.search(narration) and not crowd and not _EYES.search(narration):
         chosen = Framing("close", focus="hands", reason="the line is about hands")
-    elif state.inserts_since >= 2 and (obj := prop_in(text, director_props or [], names)):
+    elif (obj := prop_in(text, director_props or [], names)) and (state.inserts_since >= 1 or obj in _WEAPONS):
         chosen = Framing("close", focus="prop", subject=obj, reason=f"the text centres the {obj}")
-    elif (other := _other_speaker(spoken, lead)) and not crowd and last.focus != "over-shoulder":
+    elif others_present and (other := _other_speaker(spoken, lead)) and not crowd and last.focus != "over-shoulder":
         chosen = Framing("medium", focus="over-shoulder", subject=other, reason="someone else speaks to the lead")
     elif _PEAK.search(text) or _PEAK_EXPRESSION.search(expression):
         chosen = Framing("close", reason="emotional peak")
