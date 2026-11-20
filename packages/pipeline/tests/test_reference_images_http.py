@@ -89,3 +89,32 @@ def test_the_candidate_image_takes_the_access_token_when_a_password_is_set(tmp_p
     finally:
         httpd.shutdown()
         t.join(timeout=5)
+
+
+def test_project_status_says_which_engine_made_the_audio(live_server, tmp_path: Path, monkeypatch) -> None:  # noqa: F811
+    """The Studio disabled nothing while the audio was silent stub output, so "Make M4B" queued a job that failed
+    ("voice it with chatterbox first"). The server already reads run.json; the project status now carries it."""
+    monkeypatch.chdir(tmp_path)
+    port = live_server
+    _request(port, "POST", "/api/projects", body=json.dumps({"id": "au", "title": "A"}).encode())
+    def project() -> dict:
+        _, listed = _request(port, "GET", "/api/projects")
+        return next(p for p in listed if p["id"] == "au")
+
+    assert project()["audio_engine"] == ""
+    audio = tmp_path / "data" / "novels" / "au" / "audio"
+    audio.mkdir(parents=True)
+    (audio / "run.json").write_text(json.dumps({"engine": "stub"}))
+    assert project()["audio_engine"] == "stub"
+
+
+def test_output_listing_includes_the_pages_a_pages_job_wrote(live_server, tmp_path: Path, monkeypatch) -> None:  # noqa: F811
+    """The Studio links the CBZ and PDF a "Make pages" job wrote; they live under data/novels/<id>/pages."""
+    monkeypatch.chdir(tmp_path)
+    port = live_server
+    _request(port, "POST", "/api/projects", body=json.dumps({"id": "pg", "title": "P"}).encode())
+    pages = tmp_path / "data" / "novels" / "pg" / "pages" / "ch1" / "v1_x"
+    pages.mkdir(parents=True)
+    (pages / "ch1.cbz").write_bytes(b"PK")
+    status, out = _request(port, "GET", "/api/novels/pg/output")
+    assert status == 200 and [e["path"] for e in out["kinds"]["pages"]] == ["pages/ch1/v1_x/ch1.cbz"]

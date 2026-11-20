@@ -928,6 +928,9 @@ LANGUAGE_SUPPORT = {
 
 
 def _project_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
+    from echotales.pipeline import paths
+    from echotales.pipeline.voice.export import engine_of
+
     novel_row = handle.store.get_novel(handle.source.novel_id) or {}
     chapters = handle.store.chapter_numbers(handle.source.novel_id)
     jobs = handle.store.list_jobs(handle.source.novel_id)
@@ -938,6 +941,9 @@ def _project_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
         "source_uploaded": bool(novel_row.get("source_path")),
         "ingested": bool(chapters),
         "chapter_count": len(chapters),
+        # Which engine voiced the book ("" before any voicing). The M4B step is disabled for "stub": that audio is
+        # silent, and the export job refuses it only after it has been queued.
+        "audio_engine": engine_of(Path(paths.asset_dir(handle.source.novel_id, "audio"))),
         "language": LANGUAGE_SUPPORT,
         "job_count": len(jobs),
         "last_job": _job_json(jobs[0], handle.store.stage_progress_by_run([jobs[0].run_id]).get(jobs[0].run_id))
@@ -975,7 +981,7 @@ def _with_genre(handle: NovelHandle, params: dict) -> dict:  # type: ignore[type
 #: the source of truth for what's been rendered -- no separate output
 #: metadata table needed, just a filesystem walk (CLAUDE.md's "Versioned
 #: output directories, and name them" convention).
-_OUTPUT_KINDS = ("panels", "video", "audio", "references")
+_OUTPUT_KINDS = ("panels", "video", "audio", "references", "pages")
 
 
 def _list_output(novel_id: str) -> dict:  # type: ignore[type-arg]

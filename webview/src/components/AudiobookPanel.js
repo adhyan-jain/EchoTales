@@ -28,6 +28,9 @@ export default function AudiobookPanel({ novelId, project }) {
   const [videoEngine, setVideoEngine] = useState('stills');
   const [prune, setPrune] = useState(false);
   const [videoChapters, setVideoChapters] = useState('1');
+  const [pagesChapters, setPagesChapters] = useState('1');
+  const [pagesFormat, setPagesFormat] = useState('manga');
+  const [episodeChapters, setEpisodeChapters] = useState('1');
   const [busy, setBusy] = useState('');
   // Which reads failed. A failed read is "unknown", never a definite state: an empty jobs list re-enabled every
   // action button (double-queue), a null bible read as "not locked", a null queue said "Checking the queue…" forever.
@@ -84,13 +87,25 @@ export default function AudiobookPanel({ novelId, project }) {
   const voiceJob = latest(jobs, 'voice');
   const exportJob = latest(jobs, 'export_m4b');
   const videoJob = latest(jobs, 'video');
+  const pagesJob = latest(jobs, 'pages');
+  const episodeJob = latest(jobs, 'episode');
   const current = !failed.bible && bible ? bible.current : null;
   const locked = !!(current && current.locked_version != null && !current.dirty);
   const waiting = queue && !failed.queue ? queue.total : null;
   const audioFiles = (output && output.kinds && output.kinds.audio) || [];
   const book = audioFiles.filter((f) => /\.m4b$/i.test(f.path)).sort((a, b) => (b.mtime || 0) - (a.mtime || 0))[0];
-  const chapterList = videoChapters.split(',').map((c) => c.trim()).filter(Boolean).map(Number);
-  const chaptersOk = chapterList.length > 0 && chapterList.every((c) => Number.isFinite(c) && c > 0);
+  const parseChapters = (text) => text.split(',').map((c) => c.trim()).filter(Boolean).map(Number);
+  const okChapters = (list) => list.length > 0 && list.every((c) => Number.isFinite(c) && c > 0);
+  const chapterList = parseChapters(videoChapters);
+  const chaptersOk = okChapters(chapterList);
+  const pagesList = parseChapters(pagesChapters);
+  const episodeList = parseChapters(episodeChapters);
+  const pageFiles = ((output && output.kinds && output.kinds.pages) || []).slice().sort((a, b) => (b.mtime || 0) - (a.mtime || 0));
+  const cbz = pageFiles.find((f) => /\.cbz$/i.test(f.path));
+  const pdf = pageFiles.find((f) => /\.pdf$/i.test(f.path));
+  const hasPanels = !!(output && output.kinds && (output.kinds.panels || []).length > 0);
+  // The server reads the audio folder's run.json; the export job refuses stub audio only after it was queued.
+  const stubAudio = !!project && project.audio_engine === 'stub';
   const videoFiles = ((output && output.kinds && output.kinds.video) || []).filter((f) => /\.mp4$/i.test(f.path));
   const film = videoFiles.sort((a, b) => (b.mtime || 0) - (a.mtime || 0))[0];
   const voiced = voiceJob && voiceJob.status === 'SUCCEEDED';
@@ -107,7 +122,7 @@ export default function AudiobookPanel({ novelId, project }) {
     <section aria-label="Audiobook" className="rounded-3xl border border-border bg-surface p-6">
       <h2 className="font-display text-lg font-bold tracking-tight">Make the audiobook</h2>
       <p className="mt-1 text-sm text-muted">
-        Six steps, in the order the server requires them. Each shows its real state.
+        Eight steps, in the order the server requires them. Each shows its real state.
       </p>
       {unknown.length > 0 && (
         <div role="alert" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
@@ -189,7 +204,13 @@ export default function AudiobookPanel({ novelId, project }) {
           n={5}
           done={!!book}
           title="Bind the audiobook"
-          note={book ? 'Ready. One file, with a marker for every chapter.' : 'Joins the chapters into one M4B with chapter markers.'}
+          note={
+            book
+              ? 'Ready. One file, with a marker for every chapter.'
+              : stubAudio
+                ? 'This audio is the silent stub: voice it with chatterbox first.'
+                : 'Joins the chapters into one M4B with chapter markers.'
+          }
           job={exportJob}
           action={
             book ? (
@@ -201,7 +222,7 @@ export default function AudiobookPanel({ novelId, project }) {
                 <Download className="h-4 w-4" aria-hidden="true" /> Download
               </a>
             ) : (
-              <Button size="sm" disabled={!voiced || failed.output || anyRunning || busy === 'export_m4b'} onClick={() => start('export_m4b', {}, 'Export')}>
+              <Button size="sm" disabled={!voiced || stubAudio || failed.output || anyRunning || busy === 'export_m4b'} onClick={() => start('export_m4b', {}, 'Export')}>
                 Make M4B
               </Button>
             )
@@ -250,6 +271,76 @@ export default function AudiobookPanel({ novelId, project }) {
                 onClick={() => start('video', { chapters: chapterList, engine: videoEngine, prune_visual_narration: prune && videoEngine === 'stills' }, 'Video')}
               >
                 Make video
+              </Button>
+            </span>
+          }
+        />
+        <StepRow
+          n={7}
+          done={!!(cbz || pdf)}
+          title="Make comic pages"
+          note={hasPanels ? 'Lays the chapter panels out as manga, comic or webtoon pages.' : 'Render the chapter panels first.'}
+          job={pagesJob}
+          action={
+            <span className="flex flex-wrap items-center gap-2">
+              <input
+                aria-label="Pages chapters"
+                value={pagesChapters}
+                onChange={(e) => setPagesChapters(e.target.value)}
+                placeholder="1, 2"
+                className="h-9 w-20 rounded-xl border border-border bg-transparent px-2 text-sm text-text"
+              />
+              <select
+                aria-label="Page format"
+                value={pagesFormat}
+                onChange={(e) => setPagesFormat(e.target.value)}
+                className="h-9 rounded-xl border border-border bg-transparent px-2 text-sm text-text"
+              >
+                <option value="manga">Manga</option>
+                <option value="comic">Comic</option>
+                <option value="webtoon">Webtoon</option>
+              </select>
+              <Button
+                size="sm"
+                disabled={!hasPanels || !okChapters(pagesList) || anyRunning || busy === 'pages'}
+                onClick={() => start('pages', { chapters: pagesList, format: pagesFormat, export: 'png,cbz,pdf' }, 'Pages')}
+              >
+                Make pages
+              </Button>
+              {cbz && (
+                <a href={fileUrl(novelId, cbz.path)} download className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border px-3 text-sm font-semibold hover:bg-surface2">
+                  <Download className="h-4 w-4" aria-hidden="true" /> Pages (CBZ)
+                </a>
+              )}
+              {pdf && (
+                <a href={fileUrl(novelId, pdf.path)} download className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border px-3 text-sm font-semibold hover:bg-surface2">
+                  <Download className="h-4 w-4" aria-hidden="true" /> Pages (PDF)
+                </a>
+              )}
+            </span>
+          }
+        />
+        <StepRow
+          n={8}
+          done={!!(episodeJob && episodeJob.status === 'SUCCEEDED')}
+          title="Make the episode"
+          note="One video per chapter: the panels timed to the voiced audio, with subtitles. The result appears in the video player below."
+          job={episodeJob}
+          action={
+            <span className="flex flex-wrap items-center gap-2">
+              <input
+                aria-label="Episode chapters"
+                value={episodeChapters}
+                onChange={(e) => setEpisodeChapters(e.target.value)}
+                placeholder="1, 2"
+                className="h-9 w-20 rounded-xl border border-border bg-transparent px-2 text-sm text-text"
+              />
+              <Button
+                size="sm"
+                disabled={!voiced || !okChapters(episodeList) || anyRunning || busy === 'episode'}
+                onClick={() => start('episode', { chapters: episodeList }, 'Episode')}
+              >
+                Make episode
               </Button>
             </span>
           }
