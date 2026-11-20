@@ -285,10 +285,24 @@ class ImportReport:
         return {"applied": self.applied, "skipped": self.skipped, "direction_dir": self.direction_dir}
 
 
+#: A pack is JSON text; a real one is well under a megabyte. The upload route caps the zip at 25 MB, but deflate packs
+#: a gigabyte of zeros into a few KB, so the unpacked size is bounded here, from the sizes the archive declares (the
+#: reader stops at the declared size) before anything is decompressed.
+MAX_MEMBER_BYTES = 64 * 1024 * 1024
+
+
+def _read_member(z: zipfile.ZipFile, name: str) -> bytes:
+    if z.getinfo(name).file_size > MAX_MEMBER_BYTES:
+        raise PackError(f"{name} unpacks to more than {MAX_MEMBER_BYTES // (1024 * 1024)} MB; not a real pack")
+    return z.read(name)
+
+
 def read_pack(path: Path | str) -> dict[str, Any]:
     try:
         with zipfile.ZipFile(path) as z:
-            pack = {"manifest": json.loads(z.read("manifest.json"))} | {k: json.loads(z.read(f"{k}.json")) for k in _KINDS}
+            pack = {"manifest": json.loads(_read_member(z, "manifest.json"))} | {
+                k: json.loads(_read_member(z, f"{k}.json")) for k in _KINDS
+            }
     except (OSError, KeyError, ValueError, zipfile.BadZipFile) as exc:
         raise PackError(f"not a readable {PACK_SUFFIX} file: {exc}") from exc
     m = pack["manifest"]

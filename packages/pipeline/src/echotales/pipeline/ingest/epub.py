@@ -31,6 +31,8 @@ NS = {
     "container": "urn:oasis:names:tc:opendocument:xmlns:container",
 }
 
+MAX_MEMBER_BYTES = 128 * 1024 * 1024
+
 # One selector per class only ("a, .foo" or nested/combinator selectors are
 # not matched) -- epub stylesheets from calibre and similar tools declare
 # emphasis classes this simply, and a stricter parser would need a real CSS
@@ -135,9 +137,16 @@ class Epub:
         joined = posixpath.normpath(posixpath.join(base, href)) if base else href
         return joined.lstrip("./")
 
+    def _read_capped(self, name: str) -> bytes:
+        # A book's XHTML, images and stylesheets are far below this; a larger member is a zip bomb (the reader stops at
+        # the size the archive declares, so checking the declared size bounds memory).
+        if self._zip.getinfo(name).file_size > MAX_MEMBER_BYTES:
+            raise ValueError(f"{name} in the EPUB unpacks to more than {MAX_MEMBER_BYTES // (1024 * 1024)} MB")
+        return self._zip.read(name)
+
     def read(self, href: str) -> bytes:
         try:
-            return self._zip.read(href)
+            return self._read_capped(href)
         except KeyError:
             # Zip entries and hrefs disagree on leading "./" and on percent
             # encoding often enough that a direct lookup alone is unreliable.
@@ -146,7 +155,7 @@ class Epub:
             target = unquote(href).lstrip("/")
             for name in self._zip.namelist():
                 if name == target or name.endswith("/" + target):
-                    return self._zip.read(name)
+                    return self._read_capped(name)
             raise
 
     # ---- metadata ------------------------------------------------------
