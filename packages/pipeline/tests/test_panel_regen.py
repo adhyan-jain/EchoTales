@@ -16,8 +16,12 @@ from echotales.pipeline.jobs import JobQueue, new_job_id, run_job
 from echotales.pipeline.render import regen
 from echotales.pipeline.render.panels import render_panels
 from echotales.pipeline.render.plan import load_panel_plan
-
-from echotales.pipeline.webview_server import NovelSource, Registry, make_handler, sanitize_job_params
+from echotales.pipeline.webview_server import (
+    NovelSource,
+    Registry,
+    make_handler,
+    sanitize_job_params,
+)
 
 
 @pytest.fixture
@@ -122,7 +126,7 @@ def _call(port, method, path, body=None):
 
 
 def test_routes_list_queue_and_choose(server):
-    port, store, vdir = server
+    port, store, _ = server
     status, listing = _call(port, "GET", "/api/novels/t/panels?chapter=1")
     assert status == 200 and listing["version"] == "v1_stub"
     panel = listing["panels"][0]

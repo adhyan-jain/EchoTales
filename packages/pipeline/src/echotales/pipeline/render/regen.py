@@ -78,7 +78,8 @@ def _index_path(vdir: Path, seq: int) -> Path:
 
 def _read_index(vdir: Path, seq: int) -> dict[str, Any]:
     try:
-        return json.loads(_index_path(vdir, seq).read_text(encoding="utf-8"))
+        index: dict[str, Any] = json.loads(_index_path(vdir, seq).read_text(encoding="utf-8"))
+        return index
     except (OSError, ValueError):
         return {"rounds": []}
 

@@ -617,7 +617,7 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
                     version=params.get("version"), out_dir=params.get("panel_dir"), job_id=job.job_id,
                 ),
             )
-            return pipeline_run.run_id
+            return str(pipeline_run.run_id)
         # The tier sets how many scenes (each one to three images): a preview by default in `local-low`, the whole chapter otherwise.
         max_panels = int(params.get("max_panels") or _policy().scenes_for(params.get("tier")))
         chapters = params.get("chapters")
