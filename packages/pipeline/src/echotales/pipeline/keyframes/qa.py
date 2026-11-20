@@ -646,8 +646,12 @@ def expectation_from_brief(brief: Any) -> PanelExpectation:
         people = max(len(chars), 1) if chars else 2
     else:
         people = len(chars)
+    # The scene's staging sheet places "the others" in frame (RI ch1: "the others stand in rows on one side"). The first
+    # cliff render failed 8 of 13 panels on an exact count of one that showed the lead and that crowd, so a staged
+    # crowd turns the count into a floor, like a crowd cut.
+    staged_others = "the others" in (getattr(brief, "staging", "") or "").casefold()
     return PanelExpectation(
-        people=people, people_at_least=crowd is not None, hair_colour=hair, outfit_colour=outfit,
+        people=people, people_at_least=crowd is not None or staged_others, hair_colour=hair, outfit_colour=outfit,
         lead=lead.name if lead else "",
     )
 

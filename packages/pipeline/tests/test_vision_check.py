@@ -115,6 +115,15 @@ def test_expectation_comes_from_the_locked_identity() -> None:
     assert qa.expectation_from_brief(PanelBrief(novel_id="", characters=[])).people == 0
 
 
+def test_a_staged_crowd_makes_the_person_count_a_floor() -> None:
+    b = _brief()
+    b.staging = "Set: a mountaintop. Blocking: Fang Yuan stands alone; the others stand in rows on one side of the frame."
+    e = qa.expectation_from_brief(b)
+    assert e.people == 1 and e.people_at_least
+    b.staging = "Set: a mountaintop. Blocking: Fang Yuan stands alone."
+    assert not qa.expectation_from_brief(b).people_at_least
+
+
 def test_the_report_counts_checked_passed_rescued_and_extra_images(tmp_path) -> None:
     rows = [
         {"panel": "a", "candidates": 2, "chosen": 0, "passed": True, "first_passed": True, "unchecked": False, "failed": []},
