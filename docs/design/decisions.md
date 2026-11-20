@@ -540,6 +540,23 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Honesty rule**: a colour the model cannot name is no veto; an unchecked panel is counted as unchecked, never as passed.
 - **Status**: done and measured on three novels (EVOLUTION 4.170); the default outfit for a text with none is still a genre default.
 
+### D62. The reader stays on gemma2:9b; no 7-8B model on the card beats it, and gemma itself does not fit the card (2026-11-20)
+- **Decided**: keep `gemma2:9b` as the reader default (`llm/tasks.py`, `ECHOTALES_READER_MODEL` overrides). `qwen3:8b` and `qwen2.5:7b` were run on the same 15 reference chapters, speakers pass only, silver references (`data/eval/reader/bakeoff-*.json`). Neither is close, so nothing is adopted and the engine registry is unchanged.
+- **Measured** (accuracy; UNKNOWN answers out of 194 / 84 / 180 tagged lines; model returned nothing or invalid JSON: 0 in every run; seconds per chapter; `ollama ps` at the reader's 8192 context):
+
+| Model | LotM | RI | ORV | UNKNOWN L/R/O | s/chapter | Processor at 8192 |
+|---|---|---|---|---|---|---|
+| gemma2:9b (rerun) | 96.5 (167/173) | 96.4 (81/84) | 89.7 (130/145) | 7 / 26 / 47 | 1208 | 21% CPU / 79% GPU, 9.5 GB |
+| gemma2:9b (run of record v18) | 96.5 | 95.2 | 89.0 | not kept | 66 | not recorded |
+| qwen3:8b (think off) | 95.4 (165/173) | 69.0 (58/84) | 74.5 (108/145) | 2 / 19 / 30 | 18.5 | 100% GPU, 6.6 GB |
+| qwen2.5:7b | 89.0 (154/173) | 67.9 (57/84) | 65.5 (95/145) | 10 / 31 / 82 | 25.9 | 100% GPU, 5.3 GB |
+
+- **Why not adopted**: the rule was ORV up, no book down more than 0.5, time at most 2x. qwen3:8b loses 27 points on RI and 15 on ORV; qwen2.5:7b is worse. The earlier diagnosis had put the remaining ORV misses down to the model; this run agrees, since both smaller models are further from the references.
+- **The finding that matters more**: gemma2:9b does not fit an 8 GB card with no CPU offload at any context the reader can use. `ollama ps` on the 4060 (about 15 MiB used beforehand): 21% on CPU at 8192, 14% at 6144, 9% at 4096, 10% at 3072 (weights alone are 5.4 GB; its large KV cache and graph do the rest). The reader's own default therefore breaks the owner's no-offload rule. The rerun took 18121 s against 994 s for v18 (18x). The spill is measured; that it explains all of the 18x is not proven (the card was also shared on the lock with image jobs, and v18's conditions were not recorded). Accuracy is unaffected: the rerun matches v18 within one line per book.
+- **Open for the owner**: either accept gemma2:9b's partial offload for the reader (accurate, slow), or trade 10-25 points of RI/ORV accuracy for a model that is fully on the GPU. A third path, not tried: another 7-9B model (`ministral-3:8b`, 6.0 GB, Apache-2.0, was downloading at 200-400 KB/s with hours left and was not run; probe it at 8192/6144/4096 first and run `scripts/eval/reader_ablation.py run <label> --passes speakers` with `ECHOTALES_READER_MODEL=ministral-3:8b`).
+- **Code kept**: `OllamaProvider` sends `think: false` for `qwen3*` models only (test `test_ollama_think.py`); qwen3 otherwise spends its token budget on a reasoning trace.
+- **Status**: measured; default unchanged.
+
 ## 3. Documentation policy
 
 ### D9. Few, living docs
