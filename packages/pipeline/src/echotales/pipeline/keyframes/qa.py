@@ -441,9 +441,17 @@ def same_colour(a: str, b: str) -> bool:
 
 
 def colour_family(text: str) -> str:
-    """The colour family of the last colour word in `text`, or ''."""
-    found = [_WORD_FAMILY[w] for w in re.findall(r"[a-z]+", (text or "").casefold()) if w in _WORD_FAMILY]
-    return found[-1] if found else ""
+    """The family of the first run of adjacent colour words in `text` (its last word: "dark green" is green), or ''.
+
+    The lead garment is named first: LotM Klein's "dark green frock coat and waistcoat over a white shirt" read as white
+    when the last colour word won, and the vision check failed 16 of 16 panels that were drawn as locked."""
+    run: list[str] = []
+    for w in re.findall(r"[a-z]+", (text or "").casefold()):
+        if w in _WORD_FAMILY:
+            run.append(_WORD_FAMILY[w])
+        elif run:
+            break
+    return run[-1] if run else ""
 
 
 @dataclass(slots=True)

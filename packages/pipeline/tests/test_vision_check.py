@@ -10,12 +10,15 @@ from echotales.pipeline.persona.identity_lock import LockedIdentity
 from echotales.pipeline.render.compiler import CharacterBrief, CrowdBrief, OutputMode, PanelBrief
 
 
-def test_colour_families_read_the_last_colour_word_and_fold_dark_shades() -> None:
+def test_colour_families_read_the_first_colour_run_and_fold_dark_shades() -> None:
     f = qa.colour_family
     assert f("dark navy") == "dark" and f("black") == "dark" and f("charcoal grey") == "grey"
     assert f("deep green robes") == "green" and f("dark brown") == "brown" and f("teal") == "teal"
     assert f("a long robe") == "" and f("") == ""
     assert f("blonde") == f("golden blond") == "blond"
+    # the lead garment is named first: a white shirt under a green coat is a green outfit
+    assert f("a dark green frock coat and waistcoat over a white shirt") == "green"
+    assert f("a white robe with a black sash") == "white"
 
 
 EXPECT = qa.PanelExpectation(people=1, hair_colour="black", outfit_colour="deep green", lead="Fang Yuan")
