@@ -95,6 +95,7 @@ from echotales.pipeline.webview import (
     build_character_dashboard,
     build_novel_payload,
     build_reader_cast,
+    candidate_urls,
 )
 
 #: Section 7.2: a real, minimal auth gate suited to a local, single-operator
@@ -927,6 +928,8 @@ LANGUAGE_SUPPORT = {
 
 
 def _project_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
+    from echotales.pipeline.voice.export import engine_of  # type: ignore[import-untyped]
+
     novel_row = handle.store.get_novel(handle.source.novel_id) or {}
     chapters = handle.store.chapter_numbers(handle.source.novel_id)
     jobs = handle.store.list_jobs(handle.source.novel_id)
@@ -937,6 +940,9 @@ def _project_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
         "source_uploaded": bool(novel_row.get("source_path")),
         "ingested": bool(chapters),
         "chapter_count": len(chapters),
+        # Which engine voiced the book ("" before any voicing). The M4B step is disabled for "stub": that audio is
+        # silent, and the export job refuses it only after it has been queued.
+        "audio_engine": engine_of(Path(paths.asset_dir(handle.source.novel_id, "audio"))),
         "language": LANGUAGE_SUPPORT,
         "job_count": len(jobs),
         "last_job": _job_json(jobs[0], handle.store.stage_progress_by_run([jobs[0].run_id]).get(jobs[0].run_id))
@@ -974,7 +980,7 @@ def _with_genre(handle: NovelHandle, params: dict) -> dict:  # type: ignore[type
 #: the source of truth for what's been rendered -- no separate output
 #: metadata table needed, just a filesystem walk (CLAUDE.md's "Versioned
 #: output directories, and name them" convention).
-_OUTPUT_KINDS = ("panels", "video", "audio", "references")
+_OUTPUT_KINDS = ("panels", "video", "audio", "references", "pages")
 
 
 def _list_output(novel_id: str) -> dict:  # type: ignore[type-arg]
@@ -1406,7 +1412,11 @@ def make_handler(
             # The companion page is opened as a plain link in a new tab, so it is the one other route that takes it.
             is_media = len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3:] == ["output", "file"]
             is_companion = len(parts) == 6 and parts[:2] == ["api", "novels"] and parts[3] == "companion"
-            if self.command in ("GET", "HEAD") and (is_media or is_companion):
+            # Reference pictures in <img> tags (character dossier, asset studio) for the same reason.
+            is_candidate_image = (
+                len(parts) == 7 and parts[:2] == ["api", "novels"] and parts[3:5] == ["assets", "candidate"] and parts[6] == "image"
+            )
+            if self.command in ("GET", "HEAD") and (is_media or is_companion or is_candidate_image):
                 return sessions.valid(parse_qs(url.query).get("access_token", [""])[0])
             return False
 
@@ -1665,7 +1675,7 @@ def make_handler(
                         [
                             {
                                 "id": c.id,
-                                "source_url": c.source_url,
+                                **candidate_urls(parts[2], c),
                                 "title": c.title,
                                 "selected": c.selected,
                                 "user_uploaded": c.user_uploaded,
@@ -1712,8 +1722,7 @@ def make_handler(
                             "self_id": c.self_id,
                             "character_label": getattr(c, "character_label", c.self_id),
                             "title": getattr(c, "title", "3-View Turnaround"),
-                            "source_url": c.source_url,
-                            "image_url": f"/api/novels/{novel_id}/assets/candidate/{c.id}/image",
+                            **candidate_urls(novel_id, c),
                             "selected": (c.selected and not is_stale and file_exists) or (c.selected and file_exists),
                             "is_approved": (c.selected and not is_stale and file_exists) or (c.selected and file_exists),
                             "is_stale": is_stale or (c.selected and not file_exists),
@@ -1737,8 +1746,7 @@ def make_handler(
                             "id": c.id,
                             "location_id": c.self_id,
                             "title": c.title,
-                            "source_url": c.source_url,
-                            "image_url": f"/api/novels/{novel_id}/assets/candidate/{c.id}/image",
+                            **candidate_urls(novel_id, c),
                             "selected": c.selected,
                             "is_approved": c.selected,
                             "found_at": c.found_at,
@@ -2128,7 +2136,7 @@ def make_handler(
                         actor="reviewer", note=str(body.get("note", "")),
                     )
                     handle.invalidate()
-                    return self._json(200, {"id": candidate.id, "source_url": candidate.source_url})
+                    return self._json(200, {"id": candidate.id, **candidate_urls(parts[2], candidate)})
 
                 # POST /api/novels/<id>/characters/<self_id>/sheets/<persona_id>/approve or reject
                 # POST /api/novels/<id>/sheets/<persona_id>/approve or reject
@@ -2187,7 +2195,7 @@ def make_handler(
                         "id": candidate.id,
                         "persona_id": candidate.persona_id,
                         "self_id": candidate.self_id,
-                        "source_url": candidate.source_url,
+                        **candidate_urls(novel_id, candidate),
                         "selected": candidate.selected,
                         "action": action,
                     })
@@ -2753,9 +2761,15 @@ def make_handler(
                         video_engine = str(params.get("engine") or "stills")
                         if video_engine not in ("stills", "ltx-local"):
                             return self._json(400, {"error": f"video engine {video_engine!r} is not allowed; use stills or ltx-local"})
-                        refusal = _gpu_refusal(video_engine)
-                        if refusal:
-                            return self._json(409, _refusal_body(refusal))
+                        # Held pictures need no GPU. `_gpu_refusal` treats its argument as an image engine and refused
+                        # "stills" as not enabled (2026-11 walkthrough), so only the local video model is checked,
+                        # with the video check.
+                        if video_engine != "stills":
+                            from echotales.pipeline.compute import _video_refusal
+
+                            refusal = _video_refusal()
+                            if refusal:
+                                return self._json(409, _refusal_body(refusal))
                     if kind == "voice_audition":
                         # Same rule as the voice job: the bank folder and the output folder are the server's choice.
                         params.pop("bank", None)
@@ -2926,7 +2940,7 @@ def make_handler(
                         handle.store, parts[2], parts[4], str(image_path), actor="reviewer",
                     )
                     handle.invalidate()
-                    return self._json(201, {"id": candidate.id, "source_url": candidate.source_url})
+                    return self._json(201, {"id": candidate.id, **candidate_urls(parts[2], candidate)})
             except _BodyTooLarge as exc:
                 return self._json(413, {"error": str(exc)})
             except Exception as exc:

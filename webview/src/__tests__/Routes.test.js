@@ -79,7 +79,7 @@ test('the reader shows the chapter from the URL and has no editing chrome', asyn
 
 test('the reader asks for the cast as of the chapter it shows', async () => {
   mount('/p/toy/read/2');
-  expect(await screen.findByRole('button', { name: /^Hero, 3 mentions/ })).toBeInTheDocument();
+  expect(await screen.findByRole('button', { name: /^Hero 3 mentions/ })).toBeInTheDocument();
   expect(api.readerCast).toHaveBeenCalledWith('toy', 2);
 });
 

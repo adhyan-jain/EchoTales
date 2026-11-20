@@ -169,8 +169,10 @@ export default function ScreenplayEditor({ novelId, episodeId = 'ep1', onSelectS
 
                     <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="text-[10px] font-semibold uppercase tracking-wider text-muted">Action &amp; Pose</label>
+                        <label htmlFor={`shot-${scIdx}-${shIdx}-action`} className="text-[10px] font-semibold uppercase tracking-wider text-muted">Action &amp; Pose</label>
                         <input
+                          id={`shot-${scIdx}-${shIdx}-action`}
+                          aria-label={`Action & Pose (shot ${shot.shot_index + 1})`}
                           type="text"
                           value={shot.action || ''}
                           onChange={(e) => updateShot(scIdx, shIdx, { action: e.target.value })}
@@ -180,8 +182,10 @@ export default function ScreenplayEditor({ novelId, episodeId = 'ep1', onSelectS
 
                       <div className="flex gap-2">
                         <div className="flex-1">
-                          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted">Framing</label>
+                          <label htmlFor={`shot-${scIdx}-${shIdx}-framing`} className="text-[10px] font-semibold uppercase tracking-wider text-muted">Framing</label>
                           <select
+                            id={`shot-${scIdx}-${shIdx}-framing`}
+                            aria-label={`Framing (shot ${shot.shot_index + 1})`}
                             value={shot.shot_size || 'medium'}
                             onChange={(e) => updateShot(scIdx, shIdx, { shot_size: e.target.value })}
                             className="mt-1 w-full rounded-xl border border-border bg-surface px-2 py-1.5 text-xs text-text focus:outline-none focus:ring-1 focus:ring-accent"
@@ -193,8 +197,10 @@ export default function ScreenplayEditor({ novelId, episodeId = 'ep1', onSelectS
                         </div>
 
                         <div className="flex-1">
-                          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted">Camera Movement</label>
+                          <label htmlFor={`shot-${scIdx}-${shIdx}-camera`} className="text-[10px] font-semibold uppercase tracking-wider text-muted">Camera Movement</label>
                           <select
+                            id={`shot-${scIdx}-${shIdx}-camera`}
+                            aria-label={`Camera Movement (shot ${shot.shot_index + 1})`}
                             value={shot.camera_move || 'static'}
                             onChange={(e) => updateShot(scIdx, shIdx, { camera_move: e.target.value })}
                             className="mt-1 w-full rounded-xl border border-border bg-surface px-2 py-1.5 text-xs text-text focus:outline-none focus:ring-1 focus:ring-accent"

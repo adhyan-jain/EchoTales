@@ -76,7 +76,7 @@ function mount(path) {
 test('the reader names only who the reader has met, in the list, the marks and the speaker column', async () => {
   api.readerCast.mockResolvedValue({ entities: [GUEST_AT_1] });
   mount('/p/toy/read/1');
-  expect(await screen.findByRole('button', { name: /^The masked guest, 1 mentions/ })).toBeInTheDocument();
+  expect(await screen.findByRole('button', { name: /^The masked guest 1 mentions/ })).toBeInTheDocument();
   expect(screen.queryByText('Arthur Vane')).not.toBeInTheDocument();
   expect(screen.queryByText('Corin')).not.toBeInTheDocument();
   expect(screen.getByText('unnamed speaker')).toBeInTheDocument(); // Corin speaks before anyone names him
@@ -91,7 +91,7 @@ test('the cast failing to load offers a retry instead of falling back to the who
   api.readerCast.mockResolvedValueOnce({ entities: [GUEST_AT_1] });
   mount('/p/toy/read/1');
   fireEvent.click(await screen.findByRole('button', { name: /try again/i }));
-  expect(await screen.findByRole('button', { name: /^The masked guest, 1 mentions/ })).toBeInTheDocument();
+  expect(await screen.findByRole('button', { name: /^The masked guest 1 mentions/ })).toBeInTheDocument();
   expect(screen.queryByText('Arthur Vane')).not.toBeInTheDocument();
   await waitFor(() => expect(api.readerCast).toHaveBeenCalledTimes(2));
 });
@@ -126,21 +126,21 @@ test('turning the page keeps the cast list up while the next chapter loads', asy
   let release;
   api.readerCast.mockResolvedValueOnce({ entities: [GUEST_AT_1] });
   mount('/p/toy/read/1');
-  expect(await screen.findByRole('button', { name: /^The masked guest, 1 mentions/ })).toBeInTheDocument();
+  expect(await screen.findByRole('button', { name: /^The masked guest 1 mentions/ })).toBeInTheDocument();
   api.readerCast.mockReturnValueOnce(new Promise((resolve) => { release = resolve; }));
   fireEvent.click(screen.getByRole('button', { name: /next chapter/i }));
   await waitFor(() => expect(api.readerCast).toHaveBeenCalledWith('toy', 2));
-  expect(screen.getByRole('button', { name: /^The masked guest, 1 mentions/ })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /^The masked guest 1 mentions/ })).toBeInTheDocument();
   expect(screen.queryByText('Loading the cast…')).not.toBeInTheDocument();
   release({ entities: [GUEST_WHOLE, CORIN_WHOLE] });
-  expect(await screen.findByRole('button', { name: /^Corin, 1 mentions/ })).toBeInTheDocument();
+  expect(await screen.findByRole('button', { name: /^Corin 1 mentions/ })).toBeInTheDocument();
 });
 
 test('clicking a dialogue speaker in the reader opens EntityPicker and allows reassigning speaker', async () => {
   api.readerCast.mockResolvedValue({ entities: [GUEST_AT_1] });
   api.reassignSpeaker.mockResolvedValue({ id: 'corr-1' });
   mount('/p/toy/read/1');
-  const speakerBtn = await screen.findByRole('button', { name: /Reassign speaker The masked guest/i });
+  const speakerBtn = await screen.findByRole('button', { name: /The masked guest.*reassign speaker/i });
   expect(speakerBtn).toBeInTheDocument();
   fireEvent.click(speakerBtn);
   expect(await screen.findByRole('dialog', { name: /Choose a character/i })).toBeInTheDocument();
@@ -151,7 +151,7 @@ test('a double click on a speaker choice posts one correction, not two', async (
   api.readerCast.mockResolvedValue({ entities: [GUEST_AT_1] });
   api.reassignSpeaker.mockReturnValue(new Promise(() => {})); // stays in flight
   mount('/p/toy/read/1');
-  fireEvent.click(await screen.findByRole('button', { name: /Reassign speaker The masked guest/i }));
+  fireEvent.click(await screen.findByRole('button', { name: /The masked guest.*reassign speaker/i }));
   const dialog = await screen.findByRole('dialog', { name: /Choose a character/i });
   const row = within(dialog).getByRole('button', { name: /Corin/ });
   fireEvent.click(row);

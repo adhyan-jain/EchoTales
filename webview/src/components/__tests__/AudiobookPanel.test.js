@@ -1,6 +1,6 @@
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 jest.mock('../../api', () => ({
@@ -204,6 +204,91 @@ describe('AudiobookPanel video step', () => {
     });
     const player = await screen.findByLabelText('Latest chapter video');
     expect(player).toHaveAttribute('src', expect.stringContaining('chapter.mp4'));
+  });
+});
+
+describe('AudiobookPanel M4B, pages and episode steps', () => {
+  const voicedJobs = [{ job_id: 'v', kind: 'voice', status: 'SUCCEEDED', created_at: 2 }];
+  const locked = { current: { locked_version: 1, dirty: false, stale_reason: null } };
+  const panels = { kinds: { audio: [], panels: [{ path: 'panels/ch1/v1/p.png', mtime: 1, size: 1 }] } };
+
+  test('Make M4B is off with a hint while the audio is the silent stub', async () => {
+    mount({ jobs: voicedJobs, bible: locked, project: { ...project, audio_engine: 'stub' } });
+    expect(await screen.findByRole('button', { name: 'Make M4B' })).toBeDisabled();
+    expect(screen.getByText(/voice it with chatterbox first/i)).toBeInTheDocument();
+  });
+
+  test('Make M4B stays on for real audio', async () => {
+    mount({ jobs: voicedJobs, bible: locked, project: { ...project, audio_engine: 'chatterbox' } });
+    const button = await screen.findByRole('button', { name: 'Make M4B' });
+    await waitFor(() => expect(button).toBeEnabled());
+  });
+
+  test('Make pages sends the chosen format and the CBZ and PDF exports', async () => {
+    mount({ output: panels });
+    fireEvent.change(await screen.findByLabelText('Page format'), { target: { value: 'webtoon' } });
+    const button = screen.getByRole('button', { name: 'Make pages' });
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
+    await waitFor(() =>
+      expect(api.triggerStage).toHaveBeenCalledWith('b', 'pages', { chapters: [1], format: 'webtoon', export: 'png,cbz,pdf' })
+    );
+  });
+
+  test('Make pages is off until there are panels, and finished pages are downloadable', async () => {
+    mount();
+    expect(await screen.findByRole('button', { name: 'Make pages' })).toBeDisabled();
+  });
+
+  test('the finished CBZ and PDF are linked', async () => {
+    mount({
+      output: { kinds: { audio: [], panels: [], pages: [
+        { path: 'pages/ch1/v1_x/ch1.cbz', mtime: 5, size: 1 },
+        { path: 'pages/ch1/v1_x/ch1.pdf', mtime: 5, size: 1 },
+        { path: 'pages/ch1/v1_x/page_01.png', mtime: 5, size: 1 },
+      ] } },
+    });
+    expect(await screen.findByRole('link', { name: /Pages \(CBZ\)/ })).toHaveAttribute('href', expect.stringContaining('ch1.cbz'));
+    expect(screen.getByRole('link', { name: /Pages \(PDF\)/ })).toHaveAttribute('href', expect.stringContaining('ch1.pdf'));
+  });
+
+  test('Make episode starts an episode job and needs the voiced book', async () => {
+    mount();
+    expect(await screen.findByRole('button', { name: 'Make episode' })).toBeDisabled();
+  });
+
+  test('Make episode sends the chapters', async () => {
+    mount({ jobs: voicedJobs, bible: locked });
+    const button = await screen.findByRole('button', { name: 'Make episode' });
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
+    await waitFor(() => expect(api.triggerStage).toHaveBeenCalledWith('b', 'episode', { chapters: [1] }));
+  });
+});
+
+describe('AudiobookPanel job completion', () => {
+  afterEach(() => jest.useRealTimers());
+
+  test('tells the page when a running job finishes, so counts that came from the build are re-read', async () => {
+    jest.useFakeTimers();
+    const onJobFinished = jest.fn();
+    api.listJobs
+      .mockResolvedValueOnce([{ job_id: 'p', kind: 'pipeline', status: 'RUNNING', created_at: 1 }])
+      .mockResolvedValue([{ job_id: 'p', kind: 'pipeline', status: 'SUCCEEDED', created_at: 1 }]);
+    api.getBible.mockResolvedValue({ current: { locked_version: null, dirty: true, stale_reason: null } });
+    api.reviewLines.mockResolvedValue({ total: 0, items: [] });
+    api.listOutput.mockResolvedValue({ kinds: { audio: [] } });
+    render(
+      <MemoryRouter>
+        <ToastProvider>
+          <AudiobookPanel novelId="b" project={project} onJobFinished={onJobFinished} />
+        </ToastProvider>
+      </MemoryRouter>
+    );
+    await act(async () => {});
+    expect(onJobFinished).not.toHaveBeenCalled();
+    await act(async () => { jest.advanceTimersByTime(2600); });
+    await waitFor(() => expect(onJobFinished).toHaveBeenCalledTimes(1));
   });
 });
 

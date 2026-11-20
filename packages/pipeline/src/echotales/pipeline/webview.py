@@ -25,6 +25,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
+from echotales.core.models import RefImageCandidate
 from echotales.core.store import Store
 
 #: Matches the id `speakers/runner.py::_assign_anonymous_slots` mints --
@@ -420,6 +421,36 @@ _DASHBOARD_TRAIT_KEYS: tuple[str, ...] = (
 _REVISED_TRAIT_KEYS: frozenset[str] = frozenset({"gender", "age_band", "register"})
 
 
+def candidate_urls(novel_id: str, cand: RefImageCandidate) -> dict[str, str]:
+    """The picture URLs a browser may load for a reference candidate.
+
+    A local upload is stored as `file://<path>`, which the browser refuses ("Not allowed to load local resource": the
+    character dossier showed broken images, 2026-11 walkthrough). So the API never returns a file:// address: a local
+    picture is answered by the server's own image route, a web result keeps its http(s) address.
+    """
+    own = f"/api/novels/{novel_id}/assets/candidate/{cand.id}/image"
+    web = cand.source_url if cand.source_url.startswith(("http://", "https://")) else None
+    return {"source_url": web or own, "image_url": own}
+
+
+def _merged_away(store: Store) -> dict[str, str]:
+    """`from_id -> final into_id` for every reviewer MERGE. Only `human_correction` merges: the resolver's own MERGE
+    events use the same type for other things (a transmigration continues one self across bodies), and hiding those
+    from the cast would drop real characters."""
+    into: dict[str, str] = {}
+    for ev in store.iter_events():
+        if ev.type.value == "merge" and ev.payload.get("source") == "human_correction":
+            into[str(ev.payload["from_id"])] = str(ev.payload["into_id"])
+    final: dict[str, str] = {}
+    for frm in into:
+        target, seen = into[frm], {frm}
+        while target in into and target not in seen:  # a chain A->B->C, and a loop must not hang the page
+            seen.add(target)
+            target = into[target]
+        final[frm] = target
+    return final
+
+
 def build_character_dashboard(store: Store, novel_id: str) -> dict:
     """One row per person-kind entity: assigned voice, reference images,
     and the source evidence behind every auto-assigned trait.
@@ -440,6 +471,7 @@ def build_character_dashboard(store: Store, novel_id: str) -> dict:
 
     voice_by_target = _voice_assignments_from_manifest(novel_id)
 
+    merged = _merged_away(store)
     rows = []
     for entity in store.all_selves(novel_id):
         if not entity.kind.is_person:
@@ -517,6 +549,13 @@ def build_character_dashboard(store: Store, novel_id: str) -> dict:
                 "self_id": entity.id,
                 "gender": gender,
                 "gender_by_reviewer": gender_by_reviewer,
+                # Set when a reviewer merged this character into another: the Studio hides the row from the cast list
+                # but keeps the dossier reachable (2026-11 walkthrough).
+                "merged_into": (
+                    {"id": merged[entity.id], "label": (store.get_self(merged[entity.id]) or entity).canonical_label}
+                    if entity.id in merged
+                    else None
+                ),
                 "persona_id": persona_id,
                 "label": entity.canonical_label,
                 "canonical_label": entity.canonical_label,
@@ -527,8 +566,8 @@ def build_character_dashboard(store: Store, novel_id: str) -> dict:
                 "reference_images": [
                     {
                         "id": c.id,
-                        "source_url": c.source_url,
-                        "thumbnail_url": c.thumbnail_url or c.source_url,
+                        **candidate_urls(novel_id, c),
+                        "thumbnail_url": c.thumbnail_url if c.thumbnail_url.startswith(("http://", "https://")) else None,
                         "title": c.title,
                         "selected": c.selected,
                         "user_uploaded": c.user_uploaded,

@@ -21,13 +21,16 @@ function shortId(id) {
   const parts = String(id || '').split(':');
   return parts.length >= 3 ? parts.slice(1).join(':') : String(id || '');
 }
-function describePending(c) {
+function describePending(c, entities = []) {
   const p = c.payload || {};
+  const nameOf = (id) => (entities.find((e) => e.id === id) || {}).label;
   switch (c.type) {
     case 'merge_lines':
       return `Merge line ${shortId(p.absorbed_span_id)} into ${shortId(p.primary_span_id)}`;
     case 'merge_entities':
-      return 'Merge one character into another';
+      return nameOf(p.from_id) && nameOf(p.into_id)
+        ? `Merge ${nameOf(p.from_id)} into ${nameOf(p.into_id)}`
+        : 'Merge one character into another';
     case 'reassign_mention':
       return p.target_id || p.new_label ? `Change who a mention refers to (${shortId(p.mention_id)})` : `Unlink a mention (${shortId(p.mention_id)})`;
     case 'reassign_speaker':
@@ -43,7 +46,7 @@ function describePending(c) {
   }
 }
 
-export default function AnalysisPanel({ summary, items = [], failedIds = new Set(), onUndo, undoing, onApply, applyResult, applying, onClose }) {
+export default function AnalysisPanel({ summary, items = [], entities = [], failedIds = new Set(), onUndo, undoing, onApply, applyResult, applying, onClose }) {
   const pending = summary.pending_actionable ?? summary.pending;
   const waiting = items.filter((c) => !c.applied);
   // `failedIds`: corrections the last Apply attempted that are still unapplied,
@@ -79,7 +82,7 @@ export default function AnalysisPanel({ summary, items = [], failedIds = new Set
                 {waiting.map((c) => (
                   <li key={c.id} className={failedIds.has(c.id) ? 'failed' : ''}>
                     <span>
-                      {describePending(c)}
+                      {describePending(c, entities)}
                       {failedIds.has(c.id) && <em> — did not apply last time</em>}
                     </span>
                     <button
@@ -87,7 +90,7 @@ export default function AnalysisPanel({ summary, items = [], failedIds = new Set
                       className="undo"
                       disabled={undoing === c.id}
                       onClick={() => onUndo(c.id)}
-                      aria-label={`Undo: ${describePending(c)}`}
+                      aria-label={`Undo: ${describePending(c, entities)}`}
                     >
                       Undo
                     </button>

@@ -11,6 +11,7 @@ import '@testing-library/jest-dom';
 
 jest.mock('../../api', () => ({
   api: {
+    mediaUrl: (u) => u,
     login: jest.fn(),
     authStatus: jest.fn(),
     createProject: jest.fn(),
@@ -234,6 +235,41 @@ describe('CharacterDashboard', () => {
         ],
       },
     ],
+  });
+
+  test('an uploaded reference shows through the server image route, never file://', async () => {
+    const data = baseCharacters();
+    data.characters[0].reference_images = [
+      { id: 'u1', source_url: '/api/novels/n/assets/candidate/u1/image', image_url: '/api/novels/n/assets/candidate/u1/image', thumbnail_url: null, title: 'Mine', selected: false, user_uploaded: true },
+    ];
+    api.characters.mockResolvedValueOnce(data);
+    renderDashboard({ novelId: 'reverend-insanity' });
+    fireEvent.click(await screen.findByText('Fang Yuan'));
+    const img = await screen.findByAltText('Mine');
+    expect(img.getAttribute('src')).toBe('/api/novels/n/assets/candidate/u1/image');
+  });
+
+  test('a character merged into another is hidden from the cast but its dossier says where it went', async () => {
+    const data = baseCharacters();
+    data.characters.push({
+      self_id: 'm1', id: 'm1', label: 'Lizzy', prominence: 'RECURRING', traits: [], reference_images: [],
+      merged_into: { id: 'reverend-insanity:self1', label: 'Fang Yuan' },
+    });
+    api.characters.mockResolvedValueOnce(data);
+    renderDashboard({ novelId: 'reverend-insanity', selectedId: 'm1' });
+    expect(await screen.findByText(/merged into Fang Yuan/i)).toBeInTheDocument();
+  });
+
+  test('the merged-away character is not in the cast list', async () => {
+    const data = baseCharacters();
+    data.characters.push({
+      self_id: 'm1', id: 'm1', label: 'Lizzy', prominence: 'RECURRING', traits: [], reference_images: [],
+      merged_into: { id: 'reverend-insanity:self1', label: 'Fang Yuan' },
+    });
+    api.characters.mockResolvedValueOnce(data);
+    renderDashboard({ novelId: 'reverend-insanity' });
+    await screen.findByText('Fang Yuan');
+    expect(screen.queryByText('Lizzy')).not.toBeInTheDocument();
   });
 
   test('lists the cast, then drills into a character to show voice, references, and evidence', async () => {

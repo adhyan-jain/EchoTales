@@ -550,6 +550,31 @@ class TestStaleBuildSurvivesJobs:
 
 
 class TestVideoJobRoute:
+    def test_stills_video_is_queued_without_any_gpu_check(self, live_server: int, monkeypatch) -> None:
+        # 2026-11 walkthrough: "stills" went through the image-engine check and was always refused with
+        # "engine 'stills' is not enabled on this server". Held pictures need no GPU; only ltx-local does.
+        def boom():
+            raise AssertionError("stills must not consult the GPU")
+
+        monkeypatch.setattr("echotales.pipeline.compute._video_refusal", boom)
+        assert TestUploadSafety._create(live_server, "vid3")[0] == 201
+        status, body = _request(
+            live_server, "POST", "/api/projects/vid3/video",
+            body=json.dumps({"chapters": [1], "engine": "stills"}).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        assert status == 202, body
+
+    def test_ltx_local_goes_through_the_video_gpu_check(self, live_server: int, monkeypatch) -> None:
+        monkeypatch.setattr("echotales.pipeline.compute._video_refusal", lambda: "the GPU is busy")
+        assert TestUploadSafety._create(live_server, "vid4")[0] == 201
+        status, _ = _request(
+            live_server, "POST", "/api/projects/vid4/video",
+            body=json.dumps({"chapters": [1], "engine": "ltx-local"}).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        assert status == 409
+
     def test_an_unknown_video_engine_is_refused(self, live_server: int) -> None:
         assert TestUploadSafety._create(live_server, "vid")[0] == 201
         status, body = _request(
@@ -560,9 +585,7 @@ class TestVideoJobRoute:
         assert status == 400 and "stills" in body["error"]
 
     def test_a_busy_gpu_refuses_ltx_local_but_not_stills(self, live_server: int, monkeypatch) -> None:
-        monkeypatch.setattr(
-            "echotales.pipeline.webview_server._gpu_refusal", lambda e: "the GPU is busy" if e == "ltx-local" else None
-        )
+        monkeypatch.setattr("echotales.pipeline.compute._video_refusal", lambda: "the GPU is busy")
         assert TestUploadSafety._create(live_server, "vid2")[0] == 201
         status, _ = _request(
             live_server, "POST", "/api/projects/vid2/video",

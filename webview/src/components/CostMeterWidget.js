@@ -6,6 +6,10 @@ import { useToast } from './ui/Toast';
 import { describeError } from '../lib/errors';
 import { DollarSign, AlertCircle, RefreshCw, Film } from 'lucide-react';
 
+// The server's cost.py to_dict() is the shape of record; any field may be absent, and a missing one must not
+// crash the Studio page (2026-11 walkthrough: .toFixed on undefined).
+const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+
 export default function CostMeterWidget({ novelId, episodeId = 'ep1', onTierChange }) {
   const push = useToast();
   const [tier, setTier] = useState('path1');
@@ -34,7 +38,7 @@ export default function CostMeterWidget({ novelId, episodeId = 'ep1', onTierChan
   };
 
   const maxAllowedCost = tier === 'path1' ? 0.50 : 1.80;
-  const isOverBudget = costData && costData.cost_per_finished_minute_usd > maxAllowedCost;
+  const isOverBudget = costData && num(costData.cost_per_finished_minute_usd) > maxAllowedCost;
 
   return (
     <section className="rounded-3xl border border-border bg-surface p-6 shadow-card" data-testid="cost-meter-widget">
@@ -98,7 +102,7 @@ export default function CostMeterWidget({ novelId, episodeId = 'ep1', onTierChan
               <span className="text-xs font-semibold uppercase tracking-wider text-muted">Cost Per Min</span>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="font-display text-2xl font-bold tracking-tight text-text" data-testid="cost-per-minute">
-                  ${costData.cost_per_finished_minute_usd.toFixed(2)}
+                  ${num(costData.cost_per_finished_minute_usd).toFixed(2)}
                 </span>
                 <span className="text-xs text-muted">/ finished min</span>
               </div>
@@ -114,12 +118,12 @@ export default function CostMeterWidget({ novelId, episodeId = 'ep1', onTierChan
               <span className="text-xs font-semibold uppercase tracking-wider text-muted">Total Episode Cost</span>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="font-display text-2xl font-bold tracking-tight text-accent" data-testid="total-cost">
-                  ${costData.total_estimated_usd.toFixed(2)}
+                  ${num(costData.total_cost_usd).toFixed(2)}
                 </span>
                 <span className="text-xs text-muted">USD</span>
               </div>
               <p className="mt-2 text-xs text-muted">
-                {costData.num_shots} shots &bull; {(costData.episode_duration_s / 60).toFixed(1)} minutes
+                {num(costData.num_shots)} shots &bull; {(num(costData.episode_duration_s) / 60).toFixed(1)} minutes
               </p>
             </div>
 
@@ -158,30 +162,18 @@ export default function CostMeterWidget({ novelId, episodeId = 'ep1', onTierChan
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
-                  {costData.breakdown && (
-                    <>
-                      <tr>
-                        <td className="px-4 py-2 font-medium text-text">LLM Screenplay Compilation</td>
-                        <td className="px-4 py-2 text-muted">{costData.breakdown.llm_screenplay_tokens?.toLocaleString() || 0} tokens</td>
-                        <td className="px-4 py-2 text-right font-mono">${(costData.breakdown.llm_screenplay_cost_usd || 0).toFixed(4)}</td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-2 font-medium text-text">Keyframe Image Generation</td>
-                        <td className="px-4 py-2 text-muted">{costData.breakdown.image_generation_count || 0} images</td>
-                        <td className="px-4 py-2 text-right font-mono">${(costData.breakdown.image_generation_cost_usd || 0).toFixed(4)}</td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-2 font-medium text-text">Voice Synthesis (Qwen3-TTS / Dia2)</td>
-                        <td className="px-4 py-2 text-muted">{costData.breakdown.audio_seconds?.toFixed(1) || 0}s audio</td>
-                        <td className="px-4 py-2 text-right font-mono">${(costData.breakdown.voice_synthesis_cost_usd || 0).toFixed(4)}</td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-2 font-medium text-text">Compositor / Video Render</td>
-                        <td className="px-4 py-2 text-muted">{costData.breakdown.video_render_seconds?.toFixed(1) || 0}s GPU</td>
-                        <td className="px-4 py-2 text-right font-mono">${(costData.breakdown.video_render_cost_usd || 0).toFixed(4)}</td>
-                      </tr>
-                    </>
-                  )}
+                  {[
+                    ['LLM Screenplay Compilation', 'llm_adaptation', `${num(costData.num_dialogue_lines)} lines`],
+                    ['Keyframe Image Generation', 'keyframe_diffusion', `${num(costData.num_shots)} shots`],
+                    ['Voice Synthesis (Qwen3-TTS / Dia2)', 'voice_synthesis', `${num(costData.num_dialogue_lines)} lines`],
+                    ['Compositor / Video Render', 'video_generation', `${num(costData.estimated_render_time_s).toFixed(1)}s render`],
+                  ].map(([label, key, units]) => (
+                    <tr key={key}>
+                      <td className="px-4 py-2 font-medium text-text">{label}</td>
+                      <td className="px-4 py-2 text-muted">{units}</td>
+                      <td className="px-4 py-2 text-right font-mono">${num(costData.breakdown?.[key]).toFixed(4)}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>

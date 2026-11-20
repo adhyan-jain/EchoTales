@@ -153,7 +153,8 @@ export default function CharacterDashboard({ novelId, readOnly = false, selected
   };
 
   const q = search.toLowerCase();
-  const filtered = characters.filter((c) => (c.label || '').toLowerCase().includes(q));
+  // A character a reviewer merged into another is no longer a separate person; its dossier stays reachable by link.
+  const filtered = characters.filter((c) => !c.merged_into && (c.label || '').toLowerCase().includes(q));
   const mainCast = filtered.filter((c) => c.prominence !== 'INCIDENTAL');
   const incidentalCast = filtered.filter((c) => c.prominence === 'INCIDENTAL');
   // Numbering runs across the whole manifest (main cast first, then
@@ -319,6 +320,11 @@ function CharacterDetail({ novelId, character, busy, readOnly, onBack, onSetVoic
           tone={prominence === 'PRINCIPAL' ? 'accent' : 'neutral'}
           badge={prominence ? PROMINENCE_LABEL[prominence] || prominence : null}
         />
+        {character.merged_into && (
+          <p className="mt-3 text-sm text-muted">
+            Merged into {character.merged_into.label}. This page is kept for the record; edit {character.merged_into.label} instead.
+          </p>
+        )}
         {onSetGender && (
           <div className="mt-4">
             <GenderControl gender={character.gender} byReviewer={!!character.gender_by_reviewer} disabled={busy} onChange={onSetGender} />
@@ -347,7 +353,7 @@ function CharacterDetail({ novelId, character, busy, readOnly, onBack, onSetVoic
                 <Card key={r.id}>
                   <div className="aspect-[3/4] w-full overflow-hidden bg-surface2">
                     <img
-                      src={r.thumbnail_url || r.source_url}
+                      src={api.mediaUrl(r.image_url || r.thumbnail_url || r.source_url)}
                       alt={r.title || label}
                       className="h-full w-full object-cover"
                       loading="lazy"

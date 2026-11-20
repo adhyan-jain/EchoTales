@@ -109,7 +109,7 @@ test('Escape cancels the dialog and returns focus to the button that opened it',
 
 test('add mention: text not in the line is explained inline; valid text opens the character picker', async () => {
   await openReview();
-  fireEvent.click(screen.getByRole('button', { name: /add a mention in this line/i }));
+  fireEvent.click(screen.getByRole('button', { name: /mention in this line/i }));
   const field = await screen.findByRole('textbox', { name: /words in this line/i });
   expect(screen.getByText(LINE, { selector: 'p' })).toBeInTheDocument(); // the line is shown for context
 
@@ -133,7 +133,7 @@ test('a double click on a speaker choice posts one correction, and a failed coun
   api.reassignSpeaker.mockReturnValue(new Promise(() => {}));
   await openReview();
   expect(screen.getByRole('button', { name: /^Corrections/ })).toHaveTextContent('–');
-  fireEvent.click(screen.getByRole('button', { name: /Reassign speaker Hero/i }));
+  fireEvent.click(screen.getByRole('button', { name: /Hero.*reassign speaker/i }));
   const dialog = await screen.findByRole('dialog', { name: /Choose a character/i });
   const row = within(dialog).getByRole('button', { name: /Corin/ });
   fireEvent.click(row);
