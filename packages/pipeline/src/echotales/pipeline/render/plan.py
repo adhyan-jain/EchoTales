@@ -106,12 +106,15 @@ def append_panel_plan(path: Path, row: PanelPlan, *, truncate: bool = False) -> 
         fh.write(row.model_dump_json() + "\n")
 
 
-def load_panel_plan(version_dir: str | Path) -> list[PanelPlan]:
+def load_panel_plan(version_dir: str | Path, *, apply_choices: bool = True) -> list[PanelPlan]:
     """Every panel row of one version directory, in play order.
 
     Raises `FileNotFoundError` when the directory has no plan (a version rendered
     before plans existed: an empty list would read as "no panels") and
     `PanelPlanSchemaError` for a row of a schema version this code does not know.
+
+    A picture the reviewer chose for a panel (`render/regen.py`, `panel_choices.json`) replaces that row's `image_path`,
+    so pages and videos use it; `apply_choices=False` returns the plan as rendered (what a redraw starts from).
     """
     path = Path(version_dir) / PANEL_PLAN_FILE
     if not path.exists():
@@ -128,7 +131,19 @@ def load_panel_plan(version_dir: str | Path) -> list[PanelPlan]:
                 f"this code reads {PLAN_SCHEMA_VERSION}"
             )
         rows.append(PanelPlan.model_validate(raw))
+    chosen = _read_choices(Path(version_dir)) if apply_choices else {}
+    for row in rows:
+        if row.panel_id in chosen:
+            row.image_path = chosen[row.panel_id]
     return rows
+
+
+def _read_choices(version_dir: Path) -> dict[str, str]:
+    try:
+        raw = json.loads((version_dir / "panel_choices.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return {str(k): str(v) for k, v in raw.items()} if isinstance(raw, dict) else {}
 
 
 def dropped_clauses(parts: list[str], fitted: str) -> list[str]:
