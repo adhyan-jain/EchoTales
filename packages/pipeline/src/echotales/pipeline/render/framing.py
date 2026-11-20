@@ -145,6 +145,7 @@ def plan_framing(
     crowd: bool = False,
     others_present: bool = True,
     new_place: bool = False,
+    opens_chapter: bool | None = None,
     state: FramingState | None = None,
 ) -> Framing:
     """Choose this panel's framing from its passage, then keep the sequence varied.
@@ -162,7 +163,11 @@ def plan_framing(
     narration = _unquoted(text)
 
     chosen: Framing | None = None
-    if new_place or last is None:
+    # `opens_chapter` is for a render of a block range that starts mid-chapter (b79 "a pair of clear eyes" was drawn as an
+    # establishing shot only because it was the first panel of the slice); None means "the first panel I am given".
+    if opens_chapter is None:
+        opens_chapter = last is None
+    if new_place or opens_chapter:
         chosen = Framing("wide", focus="establishing", reason="a place starts" if new_place else "the chapter opens")
     elif short and _EYES.search(narration) and not crowd and not _LOOKS_LIST.search(_first_sentence(narration)):
         chosen = Framing("close", focus="eyes", reason="the line is about eyes")
@@ -170,7 +175,7 @@ def plan_framing(
         chosen = Framing("close", focus="hands", reason="the line is about hands")
     elif (obj := prop_in(text, director_props or [], names)) and (state.inserts_since >= 1 or obj in _WEAPONS):
         chosen = Framing("close", focus="prop", subject=obj, reason=f"the text centres the {obj}")
-    elif others_present and (other := _other_speaker(spoken, lead)) and not crowd and last.focus != "over-shoulder":
+    elif others_present and (other := _other_speaker(spoken, lead)) and not crowd and not (last and last.focus == "over-shoulder"):
         chosen = Framing("medium", focus="over-shoulder", subject=other, reason="someone else speaks to the lead")
     elif _PEAK.search(text) or _PEAK_EXPRESSION.search(expression):
         chosen = Framing("close", reason="emotional peak")

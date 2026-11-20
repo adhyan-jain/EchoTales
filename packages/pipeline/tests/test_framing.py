@@ -109,3 +109,10 @@ def test_a_close_up_keeps_the_face_sentences_and_drops_the_scene_they_sat_in() -
     assert fr.crop_composition(para, "eyes") == "His face shows a cold mocking smile with narrowed eyes."
     assert fr.crop_composition("The room is quiet. Dust drifts.", "") == "The room is quiet."
     assert fr.crop_composition("The room is quiet.", "eyes") == ""
+
+
+def test_the_first_panel_of_a_mid_chapter_slice_is_not_a_chapter_opening() -> None:
+    state = fr.FramingState()
+    f = fr.plan_framing("At the very same moment, a pair of clear eyes quietly looked at the lights.", names=NAMES,
+                        opens_chapter=False, state=state)
+    assert f.focus == "eyes"
