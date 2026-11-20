@@ -182,6 +182,29 @@ refuses before sending past `ECHOTALES_CLOUD_BUDGET_USD` (default 9). `echotales
 `cloud lora --dry-run` print a cost and send nothing; `echotales cloud ledger` prints the total. ElevenLabs uses your own
 key and a library or your own uploaded voice; do not use it to clone a real person's voice without their consent.
 
+## Security
+
+The Studio is a single-user tool for your own machine, and it assumes that.
+
+- **Localhost only by default.** `webview-server` listens on 127.0.0.1. With no `ECHOTALES_WEBVIEW_PASSWORD` set there is
+  no login, so the server refuses to start on any other address (`--host 0.0.0.0` exits with an error) and answers only
+  requests whose `Host` is `localhost`, `127.0.0.1` or `::1` (a defence against DNS rebinding). The Docker image opts out
+  of the bind check because `compose.yaml` publishes the port on the host's 127.0.0.1 only.
+- **To share it on a network, set a password.** `ECHOTALES_WEBVIEW_PASSWORD=...` turns on a login (`Authorization: Bearer
+  <session token>`, 12-hour sessions, five wrong passwords per minute then HTTP 429). Use HTTPS in front of it (a reverse
+  proxy): the password and token travel in clear text otherwise. Media tags cannot send headers, so output files and
+  the companion page also accept `?access_token=`; treat those URLs as secrets.
+- **Cross-site requests.** Writes require the request's `Origin` to match the page the server serves (or a localhost
+  dev server, or `ECHOTALES_CORS_ORIGINS`); there are no cookies, so there is nothing for another site to ride on.
+- **Uploads are untrusted.** EPUBs, comic archives, voice clips, pictures and `.etpack` files are size-capped,
+  archive paths are never used to write, and job parameters cannot name server folders. Files served back from a
+  project (`output/file`) are sent `nosniff`, and HTML or SVG among them is sandboxed. A pack can still carry bad
+  prompts or review decisions: import packs from people you trust.
+- **Keys** (`.env`: RunPod, ElevenLabs, Anthropic) are read from the environment only, sent only as request headers,
+  and never written to logs, errors, the cloud ledger or API responses.
+
+Found something? Open a private security advisory on the repository rather than a public issue.
+
 ## Source texts
 
 Source novels are **not** committed. Place your own copies in `data/raw/` and

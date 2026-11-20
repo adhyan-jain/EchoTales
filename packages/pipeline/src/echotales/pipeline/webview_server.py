@@ -111,11 +111,69 @@ _AUTH_ENV_VAR = "ECHOTALES_WEBVIEW_PASSWORD"
 # numbers nobody measured is worse than no screen.
 _SHOT_QA_UNWIRED = "per-shot candidates, re-roll and lock are not wired to the keyframe engine yet; no QA score is shown that was not measured"
 _SESSION_TTL_SECONDS = 12 * 3600
+#: Failed logins allowed per window before the server answers 429. The password is the only credential when the Studio
+#: is reachable beyond this machine, and a compare-digest login with no limit is a free online guessing oracle.
+_LOGIN_MAX_FAILURES = 5
+_LOGIN_WINDOW_SECONDS = 60.0
+_LOOPBACK_NAMES = ("localhost", "127.0.0.1", "::1")
+
+
+def _hostname_of(host_header: str) -> str:
+    """`Host:` header to a bare lower-case hostname (`[::1]:8787` -> `::1`, `localhost:8787` -> `localhost`)."""
+    h = (host_header or "").strip().lower()
+    if h.startswith("["):
+        return h[1:].split("]", 1)[0]
+    return h.rsplit(":", 1)[0] if h.count(":") == 1 else h
+
+
+#: Job parameters that name a place on disk. The server chooses every one of them (`paths.asset_dir`, the project's own
+#: sources.toml and corrections log); a value from the request chose where a render, episode or pages job WROTE and
+#: which toml an ingest READ, on any path the server's user can reach (security review, 2026-11-21). The voice, video
+#: and voice_audition routes already dropped some of these; this is the one rule for every kind.
+_SERVER_OWNED_PARAMS = (
+    "panel_dir", "audio_dir", "out_dir", "out_root", "bank", "source_path", "sources_path", "corrections_path",
+    "cache_dir", "data_root", "db_path",
+)
+_SAFE_SUFFIX = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,39}")
+#: A project's queued-or-running jobs may not pass this; a script posting in a loop would otherwise queue without end.
+MAX_UNFINISHED_JOBS = 50
+
+
+def sanitize_job_params(body: object) -> dict:  # type: ignore[type-arg]
+    """The request body as job params, minus anything that names a server path; `suffix` (a folder-name tail) must be a
+    plain token, so `../../x` cannot leave the version folder."""
+    if not isinstance(body, dict):
+        raise ValueError("the request body must be a JSON object")
+    params = {k: v for k, v in body.items() if k not in _SERVER_OWNED_PARAMS}
+    suffix = params.get("suffix")
+    if suffix is not None and (not isinstance(suffix, str) or not _SAFE_SUFFIX.fullmatch(suffix) or ".." in suffix):
+        raise ValueError("suffix must be 1-40 letters, digits, '.', '_' or '-', starting with a letter or digit")
+    return params
+
+
+def check_bind(host: str, password: str | None) -> None:
+    """Refuse to listen beyond loopback without a password.
+
+    The API writes corrections, queues GPU jobs, accepts uploads and can delete projects, with auth off by default.
+    `--host 0.0.0.0` made all of that reachable by anything on the network (security review, 2026-11-21)."""
+    # The container image binds 0.0.0.0 because its own loopback is unreachable; compose publishes the port on the
+    # host's 127.0.0.1 only. That is the one place an unprotected non-loopback bind is intended, and it says so.
+    if host.strip().lower() not in _LOOPBACK_NAMES and not password and os.environ.get("ECHOTALES_ALLOW_OPEN_BIND") != "1":
+        raise SystemExit(
+            f"refusing to bind {host}: the Studio has no login unless {_AUTH_ENV_VAR} is set, and anyone who can "
+            f"reach the port could upload files, queue jobs and delete projects. Set {_AUTH_ENV_VAR}, or use 127.0.0.1."
+        )
 
 
 @dataclass(slots=True)
 class SessionStore:
     tokens: dict[str, float] = field(default_factory=dict)
+    failures: list[float] = field(default_factory=list)
+
+    def locked_out(self) -> bool:
+        now = time.time()
+        self.failures = [t for t in self.failures if now - t < _LOGIN_WINDOW_SECONDS]
+        return len(self.failures) >= _LOGIN_MAX_FAILURES
 
     def issue(self) -> str:
         token = secrets.token_urlsafe(32)
@@ -1032,6 +1090,19 @@ THUMB_WIDTHS = (320, 480, 960)
 _IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
 
 
+def _is_raster_image(data: bytes) -> bool:
+    import io
+
+    from PIL import Image
+
+    try:
+        with Image.open(io.BytesIO(data)) as img:
+            img.verify()
+            return img.format in ("PNG", "JPEG", "WEBP")
+    except Exception:  # PIL raises many types, including its decompression-bomb error
+        return False
+
+
 def _thumbnail(src: Path, width: int, cache_dir: Path) -> Path:
     """A WebP copy of `src` no wider than `width`, cached by content version.
 
@@ -1171,6 +1242,15 @@ def make_handler(
             extra = {o.strip() for o in os.environ.get("ECHOTALES_CORS_ORIGINS", "").split(",") if o.strip()}
             return host in ("localhost", "127.0.0.1", "::1") or origin in extra
 
+        def _host_allowed(self) -> bool:
+            """With no password set, the Host header must name this machine. A page on attacker.example that
+            re-points its DNS at 127.0.0.1 (DNS rebinding) is then same-origin with this server, so the Origin check
+            above passes it (Origin and Host match). Refusing a foreign Host closes that. With a password set the
+            attacker has no token, and a LAN deployment legitimately arrives under its own name."""
+            if password is not None:
+                return True
+            return _hostname_of(self.headers.get("Host", "")) in _LOOPBACK_NAMES
+
         def _cors(self) -> None:
             origin = self.headers.get("Origin")
             if origin and self._origin_allowed():
@@ -1192,7 +1272,13 @@ def make_handler(
                 self.wfile.write(data)
 
         def _read_body_bytes(self, limit: int = _MAX_JSON_BODY) -> bytes:
-            length = int(self.headers.get("Content-Length", 0))
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+            except ValueError:
+                raise _BodyTooLarge("Content-Length is not a number") from None
+            if length < 0:
+                # rfile.read(-1) reads until the client closes: one request could hold the single-threaded server.
+                raise _BodyTooLarge("Content-Length is negative")
             if length > limit:
                 raise _BodyTooLarge(f"request body of {length:,} bytes exceeds the {limit:,}-byte limit")
             return self.rfile.read(length) if length else b""
@@ -1217,7 +1303,9 @@ def make_handler(
             handle.invalidate()
             return {"job_id": job.job_id, "kind": kind, "status": job.status.value}
 
-        def _serve_file(self, path: Path, *, max_age: int | None = None, private: bool = False) -> None:
+        def _serve_file(
+            self, path: Path, *, max_age: int | None = None, private: bool = False, app_shell: bool = False
+        ) -> None:
             import mimetypes
             from email.utils import formatdate
 
@@ -1259,6 +1347,13 @@ def make_handler(
                 self.send_response(206 if partial else 200)
                 self._cors()
                 self.send_header("Content-Type", content_type)
+                # Files served from a project's output folders are data, not part of the app. An uploaded .html or
+                # .svg would otherwise run script in the Studio's own origin (where the login token lives).
+                self.send_header("X-Content-Type-Options", "nosniff")
+                if not app_shell and content_type in ("text/html", "image/svg+xml"):
+                    self.send_header(
+                        "Content-Security-Policy", "sandbox; default-src 'none'; style-src 'self'; img-src 'self' data:"
+                    )
                 self.send_header("Accept-Ranges", "bytes")
                 self.send_header("Content-Length", str(length))
                 self.send_header("ETag", etag)
@@ -1315,11 +1410,15 @@ def make_handler(
             self.do_GET()
 
         def do_OPTIONS(self) -> None:
+            if not self._host_allowed():
+                return self._json(403, {"error": "unexpected Host header"})
             self.send_response(204)
             self._cors()
             self.end_headers()
 
         def do_GET(self) -> None:
+            if not self._host_allowed():
+                return self._json(403, {"error": "unexpected Host header"})
             parts = _split_path(urlparse(self.path).path)
             try:
                 # The built frontend is served before the auth check: the
@@ -1339,7 +1438,7 @@ def make_handler(
                     if target is None and not looks_like_asset and index_file.is_file():
                         target = index_file
                     if target is not None:
-                        return self._serve_file(target)
+                        return self._serve_file(target, app_shell=True)
                     return self._json(404, {"error": "not found"})
                 if parts == ["api", "auth", "status"]:
                     return self._json(200, {"auth_required": password is not None})
@@ -1903,6 +2002,8 @@ def make_handler(
 
         def do_POST(self) -> None:
             parts = _split_path(urlparse(self.path).path)
+            if not self._host_allowed():
+                return self._json(403, {"error": "unexpected Host header"})
             if not self._origin_allowed():
                 return self._json(403, {"error": "cross-site request refused"})
             try:
@@ -1910,11 +2011,14 @@ def make_handler(
                     body = self._read_json()
                     if password is None:
                         return self._json(400, {"error": "auth is not enabled on this server"})
+                    if sessions.locked_out():
+                        return self._json(429, {"error": "too many failed logins; wait a minute and try again"})
                     supplied = str(body.get("password", ""))
                     # Constant-time compare: a login endpoint timed on string
                     # equality leaks the password one byte at a time to
                     # anyone who can measure response latency.
-                    if not hmac.compare_digest(supplied, password):
+                    if not hmac.compare_digest(supplied.encode("utf-8"), password.encode("utf-8")):
+                        sessions.failures.append(time.time())
                         return self._json(401, {"error": "wrong password"})
                     return self._json(200, {"token": sessions.issue()})
 
@@ -2587,7 +2691,12 @@ def make_handler(
                         return self._json(404, {"error": f"unknown project {parts[2]!r}"})
                     body = self._read_json()
                     kind = parts[3]
-                    params = dict(body)
+                    try:
+                        params = sanitize_job_params(body)
+                    except ValueError as exc:
+                        return self._json(400, {"error": str(exc)})
+                    if handle.store.count_unfinished_jobs() >= MAX_UNFINISHED_JOBS:
+                        return self._json(429, {"error": f"{MAX_UNFINISHED_JOBS} jobs are already queued or running; wait for some to finish"})
                     if (
                         kind in ("render", "reference_gen")
                         and "engine" in params
@@ -2800,7 +2909,11 @@ def make_handler(
                     asset_dir = registry.project_asset_dir(parts[2]) / "reference_uploads"
                     asset_dir.mkdir(parents=True, exist_ok=True)
                     # The client's filename joined a server path unsanitised (audit); keep only a safe base name.
-                    safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", Path(filename).name) or "upload"
+                    safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", Path(filename.replace("\\", "/")).name) or "upload"
+                    # Only a real raster picture is kept: the file is served back from this origin, and an .html or
+                    # .svg under an image's name ran script in the Studio (security review, 2026-11-21).
+                    if Path(safe_name).suffix.lower() not in _IMAGE_SUFFIXES or not _is_raster_image(data):
+                        return self._json(400, {"error": "upload a .png, .jpg or .webp picture"})
                     image_path = asset_dir / f"{re.sub(r'[^A-Za-z0-9._-]', '_', parts[4])}_{safe_name}"
                     image_path.write_bytes(data)
                     from echotales.pipeline.persona import refimg
@@ -2819,6 +2932,8 @@ def make_handler(
 
         def do_DELETE(self) -> None:
             parts = _split_path(urlparse(self.path).path)
+            if not self._host_allowed():
+                return self._json(403, {"error": "unexpected Host header"})
             if not self._origin_allowed():
                 return self._json(403, {"error": "cross-site request refused"})
             try:
@@ -2881,6 +2996,7 @@ def serve(
     # from the repo root against a *scratch* .db still wrote its test edits
     # into the tracked data/corrections/ log (2026-09-26). QA runs should
     # pass --corrections-dir pointing at a scratch directory.
+    check_bind(host, os.environ.get(_AUTH_ENV_VAR))
     registry = Registry(sources, corrections_dir=corrections_dir)
     # One worker thread, strictly sequential job execution process-wide --
     # see jobs.py's module docstring for why (the same GPU-sharing

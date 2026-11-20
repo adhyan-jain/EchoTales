@@ -35,4 +35,5 @@ VOLUME /app/data
 EXPOSE 8787
 # The container's own loopback is unreachable from the host, so bind all interfaces; compose publishes it on the
 # host's 127.0.0.1 only.
+ENV ECHOTALES_ALLOW_OPEN_BIND=1
 CMD ["echotales", "webview-server", "--host", "0.0.0.0", "--port", "8787", "--static-dir", "webview/build"]

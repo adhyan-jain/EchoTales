@@ -57,13 +57,20 @@ def wav_seconds(path: Path) -> float:
         return fh.getnframes() / float(fh.getframerate())
 
 
+def _meta_escape(text: str) -> str:
+    """ffmetadata values escape `= ; # \\` and newlines. A chapter title from a book is untrusted text: a newline in it
+    started a new `[CHAPTER]` section of the metadata file."""
+    out = "".join("\\" + c if c in "=;#\\" else c for c in text)
+    return out.replace("\r", " ").replace("\n", " ")
+
+
 def chapter_metadata(titles: Sequence[str], durations: Sequence[float], *, title: str, author: str) -> str:
     """ffmetadata text with one chapter per track, in milliseconds."""
-    lines = [";FFMETADATA1", f"title={title}", f"artist={author}", "genre=Audiobook"]
+    lines = [";FFMETADATA1", f"title={_meta_escape(title)}", f"artist={_meta_escape(author)}", "genre=Audiobook"]
     start = 0
     for name, seconds in zip(titles, durations):
         end = start + round(seconds * 1000)
-        lines += ["[CHAPTER]", "TIMEBASE=1/1000", f"START={start}", f"END={end}", f"title={name}"]
+        lines += ["[CHAPTER]", "TIMEBASE=1/1000", f"START={start}", f"END={end}", f"title={_meta_escape(name)}"]
         start = end
     return "\n".join(lines) + "\n"
 
