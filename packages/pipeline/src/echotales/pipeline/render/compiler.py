@@ -121,16 +121,16 @@ PROFILES["z-image-turbo"] = ModelProfile(
 def default_model() -> str:
     """The configured image model (`render.image_model`: Z-Image Turbo since D58). This used to be a constant "noobai-xl-1.1",
     so a bare `compile_prompt(brief)` wrote NoobAI tags although every real render is Z-Image (EVOLUTION 4.171)."""
-    from echotales.pipeline.config import get_settings
+    from echotales.pipeline.config import get_settings  # type: ignore[import-untyped]
 
-    return get_settings().render_image_model
+    return str(get_settings().render_image_model)
 
 
 def model_profile(key: str | None = None) -> ModelProfile:
     """The profile for `key`, or for the configured image model when none is given. A key the engine registry
     (`pipeline/engines/registry.py`) does not list on the compiler surface raises, because a typo silently rendering with another
     model would make a model comparison meaningless."""
-    from echotales.pipeline.engines import registry
+    from echotales.pipeline.engines import registry  # type: ignore[import-untyped]
 
     chosen = (key or default_model()).strip().lower()
     if chosen not in registry.compiler_profiles() or chosen not in PROFILES:
@@ -722,7 +722,9 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     stage = PromptSection("staging", staging_text) if staging_text else None
     cropped = b.composition.strip()
     if b.shot == "close" and b.frame_focus in ("", "eyes", "hands"):
-        from echotales.pipeline.render.framing import crop_composition
+        from echotales.pipeline.render.framing import (
+            crop_composition,  # type: ignore[import-untyped]
+        )
 
         cropped = crop_composition(cropped, b.frame_focus) if b.frame_focus != "hands" else ""
     comp = None if insert or not cropped else PromptSection("composition", cropped)
@@ -1108,7 +1110,7 @@ def brief_from_direction(
         chars, crowd = [], None
     lead_face = ""
     if chars and composition:
-        from echotales.pipeline.render.face import infer_expression
+        from echotales.pipeline.render.face import infer_expression  # type: ignore[import-untyped]
 
         lead_dir = dir_chars[0] if dir_chars else None
         said = (getattr(lead_dir, "expression", "") if lead_dir is not None else "") or (getattr(d, "expression", "") or "")

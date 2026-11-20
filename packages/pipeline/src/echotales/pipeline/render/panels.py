@@ -68,7 +68,12 @@ from echotales.pipeline.render.contract import (
 )
 from echotales.pipeline.render.direction import direct_beat, sanitize_prompt
 from echotales.pipeline.render.factions import qualify_role, scene_faction
-from echotales.pipeline.render.framing import FramingState, apply_framing, plan_framing, staging_set
+from echotales.pipeline.render.framing import (  # type: ignore[import-untyped]
+    FramingState,
+    apply_framing,
+    plan_framing,
+    staging_set,
+)
 from echotales.pipeline.render.palette import Palette, PaletteSpec, apply_palette
 from echotales.pipeline.render.plan import (
     PANEL_PLAN_FILE,
