@@ -116,15 +116,25 @@ PROFILES["z-image-turbo"] = ModelProfile(
     negative_base="",
     licence="Apache-2.0 (model card, https://huggingface.co/Tongyi-MAI/Z-Image-Turbo)",
 )
-DEFAULT_MODEL = "noobai-xl-1.1"
+
+
+def default_model() -> str:
+    """The configured image model (`render.image_model`: Z-Image Turbo since D58). This used to be a constant "noobai-xl-1.1",
+    so a bare `compile_prompt(brief)` wrote NoobAI tags although every real render is Z-Image (EVOLUTION 4.171)."""
+    from echotales.pipeline.config import get_settings  # type: ignore[import-untyped]
+
+    return str(get_settings().render_image_model)
 
 
 def model_profile(key: str | None = None) -> ModelProfile:
-    """The profile for `key`; an unknown key raises, because a typo silently rendering with another model would make a
-    model comparison meaningless."""
-    chosen = (key or DEFAULT_MODEL).strip().lower()
-    if chosen not in PROFILES:
-        raise ValueError(f"unknown image model {key!r}; expected one of {sorted(PROFILES)}")
+    """The profile for `key`, or for the configured image model when none is given. A key the engine registry
+    (`pipeline/engines/registry.py`) does not list on the compiler surface raises, because a typo silently rendering with another
+    model would make a model comparison meaningless."""
+    from echotales.pipeline.engines import registry  # type: ignore[import-untyped]
+
+    chosen = (key or default_model()).strip().lower()
+    if chosen not in registry.compiler_profiles() or chosen not in PROFILES:
+        raise ValueError(f"unknown image model {key!r}; expected one of {sorted(registry.compiler_profiles())}")
     return PROFILES[chosen]
 
 
@@ -218,6 +228,15 @@ class PanelBrief:
     composition: str = ""
     #: The scene's staging sheet text (set, blocking, light), identical on every panel of the scene.
     staging: str = ""
+    #: The framing sentence (`render/framing.py`) written right after the style lead, and its focus ("prop" is an insert with
+    #: nobody in it, "eyes" and "hands" are crops of the lead).
+    framing: str = ""
+    frame_focus: str = ""
+    #: The lead's face as drawn parts (`render/face.py`), written right after the identity so it is not the paragraph's last words.
+    face: str = ""
+    #: The light and mood grade written from the scene's stated time and light source (`render/lightgrade.py`), right after the
+    #: framing; empty when the text states no light.
+    grade: str = ""
     #: "text" when the panel's own text shows something; "inferred" when the director chose a visual from the text's
     #: referents because nothing visible was stated. Carried so `audit` can count them.
     visual_source: str = ""
@@ -456,6 +475,8 @@ def compile_prompt(
 
 _NATURAL_SHOT = {"wide": "A wide establishing shot", "medium": "A medium shot", "close": "A close-up portrait"}
 _NOUN = {"male": "man", "female": "woman"}
+#: Adults are drawn as adults: a face with a defined jaw and mature proportions, never the big-eyed round face of a child.
+_ADULT_FACE = ", an adult face with a defined jaw and mature proportions"
 _CHILD_NOUN = {"male": "boy", "female": "girl", "unknown": "child"}
 _TEEN_NOUN = {"male": "teenage boy", "female": "teenage girl", "unknown": "teenager"}
 _CREATURE_WORDS = re.compile(r"\b(beast|centipede|demon|spirit|dragon|monster|imp|wolf|chimera|creature|fiend)\b", re.IGNORECASE)
@@ -469,10 +490,20 @@ def _plain(text: str) -> str:
     return re.sub(r"\s+", " ", (text or "").replace("_", " ")).strip().strip(",.")
 
 
+def body_is_young(age_band: str, age_years: int = 0) -> bool:
+    """Whether a body is drawn as a child or a teenager. The graph's "youth" band covers 13 to about 25 and was always drawn as a
+    teenage boy, so LotM's 22-year-old Klein came out about twelve (round 3, 16 of 16 panels): "youth" is young only when a stated
+    age says under 18; with no age it is a young adult. Child, teen, teenager and adolescent stay young."""
+    band = (age_band or "").lower()
+    if band == "youth":
+        return 0 < age_years < 18
+    return band in ("child", "teen", "teenager", "adolescent")
+
+
 def _identity_head(c: CharacterBrief) -> tuple[str, bool]:
     """`("Name is a 15-year-old boy", young)`: who the person is before any look."""
     age_band = (c.age_band or "").lower()
-    young = age_band in ("child", "teen", "teenager", "adolescent", "youth")
+    young = body_is_young(age_band, c.age_years)
     if young and c.age_years:
         # RI's reborn fifteen-year-old was drawn as the grown man because "youth" had no wording and no number; a stated
         # age in plain words is what lets Z-Image draw a younger version of the same face.
@@ -484,12 +515,14 @@ def _identity_head(c: CharacterBrief) -> tuple[str, bool]:
     elif age_band == "child":
         noun = _CHILD_NOUN.get(c.gender, "child")
         head = f"{c.name} is a young {noun}"
-    elif age_band in ("teen", "teenager", "adolescent", "youth"):
+    elif young:
         noun = _TEEN_NOUN.get(c.gender, "teenager")
         head = f"{c.name} is a {noun}"
     else:
         noun = _NOUN.get(c.gender, "person")
-        age = c.age_band if c.age_band and c.age_band not in ("adult", "unknown") else ""
+        age = c.age_band if c.age_band and c.age_band not in ("adult", "unknown", "youth") else ""
+        if age_band == "youth":
+            age = "young"
         head = f"{c.name} is a{'n' if (age or noun)[0] in 'aeiou' else ''} {f'{age} ' if age else ''}{noun}"
     return head, young
 
@@ -514,7 +547,7 @@ def identity_sentence(c: CharacterBrief, appearance: AppearanceInText = Appearan
     if c.locked is not None:
         # The interval's locked words (`persona/identity_lock.py`): hair style, build and clothes included, so the model has
         # nothing left to choose per panel. A young body keeps its youthful face, which the lock does not carry.
-        face = ", a smooth youthful face" if young else ""
+        face = ", a smooth youthful face" if young else _ADULT_FACE if c.age_band != "elder" else ""
         return _plain(f"{head} with {c.locked.description()}{face}") + "."  # type: ignore[attr-defined]
     facts = {k: v for k, v in c.appearance.items() if v and k not in _SKIP}
     hair_bits = [v for k, v in facts.items() if _HAIR.search(k)]
@@ -542,6 +575,8 @@ def identity_sentence(c: CharacterBrief, appearance: AppearanceInText = Appearan
         text += " with " + (", ".join(feats[:-1]) + " and " + feats[-1] if len(feats) > 1 else feats[0])
     if young:
         text += ", a smooth youthful face and a " + ("slight build" if c.gender == "female" else "slim boyish build")
+    elif c.age_band != "elder":
+        text += _ADULT_FACE
     if c.attire:
         text += f", wearing {_plain(c.attire)}"
     return _plain(text) + "."
@@ -694,11 +729,25 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     nothing scene-dependent is in them; wounds and clothing state live in the paragraph, which comes from the panel's text.
     Setting clauses the paragraph already says are not repeated."""
     from echotales.pipeline.persona.genre import style_lead
-
     lead = _MANGA_LEAD if b.mode is OutputMode.MANGA else style_lead(b.novel_id)
     s = [PromptSection("style", lead)]
-    stage = PromptSection("staging", b.staging.strip()) if b.staging else None
-    comp = PromptSection("composition", b.composition.strip())
+    # The framing comes straight after the style lead: Z-Image has no CFG, so the shot named first and plainly is the shot drawn.
+    # Before this the compiled prompt never named a shot (16 of 16 LotM panels were one medium shot, EVOLUTION 4.171).
+    if b.framing:
+        s.append(PromptSection("framing", b.framing))
+    if b.grade:
+        s.append(PromptSection("grade", b.grade))
+    insert = b.frame_focus == "prop"
+    staging_text = trim_staging(b.staging.strip(), b.frame_focus, b.shot) if b.staging else ""
+    stage = PromptSection("staging", staging_text) if staging_text else None
+    cropped = b.composition.strip()
+    if b.shot == "close" and b.frame_focus in ("", "eyes", "hands"):
+        from echotales.pipeline.render.framing import (  # type: ignore[import-untyped]
+            crop_composition,
+        )
+
+        cropped = crop_composition(cropped, b.frame_focus) if b.frame_focus != "hands" else ""
+    comp = None if insert or not cropped else PromptSection("composition", cropped)
     written: dict[str, bool] = {}
     fields: dict[str, list[str]] = {}
     # Identity right after the style lead, before the scene: Z-Image has no CFG, so what the prompt says first and fixedly is
@@ -708,10 +757,14 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
         s.append(PromptSection(f"character:{c.name}", identity_sentence(c, appearance)))
         written[c.name] = appearance is not AppearanceInText.OFF
         fields[c.name] = derive_demeanour(c, b.mood, b.tension).fields_used
+    # The lead's face as drawn parts, straight after the identity and before the scene: said once, last and in three words
+    # ("cold mocking smile") it drew a mild smile; "mocking" must read as mocking (round 3, defect 7).
+    if b.face and b.characters and not insert:
+        s.append(PromptSection("face", f"{b.characters[0].name}'s face: {b.face}."))
     # A close shot leads with its own paragraph: staging first drew a second small hero at the cliff edge behind the
     # foreground one (2 of 2 seeds, 2026-11-19); paragraph first drew one (2 of 2).
-    s += [comp, stage] if (stage and b.shot == "close") else [x for x in (stage, comp) if x]
-    said = f"{b.composition} {b.staging}".lower()
+    s += [x for x in ((comp, stage) if (stage and b.shot == "close") else (stage, comp)) if x]
+    said = f"{cropped} {staging_text}".lower()
     clauses: list[str] = []
     # A staging sheet that names a Set is the one statement of the place (and "Light:" of the light): the genre locale and the
     # director's own setting are guesses from cue words, and appended after it they drew a timber hall and an open field on
@@ -731,6 +784,28 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
         positive=" ".join(x.text for x in s), negative="", sections=s, negative_sections=[], family=profile.family,
         mode=b.mode, appearance_written=written, demeanour_fields=fields,
     )
+
+
+_STAGE_PART = re.compile(r"\b(Set|Blocking|Light):\s*(.*?)(?=\s+(?:Set|Blocking|Light):|\Z)", re.S)
+
+
+def trim_staging(staging: str, focus: str, shot: str) -> str:
+    """The staging sheet cut to what the shot can see. The sheet's Blocking line ("stands alone facing right; the others stand in
+    rows") is a full-body, wide arrangement: left in a close-up it drew the crowd and the whole body again, and in an insert it
+    drew the people. An insert keeps the Set (the room the object is in); an eye or hand crop keeps only the Light; a close-up
+    keeps Set and Light; every other shot keeps the whole sheet."""
+    parts = {m.group(1): f"{m.group(1)}: {m.group(2).strip()}" for m in _STAGE_PART.finditer(staging)}
+    if not parts:
+        return staging
+    if focus == "prop":
+        keep: tuple[str, ...] = ("Set",)
+    elif focus in ("eyes", "hands"):
+        keep = ("Light",)
+    elif shot == "close":
+        keep = ("Set", "Light")
+    else:
+        return staging
+    return " ".join(parts[k] for k in keep if k in parts)
 
 
 def _style_sentence(b: PanelBrief) -> str:
@@ -939,7 +1014,7 @@ def character_brief(
 
         years = body_age_years(store, persona_id, novel_id=novel_id, entity_id=self_id, position=position)
     final_gender = gender if gender in ("male", "female") else (gender_hint or "unknown")
-    young = age in ("child", "youth", "teen", "teenager", "adolescent")
+    young = body_is_young(age, years)
     from echotales.pipeline.persona.identity_lock import lock_for
 
     locked = lock_for(
@@ -998,6 +1073,8 @@ def brief_from_direction(
 
     The crowd comes from the director's layout and the crowd-cut flag, never from the headcount tag: the old path wrote
     "solo" because nothing here knew a crowd existed."""
+    from echotales.pipeline.render.lightgrade import light_grade  # type: ignore[import-untyped]
+
     art, wardrobe, manhua = genre_direction(novel_id)
     d = direction
     layout = (getattr(d, "layout", "") or "").lower()
@@ -1018,6 +1095,8 @@ def brief_from_direction(
                            stance=(getattr(d, "layout", "") or "around the lead").replace("_", " "))
     mood = getattr(d, "mood", "") or ""
     composition = (getattr(d, "composition", "") or "").strip()
+    passage = beat_text
+    frame_focus = getattr(d, "frame_focus", "") or ""
     if composition:
         # The paragraph carries the beat's clothing and wounds; the identity sentence must stay the interval's fixed
         # wording, so beat prose is not allowed to rewrite attire or condition (it put "deep green robes" on the reborn
@@ -1048,6 +1127,19 @@ def brief_from_direction(
             )
             chars.append(cb)
 
+    if frame_focus == "prop":
+        # An insert of an object has nobody in it: the vision check must not expect a lead, nor the compiler draw one.
+        chars, crowd = [], None
+    lead_face = ""
+    if chars and composition:
+        from echotales.pipeline.render.face import infer_expression  # type: ignore[import-untyped]
+
+        lead_dir = dir_chars[0] if dir_chars else None
+        said = (getattr(lead_dir, "expression", "") if lead_dir is not None else "") or (getattr(d, "expression", "") or "")
+        # An over-the-shoulder panel's lead is the listener: the line's emotion belongs to the speaker, so only the director's
+        # own reading of the reaction is used there (render/speech.py, rule 15).
+        lead_face = said if frame_focus == "over-shoulder" else infer_expression(said, passage)
+
     camera = getattr(d, "camera_angle", "") or getattr(d, "camera", "") or ""
     loc_detail = getattr(d, "location_detail", "") or ""
     props = list(getattr(d, "props", []) or []) + list(getattr(d, "key_objects", []) or [])
@@ -1064,4 +1156,15 @@ def brief_from_direction(
         era_wardrobe=wardrobe, manhua=manhua, is_indoor=is_indoor,
         composition=composition, staging=(getattr(d, "staging", "") or "") if composition else "",
         visual_source=getattr(d, "visual_source", "") or "",
+        framing=getattr(d, "frame", "") or "", frame_focus=frame_focus, face=_drawn(lead_face),
+        grade=light_grade(
+            (getattr(d, "staging", "") or "") if composition else "", getattr(d, "lighting", "") or "", passage,
+            f"{location} {getattr(d, 'setting', '')} {loc_detail}", composition, mood=mood,
+        ),
     )
+
+
+def _drawn(expression: str) -> str:
+    from echotales.pipeline.render.face import drawn_face
+
+    return drawn_face(expression) if expression else ""

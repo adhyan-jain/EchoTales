@@ -238,3 +238,51 @@ def test_a_graph_fact_beats_the_genre_default_and_the_default_is_the_fallback(tm
 def test_a_character_without_a_lock_is_early_too() -> None:
     out = compile_prompt(_brief(None), model_profile("z-image-turbo"))
     assert [s.label for s in out.sections][:2] == ["style", "character:Fang Yuan"]
+
+
+def test_a_scene_hair_colour_alone_still_reads_as_hair() -> None:
+    """The scene look returned hair "Black" for LotM block 36 ("Black hair, brown eyes ..."), and the sentence read 'a teenage boy
+    with Black, brown eyes'."""
+    d = il.choose_defaults("s", "male", False)
+    lock = il.build_lock("p", {"eye_color": "brown"}, d, scene_hair="Black")
+    assert lock.hair == "black hair" and lock.source["hair"] == "scene"
+    assert il.build_lock("p", {}, d, scene_hair="long straight hair").hair == "long straight hair"
+
+
+class _WindowClient:
+    """Answers each window like a model reading only that window's text: the outfit if a garment word is in it."""
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def complete(self, task, prompt, schema, **kw):
+        self.calls += 1
+        look = il.CharacterLook(outfit="a linen shirt") if "linen shirt" in prompt else il.CharacterLook()
+        return type("R", (), {"value": look})()
+
+
+def test_a_garment_stated_late_in_a_long_scene_beats_the_genre_default(tmp_path) -> None:
+    """LotM ch1 is one scene of about 40 blocks; block 36 says 'a linen shirt' but the look call read only the first 2,600
+    characters, found nothing and stored an empty look, so the lock drew the genre's dark green frock coat in 16 of 16 panels."""
+    store = _store(tmp_path)
+    long_scene = " ".join(f"Sentence number {i} of the long quiet scene goes by in the room." for i in range(120))
+    long_scene += " Black hair, brown eyes, a linen shirt, thinly built."
+    assert len(long_scene) > 2 * il.LOOK_WINDOW
+    client = _WindowClient()
+    ctx = il.SceneContext("1:0", long_scene, client, "t")
+    lock = _lock(store, scene=ctx, name="Klein", facts={"hair_color": "black"})
+    assert lock.outfit == "a linen shirt" and lock.source["outfit"] == "scene"
+    calls = client.calls
+    again = _lock(store, scene=il.SceneContext("1:0", long_scene, None, "t"), name="Klein", facts={"hair_color": "black"})
+    assert again.outfit == "a linen shirt" and client.calls == calls, "the image pass reads the stored windows, asks nothing"
+    store.close()
+
+
+def test_a_scene_hair_that_is_only_a_condition_keeps_the_locked_hair_and_joins_the_state() -> None:
+    d = il.choose_defaults("s", "male", True)
+    facts = {"hair_color": "black", "hair_style": "long hair tied up in a topknot"}
+    lock = il.build_lock("p", facts, d, scene_hair="disheveled", scene_state="robes torn to shreds")
+    assert "black" in lock.hair and "topknot" in lock.hair and "disheveled" not in lock.hair
+    assert "hair disheveled" in lock.state and "torn to shreds" in lock.state
+    kept = il.build_lock("p", facts, d, scene_hair="black hair in a bun")
+    assert "bun" in kept.hair and kept.source["hair"] == "scene"

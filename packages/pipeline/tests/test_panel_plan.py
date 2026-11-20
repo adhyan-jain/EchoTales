@@ -70,7 +70,8 @@ def test_single_phase_writes_one_row_per_image_with_scene_blocks_cast_and_direct
     assert len({r.scene_state_id for r in rows}) == 3
     assert len({r.location for r in rows}) == 3  # the clansmen scene keeps the temple hall instead of a false village
     assert all(r.direction is not None and r.direction_source == "director" for r in rows)
-    assert rows[0].direction.shot == "wide" and rows[0].direction.expression == "calm_expression"
+    # The shot is the framing planner's (render/framing.py), not the director's: row 0 is a mid-chapter beat with no cue, so a rotation medium.
+    assert rows[0].direction.shot == "medium" and rows[0].direction.expression == "calm_expression"
     assert rows[0].direction.key_objects == ["lantern"]
     assert [m.self_id for m in rows[0].cast] == ["t:fang"] and rows[0].cast[0].label == "Fang Yuan"
     assert rows[0].cast_source == "present"

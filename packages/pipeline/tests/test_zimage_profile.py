@@ -82,7 +82,7 @@ def test_identity_sentence_is_identical_across_different_panels():
     b = compile_prompt(brief(crowd=None, shot="close", mood="calm", tension=0.0, lighting="dusk"), Z)
     sa, sb = dict(a.section_texts())["character:Fang Yuan"], dict(b.section_texts())["character:Fang Yuan"]
     assert sa == sb == identity_sentence(CharacterBrief(**FANG))
-    assert sa == "Fang Yuan is a man with long black hair, dark brown eyes and scar on cheek, wearing deep green robes."
+    assert sa == "Fang Yuan is a man with long black hair, dark brown eyes and scar on cheek, an adult face with a defined jaw and mature proportions, wearing deep green robes."
 
 
 def test_manga_and_colour_style_lines_describe_chinese_culture_positively():
@@ -116,7 +116,7 @@ def test_cold_lead_demeanour_is_unmistakable_and_never_a_bare_smile_or_laugh():
 def test_extra_named_character_gets_their_own_fixed_sentence():
     other = CharacterBrief(name="Elder Mo", gender="male", appearance={"hair_color": "white"}, attire="grey robes")
     c = compile_prompt(brief(characters=[CharacterBrief(**FANG), other], crowd=None), Z)
-    assert "Elder Mo is a man with white hair, wearing grey robes." in dict(c.section_texts())["others"]
+    assert "Elder Mo is a man with white hair, an adult face with a defined jaw and mature proportions, wearing grey robes." in dict(c.section_texts())["others"]
 
 
 def test_hf_name_maps_gguf_tensor_names():

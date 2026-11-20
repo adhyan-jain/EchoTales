@@ -50,6 +50,12 @@ _GARMENT = {
 _BUILD = {"male": ("a lean build", "a lean build", "an average build"), "female": ("a slender build",)}
 
 
+_FIXED_HAIR = re.compile(
+    r"\b(black|white|silver|grey|gray|golden|gold|blond\w*|brown|auburn|red|ginger|chestnut|dark|light|pale|dyed|green|blue|pink|purple|"
+    r"long|short|medium|shoulder|cropped|shaved|bald|braid\w*|ponytail|topknot|bun|tied|bound|loose|curly|curls|wavy|straight|"
+    r"fringe|bangs|parted)\b", re.I)
+
+
 def _pick(seed: str, options: tuple[Any, ...], salt: str) -> Any:
     return options[int(hashlib.md5(f"{salt}:{seed}".encode()).hexdigest(), 16) % len(options)]
 
@@ -125,12 +131,19 @@ def build_lock(
     graph facts, the stored defaults. Pure: the same inputs give the same words, which is the whole point."""
     src: dict[str, str] = {}
     genre = genre or {}
+    if scene_hair and not _FIXED_HAIR.search(scene_hair):
+        # "disheveled" is how the hair is in one scene, not which hair it is: used as the hair it erased the colour and style ("a man
+        # with disheveled hair"), and the topknot came and went across the cliff scene (round 3). It joins the scene's state instead.
+        scene_state = f"{scene_state}, hair {scene_hair.strip()}".strip(", ")
+        scene_hair = ""
     colour = _plain(facts.get("hair_color", "")) or _plain(genre.get("hair_color", ""))
     style = _plain(facts.get("hair_style", ""))
     if sheet is not None:
         hair, src["hair"] = sheet.hair, "sheet"
     elif scene_hair:
         hair, src["hair"] = _plain(scene_hair), "scene"
+        if "hair" not in hair.casefold():  # a bare colour or style ("Black") must still read as hair after "with"
+            hair = f"{hair.casefold()} hair"
     elif style:
         # A stated style is often a whole phrase ("very long straight hair down to the waist"): never "... waist hair".
         hair = f"{colour} {style}".strip()
@@ -214,12 +227,35 @@ def grounded_look(look: CharacterLook, scene_text: str) -> CharacterLook:
     return CharacterLook(**keep)
 
 
-def scene_look(store: object, ctx: SceneContext | None, persona_id: str, name: str) -> CharacterLook | None:
-    """This character's stated look in this scene: stored, else asked once and stored. None when there is nothing to read
-    (no scene, no stored answer, no client)."""
-    if ctx is None or not ctx.text.strip():
-        return None
-    aid = f"identity_look:{persona_id}:{ctx.key}"
+#: Characters of scene text one look call reads. A scene can be a whole chapter (LotM ch1 is one 40-block scene), and the
+#: first call read only its first 2,600 characters: "a linen shirt" at block 36 was never seen and the lock fell to a genre
+#: default (EVOLUTION 4.171).
+LOOK_WINDOW = 2600
+LOOK_MAX_WINDOWS = 8
+
+
+def _look_windows(text: str) -> list[str]:
+    """The scene text cut at sentence ends into windows of at most `LOOK_WINDOW` characters (a sentence longer than that is
+    cut where it stands), at most `LOOK_MAX_WINDOWS` of them."""
+    out: list[str] = []
+    cur = ""
+    for sent in re.split(r"(?<=[.!?])\s+", text.strip()):
+        while len(sent) > LOOK_WINDOW:
+            if cur:
+                out.append(cur)
+                cur = ""
+            out.append(sent[:LOOK_WINDOW])
+            sent = sent[LOOK_WINDOW:]
+        if cur and len(cur) + 1 + len(sent) > LOOK_WINDOW:
+            out.append(cur)
+            cur = ""
+        cur = f"{cur} {sent}".strip()
+    if cur:
+        out.append(cur)
+    return out[:LOOK_MAX_WINDOWS]
+
+
+def _ask_look(store: object, ctx: SceneContext, persona_id: str, name: str, window: str, aid: str) -> CharacterLook | None:
     row = store.conn.execute("SELECT payload_json FROM derived_artifact WHERE id=?", (aid,)).fetchone()  # type: ignore[attr-defined]
     if row is not None:
         return CharacterLook(**json.loads(row["payload_json"]))
@@ -227,7 +263,7 @@ def scene_look(store: object, ctx: SceneContext | None, persona_id: str, name: s
         return None
     from echotales.pipeline.llm.tasks import Task
 
-    prompt = f"Character: {name}\nScene text:\n{ctx.text[:2600].strip()}\n\nReturn only JSON with keys outfit, hair, condition."
+    prompt = f"Character: {name}\nScene text:\n{window}\n\nReturn only JSON with keys outfit, hair, condition."
     try:
         result = ctx.client.complete(Task.PANEL_DIRECTION, prompt, CharacterLook, system=LOOK_SYSTEM, novel_id=ctx.novel_id)  # type: ignore[attr-defined]
     except Exception as exc:
@@ -235,10 +271,36 @@ def scene_look(store: object, ctx: SceneContext | None, persona_id: str, name: s
         return None
     if not isinstance(result.value, CharacterLook):  # a client that answers every task with one canned object
         return None
-    look = grounded_look(result.value, ctx.text)
+    look = grounded_look(result.value, window)
     store.record_artifact(aid, TIER, [], "", json.dumps(look.model_dump()))  # type: ignore[attr-defined]
     store.conn.commit()  # type: ignore[attr-defined]
     return look
+
+
+def scene_look(store: object, ctx: SceneContext | None, persona_id: str, name: str) -> CharacterLook | None:
+    """This character's stated look in this scene: stored, else asked once per window of the scene text and stored. None when
+    there is nothing to read (no scene, no stored answer, no client).
+
+    Clothes and hair are the first window that states them (one scene, one outfit, as the lock is chosen once); the condition
+    is the first window's only, because a wound stated at the end of a scene must not be drawn on its first panel."""
+    if ctx is None or not ctx.text.strip():
+        return None
+    base = f"identity_look:{persona_id}:{ctx.key}"
+    looks: list[CharacterLook] = []
+    for n, window in enumerate(_look_windows(ctx.text)):
+        got = _ask_look(store, ctx, persona_id, name, window, base if n == 0 else f"{base}#w{n}")
+        if got is None:
+            if n == 0:
+                return None
+            continue
+        looks.append(got)
+    if not looks:
+        return None
+    return CharacterLook(
+        outfit=next((x.outfit for x in looks if x.outfit), ""),
+        hair=next((x.hair for x in looks if x.hair), ""),
+        condition=looks[0].condition,
+    )
 
 
 def resolve_look(store: object, ctx: SceneContext | None, persona_id: str, name: str) -> CharacterLook | None:
